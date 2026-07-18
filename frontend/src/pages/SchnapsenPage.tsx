@@ -28,6 +28,7 @@ import { cardAlt, suitSymbol } from '../utils/cardAlt';
 import { parseSchnapsenCommand, SCHNAPSEN_HELP } from '../utils/cli/commands/schnapsenCommands';
 import { formatSchnapsenState } from '../utils/cli/formatters/schnapsenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { computeSchnapsenLegalRing } from '../utils/schnapsenLegal';
 
 /** Card design → Schnapsen trump-suit id (1=♠ 2=♣ 3=♥ 4=♦). */
 const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
@@ -119,10 +120,13 @@ function SchnapsenPageContent() {
 
   const phaseName = isGameEnd ? t('phase.gameEnd') : isTrickEnd ? t('phase.trickEnd') : t('phase.play');
 
-  // In the second phase a card is only playable if it is in validPlays.
-  const validPlaySet = new Set(state.validPlays ?? []);
   const marriageSet = new Set(state.marriagePlays ?? []);
-  const restrictPlays = isHumanTurn && state.isEndgame;
+  // In the second phase (stock exhausted) strict must-follow rules apply. We
+  // *guide* the human with an additive success ring on the legal cards instead
+  // of disabling illegal ones — the backend still validates every play, so
+  // illegal cards stay clickable (no hard block). Phase 1 shows no ring.
+  const legalRing = computeSchnapsenLegalRing(state.isEndgame, isHumanTurn, state.validPlays);
+  const showLegalGuide = isHumanTurn && state.isEndgame;
 
   const resultBanner = (() => {
     if (!isGameEnd) return null;
@@ -246,17 +250,26 @@ function SchnapsenPageContent() {
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
                 </div>
+                {showLegalGuide && (
+                  <div
+                    className="mb-2 rounded bg-black/30 border border-ds-success px-3 py-2 text-ds-text-primary text-sm"
+                    role="status"
+                    data-testid="schnapsen-endgame-guide"
+                  >
+                    {t('endgameRuleGuide')}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-2">
                   {human.cards.map((card, idx) => {
-                    const playable = isHumanTurn && (!restrictPlays || validPlaySet.has(idx));
+                    const legal = legalRing.has(idx);
                     return (
                       <div key={`${card.design}-${card.value}-${idx}`} className="flex flex-col items-center gap-1">
                         <button
                           type="button"
                           onClick={() => handlePlay(idx)}
-                          disabled={loading || !playable}
+                          disabled={loading || !isHumanTurn}
                           aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                          className="disabled:opacity-50"
+                          className={`disabled:opacity-50 ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                         >
                           <CardImage card={card} width={cardWidth} />
                         </button>
