@@ -35,6 +35,7 @@ import { EUCHRE_HELP, parseEuchreCommand } from '../utils/cli/commands/euchreCom
 import { formatEuchreState } from '../utils/cli/formatters/euchreFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { bowerRole } from '../utils/euchreBower';
+import { euchreLegalPlayIndices } from '../utils/euchreLegalPlay';
 import { euchreSittingOutIdx } from '../utils/euchreSittingOut';
 import { playerName } from '../utils/playerUtils';
 
@@ -202,6 +203,16 @@ function EuchrePageContent() {
   const isGameEnd = state.phase === EuchrePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = (isPickUpPhase || isCallTrumpPhase) && state.players[state.bidPlayerIdx]?.isHuman === true;
+
+  // On the human's play turn, mirror the server's follow-suit rule
+  // (internal/domain/Euchre.go validatePlay) so legal cards get an additive
+  // success ring. Highlight only — clicks are never blocked; the backend still
+  // validates the actual play. The effective-suit check counts the left bower
+  // as trump, matching the domain so the ring is intuitive.
+  const legalPlayIndices =
+    isHumanTurn && humanPlayer
+      ? euchreLegalPlayIndices(humanPlayer.cards, state.currentTrick[0]?.card, state.trumpSuit)
+      : undefined;
   const isHumanDiscard = isDiscardPhase && state.players[state.dealerIdx]?.isHuman === true;
 
   const suitName = (suit: number) => (SUIT_NAMES[suit] ? t(SUIT_NAMES[suit]) : '');
@@ -459,6 +470,10 @@ function EuchrePageContent() {
                   // the left bower (a same-color Jack that plays as trump despite
                   // its printed suit). Badge only — never blocks card selection.
                   const role = bowerRole(card, state.trumpSuit);
+                  // Additive success ring on legal-to-play cards (never blocks
+                  // clicks). Uses `outline` so it stacks on top of the inline
+                  // selection border/shadow instead of being clobbered by them.
+                  const isLegal = legalPlayIndices?.includes(idx) ?? false;
                   return (
                     <button
                       type="button"
@@ -466,12 +481,14 @@ function EuchrePageContent() {
                       onClick={() => toggleCard(idx)}
                       aria-label={cardAlt(card)}
                       aria-pressed={selectedCardIndices.includes(idx)}
+                      data-legal={isLegal ? 'true' : undefined}
                       className={`relative transition-transform ${focusRingCard}`}
                       style={{
                         background: 'none',
                         padding: 0,
                         borderRadius: 8,
                         ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                        ...(isLegal ? { outline: '2px solid var(--color-ds-success)', outlineOffset: '1px' } : {}),
                         boxSizing: 'border-box',
                         ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
                       }}

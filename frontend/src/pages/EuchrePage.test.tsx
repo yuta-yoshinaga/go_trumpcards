@@ -469,6 +469,48 @@ describe('EuchrePage', () => {
     expect(cardBtn2).toHaveAttribute('aria-label', '\u2665 J');
   });
 
+  it('rings every card as legal when leading the trick', async () => {
+    // playPhaseState has an empty currentTrick → the human leads → all legal.
+    renderWithProviders(<EuchrePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const spadeBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    const heartBtn = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+    expect(spadeBtn).toHaveAttribute('data-legal', 'true');
+    expect(heartBtn).toHaveAttribute('data-legal', 'true');
+  });
+
+  it('rings only the legal follow-suit card and leaves clicks unblocked', async () => {
+    // Lead a spade with trump = spade → the human (♠A, ♥J) must follow spade,
+    // so only ♠A is legal; ♥J is not ringed but must still be clickable.
+    const followState: EuchreResponse = {
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 3, card: { design: 'SPADE', value: 12 } }],
+    };
+    mockExec.mockResolvedValue(followState);
+    renderWithProviders(<EuchrePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const spadeBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    const heartBtn = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+    expect(spadeBtn).toHaveAttribute('data-legal', 'true');
+    expect(heartBtn).not.toHaveAttribute('data-legal');
+
+    // Highlight is additive — the illegal card can still be selected (no block).
+    fireEvent.click(heartBtn);
+    expect(heartBtn).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('does not ring cards when it is not the human play turn', async () => {
+    // Trick-end phase is not a human play turn → no legal ring.
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<EuchrePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const spadeBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    expect(spadeBtn).not.toHaveAttribute('data-legal');
+  });
+
   it('reset button calls apiExec', async () => {
     renderWithProviders(<EuchrePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '\u30ea\u30bb\u30c3\u30c8' })).not.toBeDisabled());
