@@ -89,6 +89,20 @@ const withFoundationState: FortyAndEightResponse = {
   foundation: [[card('SPADE', 1)], [], [card('HEART', 1), card('HEART', 2)], [], [], [], [], []],
 };
 
+// Waste holds an Ace, so selecting it makes every empty foundation eligible (#3288).
+const aceWasteState: FortyAndEightResponse = {
+  ...playingState,
+  waste: [card('SPADE', 1)],
+  foundation: [[], [], [], [], [], [], [], []],
+};
+
+// Waste holds ♠2 and foundation pile 0 tops out at ♠A, so only pile 0 is a legal target (#3288).
+const singleTargetState: FortyAndEightResponse = {
+  ...playingState,
+  waste: [card('SPADE', 2)],
+  foundation: [[card('SPADE', 1)], [], [], [], [], [], [], []],
+};
+
 const withHintState: FortyAndEightResponse = {
   ...playingState,
   hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 3 },
@@ -326,6 +340,39 @@ describe('FortyAndEightPage', () => {
     fireEvent.click(wasteButton);
 
     expect(tableauButton.className).toContain('ring-2');
+  });
+
+  it('highlights every empty foundation when an Ace source is selected', async () => {
+    mockExec.mockResolvedValue(aceWasteState);
+    const { container } = renderWithProviders(<FortyAndEightPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    // No source selected yet -> no highlight.
+    expect(container.querySelectorAll('[data-eligible-foundation="true"]')).toHaveLength(0);
+
+    const wasteButton = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    fireEvent.click(wasteButton);
+
+    // Ace is placeable on all 8 empty foundations.
+    await waitFor(() => expect(container.querySelectorAll('[data-eligible-foundation="true"]')).toHaveLength(8));
+    for (const el of container.querySelectorAll('[data-eligible-foundation="true"]')) {
+      expect(el.className).toContain('ring-ds-info');
+    }
+  });
+
+  it('highlights only the single legal foundation and leaves invalid piles unhighlighted', async () => {
+    mockExec.mockResolvedValue(singleTargetState);
+    const { container } = renderWithProviders(<FortyAndEightPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    const wasteButton = screen.getByAltText('♠ 2').closest('button') as HTMLButtonElement;
+    fireEvent.click(wasteButton);
+
+    // ♠2 only fits on pile 0 (top ♠A); the 7 empty piles reject a non-Ace.
+    await waitFor(() => expect(container.querySelectorAll('[data-eligible-foundation="true"]')).toHaveLength(1));
+    const highlighted = container.querySelector('[data-eligible-foundation="true"]') as HTMLElement;
+    expect(highlighted).toHaveAttribute('aria-label', expect.stringContaining('組札'));
+    expect(highlighted.className).toContain('ring-ds-info');
   });
 
   it('clicking tableau card when source selected dispatches move', async () => {
