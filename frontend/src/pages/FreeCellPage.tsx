@@ -36,6 +36,7 @@ import { FREECELL_HELP, parseFreecellCommand } from '../utils/cli/commands/freec
 import { formatFreecellState } from '../utils/cli/formatters/freecellFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { freeCellAutoCompleteReady } from '../utils/freeCellAutoComplete';
+import { freeCellFoundationTarget } from '../utils/freeCellFoundationTarget';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -110,6 +111,7 @@ function FreeCellPageContent() {
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
+    handleAutoFoundation,
     isAutoCompleting,
   } = useFreeCellGame();
   const {
@@ -138,6 +140,19 @@ function FreeCellPageContent() {
       void exec('move', source, target);
     },
     [exec],
+  );
+
+  // Double-click / double-tap shortcut: auto-send an exposed card (a tableau
+  // top card or a free-cell card) to its foundation when a legal target
+  // exists; otherwise do nothing (no error, selection untouched).
+  const handleFoundationShortcut = useCallback(
+    (source: FreeCellMoveZone, card: Card) => {
+      if (!state) return;
+      const target = freeCellFoundationTarget(card, state.foundation);
+      if (!target) return;
+      handleAutoFoundation(source, target);
+    },
+    [state, handleAutoFoundation],
   );
   const dnd = useSolitaireDragDrop<FreeCellMoveZone>({
     onMove: dispatchMove,
@@ -255,7 +270,14 @@ function FreeCellPageContent() {
                         {card ? (
                           <button
                             type="button"
-                            onClick={() => handleSelectSource(freeCellZone)}
+                            onClick={(e) => {
+                              // The second click of a double-click also fires
+                              // onClick (detail === 2); ignore it so onDoubleClick
+                              // owns the foundation shortcut and selection stays put.
+                              if (e.detail >= 2) return;
+                              handleSelectSource(freeCellZone);
+                            }}
+                            onDoubleClick={() => handleFoundationShortcut(freeCellZone, card)}
                             disabled={!isPlaying || loading}
                             aria-label={cardAlt(card)}
                             aria-pressed={isSourceSelected('freecell', undefined, idx)}
@@ -389,13 +411,25 @@ function FreeCellPageContent() {
                                   {card ? (
                                     <button
                                       type="button"
-                                      onClick={() => {
+                                      onClick={(e) => {
+                                        // The second click of a double-click also
+                                        // fires onClick (detail === 2); ignore it so
+                                        // onDoubleClick owns the foundation shortcut
+                                        // without issuing a stray self-target move.
+                                        if (e.detail >= 2) return;
                                         if (selectedSource) {
                                           handleSelectTarget(tableauColZone);
                                         } else {
                                           handleSelectSource(cardZone);
                                         }
                                       }}
+                                      onDoubleClick={
+                                        // Only the exposed top card of a column can
+                                        // move to a foundation.
+                                        cardIdx === col.length - 1
+                                          ? () => handleFoundationShortcut(cardZone, card)
+                                          : undefined
+                                      }
                                       disabled={!isPlaying || loading}
                                       aria-label={cardAlt(card)}
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
