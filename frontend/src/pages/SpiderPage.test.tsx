@@ -661,6 +661,105 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
   });
 
+  describe('movable-run hover highlight (#3061)', () => {
+    // Col 0 is a valid same-suit descending run (♠K ♠Q ♠J); col 1 breaks at the first
+    // card (♣7 then ♥6 — suit mismatch) so ♣7 is not movable while ♥6 rings itself.
+    const runState: SpiderResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 12), faceUp: true },
+          { card: card('SPADE', 11), faceUp: true },
+        ],
+        [
+          { card: card('CLOVER', 7), faceUp: true },
+          { card: card('HEART', 6), faceUp: true },
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+      ]),
+    };
+
+    const btnFor = (alt: string) => screen.getByAltText(alt).closest('button') as HTMLButtonElement;
+
+    it('rings the whole same-suit descending run on hover and clears on leave', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      const top = btnFor('♠ K');
+      fireEvent.mouseEnter(top);
+      await waitFor(() => expect(btnFor('♠ K')).toHaveAttribute('data-movable-run', 'true'));
+      expect(btnFor('♠ Q')).toHaveAttribute('data-movable-run', 'true');
+      expect(btnFor('♠ J')).toHaveAttribute('data-movable-run', 'true');
+      expect(btnFor('♠ K').className).toContain('ring-ds-success');
+
+      fireEvent.mouseLeave(top);
+      await waitFor(() => expect(btnFor('♠ K')).not.toHaveAttribute('data-movable-run'));
+    });
+
+    it('rings only the valid suffix when hovering a mid-run card', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ Q')).toBeInTheDocument());
+
+      fireEvent.mouseEnter(btnFor('♠ Q'));
+      await waitFor(() => expect(btnFor('♠ Q')).toHaveAttribute('data-movable-run', 'true'));
+      expect(btnFor('♠ J')).toHaveAttribute('data-movable-run', 'true');
+      // ♠K is above the hovered card, so it is not part of the run.
+      expect(btnFor('♠ K')).not.toHaveAttribute('data-movable-run');
+    });
+
+    it('does not ring a card whose tail is a broken sequence', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♣ 7')).toBeInTheDocument());
+
+      // Hovering ♣7 would drag ♥6 with it — a broken sequence — so no ring appears.
+      fireEvent.mouseEnter(btnFor('♣ 7'));
+      await waitFor(() => expect(btnFor('♥ 6')).toBeInTheDocument());
+      expect(btnFor('♣ 7')).not.toHaveAttribute('data-movable-run');
+      expect(btnFor('♥ 6')).not.toHaveAttribute('data-movable-run');
+
+      // The lone bottom card still rings itself.
+      fireEvent.mouseEnter(btnFor('♥ 6'));
+      await waitFor(() => expect(btnFor('♥ 6')).toHaveAttribute('data-movable-run', 'true'));
+    });
+
+    it('highlights the run on keyboard focus too', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      fireEvent.focus(btnFor('♠ K'));
+      await waitFor(() => expect(btnFor('♠ K')).toHaveAttribute('data-movable-run', 'true'));
+      expect(btnFor('♠ J')).toHaveAttribute('data-movable-run', 'true');
+
+      fireEvent.blur(btnFor('♠ K'));
+      await waitFor(() => expect(btnFor('♠ K')).not.toHaveAttribute('data-movable-run'));
+    });
+
+    it('keeps the selection ring (warning) when a hovered card is the selected source', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      fireEvent.click(btnFor('♠ K'));
+      await waitFor(() => expect(btnFor('♠ K')).toHaveAttribute('aria-pressed', 'true'));
+      fireEvent.mouseEnter(btnFor('♠ K'));
+      // Selection ring takes priority over the hover ring on the selected card.
+      expect(btnFor('♠ K').className).toContain('ring-ds-warning');
+      expect(btnFor('♠ K').className).not.toContain('ring-ds-success');
+    });
+  });
+
   describe('drag and drop', () => {
     function buildDataTransfer() {
       const store: Record<string, string> = {};
