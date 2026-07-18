@@ -29,6 +29,19 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSpoonsCommand, SPOONS_HELP } from '../utils/cli/commands/spoonsCommands';
 import { formatSpoonsState } from '../utils/cli/formatters/spoonsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { computeSpoonsRankGroups } from '../utils/spoonsRankGroups';
+
+/**
+ * Ring color classes for same-rank hand groups, indexed by group color index.
+ * Purely a visual aid; assignment is deterministic (by ascending rank) so the
+ * same pair always keeps the same color across passes.
+ */
+const SPOONS_GROUP_RING_CLASSES = [
+  'ring-2 ring-sky-400',
+  'ring-2 ring-amber-400',
+  'ring-2 ring-emerald-400',
+  'ring-2 ring-fuchsia-400',
+] as const;
 
 /** CPU difficulty options for the Spoons settings panel. */
 const CPU_DIFFICULTY_OPTIONS = [
@@ -259,24 +272,53 @@ function SpoonsPageContent() {
                   {canPass ? ` — ${t('passNotice')}` : ''}
                 </div>
                 <div className="flex gap-1 flex-wrap">
-                  {humanPlayer.hand.map((c, i) => {
-                    const card = <CardImage key={`hand-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />;
-                    return canPass ? (
-                      <button
-                        type="button"
-                        key={`pass-${c.design}-${c.value}-${i}`}
-                        onClick={() => exec('pass', { cardIndex: i })}
-                        disabled={loading}
-                        className="p-0 bg-transparent border-0 cursor-pointer disabled:cursor-not-allowed"
-                        aria-label={t('passCardAria', { card: cardAlt(c) })}
-                        data-testid={`spoons-pass-${i}`}
-                      >
-                        {card}
-                      </button>
-                    ) : (
-                      card
-                    );
-                  })}
+                  {(() => {
+                    const rankGroups = computeSpoonsRankGroups(humanPlayer.hand);
+                    return humanPlayer.hand.map((c, i) => {
+                      const group = rankGroups[i];
+                      const { colorIndex } = group;
+                      const isGrouped = colorIndex !== null;
+                      const isReach = isGrouped && group.count >= 3;
+                      // Ring only for cards in a same-rank group of 2+; singletons stay neutral.
+                      const ringClass = isGrouped
+                        ? `${SPOONS_GROUP_RING_CLASSES[colorIndex % SPOONS_GROUP_RING_CLASSES.length]}${isReach ? ' motion-safe:animate-pulse' : ''}`
+                        : '';
+                      const card = (
+                        <CardImage
+                          key={`hand-${c.design}-${c.value}-${i}`}
+                          card={c}
+                          width={cardWidth}
+                          className={ringClass}
+                        />
+                      );
+                      const groupProps = {
+                        'data-rank-group': isGrouped ? String(group.colorIndex) : 'none',
+                        'data-rank-reach': isReach ? 'true' : 'false',
+                      };
+                      return canPass ? (
+                        <button
+                          type="button"
+                          key={`pass-${c.design}-${c.value}-${i}`}
+                          onClick={() => exec('pass', { cardIndex: i })}
+                          disabled={loading}
+                          className="p-0 bg-transparent border-0 cursor-pointer disabled:cursor-not-allowed"
+                          aria-label={t('passCardAria', { card: cardAlt(c) })}
+                          data-testid={`spoons-pass-${i}`}
+                          {...groupProps}
+                        >
+                          {card}
+                        </button>
+                      ) : (
+                        <span
+                          key={`hand-wrap-${c.design}-${c.value}-${i}`}
+                          data-testid={`spoons-hand-${i}`}
+                          {...groupProps}
+                        >
+                          {card}
+                        </span>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             ) : (
