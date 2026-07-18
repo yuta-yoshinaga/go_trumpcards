@@ -10,10 +10,12 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -149,6 +151,25 @@ function OsmosisPageContent() {
     : phase === OsmosisPhase.GAME_OVER
       ? t('phase.gameOver')
       : t('phase.playing');
+
+  // Bind letter-key shortcuts to the play-phase actions. Memoize so the effect
+  // doesn't re-subscribe every render, and call the hook before any early return
+  // to keep hook order stable. Enter/Space are intentionally NOT bound — they
+  // natively activate a focused button and would double-fire.
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDraw },
+      { key: 'h', action: handleHint },
+      { key: 'a', action: handleAutoComplete },
+      { key: 'z', action: handleUndo },
+      { key: 'g', action: confirmGiveUpAction },
+    ],
+    [handleDraw, handleHint, handleAutoComplete, handleUndo, confirmGiveUpAction],
+  );
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: state != null && isPlaying && !loading,
+  });
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
   if (!state) return null;
@@ -375,40 +396,50 @@ function OsmosisPageContent() {
                     className={`${btnPrimary} ${focusRingWhite}`}
                     onClick={handleDraw}
                     disabled={loading}
+                    aria-keyshortcuts="d"
                   >
                     {t('draw')}
+                    <KbdBadge label={t('kbd.draw')} />
                   </button>
                   <button
                     type="button"
                     className={`${btnSuccess} ${focusRingWhite}`}
                     onClick={handleHint}
                     disabled={loading}
+                    aria-keyshortcuts="h"
                   >
                     {t('hint')}
+                    <KbdBadge label={t('kbd.hint')} />
                   </button>
                   <button
                     type="button"
                     className={`${btnSuccess} ${focusRingWhite}`}
                     onClick={handleAutoComplete}
                     disabled={loading}
+                    aria-keyshortcuts="a"
                   >
                     {t('autoComplete')}
+                    <KbdBadge label={t('kbd.autoComplete')} />
                   </button>
                   <button
                     type="button"
                     className={`${btnOutline} ${focusRingWhite}`}
                     onClick={handleUndo}
                     disabled={!state.canUndo || loading}
+                    aria-keyshortcuts="z"
                   >
                     {t('undo')}
+                    <KbdBadge label={t('kbd.undo')} />
                   </button>
                   <button
                     type="button"
                     className={`${btnDanger} ${focusRingWhite}`}
                     onClick={confirmGiveUpAction}
                     disabled={loading}
+                    aria-keyshortcuts="g"
                   >
                     {t('giveup')}
+                    <KbdBadge label={t('kbd.giveUp')} />
                   </button>
                 </>
               )}
