@@ -182,7 +182,8 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
   const gamePath = variant === 'spanish21' ? '/spanish21' : '/';
   const navTitleKey = variant === 'spanish21' ? 'nav.spanish21' : 'nav.blackjack';
   const themeKey: 'blackjack' | 'spanish21' = variant === 'spanish21' ? 'spanish21' : 'blackjack';
-  const { t, tc, actionLog, showActionLog, hideActionLog } = useGamePageSetup(variant);
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup(variant);
   const phaseNames = usePhaseNames(variant, BJ_PHASE_KEYS);
   const suggestionLabels = useSuggestionLabels(t);
   const { playSound } = useSound();
@@ -295,6 +296,11 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
     hideActionLog,
   ]);
 
+  // Manual "Next Game" clicks route through the shared reset-confirm dialog so a stray tap
+  // does not discard the session. The auto-advance countdown keeps firing handleReset directly
+  // (see BjEndPhaseControls), so the automatic next-round flow is unaffected.
+  const requestResetConfirm = useCallback(() => requestConfirm(handleReset), [requestConfirm, handleReset]);
+
   if (!state)
     return (
       <GameSkeleton
@@ -320,9 +326,9 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
       winShow={phase === BjPhase.END}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
-      confirmOpen={false}
-      confirmReset={() => {}}
-      cancelReset={() => {}}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
       headerExtra={
         <>
           <span>
@@ -676,6 +682,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                   <BjEndPhaseControls
                     loading={loading}
                     onReset={handleReset}
+                    onRequestReset={requestResetConfirm}
                     autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
                   />
                 </div>

@@ -23,6 +23,15 @@ describe('BjEndPhaseControls', () => {
     expect(onReset).toHaveBeenCalled();
   });
 
+  it('calls onRequestReset instead of onReset when the button is clicked', () => {
+    const onReset = vi.fn();
+    const onRequestReset = vi.fn();
+    render(<BjEndPhaseControls {...defaultProps({ onReset, onRequestReset })} />);
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    expect(onRequestReset).toHaveBeenCalled();
+    expect(onReset).not.toHaveBeenCalled();
+  });
+
   it('disables button when loading is true', () => {
     render(<BjEndPhaseControls {...defaultProps({ loading: true })} />);
     expect(screen.getByRole('button', { name: '次のゲーム' })).toBeDisabled();
@@ -81,6 +90,17 @@ describe('BjEndPhaseControls', () => {
 
       vi.advanceTimersByTime(2000);
       await waitFor(() => expect(onReset).toHaveBeenCalled());
+    });
+
+    it('auto-advance fires onReset directly, bypassing onRequestReset', async () => {
+      const onReset = vi.fn();
+      const onRequestReset = vi.fn();
+      render(<BjEndPhaseControls {...defaultProps({ onReset, onRequestReset, autoAdvanceSeconds: 2 })} />);
+
+      vi.advanceTimersByTime(2000);
+      await waitFor(() => expect(onReset).toHaveBeenCalled());
+      // The confirmation path is skipped for auto-advance.
+      expect(onRequestReset).not.toHaveBeenCalled();
     });
 
     it('clears countdown text after reaching 0', async () => {
