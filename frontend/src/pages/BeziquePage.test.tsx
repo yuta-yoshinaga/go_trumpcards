@@ -193,6 +193,28 @@ describe('BeziquePage', () => {
     expect(card).not.toHaveAttribute('data-legal');
   });
 
+  it('shows the low-stock endgame warning when the stock nears empty', async () => {
+    mockExec.mockResolvedValue(makeBeziqueState({ phase: 0, currentPlayerIdx: 0, stockRemaining: 3 }));
+    renderWithProviders(<BeziquePage />);
+    const warning = await screen.findByTestId('bezique-stock-warning');
+    expect(warning).toHaveTextContent('3');
+    expect(warning).toHaveAttribute('role', 'status');
+  });
+
+  it('does not show the low-stock warning while the stock is plentiful', async () => {
+    // Default fixture has stockRemaining 30 (well above the threshold).
+    renderWithProviders(<BeziquePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument());
+    expect(screen.queryByTestId('bezique-stock-warning')).not.toBeInTheDocument();
+  });
+
+  it('drops the low-stock warning once the endgame begins', async () => {
+    mockExec.mockResolvedValue(endgameState);
+    renderWithProviders(<BeziquePage />);
+    await waitFor(() => expect(screen.getByText(/フェーズ2/)).toBeInTheDocument());
+    expect(screen.queryByTestId('bezique-stock-warning')).not.toBeInTheDocument();
+  });
+
   it('renders the game end message', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<BeziquePage />);
