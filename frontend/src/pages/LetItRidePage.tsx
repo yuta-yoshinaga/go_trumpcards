@@ -250,6 +250,19 @@ function LetItRidePageContent() {
                     </div>
                   </div>
                 </details>
+                <details className="bg-black/30 rounded-lg w-full max-w-sm" data-testid="bet-structure">
+                  <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
+                    {t('betStructure.title')}
+                  </summary>
+                  <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
+                    <p>{t('betStructure.intro')}</p>
+                    <ul className="space-y-0.5 list-disc list-inside">
+                      <li>{t('betStructure.pull3')}</li>
+                      <li>{t('betStructure.pull2')}</li>
+                      <li>{t('betStructure.ride')}</li>
+                    </ul>
+                  </div>
+                </details>
               </div>
             )}
 
