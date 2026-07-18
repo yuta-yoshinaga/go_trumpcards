@@ -1,5 +1,9 @@
 import type { Card } from '../types/card';
 
+/** Fixed number of draw rounds per 2-7 Triple Draw hand. Mirrors the backend
+ * constant `domain.DeuceToSevenMaxDraws` so the draw badge can show the cap. */
+export const DEUCE_TO_SEVEN_MAX_DRAWS = 3;
+
 /** Returns a card's value with the Ace counted as 14 (high), matching the 2-7
  * rule that the Ace never plays low. */
 function highValue(c: Card): number {
