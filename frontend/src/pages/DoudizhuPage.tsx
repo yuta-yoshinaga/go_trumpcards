@@ -277,28 +277,33 @@ function DoudizhuPageContent() {
             </div>
           )}
 
-          {/* Human hand */}
-          {humanPlayer && phase === 'play' && (
+          {/* Human hand — shown during both bid and play phases (display-only while bidding) */}
+          {humanPlayer && (phase === 'play' || phase === 'bid') && (
             <div data-tutorial="ddz-hand">
               <div className="flex flex-wrap justify-center gap-1">
-                {humanPlayer.cards.map((c, i) => (
-                  <button
-                    key={`hand-${c.design}-${c.value}`}
-                    type="button"
-                    className={
-                      selectedCards.has(i)
-                        ? 'transition-transform -translate-y-2 ring-2 ring-ds-warning rounded'
-                        : 'transition-transform'
-                    }
-                    onClick={() => toggleCard(i)}
-                    aria-label={cardAlt(c)}
-                    aria-pressed={selectedCards.has(i)}
-                  >
-                    <AnimatedCard card={c} width={cardWidth * 0.9} />
-                  </button>
-                ))}
+                {humanPlayer.cards.map((c, i) => {
+                  const interactive = phase === 'play';
+                  const selected = interactive && selectedCards.has(i);
+                  return (
+                    <button
+                      key={`hand-${c.design}-${c.value}`}
+                      type="button"
+                      disabled={!interactive}
+                      className={
+                        selected
+                          ? 'transition-transform -translate-y-2 ring-2 ring-ds-warning rounded'
+                          : 'transition-transform'
+                      }
+                      onClick={interactive ? () => toggleCard(i) : undefined}
+                      aria-label={cardAlt(c)}
+                      aria-pressed={interactive ? selectedCards.has(i) : undefined}
+                    >
+                      <AnimatedCard card={c} width={cardWidth * 0.9} />
+                    </button>
+                  );
+                })}
               </div>
-              {isHumanTurn && (
+              {phase === 'play' && isHumanTurn && (
                 <div className="flex justify-center gap-2 mt-2">
                   <button type="button" className={btnPrimary} onClick={handlePlay} disabled={selectedCards.size === 0}>
                     {t('button.play')}

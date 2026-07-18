@@ -108,6 +108,40 @@ describe('DoudizhuPage', () => {
     });
   });
 
+  it('shows the human hand during the bid phase as display-only (no selection)', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      phase: 'bid',
+      landlordIdx: -1,
+      highestBid: 0,
+      currentTurn: 0,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          isLandlord: false,
+          cardCount: 1,
+          cards: [{ design: 'SPADE', value: 5 }],
+        },
+        { id: 1, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
+        { id: 2, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
+      ],
+    });
+    renderWithProviders(<DoudizhuPage />);
+
+    // The hand card is rendered during the bid phase.
+    const cardBtn = await screen.findByRole('button', { name: '♠ 5' });
+    // It is display-only: disabled, with no selection toggle state.
+    expect(cardBtn).toBeDisabled();
+    expect(cardBtn).not.toHaveAttribute('aria-pressed');
+    fireEvent.click(cardBtn);
+    expect(cardBtn).not.toHaveAttribute('aria-pressed');
+
+    // No play/pass controls during bidding.
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+
   it('passes during the bid phase', async () => {
     mockExec.mockResolvedValue({
       ...defaultState,
