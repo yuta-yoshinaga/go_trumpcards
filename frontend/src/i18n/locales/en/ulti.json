@@ -46,6 +46,7 @@
   "bidDurchmarsch": "Durchmarsch",
   "bidPhase": "Declare a contract — pick a trump suit for Party, or declare Betli / Durchmarsch.",
   "discardPhase": "Talon exchange — pick 2 unwanted cards to discard face down.",
+  "discardProgress": "Selecting {{selected}}/{{required}} cards to discard",
   "discardButton": "Discard",
   "playButton": "Play",
   "nextTrick": "Next Trick",
