@@ -37,10 +37,10 @@ import { computeSpoonsRankGroups } from '../utils/spoonsRankGroups';
  * same pair always keeps the same color across passes.
  */
 const SPOONS_GROUP_RING_CLASSES = [
-  'ring-2 ring-sky-400',
-  'ring-2 ring-amber-400',
-  'ring-2 ring-emerald-400',
-  'ring-2 ring-fuchsia-400',
+  'ring-2 ring-ds-info',
+  'ring-2 ring-ds-warning',
+  'ring-2 ring-ds-success',
+  'ring-2 ring-ds-accent',
 ] as const;
 
 /** CPU difficulty options for the Spoons settings panel. */
