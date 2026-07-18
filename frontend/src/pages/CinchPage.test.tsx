@@ -114,6 +114,25 @@ describe('CinchPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 6 }));
   });
 
+  it('shows the bid-strength guide with the estimated point range and the 14-point legend', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CinchPage />);
+    const guide = await screen.findByTestId('cinch-bid-strength');
+    // Default bid hand (K♥, Q♥, A♠) holds 1 point for spades/hearts, 0 otherwise.
+    expect(screen.getByTestId('cinch-bid-strength-range')).toHaveTextContent('0〜1点');
+    expect(screen.getByTestId('cinch-bid-strength-best')).toHaveTextContent('スペード');
+    // The 14-point composition legend is present.
+    expect(guide).toHaveTextContent('14点の構成');
+    expect(guide).toHaveTextContent('Right Pedro');
+  });
+
+  it('does not show the bid-strength guide outside the human bid turn', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<CinchPage />);
+    await waitFor(() => expect(screen.getByTestId('cinch-trump-header')).toBeInTheDocument());
+    expect(screen.queryByTestId('cinch-bid-strength')).not.toBeInTheDocument();
+  });
+
   it('renders the name-trump phase with four suit buttons', async () => {
     mockExec.mockResolvedValue(nameTrumpState);
     renderWithProviders(<CinchPage />);

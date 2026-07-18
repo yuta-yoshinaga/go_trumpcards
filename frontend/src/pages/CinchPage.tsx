@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CinchResponse } from '../types/card';
 import { CinchPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { estimateCinchBidStrength } from '../utils/cinchBidStrength';
 import { CINCH_HELP, parseCinchCommand } from '../utils/cli/commands/cinchCommands';
 import { formatCinchState } from '../utils/cli/formatters/cinchFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -155,6 +156,10 @@ function CinchPageContent() {
   const canBid = isBidPhase && state.bidPlayerIdx === humanIdx && isHumanTurn;
   const canNameTrump = isNameTrumpPhase && state.bidWinnerIdx === humanIdx;
   const canPlay = isPlayPhase && isHumanTurn;
+
+  // Rough, hand-only strength guide shown alongside the bid buttons so a player
+  // can gauge how high to bid. Purely advisory — not a capture guarantee.
+  const bidStrength = canBid && humanPlayer ? estimateCinchBidStrength(humanPlayer.cards) : null;
 
   // Legal bids: pass (0) plus any raise strictly above the current highest bid, up to 14.
   const minRaise = Math.max(1, state.currentBid + 1);
@@ -365,6 +370,28 @@ function CinchPageContent() {
             {canBid && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="cinch-bid-prompt">
                 {t('bidPrompt')}
+              </div>
+            )}
+            {canBid && bidStrength && (
+              <div
+                className="mb-2 mx-auto max-w-xl p-2 rounded bg-black/30 text-ds-text-muted text-xs text-center"
+                data-testid="cinch-bid-strength"
+              >
+                <div className="text-ds-text-primary" data-testid="cinch-bid-strength-range">
+                  {t('bidStrength.range', { min: bidStrength.minPoints, max: bidStrength.maxPoints })}
+                </div>
+                <div data-testid="cinch-bid-strength-best">
+                  {t('bidStrength.best', {
+                    symbol: SUIT_SYMBOLS[bidStrength.bestSuit],
+                    suit: suitLabel(bidStrength.bestSuit),
+                    points: bidStrength.pointsBySuit[bidStrength.bestSuit],
+                  })}
+                </div>
+                <div className="mt-1">
+                  <span className="text-ds-text-primary">{t('bidStrength.legendTitle')}:</span>{' '}
+                  {t('bidStrength.legend')}
+                </div>
+                <div className="mt-1 italic">{t('bidStrength.note')}</div>
               </div>
             )}
             {canNameTrump && (
