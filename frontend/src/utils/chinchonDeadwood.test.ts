@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
 import {
   bestChinchonDeadwoodValue,
+  bestChinchonMeldSplit,
   calcChinchonDeadwoodValue,
   chinchonCardValue,
   chinchonDeadwoodBreakdown,
@@ -91,5 +92,38 @@ describe('chinchonDeadwoodBreakdown', () => {
   it('returns an empty breakdown when every card melds', () => {
     const hand = [c('SPADE', 5), c('HEART', 5), c('CLOVER', 5)];
     expect(chinchonDeadwoodBreakdown(hand)).toEqual({ cards: [], values: [], total: 0 });
+  });
+});
+
+describe('bestChinchonMeldSplit', () => {
+  it('marks the melded card indices and leaves deadwood out', () => {
+    // ♠5-♥5-♣5 set (idx 0,1,2) melds; ♦K(idx 3) and ♥3(idx 4) are deadwood.
+    const hand = [c('SPADE', 5), c('HEART', 5), c('CLOVER', 5), c('DIAMOND', 13), c('HEART', 3)];
+    const split = bestChinchonMeldSplit(hand);
+    expect([...split.meldedIndices].sort((a, b) => a - b)).toEqual([0, 1, 2]);
+    expect(split.meldedIndices.has(3)).toBe(false);
+    expect(split.meldedIndices.has(4)).toBe(false);
+    expect(split.deadwoodValue).toBe(13);
+  });
+
+  it('marks a same-suit run spanning the 7/J gap as melded', () => {
+    // ♠7-J-Q run (idx 0,1,2) melds; ♥A(idx 3) is deadwood.
+    const hand = [c('SPADE', 7), c('SPADE', 11), c('SPADE', 12), c('HEART', 1)];
+    const split = bestChinchonMeldSplit(hand);
+    expect([...split.meldedIndices].sort((a, b) => a - b)).toEqual([0, 1, 2]);
+    expect(split.deadwoodValue).toBe(1);
+  });
+
+  it('returns an empty set for an empty hand', () => {
+    const split = bestChinchonMeldSplit([]);
+    expect(split.meldedIndices.size).toBe(0);
+    expect(split.deadwoodValue).toBe(0);
+  });
+
+  it('marks every index as deadwood when no meld exists', () => {
+    const hand = [c('SPADE', 5), c('HEART', 13)];
+    const split = bestChinchonMeldSplit(hand);
+    expect(split.meldedIndices.size).toBe(0);
+    expect(split.deadwoodValue).toBe(15);
   });
 });
