@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { bestDeadwoodValue, calcDeadwoodValue, ginRummyCardValue, ginRummyMeldLabel } from './ginRummyDeadwood';
+import {
+  bestDeadwoodValue,
+  bestMeldSplit,
+  calcDeadwoodValue,
+  ginRummyCardValue,
+  ginRummyMeldLabel,
+} from './ginRummyDeadwood';
 
 const c = (design: Card['design'], value: number): Card => ({ design, value });
 
@@ -57,6 +63,63 @@ describe('bestDeadwoodValue', () => {
       c('DIAMOND', 9),
     ];
     expect(bestDeadwoodValue(hand)).toBe(0);
+  });
+});
+
+describe('bestMeldSplit', () => {
+  const sorted = (s: ReadonlySet<number>) => [...s].sort((a, b) => a - b);
+
+  it('returns an empty split for an empty hand', () => {
+    const split = bestMeldSplit([]);
+    expect(sorted(split.meldedIndices)).toEqual([]);
+    expect(split.deadwoodValue).toBe(0);
+  });
+
+  it('melds no card when no meld exists', () => {
+    const split = bestMeldSplit([c('SPADE', 2), c('HEART', 5), c('CLOVER', 9)]);
+    expect(sorted(split.meldedIndices)).toEqual([]);
+    expect(split.deadwoodValue).toBe(2 + 5 + 9);
+  });
+
+  it('marks a set of 3 as melded, leaving the stray as deadwood', () => {
+    // indices 0,1,2 = three 7s (set); index 3 = stray 4 (deadwood)
+    const split = bestMeldSplit([c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), c('DIAMOND', 4)]);
+    expect(sorted(split.meldedIndices)).toEqual([0, 1, 2]);
+    expect(split.deadwoodValue).toBe(4);
+  });
+
+  it('marks a run of 3 as melded, leaving the stray as deadwood', () => {
+    // indices 0,1,2 = ♠5-6-7 run; index 3 = stray K (deadwood)
+    const split = bestMeldSplit([c('SPADE', 5), c('SPADE', 6), c('SPADE', 7), c('HEART', 13)]);
+    expect(sorted(split.meldedIndices)).toEqual([0, 1, 2]);
+    expect(split.deadwoodValue).toBe(10);
+  });
+
+  it('prefers the run over an impossible set with duplicate ranks', () => {
+    // ♠7-8-9 run (0,1,2); leftover ♥7,♣7 (3,4) are only 2 sevens → no set → deadwood
+    const split = bestMeldSplit([c('SPADE', 7), c('SPADE', 8), c('SPADE', 9), c('HEART', 7), c('CLOVER', 7)]);
+    expect(sorted(split.meldedIndices)).toEqual([0, 1, 2]);
+    expect(split.deadwoodValue).toBe(14);
+  });
+
+  it('melds every card when the hand is fully melded', () => {
+    const hand: Card[] = [
+      c('SPADE', 5),
+      c('SPADE', 6),
+      c('SPADE', 7),
+      c('SPADE', 8),
+      c('HEART', 9),
+      c('CLOVER', 9),
+      c('DIAMOND', 9),
+    ];
+    const split = bestMeldSplit(hand);
+    expect(sorted(split.meldedIndices)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(split.deadwoodValue).toBe(0);
+  });
+
+  it('stays consistent with bestDeadwoodValue', () => {
+    const hand = [c('SPADE', 7), c('SPADE', 8), c('SPADE', 9), c('HEART', 7), c('CLOVER', 7)];
+    expect(bestMeldSplit(hand).deadwoodValue).toBe(bestDeadwoodValue(hand));
   });
 });
 

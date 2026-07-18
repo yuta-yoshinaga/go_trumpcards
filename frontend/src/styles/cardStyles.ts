@@ -65,6 +65,21 @@ export function trumpRingStyle(): React.CSSProperties {
 }
 
 /**
+ * Return inline styles that color-code a hand card by meld membership (e.g. Gin
+ * Rummy): a melded card gets a green outline, a deadwood card a subtle grey one.
+ * Uses `outline` (not `border`/`boxShadow`) so it stacks additively on top of
+ * the selection border and lift without clobbering them — a card can be both
+ * melded and selected. Purely decorative; never blocks clicks.
+ */
+export function meldCardStyle(isMelded: boolean): React.CSSProperties {
+  return {
+    outline: isMelded ? '2px solid var(--color-ds-success)' : '2px dashed rgba(148, 163, 184, 0.5)',
+    outlineOffset: '1px',
+    borderRadius: 8,
+  };
+}
+
+/**
  * Return adjusted overlap margin for a card that is adjacent to a selected card on mobile.
  * Reduces the negative overlap by EXPANSION_GAP_PX, effectively widening the visible area.
  * Returns the original overlap when the card is not adjacent to a selection.

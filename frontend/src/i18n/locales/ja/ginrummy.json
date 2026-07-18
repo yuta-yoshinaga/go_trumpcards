@@ -29,6 +29,8 @@
   "discardButton": "捨てる",
   "knockButton": "ノック",
   "deadwoodLabel": "デッドウッド: {{score}}点（ノック上限 {{threshold}}）",
+  "meldLegend": "メルド",
+  "deadwoodLegend": "デッドウッド",
   "layoffButton": "レイオフ",
   "skipLayoffButton": "スキップ",
   "nextRound": "次のラウンド",
