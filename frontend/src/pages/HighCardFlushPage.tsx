@@ -405,20 +405,19 @@ function HighCardFlushPageContent() {
                   {t('label.flushLen')}: {state.playerFlushLen} · {t('label.multiplier')} ≤ {maxMultiplier}
                 </div>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {maxMultiplier >= 1 && (
-                    <button type="button" className={btnSuccess} onClick={raise(1)} disabled={loading}>
-                      {t('button.raise1x')}
-                    </button>
-                  )}
-                  {maxMultiplier >= 2 && (
-                    <button type="button" className={btnSuccess} onClick={raise(2)} disabled={loading}>
-                      {t('button.raise2x')}
-                    </button>
-                  )}
-                  {maxMultiplier >= 3 && (
-                    <button type="button" className={btnSuccess} onClick={raise(3)} disabled={loading}>
-                      {t('button.raise3x')}
-                    </button>
+                  {[1, 2, 3].map((m) =>
+                    maxMultiplier >= m ? (
+                      <button
+                        key={m}
+                        type="button"
+                        className={btnSuccess}
+                        onClick={raise(m)}
+                        disabled={loading}
+                        data-testid={`raise-${m}x`}
+                      >
+                        {t('button.raiseAmount', { multiplier: m, amount: state.anteBet * m })}
+                      </button>
+                    ) : null,
                   )}
                   <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
                     {t('button.fold')}
