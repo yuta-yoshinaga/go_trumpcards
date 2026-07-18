@@ -20,7 +20,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useMaoGame } from '../hooks/useMaoGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnDanger, btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -54,6 +54,9 @@ const SUIT_SYMBOLS: Record<number, string> = {
   [CrazyEightsSuit.HEART]: '♥',
   [CrazyEightsSuit.DIAMOND]: '♦',
 };
+
+/** Red suits (hearts, diamonds) — rendered in the error/red token; spades and clubs use the ivory primary token. */
+const RED_SUITS: ReadonlySet<number> = new Set([CrazyEightsSuit.HEART, CrazyEightsSuit.DIAMOND]);
 
 /** Number of correct compliances required before a rule hint is unlocked. */
 const HINT_THRESHOLD = 3;
@@ -462,10 +465,20 @@ function MaoPageContent() {
                     <button
                       key={suit}
                       type="button"
-                      className={btnPrimary}
+                      className={`${btnSecondary} inline-flex items-center gap-1.5`}
                       onClick={() => handleChooseSuit(suit)}
                       disabled={loading}
+                      aria-label={t(key)}
                     >
+                      <span
+                        aria-hidden="true"
+                        data-testid={`suit-symbol-${suit}`}
+                        className={`text-lg leading-none ${
+                          RED_SUITS.has(suit) ? 'text-ds-error' : 'text-ds-text-primary'
+                        }`}
+                      >
+                        {SUIT_SYMBOLS[suit]}
+                      </span>
                       {t(key)}
                     </button>
                   ))}

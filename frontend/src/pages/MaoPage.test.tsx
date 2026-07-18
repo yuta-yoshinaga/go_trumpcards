@@ -144,11 +144,31 @@ describe('MaoPage', () => {
   it('renders choose suit phase and calls suit', async () => {
     mockExec.mockResolvedValue(chooseSuitState);
     renderWithProviders(<MaoPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ スペード' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スペード' })).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '♥ ハート' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ハート' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('suit', undefined, 3));
+  });
+
+  it('shows a color-coded suit symbol alongside each suit-selection button', async () => {
+    mockExec.mockResolvedValue(chooseSuitState);
+    renderWithProviders(<MaoPage />);
+    // CrazyEightsSuit: SPADE=1, CLOVER=2, HEART=3, DIAMOND=4
+    await waitFor(() => expect(screen.getByTestId('suit-symbol-1')).toBeInTheDocument());
+
+    // Every suit button shows both its glyph and its text label.
+    expect(screen.getByTestId('suit-symbol-1')).toHaveTextContent('♠');
+    expect(screen.getByTestId('suit-symbol-2')).toHaveTextContent('♣');
+    expect(screen.getByTestId('suit-symbol-3')).toHaveTextContent('♥');
+    expect(screen.getByTestId('suit-symbol-4')).toHaveTextContent('♦');
+    expect(screen.getByRole('button', { name: 'ダイヤ' })).toBeInTheDocument();
+
+    // Red suits (hearts, diamonds) carry the red token; black suits use the ivory primary token.
+    expect(screen.getByTestId('suit-symbol-3').className).toContain('text-ds-error');
+    expect(screen.getByTestId('suit-symbol-4').className).toContain('text-ds-error');
+    expect(screen.getByTestId('suit-symbol-1').className).toContain('text-ds-text-primary');
+    expect(screen.getByTestId('suit-symbol-2').className).toContain('text-ds-text-primary');
   });
 
   it('calls declare when declare button clicked', async () => {
