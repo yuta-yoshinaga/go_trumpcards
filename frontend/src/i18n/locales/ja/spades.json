@@ -28,6 +28,7 @@
   "bidProgress.made": "ビッド達成 (+{{bags}} バッグ)",
   "bidProgress.nilOk": "ニル継続中",
   "bidProgress.nilFail": "ニル失敗",
+  "bagWarning": "バッグ {{bags}}/{{threshold}} 注意",
   "currentTrick": "現在のトリック",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
