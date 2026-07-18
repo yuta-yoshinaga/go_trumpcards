@@ -119,7 +119,18 @@ describe('TrenteEtQuarantePage', () => {
   it('shows the refait message on a tie at 31', async () => {
     mockApi.mockResolvedValue(refaitState);
     renderWithProviders(<TrenteEtQuarantePage />);
-    await waitFor(() => expect(screen.getByText(/ルフェ/)).toBeInTheDocument());
+    // Scope to the result banner so the rule-explainer summary (which also mentions Refait) is excluded.
+    await waitFor(() => expect(screen.getByTestId('teq-result')).toHaveTextContent(/ルフェ/));
+  });
+
+  it('renders the static refait rule explainer with the half-stake detail', async () => {
+    mockApi.mockResolvedValue(refaitState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    const explainer = await screen.findByTestId('teq-refait-explainer');
+    expect(explainer).toBeInTheDocument();
+    // The explainer must accurately state that the house takes half the stake.
+    expect(explainer).toHaveTextContent('賭け金の半分を失う');
+    expect(explainer).toHaveTextContent(/ハウスエッジ/);
   });
 
   it('starts the next round from the result phase', async () => {

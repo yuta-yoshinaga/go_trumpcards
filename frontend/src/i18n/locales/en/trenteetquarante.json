@@ -39,6 +39,12 @@
   "payout": {
     "total": "Net payout"
   },
+  "refait": {
+    "title": "What is a Refait (a tie at 31)?",
+    "intro": "When both rows finish on the same total it is normally a push (your full stake is returned) — except when they tie at 31, which is a \"Refait\".",
+    "half": "On a Refait the house takes half your stake and returns the other half (you lose half your bet).",
+    "edge": "This is the only edge the house holds in Trente et Quarante. Ties at 32–40 are ordinary pushes and your stake is returned in full."
+  },
   "tutorial": {
     "betControls": "Choose one of the four bets and enter your stake",
     "actionButtons": "Deal both rows, then start the next round",
