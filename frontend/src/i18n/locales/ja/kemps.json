@@ -24,6 +24,7 @@
   },
   "partnerSignaling": "パートナーが合図を送っています！「ケムプス！」を宣言しましょう。",
   "opponentSignaling": "相手チームの誰かが合図しているかもしれません…。",
+  "fourOfAKindReady": "フォーオブアカインドが成立しました！「ケムプス！」を宣言できます。",
   "kempsButton": "ケムプス！",
   "counterButton": "カウンター・ケムプス！（{{name}}）",
   "declineButton": "宣言しない",

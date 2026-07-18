@@ -177,6 +177,80 @@ describe('KempsPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('kemps'));
   });
 
+  it('emphasizes the Kemps button and announces readiness when the human holds four of a kind', async () => {
+    // Human holds four of a kind and the declare window is open.
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        isHumanTurn: false,
+        fourHolderIdx: 0,
+        players: [
+          makePlayer({
+            name: 'You',
+            isHuman: true,
+            team: 0,
+            hasFourOfAKind: true,
+            hand: [
+              { design: 'SPADE', value: 7 },
+              { design: 'HEART', value: 7 },
+              { design: 'CLOVER', value: 7 },
+              { design: 'DIAMOND', value: 7 },
+            ],
+          }),
+          makePlayer({ team: 1 }),
+          makePlayer({ team: 0 }),
+          makePlayer({ team: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<KempsPage />);
+    const btn = await screen.findByTestId('kemps-declare-button');
+    expect(btn).toHaveAttribute('data-emphasized', 'true');
+    expect(btn.className).toContain('ring-ds-success');
+    expect(btn.className).toContain('animate-pulse');
+    // The readiness is announced in a live region.
+    const ready = screen.getByTestId('kemps-four-ready');
+    expect(ready).toHaveAttribute('role', 'status');
+    expect(ready).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('does not emphasize the Kemps button when the human lacks four of a kind', async () => {
+    // declareState keeps the human without four of a kind (partner holds it).
+    mockExec.mockResolvedValue(declareState);
+    renderWithProviders(<KempsPage />);
+    const btn = await screen.findByTestId('kemps-declare-button');
+    expect(btn).toHaveAttribute('data-emphasized', 'false');
+    expect(btn.className).not.toContain('ring-ds-success');
+    expect(screen.queryByTestId('kemps-four-ready')).not.toBeInTheDocument();
+  });
+
+  it('announces four-of-a-kind readiness during the exchange phase', async () => {
+    // Emphasis notice appears even before the declare window opens.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({
+            name: 'You',
+            isHuman: true,
+            team: 0,
+            hasFourOfAKind: true,
+            hand: [
+              { design: 'SPADE', value: 9 },
+              { design: 'HEART', value: 9 },
+              { design: 'CLOVER', value: 9 },
+              { design: 'DIAMOND', value: 9 },
+            ],
+          }),
+          makePlayer({ team: 1 }),
+          makePlayer({ team: 0 }),
+          makePlayer({ team: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<KempsPage />);
+    expect(await screen.findByTestId('kemps-four-ready')).toBeInTheDocument();
+  });
+
   it('dispatches counter against an opponent seat', async () => {
     mockExec.mockResolvedValue(declareState);
     renderWithProviders(<KempsPage />);

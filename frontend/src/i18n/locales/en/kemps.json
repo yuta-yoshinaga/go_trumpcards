@@ -24,6 +24,7 @@
   },
   "partnerSignaling": "Your partner is signaling! Declare Kemps!",
   "opponentSignaling": "Someone on the opposing team may be signaling…",
+  "fourOfAKindReady": "You have four of a kind! You can declare Kemps!",
   "kempsButton": "Kemps!",
   "counterButton": "Counter-Kemps! ({{name}})",
   "declineButton": "Decline",

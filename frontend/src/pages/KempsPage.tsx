@@ -144,6 +144,11 @@ function KempsPageContent() {
     return <GameSkeleton gameKey="kemps" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  // The backend flags four-of-a-kind for the human only; when set, the Kemps
+  // call button is emphasised so the player does not miss the declare chance
+  // while focused on field swaps (#3553). The flag clears the moment a swap
+  // breaks the quad, so the emphasis follows the current hand automatically.
+  const humanHasFour = !!humanPlayer?.hasFourOfAKind;
   const isExchange = state.phase === KempsPhase.EXCHANGE;
   const isDeclare = state.phase === KempsPhase.DECLARE;
   const isRoundEnd = state.phase === KempsPhase.ROUND_END;
@@ -304,6 +309,19 @@ function KempsPageContent() {
               </div>
             )}
 
+            {/* Four-of-a-kind readiness — announced (and shown during EXCHANGE)
+                so the human notices the quad before the declare window. */}
+            {humanHasFour && !isGameEnd && (
+              <div
+                className="my-2 p-2 rounded bg-ds-success/20 text-ds-success text-sm font-semibold"
+                role="status"
+                aria-live="polite"
+                data-testid="kemps-four-ready"
+              >
+                {t('fourOfAKindReady')}
+              </div>
+            )}
+
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
@@ -387,7 +405,14 @@ function KempsPageContent() {
 
               {isDeclare && !isGameEnd && (
                 <>
-                  <button type="button" className={btnWarning} onClick={() => exec('kemps')} disabled={loading}>
+                  <button
+                    type="button"
+                    className={`${btnWarning}${humanHasFour ? ' ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
+                    onClick={() => exec('kemps')}
+                    disabled={loading}
+                    data-testid="kemps-declare-button"
+                    data-emphasized={humanHasFour ? 'true' : 'false'}
+                  >
                     {t('kempsButton')}
                   </button>
                   {opponentSeats.map(({ p, idx }) => (
