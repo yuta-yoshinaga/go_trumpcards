@@ -26,7 +26,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { PanResponse } from '../types/card';
+import type { PanPlayer, PanResponse } from '../types/card';
 import { PanPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -160,6 +160,38 @@ function PanPageContent() {
   const isHumanTurn = (isDrawPhase || isPlayPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
   const canLayoff = isPlayPhase && isHumanTurn && selectedCardIndices.length === 1 && !loading;
 
+  // Meld-progress indicator toward the win condition (winMeldCount cards laid on
+  // the table), highlighting the final stretch (<=2 cards left) to go out.
+  const renderMeldProgress = (p: PanPlayer) => {
+    const melded = p.meldedCount;
+    const total = state.winMeldCount;
+    const remaining = total - melded;
+    const isClose = remaining > 0 && remaining <= 2;
+    const pct = total > 0 ? Math.min(100, (melded / total) * 100) : 0;
+    const label = t('meldProgress', { count: melded, total });
+    return (
+      <div data-testid="pan-meld-progress" className="mx-auto mb-2 max-w-xs">
+        <div className="flex items-center justify-between text-xs mb-0.5">
+          <span className="text-ds-text-muted">{label}</span>
+          {isClose && <span className="text-ds-warning font-bold">{t('meldRemaining', { count: remaining })}</span>}
+        </div>
+        <div
+          role="progressbar"
+          aria-label={label}
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-valuenow={melded}
+          className="h-1.5 w-full rounded-sm bg-white/15 overflow-hidden"
+        >
+          <div
+            className={`h-full rounded-sm ${isClose ? 'bg-ds-warning' : 'bg-ds-accent'}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <GamePageShell
       title={tc('nav.pan')}
@@ -229,6 +261,8 @@ function PanPageContent() {
               <span className="mr-4">{t('drawPile', { count: state.drawPileCount })}</span>
               <span>{t('winMeld', { count: state.winMeldCount })}</span>
             </div>
+
+            {humanPlayer && renderMeldProgress(humanPlayer)}
 
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}

@@ -21,6 +21,8 @@
   "chips": "チップ: {{count}}",
   "melded": "メルド: {{count}}枚",
   "winMeld": "上がりに必要なメルド数: {{count}}枚",
+  "meldProgress": "メルド {{count}}/{{total}}",
+  "meldRemaining": "あと {{count}} 枚",
   "cumulativeScore": "累計: {{score}}",
   "meldsTitle": "場のメルド",
   "noMelds": "まだメルドはありません",
