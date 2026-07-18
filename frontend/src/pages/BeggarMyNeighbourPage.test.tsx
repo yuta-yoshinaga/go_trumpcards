@@ -214,6 +214,47 @@ describe('BeggarMyNeighbourPage', () => {
     await waitFor(() => expect(screen.queryByTestId('step-button')).not.toBeInTheDocument());
   });
 
+  it('shows each player held-card total in the summary readout', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      players: [
+        { id: 0, isHuman: true, drawPileSize: 30, discardPileSize: 9, totalCards: 39 },
+        { id: 1, isHuman: false, drawPileSize: 10, discardPileSize: 3, totalCards: 13 },
+      ],
+    });
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    const counts = await screen.findByTestId('bmn-card-counts');
+    expect(counts).toHaveTextContent(/あなた.*計 39 枚/);
+    expect(counts).toHaveTextContent(/CPU.*計 13 枚/);
+  });
+
+  it('reflects the held-card ratio in the count bar', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      players: [
+        { id: 0, isHuman: true, drawPileSize: 30, discardPileSize: 9, totalCards: 39 },
+        { id: 1, isHuman: false, drawPileSize: 10, discardPileSize: 3, totalCards: 13 },
+      ],
+    });
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    // 39 / (39 + 13) = 75%.
+    const bar = await screen.findByTestId('bmn-count-bar');
+    expect(bar).toHaveAttribute('data-you-pct', '75');
+    expect(bar).toHaveAttribute('role', 'img');
+    expect(bar).toHaveAccessibleName('持ち札 あなた 39 枚、CPU 13 枚');
+  });
+
+  it('shows round progress toward the max-rounds cap', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      roundsPlayed: 250,
+      config: { maxRounds: 1000 },
+    });
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    const progress = await screen.findByTestId('bmn-round-progress');
+    expect(progress).toHaveTextContent('ラウンド 250 / 1000');
+  });
+
   it('exposes accessible help for the max-rounds setting', async () => {
     renderWithProviders(<BeggarMyNeighbourPage />);
     await waitFor(() => expect(screen.getByText('最大ラウンド数')).toBeInTheDocument());

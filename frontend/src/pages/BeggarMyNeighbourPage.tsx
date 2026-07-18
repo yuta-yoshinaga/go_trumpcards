@@ -128,6 +128,14 @@ function BeggarMyNeighbourPageContent() {
   const human = state.players[0];
   const cpu = state.players[1];
 
+  // Held-card totals and the who-is-winning ratio (out of the 52-card deck).
+  const heldTotal = human.totalCards + cpu.totalCards;
+  const youPct = heldTotal > 0 ? Math.round((human.totalCards / heldTotal) * 100) : 50;
+  const cpuPct = 100 - youPct;
+  // Round progress toward the draw-cutoff cap.
+  const roundCap = state.config.maxRounds;
+  const roundPct = roundCap > 0 ? Math.min(100, Math.round((state.roundsPlayed / roundCap) * 100)) : 0;
+
   const phaseName = isGameEnd
     ? t('phase.end')
     : state.phase === BeggarMyNeighbourPhase.PAY_PENALTY
@@ -168,6 +176,40 @@ function BeggarMyNeighbourPageContent() {
             {/* Announce the phase (and penalty countdown) to screen readers. */}
             <div className="sr-only" role="status" aria-live="polite" data-testid="bmn-phase-announce">
               {phaseAnnouncement}
+            </div>
+
+            {/* Held-card totals + round progress so the standings and how close the
+                draw-cutoff is are visible without mental arithmetic. */}
+            <div className="space-y-2 px-2" data-testid="bmn-summary">
+              {/* Round progress toward the max-rounds cap. */}
+              <div className="flex items-center gap-2">
+                <div className="text-xs text-ds-text-muted whitespace-nowrap" data-testid="bmn-round-progress">
+                  {t('readout.roundProgress', { played: state.roundsPlayed, max: roundCap })}
+                </div>
+                <div className="flex-1 h-1.5 bg-black/30 rounded-full overflow-hidden" aria-hidden="true">
+                  <div className="h-full bg-ds-info" style={{ width: `${roundPct}%` }} />
+                </div>
+              </div>
+
+              {/* Held-card counts and the who-is-ahead ratio bar. */}
+              <div className="flex justify-between text-xs text-ds-text-primary" data-testid="bmn-card-counts">
+                <span>
+                  {tc('player.you')}: {t('readout.cardCount', { count: human.totalCards })}
+                </span>
+                <span>
+                  {tc('player.cpu', { id: 1 })}: {t('readout.cardCount', { count: cpu.totalCards })}
+                </span>
+              </div>
+              <div
+                className="flex h-2 rounded-full overflow-hidden"
+                role="img"
+                aria-label={t('readout.countBarLabel', { you: human.totalCards, cpu: cpu.totalCards })}
+                data-testid="bmn-count-bar"
+                data-you-pct={youPct}
+              >
+                <div className="bg-ds-success h-full" style={{ width: `${youPct}%` }} />
+                <div className="bg-ds-warning h-full" style={{ width: `${cpuPct}%` }} />
+              </div>
             </div>
 
             {/* CPU pile */}

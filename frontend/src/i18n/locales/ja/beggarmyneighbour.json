@@ -28,6 +28,11 @@
     "payPenalty": "ペナルティを支払いましょう",
     "collectPile": "場の山を回収しましょう"
   },
+  "readout": {
+    "cardCount": "計 {{count}} 枚",
+    "roundProgress": "ラウンド {{played}} / {{max}}",
+    "countBarLabel": "持ち札 あなた {{you}} 枚、CPU {{cpu}} 枚"
+  },
   "tutorial": {
     "cpuPile": "CPUの山札です。残り枚数が表示されます。",
     "centralPile": "場の山です。ペナルティが発生すると積み重なります。",
