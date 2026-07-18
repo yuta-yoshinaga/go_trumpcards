@@ -28,6 +28,11 @@
     "payPenalty": "Pay your penalty card",
     "collectPile": "Collect the central pile"
   },
+  "readout": {
+    "cardCount": "{{count}} cards",
+    "roundProgress": "Round {{played}} / {{max}}",
+    "countBarLabel": "Held cards: you {{you}}, CPU {{cpu}}"
+  },
   "tutorial": {
     "cpuPile": "CPU's card pile. Shows remaining card count.",
     "centralPile": "The central pile. Penalty cards cause it to grow.",
