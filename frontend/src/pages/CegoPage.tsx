@@ -336,6 +336,16 @@ function CegoPageContent() {
                 {t('contractPhase')}
               </div>
             )}
+            {canContract && (
+              <div
+                className="mb-2 mx-auto max-w-xl p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                data-testid="cego-contract-explainer"
+              >
+                <div className="mb-1 text-ds-text-primary font-semibold">{t('contractExplainTitle')}</div>
+                <div className="py-0.5">{t('contractCegoDesc', { count: state.blindCount })}</div>
+                <div className="py-0.5">{t('contractHandspielDesc')}</div>
+              </div>
+            )}
             {canExchange && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="cego-exchange-prompt">
                 {t('exchangePhase', { count: selectedCardIndices.length })}
