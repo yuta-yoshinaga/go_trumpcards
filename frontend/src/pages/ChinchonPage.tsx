@@ -26,7 +26,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { focusRingCard, meldCardStyle, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ChinchonResponse } from '../types/card';
@@ -34,6 +34,7 @@ import { ChinchonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import {
+  bestChinchonMeldSplit,
   type ChinchonDeadwoodBreakdown,
   chinchonDeadwoodBreakdown,
   chinchonMeldLabel,
@@ -192,6 +193,31 @@ function ChinchonPageContent() {
   }, [state, selectedCardIndices]);
   const liveDeadwood = liveDeadwoodBreakdown?.total ?? null;
   const canKnockNow = liveDeadwood != null && liveDeadwood <= knockThreshold;
+
+  // During DISCARD, color-code the human's hand by the best meld split so the
+  // player can see which cards form melds vs. deadwood. When a single discard
+  // is selected the split is projected onto the post-discard hand (the chosen
+  // card is excluded), so the coloring follows the selection and stays in sync
+  // with the deadwood indicator. Returned indices reference the *rendered*
+  // hand. Empty set outside DISCARD, so no coloring is applied.
+  const meldedIndices = useMemo<ReadonlySet<number>>(() => {
+    if (!state || state.phase !== ChinchonPhase.DISCARD) return new Set();
+    const human = state.players.find((p) => p.isHuman);
+    if (!human || human.cards.length === 0) return new Set();
+    const cards = human.cards;
+    if (selectedCardIndices.length !== 1) return bestChinchonMeldSplit(cards).meldedIndices;
+    const skip = selectedCardIndices[0];
+    const subMelded = bestChinchonMeldSplit(cards.filter((_, i) => i !== skip)).meldedIndices;
+    // Map post-discard sub-hand indices back to the rendered hand indices.
+    const result = new Set<number>();
+    let k = 0;
+    for (let i = 0; i < cards.length; i++) {
+      if (i === skip) continue;
+      if (subMelded.has(k)) result.add(i);
+      k++;
+    }
+    return result;
+  }, [state, selectedCardIndices]);
 
   if (!state)
     return (
@@ -400,6 +426,29 @@ function ChinchonPageContent() {
                 })}
               </div>
             )}
+            {isDiscardPhase && (
+              <div
+                data-testid="chinchon-meld-legend"
+                className="flex items-center gap-3 text-xs text-ds-text-muted mb-1"
+              >
+                <span className="flex items-center gap-1">
+                  <span
+                    aria-hidden="true"
+                    className="inline-block h-3 w-3 rounded-sm"
+                    style={{ outline: '2px solid var(--color-ds-success)', outlineOffset: '-2px' }}
+                  />
+                  {t('meldLegend')}
+                </span>
+                <span className="flex items-center gap-1">
+                  <span
+                    aria-hidden="true"
+                    className="inline-block h-3 w-3 rounded-sm"
+                    style={{ outline: '2px dashed rgba(148, 163, 184, 0.6)', outlineOffset: '-2px' }}
+                  />
+                  {t('deadwoodLegend')}
+                </span>
+              </div>
+            )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ch-player-hand">
                 {humanPlayer.cards.map((card, idx) => (
@@ -409,11 +458,14 @@ function ChinchonPageContent() {
                     onClick={() => toggleCard(idx)}
                     aria-label={cardAlt(card)}
                     aria-pressed={selectedCardIndices.includes(idx)}
+                    data-testid={`chinchon-hand-card-${idx}`}
+                    data-meld={isDiscardPhase ? (meldedIndices.has(idx) ? 'meld' : 'deadwood') : undefined}
                     className={`transition-transform ${focusRingCard}`}
                     style={{
                       background: 'none',
                       padding: 0,
                       borderRadius: 8,
+                      ...(isDiscardPhase ? meldCardStyle(meldedIndices.has(idx)) : undefined),
                       ...selectedCardStyle(selectedCardIndices.includes(idx)),
                       boxSizing: 'border-box',
                     }}

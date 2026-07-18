@@ -32,6 +32,8 @@
   "knockButton": "ノック",
   "deadwoodLabel": "デッドウッド: {{score}}点（ノック上限 {{threshold}}）",
   "deadwoodBreakdown": "内訳: {{breakdown}}",
+  "meldLegend": "メルド",
+  "deadwoodLegend": "デッドウッド",
   "layoffButton": "レイオフ",
   "skipLayoffButton": "スキップ",
   "nextRound": "次のラウンド",
