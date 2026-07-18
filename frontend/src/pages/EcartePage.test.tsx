@@ -91,6 +91,39 @@ describe('EcartePage', () => {
     expect(screen.getByTestId('ecarte-refuse')).toBeInTheDocument();
   });
 
+  it('shows the vulnerable-rule helper under the negStep label on an ElderDecide turn', async () => {
+    renderWithProviders(<EcartePage />);
+    await waitFor(() => expect(screen.getByTestId('ecarte-neg-help')).toBeInTheDocument());
+    expect(screen.getByTestId('ecarte-neg-help')).toHaveTextContent('勝負');
+  });
+
+  it('shows the refusal-vulnerability helper on a DealerRespond turn', async () => {
+    mockExec.mockResolvedValue(dealerRespondState);
+    renderWithProviders(<EcartePage />);
+    await waitFor(() => expect(screen.getByTestId('ecarte-neg-help')).toHaveTextContent('vulnerable'));
+  });
+
+  it('attaches consequence descriptions to the propose/stand buttons', async () => {
+    renderWithProviders(<EcartePage />);
+    const propose = await screen.findByTestId('ecarte-propose');
+    expect(propose).toHaveAttribute('aria-describedby', 'ecarte-propose-desc');
+    expect(propose).toHaveAttribute('title');
+    expect(screen.getByTestId('ecarte-stand')).toHaveAttribute('aria-describedby', 'ecarte-stand-desc');
+    // The sr-only description for stand spells out that there is no penalty.
+    expect(document.getElementById('ecarte-stand-desc')).toHaveTextContent('罰則なし');
+  });
+
+  it('attaches consequence descriptions to the accept/refuse buttons', async () => {
+    mockExec.mockResolvedValue(dealerRespondState);
+    renderWithProviders(<EcartePage />);
+    const refuse = await screen.findByTestId('ecarte-refuse');
+    expect(refuse).toHaveAttribute('aria-describedby', 'ecarte-refuse-desc');
+    expect(refuse).toHaveAttribute('title');
+    expect(screen.getByTestId('ecarte-accept')).toHaveAttribute('aria-describedby', 'ecarte-accept-desc');
+    // The refuse consequence names the extra-point (vulnerable) penalty.
+    expect(document.getElementById('ecarte-refuse-desc')).toHaveTextContent('追加1点');
+  });
+
   it('dispatches respond(false) when the refuse button is clicked', async () => {
     mockExec.mockResolvedValue(dealerRespondState);
     renderWithProviders(<EcartePage />);

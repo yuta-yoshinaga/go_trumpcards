@@ -72,6 +72,18 @@ const ECARTE_NEG_STEP_KEYS: Readonly<Record<number, string>> = {
   [EcarteNegStep.DEALER_DISCARD]: 'negStep.discard',
 };
 
+/**
+ * Exchange-phase sub-step → one-line "what do these options mean" helper key.
+ * Surfaces Écarté's stakes (esp. the dealer's refusal-vulnerability rule) right
+ * under the negStep label so first-time players understand the consequences (#3455).
+ */
+const ECARTE_NEG_HELP_KEYS: Readonly<Record<number, string>> = {
+  [EcarteNegStep.ELDER_DECIDE]: 'negHelp.elderDecide',
+  [EcarteNegStep.DEALER_RESPOND]: 'negHelp.dealerRespond',
+  [EcarteNegStep.ELDER_DISCARD]: 'negHelp.discard',
+  [EcarteNegStep.DEALER_DISCARD]: 'negHelp.discard',
+};
+
 /** Renders the Écarté game page: a 2-player French trick game with an Exchange phase. */
 export const EcartePage = withTutorial(EcartePageContent, 'ecarte', ECARTE_TUTORIAL_STEPS);
 
@@ -235,6 +247,9 @@ function EcartePageContent() {
                 <div className="text-ds-accent text-xs mt-0.5" data-testid="ecarte-neg-step">
                   {t('negStepLabel', { step: t(ECARTE_NEG_STEP_KEYS[state.negStep]) })}
                 </div>
+                <div className="text-ds-text-muted text-xs mt-0.5" data-testid="ecarte-neg-help">
+                  {t(ECARTE_NEG_HELP_KEYS[state.negStep])}
+                </div>
               </div>
             )}
 
@@ -347,19 +362,29 @@ function EcartePageContent() {
                     className={btnPrimary}
                     onClick={handlePropose}
                     disabled={loading}
+                    title={t('consequence.propose')}
+                    aria-describedby="ecarte-propose-desc"
                     data-testid="ecarte-propose"
                   >
                     {t('proposeButton')}
                   </button>
+                  <span id="ecarte-propose-desc" className="sr-only">
+                    {t('consequence.propose')}
+                  </span>
                   <button
                     type="button"
                     className={btnSuccess}
                     onClick={handleStand}
                     disabled={loading}
+                    title={t('consequence.stand')}
+                    aria-describedby="ecarte-stand-desc"
                     data-testid="ecarte-stand"
                   >
                     {t('standButton')}
                   </button>
+                  <span id="ecarte-stand-desc" className="sr-only">
+                    {t('consequence.stand')}
+                  </span>
                 </>
               )}
               {isDealerRespond && (
@@ -369,19 +394,29 @@ function EcartePageContent() {
                     className={btnPrimary}
                     onClick={() => handleRespond(true)}
                     disabled={loading}
+                    title={t('consequence.accept')}
+                    aria-describedby="ecarte-accept-desc"
                     data-testid="ecarte-accept"
                   >
                     {t('acceptButton')}
                   </button>
+                  <span id="ecarte-accept-desc" className="sr-only">
+                    {t('consequence.accept')}
+                  </span>
                   <button
                     type="button"
                     className={btnSuccess}
                     onClick={() => handleRespond(false)}
                     disabled={loading}
+                    title={t('consequence.refuse')}
+                    aria-describedby="ecarte-refuse-desc"
                     data-testid="ecarte-refuse"
                   >
                     {t('refuseButton')}
                   </button>
+                  <span id="ecarte-refuse-desc" className="sr-only">
+                    {t('consequence.refuse')}
+                  </span>
                 </>
               )}
               {isDiscardStep && (
