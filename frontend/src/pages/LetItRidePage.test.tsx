@@ -134,6 +134,27 @@ describe('LetItRidePage', () => {
     expect(screen.getByText('配当表')).toBeInTheDocument();
   });
 
+  it('explains the 3-bet split and pull-back rule in bet phase', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    const panel = screen.getByTestId('bet-structure');
+    expect(panel).toBeInTheDocument();
+    expect(panel).toHaveTextContent('なぜ3口に分かれるの？');
+    // Accurate to the domain: 3x deduction caps a single bet at 1/3 of chips.
+    expect(panel).toHaveTextContent('1/3');
+    expect(panel).toHaveTextContent('ベット3を引き戻せます');
+    expect(panel).toHaveTextContent('ベット2を引き戻せます');
+    expect(panel).toHaveTextContent('ベット1は必ず残ります');
+  });
+
+  it('hides the bet-structure explanation outside the bet phase', async () => {
+    mockApi.mockResolvedValue(firstDecisionState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByTestId('bet-status')).toBeInTheDocument());
+    expect(screen.queryByTestId('bet-structure')).not.toBeInTheDocument();
+  });
+
   it('shows FIRST_DECISION phase with pull and letitride buttons', async () => {
     mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(firstDecisionState);
     renderWithProviders(<LetItRidePage />);

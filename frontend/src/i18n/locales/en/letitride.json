@@ -53,6 +53,13 @@
     "title": "Settings"
   },
   "betGuide": "Place your bet — 3 equal bets will be placed",
+  "betStructure": {
+    "title": "Why is my bet split into 3?",
+    "intro": "Your ante is placed as 3 equal bets (Bet 1, 2, and 3). Three times your bet amount is deducted, so a single bet is capped at 1/3 of your chips.",
+    "pull3": "First Decision (after the 1st community card): you may pull back Bet 3",
+    "pull2": "Second Decision (after the 2nd community card): you may pull back Bet 2",
+    "ride": "Bet 1 always rides. If your hand qualifies, each remaining bet is paid out."
+  },
   "payoutRef": {
     "title": "Payout Table",
     "header": "Payouts (per active bet)",
