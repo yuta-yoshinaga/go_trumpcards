@@ -49,6 +49,7 @@ const gameOverState: CanfieldResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.clear();
   mockExec.mockResolvedValue(playingState);
 });
 
@@ -180,6 +181,32 @@ describe('CanfieldPage', () => {
     renderWithProviders(<CanfieldPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByTestId('cf-col-actions-0')).not.toBeInTheDocument();
+  });
+
+  it('collapses per-column actions on desktop when the setting is toggled on', async () => {
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Initially expanded (no disclosure) on desktop.
+    expect(screen.queryByTestId('cf-col-actions-0')).not.toBeInTheDocument();
+    // Toggle the "collapse column actions" setting.
+    const toggle = screen.getByRole('checkbox', { name: '列の操作ボタンを折りたたむ' });
+    fireEvent.click(toggle);
+    // Now each column's actions live behind a <details> disclosure, collapsed by default.
+    const details = await screen.findByTestId('cf-col-actions-0');
+    expect(details.tagName.toLowerCase()).toBe('details');
+    expect(details).not.toHaveAttribute('open');
+    expect(details.querySelector('summary')).toHaveTextContent('列 0 の操作');
+    // The move buttons remain reachable inside the disclosure (functionality preserved).
+    expect(screen.getAllByRole('button', { name: '→組' }).length).toBeGreaterThan(0);
+  });
+
+  it('persists the collapse setting across remounts via localStorage', async () => {
+    localStorage.setItem('canfield-collapse-col-actions', 'true');
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Restored as collapsed on desktop without re-toggling.
+    expect(await screen.findByTestId('cf-col-actions-0')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: '列の操作ボタンを折りたたむ' })).toBeChecked();
   });
 
   it('per-column action buttons dispatch the matching move', async () => {

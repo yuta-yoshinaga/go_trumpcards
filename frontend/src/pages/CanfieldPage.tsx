@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useLocalStorageToggle } from '../hooks/useLocalStorageToggle';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -89,6 +90,10 @@ function CanfieldPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('canfield', state);
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('canfield');
+  // Desktop declutter: let players collapse the dense per-column action buttons
+  // behind a <details> disclosure, matching the mobile treatment. Persisted so
+  // the preference survives reloads. Drag-and-drop is unaffected either way.
+  const [collapseColActions, setCollapseColActions] = useLocalStorageToggle('canfield-collapse-col-actions', false);
   const cliConfig: CliGameConfig<CanfieldResponse, Parameters<typeof canfieldApi.exec>> = useMemo(
     () => ({
       gameName: 'canfield',
@@ -221,6 +226,13 @@ function CanfieldPageContent() {
                     label: tc('hint.toggle', { ns: 'tutorial' }),
                     checked: frontendHintEnabled,
                     onToggle: setFrontendHintEnabled,
+                  },
+                  {
+                    type: 'checkbox' as const,
+                    id: 'collapseColActions',
+                    label: t('collapseColumnActions'),
+                    checked: collapseColActions,
+                    onToggle: setCollapseColActions,
                   },
                 ],
               },
@@ -403,9 +415,11 @@ function CanfieldPageContent() {
                             )}
                           </div>
                         );
-                        // On mobile, collapse the dense per-column action buttons behind a
-                        // details disclosure so they don't crowd below the 44px tap-target min.
-                        return isMobile ? (
+                        // Collapse the dense per-column action buttons behind a details
+                        // disclosure when space is tight (mobile) or when the player opts in
+                        // via the settings toggle on desktop — so they don't crowd below the
+                        // 44px tap-target min. Drag-and-drop stays available regardless.
+                        return isMobile || collapseColActions ? (
                           <details className="mt-1 w-full" data-testid={`cf-col-actions-${i}`}>
                             {/* Include the column number so a screen reader can tell the
                                 per-column action panels apart. 0-based to match the rest

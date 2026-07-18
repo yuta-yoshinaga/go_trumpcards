@@ -44,5 +44,6 @@
     "actionButtons": "Action buttons: hint, auto-complete, undo, give up.",
     "resetButton": "Start a new game."
   },
-  "columnActionsFor": "Column {{n}} actions"
+  "columnActionsFor": "Column {{n}} actions",
+  "collapseColumnActions": "Collapse column action buttons"
 }
