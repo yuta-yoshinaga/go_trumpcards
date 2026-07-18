@@ -28,13 +28,14 @@ import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { CrescentResponse } from '../types/card';
+import type { Card, CrescentResponse } from '../types/card';
 import { CrescentPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { CRESCENT_HELP, parseCrescentCommand } from '../utils/cli/commands/crescentCommands';
 import { formatCrescentState } from '../utils/cli/formatters/crescentFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { crescentCanPlaceOnFoundation, crescentCanPlaceOnTableau } from '../utils/crescentTargets';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -154,6 +155,16 @@ function CrescentPageContent() {
     disabled: loading,
   });
 
+  // The card the player has picked up (always a tableau top card). Drives the
+  // persistent valid-destination highlight so mouse, touch, and keyboard users
+  // all see where the selected card can legally go (#3257).
+  const selectedCard: Card | null = useMemo(() => {
+    if (!selectedSource || selectedSource.zone !== 'tableau' || selectedSource.col === undefined) return null;
+    const col = state?.tableau[selectedSource.col];
+    if (!col || col.length === 0) return null;
+    return col[col.length - 1]?.card ?? null;
+  }, [selectedSource, state]);
+
   const handleManualReset = useCallback(() => {
     hideActionLog();
     handleReset();
@@ -195,6 +206,18 @@ function CrescentPageContent() {
 
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
+
+  // With a card selected, ring the piles it can legally move to (persistent, so
+  // it survives touch/keyboard where there is no hover), and dim the other
+  // playable tops so mistaken clicks stand out (#3257).
+  const isFoundationTarget = (idx: number) =>
+    selectedCard !== null && crescentCanPlaceOnFoundation(selectedCard, state.foundation, idx);
+  const isTableauTarget = (colIdx: number) =>
+    selectedCard !== null &&
+    !isSourceSelected('tableau', colIdx) &&
+    crescentCanPlaceOnTableau(selectedCard, state.tableau, colIdx);
+  const targetRingClass = (valid: boolean, active: boolean) =>
+    valid && !active ? 'ring-2 ring-ds-success rounded' : '';
 
   return (
     <GamePageShell
@@ -262,6 +285,7 @@ function CrescentPageContent() {
                             onDragOver={dnd.handleDragOver(foundationZone)}
                             onDrop={dnd.handleDrop(foundationZone)}
                             onDragLeave={dnd.handleDragLeave}
+                            className={targetRingClass(isFoundationTarget(idx), dnd.isDropTarget(foundationZone))}
                           >
                             {pile.length > 0 ? (
                               <button
@@ -274,7 +298,7 @@ function CrescentPageContent() {
                                   count: pile.length,
                                   top: cardAlt(pile[pile.length - 1]),
                                 })}
-                                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${selectedCard !== null && !isFoundationTarget(idx) ? 'opacity-40' : ''}`}
                               >
                                 <AnimatedCard card={pile[pile.length - 1]} width={tableauDim.cw} draggable={false} />
                               </button>
@@ -331,7 +355,7 @@ function CrescentPageContent() {
                       onDragOver={dnd.handleDragOver(tableauColZone)}
                       onDrop={dnd.handleDrop(tableauColZone)}
                       onDragLeave={dnd.handleDragLeave}
-                      className="relative block"
+                      className={`relative block ${targetRingClass(isTableauTarget(colIdx), dnd.isDropTarget(tableauColZone))}`}
                     >
                       <div className="relative" style={{ minHeight: tableauDim.ch }}>
                         {col.length === 0 ? (
@@ -367,7 +391,7 @@ function CrescentPageContent() {
                                     draggable={isPlaying && !loading && isTop}
                                     onDragStart={isTop ? dnd.handleDragStart(tableauColZone) : undefined}
                                     onDragEnd={dnd.handleDragEnd}
-                                    className={`p-0 border-0 bg-transparent w-full rounded ${isTop ? 'cursor-pointer' : 'cursor-default'} ${focusRingWhite} ${isTop && isSourceSelected('tableau', colIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(tableauColZone) && isTop ? 'opacity-50' : ''}`}
+                                    className={`p-0 border-0 bg-transparent w-full rounded ${isTop ? 'cursor-pointer' : 'cursor-default'} ${focusRingWhite} ${isTop && isSourceSelected('tableau', colIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(tableauColZone) && isTop ? 'opacity-50' : ''} ${isTop && selectedCard !== null && !isTableauTarget(colIdx) && !isSourceSelected('tableau', colIdx) ? 'opacity-40' : ''}`}
                                   >
                                     <AnimatedCard
                                       card={tc.card}

@@ -216,6 +216,48 @@ describe('CrescentPage', () => {
     );
   });
 
+  it('rings valid destinations when a source is selected (no hover needed)', async () => {
+    // col0 top ♠4 can go onto foundation ♠3 (asc) and onto tableau ♠5; ♥6 is invalid.
+    const highlightState: CrescentResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        [{ card: card('SPADE', 4), faceUp: true }],
+        [{ card: card('SPADE', 5), faceUp: true }],
+        [{ card: card('HEART', 6), faceUp: true }],
+      ]),
+      foundation: [
+        [card('SPADE', 3)],
+        [card('CLOVER', 1)],
+        [card('HEART', 1)],
+        [card('DIAMOND', 1)],
+        [card('SPADE', 13)],
+        [card('CLOVER', 13)],
+        [card('HEART', 13)],
+        [card('DIAMOND', 13)],
+      ],
+    };
+    mockExec.mockResolvedValue(highlightState);
+
+    const { container } = renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const foundations = container.querySelector('[data-tutorial="crescent-foundations"]') as HTMLElement;
+    const tableau = container.querySelector('[data-tutorial="crescent-tableau"]') as HTMLElement;
+    // No selection yet -> nothing highlighted.
+    expect(foundations.querySelectorAll('.ring-ds-success')).toHaveLength(0);
+    expect(tableau.querySelectorAll('.ring-ds-success')).toHaveLength(0);
+
+    // Select ♠4 as the source.
+    const cardButton = screen.getByAltText('♠ 4').closest('button') as HTMLButtonElement;
+    fireEvent.click(cardButton);
+
+    await waitFor(() => expect(foundations.querySelectorAll('.ring-ds-success').length).toBe(1));
+    // Exactly the ♠5 column rings; the ♥6 column and the source do not.
+    expect(tableau.querySelectorAll('.ring-ds-success')).toHaveLength(1);
+    const invalidTop = screen.getByAltText('♥ 6').closest('button') as HTMLButtonElement;
+    expect(invalidTop.className).toContain('opacity-40');
+  });
+
   it('clicking reset dispatches reset (after confirm)', async () => {
     renderWithProviders(<CrescentPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
