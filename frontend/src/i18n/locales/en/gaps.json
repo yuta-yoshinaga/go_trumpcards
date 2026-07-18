@@ -12,6 +12,12 @@
   "redealKeepLabel": "Redeal ({{used}}/{{total}}) — keeps {{locked}}",
   "giveup": "Give Up",
   "hint": "Hint",
+  "kbd": {
+    "undo": "Z",
+    "redeal": "D",
+    "hint": "H",
+    "giveUp": "G"
+  },
   "gap": "Gap",
   "gapAriaNeeded": "Gap (place {{card}})",
   "gapAriaAnySuit": "Gap (place any suit {{value}})",

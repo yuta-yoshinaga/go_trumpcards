@@ -12,6 +12,12 @@
   "redealKeepLabel": "再配り ({{used}}/{{total}}) — {{locked}}枚維持",
   "giveup": "ギブアップ",
   "hint": "ヒント",
+  "kbd": {
+    "undo": "Z",
+    "redeal": "D",
+    "hint": "H",
+    "giveUp": "G"
+  },
   "gap": "空き",
   "gapAriaNeeded": "空き（{{card}} を置けます）",
   "gapAriaAnySuit": "空き（任意のスートの {{value}} を置けます）",
