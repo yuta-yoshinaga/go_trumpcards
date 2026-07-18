@@ -175,4 +175,77 @@ describe('PreferencePage', () => {
     renderWithProviders(<PreferencePage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ち！')).toBeInTheDocument());
   });
+
+  // A play-phase state where CPU 1 is the declarer with the given contract and trick progress.
+  const declarerProgressState = (contract: number, tricksWon: number, cardsLeft: number) =>
+    makePreferenceState({
+      phase: 1,
+      declarerIdx: 1,
+      contract,
+      trumpSuit: 3,
+      isHumanBidTurn: false,
+      isHumanTurn: false,
+      currentPlayerIdx: 0,
+      players: [
+        { id: 0, isHuman: true, cardCount: cardsLeft, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: cardsLeft,
+          cards: [],
+          trickCount: tricksWon,
+          score: 0,
+          isDeclarer: true,
+        },
+        { id: 2, isHuman: false, cardCount: cardsLeft, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+      ],
+    });
+
+  it('shows in-progress contract progress with the target', async () => {
+    // Six (needs 6), 4 won with 3 tricks left → reachable, still in progress.
+    mockExec.mockResolvedValue(declarerProgressState(1, 4, 3));
+    renderWithProviders(<PreferencePage />);
+    const readout = await screen.findByTestId('preference-contract-progress');
+    expect(readout).toHaveTextContent('4 / 6');
+    expect(readout).toHaveClass('text-ds-warning');
+    expect(readout).not.toHaveTextContent('達成');
+    expect(readout).not.toHaveTextContent('失敗確定');
+  });
+
+  it('shows the contract as made once the target is reached', async () => {
+    // Six (needs 6), 6 won with 0 left → made.
+    mockExec.mockResolvedValue(declarerProgressState(1, 6, 0));
+    renderWithProviders(<PreferencePage />);
+    const readout = await screen.findByTestId('preference-contract-progress');
+    expect(readout).toHaveTextContent('6 / 6');
+    expect(readout).toHaveTextContent('達成');
+    expect(readout).toHaveClass('text-ds-success');
+  });
+
+  it('shows failure once the target becomes unreachable', async () => {
+    // Eight (needs 8), 2 won with 3 left → 2+3 < 8, failure certain.
+    mockExec.mockResolvedValue(declarerProgressState(4, 2, 3));
+    renderWithProviders(<PreferencePage />);
+    const readout = await screen.findByTestId('preference-contract-progress');
+    expect(readout).toHaveTextContent('2 / 8');
+    expect(readout).toHaveTextContent('失敗確定');
+    expect(readout).toHaveClass('text-ds-error');
+  });
+
+  it('flags Misère failure the instant the declarer wins a trick', async () => {
+    // Misère (target 0), 1 trick won → immediate failure.
+    mockExec.mockResolvedValue(declarerProgressState(2, 1, 5));
+    renderWithProviders(<PreferencePage />);
+    const readout = await screen.findByTestId('preference-contract-progress');
+    expect(readout).toHaveTextContent('ミゼール');
+    expect(readout).toHaveTextContent('失敗確定');
+    expect(readout).toHaveClass('text-ds-error');
+  });
+
+  it('does not show contract progress before a declarer is decided', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<PreferencePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('preference-contract-progress')).not.toBeInTheDocument();
+  });
 });

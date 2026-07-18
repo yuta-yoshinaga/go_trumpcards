@@ -55,6 +55,12 @@
     "title": "ラウンド結果",
     "tricks": "{{name}} トリック: {{count}}"
   },
+  "progress": {
+    "line": "宣言者の進捗: {{won}} / {{needed}} トリック",
+    "misere": "宣言者の進捗: {{won}} トリック（ミゼール・目標0）",
+    "made": "達成",
+    "failed": "失敗確定"
+  },
   "hintAvailable": "ヒント",
   "hint": {
     "lead_low": "低い札でリードして温存することを推奨",

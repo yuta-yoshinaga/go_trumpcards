@@ -55,6 +55,12 @@
     "title": "Round Result",
     "tricks": "{{name}} tricks: {{count}}"
   },
+  "progress": {
+    "line": "Declarer progress: {{won}} / {{needed}} tricks",
+    "misere": "Declarer progress: {{won}} tricks (Misère, target 0)",
+    "made": "Contract made",
+    "failed": "Contract failed"
+  },
   "hintAvailable": "Hint",
   "hint": {
     "lead_low": "Lead a low card to conserve strength",
