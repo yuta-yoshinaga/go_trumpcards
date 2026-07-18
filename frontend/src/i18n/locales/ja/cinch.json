@@ -23,6 +23,13 @@
   "bidPrompt": "あなたのビッド番です — パスするか 1〜14 を宣言してください。",
   "bidCpu": "CPU {{id}} がビッド中です…",
   "bidPass": "パス",
+  "bidStrength": {
+    "range": "手札の推定獲得点: {{min}}〜{{max}}点（切り札次第の目安）",
+    "best": "最有力の切り札: {{symbol}} {{suit}}（{{points}}点分を保持）",
+    "legendTitle": "14点の構成",
+    "legend": "High(A)=1 / King(K)=1 / Ten(10)=1 / Jack(J)=1 / Right Pedro(切5)=5 / Left Pedro(同色5)=5",
+    "note": "あくまで目安です。実際の獲得点は切り札宣言後のプレイ次第で変わります。"
+  },
   "trumpPrompt": "あなたがビッドに勝ちました — 切り札を宣言してください。",
   "bidderBadge": "ビッダー",
   "cards": "{{count}}枚",

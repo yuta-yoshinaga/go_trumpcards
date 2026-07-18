@@ -23,6 +23,13 @@
   "bidPrompt": "Your turn to bid — pass or declare 1-14.",
   "bidCpu": "CPU {{id}} is bidding…",
   "bidPass": "Pass",
+  "bidStrength": {
+    "range": "Estimated points held: {{min}}-{{max}} pts (rough guide, depends on trump)",
+    "best": "Strongest trump: {{symbol}} {{suit}} (holding {{points}} pts)",
+    "legendTitle": "The 14 points",
+    "legend": "High(A)=1 / King(K)=1 / Ten(10)=1 / Jack(J)=1 / Right Pedro(5 of trump)=5 / Left Pedro(off-color 5)=5",
+    "note": "A rough guide only — your actual take depends on play after trump is named."
+  },
   "trumpPrompt": "You won the bid — name the trump suit.",
   "bidderBadge": "Bidder",
   "cards": "{{count}} cards",
