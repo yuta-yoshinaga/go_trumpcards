@@ -16,6 +16,15 @@
   "slotsBuilt": "Slots staged",
   "slotSet": "Set of {{n}}",
   "slotRun": "Run of {{n}}",
+  "shortfall": {
+    "empty": "Not started",
+    "needMoreSet": "{{n}} more of same rank",
+    "needMoreRun": "{{n}} more in sequence",
+    "tooMany": "{{n}} too many",
+    "setRankMismatch": "Match the ranks",
+    "runSuitMismatch": "Use one suit",
+    "runNotConsecutive": "Sequence is broken"
+  },
   "drawStock": "Draw from stock",
   "drawDiscard": "Take discard",
   "addSlot": "Add to slot",

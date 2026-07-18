@@ -16,6 +16,15 @@
   "slotsBuilt": "組成済スロット",
   "slotSet": "{{n}}枚セット",
   "slotRun": "{{n}}枚ラン",
+  "shortfall": {
+    "empty": "未着手",
+    "needMoreSet": "あと{{n}}枚 同ランク",
+    "needMoreRun": "あと{{n}}枚 連番",
+    "tooMany": "{{n}}枚 多い",
+    "setRankMismatch": "同ランクで揃えて",
+    "runSuitMismatch": "スートを統一して",
+    "runNotConsecutive": "連番が途切れている"
+  },
   "drawStock": "山札から引く",
   "drawDiscard": "捨て札を取る",
   "addSlot": "スロットに追加",

@@ -310,6 +310,29 @@ describe('CariocaPage', () => {
     expect(screen.getByTestId('ca-submit-contract')).not.toBeDisabled();
   });
 
+  it('annotates each slot with what is still missing and clears it once satisfied', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<CariocaPage />);
+    await waitFor(() => expect(screen.getByTestId('ca-slot-progress')).toBeInTheDocument());
+    // An empty slot shows the "not started" hint.
+    expect(screen.getByTestId('ca-slot-shortfall-0')).toHaveTextContent('未着手');
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+    // Place a single 5 into slot 0 — a set of 3 still needs 2 more of the same rank.
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+    await waitFor(() => expect(screen.getByTestId('ca-slot-shortfall-0')).toHaveTextContent('あと2枚 同ランク'));
+
+    // Complete slot 0 with the three 5s — the shortfall annotation disappears.
+    fireEvent.click(screen.getByRole('button', { name: /Undo last slot|最後のスロットを取り消す/ }));
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[1]);
+    fireEvent.click(cardButtons[2]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+    await waitFor(() => expect(screen.getByTestId('ca-slot-progress-0')).toHaveAttribute('data-state', 'satisfied'));
+    expect(screen.queryByTestId('ca-slot-shortfall-0')).not.toBeInTheDocument();
+  });
+
   it('enables Submit for a joker-wild contract meld', async () => {
     // Slot 0 = 5,5,JOKER (a set completed by a wild); slot 1 = three 13s.
     const jokerHand: Card[] = [
