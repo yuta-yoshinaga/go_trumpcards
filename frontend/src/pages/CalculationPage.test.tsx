@@ -347,6 +347,26 @@ describe('CalculationPage', () => {
     expect(screen.getByTestId('calc-foundation-next-1')).toHaveTextContent('次:4');
   });
 
+  it('exposes the full upcoming-rank sequence as visible, tappable text (not only a title attr)', async () => {
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // F0 seeded with A, step +1 ⇒ upcoming full sequence starts at 2.
+    const details = screen.getByTestId('calc-foundation-upcoming-details-0');
+    expect(details).toBeInTheDocument();
+    // The full sequence is rendered as real DOM text, reachable on touch devices
+    // by tapping the <summary> (native <details> disclosure — no hover needed).
+    const summary = details.querySelector('summary');
+    expect(summary).not.toBeNull();
+    if (summary) {
+      fireEvent.click(summary);
+    }
+    const full = screen.getByTestId('calc-foundation-upcoming-full-0');
+    expect(full).toBeVisible();
+    // Sequence must be the complete run to K (13), joined with arrows.
+    expect(full.textContent).toContain('→');
+    expect(full).toHaveAccessibleName(/2/);
+  });
+
   it('shows the seed rank on an empty foundation (no top card yet)', async () => {
     mockExec.mockResolvedValue({
       ...playingState,

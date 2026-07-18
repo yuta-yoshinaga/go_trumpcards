@@ -404,54 +404,73 @@ function CalculationPageContent() {
                 const upcomingRanks = calculationUpcomingRanks(idx, top?.value, pile.length);
                 const upcomingLabel = upcomingRanks.map(valueName).join(' → ');
                 return (
-                  <button
-                    key={`f-${idx.toString()}`}
-                    type="button"
-                    className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${isHint ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
-                    onClick={() => playToFoundation(idx)}
-                    disabled={!isPlaying || loading || source === null}
-                    title={upcomingLabel ? t('upcomingRanksTooltip', { sequence: upcomingLabel }) : undefined}
-                    aria-label={
-                      nextRankLabel
-                        ? `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('nextRankAria', { rank: nextRankLabel })}`
-                        : `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('foundationCompleteAria')}`
-                    }
-                  >
-                    <span className="text-[11px] mb-0.5 text-ds-text-muted">
-                      F{idx} {STEP_LABELS[idx]}
-                    </span>
-                    <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
-                      {top ? (
-                        <AnimatedCard card={top} width={cardWidth} />
-                      ) : (
-                        <div
-                          style={{ width: cardWidth, height: cardHeight }}
-                          className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
-                        >
-                          {t('empty')}
-                        </div>
-                      )}
-                      {nextRankLabel && (
+                  <div key={`f-${idx.toString()}`} className="flex flex-col items-center">
+                    <button
+                      type="button"
+                      className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${isHint ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
+                      onClick={() => playToFoundation(idx)}
+                      disabled={!isPlaying || loading || source === null}
+                      title={upcomingLabel ? t('upcomingRanksTooltip', { sequence: upcomingLabel }) : undefined}
+                      aria-label={
+                        nextRankLabel
+                          ? `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('nextRankAria', { rank: nextRankLabel })}`
+                          : `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('foundationCompleteAria')}`
+                      }
+                    >
+                      <span className="text-[11px] mb-0.5 text-ds-text-muted">
+                        F{idx} {STEP_LABELS[idx]}
+                      </span>
+                      <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
+                        {top ? (
+                          <AnimatedCard card={top} width={cardWidth} />
+                        ) : (
+                          <div
+                            style={{ width: cardWidth, height: cardHeight }}
+                            className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+                          >
+                            {t('empty')}
+                          </div>
+                        )}
+                        {nextRankLabel && (
+                          <span
+                            data-testid={`calc-foundation-next-${idx}`}
+                            aria-hidden="true"
+                            className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30"
+                          >
+                            {t('nextRankBadge', { rank: nextRankLabel })}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-ds-text-muted mt-0.5">{pile.length}/13</span>
+                      {upcomingRanks.length > 1 && (
                         <span
-                          data-testid={`calc-foundation-next-${idx}`}
+                          data-testid={`calc-foundation-upcoming-${idx}`}
                           aria-hidden="true"
-                          className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30"
+                          className="mt-0.5 text-[10px] leading-none text-ds-text-muted opacity-60"
                         >
-                          {t('nextRankBadge', { rank: nextRankLabel })}
+                          {upcomingRanks.slice(1, 5).map(valueName).join('·')}
                         </span>
                       )}
-                    </div>
-                    <span className="text-[11px] text-ds-text-muted mt-0.5">{pile.length}/13</span>
+                    </button>
                     {upcomingRanks.length > 1 && (
-                      <span
-                        data-testid={`calc-foundation-upcoming-${idx}`}
-                        aria-hidden="true"
-                        className="mt-0.5 text-[10px] leading-none text-ds-text-muted opacity-60"
-                      >
-                        {upcomingRanks.slice(1, 5).map(valueName).join('·')}
-                      </span>
+                      <details className="mt-0.5" data-testid={`calc-foundation-upcoming-details-${idx}`}>
+                        <summary className="cursor-pointer list-none text-[10px] text-ds-text-muted underline decoration-dotted">
+                          {t('upcomingRanksToggle')}
+                        </summary>
+                        <span
+                          role="note"
+                          data-testid={`calc-foundation-upcoming-full-${idx}`}
+                          className="mt-0.5 block max-w-[6rem] break-words text-center text-[10px] leading-tight text-ds-text-muted"
+                          aria-label={t('upcomingRanksDetailAria', {
+                            idx,
+                            sequence: upcomingLabel,
+                          })}
+                        >
+                          {upcomingLabel}
+                        </span>
+                      </details>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
