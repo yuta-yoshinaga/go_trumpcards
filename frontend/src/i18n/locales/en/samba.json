@@ -31,6 +31,12 @@
   "mixedCanasta": "Mixed Canasta",
   "samba": "Samba",
   "sequence": "Sequence",
+  "meldProgress": {
+    "toCanasta": "{{n}} more for Canasta",
+    "toSamba": "{{n}} more for Samba",
+    "canastaComplete": "Canasta complete!",
+    "sambaComplete": "Samba complete!"
+  },
   "drawStockButton": "Draw from stock",
   "drawDiscardButton": "Pick up discard",
   "meldButton": "Meld",
