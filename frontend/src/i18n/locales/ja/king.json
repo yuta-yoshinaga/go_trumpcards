@@ -66,7 +66,10 @@
   "nextDeal": "次のディール",
   "dealResult": {
     "title": "ディール結果",
-    "gained": "{{name}}: {{points}}点"
+    "gained": "{{name}}: {{points}}点",
+    "contractLine": "契約: {{name}}",
+    "contractLineTrump": "契約: {{name}}（切り札: {{suit}}）",
+    "basis": "失点根拠: {{desc}}"
   },
   "hintAvailable": "ヒント",
   "hint": {

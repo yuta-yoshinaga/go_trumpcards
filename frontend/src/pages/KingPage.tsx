@@ -273,15 +273,31 @@ function KingPageContent() {
                   </div>
                 )}
 
-                {/* Deal result: per-player gained points */}
+                {/* Deal result: contract played, its loss basis, and per-player gained points */}
                 {(isDealEnd || isGameEnd) && state.lastDealDetail && (
                   <div
                     className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
                     data-testid="king-deal-result"
                   >
                     <div className="mb-1 text-ds-text-primary">{t('dealResult.title')}</div>
+                    {/* Contract breakdown: which contract was played and why points moved */}
+                    <div className="mb-1.5 pb-1.5 border-b border-white/10" data-testid="king-deal-breakdown">
+                      <div className="text-ds-text-primary font-semibold">
+                        {state.lastDealDetail.contract === KING_TRUMP_CONTRACT && state.lastDealDetail.trumpSuit >= 1
+                          ? t('dealResult.contractLineTrump', {
+                              name: t(`contracts.${state.lastDealDetail.contract}`),
+                              suit: SUIT_SYMBOLS[state.lastDealDetail.trumpSuit] ?? '-',
+                            })
+                          : t('dealResult.contractLine', {
+                              name: t(`contracts.${state.lastDealDetail.contract}`),
+                            })}
+                      </div>
+                      <div className="text-xs opacity-80">
+                        {t('dealResult.basis', { desc: t(`contractDesc.${state.lastDealDetail.contract}`) })}
+                      </div>
+                    </div>
                     {state.players.map((p) => (
-                      <div key={p.id}>
+                      <div key={p.id} data-testid={`king-deal-breakdown-row-${p.id}`}>
                         {t('dealResult.gained', {
                           name: playerName(p.id, p.isHuman),
                           points: state.lastDealDetail?.gained[p.id] ?? 0,
