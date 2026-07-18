@@ -11,6 +11,7 @@
   "moveCount": "Moves",
   "draw": "Draw",
   "redeal": "Redeal",
+  "redealWithCount": "Redeal ({{count}} left)",
   "giveup": "Give Up",
   "empty": "Empty",
   "emptyDivanSlot": "Empty divan slot {{idx}}",

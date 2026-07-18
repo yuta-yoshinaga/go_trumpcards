@@ -31,6 +31,12 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSultanCommand, SULTAN_HELP } from '../utils/cli/commands/sultanCommands';
 import { formatSultanState } from '../utils/cli/formatters/sultanFormatter';
 
+/**
+ * Maximum number of waste redeals allowed in Sultan of Turkey.
+ * Mirrors `domain.SultanMaxRedeal` (total of 3 passes through the stock).
+ */
+const SULTAN_MAX_REDEAL = 2;
+
 /** Sultan of Turkey tutorial step definitions. */
 const SULTAN_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -375,8 +381,11 @@ function SultanPageContent() {
                       className={btnPrimary}
                       onClick={handleRedeal}
                       disabled={loading || isAutoCompleting}
+                      data-testid="sultan-redeal-count"
                     >
-                      {t('redeal')}
+                      {t('redealWithCount', {
+                        count: SULTAN_MAX_REDEAL - state.redealCount,
+                      })}
                     </button>
                   )}
                   <button
