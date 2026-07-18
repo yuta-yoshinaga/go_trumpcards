@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BeziqueMeld, BeziqueResponse } from '../types/card';
 import { BeziquePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { beziqueEndgameLegalIndices, beziqueSuitDesign } from '../utils/beziqueLegal';
 import { cardLabel } from '../utils/cardUtils';
 import { BEZIQUE_HELP, parseBeziqueCommand } from '../utils/cli/commands/beziqueCommands';
 import { formatBeziqueState } from '../utils/cli/formatters/beziqueFormatter';
@@ -136,6 +137,16 @@ function BeziquePageContent() {
   const canPlay = isHumanPlayTurn;
 
   const trumpSymbol = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? SUIT_SYMBOLS[state.trumpSuit] : t('noTrump');
+
+  // During the endgame (phase 2) the follower must follow suit and win if able.
+  // Ring the legal-to-play cards so the human sees the constraint before playing.
+  // Only meaningful when following a lead: while leading (or before the endgame)
+  // every card is legal, so no highlight is shown. The backend still validates.
+  const leadCard = state.currentTrick[0]?.card ?? null;
+  const legalIndices =
+    isHumanPlayTurn && state.isEndgame && leadCard != null && humanPlayer != null
+      ? beziqueEndgameLegalIndices(humanPlayer.cards, leadCard, beziqueSuitDesign(state.trumpSuit))
+      : undefined;
 
   /** Builds a localized label for one declarable meld. */
   const meldLabel = (m: BeziqueMeld): string => {
@@ -311,6 +322,7 @@ function BeziquePageContent() {
                 isMobile={isMobile}
                 dataTutorialPrefix="bezique"
                 restrictedTooltip={t('playButton')}
+                legalIndices={legalIndices}
               />
             )}
 
