@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -16,6 +16,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useScoponeGame } from '../hooks/useScoponeGame';
+import { useSound } from '../providers/SoundProvider';
 import { gameTheme } from '../styles/gameTheme';
 import type { ScoponeResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
@@ -103,6 +104,45 @@ function ScoponePageContent() {
     retry,
   } = useScoponeGame();
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
+
+  // Celebrate a Scopa (clean sweep of the table) the instant any player's scopaCount
+  // rises — the sweep is the game's highlight but was easy to miss amid fast CPU turns
+  // (#3464). Tracked per-player so a partner-team sweep can be emphasised. scopaCount
+  // resets to 0 each round, so a drop clears any stale badge (no false re-fire).
+  const [scopaCelebration, setScopaCelebration] = useState<{ key: number; own: boolean } | null>(null);
+  const prevScopaRef = useRef<number[] | null>(null);
+  useEffect(() => {
+    if (!state) return;
+    const current = state.players.map((p) => p.scopaCount);
+    const prev = prevScopaRef.current;
+    prevScopaRef.current = current;
+    if (prev === null || prev.length !== current.length) {
+      // First render or a player-count change: seed the baseline without firing.
+      if (prev !== null) setScopaCelebration(null);
+      return;
+    }
+    const humanTeam = state.players.find((p) => p.isHuman)?.team ?? -1;
+    let gain = false;
+    let own = false;
+    let dropped = false;
+    for (let i = 0; i < current.length; i++) {
+      const delta = current[i] - prev[i];
+      if (delta > 0) {
+        gain = true;
+        if (state.players[i].team === humanTeam) own = true;
+      } else if (delta < 0) {
+        dropped = true;
+      }
+    }
+    if (gain) {
+      setScopaCelebration((c) => ({ key: (c?.key ?? 0) + 1, own }));
+      playSound('chipClick', { pitchVariation: 0.1 });
+    } else if (dropped) {
+      // A reset / next round drops scopaCount back to 0; clear the stale badge.
+      setScopaCelebration(null);
+    }
+  }, [state, playSound]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('scopone');
   const cliConfig: CliGameConfig<ScoponeResponse, ScoponeCliArgs> = useMemo(
@@ -200,7 +240,25 @@ function ScoponePageContent() {
             </div>
 
             {/* Table cards */}
-            <div className="py-3 bg-black/20 rounded-lg" data-tutorial="sp-table-cards">
+            <div className="relative py-3 bg-black/20 rounded-lg" data-tutorial="sp-table-cards">
+              {scopaCelebration && (
+                <div
+                  key={scopaCelebration.key}
+                  className="absolute inset-x-0 -top-3 z-10 flex justify-center motion-safe:animate-bounce pointer-events-none"
+                  role="status"
+                  data-testid="scopone-scopa-celebration"
+                >
+                  <span
+                    className={`rounded-full px-3 py-0.5 text-sm font-bold shadow-lg ${
+                      scopaCelebration.own
+                        ? 'bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent'
+                        : 'bg-ds-info text-white'
+                    }`}
+                  >
+                    {scopaCelebration.own ? t('label.scopaBadgeOwn') : t('label.scopaBadge')}
+                  </span>
+                </div>
+              )}
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>
               <div className="flex justify-center gap-2 min-h-[60px] flex-wrap">
                 {state.tableCards.length === 0 ? (
