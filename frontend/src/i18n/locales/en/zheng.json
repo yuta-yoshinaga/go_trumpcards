@@ -6,6 +6,9 @@
     "4": "4th"
   },
   "cardCount": "{{count}} cards",
+  "rankTable": {
+    "title": "Standings"
+  },
   "selectToPlay": "Click cards to select",
   "tableCards": "Table",
   "tableEmpty": "(empty)",

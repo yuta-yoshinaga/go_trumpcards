@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { zhengApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -200,6 +200,34 @@ describe('ZhengPage', () => {
     renderWithProviders(<ZhengPage />);
     await screen.findByTestId('pass-button');
     expect(screen.getByText('— 7')).toBeInTheDocument();
+  });
+
+  it('hides the standings table until a player has finished', async () => {
+    renderWithProviders(<ZhengPage />);
+    await screen.findByTestId('pass-button');
+    expect(screen.queryByTestId('zheng-rank-table')).not.toBeInTheDocument();
+  });
+
+  it('renders a standings table ordering finished players by rank then unfinished by fewest cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [], { isFinished: true, rank: 2, cardCount: 0 }),
+          player(1, false, [], { isFinished: true, rank: 1, cardCount: 0 }),
+          player(2, false, [card('SPADE', 3)], { cardCount: 3 }),
+          player(3, false, [], { cardCount: 8 }),
+        ],
+      }),
+    );
+    renderWithProviders(<ZhengPage />);
+    const table = await screen.findByTestId('zheng-rank-table');
+    const rows = within(table).getAllByRole('listitem');
+    expect(rows).toHaveLength(4);
+    // CPU1 out first (1位), human out second (2位), then still-playing by fewest cards.
+    expect(rows[0]).toHaveTextContent('1位');
+    expect(rows[1]).toHaveTextContent('2位');
+    expect(rows[2]).toHaveTextContent('3枚');
+    expect(rows[3]).toHaveTextContent('8枚');
   });
 
   it('renders the game-end rankings message via messageCode', async () => {

@@ -164,6 +164,16 @@ function ZhengPageContent() {
   const showInvalidCombo = isHumanTurn && selectedIndices.length > 0 && !hasValidCombo;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
 
+  // Standings: finished players first (by confirmed rank), then still-playing
+  // players ordered by fewest cards left. Shown once anyone has gone out so the
+  // remaining race (avoiding last place) is visible without waiting for game end.
+  const anyFinished = state.players.some((p) => p.isFinished);
+  const rankedPlayers = [...state.players].sort((a, b) => {
+    if (a.isFinished && b.isFinished) return a.rank - b.rank;
+    if (a.isFinished !== b.isFinished) return a.isFinished ? -1 : 1;
+    return a.cardCount - b.cardCount;
+  });
+
   return (
     <GamePageShell
       title={tc('nav.zheng')}
@@ -212,6 +222,29 @@ function ZhengPageContent() {
                   </div>
                 ))}
             </div>
+
+            {/* Standings — finished players' confirmed ranks + remaining card counts */}
+            {anyFinished && (
+              <div className="mx-auto max-w-xs rounded-lg bg-black/20 px-3 py-2" data-testid="zheng-rank-table">
+                <div className="mb-1 text-center text-xs text-ds-text-muted">{t('rankTable.title')}</div>
+                <ul className="space-y-0.5">
+                  {rankedPlayers.map((p) => (
+                    <li
+                      key={p.id}
+                      className="flex items-center justify-between text-xs"
+                      data-testid={`zheng-rank-row-${p.id}`}
+                    >
+                      <span>{p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}</span>
+                      {p.isFinished ? (
+                        <span className="font-bold text-ds-text">{t(`rank.${p.rank}`)}</span>
+                      ) : (
+                        <span className="text-ds-text-muted">{t('cardCount', { count: p.cardCount })}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Table cards */}
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="zheng-table-cards">
