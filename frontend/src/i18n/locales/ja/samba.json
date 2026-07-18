@@ -31,6 +31,12 @@
   "mixedCanasta": "ミックスカナスタ",
   "samba": "サンバ",
   "sequence": "シーケンス",
+  "meldProgress": {
+    "toCanasta": "あと{{n}}枚でカナスタ",
+    "toSamba": "あと{{n}}枚でサンバ",
+    "canastaComplete": "カナスタ成立！",
+    "sambaComplete": "サンバ成立！"
+  },
   "drawStockButton": "山札から引く",
   "drawDiscardButton": "捨て札を取る",
   "meldButton": "メルドする",

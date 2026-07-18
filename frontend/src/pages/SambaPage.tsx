@@ -36,6 +36,12 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { sambaMinMeld, sambaSelectionPoints } from '../utils/sambaScore';
 
+/**
+ * Cards required to complete a canasta (7-card set) or samba (7-card sequence).
+ * Matches the Go domain rule (`SambaMeld.IsCanasta`/`IsSamba`: `len(Cards) >= 7`).
+ */
+const SAMBA_CANASTA_SIZE = 7;
+
 const SAMBA_PHASE_KEYS: Readonly<Record<number, string>> = {
   [SambaPhase.DRAW]: 'draw',
   [SambaPhase.MELD]: 'meld',
@@ -297,24 +303,41 @@ function SambaPageContent() {
                         {p.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
                         {p.hasSamba && <span className="ml-1 text-ds-accent">▲</span>}
                       </div>
-                      {p.melds.map((m, mi) => (
-                        <div key={mi} className="flex flex-wrap gap-1 mb-1">
-                          <span className="text-xs text-ds-text-muted self-center mr-1">
-                            {m.kind === 1
-                              ? m.isSamba
-                                ? t('samba')
-                                : t('sequence')
-                              : m.isCanasta
-                                ? m.isNatural
-                                  ? t('naturalCanasta')
-                                  : t('mixedCanasta')
-                                : `(${m.cards.length})`}
-                          </span>
-                          {m.cards.map((card, ci) => (
-                            <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
-                          ))}
-                        </div>
-                      ))}
+                      {p.melds.map((m, mi) => {
+                        // Progress toward the 7-card canasta (set) / samba (sequence)
+                        // milestone, derived purely from `cards.length` and `kind`.
+                        const remaining = SAMBA_CANASTA_SIZE - m.cards.length;
+                        const toSamba = m.kind === 1;
+                        const complete = remaining <= 0;
+                        return (
+                          <div key={mi} className="flex flex-wrap gap-1 mb-1">
+                            <span className="text-xs text-ds-text-muted self-center mr-1">
+                              {m.kind === 1
+                                ? m.isSamba
+                                  ? t('samba')
+                                  : t('sequence')
+                                : m.isCanasta
+                                  ? m.isNatural
+                                    ? t('naturalCanasta')
+                                    : t('mixedCanasta')
+                                  : `(${m.cards.length})`}
+                            </span>
+                            <span
+                              data-testid={`sa-meld-progress-${pi}-${mi}`}
+                              className={`text-xs self-center mr-1 ${
+                                complete ? 'text-ds-success font-bold motion-safe:animate-pulse' : 'text-ds-info'
+                              }`}
+                            >
+                              {complete
+                                ? t(toSamba ? 'meldProgress.sambaComplete' : 'meldProgress.canastaComplete')
+                                : t(toSamba ? 'meldProgress.toSamba' : 'meldProgress.toCanasta', { n: remaining })}
+                            </span>
+                            {m.cards.map((card, ci) => (
+                              <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
+                            ))}
+                          </div>
+                        );
+                      })}
                       {p.red3s.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           <span className="text-xs text-ds-error self-center mr-1">{t('red3s')}</span>
