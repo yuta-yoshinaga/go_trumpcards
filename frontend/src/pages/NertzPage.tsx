@@ -21,7 +21,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, NertzPlayerData, NertzResponse, NertzTableauCard } from '../types/card';
+import type { Card, NertzFoundationData, NertzPlayerData, NertzResponse, NertzTableauCard } from '../types/card';
 import { NertzPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { NERTZ_HELP, parseNertzCommand } from '../utils/cli/commands/nertzCommands';
@@ -49,6 +49,34 @@ const NERTZ_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 type Selection = { kind: 'nertz' } | { kind: 'waste' } | { kind: 'tableau'; col: number; cardIndex: number } | null;
+
+/** Whether a card belongs to a red suit (hearts / diamonds). */
+function isRedNertzCard(card: Card): boolean {
+  return card.design === 'HEART' || card.design === 'DIAMOND';
+}
+
+/**
+ * Client-side mirror of the backend `NertzFoundation.CanAccept`: a foundation
+ * cell accepts an Ace when empty, otherwise the same-suit next-higher rank.
+ */
+function nertzFoundationAccepts(card: Card | null, foundation: NertzFoundationData): boolean {
+  if (!card || card.design === 'JOKER') return false;
+  if (foundation.top) {
+    return card.design === foundation.top.design && card.value === foundation.top.value + 1;
+  }
+  return card.value === 1;
+}
+
+/**
+ * Client-side mirror of the backend `canPlaceOnNertzTableau`: an empty column
+ * accepts any card, otherwise the card must be one rank lower and the opposite
+ * colour of the column's bottom card.
+ */
+function nertzTableauAccepts(card: Card | null, destTop: Card | null): boolean {
+  if (!card) return false;
+  if (!destTop) return true;
+  return isRedNertzCard(card) !== isRedNertzCard(destTop) && card.value === destTop.value - 1;
+}
 
 /** Renders the Nertz / Pounce game page. */
 export const NertzPage = withTutorial(NertzPageContent, 'nertz', NERTZ_TUTORIAL_STEPS);
@@ -309,6 +337,45 @@ function NertzPageContent() {
     enabled: state?.phase === NertzPhase.PLAYING && !loading,
   });
 
+  // The concrete card the current selection would move, used to derive which
+  // destinations can legally accept it.
+  const selectedCard: Card | null = useMemo(() => {
+    if (!selection || !human) return null;
+    if (selection.kind === 'nertz') return human.nertzTop ?? null;
+    if (selection.kind === 'waste') return human.wasteTop ?? null;
+    return human.tableau[selection.col]?.[selection.cardIndex]?.card ?? null;
+  }, [selection, human]);
+
+  // A foundation only ever takes the bottom (top-of-column) card, so a tableau
+  // selection is foundation-eligible only when it is that bottom card. Nertz and
+  // waste sources are always foundation-eligible.
+  const foundationEligible = useMemo(() => {
+    if (!selection || !human) return false;
+    if (selection.kind !== 'tableau') return true;
+    return selection.cardIndex === human.tableau[selection.col].length - 1;
+  }, [selection, human]);
+
+  const validFoundations = useMemo(() => {
+    const set = new Set<number>();
+    if (!state || !selectedCard || !foundationEligible) return set;
+    state.foundations.forEach((f, idx) => {
+      if (nertzFoundationAccepts(selectedCard, f)) set.add(idx);
+    });
+    return set;
+  }, [state, selectedCard, foundationEligible]);
+
+  const validTableauCols = useMemo(() => {
+    const set = new Set<number>();
+    if (!human || !selectedCard) return set;
+    human.tableau.forEach((col, colIdx) => {
+      // A tableau card cannot be dropped back onto its own column.
+      if (selection?.kind === 'tableau' && selection.col === colIdx) return;
+      const destTop = col.length > 0 ? (col[col.length - 1].card ?? null) : null;
+      if (nertzTableauAccepts(selectedCard, destTop)) set.add(colIdx);
+    });
+    return set;
+  }, [human, selectedCard, selection]);
+
   const phaseName = useMemo(() => {
     if (isGameEnd) return t('phase.gameEnd');
     if (isRoundEnd) return t('phase.roundEnd');
@@ -418,6 +485,8 @@ function NertzPageContent() {
                       collided={collidedFoundationIdx === idx}
                       placedBy={flash?.placedBy ?? null}
                       placedFlashKey={flash?.key ?? 0}
+                      validTarget={validFoundations.has(idx)}
+                      selectionActive={!!selection}
                     />
                   );
                 })}
@@ -491,6 +560,8 @@ function NertzPageContent() {
                       onSelectCard={handleSelectTableau}
                       onTarget={() => handleTableauTargetClick(colIdx)}
                       disabled={!isHumanTurn}
+                      validTarget={validTableauCols.has(colIdx)}
+                      selectionActive={!!selection}
                     />
                   ))}
                 </div>
@@ -556,6 +627,10 @@ interface FoundationCellProps {
   placedBy?: 'human' | 'cpu' | null;
   /** Re-applies the placed flash even when `placedBy` stays the same (e.g., two human placements in a row). */
   placedFlashKey?: number;
+  /** The current selection can legally be placed here → persistent success ring. */
+  validTarget?: boolean;
+  /** A source is currently selected → invalid destinations are dimmed. */
+  selectionActive?: boolean;
 }
 
 function FoundationCell({
@@ -568,10 +643,21 @@ function FoundationCell({
   collided = false,
   placedBy = null,
   placedFlashKey = 0,
+  validTarget = false,
+  selectionActive = false,
 }: FoundationCellProps) {
   const { cardWidth } = useCardDimensions();
   const w = Math.max(44, Math.round(cardWidth * 0.6));
-  const collisionCls = collided ? 'animate-shake ring-2 ring-ds-error' : '';
+  // A rejected move flashes an error ring transiently; otherwise a legal
+  // destination shows a persistent success ring (a non-colour "has a ring"
+  // cue), and invalid destinations dim while a source is selected.
+  const targetCls = collided
+    ? 'animate-shake ring-2 ring-ds-error'
+    : validTarget
+      ? 'ring-2 ring-ds-success'
+      : selectionActive
+        ? 'opacity-60'
+        : '';
   // The placement flash is a sibling overlay so we can remount *it* (via key)
   // to re-fire animate-pulse-once on back-to-back placements without
   // unmounting the underlying <button> and breaking keyboard focus.
@@ -587,11 +673,12 @@ function FoundationCell({
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className={`flex flex-col items-center rounded p-0.5 text-xs text-ds-text-muted disabled:opacity-50 ${collisionCls}`}
+        className={`flex flex-col items-center rounded p-0.5 text-xs text-ds-text-muted disabled:opacity-50 ${targetCls}`}
         aria-label={ariaLabel}
         data-testid={`nertz-foundation-${idx}`}
         data-collided={collided || undefined}
         data-placed-by={placedBy ?? undefined}
+        data-valid-target={validTarget || undefined}
       >
         <span className="block leading-none">F{idx}</span>
         {top ? (
@@ -656,26 +743,50 @@ interface TableauColumnProps {
   onSelectCard: (col: number, cardIndex: number) => void;
   onTarget: () => void;
   disabled: boolean;
+  /** The current selection can legally be placed on this column → persistent success ring. */
+  validTarget?: boolean;
+  /** A source is currently selected → invalid destinations are dimmed. */
+  selectionActive?: boolean;
 }
 
-function TableauColumn({ col, colIdx, selection, onSelectCard, onTarget, disabled }: TableauColumnProps) {
+function TableauColumn({
+  col,
+  colIdx,
+  selection,
+  onSelectCard,
+  onTarget,
+  disabled,
+  validTarget = false,
+  selectionActive = false,
+}: TableauColumnProps) {
   const { cardWidth } = useCardDimensions();
   const w = Math.max(44, Math.round(cardWidth * 0.6));
+  const isSource = selection?.kind === 'tableau' && selection.col === colIdx;
+  // A legal drop column shows a persistent success ring (a non-colour "has a
+  // ring" cue); invalid columns dim while a source is selected, except the
+  // source column itself which keeps its own selection highlight.
+  const targetCls = validTarget ? 'ring-2 ring-ds-success' : selectionActive && !isSource ? 'opacity-60' : '';
   if (col.length === 0) {
     return (
       <button
         type="button"
         onClick={onTarget}
         disabled={disabled}
-        className="min-h-[4rem] rounded border border-dashed border-white/30 text-ds-text-muted text-xs"
+        className={`min-h-[4rem] rounded border border-dashed border-white/30 text-ds-text-muted text-xs ${targetCls}`}
         style={{ width: w }}
+        data-testid={`nertz-tableau-col-${colIdx}`}
+        data-valid-target={validTarget || undefined}
       >
         —
       </button>
     );
   }
   return (
-    <div className="flex flex-col gap-1">
+    <div
+      className={`flex flex-col gap-1 rounded ${targetCls}`}
+      data-testid={`nertz-tableau-col-${colIdx}`}
+      data-valid-target={validTarget || undefined}
+    >
       {col.map((tc, i) => {
         const isSelected = selection?.kind === 'tableau' && selection.col === colIdx && selection.cardIndex === i;
         const isLast = i === col.length - 1;
