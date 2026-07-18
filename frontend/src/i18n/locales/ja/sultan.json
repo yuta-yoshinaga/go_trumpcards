@@ -11,6 +11,7 @@
   "moveCount": "手数",
   "draw": "引く",
   "redeal": "リディール",
+  "redealWithCount": "リディール（残り{{count}}回）",
   "giveup": "ギブアップ",
   "empty": "空",
   "emptyDivanSlot": "空のディヴァン枠 {{idx}}",

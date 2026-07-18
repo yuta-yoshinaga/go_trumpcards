@@ -174,11 +174,11 @@ describe('SultanPage', () => {
   it('redeal button shown and dispatches redeal when canRedeal', async () => {
     mockExec.mockResolvedValue(canRedealState);
     renderWithProviders(<SultanPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リディール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /リディール/ })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(canRedealState);
-    fireEvent.click(screen.getByRole('button', { name: 'リディール' }));
+    fireEvent.click(screen.getByRole('button', { name: /リディール/ }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('redeal'));
   });
@@ -186,7 +186,21 @@ describe('SultanPage', () => {
   it('redeal button hidden when canRedeal is false', async () => {
     renderWithProviders(<SultanPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: 'リディール' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /リディール/ })).not.toBeInTheDocument();
+  });
+
+  it('redeal button shows the remaining redeal count', async () => {
+    // redealCount 0 of a max of 2 → 2 redeals remaining.
+    mockExec.mockResolvedValue(canRedealState);
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByTestId('sultan-redeal-count')).toHaveTextContent('リディール（残り2回）'));
+  });
+
+  it('redeal button count reflects one redeal already used', async () => {
+    // redealCount 1 of a max of 2 → 1 redeal remaining (matches CUI display).
+    mockExec.mockResolvedValue({ ...canRedealState, redealCount: 1 });
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByTestId('sultan-redeal-count')).toHaveTextContent('リディール（残り1回）'));
   });
 
   it('clicking waste card dispatches move from waste', async () => {
