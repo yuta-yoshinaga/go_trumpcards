@@ -59,6 +59,7 @@ const roundEndWinState = makeState({ phase: 4, totalPayout: 200, chips: 1200 });
 const gameEndState = makeState({ phase: 5, gameEndFlag: true, chips: 0 });
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(bettingState);
 });
@@ -201,5 +202,50 @@ describe('FaroPage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<FaroPage />);
     await waitFor(() => expect(screen.getByText('チップが尽きました。ゲーム終了です。')).toBeInTheDocument());
+  });
+
+  describe('case keeper', () => {
+    it('starts every rank at four before any card is revealed', async () => {
+      renderWithProviders(<FaroPage />);
+      const grid = await screen.findByTestId('case-keeper');
+      expect(grid).toBeInTheDocument();
+      for (const rank of [1, 7, 13]) {
+        expect(screen.getByTestId(`case-keeper-rank-${rank}`)).toHaveTextContent('4');
+      }
+    });
+
+    it('decrements ranks by the cards revealed on a turn', async () => {
+      // soda (SPADE A), losing (SPADE 3), winning (HEART 7) -> A, 3, 7 each drop to 3.
+      mockExec.mockResolvedValue(
+        makeState({
+          phase: 2,
+          soda: card('SPADE', 1),
+          losingCard: card('SPADE', 3),
+          winningCard: card('HEART', 7),
+          turnsPlayed: 1,
+        }),
+      );
+      renderWithProviders(<FaroPage />);
+      await waitFor(() => expect(screen.getByTestId('case-keeper-rank-1')).toHaveTextContent('3'));
+      expect(screen.getByTestId('case-keeper-rank-3')).toHaveTextContent('3');
+      expect(screen.getByTestId('case-keeper-rank-7')).toHaveTextContent('3');
+      // An untouched rank stays at four.
+      expect(screen.getByTestId('case-keeper-rank-5')).toHaveTextContent('4');
+    });
+
+    it('resets all ranks to four when the game is reset', async () => {
+      mockExec.mockResolvedValue(
+        makeState({ phase: 2, losingCard: card('SPADE', 3), winningCard: card('HEART', 7), turnsPlayed: 1 }),
+      );
+      renderWithProviders(<FaroPage />);
+      await waitFor(() => expect(screen.getByTestId('case-keeper-rank-3')).toHaveTextContent('3'));
+
+      // Reset returns a fresh deck; the case keeper must clear back to four.
+      mockExec.mockResolvedValue(bettingState);
+      fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+      const confirm = await screen.findByRole('button', { name: '確認' });
+      fireEvent.click(confirm);
+      await waitFor(() => expect(screen.getByTestId('case-keeper-rank-3')).toHaveTextContent('4'));
+    });
   });
 });

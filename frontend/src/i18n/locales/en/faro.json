@@ -32,6 +32,8 @@
   "win": "You won chips!",
   "gameEnd": "Out of chips. Game over.",
   "rankName": "Rank",
+  "caseKeeperTitle": "Case keeper (cards left per rank)",
+  "caseKeeperCell": "{{rank}}: {{count}} left",
   "phase": {
     "betting": "Betting",
     "turn": "Turn",

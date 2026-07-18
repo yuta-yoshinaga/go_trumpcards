@@ -32,6 +32,8 @@
   "win": "チップを増やしました！",
   "gameEnd": "チップが尽きました。ゲーム終了です。",
   "rankName": "ランク",
+  "caseKeeperTitle": "ケースキーパー（各ランクの残り枚数）",
+  "caseKeeperCell": "{{rank}}：残り{{count}}枚",
   "phase": {
     "betting": "ベット",
     "turn": "ターン",
