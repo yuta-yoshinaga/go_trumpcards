@@ -12,7 +12,7 @@ export function getSpeedHint(state: SpeedResponse): HintResult | null {
   if (state.gameEndFlag) return null;
   if (state.phase !== SpeedPhase.PLAY) return null;
 
-  const hasPlayable = human.cards.some((c) => canPlayOnAnyPile(c, state.centerPiles));
+  const hasPlayable = human.cards.some((c) => isSpeedPlayable(c.value, state.centerPiles));
 
   if (hasPlayable) {
     return { targetAction: 'play', reason: 'hint.hasPlayable', confidence: 'strong' };
@@ -21,9 +21,14 @@ export function getSpeedHint(state: SpeedResponse): HintResult | null {
   return { targetAction: 'wait', reason: 'hint.noPlayable', confidence: 'moderate' };
 }
 
-/** Check if a card can be played on any center pile (value +/- 1, with wrap-around). */
-function canPlayOnAnyPile(card: Card, centerPiles: Card[]): boolean {
-  return centerPiles.some((pile) => isAdjacent(card.value, pile.value));
+/**
+ * Returns true if a card of the given rank can be played onto at least one
+ * center pile right now (rank ±1, with King↔Ace wrap-around). Mirrors the
+ * backend `Speed.CanPlay` / `isAdjacentRank` rule so the highlight matches
+ * what the server will accept.
+ */
+export function isSpeedPlayable(cardValue: number, centerPiles: Card[]): boolean {
+  return centerPiles.some((pile) => pile != null && isAdjacent(cardValue, pile.value));
 }
 
 /** Check if two values are adjacent (with King-Ace wrap-around). */

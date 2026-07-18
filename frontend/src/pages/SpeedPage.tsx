@@ -23,7 +23,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { AUTO_FLIP_DELAY_MS, CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline } from '../styles/buttonStyles';
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { focusRingCard, playableRingStyle, selectedCardStyle } from '../styles/cardStyles';
 import type { SpeedResponse } from '../types/card';
 import { SpeedPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -31,6 +31,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSpeedCommand, SPEED_HELP } from '../utils/cli/commands/speedCommands';
 import { formatSpeedState } from '../utils/cli/formatters/speedFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isSpeedPlayable } from '../utils/hints/speedHint';
 
 const SPEED_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -237,20 +238,30 @@ function SpeedPageContent() {
                 </span>
               </div>
               <div className="flex gap-1 flex-wrap justify-center">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => handleSmartClick(idx, humanPlayer.cards, state.centerPiles)}
-                    disabled={!isPlayPhase || loading}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={selectedCardStyle(selectedCardIndices.includes(idx))}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
+                {humanPlayer.cards.map((card, idx) => {
+                  // Highlight cards playable right now (rank ±1 of either center
+                  // pile, K↔A wrap). Ring-only: the button stays clickable so the
+                  // backend still validates the play.
+                  const playable = isPlayPhase && isSpeedPlayable(card.value, state.centerPiles);
+                  return (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}-${idx}`}
+                      onClick={() => handleSmartClick(idx, humanPlayer.cards, state.centerPiles)}
+                      disabled={!isPlayPhase || loading}
+                      aria-label={playable ? `${cardAlt(card)} (${t('playable')})` : cardAlt(card)}
+                      aria-pressed={selectedCardIndices.includes(idx)}
+                      data-playable={playable ? 'true' : undefined}
+                      className={`transition-transform ${focusRingCard}`}
+                      style={{
+                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                        ...(playable ? playableRingStyle() : {}),
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

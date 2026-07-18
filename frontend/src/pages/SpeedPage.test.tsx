@@ -200,8 +200,9 @@ describe('SpeedPage', () => {
   it('auto-plays a card via smart-click when only one valid pile exists', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
-    // SPADE 4 is adjacent to pile 0 (value 5) only → smart-click auto-plays
-    fireEvent.click(screen.getByRole('button', { name: '♠ 4' }));
+    // SPADE 4 is adjacent to pile 0 (value 5) only → smart-click auto-plays.
+    // It is also playable, so its aria-label carries the "playable now" suffix.
+    fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0));
   });
 
@@ -407,6 +408,39 @@ describe('SpeedPage', () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
     expect(screen.queryByTestId('stuck-emphasis-container')).not.toBeInTheDocument();
+  });
+
+  it('marks playable hand cards with a success ring in play phase', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    // Center piles 5/9 → SPADE 4 (5-1) and HEART 8 (9-1) are playable; CLOVER 11
+    // and DIAMOND 2 are not.
+    const playable = screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' });
+    expect(playable).toHaveAttribute('data-playable', 'true');
+    expect(playable.style.outline).toContain('var(--color-ds-success)');
+
+    const notPlayable = screen.getByRole('button', { name: '♦ 2' });
+    expect(notPlayable).not.toHaveAttribute('data-playable');
+    expect(notPlayable.style.outline).toBe('');
+  });
+
+  it('keeps a non-highlighted hand card clickable (ring does not block clicks)', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    // DIAMOND 2 is not highlighted (not adjacent to either pile) but must stay
+    // interactive — clicking it toggles selection rather than being blocked.
+    const notPlayable = screen.getByRole('button', { name: '♦ 2' });
+    expect(notPlayable).toBeEnabled();
+    fireEvent.click(notPlayable);
+    expect(notPlayable).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('removes the playable ring in stuck phase', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('めくる')).toBeInTheDocument());
+    // No hand card carries the playable marker once play is halted.
+    expect(document.querySelector('[data-playable="true"]')).toBeNull();
   });
 });
 

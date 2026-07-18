@@ -6,6 +6,7 @@
     "gameEnd": "ゲーム終了"
   },
   "yourHand": "手札",
+  "playable": "今すぐ出せる",
   "cpuHand": "CPU手札",
   "drawPile": "山札",
   "selectCard": "手札からカードを選択",

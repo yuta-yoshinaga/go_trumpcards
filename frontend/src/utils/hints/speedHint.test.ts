@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, SpeedResponse } from '../../types/card';
 import { SpeedPhase } from '../../types/phases';
-import { getSpeedHint } from './speedHint';
+import { getSpeedHint, isSpeedPlayable } from './speedHint';
 
 const card = (design: Card['design'], value: number): Card => ({ design, value });
 
@@ -69,5 +69,31 @@ describe('getSpeedHint', () => {
     expect(result?.targetAction).toBe('play');
     expect(result?.reason).toBe('hint.hasPlayable');
     expect(result?.confidence).toBe('strong');
+  });
+});
+
+describe('isSpeedPlayable', () => {
+  const piles = [card('HEART', 6), card('SPADE', 9)];
+
+  it('returns true for a card one below a pile top', () => {
+    expect(isSpeedPlayable(5, piles)).toBe(true); // 6 - 1
+  });
+
+  it('returns true for a card one above a pile top', () => {
+    expect(isSpeedPlayable(10, piles)).toBe(true); // 9 + 1
+  });
+
+  it('returns false for a non-adjacent card', () => {
+    expect(isSpeedPlayable(3, piles)).toBe(false);
+  });
+
+  it('handles King-Ace wrap-around', () => {
+    expect(isSpeedPlayable(1, [card('HEART', 13), card('SPADE', 5)])).toBe(true); // A next to K
+    expect(isSpeedPlayable(13, [card('HEART', 1), card('SPADE', 5)])).toBe(true); // K next to A
+  });
+
+  it('ignores null piles safely', () => {
+    expect(isSpeedPlayable(5, [null as unknown as Card, card('SPADE', 6)])).toBe(true);
+    expect(isSpeedPlayable(5, [null as unknown as Card])).toBe(false);
   });
 });
