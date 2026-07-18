@@ -23,6 +23,7 @@
   "dirUptown": "アップタウン",
   "dirDowntown": "ダウンタウン",
   "dirNoTrump": "ノートランプ",
+  "bidTooLow": "現在の最高ビッド ({{tricks}} {{dir}}) を上回る必要があります",
   "passButton": "パス",
   "declareTrumpPrompt": "切り札スートを選択:",
   "exchangeButton": "交換 ({{count}}/6)",

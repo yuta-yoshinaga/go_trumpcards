@@ -23,6 +23,7 @@
   "dirUptown": "Uptown",
   "dirDowntown": "Downtown",
   "dirNoTrump": "No Trump",
+  "bidTooLow": "Must exceed the current highest bid ({{tricks}} {{dir}})",
   "passButton": "Pass",
   "declareTrumpPrompt": "Choose a trump suit:",
   "exchangeButton": "Exchange ({{count}}/6)",
