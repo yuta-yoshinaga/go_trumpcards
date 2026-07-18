@@ -167,6 +167,7 @@ const cpuDeclarerSuitGame: SkatResponse = {
 };
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockResolvedValue(bidPhaseHumanTurn);
 });
 
@@ -189,6 +190,40 @@ describe('SkatPage', () => {
     );
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 1, targetScore: 500 } }),
+    );
+  });
+
+  it('renders the CPU difficulty selector in the settings panel', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/skat']}>
+        <SkatPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByRole('button', { name: '18でコールする' })).toBeInTheDocument());
+    const select = screen.getByLabelText(/CPU難易度|CPU Difficulty/) as HTMLSelectElement;
+    expect(select).toBeInTheDocument();
+    expect(select.value).toBe('1');
+  });
+
+  it('reflects the selected CPU difficulty in the reset API call', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/skat']}>
+        <SkatPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByRole('button', { name: '18でコールする' })).toBeInTheDocument());
+
+    const select = screen.getByLabelText(/CPU難易度|CPU Difficulty/);
+    fireEvent.change(select, { target: { value: '2' } });
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'reset',
+        expect.objectContaining({ config: expect.objectContaining({ cpuDifficulty: 2 }) }),
+      ),
     );
   });
 

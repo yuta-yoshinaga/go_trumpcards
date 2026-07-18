@@ -40,6 +40,14 @@
     "diamond": "♦ Diamonds",
     "grand": "Grand"
   },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetScore": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
   "phase": {
     "bid": "Bidding",
     "skatPickup": "Skat pickup",

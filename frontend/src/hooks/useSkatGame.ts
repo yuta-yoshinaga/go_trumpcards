@@ -37,9 +37,16 @@ export function useSkatGame() {
 
   const { state, loading, error, exec: dispatch, retry } = useGameApi(skatApi.exec, { onSuccess });
 
+  /** Resets the game, applying the current config (CPU difficulty, target score). */
+  const reset = useCallback(() => {
+    dispatch('reset', { config: skatConfig });
+  }, [dispatch, skatConfig]);
+
+  // Fetch a fresh game on mount using the initial (default) config.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run reset once on mount with the initial config.
   useEffect(() => {
-    dispatch('reset', { config: DEFAULT_SKAT_CONFIG });
-  }, [dispatch]);
+    reset();
+  }, []);
 
   const handleBid = useCallback(
     (accept: boolean) => {
@@ -102,6 +109,7 @@ export function useSkatGame() {
     hintLoading,
     dispatch,
     skatConfig,
+    reset,
     selectedCardIndices,
     toggleCard,
     clearSelection,

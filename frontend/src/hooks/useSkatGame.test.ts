@@ -249,4 +249,17 @@ describe('useSkatGame', () => {
     act(() => result.current.handleConfigChange('cpuDifficulty', '2'));
     expect(result.current.skatConfig.cpuDifficulty).toBe(2);
   });
+
+  it('reset dispatches reset with the current config', async () => {
+    mockExec.mockResolvedValue(baseSkatState);
+    const { result } = renderHook(() => useSkatGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    act(() => result.current.handleConfigChange('cpuDifficulty', '2'));
+    mockExec.mockClear();
+    act(() => result.current.reset());
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, targetScore: 500 } }),
+    );
+  });
 });

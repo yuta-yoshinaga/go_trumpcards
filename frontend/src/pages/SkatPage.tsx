@@ -3,6 +3,7 @@ import type { skatApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -19,7 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSkatGame } from '../hooks/useSkatGame';
+import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useSkatGame } from '../hooks/useSkatGame';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SkatResponse } from '../types/card';
@@ -81,6 +82,9 @@ function SkatPageContent() {
     state,
     loading,
     error,
+    skatConfig,
+    handleConfigChange,
+    reset,
     selectedCardIndices,
     toggleCard,
     handleBid,
@@ -115,8 +119,8 @@ function SkatPageContent() {
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
-    window.location.reload();
-  }, [hideActionLog]);
+    reset();
+  }, [hideActionLog, reset]);
 
   if (!state) {
     return (
@@ -161,6 +165,41 @@ function SkatPageContent() {
         <CliTerminal logEntries={cliMode.logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: skatConfig.cpuDifficulty,
+                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
+                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'targetScore',
+                    label: t('settings.targetScore'),
+                    value: skatConfig.targetScore,
+                    options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('targetScore', v),
+                  },
+                  {
+                    type: 'checkbox',
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: hintEnabled,
+                    onToggle: setHintEnabled,
+                  },
+                ],
+              },
+            ]}
+          />
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
             {error && <ErrorAlert message={error} onRetry={retry} />}
 
@@ -279,15 +318,6 @@ function SkatPageContent() {
 
           <GameFooter className={`${gameTheme.skat.footer} px-4 py-2.5`}>
             <div className="flex flex-wrap gap-2 items-center">
-              <label className="flex items-center gap-1 text-ds-text-primary text-xs">
-                <input
-                  type="checkbox"
-                  checked={hintEnabled}
-                  onChange={(e) => setHintEnabled(e.target.checked)}
-                  aria-label={tc('hint.toggle', { ns: 'tutorial' })}
-                />
-                {tc('hint.toggle', { ns: 'tutorial' })}
-              </label>
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}
