@@ -53,6 +53,15 @@
     "teamA": "チームA: {{points}}点",
     "teamB": "チームB: {{points}}点"
   },
+  "livePoints": {
+    "title": "ライブ得点",
+    "contract": "{{team}}（落札）: {{got}} / 契約{{contract}}点",
+    "status": {
+      "made": "契約達成",
+      "failed": "達成不能",
+      "needMore": "あと{{remaining}}点"
+    }
+  },
   "hintAvailable": "ヒント",
   "hint": {
     "lead_high": "強い札でリードしてトリックを取りに行く",

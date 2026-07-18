@@ -53,6 +53,15 @@
     "teamA": "Team A: {{points}} pts",
     "teamB": "Team B: {{points}} pts"
   },
+  "livePoints": {
+    "title": "Live Points",
+    "contract": "{{team}} (bid): {{got}} / contract {{contract}} pts",
+    "status": {
+      "made": "Contract made",
+      "failed": "Cannot make it",
+      "needMore": "{{remaining}} pt(s) to go"
+    }
+  },
   "hintAvailable": "Hint",
   "hint": {
     "lead_high": "Lead a strong card to win the trick",
