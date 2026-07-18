@@ -56,5 +56,11 @@
     "hand": "Your hand. During the play phase, cards you may legally play are highlighted; click one to play it in an ascending same-suit run.",
     "actions": "On your bet turn, distribute your chips across the four boodles and place your bets. During play, click a playable card. At the result phase, deal the next round.",
     "resetButton": "Reset the game and start over."
+  },
+  "nextHint": {
+    "next": "Play next: {{suit}} {{value}}",
+    "new": "You can start a new sequence",
+    "nextBadge": "Next",
+    "leadBadge": "Lead"
   }
 }
