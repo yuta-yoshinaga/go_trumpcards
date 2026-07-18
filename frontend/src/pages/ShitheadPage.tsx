@@ -10,6 +10,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -388,28 +389,28 @@ interface FaceDownRowProps {
   onToggle: (index: number) => void;
 }
 
-/** Row of face-down (hidden) cards selectable for blind play. */
+/** Row of face-down (hidden) cards rendered as card-back images, selectable for blind play. */
 function FaceDownRow({ label, count, selectable, selected, onToggle }: FaceDownRowProps) {
+  const { cardWidth } = useCardDimensions();
   return (
     <div className="space-y-1">
       <div className="text-xs uppercase tracking-wide text-ds-text-muted">{label}</div>
       <div className="flex flex-wrap gap-2">
         {Array.from({ length: count }).map((_, i) => {
           const isSelected = selected.includes(i);
-          const cls = isSelected
-            ? 'bg-ds-warning text-ds-text-on-accent border-ds-warning'
-            : selectable
-              ? 'bg-ds-accent text-ds-text-on-accent border-ds-border-subtle hover:bg-ds-accent-hover'
-              : 'bg-ds-surface text-ds-text-muted border-ds-border-subtle';
           return (
             <button
               key={`fd-${i}`}
               type="button"
               disabled={!selectable}
               onClick={() => onToggle(i)}
-              className={`min-w-[3rem] px-2 py-2 rounded border text-sm ${cls}`}
+              aria-pressed={selectable ? isSelected : undefined}
+              data-testid={`sh-facedown-${i}`}
+              className={`relative rounded transition-transform ${focusRingCard} ${
+                isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
+              } ${selectable ? 'cursor-pointer' : 'cursor-default'}`}
             >
-              ?
+              <AnimatedCardBack width={cardWidth} />
             </button>
           );
         })}
