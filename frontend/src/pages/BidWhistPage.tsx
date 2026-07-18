@@ -374,18 +374,39 @@ function BidWhistPageContent() {
                       </option>
                     ))}
                   </select>
-                  {DIRECTIONS.map((d) => (
-                    <button
-                      key={d.id}
-                      type="button"
-                      onClick={() => bid(bidTricks, d.id)}
-                      disabled={loading}
-                      className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
-                      data-testid={`bid-dir-${d.id}`}
-                    >
-                      {t(d.key)}
-                    </button>
-                  ))}
+                  {DIRECTIONS.map((d) => {
+                    // A bid's strength is tricks*10 + direction (matches BidWhistBid.Order in
+                    // the Go domain). A new bid must strictly exceed the current highest bid.
+                    const highestOrder = state.highestBid
+                      ? state.highestBid.tricks * 10 + state.highestBid.direction
+                      : -1;
+                    const tooLow = bidTricks * 10 + d.id <= highestOrder;
+                    const disabled = loading || tooLow;
+                    const reason =
+                      tooLow && state.highestBid
+                        ? t('bidTooLow', {
+                            tricks: state.highestBid.tricks,
+                            dir: t(DIRECTIONS[state.highestBid.direction]?.key ?? 'dirUptown'),
+                          })
+                        : undefined;
+                    // The title lives on the wrapping span: browsers suppress native tooltips on
+                    // disabled buttons, so hovering the span still surfaces the reason.
+                    return (
+                      <span key={d.id} title={reason} data-testid={`bid-dir-wrap-${d.id}`}>
+                        <button
+                          type="button"
+                          onClick={() => bid(bidTricks, d.id)}
+                          disabled={disabled}
+                          aria-disabled={disabled}
+                          aria-label={reason ? `${t(d.key)} — ${reason}` : undefined}
+                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                          data-testid={`bid-dir-${d.id}`}
+                        >
+                          {t(d.key)}
+                        </button>
+                      </span>
+                    );
+                  })}
                   <button
                     type="button"
                     onClick={pass}

@@ -171,4 +171,49 @@ describe('BidWhistPage', () => {
     await screen.findByTestId('hand-card-0');
     expect(screen.queryByTestId('kitty-progress')).not.toBeInTheDocument();
   });
+
+  it('enables every direction when there is no highest bid', async () => {
+    renderWithProviders(<BidWhistPage />);
+    // Default selected tricks is 1; with no highest bid, all directions are valid.
+    expect(await screen.findByTestId('bid-dir-0')).toBeEnabled();
+    expect(screen.getByTestId('bid-dir-1')).toBeEnabled();
+    expect(screen.getByTestId('bid-dir-2')).toBeEnabled();
+    expect(screen.getByTestId('pass-button')).toBeEnabled();
+  });
+
+  it('disables directions that do not exceed the current highest bid', async () => {
+    // Highest bid = 1 Uptown (order 10). Selected tricks default to 1, so:
+    //   Uptown (order 10) is not strictly greater → disabled,
+    //   Downtown (11) and No Trump (12) beat it → enabled.
+    mockExec.mockResolvedValue(makeState({ highestBid: { tricks: 1, direction: 0 }, highestBidder: 3 }));
+    renderWithProviders(<BidWhistPage />);
+    const uptown = await screen.findByTestId('bid-dir-0');
+    expect(uptown).toBeDisabled();
+    expect(uptown).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('bid-dir-1')).toBeEnabled();
+    expect(screen.getByTestId('bid-dir-2')).toBeEnabled();
+    // Pass is always available.
+    expect(screen.getByTestId('pass-button')).toBeEnabled();
+  });
+
+  it('surfaces a reason tooltip on a disabled direction button', async () => {
+    mockExec.mockResolvedValue(makeState({ highestBid: { tricks: 3, direction: 2 }, highestBidder: 1 }));
+    renderWithProviders(<BidWhistPage />);
+    // Highest bid 3 No Trump (order 32) beats every tricks-1 bid → all disabled with a title.
+    const wrap = await screen.findByTestId('bid-dir-wrap-0');
+    expect(wrap).toHaveAttribute('title', expect.stringContaining('3'));
+    expect(screen.getByTestId('bid-dir-0')).toBeDisabled();
+  });
+
+  it('disables lower-order directions but enables higher tricks after selecting them', async () => {
+    mockExec.mockResolvedValue(makeState({ highestBid: { tricks: 4, direction: 0 }, highestBidder: 2 }));
+    renderWithProviders(<BidWhistPage />);
+    // With tricks 1 selected, nothing beats a 4-trick bid.
+    expect(await screen.findByTestId('bid-dir-0')).toBeDisabled();
+    // Raising the selector to 5 tricks makes all directions valid again (order 50+ > 40).
+    fireEvent.change(screen.getByLabelText('トリック数を選択 (1-7):'), { target: { value: '5' } });
+    expect(screen.getByTestId('bid-dir-0')).toBeEnabled();
+    expect(screen.getByTestId('bid-dir-1')).toBeEnabled();
+    expect(screen.getByTestId('bid-dir-2')).toBeEnabled();
+  });
 });
