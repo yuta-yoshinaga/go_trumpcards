@@ -21,6 +21,8 @@
   "cards": "{{count}} cards",
   "captured": "Captured: {{count}}",
   "basra": "Basra: {{count}}",
+  "basraBadge": "Basra! Table swept",
+  "basraBadgeOwn": "Basra! You swept it",
   "turnYours": "Your turn — pick a hand card, then tap table cards to capture (or none to trail).",
   "turnCpu": "CPU {{id}} is playing…",
   "playButton": "Play",
