@@ -6,6 +6,12 @@
     "discard": "捨てる",
     "nextRound": "次のラウンド"
   },
+  "kbd": {
+    "drawStock": "S",
+    "drawDiscard": "D",
+    "knock": "K",
+    "discard": "X"
+  },
   "phase": {
     "draw": "ドロー",
     "discard": "ディスカード",

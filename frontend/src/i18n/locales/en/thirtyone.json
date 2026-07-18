@@ -6,6 +6,12 @@
     "discard": "Discard",
     "nextRound": "Next Round"
   },
+  "kbd": {
+    "drawStock": "S",
+    "drawDiscard": "D",
+    "knock": "K",
+    "discard": "X"
+  },
   "phase": {
     "draw": "Draw",
     "discard": "Discard",
