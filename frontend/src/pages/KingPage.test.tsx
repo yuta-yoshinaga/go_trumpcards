@@ -137,6 +137,33 @@ describe('KingPage', () => {
     expect(screen.getByTestId('king-deal-result')).toBeInTheDocument();
   });
 
+  it('shows the contract breakdown with the contract name, loss basis, and per-player points', async () => {
+    mockExec.mockResolvedValue(dealEndState);
+    renderWithProviders(<KingPage />);
+    await waitFor(() => expect(screen.getByTestId('king-deal-breakdown')).toBeInTheDocument());
+    // Contract 0 = No Tricks; its label and loss basis are rendered.
+    const breakdown = screen.getByTestId('king-deal-breakdown');
+    expect(breakdown).toHaveTextContent('契約: ノートリック');
+    expect(breakdown).toHaveTextContent('失点根拠: トリックを取るごとに失点。');
+    // Per-player point rows match the gained map from lastDealDetail.
+    expect(screen.getByTestId('king-deal-breakdown-row-0')).toHaveTextContent('-20点');
+    expect(screen.getByTestId('king-deal-breakdown-row-1')).toHaveTextContent('-30点');
+    expect(screen.getByTestId('king-deal-breakdown-row-2')).toHaveTextContent('-10点');
+  });
+
+  it('shows the trump suit in the breakdown for the King (Trump) contract', async () => {
+    mockExec.mockResolvedValue(
+      makeKingState({
+        phase: 'dealEnd',
+        lastDealDetail: { contract: 6, trumpSuit: 3, dealerIdx: 0, gained: { 0: -8, 1: 0, 2: 0, 3: 0 } },
+      }),
+    );
+    renderWithProviders(<KingPage />);
+    await waitFor(() => expect(screen.getByTestId('king-deal-breakdown')).toBeInTheDocument());
+    const breakdown = screen.getByTestId('king-deal-breakdown');
+    expect(breakdown).toHaveTextContent('契約: キング（切り札）（切り札: ♥）');
+  });
+
   it('renders the game end message', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<KingPage />);

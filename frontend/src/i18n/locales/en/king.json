@@ -66,7 +66,10 @@
   "nextDeal": "Next Deal",
   "dealResult": {
     "title": "Deal Result",
-    "gained": "{{name}}: {{points}} pts"
+    "gained": "{{name}}: {{points}} pts",
+    "contractLine": "Contract: {{name}}",
+    "contractLineTrump": "Contract: {{name}} (trump: {{suit}})",
+    "basis": "Basis: {{desc}}"
   },
   "hintAvailable": "Hint",
   "hint": {
