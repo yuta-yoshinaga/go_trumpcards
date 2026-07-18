@@ -1345,4 +1345,57 @@ describe('OldMaidPage', () => {
     await startGame();
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('終了'));
   });
+
+  // -- Drawn-card landing highlight (issue #2984) --
+
+  it('ring-highlights the position where the human just drew a card', async () => {
+    // Human (id 0) drew HEART-2, which now sits at index 1 of their hand.
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 0,
+      lastDrawFromIdx: 1,
+      lastDrawCard: { design: 'HEART', value: 2 },
+    });
+    await startGame();
+    const container = await screen.findByTestId('human-card-container');
+    const highlighted = within(container)
+      .getAllByRole('button')
+      .filter((b) => b.dataset.drawnHighlight === 'true');
+    expect(highlighted).toHaveLength(1);
+    // Second card (index 1) is the drawn HEART-2.
+    expect(within(container).getAllByRole('button')[1]).toBe(highlighted[0]);
+    // Animation is gated behind motion-safe so reduced-motion users get no pulse.
+    expect(highlighted[0].className).toContain('ring-ds-accent');
+    expect(highlighted[0].className).toContain('motion-safe:animate-pulse');
+  });
+
+  it('does not highlight when a CPU drew from another player', async () => {
+    // CPU 1 drew from CPU 2 (no human involvement): nothing to highlight.
+    mockExec.mockResolvedValue(cpuTurnState);
+    await startGame();
+    const container = await screen.findByTestId('human-card-container');
+    const highlighted = within(container)
+      .getAllByRole('button')
+      .filter((b) => b.dataset.drawnHighlight === 'true');
+    expect(highlighted).toHaveLength(0);
+  });
+
+  it('does not highlight when the human draw was discarded as a pair', async () => {
+    // Human drew a card not present in their hand (it paired off and was discarded).
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 0,
+      lastDrawFromIdx: 1,
+      lastDrawCard: { design: 'CLOVER', value: 9 },
+      lastDiscardedPairs: 1,
+    });
+    await startGame();
+    const container = await screen.findByTestId('human-card-container');
+    const highlighted = within(container)
+      .getAllByRole('button')
+      .filter((b) => b.dataset.drawnHighlight === 'true');
+    expect(highlighted).toHaveLength(0);
+  });
 });
