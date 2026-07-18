@@ -154,6 +154,24 @@ describe('StreetsAndAlleysPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
   });
 
+  it('advertises the keyboard shortcuts on the control buttons', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const undo = await screen.findByRole('button', { name: '元に戻す' });
+    expect(undo).toHaveAttribute('aria-keyshortcuts', 'z');
+    expect(undo.querySelector('kbd')?.textContent).toBe('Z');
+    const hint = screen.getByRole('button', { name: 'ヒント' });
+    expect(hint).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(hint.querySelector('kbd')?.textContent).toBe('H');
+    const autoComplete = screen.getByRole('button', { name: '自動完成' });
+    expect(autoComplete).toHaveAttribute('aria-keyshortcuts', 'a');
+    expect(autoComplete.querySelector('kbd')?.textContent).toBe('A');
+    // KbdBadge text is aria-hidden, so the giveup button's accessible name stays clean.
+    const giveUp = screen.getByRole('button', { name: 'ギブアップ' });
+    expect(giveUp).toHaveAttribute('aria-keyshortcuts', 'g');
+    expect(giveUp.querySelector('kbd')?.textContent).toBe('G');
+  });
+
   it('hides giveup button when game cleared', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<StreetsAndAlleysPage />);
