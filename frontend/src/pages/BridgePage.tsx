@@ -29,6 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BridgeResponse } from '../types/card';
 import { BridgePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { canBid, canDouble, canRedouble } from '../utils/bridgeBidRules';
 import { cardAlt } from '../utils/cardAlt';
 import { BRIDGE_HELP, parseBridgeCommand } from '../utils/cli/commands/bridgeCommands';
 import { formatBridgeState } from '../utils/cli/formatters/bridgeFormatter';
@@ -193,6 +194,12 @@ function BridgePageContent() {
   const isGameEnd = state.phase === BridgePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
+
+  // Auction legality: mirror internal/domain/Bridge.go so illegal controls are
+  // disabled before a request is sent.
+  const doubleLegal = canDouble(state);
+  const redoubleLegal = canRedouble(state);
+  const bidLegal = canBid(state.contractLevel, state.contractSuit, bidLevel, bidSuit);
 
   const suitLabel = (suit: number) => (SUIT_DISPLAY[suit] ? t(SUIT_DISPLAY[suit]) : '');
 
@@ -582,17 +589,33 @@ function BridgePageContent() {
                     type="button"
                     className={btnPrimary}
                     onClick={() => handleBid(1, bidLevel, bidSuit)}
-                    disabled={loading}
+                    disabled={loading || !bidLegal}
+                    title={!bidLegal ? t('bidTooLow') : undefined}
+                    data-testid="br-bid-submit"
                   >
                     {t('bidButton')}
                   </button>
                   <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
                     {t('passButton')}
                   </button>
-                  <button type="button" className={btnSecondary} onClick={() => handleBid(2)} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={() => handleBid(2)}
+                    disabled={loading || !doubleLegal}
+                    title={!doubleLegal ? t('doubleIllegal') : undefined}
+                    data-testid="br-double"
+                  >
                     {t('doubleButton')}
                   </button>
-                  <button type="button" className={btnSecondary} onClick={() => handleBid(3)} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={() => handleBid(3)}
+                    disabled={loading || !redoubleLegal}
+                    title={!redoubleLegal ? t('redoubleIllegal') : undefined}
+                    data-testid="br-redouble"
+                  >
                     {t('redoubleButton')}
                   </button>
                 </span>
