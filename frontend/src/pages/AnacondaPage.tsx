@@ -146,6 +146,25 @@ function AnacondaPageContent() {
   const passReady = isPassPhase && humanTurn && selected.length === state.passCount;
   const keepReady = isSetPhase && humanTurn && selected.length === KEEP_SIZE;
 
+  // Immediate over/under feedback on the selected-card count for the Pass/Set phases.
+  const requiredSelection = isPassPhase ? state.passCount : KEEP_SIZE;
+  const selectionDiff = selected.length - requiredSelection;
+  const selectionFeedback =
+    selectionDiff < 0
+      ? {
+          text: t('selectionRemaining', { n: -selectionDiff, selected: selected.length, required: requiredSelection }),
+          cls: 'text-ds-warning',
+        }
+      : selectionDiff > 0
+        ? {
+            text: t('selectionOver', { n: selectionDiff, selected: selected.length, required: requiredSelection }),
+            cls: 'text-ds-danger',
+          }
+        : {
+            text: t('selectionReady', { selected: selected.length, required: requiredSelection }),
+            cls: 'text-ds-success',
+          };
+
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
 
   const handName = (key?: string): string => (key ? t(`hand.${key.toLowerCase()}`, { defaultValue: key }) : '');
@@ -269,6 +288,15 @@ function AnacondaPageContent() {
             {isRollPhase && (
               <div className="text-ds-text-muted text-center mb-2 text-sm font-semibold">
                 {t('rollNotice', { revealed: state.rollIndex })}
+              </div>
+            )}
+            {canSelectCards && (
+              <div
+                data-testid="anaconda-selection-feedback"
+                aria-live="polite"
+                className={`text-center mb-2 text-sm font-semibold ${selectionFeedback.cls}`}
+              >
+                {selectionFeedback.text}
               </div>
             )}
 
