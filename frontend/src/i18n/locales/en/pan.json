@@ -21,6 +21,8 @@
   "chips": "Chips: {{count}}",
   "melded": "Melded: {{count}}",
   "winMeld": "Melds needed to go out: {{count}}",
+  "meldProgress": "Melds {{count}}/{{total}}",
+  "meldRemaining": "{{count}} to go",
   "cumulativeScore": "Total: {{score}}",
   "meldsTitle": "Table Melds",
   "noMelds": "No melds yet",

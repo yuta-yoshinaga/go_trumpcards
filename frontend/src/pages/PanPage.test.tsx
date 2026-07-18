@@ -392,6 +392,33 @@ describe('PanPage', () => {
     });
   });
 
+  it('shows human meld progress toward the win condition', async () => {
+    const progressState: PanResponse = {
+      ...drawPhaseState,
+      players: [player({ cards: [...humanHand], meldedCount: 4 }), drawPhaseState.players[1]],
+    };
+    mockExec.mockResolvedValue(progressState);
+    renderWithProviders(<PanPage />);
+    const bar = await screen.findByTestId('pan-meld-progress');
+    expect(bar).toHaveTextContent('メルド 4/11');
+    const progressbar = screen.getByRole('progressbar');
+    expect(progressbar).toHaveAttribute('aria-valuenow', '4');
+    expect(progressbar).toHaveAttribute('aria-valuemax', '11');
+    // Not yet in the final stretch, so no "remaining" callout.
+    expect(screen.queryByText('あと 2 枚')).not.toBeInTheDocument();
+  });
+
+  it('highlights remaining melds when close to going out', async () => {
+    const closeState: PanResponse = {
+      ...drawPhaseState,
+      players: [player({ cards: [...humanHand], meldedCount: 9 }), drawPhaseState.players[1]],
+    };
+    mockExec.mockResolvedValue(closeState);
+    renderWithProviders(<PanPage />);
+    await waitFor(() => expect(screen.getByTestId('pan-meld-progress')).toHaveTextContent('メルド 9/11'));
+    expect(screen.getByText('あと 2 枚')).toBeInTheDocument();
+  });
+
   it('phase indicator shows your turn on human draw turn', async () => {
     renderWithProviders(<PanPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
