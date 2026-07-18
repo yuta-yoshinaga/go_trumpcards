@@ -46,6 +46,7 @@ import { PINEAPPLE_HELP, parsePineappleCommand } from '../utils/cli/commands/pin
 import { formatPineappleState } from '../utils/cli/formatters/pineappleFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { holdemBestFive } from '../utils/holdemBestFive';
+import { type PineappleKeepFeature, pineappleKeepFeatures } from '../utils/pineappleDiscardHint';
 import { findPlayerName } from '../utils/playerUtils';
 import { evaluateFiveCardHand, pokerHandKey } from '../utils/pokerSquaresUtils';
 
@@ -271,6 +272,19 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       return rank == null ? null : pokerHandKey(rank);
     });
   }, [variant, isDiscardPhase, humanPlayer, state?.communityCards]);
+  // Plain Pineapple discards 1 of 3 preflop (before any board), so a board-based
+  // preview is impossible. Instead annotate each hole card with the qualitative
+  // shape (pair / suited / connector / high card) the OTHER two would keep, a
+  // board-free judgment the player can use to pick which card to throw.
+  const keepFeaturePreviews = useMemo<(PineappleKeepFeature[] | null)[] | null>(() => {
+    if (variant !== 'pineapple' || !isDiscardPhase) return null;
+    const hole = humanPlayer?.cards ?? [];
+    if (hole.length !== 3) return null;
+    return hole.map((_, discardIdx) => {
+      const [a, b] = hole.filter((_, i) => i !== discardIdx);
+      return pineappleKeepFeatures(a, b);
+    });
+  }, [variant, isDiscardPhase, humanPlayer]);
 
   const actionBindings = useMemo(
     () => [
@@ -527,6 +541,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                         const inBest = showdownBest5.holeSet.has(idx);
                         const dim = showdownBest5.holeSet.size > 0 && !inBest;
                         const candKey = candidatePreviews?.[idx] ?? null;
+                        const keepFeatures = keepFeaturePreviews?.[idx] ?? null;
                         return (
                           <div key={`${card.design}-${card.value}`} className="flex flex-col items-center">
                             <button
@@ -546,6 +561,16 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                                 data-testid="cp-discard-candidate"
                               >
                                 {`${t('discard.candidateHand')}: ${t(`hand.${candKey}`)}`}
+                              </span>
+                            )}
+                            {keepFeatures && (
+                              <span
+                                className="mt-0.5 text-[10px] text-ds-text-muted"
+                                data-testid="pn-discard-keep-feature"
+                              >
+                                {`${t('discard.keepLabel')}: ${keepFeatures
+                                  .map((f) => t(`discard.feature${f.charAt(0).toUpperCase()}${f.slice(1)}`))
+                                  .join('・')}`}
                               </span>
                             )}
                           </div>
