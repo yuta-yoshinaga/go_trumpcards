@@ -1045,13 +1045,14 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('split'));
   });
 
-  it('sends config params when reset button is clicked in end phase', async () => {
+  it('sends config params when reset button is confirmed in end phase', async () => {
     mockExec.mockResolvedValue(endPhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(betPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         dealerHitsSoft17: false,
@@ -1461,16 +1462,40 @@ describe('BlackJackPage', () => {
     expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 
-  // --- Next Game button tests ---
+  // --- Next Game button / reset confirmation tests ---
 
-  it('executes reset when next game button is clicked in end phase', async () => {
+  it('shows the reset confirmation dialog when the next game button is clicked', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    // Confirmation dialog appears and no reset fires until it is confirmed.
+    expect(screen.getByText('本当にゲームをリセットしますか？')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('executes reset after confirming the dialog in end phase', async () => {
     mockExec.mockResolvedValue(endPhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(betPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
+  });
+
+  it('does not reset when the confirmation dialog is cancelled', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    // Dialog closes and no reset command is sent.
+    await waitFor(() => expect(screen.queryByText('本当にゲームをリセットしますか？')).not.toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   // --- Keyboard navigation tests ---

@@ -86,6 +86,38 @@ describe('Spanish21Page', () => {
     expect(badge).not.toHaveTextContent('bonus.777.spade');
   });
 
+  it('shows the reset confirmation dialog when the next game button is clicked', async () => {
+    mockExec.mockResolvedValue(endPhaseWithBonus);
+    renderWithProviders(<Spanish21Page />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    expect(screen.getByText('本当にゲームをリセットしますか？')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('resets after confirming the dialog', async () => {
+    mockExec.mockResolvedValue(endPhaseWithBonus);
+    renderWithProviders(<Spanish21Page />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(betPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
+  });
+
+  it('does not reset when the confirmation dialog is cancelled', async () => {
+    mockExec.mockResolvedValue(endPhaseWithBonus);
+    renderWithProviders(<Spanish21Page />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await waitFor(() => expect(screen.queryByText('本当にゲームをリセットしますか？')).not.toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   it('opens a Spanish 21 specific tutorial step describing the 48-card deck and bonuses', async () => {
     renderWithProviders(<Spanish21Page />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
