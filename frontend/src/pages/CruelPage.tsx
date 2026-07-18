@@ -38,6 +38,17 @@ import { formatCruelState } from '../utils/cli/formatters/cruelFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+/**
+ * Maps a card design to its 0-based foundation index, matching the foundation
+ * row order (`♠`=0, `♣`=1, `♥`=2, `♦`=3) and mirroring the backend's suit layout.
+ * Used to highlight only the foundation pile whose suit matches the moving card.
+ */
+const DESIGN_TO_FOUNDATION_INDEX: Record<string, number> = {
+  SPADE: 0,
+  CLOVER: 1,
+  HEART: 2,
+  DIAMOND: 3,
+};
 const noop = () => {};
 
 /** Cruel tutorial step definitions. */
@@ -273,6 +284,16 @@ function CruelPageContent() {
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
 
+  // Suit of the card currently being moved (a dragged card takes priority over a
+  // click-selected one). Cruel only ever moves a column's top card, so the moving
+  // card is the last card of the source tableau column. Deriving its foundation
+  // index lets us light only the matching pile instead of all four at once (#3040).
+  const movingCol = dnd.dragSource?.col ?? selectedSource?.col;
+  const movingColCards = movingCol !== undefined ? state.tableau[movingCol] : undefined;
+  const movingCard =
+    movingColCards && movingColCards.length > 0 ? movingColCards[movingColCards.length - 1].card : null;
+  const activeFoundationIdx = movingCard ? DESIGN_TO_FOUNDATION_INDEX[movingCard.design] : undefined;
+
   return (
     <GamePageShell
       title={tc('nav.cruel')}
@@ -325,19 +346,25 @@ function CruelPageContent() {
               {state.foundation.map((pile, i) => {
                 const topCard = pile.length > 0 ? pile[pile.length - 1] : null;
                 const isTarget = selectedSource !== null;
+                // Only the pile whose suit matches the card being moved (dragged or
+                // click-selected) is highlighted, so the player sees where it lands (#3040).
+                const suitMatch = activeFoundationIdx === i;
+                const showSuitTarget = suitMatch && (dnd.isDragging || isTarget);
                 return (
                   <DropZone
                     key={i}
                     onDrop={dnd.handleDrop({ zone: 'foundation' })}
                     onDragOver={dnd.handleDragOver({ zone: 'foundation' })}
                     onDragLeave={dnd.handleDragLeave}
-                    isDropTarget={dnd.isDropTarget({ zone: 'foundation' })}
+                    isDropTarget={dnd.isDropTarget({ zone: 'foundation' }) && suitMatch}
                   >
                     <button
                       type="button"
+                      data-testid={`cruel-foundation-${i}`}
+                      data-suit-target={showSuitTarget ? 'true' : undefined}
                       className={`${focusRingWhite} rounded-lg transition-colors ${
-                        isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
-                      }`}
+                        showSuitTarget ? 'ring-2 ring-ds-info' : ''
+                      } ${isTarget && suitMatch ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''}`}
                       onClick={() => isTarget && handleSelectTarget('foundation')}
                       disabled={!isPlaying || !isTarget}
                       aria-label={
