@@ -53,5 +53,6 @@
   },
   "selectHandCardAria": "Select {{card}}",
   "swapCardAria": "Swap with {{card}}",
+  "swapCardRankMatchAria": "Swap with {{card}} (same rank as the selected hand card)",
   "swapPending": "A hand card is selected; choose a field card to swap with."
 }

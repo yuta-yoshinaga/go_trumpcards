@@ -69,6 +69,15 @@ function makeState(overrides: Partial<KempsResponse> = {}): KempsResponse {
 }
 
 const exchangeState = makeState();
+// Field shares rank 2 with the human's ♥2 hand card at indices 0 and 2 (#3554).
+const rankMatchState = makeState({
+  field: [
+    { design: 'SPADE', value: 2 },
+    { design: 'HEART', value: 6 },
+    { design: 'CLOVER', value: 2 },
+    { design: 'DIAMOND', value: 8 },
+  ],
+});
 const declareState = makeState({ phase: 1, isHumanTurn: false, fourHolderIdx: 2 });
 const roundEndState = makeState({ phase: 2, isHumanTurn: false, roundResult: 1, roundWinnerTeam: 0 });
 const gameEndState = makeState({ phase: 3, gameEndFlag: true, winnerTeam: 0, isHumanTurn: false, teamScores: [5, 2] });
@@ -109,6 +118,32 @@ describe('KempsPage', () => {
     mockExec.mockClear();
     fireEvent.click(clover7);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('swap', { handIndex: 1, fieldIndex: 2 }));
+  });
+
+  it('highlights same-rank field cards when a hand card is selected and clears on deselect', async () => {
+    mockExec.mockResolvedValue(rankMatchState);
+    renderWithProviders(<KempsPage />);
+    // Select ♥2 — field indices 0 and 2 (both rank 2) should be marked as matches.
+    const heart2 = await screen.findByRole('button', { name: '♥ 2 を選択' });
+    fireEvent.click(heart2);
+    expect(screen.getByTestId('kemps-field-0')).toHaveAttribute('data-rank-match', 'true');
+    expect(screen.getByTestId('kemps-field-2')).toHaveAttribute('data-rank-match', 'true');
+    // The non-matching field cards are not highlighted.
+    expect(screen.getByTestId('kemps-field-1')).toHaveAttribute('data-rank-match', 'false');
+    expect(screen.getByTestId('kemps-field-3')).toHaveAttribute('data-rank-match', 'false');
+    // Deselecting the hand card removes the field swap buttons (and their highlight).
+    fireEvent.click(screen.getByRole('button', { name: '♥ 2 を選択' }));
+    expect(screen.queryByTestId('kemps-field-0')).not.toBeInTheDocument();
+  });
+
+  it('does not highlight field cards when no hand rank matches the selection', async () => {
+    // Default field [♠5 ♥6 ♣7 ♦8] shares no rank with the ♠1 hand card.
+    renderWithProviders(<KempsPage />);
+    const spadeAce = await screen.findByRole('button', { name: '♠ A を選択' });
+    fireEvent.click(spadeAce);
+    for (const i of [0, 1, 2, 3]) {
+      expect(screen.getByTestId(`kemps-field-${i}`)).toHaveAttribute('data-rank-match', 'false');
+    }
   });
 
   it('does not show field swap buttons until a hand card is selected', async () => {
