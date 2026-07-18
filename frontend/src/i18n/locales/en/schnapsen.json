@@ -1,5 +1,6 @@
 {
   "currentTrick": "Current trick",
+  "endgameRuleGuide": "Phase 2: must follow suit (win the trick if you can), else trump. Cards with a green ring are legal to play.",
   "title": "Schnapsen / Sixty-Six",
   "subtitle": "Austrian 2-player trick-taking — 20-card deck, marriages, first to 66",
   "header": {
