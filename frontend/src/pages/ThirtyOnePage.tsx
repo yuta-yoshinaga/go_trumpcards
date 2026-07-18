@@ -9,10 +9,12 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -174,6 +176,38 @@ function ThirtyOnePageContent() {
   const humanCards = state?.players[0]?.cards;
   const suitTotals = useMemo(() => fiftyOneSuitScores(humanCards ?? []), [humanCards]);
   const bestSuit = useMemo(() => fiftyOneBestSuit(suitTotals), [suitTotals]);
+
+  // Keyboard shortcuts — must be registered before the early return so the hook
+  // order stays stable while state loads. Phase/turn flags use optional chaining
+  // for the same reason. Letter keys only (Enter/Space would double-fire on a
+  // focused button); each binding's `enabled` mirrors its button's disabled
+  // state, so keys are inert on invalid phases or when it is not the human turn.
+  const kbIsDraw = state?.phase === ThirtyOnePhase.DRAW;
+  const kbIsDiscard = state?.phase === ThirtyOnePhase.DISCARD;
+  const kbIsGameEnd = !!state?.gameEndFlag || state?.phase === ThirtyOnePhase.GAME_END;
+  const kbIsHumanTurn = state?.currentPlayerIdx === 0 && !kbIsGameEnd && (kbIsDraw || kbIsDiscard);
+  const kbCanKnock = kbIsHumanTurn && kbIsDraw && (state?.knockerIdx ?? -1) < 0;
+  const actionBindings = useMemo(
+    () => [
+      { key: 's', action: handleDrawStock, enabled: kbIsHumanTurn && kbIsDraw },
+      { key: 'd', action: handleDrawDiscard, enabled: kbIsHumanTurn && kbIsDraw && !!state?.discardTop },
+      { key: 'k', action: handleKnock, enabled: kbCanKnock },
+      { key: 'x', action: handleDiscard, enabled: kbIsHumanTurn && kbIsDiscard && selectedCardIdx !== null },
+    ],
+    [
+      handleDrawStock,
+      handleDrawDiscard,
+      handleKnock,
+      handleDiscard,
+      kbIsHumanTurn,
+      kbIsDraw,
+      kbIsDiscard,
+      kbCanKnock,
+      state?.discardTop,
+      selectedCardIdx,
+    ],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !cliEnabled && !loading });
 
   if (!state || state.players.length < 4)
     return <GameSkeleton gameKey="thirtyone" layout={{ kind: 'centered', rows: [3, 3] }} />;
@@ -423,8 +457,10 @@ function ThirtyOnePageContent() {
                 disabled={loading || !isHumanTurn || !isDraw}
                 className="px-4 py-2 rounded-lg bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="draw-stock-button"
+                aria-keyshortcuts="s"
               >
                 {t('button.drawStock')}
+                <KbdBadge label={t('kbd.drawStock')} />
               </button>
               <button
                 type="button"
@@ -432,8 +468,10 @@ function ThirtyOnePageContent() {
                 disabled={loading || !isHumanTurn || !isDraw || !state.discardTop}
                 className="px-4 py-2 rounded-lg bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="draw-discard-button"
+                aria-keyshortcuts="d"
               >
                 {t('button.drawDiscard')}
+                <KbdBadge label={t('kbd.drawDiscard')} />
               </button>
               <button
                 type="button"
@@ -441,8 +479,10 @@ function ThirtyOnePageContent() {
                 disabled={loading || !canKnock}
                 className="px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="knock-button"
+                aria-keyshortcuts="k"
               >
                 {t('button.knock')}
+                <KbdBadge label={t('kbd.knock')} />
               </button>
               <button
                 type="button"
@@ -450,8 +490,10 @@ function ThirtyOnePageContent() {
                 disabled={loading || !isHumanTurn || !isDiscard || selectedCardIdx === null}
                 className="px-4 py-2 rounded-lg bg-ds-success text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="discard-button"
+                aria-keyshortcuts="x"
               >
                 {t('button.discard')}
+                <KbdBadge label={t('kbd.discard')} />
               </button>
               {isRoundEnd && (
                 <button
