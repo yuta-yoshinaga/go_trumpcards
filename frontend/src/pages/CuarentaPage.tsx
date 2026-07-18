@@ -29,6 +29,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { CUARENTA_HELP, parseCuarentaCommand } from '../utils/cli/commands/cuarentaCommands';
 import { formatCuarentaState } from '../utils/cli/formatters/cuarentaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { cuarentaCaptureIndices } from '../utils/cuarentaCapture';
 
 /** Cards a team must capture in a round to earn the extra "más de veinte" points. */
 const CUARENTA_CAPTURE_BONUS = 20;
@@ -94,6 +95,10 @@ function CuarentaPageContent() {
 
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
 
+  // Hand card the human is hovering/focusing, used to preview which table cards
+  // that card would capture (equal-rank sweep). Clicking still plays instantly.
+  const [previewHandIndex, setPreviewHandIndex] = useState<number | null>(null);
+
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useEffect(() => {
@@ -157,6 +162,11 @@ function CuarentaPageContent() {
   const humanPlayer = state.players.find((p) => p.isHuman);
   // Team A = seats {0,2}; the human (seat 0) is on Team A.
   const humanTeam = humanPlayer?.team ?? 0;
+
+  // Table cards the previewed hand card would capture (equal-rank sweep), shown
+  // only while it is the human's turn so the ring is actionable advice.
+  const previewCard = isHumanTurn && previewHandIndex !== null ? (humanPlayer?.cards[previewHandIndex] ?? null) : null;
+  const captureIndices = cuarentaCaptureIndices(previewCard, state.tableCards);
 
   // Per-team captured-card totals this round: capturing 20+ cards earns the
   // "más de veinte" bonus, so the running tally matters mid-round (#3563).
@@ -300,9 +310,21 @@ function CuarentaPageContent() {
               </div>
               {state.tableCards.length > 0 ? (
                 <div className="flex flex-wrap justify-center gap-2">
-                  {state.tableCards.map((c, i) => (
-                    <CardImage key={`table-${i}`} card={c} width={cardWidth} />
-                  ))}
+                  {state.tableCards.map((c, i) => {
+                    const capturable = captureIndices.has(i);
+                    return (
+                      <div
+                        key={`table-${i}`}
+                        className={`rounded-md transition-all ${
+                          capturable ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                        }`}
+                        data-testid={`cuarenta-table-card-${i}`}
+                        data-capturable={capturable ? 'true' : undefined}
+                      >
+                        <CardImage card={c} width={cardWidth} />
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-ds-text-muted text-sm">{t('tableEmpty')}</div>
@@ -344,6 +366,10 @@ function CuarentaPageContent() {
                     key={`hand-${i}`}
                     type="button"
                     onClick={() => isHumanTurn && exec('play', { handIndex: i })}
+                    onMouseEnter={() => setPreviewHandIndex(i)}
+                    onMouseLeave={() => setPreviewHandIndex(null)}
+                    onFocus={() => setPreviewHandIndex(i)}
+                    onBlur={() => setPreviewHandIndex(null)}
                     disabled={!isHumanTurn || loading}
                     className={`rounded transition-all ${
                       isHumanTurn ? 'cursor-pointer hover:opacity-90 hover:-translate-y-1' : 'cursor-default'
