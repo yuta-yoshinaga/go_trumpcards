@@ -38,7 +38,9 @@
     "title": "Round Result",
     "winner": "Round winner: {{name}}",
     "survived": "{{name}} spent a Dogbone to survive",
-    "eliminated": "{{name}} took zero tricks and was knocked out"
+    "eliminated": "{{name}} took zero tricks and was knocked out",
+    "nextRoundPreview": "Next round: {{count}} cards each / trump chosen by {{name}}",
+    "finalRoundPreview": "Final round: {{count}} cards each / trump chosen by {{name}}"
   },
   "hintAvailable": "Hint",
   "hint": {
