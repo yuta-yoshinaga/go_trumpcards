@@ -19,6 +19,7 @@
   "trumpCard": "Trump card: {{card}}",
   "stock": "Stock: {{count}}",
   "noTrump": "undeclared",
+  "stockLowWarning": "Endgame approaching ({{count}} left in stock) — declare your melds soon.",
   "endgameNotice": "Phase 2 (endgame) — strict must-follow. No melds. Last trick scores +10.",
   "currentTrick": "Current Trick",
   "you": "You",

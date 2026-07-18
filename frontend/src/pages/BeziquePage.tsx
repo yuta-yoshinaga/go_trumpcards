@@ -42,6 +42,13 @@ const SUIT_KEYS = ['', 'spade', 'club', 'heart', 'diamond'] as const;
 /** Meld-name i18n key suffixes indexed by meld type (0=marriage … 5=four jacks). */
 const MELD_NAME_KEYS = ['marriage', 'bezique', 'fourAces', 'fourKings', 'fourQueens', 'fourJacks'] as const;
 
+/**
+ * Stock (talon) count at or below which the pre-endgame warning is shown. When the
+ * stock empties the game jumps to phase 2 (strict must-follow, no melds), so this
+ * gives the player a few turns' notice to finish declaring melds.
+ */
+const STOCK_LOW_THRESHOLD = 4;
+
 /** Bezique tutorial step definitions. */
 const BEZIQUE_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="bezique-info"]', messageKey: 'tutorial.info', placement: 'bottom', advanceOn: 'next' },
@@ -138,6 +145,10 @@ function BeziquePageContent() {
 
   const trumpSymbol = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? SUIT_SYMBOLS[state.trumpSuit] : t('noTrump');
 
+  // Warn as the stock nears empty (but before the endgame actually begins): once it
+  // hits 0 the game switches to phase 2 and the existing endgameNotice takes over.
+  const stockLow = !state.isEndgame && state.stockRemaining > 0 && state.stockRemaining <= STOCK_LOW_THRESHOLD;
+
   // During the endgame (phase 2) the follower must follow suit and win if able.
   // Ring the legal-to-play cards so the human sees the constraint before playing.
   // Only meaningful when following a lead: while leading (or before the endgame)
@@ -230,9 +241,22 @@ function BeziquePageContent() {
               <span className="mr-4">{t('deal', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
               <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
-              <span className="mr-4">{t('stock', { count: state.stockRemaining })}</span>
+              <span className={`mr-4 ${stockLow ? 'text-ds-warning font-semibold motion-safe:animate-pulse' : ''}`}>
+                {t('stock', { count: state.stockRemaining })}
+              </span>
               <span>{t('target', { points: state.config.targetScore })}</span>
             </div>
+
+            {stockLow && (
+              <div
+                role="status"
+                aria-live="polite"
+                data-testid="bezique-stock-warning"
+                className="text-ds-warning text-center mb-2 text-sm font-semibold motion-safe:animate-pulse"
+              >
+                {t('stockLowWarning', { count: state.stockRemaining })}
+              </div>
+            )}
 
             {state.isEndgame && (
               <div className="text-ds-warning text-center mb-2 text-sm font-semibold">{t('endgameNotice')}</div>
