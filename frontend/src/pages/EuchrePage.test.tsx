@@ -888,4 +888,47 @@ describe('EuchrePage', () => {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
   });
+
+  describe('bower badges', () => {
+    // Human holds the right bower (♠J, trump) and left bower (♣J, same color as ♠).
+    const bowerHandState: EuchreResponse = {
+      ...playPhaseState,
+      trumpSuit: 1, // spades
+      players: playPhaseState.players.map((p, i) =>
+        i === 0
+          ? {
+              ...p,
+              cardCount: 3,
+              cards: [
+                { design: 'SPADE', value: 11 }, // right bower
+                { design: 'CLOVER', value: 11 }, // left bower (same color)
+                { design: 'HEART', value: 11 }, // off-color jack — no badge
+              ],
+            }
+          : p,
+      ),
+    };
+
+    it('badges the right and left bowers once trump is set', async () => {
+      mockExec.mockResolvedValue(bowerHandState);
+      renderWithProviders(<EuchrePage />);
+      const right = await screen.findByTestId('eu-bower-badge-0');
+      const left = await screen.findByTestId('eu-bower-badge-1');
+      expect(right).toHaveAttribute('data-bower', 'right');
+      expect(right).toHaveTextContent('右');
+      expect(left).toHaveAttribute('data-bower', 'left');
+      expect(left).toHaveTextContent('左');
+      // Off-color jack at index 2 carries no badge.
+      expect(screen.queryByTestId('eu-bower-badge-2')).not.toBeInTheDocument();
+    });
+
+    it('does not badge bowers while trump is undecided (pick-up phase)', async () => {
+      const undecided: EuchreResponse = { ...bowerHandState, phase: 0, trumpSuit: 0 };
+      mockExec.mockResolvedValue(undecided);
+      renderWithProviders(<EuchrePage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+      expect(screen.queryByTestId('eu-bower-badge-0')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('eu-bower-badge-1')).not.toBeInTheDocument();
+    });
+  });
 });
