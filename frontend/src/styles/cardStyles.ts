@@ -80,6 +80,21 @@ export function meldCardStyle(isMelded: boolean): React.CSSProperties {
 }
 
 /**
+ * Return inline styles for an additive "playable right now" success ring.
+ * Uses `outline` (not `border`/`boxShadow`) so it stacks on top of the
+ * selection border and any inline `boxShadow` without clobbering them — a
+ * playable card can also be selected and still show its ring. Uses the
+ * `--color-ds-success` design token. Applied e.g. to Speed hand cards.
+ */
+export function playableRingStyle(): React.CSSProperties {
+  return {
+    outline: '2px solid var(--color-ds-success)',
+    outlineOffset: '1px',
+    borderRadius: 8,
+  };
+}
+
+/**
  * Return adjusted overlap margin for a card that is adjacent to a selected card on mobile.
  * Reduces the negative overlap by EXPANSION_GAP_PX, effectively widening the visible area.
  * Returns the original overlap when the card is not adjacent to a selection.

@@ -6,6 +6,7 @@
     "gameEnd": "Game End"
   },
   "yourHand": "Your Hand",
+  "playable": "playable now",
   "cpuHand": "CPU Hand",
   "drawPile": "Draw Pile",
   "selectCard": "Select a card from your hand",
