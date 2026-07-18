@@ -62,8 +62,28 @@ const refaitState = makeTrenteEtQuaranteState({
   gameEndFlag: true,
 });
 
+// Rows whose cumulative pip totals genuinely cross 31, so the running-total
+// display and the crossing marker can be asserted. Noir: 10,20,30,31 (crosses
+// on the 4th card at 31). Rouge: 10,20,30,39 (crosses on the 4th card at 39).
+const crossState = makeTrenteEtQuaranteState({
+  phase: TrenteEtQuarantePhase.RESULT,
+  stake: 100,
+  currentBet: TrenteEtQuaranteBetType.NOIR,
+  noirRow: [card('SPADE', 10), card('CLOVER', 11), card('SPADE', 12), card('CLOVER', 1)],
+  rougeRow: [card('HEART', 10), card('DIAMOND', 10), card('HEART', 10), card('DIAMOND', 9)],
+  noirTotal: 31,
+  rougeTotal: 39,
+  winningRow: 0, // Noir (lower total) wins
+  firstCardRed: false,
+  result: 1,
+  payout: 200,
+  gameEndFlag: true,
+  message: '',
+});
+
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.clear();
   mockApi.mockResolvedValue(betState);
 });
 
@@ -114,6 +134,47 @@ describe('TrenteEtQuarantePage', () => {
     await waitFor(() => expect(screen.getByTestId('teq-result')).toBeInTheDocument());
     expect(screen.getByTestId('teq-next-round-button')).toBeInTheDocument();
     expect(screen.getByTestId('teq-result')).toHaveTextContent('200');
+  });
+
+  it('shows the running cumulative total beneath each dealt card', async () => {
+    mockApi.mockResolvedValue(crossState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await waitFor(() => expect(screen.getByTestId('teq-cumulative-noir-0')).toBeInTheDocument());
+    // Noir cumulative: 10, 20, 30, 31.
+    expect(screen.getByTestId('teq-cumulative-noir-0')).toHaveTextContent('10');
+    expect(screen.getByTestId('teq-cumulative-noir-1')).toHaveTextContent('20');
+    expect(screen.getByTestId('teq-cumulative-noir-2')).toHaveTextContent('30');
+    expect(screen.getByTestId('teq-cumulative-noir-3')).toHaveTextContent('31');
+    // Rouge cumulative: 10, 20, 30, 39.
+    expect(screen.getByTestId('teq-cumulative-rouge-3')).toHaveTextContent('39');
+  });
+
+  it('marks the 31-crossing card in each row exactly once', async () => {
+    mockApi.mockResolvedValue(crossState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await waitFor(() => expect(screen.getByTestId('teq-crossing-noir')).toBeInTheDocument());
+    // Only one crossing marker per row, and it sits on the finalizing (4th) card.
+    expect(screen.getAllByTestId('teq-crossing-noir')).toHaveLength(1);
+    expect(screen.getAllByTestId('teq-crossing-rouge')).toHaveLength(1);
+    expect(screen.getByTestId('teq-cumulative-noir-3')).toContainElement(screen.getByTestId('teq-crossing-noir'));
+  });
+
+  it('emphasizes the winning row total and the margin over the losing row', async () => {
+    mockApi.mockResolvedValue(crossState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await waitFor(() => expect(screen.getByTestId('teq-margin')).toBeInTheDocument());
+    const margin = screen.getByTestId('teq-margin');
+    expect(margin).toHaveTextContent('ノワール'); // winner label
+    expect(margin).toHaveTextContent('8'); // 39 - 31 point difference
+    expect(margin).toHaveTextContent('31');
+    expect(margin).toHaveTextContent('39');
+  });
+
+  it('omits the margin line on a refait (tie at 31)', async () => {
+    mockApi.mockResolvedValue(refaitState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await waitFor(() => expect(screen.getByText(/ルフェ/)).toBeInTheDocument());
+    expect(screen.queryByTestId('teq-margin')).not.toBeInTheDocument();
   });
 
   it('shows the refait message on a tie at 31', async () => {

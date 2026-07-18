@@ -9,7 +9,8 @@
     "noirRow": "Noir",
     "rougeRow": "Rouge",
     "total": "Total",
-    "winner": "Winner"
+    "winner": "Winner",
+    "crossing": "Reaches 31"
   },
   "betType": {
     "noir": "Noir",
@@ -34,7 +35,8 @@
     "win": "You win!",
     "lose": "You lose",
     "push": "Push — your stake is returned.",
-    "refait": "Refait — a tie at 31. Half your stake is lost."
+    "refait": "Refait — a tie at 31. Half your stake is lost.",
+    "margin": "{{winner}} wins by {{diff}} ({{winnerTotal}} vs {{loserTotal}})"
   },
   "payout": {
     "total": "Net payout"

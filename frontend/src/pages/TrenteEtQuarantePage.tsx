@@ -30,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseTrenteEtQuaranteCommand, TRENTEETQUARANTE_HELP } from '../utils/cli/commands/trenteetquaranteCommands';
 import { formatTrenteEtQuaranteState } from '../utils/cli/formatters/trenteetquaranteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { buildTrenteEtQuaranteRow } from '../utils/trenteEtQuaranteRow';
 
 const TEQ_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -177,15 +178,19 @@ function TrenteEtQuarantePageContent() {
             {hasRows && (
               <div className="mb-4 flex flex-col gap-4" data-tutorial="teq-results">
                 <CardRow
+                  testId="noir"
                   label={`${t('label.noirRow')} (${state.noirTotal})`}
                   cards={state.noirRow}
                   cardWidth={cardWidth}
+                  crossingLabel={t('label.crossing')}
                   highlight={isResultPhase && !state.refait && state.winningRow === TrenteEtQuaranteWinningRow.NOIR}
                 />
                 <CardRow
+                  testId="rouge"
                   label={`${t('label.rougeRow')} (${state.rougeTotal})`}
                   cards={state.rougeRow}
                   cardWidth={cardWidth}
+                  crossingLabel={t('label.crossing')}
                   highlight={isResultPhase && !state.refait && state.winningRow === TrenteEtQuaranteWinningRow.ROUGE}
                 />
               </div>
@@ -198,6 +203,22 @@ function TrenteEtQuarantePageContent() {
                 ) : (
                   <div className="font-bold">
                     {state.result > 0 ? t('result.win') : state.result < 0 ? t('result.lose') : ''}
+                  </div>
+                )}
+                {!state.refait && state.winningRow !== TrenteEtQuaranteWinningRow.NONE && (
+                  <div className="text-ds-success" data-testid="teq-margin">
+                    {(() => {
+                      const noirWon = state.winningRow === TrenteEtQuaranteWinningRow.NOIR;
+                      const winnerName = noirWon ? t('label.noirRow') : t('label.rougeRow');
+                      const winnerTotal = noirWon ? state.noirTotal : state.rougeTotal;
+                      const loserTotal = noirWon ? state.rougeTotal : state.noirTotal;
+                      return t('result.margin', {
+                        winner: winnerName,
+                        diff: loserTotal - winnerTotal,
+                        winnerTotal,
+                        loserTotal,
+                      });
+                    })()}
                   </div>
                 )}
                 <div>
@@ -308,26 +329,50 @@ function TrenteEtQuarantePageContent() {
   );
 }
 
-/** Renders one labelled row of dealt cards, optionally highlighted as the winning row. */
+/**
+ * Renders one labelled row of dealt cards, optionally highlighted as the winning
+ * row. Each card shows the running row total beneath it, and the card that first
+ * pushes the total to 31 or more is marked as the finalizing (crossing) card.
+ */
 function CardRow({
+  testId,
   label,
   cards,
   cardWidth,
+  crossingLabel,
   highlight,
 }: {
+  testId: string;
   label: string;
   cards: Card[];
   cardWidth: number;
+  crossingLabel: string;
   highlight: boolean;
 }) {
+  const steps = buildTrenteEtQuaranteRow(cards);
   return (
-    <div className={highlight ? 'rounded-lg ring-2 ring-ds-success p-2' : 'p-2'}>
+    <div className={highlight ? 'rounded-lg ring-2 ring-ds-success p-2' : 'p-2'} data-testid={`teq-row-${testId}`}>
       <div className={`text-center font-bold mb-1 ${highlight ? 'text-ds-success' : 'text-ds-text-primary'}`}>
         {label}
       </div>
       <div className="flex justify-center gap-2 flex-wrap">
-        {cards.map((card, i) => (
-          <AnimatedCard key={`${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+        {steps.map((step, i) => (
+          <div key={`${step.card.design}-${step.card.value}-${i}`} className="flex flex-col items-center gap-1">
+            <div className={step.crossing ? 'rounded-md ring-2 ring-ds-warning' : ''}>
+              <AnimatedCard card={step.card} width={cardWidth} />
+            </div>
+            <span
+              className={`text-xs leading-none tabular-nums ${step.crossing ? 'font-bold text-ds-warning' : 'text-ds-text-muted'}`}
+              data-testid={`teq-cumulative-${testId}-${i}`}
+            >
+              {step.cumulative}
+              {step.crossing && (
+                <span className="ml-0.5" data-testid={`teq-crossing-${testId}`} title={crossingLabel}>
+                  ▲
+                </span>
+              )}
+            </span>
+          </div>
         ))}
       </div>
     </div>
