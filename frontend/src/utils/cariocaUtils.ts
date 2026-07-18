@@ -1,6 +1,24 @@
 import type { Card, ContractRummyContractSlot } from '../types/card';
 import { CONTRACT_SLOT_SET, type ContractSlotEvaluation } from './contractRummyUtils';
 
+/** Reason a Carioca contract slot is not yet satisfied. Drives the "what's missing" annotation. */
+export type CariocaSlotShortfallCode =
+  | 'empty'
+  | 'needMoreSet'
+  | 'needMoreRun'
+  | 'tooMany'
+  | 'setRankMismatch'
+  | 'runSuitMismatch'
+  | 'runNotConsecutive';
+
+/** A single unmet contract-slot requirement: a reason code plus an optional card count. */
+export interface CariocaSlotShortfall {
+  /** i18n key suffix describing the shortfall. */
+  code: CariocaSlotShortfallCode;
+  /** Cards still needed (`needMore*`) or excess cards to remove (`tooMany`); absent for combination errors. */
+  count?: number;
+}
+
 /**
  * Joker-aware contract-slot helpers for Carioca.
  *
@@ -107,4 +125,28 @@ export function evaluateCariocaContractSlot(slot: ContractRummyContractSlot, car
   }
   const ok = slot.kind === CONTRACT_SLOT_SET ? isCariocaSet(cards) : isCariocaRun(cards);
   return { required, placed, satisfied: ok, invalid: !ok };
+}
+
+/**
+ * Describe what a Carioca contract slot still needs to be satisfied. Returns `null` when the
+ * slot already forms a valid set/run at the required size (nothing missing). Otherwise it
+ * reports why the slot cannot be submitted yet: not started, too few / too many cards, or a
+ * combination error (rank mismatch, suit mismatch, or a broken sequence). Reuses
+ * `isCariocaSet` / `isCariocaRun`, so it stays in sync with the Go domain's validation.
+ */
+export function describeCariocaSlotShortfall(
+  slot: ContractRummyContractSlot,
+  cards: Card[],
+): CariocaSlotShortfall | null {
+  const placed = cards.length;
+  const required = slot.size;
+  const isSet = slot.kind === CONTRACT_SLOT_SET;
+  if (placed === 0) return { code: 'empty' };
+  if (placed > required) return { code: 'tooMany', count: placed - required };
+  if (placed < required) return { code: isSet ? 'needMoreSet' : 'needMoreRun', count: required - placed };
+  // placed === required: the count is right, so any failure is a combination error.
+  if (isSet ? isCariocaSet(cards) : isCariocaRun(cards)) return null;
+  if (isSet) return { code: 'setRankMismatch' };
+  const suits = new Set(cards.filter((c) => !isJoker(c)).map((c) => c.design));
+  return suits.size > 1 ? { code: 'runSuitMismatch' } : { code: 'runNotConsecutive' };
 }

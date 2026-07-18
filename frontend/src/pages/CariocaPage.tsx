@@ -19,7 +19,7 @@ import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/but
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, CariocaContractSlot, CariocaResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
-import { evaluateCariocaContractSlot } from '../utils/cariocaUtils';
+import { describeCariocaSlotShortfall, evaluateCariocaContractSlot } from '../utils/cariocaUtils';
 
 /** Phase identifiers for Carioca. */
 const CA_PHASE = {
@@ -182,7 +182,8 @@ function CariocaPageContent() {
     return state.contractSlots.map((slot, slotIdx) => {
       const cardIdxs = contractSlots[slotIdx] ?? [];
       const cards = cardIdxs.map((i) => humanPlayer.cards[i]).filter(Boolean);
-      return evaluateCariocaContractSlot(slot, cards);
+      // `shortfall` annotates the badge with what the slot still needs (or null when done).
+      return { ev: evaluateCariocaContractSlot(slot, cards), shortfall: describeCariocaSlotShortfall(slot, cards) };
     });
   }, [state, humanPlayer, contractSlots]);
 
@@ -190,7 +191,7 @@ function CariocaPageContent() {
   // intent obvious; the length>0 guard prevents `[].every(...)` from vacuously
   // enabling submit on a contract with zero slots.
   const allSlotsSatisfied =
-    humanPlayer != null && slotEvaluations.length > 0 && slotEvaluations.every((ev) => ev.satisfied);
+    humanPlayer != null && slotEvaluations.length > 0 && slotEvaluations.every((e) => e.ev.satisfied);
 
   if (!state) {
     return (
@@ -233,7 +234,9 @@ function CariocaPageContent() {
       {isPlayPhase && humanPlayer && !humanPlayer.contractMet && state.contractSlots.length > 0 && (
         <section className="px-4 py-2 flex flex-wrap gap-2 text-sm" data-testid="ca-slot-progress">
           {state.contractSlots.map((slot, slotIdx) => {
-            const ev = slotEvaluations[slotIdx] ?? { placed: 0, required: slot.size, satisfied: false, invalid: false };
+            const detail = slotEvaluations[slotIdx];
+            const ev = detail?.ev ?? { placed: 0, required: slot.size, satisfied: false, invalid: false };
+            const shortfall = detail?.shortfall ?? null;
             const color = ev.satisfied
               ? badgeSuccessColors
               : ev.invalid
@@ -242,13 +245,21 @@ function CariocaPageContent() {
                   ? 'bg-black/20 border border-white/30 text-ds-text-muted'
                   : badgeWarningColors;
             return (
-              <span
-                key={`slot-${slotIdx}`}
-                className={`px-2 py-1 rounded ${color}`}
-                data-testid={`ca-slot-progress-${slotIdx}`}
-                data-state={ev.satisfied ? 'satisfied' : ev.invalid ? 'invalid' : ev.placed === 0 ? 'empty' : 'partial'}
-              >
-                {formatSlot(slot, t)} ({ev.placed}/{ev.required}){ev.satisfied ? ' ✓' : ''}
+              <span key={`slot-${slotIdx}`} className="flex flex-col items-start gap-0.5">
+                <span
+                  className={`px-2 py-1 rounded ${color}`}
+                  data-testid={`ca-slot-progress-${slotIdx}`}
+                  data-state={
+                    ev.satisfied ? 'satisfied' : ev.invalid ? 'invalid' : ev.placed === 0 ? 'empty' : 'partial'
+                  }
+                >
+                  {formatSlot(slot, t)} ({ev.placed}/{ev.required}){ev.satisfied ? ' ✓' : ''}
+                </span>
+                {shortfall && (
+                  <span className="text-xs text-ds-text-muted" data-testid={`ca-slot-shortfall-${slotIdx}`}>
+                    {t(`shortfall.${shortfall.code}`, shortfall.count != null ? { n: shortfall.count } : undefined)}
+                  </span>
+                )}
               </span>
             );
           })}

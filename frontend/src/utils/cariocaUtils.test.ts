@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, ContractRummyContractSlot } from '../types/card';
-import { evaluateCariocaContractSlot, isCariocaRun, isCariocaSet } from './cariocaUtils';
+import { describeCariocaSlotShortfall, evaluateCariocaContractSlot, isCariocaRun, isCariocaSet } from './cariocaUtils';
 import { CONTRACT_SLOT_RUN, CONTRACT_SLOT_SET } from './contractRummyUtils';
 
 const card = (design: Card['design'], value: number): Card => ({ design, value });
@@ -105,5 +105,64 @@ describe('evaluateCariocaContractSlot', () => {
   it('reports empty as neither satisfied nor invalid', () => {
     const ev = evaluateCariocaContractSlot(setSlot, []);
     expect(ev).toEqual({ required: 3, placed: 0, satisfied: false, invalid: false });
+  });
+});
+
+describe('describeCariocaSlotShortfall', () => {
+  const setSlot: ContractRummyContractSlot = { kind: CONTRACT_SLOT_SET, size: 3 };
+  const runSlot: ContractRummyContractSlot = { kind: CONTRACT_SLOT_RUN, size: 4 };
+
+  it('returns null for a satisfied set', () => {
+    expect(describeCariocaSlotShortfall(setSlot, [card('SPADE', 5), card('HEART', 5), joker()])).toBeNull();
+  });
+
+  it('returns null for a satisfied run', () => {
+    expect(
+      describeCariocaSlotShortfall(runSlot, [card('HEART', 7), card('HEART', 8), joker(), card('HEART', 10)]),
+    ).toBeNull();
+  });
+
+  it('reports empty for a slot with no cards', () => {
+    expect(describeCariocaSlotShortfall(setSlot, [])).toEqual({ code: 'empty' });
+  });
+
+  it('reports how many more cards a set needs', () => {
+    expect(describeCariocaSlotShortfall(setSlot, [card('SPADE', 5)])).toEqual({ code: 'needMoreSet', count: 2 });
+  });
+
+  it('reports how many more cards a run needs', () => {
+    expect(describeCariocaSlotShortfall(runSlot, [card('SPADE', 2), card('SPADE', 3)])).toEqual({
+      code: 'needMoreRun',
+      count: 2,
+    });
+  });
+
+  it('reports excess cards as tooMany', () => {
+    expect(
+      describeCariocaSlotShortfall(setSlot, [
+        card('SPADE', 5),
+        card('HEART', 5),
+        card('DIAMOND', 5),
+        card('CLOVER', 5),
+      ]),
+    ).toEqual({ code: 'tooMany', count: 1 });
+  });
+
+  it('reports a rank mismatch for a full but invalid set', () => {
+    expect(describeCariocaSlotShortfall(setSlot, [card('SPADE', 5), card('HEART', 6), card('DIAMOND', 7)])).toEqual({
+      code: 'setRankMismatch',
+    });
+  });
+
+  it('reports a suit mismatch for a full run with mixed suits', () => {
+    expect(
+      describeCariocaSlotShortfall(runSlot, [card('SPADE', 2), card('HEART', 3), card('SPADE', 4), card('SPADE', 5)]),
+    ).toEqual({ code: 'runSuitMismatch' });
+  });
+
+  it('reports a broken sequence for a full same-suit run with a gap', () => {
+    expect(
+      describeCariocaSlotShortfall(runSlot, [card('SPADE', 2), card('SPADE', 3), card('SPADE', 4), card('SPADE', 9)]),
+    ).toEqual({ code: 'runNotConsecutive' });
   });
 });
