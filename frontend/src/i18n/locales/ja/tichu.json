@@ -28,6 +28,19 @@
     "play": "プレイ",
     "end": "結果"
   },
+  "comboPreview": "選択中の役",
+  "invalidCombo": "無効な組み合わせ（このままでは出せません）",
+  "combo": {
+    "single": "シングル",
+    "pair": "ペア",
+    "triple": "スリーカード",
+    "fullHouse": "フルハウス",
+    "straight": "ストレート",
+    "stairs": "連続ペア",
+    "bomb": "ボム",
+    "straightFlush": "ストレートフラッシュ",
+    "dog": "犬"
+  },
   "result": {
     "youWin": "あなたのチームの勝利！",
     "youLose": "相手チームの勝利",

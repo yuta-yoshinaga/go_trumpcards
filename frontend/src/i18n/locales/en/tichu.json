@@ -28,6 +28,19 @@
     "play": "Play",
     "end": "Result"
   },
+  "comboPreview": "Selected combo",
+  "invalidCombo": "Invalid combination (cannot be played as is)",
+  "combo": {
+    "single": "Single",
+    "pair": "Pair",
+    "triple": "Triple",
+    "fullHouse": "Full house",
+    "straight": "Straight",
+    "stairs": "Stairs",
+    "bomb": "Bomb",
+    "straightFlush": "Straight flush",
+    "dog": "Dog"
+  },
   "result": {
     "youWin": "Your team wins!",
     "youLose": "Opponents win",

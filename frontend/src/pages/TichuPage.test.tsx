@@ -262,6 +262,76 @@ describe('TichuPage', () => {
     });
   });
 
+  it('play phase: previews the combo type for a valid selection and warns on an invalid one', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player({
+            id: 0,
+            isHuman: true,
+            team: 0,
+            cardCount: 3,
+            cards: [
+              { design: 'SPADE', value: 9 },
+              { design: 'HEART', value: 9 },
+              { design: 'CLOVER', value: 8 },
+            ],
+          }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<TichuPage />);
+    await screen.findByRole('button', { name: '出す' });
+    const cards = container.querySelectorAll('[data-tutorial="tichu-hand"] button');
+
+    // Select the two nines -> a pair.
+    fireEvent.click(cards[0]);
+    fireEvent.click(cards[1]);
+    const preview = screen.getByTestId('tichu-combo-preview');
+    expect(preview).toHaveTextContent('ペア');
+
+    // Swap the second nine for the eight -> no legal combo, warning shown.
+    fireEvent.click(cards[1]);
+    fireEvent.click(cards[2]);
+    expect(screen.getByTestId('tichu-combo-invalid')).toBeInTheDocument();
+    // The Play button stays enabled — the warning is additive, the backend decides.
+    expect(screen.getByRole('button', { name: '出す' })).toBeEnabled();
+  });
+
+  it('play phase: previews a full house for a 3+2 selection', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player({
+            id: 0,
+            isHuman: true,
+            team: 0,
+            cardCount: 5,
+            cards: [
+              { design: 'SPADE', value: 7 },
+              { design: 'HEART', value: 7 },
+              { design: 'CLOVER', value: 7 },
+              { design: 'SPADE', value: 4 },
+              { design: 'HEART', value: 4 },
+            ],
+          }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<TichuPage />);
+    await screen.findByRole('button', { name: '出す' });
+    // The hand div also holds the Play button; only the first five buttons are cards.
+    const cards = container.querySelectorAll('[data-tutorial="tichu-hand"] button');
+    for (let i = 0; i < 5; i++) fireEvent.click(cards[i]);
+    expect(screen.getByTestId('tichu-combo-preview')).toHaveTextContent('フルハウス');
+  });
+
   it('toggles CLI mode', async () => {
     renderWithProviders(<TichuPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());

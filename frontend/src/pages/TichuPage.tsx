@@ -29,6 +29,7 @@ import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { tichuBombIndices } from '../utils/tichuBomb';
+import { classifyTichuCombo } from '../utils/tichuCombo';
 
 type ApiArgs = {
   command: string;
@@ -146,6 +147,18 @@ function TichuPageContent() {
   const humanTeam = humanPlayer?.team ?? 0;
   const bombIndices = useMemo(() => tichuBombIndices(humanPlayer?.cards ?? []), [humanPlayer?.cards]);
   const humanWon = isGameEnd && !!state && state.scores[humanTeam] > state.scores[1 - humanTeam];
+
+  // Additive combo-type preview for the current selection (warn-only; the backend
+  // remains the source of truth and rejects any truly-illegal play — see #3392).
+  const selectedCombo = useMemo(() => {
+    const cards = humanPlayer?.cards ?? [];
+    const picked = Array.from(selectedCards)
+      .sort((a, b) => a - b)
+      .map((i) => cards[i])
+      .filter((c): c is NonNullable<typeof c> => c != null);
+    if (picked.length === 0) return null;
+    return classifyTichuCombo(picked);
+  }, [humanPlayer?.cards, selectedCards]);
 
   useEffect(() => {
     if (humanWon) playSound('winFanfare');
@@ -337,6 +350,23 @@ function TichuPageContent() {
                   );
                 })}
               </div>
+              {phase === 'play' && isHumanTurn && selectedCombo && (
+                <div className="mt-2 text-center text-xs" data-testid="tichu-combo-preview">
+                  {selectedCombo.type === 'invalid' ? (
+                    <span className="font-medium text-ds-warning" data-testid="tichu-combo-invalid">
+                      {t('invalidCombo')}
+                    </span>
+                  ) : (
+                    <span className="text-ds-text-secondary">
+                      {t('comboPreview')}:{' '}
+                      <span className="font-medium text-ds-accent">
+                        {t(`combo.${selectedCombo.type}`)}
+                        {selectedCombo.length > 0 ? ` (${selectedCombo.length})` : ''}
+                      </span>
+                    </span>
+                  )}
+                </div>
+              )}
               {phase === 'play' && isHumanTurn && (
                 <div className="flex justify-center gap-2 mt-2">
                   <button type="button" className={btnPrimary} onClick={handlePlay} disabled={selectedCards.size === 0}>
