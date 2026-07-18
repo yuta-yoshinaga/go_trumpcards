@@ -21,6 +21,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
+import { badgeErrorColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -206,15 +207,37 @@ function BlackJackSwitchPageContent() {
                       className={`border rounded-lg p-2 ${tone} bg-black/20`}
                     >
                       <div className="text-ds-text-primary text-center text-xs font-bold mb-1">
-                        {t('label.hand')} {idx} ({hand.score}
+                        {t('label.hand')} {idx + 1} ({hand.score}
                         {previewScore !== null && (
                           <span data-testid={`hand-${idx}-preview`} className={`ml-1 font-bold ${previewColor}`}>
                             → {previewScore}
                           </span>
                         )}
                         ) — {t('label.bet')}: {hand.bet}
-                        {hand.busted ? ' BUST' : ''}
-                        {hand.isBJ ? ' BJ' : ''}
+                        {hand.busted && (
+                          <span
+                            data-testid={`hand-${idx}-bust-badge`}
+                            className={`ml-1 inline-block rounded px-1.5 py-0.5 text-[10px] ${badgeErrorColors}`}
+                          >
+                            {t('badge.bust')}
+                          </span>
+                        )}
+                        {hand.isBJ && (
+                          <span
+                            data-testid={`hand-${idx}-bj-badge`}
+                            className={`ml-1 inline-block rounded px-1.5 py-0.5 text-[10px] ${badgeSuccessColors}`}
+                          >
+                            {t('badge.bj')}
+                          </span>
+                        )}
+                        {isCurrent && (
+                          <span
+                            data-testid={`hand-${idx}-acting-badge`}
+                            className={`ml-1 inline-block rounded px-1.5 py-0.5 text-[10px] ${badgeWarningColors}`}
+                          >
+                            {t('badge.acting')}
+                          </span>
+                        )}
                       </div>
                       <div className="flex justify-center gap-1 flex-wrap">
                         {hand.cards.map((c, j) => (
