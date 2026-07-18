@@ -28,6 +28,7 @@
   "bidProgress.made": "Bid made (+{{bags}} bags)",
   "bidProgress.nilOk": "Nil on track",
   "bidProgress.nilFail": "Nil failed",
+  "bagWarning": "Bags {{bags}}/{{threshold}} — watch out",
   "currentTrick": "Current Trick",
   "scores": "Scores",
   "scoresPlayer": "Player",
