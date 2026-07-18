@@ -6,6 +6,9 @@
     "4": "4位"
   },
   "cardCount": "{{count}}枚",
+  "rankTable": {
+    "title": "順位表"
+  },
   "selectToPlay": "カードを選択して出す",
   "tableCards": "場のカード",
   "tableEmpty": "(なし)",
