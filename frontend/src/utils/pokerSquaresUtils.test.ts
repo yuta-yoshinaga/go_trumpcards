@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, CardDesign } from '../types/card';
-import { evaluateFiveCardHand, PokerHand, pokerHandKey, pokerSquaresRankToScore } from './pokerSquaresUtils';
+import {
+  evaluateFiveCardHand,
+  evaluatePartialHand,
+  PokerHand,
+  pokerHandKey,
+  pokerSquaresRankToScore,
+} from './pokerSquaresUtils';
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -145,6 +151,53 @@ describe('evaluateFiveCardHand', () => {
         card('SPADE', 1),
       ]),
     ).toBe(PokerHand.RoyalFlush);
+  });
+});
+
+describe('evaluatePartialHand', () => {
+  it('returns null for an empty line', () => {
+    expect(evaluatePartialHand([])).toBeNull();
+  });
+
+  it('returns null for a full (5-card) line — evaluateFiveCardHand owns that case', () => {
+    expect(
+      evaluatePartialHand([
+        card('SPADE', 2),
+        card('CLOVER', 2),
+        card('HEART', 9),
+        card('DIAMOND', 11),
+        card('SPADE', 13),
+      ]),
+    ).toBeNull();
+  });
+
+  it('returns null when no multiple is made (high cards only)', () => {
+    expect(evaluatePartialHand([card('SPADE', 2), card('CLOVER', 5), card('HEART', 9)])).toBeNull();
+  });
+
+  it('detects a made one pair', () => {
+    expect(evaluatePartialHand([card('SPADE', 7), card('CLOVER', 7), card('HEART', 2)])).toBe(PokerHand.OnePair);
+  });
+
+  it('detects a made two pair', () => {
+    expect(evaluatePartialHand([card('SPADE', 7), card('CLOVER', 7), card('HEART', 3), card('DIAMOND', 3)])).toBe(
+      PokerHand.TwoPair,
+    );
+  });
+
+  it('detects a made three of a kind', () => {
+    expect(evaluatePartialHand([card('SPADE', 7), card('CLOVER', 7), card('HEART', 7)])).toBe(PokerHand.ThreeOfAKind);
+  });
+
+  it('detects a made four of a kind', () => {
+    expect(evaluatePartialHand([card('SPADE', 7), card('CLOVER', 7), card('HEART', 7), card('DIAMOND', 7)])).toBe(
+      PokerHand.FourOfAKind,
+    );
+  });
+
+  it('does not over-claim a straight or flush before the line is full', () => {
+    // Four suited sequential cards are only a draw, not a made hand.
+    expect(evaluatePartialHand([card('SPADE', 5), card('SPADE', 6), card('SPADE', 7), card('SPADE', 8)])).toBeNull();
   });
 });
 

@@ -43,5 +43,8 @@
     "royalFlush": "ロイヤルフラッシュ"
   },
   "previewRowAnnounce": "{{row}}行目が{{hand}}で完成し、{{delta}}点獲得します",
-  "previewColAnnounce": "{{col}}列目が{{hand}}で完成し、{{delta}}点獲得します"
+  "previewColAnnounce": "{{col}}列目が{{hand}}で完成し、{{delta}}点獲得します",
+  "previewPartialPrefix": "〜",
+  "previewRowPartialAnnounce": "{{row}}行目は現在{{hand}}の見込みです",
+  "previewColPartialAnnounce": "{{col}}列目は現在{{hand}}の見込みです"
 }

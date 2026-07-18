@@ -358,6 +358,79 @@ describe('PokerSquaresPage', () => {
     expect(screen.queryByTestId('ps-board')).not.toBeInTheDocument();
   });
 
+  it('shows a partial made-hand hint for an incomplete row when hovering an empty cell', async () => {
+    // Row 0 holds two 9's; placing a third 9 at (0,2) makes trips but the row is
+    // still incomplete, so the muted partial hint (not a locked +N) should show.
+    const board = emptyBoard();
+    board[0][0] = { card: card('SPADE', 9) };
+    board[0][1] = { card: card('CLOVER', 9) };
+    mockApi.mockResolvedValue({
+      ...playingState,
+      board,
+      currentCard: card('HEART', 9),
+      placedCount: 2,
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    const cell = await screen.findByTestId('cell-0-2');
+    fireEvent.pointerEnter(cell);
+    const partial = await screen.findByTestId('row-partial-preview-0');
+    expect(partial).toHaveTextContent('スリーカード');
+    // No completed-line +N preview should be present for the incomplete row.
+    expect(screen.queryByTestId('row-score-preview-0')).not.toBeInTheDocument();
+  });
+
+  it('shows a partial made-hand hint for an incomplete column when hovering an empty cell', async () => {
+    const board = emptyBoard();
+    board[0][0] = { card: card('SPADE', 4) };
+    board[1][0] = { card: card('CLOVER', 4) };
+    mockApi.mockResolvedValue({
+      ...playingState,
+      board,
+      currentCard: card('HEART', 7),
+      placedCount: 2,
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    const cell = await screen.findByTestId('cell-2-0');
+    fireEvent.pointerEnter(cell);
+    // Column 0 already has a pair of 4's; placing an unrelated card keeps the pair.
+    const partial = await screen.findByTestId('col-partial-preview-0');
+    expect(partial).toHaveTextContent('ワンペア');
+  });
+
+  it('does not show a partial hint when the placement forms no made hand', async () => {
+    const board = emptyBoard();
+    board[0][0] = { card: card('SPADE', 2) };
+    board[0][1] = { card: card('CLOVER', 5) };
+    mockApi.mockResolvedValue({
+      ...playingState,
+      board,
+      currentCard: card('HEART', 9),
+      placedCount: 2,
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    const cell = await screen.findByTestId('cell-0-2');
+    fireEvent.pointerEnter(cell);
+    await waitFor(() => expect(screen.getByTestId('cell-0-2')).toHaveAttribute('data-cross-hover', 'true'));
+    expect(screen.queryByTestId('row-partial-preview-0')).not.toBeInTheDocument();
+  });
+
+  it('announces the partial made hand in the live region for keyboard users', async () => {
+    const board = emptyBoard();
+    board[0][0] = { card: card('SPADE', 9) };
+    board[0][1] = { card: card('CLOVER', 9) };
+    mockApi.mockResolvedValue({
+      ...playingState,
+      board,
+      currentCard: card('HEART', 9),
+      placedCount: 2,
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    const cell = await screen.findByTestId('cell-0-2');
+    fireEvent.focus(cell);
+    const live = screen.getByTestId('ps-preview-live');
+    await waitFor(() => expect(live).toHaveTextContent(/1行目.*見込み/));
+  });
+
   it('shows the projected row score when hovering a cell that would complete a row', async () => {
     // Row 0 has four 9's of different suits — placing a 5 at (0,4) completes a four-of-a-kind (50 pts).
     const board = emptyBoard();
