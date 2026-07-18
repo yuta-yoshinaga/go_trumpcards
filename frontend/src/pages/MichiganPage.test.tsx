@@ -128,6 +128,63 @@ describe('MichiganPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '賭ける' })).toBeEnabled());
   });
 
+  it('marks a boodle as collectible when the human holds its matching card', async () => {
+    // Boodle 0 is A♥ (HEART 1); give the human that card so it becomes recoverable.
+    const collectibleState = makeMichiganState({
+      phase: 0,
+      isHumanTurn: true,
+      humanBetPlaced: false,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          chips: 192,
+          roundBet: 8,
+          cardCount: 2,
+          cards: [
+            { design: 'HEART', value: 1 }, // matches boodle 0 (A♥)
+            { design: 'SPADE', value: 2 },
+          ],
+          isCurrent: true,
+          isWinner: false,
+        },
+        { id: 1, isHuman: false, chips: 192, roundBet: 8, cardCount: 5, cards: [], isCurrent: false, isWinner: false },
+        { id: 2, isHuman: false, chips: 192, roundBet: 8, cardCount: 5, cards: [], isCurrent: false, isWinner: false },
+        { id: 3, isHuman: false, chips: 192, roundBet: 8, cardCount: 5, cards: [], isCurrent: false, isWinner: false },
+      ],
+    });
+    mockExec.mockResolvedValue(collectibleState);
+    renderWithProviders(<MichiganPage />);
+    expect(await screen.findByTestId('bet-collectible-0')).toHaveTextContent('回収可能');
+    // Boodle 1 (K♣) is not held, so no collectible mark there.
+    expect(screen.queryByTestId('bet-collectible-1')).not.toBeInTheDocument();
+  });
+
+  it('shows no collectible marks when the human holds none of the boodle cards', async () => {
+    renderWithProviders(<MichiganPage />); // default betState hand matches no boodle
+    await screen.findByRole('button', { name: '賭ける' });
+    expect(screen.queryByTestId('bet-collectible-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('bet-collectible-1')).not.toBeInTheDocument();
+  });
+
+  it('warns on a boodle whose chips have already been claimed', async () => {
+    const claimedState = makeMichiganState({
+      phase: 0,
+      isHumanTurn: true,
+      humanBetPlaced: false,
+      boodles: [
+        { card: { design: 'HEART', value: 1 }, chips: 2, claimedBy: -1 },
+        { card: { design: 'CLOVER', value: 13 }, chips: 2, claimedBy: 2 }, // claimed
+        { card: { design: 'DIAMOND', value: 12 }, chips: 2, claimedBy: -1 },
+        { card: { design: 'SPADE', value: 11 }, chips: 2, claimedBy: -1 },
+      ],
+    });
+    mockExec.mockResolvedValue(claimedState);
+    renderWithProviders(<MichiganPage />);
+    expect(await screen.findByTestId('bet-claimed-warning-1')).toHaveTextContent('獲得済み・賭け注意');
+    expect(screen.queryByTestId('bet-claimed-warning-0')).not.toBeInTheDocument();
+  });
+
   it('hides the place-bets button when it is not the human turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<MichiganPage />);
