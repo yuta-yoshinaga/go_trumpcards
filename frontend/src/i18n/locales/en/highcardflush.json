@@ -13,9 +13,7 @@
   },
   "button": {
     "bet": "Bet",
-    "raise1x": "Raise x1",
-    "raise2x": "Raise x2",
-    "raise3x": "Raise x3",
+    "raiseAmount": "Raise x{{multiplier}} ({{amount}})",
     "fold": "Fold",
     "reset": "Reset"
   },

@@ -13,9 +13,7 @@
   },
   "button": {
     "bet": "ベット",
-    "raise1x": "レイズ x1",
-    "raise2x": "レイズ x2",
-    "raise3x": "レイズ x3",
+    "raiseAmount": "レイズ x{{multiplier}}（{{amount}}）",
     "fold": "フォールド",
     "reset": "リセット"
   },
