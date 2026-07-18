@@ -84,6 +84,9 @@ function signedCoins(delta: number): string {
   return delta > 0 ? `+${delta}` : `${delta}`;
 }
 
+/** Number of talon cards the declarer must discard in the Discard phase (matches `UltiDiscardSize` in `internal/domain/Ulti.go`). */
+const DISCARD_COUNT = 2;
+
 /** Selectable trump suits with their playing-card symbols (1=♠ 2=♣ 3=♥ 4=♦). */
 const TRUMP_CHOICES = [
   { code: 1, symbol: '♠' },
@@ -382,7 +385,10 @@ function UltiPageContent() {
             )}
             {canDiscard && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="ulti-discard-prompt">
-                {t('discardPhase')}
+                <div>{t('discardPhase')}</div>
+                <div className="text-ds-text-muted" data-testid="ulti-discard-progress">
+                  {t('discardProgress', { selected: selectedCardIndices.length, required: DISCARD_COUNT })}
+                </div>
               </div>
             )}
             {humanPlayer && (

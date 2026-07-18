@@ -46,6 +46,7 @@
   "bidDurchmarsch": "ドゥルマルス",
   "bidPhase": "契約宣言 — 切り札を選んでパルティ、またはベトリ／ドゥルマルスを宣言します。",
   "discardPhase": "タロン交換 — 手札から不要な2枚を選んで伏せて捨てます。",
+  "discardProgress": "捨て札を {{selected}}/{{required}} 枚選択中",
   "discardButton": "捨てる",
   "playButton": "出す",
   "nextTrick": "次のトリック",

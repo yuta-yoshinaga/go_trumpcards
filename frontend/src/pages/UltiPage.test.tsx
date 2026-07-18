@@ -134,6 +134,18 @@ describe('UltiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndices: [0, 1] }));
   });
 
+  it('shows the discard selection count that updates as cards are picked', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<UltiPage />);
+    const progress = await screen.findByTestId('ulti-discard-progress');
+    // Starts at 0 of the required 2.
+    expect(progress).toHaveTextContent('0/2');
+    fireEvent.click(screen.getByAltText('♥ Q'));
+    expect(screen.getByTestId('ulti-discard-progress')).toHaveTextContent('1/2');
+    fireEvent.click(screen.getByAltText('♥ K'));
+    expect(screen.getByTestId('ulti-discard-progress')).toHaveTextContent('2/2');
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<UltiPage />);
     const card = await screen.findByAltText('♥ Q');
