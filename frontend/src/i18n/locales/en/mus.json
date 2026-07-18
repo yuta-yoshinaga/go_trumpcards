@@ -36,6 +36,8 @@
   "corteButton": "Corte (play)",
   "discardButton": "Exchange",
   "discardSelected": "Selected {{count}}",
+  "discardGuide": "Choose 1–4 cards to exchange",
+  "discardCount": "{{count}} selected",
   "keepAll": "Keep all",
   "bet": {
     "paso": "Paso (pass)",

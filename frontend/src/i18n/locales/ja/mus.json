@@ -36,6 +36,8 @@
   "corteButton": "コルテ（勝負）",
   "discardButton": "交換する",
   "discardSelected": "選択 {{count}}枚",
+  "discardGuide": "交換するカードを1〜4枚選んでください",
+  "discardCount": "{{count}}枚選択中",
   "keepAll": "全保持",
   "bet": {
     "paso": "パソ（パス）",
