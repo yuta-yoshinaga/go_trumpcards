@@ -227,6 +227,17 @@ function TrenteEtQuarantePageContent() {
               </div>
             )}
 
+            {/* Static rule explainer: why a 31-tie (Refait) halves the stake. Shown in both
+                phases as a reference, and surfaced above so a losing Refait payout is explained. */}
+            <details className="mx-auto mb-2 max-w-md rounded bg-black/30 p-2" data-testid="teq-refait-explainer">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('refait.title')}</summary>
+              <div className="mt-1 flex flex-col gap-1 text-ds-text-muted text-xs leading-relaxed">
+                <p>{t('refait.intro')}</p>
+                <p className="font-semibold text-ds-warning">{t('refait.half')}</p>
+                <p>{t('refait.edge')}</p>
+              </div>
+            </details>
+
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
 

@@ -39,6 +39,8 @@
   "betMinusAria": "ブードル {{index}} からチップを 1 枚減らす",
   "betPlusAria": "ブードル {{index}} にチップを 1 枚足す",
   "placeBets": "賭ける",
+  "betCollectible": "回収可能",
+  "betClaimedWarning": "獲得済み・賭け注意",
   "playPrompt": "同じスートの昇順でカードを出してください。",
   "playCardAria": "手札 {{index}} を出す",
   "nextRound": "次のラウンド",
