@@ -273,4 +273,53 @@ describe('PishtiPage', () => {
     expect(screen.getByTestId('hand-card-1').className).not.toContain('ring-ds-');
     expect(screen.getByTestId('hand-card-0').className).not.toContain('ring-ds-');
   });
+
+  it('shows a provisional score during play: Pişti bonus plus the sole most-cards +3', async () => {
+    // Human leads on captured cards (10 vs 4/0/0) → gets the provisional most-cards +3;
+    // combined with a locked-in Pişti bonus of 10 the provisional total is 13.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ id: 0, isHuman: true, capturedCount: 10, pistiBonus: 10 }),
+          makePlayer({ id: 1, capturedCount: 4 }),
+          makePlayer({ id: 2, capturedCount: 0 }),
+          makePlayer({ id: 3, capturedCount: 0 }),
+        ],
+      }),
+    );
+    renderWithProviders(<PishtiPage />);
+    const humanReadout = await screen.findByTestId('pishti-provisional-0');
+    expect(humanReadout).toHaveTextContent('暫定 13点');
+    // A non-leader with no bonus reads 0.
+    expect(screen.getByTestId('pishti-provisional-1')).toHaveTextContent('暫定 0点');
+    // The partial-score disclosure note is shown during play.
+    expect(screen.getByTestId('pishti-provisional-note')).toBeInTheDocument();
+  });
+
+  it('awards nobody the most-cards +3 when the captured-count leader is tied', async () => {
+    // Two players tie for the most captured cards → neither gets the +3 (mirrors the
+    // domain rule), so each provisional score reflects only its Pişti bonus.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ id: 0, isHuman: true, capturedCount: 8, pistiBonus: 10 }),
+          makePlayer({ id: 1, capturedCount: 8, pistiBonus: 0 }),
+          makePlayer({ id: 2, capturedCount: 2 }),
+          makePlayer({ id: 3, capturedCount: 0 }),
+        ],
+      }),
+    );
+    renderWithProviders(<PishtiPage />);
+    const humanReadout = await screen.findByTestId('pishti-provisional-0');
+    expect(humanReadout).toHaveTextContent('暫定 10点');
+    expect(screen.getByTestId('pishti-provisional-1')).toHaveTextContent('暫定 0点');
+  });
+
+  it('hides the provisional readout and shows the final score on game end', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<PishtiPage />);
+    await waitFor(() => expect(screen.getByText(/11点/)).toBeInTheDocument());
+    expect(screen.queryByTestId('pishti-provisional-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('pishti-provisional-note')).not.toBeInTheDocument();
+  });
 });

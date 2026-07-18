@@ -21,7 +21,7 @@ import { useSound } from '../providers/SoundProvider';
 import { btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, PishtiResponse } from '../types/card';
+import type { Card, PishtiPlayer, PishtiResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { PISHTI_HELP, parsePishtiCommand } from '../utils/cli/commands/pishtiCommands';
@@ -179,6 +179,20 @@ function PishtiPageContent() {
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
 
+  // Provisional score shown during play so players can gauge where they stand (#3560).
+  // The API exposes only capturedCount + pistiBonus (not the captured cards' values),
+  // so the true point-card score (A/J/2♣/10♦) is NOT derivable. What IS known:
+  //   - Pişti bonuses are already locked into the final score, and
+  //   - the most-cards +3 (PishtiScoreMostCards) goes to the sole captured-count leader
+  //     (ties award nobody, mirroring the domain's calcFinalScore).
+  // We surface only those; the note discloses that card points are still uncounted.
+  const MOST_CARDS_BONUS = 3;
+  const maxCaptured = Math.max(...state.players.map((p) => p.capturedCount));
+  const capturedLeaders = state.players.filter((p) => p.capturedCount === maxCaptured);
+  const provisionalLeaderSeat = maxCaptured > 0 && capturedLeaders.length === 1 ? capturedLeaders[0].id : -1;
+  const provisionalScore = (p: PishtiPlayer): number =>
+    p.pistiBonus + (p.id === provisionalLeaderSeat ? MOST_CARDS_BONUS : 0);
+
   const handleManualReset = () => {
     hideActionLog();
     exec('reset', { config: { cpuDifficulty, playerCnt } });
@@ -240,6 +254,11 @@ function PishtiPageContent() {
             {/* Players (hand / captured / Pişti bonus / current turn) */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="pishti-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
+              {!isGameEnd && (
+                <div className="mb-1 text-ds-text-muted text-xs" data-testid="pishti-provisional-note">
+                  {t('provisionalNote')}
+                </div>
+              )}
               {state.players.map((p) => (
                 <div
                   key={`player-${p.id}`}
@@ -250,6 +269,16 @@ function PishtiPageContent() {
                   <span>{playerLabel(p.id, p.isHuman)}</span>
                   <span>{t('captured', { count: p.capturedCount })}</span>
                   {p.pistiBonus > 0 && <span className="text-ds-accent">{t('pisti', { count: p.pistiBonus })}</span>}
+                  {!isGameEnd && (
+                    <span
+                      className="text-ds-text-primary"
+                      data-testid={`pishti-provisional-${p.id}`}
+                      title={t('provisionalNote')}
+                    >
+                      {t('provisional', { score: provisionalScore(p) })}
+                      {p.id === provisionalLeaderSeat && <span className="ml-1 text-ds-accent">★</span>}
+                    </span>
+                  )}
                   {isGameEnd && (
                     <span className="text-ds-text-primary">{t('finalScore', { score: p.finalScore })}</span>
                   )}
