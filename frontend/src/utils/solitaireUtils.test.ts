@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isTableauAllFaceUp, spiderMovableRun } from './solitaireUtils';
+import { isInMoveBlock, isTableauAllFaceUp, spiderMovableRun } from './solitaireUtils';
 
 /** Builds a face-up Spider tableau card from suit (`design`) + rank (`value`). */
 const up = (design: string, value: number) => ({ card: { design, value }, faceUp: true });
@@ -69,5 +69,30 @@ describe('spiderMovableRun', () => {
     expect(spiderMovableRun(col, -1)).toEqual([]);
     expect(spiderMovableRun(col, 5)).toEqual([]);
     expect(spiderMovableRun([{ card: null, faceUp: true }], 0)).toEqual([]);
+  });
+});
+
+describe('isInMoveBlock', () => {
+  it('returns false when nothing is selected', () => {
+    expect(isInMoveBlock(null, 0, 0)).toBe(false);
+  });
+
+  it('includes the selected card and every card below it in the same column', () => {
+    const selected = { col: 2, cardIndex: 3 };
+    expect(isInMoveBlock(selected, 2, 3)).toBe(true); // the selected card itself
+    expect(isInMoveBlock(selected, 2, 4)).toBe(true); // one below
+    expect(isInMoveBlock(selected, 2, 9)).toBe(true); // further below
+  });
+
+  it('excludes cards above the selection', () => {
+    const selected = { col: 2, cardIndex: 3 };
+    expect(isInMoveBlock(selected, 2, 2)).toBe(false);
+    expect(isInMoveBlock(selected, 2, 0)).toBe(false);
+  });
+
+  it('excludes cards in a different column', () => {
+    const selected = { col: 2, cardIndex: 3 };
+    expect(isInMoveBlock(selected, 1, 3)).toBe(false);
+    expect(isInMoveBlock(selected, 3, 4)).toBe(false);
   });
 });
