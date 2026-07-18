@@ -168,6 +168,44 @@ describe('GinRummyPage', () => {
     expect(screen.queryByTestId('ginrummy-deadwood-indicator')).not.toBeInTheDocument();
   });
 
+  it('color-codes the hand into meld and deadwood cards during discard phase', async () => {
+    // ♠5-6-7 form a run (melded); ♥K is deadwood.
+    const meldHandState: GinRummyResponse = {
+      ...discardPhaseState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 4,
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'SPADE', value: 7 },
+            { design: 'HEART', value: 13 },
+          ],
+          roundScore: 0,
+          cumulativeScore: 0,
+        },
+        discardPhaseState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(meldHandState);
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('gr-hand-card-0')).toBeInTheDocument());
+    expect(screen.getByTestId('gr-hand-card-0')).toHaveAttribute('data-meld', 'meld');
+    expect(screen.getByTestId('gr-hand-card-1')).toHaveAttribute('data-meld', 'meld');
+    expect(screen.getByTestId('gr-hand-card-2')).toHaveAttribute('data-meld', 'meld');
+    expect(screen.getByTestId('gr-hand-card-3')).toHaveAttribute('data-meld', 'deadwood');
+    expect(screen.getByTestId('ginrummy-meld-legend')).toBeInTheDocument();
+  });
+
+  it('does not color-code the hand outside discard phase', async () => {
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('gr-hand-card-0')).toBeInTheDocument());
+    expect(screen.getByTestId('gr-hand-card-0')).not.toHaveAttribute('data-meld');
+    expect(screen.queryByTestId('ginrummy-meld-legend')).not.toBeInTheDocument();
+  });
+
   it('pulses the knock button when deadwood ≤10 during discard phase', async () => {
     const lowDeadwoodHand: GinRummyResponse = {
       ...discardPhaseState,

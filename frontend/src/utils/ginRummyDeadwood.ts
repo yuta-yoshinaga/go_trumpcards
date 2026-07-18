@@ -42,25 +42,50 @@ interface IndexedCard {
   card: Card;
 }
 
-/** Find the minimum-deadwood split of `hand` into melds + deadwood.
- * Mirrors `FindBestMelds` in internal/domain/GinRummy.go but the only
- * value we surface back to React is the integer deadwood total. */
-export function bestDeadwoodValue(hand: readonly Card[]): number {
-  if (hand.length === 0) return 0;
-  const indexed: IndexedCard[] = hand.map((card, idx) => ({ idx, card }));
-  return search(indexed);
+/** Result of splitting a hand into melds + deadwood: which original hand
+ * indices belong to some meld in the best split, plus the deadwood total. */
+export interface MeldSplit {
+  /** Original hand indices that are part of a meld in the best split. */
+  meldedIndices: ReadonlySet<number>;
+  /** Sum of card values of the unmelded (deadwood) cards. */
+  deadwoodValue: number;
 }
 
-function search(remaining: IndexedCard[]): number {
+/** Find the minimum-deadwood split of `hand`, returning which original hand
+ * indices are melded and the deadwood total of the rest. Mirrors
+ * `FindBestMelds` in internal/domain/GinRummy.go. Shares the same search as
+ * {@link bestDeadwoodValue}, so the two stay consistent. */
+export function bestMeldSplit(hand: readonly Card[]): MeldSplit {
+  if (hand.length === 0) return { meldedIndices: new Set(), deadwoodValue: 0 };
+  const indexed: IndexedCard[] = hand.map((card, idx) => ({ idx, card }));
+  const { value, melded } = search(indexed);
+  return { meldedIndices: melded, deadwoodValue: value };
+}
+
+/** Find the minimum-deadwood split of `hand` into melds + deadwood.
+ * Mirrors `FindBestMelds` in internal/domain/GinRummy.go but the only
+ * value we surface back is the integer deadwood total. */
+export function bestDeadwoodValue(hand: readonly Card[]): number {
+  return bestMeldSplit(hand).deadwoodValue;
+}
+
+/** Minimum-deadwood split of `remaining`, returning the deadwood value and the
+ * set of original indices that end up melded in that best split. */
+function search(remaining: IndexedCard[]): { value: number; melded: Set<number> } {
   const candidates = enumerateMelds(remaining);
-  let best = calcDeadwoodValue(remaining.map((r) => r.card));
+  // Baseline: take no meld here → every remaining card is deadwood.
+  let best = { value: calcDeadwoodValue(remaining.map((r) => r.card)), melded: new Set<number>() };
   if (candidates.length === 0) return best;
   for (const meld of candidates) {
     const meldIdx = new Set(meld.map((m) => m.idx));
     const rest = remaining.filter((r) => !meldIdx.has(r.idx));
-    const dv = search(rest);
-    if (dv < best) best = dv;
-    if (best === 0) break;
+    const sub = search(rest);
+    if (sub.value < best.value) {
+      const melded = new Set<number>(meldIdx);
+      for (const i of sub.melded) melded.add(i);
+      best = { value: sub.value, melded };
+    }
+    if (best.value === 0) break;
   }
   return best;
 }
