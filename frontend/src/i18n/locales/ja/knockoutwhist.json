@@ -38,7 +38,9 @@
     "title": "ラウンド結果",
     "winner": "ラウンド勝者: {{name}}",
     "survived": "{{name}} はDogboneを消費して生き残りました",
-    "eliminated": "{{name}} は0トリックで脱落しました"
+    "eliminated": "{{name}} は0トリックで脱落しました",
+    "nextRoundPreview": "次ラウンド: 手札{{count}}枚 / 切り札選択: {{name}}",
+    "finalRoundPreview": "最終ラウンド: 手札{{count}}枚 / 切り札選択: {{name}}"
   },
   "hintAvailable": "ヒント",
   "hint": {

@@ -147,6 +147,8 @@ function KnockoutWhistPageContent() {
   const isTrumpSelect = state.phase === KnockoutWhistPhase.TRUMP_SELECT;
   const isGameEnd = state.phase === KnockoutWhistPhase.GAME_END || state.gameEndFlag;
 
+  // Knockout Whist deals one fewer card each round, bottoming out at 1 (see KnockoutWhist.startRound in the Go domain).
+  const nextHandSize = Math.max(state.handSize - 1, 1);
   const isHumanEliminated = state.players[humanIdx]?.eliminated ?? false;
   const canPlay = isPlayPhase && isHumanTurn && !isHumanEliminated;
   // Show a spectator banner while the human is knocked out but the match continues among the CPUs.
@@ -280,6 +282,15 @@ function KnockoutWhistPageContent() {
                         name: playerName(state.roundWinnerIdx, state.players[state.roundWinnerIdx]?.isHuman ?? false),
                       })}
                     </div>
+                    {/* Preview the upcoming round: hand size drops by 1 (min 1) and the round winner chooses trump. */}
+                    {isRoundEnd && !isGameEnd && (
+                      <div data-testid="kw-next-round-preview" className="mt-1 text-ds-text-primary">
+                        {t(nextHandSize === 1 ? 'roundResult.finalRoundPreview' : 'roundResult.nextRoundPreview', {
+                          count: nextHandSize,
+                          name: playerName(state.roundWinnerIdx, state.players[state.roundWinnerIdx]?.isHuman ?? false),
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

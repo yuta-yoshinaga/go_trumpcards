@@ -83,6 +83,28 @@ describe('KnockoutWhistPage', () => {
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
   });
 
+  it('previews the next round hand size (one fewer card) and trump chooser at round end', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<KnockoutWhistPage />);
+    const preview = await screen.findByTestId('kw-next-round-preview');
+    // Default round-end hand size is 7, so the next round deals 6 cards; winner idx 0 is the human.
+    expect(preview).toHaveTextContent('次ラウンド: 手札6枚 / 切り札選択: あなた');
+  });
+
+  it('flags the final round when the next hand size bottoms out at 1', async () => {
+    mockExec.mockResolvedValue(makeKnockoutWhistState({ phase: 2, roundWinnerIdx: 1, handSize: 2 }));
+    renderWithProviders(<KnockoutWhistPage />);
+    const preview = await screen.findByTestId('kw-next-round-preview');
+    expect(preview).toHaveTextContent('最終ラウンド: 手札1枚');
+  });
+
+  it('does not preview the next round at game end', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<KnockoutWhistPage />);
+    await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ち！')).toBeInTheDocument());
+    expect(screen.queryByTestId('kw-next-round-preview')).not.toBeInTheDocument();
+  });
+
   it('renders the game end message', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<KnockoutWhistPage />);
