@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { COURT_PIECE_HELP, parseCourtPieceCommand } from '../utils/cli/commands/courtPieceCommands';
 import { formatCourtPieceState } from '../utils/cli/formatters/courtPieceFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { courtPieceLegalPlayIndices } from '../utils/courtPieceLegal';
 import { playerName } from '../utils/playerUtils';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = undeclared). */
@@ -141,6 +142,13 @@ function CourtPiecePageContent() {
   const isHumanTrumpTurn = isTrumpPhase && state.callerIdx === humanIdx;
   const isHumanTurn = isPlayPhase && isHumanCurrent;
   const canPlay = isHumanTurn;
+
+  // On the human's play turn, mirror the server's follow-suit rule
+  // (internal/domain/CourtPiece.go validatePlay) so legal cards get a success
+  // ring. This is an additive hint only — illegal cards stay clickable and the
+  // backend remains the source of truth for rejecting an illegal play.
+  const legalPlayIndices =
+    canPlay && humanPlayer ? courtPieceLegalPlayIndices(humanPlayer.cards, state.currentTrick) : undefined;
 
   const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
 
@@ -298,7 +306,7 @@ function CourtPiecePageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="courtpiece"
-                restrictedTooltip={t('playButton')}
+                legalIndices={legalPlayIndices}
               />
             )}
 
