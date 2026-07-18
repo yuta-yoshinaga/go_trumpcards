@@ -189,4 +189,88 @@ describe('ScoponePage', () => {
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     localStorage.removeItem('cli-mode-scopone');
   });
+
+  // Builds a 4-player Scopone state with a given scopaCount for one player.
+  const stateWithScopa = (playerId: number, scopaCount: number) =>
+    makeScoponeState({
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          team: 0,
+          handCount: 3,
+          cards: makeScoponeState().players[0].cards,
+          capturedCount: 0,
+          scopaCount: playerId === 0 ? scopaCount : 0,
+        },
+        {
+          id: 1,
+          isHuman: false,
+          team: 1,
+          handCount: 3,
+          cards: [],
+          capturedCount: 0,
+          scopaCount: playerId === 1 ? scopaCount : 0,
+        },
+        {
+          id: 2,
+          isHuman: false,
+          team: 0,
+          handCount: 3,
+          cards: [],
+          capturedCount: 0,
+          scopaCount: playerId === 2 ? scopaCount : 0,
+        },
+        {
+          id: 3,
+          isHuman: false,
+          team: 1,
+          handCount: 3,
+          cards: [],
+          capturedCount: 0,
+          scopaCount: playerId === 3 ? scopaCount : 0,
+        },
+      ],
+    });
+
+  it('does not show the scopa badge on initial load', async () => {
+    mockExec.mockResolvedValue(stateWithScopa(0, 2));
+    renderWithProviders(<ScoponePage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('scopone-scopa-celebration')).not.toBeInTheDocument();
+  });
+
+  it('shows the scopa badge when a player scopaCount increases', async () => {
+    renderWithProviders(<ScoponePage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    // A subsequent play resolves a state where the human (team 0) swept the table.
+    mockExec.mockResolvedValue(stateWithScopa(0, 1));
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('take-button'));
+
+    const badge = await screen.findByTestId('scopone-scopa-celebration');
+    expect(badge).toBeInTheDocument();
+    // Own-team sweep uses the emphasised label.
+    expect(badge).toHaveTextContent('スコパ！ あなたのチーム');
+  });
+
+  it('clears the scopa badge after scopaCount resets to zero', async () => {
+    renderWithProviders(<ScoponePage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(stateWithScopa(0, 1));
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('take-button'));
+    await screen.findByTestId('scopone-scopa-celebration');
+
+    // A next round drops scopaCount back to 0 — the badge must disappear. Use Lay
+    // (no table selection needed) since the prior play cleared the selection.
+    mockExec.mockResolvedValue(stateWithScopa(0, 0));
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('lay-button'));
+    await waitFor(() => expect(screen.queryByTestId('scopone-scopa-celebration')).not.toBeInTheDocument());
+  });
 });

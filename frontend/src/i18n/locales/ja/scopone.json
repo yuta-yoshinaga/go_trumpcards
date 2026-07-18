@@ -20,7 +20,9 @@
     "yourTeam": "あなたのチーム",
     "cpuStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / スコパ{{scopa}}",
     "humanStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / スコパ{{scopa}}",
-    "teamScore": "チーム{{team}}: {{score}}pt"
+    "teamScore": "チーム{{team}}: {{score}}pt",
+    "scopaBadge": "スコパ！",
+    "scopaBadgeOwn": "スコパ！ あなたのチーム"
   },
   "button": {
     "take": "取る",

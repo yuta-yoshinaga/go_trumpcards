@@ -20,7 +20,9 @@
     "yourTeam": "Your Team",
     "cpuStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}}",
     "humanStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}}",
-    "teamScore": "Team {{team}}: {{score}} pt"
+    "teamScore": "Team {{team}}: {{score}} pt",
+    "scopaBadge": "Scopa!",
+    "scopaBadgeOwn": "Scopa! Your team"
   },
   "button": {
     "take": "Take",
