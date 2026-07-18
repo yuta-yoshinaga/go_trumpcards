@@ -34,6 +34,8 @@
   "layoff": "レイオフ",
   "meldAria": "{{player}}のメルド{{meld}}",
   "layoffTargetSummary": "→ レイオフ先: {{player}} メルド{{meld}}",
+  "layoffAcceptable": "この札を付けられます",
+  "layoffNotAcceptable": "この札は付けられません",
   "discard": "カードを捨てる",
   "nextRound": "次のラウンドへ",
   "viewLog": "棋譜を表示",

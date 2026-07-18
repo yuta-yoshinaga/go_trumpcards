@@ -108,6 +108,18 @@ export function isCariocaRun(cards: Card[]): boolean {
 }
 
 /**
+ * Returns true iff `card` can be laid off onto an existing on-table `meldCards` meld.
+ * Mirrors the Go domain's `canAddToCariocaMeld`: the meld plus the card must still form a
+ * valid set (same rank) or run (same suit, consecutive), with at most one joker across the
+ * combined meld. An empty meld never accepts a layoff.
+ */
+export function canLayoffCariocaMeld(meldCards: Card[], card: Card): boolean {
+  if (meldCards.length === 0) return false;
+  const combined = [...meldCards, card];
+  return isCariocaSet(combined) || isCariocaRun(combined);
+}
+
+/**
  * Evaluate a single Carioca contract slot against the cards placed into it, treating a
  * joker as a wildcard. Drop-in replacement for `evaluateContractSlot` (same return shape).
  */

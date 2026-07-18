@@ -53,5 +53,7 @@
     "number": "数字順",
     "label": "手札の並べ替え"
   },
-  "tablePlayLabel": "場の役"
+  "tablePlayLabel": "場の役",
+  "selectedPlayLabel": "選択中",
+  "invalidCombo": "無効な組み合わせ"
 }
