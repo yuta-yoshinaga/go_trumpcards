@@ -108,6 +108,9 @@ const MIGHTY_PHASE_KEYS: Readonly<Record<number, string>> = {
 const SUIT_KEYS: Record<number, string> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
 const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
+/** Highest Mighty bid (all 20 point cards); mirrors the domain `MightyMaxPoints`. */
+const MIGHTY_MAX_BID = 20;
+
 /** Tailwind classes for a suit/option toggle button (44px tap target, highlighted when selected). */
 function suitToggleClass(selected: boolean): string {
   return selected
@@ -238,6 +241,12 @@ function MightyPageContent() {
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
   const isHumanDeclarer = isTrumpAndFriend && state.players[state.declarerIdx]?.isHuman === true;
   const isHumanExchange = isKittyExchange && state.players[state.declarerIdx]?.isHuman === true;
+
+  // Bidding: no-trump declarations raise the minimum bid by the configured extra.
+  // A discrete button grid (mirroring CallBreak/Tarneeb) replaces the raw number input;
+  // out-of-range and already-beaten values are disabled instead of clamped client-side.
+  const bidEffectiveMin = bidNoTrumpToggle ? state.config.minBid + state.config.noTrumpExtra : state.config.minBid;
+  const isBidSelectionValid = bidValue >= bidEffectiveMin && bidValue <= MIGHTY_MAX_BID && bidValue > state.highestBid;
 
   const roleBadge = (p: { isDeclarer: boolean; isPartner: boolean; partnerRevealed: boolean }) => {
     if (p.isDeclarer) return ` [${t('role.declarer')}]`;
@@ -652,16 +661,33 @@ function MightyPageContent() {
 
               {/* Bid controls */}
               {isHumanBidTurn && (
-                <>
-                  <input
-                    type="number"
-                    min={mightyConfig.minBid}
-                    max={20}
-                    value={bidValue}
-                    onChange={(e) => setBidValue(Number(e.target.value))}
-                    className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
-                    aria-label="bid-input"
-                  />
+                <div className="flex flex-col items-center gap-2">
+                  <fieldset
+                    className="grid grid-cols-4 gap-1 border-0 p-0"
+                    aria-label={t('bidSelectLabel')}
+                    data-testid="mighty-bid-grid"
+                  >
+                    {Array.from(
+                      { length: MIGHTY_MAX_BID - state.config.minBid + 1 },
+                      (_, i) => i + state.config.minBid,
+                    ).map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setBidValue(n)}
+                        disabled={loading || n < bidEffectiveMin || n <= state.highestBid}
+                        aria-pressed={bidValue === n}
+                        data-testid={`bid-option-${n}`}
+                        className={`min-h-[44px] min-w-[44px] rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
+                          bidValue === n
+                            ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
+                            : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </fieldset>
                   <label className="flex items-center gap-1 text-ds-text-primary text-sm">
                     <input
                       type="checkbox"
@@ -671,18 +697,20 @@ function MightyPageContent() {
                     />
                     {t('noTrumpToggle')}
                   </label>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => handleBid(bidValue, bidNoTrumpToggle)}
-                    disabled={loading}
-                  >
-                    {t('bidButton')}
-                  </button>
-                  <button type="button" className={btnPrimary} onClick={handlePass} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                </>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => handleBid(bidValue, bidNoTrumpToggle)}
+                      disabled={loading || !isBidSelectionValid}
+                    >
+                      {t('bidButton')}
+                    </button>
+                    <button type="button" className={btnPrimary} onClick={handlePass} disabled={loading}>
+                      {t('passButton')}
+                    </button>
+                  </div>
+                </div>
               )}
 
               {/* Trump & Friend declaration controls */}
