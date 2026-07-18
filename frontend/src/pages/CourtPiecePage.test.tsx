@@ -39,6 +39,33 @@ const playPhaseState = makeCourtPieceState({
     { id: 3, isHuman: false, team: 1, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
   ],
 });
+// A human play turn where a heart has been led, so the human must follow with a
+// heart. ♥Q and ♥K are legal; ♠A is illegal but must stay clickable.
+const followSuitState = makeCourtPieceState({
+  phase: 1,
+  trumpSuit: 3,
+  currentPlayerIdx: 0,
+  currentTrick: [{ playerIdx: 3, card: { design: 'HEART', value: 7 } }],
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      team: 0,
+      cardCount: 3,
+      cards: [
+        { design: 'HEART', value: 12 },
+        { design: 'HEART', value: 13 },
+        { design: 'SPADE', value: 1 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, team: 1, cardCount: 3, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+    { id: 2, isHuman: false, team: 0, cardCount: 3, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+    { id: 3, isHuman: false, team: 1, cardCount: 3, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+  ],
+});
 const cpuTurnState = makeCourtPieceState({ phase: 1, trumpSuit: 3, currentPlayerIdx: 1 });
 const trickEndState = makeCourtPieceState({ phase: 2, trumpSuit: 3 });
 const roundEndState = makeCourtPieceState({
@@ -120,6 +147,31 @@ describe('CourtPiecePage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
     });
     expect(screen.getByText('コーラー')).toBeInTheDocument();
+  });
+
+  it('rings the follow-suit-legal cards during a human play turn', async () => {
+    mockExec.mockResolvedValue(followSuitState);
+    renderWithProviders(<CourtPiecePage />);
+    const legalCard = (await screen.findByAltText('♥ Q')).closest('button');
+    // Legal cards carry the additive success ring.
+    expect(legalCard?.className).toContain('ring-ds-success');
+    // The other heart is also legal.
+    expect((await screen.findByAltText('♥ K')).closest('button')?.className).toContain('ring-ds-success');
+    // The illegal spade gets no success ring.
+    const illegalCard = (await screen.findByAltText('♠ A')).closest('button');
+    expect(illegalCard?.className).not.toContain('ring-ds-success');
+  });
+
+  it('keeps an illegal card clickable (ring-only, no hard block)', async () => {
+    mockExec.mockResolvedValue(followSuitState);
+    renderWithProviders(<CourtPiecePage />);
+    const illegalCard = (await screen.findByAltText('♠ A')).closest('button');
+    // The card must NOT be disabled — the backend still validates the play.
+    expect(illegalCard).not.toHaveAttribute('aria-disabled');
+    expect(illegalCard?.className).not.toContain('cursor-not-allowed');
+    // Clicking it selects the card (does not throw / is not blocked).
+    if (illegalCard) fireEvent.click(illegalCard);
+    await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeEnabled());
   });
 
   it('does not show the play button on a CPU turn', async () => {
