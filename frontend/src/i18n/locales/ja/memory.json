@@ -22,6 +22,8 @@
   "cardFaceDown": "{{position}}枚目のカード（裏向き）",
   "visitedMark": "一度めくったカード",
   "scoreLine": "{{name}}: {{count}}",
+  "capturedPairs": "獲得ペア",
+  "noCapturedPairs": "なし",
   "nextButton": "次へ",
   "flipPrompt1": "1枚目をめくってください",
   "flipPrompt2": "2枚目をめくってください",

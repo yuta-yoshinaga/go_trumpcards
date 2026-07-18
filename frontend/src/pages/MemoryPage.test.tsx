@@ -29,10 +29,10 @@ function makeBoard(
 
 const flip1State: MemoryResponse = {
   players: [
-    { id: 0, isHuman: true, pairCount: 0 },
-    { id: 1, isHuman: false, pairCount: 2 },
-    { id: 2, isHuman: false, pairCount: 1 },
-    { id: 3, isHuman: false, pairCount: 0 },
+    { id: 0, isHuman: true, pairCount: 0, pairs: [] },
+    { id: 1, isHuman: false, pairCount: 2, pairs: [] },
+    { id: 2, isHuman: false, pairCount: 1, pairs: [] },
+    { id: 3, isHuman: false, pairCount: 0, pairs: [] },
   ],
   board: makeBoard(),
   phase: 0,
@@ -521,6 +521,43 @@ describe('MemoryPage', () => {
     const cardBtn = screen.getByTestId('board-0');
     expect(cardBtn.className).not.toContain('border-ds-info');
     expect(cardBtn.className).toContain('border-white/10');
+  });
+
+  // --- Captured pairs mini-cards (#3028) ---
+
+  it('renders captured-pair mini cards per player', async () => {
+    const capturedState: MemoryResponse = {
+      ...flip1State,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          pairCount: 2,
+          pairs: [
+            { design: 'CLOVER' as const, value: 3 },
+            { design: 'SPADE' as const, value: 7 },
+          ],
+        },
+        { id: 1, isHuman: false, pairCount: 1, pairs: [{ design: 'HEART' as const, value: 11 }] },
+        { id: 2, isHuman: false, pairCount: 0, pairs: [] },
+        { id: 3, isHuman: false, pairCount: 0, pairs: [] },
+      ],
+    };
+    mockExec.mockResolvedValue(capturedState);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByTestId('mem-captured')).toBeInTheDocument());
+    // Human captured 3♣ and 7♠ → two mini cards rendered in their row.
+    const humanRow = screen.getByTestId('mem-captured-0');
+    expect(humanRow.querySelectorAll('img').length).toBe(2);
+    // A player with no captures shows the "none" placeholder.
+    expect(screen.getByTestId('mem-captured-2')).toHaveTextContent('なし');
+  });
+
+  it('captured-pairs panel is collapsible', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByTestId('mem-captured')).toBeInTheDocument());
+    expect(screen.getByText('獲得ペア')).toBeInTheDocument();
+    expect(screen.getByTestId('mem-captured').tagName).toBe('DETAILS');
   });
 
   // --- Frontend hint ---
