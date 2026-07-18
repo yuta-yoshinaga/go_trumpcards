@@ -58,3 +58,24 @@ export function spiderMovableRun(column: readonly RunTableauCard[], index: numbe
   for (let i = index; i < column.length; i++) run.push(i);
   return run;
 }
+
+/** A selected tableau card: the column and the index within that column. */
+export interface TableauSelection {
+  col: number;
+  cardIndex: number;
+}
+
+/**
+ * Determines whether the tableau card at (`col`, `cardIdx`) belongs to the
+ * "block" that would be lifted together when the card at `selected` is picked
+ * up. In Yukon a face-up card moves with every card sitting on top of it
+ * regardless of suit/rank order, so the block spans from the selected index
+ * down to the column bottom. Returns `false` when nothing is selected, or the
+ * candidate is in a different column, or the candidate sits above the selection.
+ *
+ * This powers the tap-to-preview block highlight on touch devices, where hover
+ * is unavailable (#3152).
+ */
+export function isInMoveBlock(selected: TableauSelection | null, col: number, cardIdx: number): boolean {
+  return selected !== null && selected.col === col && cardIdx >= selected.cardIndex;
+}

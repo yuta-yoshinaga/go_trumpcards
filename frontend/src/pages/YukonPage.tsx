@@ -35,7 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseYukonCommand, YUKON_HELP } from '../utils/cli/commands/yukonCommands';
 import type { CliGameConfig } from '../utils/cli/types';
-import { isTableauAllFaceUp } from '../utils/solitaireUtils';
+import { isInMoveBlock, isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 // Localized suit-name keys parallel to FOUNDATION_SUITS, used for aria-labels so
@@ -434,6 +434,18 @@ function YukonPageContent() {
                               {tc.faceUp ? (
                                 (() => {
                                   const inHoverBlock = hoveredBlock?.col === colIdx && cardIdx >= hoveredBlock.cardIdx;
+                                  // Tap-to-preview: once a tableau card is selected, glow the whole
+                                  // block that would lift with it (selected card + every card on top).
+                                  // This gives touch users the hover preview they can't otherwise get (#3152).
+                                  const inSelectedBlock =
+                                    selectedSource?.zone === 'tableau' &&
+                                    selectedSource.col !== undefined &&
+                                    selectedSource.cardIndex !== undefined &&
+                                    isInMoveBlock(
+                                      { col: selectedSource.col, cardIndex: selectedSource.cardIndex },
+                                      colIdx,
+                                      cardIdx,
+                                    );
                                   return (
                                     <button
                                       type="button"
@@ -445,13 +457,14 @@ function YukonPageContent() {
                                       onFocus={() => setHoveredBlock({ col: colIdx, cardIdx })}
                                       onBlur={() => setHoveredBlock(null)}
                                       data-block-member={inHoverBlock || undefined}
+                                      data-selected-block={inSelectedBlock || undefined}
                                       className={`${focusRingWhite} rounded-lg transition-all ${
                                         isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                                       } ${isDragSrc ? 'opacity-50' : ''} ${
                                         hintFrom ? 'ring-2 ring-ds-info motion-safe:animate-pulse' : ''
                                       } ${hintTo ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${
                                         inHoverBlock && !isSelected ? 'ring-2 ring-ds-accent/70' : ''
-                                      }`}
+                                      } ${inSelectedBlock && !isSelected ? 'ring-2 ring-ds-info' : ''}`}
                                       onClick={() => {
                                         if (selectedSource) {
                                           if (isLast) {
