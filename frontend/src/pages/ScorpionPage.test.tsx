@@ -185,6 +185,33 @@ describe('ScorpionPage', () => {
     expect(screen.getByRole('button', { name: '配る' })).toHaveAttribute('title', '空の列をすべて埋めないと配れません');
   });
 
+  it('shows the deal-blocked reason as visible text when an empty column exists', async () => {
+    const stateWithEmptyCol: ScorpionResponse = {
+      ...playingState,
+      tableau: [
+        [{ card: card('SPADE', 13), faceUp: true }],
+        [],
+        [{ card: card('CLOVER', 5), faceUp: true }],
+        [{ card: card('DIAMOND', 10), faceUp: true }],
+        [{ card: card('SPADE', 3), faceUp: true }],
+        [{ card: card('HEART', 7), faceUp: true }],
+        [{ card: card('CLOVER', 2), faceUp: true }],
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithEmptyCol);
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument());
+    const reason = screen.getByTestId('sc-deal-blocked-reason');
+    expect(reason).toHaveTextContent('空の列をすべて埋めないと配れません');
+    expect(reason).toHaveAttribute('role', 'status');
+  });
+
+  it('does not show the deal-blocked reason when every column is filled', async () => {
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('sc-deal-blocked-reason')).not.toBeInTheDocument();
+  });
+
   it('autocomplete button triggers autocomplete command', async () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
