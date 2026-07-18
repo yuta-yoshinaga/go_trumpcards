@@ -214,6 +214,24 @@ describe('CegoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('contract', { contract: 'handspiel' }));
   });
 
+  it('shows the contract explainer describing Cego vs Handspiel during contract selection', async () => {
+    mockExec.mockResolvedValue(contractPhaseState);
+    renderWithProviders(<CegoPage />);
+    const panel = await screen.findByTestId('cego-contract-explainer');
+    // Cego side: mentions the blind (盲札) and its count (10 by default).
+    expect(panel).toHaveTextContent(/盲札/);
+    expect(panel).toHaveTextContent(/10枚の場札/);
+    // Handspiel side: plays the dealt hand without the blind.
+    expect(panel).toHaveTextContent(/配られた手札のまま/);
+  });
+
+  it('does not show the contract explainer outside contract selection', async () => {
+    mockExec.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<CegoPage />);
+    await screen.findByRole('button', { name: '2 ♥' });
+    expect(screen.queryByTestId('cego-contract-explainer')).not.toBeInTheDocument();
+  });
+
   it('renders the exchange phase and keeps the keep button disabled until 1 card is chosen', async () => {
     mockExec.mockResolvedValue(exchangePhaseState);
     renderWithProviders(<CegoPage />);
