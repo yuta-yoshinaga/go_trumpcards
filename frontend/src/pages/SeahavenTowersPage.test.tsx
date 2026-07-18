@@ -61,6 +61,13 @@ const withHintState: SeahavenTowersResponse = {
   hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'tableau', toCol: 2 },
 };
 
+// A column that ascends bottom→top (5 sits below 9) is not a clean mop-up, so
+// auto-complete cannot guarantee a win: readiness is false.
+const notReadyState: SeahavenTowersResponse = {
+  ...playingState,
+  tableau: [[card('SPADE', 5), card('SPADE', 9)], [], [], [], [], [], [], [], [], []],
+};
+
 beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
@@ -181,6 +188,27 @@ describe('SeahavenTowersPage', () => {
     mockExec.mockResolvedValueOnce(playingState);
     fireEvent.click(screen.getByRole('button', { name: 'オートコンプリート' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('shows the auto-complete ready badge and enables the button when all columns descend', async () => {
+    // playingState columns are single/empty cards → strictly descending → ready.
+    renderWithProviders(<SeahavenTowersPage />);
+    await waitFor(() => expect(screen.getByTestId('seahaventowers-autocomplete-ready-badge')).toBeInTheDocument());
+    const autoCompleteBtn = screen.getByTestId('autocomplete-button');
+    expect(autoCompleteBtn).toBeEnabled();
+    expect(autoCompleteBtn).not.toHaveAttribute('title');
+    expect(autoCompleteBtn.className).toContain('animate-pulse');
+  });
+
+  it('hides the badge, disables the button, and shows a tooltip when not ready', async () => {
+    mockExec.mockResolvedValue(notReadyState);
+    renderWithProviders(<SeahavenTowersPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('seahaventowers-autocomplete-ready-badge')).not.toBeInTheDocument();
+    const autoCompleteBtn = screen.getByTestId('autocomplete-button');
+    expect(autoCompleteBtn).toBeDisabled();
+    expect(autoCompleteBtn).toHaveAttribute('title');
+    expect(autoCompleteBtn.className).not.toContain('animate-pulse');
   });
 
   it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
