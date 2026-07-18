@@ -36,7 +36,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSpiderCommand, SPIDER_HELP } from '../utils/cli/commands/spiderCommands';
 import { formatSpiderState } from '../utils/cli/formatters/spiderFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { isTableauAllFaceUp } from '../utils/solitaireUtils';
+import { isTableauAllFaceUp, spiderMovableRun } from '../utils/solitaireUtils';
 
 /** Spider Solitaire tutorial step definitions. */
 const SPD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -149,6 +149,10 @@ function SpiderPageContent() {
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const isPlayingForKbd = state?.phase === SpiderPhase.PLAYING;
+
+  // Movable-run hover preview: highlights the same-suit descending run that would move as a
+  // unit when a tableau card is grabbed (#3061). Purely additive — never gates clicks/drags.
+  const [hoveredRun, setHoveredRun] = useState<{ col: number; indices: number[] } | null>(null);
 
   // Empty-column deal guard: surfaces a shake animation + tooltip instead of failing silently.
   const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
@@ -350,6 +354,12 @@ function SpiderPageContent() {
                                 col: colIdx,
                                 cardIndex: cardIdx,
                               };
+                              const inMovableRun = hoveredRun?.col === colIdx && hoveredRun.indices.includes(cardIdx);
+                              const ringClass = isSourceSelected(colIdx, cardIdx)
+                                ? 'ring-2 ring-ds-warning'
+                                : inMovableRun
+                                  ? 'ring-2 ring-ds-success'
+                                  : '';
                               return (
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -359,6 +369,15 @@ function SpiderPageContent() {
                                   {tc.faceUp && tc.card ? (
                                     <button
                                       type="button"
+                                      onMouseEnter={() =>
+                                        setHoveredRun({ col: colIdx, indices: spiderMovableRun(col, cardIdx) })
+                                      }
+                                      onMouseLeave={() => setHoveredRun(null)}
+                                      onFocus={() =>
+                                        setHoveredRun({ col: colIdx, indices: spiderMovableRun(col, cardIdx) })
+                                      }
+                                      onBlur={() => setHoveredRun(null)}
+                                      data-movable-run={inMovableRun ? 'true' : undefined}
                                       onClick={() => {
                                         if (selectedSource) {
                                           // If clicking a different column, treat as move target
@@ -378,7 +397,7 @@ function SpiderPageContent() {
                                       draggable={isPlaying && !loading}
                                       onDragStart={dnd.handleDragStart(cardZone)}
                                       onDragEnd={dnd.handleDragEnd}
-                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${ringClass} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                     >
                                       <AnimatedCard
                                         card={tc.card}
