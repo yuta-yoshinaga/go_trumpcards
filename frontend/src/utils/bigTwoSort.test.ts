@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { bigTwoCardStrength, bigTwoPlayTypeKey, bigTwoValueStrength, sortedBigTwoHand } from './bigTwoSort';
+import {
+  bigTwoCardStrength,
+  bigTwoPlayTypeKey,
+  bigTwoValueStrength,
+  classifyBigTwoPlay,
+  sortedBigTwoHand,
+} from './bigTwoSort';
 
 const c = (design: Card['design'], value: number): Card => ({ design, value });
 
@@ -65,5 +71,63 @@ describe('bigTwoPlayTypeKey', () => {
   it('returns null for invalid/empty (0)', () => {
     expect(bigTwoPlayTypeKey(0)).toBeNull();
     expect(bigTwoPlayTypeKey(99)).toBeNull();
+  });
+});
+
+describe('classifyBigTwoPlay', () => {
+  it('classifies a single card', () => {
+    expect(classifyBigTwoPlay([c('SPADE', 5)])).toBe(1);
+  });
+
+  it('classifies a matching pair, rejects a mismatched pair', () => {
+    expect(classifyBigTwoPlay([c('SPADE', 7), c('HEART', 7)])).toBe(2);
+    expect(classifyBigTwoPlay([c('SPADE', 7), c('HEART', 8)])).toBe(0);
+  });
+
+  it('classifies a triple, rejects a mismatched triple', () => {
+    expect(classifyBigTwoPlay([c('SPADE', 9), c('HEART', 9), c('CLOVER', 9)])).toBe(3);
+    expect(classifyBigTwoPlay([c('SPADE', 9), c('HEART', 9), c('CLOVER', 10)])).toBe(0);
+  });
+
+  it('classifies a straight (mixed suits, consecutive)', () => {
+    expect(classifyBigTwoPlay([c('SPADE', 3), c('HEART', 4), c('CLOVER', 5), c('DIAMOND', 6), c('SPADE', 7)])).toBe(4);
+  });
+
+  it('classifies the Ace-high 10-J-Q-K-A straight', () => {
+    expect(classifyBigTwoPlay([c('SPADE', 10), c('HEART', 11), c('CLOVER', 12), c('DIAMOND', 13), c('SPADE', 1)])).toBe(
+      4,
+    );
+  });
+
+  it('rejects a run containing a 2 as a straight', () => {
+    expect(classifyBigTwoPlay([c('SPADE', 1), c('HEART', 2), c('CLOVER', 3), c('DIAMOND', 4), c('SPADE', 5)])).toBe(0);
+  });
+
+  it('classifies a flush (same suit, not consecutive)', () => {
+    expect(classifyBigTwoPlay([c('SPADE', 3), c('SPADE', 5), c('SPADE', 7), c('SPADE', 9), c('SPADE', 11)])).toBe(5);
+  });
+
+  it('classifies a full house', () => {
+    expect(classifyBigTwoPlay([c('SPADE', 8), c('HEART', 8), c('CLOVER', 8), c('DIAMOND', 4), c('SPADE', 4)])).toBe(6);
+  });
+
+  it('classifies four of a kind (plus kicker)', () => {
+    expect(classifyBigTwoPlay([c('SPADE', 6), c('HEART', 6), c('CLOVER', 6), c('DIAMOND', 6), c('SPADE', 9)])).toBe(7);
+  });
+
+  it('classifies a straight flush', () => {
+    expect(classifyBigTwoPlay([c('SPADE', 3), c('SPADE', 4), c('SPADE', 5), c('SPADE', 6), c('SPADE', 7)])).toBe(8);
+  });
+
+  it('returns 0 for empty, 4-card, and 6-card selections', () => {
+    expect(classifyBigTwoPlay([])).toBe(0);
+    expect(classifyBigTwoPlay([c('SPADE', 3), c('HEART', 3), c('CLOVER', 3), c('DIAMOND', 5)])).toBe(0);
+    expect(
+      classifyBigTwoPlay([c('SPADE', 3), c('HEART', 4), c('CLOVER', 5), c('DIAMOND', 6), c('SPADE', 7), c('HEART', 8)]),
+    ).toBe(0);
+  });
+
+  it('returns 0 for a 5-card selection that is neither straight, flush, nor a set', () => {
+    expect(classifyBigTwoPlay([c('SPADE', 3), c('HEART', 5), c('CLOVER', 7), c('DIAMOND', 9), c('SPADE', 11)])).toBe(0);
   });
 });

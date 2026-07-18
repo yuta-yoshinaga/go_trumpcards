@@ -39,6 +39,8 @@
   "betMinusAria": "Remove a chip from boodle {{index}}",
   "betPlusAria": "Add a chip to boodle {{index}}",
   "placeBets": "Place bets",
+  "betCollectible": "Collectible",
+  "betClaimedWarning": "Already won",
   "playPrompt": "Play a card in an ascending same-suit run.",
   "playCardAria": "Play hand card {{index}}",
   "nextRound": "Next Round",

@@ -173,7 +173,9 @@ describe('TrenteEtQuarantePage', () => {
   it('omits the margin line on a refait (tie at 31)', async () => {
     mockApi.mockResolvedValue(refaitState);
     renderWithProviders(<TrenteEtQuarantePage />);
-    await waitFor(() => expect(screen.getByText(/ルフェ/)).toBeInTheDocument());
+    // Scope to the result banner: the refait rule-explainer summary also mentions Refait,
+    // so a bare getByText(/ルフェ/) would match multiple elements.
+    await waitFor(() => expect(screen.getByTestId('teq-result')).toHaveTextContent(/ルフェ/));
     expect(screen.queryByTestId('teq-margin')).not.toBeInTheDocument();
   });
 
