@@ -36,6 +36,16 @@ const gameEndState = makeBeziqueState({
   message: 'ゲーム終了！ あなたの勝利です (1010-820)！',
 });
 const endgameState = makeBeziqueState({ phase: 0, currentPlayerIdx: 0, stockRemaining: 0, isEndgame: true });
+// Endgame human FOLLOW turn: opponent led ♠K; hand is ♠Q / ♦J / ♥A, trump ♥.
+// Holding ♠ forces following ♠ (♠Q cannot beat ♠K, so it is the only legal card).
+const endgameFollowState = makeBeziqueState({
+  phase: 0,
+  currentPlayerIdx: 0,
+  stockRemaining: 0,
+  isEndgame: true,
+  trumpSuit: 3,
+  currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 13 } }],
+});
 
 beforeEach(() => {
   mockExec.mockReset();
@@ -148,6 +158,39 @@ describe('BeziquePage', () => {
     mockExec.mockResolvedValue(endgameState);
     renderWithProviders(<BeziquePage />);
     await waitFor(() => expect(screen.getByText(/フェーズ2/)).toBeInTheDocument());
+  });
+
+  it('rings only the legal cards during an endgame follow turn', async () => {
+    mockExec.mockResolvedValue(endgameFollowState);
+    renderWithProviders(<BeziquePage />);
+    const legal = (await screen.findByAltText('♠ Q')).closest('button');
+    const illegalDiamond = screen.getByAltText('♦ J').closest('button');
+    const illegalHeart = screen.getByAltText('♥ A').closest('button');
+    // ♠Q is the only legal follow → it alone carries the success ring marker.
+    expect(legal).toHaveAttribute('data-legal', 'true');
+    expect(illegalDiamond).not.toHaveAttribute('data-legal');
+    expect(illegalHeart).not.toHaveAttribute('data-legal');
+  });
+
+  it('keeps an illegal card clickable during the endgame (backend still validates)', async () => {
+    mockExec.mockResolvedValue(endgameFollowState);
+    renderWithProviders(<BeziquePage />);
+    const illegal = (await screen.findByAltText('♦ J')).closest('button');
+    // Ring-only highlighting must never block clicks: the card stays enabled.
+    expect(illegal).not.toHaveAttribute('aria-disabled');
+    fireEvent.click(illegal as HTMLElement);
+    expect(illegal).toHaveAttribute('aria-pressed', 'true');
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(endgameFollowState);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    // ♦J is index 1 in the hand; the play still dispatches so the server can reject it.
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
+  });
+
+  it('does not ring any card before the endgame (all cards legal)', async () => {
+    renderWithProviders(<BeziquePage />);
+    const card = (await screen.findByAltText('♠ Q')).closest('button');
+    expect(card).not.toHaveAttribute('data-legal');
   });
 
   it('renders the game end message', async () => {
