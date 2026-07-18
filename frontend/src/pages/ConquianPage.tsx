@@ -422,10 +422,20 @@ function ConquianPageContent() {
                     type="button"
                     className={btnPrimary}
                     onClick={handleMeldSelected}
-                    disabled={loading || (selectedCardIndices.length !== 1 && selectedCardIndices.length < 3)}
+                    disabled={loading || selectedCardIndices.length < 3}
                     data-tutorial="cq-meld-button"
+                    data-testid="conquian-meld-button"
                   >
                     {t('meldButton')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleMeldSelected}
+                    disabled={loading || selectedCardIndices.length !== 1}
+                    data-testid="conquian-layoff-button"
+                  >
+                    {t('layoffButton')}
                   </button>
                   <button
                     type="button"

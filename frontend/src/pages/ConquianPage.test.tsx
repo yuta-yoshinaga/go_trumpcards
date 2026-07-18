@@ -52,6 +52,23 @@ const meldPhaseTookDiscard: ConquianResponse = {
   tookDiscard: true,
 };
 
+// Meld phase with a 3-card hand so all three can be selected to form a new meld.
+const meldPhaseThreeCards: ConquianResponse = {
+  ...meldPhaseState,
+  players: [
+    {
+      ...drawPhaseState.players[0],
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE', value: 5 },
+        { design: 'HEART', value: 5 },
+        { design: 'CLOVER', value: 5 },
+      ],
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], melds: [], wins: 1 },
+  ],
+};
+
 const roundEndState: ConquianResponse = {
   ...drawPhaseState,
   phase: 2,
@@ -238,13 +255,65 @@ describe('ConquianPage', () => {
     expect(screen.getByRole('button', { name: '捨て札から引く' })).toHaveAttribute('aria-keyshortcuts', 'd');
   });
 
-  it('renders meld and discard buttons during meld phase', async () => {
+  it('renders meld, layoff and discard buttons during meld phase', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<ConquianPage />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'メルドする' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'レイオフ' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument();
     });
+  });
+
+  it('meld and layoff buttons are both disabled with no selection', async () => {
+    mockExec.mockResolvedValue(meldPhaseThreeCards);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.getByTestId('conquian-meld-button')).toBeInTheDocument());
+    expect(screen.getByTestId('conquian-meld-button')).toBeDisabled();
+    expect(screen.getByTestId('conquian-layoff-button')).toBeDisabled();
+  });
+
+  it('layoff enabled and meld disabled when exactly 1 card selected; dispatches meld', async () => {
+    mockExec.mockResolvedValue(meldPhaseThreeCards);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 5')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ 5').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('conquian-layoff-button')).not.toBeDisabled();
+    expect(screen.getByTestId('conquian-meld-button')).toBeDisabled();
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(drawPhaseState);
+    fireEvent.click(screen.getByTestId('conquian-layoff-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [[0]]));
+  });
+
+  it('both meld and layoff disabled when exactly 2 cards selected', async () => {
+    mockExec.mockResolvedValue(meldPhaseThreeCards);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 5')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ 5').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('conquian-meld-button')).toBeDisabled();
+    expect(screen.getByTestId('conquian-layoff-button')).toBeDisabled();
+  });
+
+  it('meld enabled and layoff disabled when 3 cards selected; dispatches meld', async () => {
+    mockExec.mockResolvedValue(meldPhaseThreeCards);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 5')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('conquian-meld-button')).not.toBeDisabled();
+    expect(screen.getByTestId('conquian-layoff-button')).toBeDisabled();
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(drawPhaseState);
+    fireEvent.click(screen.getByTestId('conquian-meld-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [[0, 1, 2]]));
   });
 
   it('discard button disabled when not exactly 1 card selected', async () => {
