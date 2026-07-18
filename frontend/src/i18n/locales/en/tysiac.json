@@ -47,6 +47,7 @@
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
   "target": "Target: {{points}} pts",
+  "progressLabel": "Progress: {{score}} / {{target}}",
   "lastTrickBonus": "Last trick +10",
   "playPhase": {
     "lead": "Your turn — pick a card to lead.",

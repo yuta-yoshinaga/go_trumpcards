@@ -47,6 +47,7 @@
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
   "target": "目標: {{points}}点",
+  "progressLabel": "進捗: {{score}} / {{target}}",
   "lastTrickBonus": "ラストトリック +10",
   "playPhase": {
     "lead": "あなたの番です — リードするカードを選んでください。",
