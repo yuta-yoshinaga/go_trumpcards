@@ -141,6 +141,15 @@ describe('ManillePage', () => {
     expect(screen.getByTestId('manille-player-3')).not.toHaveAttribute('data-own-team');
   });
 
+  it('renders the card-strength legend with the reversed rank order and points', async () => {
+    renderWithProviders(<ManillePage />);
+    const legend = await screen.findByTestId('manille-strength-legend');
+    // Manille (10) tops the order, then Manillon (A); note lists 10 > A > K > Q > J > 9 > 8 > 7.
+    expect(legend).toHaveTextContent('10 (マニーユ)');
+    expect(legend).toHaveTextContent('A (マニヨン)');
+    expect(legend).toHaveTextContent('10 > A > K > Q > J > 9 > 8 > 7（切り札・非切り札で共通）。得点合計60点。');
+  });
+
   it('applies the same-team highlight in the mobile player list', async () => {
     mobileFlag.value = true;
     renderWithProviders(<ManillePage />);
