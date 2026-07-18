@@ -288,6 +288,48 @@ describe('ShitheadPage', () => {
     expect(screen.getByText('リセット: 次のプレイヤーは何でも出せます')).toBeInTheDocument();
   });
 
+  it('renders face-down cards as card-back images rather than "?" buttons', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    // faceDownCount is 3 for the human player.
+    await waitFor(() => expect(screen.getByTestId('sh-facedown-0')).toBeInTheDocument());
+    expect(screen.getByTestId('sh-facedown-1')).toBeInTheDocument();
+    expect(screen.getByTestId('sh-facedown-2')).toBeInTheDocument();
+    // Each face-down slot renders a card-back image, not a literal "?".
+    expect(screen.getAllByTestId('animated-card-back').length).toBeGreaterThanOrEqual(3);
+    expect(screen.getByTestId('sh-facedown-0')).not.toHaveTextContent('?');
+  });
+
+  it('makes face-down cards selectable with a ring when currentSource is facedown', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, currentSource: 'facedown' });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    const first = await screen.findByTestId('sh-facedown-0');
+    expect(first).toBeEnabled();
+    expect(first).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(first);
+    await waitFor(() => expect(screen.getByTestId('sh-facedown-0')).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('sh-facedown-0').className).toContain('ring-ds-warning');
+  });
+
+  it('disables face-down cards when the current source is not facedown', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    // Default humanTurnState currentSource is 'hand'.
+    const first = await screen.findByTestId('sh-facedown-0');
+    expect(first).toBeDisabled();
+    expect(first).not.toHaveAttribute('aria-pressed');
+  });
+
   it('renders a joker discard top as a card image with an accessible label', async () => {
     mockExec.mockResolvedValue({
       ...humanTurnState,
