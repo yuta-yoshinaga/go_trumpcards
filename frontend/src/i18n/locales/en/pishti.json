@@ -8,6 +8,8 @@
   "pistiCelebration": "PİŞTİ +10!",
   "pistiCelebrationJack": "PİŞTİ +20! (J)",
   "finalScore": "{{score}} pts",
+  "provisional": "Provisional {{score}}",
+  "provisionalNote": "The provisional score includes only locked-in Pişti bonuses and the most-cards +3. Card points (A, J, 2♣, 10♦) are not yet counted, so final scores will be higher.",
   "pile": "Pile",
   "pileTop": "Pile top",
   "pileCount": "{{count}} cards",
