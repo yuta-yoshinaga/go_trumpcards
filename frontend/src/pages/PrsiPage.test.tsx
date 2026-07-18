@@ -279,6 +279,38 @@ describe('PrsiPage', () => {
     await waitFor(() => expect(screen.getByText('山札: 30枚')).toBeInTheDocument());
   });
 
+  it('renders the clickable stock pile with the remaining count', async () => {
+    renderWithProviders(<PrsiPage />);
+    const stock = await screen.findByTestId('prsi-stock');
+    expect(stock).toHaveTextContent('30');
+    expect(stock).not.toBeDisabled();
+  });
+
+  it('drawing via a stock click dispatches the draw action on the human turn', async () => {
+    renderWithProviders(<PrsiPage />);
+    const stock = await screen.findByTestId('prsi-stock');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(stock);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('disables the stock pile when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<PrsiPage />);
+    const stock = await screen.findByTestId('prsi-stock');
+    expect(stock).toBeDisabled();
+  });
+
+  it('shows the penalty badge on the stock pile when penaltyDrawCount > 0', async () => {
+    mockExec.mockResolvedValue(penaltyState);
+    renderWithProviders(<PrsiPage />);
+    const badge = await screen.findByTestId('prsi-stock-penalty');
+    expect(badge).toHaveTextContent('+2');
+  });
+
   it('phase indicator shows your turn when human play turn', async () => {
     renderWithProviders(<PrsiPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));

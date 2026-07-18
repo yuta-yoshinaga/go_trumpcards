@@ -11,6 +11,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -196,18 +197,50 @@ function PrsiPageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
               <div>
-                {/* Discard pile top */}
-                {state.discardTop && (
-                  <div
-                    className="my-3 p-3 rounded bg-black/40 flex items-center gap-3"
-                    data-tutorial="prsi-discard-pile"
-                  >
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
-                    <div className="text-ds-text-muted text-sm">
-                      <div>{t('discardTop')}</div>
+                {/* Discard pile top + clickable stock pile */}
+                <div className="my-3 flex items-start gap-4 flex-wrap">
+                  {state.discardTop && (
+                    <div className="p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="prsi-discard-pile">
+                      <AnimatedCard card={state.discardTop} width={cardWidth} />
+                      <div className="text-ds-text-muted text-sm">
+                        <div>{t('discardTop')}</div>
+                      </div>
                     </div>
+                  )}
+
+                  {/* Stock pile: a face-down stack the human can click to draw. */}
+                  <div className="p-3 rounded bg-black/40 flex flex-col items-center gap-1">
+                    <button
+                      type="button"
+                      data-testid="prsi-stock"
+                      onClick={handleDraw}
+                      disabled={!isHumanTurn || loading || state.drawPileCount === 0}
+                      aria-label={t('stockAria', { count: state.drawPileCount })}
+                      className={`relative ${focusRingCard} ${
+                        isHumanTurn && state.drawPileCount > 0 ? 'cursor-pointer' : 'cursor-default opacity-70'
+                      }`}
+                      style={{ background: 'none', padding: 0, border: 'none', lineHeight: 0 }}
+                    >
+                      <AnimatedCardBack width={cardWidth} silent />
+                      <span
+                        className="absolute -top-1 -right-1 min-w-[1.25rem] px-1 rounded-full bg-ds-surface text-ds-text-primary text-xs font-bold text-center leading-5 shadow"
+                        aria-hidden="true"
+                      >
+                        {state.drawPileCount}
+                      </span>
+                      {hasPenalty && (
+                        <span
+                          className="absolute -bottom-1 -left-1 px-1.5 rounded-full bg-ds-warning text-black text-xs font-bold leading-5 shadow"
+                          aria-hidden="true"
+                          data-testid="prsi-stock-penalty"
+                        >
+                          +{state.penaltyDrawCount}
+                        </span>
+                      )}
+                    </button>
+                    <div className="text-ds-text-muted text-sm">{t('stock')}</div>
                   </div>
-                )}
+                </div>
 
                 {hasPenalty && (
                   <div
