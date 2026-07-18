@@ -120,6 +120,25 @@ describe('PresidentPage', () => {
     expect(screen.getByTestId('president-revolution-flash')).toHaveClass('bg-ds-warning/40');
   });
 
+  it('shows a distinct status banner when revolution reverts (true → false)', async () => {
+    mockExec.mockReset();
+    // Mount fetches an active-revolution state; the follow-up pass returns a
+    // state where revolution has ended, driving the true → false transition.
+    mockExec
+      .mockResolvedValueOnce(makeState({ revolutionActive: true }))
+      .mockResolvedValue(makeState({ revolutionActive: false }));
+    renderWithProviders(<PresidentPage />);
+    await waitFor(() => expect(screen.getByTestId('president-revolution-flash')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('pass-button'));
+    await waitFor(() => expect(screen.getByTestId('president-revolution-end-flash')).toBeInTheDocument());
+    const endFlash = screen.getByTestId('president-revolution-end-flash');
+    expect(endFlash).toHaveAttribute('role', 'status');
+    expect(endFlash).toHaveTextContent('革命終了');
+    // Distinct from the activation flash (info-coloured banner vs warning scrim).
+    expect(endFlash.querySelector('span')).toHaveClass('bg-ds-info');
+  });
+
   it('disables action buttons when it is not human turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentTurn: 1 }));
     renderWithProviders(<PresidentPage />);

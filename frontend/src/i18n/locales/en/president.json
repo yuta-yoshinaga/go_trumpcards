@@ -8,6 +8,7 @@
   "label.tableCards": "Table",
   "label.tableEmpty": "Empty (anyone can play)",
   "badge.revolution": "[Revolution] 2 weakest, 3 strongest",
+  "flash.revolutionEnd": "Revolution ended — strength order back to normal",
   "rank.president": "President",
   "rank.vicePresident": "Vice President",
   "rank.viceScum": "Vice Scum",
