@@ -40,6 +40,14 @@
     "diamond": "♦ ダイヤ",
     "grand": "グランド"
   },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetScore": "目標スコア",
+    "easy": "やさしい",
+    "normal": "ふつう",
+    "hard": "むずかしい"
+  },
   "phase": {
     "bid": "ビッドフェーズ",
     "skatPickup": "スカート拾い",
