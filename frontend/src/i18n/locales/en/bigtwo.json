@@ -53,5 +53,7 @@
     "number": "Rank",
     "label": "Sort hand"
   },
-  "tablePlayLabel": "Play"
+  "tablePlayLabel": "Play",
+  "selectedPlayLabel": "Selected",
+  "invalidCombo": "Invalid combination"
 }
