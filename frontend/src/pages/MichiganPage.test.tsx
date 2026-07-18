@@ -151,6 +151,40 @@ describe('MichiganPage', () => {
     expect(card).toBeDisabled();
   });
 
+  it('highlights playable cards with a success ring and a next-play badge', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<MichiganPage />);
+    const playable = await screen.findByTestId('hand-card-0');
+    expect(playable.className).toContain('ring-ds-success');
+    expect(playable).toHaveAttribute('data-playable', 'true');
+    expect(screen.getByTestId('playable-badge-0')).toBeInTheDocument();
+  });
+
+  it('does not ring or badge a non-playable card', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<MichiganPage />);
+    const nonPlayable = await screen.findByTestId('hand-card-1');
+    expect(nonPlayable.className).not.toContain('ring-ds-success');
+    expect(nonPlayable).toHaveAttribute('data-playable', 'false');
+    expect(screen.queryByTestId('playable-badge-1')).not.toBeInTheDocument();
+  });
+
+  it('shows the next-required-card hint for an active sequence', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<MichiganPage />);
+    expect(await screen.findByTestId('michigan-next-hint')).toHaveTextContent('次に出せる: ハート 4');
+  });
+
+  it('keeps a highlighted playable card clickable (ring stays additive)', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<MichiganPage />);
+    const playable = await screen.findByTestId('hand-card-0');
+    expect(playable).not.toBeDisabled();
+    mockExec.mockClear();
+    fireEvent.click(playable);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
+  });
+
   it('shows the next-round button at the result phase and dispatches nextround', async () => {
     mockExec.mockResolvedValue(resultState);
     renderWithProviders(<MichiganPage />);

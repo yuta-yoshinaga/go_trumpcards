@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { MICHIGAN_HELP, parseMichiganCommand } from '../utils/cli/commands/michiganCommands';
 import { formatMichiganState } from '../utils/cli/formatters/michiganFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { michiganNextPlayable } from '../utils/michiganPlayable';
 
 /** Number of center boodle cards (always 4: A♥, K♣, Q♦, J♠). */
 const MICHIGAN_BOODLE_COUNT = 4;
@@ -148,6 +149,8 @@ function MichiganPageContent() {
 
   const showBetControls = isBetPhase && isHumanTurn && !state.humanBetPlaced && !isGameEnd;
   const canPlay = (i: number) => isPlayPhase && isHumanTurn && state.playableIndices.includes(i);
+  const nextPlayable = michiganNextPlayable(state);
+  const showPlayHints = isPlayPhase && isHumanTurn && !isGameEnd;
 
   const betSum = bets.reduce((a, b) => a + b, 0);
   const betRemaining = state.betBudget - betSum;
@@ -347,6 +350,13 @@ function MichiganPageContent() {
             {humanPlayer && humanPlayer.cards.length > 0 ? (
               <div className="mb-2" data-tutorial="michigan-hand">
                 <div className="text-ds-text-muted text-xs mb-0.5">{t('handLabel')}</div>
+                {showPlayHints && (
+                  <div className="text-ds-success text-sm mb-1" data-testid="michigan-next-hint">
+                    {nextPlayable.isNewSequence
+                      ? t('nextHint.new')
+                      : t('nextHint.next', { suit: nextPlayable.suitName, value: nextPlayable.nextValue })}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-1">
                   {humanPlayer.cards.map((c, i) => (
                     <button
@@ -355,12 +365,23 @@ function MichiganPageContent() {
                       onClick={() => canPlay(i) && handlePlay(i)}
                       disabled={!canPlay(i) || loading}
                       className={`rounded transition-all ${
-                        canPlay(i) ? 'cursor-pointer hover:-translate-y-2' : 'cursor-default opacity-60'
+                        canPlay(i)
+                          ? 'cursor-pointer hover:-translate-y-2 ring-2 ring-ds-success'
+                          : 'cursor-default opacity-60'
                       }`}
                       data-testid={`hand-card-${i}`}
+                      data-playable={canPlay(i) ? 'true' : 'false'}
                       aria-label={t('playCardAria', { index: i })}
                     >
                       <CardImage card={c} width={cardWidth} />
+                      {canPlay(i) && (
+                        <span
+                          className="block text-center text-ds-success text-xs mt-0.5"
+                          data-testid={`playable-badge-${i}`}
+                        >
+                          {nextPlayable.isNewSequence ? t('nextHint.leadBadge') : t('nextHint.nextBadge')}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
