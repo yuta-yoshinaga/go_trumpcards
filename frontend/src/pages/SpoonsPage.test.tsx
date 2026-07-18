@@ -114,6 +114,68 @@ describe('SpoonsPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass', { cardIndex: 2 }));
   });
 
+  it('color-codes same-rank hand cards into groups and leaves singletons neutral', async () => {
+    // Hand: 7♠ 7♥ 3♣ K♦ — the two 7s share a group color; 3 and K are neutral.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({
+            name: 'You',
+            isHuman: true,
+            hand: [
+              { design: 'SPADE', value: 7 },
+              { design: 'HEART', value: 7 },
+              { design: 'CLOVER', value: 3 },
+              { design: 'DIAMOND', value: 13 },
+            ],
+          }),
+          makePlayer(),
+          makePlayer(),
+          makePlayer(),
+        ],
+      }),
+    );
+    renderWithProviders(<SpoonsPage />);
+    const c0 = await screen.findByTestId('spoons-pass-0');
+    const c1 = screen.getByTestId('spoons-pass-1');
+    const c2 = screen.getByTestId('spoons-pass-2');
+    const c3 = screen.getByTestId('spoons-pass-3');
+    // The pair shares a non-"none" group color.
+    expect(c0).toHaveAttribute('data-rank-group', c1.getAttribute('data-rank-group') ?? '');
+    expect(c0.getAttribute('data-rank-group')).not.toBe('none');
+    // Singletons carry no group color and are not reach.
+    expect(c2).toHaveAttribute('data-rank-group', 'none');
+    expect(c3).toHaveAttribute('data-rank-group', 'none');
+    expect(c0).toHaveAttribute('data-rank-reach', 'false');
+  });
+
+  it('flags a three-of-a-kind hand as a reach', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({
+            name: 'You',
+            isHuman: true,
+            hand: [
+              { design: 'SPADE', value: 8 },
+              { design: 'HEART', value: 8 },
+              { design: 'CLOVER', value: 8 },
+              { design: 'DIAMOND', value: 2 },
+            ],
+          }),
+          makePlayer(),
+          makePlayer(),
+          makePlayer(),
+        ],
+      }),
+    );
+    renderWithProviders(<SpoonsPage />);
+    const c0 = await screen.findByTestId('spoons-pass-0');
+    expect(c0).toHaveAttribute('data-rank-reach', 'true');
+    expect(c0.getAttribute('data-rank-group')).not.toBe('none');
+    expect(screen.getByTestId('spoons-pass-3')).toHaveAttribute('data-rank-reach', 'false');
+  });
+
   it('does not render pass buttons when it is not the human turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1, isHumanTurn: false }));
     renderWithProviders(<SpoonsPage />);
