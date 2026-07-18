@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, ContractRummyContractSlot } from '../types/card';
-import { describeCariocaSlotShortfall, evaluateCariocaContractSlot, isCariocaRun, isCariocaSet } from './cariocaUtils';
+import {
+  canLayoffCariocaMeld,
+  describeCariocaSlotShortfall,
+  evaluateCariocaContractSlot,
+  isCariocaRun,
+  isCariocaSet,
+} from './cariocaUtils';
 import { CONTRACT_SLOT_RUN, CONTRACT_SLOT_SET } from './contractRummyUtils';
 
 const card = (design: Card['design'], value: number): Card => ({ design, value });
@@ -164,5 +170,45 @@ describe('describeCariocaSlotShortfall', () => {
     expect(
       describeCariocaSlotShortfall(runSlot, [card('SPADE', 2), card('SPADE', 3), card('SPADE', 4), card('SPADE', 9)]),
     ).toEqual({ code: 'runNotConsecutive' });
+  });
+});
+
+describe('canLayoffCariocaMeld', () => {
+  it('accepts a matching-rank card onto a set', () => {
+    // A trío of 5s accepts a fourth 5 (still a valid set).
+    expect(canLayoffCariocaMeld([card('SPADE', 5), card('HEART', 5), card('DIAMOND', 5)], card('CLOVER', 5))).toBe(
+      true,
+    );
+  });
+
+  it('rejects a mismatched-rank card onto a set', () => {
+    expect(canLayoffCariocaMeld([card('SPADE', 5), card('HEART', 5), card('DIAMOND', 5)], card('CLOVER', 8))).toBe(
+      false,
+    );
+  });
+
+  it('accepts a card that extends a run at either end (same suit)', () => {
+    const run = [card('SPADE', 3), card('SPADE', 4), card('SPADE', 5), card('SPADE', 6)];
+    expect(canLayoffCariocaMeld(run, card('SPADE', 7))).toBe(true); // high end
+    expect(canLayoffCariocaMeld(run, card('SPADE', 2))).toBe(true); // low end
+  });
+
+  it('rejects a same-suit card that does not extend the run', () => {
+    const run = [card('SPADE', 3), card('SPADE', 4), card('SPADE', 5), card('SPADE', 6)];
+    expect(canLayoffCariocaMeld(run, card('SPADE', 9))).toBe(false);
+  });
+
+  it('rejects an off-suit card onto a run', () => {
+    const run = [card('SPADE', 3), card('SPADE', 4), card('SPADE', 5), card('SPADE', 6)];
+    expect(canLayoffCariocaMeld(run, card('HEART', 7))).toBe(false);
+  });
+
+  it('rejects a layoff onto an empty meld', () => {
+    expect(canLayoffCariocaMeld([], card('SPADE', 5))).toBe(false);
+  });
+
+  it('rejects a second joker when the run already contains one', () => {
+    const run = [card('SPADE', 3), joker(), card('SPADE', 5), card('SPADE', 6)];
+    expect(canLayoffCariocaMeld(run, joker())).toBe(false);
   });
 });

@@ -386,6 +386,76 @@ describe('CariocaPage', () => {
     expect(screen.getByTestId('ca-submit-contract')).toBeDisabled();
   });
 
+  it('marks a meld green for a card that fits and red for one that does not', async () => {
+    // Human contract met (no own melds) + opponent 1 has a trío of 5s to lay off onto.
+    const metState: CariocaResponse = {
+      ...playState,
+      players: [
+        { ...playState.players[0], contractMet: true },
+        {
+          ...playState.players[1],
+          contractMet: true,
+          melds: [{ cards: [card('SPADE', 5), card('HEART', 5), card('DIAMOND', 5)] }],
+        },
+        playState.players[2],
+      ],
+    };
+    mockExec.mockResolvedValue(metState);
+    renderWithProviders(<CariocaPage />);
+    const meld = await screen.findByTestId('ca-meld-1-0');
+    // No preview before a card is staged.
+    expect(meld).not.toHaveAttribute('data-layoff-accepts');
+
+    // Hand card buttons carry an image but (unlike meld buttons) no ca-meld test id.
+    const handCards = screen
+      .getAllByRole('button')
+      .filter((b) => b.querySelector('img') && !b.getAttribute('data-testid')?.startsWith('ca-meld'));
+
+    // baseHand[0] is the 5♠ — a valid fourth card for the 5-set.
+    fireEvent.click(handCards[0]);
+    expect(meld).toHaveAttribute('data-layoff-accepts', 'true');
+    expect(meld).toHaveClass('ring-ds-success');
+
+    // Toggle it off and pick baseHand[3] (K♣) — a mismatch that the set rejects.
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[3]);
+    expect(meld).toHaveAttribute('data-layoff-accepts', 'false');
+    expect(meld).toHaveClass('ring-ds-error');
+  });
+
+  it('annotates the layoff summary with whether the staged card fits the target meld', async () => {
+    const metState: CariocaResponse = {
+      ...playState,
+      players: [
+        { ...playState.players[0], contractMet: true },
+        {
+          ...playState.players[1],
+          contractMet: true,
+          melds: [{ cards: [card('SPADE', 5), card('HEART', 5), card('DIAMOND', 5)] }],
+        },
+        playState.players[2],
+      ],
+    };
+    mockExec.mockResolvedValue(metState);
+    renderWithProviders(<CariocaPage />);
+    const meld = await screen.findByTestId('ca-meld-1-0');
+    fireEvent.click(meld); // target this meld
+
+    const handCards = screen
+      .getAllByRole('button')
+      .filter((b) => b.querySelector('img') && !b.getAttribute('data-testid')?.startsWith('ca-meld'));
+
+    // Stage the 5♠ — the summary should report the card fits.
+    fireEvent.click(handCards[0]);
+    const acceptance = screen.getByTestId('ca-layoff-acceptance');
+    expect(acceptance).toHaveAttribute('data-accepts', 'true');
+
+    // Switch to the K♣ — the summary flips to "doesn't fit".
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[3]);
+    expect(screen.getByTestId('ca-layoff-acceptance')).toHaveAttribute('data-accepts', 'false');
+  });
+
   it('shows winner banner at game end', async () => {
     const endState: CariocaResponse = {
       ...drawState,
