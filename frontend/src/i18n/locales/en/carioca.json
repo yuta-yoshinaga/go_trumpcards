@@ -34,6 +34,8 @@
   "layoff": "Lay off",
   "meldAria": "{{player}}'s meld {{meld}}",
   "layoffTargetSummary": "→ Lay off to: {{player}} meld {{meld}}",
+  "layoffAcceptable": "This card fits",
+  "layoffNotAcceptable": "This card doesn't fit",
   "discard": "Discard card",
   "nextRound": "Next round",
   "viewLog": "View log",
