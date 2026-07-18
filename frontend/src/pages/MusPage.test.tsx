@@ -79,14 +79,27 @@ describe('MusPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mus', { mus: false }));
   });
 
-  it('renders the discard button in the discard phase', async () => {
+  it('disables the discard button and shows the guide when nothing is selected', async () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<MusPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /交換する/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /交換する/ })).toBeDisabled();
+    expect(screen.getByTestId('mus-discard-guide')).toHaveTextContent('交換するカードを1〜4枚選んでください');
+  });
+
+  it('enables the discard button once a card is selected and dispatches the discard', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<MusPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /交換する/ })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    expect(screen.getByRole('button', { name: /交換する/ })).toBeEnabled();
+    expect(screen.getByTestId('mus-discard-guide')).toHaveTextContent('1枚選択中');
+
     mockExec.mockClear();
     mockExec.mockResolvedValue(discardState);
     fireEvent.click(screen.getByRole('button', { name: /交換する/ }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { discardIndices: [] }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { discardIndices: [0] }));
   });
 
   it('renders bet buttons gated by can flags and dispatches envido', async () => {

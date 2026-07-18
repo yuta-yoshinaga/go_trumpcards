@@ -305,9 +305,21 @@ function MusPageContent() {
               )}
 
               {isDiscardPhase && isHumanTurn && (
-                <button type="button" className={btnPrimary} onClick={handleDiscard} disabled={loading}>
-                  {t('discardButton')} ({t('discardSelected', { count: selectedCardIndices.length })})
-                </button>
+                <>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleDiscard}
+                    disabled={loading || selectedCardIndices.length === 0}
+                  >
+                    {t('discardButton')} ({t('discardSelected', { count: selectedCardIndices.length })})
+                  </button>
+                  <span className="text-ds-text-muted text-sm" data-testid="mus-discard-guide">
+                    {selectedCardIndices.length === 0
+                      ? t('discardGuide')
+                      : t('discardCount', { count: selectedCardIndices.length })}
+                  </span>
+                </>
               )}
 
               {isBetPhase && isHumanTurn && (
