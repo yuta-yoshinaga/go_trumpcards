@@ -17,6 +17,7 @@ const resultState = makeGutsState({
   phase: 1,
   winnerIdx: 0,
   result: 1,
+  matchers: [1],
   players: [
     {
       id: 0,
@@ -40,7 +41,7 @@ const resultState = makeGutsState({
       chips: 170,
       in: true,
       out: false,
-      roundBet: 10,
+      roundBet: 90,
       cardCount: 2,
       cards: [
         { design: 'HEART', value: 5 },
@@ -86,6 +87,7 @@ const gameEndState = makeGutsState({
 });
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(declareState);
 });
@@ -145,6 +147,14 @@ describe('GutsPage', () => {
     renderWithProviders(<GutsPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'イン（残る）' })).not.toBeInTheDocument();
+  });
+
+  it('shows the matcher extra payment in the round result', async () => {
+    mockExec.mockResolvedValue(resultState);
+    renderWithProviders(<GutsPage />);
+    const line = await screen.findByTestId('guts-matcher-payment');
+    // roundBet 90 minus ante 10 = 80 chips matched into the next pot.
+    expect(line).toHaveTextContent('マッチ支払い: CPU 1 が -80');
   });
 
   it('renders the game-end message', async () => {

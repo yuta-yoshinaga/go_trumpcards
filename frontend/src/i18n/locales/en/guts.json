@@ -37,7 +37,8 @@
   "nextRound": "Next Round",
   "roundResult": {
     "title": "Round Result",
-    "winner": "{{name}} won the pot of {{pot}}."
+    "winner": "{{name}} won the pot of {{pot}}.",
+    "matchPayment": "Match payment: {{name}} pays -{{amount}}"
   },
   "matchWinner": "{{name}} won the match!",
   "hint": {

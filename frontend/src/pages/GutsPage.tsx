@@ -277,6 +277,23 @@ function GutsPageContent() {
                     pot: state.pot,
                   })}
                 </div>
+                {state.matchers.map((idx) => {
+                  const matcher = state.players[idx];
+                  if (!matcher) return null;
+                  const amount = Math.max(0, matcher.roundBet - state.ante);
+                  return (
+                    <div
+                      key={`matcher-${idx}`}
+                      className="text-ds-error font-semibold"
+                      data-testid="guts-matcher-payment"
+                    >
+                      {t('roundResult.matchPayment', {
+                        name: playerLabel(idx, idx === humanIdx),
+                        amount,
+                      })}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
