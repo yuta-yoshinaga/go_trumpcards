@@ -306,4 +306,61 @@ describe('BelotePage', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(screen.getByText(/を宣言/)).toBeInTheDocument());
   });
+
+  it('rings only the legal follow-suit card during the human play turn', async () => {
+    // Trump ♠(1). Opponent leads ♥; the human holds ♥10 so must follow ♥.
+    // Only ♥10 is legal; ♠J and ♣9 are illegal.
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BelotePhase.PLAY,
+        trumpSuit: 1,
+        currentPlayerIdx: 0,
+        makerTeam: 0,
+        currentTrick: [{ playerIdx: 1, card: card('HEART', 13) }],
+      }),
+    );
+    renderWithProviders(<BelotePage />);
+    const legalCard = await screen.findByRole('button', { name: '♥ 10' });
+    const illegalCard = screen.getByRole('button', { name: '♠ J' });
+    expect(legalCard).toHaveAttribute('data-legal', 'true');
+    expect(illegalCard).not.toHaveAttribute('data-legal');
+  });
+
+  it('keeps an illegal card clickable so the backend still validates the play', async () => {
+    // Same setup: ♠J is illegal (must follow ♥) but must remain selectable —
+    // the highlight is additive only and never blocks clicks (see hearts #3977).
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BelotePhase.PLAY,
+        trumpSuit: 1,
+        currentPlayerIdx: 0,
+        makerTeam: 0,
+        currentTrick: [{ playerIdx: 1, card: card('HEART', 13) }],
+      }),
+    );
+    renderWithProviders(<BelotePage />);
+    const illegalCard = await screen.findByRole('button', { name: '♠ J' });
+    expect(illegalCard).not.toHaveAttribute('aria-disabled');
+    // The Play button is disabled until a card is selected.
+    expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
+    fireEvent.click(illegalCard);
+    // Clicking the illegal card selects it and enables Play — no client-side block.
+    expect(illegalCard).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: '出す' })).not.toBeDisabled();
+  });
+
+  it('does not ring any card during a CPU play turn', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BelotePhase.PLAY,
+        trumpSuit: 1,
+        currentPlayerIdx: 1,
+        makerTeam: 0,
+        currentTrick: [{ playerIdx: 1, card: card('HEART', 13) }],
+      }),
+    );
+    renderWithProviders(<BelotePage />);
+    const humanCard = await screen.findByRole('button', { name: '♥ 10' });
+    expect(humanCard).not.toHaveAttribute('data-legal');
+  });
 });
