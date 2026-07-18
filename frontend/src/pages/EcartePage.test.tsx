@@ -112,6 +112,34 @@ describe('EcartePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { discardIndices: [0] }));
   });
 
+  it('disables the discard button and shows the empty reason when no card is selected', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<EcartePage />);
+    const discard = await screen.findByTestId('ecarte-discard');
+    expect(discard).toBeDisabled();
+    expect(screen.getByTestId('ecarte-discard-reason')).toHaveTextContent('カードを選択してください');
+    expect(screen.getByTestId('ecarte-discard-guide')).toHaveTextContent('0枚選択中');
+  });
+
+  it('enables the discard button and updates the count guide once a card is selected', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<EcartePage />);
+    const card = await screen.findByAltText('♠ K');
+    fireEvent.click(card);
+    expect(screen.getByTestId('ecarte-discard')).toBeEnabled();
+    expect(screen.getByTestId('ecarte-discard-guide')).toHaveTextContent('1枚選択中');
+    expect(screen.queryByTestId('ecarte-discard-reason')).not.toBeInTheDocument();
+  });
+
+  it('disables the discard button and shows the stock reason when selecting more than the stock', async () => {
+    mockExec.mockResolvedValue(makeEcarteState({ phase: 0, negStep: 2, currentPlayerIdx: 0, stockRemaining: 0 }));
+    renderWithProviders(<EcartePage />);
+    const card = await screen.findByAltText('♠ K');
+    fireEvent.click(card);
+    expect(screen.getByTestId('ecarte-discard')).toBeDisabled();
+    expect(screen.getByTestId('ecarte-discard-reason')).toHaveTextContent('山札が足りません');
+  });
+
   it('renders the play phase with the human cards and the play button', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<EcartePage />);

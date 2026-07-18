@@ -150,6 +150,14 @@ function EcartePageContent() {
     isHumanExchangeTurn &&
     (state.negStep === EcarteNegStep.ELDER_DISCARD || state.negStep === EcarteNegStep.DEALER_DISCARD);
 
+  // Discard-step guards: block an empty selection (server-error otherwise) and a
+  // selection larger than the remaining stock, surfacing the reason inline (#3454).
+  const discardCount = selectedCardIndices.length;
+  const discardExceedsStock = discardCount > state.stockRemaining;
+  const discardDisabled = loading || discardCount === 0 || discardExceedsStock;
+  const discardReasonKey =
+    discardCount === 0 ? 'discardReasonEmpty' : discardExceedsStock ? 'discardReasonExceed' : null;
+
   const trumpSymbol = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? SUIT_SYMBOLS[state.trumpSuit] : t('noTrump');
 
   const handleManualReset = () => {
@@ -379,15 +387,23 @@ function EcartePageContent() {
               {isDiscardStep && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('discardPrompt')}</span>
+                  <span className="text-xs text-ds-text-primary self-center mr-1" data-testid="ecarte-discard-guide">
+                    {t('discardSelectionGuide', { count: selectedCardIndices.length })}
+                  </span>
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={handleDiscard}
-                    disabled={loading}
+                    disabled={discardDisabled}
                     data-testid="ecarte-discard"
                   >
                     {t('discardButton', { count: selectedCardIndices.length })}
                   </button>
+                  {discardReasonKey && (
+                    <span className="text-xs text-ds-warning self-center" data-testid="ecarte-discard-reason">
+                      {t(discardReasonKey)}
+                    </span>
+                  )}
                 </>
               )}
               {isRoundEnd && (

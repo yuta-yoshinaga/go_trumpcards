@@ -38,6 +38,9 @@
   "refuseButton": "Refuse",
   "discardPrompt": "Choose cards to discard:",
   "discardButton": "Exchange ({{count}})",
+  "discardSelectionGuide": "{{count}} selected",
+  "discardReasonEmpty": "Select at least one card",
+  "discardReasonExceed": "Not enough stock",
   "nextRound": "Next Deal",
   "target": "Target: {{points}} pts",
   "roundResult": {

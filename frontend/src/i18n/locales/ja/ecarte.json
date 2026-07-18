@@ -38,6 +38,9 @@
   "refuseButton": "拒否",
   "discardPrompt": "捨てるカードを選んでください:",
   "discardButton": "交換する ({{count}})",
+  "discardSelectionGuide": "{{count}}枚選択中",
+  "discardReasonEmpty": "カードを選択してください",
+  "discardReasonExceed": "山札が足りません",
   "nextRound": "次のディール",
   "target": "目標: {{points}}点",
   "roundResult": {
