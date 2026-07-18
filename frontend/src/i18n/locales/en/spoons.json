@@ -3,6 +3,8 @@
   "cpu": "CPU {{id}}",
   "round": "Round {{n}}",
   "spoonsRemaining": "Spoons left: {{count}}",
+  "spoonsLabel": "Spoons",
+  "spoonGrabbedBy": "Grabbed by {{name}}",
   "drawPile": "Draw pile: {{count}}",
   "playersTitle": "Players",
   "handLabel": "Your hand",

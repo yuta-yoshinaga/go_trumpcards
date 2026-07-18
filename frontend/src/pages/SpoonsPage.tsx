@@ -165,6 +165,17 @@ function SpoonsPageContent() {
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
 
+  // Build the spoon-icon row: one available icon per remaining spoon, plus one
+  // grayed-out icon per player who already grabbed (labeled with the grabber).
+  // The full-row total = remaining + grabbed = the number of spoons in play.
+  const grabbers = state.players
+    .map((p, idx) => ({ idx, isHuman: p.isHuman, hasSpoon: p.hasSpoon }))
+    .filter((g) => g.hasSpoon);
+  const spoonsInPlay = state.spoonsRemaining + grabbers.length;
+  // motion-safe pulse only while spoons can still be grabbed, echoing the grab
+  // button's urgency cue; respects prefers-reduced-motion via motion-safe:.
+  const spoonPulse = state.grabWindowOpen && !isGameEnd ? ' motion-safe:animate-pulse' : '';
+
   const handleManualReset = () => {
     hideActionLog();
     exec('reset', { config: { cpuDifficulty } });
@@ -213,8 +224,47 @@ function SpoonsPageContent() {
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             <div className="text-ds-text-primary text-center mb-2" data-tutorial="spoons-info">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('spoonsRemaining', { count: state.spoonsRemaining })}</span>
               <span>{t('drawPile', { count: state.drawPileSize })}</span>
+            </div>
+
+            {/* Spoons on the table, visualized as icons (grabbed ones grayed out). */}
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mb-3">
+              <span className="text-ds-text-muted text-sm">{t('spoonsLabel')}</span>
+              {spoonsInPlay > 0 ? (
+                <div
+                  className="flex flex-wrap items-center gap-1.5"
+                  data-testid="spoons-icon-row"
+                  role="img"
+                  aria-label={t('spoonsRemaining', { count: state.spoonsRemaining })}
+                >
+                  {Array.from({ length: state.spoonsRemaining }, (_, i) => (
+                    <span
+                      key={`spoon-avail-${i}`}
+                      data-testid="spoons-icon-available"
+                      aria-hidden="true"
+                      className={`text-lg leading-none${spoonPulse}`}
+                    >
+                      🥄
+                    </span>
+                  ))}
+                  {grabbers.map((g) => (
+                    <span
+                      key={`spoon-grabbed-${g.idx}`}
+                      data-testid="spoons-icon-grabbed"
+                      className="inline-flex items-center gap-0.5 text-ds-text-muted text-xs"
+                    >
+                      <span aria-hidden="true" className="text-lg leading-none opacity-40 grayscale">
+                        🥄
+                      </span>
+                      {t('spoonGrabbedBy', { name: playerLabel(g.idx, g.isHuman) })}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-ds-text-muted text-sm" data-testid="spoons-icon-row">
+                  {t('spoonsRemaining', { count: state.spoonsRemaining })}
+                </span>
+              )}
             </div>
 
             {/* Players */}

@@ -91,11 +91,42 @@ describe('SpoonsPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('shows round, spoons remaining and draw pile info', async () => {
+  it('shows round and draw pile info', async () => {
     renderWithProviders(<SpoonsPage />);
     await waitFor(() => expect(screen.getByText(/ラウンド 1/)).toBeInTheDocument());
-    expect(screen.getByText(/残りスプーン: 3/)).toBeInTheDocument();
     expect(screen.getByText(/山札: 36/)).toBeInTheDocument();
+  });
+
+  it('renders one spoon icon per remaining spoon with an accessible count label', async () => {
+    renderWithProviders(<SpoonsPage />);
+    // 3 spoons remaining → 3 available icons, none grabbed yet.
+    await waitFor(() => expect(screen.getAllByTestId('spoons-icon-available')).toHaveLength(3));
+    expect(screen.queryAllByTestId('spoons-icon-grabbed')).toHaveLength(0);
+    // Screen readers still get the number via the row's aria-label.
+    expect(screen.getByTestId('spoons-icon-row')).toHaveAttribute('aria-label', '残りスプーン: 3');
+  });
+
+  it('shows grabbed spoons grayed out with the grabber name', async () => {
+    // One CPU grabbed a spoon: 2 remaining + 1 grabbed = 3 spoons in play.
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        grabWindowOpen: true,
+        spoonsRemaining: 2,
+        firstGrabberIdx: 1,
+        players: [
+          makePlayer({ name: 'You', isHuman: true }),
+          makePlayer({ hasSpoon: true }),
+          makePlayer(),
+          makePlayer(),
+        ],
+      }),
+    );
+    renderWithProviders(<SpoonsPage />);
+    await waitFor(() => expect(screen.getAllByTestId('spoons-icon-available')).toHaveLength(2));
+    const grabbed = screen.getAllByTestId('spoons-icon-grabbed');
+    expect(grabbed).toHaveLength(1);
+    expect(grabbed[0]).toHaveTextContent('CPU 1 が取得');
   });
 
   it('renders the human hand as pass buttons naming each card', async () => {
