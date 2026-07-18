@@ -150,6 +150,11 @@ function KempsPageContent() {
   const isGameEnd = state.phase === KempsPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = state.isHumanTurn;
   const canSwap = isExchange && isHumanTurn && !isGameEnd;
+  // Rank of the currently selected hand card; field cards sharing this rank are
+  // highlighted to help the human spot four-of-a-kind swaps (#3554). Null unless a
+  // swap is possible and a hand card is selected, so nothing is highlighted otherwise.
+  const selectedRank =
+    canSwap && selectedHand !== null && humanPlayer ? (humanPlayer.hand[selectedHand]?.value ?? null) : null;
   const humanTeam = humanPlayer ? humanPlayer.team : 0;
   const humanWon = isGameEnd && state.winnerTeam === humanTeam;
 
@@ -251,16 +256,22 @@ function KempsPageContent() {
               <div className="flex gap-1 flex-wrap">
                 {state.field.map((c, i) => {
                   const card = <CardImage key={`field-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />;
+                  const rankMatch = selectedRank !== null && c.value === selectedRank;
                   return canSwap && selectedHand !== null ? (
                     <button
                       type="button"
                       key={`field-btn-${c.design}-${c.value}-${i}`}
                       onClick={() => handleFieldClick(i)}
                       disabled={loading}
-                      className="p-0 bg-transparent border-0 cursor-pointer disabled:cursor-not-allowed"
-                      aria-label={t('swapCardAria', { card: cardAlt(c) })}
+                      className={`p-0 bg-transparent border-0 cursor-pointer disabled:cursor-not-allowed rounded ${rankMatch ? 'ring-2 ring-ds-success' : 'ring-0'}`}
+                      aria-label={
+                        rankMatch
+                          ? t('swapCardRankMatchAria', { card: cardAlt(c) })
+                          : t('swapCardAria', { card: cardAlt(c) })
+                      }
                       aria-describedby="kemps-swap-pending"
                       data-testid={`kemps-field-${i}`}
+                      data-rank-match={rankMatch ? 'true' : 'false'}
                     >
                       {card}
                     </button>

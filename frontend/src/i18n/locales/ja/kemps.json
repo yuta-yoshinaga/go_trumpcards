@@ -53,5 +53,6 @@
   },
   "selectHandCardAria": "{{card}} を選択",
   "swapCardAria": "{{card}} と交換",
+  "swapCardRankMatchAria": "{{card}} と交換（選択中の手札と同じランク）",
   "swapPending": "手札のカードを選択済みです。交換する場のカードを選んでください。"
 }
