@@ -79,6 +79,7 @@ const gameEndState: NertzResponse = {
 };
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockResolvedValue(playingState);
 });
 
@@ -249,6 +250,63 @@ describe('NertzPage', () => {
         to: { zone: 'foundation', idx: 0 },
       }),
     );
+  });
+
+  it('rings valid foundation and tableau drop targets while a source is selected', async () => {
+    const foundations: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
+    // Foundation 0 holds ♥5 → only ♥6 completes it; empty foundations need an Ace.
+    foundations[0] = { suit: 2, size: 5, top: { design: 'HEART', value: 5 } };
+    const state: NertzResponse = {
+      ...playingState,
+      foundations,
+      players: [
+        {
+          ...playingState.players[0],
+          nertzTop: { design: 'HEART', value: 6 },
+          tableau: [
+            [{ card: { design: 'SPADE', value: 7 }, faceUp: true }], // valid: black 7 below red 6
+            [{ card: { design: 'HEART', value: 8 }, faceUp: true }], // invalid: same colour
+            [], // valid: empty column accepts anything
+            [{ card: { design: 'SPADE', value: 9 }, faceUp: true }], // invalid: rank gap
+          ],
+        },
+        playingState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+
+    // No selection → no target rings anywhere.
+    await waitFor(() => expect(screen.getByAltText('♥ 6')).toBeInTheDocument());
+    expect(screen.getByTestId('nertz-foundation-0')).not.toHaveAttribute('data-valid-target');
+    expect(screen.getByTestId('nertz-tableau-col-0')).not.toHaveAttribute('data-valid-target');
+
+    // Select the nertz pile (♥6).
+    fireEvent.click(screen.getByAltText('♥ 6').closest('button') as HTMLElement);
+
+    // Foundation 0 (♥5) is a legal target; empty foundation 1 is not (needs an Ace).
+    const f0 = screen.getByTestId('nertz-foundation-0');
+    expect(f0).toHaveAttribute('data-valid-target', 'true');
+    expect(f0.className).toContain('ring-ds-success');
+    const f1 = screen.getByTestId('nertz-foundation-1');
+    expect(f1).not.toHaveAttribute('data-valid-target');
+    expect(f1.className).toContain('opacity-60');
+
+    // Tableau: black-7 column and the empty column are legal; the others are not.
+    expect(screen.getByTestId('nertz-tableau-col-0')).toHaveAttribute('data-valid-target', 'true');
+    expect(screen.getByTestId('nertz-tableau-col-2')).toHaveAttribute('data-valid-target', 'true');
+    expect(screen.getByTestId('nertz-tableau-col-1')).not.toHaveAttribute('data-valid-target');
+    expect(screen.getByTestId('nertz-tableau-col-3')).not.toHaveAttribute('data-valid-target');
+    expect(screen.getByTestId('nertz-tableau-col-0').className).toContain('ring-ds-success');
+
+    // Deselecting (click the source again) clears every ring.
+    fireEvent.click(screen.getByAltText('♥ 6').closest('button') as HTMLElement);
+    expect(screen.getByTestId('nertz-foundation-0')).not.toHaveAttribute('data-valid-target');
+    expect(screen.getByTestId('nertz-tableau-col-0')).not.toHaveAttribute('data-valid-target');
   });
 
   it('announces a foundation placement to screen readers', async () => {
