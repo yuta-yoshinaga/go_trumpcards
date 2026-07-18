@@ -21,6 +21,8 @@
   "cards": "{{count}}枚",
   "captured": "捕獲: {{count}}",
   "basra": "バスラ: {{count}}",
+  "basraBadge": "バスラ！場を一掃",
+  "basraBadgeOwn": "バスラ！あなたが一掃",
   "turnYours": "あなたの手番です — 手札を1枚選び、捕獲する場札をタップ（何も選ばなければトレイル）。",
   "turnCpu": "CPU {{id}} がプレイ中です…",
   "playButton": "出す",

@@ -121,4 +121,41 @@ describe('BasraPage', () => {
     fireEvent.click(nextBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
+
+  // Drives a play action whose response bumps `seat`'s basraCount, simulating a sweep.
+  const withBasra = (seat: number) =>
+    makeBasraState({
+      players: playPhaseState.players.map((p) => (p.id === seat ? { ...p, basraCount: 1 } : p)),
+    });
+
+  it('does not show the Basra celebration badge on a steady play state', async () => {
+    renderWithProviders(<BasraPage />);
+    await screen.findByTestId('hand-card-0');
+    expect(screen.queryByTestId('basra-celebration')).not.toBeInTheDocument();
+    expect(screen.getByTestId('basra-count-0')).not.toHaveAttribute('data-emphasised');
+  });
+
+  it('celebrates and emphasises the counter when the human achieves a Basra', async () => {
+    renderWithProviders(<BasraPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    fireEvent.click(handCard);
+    mockExec.mockResolvedValue(withBasra(0));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    const badge = await screen.findByTestId('basra-celebration');
+    expect(badge).toHaveAttribute('role', 'status');
+    expect(badge).toHaveTextContent('あなた');
+    expect(screen.getByTestId('basra-count-0')).toHaveAttribute('data-emphasised', 'true');
+  });
+
+  it('celebrates a CPU Basra with the neutral badge and emphasises that seat', async () => {
+    renderWithProviders(<BasraPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    fireEvent.click(handCard);
+    mockExec.mockResolvedValue(withBasra(1));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    const badge = await screen.findByTestId('basra-celebration');
+    expect(badge).toHaveTextContent('場を一掃');
+    expect(screen.getByTestId('basra-count-1')).toHaveAttribute('data-emphasised', 'true');
+    expect(screen.getByTestId('basra-count-0')).not.toHaveAttribute('data-emphasised');
+  });
 });
