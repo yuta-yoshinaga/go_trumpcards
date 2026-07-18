@@ -99,10 +99,17 @@ describe('DeuceToSevenPage', () => {
     await waitFor(() => expect(screen.getByText('プリドロー')).toBeInTheDocument());
   });
 
-  it('renders the draw counter badge during draw phases', async () => {
+  it('renders the draw counter badge with the current draw and the max cap', async () => {
     mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 2 }));
     renderWithProviders(<DeuceToSevenPage />);
+    // The badge shows current/max (2/3), so the player sees the 3-draw limit.
     await waitFor(() => expect(screen.getAllByText('ドロー 2/3').length).toBeGreaterThan(0));
+  });
+
+  it('shows the max cap in the badge on the first draw', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 1 }));
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getAllByText('ドロー 1/3').length).toBeGreaterThan(0));
   });
 
   it('shows the end message at showdown', async () => {
