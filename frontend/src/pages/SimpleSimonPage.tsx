@@ -19,6 +19,7 @@ import type { Card } from '../types/card';
 import { SimpleSimonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { isGrabbable, movableFromIndex } from '../utils/simpleSimonRun';
 
 /** Simple Simon tutorial step definitions. */
 const SS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -97,6 +98,9 @@ function SimpleSimonPageContent() {
       setSelected(null);
       return;
     }
+    // Only a valid movable run (same-suit descending to the tail) can be grabbed
+    // as a source; ignore clicks on cards above the run boundary.
+    if (!isGrabbable(state.columns[col], idx)) return;
     setSelected({ col, idx });
   };
 
@@ -107,46 +111,59 @@ function SimpleSimonPageContent() {
     setSelected(null);
   };
 
-  const renderColumn = (column: Card[], col: number) => (
-    <div
-      key={`col-${col}`}
-      className={`flex flex-col items-center rounded p-0.5 ${selected && selected.col !== col ? 'ring-1 ring-ds-success' : ''}`}
-      style={{ minHeight: Math.round(w * 1.4) }}
-      data-testid={`column-${col}`}
-    >
-      {column.length === 0 ? (
-        <button
-          type="button"
-          className="rounded border border-dashed border-white/25 bg-black/20"
-          style={{ width: w, height: Math.round(w * 1.4) }}
-          onClick={canAct ? () => clickColumn(col) : undefined}
-          disabled={!canAct}
-          title={t('empty')}
-          aria-label={t('emptyColAria', { col: col + 1 })}
-          data-testid={`column-${col}-drop`}
-        />
-      ) : (
-        column.map((c, i) => {
-          const inSelectedRun = Boolean(selected && selected.col === col && i >= selected.idx);
-          return (
-            <button
-              type="button"
-              key={`col-${col}-${i}`}
-              className={`rounded ${inSelectedRun ? 'ring-2 ring-ds-warning' : ''}`}
-              style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
-              onClick={canAct ? () => clickCard(col, i) : undefined}
-              disabled={!canAct}
-              data-testid={`card-${col}-${i}`}
-              aria-label={t('cardPosAria', { card: cardAlt(c), col: col + 1, pos: i + 1 })}
-              aria-pressed={inSelectedRun}
-            >
-              <CardImage card={c} width={w} />
-            </button>
-          );
-        })
-      )}
-    </div>
-  );
+  const renderColumn = (column: Card[], col: number) => {
+    const isDestination = Boolean(selected && selected.col !== col);
+    const runStart = movableFromIndex(column);
+    return (
+      <div
+        key={`col-${col}`}
+        className={`flex flex-col items-center rounded p-0.5 ${isDestination ? 'ring-1 ring-ds-success' : ''}`}
+        style={{ minHeight: Math.round(w * 1.4) }}
+        data-testid={`column-${col}`}
+      >
+        {column.length === 0 ? (
+          <button
+            type="button"
+            className="rounded border border-dashed border-white/25 bg-black/20"
+            style={{ width: w, height: Math.round(w * 1.4) }}
+            onClick={canAct ? () => clickColumn(col) : undefined}
+            disabled={!canAct}
+            title={t('empty')}
+            aria-label={t('emptyColAria', { col: col + 1 })}
+            data-testid={`column-${col}-drop`}
+          />
+        ) : (
+          column.map((c, i) => {
+            const inSelectedRun = Boolean(selected && selected.col === col && i >= selected.idx);
+            // Grabbable = head of a valid movable run in this column. In a
+            // destination column every card just forwards to the move.
+            const grabbable = i >= runStart;
+            const clickable = isDestination || grabbable;
+            // Highlight the movable-run boundary only while this column can be a
+            // source (no selection, or the selection is here).
+            const showRunHint = !isDestination && grabbable && !inSelectedRun;
+            const ring = inSelectedRun ? 'ring-2 ring-ds-warning' : showRunHint ? 'ring-1 ring-ds-success/70' : '';
+            return (
+              <button
+                type="button"
+                key={`col-${col}-${i}`}
+                className={`rounded ${ring} ${clickable ? '' : 'cursor-not-allowed'}`}
+                style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
+                onClick={canAct ? () => clickCard(col, i) : undefined}
+                disabled={!canAct || !clickable}
+                data-testid={`card-${col}-${i}`}
+                data-grabbable={grabbable}
+                aria-label={t('cardPosAria', { card: cardAlt(c), col: col + 1, pos: i + 1 })}
+                aria-pressed={inSelectedRun}
+              >
+                <CardImage card={c} width={w} />
+              </button>
+            );
+          })
+        )}
+      </div>
+    );
+  };
 
   return (
     <GamePageShell
