@@ -134,4 +134,45 @@ describe('AnacondaPage', () => {
     renderWithProviders(<AnacondaPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝利です！')).toBeInTheDocument());
   });
+
+  it('shows an under-count hint and keeps Pass disabled before enough cards are selected', async () => {
+    renderWithProviders(<AnacondaPage />);
+    await screen.findByRole('button', { name: 'パスする' });
+    const feedback = screen.getByTestId('anaconda-selection-feedback');
+    expect(feedback).toHaveTextContent('あと 3 枚選択してください（0/3）');
+    fireEvent.click(cardButtons()[0]);
+    expect(feedback).toHaveTextContent('あと 2 枚選択してください（1/3）');
+    expect(screen.getByRole('button', { name: 'パスする' })).toBeDisabled();
+  });
+
+  it('shows an exact-count confirmation and enables Pass at the required count', async () => {
+    renderWithProviders(<AnacondaPage />);
+    await screen.findByRole('button', { name: 'パスする' });
+    const cards = cardButtons();
+    for (let i = 0; i < 3; i++) fireEvent.click(cards[i]);
+    expect(screen.getByTestId('anaconda-selection-feedback')).toHaveTextContent('選択完了（3/3）');
+    expect(screen.getByRole('button', { name: 'パスする' })).toBeEnabled();
+  });
+
+  it('shows an over-count hint and keeps Pass disabled when too many cards are selected', async () => {
+    renderWithProviders(<AnacondaPage />);
+    await screen.findByRole('button', { name: 'パスする' });
+    const cards = cardButtons();
+    for (let i = 0; i < 4; i++) fireEvent.click(cards[i]);
+    expect(screen.getByTestId('anaconda-selection-feedback')).toHaveTextContent('1 枚外してください（4/3）');
+    expect(screen.getByRole('button', { name: 'パスする' })).toBeDisabled();
+  });
+
+  it('shows the over/exact feedback against KEEP_SIZE on the set phase', async () => {
+    mockExec.mockResolvedValue(setState);
+    renderWithProviders(<AnacondaPage />);
+    await screen.findByRole('button', { name: 'キープ' });
+    const cards = cardButtons();
+    for (let i = 0; i < 5; i++) fireEvent.click(cards[i]);
+    expect(screen.getByTestId('anaconda-selection-feedback')).toHaveTextContent('選択完了（5/5）');
+    expect(screen.getByRole('button', { name: 'キープ' })).toBeEnabled();
+    fireEvent.click(cards[5]);
+    expect(screen.getByTestId('anaconda-selection-feedback')).toHaveTextContent('1 枚外してください（6/5）');
+    expect(screen.getByRole('button', { name: 'キープ' })).toBeDisabled();
+  });
 });
