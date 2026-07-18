@@ -24,7 +24,7 @@ import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BigTwoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
-import { type BigTwoSortMode, bigTwoPlayTypeKey, sortedBigTwoHand } from '../utils/bigTwoSort';
+import { type BigTwoSortMode, bigTwoPlayTypeKey, classifyBigTwoPlay, sortedBigTwoHand } from '../utils/bigTwoSort';
 import {
   BIGTWO_HELP,
   type BigTwoCliArgs,
@@ -139,7 +139,12 @@ function BigTwoPageContent() {
   const humanWon = isGameEnd && state.players[0]?.rank === 1;
   const isHumanTurn = state.currentTurn === 0 && !isGameEnd;
   const human = state.players[0];
-  const canPlay = isHumanTurn && selectedIndices.length > 0;
+  // Preview the combo type of the currently-selected cards (client-side, mirrors
+  // the domain classifier). 0 = invalid combination; 1-8 map to a play-type key.
+  const selectedCards = selectedIndices.map((i) => human.cards[i]).filter(Boolean);
+  const selectedPlayType = classifyBigTwoPlay(selectedCards);
+  const selectedInvalid = selectedIndices.length > 0 && selectedPlayType === 0;
+  const canPlay = isHumanTurn && selectedIndices.length > 0 && !selectedInvalid;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
 
   return (
@@ -218,6 +223,27 @@ function BigTwoPageContent() {
                 <span>{tc('player.you')}</span>
                 {human.isFinished && <span className="font-bold">{t(`rank.${human.rank}`)}</span>}
               </div>
+              {isHumanTurn && selectedIndices.length > 0 && (
+                <div className="mb-1.5 flex items-center justify-center">
+                  {selectedInvalid ? (
+                    <span
+                      data-testid="bt-selected-playtype"
+                      role="status"
+                      className="rounded-full bg-ds-error/30 px-2 py-0.5 text-xs font-semibold text-ds-error"
+                    >
+                      {t('invalidCombo')}
+                    </span>
+                  ) : (
+                    <span
+                      data-testid="bt-selected-playtype"
+                      role="status"
+                      className="rounded-full bg-ds-info/30 px-2 py-0.5 text-xs font-semibold text-ds-text-primary"
+                    >
+                      {`${t('selectedPlayLabel')}: ${t(`playType.${bigTwoPlayTypeKey(selectedPlayType)}`)}`}
+                    </span>
+                  )}
+                </div>
+              )}
               {human.cards.length > 0 && (
                 <fieldset className="flex justify-center gap-1.5 mb-2 border-0 p-0 m-0">
                   <legend className="sr-only">{t('sort.label')}</legend>
