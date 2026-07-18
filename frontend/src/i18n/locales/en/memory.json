@@ -22,6 +22,8 @@
   "cardFaceDown": "Card {{position}} (face down)",
   "visitedMark": "Already seen",
   "scoreLine": "{{name}}: {{count}}",
+  "capturedPairs": "Captured Pairs",
+  "noCapturedPairs": "None",
   "nextButton": "Next",
   "flipPrompt1": "Flip the first card",
   "flipPrompt2": "Flip the second card",

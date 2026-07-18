@@ -6,8 +6,8 @@ import { getMemoryHint } from './memoryHint';
 function makeState(overrides: Partial<MemoryResponse> = {}): MemoryResponse {
   return {
     players: [
-      { id: 0, isHuman: true, pairCount: 0 },
-      { id: 1, isHuman: false, pairCount: 0 },
+      { id: 0, isHuman: true, pairCount: 0, pairs: [] },
+      { id: 1, isHuman: false, pairCount: 0, pairs: [] },
     ],
     board: [
       { card: { design: 'SPADE', value: 1 }, faceUp: false, taken: false },

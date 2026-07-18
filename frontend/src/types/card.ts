@@ -5184,11 +5184,13 @@ export interface ThreeThirteenResponse extends BaseGameResponse {
 
 // --- Memory (神経衰弱) ---
 
-/** Memory player data with pair count. */
+/** Memory player data with pair count and captured-pair representative cards. */
 export interface MemoryPlayerData {
   id: number;
   isHuman: boolean;
   pairCount: number;
+  /** One representative card per captured pair, in ascending rank order. */
+  pairs: Card[];
 }
 
 /** A card on the Memory game board. */

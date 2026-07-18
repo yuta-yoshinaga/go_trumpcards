@@ -124,6 +124,12 @@ function MemoryPageContent() {
 
   const [visited, setVisited] = useState<Set<number>>(() => new Set());
 
+  // Captured-pairs panel is expanded on desktop and collapsed on mobile so the
+  // board grid keeps its full height on small screens (#3028).
+  const [pairsOpen, setPairsOpen] = useState<boolean>(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
+  );
+
   useEffect(() => {
     if (!state) return;
     setVisited((prev) => {
@@ -248,6 +254,42 @@ function MemoryPageContent() {
                 </span>
               ))}
             </div>
+
+            {/* Captured pairs – mini cards per player. Collapsible on mobile so
+                the board grid keeps its full height (#3028). */}
+            <details
+              className="my-1 px-2 py-1 rounded bg-black/20 text-ds-text-primary text-sm lg:shrink-0"
+              data-testid="mem-captured"
+              open={pairsOpen}
+              onToggle={(e) => setPairsOpen(e.currentTarget.open)}
+            >
+              <summary className="cursor-pointer select-none font-bold py-0.5">{t('capturedPairs')}</summary>
+              <div className="mt-1 flex flex-col gap-1">
+                {state.players.map((p) => (
+                  <div
+                    key={p.id}
+                    data-testid={`mem-captured-${p.id.toString()}`}
+                    className="flex items-center gap-1 flex-wrap"
+                  >
+                    <span className={`shrink-0 ${p.isHuman ? 'text-ds-accent' : 'text-ds-text-muted'}`}>
+                      {playerName(p.id, p.isHuman)}
+                    </span>
+                    {p.pairs.length === 0 ? (
+                      <span className="text-ds-text-muted/70">{t('noCapturedPairs')}</span>
+                    ) : (
+                      p.pairs.map((c, i) => (
+                        <AnimatedCard
+                          key={`p${p.id.toString()}-pair-${i.toString()}-${c.design}${c.value.toString()}`}
+                          card={c}
+                          width={Math.max(20, Math.round(cardWidth * 0.5))}
+                          silent
+                        />
+                      ))
+                    )}
+                  </div>
+                ))}
+              </div>
+            </details>
 
             {/* Board: responsive grid (4/8/13 columns); on lg fills remaining height */}
             <div
