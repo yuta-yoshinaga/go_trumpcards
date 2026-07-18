@@ -100,6 +100,38 @@ describe('SimpleSimonPage', () => {
     }
   });
 
+  it('marks only the movable-run cards as grabbable and blocks invalid source selection', async () => {
+    // Column 3: ♠9 (not a run head), then ♥6 ♥5 ♥4 (a same-suit descending run).
+    mockExec.mockResolvedValue(
+      makeState({
+        columns: (() => {
+          const cols: Card[][] = Array.from({ length: 10 }, () => []);
+          cols[0] = [card('SPADE', 5)];
+          cols[3] = [card('SPADE', 9), card('HEART', 6), card('HEART', 5), card('HEART', 4)];
+          return cols;
+        })(),
+      }),
+    );
+    renderWithProviders(<SimpleSimonPage />);
+    const top = await screen.findByTestId('card-3-0');
+    // The out-of-run top card is not grabbable and is disabled.
+    expect(top).toHaveAttribute('data-grabbable', 'false');
+    expect(top).toBeDisabled();
+    // The run head and its tail are grabbable.
+    expect(screen.getByTestId('card-3-1')).toHaveAttribute('data-grabbable', 'true');
+    expect(screen.getByTestId('card-3-3')).toHaveAttribute('data-grabbable', 'true');
+
+    // Clicking the invalid top card selects nothing (no aria-pressed run).
+    fireEvent.click(top);
+    expect(screen.getByTestId('card-3-1')).toHaveAttribute('aria-pressed', 'false');
+
+    // Clicking the run head selects it and its descendants.
+    fireEvent.click(screen.getByTestId('card-3-1'));
+    expect(screen.getByTestId('card-3-1')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('card-3-3')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('card-3-0')).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('hides controls at game over', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 2 }));
     renderWithProviders(<SimpleSimonPage />);
