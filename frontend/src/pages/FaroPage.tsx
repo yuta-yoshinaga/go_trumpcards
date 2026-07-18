@@ -22,9 +22,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { FaroResponse } from '../types/card';
 import { FaroPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { valueName } from '../utils/cardUtils';
 import { FARO_HELP, parseFaroCommand } from '../utils/cli/commands/faroCommands';
 import { formatFaroState } from '../utils/cli/formatters/faroFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { FARO_RANK_COUNT, mergeSeenCards, remainingByRank } from '../utils/faroCaseKeeper';
 
 /** Rank values on the Faro layout, A (1) through K (13). */
 const RANKS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] as const;
@@ -95,11 +97,29 @@ function FaroPageContent() {
   const [copper, setCopper] = useState(false);
   const [callOrder, setCallOrder] = useState<number[]>([]);
 
+  // Case keeper: the server sends only the current turn's cards, so accumulate
+  // every revealed card into a local set of unique keys and derive the
+  // per-rank remaining counts from it. Reset each round (reset / next).
+  const [seenKeys, setSeenKeys] = useState<Set<string>>(() => new Set());
+
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useEffect(() => {
     exec('reset');
   }, []);
+
+  // Merge each turn's newly revealed cards (soda, last turn, and any call cards)
+  // into the running set. Only new keys grow the set, so returning the previous
+  // reference when nothing changed avoids a redundant re-render.
+  useEffect(() => {
+    if (!state) return;
+    setSeenKeys((prev) => {
+      const next = mergeSeenCards(prev, [state.soda, state.losingCard, state.winningCard, ...state.callCards]);
+      return next.size === prev.size ? prev : next;
+    });
+  }, [state]);
+
+  const remaining = useMemo(() => remainingByRank(seenKeys), [seenKeys]);
 
   const phaseNames = usePhaseNames('faro', FARO_PHASE_KEYS);
 
@@ -133,6 +153,7 @@ function FaroPageContent() {
   const handleReset = () => {
     hideActionLog();
     setCallOrder([]);
+    setSeenKeys(new Set());
     exec('reset');
   };
 
@@ -140,6 +161,7 @@ function FaroPageContent() {
 
   const handleNext = () => {
     setCallOrder([]);
+    setSeenKeys(new Set());
     exec('next');
   };
 
@@ -246,6 +268,39 @@ function FaroPageContent() {
                         </span>
                       )}
                     </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Case keeper: remaining cards per rank, accumulated from revealed cards */}
+            <div className="mb-3 p-3 rounded bg-black/20" data-testid="case-keeper">
+              <div className="text-ds-text-muted text-xs mb-2 text-center">{t('caseKeeperTitle')}</div>
+              <div className="grid grid-cols-7 gap-1.5 justify-items-center">
+                {RANKS.map((rank) => {
+                  const left = remaining[rank] ?? FARO_RANK_COUNT;
+                  const depleted = left === 0;
+                  return (
+                    <div
+                      key={`case-${rank}`}
+                      className={`flex flex-col items-center rounded border px-1 py-0.5 text-center leading-tight ${
+                        depleted ? 'border-white/10 bg-black/30 opacity-50' : 'border-white/25 bg-black/20'
+                      }`}
+                      data-testid={`case-keeper-rank-${rank}`}
+                      role="img"
+                      aria-label={t('caseKeeperCell', { rank: valueName(rank), count: left })}
+                    >
+                      <span className="text-[11px] font-bold text-ds-text-primary" aria-hidden="true">
+                        {valueName(rank)}
+                      </span>
+                      <span
+                        className={`text-[13px] font-semibold tabular-nums ${
+                          depleted ? 'text-ds-text-muted' : 'text-ds-warning'
+                        }`}
+                      >
+                        {left}
+                      </span>
+                    </div>
                   );
                 })}
               </div>
