@@ -27,6 +27,7 @@
   "roundPoints": "ラウンド: {{points}}点",
   "marriagePoints": "マリッジ: {{points}}点",
   "marriageButton": "マリッジ",
+  "marriageBadge": "マリッジ可能 (キング+クイーン)",
   "declareMarriage": "キング+クイーンを宣言してボーナス点を獲得",
   "playButton": "出す",
   "nextTrick": "次のトリック",

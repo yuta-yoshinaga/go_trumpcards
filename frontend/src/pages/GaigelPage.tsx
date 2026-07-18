@@ -127,6 +127,14 @@ function GaigelPageContent() {
   const selectedIdx = selectedCardIndices.length === 1 ? selectedCardIndices[0] : -1;
   const canDeclareMarriage = isHumanTurn && selectedIdx >= 0 && state.marriageIndices.includes(selectedIdx);
 
+  // Surface a 💍 badge on hand cards that can start a marriage (King + Queen of
+  // the same suit, both currently held) so the 20/40-point opportunity is
+  // visible without probing each card. `marriageIndices` is scoped to the
+  // current player, so restrict it to the human's own lead turn.
+  const marriageIndices = isHumanTurn ? state.marriageIndices : [];
+  const marriageBadgeFor = (idx: number): { glyph: string; title: string } | null =>
+    marriageIndices.includes(idx) ? { glyph: '💍', title: t('marriageBadge') } : null;
+
   return (
     <GamePageShell
       title={tc('nav.gaigel')}
@@ -282,6 +290,7 @@ function GaigelPageContent() {
             cardWidth={cardWidth}
             isMobile={isMobile}
             dataTutorialPrefix="gg"
+            cardBadgeFor={marriageBadgeFor}
           />
         )}
 
