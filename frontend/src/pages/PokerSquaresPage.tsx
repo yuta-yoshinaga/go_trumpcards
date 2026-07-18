@@ -30,7 +30,12 @@ import { cardAlt } from '../utils/cardAlt';
 import { POKERSQUARES_HELP, parsePokerSquaresCommand } from '../utils/cli/commands/pokersquaresCommands';
 import { formatPokerSquaresState } from '../utils/cli/formatters/pokersquaresFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { evaluateFiveCardHand, pokerHandKey, pokerSquaresRankToScore } from '../utils/pokerSquaresUtils';
+import {
+  evaluateFiveCardHand,
+  evaluatePartialHand,
+  pokerHandKey,
+  pokerSquaresRankToScore,
+} from '../utils/pokerSquaresUtils';
 
 const POKER_SQUARES_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PokerSquaresPhase.PLAYING]: 'playing',
@@ -128,9 +133,12 @@ function PokerSquaresPageContent() {
     }
   }, [loading, state?.board, crossHover]);
 
-  // While the player hovers an empty cell, compute the (hypothetical) row + col scores
-  // they would lock in by placing `currentCard` there. We can only score full lines, so
-  // the preview surfaces only when this placement would complete the row or column.
+  // While the player hovers an empty cell, compute the (hypothetical) row + col outcome
+  // for placing `currentCard` there. A full line is scored exactly (`row`/`col`, surfaced
+  // as `+N`). Otherwise we surface the best *made* partial hand so far (`rowPartial`/
+  // `colPartial`) — the most valuable guidance is in the early/mid game, where no line is
+  // complete yet but the player still needs to know which lines are developing a pair or
+  // better (issue #3167).
   const preview = useMemo(() => {
     if (!state || !crossHover || !state.currentCard) return null;
     const board = state.board;
@@ -144,13 +152,17 @@ function PokerSquaresPageContent() {
       ri === crossHover.row ? placedCard : r[crossHover.col].card,
     );
 
-    const rowComplete: Card[] | null = rowCards.every((c): c is Card => c != null) ? (rowCards as Card[]) : null;
-    const colComplete: Card[] | null = colCards.every((c): c is Card => c != null) ? (colCards as Card[]) : null;
+    const rowFilled = rowCards.filter((c): c is Card => c != null);
+    const colFilled = colCards.filter((c): c is Card => c != null);
+    const rowComplete: Card[] | null = rowFilled.length === rowCards.length ? rowFilled : null;
+    const colComplete: Card[] | null = colFilled.length === colCards.length ? colFilled : null;
     const rowRank = rowComplete ? evaluateFiveCardHand(rowComplete) : null;
     const colRank = colComplete ? evaluateFiveCardHand(colComplete) : null;
     return {
       row: rowRank != null ? { rank: rowRank, score: pokerSquaresRankToScore(rowRank) } : null,
       col: colRank != null ? { rank: colRank, score: pokerSquaresRankToScore(colRank) } : null,
+      rowPartial: rowComplete ? null : evaluatePartialHand(rowFilled),
+      colPartial: colComplete ? null : evaluatePartialHand(colFilled),
     };
   }, [state, crossHover]);
 
@@ -184,6 +196,24 @@ function PokerSquaresPageContent() {
           }),
         );
       }
+    }
+    // For still-incomplete lines, announce the best made partial hand so keyboard
+    // users get the same early-game guidance the muted on-board label provides.
+    if (preview.rowPartial != null) {
+      parts.push(
+        t('previewRowPartialAnnounce', {
+          row: crossHover.row + 1,
+          hand: t(`hand.${pokerHandKey(preview.rowPartial)}`),
+        }),
+      );
+    }
+    if (preview.colPartial != null) {
+      parts.push(
+        t('previewColPartialAnnounce', {
+          col: crossHover.col + 1,
+          hand: t(`hand.${pokerHandKey(preview.colPartial)}`),
+        }),
+      );
     }
     return parts.join(' ');
   }, [state, crossHover, preview, t]);
@@ -342,6 +372,7 @@ function PokerSquaresPageContent() {
                         {state.rowScores.map((s, i) => {
                           const highlighted = crossHover?.row === i;
                           const rowPreview = highlighted ? preview?.row : null;
+                          const rowPartial = highlighted ? preview?.rowPartial : null;
                           return (
                             <div
                               key={`row-score-${i}`}
@@ -364,6 +395,15 @@ function PokerSquaresPageContent() {
                                   <div>{t(`hand.${pokerHandKey(rowPreview.rank)}`)}</div>
                                 </div>
                               )}
+                              {rowPartial != null && (
+                                <div
+                                  data-testid={`row-partial-preview-${i}`}
+                                  className="text-[10px] text-ds-text-muted leading-none mt-0.5"
+                                >
+                                  {t('previewPartialPrefix')}
+                                  {t(`hand.${pokerHandKey(rowPartial)}`)}
+                                </div>
+                              )}
                             </div>
                           );
                         })}
@@ -377,6 +417,7 @@ function PokerSquaresPageContent() {
                       {state.colScores.map((s, i) => {
                         const highlighted = crossHover?.col === i;
                         const colPreview = highlighted ? preview?.col : null;
+                        const colPartial = highlighted ? preview?.colPartial : null;
                         return (
                           <div
                             key={`col-score-${i}`}
@@ -397,6 +438,15 @@ function PokerSquaresPageContent() {
                               >
                                 +{colPreview.score - s}
                                 <div>{t(`hand.${pokerHandKey(colPreview.rank)}`)}</div>
+                              </div>
+                            )}
+                            {colPartial != null && (
+                              <div
+                                data-testid={`col-partial-preview-${i}`}
+                                className="text-[10px] text-ds-text-muted leading-none mt-0.5"
+                              >
+                                {t('previewPartialPrefix')}
+                                {t(`hand.${pokerHandKey(colPartial)}`)}
                               </div>
                             )}
                           </div>

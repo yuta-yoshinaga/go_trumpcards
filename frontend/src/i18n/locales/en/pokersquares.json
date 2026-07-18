@@ -43,5 +43,8 @@
     "royalFlush": "Royal Flush"
   },
   "previewRowAnnounce": "Row {{row}} completes {{hand}} for {{delta}} points",
-  "previewColAnnounce": "Column {{col}} completes {{hand}} for {{delta}} points"
+  "previewColAnnounce": "Column {{col}} completes {{hand}} for {{delta}} points",
+  "previewPartialPrefix": "~",
+  "previewRowPartialAnnounce": "Row {{row}} is developing {{hand}}",
+  "previewColPartialAnnounce": "Column {{col}} is developing {{hand}}"
 }
