@@ -59,7 +59,29 @@ const gameEndState = makeSoloWhistState({
   message: 'ゲーム終了！ あなたの勝ちです！',
 });
 
+/**
+ * Builds a play-phase fixture with the human declarer holding a given contract,
+ * tricks won, and cards left in hand — the three inputs to the contract-progress readout.
+ */
+function makeProgressState(contract: number, won: number, cardCount: number) {
+  return makeSoloWhistState({
+    phase: 1,
+    declarerIdx: 0,
+    contract,
+    trumpSuit: contract === 2 ? 0 : 3,
+    isHumanBidTurn: false,
+    isHumanTurn: true,
+    players: [
+      { id: 0, isHuman: true, cardCount, cards: [], trickCount: won, score: 0, isDeclarer: true },
+      { id: 1, isHuman: false, cardCount, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+      { id: 2, isHuman: false, cardCount, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+      { id: 3, isHuman: false, cardCount, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    ],
+  });
+}
+
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(bidPhaseState);
 });
@@ -177,5 +199,63 @@ describe('SoloWhistPage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<SoloWhistPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ちです！')).toBeInTheDocument());
+  });
+
+  it('shows the Solo contract progress in-progress (won < 8, still reachable)', async () => {
+    // Solo targets 8 tricks; 3 won with 9 cards left is still reachable → in progress.
+    mockExec.mockResolvedValue(makeProgressState(1, 3, 9));
+    renderWithProviders(<SoloWhistPage />);
+    const line = await screen.findByTestId('solowhist-contract-progress');
+    expect(line).toHaveTextContent('宣言者の進捗: 3 / 8 トリック');
+    expect(line).not.toHaveTextContent('達成');
+    expect(line).not.toHaveTextContent('失敗確定');
+    expect(line.className).toContain('text-ds-warning');
+  });
+
+  it('marks the Solo contract as made once the target is reached', async () => {
+    // 8 tricks won meets the Solo target → made.
+    mockExec.mockResolvedValue(makeProgressState(1, 8, 5));
+    renderWithProviders(<SoloWhistPage />);
+    const line = await screen.findByTestId('solowhist-contract-progress');
+    expect(line).toHaveTextContent('宣言者の進捗: 8 / 8 トリック');
+    expect(line).toHaveTextContent('達成');
+    expect(line.className).toContain('text-ds-success');
+  });
+
+  it('marks the Solo contract as failed when the target is out of reach', async () => {
+    // 2 won + 5 remaining = 7 < 8 → mathematically impossible → failed.
+    mockExec.mockResolvedValue(makeProgressState(1, 2, 5));
+    renderWithProviders(<SoloWhistPage />);
+    const line = await screen.findByTestId('solowhist-contract-progress');
+    expect(line).toHaveTextContent('失敗確定');
+    expect(line.className).toContain('text-ds-error');
+  });
+
+  it('fails the Misère contract the instant a trick is won', async () => {
+    // Misère (contract 2) targets 0 tricks; winning even 1 fails immediately.
+    mockExec.mockResolvedValue(makeProgressState(2, 1, 8));
+    renderWithProviders(<SoloWhistPage />);
+    const line = await screen.findByTestId('solowhist-contract-progress');
+    expect(line).toHaveTextContent('宣言者の進捗: 1 トリック（ミゼール・目標0）');
+    expect(line).toHaveTextContent('失敗確定');
+    expect(line.className).toContain('text-ds-error');
+  });
+
+  it('keeps a clean Misère in progress while no trick is won', async () => {
+    // 0 tricks won with cards still in hand → still in progress.
+    mockExec.mockResolvedValue(makeProgressState(2, 0, 8));
+    renderWithProviders(<SoloWhistPage />);
+    const line = await screen.findByTestId('solowhist-contract-progress');
+    expect(line).toHaveTextContent('宣言者の進捗: 0 トリック（ミゼール・目標0）');
+    expect(line).not.toHaveTextContent('失敗確定');
+    expect(line).not.toHaveTextContent('達成');
+    expect(line.className).toContain('text-ds-warning');
+  });
+
+  it('does not show the progress readout before the contract is decided', async () => {
+    mockExec.mockResolvedValue(makeSoloWhistState({ declarerIdx: -1 }));
+    renderWithProviders(<SoloWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('solowhist-declarer')).toBeInTheDocument());
+    expect(screen.queryByTestId('solowhist-contract-progress')).not.toBeInTheDocument();
   });
 });

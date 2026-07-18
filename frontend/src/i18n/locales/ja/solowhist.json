@@ -31,6 +31,12 @@
   "contract": "契約: {{contract}}",
   "contractUndecided": "契約: 未決定",
   "declarerLine": "宣言者: {{name}} — {{contract}}",
+  "progress": {
+    "line": "宣言者の進捗: {{won}} / {{needed}} トリック",
+    "misere": "宣言者の進捗: {{won}} トリック（ミゼール・目標0）",
+    "made": "達成",
+    "failed": "失敗確定"
+  },
   "bidLabel": "入札",
   "playButton": "出す",
   "nextTrick": "次のトリック",
