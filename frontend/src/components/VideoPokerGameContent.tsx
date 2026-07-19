@@ -8,6 +8,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useLocalStorageToggle } from '../hooks/useLocalStorageToggle';
+import { useVideoPokerStats } from '../hooks/useVideoPokerStats';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -22,6 +23,7 @@ import {
   videoPokerPayoutCell,
   videoPokerPayoutRows,
 } from '../utils/videoPokerPayout';
+import { videoPokerNet, videoPokerWinRate } from '../utils/videoPokerStats';
 import { ActionLogPanel } from './ActionLogPanel';
 import { CliTerminal } from './cli/CliTerminal';
 import { CliToggle } from './cli/CliToggle';
@@ -67,11 +69,14 @@ function PayoutTable({
   gameName,
   betAmount,
   winningRowKey,
+  handCounts,
 }: {
   t: (key: string) => string;
   gameName: 'videopoker' | 'deuceswild' | 'jokerpoker';
   betAmount: number;
   winningRowKey: string | null;
+  /** Per-hand win counts to append as a trailing column, or null to hide the column. */
+  handCounts: Record<string, number> | null;
 }) {
   const [open, setOpen] = useLocalStorageToggle(`paytable_open_${gameName}`, true);
   const rows = videoPokerPayoutRows(gameName);
@@ -95,6 +100,7 @@ function PayoutTable({
                 {b}
               </th>
             ))}
+            {handCounts && <th className="px-1.5 py-0.5 text-right font-medium">{t('payoutTable.count')}</th>}
           </tr>
         </thead>
         <tbody>
@@ -113,6 +119,14 @@ function PayoutTable({
                     {videoPokerPayoutCell(row, b)}
                   </td>
                 ))}
+                {handCounts && (
+                  <td
+                    className="px-1.5 py-0.5 text-right text-ds-text-primary tabular-nums"
+                    data-testid={`vp-payout-count-${row.key}`}
+                  >
+                    {handCounts[row.key] ?? 0}
+                  </td>
+                )}
               </tr>
             );
           })}
@@ -175,6 +189,13 @@ export function VideoPokerGameContent({
   const isBetPhase = state?.phase === VideoPokerPhase.BET;
   const isDrawPhase = state?.phase === VideoPokerPhase.DRAW;
   const isResultPhase = state?.phase === VideoPokerPhase.RESULT;
+
+  // Session statistics (hands / win rate / net) are scoped to the base
+  // Jacks-or-Better variant so the shared component leaves Deuces Wild and
+  // Joker Poker untouched. Storage is still keyed per variant, so enabling the
+  // others later needs no data migration.
+  const statsEnabled = gameName === 'videopoker';
+  const { stats, clear: clearStats } = useVideoPokerStats(gameName, state, isResultPhase, statsEnabled);
 
   // Announce the draw outcome once per hand. Keying on the state reference (a
   // fresh object on every API result) re-fires the effect even for an identical
@@ -429,6 +450,7 @@ export function VideoPokerGameContent({
               gameName={gameName}
               betAmount={betAmount}
               winningRowKey={isResultPhase ? videoPokerHandNameToRowKey(state.handName) : null}
+              handCounts={statsEnabled ? stats.handCounts : null}
             />
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
@@ -457,6 +479,33 @@ export function VideoPokerGameContent({
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
                   {tc('actionLog.view')}
                 </button>
+              </div>
+            )}
+            {statsEnabled && (
+              <div
+                className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pb-2 text-ds-text-muted text-xs lg:text-sm"
+                data-testid="vp-session-stats"
+              >
+                <span data-testid="vp-stats-summary">
+                  {stats.hands === 0
+                    ? tNs('stats.empty')
+                    : tNs('stats.summary', {
+                        hands: stats.hands,
+                        winRate: Math.round(videoPokerWinRate(stats) * 100),
+                        net: `${videoPokerNet(stats) >= 0 ? '+' : ''}${videoPokerNet(stats)}`,
+                      })}
+                </span>
+                {stats.hands > 0 && (
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={clearStats}
+                    disabled={loading}
+                    data-testid="vp-stats-clear"
+                  >
+                    {tNs('stats.clear')}
+                  </button>
+                )}
               </div>
             )}
             <div className="flex flex-wrap justify-center gap-x-4 pb-2">
