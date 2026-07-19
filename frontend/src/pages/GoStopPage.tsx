@@ -26,6 +26,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { GOSTOP_HELP, parseGoStopCommand } from '../utils/cli/commands/gostopCommands';
 import { formatGoStopState } from '../utils/cli/formatters/gostopFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { computeNearYaku } from '../utils/gostopYaku';
 
 /** Go-Stop (ゴーストップ) tutorial step definitions. */
 const GOSTOP_TUTORIAL_STEPS: TutorialStep[] = [
@@ -166,6 +167,9 @@ function GoStopPageContent() {
 
   const winnerName = state.winner < 0 ? '' : state.winner === (human?.id ?? 0) ? t('you') : t('cpu');
 
+  // Yaku that are a few cards from completing if the player calls Go and plays on.
+  const pendingNearYaku = isDecisionPhase ? computeNearYaku(state.pendingBreakdown) : [];
+
   return (
     <GamePageShell
       title={tc('nav.gostop')}
@@ -283,6 +287,22 @@ function GoStopPageContent() {
                   {t('decision.points', { points: state.pendingPoints })}
                 </div>
                 {breakdownChips(state.pendingBreakdown)}
+                {pendingNearYaku.length > 0 && (
+                  <div className="mt-1" data-testid="gostop-yaku-preview">
+                    <div className="text-[10px] text-ds-text-muted mb-0.5">{t('preview.title')}</div>
+                    <div className="flex gap-1 justify-center flex-wrap text-[10px]">
+                      {pendingNearYaku.map((y) => (
+                        <span
+                          key={y.category}
+                          className="px-1.5 py-0.5 rounded bg-ds-info/20 text-ds-info"
+                          data-testid={`gostop-yaku-preview-${y.category}`}
+                        >
+                          {t('preview.item', { name: t(`preview.${y.target}`), remaining: y.remaining })}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="flex gap-3 justify-center mt-2">
                   <button type="button" className={btnWarning} onClick={callGo} disabled={loading}>
                     {t('decision.go')}
