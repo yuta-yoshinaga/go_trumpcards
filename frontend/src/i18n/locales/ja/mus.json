@@ -78,5 +78,17 @@
   },
   "envidoStepperLabel": "エンビードの賭け額",
   "envidoIncrease": "エンビードを1増やす",
-  "envidoDecrease": "エンビードを1減らす"
+  "envidoDecrease": "エンビードを1減らす",
+  "handSummary": {
+    "title": "手札評価",
+    "pares": "パレス",
+    "juego": "フエゴ",
+    "paresNone": "なし",
+    "paresPar": "ペア",
+    "paresMedias": "メディアス（3枚）",
+    "paresDuples": "デュプレス（2ペア）",
+    "juegoBest": "31点 ★（最強）",
+    "juegoYes": "{{points}}点（フエゴあり）",
+    "juegoPunto": "プント {{points}}点（フエゴなし）"
+  }
 }

@@ -78,5 +78,17 @@
   },
   "envidoStepperLabel": "Envido bet amount",
   "envidoIncrease": "Increase envido by 1",
-  "envidoDecrease": "Decrease envido by 1"
+  "envidoDecrease": "Decrease envido by 1",
+  "handSummary": {
+    "title": "Hand summary",
+    "pares": "Pares",
+    "juego": "Juego",
+    "paresNone": "None",
+    "paresPar": "Par (one pair)",
+    "paresMedias": "Medias (three)",
+    "paresDuples": "Duples (two pairs)",
+    "juegoBest": "31 ★ (best)",
+    "juegoYes": "{{points}} (has Juego)",
+    "juegoPunto": "Punto {{points}} (no Juego)"
+  }
 }
