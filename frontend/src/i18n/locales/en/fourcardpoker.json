@@ -3,6 +3,7 @@
   "player": "Player",
   "dealer": "Dealer",
   "dealerUpcard": "Upcard only",
+  "hiddenCard": "Hidden card",
   "label": {
     "chips": "Chips",
     "ante": "Ante",
