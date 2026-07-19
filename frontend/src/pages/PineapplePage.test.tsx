@@ -407,6 +407,119 @@ describe('PineapplePage', () => {
     expect(preview).toHaveTextContent('ワンペア');
   });
 
+  it('annotates each remaining Irish Poker card once the first discard is chosen', async () => {
+    const irishDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishDiscardState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    // Choose only the FIRST discard (♦5): a staged preview should appear for each
+    // of the three still-selectable cards (the candidate second discards).
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+
+    const labels = await screen.findAllByTestId('irishpoker-discard-candidate');
+    expect(labels).toHaveLength(3); // one per remaining card, excluding the chosen one
+    // Every kept pair (Aces or eights) makes at least one pair with the board.
+    for (const label of labels) expect(label).toHaveTextContent('ワンペア');
+    // The full two-card kept preview is not shown yet (only one card selected).
+    expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
+  });
+
+  it('switches from staged candidates to the kept preview at the second Irish Poker discard', async () => {
+    const irishDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishDiscardState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    expect(await screen.findAllByTestId('irishpoker-discard-candidate')).toHaveLength(3);
+
+    // Selecting the second discard hands off to the full kept-cards preview.
+    fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
+    expect(await screen.findByTestId('irishpoker-discard-preview')).toBeInTheDocument();
+    expect(screen.queryAllByTestId('irishpoker-discard-candidate')).toHaveLength(0);
+
+    // Deselecting one card returns to the staged, per-candidate previews.
+    fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
+    expect(await screen.findAllByTestId('irishpoker-discard-candidate')).toHaveLength(3);
+    expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
+  });
+
+  it('does not stage Irish Poker candidate previews before any card is chosen', async () => {
+    const irishDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishDiscardState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    // No discard chosen yet → no staged candidate annotations.
+    expect(screen.queryByTestId('irishpoker-discard-candidate')).not.toBeInTheDocument();
+  });
+
   it('evaluates the best five when the board has more than three cards', async () => {
     const irishRiverState: PineappleResponse = {
       ...discardState,
