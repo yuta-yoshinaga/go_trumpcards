@@ -23,7 +23,6 @@ func setupGaigelCuiMock() *interfaces.MockGaigelGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetTrumpSuit").Return(1)
-	m.On("GetTrumpCard").Return((*domain.Card)(nil))
 	m.On("GetStockRemaining").Return(27)
 	m.On("GetTeamScore", 0).Return(0)
 	m.On("GetTeamScore", 1).Return(0)
@@ -69,30 +68,6 @@ func TestGaigelCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "切り札: SPADE")
 		assert.Contains(t, result, "[0]SPADE 1")
-	})
-
-	t.Run("turn-up card named while stock remains", func(t *testing.T) {
-		m, players := setupGaigelCuiMockWithPlayers()
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpCard")
-		m.On("GetTrumpCard").Return(domain.NewCard(domain.CardDesignSpade, 10, false))
-
-		result := p.Output(m, nil)
-		// The trump line now includes the face-up turn-up card's name.
-		assert.Contains(t, result, "切り札: SPADE")
-		assert.Contains(t, result, "[SPADE 10]")
-	})
-
-	t.Run("turn-up card hidden after stock exhausted", func(t *testing.T) {
-		m, players := setupGaigelCuiMockWithPlayers()
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetStockRemaining")
-		m.On("GetStockRemaining").Return(0)
-		// GetTrumpCard stays nil (default mock), so no card face is shown.
-
-		result := p.Output(m, nil)
-		assert.Contains(t, result, "切り札: SPADE")
-		assert.NotContains(t, result, "[SPADE 10]")
 	})
 
 	t.Run("trump undecided", func(t *testing.T) {

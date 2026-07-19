@@ -42,19 +42,9 @@ func (p *GaigelCuiPresenter) Output(g interfaces.GaigelGame, lastErr error) stri
 			"name", cuiPlayerName(g.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 
 		if trumpSuit := g.GetTrumpSuit(); trumpSuit > 0 {
-			// While the turn-up card is still face-up under the stock, name it so
-			// the ranked card on show is visible information; once the stock is
-			// exhausted and the card has been drawn, fall back to suit + stock only.
-			if tc := g.GetTrumpCard(); tc != nil {
-				out.WriteString(i18n.Tf("gaigel.trumpLine",
-					"suit", cuiSuitName(trumpSuit),
-					"card", cuiCardStr(tc),
-					"stock", strconv.Itoa(g.GetStockRemaining())) + "\n")
-			} else {
-				out.WriteString(i18n.Tf("gaigel.trumpLineNoCard",
-					"suit", cuiSuitName(trumpSuit),
-					"stock", strconv.Itoa(g.GetStockRemaining())) + "\n")
-			}
+			out.WriteString(i18n.Tf("gaigel.trumpLine",
+				"suit", cuiSuitName(trumpSuit),
+				"stock", strconv.Itoa(g.GetStockRemaining())) + "\n")
 		} else {
 			out.WriteString(i18n.T("gaigel.trumpUndecided") + "\n")
 		}
