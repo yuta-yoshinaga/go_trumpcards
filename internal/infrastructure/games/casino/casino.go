@@ -374,14 +374,6 @@ func init() {
 			return usecase.RestoreBeloteInteractor(data, new(presenter.BeloteWebPresenter))
 		},
 		controller.NewBeloteWebControllerWithProvider)
-	games.RegisterKVGame("yaniv", games.CategoryCasino,
-		func() usecase.YanivInteractorIF {
-			return usecase.NewYanivInteractor(domain.NewDefaultYaniv(), new(presenter.YanivWebPresenter))
-		},
-		func(data []byte) (usecase.YanivInteractorIF, error) {
-			return usecase.RestoreYanivInteractor(data, new(presenter.YanivWebPresenter))
-		},
-		controller.NewYanivWebControllerWithProvider)
 	games.RegisterKVGame("tressette", games.CategoryCasino,
 		func() usecase.TressetteInteractorIF {
 			return usecase.NewTressetteInteractor(domain.NewDefaultTressette(), new(presenter.TressetteWebPresenter))

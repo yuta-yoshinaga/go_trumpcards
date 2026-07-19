@@ -366,7 +366,7 @@ const workerUrl: Record<string, string> = {
   egyptianratscrew: WORKER_CLASSIC,
   bakersdozen: WORKER_SOLO,
   thirtyone: WORKER_SOLO,
-  yaniv: WORKER_CASINO,
+  yaniv: WORKER_SOLO,
   tressette: WORKER_CASINO,
   tonk: WORKER_CLASSIC,
   dragontiger: WORKER_CASINO,
