@@ -33,6 +33,12 @@
     "title": "Big Road",
     "clear": "Clear History"
   },
+  "stats": {
+    "player": "P {{n}} ({{pct}}%)",
+    "banker": "B {{n}} ({{pct}}%)",
+    "tie": "T {{n}} ({{pct}}%)",
+    "streak": "Current {{side}} streak {{k}}"
+  },
   "tutorial": {
     "betControls": "Set your bet amount and target (Player, Banker, or Tie) here. You can also place side bets.",
     "playerHand": "This is the Player's hand. The hand closest to 9 wins.",
