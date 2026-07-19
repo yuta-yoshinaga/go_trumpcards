@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { pyramidApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -23,6 +23,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePyramidGame } from '../hooks/usePyramidGame';
+import { usePyramidStats } from '../hooks/usePyramidStats';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -154,6 +155,24 @@ function PyramidPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
+  // Best-record persistence in localStorage (issue #3083).
+  const { stats, recordResult } = usePyramidStats();
+  const [newBestMoves, setNewBestMoves] = useState(false);
+  // Guard so each finished game is recorded exactly once (phase stays ended across re-renders).
+  const recordedRef = useRef(false);
+  const endPhase = state?.phase;
+  const endMoveCount = state?.moveCount ?? 0;
+  useEffect(() => {
+    const ended = endPhase === PyramidPhase.GAME_CLEAR || endPhase === PyramidPhase.GAME_OVER;
+    if (!ended) {
+      recordedRef.current = false;
+      return;
+    }
+    if (recordedRef.current) return;
+    recordedRef.current = true;
+    setNewBestMoves(recordResult({ won: endPhase === PyramidPhase.GAME_CLEAR, moves: endMoveCount }));
+  }, [endPhase, endMoveCount, recordResult]);
+
   if (!state)
     return <GameSkeleton gameKey="pyramid" layout={{ kind: 'tiered-rows', rows: [1, 2, 3, 4], stockWaste: true }} />;
 
@@ -217,6 +236,11 @@ function PyramidPageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
+          {stats.fewestMoves !== null && (
+            <span data-testid="py-best-moves">
+              {t('bestMoves')}: {t('bestMovesValue', { moves: stats.fewestMoves })}
+            </span>
+          )}
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
@@ -390,6 +414,28 @@ function PyramidPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {/* New fewest-moves record badge on the clear screen (#3083). */}
+            {isGameClear && newBestMoves && (
+              <div
+                data-testid="py-best-badge"
+                role="status"
+                className="text-center text-ds-success font-semibold text-sm mb-2"
+              >
+                {t('newBestMoves', { moves: state.moveCount })}
+              </div>
+            )}
+
+            {/* Best-record panel: fewest moves + clear tally (#3083). */}
+            <div data-testid="py-stats-panel" className="text-game-text-muted text-xs text-center mb-2">
+              {t('bestMoves')}: {stats.fewestMoves !== null ? t('bestMovesValue', { moves: stats.fewestMoves }) : '—'}
+              {stats.plays > 0 && (
+                <>
+                  {' · '}
+                  {t('clears', { wins: stats.wins, plays: stats.plays })}
+                </>
+              )}
+            </div>
 
             {/* Action log */}
             <ActionLogSection

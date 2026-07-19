@@ -33,6 +33,10 @@
     "resetButton": "Press the reset button to start a new game."
   },
   "landscapeBanner": "Rotate to landscape for easier play",
+  "bestMoves": "Best",
+  "bestMovesValue": "{{moves}} moves",
+  "newBestMoves": "New record! Cleared in {{moves}} moves",
+  "clears": "Cleared {{wins}}/{{plays}}",
   "frontendHint": {
     "removeKing": "An exposed King can be removed directly",
     "removePair": "There is a pair of exposed cards that sums to 13",
