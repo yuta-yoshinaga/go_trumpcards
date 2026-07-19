@@ -21,6 +21,7 @@
     "confirmYes": "Confirm",
     "confirmNo": "Cancel",
     "candidateHand": "If discarded",
+    "recommended": "Recommended",
     "limitReached": "You can select up to {{count}} card(s). Deselect one first.",
     "limitDescription": "You can select at most {{count}} card(s) to discard."
   },
