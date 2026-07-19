@@ -98,6 +98,19 @@ describe('RussianBankPage', () => {
     expect(src).toHaveTextContent('自リザーブ');
   });
 
+  it('renders every card in a multi-card tableau column as a cascade', async () => {
+    const column: Card[] = [card('SPADE', 10), card('HEART', 9), card('SPADE', 8), card('HEART', 7)];
+    mockExec.mockResolvedValue(makeState({ tableau: [column, [], [], []] }));
+    renderWithProviders(<RussianBankPage />);
+    await waitFor(() => expect(screen.getByTestId('tableau-0')).toBeInTheDocument());
+    // All four buried cards are rendered (not just the top one).
+    for (let ci = 0; ci < column.length; ci++) {
+      expect(screen.getByTestId(`tableau-0-card-${ci}`)).toBeInTheDocument();
+    }
+    // The column aria-label still names the top card as the actionable target.
+    expect(screen.getByTestId('tableau-0')).toHaveAttribute('aria-label', expect.stringContaining('タブロー1'));
+  });
+
   it('selects a source then moves it to a tableau column', async () => {
     renderWithProviders(<RussianBankPage />);
     const reserve = await screen.findByTestId('reserve-0');

@@ -244,31 +244,49 @@ function RussianBankPageContent() {
         {/* Shared tableau */}
         <div className="mb-3">
           <span className="text-ds-text-muted text-[11px]">{t('tableauLabel')}</span>
-          <div className="flex gap-2 flex-wrap mt-0.5">
-            {state.tableau.map((col, i) => (
-              <button
-                type="button"
-                key={`tab-${i}`}
-                className={`rounded ${selected ? 'ring-1 ring-ds-success' : ''} ${canAct ? 'cursor-pointer' : ''}`}
-                onClick={canAct ? () => sendToTableau(i) : undefined}
-                disabled={!canAct}
-                data-testid={`tableau-${i}`}
-                aria-label={
-                  col.length > 0
-                    ? t('slotCardZone', { card: cardAlt(col[col.length - 1]), zone: t('srcTableau', { col: i + 1 }) })
-                    : t('slotEmptyZone', { zone: t('srcTableau', { col: i + 1 }) })
-                }
-              >
-                {col.length > 0 ? (
-                  <CardImage card={col[col.length - 1]} width={w} />
-                ) : (
-                  <div
-                    className="rounded border border-dashed border-white/25 bg-black/20"
-                    style={{ width: w, height: Math.round(w * 1.4) }}
-                  />
-                )}
-              </button>
-            ))}
+          <div className="flex gap-2 flex-wrap mt-0.5 items-start">
+            {state.tableau.map((col, i) => {
+              const n = col.length;
+              const cardH = Math.round(w * 1.4);
+              // Reveal every buried card's rank+suit corner via a vertical cascade
+              // instead of showing only the top card. The visible strip auto-compresses
+              // for tall columns so the pile never overruns the board / footer (#3574).
+              const baseStrip = Math.round(w * 0.34);
+              const maxColH = Math.round(cardH * 2.8);
+              const strip = n > 1 ? Math.min(baseStrip, Math.max(1, Math.round((maxColH - cardH) / (n - 1)))) : 0;
+              return (
+                <button
+                  type="button"
+                  key={`tab-${i}`}
+                  className={`relative flex flex-col items-center rounded ${selected ? 'ring-1 ring-ds-success' : ''} ${canAct ? 'cursor-pointer' : ''}`}
+                  onClick={canAct ? () => sendToTableau(i) : undefined}
+                  disabled={!canAct}
+                  data-testid={`tableau-${i}`}
+                  aria-label={
+                    n > 0
+                      ? t('slotCardZone', { card: cardAlt(col[n - 1]), zone: t('srcTableau', { col: i + 1 }) })
+                      : t('slotEmptyZone', { zone: t('srcTableau', { col: i + 1 }) })
+                  }
+                >
+                  {n === 0 ? (
+                    <div
+                      className="rounded border border-dashed border-white/25 bg-black/20"
+                      style={{ width: w, height: cardH }}
+                    />
+                  ) : (
+                    col.map((c, ci) => (
+                      <div
+                        key={`tab-${i}-card-${ci}`}
+                        data-testid={`tableau-${i}-card-${ci}`}
+                        style={{ marginTop: ci === 0 ? 0 : -(cardH - strip) }}
+                      >
+                        <CardImage card={c} width={w} />
+                      </div>
+                    ))
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
