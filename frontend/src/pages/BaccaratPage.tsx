@@ -30,6 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BaccaratResponse, BaccaratSideBetResult, Card } from '../types/card';
 import { BaccaratBetType, BaccaratPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { computeBaccaratShoeStats } from '../utils/baccaratStats';
 import { BACCARAT_HELP, parseBaccaratCommand } from '../utils/cli/commands/baccaratCommands';
 import { formatBaccaratState } from '../utils/cli/formatters/baccaratFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -163,6 +164,43 @@ function BigRoadGrid({ history }: { history: number[] }) {
               </div>
             );
           }),
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Renders a compact statistics row for the shoe history: Player / Banker / Tie
+ * counts with appearance rates, plus the current side streak. Returns null when
+ * the history is empty. Aggregation is delegated to `computeBaccaratShoeStats`.
+ */
+function ShoeStatsPanel({
+  history,
+  t,
+}: {
+  history: number[];
+  t: (key: string, params?: Record<string, unknown>) => string;
+}) {
+  if (history.length === 0) return null;
+  const stats = computeBaccaratShoeStats(history);
+  const streakLabel =
+    stats.streakSide === ROAD_PLAYER
+      ? t('betType.player')
+      : stats.streakSide === ROAD_BANKER
+        ? t('betType.banker')
+        : null;
+
+  return (
+    <div className="mb-2 text-xs text-ds-text-primary" data-testid="baccarat-shoe-stats">
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+        <span className="text-ds-info">{t('stats.player', { n: stats.playerCount, pct: stats.playerPct })}</span>
+        <span className="text-ds-error">{t('stats.banker', { n: stats.bankerCount, pct: stats.bankerPct })}</span>
+        <span className="text-ds-success">{t('stats.tie', { n: stats.tieCount, pct: stats.tiePct })}</span>
+        {streakLabel && (
+          <span className="font-bold text-ds-warning">
+            {t('stats.streak', { side: streakLabel, k: stats.streakCount })}
+          </span>
         )}
       </div>
     </div>
@@ -411,6 +449,7 @@ function BaccaratPageContent() {
               {state.history.length > 0 && (
                 <div className="text-ds-text-primary text-sm font-bold mb-1">{t('road.title')}</div>
               )}
+              <ShoeStatsPanel history={state.history} t={t} />
               <RoadmapTrendBar
                 history={state.history}
                 leftCode={ROAD_PLAYER}
