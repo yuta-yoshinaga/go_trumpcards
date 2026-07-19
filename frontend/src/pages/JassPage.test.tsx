@@ -144,6 +144,40 @@ describe('JassPage', () => {
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
   });
 
+  it('shows the Weis panel with per-team totals and a counted marker when Weis is declared', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.TRICK_END, trumpSuit: 1, roundWeisPoints: [20, 0] }));
+    renderWithProviders(<JassPage />);
+    const panel = await screen.findByTestId('jass-weis-panel');
+    expect(panel).toBeInTheDocument();
+    expect(panel).toHaveTextContent('Weis（メルド）宣言');
+    // Human is on team 0, so the (You) marker appears on team 0.
+    expect(panel).toHaveTextContent('チーム0（あなた）');
+    expect(panel).toHaveTextContent('20点');
+    // Only the scoring team (team 0) gets the "獲得" marker.
+    expect(screen.getAllByText('獲得')).toHaveLength(1);
+  });
+
+  it('hides the Weis panel when the feature is disabled', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: JassPhase.TRICK_END,
+        trumpSuit: 1,
+        roundWeisPoints: [20, 0],
+        config: { cpuDifficulty: 1, targetScore: 1000, lastTrickBonus: 5, enableWeis: false },
+      }),
+    );
+    renderWithProviders(<JassPage />);
+    await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('jass-weis-panel')).not.toBeInTheDocument();
+  });
+
+  it('hides the Weis panel when no Weis points were declared', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.TRICK_END, trumpSuit: 1, roundWeisPoints: [0, 0] }));
+    renderWithProviders(<JassPage />);
+    await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('jass-weis-panel')).not.toBeInTheDocument();
+  });
+
   it('translates a known hint reason', async () => {
     const playState = makeState({ phase: JassPhase.PLAY, trumpSuit: 1, currentPlayerIdx: 0 });
     mockExec.mockResolvedValue(playState);

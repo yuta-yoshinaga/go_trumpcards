@@ -32,6 +32,13 @@
   "roundPoints": "Round: {{points}} pts",
   "weisPoints": "Weis: {{points}} pts",
   "stockPoints": "Stöck: {{points}} pts",
+  "weisPanel": {
+    "title": "Weis (meld) declarations",
+    "note": "Weis are melds declared during the round (3-card sequence 20 pts, 4-card sequence 50 pts, four-of-a-kind 100/150/200 pts, etc.). Only the team that declared the strongest Weis scores all of its Weis points for the round.",
+    "teamPoints": "{{points}} pts",
+    "scored": "Counted",
+    "you": " (You)"
+  },
   "schiebenButton": "Schieben",
   "playButton": "Play",
   "nextTrick": "Next Trick",
