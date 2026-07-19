@@ -16,6 +16,10 @@
   "flipCenterPile": "Flip center pile {{n}}",
   "stuckMessage": "Stuck! Press flip to turn over new center cards.",
   "autoFlipInline": "Auto-flip",
+  "timer": "Time",
+  "bestTime": "Best",
+  "clearTime": "Clear time {{time}}",
+  "newBest": "New best! {{time}}",
   "autoFlipCountdownAria": "Auto-flip countdown",
   "autoFlipCountdownRemaining": "Auto-flip in {{n}} second(s)",
   "settings": {

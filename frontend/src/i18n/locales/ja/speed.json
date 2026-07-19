@@ -16,6 +16,10 @@
   "flipCenterPile": "台札{{n}}をめくる",
   "stuckMessage": "膠着状態です。めくるボタンを押してください。",
   "autoFlipInline": "自動でめくる",
+  "timer": "経過",
+  "bestTime": "ベスト",
+  "clearTime": "クリアタイム {{time}}",
+  "newBest": "ベスト更新! {{time}}",
   "autoFlipCountdownAria": "自動めくりカウントダウン",
   "autoFlipCountdownRemaining": "あと {{n}} 秒で自動めくり",
   "settings": {
