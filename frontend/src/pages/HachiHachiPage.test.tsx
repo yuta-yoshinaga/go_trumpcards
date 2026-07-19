@@ -37,6 +37,7 @@ const gameEndState = makeHachiHachiState({
 });
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(playState);
 });
@@ -141,6 +142,21 @@ describe('HachiHachiPage', () => {
     mockExec.mockClear();
     fireEvent.click(card);
     expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('offers the frontend hint toggle, off by default with no tooltip', async () => {
+    renderWithProviders(<HachiHachiPage />);
+    const toggle = await screen.findByLabelText('ヒント表示');
+    expect(toggle).not.toBeChecked();
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  it('shows the hint tooltip when the toggle is enabled and state.hint is set', async () => {
+    localStorage.setItem('hint_enabled_hachihachi', 'true');
+    mockExec.mockResolvedValue(makeHachiHachiState({ hint: { cardIndex: 0, fieldIndex: 0, reason: 'capture' } }));
+    renderWithProviders(<HachiHachiPage />);
+    const tooltip = await screen.findByTestId('hint-tooltip');
+    expect(tooltip).toHaveTextContent('価値の高い場札を捕獲する');
   });
 
   it('ignores a field click that is not a capture candidate', async () => {

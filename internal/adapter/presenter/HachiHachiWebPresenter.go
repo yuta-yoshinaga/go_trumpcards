@@ -55,7 +55,24 @@ func (p *HachiHachiWebPresenter) Output(g interfaces.HachiHachiGame, lastErr err
 		resObj.MessageCode = "hachihachi.result.scores"
 		resObj.MessageParams = map[string]string{"scores": p.encodeScoresParam(g)}
 	}
+	// 人間の手番 (プレイフェーズ) ではヒントを埋め、フロントエンドのヒントトグルを
+	// 機能させる。GetHint は CPU 手番・ゲーム終了・対象外フェーズでは nil を返すため、
+	// その場合 Hint は設定されない。
+	p.applyHint(resObj, g)
 	return marshalOrError(resObj)
+}
+
+// applyHint は人間の手番であればヒント情報を出力オブジェクトへ埋める。
+// g.GetHint() は CPU 手番・ゲーム終了・対象外フェーズでは nil を返すため、
+// その場合 Hint は設定されず、omitempty により JSON からも省かれる。
+func (p *HachiHachiWebPresenter) applyHint(resObj *controller.HachiHachiWebOutput, g interfaces.HachiHachiGame) {
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.HachiHachiWebOutputHint{
+			CardIndex:  hint.CardIndex,
+			FieldIndex: hint.FieldIndex,
+			Reason:     hint.Reason,
+		}
+	}
 }
 
 // buildBase は基本フィールドを埋めた出力オブジェクトを生成する。
@@ -180,13 +197,7 @@ func (p *HachiHachiWebPresenter) buildResultMessage(g interfaces.HachiHachiGame)
 // HintOutput はヒント情報を JSON 出力する。
 func (p *HachiHachiWebPresenter) HintOutput(g interfaces.HachiHachiGame) string {
 	resObj := p.buildBase(g)
-	if hint := g.GetHint(); hint != nil {
-		resObj.Hint = &controller.HachiHachiWebOutputHint{
-			CardIndex:  hint.CardIndex,
-			FieldIndex: hint.FieldIndex,
-			Reason:     hint.Reason,
-		}
-	}
+	p.applyHint(resObj, g)
 	return marshalOrError(resObj)
 }
 
