@@ -9,6 +9,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCliGame } from '../hooks/useCliGame';
@@ -149,6 +150,9 @@ function PigsTailPageContent() {
   const isHumanTurn = !isGameEnd && state.players[state.currentTurn]?.isHuman === true;
   const currentPhaseName = isGameEnd ? phaseNames[PIGTAIL_PHASE_END] : phaseNames[PIGTAIL_PHASE_PLAY];
   const loserIsHuman = isGameEnd && state.loserIdx >= 0 && state.players[state.loserIdx]?.isHuman === true;
+  // Signature of the current draw; changing it remounts the reveal card so the
+  // flip animation re-fires on every new draw (each draw changes circleCount).
+  const drawSig = `${state.circleCount}-${state.centerCount}-${state.lastDrawCard ? `${state.lastDrawCard.design}${state.lastDrawCard.value}` : 'none'}`;
 
   return (
     <GamePageShell
@@ -221,12 +225,22 @@ function PigsTailPageContent() {
               </div>
             </div>
 
-            {/* Last action indicator */}
+            {/* Drawn-card reveal: flips the just-drawn card face-up onto the board
+                so the player can see what was drawn, with a red highlight on penalty. */}
             {state.lastDrawCard && (
-              <div
-                className={`text-center text-sm font-medium ${state.lastPenalty ? 'text-ds-error' : 'text-ds-success'}`}
-              >
-                {state.lastPenalty ? t('label.penalty') : t('label.safe')}
+              <div className="flex flex-col items-center gap-1" data-testid="pt-draw-reveal">
+                <div key={drawSig} className="motion-safe:animate-flipIn">
+                  <div
+                    className={
+                      state.lastPenalty ? 'rounded-lg ring-2 ring-ds-error shadow-lg shadow-ds-error/50' : undefined
+                    }
+                  >
+                    <AnimatedCard card={state.lastDrawCard} width={48} silent />
+                  </div>
+                </div>
+                <div className={`text-sm font-medium ${state.lastPenalty ? 'text-ds-error' : 'text-ds-success'}`}>
+                  {state.lastPenalty ? t('label.penalty') : t('label.safe')}
+                </div>
               </div>
             )}
 
