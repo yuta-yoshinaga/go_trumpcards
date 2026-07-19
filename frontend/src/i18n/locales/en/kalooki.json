@@ -19,6 +19,7 @@
   "openingHint": "Your first meld(s) must total at least {{n}} points",
   "stockLabel": "Stock",
   "discardLabel": "Discard",
+  "revealedHand": "Revealed hand",
   "yourHand": "Your hand",
   "cards": "Cards",
   "scoreLabel": "Total",

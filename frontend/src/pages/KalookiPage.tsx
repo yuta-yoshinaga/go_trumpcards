@@ -356,6 +356,21 @@ function KalookiPageContent() {
                     })}
                   </div>
                 )}
+                {/* Reveal CPU hands at round end / game end so the human can verify penalty scores. */}
+                {!p.isHuman && (isRoundEnd || isGameEnd) && p.cards.length > 0 && (
+                  <div className="mt-2">
+                    <div className="text-xs opacity-75 mb-1">{t('revealedHand')}</div>
+                    <div className="flex flex-wrap gap-1" data-testid={`kalooki-reveal-${p.id}`}>
+                      {p.cards.map((c, ci) => (
+                        <AnimatedCard
+                          key={`reveal-${p.id}-${c.design}-${c.value}-${ci}`}
+                          card={c}
+                          width={cardWidth * 0.6}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </section>

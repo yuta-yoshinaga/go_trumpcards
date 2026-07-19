@@ -19,6 +19,7 @@
   "openingHint": "最初のメルドは合計 {{n}} 点以上が必要です",
   "stockLabel": "山札",
   "discardLabel": "捨て札",
+  "revealedHand": "公開手札",
   "yourHand": "あなたの手札",
   "cards": "枚数",
   "scoreLabel": "累計",
