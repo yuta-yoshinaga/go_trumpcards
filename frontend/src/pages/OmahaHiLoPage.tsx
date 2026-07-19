@@ -44,6 +44,7 @@ import { valueName } from '../utils/cardUtils';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { omahaBestFive } from '../utils/omahaBestFive';
 import { lowCardIndexSets } from '../utils/omahaLowCards';
 import { findPlayerName } from '../utils/playerUtils';
 
@@ -103,24 +104,40 @@ const OMAHA_PHASE_KEYS: Readonly<Record<number, string>> = {
   [OmahaPhase.REBUY]: 'rebuy',
 };
 
-/** A community or hole card that, when part of the qualifying low hand (`isLo`),
- * gets the blue ring plus color-independent markers: sr-only text (a plain div
- * can't carry aria-label) and a visible, aria-hidden "LO" badge. */
+/** A community or hole card at showdown. When part of the qualifying low hand
+ * (`isLo`) it gets the blue ring plus color-independent markers: sr-only text (a
+ * plain div can't carry aria-label) and a visible, aria-hidden "LO" badge. When
+ * part of the winning Hi best-5 (`isBest5`) it gets an additive green ring;
+ * cards in neither set are dimmed (`dim`) once a best-5 exists. Lo takes visual
+ * precedence over Hi so a card serving both keeps the blue low marker. */
 function OmahaLoCard({
   card,
   isLo,
+  isBest5,
+  dim,
+  best5Position,
   cardWidth,
   t,
 }: {
   card: Card;
   isLo: boolean;
+  isBest5: boolean;
+  dim: boolean;
+  best5Position: 'hole' | 'board';
   cardWidth: number;
   t: (key: string) => string;
 }) {
+  const ring = isLo
+    ? 'ring-2 ring-ds-info motion-safe:animate-pulse'
+    : isBest5
+      ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse'
+      : '';
   return (
     <div
-      className={isLo ? 'relative rounded-lg ring-2 ring-ds-info motion-safe:animate-pulse' : ''}
+      className={`relative rounded-lg transition-all ${ring} ${dim ? 'opacity-50' : ''}`}
       data-testid={isLo ? 'omahahilo-lo-card' : undefined}
+      data-best5-hole={isBest5 && best5Position === 'hole' ? true : undefined}
+      data-best5-board={isBest5 && best5Position === 'board' ? true : undefined}
     >
       <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
       {isLo && (
@@ -205,6 +222,14 @@ function OmahaHiLoPageContent() {
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  // At showdown, highlight the human's winning Hi 5 cards under the must-use-2 rule.
+  const showdownBest5 = useMemo(() => {
+    const empty = { holeSet: new Set<number>(), boardSet: new Set<number>() };
+    if (!isShowdown || !humanPlayer || humanPlayer.folded) return empty;
+    const best = omahaBestFive(humanPlayer.cards ?? [], state?.communityCards ?? []);
+    if (!best) return empty;
+    return { holeSet: new Set(best.holeIdx), boardSet: new Set(best.boardIdx) };
+  }, [isShowdown, humanPlayer, state?.communityCards]);
   // At showdown, highlight the human's qualifying low cards (hole + board), if any.
   const humanLowBestHand = isShowdown
     ? state?.roundResults?.find((r) => r.playerIdx === humanPlayer?.id)?.lowBestHand
@@ -296,15 +321,22 @@ function OmahaHiLoPageContent() {
                   <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
-                      ? state.communityCards.map((card, idx) => (
-                          <OmahaLoCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            isLo={lowSets.loBoardSet.has(idx)}
-                            cardWidth={cardWidth}
-                            t={t}
-                          />
-                        ))
+                      ? state.communityCards.map((card, idx) => {
+                          const inBest = showdownBest5.boardSet.has(idx);
+                          const inLo = lowSets.loBoardSet.has(idx);
+                          return (
+                            <OmahaLoCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              isLo={inLo}
+                              isBest5={inBest}
+                              dim={showdownBest5.boardSet.size > 0 && !inBest && !inLo}
+                              best5Position="board"
+                              cardWidth={cardWidth}
+                              t={t}
+                            />
+                          );
+                        })
                       : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
@@ -466,15 +498,22 @@ function OmahaHiLoPageContent() {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="ohl-combination-rule">
                   {humanPlayer.cards?.length
-                    ? humanPlayer.cards.map((card, idx) => (
-                        <OmahaLoCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          isLo={lowSets.loHoleSet.has(idx)}
-                          cardWidth={cardWidth}
-                          t={t}
-                        />
-                      ))
+                    ? humanPlayer.cards.map((card, idx) => {
+                        const inBest = showdownBest5.holeSet.has(idx);
+                        const inLo = lowSets.loHoleSet.has(idx);
+                        return (
+                          <OmahaLoCard
+                            key={`${card.design}-${card.value}`}
+                            card={card}
+                            isLo={inLo}
+                            isBest5={inBest}
+                            dim={showdownBest5.holeSet.size > 0 && !inBest && !inLo}
+                            best5Position="hole"
+                            cardWidth={cardWidth}
+                            t={t}
+                          />
+                        );
+                      })
                     : !humanPlayer.folded &&
                       Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>

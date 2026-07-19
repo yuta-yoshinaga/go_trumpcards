@@ -366,6 +366,25 @@ describe('OmahaHiLoPage', () => {
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
   });
 
+  it('highlights exactly 2 hole + 3 board cards as the Hi best-5 at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    const { container } = renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+  });
+
+  it('does not highlight a Hi best-5 when the human folded', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [humanPlayer({ folded: true, handName: '' }), showdownState.players[1], showdownState.players[2]],
+    });
+    const { container } = renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(0);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(0);
+  });
+
   it('shows green Hi and blue Lo badges when the pot splits', async () => {
     const splitState: OmahaResponse = {
       ...showdownState,
