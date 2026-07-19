@@ -23,6 +23,13 @@
   "you": "あなた",
   "cpu": "CPU",
   "captured": "捕獲: {{count}}",
+  "capturedEmpty": "獲得札なし",
+  "category": {
+    "bright": "光",
+    "animal": "種",
+    "ribbon": "短冊",
+    "kasu": "カス"
+  },
   "score": "得点: {{score}}",
   "turnYours": "あなたの手番です — 手札を1枚選んで場札を捕獲します。",
   "turnCpu": "CPU がプレイ中です…",

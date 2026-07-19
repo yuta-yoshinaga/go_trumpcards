@@ -23,6 +23,13 @@
   "you": "You",
   "cpu": "CPU",
   "captured": "Captured: {{count}}",
+  "capturedEmpty": "No captured cards",
+  "category": {
+    "bright": "Bright",
+    "animal": "Animal",
+    "ribbon": "Ribbon",
+    "kasu": "Chaff"
+  },
   "score": "Score: {{score}}",
   "turnYours": "Your turn — pick a hand card to capture a field card.",
   "turnCpu": "CPU is playing…",
