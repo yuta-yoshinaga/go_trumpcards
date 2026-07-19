@@ -37,6 +37,7 @@ import { FRENCH_TAROT_HELP, parseFrenchTarotCommand } from '../utils/cli/command
 import { formatFrenchTarotState } from '../utils/cli/formatters/frenchtarotFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { frenchTarotTarget, heldBouts } from '../utils/frenchTarotBouts';
+import { frenchTarotUnburiableReason } from '../utils/frenchtarotEcart';
 import { playerName } from '../utils/playerUtils';
 
 /** French Tarot tutorial step definitions. */
@@ -188,6 +189,16 @@ function FrenchTarotPageContent() {
       : undefined;
 
   const handValidIndices = canPlay ? state.playableIndices : canDiscard ? discardableIndices : undefined;
+
+  // During the écart, explain per-card why an un-buriable card cannot go into the
+  // chien (King / Excuse / bout / trump) via the card tooltip. Purely additive —
+  // it never blocks selection; the backend still rejects illegal buries.
+  const ecartTitleFor = (idx: number): string | undefined => {
+    const card = humanPlayer?.cards[idx];
+    if (!card) return undefined;
+    const reason = frenchTarotUnburiableReason(card);
+    return reason ? t(`chienUnburiable.${reason}`) : undefined;
+  };
 
   const handleManualReset = () => {
     hideActionLog();
@@ -426,6 +437,7 @@ function FrenchTarotPageContent() {
                 dataTutorialPrefix="frenchtarot"
                 validIndices={handValidIndices}
                 restrictedTooltip={canDiscard ? t('chienRestricted') : t('playButton')}
+                cardTitleFor={canDiscard ? ecartTitleFor : undefined}
               />
             )}
 

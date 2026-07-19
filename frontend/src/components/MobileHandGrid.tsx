@@ -46,6 +46,13 @@ interface MobileHandGridProps {
   validIndices?: number[];
   /** Tooltip surfaced on cards that are present but disabled by `validIndices`. */
   restrictedTooltip?: string;
+  /**
+   * Optional per-card tooltip override. When it returns a string for an index,
+   * that text becomes the card's `title`, taking precedence over
+   * `restrictedTooltip` / `trumpTitle`. Returns `undefined` to fall back to the
+   * default tooltip.
+   */
+  cardTitleFor?: (idx: number) => string | undefined;
   /** Optional badge to render in the top-left corner of a card (e.g. game-specific role marker). */
   cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
   /**
@@ -81,6 +88,7 @@ export function MobileHandGrid({
   dataTutorial,
   validIndices,
   restrictedTooltip,
+  cardTitleFor,
   cardBadgeFor,
   highlightIndices,
   trumpIndices,
@@ -136,7 +144,7 @@ export function MobileHandGrid({
                   // cards remain focusable for keyboard / screen-reader users — they
                   // need to reach the tooltip that explains why the card is illegal.
                   aria-disabled={restricted || undefined}
-                  title={restricted ? restrictedTooltip : trump ? trumpTitle : undefined}
+                  title={cardTitleFor?.(globalIdx) ?? (restricted ? restrictedTooltip : trump ? trumpTitle : undefined)}
                   data-trump={trump || undefined}
                   data-legal={legal || undefined}
                   className={`${focusRingCard} ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}

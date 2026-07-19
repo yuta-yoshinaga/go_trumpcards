@@ -51,6 +51,12 @@
   "bidPhase": "Auction — pass, or declare a higher contract (current highest bid: {{bid}}).",
   "chienPhase": "Chien exchange — bury 6 cards from your hand ({{count}}/6 selected). Kings and the Excuse cannot be buried.",
   "chienRestricted": "This card cannot be buried (King / Excuse).",
+  "chienUnburiable": {
+    "king": "Kings (Roi) cannot be buried in the chien.",
+    "excuse": "The Excuse cannot be buried in the chien.",
+    "bout": "Bouts (Petit = trump 1, and the 21) cannot be buried in the chien.",
+    "trump": "Trumps cannot normally be buried in the chien (only when too few other cards remain)."
+  },
   "discardButton": "Bury ({{count}}/6)",
   "playButton": "Play",
   "nextTrick": "Next Trick",

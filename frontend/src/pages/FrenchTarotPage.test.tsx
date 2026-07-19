@@ -257,6 +257,26 @@ describe('FrenchTarotPage', () => {
     await waitFor(() => expect(screen.getByTestId('frenchtarot-chien')).toBeInTheDocument());
   });
 
+  it('surfaces distinct un-buriable reasons for the King and the Excuse during the écart', async () => {
+    mockExec.mockResolvedValue(chienPhaseState);
+    renderWithProviders(<FrenchTarotPage />);
+    // The King card exposes the king-specific reason on its tooltip.
+    const kingBtn = await screen.findByRole('button', { name: 'R ♠' });
+    expect(kingBtn).toHaveAttribute('title', 'キング（ロワ）はシアンに埋められません。');
+    // The Excuse exposes a different, excuse-specific reason.
+    const excuseBtn = screen.getByRole('button', { name: 'Excuse ★' });
+    expect(excuseBtn).toHaveAttribute('title', 'エクスキューズはシアンに埋められません。');
+    // The two reasons differ.
+    expect(kingBtn.getAttribute('title')).not.toBe(excuseBtn.getAttribute('title'));
+  });
+
+  it('shows no un-buriable tooltip on a freely buriable low card during the écart', async () => {
+    mockExec.mockResolvedValue(chienPhaseState);
+    renderWithProviders(<FrenchTarotPage />);
+    const lowCard = await screen.findByRole('button', { name: '2 ♥' });
+    expect(lowCard).not.toHaveAttribute('title');
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<FrenchTarotPage />);
     const card = await screen.findByRole('button', { name: 'D ♥' });
