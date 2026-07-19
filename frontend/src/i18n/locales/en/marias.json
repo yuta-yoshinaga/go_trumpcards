@@ -44,7 +44,9 @@
   "roundResult": {
     "title": "Round Result",
     "cardPoints": "{{name}} card points: {{points}}",
-    "marriage": "{{name}} marriage: {{points}}"
+    "marriage": "{{name}} marriage: {{points}}",
+    "soloistTotal": "Soloist: {{points}} pts",
+    "defenderTotal": "Defenders total: {{points}} pts"
   },
   "hintAvailable": "Hint",
   "hint": {

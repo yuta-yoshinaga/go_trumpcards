@@ -304,6 +304,34 @@ function MariasPageContent() {
                         )}
                       </div>
                     ))}
+                    {/* Soloist-vs-Defenders total comparison. Each side total is
+                        cardPoints + marriage; the Soloist wins the round only when
+                        their total strictly exceeds the two Defenders' combined total
+                        (matching the domain's ScoreRound). The winning side is emphasised. */}
+                    {(() => {
+                      const sideTotal = (soloist: boolean) =>
+                        state.players.reduce(
+                          (sum, p) =>
+                            p.isSoloist === soloist
+                              ? sum + (state.roundCardPoints[p.id] ?? 0) + (state.roundMarriage[p.id] ?? 0)
+                              : sum,
+                          0,
+                        );
+                      const soloistTotal = sideTotal(true);
+                      const defenderTotal = sideTotal(false);
+                      const soloistWon = soloistTotal > defenderTotal;
+                      return (
+                        <div className="mt-1 pt-1 border-t border-ds-border-subtle" data-testid="marias-side-totals">
+                          <span className={soloistWon ? 'text-ds-warning font-semibold' : ''}>
+                            {t('roundResult.soloistTotal', { points: soloistTotal })}
+                          </span>
+                          <span className="mx-1">/</span>
+                          <span className={soloistWon ? '' : 'text-ds-warning font-semibold'}>
+                            {t('roundResult.defenderTotal', { points: defenderTotal })}
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>

@@ -44,7 +44,9 @@
   "roundResult": {
     "title": "ラウンド結果",
     "cardPoints": "{{name}} カード点: {{points}}",
-    "marriage": "{{name}} マリッジ: {{points}}"
+    "marriage": "{{name}} マリッジ: {{points}}",
+    "soloistTotal": "ソリスト: {{points}}点",
+    "defenderTotal": "ディフェンダー合計: {{points}}点"
   },
   "hintAvailable": "ヒント",
   "hint": {
