@@ -44,6 +44,9 @@ func (m *MockCanastaGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
 func (m *MockCanastaGame) GetDiscardTop() *domain.Card {
 	return m.Called().Get(0).(*domain.Card)
 }
+func (m *MockCanastaGame) GetDiscardPile() []*domain.Card {
+	return m.Called().Get(0).([]*domain.Card)
+}
 func (m *MockCanastaGame) GetDrawPileCount() int    { return m.Called().Int(0) }
 func (m *MockCanastaGame) GetDiscardPileCount() int { return m.Called().Int(0) }
 func (m *MockCanastaGame) GetPozzettoCount() int    { return m.Called().Int(0) }

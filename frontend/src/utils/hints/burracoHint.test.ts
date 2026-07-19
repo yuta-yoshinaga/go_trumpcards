@@ -32,6 +32,7 @@ function makeState(overrides: Partial<BurracoResponse> = {}): BurracoResponse {
     roundNumber: 1,
     currentPlayerIdx: 0,
     discardTop: null,
+    discardPile: [],
     drawPileCount: 40,
     discardPileCount: 0,
     pozzettoCount: 2,

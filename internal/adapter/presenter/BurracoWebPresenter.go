@@ -29,6 +29,14 @@ func (p *BurracoWebPresenter) Output(g interfaces.BurracoGame, lastErr error) st
 		resObj.DiscardTop = cardToOutput(top)
 	}
 
+	// 捨て札パイル全体を古い順（下から上）に公開する。ブラーコでは山ごと引き取るため
+	// パイルの中身は全プレイヤーに見えている情報であり、取得判断の核心となる。
+	pile := g.GetDiscardPile()
+	resObj.DiscardPile = make([]*controller.WebOutputCard, 0, len(pile))
+	for _, card := range pile {
+		resObj.DiscardPile = append(resObj.DiscardPile, cardToOutput(card))
+	}
+
 	cfg := g.GetConfig()
 	resObj.Config = controller.BurracoWebOutputConfig{
 		CpuDifficulty: int(cfg.CpuDifficulty),

@@ -63,6 +63,7 @@ const drawPhaseState: BurracoResponse = {
   roundNumber: 1,
   currentPlayerIdx: 0,
   discardTop: { design: 'SPADE', value: 5 },
+  discardPile: [{ design: 'SPADE', value: 5 }],
   drawPileCount: 67,
   discardPileCount: 1,
   pozzettoCount: 2,
@@ -125,6 +126,30 @@ describe('BurracoPage', () => {
     renderWithProviders(<BurracoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
+  });
+
+  it('renders the discard pile viewer with all pile cards', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      discardPile: [
+        { design: 'SPADE', value: 3 },
+        { design: 'HEART', value: 7 },
+        { design: 'CLOVER', value: 10 },
+      ],
+      discardPileCount: 3,
+    });
+    renderWithProviders(<BurracoPage />);
+    const viewer = await screen.findByTestId('ca-discard-pile-viewer');
+    expect(viewer).toBeInTheDocument();
+    expect(screen.getByTestId('ca-discard-pile-cards').querySelectorAll('img')).toHaveLength(3);
+  });
+
+  it('shows an empty message when the discard pile is empty', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: null, discardPile: [], discardPileCount: 0 });
+    renderWithProviders(<BurracoPage />);
+    await screen.findByTestId('ca-discard-pile-viewer');
+    expect(screen.getByText('捨て札の山は空です。')).toBeInTheDocument();
+    expect(screen.queryByTestId('ca-discard-pile-cards')).not.toBeInTheDocument();
   });
 
   it('calls drawstock command when button clicked', async () => {

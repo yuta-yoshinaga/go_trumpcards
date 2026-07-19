@@ -7367,6 +7367,9 @@ export interface BurracoResponse extends BaseGameResponse {
   roundNumber: number;
   currentPlayerIdx: number;
   discardTop: Card | null;
+  /** The full discard pile, oldest (bottom) first. In Burraco the whole pile is
+   * taken at once, so its contents are public information for all players. */
+  discardPile: Card[];
   drawPileCount: number;
   discardPileCount: number;
   pozzettoCount: number;

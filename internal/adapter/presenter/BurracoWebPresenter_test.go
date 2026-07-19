@@ -23,6 +23,7 @@ func setupBurracoWebMock() *interfaces.MockBurracoGame {
 	m.On("GetPozzettoCount").Return(2)
 	m.On("GetIsFrozen").Return(false)
 	m.On("GetDiscardTop").Return((*domain.Card)(nil))
+	m.On("GetDiscardPile").Return(([]*domain.Card)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.BurracoPhaseDraw)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -141,6 +142,42 @@ func TestBurracoWebPresenter_Output(t *testing.T) {
 		assert.NotNil(t, resObj.DiscardTop)
 		assert.Equal(t, "HEART", resObj.DiscardTop.Design)
 		assert.Equal(t, 7, resObj.DiscardTop.Value)
+	})
+
+	t.Run("discard pile populated in oldest-first order", func(t *testing.T) {
+		m, _ := setupBurracoWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardPile")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardPileCount")
+		pile := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			domain.NewCard(domain.CardDesignHeart, 7, false),
+			domain.NewCard(domain.CardDesignClover, 10, false),
+		}
+		m.On("GetDiscardPile").Return(pile)
+		m.On("GetDiscardPileCount").Return(len(pile))
+
+		result := p.Output(m, nil)
+		var resObj controller.BurracoWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.Len(t, resObj.DiscardPile, 3)
+		assert.Equal(t, 3, resObj.DiscardPileCount)
+		assert.Equal(t, "SPADE", resObj.DiscardPile[0].Design)
+		assert.Equal(t, 3, resObj.DiscardPile[0].Value)
+		assert.Equal(t, "HEART", resObj.DiscardPile[1].Design)
+		assert.Equal(t, "CLOVER", resObj.DiscardPile[2].Design)
+		assert.Equal(t, 10, resObj.DiscardPile[2].Value)
+	})
+
+	t.Run("empty discard pile yields empty array", func(t *testing.T) {
+		m, _ := setupBurracoWebMockWithPlayers()
+
+		result := p.Output(m, nil)
+		var resObj controller.BurracoWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.NotNil(t, resObj.DiscardPile)
+		assert.Len(t, resObj.DiscardPile, 0)
 	})
 
 	t.Run("frozen pile flag", func(t *testing.T) {
