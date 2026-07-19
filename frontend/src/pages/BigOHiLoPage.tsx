@@ -367,9 +367,39 @@ function BigOHiLoPageContent() {
                     : [],
                 );
                 if (hiWinners.length === 0 && loWinners.length === 0) return null;
+                // A scoop is when one player wins BOTH the Hi and the Lo halves.
+                const scoopers = state.roundResults.flatMap((r) =>
+                  r.hiWonAmount && r.lowWonAmount
+                    ? [
+                        {
+                          isHuman: r.playerIdx === humanPlayer?.id,
+                          name: findPlayerName(state.players, r.playerIdx),
+                          total: r.hiWonAmount + r.lowWonAmount,
+                        },
+                      ]
+                    : [],
+                );
                 return (
                   <div className="mb-2 text-center text-sm" data-testid="bigohilo-split">
                     <div className="mb-1 text-ds-text-muted">{t('hiLo.title')}</div>
+                    {scoopers.length > 0 && (
+                      <div className="mb-1.5 flex flex-wrap justify-center gap-2" role="status">
+                        {scoopers.map((s) => (
+                          <span
+                            key={`scoop-${s.name}`}
+                            data-testid="bigohilo-scoop-badge"
+                            data-scoop-human={s.isHuman || undefined}
+                            className={`inline-block rounded-full border border-ds-accent bg-ds-accent px-3 py-0.5 font-bold text-ds-text-on-accent ${
+                              s.isHuman ? 'motion-safe:animate-pulse ring-2 ring-ds-accent ring-offset-1' : ''
+                            }`}
+                          >
+                            {s.isHuman
+                              ? t('scoop.youBadge', { total: s.total })
+                              : t('scoop.badge', { name: s.name, total: s.total })}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex flex-wrap justify-center gap-2">
                       {hiWinners.map((w) => (
                         <span
