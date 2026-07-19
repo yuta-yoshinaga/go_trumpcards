@@ -47,6 +47,10 @@
     "heart": "♥ Hearts",
     "diamond": "♦ Diamonds"
   },
+  "liveTricks": {
+    "title": "This round",
+    "team": "{{team}} {{tricks}}/{{target}}"
+  },
   "roundResult": {
     "title": "Round Result (tricks won)",
     "teamA": "Team A: {{tricks}} tricks",

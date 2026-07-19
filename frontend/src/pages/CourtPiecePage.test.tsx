@@ -188,6 +188,58 @@ describe('CourtPiecePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
   });
 
+  it('shows the live team-trick tally toward the 7-trick target during play', async () => {
+    mockExec.mockResolvedValue(
+      makeCourtPieceState({
+        phase: 1,
+        trumpSuit: 3,
+        currentPlayerIdx: 0,
+        players: [
+          { id: 0, isHuman: true, team: 0, cardCount: 9, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 3 },
+          { id: 1, isHuman: false, team: 1, cardCount: 9, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 1 },
+          { id: 2, isHuman: false, team: 0, cardCount: 9, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 1 },
+          { id: 3, isHuman: false, team: 1, cardCount: 9, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 1 },
+        ],
+      }),
+    );
+    renderWithProviders(<CourtPiecePage />);
+    // Team 0 = seats 0(3) + 2(1) = 4 tricks; team 1 = seats 1(1) + 3(1) = 2 tricks.
+    const teamA = await screen.findByTestId('cp-live-tricks-team-0');
+    expect(teamA).toHaveTextContent('チームA 4/7');
+    expect(screen.getByTestId('cp-live-tricks-team-1')).toHaveTextContent('チームB 2/7');
+    // Neither team has reached the target, so no accent emphasis.
+    expect(teamA.className).not.toContain('text-ds-accent');
+  });
+
+  it('emphasizes a team that has reached the 7-trick target during play', async () => {
+    mockExec.mockResolvedValue(
+      makeCourtPieceState({
+        phase: 1,
+        trumpSuit: 3,
+        currentPlayerIdx: 0,
+        players: [
+          { id: 0, isHuman: true, team: 0, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 4 },
+          { id: 1, isHuman: false, team: 1, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 2 },
+          { id: 2, isHuman: false, team: 0, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 3 },
+          { id: 3, isHuman: false, team: 1, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 2 },
+        ],
+      }),
+    );
+    renderWithProviders(<CourtPiecePage />);
+    // Team 0 = 4 + 3 = 7 tricks (target reached); team 1 = 4.
+    const teamA = await screen.findByTestId('cp-live-tricks-team-0');
+    expect(teamA).toHaveTextContent('チームA 7/7');
+    expect(teamA.className).toContain('text-ds-accent');
+    expect(screen.getByTestId('cp-live-tricks-team-1').className).not.toContain('text-ds-accent');
+  });
+
+  it('hides the live team-trick tally once the round ends', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-live-tricks')).not.toBeInTheDocument();
+  });
+
   it('renders round end with the next round button and the round result', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<CourtPiecePage />);
