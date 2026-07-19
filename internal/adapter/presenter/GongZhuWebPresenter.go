@@ -75,17 +75,26 @@ func (p *GongZhuWebPresenter) buildPlayersOutput(g interfaces.GongZhuGame) []*co
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		player := g.GetPlayer(i)
 		pObj := &controller.GongZhuWebOutputPlayer{
-			ID:              i,
-			IsHuman:         player.GetIsHuman(),
-			CardCount:       player.GetCardsSize(),
-			Cards:           playerCardsToOutput(player, player.GetIsHuman()),
-			RoundScore:      player.GetRoundScore(),
-			CumulativeScore: player.GetCumulativeScore(),
-			TrickCount:      player.GetTrickCount(),
+			ID:                 i,
+			IsHuman:            player.GetIsHuman(),
+			CardCount:          player.GetCardsSize(),
+			Cards:              playerCardsToOutput(player, player.GetIsHuman()),
+			CapturedPointCards: gongZhuCapturedPointCards(player),
+			RoundScore:         player.GetRoundScore(),
+			CumulativeScore:    player.GetCumulativeScore(),
+			TrickCount:         player.GetTrickCount(),
 		}
 		out = append(out, pObj)
 	}
 	return out
+}
+
+// gongZhuCapturedPointCards はプレイヤーが獲得した得点札（ハート各札・♠Q=豚・
+// ♦J=羊・♣10=倍化）を WebOutputCard スライスに変換する。得点札はトリック獲得時に
+// 公開される公開情報のため、全プレイヤー分をそのまま送出してよい。nil の場合は
+// 空スライスを返す。
+func gongZhuCapturedPointCards(player *domain.GongZhuPlayer) []*controller.WebOutputCard {
+	return cardsToOutputOrEmpty(gongZhuCapturedPoints(player))
 }
 
 // buildMessage ゲーム結果メッセージを構築

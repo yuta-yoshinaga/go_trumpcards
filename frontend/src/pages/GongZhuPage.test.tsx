@@ -154,6 +154,67 @@ describe('GongZhuPage', () => {
     await waitFor(() => expect(screen.getByText('ゲーム終了！')).toBeInTheDocument());
   });
 
+  it('shows each player captured point cards summary in the score table', async () => {
+    mockExec.mockResolvedValue(
+      makeGongZhuState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 11,
+            cards: [{ design: 'SPADE', value: 12 }],
+            capturedPointCards: [
+              { design: 'SPADE', value: 12 }, // pig
+              { design: 'HEART', value: 5 },
+              { design: 'HEART', value: 13 },
+            ],
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 1,
+          },
+          {
+            id: 1,
+            isHuman: false,
+            cardCount: 11,
+            cards: [],
+            capturedPointCards: [{ design: 'DIAMOND', value: 11 }], // sheep
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 1,
+          },
+          {
+            id: 2,
+            isHuman: false,
+            cardCount: 12,
+            cards: [],
+            capturedPointCards: [],
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 0,
+          },
+          {
+            id: 3,
+            isHuman: false,
+            cardCount: 12,
+            cards: [],
+            capturedPointCards: [],
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 0,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<GongZhuPage />);
+    const p0 = await screen.findByTestId('gz-captured-0');
+    expect(p0).toHaveTextContent('♠Q');
+    expect(p0).toHaveTextContent('♥×2');
+    expect(p0).toHaveAttribute('aria-label');
+    expect(screen.getByTestId('gz-captured-1')).toHaveTextContent('♦J');
+    // A player with no captured point cards shows the "none" placeholder.
+    expect(screen.getByTestId('gz-captured-2')).toHaveTextContent('なし');
+  });
+
   it('does not show play button on CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<GongZhuPage />);

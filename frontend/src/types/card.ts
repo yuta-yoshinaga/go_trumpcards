@@ -1037,6 +1037,8 @@ export interface GongZhuPlayerData {
   isHuman: boolean;
   cardCount: number;
   cards: Card[];
+  /** Point cards this player has captured so far (hearts, ♠Q pig, ♦J sheep, ♣10 doubler). Public info revealed as tricks are taken. */
+  capturedPointCards: Card[];
   roundScore: number;
   cumulativeScore: number;
   trickCount: number;

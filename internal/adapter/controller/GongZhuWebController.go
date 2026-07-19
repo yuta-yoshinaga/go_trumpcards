@@ -24,13 +24,17 @@ type GongZhuWebConfig struct {
 
 // GongZhuWebOutputPlayer 拱猪Webアウトプットプレイヤー
 type GongZhuWebOutputPlayer struct {
-	ID              int              `json:"id"`
-	IsHuman         bool             `json:"isHuman"`
-	CardCount       int              `json:"cardCount"`
-	Cards           []*WebOutputCard `json:"cards"`
-	RoundScore      int              `json:"roundScore"`
-	CumulativeScore int              `json:"cumulativeScore"`
-	TrickCount      int              `json:"trickCount"`
+	ID        int              `json:"id"`
+	IsHuman   bool             `json:"isHuman"`
+	CardCount int              `json:"cardCount"`
+	Cards     []*WebOutputCard `json:"cards"`
+	// CapturedPointCards はこのプレイヤーがこれまでのトリックで獲得した
+	// 得点札（ハート各札・♠Q=豚・♦J=羊・♣10=倍化）の一覧。トリック獲得時に
+	// 公開される公開情報のため、全プレイヤー分を送出する。
+	CapturedPointCards []*WebOutputCard `json:"capturedPointCards"`
+	RoundScore         int              `json:"roundScore"`
+	CumulativeScore    int              `json:"cumulativeScore"`
+	TrickCount         int              `json:"trickCount"`
 }
 
 // GongZhuWebOutputTrickCard トリック中の1枚
