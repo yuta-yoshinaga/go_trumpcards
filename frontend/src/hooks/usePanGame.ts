@@ -27,7 +27,7 @@ export const TARGET_ROUNDS_OPTIONS = [1, 3, 5, 10] as const;
 
 /** Hook that manages Panguingue (Pan) game state and player actions. */
 export function usePanGame() {
-  const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
+  const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection, setSelected } = useCardSelection();
   const { config: panConfig, handleConfigChange } = useGameConfig<PanConfig>(DEFAULT_PAN_CONFIG);
 
   const onSuccess = useCallback(() => {
@@ -71,6 +71,14 @@ export function usePanGame() {
     exec('nextround');
   }, [exec]);
 
+  /** Replaces the current selection with the exact given hand indices (used by meld-candidate hints). */
+  const selectCards = useCallback(
+    (indices: number[]) => {
+      setSelected([...indices]);
+    },
+    [setSelected],
+  );
+
   return {
     state,
     loading,
@@ -80,6 +88,7 @@ export function usePanGame() {
     selectedCardIndices,
     toggleCard,
     clearSelection,
+    selectCards,
     handleConfigChange,
     handleDrawStock,
     handleDrawDiscard,

@@ -33,6 +33,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { PAN_HELP, parsePanCommand } from '../utils/cli/commands/panCommands';
 import { formatPanState } from '../utils/cli/formatters/panFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { panLayoffIndices, panMeldCandidates } from '../utils/panMeldCandidates';
 import { playerName } from '../utils/playerUtils';
 
 const PAN_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -88,6 +89,7 @@ function PanPageContent() {
     selectedCardIndices,
     toggleCard,
     clearSelection,
+    selectCards,
     handleConfigChange,
     handleDrawStock,
     handleDrawDiscard,
@@ -133,6 +135,33 @@ function PanPageContent() {
   });
 
   const phaseNames = usePhaseNames('pan', PAN_PHASE_KEYS);
+
+  // Pre-computed meld-candidate hints for the human's hand (only on their play
+  // turn). `candidates` are minimal legal melds to tap-and-select; the two index
+  // sets drive the additive ring marks on individual hand cards. Mirrors the
+  // domain's meld/layoff rules exactly (see panMeldCandidates.ts).
+  const {
+    candidates: meldCandidates,
+    candidateIndices,
+    layoffIndices,
+  } = useMemo(() => {
+    const empty = {
+      candidates: [] as ReturnType<typeof panMeldCandidates>,
+      candidateIndices: new Set<number>(),
+      layoffIndices: new Set<number>(),
+    };
+    if (!state || !frontendHintEnabled) return empty;
+    const human = state.players.find((p) => p.isHuman);
+    const isPlay = state.phase === PanPhase.PLAY;
+    const isHuman = state.players[state.currentPlayerIdx]?.isHuman === true;
+    if (!human || !isPlay || !isHuman) return empty;
+    const candidates = panMeldCandidates(human.cards);
+    const candidateIndices = new Set<number>();
+    for (const cand of candidates) for (const i of cand.indices) candidateIndices.add(i);
+    const tableMelds = state.players.flatMap((p) => p.laidMelds.map((m) => m.cards));
+    const layoffIndices = panLayoffIndices(human.cards, tableMelds);
+    return { candidates, candidateIndices, layoffIndices };
+  }, [state, frontendHintEnabled]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -389,27 +418,73 @@ function PanPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.pan.footer} px-4 py-2.5`}>
+            {humanPlayer && meldCandidates.length > 0 && (
+              <div className="mb-2 p-2 rounded bg-black/30" data-testid="pan-meld-candidates">
+                <div className="text-ds-text-muted text-xs mb-1">{t('candidates.title')}</div>
+                <div className="flex flex-wrap gap-2">
+                  {meldCandidates.map((cand) => {
+                    const cards = cand.indices.map((i) => humanPlayer.cards[i]);
+                    const kindLabel = t(cand.kind === 'set' ? 'candidates.set' : 'candidates.run');
+                    return (
+                      <button
+                        type="button"
+                        key={`cand-${cand.kind}-${cand.indices.join('-')}`}
+                        onClick={() => selectCards(cand.indices)}
+                        className={`${btnPrimary} flex items-center gap-1`}
+                        aria-label={`${kindLabel}: ${cards.map(cardAlt).join(' ')}`}
+                        data-testid={`pan-candidate-${cand.indices.join('-')}`}
+                      >
+                        <span className="text-xs font-bold">{kindLabel}</span>
+                        {cards.map((card, ci) => (
+                          <AnimatedCard
+                            key={`cand-card-${card.design}-${card.value}-${ci}`}
+                            card={card}
+                            width={cardWidth * 0.55}
+                          />
+                        ))}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="text-ds-text-muted text-xs mt-1">{t('candidates.hint')}</div>
+              </div>
+            )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="pan-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
+                {humanPlayer.cards.map((card, idx) => {
+                  const isLayoff = layoffIndices.has(idx);
+                  const isCandidate = candidateIndices.has(idx);
+                  // Additive outline ring (stacks on the selection border without
+                  // clobbering it): warning = can lay off a single card onto a
+                  // table meld; success = part of a legal meld candidate.
+                  const hintRing = isLayoff
+                    ? { outline: '2px solid var(--color-ds-warning)', outlineOffset: '1px' }
+                    : isCandidate
+                      ? { outline: '2px solid var(--color-ds-success)', outlineOffset: '1px' }
+                      : {};
+                  return (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}-${idx}`}
+                      onClick={() => toggleCard(idx)}
+                      aria-label={cardAlt(card)}
+                      aria-pressed={selectedCardIndices.includes(idx)}
+                      data-meld-candidate={isCandidate ? 'true' : undefined}
+                      data-layoff-target={isLayoff ? 'true' : undefined}
+                      className={`transition-transform ${focusRingCard}`}
+                      style={{
+                        background: 'none',
+                        padding: 0,
+                        borderRadius: 8,
+                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                        ...hintRing,
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </button>
+                  );
+                })}
               </div>
             )}
 
