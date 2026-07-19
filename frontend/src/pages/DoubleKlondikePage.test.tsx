@@ -85,6 +85,37 @@ describe('DoubleKlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mwt', { col: 0 }));
   });
 
+  it('fans out the top 3 waste cards, keeping only the top selectable', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ waste: [card('CLOVER', 2), card('SPADE', 3), card('HEART', 4), card('DIAMOND', 5)] }),
+    );
+    renderWithProviders(<DoubleKlondikePage />);
+    // The top card stays interactive as the `waste` source button.
+    await screen.findByTestId('waste');
+    // The two cards beneath it are shown for visibility only (not selectable).
+    expect(screen.getByTestId('waste-under-0')).toBeInTheDocument();
+    expect(screen.getByTestId('waste-under-1')).toBeInTheDocument();
+    // Only 3 of the 4 waste cards are rendered (the fan is capped at 3).
+    expect(screen.queryByTestId('waste-under-2')).not.toBeInTheDocument();
+    // The under-cards are plain divs, not buttons.
+    expect(screen.getAllByTestId('waste', { exact: true }).length).toBe(1);
+  });
+
+  it('shows fewer waste cards when fewer than 3 are present', async () => {
+    mockExec.mockResolvedValue(makeState({ waste: [card('CLOVER', 2), card('SPADE', 3)] }));
+    renderWithProviders(<DoubleKlondikePage />);
+    await screen.findByTestId('waste');
+    expect(screen.getByTestId('waste-under-0')).toBeInTheDocument();
+    expect(screen.queryByTestId('waste-under-1')).not.toBeInTheDocument();
+  });
+
+  it('shows an empty waste placeholder when the waste is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ waste: [] }));
+    renderWithProviders(<DoubleKlondikePage />);
+    await waitFor(() => expect(screen.getByTestId('waste-empty')).toBeInTheDocument());
+    expect(screen.queryByTestId('waste')).not.toBeInTheDocument();
+  });
+
   it('moves the waste card onto a foundation', async () => {
     renderWithProviders(<DoubleKlondikePage />);
     fireEvent.click(await screen.findByTestId('waste'));
