@@ -153,6 +153,43 @@ describe('RussianBankPage', () => {
     expect(screen.queryByTestId('discard-button')).not.toBeInTheDocument();
   });
 
+  it('requests a hint and rings the suggested reserve source and foundation target', async () => {
+    renderWithProviders(<RussianBankPage />);
+    const hintBtn = await screen.findByTestId('hint-button');
+    mockExec.mockResolvedValue(
+      makeState({ hint: { zone: 0, fromOpponent: false, col: 0, toFoundation: true, toCol: 0 } }),
+    );
+    fireEvent.click(hintBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    await waitFor(() => expect(screen.getByTestId('reserve-0')).toHaveAttribute('data-hint-source', 'true'));
+    // The foundation zone is ringed as the destination.
+    expect(screen.getByTestId('foundation-0').closest('[data-hint-foundation]')).toHaveAttribute(
+      'data-hint-foundation',
+      'true',
+    );
+  });
+
+  it('rings a suggested tableau source and tableau destination', async () => {
+    renderWithProviders(<RussianBankPage />);
+    const hintBtn = await screen.findByTestId('hint-button');
+    mockExec.mockResolvedValue(
+      makeState({ hint: { zone: 2, fromOpponent: false, col: 0, toFoundation: false, toCol: 2 } }),
+    );
+    fireEvent.click(hintBtn);
+    await waitFor(() => expect(screen.getByTestId('tableau-0')).toHaveAttribute('data-hint-source', 'true'));
+    expect(screen.getByTestId('tableau-2')).toHaveAttribute('data-hint-dest', 'true');
+  });
+
+  it('shows a no-move message and no board rings when there is no hint', async () => {
+    renderWithProviders(<RussianBankPage />);
+    const hintBtn = await screen.findByTestId('hint-button');
+    // Server returns no hint object.
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.click(hintBtn);
+    await waitFor(() => expect(screen.getByTestId('rb-hint-none')).toBeInTheDocument());
+    expect(screen.getByTestId('reserve-0')).not.toHaveAttribute('data-hint-source');
+  });
+
   it('shows the game-over label at game end', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 2, gameEndFlag: true, isHumanTurn: false, winnerIdx: 0 }));
     renderWithProviders(<RussianBankPage />);

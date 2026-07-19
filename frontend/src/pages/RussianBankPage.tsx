@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { russianbankApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -60,12 +60,30 @@ function RussianBankPageContent() {
     useGamePageSetup('russianbank');
   const { state, loading, error, exec, retry } = useGameApi(russianbankApi.exec);
   const [selected, setSelected] = useState<SelectedSource | null>(null);
+  // Whether the last hint's suggested move is currently highlighted on the board.
+  // The move coordinates come from `state.hint` (set by the server on a `hint`
+  // command); this flag just gates the rings so they only show after the player
+  // asks for a hint, then auto-dismiss.
+  const [showHint, setShowHint] = useState(false);
+  const hintTimerRef = useRef<number | null>(null);
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useEffect(() => {
     exec('reset');
   }, []);
+
+  // Clear any hint highlight (and stale source selection) whenever the board
+  // changes (move, discard, undo, CPU turn) so the rings can't point at a
+  // different card than the current hint.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: deps are the change-trigger, not read in the body.
+  useEffect(() => {
+    setSelected(null);
+    setShowHint(false);
+  }, [state?.moveCount]);
+
+  // Cancel a pending hint auto-dismiss timer on unmount.
+  useEffect(() => () => window.clearTimeout(hintTimerRef.current ?? undefined), []);
 
   const phaseNames = usePhaseNames('russianbank', RB_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
@@ -83,8 +101,27 @@ function RussianBankPageContent() {
   const handleReset = () => {
     hideActionLog();
     setSelected(null);
+    // A reset keeps moveCount at 0, so the board-change effect may not fire —
+    // clear any stale hint highlight here.
+    setShowHint(false);
+    window.clearTimeout(hintTimerRef.current ?? undefined);
     exec('reset');
   };
+
+  // Ask the server for a hint, then highlight the suggested move's source and
+  // destination for a few seconds. Does not execute the move.
+  const handleHint = () => {
+    exec('hint');
+    setShowHint(true);
+    window.clearTimeout(hintTimerRef.current ?? undefined);
+    hintTimerRef.current = window.setTimeout(() => setShowHint(false), 4000);
+  };
+
+  // The move to highlight, only while the highlight is active.
+  const hint = showHint ? state.hint : undefined;
+  const hintFoundation = hint?.toFoundation === true;
+  // A hint was requested but the server found no legal move to suggest.
+  const hintEmpty = showHint && state.hint === undefined;
 
   /** Pick (or toggle off) a move source. */
   const pickSource = (zone: number, fromOpp: boolean, col: number, label: string) => {
@@ -121,8 +158,18 @@ function RussianBankPageContent() {
     zoneName?: string,
     // `source` slots (reserve/waste) are selectable move-origins → expose aria-pressed.
     source = false,
+    // Hint rings: `hintSource` marks the suggested move's origin, `hintDest` its target.
+    hintSource = false,
+    hintDest = false,
   ) => {
-    const cls = `rounded ${highlighted ? 'ring-2 ring-ds-warning' : ''} ${onClick ? 'cursor-pointer' : ''}`;
+    // Source ring (info) and destination ring (success) are additive hint cues that
+    // sit on top of the selection ring (warning).
+    const hintRing = hintSource
+      ? ' ring-2 ring-ds-info motion-safe:animate-pulse'
+      : hintDest
+        ? ' ring-2 ring-ds-success motion-safe:animate-pulse'
+        : '';
+    const cls = `rounded ${highlighted ? 'ring-2 ring-ds-warning' : ''}${hintRing} ${onClick ? 'cursor-pointer' : ''}`;
     const label = card
       ? zoneName
         ? t('slotCardZone', { card: cardAlt(card), zone: zoneName })
@@ -140,6 +187,8 @@ function RussianBankPageContent() {
           onClick={onClick}
           disabled={!onClick}
           data-testid={key}
+          data-hint-source={hintSource ? 'true' : undefined}
+          data-hint-dest={hintDest ? 'true' : undefined}
           aria-label={label}
           aria-pressed={ariaPressed}
         >
@@ -156,6 +205,8 @@ function RussianBankPageContent() {
         onClick={onClick}
         disabled={!onClick}
         data-testid={key}
+        data-hint-source={hintSource ? 'true' : undefined}
+        data-hint-dest={hintDest ? 'true' : undefined}
         aria-label={label}
         aria-pressed={ariaPressed}
       />
@@ -186,6 +237,7 @@ function RussianBankPageContent() {
             selected?.zone === ZONE_RESERVE && selected.fromOpp === opponent,
             t(opponent ? 'srcOppReserve' : 'srcReserve'),
             true,
+            hint?.zone === ZONE_RESERVE && hint.fromOpponent === opponent,
           )}
         </div>
         <div className="flex flex-col items-center gap-0.5">
@@ -197,6 +249,7 @@ function RussianBankPageContent() {
             selected?.zone === ZONE_WASTE && selected.fromOpp === opponent,
             t(opponent ? 'srcOppWaste' : 'srcWaste'),
             true,
+            hint?.zone === ZONE_WASTE && hint.fromOpponent === opponent,
           )}
         </div>
         <div className="flex flex-col items-center gap-0.5">
@@ -228,7 +281,10 @@ function RussianBankPageContent() {
         {/* Foundations */}
         <div className="mb-2">
           <span className="text-ds-text-muted text-[11px]">{t('foundationsLabel')}</span>
-          <div className="flex gap-1 flex-wrap mt-0.5">
+          <div
+            className={`flex gap-1 flex-wrap mt-0.5 rounded${hintFoundation ? ' ring-2 ring-ds-success motion-safe:animate-pulse p-1' : ''}`}
+            data-hint-foundation={hintFoundation ? 'true' : undefined}
+          >
             {state.foundations.map((f, i) =>
               slot(
                 f[f.length - 1],
@@ -248,6 +304,15 @@ function RussianBankPageContent() {
             {state.tableau.map((col, i) => {
               const n = col.length;
               const cardH = Math.round(w * 1.4);
+              const isHintSource = hint?.zone === ZONE_TABLEAU && hint.col === i;
+              const isHintDest = hint !== undefined && !hintFoundation && hint.toCol === i;
+              // Source ring (info) / destination ring (success) are additive hint cues,
+              // layered on top of the shared move-target ring.
+              const hintRing = isHintSource
+                ? ' ring-2 ring-ds-info motion-safe:animate-pulse'
+                : isHintDest
+                  ? ' ring-2 ring-ds-success motion-safe:animate-pulse'
+                  : '';
               // Reveal every buried card's rank+suit corner via a vertical cascade
               // instead of showing only the top card. The visible strip auto-compresses
               // for tall columns so the pile never overruns the board / footer (#3574).
@@ -258,10 +323,12 @@ function RussianBankPageContent() {
                 <button
                   type="button"
                   key={`tab-${i}`}
-                  className={`relative flex flex-col items-center rounded ${selected ? 'ring-1 ring-ds-success' : ''} ${canAct ? 'cursor-pointer' : ''}`}
+                  className={`relative flex flex-col items-center rounded ${selected ? 'ring-1 ring-ds-success' : ''}${hintRing} ${canAct ? 'cursor-pointer' : ''}`}
                   onClick={canAct ? () => sendToTableau(i) : undefined}
                   disabled={!canAct}
                   data-testid={`tableau-${i}`}
+                  data-hint-source={isHintSource ? 'true' : undefined}
+                  data-hint-dest={isHintDest ? 'true' : undefined}
                   aria-label={
                     n > 0
                       ? t('slotCardZone', { card: cardAlt(col[n - 1]), zone: t('srcTableau', { col: i + 1 }) })
@@ -350,6 +417,22 @@ function RussianBankPageContent() {
             >
               {t('discard')}
             </button>
+          )}
+          {canAct && (
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={handleHint}
+              disabled={loading}
+              data-testid="hint-button"
+            >
+              {t('hint')}
+            </button>
+          )}
+          {hintEmpty && (
+            <span className="text-ds-text-muted text-xs" role="status" data-testid="rb-hint-none">
+              {t('hintNone')}
+            </span>
           )}
           {canAct && state.canCallStop && (
             <button
