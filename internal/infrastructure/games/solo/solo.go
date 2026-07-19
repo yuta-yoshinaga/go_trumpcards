@@ -437,4 +437,12 @@ func init() {
 			return usecase.RestoreZhengInteractor(data, new(presenter.ZhengWebPresenter))
 		},
 		controller.NewZhengWebControllerWithProvider)
+	games.RegisterKVGame("yaniv", games.CategorySolo,
+		func() usecase.YanivInteractorIF {
+			return usecase.NewYanivInteractor(domain.NewDefaultYaniv(), new(presenter.YanivWebPresenter))
+		},
+		func(data []byte) (usecase.YanivInteractorIF, error) {
+			return usecase.RestoreYanivInteractor(data, new(presenter.YanivWebPresenter))
+		},
+		controller.NewYanivWebControllerWithProvider)
 }

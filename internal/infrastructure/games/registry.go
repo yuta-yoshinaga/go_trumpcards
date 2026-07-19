@@ -289,7 +289,7 @@ var registry = []*Game{
 	// proposed the classic worker, but that worker is at the 1 MB gzip free-tier
 	// limit, so Yaniv is bucketed into the casino worker. Category here is purely
 	// a binary-size bucket (see package doc).
-	{Name: "yaniv", Category: CategoryCasino},
+	{Name: "yaniv", Category: CategorySolo},
 	// Gong Zhu (拱猪 / Chinese Hearts) is a trick-taking game with positive and
 	// negative point cards, a doubling card, and an exposure phase. The issue
 	// proposed the classic worker, but that worker is at the 1 MB gzip free-tier
