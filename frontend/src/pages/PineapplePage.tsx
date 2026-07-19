@@ -48,7 +48,7 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { holdemBestFive } from '../utils/holdemBestFive';
 import { type PineappleKeepFeature, pineappleKeepFeatures } from '../utils/pineappleDiscardHint';
 import { findPlayerName } from '../utils/playerUtils';
-import { evaluateFiveCardHand, pokerHandKey } from '../utils/pokerSquaresUtils';
+import { evaluateFiveCardHand, type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 
 /** Pineapple Poker tutorial step definitions. */
 const PN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -260,8 +260,10 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   }, [variant, isDiscardPhase, humanPlayer, state?.communityCards, selectedDiscards, discardCount]);
   // Crazy Pineapple discards 1 of 3 after the flop; annotate each hole card with
   // the best hand the OTHER two would make with the board if that card is the
-  // one discarded, so the player can compare keeps before committing.
-  const candidatePreviews = useMemo<(string | null)[] | null>(() => {
+  // one discarded, so the player can compare keeps before committing. Each entry
+  // carries both the i18n hand key and the raw rank, so the strongest keep can be
+  // flagged as recommended below.
+  const candidatePreviews = useMemo<({ handKey: string; rank: PokerHandRank } | null)[] | null>(() => {
     if (variant !== 'crazypineapple' || !isDiscardPhase) return null;
     const hole = humanPlayer?.cards ?? [];
     const board = state?.communityCards ?? [];
@@ -269,9 +271,25 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       const all = [...hole.filter((_, i) => i !== discardIdx), ...board];
       const picked = holdemBestFive(all);
       const rank = picked ? evaluateFiveCardHand(picked.map((i) => all[i])) : null;
-      return rank == null ? null : pokerHandKey(rank);
+      return rank == null ? null : { handKey: pokerHandKey(rank), rank };
     });
   }, [variant, isDiscardPhase, humanPlayer, state?.communityCards]);
+  // The Crazy Pineapple discard(s) whose removal leaves the strongest resulting
+  // hand — flagged with a "recommended" badge and ring. When several discards
+  // tie for the best rank, all of them are flagged.
+  const recommendedDiscards = useMemo<Set<number>>(() => {
+    const out = new Set<number>();
+    if (!candidatePreviews) return out;
+    let best = -1;
+    for (const p of candidatePreviews) {
+      if (p && p.rank > best) best = p.rank;
+    }
+    if (best < 0) return out;
+    candidatePreviews.forEach((p, i) => {
+      if (p && p.rank === best) out.add(i);
+    });
+    return out;
+  }, [candidatePreviews]);
   // Irish Poker discards 2 of 4 hole cards. Once the FIRST card is chosen, annotate
   // each still-selectable card with the best hand the OTHER two kept cards would make
   // with the board if that card became the second discard — turning the C(3,1)=3
@@ -560,7 +578,8 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                         const isSelected = selectedDiscards.includes(idx);
                         const inBest = showdownBest5.holeSet.has(idx);
                         const dim = showdownBest5.holeSet.size > 0 && !inBest;
-                        const candKey = candidatePreviews?.[idx] ?? null;
+                        const candKey = candidatePreviews?.[idx]?.handKey ?? null;
+                        const isRecommendedDiscard = recommendedDiscards.has(idx);
                         const irishCandKey = irishCandidatePreviews?.[idx] ?? null;
                         const keepFeatures = keepFeaturePreviews?.[idx] ?? null;
                         return (
@@ -569,7 +588,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                               type="button"
                               onClick={() => toggleDiscard(idx)}
                               aria-pressed={canDiscard ? isSelected : undefined}
-                              className={`${canDiscard ? 'cursor-pointer' : 'cursor-default'} ${inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${dim ? 'opacity-50' : ''}`}
+                              className={`${canDiscard ? 'cursor-pointer' : 'cursor-default'} ${inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${isRecommendedDiscard ? 'rounded-lg ring-2 ring-ds-info' : ''} ${dim ? 'opacity-50' : ''}`}
                               disabled={!canDiscard}
                               style={selectedCardStyle(canDiscard && isSelected)}
                               data-testid={inBest ? 'pn-best5-card' : undefined}
@@ -582,6 +601,14 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                                 data-testid="cp-discard-candidate"
                               >
                                 {`${t('discard.candidateHand')}: ${t(`hand.${candKey}`)}`}
+                              </span>
+                            )}
+                            {isRecommendedDiscard && (
+                              <span
+                                className="mt-0.5 rounded-full bg-ds-info/20 px-1.5 text-[10px] font-semibold text-ds-info"
+                                data-testid="cp-discard-recommended"
+                              >
+                                {t('discard.recommended')}
                               </span>
                             )}
                             {irishCandKey && (

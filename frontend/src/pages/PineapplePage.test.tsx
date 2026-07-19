@@ -626,6 +626,106 @@ describe('PineapplePage', () => {
     expect(labels[0]).toHaveTextContent('ワンペア');
   });
 
+  it('flags the single optimal Crazy Pineapple discard with a recommended badge', async () => {
+    // hole 10♠ 10♥ 2♦, board 10♣ 5♥ 8♦.
+    // Discard 2♦ → keep 10♠ 10♥ → three tens (best). The two 10-discards only
+    // leave a pair of tens, so only the 2♦ discard is recommended.
+    const crazyDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 3,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 10 },
+            { design: 'HEART', value: 10 },
+            { design: 'DIAMOND', value: 2 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'CLOVER', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockCrazyExec.mockResolvedValue(crazyDiscardState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const badges = screen.getAllByTestId('cp-discard-recommended');
+    expect(badges).toHaveLength(1); // only the strongest keep is recommended
+    expect(badges[0]).toHaveTextContent('おすすめ');
+    // The recommended card (3rd, discarding 2♦) keeps three of a kind.
+    const labels = screen.getAllByTestId('cp-discard-candidate');
+    expect(labels[2]).toHaveTextContent('スリーカード');
+  });
+
+  it('flags every tied-best Crazy Pineapple discard as recommended', async () => {
+    // hole A♠ A♥ 5♦, board 10♠ 5♥ 8♦. Every discard leaves exactly one pair,
+    // so all three tie for the best rank and all get the badge.
+    const crazyDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 3,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockCrazyExec.mockResolvedValue(crazyDiscardState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    expect(screen.getAllByTestId('cp-discard-recommended')).toHaveLength(3);
+  });
+
+  it('shows no Crazy Pineapple recommended badge when the board is too small', async () => {
+    const crazyNoBoardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 3,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [],
+      discardDone: [false, true, true, true],
+    };
+    mockCrazyExec.mockResolvedValue(crazyNoBoardState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-discard-recommended')).not.toBeInTheDocument();
+  });
+
+  it('does not show a recommended badge for the plain Pineapple variant', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-discard-recommended')).not.toBeInTheDocument();
+  });
+
   it('omits Crazy Pineapple candidate labels when the board is too small to evaluate', async () => {
     const crazyNoBoardState: PineappleResponse = {
       ...discardState,
