@@ -22,6 +22,7 @@
   "trumpSuit": "切り札: {{suit}}",
   "noTrump": "切り札未決定",
   "stock": "山札: {{count}}",
+  "turnUpCard": "めくり札",
   "currentTrick": "現在のトリック",
   "trickCount": "獲得トリック: {{count}}",
   "roundPoints": "ラウンド: {{points}}点",
