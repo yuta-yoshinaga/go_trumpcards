@@ -113,6 +113,41 @@ func TestKalookiWebPresenter_Output(t *testing.T) {
 		out := unmarshalKalooki(t, p.Output(m, nil))
 		assert.True(t, out.GameEndFlag)
 	})
+
+	t.Run("cpu hands hidden during play", func(t *testing.T) {
+		m, players := setupKalookiWebMock()
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+
+		out := unmarshalKalooki(t, p.Output(m, nil))
+		// Draw phase: CPU card faces are hidden, only the count is exposed.
+		assert.Equal(t, 2, out.Players[1].CardCount)
+		assert.Empty(t, out.Players[1].Cards)
+	})
+
+	t.Run("cpu hands revealed at round end", func(t *testing.T) {
+		m := new(interfaces.MockKalookiGame)
+		players := []*domain.KalookiPlayer{domain.NewKalookiPlayer(true), domain.NewKalookiPlayer(false)}
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		m.On("GetOpeningThreshold").Return(51)
+		m.On("GetDrawPileCount").Return(20)
+		m.On("GetDiscardTop").Return((*domain.Card)(nil))
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetPhase").Return(domain.KalookiPhaseRoundEnd)
+		m.On("GetCurrentPlayerIdx").Return(0)
+		m.On("GetWinnerIdx").Return(-1)
+		m.On("GetConfig").Return(domain.DefaultKalookiConfig())
+		m.On("GetRoundWinnerIdx").Return(0)
+		m.On("GetPlayerCnt").Return(2)
+		m.On("GetPlayer", 0).Return(players[0])
+		m.On("GetPlayer", 1).Return(players[1])
+
+		out := unmarshalKalooki(t, p.Output(m, nil))
+		// Round end: CPU card faces are revealed so penalty scores can be verified.
+		assert.Equal(t, "kalooki.roundEnd", out.MessageCode)
+		assert.Len(t, out.Players[1].Cards, 2)
+	})
 }
 
 func TestKalookiWebPresenter_ActionLogOutput(t *testing.T) {

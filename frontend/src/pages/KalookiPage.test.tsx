@@ -276,6 +276,30 @@ describe('KalookiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
+  it('keeps CPU hands hidden during the draw phase', async () => {
+    // drawState (from beforeEach) is phase 0 — CPU faces must not be revealed.
+    renderWithProviders(<KalookiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('kalooki-reveal-1')).not.toBeInTheDocument();
+  });
+
+  it('reveals CPU hands at round end', async () => {
+    const revealState: KalookiResponse = {
+      ...roundEndState,
+      players: [
+        roundEndState.players[0],
+        { ...cpu(1), cardCount: 2, cards: [card('SPADE', 5), card('HEART', 9)] },
+        cpu(2),
+      ],
+    };
+    mockExec.mockResolvedValue(revealState);
+    renderWithProviders(<KalookiPage />);
+    const reveal = await screen.findByTestId('kalooki-reveal-1');
+    expect(reveal.querySelectorAll('img')).toHaveLength(2);
+    // A CPU with no cards left (winner) shows no reveal block.
+    expect(screen.queryByTestId('kalooki-reveal-2')).not.toBeInTheDocument();
+  });
+
   it('shows the winner banner at game end', async () => {
     mockExec.mockResolvedValue({ ...drawState, phase: 3, gameEndFlag: true, winnerIdx: 0 });
     renderWithProviders(<KalookiPage />);
