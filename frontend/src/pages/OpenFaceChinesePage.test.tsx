@@ -4,7 +4,7 @@ import { openfacechineseApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, OpenFaceChinesePlayer, OpenFaceChineseResponse } from '../types/card';
-import { OpenFaceChinesePage } from './OpenFaceChinesePage';
+import { isOfcRowFull, OpenFaceChinesePage } from './OpenFaceChinesePage';
 
 vi.mock('../api/gameApi', () => ({
   openfacechineseApi: { exec: vi.fn() },
@@ -206,5 +206,73 @@ describe('OpenFaceChinesePage', () => {
     renderWithProviders(<OpenFaceChinesePage />);
     const hint = await screen.findByTestId('ofc-hint');
     expect(hint).toHaveTextContent('強い組み合わせはボトムに寄せましょう');
+  });
+
+  it('disables the place button for a full row', async () => {
+    // Human top row already holds its 3-card maximum.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ front: [card('SPADE', 2), card('HEART', 3), card('CLOVER', 4)] }),
+          makePlayer({ id: 1, isHuman: false }),
+        ],
+      }),
+    );
+    renderWithProviders(<OpenFaceChinesePage />);
+    await waitFor(() => expect(screen.getByTestId('place-front')).toBeDisabled());
+    // Non-full rows stay enabled.
+    expect(screen.getByTestId('place-middle')).not.toBeDisabled();
+    expect(screen.getByTestId('place-back')).not.toBeDisabled();
+  });
+
+  it('places the pending card by tapping a non-full board row', async () => {
+    renderWithProviders(<OpenFaceChinesePage />);
+    const row = await screen.findByTestId('ofc-place-row-middle-0');
+    mockExec.mockClear();
+    fireEvent.click(row);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('place', { row: 1 }));
+  });
+
+  it('sends nothing when a full board row is tapped', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ front: [card('SPADE', 2), card('HEART', 3), card('CLOVER', 4)] }),
+          makePlayer({ id: 1, isHuman: false }),
+        ],
+      }),
+    );
+    renderWithProviders(<OpenFaceChinesePage />);
+    const row = await screen.findByTestId('ofc-place-row-front-0');
+    expect(row).toBeDisabled();
+    mockExec.mockClear();
+    fireEvent.click(row);
+    expect(mockExec).not.toHaveBeenCalledWith('place', expect.anything());
+  });
+
+  it('does not make CPU board rows tappable', async () => {
+    renderWithProviders(<OpenFaceChinesePage />);
+    await waitFor(() => expect(screen.getByTestId('player-1')).toBeInTheDocument());
+    expect(screen.queryByTestId('ofc-place-row-front-1')).not.toBeInTheDocument();
+  });
+});
+
+describe('isOfcRowFull', () => {
+  const p = (front: Card[], middle: Card[], back: Card[]): OpenFaceChinesePlayer => makePlayer({ front, middle, back });
+  const c = card('SPADE', 1);
+
+  it('returns false for a null player', () => {
+    expect(isOfcRowFull(null, 0)).toBe(false);
+  });
+
+  it('detects a full front row (capacity 3)', () => {
+    expect(isOfcRowFull(p([c, c, c], [], []), 0)).toBe(true);
+    expect(isOfcRowFull(p([c, c], [], []), 0)).toBe(false);
+  });
+
+  it('detects full middle and back rows (capacity 5)', () => {
+    expect(isOfcRowFull(p([], [c, c, c, c, c], []), 1)).toBe(true);
+    expect(isOfcRowFull(p([], [], [c, c, c, c, c]), 2)).toBe(true);
+    expect(isOfcRowFull(p([], [c, c, c, c], []), 1)).toBe(false);
   });
 });

@@ -47,6 +47,7 @@
     "place": "配られたカードを置く段を選びましょう。一度置いたカードは動かせません。",
     "resetButton": "ゲームを最初からやり直すにはこのボタンを押します。"
   },
+  "placeRowAria": "{{label}} に置く",
   "rowAriaEmpty": "{{label}} {{count}}枚",
   "rowAriaFilled": "{{label}} {{count}}枚: {{cards}}",
   "pendingAnnounce": "配置待ち: {{card}}"
