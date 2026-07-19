@@ -21,6 +21,7 @@
   "playing": "プレイ中",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
+  "hintSentence": "移動: 列 {{fromCol}} の {{card}} → {{dest}}",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
   "stalemate": "手詰まりです",
