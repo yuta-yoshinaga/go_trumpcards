@@ -242,6 +242,11 @@ function CuckooPageContent() {
                 aria-live="polite"
               >
                 <div className="mb-1">{t('roundLosersTitle')}</div>
+                {state.roundLowest >= 1 && (
+                  <div className="mb-1 font-semibold" data-testid="cuckoo-round-lowest">
+                    {t('roundLowestValue', { value: state.roundLowest })}
+                  </div>
+                )}
                 {state.roundLosers.map((idx) => (
                   <div key={`loser-${idx}`}>{t('roundLoser', { name: playerLabel(idx, idx === 0) })}</div>
                 ))}
