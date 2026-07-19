@@ -29,6 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 import { rummy500HandPenalty } from '../utils/rummy500HandPenalty';
+import { rummy500PickupCount } from '../utils/rummy500PickupCount';
 
 const RUMMY500_PHASE_KEYS: Readonly<Record<number, string>> = {
   [Rummy500Phase.DRAW]: 'draw',
@@ -95,6 +96,10 @@ function Rummy500PageContent() {
   // means nothing is selected yet, so the Lay off button stays disabled. The owner's
   // display name is captured here (where isHuman is in scope) for the footer label.
   const [layoffTarget, setLayoffTarget] = useState<{ owner: number; meldIdx: number; ownerName: string } | null>(null);
+  // Index of the discard card currently hovered/focused during the Draw phase. Drawing from a
+  // chosen index takes that card plus every card above it, so we preview the whole take-range
+  // (from this index to the top) before the player commits. null means nothing is previewed.
+  const [hoveredDiscardIdx, setHoveredDiscardIdx] = useState<number | null>(null);
 
   const phaseNames = usePhaseNames('rummy500', RUMMY500_PHASE_KEYS);
 
@@ -186,19 +191,40 @@ function Rummy500PageContent() {
                 <div className="text-ds-text-muted text-xs">{t('discardEmpty')}</div>
               ) : (
                 <div className="flex flex-wrap gap-1">
-                  {state.discardPile.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`disc-${card.design}-${card.value}-${idx}`}
-                      onClick={() => isDrawPhase && isHumanTurn && !loading && handleDrawDiscard(idx)}
-                      disabled={!isDrawPhase || !isHumanTurn || loading}
-                      aria-label={`${cardAlt(card)} (${idx})`}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{ background: 'none', padding: 0, borderRadius: 8 }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth * 0.7} />
-                    </button>
-                  ))}
+                  {state.discardPile.map((card, idx) => {
+                    const takeCount = rummy500PickupCount(state.discardPile.length, idx);
+                    const inPickupRange = hoveredDiscardIdx !== null && idx >= hoveredDiscardIdx;
+                    const isPickupAnchor = hoveredDiscardIdx === idx;
+                    return (
+                      <button
+                        type="button"
+                        key={`disc-${card.design}-${card.value}-${idx}`}
+                        onClick={() => isDrawPhase && isHumanTurn && !loading && handleDrawDiscard(idx)}
+                        onMouseEnter={() => setHoveredDiscardIdx(idx)}
+                        onMouseLeave={() => setHoveredDiscardIdx(null)}
+                        onFocus={() => setHoveredDiscardIdx(idx)}
+                        onBlur={() => setHoveredDiscardIdx(null)}
+                        disabled={!isDrawPhase || !isHumanTurn || loading}
+                        aria-label={t('drawDiscardRangeLabel', { card: cardAlt(card), count: takeCount })}
+                        data-testid={`disc-card-${idx}`}
+                        data-in-pickup-range={inPickupRange ? 'true' : undefined}
+                        className={`relative transition-transform ${focusRingCard} ${
+                          inPickupRange ? 'ring-2 ring-ds-warning -translate-y-1' : ''
+                        }`}
+                        style={{ background: 'none', padding: 0, borderRadius: 8 }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth * 0.7} />
+                        {isPickupAnchor && (
+                          <span
+                            data-testid="pickup-range-badge"
+                            className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ds-warning px-1.5 py-0.5 text-[10px] font-bold text-ds-text-on-accent shadow"
+                          >
+                            {t('pickupBadge', { count: takeCount })}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

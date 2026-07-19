@@ -33,6 +33,8 @@
   "playPhase": "Meld, lay off, then discard",
   "roundEnd": "Round complete",
   "drawDiscardHint": "Click any discard card to take it plus all cards above it",
+  "drawDiscardRangeLabel": "Take {{count}} card(s) from {{card}}",
+  "pickupBadge": "Take {{count}}",
   "handPenalty": "Hand penalty: -{{points}} pts",
   "handPenaltyHint": "If anyone else goes out, this is how many points you lose",
   "winner": {

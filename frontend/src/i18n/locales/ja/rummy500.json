@@ -33,6 +33,8 @@
   "playPhase": "メルド・レイオフ・ディスカードを行ってください",
   "roundEnd": "ラウンド終了",
   "drawDiscardHint": "捨て札の任意のカードをクリックすると、そのカード以上をすべて引き取れます",
+  "drawDiscardRangeLabel": "{{card}} から{{count}}枚引き取る",
+  "pickupBadge": "{{count}}枚引き取る",
   "handPenalty": "手札ペナルティ: -{{points}}点",
   "handPenaltyHint": "誰かが上がった時、手札に残ったカードの合計がマイナス点になります",
   "winner": {
