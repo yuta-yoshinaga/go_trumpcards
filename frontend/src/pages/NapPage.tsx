@@ -396,21 +396,25 @@ function NapPageContent() {
                     // Pass (0) is always allowed; a non-pass bid must beat the current highest.
                     const tooLow = b.value !== NapContract.PASS && b.value <= highestBid;
                     const disabled = loading || tooLow;
+                    const reason = tooLow
+                      ? t('bidTooLow', { bid: highestBidLabelKey ? t(highestBidLabelKey) : '' })
+                      : undefined;
+                    // The title lives on the wrapping span: browsers suppress native tooltips and
+                    // hover events on disabled buttons, so hovering the span still surfaces the reason.
                     return (
-                      <button
-                        key={b.value}
-                        type="button"
-                        className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
-                        onClick={() => handleBid(b.value)}
-                        disabled={disabled}
-                        aria-disabled={disabled}
-                        title={
-                          tooLow ? t('bidTooLow', { bid: highestBidLabelKey ? t(highestBidLabelKey) : '' }) : undefined
-                        }
-                        data-testid={`bid-${b.value}`}
-                      >
-                        {t(b.key)}
-                      </button>
+                      <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
+                        <button
+                          type="button"
+                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                          onClick={() => handleBid(b.value)}
+                          disabled={disabled}
+                          aria-disabled={disabled}
+                          aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
+                          data-testid={`bid-${b.value}`}
+                        >
+                          {t(b.key)}
+                        </button>
+                      </span>
                     );
                   })}
                 </>
