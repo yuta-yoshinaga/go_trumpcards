@@ -42,6 +42,13 @@
   "contractHandspielDesc": "ハントシュピール: 盲札を使わず、配られた手札のまま勝負します。堅実ですが得点の伸びは控えめです。",
   "exchangePhase": "場札交換 — 手元に残す1枚を選びます（{{count}}/1 枚選択中）。残り10枚を伏せて場札を取ります。",
   "exchangeKeep": "手元に残す1枚を選んでください。",
+  "exchangeGuide": {
+    "title": "場札交換の手順（ステップ {{step}}/{{total}}）",
+    "step1": "手札から残す{{keep}}枚を選ぶ（残り {{remaining}} 枚選択）。",
+    "step2": "残り{{layDown}}枚を伏せて、伏せ札（チェゴ）{{count}}枚を取る。",
+    "remaining": "あと {{remaining}} 枚選ぶと交換できます。",
+    "ready": "準備完了 — 「残す」を押すと場札交換を確定します。"
+  },
   "exchangeButton": "残す（{{count}}/1）",
   "playButton": "出す",
   "nextTrick": "次のトリック",
