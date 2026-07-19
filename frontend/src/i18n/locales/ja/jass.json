@@ -32,6 +32,13 @@
   "roundPoints": "ラウンド: {{points}}点",
   "weisPoints": "Weis: {{points}}点",
   "stockPoints": "Stöck: {{points}}点",
+  "weisPanel": {
+    "title": "Weis（メルド）宣言",
+    "note": "Weis はラウンド中に宣言されるメルド（3枚シーケンス20点、4枚シーケンス50点、同位4枚100/150/200点など）のボーナスです。最も強い Weis を宣言したチームだけが、そのラウンドの自チーム Weis 点をすべて獲得します。",
+    "teamPoints": "{{points}}点",
+    "scored": "獲得",
+    "you": "（あなた）"
+  },
   "schiebenButton": "シーバー",
   "playButton": "出す",
   "nextTrick": "次のトリック",
