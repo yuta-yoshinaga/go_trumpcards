@@ -177,6 +177,39 @@ function GongZhuPageContent() {
     return parts.length > 0 ? parts.join(', ') : t('exposedNone');
   }, [state, t]);
 
+  // Compact glyph summary of the point cards a player has captured so far
+  // (♠Q pig, ♦J sheep, ♥×N hearts, ♣10 doubler), or a "none" placeholder.
+  const capturedSummary = useCallback(
+    (cards: GongZhuResponse['players'][number]['capturedPointCards']): string => {
+      const parts: string[] = [];
+      if (cards.some((c) => c.design === 'SPADE' && c.value === 12)) parts.push(t('card.spadeQueen'));
+      if (cards.some((c) => c.design === 'DIAMOND' && c.value === 11)) parts.push(t('card.diamondJack'));
+      const hearts = cards.filter((c) => c.design === 'HEART').length;
+      if (hearts > 0) parts.push(t('capturedHearts', { count: hearts }));
+      if (cards.some((c) => c.design === 'CLOVER' && c.value === 10)) parts.push(t('card.clubTen'));
+      return parts.length > 0 ? parts.join(' ') : t('capturedNone');
+    },
+    [t],
+  );
+
+  // Score-table cell showing a player's captured point cards. Shared by the
+  // mobile (details) and desktop score tables so the two stay in sync.
+  const capturedCell = useCallback(
+    (p: GongZhuResponse['players'][number]) => {
+      const summary = capturedSummary(p.capturedPointCards);
+      return (
+        <td
+          className="text-center"
+          data-testid={`gz-captured-${p.id}`}
+          aria-label={t('capturedPoints', { cards: summary })}
+        >
+          {summary}
+        </td>
+      );
+    },
+    [capturedSummary, t],
+  );
+
   if (!state)
     return <GameSkeleton gameKey="gongzhu" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
@@ -336,6 +369,7 @@ function GongZhuPageContent() {
                           <th scope="col">{t('scoresRound')}</th>
                           <th scope="col">{t('scoresTotal')}</th>
                           <th scope="col">{t('scoresTricks')}</th>
+                          <th scope="col">{t('scoresPoints')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -345,6 +379,7 @@ function GongZhuPageContent() {
                             <td className="text-center">{p.roundScore}</td>
                             <td className="text-center">{p.cumulativeScore}</td>
                             <td className="text-center">{p.trickCount}</td>
+                            {capturedCell(p)}
                           </tr>
                         ))}
                       </tbody>
@@ -362,6 +397,7 @@ function GongZhuPageContent() {
                           <th scope="col">{t('scoresRound')}</th>
                           <th scope="col">{t('scoresTotal')}</th>
                           <th scope="col">{t('scoresTricks')}</th>
+                          <th scope="col">{t('scoresPoints')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -371,6 +407,7 @@ function GongZhuPageContent() {
                             <td className="text-center">{p.roundScore}</td>
                             <td className="text-center">{p.cumulativeScore}</td>
                             <td className="text-center">{p.trickCount}</td>
+                            {capturedCell(p)}
                           </tr>
                         ))}
                       </tbody>
