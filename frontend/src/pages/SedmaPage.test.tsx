@@ -75,6 +75,22 @@ describe('SedmaPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
   });
 
+  it('shows the live captured card points during play', async () => {
+    mockExec.mockResolvedValue(makeSedmaState({ roundCardPoints: [40, 20] }));
+    renderWithProviders(<SedmaPage />);
+    const panel = await screen.findByTestId('sedma-round-points');
+    expect(panel).toHaveTextContent('獲得カード点（現ラウンド）');
+    expect(panel).toHaveTextContent('チームAのカード点: 40');
+    expect(panel).toHaveTextContent('チームBのカード点: 20');
+  });
+
+  it('hides the live captured card points once the round ends', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<SedmaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+    expect(screen.queryByTestId('sedma-round-points')).not.toBeInTheDocument();
+  });
+
   it('renders round end with the next round button and the round result', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<SedmaPage />);
