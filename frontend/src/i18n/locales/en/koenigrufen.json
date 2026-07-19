@@ -38,6 +38,10 @@
   "partnerBadge": "Partner",
   "calledKing": "Called King: {{suit}}",
   "partnerRevealed": "Partner: {{name}}",
+  "partnerClue": {
+    "unknown": "Whoever holds the {{suit}} King is the declarer's secret partner (still unknown)",
+    "youArePartner": "You hold that King — you are the declarer's secret partner"
+  },
   "bidPass": "Pass",
   "bidRufer": "Rufer",
   "bidPhase": "Auction — declare the Rufer (King-calling) contract, or pass.",
