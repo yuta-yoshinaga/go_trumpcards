@@ -78,6 +78,20 @@ const roundEndState = makeScartoState({
   dealScores: [6, -2, -4],
 });
 
+// Round end with captured card-points that make the average-difference settlement
+// meaningful: totals 70+60+52 = 182, mean ≈ 60.7, so dealScores = 3·points − 182.
+const settlementState = makeScartoState({
+  phase: 3,
+  isHumanTurn: false,
+  outcome: 1,
+  dealScores: [28, -2, -34],
+  players: [
+    { id: 0, isHuman: true, cardCount: 0, cards: [], trickCount: 5, cardPoints: 70, score: 28, isDealer: false },
+    { id: 1, isHuman: false, cardCount: 0, cards: [], trickCount: 4, cardPoints: 60, score: -2, isDealer: false },
+    { id: 2, isHuman: false, cardCount: 0, cards: [], trickCount: 3, cardPoints: 52, score: -34, isDealer: true },
+  ],
+});
+
 const gameEndState = makeScartoState({
   phase: 4,
   isHumanTurn: false,
@@ -194,6 +208,20 @@ describe('ScartoPage', () => {
     renderWithProviders(<ScartoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のディール' })).toBeInTheDocument());
     expect(screen.getByTestId('scarto-result')).toBeInTheDocument();
+  });
+
+  it('shows the average-difference settlement breakdown at round end', async () => {
+    mockExec.mockResolvedValue(settlementState);
+    renderWithProviders(<ScartoPage />);
+    const breakdown = await screen.findByTestId('scarto-breakdown');
+    // Table average of captured card-points (182 / 3 ≈ 60.7).
+    expect(breakdown).toHaveTextContent('全体平均: 60.7点');
+    // Each seat's earned card-points.
+    expect(breakdown).toHaveTextContent('獲得 70点');
+    expect(breakdown).toHaveTextContent('獲得 60点');
+    expect(breakdown).toHaveTextContent('獲得 52点');
+    // The displayed delta matches dealScores (existing per-player settlement line).
+    expect(screen.getByTestId('scarto-result')).toHaveTextContent('+28');
   });
 
   it('dispatches nextround from round end', async () => {

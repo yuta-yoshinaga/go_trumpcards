@@ -39,7 +39,9 @@
   "roundResult": {
     "title": "Deal result",
     "outcome": "Your result: {{outcome}}",
-    "playerLine": "{{name}}: {{delta}} (total {{score}})"
+    "playerLine": "{{name}}: {{delta}} (total {{score}})",
+    "average": "Table average: {{avg}} pts",
+    "earnedLine": "{{name}}: earned {{points}} pts (vs avg {{diff}})"
   },
   "hintAvailable": "Hint",
   "hint": {

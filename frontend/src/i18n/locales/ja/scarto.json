@@ -39,7 +39,9 @@
   "roundResult": {
     "title": "ディール結果",
     "outcome": "あなたの結果: {{outcome}}",
-    "playerLine": "{{name}}: {{delta}}（累計 {{score}}）"
+    "playerLine": "{{name}}: {{delta}}（累計 {{score}}）",
+    "average": "全体平均: {{avg}}点",
+    "earnedLine": "{{name}}: 獲得 {{points}}点（平均差 {{diff}}）"
   },
   "hintAvailable": "ヒント",
   "hint": {
