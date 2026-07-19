@@ -47,10 +47,16 @@ func (p *BlackHoleWebPresenter) Output(g interfaces.BlackHoleGame, lastErr error
 }
 
 // HintOutput ヒントをJSON出力する。
+//
+// The board (fans + black hole) is included so the client can keep rendering the
+// tableau after a hint request: the Black Hole page replaces its whole state from
+// this response, so an empty board would blank the tableau. The recommended fan is
+// surfaced via Hint for a two-tier highlight (strong ring on the recommended fan,
+// weaker ring on the other legal fans).
 func (p *BlackHoleWebPresenter) HintOutput(g interfaces.BlackHoleGame) string {
 	resObj := p.buildBaseOutput(g)
-	resObj.Fans = make([][]*controller.WebOutputCard, 0)
-	resObj.BlackHole = make([]*controller.WebOutputCard, 0)
+	resObj.Fans = blackHoleFansOutput(g.GetFans())
+	resObj.BlackHole = cardsToOutputOrEmpty(g.GetBlackHole())
 	if hint := g.GetHint(); hint != nil {
 		resObj.Hint = &controller.BlackHoleWebOutputHint{Fan: hint.Fan}
 		resObj.MessageCode = "blackhole.hintAvailable"
