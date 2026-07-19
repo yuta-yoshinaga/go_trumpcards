@@ -17,6 +17,7 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import {
   CPU_DIFFICULTY_OPTIONS,
   ELIMINATION_LIMIT_OPTIONS,
+  KNOCK_THRESHOLD_OPTIONS,
   PLAYER_COUNT_OPTIONS,
   useChinchonGame,
 } from '../hooks/useChinchonGame';
@@ -286,6 +287,15 @@ function ChinchonPageContent() {
                     value: chinchonConfig.eliminationLimit,
                     options: ELIMINATION_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('eliminationLimit', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'knockThreshold',
+                    label: t('settings.knockThreshold'),
+                    value: chinchonConfig.knockThreshold,
+                    options: KNOCK_THRESHOLD_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('knockThreshold', v),
+                    testId: 'chinchon-knock-threshold-select',
                   },
                 ],
               },

@@ -379,6 +379,23 @@ describe('ChinchonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ...RESET_CONFIG, playerCount: 4 }));
   });
 
+  it('settings panel changes knockThreshold sent on reset', async () => {
+    renderWithProviders(<ChinchonPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.change(screen.getByTestId('chinchon-knock-threshold-select'), { target: { value: '10' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(drawPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ...RESET_CONFIG, knockThreshold: 10 }),
+    );
+  });
+
   it('does not show draw buttons when not human turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<ChinchonPage />);
