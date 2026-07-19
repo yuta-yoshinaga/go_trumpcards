@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, panApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -461,5 +461,84 @@ describe('PanPage', () => {
   it('renders accessible h1 heading', async () => {
     renderWithProviders(<PanPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+});
+
+describe('PanPage meld candidates', () => {
+  // Hand with a set of three 5s (a legal meld candidate) plus a ♠4 that can be
+  // laid off onto CPU 1's existing set of 4s (see playPhaseState).
+  const meldableHand = [
+    { design: 'SPADE', value: 5 },
+    { design: 'HEART', value: 5 },
+    { design: 'DIAMOND', value: 5 },
+    { design: 'SPADE', value: 4 },
+  ] as const;
+  const meldablePlayState: PanResponse = {
+    ...playPhaseState,
+    players: [player({ cards: [...meldableHand] }), playPhaseState.players[1]],
+  };
+
+  // Near-miss: 6-J-Q of one suit LOOKS like a run, but 6 and J are not adjacent
+  // in Pan's reduced deck (the 7 sits between them), so it is NOT a legal meld.
+  const nearMissHand = [
+    { design: 'SPADE', value: 6 },
+    { design: 'SPADE', value: 11 },
+    { design: 'SPADE', value: 12 },
+  ] as const;
+  const nearMissState: PanResponse = {
+    ...playPhaseState,
+    players: [player({ cards: [...nearMissHand] }), playPhaseState.players[1]],
+  };
+
+  afterEach(() => {
+    localStorage.removeItem('hint_enabled_pan');
+  });
+
+  it('surfaces a set candidate when the hint toggle is on', async () => {
+    localStorage.setItem('hint_enabled_pan', 'true');
+    mockExec.mockResolvedValue(meldablePlayState);
+    renderWithProviders(<PanPage />);
+    expect(await screen.findByTestId('pan-meld-candidates')).toBeInTheDocument();
+    expect(screen.getByTestId('pan-candidate-0-1-2')).toBeInTheDocument();
+    expect(screen.getByText('セット')).toBeInTheDocument();
+  });
+
+  it('selecting a candidate selects those cards and enables meld', async () => {
+    localStorage.setItem('hint_enabled_pan', 'true');
+    mockExec.mockResolvedValue(meldablePlayState);
+    renderWithProviders(<PanPage />);
+    const candidate = await screen.findByTestId('pan-candidate-0-1-2');
+    expect(screen.getByRole('button', { name: 'メルド' })).toBeDisabled();
+    fireEvent.click(candidate);
+    expect(screen.getByRole('button', { name: 'メルド' })).not.toBeDisabled();
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(meldablePlayState);
+    fireEvent.click(screen.getByRole('button', { name: 'メルド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', { cardIndices: [0, 1, 2] }));
+  });
+
+  it('marks a layoff-able hand card', async () => {
+    localStorage.setItem('hint_enabled_pan', 'true');
+    mockExec.mockResolvedValue(meldablePlayState);
+    renderWithProviders(<PanPage />);
+    await screen.findByTestId('pan-meld-candidates');
+    const layoffCard = screen.getByAltText('♠ 4').closest('button') as HTMLButtonElement;
+    expect(layoffCard).toHaveAttribute('data-layoff-target', 'true');
+  });
+
+  it('does NOT surface a candidate for a near-but-invalid hand', async () => {
+    localStorage.setItem('hint_enabled_pan', 'true');
+    mockExec.mockResolvedValue(nearMissState);
+    renderWithProviders(<PanPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'メルド' })).toBeInTheDocument());
+    expect(screen.queryByTestId('pan-meld-candidates')).not.toBeInTheDocument();
+  });
+
+  it('hides candidates when the hint toggle is off', async () => {
+    localStorage.removeItem('hint_enabled_pan');
+    mockExec.mockResolvedValue(meldablePlayState);
+    renderWithProviders(<PanPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'メルド' })).toBeInTheDocument());
+    expect(screen.queryByTestId('pan-meld-candidates')).not.toBeInTheDocument();
   });
 });

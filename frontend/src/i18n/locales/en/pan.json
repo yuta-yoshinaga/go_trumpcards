@@ -51,6 +51,12 @@
     "meld": "You can lay down a meld — select and play it",
     "discard": "Discard a card you don't need"
   },
+  "candidates": {
+    "title": "Meld candidates",
+    "set": "Set",
+    "run": "Run",
+    "hint": "Tap a candidate to select those cards. Cards with a yellow ring can be laid off."
+  },
   "tutorial": {
     "drawArea": "Draw a card from the stock or discard pile to start your turn.",
     "playerHand": "This is your hand. Form sets or ropes (runs) of 3+ cards.",
