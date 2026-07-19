@@ -28,6 +28,8 @@
   "holeAria": "ブラックホール: {{card}}",
   "holeEmptyAria": "ブラックホール: 空",
   "hintPlayable": "置けます",
+  "hintRecommended": "おすすめ",
+  "hintRecommendedAnnounce": "おすすめ: {{card}}（ファン{{fan}}）",
   "hintLegalFans": "置けるカード: {{list}}",
   "hintNoLegal": "置けるカードがありません",
   "acceptableRanks": "受け入れ可能: {{ranks}}",

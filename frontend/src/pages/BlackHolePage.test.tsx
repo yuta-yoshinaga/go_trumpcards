@@ -106,9 +106,38 @@ describe('BlackHolePage', () => {
     expect(screen.getByTestId('card-0-1').className).toContain('ring-ds-success');
     // The non-adjacent fan top is never marked.
     expect(otherTop).not.toHaveAttribute('data-hinted-legal');
+    // With no backend recommendation, it falls back to the plain legal highlight.
+    expect(screen.getByTestId('card-0-1')).not.toHaveAttribute('data-hinted-recommended');
     // Non-visual channels: aria-label gains "置けます" and the live region lists it.
     expect(screen.getByTestId('card-0-1')).toHaveAttribute('aria-label', '♣ 6（ファン1） · 置けます');
     expect(screen.getByTestId('bh-hint-announce')).toHaveTextContent('置けるカード: ♣ 6（ファン1）');
+  });
+
+  it('strongly emphasises the backend-recommended fan, distinct from other legal fans', async () => {
+    // Hole top 7 → fan0 top ♣6 and fan2 top ♠8 are both legal; the backend
+    // recommends fan 2.
+    const state = makeState({ blackHole: [card('SPADE', 7)], hint: { fan: 2 } });
+    state.fans[2] = [card('SPADE', 8)];
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<BlackHolePage />);
+    await screen.findByTestId('hint-button');
+    fireEvent.click(screen.getByTestId('hint-button'));
+
+    // The recommended fan carries both the legal ring and the distinct gold outline.
+    const recommended = await screen.findByTestId('card-2-0');
+    await waitFor(() => expect(recommended).toHaveAttribute('data-hinted-recommended', 'true'));
+    expect(recommended).toHaveAttribute('data-hinted-legal', 'true');
+    expect(recommended.className).toContain('outline-ds-warning');
+    expect(recommended).toHaveAttribute('aria-label', '♠ 8（ファン3） · おすすめ · 置けます');
+
+    // The other legal fan is highlighted but NOT recommended (two-tier).
+    const otherLegal = screen.getByTestId('card-0-1');
+    expect(otherLegal).toHaveAttribute('data-hinted-legal', 'true');
+    expect(otherLegal).not.toHaveAttribute('data-hinted-recommended');
+    expect(otherLegal.className).not.toContain('outline-ds-warning');
+
+    // The live region leads with the recommendation.
+    expect(screen.getByTestId('bh-hint-announce')).toHaveTextContent('おすすめ: ♠ 8（ファン3）');
   });
 
   it('labels fan cards and the black hole for screen readers', async () => {

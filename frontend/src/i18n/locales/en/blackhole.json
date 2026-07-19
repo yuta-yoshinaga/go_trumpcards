@@ -28,6 +28,8 @@
   "holeAria": "Black hole: {{card}}",
   "holeEmptyAria": "Black hole: empty",
   "hintPlayable": "playable",
+  "hintRecommended": "recommended",
+  "hintRecommendedAnnounce": "Recommended: {{card}} (fan {{fan}})",
   "hintLegalFans": "Playable: {{list}}",
   "hintNoLegal": "No playable card",
   "acceptableRanks": "Playable ranks: {{ranks}}",
