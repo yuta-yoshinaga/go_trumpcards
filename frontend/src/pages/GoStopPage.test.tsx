@@ -176,4 +176,22 @@ describe('GoStopPage', () => {
     fireEvent.click(screen.getByTestId('field-card-0'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 0 }));
   });
+
+  it('renders the backend hint tooltip when the hint toggle is enabled (#3519)', async () => {
+    // #3519: the toggle was dead because state.hint was always undefined; Output() now populates it.
+    localStorage.setItem('hint_enabled_gostop', 'true');
+    mockExec.mockResolvedValue(makeGoStopState({ hint: { cardIndex: 0, fieldIndex: -1, go: -1, reason: 'capture' } }));
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+    localStorage.removeItem('hint_enabled_gostop');
+  });
+
+  it('hides the hint tooltip when no hint is present even with the toggle enabled', async () => {
+    localStorage.setItem('hint_enabled_gostop', 'true');
+    mockExec.mockResolvedValue(makeGoStopState({ hint: null }));
+    renderWithProviders(<GoStopPage />);
+    await screen.findByTestId('hand-card-0');
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+    localStorage.removeItem('hint_enabled_gostop');
+  });
 });

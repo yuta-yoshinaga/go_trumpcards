@@ -55,8 +55,25 @@ func (p *GoStopWebPresenter) Output(g interfaces.GoStopGame, lastErr error) stri
 		resObj.Message = p.buildResultMessage(g)
 		resObj.MessageCode = "gostop.result.scores"
 		resObj.MessageParams = map[string]string{"scores": p.encodeScoresParam(g)}
+	} else {
+		// 人間手番のプレイ/決断フェーズでは通常出力にもヒントを載せる。
+		// GetHint は CPU 手番/ゲーム終了時に nil を返すため、その場合 Hint は付かない。
+		p.applyHint(resObj, g)
 	}
 	return marshalOrError(resObj)
+}
+
+// applyHint は人間手番であればドメインのヒントを出力オブジェクトへ写す。CPU 手番や
+// 終了時など GetHint が nil を返すケースでは Hint フィールドを設定しない。
+func (p *GoStopWebPresenter) applyHint(resObj *controller.GoStopWebOutput, g interfaces.GoStopGame) {
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.GoStopWebOutputHint{
+			CardIndex:  hint.CardIndex,
+			FieldIndex: hint.FieldIndex,
+			Go:         hint.Go,
+			Reason:     hint.Reason,
+		}
+	}
 }
 
 // breakdownToWeb は domain の得点内訳を Web 出力型へ変換する。
@@ -195,14 +212,7 @@ func (p *GoStopWebPresenter) buildResultMessage(g interfaces.GoStopGame) string 
 // HintOutput はヒント情報を JSON 出力する。
 func (p *GoStopWebPresenter) HintOutput(g interfaces.GoStopGame) string {
 	resObj := p.buildBase(g)
-	if hint := g.GetHint(); hint != nil {
-		resObj.Hint = &controller.GoStopWebOutputHint{
-			CardIndex:  hint.CardIndex,
-			FieldIndex: hint.FieldIndex,
-			Go:         hint.Go,
-			Reason:     hint.Reason,
-		}
-	}
+	p.applyHint(resObj, g)
 	return marshalOrError(resObj)
 }
 
