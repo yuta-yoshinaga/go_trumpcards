@@ -262,6 +262,47 @@ describe('EasthavenPage', () => {
     );
   });
 
+  it('double-clicking a foundation-playable top card auto-moves it to the foundation', async () => {
+    const aceState: EasthavenResponse = {
+      ...playingState,
+      tableau: [
+        [
+          { card: null, faceUp: false },
+          { card: card('SPADE', 13), faceUp: true },
+        ],
+        [{ card: card('HEART', 8), faceUp: true }],
+        [{ card: card('CLOVER', 5), faceUp: true }],
+        [{ card: card('DIAMOND', 10), faceUp: true }],
+        [{ card: card('SPADE', 1), faceUp: true }], // ♠A → playable onto the empty ♠ foundation
+        [{ card: card('HEART', 7), faceUp: true }],
+        [{ card: card('CLOVER', 2), faceUp: true }],
+      ],
+    };
+    mockExec.mockResolvedValue(aceState);
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(aceState);
+    fireEvent.doubleClick(screen.getByRole('button', { name: '♠ A' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        expect.objectContaining({ zone: 'tableau', col: 4 }),
+        expect.objectContaining({ zone: 'foundation', col: 0 }),
+      ),
+    );
+  });
+
+  it('double-clicking a non-foundation-playable top card does nothing', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    // ♥8 has no legal foundation target (the empty ♥ pile needs an Ace first).
+    fireEvent.doubleClick(screen.getByRole('button', { name: '♥ 8' }));
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders a full from→to sentence for a to-foundation hint', async () => {
     // tableau[0][1] is ♠ K, so the sentence names the source column, card, and dest.
     mockExec.mockResolvedValue({ ...playingState, hint: { fromCol: 0, cardIndex: 1, toZone: 'foundation', toCol: 0 } });
