@@ -7,6 +7,7 @@
   "title": "四つ葉のクローバー",
   "stock": "山札",
   "discard": "除去済み",
+  "discardPile": "捨て札",
   "moveCount": "手数",
   "combo": "コンボ ×{{count}}",
   "draw": "配る",

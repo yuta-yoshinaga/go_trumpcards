@@ -65,6 +65,9 @@ const ACESUP_TUTORIAL_STEPS: TutorialStep[] = [
 
 const COL_COUNT = 4;
 
+/** Number of non-ace cards that must be discarded to win (52 - 4 aces). */
+const DISCARD_GOAL = 48;
+
 /** Renders the Aces Up game page with 4 columns, deal/remove/move controls. */
 export const AcesUpPage = withTutorial(AcesUpPageContent, 'acesup', ACESUP_TUTORIAL_STEPS);
 /** Inner content of the Aces Up page, wrapped by TutorialProvider. */
@@ -285,7 +288,7 @@ function AcesUpPageContent() {
               })}
             </div>
 
-            {/* Stock */}
+            {/* Stock + discard pile */}
             <div className="flex gap-4 justify-center mb-3" data-tutorial="acesup-stock">
               <div className="text-center">
                 <div className="text-game-text-muted text-xs mb-1">
@@ -299,6 +302,28 @@ function AcesUpPageContent() {
                   />
                 ) : (
                   <div
+                    style={{ width: cardWidth, height: cardHeight }}
+                    className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
+                  >
+                    {t('empty')}
+                  </div>
+                )}
+              </div>
+              <div className="text-center" data-testid="acesup-discard-pile">
+                <div className="text-game-text-muted text-xs mb-1">
+                  {t('discardPile')} ({state.discardCount}/{DISCARD_GOAL})
+                </div>
+                {state.discardTop ? (
+                  <div data-testid="acesup-discard-top">
+                    <AnimatedCard
+                      key={`discard-${state.discardCount.toString()}`}
+                      card={state.discardTop}
+                      width={cardWidth}
+                    />
+                  </div>
+                ) : (
+                  <div
+                    data-testid="acesup-discard-empty"
                     style={{ width: cardWidth, height: cardHeight }}
                     className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
                   >

@@ -274,6 +274,14 @@ func (a *AcesUp) GetStockCount() int { return len(a.stock) }
 // GetDiscardCount 除去済み枚数取得
 func (a *AcesUp) GetDiscardCount() int { return len(a.discard) }
 
+// GetDiscardTop 捨て札の一番上（直近に除去した札）を返す。捨て札が空なら nil。
+func (a *AcesUp) GetDiscardTop() *Card {
+	if len(a.discard) == 0 {
+		return nil
+	}
+	return a.discard[len(a.discard)-1]
+}
+
 // GetColumns 場札の列を取得
 func (a *AcesUp) GetColumns() [AcesUpColCnt][]*Card { return a.columns }
 

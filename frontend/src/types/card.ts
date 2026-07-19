@@ -7577,6 +7577,8 @@ export interface AcesUpResponse extends BaseGameResponse {
   columns: AcesUpCard[][];
   stockCount: number;
   discardCount: number;
+  /** The most recently removed card (top of the discard pile); absent when nothing has been discarded. */
+  discardTop?: Card | null;
   phase: number;
   moveCount: number;
   canUndo: boolean;

@@ -85,6 +85,16 @@ func (_m *MockAcesUpGame) GetDiscardCount() int {
 	return ret.Get(0).(int)
 }
 
+// GetDiscardTop mocks the GetDiscardTop call.
+func (_m *MockAcesUpGame) GetDiscardTop() *domain.Card {
+	ret := _m.Called()
+	r0 := ret.Get(0)
+	if r0 == nil {
+		return nil
+	}
+	return r0.(*domain.Card)
+}
+
 func (_m *MockAcesUpGame) GetColumns() [domain.AcesUpColCnt][]*domain.Card {
 	ret := _m.Called()
 	return ret.Get(0).([domain.AcesUpColCnt][]*domain.Card)
