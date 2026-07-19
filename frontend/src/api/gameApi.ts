@@ -452,7 +452,7 @@ const workerUrl: Record<string, string> = {
   bourre: WORKER_CASINO,
   sheepshead: WORKER_CASINO,
   doppelkopf: WORKER_CASINO,
-  mus: WORKER_CASINO,
+  mus: WORKER_SOLO,
   tute: WORKER_CASINO,
   sueca: WORKER_CASINO,
   klaverjas: WORKER_CLASSIC,

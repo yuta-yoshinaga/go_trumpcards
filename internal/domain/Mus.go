@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || solo
 
 // Package domain ムス (Mus) のドメインモデル。
 //

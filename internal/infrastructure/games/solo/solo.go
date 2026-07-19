@@ -437,4 +437,12 @@ func init() {
 			return usecase.RestoreZhengInteractor(data, new(presenter.ZhengWebPresenter))
 		},
 		controller.NewZhengWebControllerWithProvider)
+	games.RegisterKVGame("mus", games.CategorySolo,
+		func() usecase.MusInteractorIF {
+			return usecase.NewMusInteractor(domain.NewDefaultMus(), new(presenter.MusWebPresenter))
+		},
+		func(data []byte) (usecase.MusInteractorIF, error) {
+			return usecase.RestoreMusInteractor(data, new(presenter.MusWebPresenter))
+		},
+		controller.NewMusWebControllerWithProvider)
 }

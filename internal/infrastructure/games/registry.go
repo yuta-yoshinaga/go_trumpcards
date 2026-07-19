@@ -339,7 +339,7 @@ var registry = []*Game{
 	// Mus (ムス) is a Basque 4-player 2-team vying (betting) game on a 40-card
 	// Latin deck: four wager rounds (Grande/Chica/Pares/Juego) with paso/envido/
 	// ordago and a mus card-exchange phase. Casino worker (binary-size bucket).
-	{Name: "mus", Category: CategoryCasino},
+	{Name: "mus", Category: CategorySolo},
 	// Tute (トゥーテ) is a Spanish 40-card trump trick-taking game for 4 players
 	// (2v2) with K+Q marriage declarations (cante) and a 4-King/4-Queen instant
 	// win. Casino worker (binary-size bucket).
