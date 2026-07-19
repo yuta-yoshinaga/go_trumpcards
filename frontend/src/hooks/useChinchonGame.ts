@@ -23,6 +23,9 @@ export const CPU_DIFFICULTY_OPTIONS = [
 /** Available player count options for Chinchón. */
 export const PLAYER_COUNT_OPTIONS = [2, 3, 4] as const;
 
+/** Available knock (deadwood) threshold options for Chinchón. */
+export const KNOCK_THRESHOLD_OPTIONS = [0, 3, 5, 10] as const;
+
 /** Available elimination limit options for Chinchón. */
 export const ELIMINATION_LIMIT_OPTIONS = [50, 100, 150, 200] as const;
 

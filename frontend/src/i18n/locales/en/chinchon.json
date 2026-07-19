@@ -11,6 +11,7 @@
     "cpuDifficulty": "CPU Difficulty",
     "playerCount": "Players",
     "eliminationLimit": "Elimination Limit",
+    "knockThreshold": "Knock Limit",
     "easy": "Easy",
     "normal": "Normal",
     "hard": "Hard"
