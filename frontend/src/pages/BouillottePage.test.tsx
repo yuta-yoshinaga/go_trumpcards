@@ -177,4 +177,65 @@ describe('BouillottePage', () => {
     renderWithProviders(<BouillottePage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝利です！')).toBeInTheDocument());
   });
+
+  it('highlights only the hand cards that share the retourne rank', async () => {
+    // Human hand K, J, 4 with a K retourne — only the first card matches.
+    renderWithProviders(<BouillottePage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.getByTestId('hand-card-0').className).toContain('ring-ds-accent');
+    expect(screen.getByTestId('hand-card-1').className).not.toContain('ring-ds-accent');
+    expect(screen.getByTestId('hand-card-2').className).not.toContain('ring-ds-accent');
+    // The retourne itself is ringed when the human holds a matching card.
+    expect(screen.getByTestId('retourne-card').className).toContain('ring-ds-accent');
+    // A single match forms no retourne-completed combo, so no note.
+    expect(screen.queryByTestId('retourne-note')).not.toBeInTheDocument();
+  });
+
+  it('shows the brelan favori note when the retourne completes a matching pair', async () => {
+    const favoriState = makeBouillotteState({
+      phase: 0,
+      isHumanTurn: true,
+      retourne: { design: 'DIAMOND', value: 12 },
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          chips: 190,
+          roundBet: 10,
+          folded: false,
+          out: false,
+          cardCount: 3,
+          cards: [
+            { design: 'SPADE', value: 12 },
+            { design: 'HEART', value: 12 },
+            { design: 'CLOVER', value: 8 },
+          ],
+          handName: 'brelan',
+          isWinner: false,
+        },
+        ...bettingState.players.slice(1),
+      ],
+    });
+    mockExec.mockResolvedValue(favoriState);
+    renderWithProviders(<BouillottePage />);
+    await waitFor(() => expect(screen.getByTestId('retourne-note')).toBeInTheDocument());
+    expect(screen.getByTestId('retourne-note').textContent).toContain('ブルラン・ファヴォリ');
+    expect(screen.getByTestId('hand-card-0').className).toContain('ring-ds-accent');
+    expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-accent');
+    expect(screen.getByTestId('hand-card-2').className).not.toContain('ring-ds-accent');
+  });
+
+  it('does not highlight any card when no hand card matches the retourne', async () => {
+    const noMatchState = makeBouillotteState({
+      phase: 0,
+      isHumanTurn: true,
+      retourne: { design: 'DIAMOND', value: 8 },
+    });
+    mockExec.mockResolvedValue(noMatchState);
+    renderWithProviders(<BouillottePage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.getByTestId('hand-card-0').className).not.toContain('ring-ds-accent');
+    expect(screen.getByTestId('retourne-card').className).not.toContain('ring-ds-accent');
+    expect(screen.queryByTestId('retourne-note')).not.toBeInTheDocument();
+  });
 });
