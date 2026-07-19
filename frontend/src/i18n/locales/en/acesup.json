@@ -7,6 +7,7 @@
   "title": "Aces Up",
   "stock": "Stock",
   "discard": "Removed",
+  "discardPile": "Discards",
   "moveCount": "Moves",
   "combo": "Combo ×{{count}}",
   "draw": "Deal",
