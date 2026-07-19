@@ -170,4 +170,33 @@ describe('DoubleKlondikePage', () => {
     await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
     expect(screen.queryByTestId('hint-button')).not.toBeInTheDocument();
   });
+
+  it('scrolls the tableau and foundations with 44px+ tap targets on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const { container } = renderWithProviders(<DoubleKlondikePage />);
+      await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+      // The 9-column tableau and 8-foundation rows become horizontally scrollable.
+      expect(container.querySelector('[data-tutorial="dk-board"]')).toHaveClass('overflow-x-auto');
+      expect(screen.getByTestId('foundation-row')).toHaveClass('overflow-x-auto');
+      // Cards render at least 44px wide so suits stay legible and tap targets
+      // meet the DESIGN.md 44px minimum.
+      const cardImg = screen.getByTestId('card-0-0').querySelector('img');
+      expect(cardImg?.style.width).toBe('44px');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('keeps the desktop tableau as a fixed 9-column grid', async () => {
+    // Default jsdom width (1024) is desktop; the board should not scroll.
+    const { container } = renderWithProviders(<DoubleKlondikePage />);
+    await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+    const board = container.querySelector('[data-tutorial="dk-board"]');
+    expect(board).toHaveClass('grid-cols-9');
+    expect(board).not.toHaveClass('overflow-x-auto');
+  });
 });
