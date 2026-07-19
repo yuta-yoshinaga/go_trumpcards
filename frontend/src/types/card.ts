@@ -989,6 +989,8 @@ export interface HeartsPlayerData {
   roundScore: number;
   cumulativeScore: number;
   trickCount: number;
+  /** Captured penalty cards so far: every heart plus the Q♠ (J♦ excluded). */
+  penaltyCards: Card[];
 }
 
 /** A card played in a Hearts trick. */

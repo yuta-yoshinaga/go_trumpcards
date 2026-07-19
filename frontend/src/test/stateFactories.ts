@@ -68,15 +68,43 @@ const heartsHumanPlayer = {
   roundScore: 0,
   cumulativeScore: 0,
   trickCount: 0,
+  penaltyCards: [],
 };
 
 /** Base Hearts state used as the default for {@link makeHeartsState}. */
 const baseHeartsState: HeartsResponse = {
   players: [
     heartsHumanPlayer,
-    { id: 1, isHuman: false, cardCount: 13, cards: [], roundScore: 3, cumulativeScore: 10, trickCount: 1 },
-    { id: 2, isHuman: false, cardCount: 13, cards: [], roundScore: 5, cumulativeScore: 20, trickCount: 2 },
-    { id: 3, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 5, trickCount: 0 },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 13,
+      cards: [],
+      roundScore: 3,
+      cumulativeScore: 10,
+      trickCount: 1,
+      penaltyCards: [],
+    },
+    {
+      id: 2,
+      isHuman: false,
+      cardCount: 13,
+      cards: [],
+      roundScore: 5,
+      cumulativeScore: 20,
+      trickCount: 2,
+      penaltyCards: [],
+    },
+    {
+      id: 3,
+      isHuman: false,
+      cardCount: 13,
+      cards: [],
+      roundScore: 0,
+      cumulativeScore: 5,
+      trickCount: 0,
+      penaltyCards: [],
+    },
   ],
   phase: 1,
   roundNumber: 1,

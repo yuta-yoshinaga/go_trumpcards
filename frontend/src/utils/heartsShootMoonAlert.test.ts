@@ -10,6 +10,7 @@ const player = (id: number, roundScore: number): HeartsPlayerData => ({
   roundScore,
   cumulativeScore: 0,
   trickCount: 0,
+  penaltyCards: [],
 });
 
 describe('shootTheMoonAlertIdx', () => {
