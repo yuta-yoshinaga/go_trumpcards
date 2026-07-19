@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { catchtenApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -143,6 +143,29 @@ describe('CatchTenPage', () => {
     const team1Chips = screen.getAllByText('チーム 1').filter((el) => el.className.includes('text-ds-error'));
     expect(team0Chips.length).toBeGreaterThan(0);
     expect(team1Chips.length).toBeGreaterThan(0);
+  });
+
+  it('plays the win celebration when the human team wins', async () => {
+    mockExec.mockResolvedValue(gameEndState); // winnerTeam: 0 = human team
+    renderWithProviders(<CatchTenPage />);
+    expect(await screen.findByTestId('win-celebration')).toBeInTheDocument();
+  });
+
+  it('does not celebrate when the CPU team wins', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 3, gameEndFlag: true, winnerTeam: 1 }));
+    renderWithProviders(<CatchTenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    // Outwait the celebration's 400ms delay so a wrongly-fired overlay would be visible.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 600)));
+    expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
+  });
+
+  it('does not celebrate on a draw (winnerTeam -1)', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 3, gameEndFlag: true, winnerTeam: -1 }));
+    renderWithProviders(<CatchTenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    await act(() => new Promise((resolve) => setTimeout(resolve, 600)));
+    expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
   });
 
   it('names the recommended card (suit + rank) in the hint text', async () => {

@@ -25,6 +25,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -127,6 +128,12 @@ function CatchTenPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('catchten', state);
   const { cardWidth, isMobile } = useCardDimensions();
+  const { playSound } = useSound();
+  // Memoized so WinCelebration's effect (which depends on onCelebrate) does not
+  // re-arm its timer — and replay the fanfare — on every post-win re-render.
+  const handleCelebrate = useCallback(() => {
+    playSound('winFanfare');
+  }, [playSound]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('catchten');
@@ -194,6 +201,11 @@ function CatchTenPageContent() {
   const isGameEnd = state.phase === CatchTenPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
+  // The human sits at seat 0, so team 0 is the human team. A draw
+  // (CatchTenDrawTeam → winnerTeam < 0) never satisfies this, so the
+  // celebration only fires for the human team's outright win.
+  const humanWon = isGameEnd && state.winnerTeam === 0;
+
   // Render a CPU player's stats as a definition list so screen readers
   // announce each field (hand size, team, cumulative/round score) as an
   // independent item instead of one long pipe-joined sentence. The visual `|`
@@ -250,6 +262,8 @@ function CatchTenPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/catchten"
       gameEndFlag={!!state?.gameEndFlag}
+      winShow={humanWon}
+      onCelebrate={handleCelebrate}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
