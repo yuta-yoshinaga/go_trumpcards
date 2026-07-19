@@ -1,5 +1,5 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { warApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -81,6 +81,10 @@ beforeEach(() => {
   });
 });
 
+afterEach(() => {
+  localStorage.removeItem('war:autoPlaySpeed');
+});
+
 describe('WarPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<WarPage />);
@@ -91,7 +95,8 @@ describe('WarPage', () => {
     renderWithProviders(<WarPage />);
     await waitFor(() => expect(screen.getByText('最大ラウンド数')).toBeInTheDocument());
     // The (?) toggle reveals an accessible tooltip explaining the end condition.
-    fireEvent.click(screen.getByText('(?)'));
+    // The first help toggle belongs to the max-rounds setting.
+    fireEvent.click(screen.getAllByText('(?)')[0]);
     expect(screen.getByRole('tooltip')).toHaveTextContent('無限');
   });
 
@@ -175,11 +180,70 @@ describe('WarPage', () => {
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeDisabled());
   });
 
-  it('autoplay button calls exec with autoplay', async () => {
+  it('autoplay auto-advances via repeated step calls and stops at game end', async () => {
+    vi.useFakeTimers();
+    try {
+      // reset (mount) → base, then two client-driven steps; the second ends the game.
+      mockExec
+        .mockReset()
+        .mockResolvedValueOnce(baseState) // reset on mount
+        .mockResolvedValueOnce(baseState) // step 1
+        .mockResolvedValueOnce(gameEndState) // step 2 → game end
+        .mockResolvedValue(gameEndState);
+      renderWithProviders(<WarPage />);
+      // Flush the mount reset.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      fireEvent.click(screen.getByTestId('autoplay-button'));
+      // Two normal-speed ticks (450ms each) advance two rounds, then the game ends.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(450);
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(450);
+      });
+      // Any further ticks must not fire more steps once the game has ended.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2000);
+      });
+      const stepCalls = mockExec.mock.calls.filter(([cmd]) => cmd === 'step');
+      expect(stepCalls).toHaveLength(2);
+      // autoplay never hits the single-shot server command.
+      expect(mockExec).not.toHaveBeenCalledWith('autoplay');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('faster speed shortens the auto-advance interval', async () => {
+    vi.useFakeTimers();
+    try {
+      mockExec.mockReset().mockResolvedValue(baseState);
+      renderWithProviders(<WarPage />);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      // Switch to fast (150ms delay) before starting autoplay.
+      fireEvent.change(screen.getByTestId('autoplay-speed-select'), { target: { value: 'fast' } });
+      fireEvent.click(screen.getByTestId('autoplay-button'));
+      // 150ms is enough at fast speed but would be too short at the 450ms normal delay.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(150);
+      });
+      expect(mockExec).toHaveBeenCalledWith('step');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('renders the animation speed selector persisted to localStorage', async () => {
     renderWithProviders(<WarPage />);
-    await waitFor(() => expect(screen.getByTestId('autoplay-button')).toBeInTheDocument());
-    fireEvent.click(screen.getByTestId('autoplay-button'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autoplay'));
+    const select = (await screen.findByTestId('autoplay-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('normal');
+    fireEvent.change(select, { target: { value: 'slow' } });
+    expect(select.value).toBe('slow');
+    expect(localStorage.getItem('war:autoPlaySpeed')).toBe('slow');
   });
 
   it('disables autoplay button on game end', async () => {

@@ -15,6 +15,8 @@ export interface SettingsItem {
   options?: { value: string | number; label: string }[];
   onSelect?: (value: string) => void;
   disabled?: boolean;
+  /** Optional `data-testid` applied to the underlying input/select element. */
+  testId?: string;
 }
 
 /** A group of related settings items with optional title. */
@@ -110,6 +112,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                         disabled={item.disabled}
                         onChange={(e) => item.onToggle?.(e.target.checked)}
                         aria-describedby={item.tooltip ? `${item.id}-tooltip` : undefined}
+                        data-testid={item.testId}
                       />
                       {item.label}
                     </label>
@@ -125,6 +128,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       className="bg-ds-surface-elevated text-ds-text-primary disabled:text-ds-text-muted disabled:opacity-70 rounded px-2 py-2 min-h-[44px]"
                       disabled={item.disabled}
                       aria-describedby={item.tooltip ? `${item.id}-tooltip` : undefined}
+                      data-testid={item.testId}
                     >
                       {item.options?.map((opt) => (
                         <option key={opt.value} value={opt.value}>
