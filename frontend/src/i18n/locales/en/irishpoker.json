@@ -22,6 +22,7 @@
     "selectedCount": "{{n}}/{{total}} selected",
     "keepLabel": "Keep",
     "previewHand": "Tentative hand",
+    "candidateHand": "If also discarded",
     "limitReached": "You can select up to {{count}} card(s). Deselect one first.",
     "limitDescription": "You can select at most {{count}} card(s) to discard."
   },

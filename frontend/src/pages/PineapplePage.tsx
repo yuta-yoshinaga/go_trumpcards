@@ -272,6 +272,26 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       return rank == null ? null : pokerHandKey(rank);
     });
   }, [variant, isDiscardPhase, humanPlayer, state?.communityCards]);
+  // Irish Poker discards 2 of 4 hole cards. Once the FIRST card is chosen, annotate
+  // each still-selectable card with the best hand the OTHER two kept cards would make
+  // with the board if that card became the second discard — turning the C(3,1)=3
+  // remaining choices into a side-by-side comparison before the pair is committed.
+  // (At 2 selected, the full `discardPreview` above takes over instead.)
+  const irishCandidatePreviews = useMemo<(string | null)[] | null>(() => {
+    if (variant !== 'irishpoker' || !isDiscardPhase) return null;
+    if (selectedDiscards.length !== discardCount - 1) return null;
+    const hole = humanPlayer?.cards ?? [];
+    const board = state?.communityCards ?? [];
+    return hole.map((_, idx) => {
+      // The already-selected card is marked as selected, not annotated.
+      if (selectedDiscards.includes(idx)) return null;
+      const kept = hole.filter((_, i) => i !== idx && !selectedDiscards.includes(i));
+      const all = [...kept, ...board];
+      const picked = holdemBestFive(all);
+      const rank = picked ? evaluateFiveCardHand(picked.map((i) => all[i])) : null;
+      return rank == null ? null : pokerHandKey(rank);
+    });
+  }, [variant, isDiscardPhase, humanPlayer, state?.communityCards, selectedDiscards, discardCount]);
   // Plain Pineapple discards 1 of 3 preflop (before any board), so a board-based
   // preview is impossible. Instead annotate each hole card with the qualitative
   // shape (pair / suited / connector / high card) the OTHER two would keep, a
@@ -541,6 +561,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                         const inBest = showdownBest5.holeSet.has(idx);
                         const dim = showdownBest5.holeSet.size > 0 && !inBest;
                         const candKey = candidatePreviews?.[idx] ?? null;
+                        const irishCandKey = irishCandidatePreviews?.[idx] ?? null;
                         const keepFeatures = keepFeaturePreviews?.[idx] ?? null;
                         return (
                           <div key={`${card.design}-${card.value}`} className="flex flex-col items-center">
@@ -561,6 +582,14 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                                 data-testid="cp-discard-candidate"
                               >
                                 {`${t('discard.candidateHand')}: ${t(`hand.${candKey}`)}`}
+                              </span>
+                            )}
+                            {irishCandKey && (
+                              <span
+                                className="mt-0.5 text-[10px] text-ds-text-muted"
+                                data-testid="irishpoker-discard-candidate"
+                              >
+                                {`${t('discard.candidateHand')}: ${t(`hand.${irishCandKey}`)}`}
                               </span>
                             )}
                             {keepFeatures && (
