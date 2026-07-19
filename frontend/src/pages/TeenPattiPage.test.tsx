@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { teenPattiApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -97,18 +97,36 @@ describe('TeenPattiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('sideshow'));
   });
 
-  it('shows Accept/Decline when the human is the Side Show target and dispatches respond', async () => {
+  it('shows the unified Side Show panel with Accept/Decline when the human is the target and dispatches respond', async () => {
     mockExec.mockResolvedValue(
       makeTeenPattiState({ phase: 1, isHumanTurn: false, sideShowRequester: 1, sideShowTarget: 0 }),
     );
     renderWithProviders(<TeenPattiPage />);
-    const accept = await screen.findByRole('button', { name: '承諾' });
-    const decline = screen.getByRole('button', { name: '拒否' });
+    const panel = await screen.findByTestId('teenpatti-sideshow-panel');
+    // The accept/decline buttons live inside the emphasized panel, not the footer.
+    const accept = within(panel).getByRole('button', { name: '承諾' });
+    const decline = within(panel).getByRole('button', { name: '拒否' });
     mockExec.mockClear();
     fireEvent.click(accept);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('respond', { accept: true }));
     fireEvent.click(decline);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('respond', { accept: false }));
+  });
+
+  it('shows the Side Show panel (without response buttons) when the human is not the target', async () => {
+    mockExec.mockResolvedValue(
+      makeTeenPattiState({ phase: 1, isHumanTurn: false, sideShowRequester: 1, sideShowTarget: 2 }),
+    );
+    renderWithProviders(<TeenPattiPage />);
+    const panel = await screen.findByTestId('teenpatti-sideshow-panel');
+    expect(within(panel).queryByRole('button', { name: '承諾' })).not.toBeInTheDocument();
+    expect(within(panel).queryByRole('button', { name: '拒否' })).not.toBeInTheDocument();
+  });
+
+  it('hides the Side Show panel outside the Side Show phase', async () => {
+    renderWithProviders(<TeenPattiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('teenpatti-sideshow-panel')).not.toBeInTheDocument();
   });
 
   it('hides action buttons on a CPU turn', async () => {
