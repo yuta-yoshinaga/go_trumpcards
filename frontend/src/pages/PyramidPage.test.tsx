@@ -1,7 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, pyramidApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { PYRAMID_STATS_KEY } from '../hooks/usePyramidStats';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, PyramidCard, PyramidResponse } from '../types/card';
 import { PyramidPage } from './PyramidPage';
@@ -632,5 +633,52 @@ describe('PyramidPage', () => {
     mockExec.mockResolvedValue(playingState);
     fireEvent.click(screen.getByTestId('stalemate-escape-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 4));
+  });
+});
+
+// --- Best-record persistence (#3083) ---
+
+describe('PyramidPage best-record', () => {
+  // Clear only the stats key so we don't disturb tutorial-suggest state used by other tests.
+  beforeEach(() => localStorage.removeItem(PYRAMID_STATS_KEY));
+  afterEach(() => localStorage.removeItem(PYRAMID_STATS_KEY));
+
+  it('records the fewest-moves clear and shows the badge, panel, and header chip', async () => {
+    // gameClearState.moveCount is 5.
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<PyramidPage />);
+
+    await waitFor(() => expect(screen.getByTestId('py-best-badge')).toBeInTheDocument());
+    expect(screen.getByTestId('py-best-badge')).toHaveTextContent('新記録');
+    expect(screen.getByTestId('py-best-badge')).toHaveTextContent('5');
+    expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('5 手');
+    expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('クリア 1/1');
+    expect(screen.getByTestId('py-best-moves')).toHaveTextContent('5 手');
+    // Persisted for next time.
+    expect(JSON.parse(localStorage.getItem(PYRAMID_STATS_KEY) ?? '{}')).toEqual({
+      plays: 1,
+      wins: 1,
+      fewestMoves: 5,
+    });
+  });
+
+  it('keeps a better existing record and shows no new-best badge for a slower clear', async () => {
+    localStorage.setItem(PYRAMID_STATS_KEY, JSON.stringify({ plays: 1, wins: 1, fewestMoves: 3 }));
+    mockExec.mockResolvedValue(gameClearState); // 5 moves > existing best 3
+    renderWithProviders(<PyramidPage />);
+
+    await waitFor(() => expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('3 手'));
+    expect(screen.queryByTestId('py-best-badge')).not.toBeInTheDocument();
+    expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('クリア 2/2');
+  });
+
+  it('counts a loss without recording a fewest-moves value', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<PyramidPage />);
+
+    await waitFor(() => expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('クリア 0/1'));
+    expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('—');
+    expect(screen.queryByTestId('py-best-moves')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('py-best-badge')).not.toBeInTheDocument();
   });
 });

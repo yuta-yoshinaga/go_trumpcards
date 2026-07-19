@@ -33,6 +33,10 @@
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
   "landscapeBanner": "横向きにすると操作しやすくなります",
+  "bestMoves": "ベスト",
+  "bestMovesValue": "{{moves}} 手",
+  "newBestMoves": "新記録！ {{moves}} 手でクリア",
+  "clears": "クリア {{wins}}/{{plays}}",
   "frontendHint": {
     "removeKing": "露出したキングはそのまま除去できます",
     "removePair": "合計13になる露出カードのペアがあります",
