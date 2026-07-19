@@ -90,6 +90,20 @@ describe('GaigelPage', () => {
     expect(screen.getByText('山札: 28')).toBeInTheDocument();
   });
 
+  it('renders the face-up turn-up card when the stock still holds it', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpCard: card('HEART', 10) }));
+    renderWithProviders(<GaigelPage />);
+    await waitFor(() => expect(screen.getByTestId('gaigel-trump-card')).toBeInTheDocument());
+    expect(screen.getByText('めくり札')).toBeInTheDocument();
+  });
+
+  it('omits the turn-up card once the stock is exhausted', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpCard: undefined, stockRemaining: 0 }));
+    renderWithProviders(<GaigelPage />);
+    await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('gaigel-trump-card')).not.toBeInTheDocument();
+  });
+
   it('dispatches play with the selected card index during play', async () => {
     renderWithProviders(<GaigelPage />);
     const cardBtn = await screen.findByRole('button', { name: '♠ K' });

@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -194,6 +195,15 @@ function GaigelPageContent() {
           </span>
           <span>{t('stock', { count: state.stockRemaining })}</span>
         </div>
+
+        {/* Face-up turn-up card that fixes the trump suit. It sits under the
+            stock and is drawn last, so it disappears once the stock is empty. */}
+        {state.trumpCard && (
+          <div className="flex items-center justify-center gap-2 mb-3" data-testid="gaigel-trump-card">
+            <span className="text-ds-text-muted text-sm">{t('turnUpCard')}</span>
+            <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
+          </div>
+        )}
 
         {/* CPU players */}
         <div className="mb-3">

@@ -22,6 +22,7 @@
   "trumpSuit": "Trump: {{suit}}",
   "noTrump": "Trump not set",
   "stock": "Stock: {{count}}",
+  "turnUpCard": "Turn-up card",
   "currentTrick": "Current Trick",
   "trickCount": "Tricks: {{count}}",
   "roundPoints": "Round: {{points}} pts",

@@ -67,6 +67,30 @@ func TestGaigelWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 27, resObj.StockRemaining)
 	})
 
+	t.Run("turn-up trump card populated", func(t *testing.T) {
+		m, players := setupGaigelWebMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpCard")
+		m.On("GetTrumpCard").Return(domain.NewCard(domain.CardDesignHeart, 10, true))
+
+		result := p.Output(m, nil)
+		var resObj controller.GaigelWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.NotNil(t, resObj.TrumpCard)
+		assert.Equal(t, "HEART", resObj.TrumpCard.Design)
+		assert.Equal(t, 10, resObj.TrumpCard.Value)
+	})
+
+	t.Run("turn-up trump card omitted once drawn", func(t *testing.T) {
+		m, players := setupGaigelWebMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+		// setupGaigelWebMock already returns a nil trump card.
+		result := p.Output(m, nil)
+		var resObj controller.GaigelWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Nil(t, resObj.TrumpCard)
+	})
+
 	t.Run("with error", func(t *testing.T) {
 		m, _ := setupGaigelWebMockWithPlayers()
 		result := p.Output(m, errors.New("boom"))
