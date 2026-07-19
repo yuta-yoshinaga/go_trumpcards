@@ -279,6 +279,17 @@ function EasthavenPageContent() {
   const isEnded = isGameClear || isGameOver;
   const autoCompleteReady = isTableauAllFaceUp(state.tableau) && state.stockCount === 0;
 
+  // Compose the hint into a full "move <card> in column N → <dest>" sentence so
+  // the aria-live announcement and visible box read completely, even when the
+  // ring-flash source card is scrolled out of view (issue #3388).
+  const hintDest = state.hint
+    ? state.hint.toZone === 'foundation'
+      ? t('foundation')
+      : `${t('tableau')} ${state.hint.toCol}`
+    : '';
+  const hintCard = state.hint ? state.tableau[state.hint.fromCol]?.[state.hint.cardIndex]?.card : null;
+  const hintCardName = hintCard ? cardAlt(hintCard) : '';
+
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
     selectedSource.zone === zone &&
@@ -516,8 +527,9 @@ function EasthavenPageContent() {
                 className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
                 role="status"
                 aria-live="polite"
+                data-testid="eh-hint"
               >
-                {state.hint.toZone === 'foundation' ? t('foundation') : `${t('tableau')} ${state.hint.toCol}`}
+                {t('hintSentence', { fromCol: state.hint.fromCol, card: hintCardName, dest: hintDest })}
               </div>
             )}
             {frontendHintEnabled && frontendHint && (

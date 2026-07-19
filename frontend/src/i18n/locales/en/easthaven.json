@@ -21,6 +21,7 @@
   "playing": "Playing",
   "noHint": "No hint available",
   "hintAvailable": "A hint is available",
+  "hintSentence": "Move: {{card}} in column {{fromCol}} → {{dest}}",
   "foundationAriaLabel": "{{suit}} foundation, {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "stalemate": "No moves left",

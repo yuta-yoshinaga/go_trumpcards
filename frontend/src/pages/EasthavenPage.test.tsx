@@ -262,11 +262,31 @@ describe('EasthavenPage', () => {
     );
   });
 
-  it('renders a hint banner from state.hint', async () => {
+  it('renders a full from→to sentence for a to-foundation hint', async () => {
+    // tableau[0][1] is ♠ K, so the sentence names the source column, card, and dest.
     mockExec.mockResolvedValue({ ...playingState, hint: { fromCol: 0, cardIndex: 1, toZone: 'foundation', toCol: 0 } });
     renderWithProviders(<EasthavenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getAllByText('組札').length).toBeGreaterThan(0);
+    const hint = await screen.findByTestId('eh-hint');
+    expect(hint).toHaveTextContent('移動: 列 0 の ♠ K → 組札');
+  });
+
+  it('renders a full from→to sentence for a to-tableau hint', async () => {
+    // toZone 'tableau' exercises the dest branch that names the destination column.
+    mockExec.mockResolvedValue({ ...playingState, hint: { fromCol: 1, cardIndex: 0, toZone: 'tableau', toCol: 3 } });
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const hint = await screen.findByTestId('eh-hint');
+    expect(hint).toHaveTextContent('移動: 列 1 の ♥ 8 → 場札 3');
+  });
+
+  it('renders the hint sentence without a card name when the source card is face-down', async () => {
+    // tableau[0][0] is a face-down (card: null) slot, hitting the empty-card-name branch.
+    mockExec.mockResolvedValue({ ...playingState, hint: { fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 } });
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const hint = await screen.findByTestId('eh-hint');
+    expect(hint).toHaveTextContent('移動: 列 0 の → 組札');
   });
 
   it('deal is guarded (no deal call) while an empty column exists', async () => {
