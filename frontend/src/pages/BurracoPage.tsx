@@ -300,6 +300,34 @@ function BurracoPageContent() {
                   </div>
                 )}
 
+                {/* Full discard pile viewer: in Burraco the whole pile is taken at once,
+                    so its contents are decision-critical public information. */}
+                <details
+                  className="my-3 rounded bg-black/30 p-2"
+                  data-testid="ca-discard-pile-viewer"
+                  open={isDrawPhase}
+                >
+                  <summary className="cursor-pointer select-none text-sm text-ds-text-muted">
+                    {t('discardPileViewer', { count: state.discardPile.length })}
+                  </summary>
+                  {state.discardPile.length === 0 ? (
+                    <div className="mt-2 text-xs text-ds-text-muted">{t('discardPileEmpty')}</div>
+                  ) : (
+                    <>
+                      <div className="mt-1 text-xs text-ds-text-muted">{t('discardPileOrderHint')}</div>
+                      <div className="mt-2 flex flex-wrap gap-1" data-testid="ca-discard-pile-cards">
+                        {state.discardPile.map((card, di) => (
+                          <AnimatedCard
+                            key={`discard-${card.design}-${card.value}-${di}`}
+                            card={card}
+                            width={cardWidth * 0.6}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </details>
+
                 {/* Player melds */}
                 {state.players.map((p, pi) => {
                   if (p.melds.length === 0 && p.red3s.length === 0) return null;
