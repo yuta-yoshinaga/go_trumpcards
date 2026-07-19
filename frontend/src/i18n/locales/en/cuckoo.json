@@ -24,6 +24,7 @@
   "nextRound": "Next round",
   "roundLoser": "{{name}} held the lowest card and lost a life.",
   "roundLosersTitle": "This round's losers",
+  "roundLowestValue": "Lowest value: {{value}}",
   "settings": {
     "title": "Settings",
     "cpuDifficulty": "CPU difficulty",

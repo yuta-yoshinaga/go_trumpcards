@@ -1,5 +1,8 @@
 {
   "discardTop": "捨て札",
+  "discardPileViewer": "捨て札の山を見る ({{count}}枚)",
+  "discardPileEmpty": "捨て札の山は空です。",
+  "discardPileOrderHint": "古い順（下 → 上）に並んでいます。",
   "phase": {
     "draw": "ドロー",
     "meld": "メルド",

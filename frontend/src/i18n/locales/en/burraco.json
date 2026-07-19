@@ -1,5 +1,8 @@
 {
   "discardTop": "Discard",
+  "discardPileViewer": "View discard pile ({{count}} cards)",
+  "discardPileEmpty": "The discard pile is empty.",
+  "discardPileOrderHint": "Ordered oldest first (bottom → top).",
   "phase": {
     "draw": "Draw",
     "meld": "Meld",

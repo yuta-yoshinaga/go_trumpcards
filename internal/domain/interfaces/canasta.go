@@ -43,6 +43,8 @@ type CanastaGame interface {
 	GetCurrentPlayerIdx() int
 	// GetDiscardTop 捨て札の一番上のカードを取得する
 	GetDiscardTop() *domain.Card
+	// GetDiscardPile 捨て札の山全体を古い順（下から上）に取得する
+	GetDiscardPile() []*domain.Card
 	// GetDrawPileCount 山札の残り枚数を取得する
 	GetDrawPileCount() int
 	// GetDiscardPileCount 捨て札の枚数を取得する

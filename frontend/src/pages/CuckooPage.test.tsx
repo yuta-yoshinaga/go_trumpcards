@@ -137,6 +137,19 @@ describe('CuckooPage', () => {
     expect(losers).toHaveAttribute('aria-live', 'polite');
   });
 
+  it('shows the round lowest value at round end', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CuckooPage />);
+    const lowest = await screen.findByTestId('cuckoo-round-lowest');
+    expect(lowest).toHaveTextContent('最低値: 5');
+  });
+
+  it('hides the round lowest value when undecided', async () => {
+    renderWithProviders(<CuckooPage />);
+    await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());
+    expect(screen.queryByTestId('cuckoo-round-lowest')).not.toBeInTheDocument();
+  });
+
   it('dispatches keep on the human turn', async () => {
     renderWithProviders(<CuckooPage />);
     const btn = await screen.findByRole('button', { name: 'キープ' });

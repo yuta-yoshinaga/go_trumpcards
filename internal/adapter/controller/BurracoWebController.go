@@ -56,6 +56,7 @@ type BurracoWebOutput struct {
 	RoundNumber      int                       `json:"roundNumber"`
 	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
 	DiscardTop       *WebOutputCard            `json:"discardTop"`
+	DiscardPile      []*WebOutputCard          `json:"discardPile"`
 	DrawPileCount    int                       `json:"drawPileCount"`
 	DiscardPileCount int                       `json:"discardPileCount"`
 	PozzettoCount    int                       `json:"pozzettoCount"`
