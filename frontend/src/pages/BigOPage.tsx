@@ -282,26 +282,35 @@ function BigOPageContent() {
                   </div>
                 </>
               );
-              const cpuPlayerCards = cpuPlayers.map((player) => (
-                <CpuPlayerCard
-                  key={player.id}
-                  player={player}
-                  showCards={isShowdown}
-                  faceDownCount={5}
-                  showHandName={isShowdown}
-                  extraInfo={
-                    player.totalHands > 0 ? (
-                      <HudStats
-                        namespace="bigo"
-                        vpip={player.vpip}
-                        pfr={player.pfr}
-                        threeBet={player.threeBet}
-                        af={player.af}
-                      />
-                    ) : undefined
-                  }
-                />
-              ));
+              const cpuPlayerCards = cpuPlayers.map((player) => {
+                // At showdown, highlight the exactly-2 hole cards this CPU used
+                // in its best hand under Big O's must-use-2-hole + 3-board rule.
+                const cpuUsedHoleIdx =
+                  isShowdown && !player.folded
+                    ? (omahaBestFive(player.cards ?? [], state?.communityCards ?? [])?.holeIdx ?? undefined)
+                    : undefined;
+                return (
+                  <CpuPlayerCard
+                    key={player.id}
+                    player={player}
+                    showCards={isShowdown}
+                    faceDownCount={5}
+                    showHandName={isShowdown}
+                    usedHoleIdx={cpuUsedHoleIdx}
+                    extraInfo={
+                      player.totalHands > 0 ? (
+                        <HudStats
+                          namespace="bigo"
+                          vpip={player.vpip}
+                          pfr={player.pfr}
+                          threeBet={player.threeBet}
+                          af={player.af}
+                        />
+                      ) : undefined
+                    }
+                  />
+                );
+              });
 
               if (isLargeDesktop) {
                 return (

@@ -180,6 +180,35 @@ describe('CpuPlayerCard', () => {
     expect(screen.queryByTestId('meta-ai-indicator')).not.toBeInTheDocument();
   });
 
+  it('rings the used hole cards when usedHoleIdx is provided at face-up', () => {
+    render(
+      <CpuPlayerCard player={makePlayer()} showCards={true} faceDownCount={2} showHandName={false} usedHoleIdx={[0]} />,
+    );
+    const used = screen.getAllByTestId('cpu-hole-used');
+    expect(used).toHaveLength(1);
+    expect(used[0].className).toContain('ring-ds-success');
+    // The used ring wraps the first card (♠ A), not the second.
+    expect(used[0].querySelector('img')).toHaveAttribute('alt', '♠ A');
+  });
+
+  it('does not ring any card when usedHoleIdx is absent', () => {
+    render(<CpuPlayerCard player={makePlayer()} showCards={true} faceDownCount={2} showHandName={false} />);
+    expect(screen.queryByTestId('cpu-hole-used')).not.toBeInTheDocument();
+  });
+
+  it('does not ring cards for a folded player even when usedHoleIdx is provided', () => {
+    render(
+      <CpuPlayerCard
+        player={makePlayer({ folded: true })}
+        showCards={true}
+        faceDownCount={2}
+        showHandName={false}
+        usedHoleIdx={[0, 1]}
+      />,
+    );
+    expect(screen.queryByTestId('cpu-hole-used')).not.toBeInTheDocument();
+  });
+
   it('does not render MetaAiIndicator when metaAi is disabled', () => {
     render(
       <CpuPlayerCard
