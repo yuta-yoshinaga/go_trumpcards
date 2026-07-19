@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -52,6 +53,10 @@ const FCP_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
+
+/** Total cards the dealer is dealt; during the action phase only the upcard
+ * is revealed and the remaining cards are shown as concealed backs. */
+const DEALER_HAND_SIZE = 6;
 
 /** 4-card hand rank → i18n key (1=High Card, 8=Four of a Kind). */
 const HAND_RANK_KEYS: Record<number, string> = {
@@ -252,10 +257,20 @@ function FourCardPokerPageContent() {
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>
                   )}
                 </div>
-                <div className="flex justify-center gap-2">
+                <div className="flex justify-center gap-2 flex-wrap">
                   {state.dealerHand.map((card, i) => (
                     <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                   ))}
+                  {/* During the action phase the dealer holds 6 cards but only the
+                      upcard is revealed; render the remaining concealed cards as backs. */}
+                  {isActionPhase &&
+                    Array.from({ length: DEALER_HAND_SIZE - state.dealerHand.length }, (_, i) => (
+                      // role="img" + aria-label makes AT announce "hidden card"
+                      // instead of the generic card-back alt on the inner image.
+                      <span key={`d-back-${i}`} role="img" aria-label={t('hiddenCard')} className="inline-flex">
+                        <AnimatedCardBack width={cardWidth} />
+                      </span>
+                    ))}
                 </div>
               </div>
             )}
