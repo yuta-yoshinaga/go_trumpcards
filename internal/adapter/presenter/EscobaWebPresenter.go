@@ -46,12 +46,19 @@ func (ewp *EscobaWebPresenter) Output(eg interfaces.EscobaGame, lastErr error) s
 		if player.GetIsHuman() {
 			humanIdx = i
 		}
+		// Reveal the captured pile only for the human; CPUs stay count-only to
+		// preserve the memory-game aspect (どの札を取ったかは相手に見せない)。
+		captured := make([]*controller.WebOutputCard, 0)
+		if player.GetIsHuman() {
+			captured = cardsToOutputOrEmpty(player.GetCapturedCards())
+		}
 		resObj.Players = append(resObj.Players, &controller.EscobaWebOutputPlayer{
 			ID:            i,
 			IsHuman:       player.GetIsHuman(),
 			HandCount:     player.GetCardsSize(),
 			Cards:         playerCardsToOutput(player, player.GetIsHuman()),
 			CapturedCount: player.CapturedCount(),
+			CapturedCards: captured,
 			EscobaCount:   player.GetScopaCount(),
 			Score:         player.GetTotalScore(),
 		})

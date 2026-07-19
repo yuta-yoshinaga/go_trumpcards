@@ -23,6 +23,11 @@
     "humanStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / エスコバ{{escoba}}",
     "playerScore": "P{{id}}: {{score}}pt"
   },
+  "captured": {
+    "title": "獲得した札",
+    "summary": "獲得した札を見る（{{count}}枚）",
+    "empty": "まだ札を獲得していません"
+  },
   "button": {
     "take": "取る",
     "lay": "場に置く",

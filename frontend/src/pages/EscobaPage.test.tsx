@@ -173,11 +173,91 @@ describe('EscobaPage', () => {
   it('shows loading state when state has fewer than 4 players', async () => {
     mockExec.mockResolvedValue(
       makeEscobaState({
-        players: [{ id: 0, isHuman: true, handCount: 0, cards: [], capturedCount: 0, escobaCount: 0, score: 0 }],
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            handCount: 0,
+            cards: [],
+            capturedCount: 0,
+            capturedCards: [],
+            escobaCount: 0,
+            score: 0,
+          },
+        ],
       }),
     );
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.queryByTestId('hand-card-0')).not.toBeInTheDocument());
+  });
+
+  it('renders the human captured-cards viewer with the captured pile', async () => {
+    mockExec.mockResolvedValue(
+      makeEscobaState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            handCount: 3,
+            cards: [
+              { design: 'SPADE', value: 7 },
+              { design: 'HEART', value: 5 },
+              { design: 'DIAMOND', value: 11 },
+            ],
+            capturedCount: 2,
+            capturedCards: [
+              { design: 'SPADE', value: 4 },
+              { design: 'HEART', value: 3 },
+            ],
+            escobaCount: 0,
+            score: 0,
+          },
+          {
+            id: 1,
+            isHuman: false,
+            handCount: 3,
+            cards: [],
+            capturedCount: 5,
+            capturedCards: [],
+            escobaCount: 0,
+            score: 0,
+          },
+          {
+            id: 2,
+            isHuman: false,
+            handCount: 3,
+            cards: [],
+            capturedCount: 0,
+            capturedCards: [],
+            escobaCount: 0,
+            score: 0,
+          },
+          {
+            id: 3,
+            isHuman: false,
+            handCount: 3,
+            cards: [],
+            capturedCount: 0,
+            capturedCards: [],
+            escobaCount: 0,
+            score: 0,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('captured-viewer')).toBeInTheDocument());
+    // Summary reflects the human's captured count.
+    expect(screen.getByText('獲得した札を見る（2枚）')).toBeInTheDocument();
+    // The captured pile renders the actual cards.
+    expect(screen.getByTestId('captured-cards')).toBeInTheDocument();
+  });
+
+  it('shows the empty-pile message when the human has captured nothing', async () => {
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('captured-viewer')).toBeInTheDocument());
+    expect(screen.getByText('まだ札を獲得していません')).toBeInTheDocument();
+    expect(screen.queryByTestId('captured-cards')).not.toBeInTheDocument();
   });
 
   it('renders CLI terminal when CLI mode is enabled via localStorage', async () => {

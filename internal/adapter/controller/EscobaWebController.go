@@ -38,6 +38,9 @@ type EscobaWebOutputPlayer struct {
 	HandCount     int              `json:"handCount"`
 	Cards         []*WebOutputCard `json:"cards"`
 	CapturedCount int              `json:"capturedCount"`
+	// CapturedCards は獲得した捕獲札の中身。人間プレイヤーのみに公開し、CPU は
+	// 記憶ゲーム性を保つため空スライスとする (枚数は CapturedCount で確認可能)。
+	CapturedCards []*WebOutputCard `json:"capturedCards"`
 	EscobaCount   int              `json:"escobaCount"`
 	Score         int              `json:"score"`
 }

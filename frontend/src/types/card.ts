@@ -9056,6 +9056,8 @@ export interface EscobaPlayerData {
   handCount: number;
   cards: Card[];
   capturedCount: number;
+  /** The captured pile's actual cards. Populated only for the human player; CPUs stay count-only (empty array). */
+  capturedCards: Card[];
   escobaCount: number;
   score: number;
 }
