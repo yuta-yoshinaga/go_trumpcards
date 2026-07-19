@@ -252,6 +252,35 @@ describe('CegoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndices: [1] }));
   });
 
+  it('shows the exchange guide with step 1 active while no keep card is selected', async () => {
+    mockExec.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<CegoPage />);
+    await screen.findByRole('button', { name: '2 ♥' });
+    const guide = screen.getByTestId('cego-exchange-guide');
+    expect(guide).toBeInTheDocument();
+    // Blind count (10) and lay-down count (10) are surfaced in the steps.
+    expect(guide).toHaveTextContent(/10/);
+    expect(screen.getByTestId('cego-exchange-step-1')).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByTestId('cego-exchange-step-2')).not.toHaveAttribute('aria-current');
+    expect(screen.getByTestId('cego-exchange-status')).toHaveTextContent('あと 1 枚選ぶと交換できます。');
+  });
+
+  it('advances the exchange guide to step 2 once the keep card is selected', async () => {
+    mockExec.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<CegoPage />);
+    const card = await screen.findByRole('button', { name: '3 ♥' });
+    fireEvent.click(card);
+    expect(screen.getByTestId('cego-exchange-step-2')).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByTestId('cego-exchange-step-1')).not.toHaveAttribute('aria-current');
+    expect(screen.getByTestId('cego-exchange-status')).toHaveTextContent('準備完了');
+  });
+
+  it('does not show the exchange guide outside the exchange phase', async () => {
+    renderWithProviders(<CegoPage />);
+    await screen.findByRole('button', { name: 'K ♥' });
+    expect(screen.queryByTestId('cego-exchange-guide')).not.toBeInTheDocument();
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<CegoPage />);
     const card = await screen.findByRole('button', { name: 'K ♥' });

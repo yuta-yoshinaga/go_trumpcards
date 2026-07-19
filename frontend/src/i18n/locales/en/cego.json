@@ -42,6 +42,13 @@
   "contractHandspielDesc": "Handspiel: skip the blind and play your dealt hand as is. Safer, but the upside is smaller.",
   "exchangePhase": "Cego exchange — pick the 1 card to keep ({{count}}/1 selected). The other 10 are laid down and you take the blind.",
   "exchangeKeep": "Choose the single card to keep.",
+  "exchangeGuide": {
+    "title": "Cego exchange steps (step {{step}}/{{total}})",
+    "step1": "Pick the {{keep}} card to keep from your hand ({{remaining}} more to select).",
+    "step2": "Lay down the other {{layDown}} cards face-down and take the {{count}}-card blind (Cego).",
+    "remaining": "Select {{remaining}} more card to exchange.",
+    "ready": "Ready — press Keep to confirm the exchange."
+  },
   "exchangeButton": "Keep ({{count}}/1)",
   "playButton": "Play",
   "nextTrick": "Next Trick",
