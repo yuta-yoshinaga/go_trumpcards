@@ -20,6 +20,10 @@
   "currentBet": "Current bet: {{amount}}",
   "roundBet": "Bet: {{amount}}",
   "retourneLabel": "Retourne (shared card)",
+  "retourneNote": {
+    "favori": "The retourne completes a brelan favori! (your pair + the shared card make three).",
+    "carre": "Your brelan matches the retourne's rank (carré) — a top-class hand!"
+  },
   "handLabel": "Your hand",
   "playersTitle": "Players",
   "bettingNotice": "Your turn — call, raise (vie), or fold.",

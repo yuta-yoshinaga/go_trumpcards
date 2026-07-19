@@ -32,6 +32,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BouillotteResponse } from '../types/card';
 import { BouillottePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { analyzeRetourneMatch } from '../utils/bouillotteRetourne';
 import { BOUILLOTTE_HELP, parseBouillotteCommand } from '../utils/cli/commands/bouillotteCommands';
 import { formatBouillotteState } from '../utils/cli/formatters/bouillotteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -122,6 +123,10 @@ function BouillottePageContent() {
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanIdx = state.players.findIndex((p) => p.isHuman);
+
+  // Which of the human's cards share the retourne's rank, and any combo it completes.
+  const retourneMatch = analyzeRetourneMatch(humanPlayer?.cards ?? [], state.retourne);
+  const matchingSet = new Set(retourneMatch.matchingIndices);
 
   const isBettingPhase = state.phase === BouillottePhase.BETTING;
   const isResultPhase = state.phase === BouillottePhase.RESULT;
@@ -226,7 +231,12 @@ function BouillottePageContent() {
             {state.retourne && (
               <div className="mb-2 flex flex-col items-center">
                 <div className="text-ds-text-muted text-xs mb-0.5">{t('retourneLabel')}</div>
-                <CardImage card={state.retourne} width={cardWidth} />
+                <span
+                  data-testid="retourne-card"
+                  className={matchingSet.size > 0 ? 'inline-block rounded-md ring-2 ring-ds-accent' : 'inline-block'}
+                >
+                  <CardImage card={state.retourne} width={cardWidth} />
+                </span>
               </div>
             )}
 
@@ -307,9 +317,20 @@ function BouillottePageContent() {
                 </div>
                 <div className="flex gap-1">
                   {humanPlayer.cards.map((c, i) => (
-                    <CardImage key={`human-${i}`} card={c} width={cardWidth} />
+                    <span
+                      key={`human-${i}`}
+                      data-testid={`hand-card-${i}`}
+                      className={matchingSet.has(i) ? 'inline-block rounded-md ring-2 ring-ds-accent' : 'inline-block'}
+                    >
+                      <CardImage card={c} width={cardWidth} />
+                    </span>
                   ))}
                 </div>
+                {retourneMatch.noteKey && (
+                  <div className="mt-1 text-xs font-semibold text-ds-accent" data-testid="retourne-note">
+                    {t(`retourneNote.${retourneMatch.noteKey}`)}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-ds-text-muted text-sm mb-2" data-tutorial="bouillotte-hand">
