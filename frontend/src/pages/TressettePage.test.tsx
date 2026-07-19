@@ -112,6 +112,37 @@ describe('TressettePage', () => {
     expect(team1.querySelectorAll('.bg-ds-accent')).toHaveLength(0);
   });
 
+  it('shows the empty previous-trick message at the start of a round', async () => {
+    mockExec.mockResolvedValue(makeTressetteState({ lastTrick: [], lastTrickWinner: -1 }));
+    renderWithProviders(<TressettePage />);
+
+    const viewer = await screen.findByTestId('tr-previous-trick');
+    expect(viewer).toHaveTextContent('前のトリック');
+    expect(viewer).toHaveTextContent('このラウンドにはまだ前のトリックがありません');
+  });
+
+  it('renders the previous trick cards and winner once a trick has resolved', async () => {
+    mockExec.mockResolvedValue(
+      makeTressetteState({
+        trickNumber: 2,
+        lastTrick: [
+          { playerIdx: 1, card: { design: 'SPADE', value: 3 } },
+          { playerIdx: 2, card: { design: 'SPADE', value: 1 } },
+          { playerIdx: 3, card: { design: 'SPADE', value: 5 } },
+          { playerIdx: 0, card: { design: 'SPADE', value: 7 } },
+        ],
+        lastTrickWinner: 2,
+      }),
+    );
+    renderWithProviders(<TressettePage />);
+
+    const viewer = await screen.findByTestId('tr-previous-trick');
+    // Winner label is rendered from the previousTrickWinner i18n key.
+    expect(viewer).toHaveTextContent('が獲得');
+    // The winning card carries the WIN badge.
+    expect(viewer.querySelector('[data-testid="trick-winner-badge"]')).not.toBeNull();
+  });
+
   it('renders a collapsible card-point legend with the scoring values', async () => {
     mockExec.mockResolvedValue(makeTressetteState());
     renderWithProviders(<TressettePage />);

@@ -53,6 +53,8 @@ type TressetteWebOutput struct {
 	TrickNumber      int                            `json:"trickNumber"`
 	CurrentPlayerIdx int                            `json:"currentPlayerIdx"`
 	CurrentTrick     []*TressetteWebOutputTrickCard `json:"currentTrick"`
+	LastTrick        []*TressetteWebOutputTrickCard `json:"lastTrick"`
+	LastTrickWinner  int                            `json:"lastTrickWinner"`
 	LeadPlayerIdx    int                            `json:"leadPlayerIdx"`
 	TeamScores       []int                          `json:"teamScores"`
 	TeamRoundThirds  []int                          `json:"teamRoundThirds"`
@@ -96,6 +98,8 @@ func newTressetteDefaultOutput(msg string) *TressetteWebOutput {
 	return &TressetteWebOutput{
 		Players:         make([]*TressetteWebOutputPlayer, 0),
 		CurrentTrick:    make([]*TressetteWebOutputTrickCard, 0),
+		LastTrick:       make([]*TressetteWebOutputTrickCard, 0),
+		LastTrickWinner: -1,
 		TeamScores:      make([]int, 0),
 		TeamRoundThirds: make([]int, 0),
 		PlayableIndices: make([]int, 0),

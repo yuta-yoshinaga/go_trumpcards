@@ -44,8 +44,55 @@ func (p *TressetteWebPresenter) buildBase(g interfaces.TressetteGame) *controlle
 	}
 
 	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.LastTrick, resObj.LastTrickWinner = p.buildLastTrickOutput(g)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
+}
+
+// buildLastTrickOutput は直前に解決されたトリック（誰が何を出し誰が取ったか）を
+// アクションログから再構築する。ドメインは専用の lastTrick フィールドを持たないが、
+// 各トリックの "play" ログ（プレイヤーと札）と "trick_win" ログ（勝者）から
+// 現ラウンドの直近トリックを復元できる。ラウンド開始直後（プレイフェーズのトリック 1
+// で、この局のトリックがまだ確定していない）は空スライスと -1 を返す。
+func (p *TressetteWebPresenter) buildLastTrickOutput(g interfaces.TressetteGame) ([]*controller.TressetteWebOutputTrickCard, int) {
+	empty := make([]*controller.TressetteWebOutputTrickCard, 0)
+	// ラウンド最初のトリックがプレイ中は、この局に確定済みトリックが無いため空を返す。
+	if g.GetPhase() == domain.TressettePhasePlay && g.GetTrickNumber() <= 1 {
+		return empty, -1
+	}
+
+	log := g.GetActionLog()
+	winIdx := -1
+	for i := len(log) - 1; i >= 0; i-- {
+		if log[i] != nil && log[i].ActionType == "trick_win" {
+			winIdx = i
+			break
+		}
+	}
+	if winIdx < 0 {
+		return empty, -1
+	}
+
+	// trick_win 直前の "play" ログ（プレイ順）が、そのトリックの各札に対応する。
+	var plays []*domain.ActionLogEntry
+	for i := 0; i < winIdx; i++ {
+		if e := log[i]; e != nil && e.ActionType == "play" && len(e.Cards) > 0 {
+			plays = append(plays, e)
+		}
+	}
+	if len(plays) < domain.TressettePlayerCnt {
+		return empty, -1
+	}
+	plays = plays[len(plays)-domain.TressettePlayerCnt:]
+
+	out := make([]*controller.TressetteWebOutputTrickCard, 0, len(plays))
+	for _, e := range plays {
+		out = append(out, &controller.TressetteWebOutputTrickCard{
+			PlayerIdx: e.PlayerIdx,
+			Card:      cardToOutput(e.Cards[0]),
+		})
+	}
+	return out, log[winIdx].PlayerIdx
 }
 
 // playableIndices 人間プレイヤーがプレイできるカードのインデックスを返す

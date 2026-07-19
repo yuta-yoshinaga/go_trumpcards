@@ -149,6 +149,57 @@ func TestTressetteWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestTressetteWebPresenter_LastTrick(t *testing.T) {
+	p := new(presenter.TressetteWebPresenter)
+
+	// resolvedTrickLog returns an action log for one fully-resolved trick:
+	// four play entries (players 1,2,3,0) followed by the trick_win entry (winner 2).
+	resolvedTrickLog := func() []*domain.ActionLogEntry {
+		mk := func(pi, design, value int, at string) *domain.ActionLogEntry {
+			return &domain.ActionLogEntry{
+				PlayerIdx:  pi,
+				ActionType: at,
+				Cards:      []*domain.Card{domain.NewCard(design, value, false)},
+			}
+		}
+		return []*domain.ActionLogEntry{
+			mk(1, domain.CardDesignSpade, 3, "play"),
+			mk(2, domain.CardDesignSpade, 1, "play"),
+			mk(3, domain.CardDesignSpade, 5, "play"),
+			mk(0, domain.CardDesignSpade, 7, "play"),
+			{PlayerIdx: 2, ActionType: "trick_win"},
+		}
+	}
+
+	t.Run("round start (play phase, trick 1) has empty last trick", func(t *testing.T) {
+		m, _ := setupTressetteWebMockWithPlayers()
+		result := p.Output(m, nil)
+		var resObj controller.TressetteWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.LastTrick)
+		assert.Equal(t, -1, resObj.LastTrickWinner)
+	})
+
+	t.Run("populated from action log during next trick", func(t *testing.T) {
+		m, _ := setupTressetteWebMockWithPlayers()
+		// Playing trick 2 now, so the resolved trick 1 is the last trick.
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrickNumber")
+		m.On("GetTrickNumber").Return(2)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+		m.On("GetActionLog").Return(resolvedTrickLog())
+
+		result := p.Output(m, nil)
+		var resObj controller.TressetteWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Len(t, resObj.LastTrick, 4)
+		assert.Equal(t, 2, resObj.LastTrickWinner)
+		// Order and player mapping preserved from the play log.
+		assert.Equal(t, 1, resObj.LastTrick[0].PlayerIdx)
+		assert.Equal(t, 3, resObj.LastTrick[0].Card.Value)
+		assert.Equal(t, 0, resObj.LastTrick[3].PlayerIdx)
+	})
+}
+
 func TestTressetteWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.TressetteWebPresenter)
 

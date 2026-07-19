@@ -240,6 +240,35 @@ function TressettePageContent() {
                   label={t('currentTrick')}
                   dataTutorial="tr-trick-display"
                 />
+
+                {/* Previous trick reviewer: lets the player recount the just-completed trick */}
+                <details className="mb-2 p-2 rounded bg-black/30" data-testid="tr-previous-trick">
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('previousTrick')}
+                  </summary>
+                  <div className="mt-1">
+                    {state.lastTrick.length > 0 ? (
+                      <TrickDisplay
+                        currentTrick={state.lastTrick}
+                        players={state.players}
+                        cardWidth={Math.round(cardWidth * 0.7)}
+                        label={
+                          state.lastTrickWinner >= 0
+                            ? t('previousTrickWinner', {
+                                name: playerName(
+                                  state.lastTrickWinner,
+                                  state.players[state.lastTrickWinner]?.isHuman === true,
+                                ),
+                              })
+                            : t('previousTrick')
+                        }
+                        winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                      />
+                    ) : (
+                      <div className="text-ds-text-muted text-sm">{t('previousTrickEmpty')}</div>
+                    )}
+                  </div>
+                </details>
               </div>
 
               {/* Right: info sidebar */}
