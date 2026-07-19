@@ -161,6 +161,11 @@ function FiveCardStudPageContent() {
   // Door cards revealed so far: Second Street shows 1, then +1 each street up to 4 on Fifth Street.
   const doorCount = Math.min(Math.max(phase - FiveCardStudPhase.SECOND_STREET + 1, 1), 4);
 
+  // Celebrate only when the human wins the pot (positive wonAmount at showdown), not on a fold/loss.
+  const humanWon =
+    phase === FiveCardStudPhase.END &&
+    (state?.roundResults?.some((r) => r.playerIdx === humanIdx && r.wonAmount > 0) ?? false);
+
   const actionBindings = useMemo(
     () => [
       { key: 'c', action: () => execApi('call', undefined, undefined, getElapsed()), enabled: hasOutstandingBet },
@@ -199,7 +204,7 @@ function FiveCardStudPageContent() {
       isHumanTurn={canAct}
       gamePath="/fivecardstud"
       gameEndFlag={phase === FiveCardStudPhase.SHOWDOWN || phase === FiveCardStudPhase.END}
-      winShow={phase === FiveCardStudPhase.END}
+      winShow={humanWon}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}

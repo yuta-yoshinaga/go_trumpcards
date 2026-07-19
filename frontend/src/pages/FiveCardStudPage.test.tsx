@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fiveCardStudApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -137,6 +137,35 @@ const showdownState: FiveCardStudResponse = {
   dealerIdx: 2,
   currentTurn: -1,
   phase: 5,
+  roundResults: [
+    { playerIdx: 0, handRank: 1, handName: 'ワンペア', kickers: 'A', bestHand: [], wonAmount: 0, mucked: false },
+    { playerIdx: 1, handRank: 2, handName: 'ツーペア', kickers: '8', bestHand: [], wonAmount: 200, mucked: false },
+  ],
+  message: 'CPU 1 の勝ち',
+};
+
+/** END (phase 6) where the human takes the pot (positive wonAmount). */
+const endHumanWinState: FiveCardStudResponse = {
+  ...showdownState,
+  phase: 6,
+  gameEndFlag: true,
+  players: [
+    humanPlayer({ handName: 'ツーペア', chips: 1200 }),
+    cpuPlayer(1, { handName: 'ワンペア', holeCards: [{ design: 'SPADE', value: 5 }] }),
+    cpuPlayer(2, { folded: true }),
+  ],
+  roundResults: [
+    { playerIdx: 0, handRank: 2, handName: 'ツーペア', kickers: 'A', bestHand: [], wonAmount: 200, mucked: false },
+    { playerIdx: 1, handRank: 1, handName: 'ワンペア', kickers: '5', bestHand: [], wonAmount: 0, mucked: false },
+  ],
+  message: 'あなたの勝ち',
+};
+
+/** END (phase 6) where a CPU wins and the human gets nothing. */
+const endHumanLossState: FiveCardStudResponse = {
+  ...showdownState,
+  phase: 6,
+  gameEndFlag: true,
   roundResults: [
     { playerIdx: 0, handRank: 1, handName: 'ワンペア', kickers: 'A', bestHand: [], wonAmount: 0, mucked: false },
     { playerIdx: 1, handRank: 2, handName: 'ツーペア', kickers: '8', bestHand: [], wonAmount: 200, mucked: false },
@@ -335,5 +364,20 @@ describe('FiveCardStudPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true }));
+  });
+
+  it('plays the win celebration when the human wins the pot', async () => {
+    mockExec.mockResolvedValue(endHumanWinState);
+    renderWithProviders(<FiveCardStudPage />);
+    expect(await screen.findByTestId('win-celebration')).toBeInTheDocument();
+  });
+
+  it('does not celebrate when the human loses the hand', async () => {
+    mockExec.mockResolvedValue(endHumanLossState);
+    renderWithProviders(<FiveCardStudPage />);
+    await waitFor(() => expect(screen.queryByTestId('skeleton')).not.toBeInTheDocument());
+    // Outwait the celebration's 400ms delay so a wrongly-fired overlay would be visible.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 600)));
+    expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
   });
 });
