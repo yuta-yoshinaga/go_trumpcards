@@ -111,6 +111,22 @@ describe('SuecaPage', () => {
     await waitFor(() => expect(screen.getByTestId('sueca-trick-winner')).toHaveTextContent('チームB がトリック獲得'));
   });
 
+  it('shows the live captured card points against the 61 win line during play', async () => {
+    mockExec.mockResolvedValue(makeSuecaState({ roundCardPoints: [45, 20] }));
+    renderWithProviders(<SuecaPage />);
+    const panel = await screen.findByTestId('sueca-round-points');
+    expect(panel).toHaveTextContent('チームA: 45 / 61');
+    expect(panel).toHaveTextContent('チームB: 20 / 61');
+    expect(panel).toHaveAttribute('role', 'status');
+  });
+
+  it('hides the live points panel once the round ends (round result takes over)', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<SuecaPage />);
+    await waitFor(() => expect(screen.getByText('ラウンド結果')).toBeInTheDocument());
+    expect(screen.queryByTestId('sueca-round-points')).not.toBeInTheDocument();
+  });
+
   it('renders round end with the next round button and the round result', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<SuecaPage />);

@@ -32,6 +32,9 @@ import { formatSuecaState } from '../utils/cli/formatters/suecaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
+/** Card points needed to win a Sueca round (majority of the 120 total). */
+const SUECA_WIN_POINTS = 61;
+
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 /** Suit id → `suitName.*` i18n key (1=♠ .. 4=♦). */
@@ -264,6 +267,34 @@ function SuecaPageContent() {
                         {t('tricks', { count: p.trickCount })}
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* Live captured card points during play; the round-result block
+                    below takes over once the round ends. Progress is shown against
+                    the 61-point round-win line. */}
+                {!(isRoundEnd || isGameEnd) && (
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    role="status"
+                    aria-live="polite"
+                    data-testid="sueca-round-points"
+                  >
+                    <div className="mb-1 text-ds-text-primary">{t('livePoints.title')}</div>
+                    <div>
+                      {t('livePoints.team', {
+                        team: t('team.a'),
+                        points: state.roundCardPoints[0] ?? 0,
+                        target: SUECA_WIN_POINTS,
+                      })}
+                    </div>
+                    <div>
+                      {t('livePoints.team', {
+                        team: t('team.b'),
+                        points: state.roundCardPoints[1] ?? 0,
+                        target: SUECA_WIN_POINTS,
+                      })}
+                    </div>
                   </div>
                 )}
 
