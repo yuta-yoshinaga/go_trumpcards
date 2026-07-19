@@ -36,6 +36,7 @@ import { parseScartoCommand, SCARTO_HELP } from '../utils/cli/commands/scartoCom
 import { formatScartoState } from '../utils/cli/formatters/scartoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { scartoUndiscardableReason } from '../utils/scartoDiscard';
 
 /** Scarto tutorial step definitions. */
 const SCARTO_TUTORIAL_STEPS: TutorialStep[] = [
@@ -177,6 +178,17 @@ function ScartoPageContent() {
       : undefined;
 
   const handValidIndices = canPlay ? state.playableIndices : canScarto ? discardableIndices : undefined;
+
+  // During the scarto, explain per-card why an un-buriable card cannot be
+  // discarded (trump / Excuse / bout / counting card) via the card tooltip.
+  // Purely additive — it never blocks selection; the backend still rejects
+  // illegal discards.
+  const scartoTitleFor = (idx: number): string | undefined => {
+    const card = humanPlayer?.cards[idx];
+    if (!card) return undefined;
+    const reason = scartoUndiscardableReason(card);
+    return reason ? t(`scartoUndiscardable.${reason}`) : undefined;
+  };
 
   const handleManualReset = () => {
     hideActionLog();
@@ -373,6 +385,7 @@ function ScartoPageContent() {
                 dataTutorialPrefix="scarto"
                 validIndices={handValidIndices}
                 restrictedTooltip={canScarto ? t('scartoRestricted') : t('playButton')}
+                cardTitleFor={canScarto ? scartoTitleFor : undefined}
               />
             )}
 

@@ -164,6 +164,27 @@ describe('ScartoPage', () => {
     expect(screen.getByRole('button', { name: 'Excuse ★' })).toHaveAttribute('aria-disabled', 'true');
   });
 
+  it('surfaces distinct un-buriable reasons for the King and the Excuse in the scarto phase', async () => {
+    mockExec.mockResolvedValue(scartoPhaseState);
+    renderWithProviders(<ScartoPage />);
+    await screen.findByTestId('scarto-discard-prompt');
+    // The King (counting card) exposes the court-specific reason on its tooltip.
+    const kingBtn = screen.getByRole('button', { name: 'R ♠' });
+    expect(kingBtn).toHaveAttribute('title', '得点札（K・コート札）は捨てられません。');
+    // The Excuse exposes a different, excuse-specific reason.
+    const excuseBtn = screen.getByRole('button', { name: 'Excuse ★' });
+    expect(excuseBtn).toHaveAttribute('title', 'エクスキューズ（マット）は捨てられません。');
+    // The two reasons differ.
+    expect(kingBtn.getAttribute('title')).not.toBe(excuseBtn.getAttribute('title'));
+  });
+
+  it('shows no un-buriable tooltip on a freely buriable low pip in the scarto phase', async () => {
+    mockExec.mockResolvedValue(scartoPhaseState);
+    renderWithProviders(<ScartoPage />);
+    await screen.findByTestId('scarto-discard-prompt');
+    expect(screen.getByRole('button', { name: '2 ♥' })).not.toHaveAttribute('title');
+  });
+
   it('keeps the bury button disabled until exactly 3 cards are chosen', async () => {
     mockExec.mockResolvedValue(scartoPhaseState);
     renderWithProviders(<ScartoPage />);
