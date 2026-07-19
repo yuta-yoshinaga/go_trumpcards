@@ -95,6 +95,30 @@ describe('WattenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declare', 13, 3));
   });
 
+  it('previews the top-trump panel with the permanent trumps in the declare phase', async () => {
+    mockExec.mockResolvedValue(declarePhaseState);
+    renderWithProviders(<WattenPage />);
+    // Panel + rule explanation render.
+    await waitFor(() => expect(screen.getByTestId('watten-trump-panel')).toBeInTheDocument());
+    expect(screen.getByText('強札プレビュー')).toBeInTheDocument();
+    // Base hand (♥K, ♦7, ♠A): Max + Spitz are permanent trumps → count 2 before any pick.
+    expect(screen.getByTestId('watten-trump-count')).toHaveTextContent('あなたの強札: 2枚');
+    // The permanent trumps are ringed in the hand.
+    expect(screen.getByRole('button', { name: '♥ K' })).toHaveAttribute('data-trump', 'true');
+  });
+
+  it('updates the top-trump preview and hand ring when a Schlag rank is picked', async () => {
+    mockExec.mockResolvedValue(declarePhaseState);
+    renderWithProviders(<WattenPage />);
+    await waitFor(() => expect(screen.getByTestId('watten-trump-count')).toHaveTextContent('2枚'));
+    // ♠A is plain until Schlag = A is chosen.
+    expect(screen.getByRole('button', { name: '♠ A' })).not.toHaveAttribute('data-trump');
+    fireEvent.click(screen.getByRole('button', { name: 'A' }));
+    // ♠A now becomes a Schlag trump → count rises to 3 and the card is ringed.
+    expect(screen.getByTestId('watten-trump-count')).toHaveTextContent('あなたの強札: 3枚');
+    expect(screen.getByRole('button', { name: '♠ A' })).toHaveAttribute('data-trump', 'true');
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<WattenPage />);
     const card = await screen.findByAltText('♥ K');
