@@ -264,6 +264,20 @@ function SedmaPageContent() {
                   <div className="mb-2 p-2 rounded bg-black/30">{state.players.map(renderPlayerRow)}</div>
                 )}
 
+                {/* Live captured card points during play (A and 10 = 10 pts each, +10
+                    last-trick bonus); the round-result block below takes over at round end. */}
+                {!(isRoundEnd || isGameEnd) && (
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="sedma-round-points"
+                    role="status"
+                  >
+                    <div className="mb-1 text-ds-text-primary">{t('roundPointsTitle')}</div>
+                    <div>{t('roundResult.teamA', { points: state.roundCardPoints[0] ?? 0 })}</div>
+                    <div>{t('roundResult.teamB', { points: state.roundCardPoints[1] ?? 0 })}</div>
+                  </div>
+                )}
+
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">

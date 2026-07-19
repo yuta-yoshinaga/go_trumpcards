@@ -30,6 +30,7 @@
   "playButton": "Play",
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
+  "roundPointsTitle": "Card points captured (this round)",
   "roundResult": {
     "title": "Round Result",
     "teamA": "Team A card points: {{points}}",
