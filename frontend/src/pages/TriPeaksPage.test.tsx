@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, tripeaksApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { TRIPEAKS_STATS_KEY } from '../hooks/useTriPeaksStats';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, TriPeaksCard, TriPeaksResponse } from '../types/card';
 import { computePeakRemaining, TriPeaksPage } from './TriPeaksPage';
@@ -374,6 +375,52 @@ describe('TriPeaksPage', () => {
 
     await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('cardPlace'));
     expect(mockPlaySound.mock.calls.filter((c) => c[0] === 'cardPlace')).toHaveLength(1);
+  });
+});
+
+describe('TriPeaksPage chain-bonus score & best record (#3087)', () => {
+  it('displays the score, starting at 0', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByTestId('tp-score')).toBeInTheDocument());
+    expect(screen.getByTestId('tp-score')).toHaveTextContent('0');
+  });
+
+  it('adds chain-bonus points after removing a card', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
+    // Removing a card (moveCount rises, stock unchanged) scores 1 × 100.
+    mockExec.mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    fireEvent.click(screen.getByLabelText('♠ 5'));
+    await waitFor(() => expect(screen.getByTestId('tp-score')).toHaveTextContent('100'));
+  });
+
+  it('shows a previously stored best score in the record panel', async () => {
+    localStorage.setItem(TRIPEAKS_STATS_KEY, JSON.stringify({ plays: 5, wins: 2, bestScore: 1200 }));
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByTestId('tp-stats-panel')).toBeInTheDocument());
+    expect(screen.getByTestId('tp-stats-panel')).toHaveTextContent('1200');
+    expect(screen.getByTestId('tp-stats-panel')).toHaveTextContent('2/5');
+  });
+
+  it('records a new best score on game clear and persists it', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
+    // The clearing move both scores 100 and ends the game.
+    mockExec.mockResolvedValueOnce({
+      ...playingState,
+      moveCount: 4,
+      phase: 1,
+      messageCode: 'tripeaks.gameClear',
+      messageParams: { moveCount: '4' },
+    });
+    fireEvent.click(screen.getByLabelText('♠ 5'));
+    await waitFor(() => expect(screen.getByTestId('tp-best-badge')).toBeInTheDocument());
+    expect(JSON.parse(localStorage.getItem(TRIPEAKS_STATS_KEY) ?? '{}')).toEqual({
+      plays: 1,
+      wins: 1,
+      bestScore: 100,
+    });
+    expect(screen.getByTestId('tp-stats-panel')).toHaveTextContent('100');
   });
 });
 

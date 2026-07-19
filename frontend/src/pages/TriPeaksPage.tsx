@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { tripeaksApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -24,6 +24,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useTriPeaksGame } from '../hooks/useTriPeaksGame';
+import { useTriPeaksScore } from '../hooks/useTriPeaksScore';
+import { useTriPeaksStats } from '../hooks/useTriPeaksStats';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -216,6 +218,27 @@ function TriPeaksPageContent() {
     prevPeakRemaining.current = peakRemaining;
   }, [peakRemaining, isPlayingForPeaks, playSound]);
 
+  // Chain-bonus score, derived on the frontend from board transitions (issue #3087).
+  const peaksCleared = useMemo(() => peakRemaining.filter((n) => n === 0).length, [peakRemaining]);
+  const { score } = useTriPeaksScore(state?.moveCount, state?.stockCount, peaksCleared);
+
+  // Best-record persistence in localStorage (issue #3087).
+  const { stats, recordResult } = useTriPeaksStats();
+  const [newBest, setNewBest] = useState(false);
+  // Guard so each finished game is recorded exactly once (phase stays ended across re-renders).
+  const recordedRef = useRef(false);
+  const endPhase = state?.phase;
+  useEffect(() => {
+    const ended = endPhase === TriPeaksPhase.GAME_CLEAR || endPhase === TriPeaksPhase.GAME_OVER;
+    if (!ended) {
+      recordedRef.current = false;
+      return;
+    }
+    if (recordedRef.current) return;
+    recordedRef.current = true;
+    setNewBest(recordResult({ won: endPhase === TriPeaksPhase.GAME_CLEAR, score }));
+  }, [endPhase, score, recordResult]);
+
   if (!state)
     return <GameSkeleton gameKey="tripeaks" layout={{ kind: 'tiered-rows', rows: [3, 6, 9, 10], stockWaste: true }} />;
 
@@ -257,6 +280,9 @@ function TriPeaksPageContent() {
         <>
           <span>
             {t('moveCount')}: {state.moveCount}
+          </span>
+          <span data-testid="tp-score">
+            {t('score')}: <span className="font-bold tabular-nums">{score}</span>
           </span>
           {isPlaying && (
             <span data-testid="peak-remaining" className="flex items-center gap-1 text-xs">
@@ -413,6 +439,28 @@ function TriPeaksPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {/* New personal-best badge on the end screen (#3087). */}
+            {isEnded && newBest && (
+              <div
+                data-testid="tp-best-badge"
+                role="status"
+                className="text-center text-ds-success font-semibold text-sm mb-2"
+              >
+                {t('newBest', { score })}
+              </div>
+            )}
+
+            {/* Best-record panel: highest score + clear rate (#3087). */}
+            <div data-testid="tp-stats-panel" className="text-game-text-muted text-xs text-center mb-2">
+              {t('bestScore')}: {stats.bestScore ?? '—'}
+              {stats.plays > 0 && (
+                <>
+                  {' · '}
+                  {t('clears', { wins: stats.wins, plays: stats.plays })}
+                </>
+              )}
+            </div>
 
             <ActionLogSection
               isEndPhase={isEnded}
