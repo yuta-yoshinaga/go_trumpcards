@@ -19,6 +19,7 @@ import type { Card } from '../types/card';
 import { SimpleSimonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { simpleSimonAutoMoveTarget } from '../utils/simpleSimonAutoMoveTarget';
 import { isGrabbable, movableFromIndex } from '../utils/simpleSimonRun';
 
 /** Simple Simon tutorial step definitions. */
@@ -60,16 +61,20 @@ function SimpleSimonPageContent() {
     useGamePageSetup('simplesimon');
   const { state, loading, error, exec, retry } = useGameApi(simplesimonApi.exec);
   const [selected, setSelected] = useState<Selection | null>(null);
+  // Transient notice shown when a double-click auto-move finds no destination.
+  const [autoMoveNotice, setAutoMoveNotice] = useState<string | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useEffect(() => {
     exec('reset');
   }, []);
 
-  // Clear a stale selection whenever the board changes (move, undo).
+  // Clear a stale selection and any auto-move notice whenever the board changes
+  // (move, undo).
   // biome-ignore lint/correctness/useExhaustiveDependencies: deps are the change-trigger, not read in the body.
   useEffect(() => {
     setSelected(null);
+    setAutoMoveNotice(null);
   }, [state?.moveCount]);
 
   const phaseNames = usePhaseNames('simplesimon', SS_PHASE_KEYS);
@@ -87,6 +92,23 @@ function SimpleSimonPageContent() {
     hideActionLog();
     setSelected(null);
     exec('reset');
+  };
+
+  // Double-click a grabbable run: auto-move it to the best legal destination
+  // (same-suit link > rank-only link > empty column). If none exists, deselect
+  // and show a notice. Single-click selection is preserved via the e.detail
+  // guard in the card's onClick.
+  const autoMoveCard = (col: number, idx: number) => {
+    if (!canAct || !isGrabbable(state.columns[col], idx)) return;
+    const toCol = simpleSimonAutoMoveTarget(state.columns, col, idx);
+    if (toCol === null) {
+      setSelected(null);
+      setAutoMoveNotice(t('noAutoMove'));
+      return;
+    }
+    setAutoMoveNotice(null);
+    exec('m', { fromCol: col, cardIndex: idx, toCol });
+    setSelected(null);
   };
 
   // Click a card: select it as the source, or — if a source in another column is
@@ -149,7 +171,18 @@ function SimpleSimonPageContent() {
                 key={`col-${col}-${i}`}
                 className={`rounded ${ring} ${clickable ? '' : 'cursor-not-allowed'}`}
                 style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
-                onClick={canAct ? () => clickCard(col, i) : undefined}
+                onClick={
+                  canAct
+                    ? (e) => {
+                        // The 2nd click of a double-click also fires onClick
+                        // (detail === 2); ignore it so onDoubleClick owns the
+                        // auto-move and single-click selection is preserved.
+                        if (e.detail >= 2) return;
+                        clickCard(col, i);
+                      }
+                    : undefined
+                }
+                onDoubleClick={canAct && grabbable ? () => autoMoveCard(col, i) : undefined}
                 disabled={!canAct || !clickable}
                 data-testid={`card-${col}-${i}`}
                 data-grabbable={grabbable}
@@ -188,6 +221,11 @@ function SimpleSimonPageContent() {
         {canAct && (
           <div className="mt-2 text-ds-text-primary text-xs" role="status" data-testid="ss-guidance">
             {selected === null ? t('selectSource') : t('selectDestination')}
+          </div>
+        )}
+        {canAct && autoMoveNotice && (
+          <div className="mt-1 text-ds-text-muted text-xs" role="status" data-testid="ss-automove-notice">
+            {autoMoveNotice}
           </div>
         )}
 
