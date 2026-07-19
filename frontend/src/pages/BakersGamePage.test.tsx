@@ -87,17 +87,24 @@ describe('BakersGamePage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
   });
 
-  it('renders empty tableau columns with K placeholder', async () => {
+  it('renders empty tableau columns with a neutral any-card placeholder, not a King-only "K"', async () => {
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
-    const kElements = screen.getAllByText('K');
-    expect(kElements.length).toBeGreaterThanOrEqual(1);
+    // Baker's Game empty columns accept ANY card, so the placeholder must not
+    // suggest a King-only rule (the old "K" label borrowed from Klondike).
+    const anyElements = screen.getAllByText('任意');
+    expect(anyElements.length).toBeGreaterThanOrEqual(1);
+    const placeholderButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
+    expect(placeholderButtons).toHaveLength(0);
   });
 
   it('labels empty tableau columns for screen readers', async () => {
     renderWithProviders(<BakersGamePage />);
-    // playingState columns 2-7 are empty → each empty-column button is labelled.
-    await waitFor(() => expect(screen.getByLabelText('空のタブロー列 2（カードの移動先）')).toBeInTheDocument());
+    // playingState columns 2-7 are empty → each empty-column button is labelled
+    // to convey that any card may be placed.
+    await waitFor(() =>
+      expect(screen.getByLabelText('空のタブロー列 2（任意のカードを置けます）')).toBeInTheDocument(),
+    );
   });
 
   // --- Foundation ---
@@ -300,10 +307,10 @@ describe('BakersGamePage', () => {
     fireEvent.click(cardButton);
     await waitFor(() => expect(cardButton.className).toContain('ring-2'));
 
-    // Click empty tableau column (K placeholder)
+    // Click empty tableau column (any-card placeholder)
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
-    const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
+    const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '任意');
     if (kButtons.length > 0) {
       fireEvent.click(kButtons[0]);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
@@ -589,7 +596,7 @@ describe('BakersGamePage', () => {
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
+    const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '任意');
     for (const btn of kButtons) {
       expect(btn).toBeDisabled();
     }
@@ -835,8 +842,8 @@ describe('BakersGamePage', () => {
       const dataTransfer = buildDataTransfer();
       fireEvent.dragStart(sourceButton, { dataTransfer });
 
-      // Find an empty tableau column (K placeholder)
-      const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
+      // Find an empty tableau column (any-card placeholder)
+      const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '任意');
       expect(kButtons.length).toBeGreaterThan(0);
       const dropZone = kButtons[0].closest('div');
       mockExec.mockClear();
