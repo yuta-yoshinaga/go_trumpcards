@@ -38,6 +38,10 @@
   "partnerBadge": "パートナー",
   "calledKing": "呼ばれた王: {{suit}}",
   "partnerRevealed": "パートナー: {{name}}",
+  "partnerClue": {
+    "unknown": "{{suit}}の王を持つプレイヤーが宣言者の秘密のパートナー（まだ不明）",
+    "youArePartner": "あなたがその王を持っています — あなたが宣言者の秘密のパートナーです"
+  },
   "bidPass": "パス",
   "bidRufer": "ルーファー",
   "bidPhase": "オークション — ルーファー（王呼び）を宣言するか、パスします。",
