@@ -1,7 +1,7 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { anacondaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardImage } from '../components/CardImage';
+import { CardBack, CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -76,6 +76,9 @@ const ANACONDA_PHASE_KEYS: Readonly<Record<number, string>> = {
 /** Number of cards a player keeps at the Set phase. */
 const KEEP_SIZE = 5;
 
+/** Milliseconds between successive card emphases during the staged Roll reveal. */
+const ROLL_REVEAL_STEP_MS = 450;
+
 /** Renders the Anaconda (Pass the Trash) game page: a multi-phase poker pot game. */
 export const AnacondaPage = withTutorial(AnacondaPageContent, 'anaconda', ANACONDA_TUTORIAL_STEPS);
 
@@ -127,6 +130,34 @@ function AnacondaPageContent() {
   } = useGameHint('anaconda', state);
   const { cardWidth } = useCardDimensions();
   const phaseNames = usePhaseNames('anaconda', ANACONDA_PHASE_KEYS);
+
+  // Staged Roll reveal: during the showdown "roll" phase, sweep an emphasis ring
+  // across the exposed cards one at a time so the reveal progression is visible,
+  // finishing on the most recently revealed card. Present-state only (no server
+  // round-trip); reduced-motion users jump straight to the final emphasis.
+  const isRollReveal = state?.phase === AnacondaPhase.ROLL;
+  const rollIndex = state?.rollIndex ?? 0;
+  const [revealStep, setRevealStep] = useState(0);
+  useEffect(() => {
+    if (!isRollReveal || rollIndex <= 0) {
+      setRevealStep(0);
+      return;
+    }
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setRevealStep(rollIndex);
+      return;
+    }
+    setRevealStep(0);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    for (let step = 1; step <= rollIndex; step++) {
+      timers.push(setTimeout(() => setRevealStep(step), step * ROLL_REVEAL_STEP_MS));
+    }
+    return () => {
+      for (const timer of timers) clearTimeout(timer);
+    };
+  }, [isRollReveal, rollIndex]);
+  // Slot index of the card currently emphasized by the staged sweep (-1 = none yet).
+  const emphasizedRevealIdx = revealStep - 1;
 
   if (!state)
     return <GameSkeleton gameKey="anaconda" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
@@ -315,8 +346,45 @@ function AnacondaPageContent() {
               ))}
             </div>
 
-            {/* Revealed CPU hands during Roll / at Result */}
-            {(isRollPhase || isResultPhase) && (
+            {/* Revealed CPU hands during Roll: staged one-at-a-time emphasis with
+                face-down placeholders for the not-yet-exposed slots. */}
+            {isRollPhase && (
+              <div className="mb-2 p-2 rounded bg-black/30">
+                {state.players
+                  .filter((p) => !p.isHuman && !p.out && !p.folded)
+                  .map((p) => (
+                    <div key={p.id} className="mb-1">
+                      <div className="text-ds-text-muted text-xs mb-0.5">
+                        {playerLabel(p.id, p.isHuman)}
+                        {p.handName ? ` — ${handName(p.handName)}` : ''}
+                      </div>
+                      <div className="flex gap-1" data-testid={`anaconda-roll-${p.id}`}>
+                        {Array.from({ length: KEEP_SIZE }, (_, i) => {
+                          if (i >= p.cards.length) {
+                            return <CardBack key={`ph-${p.id}-${i}`} width={cardWidth} />;
+                          }
+                          const emphasized = i === emphasizedRevealIdx;
+                          return (
+                            <div
+                              key={`${p.id}-${i}`}
+                              data-testid={`anaconda-reveal-${p.id}-${i}`}
+                              data-emphasized={emphasized ? 'true' : undefined}
+                              className={`rounded transition-transform ${
+                                emphasized ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                              }`}
+                            >
+                              <CardImage card={p.cards[i]} width={cardWidth} />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {/* Fully revealed CPU hands at Result. */}
+            {isResultPhase && (
               <div className="mb-2 p-2 rounded bg-black/30">
                 {state.players
                   .filter((p) => !p.isHuman && p.cards.length > 0)
