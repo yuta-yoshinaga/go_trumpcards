@@ -22,6 +22,7 @@ import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BourreResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { isRedSuitDesign, isSuitDesign, suitSymbol } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
@@ -34,6 +35,11 @@ type ApiArgs = {
 };
 
 const BOURRE_PENALTY_WARN_THRESHOLD = 10;
+
+/** Plain-text trump-suit glyph for the CLI formatter: a suit symbol, or '-' when unset. */
+function trumpSuitText(design: string): string {
+  return isSuitDesign(design) ? suitSymbol(design) : '-';
+}
 
 const TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="bourre-hand"]', messageKey: 'tutorial.intro', placement: 'top', advanceOn: 'next' },
@@ -80,7 +86,7 @@ function parseBourreCommand(input: string): CliParseResult<[ApiArgs]> {
 }
 
 function formatBourreState(state: BourreResponse): string {
-  const lines: string[] = [`Phase: ${state.phase}`, `Pot: ${state.pot}  Trump: ${state.trumpSuit}`];
+  const lines: string[] = [`Phase: ${state.phase}`, `Pot: ${state.pot}  Trump: ${trumpSuitText(state.trumpSuit)}`];
   for (const p of state.players) {
     const name = p.isHuman ? 'You' : `CPU ${p.id}`;
     const status = p.isFinished ? 'out' : p.folded ? 'folded' : `${p.tricks} tricks`;
@@ -229,8 +235,15 @@ function BourrePageContent() {
             {t('label.pot')}: {state.pot}
             {state.carryPot > 0 ? ` (+${state.carryPot})` : ''}
           </span>
-          <span className="text-xs opacity-75">
-            {t('label.trump')}: {state.trumpSuit}
+          <span className="text-xs opacity-75" data-testid="bourre-trump">
+            {t('label.trump')}:{' '}
+            {isSuitDesign(state.trumpSuit) ? (
+              <span className={isRedSuitDesign(state.trumpSuit) ? 'text-ds-error' : undefined}>
+                {suitSymbol(state.trumpSuit)}
+              </span>
+            ) : (
+              '-'
+            )}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </div>
