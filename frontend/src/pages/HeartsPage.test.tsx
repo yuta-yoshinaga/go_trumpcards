@@ -79,10 +79,46 @@ describe('HeartsPage', () => {
   it('shows shoot-the-moon alert when one CPU monopolises ≥13 round points', async () => {
     const moonState = makeHeartsState({
       players: [
-        { id: 0, isHuman: true, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
-        { id: 1, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
-        { id: 2, isHuman: false, cardCount: 13, cards: [], roundScore: 14, cumulativeScore: 14, trickCount: 5 },
-        { id: 3, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 13,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 13,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+        {
+          id: 2,
+          isHuman: false,
+          cardCount: 13,
+          cards: [],
+          roundScore: 14,
+          cumulativeScore: 14,
+          trickCount: 5,
+          penaltyCards: [],
+        },
+        {
+          id: 3,
+          isHuman: false,
+          cardCount: 13,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
       ],
     });
     mockExec.mockResolvedValue(moonState);
@@ -104,16 +140,111 @@ describe('HeartsPage', () => {
           roundScore: 0,
           cumulativeScore: 0,
           trickCount: 0,
+          penaltyCards: [],
         },
-        { id: 1, isHuman: false, cardCount: 13, cards: [], roundScore: 8, cumulativeScore: 8, trickCount: 3 },
-        { id: 2, isHuman: false, cardCount: 13, cards: [], roundScore: 8, cumulativeScore: 8, trickCount: 3 },
-        { id: 3, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 13,
+          cards: [],
+          roundScore: 8,
+          cumulativeScore: 8,
+          trickCount: 3,
+          penaltyCards: [],
+        },
+        {
+          id: 2,
+          isHuman: false,
+          cardCount: 13,
+          cards: [],
+          roundScore: 8,
+          cumulativeScore: 8,
+          trickCount: 3,
+          penaltyCards: [],
+        },
+        {
+          id: 3,
+          isHuman: false,
+          cardCount: 13,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
       ],
     });
     mockExec.mockResolvedValue(splitState);
     renderWithProviders(<HeartsPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     expect(screen.queryByTestId('hearts-shoot-the-moon-badge')).not.toBeInTheDocument();
+  });
+
+  it('renders each player captured penalty-card breakdown (hearts count and Q♠)', async () => {
+    const penaltyState = makeHeartsState({
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 10,
+          cards: [{ design: 'SPADE', value: 1 }],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 10,
+          cards: [],
+          roundScore: 15,
+          cumulativeScore: 15,
+          trickCount: 3,
+          penaltyCards: [
+            { design: 'HEART', value: 2 },
+            { design: 'HEART', value: 10 },
+            { design: 'SPADE', value: 12 },
+          ],
+        },
+        {
+          id: 2,
+          isHuman: false,
+          cardCount: 10,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+        {
+          id: 3,
+          isHuman: false,
+          cardCount: 10,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+      ],
+    });
+    mockExec.mockResolvedValue(penaltyState);
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getAllByTestId('hearts-penalty-breakdown').length).toBeGreaterThan(0));
+
+    // CPU 1 took two hearts + the Q♠: its breakdown announces the full summary
+    // to screen readers and shows the "♥×2" and "♠Q" glyphs.
+    const breakdowns = screen.getAllByTestId('hearts-penalty-breakdown');
+    const withPenalties = breakdowns.filter((el) => el.getAttribute('aria-label')?.includes('ハート2枚'));
+    expect(withPenalties.length).toBeGreaterThan(0);
+    expect(withPenalties[0].getAttribute('aria-label')).toContain('スペードのクイーン獲得');
+    expect(screen.getAllByText('♥×2').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('♠Q').length).toBeGreaterThan(0);
+
+    // Players with no penalty cards announce "no penalties".
+    const emptyBreakdowns = breakdowns.filter((el) => el.getAttribute('aria-label')?.includes('ペナルティなし'));
+    expect(emptyBreakdowns.length).toBeGreaterThan(0);
   });
 
   it('renders pass phase with pass button and the recipient name', async () => {
@@ -937,10 +1068,38 @@ describe('HeartsPage', () => {
           roundScore: 0,
           cumulativeScore: 0,
           trickCount: 0,
+          penaltyCards: [],
         },
-        { id: 1, isHuman: false, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
-        { id: 2, isHuman: false, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
-        { id: 3, isHuman: false, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 2,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+        {
+          id: 2,
+          isHuman: false,
+          cardCount: 2,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+        {
+          id: 3,
+          isHuman: false,
+          cardCount: 2,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
       ],
     });
 
@@ -982,10 +1141,38 @@ describe('HeartsPage', () => {
             roundScore: 0,
             cumulativeScore: 0,
             trickCount: 0,
+            penaltyCards: [],
           },
-          { id: 1, isHuman: false, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
-          { id: 2, isHuman: false, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
-          { id: 3, isHuman: false, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+          {
+            id: 1,
+            isHuman: false,
+            cardCount: 2,
+            cards: [],
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 0,
+            penaltyCards: [],
+          },
+          {
+            id: 2,
+            isHuman: false,
+            cardCount: 2,
+            cards: [],
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 0,
+            penaltyCards: [],
+          },
+          {
+            id: 3,
+            isHuman: false,
+            cardCount: 2,
+            cards: [],
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 0,
+            penaltyCards: [],
+          },
         ],
       });
       mockExec.mockResolvedValue(leadState);

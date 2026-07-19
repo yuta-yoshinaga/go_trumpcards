@@ -1,6 +1,8 @@
 package presenter
 
 import (
+	"sort"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -62,10 +64,48 @@ func (p *HeartsWebPresenter) buildPlayersOutput(h interfaces.HeartsGame) []*cont
 			RoundScore:      player.GetRoundScore(),
 			CumulativeScore: player.GetCumulativeScore(),
 			TrickCount:      player.GetTrickCount(),
+			PenaltyCards:    heartsPenaltyCardsOutput(player),
 		}
 		out = append(out, pObj)
 	}
 	return out
+}
+
+// heartsQueenValue はスペードのクイーン (Q♠) のカード値。
+const heartsQueenValue = 12
+
+// heartsPenaltyCardsOutput はプレイヤーが獲得済みのトリックからペナルティ
+// カード (全ハート + Q♠。オムニバスのJ♦はボーナスであり含まない) を抽出し、
+// 表示用に整列 (ハート昇順→Q♠) して WebOutputCard スライスへ変換する。
+// nil ではなく空スライスを返すため JSON は常に `[]` となる。
+func heartsPenaltyCardsOutput(player *domain.HeartsPlayer) []*controller.WebOutputCard {
+	penalties := make([]*domain.Card, 0)
+	for _, trick := range player.GetTricksTaken() {
+		for _, card := range trick {
+			if isHeartsPenaltyCard(card) {
+				penalties = append(penalties, card)
+			}
+		}
+	}
+	sort.SliceStable(penalties, func(i, j int) bool {
+		di, dj := penalties[i].GetDesign(), penalties[j].GetDesign()
+		if di != dj {
+			return di == domain.CardDesignHeart // ハートを先頭に
+		}
+		return penalties[i].GetValue() < penalties[j].GetValue()
+	})
+	return cardsToOutputOrEmpty(penalties)
+}
+
+// isHeartsPenaltyCard はカードがハーツのペナルティカード (ハートまたはQ♠) か判定する。
+func isHeartsPenaltyCard(card *domain.Card) bool {
+	if card == nil {
+		return false
+	}
+	if card.GetDesign() == domain.CardDesignHeart {
+		return true
+	}
+	return card.GetDesign() == domain.CardDesignSpade && card.GetValue() == heartsQueenValue
 }
 
 // buildMessage ゲーム結果メッセージを構築
