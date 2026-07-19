@@ -38,6 +38,10 @@
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
+  "livePoints": {
+    "title": "獲得カード点",
+    "team": "{{team}}: {{points}} / {{target}}"
+  },
   "roundResult": {
     "title": "ラウンド結果",
     "teamA": "チームAのカード点: {{points}}",
