@@ -71,6 +71,56 @@ func TestEscobaWebPresenter_ActionLogOutput(t *testing.T) {
 	}
 }
 
+func TestEscobaWebPresenter_CapturedCardsHumanOnly(t *testing.T) {
+	p := &presenter.EscobaWebPresenter{}
+	e := escobaBuildGame(t)
+	// Give the human (idx 0) and a CPU (idx 1) captured cards.
+	e.GetPlayer(0).AddCaptured([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 7, false),
+		domain.NewCard(domain.CardDesignDiamond, 1, false),
+	})
+	e.GetPlayer(1).AddCaptured([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 3, false),
+	})
+
+	out := p.Output(e, nil)
+	var parsed struct {
+		Players []struct {
+			ID            int  `json:"id"`
+			IsHuman       bool `json:"isHuman"`
+			CapturedCount int  `json:"capturedCount"`
+			CapturedCards []struct {
+				Design string `json:"design"`
+				Value  int    `json:"value"`
+			} `json:"capturedCards"`
+		} `json:"players"`
+	}
+	if err := json.Unmarshal([]byte(out), &parsed); err != nil {
+		t.Fatalf("output is not valid JSON: %v", err)
+	}
+	if len(parsed.Players) != domain.EscobaPlayerCnt {
+		t.Fatalf("expected %d players, got %d", domain.EscobaPlayerCnt, len(parsed.Players))
+	}
+	for _, pl := range parsed.Players {
+		if pl.IsHuman {
+			if pl.CapturedCount != 2 {
+				t.Errorf("human capturedCount = %d, want 2", pl.CapturedCount)
+			}
+			if len(pl.CapturedCards) != 2 {
+				t.Fatalf("human capturedCards len = %d, want 2", len(pl.CapturedCards))
+			}
+			if pl.CapturedCards[0].Value != 7 || pl.CapturedCards[1].Value != 1 {
+				t.Errorf("human capturedCards content mismatch: %+v", pl.CapturedCards)
+			}
+		} else {
+			// CPUs keep the count but never expose the pile contents.
+			if len(pl.CapturedCards) != 0 {
+				t.Errorf("CPU %d leaked capturedCards: %+v", pl.ID, pl.CapturedCards)
+			}
+		}
+	}
+}
+
 // escobaPlayedOutGame returns an all-CPU game driven to game end, exercising the
 // roundEnd / gameEnd / score-detail / result-message render branches.
 func escobaPlayedOutGame(t *testing.T) *domain.Escoba {

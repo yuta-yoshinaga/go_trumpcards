@@ -286,6 +286,24 @@ function EscobaPageContent() {
                   </button>
                 ))}
               </div>
+
+              {/* Your captured pile — collapsible viewer (CPU piles stay count-only). */}
+              <details className="mt-3 mx-auto max-w-md bg-black/25 rounded-lg" data-testid="captured-viewer">
+                <summary className="cursor-pointer select-none px-3 py-2 text-xs text-ds-text-muted">
+                  {t('captured.summary', { count: human.capturedCount })}
+                </summary>
+                <div className="px-3 pb-3">
+                  {human.capturedCards.length === 0 ? (
+                    <span className="text-ds-text-muted text-xs">{t('captured.empty')}</span>
+                  ) : (
+                    <div className="flex flex-wrap justify-center gap-1" data-testid="captured-cards">
+                      {human.capturedCards.map((c, i) => (
+                        <AnimatedCard key={i} card={c} width={cardWidth * 0.55} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </details>
             </div>
 
             {/* Round-end score breakdown */}
