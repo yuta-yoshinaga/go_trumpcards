@@ -29,6 +29,10 @@
   "flipPrompt2": "2枚目をめくってください",
   "matched": "ペアが揃いました！",
   "mismatched": "残念、不一致です",
+  "announce": {
+    "match": "{{first}} / {{second}} — 一致",
+    "mismatch": "{{first}} / {{second}} — 不一致"
+  },
   "landscapeBanner": "横向きにすると快適にプレイできます",
   "tutorial": {
     "scoreTable": "各プレイヤーのペア数が表示されます。最も多くペアを集めた人が勝ちです。",
