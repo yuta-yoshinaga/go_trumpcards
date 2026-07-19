@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { AUTO_FLIP_DELAY_MS, CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
+import { useSpeedTimer } from '../hooks/useSpeedTimer';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline } from '../styles/buttonStyles';
 import { focusRingCard, playableRingStyle, selectedCardStyle } from '../styles/cardStyles';
@@ -76,6 +77,17 @@ function SpeedPageContent() {
   } = useGameHint('speed', state);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
+  // Elapsed / best-time tracking. Signals are derived here (before the skeleton
+  // early-return) so the timer hook is always called in a stable order. The
+  // timer runs during the PLAY and STUCK phases and freezes when the game ends.
+  const timerRunning = (state?.phase === SpeedPhase.PLAY || state?.phase === SpeedPhase.STUCK) && !state?.gameEndFlag;
+  const timerEnded = state?.phase === SpeedPhase.GAME_END || !!state?.gameEndFlag;
+  const { elapsedMs, bestMs, isNewBest } = useSpeedTimer(
+    timerRunning,
+    timerEnded,
+    state?.winnerIdx === 0,
+    speedConfig.cpuDifficulty,
+  );
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('speed');
   const cliConfig: CliGameConfig<SpeedResponse, Parameters<typeof speedApi.exec>> = useMemo(
@@ -147,6 +159,14 @@ function SpeedPageContent() {
   const cpuPlayer = state.players[1];
   const humanWon = state.winnerIdx === 0;
 
+  // Format milliseconds as mm:ss for the timer / best-time readouts.
+  const formatTime = (ms: number) => {
+    const total = Math.floor(ms / 1000);
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
   const phaseName = state.gameEndFlag
     ? t('phase.gameEnd')
     : state.phase === SpeedPhase.STUCK
@@ -168,6 +188,18 @@ function SpeedPageContent() {
       confirmReset={confirmReset}
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+      headerEnd={
+        <>
+          <span data-testid="speed-timer">
+            {t('timer')}: {formatTime(elapsedMs)}
+          </span>
+          {bestMs !== null && (
+            <span className="ml-3" data-testid="speed-best-time">
+              {t('bestTime')}: {formatTime(bestMs)}
+            </span>
+          )}
+        </>
+      }
     >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
@@ -175,6 +207,17 @@ function SpeedPageContent() {
         <>
           {error && <ErrorAlert message={error} onRetry={retry} />}
           <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+          {isGameEnd && humanWon && (
+            <p
+              className={`text-center text-sm font-bold ${isNewBest ? 'text-ds-success' : 'text-ds-text-muted'}`}
+              data-testid="speed-clear-time"
+              role="status"
+            >
+              {isNewBest
+                ? t('newBest', { time: formatTime(elapsedMs) })
+                : t('clearTime', { time: formatTime(elapsedMs) })}
+            </p>
+          )}
           <div className="flex-1 flex flex-col gap-3 min-h-0">
             {/* CPU area */}
             <div className="flex items-center justify-center gap-2">
