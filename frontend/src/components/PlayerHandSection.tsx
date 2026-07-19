@@ -34,6 +34,14 @@ export interface PlayerHandSectionProps {
   /** Tooltip surfaced on cards that are present but disabled by `validIndices`. */
   restrictedTooltip?: string;
   /**
+   * Optional per-card tooltip override. When it returns a string for an index,
+   * that text becomes the card's `title`, taking precedence over
+   * `restrictedTooltip` / `trumpTitle`. Lets a page explain a card-specific
+   * reason (e.g. why a King vs the Excuse cannot be buried) without blocking
+   * interaction. Returns `undefined` to fall back to the default tooltip.
+   */
+  cardTitleFor?: (idx: number) => string | undefined;
+  /**
    * Optional indices to visually highlight as actionable (e.g. exposable cards).
    * Highlighted cards get a warning border; when this list is provided, the
    * remaining (non-highlighted, non-selected) cards are dimmed to draw the eye.
@@ -78,6 +86,7 @@ export function PlayerHandSection({
   dataTutorialPrefix,
   validIndices,
   restrictedTooltip,
+  cardTitleFor,
   highlightIndices,
   trumpIndices,
   trumpTitle,
@@ -100,6 +109,7 @@ export function PlayerHandSection({
         dataTutorial={dataTutorial}
         validIndices={validIndices}
         restrictedTooltip={restrictedTooltip}
+        cardTitleFor={cardTitleFor}
         highlightIndices={highlightIndices}
         trumpIndices={trumpIndices}
         trumpTitle={trumpTitle}
@@ -134,7 +144,7 @@ export function PlayerHandSection({
             // cards remain focusable for keyboard / screen-reader users — they
             // need to reach the tooltip that explains why the card is illegal.
             aria-disabled={restricted || undefined}
-            title={restricted ? restrictedTooltip : trump ? trumpTitle : undefined}
+            title={cardTitleFor?.(idx) ?? (restricted ? restrictedTooltip : trump ? trumpTitle : undefined)}
             data-trump={trump || undefined}
             data-legal={legal || undefined}
             className={`transition-transform ${focusRingCard} ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
