@@ -29,6 +29,12 @@
   "scartoPhase": "Scarto — bury {{total}} low cards from your hand ({{count}}/{{total}} selected). Trumps, the Excuse, and counting cards (Kings and courts) cannot be buried.",
   "scartoWaiting": "Waiting for the dealer's scarto (discard)…",
   "scartoRestricted": "This card cannot be buried (trump / Excuse / counting card).",
+  "scartoUndiscardable": {
+    "excuse": "The Excuse (Matto) cannot be buried.",
+    "bout": "Bouts (the trump 1 and the 21) cannot be buried.",
+    "trump": "Trumps cannot normally be buried (only when too few pips remain).",
+    "court": "Counting cards (Kings and courts) cannot be buried."
+  },
   "discardButton": "Bury ({{count}}/{{total}})",
   "playButton": "Play",
   "nextTrick": "Next trick",

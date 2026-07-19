@@ -29,6 +29,12 @@
   "scartoPhase": "スカルト — 手札から低い{{total}}枚を選んで伏せて捨てます（{{count}}/{{total}} 枚選択中）。切り札・エクスキューズ・得点札（K・コート札）は捨てられません。",
   "scartoWaiting": "親のスカルト（捨て札）を待っています…",
   "scartoRestricted": "このカードは捨てられません（切り札・エクスキューズ・得点札）。",
+  "scartoUndiscardable": {
+    "excuse": "エクスキューズ（マット）は捨てられません。",
+    "bout": "ブー（切り札の1・21）は捨てられません。",
+    "trump": "切り札は（やむを得ない場合を除き）捨てられません。",
+    "court": "得点札（K・コート札）は捨てられません。"
+  },
   "discardButton": "捨てる（{{count}}/{{total}}）",
   "playButton": "出す",
   "nextTrick": "次のトリック",
