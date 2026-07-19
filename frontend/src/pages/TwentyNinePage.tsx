@@ -164,6 +164,9 @@ function TwentyNinePageContent() {
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
+  // The seat holding that highest bid, so the bidder's name can be surfaced during bidding.
+  const highestBidder = highestBid > 0 ? state.players[state.bids.indexOf(highestBid)] : undefined;
+  const highestBidderName = highestBidder ? playerName(highestBidder.id, highestBidder.isHuman) : '';
 
   const contractLabel = state.contract === 0 ? t('contractUndecided') : String(state.contract);
 
@@ -367,6 +370,9 @@ function TwentyNinePageContent() {
               {isBidPhase && isHumanBidTurn && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+                  <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="tn29-highest-bid">
+                    {highestBid > 0 ? t('bidHighest', { bid: highestBid, player: highestBidderName }) : t('bidNone')}
+                  </span>
                   {BIDS.map((b) => {
                     // Pass (0) is always allowed; a non-pass bid must beat the current highest.
                     const tooLow = b.value !== 0 && b.value <= highestBid;

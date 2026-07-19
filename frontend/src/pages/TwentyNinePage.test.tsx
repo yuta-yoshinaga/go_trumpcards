@@ -90,6 +90,31 @@ describe('TwentyNinePage', () => {
     expect(screen.getByTestId('bid-28')).toBeInTheDocument();
   });
 
+  it('shows "no bids yet" when no one has bid during the bid phase', async () => {
+    renderWithProviders(<TwentyNinePage />);
+    const readout = await screen.findByTestId('tn29-highest-bid');
+    expect(readout).toHaveTextContent('まだ入札なし');
+  });
+
+  it('shows the current highest bid and the bidder name during the bid phase', async () => {
+    // CPU 2 (seat index 2) holds the highest bid of 20.
+    mockExec.mockResolvedValue(makeTwentyNineState({ bids: [0, 0, 20, 0] }));
+    renderWithProviders(<TwentyNinePage />);
+    const readout = await screen.findByTestId('tn29-highest-bid');
+    expect(readout).toHaveTextContent('現在の最高ビッド: 20（CPU 2）');
+  });
+
+  it('updates the highest-bid readout as bids change', async () => {
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(screen.getByTestId('tn29-highest-bid')).toHaveTextContent('まだ入札なし'));
+    // The next server response reflects the human's own bid of 16.
+    mockExec.mockResolvedValue(makeTwentyNineState({ bids: [16, 0, 0, 0] }));
+    fireEvent.click(screen.getByTestId('bid-20'));
+    await waitFor(() =>
+      expect(screen.getByTestId('tn29-highest-bid')).toHaveTextContent('現在の最高ビッド: 16（あなた）'),
+    );
+  });
+
   it('dispatches a bid when a bid button is clicked', async () => {
     renderWithProviders(<TwentyNinePage />);
     const bid16 = await screen.findByTestId('bid-16');
