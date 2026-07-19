@@ -585,7 +585,8 @@ describe('IndianPokerPage', () => {
     mockExec.mockResolvedValue(endState);
     renderWithProviders(<IndianPokerPage />);
     await waitFor(() => expect(screen.getByText('終了')).toBeInTheDocument());
-    expect(screen.getByText('結果:')).toBeInTheDocument();
+    // Results appear after the staged own-card reveal completes (#3068).
+    await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
   });
 
   // ---- bet amount used by raise ----
@@ -784,6 +785,57 @@ describe('IndianPokerPage', () => {
     mockExec.mockResolvedValue(initState);
     renderWithProviders(<IndianPokerPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  // ---- staged showdown reveal (#3068) ----
+  describe('staged showdown reveal', () => {
+    it('conceals the own card (no reveal wrapper) during betting', async () => {
+      mockExec.mockResolvedValue(bettingState);
+      renderWithProviders(<IndianPokerPage />);
+      await waitFor(() => expect(screen.getByText(/あなたのカード/)).toBeInTheDocument());
+      expect(screen.queryByTestId('indianpoker-own-reveal')).not.toBeInTheDocument();
+    });
+
+    it('flips the own card first and holds round results until the reveal completes', async () => {
+      vi.useFakeTimers();
+      try {
+        mockExec.mockResolvedValue(showdownState);
+        renderWithProviders(<IndianPokerPage />);
+        // Own-card reveal wrapper (and the flipped card) appears immediately at showdown.
+        await vi.waitFor(() => expect(screen.getByTestId('indianpoker-own-reveal')).toBeInTheDocument());
+        expect(screen.getByAltText('♥ 7')).toBeInTheDocument();
+        // Results stay hidden until the 600ms reveal delay elapses (no spoiler).
+        expect(screen.queryByText('結果:')).not.toBeInTheDocument();
+        // After the delay the results panel is revealed.
+        await vi.advanceTimersByTimeAsync(600);
+        await vi.waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('reveals card and results together immediately when reduced motion is preferred', async () => {
+      const original = window.matchMedia;
+      window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+        matches: query.includes('prefers-reduced-motion'),
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }));
+      try {
+        mockExec.mockResolvedValue(showdownState);
+        renderWithProviders(<IndianPokerPage />);
+        await waitFor(() => expect(screen.getByTestId('indianpoker-own-reveal')).toBeInTheDocument());
+        // No staged delay: the results panel is present right away.
+        expect(screen.getByText('結果:')).toBeInTheDocument();
+      } finally {
+        window.matchMedia = original;
+      }
+    });
   });
 
   // --- Mobile layout tests ---

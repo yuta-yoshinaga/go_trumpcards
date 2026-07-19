@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { indianpokerApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -27,10 +28,12 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useSound } from '../providers/SoundProvider';
 import { placeholderCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { flipSpring } from '../styles/motionPresets';
 import type { IndianPokerResponse } from '../types/card';
 import { IndianPokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -138,6 +141,31 @@ function IndianPokerPageContent() {
   const isBetting = phase === IndianPokerPhase.BETTING;
   const isShowdown = phase === IndianPokerPhase.SHOWDOWN || phase === IndianPokerPhase.END;
   const humanPlayer = state?.players?.find((p) => p.isHuman);
+
+  // Staged showdown reveal (#3068): 0 = concealed, 1 = own card flipped face-up,
+  // 2 = round results shown. In Indian Poker you never see your own card during play,
+  // so at showdown we flip it first and hold back the results panel for 600ms to avoid
+  // spoiling the outcome before the card is read. Keyed by hand + phase so each new
+  // showdown restarts the sequence. prefers-reduced-motion jumps straight to step 2.
+  const reduced = useReducedMotion();
+  const revealSignature = isShowdown ? `${state?.handCount ?? 0}:${phase}` : 'hidden';
+  const [revealStep, setRevealStep] = useState(0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: revealSignature already encodes handCount and phase; listing raw state would re-fire the effect mid-hand.
+  useEffect(() => {
+    if (!isShowdown) {
+      setRevealStep(0);
+      return;
+    }
+    if (reduced) {
+      setRevealStep(2);
+      return;
+    }
+    setRevealStep(1);
+    playSound('cardPlace');
+    const timer = setTimeout(() => setRevealStep(2), 600);
+    return () => clearTimeout(timer);
+  }, [isShowdown, revealSignature, reduced, playSound]);
+
   const humanFolded = humanPlayer?.folded ?? false;
   const humanAllIn = humanPlayer?.allIn ?? false;
   const equity = useMemo(() => {
@@ -259,8 +287,10 @@ function IndianPokerPageContent() {
             {/* CPU actions: toast on mobile, inline log on desktop */}
             {isMobile ? <CpuActionToast actions={state.cpuActions} /> : <CpuActionLog actions={state.cpuActions} />}
 
-            {/* Round results */}
-            {isShowdown && <RoundResults results={roundResultsForDisplay} players={state.players ?? []} />}
+            {/* Round results — held back until the own-card reveal completes (#3068) */}
+            {isShowdown && revealStep >= 2 && (
+              <RoundResults results={roundResultsForDisplay} players={state.players ?? []} />
+            )}
 
             {/* Action log */}
             <ActionLogSection
@@ -291,7 +321,16 @@ function IndianPokerPageContent() {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {isShowdown && humanPlayer.card ? (
-                    <AnimatedCard card={humanPlayer.card} width={cardWidth} style={placeholderCardStyle} />
+                    <motion.div
+                      key={revealSignature}
+                      className="[transform-style:preserve-3d]"
+                      initial={reduced ? false : { rotateY: 180, opacity: 0.5 }}
+                      animate={{ rotateY: 0, opacity: 1 }}
+                      transition={flipSpring}
+                      data-testid="indianpoker-own-reveal"
+                    >
+                      <AnimatedCard card={humanPlayer.card} width={cardWidth} style={placeholderCardStyle} silent />
+                    </motion.div>
                   ) : !humanPlayer.folded ? (
                     <AnimatedCardBack width={cardWidth} />
                   ) : null}
