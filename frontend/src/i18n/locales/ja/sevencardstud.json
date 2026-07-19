@@ -13,6 +13,7 @@
   "doorCards": "ドアカード",
   "holeCards": "ホールカード",
   "yourHand": "あなたの手札",
+  "currentHand": "現在の役",
   "anteBringIn": "アンティ/ブリングイン",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
@@ -54,5 +55,17 @@
     "strongHandRank": "強いハンド — レイズ推奨",
     "decentHandRank": "まずまずのハンド — コール推奨",
     "weakHandRank": "弱いハンド — フォールド推奨"
+  },
+  "hand": {
+    "highCard": "ハイカード",
+    "onePair": "ワンペア",
+    "twoPair": "ツーペア",
+    "threeOfAKind": "スリーカード",
+    "straight": "ストレート",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "fourOfAKind": "フォーカード",
+    "straightFlush": "ストレートフラッシュ",
+    "royalFlush": "ロイヤルフラッシュ"
   }
 }

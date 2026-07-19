@@ -39,6 +39,7 @@ import { SevenCardStudPhase, SevenCardStudRebuyPhaseType } from '../types/phases
 import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
+import { evaluateBestHand, pokerHandKey } from '../utils/pokerSquaresUtils';
 
 /** Seven Card Stud tutorial step definitions. */
 const SCS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -212,6 +213,17 @@ function SevenCardStudPageContent() {
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
   const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
+
+  // Live best-hand strength for the human, computed from their visible door +
+  // hole cards (best 5 of up to 7). Shown during the streets to aid betting
+  // decisions; the server-supplied `handName` takes over at showdown. Only the
+  // human's cards are used, so no opponent information leaks.
+  const currentHandKey = useMemo(() => {
+    if (!humanPlayer) return null;
+    const cards = [...(humanPlayer.doorCards ?? []), ...(humanPlayer.holeCards ?? [])];
+    const rank = evaluateBestHand(cards);
+    return rank == null ? null : pokerHandKey(rank);
+  }, [humanPlayer]);
 
   const actionBindings = useMemo(
     () => [
@@ -403,6 +415,14 @@ function SevenCardStudPageContent() {
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                       {humanPlayer.handName}
+                    </span>
+                  )}
+                  {isActive && !humanPlayer.folded && currentHandKey && (
+                    <span
+                      data-testid="scs-current-hand"
+                      className="inline-block ml-2 text-xs rounded px-2 py-0.5 bg-black/25 text-ds-text-muted"
+                    >
+                      {t('currentHand')}: {t(`hand.${currentHandKey}`)}
                     </span>
                   )}
                 </div>

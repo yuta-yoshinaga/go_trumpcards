@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, CardDesign } from '../types/card';
 import {
+  evaluateBestHand,
   evaluateFiveCardHand,
   evaluatePartialHand,
   PokerHand,
@@ -228,5 +229,60 @@ describe('pokerHandKey', () => {
     expect(pokerHandKey(PokerHand.FourOfAKind)).toBe('fourOfAKind');
     expect(pokerHandKey(PokerHand.StraightFlush)).toBe('straightFlush');
     expect(pokerHandKey(PokerHand.RoyalFlush)).toBe('royalFlush');
+  });
+});
+
+describe('evaluateBestHand', () => {
+  it('returns null for an empty card list', () => {
+    expect(evaluateBestHand([])).toBeNull();
+  });
+
+  it('names a made pair from three street cards', () => {
+    expect(evaluateBestHand([card('SPADE', 7), card('HEART', 7), card('DIAMOND', 2)])).toBe(PokerHand.OnePair);
+  });
+
+  it('defaults to high card when fewer than five cards make nothing', () => {
+    expect(evaluateBestHand([card('SPADE', 7), card('HEART', 9), card('DIAMOND', 2)])).toBe(PokerHand.HighCard);
+  });
+
+  it('picks the best five of six cards (flush)', () => {
+    expect(
+      evaluateBestHand([
+        card('SPADE', 2),
+        card('SPADE', 5),
+        card('SPADE', 8),
+        card('SPADE', 11),
+        card('SPADE', 13),
+        card('HEART', 4),
+      ]),
+    ).toBe(PokerHand.Flush);
+  });
+
+  it('picks the best five of seven cards (full house over trips)', () => {
+    expect(
+      evaluateBestHand([
+        card('SPADE', 9),
+        card('HEART', 9),
+        card('DIAMOND', 9),
+        card('CLOVER', 4),
+        card('SPADE', 4),
+        card('HEART', 2),
+        card('DIAMOND', 12),
+      ]),
+    ).toBe(PokerHand.FullHouse);
+  });
+
+  it('finds a straight spanning seven cards', () => {
+    expect(
+      evaluateBestHand([
+        card('SPADE', 3),
+        card('HEART', 4),
+        card('DIAMOND', 5),
+        card('CLOVER', 6),
+        card('SPADE', 7),
+        card('HEART', 13),
+        card('DIAMOND', 2),
+      ]),
+    ).toBe(PokerHand.Straight);
   });
 });
