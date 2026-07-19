@@ -20,6 +20,8 @@
   "discard": "Discard & end turn",
   "stop": "Stop!",
   "undo": "Undo",
+  "hint": "Hint",
+  "hintNone": "No move available",
   "gameEnd": "Game over",
   "phase": {
     "playing": "Playing",

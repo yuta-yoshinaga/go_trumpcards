@@ -20,6 +20,8 @@
   "discard": "手札を捨てて手番終了",
   "stop": "ストップ！",
   "undo": "元に戻す",
+  "hint": "ヒント",
+  "hintNone": "打てる手がありません",
   "gameEnd": "ゲーム終了",
   "phase": {
     "playing": "プレイ中",
