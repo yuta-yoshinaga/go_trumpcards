@@ -187,20 +187,57 @@ describe('KalookiPage', () => {
     );
   });
 
-  it('remove-last-group is enabled only after a group is staged', async () => {
+  // Stage a meld group from the first `count` hand cards (starting at `start`).
+  const stageGroup = (start: number, count: number) => {
+    const cards = handButtons();
+    for (let i = start; i < start + count; i++) fireEvent.click(cards[i]);
+    fireEvent.click(screen.getByRole('button', { name: /Add group|グループに追加/ }));
+  };
+
+  it('visualizes each staged meld group with its cards', async () => {
     mockExec.mockResolvedValue(meldState);
     renderWithProviders(<KalookiPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /Add group|グループに追加/ })).toBeInTheDocument());
-    const remove = screen.getByRole('button', { name: /Remove last group|最後のグループを取り消す/ });
-    expect(remove).toBeDisabled();
-    const cards = handButtons();
-    fireEvent.click(cards[0]);
-    fireEvent.click(cards[1]);
-    fireEvent.click(cards[2]);
-    fireEvent.click(screen.getByRole('button', { name: /Add group|グループに追加/ }));
-    expect(remove).not.toBeDisabled();
-    fireEvent.click(remove);
-    expect(remove).toBeDisabled();
+    // No staged-groups panel until a group is added.
+    expect(screen.queryByTestId('kalooki-staged-groups')).not.toBeInTheDocument();
+    stageGroup(0, 3);
+    const group0 = screen.getByTestId('kalooki-staged-group-0');
+    expect(group0).toBeInTheDocument();
+    // The three staged card indices render as three mini card images.
+    expect(group0.querySelectorAll('img')).toHaveLength(3);
+  });
+
+  it('removes an individual group and leaves the other groups staged', async () => {
+    mockExec.mockResolvedValue(meldState);
+    renderWithProviders(<KalookiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add group|グループに追加/ })).toBeInTheDocument());
+    stageGroup(0, 3); // group 0 → indices 0,1,2
+    stageGroup(3, 3); // group 1 → indices 3,4,5
+    expect(screen.getByTestId('kalooki-staged-group-0')).toBeInTheDocument();
+    expect(screen.getByTestId('kalooki-staged-group-1')).toBeInTheDocument();
+
+    // Remove the FIRST group; the second must remain (not a clear-all).
+    fireEvent.click(screen.getByTestId('kalooki-remove-group-0'));
+    expect(screen.getByTestId('kalooki-staged-group-0')).toBeInTheDocument();
+    expect(screen.queryByTestId('kalooki-staged-group-1')).not.toBeInTheDocument();
+
+    // The surviving group's cards (indices 3,4,5) are submitted; the removed ones are gone.
+    fireEvent.click(screen.getByTestId('kalooki-submit-meld'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('meld', expect.objectContaining({ meldGroups: [[3, 4, 5]] })),
+    );
+  });
+
+  it('re-enables hand-card selection after its group is removed', async () => {
+    mockExec.mockResolvedValue(meldState);
+    renderWithProviders(<KalookiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add group|グループに追加/ })).toBeInTheDocument());
+    stageGroup(0, 3);
+    // Card index 0 is locked (disabled) while it belongs to a staged group.
+    expect(screen.getByTestId('kalooki-hand-0')).toBeDisabled();
+    fireEvent.click(screen.getByTestId('kalooki-remove-group-0'));
+    // Removing the group frees the card for re-selection.
+    expect(screen.getByTestId('kalooki-hand-0')).not.toBeDisabled();
   });
 
   it('discards the selected card in the meld phase', async () => {
