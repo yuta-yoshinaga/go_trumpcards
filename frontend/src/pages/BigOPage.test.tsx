@@ -398,6 +398,23 @@ describe('BigOPage', () => {
     expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
   });
 
+  it('rings the 2 hole cards each non-folded CPU used at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    // Only CPU 1 is unfolded (CPU 2 folded), so exactly its 2 used hole cards are ringed.
+    const used = screen.getAllByTestId('cpu-hole-used');
+    expect(used).toHaveLength(2);
+    for (const el of used) expect(el.className).toContain('ring-ds-success');
+  });
+
+  it('does not ring any CPU hole cards outside showdown', async () => {
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    expect(screen.queryByTestId('cpu-hole-used')).not.toBeInTheDocument();
+  });
+
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<BigOPage />);

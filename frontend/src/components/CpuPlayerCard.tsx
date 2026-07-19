@@ -40,6 +40,14 @@ interface CpuPlayerCardProps {
   compactFaceDown?: boolean;
   /** Optional meta-AI data for visual feedback. */
   metaAi?: CpuMetaAiProp;
+  /**
+   * Indices into `player.cards` of the hole cards the player actually used in
+   * their best showdown hand (e.g. the 2 hole cards under the Omaha / Big O
+   * rule). When provided and the cards are shown face-up, those cards receive
+   * an additive success ring. Ignored for folded players (whose cards are not
+   * shown), so no explicit fold check is needed here.
+   */
+  usedHoleIdx?: readonly number[];
 }
 
 /** Renders a CPU player's info area with cards (face-up or face-down) and status. */
@@ -51,10 +59,12 @@ export function CpuPlayerCard({
   extraInfo,
   compactFaceDown,
   metaAi,
+  usedHoleIdx,
 }: CpuPlayerCardProps) {
   const { t } = useTranslation('common');
   const { cpuCardWidth } = useCardDimensions();
   const showFaceUp = showCards && !player.folded && player.cards.length > 0;
+  const usedHoleSet = usedHoleIdx ? new Set(usedHoleIdx) : undefined;
   const strategyStyle = metaAi?.enabled ? deriveStrategyStyle(metaAi) : undefined;
   return (
     <div className="relative mb-3 rounded-lg p-2 bg-black/20 border border-white/10">
@@ -89,14 +99,18 @@ export function CpuPlayerCard({
       </div>
       {showFaceUp ? (
         <div className="flex flex-wrap gap-1">
-          {player.cards.map((card) => (
-            <CardImage
-              key={`${card.design}-${card.value}`}
-              card={card}
-              width={cpuCardWidth}
-              style={{ border: '3px solid transparent' }}
-            />
-          ))}
+          {player.cards.map((card, idx) => {
+            const used = usedHoleSet?.has(idx) ?? false;
+            return (
+              <div
+                key={`${card.design}-${card.value}`}
+                className={`rounded-md ${used ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
+                data-testid={used ? 'cpu-hole-used' : undefined}
+              >
+                <CardImage card={card} width={cpuCardWidth} style={{ border: '3px solid transparent' }} />
+              </div>
+            );
+          })}
         </div>
       ) : !compactFaceDown ? (
         <div className="flex flex-wrap gap-1">
