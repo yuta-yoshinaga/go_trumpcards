@@ -378,4 +378,54 @@ describe('VideoPokerGameContent', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /ドロー/ })).toBeInTheDocument());
     expect(screen.queryByTestId('vp-wild-badge-0')).not.toBeInTheDocument();
   });
+
+  it('records a win into the session stats (win rate + net) and persists it', async () => {
+    // resultPhaseWin: bet 1, payout 5, Jacks or Better -> net +4, win rate 100%.
+    mockExec.mockResolvedValue(resultPhaseWin);
+    renderContent();
+    await waitFor(() => expect(screen.getByTestId('vp-stats-summary')).toBeInTheDocument());
+    const summary = screen.getByTestId('vp-stats-summary');
+    expect(summary).toHaveTextContent('1 ハンド');
+    expect(summary).toHaveTextContent('勝率 100%');
+    expect(summary).toHaveTextContent('収支 +4');
+    // The winning hand is tallied in the payout table's count column.
+    expect(screen.getByTestId('vp-payout-count-jacksOrBetter')).toHaveTextContent('1');
+    // And it is written to localStorage under the per-variant key.
+    const stored = JSON.parse(localStorage.getItem('vp_stats_videopoker') ?? '{}');
+    expect(stored).toMatchObject({ hands: 1, wins: 1, totalBet: 1, totalPayout: 5, handCounts: { jacksOrBetter: 1 } });
+  });
+
+  it('reads persisted stats back on mount', async () => {
+    localStorage.setItem(
+      'vp_stats_videopoker',
+      JSON.stringify({ hands: 4, wins: 1, totalBet: 4, totalPayout: 10, handCounts: { flush: 1 } }),
+    );
+    mockExec.mockResolvedValue(betPhaseState);
+    renderContent();
+    await waitFor(() => expect(screen.getByRole('button', { name: /ディール/ })).toBeInTheDocument());
+    const summary = screen.getByTestId('vp-stats-summary');
+    expect(summary).toHaveTextContent('4 ハンド');
+    expect(summary).toHaveTextContent('勝率 25%');
+    expect(summary).toHaveTextContent('収支 +6');
+    expect(screen.getByTestId('vp-payout-count-flush')).toHaveTextContent('1');
+  });
+
+  it('clears the session stats when the clear button is clicked', async () => {
+    mockExec.mockResolvedValue(resultPhaseWin);
+    renderContent();
+    await waitFor(() => expect(screen.getByTestId('vp-stats-clear')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('vp-stats-clear'));
+    await waitFor(() => expect(screen.getByTestId('vp-stats-summary')).toHaveTextContent(/まだプレイ記録がありません/));
+    const stored = JSON.parse(localStorage.getItem('vp_stats_videopoker') ?? '{}');
+    expect(stored).toMatchObject({ hands: 0, wins: 0 });
+  });
+
+  it('does not show the session stats panel for other variants (deuceswild)', async () => {
+    mockExec.mockResolvedValue({ ...resultPhaseWin, variantName: 'deuceswild' });
+    renderContent('deuceswild');
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('vp-session-stats')).not.toBeInTheDocument();
+    // And nothing is written to any stats bucket for the disabled variant.
+    expect(localStorage.getItem('vp_stats_deuceswild')).toBeNull();
+  });
 });

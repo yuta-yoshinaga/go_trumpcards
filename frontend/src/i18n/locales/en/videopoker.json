@@ -30,6 +30,7 @@
   "payoutTable": {
     "title": "Payout Table",
     "hand": "Hand",
+    "count": "Hits",
     "name": {
       "royalFlush": "Royal Flush",
       "straightFlush": "Straight Flush",
@@ -41,6 +42,11 @@
       "twoPair": "Two Pair",
       "jacksOrBetter": "Jacks or Better"
     }
+  },
+  "stats": {
+    "summary": "{{hands}} hands / win rate {{winRate}}% / net {{net}}",
+    "empty": "No hands played yet",
+    "clear": "Clear stats"
   },
   "tutorial": {
     "betControls": "Place 1–5 coins to set your bet. Higher bets increase the Royal Flush bonus.",
