@@ -13,6 +13,19 @@
   "yourHand": "あなたの手札",
   "mandatoryRule": "ルール: 手札から2枚 + 場札から3枚",
   "mandatoryRuleAria": "オマハのルール: 手札ちょうど2枚と場札ちょうど3枚を使います",
+  "livePreview": "現在の役:",
+  "hand": {
+    "highCard": "ハイカード",
+    "onePair": "ワンペア",
+    "twoPair": "ツーペア",
+    "threeOfAKind": "スリーカード",
+    "straight": "ストレート",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "fourOfAKind": "フォーカード",
+    "straightFlush": "ストレートフラッシュ",
+    "royalFlush": "ロイヤルフラッシュ"
+  },
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",

@@ -13,6 +13,19 @@
   "yourHand": "Your Hand",
   "mandatoryRule": "Rule: 2 hole + 3 board",
   "mandatoryRuleAria": "Omaha rule: you must use exactly 2 hole cards and exactly 3 board cards",
+  "livePreview": "Current hand:",
+  "hand": {
+    "highCard": "High Card",
+    "onePair": "One Pair",
+    "twoPair": "Two Pair",
+    "threeOfAKind": "Three of a Kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full House",
+    "fourOfAKind": "Four of a Kind",
+    "straightFlush": "Straight Flush",
+    "royalFlush": "Royal Flush"
+  },
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
