@@ -132,6 +132,35 @@ describe('SimpleSimonPage', () => {
     expect(screen.getByTestId('card-3-0')).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('double-clicks a grabbable card to auto-move it to the best column', async () => {
+    // Default state: col0 = ♠9, col1 = ♠8. Double-clicking ♠8 links same-suit onto ♠9.
+    renderWithProviders(<SimpleSimonPage />);
+    const srcCard = await screen.findByTestId('card-1-0');
+    mockExec.mockClear();
+    fireEvent.doubleClick(srcCard);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
+  });
+
+  it('shows a notice and issues no move when a double-click has no destination', async () => {
+    // A lone ♠2 has no valid destination (no rank-3 top; empty columns are not
+    // offered for a whole-column move).
+    mockExec.mockResolvedValue(
+      makeState({
+        columns: (() => {
+          const cols: Card[][] = Array.from({ length: 10 }, () => []);
+          cols[0] = [card('SPADE', 2)];
+          return cols;
+        })(),
+      }),
+    );
+    renderWithProviders(<SimpleSimonPage />);
+    const srcCard = await screen.findByTestId('card-0-0');
+    mockExec.mockClear();
+    fireEvent.doubleClick(srcCard);
+    await waitFor(() => expect(screen.getByTestId('ss-automove-notice')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalledWith('m', expect.anything());
+  });
+
   it('hides controls at game over', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 2 }));
     renderWithProviders(<SimpleSimonPage />);
