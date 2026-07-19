@@ -32,7 +32,7 @@
   "drawDiscardButton": "Draw Discard",
   "discardButton": "Discard",
   "knockButton": "Knock",
-  "deadwoodLabel": "Deadwood: {{score}} pts",
+  "deadwoodLabel": "Predicted deadwood: {{score}} pts",
   "nextRound": "Next Round",
   "drawPhase": "Draw a card from the stock or discard pile",
   "discardPhase": "Discard a card, or discard it and knock",

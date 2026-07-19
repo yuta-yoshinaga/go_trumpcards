@@ -32,7 +32,7 @@
   "drawDiscardButton": "捨て札から引く",
   "discardButton": "捨てる",
   "knockButton": "ノック",
-  "deadwoodLabel": "デッドウッド: {{score}}点",
+  "deadwoodLabel": "予測デッドウッド: {{score}}点",
   "nextRound": "次のラウンド",
   "drawPhase": "山札または捨て札から1枚引いてください",
   "discardPhase": "手札から1枚捨てるか、その1枚を捨ててノックしてください",

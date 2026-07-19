@@ -86,6 +86,42 @@ describe('ThreeThirteenPage', () => {
     await waitFor(() => expect(screen.getByTestId('threethirteen-deadwood-indicator')).toBeInTheDocument());
   });
 
+  it('shows predicted post-discard deadwood that changes with card selection', async () => {
+    // ♠5-6-7 form a run; ♥K is the odd card. Wild rank 2 does not match any card.
+    const meldHandState: ThreeThirteenResponse = {
+      ...discardPhaseState,
+      wildRank: 2,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 4,
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'SPADE', value: 7 },
+            { design: 'HEART', value: 13 },
+          ],
+          deadwood: 10,
+          roundScore: 0,
+          cumulativeScore: 0,
+        },
+        discardPhaseState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(meldHandState);
+    renderWithProviders(<ThreeThirteenPage />);
+
+    // No selection → best single discard drops ♥K, leaving the run → 0.
+    await waitFor(() =>
+      expect(screen.getByTestId('threethirteen-deadwood-indicator')).toHaveTextContent('予測デッドウッド: 0点'),
+    );
+
+    // Selecting a run card (♠5) breaks the meld → ♠6 + ♠7 + ♥K = 23.
+    fireEvent.click(screen.getByAltText('♠ 5').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('threethirteen-deadwood-indicator')).toHaveTextContent('予測デッドウッド: 23点');
+  });
+
   it('badges wild-rank cards in the hand and on the discard top', async () => {
     // Aces wild: the ♠A in hand and the ♣A discard top both match wildRank 1.
     mockExec.mockResolvedValue({

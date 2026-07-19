@@ -32,6 +32,7 @@ import { parseThreeThirteenCommand, THREETHIRTEEN_HELP } from '../utils/cli/comm
 import { formatThreeThirteenState } from '../utils/cli/formatters/threethirteenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { bestThreeThirteenDeadwoodValue, bestThreeThirteenDiscardValue } from '../utils/threethirteenDeadwood';
 
 const THREETHIRTEEN_PHASE_KEYS: Readonly<Record<number, string>> = {
   [ThreeThirteenPhase.DRAW]: 'draw',
@@ -141,6 +142,26 @@ function ThreeThirteenPageContent() {
     });
   }, [gameExec, hideActionLog, threeThirteenConfig.cpuDifficulty, threeThirteenConfig.playerCount]);
 
+  // Predicted post-discard deadwood, so the player can weigh a discard before
+  // committing. When one card is selected we project that exact discard;
+  // otherwise we show the best value reachable across every single discard.
+  // Wild-rank cards (state.wildRank) are matched into melds, so this mirrors the
+  // server's own scoring. Computed unconditionally (before the early return) to
+  // keep hook order stable; only surfaced during the DISCARD phase.
+  const predictedDeadwood = useMemo<number | null>(() => {
+    if (!state || state.phase !== ThreeThirteenPhase.DISCARD) return null;
+    const human = state.players.find((p) => p.isHuman);
+    if (!human || human.cards.length === 0) return null;
+    const cards = human.cards;
+    if (selectedCardIndices.length === 1) {
+      return bestThreeThirteenDeadwoodValue(
+        cards.filter((_, i) => i !== selectedCardIndices[0]),
+        state.wildRank,
+      );
+    }
+    return bestThreeThirteenDiscardValue(cards, state.wildRank);
+  }, [state, selectedCardIndices]);
+
   if (!state)
     return (
       <GameSkeleton
@@ -169,8 +190,9 @@ function ThreeThirteenPageContent() {
       </span>
     ) : null;
 
-  // Lowest cumulative score wins, so highlight the leader (fewest points).
-  const humanDeadwood = humanPlayer?.deadwood ?? null;
+  // Prefer the projected post-discard deadwood (predictedDeadwood) during the
+  // discard phase; fall back to the server's current-hand value otherwise.
+  const humanDeadwood = predictedDeadwood ?? humanPlayer?.deadwood ?? null;
 
   return (
     <GamePageShell
