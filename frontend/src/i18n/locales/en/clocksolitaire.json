@@ -8,7 +8,15 @@
   "stepCount": "Steps",
   "step": "Step",
   "autoplay": "Auto Play",
+  "stopAutoplay": "Stop",
   "currentCard": "Current Card",
+  "settings": {
+    "speed": "Animation Speed",
+    "speedHelp": "Choose how fast each card's landing animation plays during auto play. Faster races through the placements.",
+    "speedSlow": "Slow",
+    "speedNormal": "Normal",
+    "speedFast": "Fast"
+  },
   "center": "Center(K)",
   "playing": "Playing",
   "gameClear": "Game Clear! Steps: {{stepCount}}",

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { clocksolitaireApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -66,14 +66,90 @@ const CLOCK_POSITIONS = Array.from({ length: 12 }, (_, i) => {
 /** Labels for clock positions (1-12). */
 const CLOCK_LABELS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
+/** Autoplay animation speed presets. */
+type AutoPlaySpeed = 'slow' | 'normal' | 'fast';
+
+/**
+ * Delay (ms) between auto-advanced `step` calls per speed preset. A larger delay
+ * gives each card's `isFlightTarget` landing highlight more time to play out; a
+ * smaller delay races to the finish.
+ */
+const AUTOPLAY_DELAY_MS: Record<AutoPlaySpeed, number> = {
+  slow: 900,
+  normal: 450,
+  fast: 150,
+};
+
+const AUTOPLAY_SPEED_STORAGE_KEY = 'clocksolitaire:autoPlaySpeed';
+
+/** Read the persisted autoplay speed, falling back to `normal` when unset/invalid. */
+function loadAutoPlaySpeed(): AutoPlaySpeed {
+  try {
+    const v = localStorage.getItem(AUTOPLAY_SPEED_STORAGE_KEY);
+    if (v === 'slow' || v === 'normal' || v === 'fast') return v;
+  } catch {
+    // localStorage may be unavailable (private mode / SSR); fall through to default.
+  }
+  return 'normal';
+}
+
 /** Clock Solitaire page content component. */
 function ClockSolitairePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('clocksolitaire');
   const { state, loading, error, exec: execApi, retry } = useGameApi(clocksolitaireApi.exec);
-  const handleReset = useCallback(() => execApi('reset'), [execApi]);
+
+  const [autoPlaySpeed, setAutoPlaySpeed] = useState<AutoPlaySpeed>(loadAutoPlaySpeed);
+  const [autoPlaying, setAutoPlaying] = useState(false);
+
   const handleStep = useCallback(() => execApi('step'), [execApi]);
-  const handleAutoPlay = useCallback(() => execApi('autoplay'), [execApi]);
+  // Autoplay is driven client-side as a timed sequence of `step` calls (see the
+  // effect below) so each card's landing highlight plays out; the button toggles it.
+  const handleAutoPlay = useCallback(() => setAutoPlaying((prev) => !prev), []);
+  const handleSelectSpeed = useCallback((v: string) => {
+    const speed: AutoPlaySpeed = v === 'slow' || v === 'fast' ? v : 'normal';
+    setAutoPlaySpeed(speed);
+    try {
+      localStorage.setItem(AUTOPLAY_SPEED_STORAGE_KEY, speed);
+    } catch {
+      // Persistence is best-effort; ignore storage failures.
+    }
+  }, []);
+  const handleReset = useCallback(() => {
+    setAutoPlaying(false);
+    return execApi('reset');
+  }, [execApi]);
+
+  // Latest state/speed read from a self-scheduling autoplay loop without
+  // re-subscribing the effect on every render.
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const speedRef = useRef(autoPlaySpeed);
+  speedRef.current = autoPlaySpeed;
+
+  // Drive autoplay client-side: recursively `step` on a speed-scaled timer so each
+  // card's `isFlightTarget` landing highlight plays out, stopping as soon as the
+  // game reaches GAME_CLEAR / GAME_OVER.
+  useEffect(() => {
+    if (!autoPlaying) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const tick = async () => {
+      const s = stateRef.current;
+      if (!s || s.phase !== ClockSolitairePhase.PLAYING) {
+        setAutoPlaying(false);
+        return;
+      }
+      await execApi('step');
+      if (cancelled) return;
+      timer = setTimeout(() => void tick(), AUTOPLAY_DELAY_MS[speedRef.current]);
+    };
+    timer = setTimeout(() => void tick(), AUTOPLAY_DELAY_MS[speedRef.current]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [autoPlaying, execApi]);
 
   useMountReset(execApi);
   const { cardWidth, cardHeight } = useCardDimensions();
@@ -324,6 +400,20 @@ function ClockSolitairePageContent() {
               {
                 items: [
                   {
+                    type: 'select' as const,
+                    id: 'autoPlaySpeed',
+                    testId: 'autoplay-speed-select',
+                    label: t('settings.speed'),
+                    tooltip: t('settings.speedHelp'),
+                    value: autoPlaySpeed,
+                    options: [
+                      { value: 'slow', label: t('settings.speedSlow') },
+                      { value: 'normal', label: t('settings.speedNormal') },
+                      { value: 'fast', label: t('settings.speedFast') },
+                    ],
+                    onSelect: handleSelectSpeed,
+                  },
+                  {
                     type: 'checkbox' as const,
                     id: 'frontendHint',
                     label: tc('hint.toggle', { ns: 'tutorial' }),
@@ -343,7 +433,8 @@ function ClockSolitairePageContent() {
                     type="button"
                     className={`${btnPrimary} ${focusRingWhite}`}
                     onClick={handleStep}
-                    disabled={loading}
+                    disabled={loading || autoPlaying}
+                    data-testid="cs-step-button"
                   >
                     {t('step')}
                   </button>
@@ -351,9 +442,10 @@ function ClockSolitairePageContent() {
                     type="button"
                     className={`${btnSuccess} ${focusRingWhite}`}
                     onClick={handleAutoPlay}
-                    disabled={loading}
+                    aria-pressed={autoPlaying}
+                    data-testid="cs-autoplay-button"
                   >
-                    {t('autoplay')}
+                    {autoPlaying ? t('stopAutoplay') : t('autoplay')}
                   </button>
                 </div>
               )}

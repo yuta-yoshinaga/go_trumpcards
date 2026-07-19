@@ -1,5 +1,5 @@
-import { screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clocksolitaireApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -78,6 +78,10 @@ const gameOverState: ClockSolitaireResponse = {
 beforeEach(() => {
   vi.clearAllMocks();
   mockExec.mockResolvedValue(playingState);
+});
+
+afterEach(() => {
+  localStorage.removeItem('clocksolitaire:autoPlaySpeed');
 });
 
 describe('ClockSolitairePage', () => {
@@ -249,5 +253,95 @@ describe('ClockSolitairePage', () => {
     renderWithProviders(<ClockSolitairePage />);
     await waitFor(() => expect(screen.getByText(/ステップ数/)).toBeInTheDocument());
     expect(document.querySelectorAll('[data-flight-target="true"]')).toHaveLength(0);
+  });
+
+  it('autoplay auto-advances via repeated step calls and stops at game clear', async () => {
+    restoreCliModeDefault();
+    vi.useFakeTimers();
+    try {
+      // reset (mount) → playing, then two client-driven steps; the second clears the game.
+      mockExec
+        .mockReset()
+        .mockResolvedValueOnce(playingState) // reset on mount
+        .mockResolvedValueOnce(playingState) // step 1
+        .mockResolvedValueOnce(gameClearState) // step 2 → game clear
+        .mockResolvedValue(gameClearState);
+      renderWithProviders(<ClockSolitairePage />);
+      // Flush the mount reset.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      fireEvent.click(screen.getByTestId('cs-autoplay-button'));
+      // Two normal-speed ticks (450ms each) place two cards, then the game clears.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(450);
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(450);
+      });
+      // Any further ticks must not fire more steps once the game has ended.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2000);
+      });
+      const stepCalls = mockExec.mock.calls.filter(([cmd]) => cmd === 'step');
+      expect(stepCalls).toHaveLength(2);
+      // Client-driven autoplay never hits the single-shot server command.
+      expect(mockExec).not.toHaveBeenCalledWith('autoplay');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('faster speed shortens the auto-advance interval', async () => {
+    restoreCliModeDefault();
+    vi.useFakeTimers();
+    try {
+      mockExec.mockReset().mockResolvedValue(playingState);
+      renderWithProviders(<ClockSolitairePage />);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      // Switch to fast (150ms delay) before starting autoplay.
+      fireEvent.change(screen.getByTestId('autoplay-speed-select'), { target: { value: 'fast' } });
+      fireEvent.click(screen.getByTestId('cs-autoplay-button'));
+      // 150ms is enough at fast speed but would be too short at the 450ms normal delay.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(150);
+      });
+      expect(mockExec).toHaveBeenCalledWith('step');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('renders the animation speed selector persisted to localStorage', async () => {
+    restoreCliModeDefault();
+    renderWithProviders(<ClockSolitairePage />);
+    const select = (await screen.findByTestId('autoplay-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('normal');
+    fireEvent.change(select, { target: { value: 'slow' } });
+    expect(select.value).toBe('slow');
+    expect(localStorage.getItem('clocksolitaire:autoPlaySpeed')).toBe('slow');
+  });
+
+  it('toggles the autoplay button label and disables step while autoplaying', async () => {
+    restoreCliModeDefault();
+    vi.useFakeTimers();
+    try {
+      mockExec.mockReset().mockResolvedValue(playingState);
+      renderWithProviders(<ClockSolitairePage />);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      const autoBtn = screen.getByTestId('cs-autoplay-button');
+      expect(autoBtn).toHaveTextContent('オートプレイ');
+      expect(screen.getByTestId('cs-step-button')).not.toBeDisabled();
+      fireEvent.click(autoBtn);
+      expect(autoBtn).toHaveTextContent('停止');
+      expect(autoBtn).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTestId('cs-step-button')).toBeDisabled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
