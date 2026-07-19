@@ -93,9 +93,37 @@ beforeEach(() => {
 });
 
 describe('AllFoursPage', () => {
+  it('renders the GameSkeleton while state is null', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<AllFoursPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<AllFoursPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows exactly one reset control mid-game that opens a confirm dialog', async () => {
+    renderWithProviders(<AllFoursPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    // Only the consolidated GameResetButton remains — no duplicate reset button.
+    expect(screen.getAllByRole('button', { name: 'リセット' })).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('shows a single 次のゲーム reset control at game end (no duplicate reset button)', async () => {
+    mockExec.mockResolvedValueOnce(gameEndState);
+    renderWithProviders(<AllFoursPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+  });
+
+  it('shows the action log via ActionLogSection at game end', async () => {
+    mockExec.mockResolvedValueOnce(gameEndState);
+    renderWithProviders(<AllFoursPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
   });
 
   it('shows stand and beg buttons in beg phase', async () => {

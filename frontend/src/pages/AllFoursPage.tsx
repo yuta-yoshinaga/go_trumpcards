@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { allfoursApi } from '../api/gameApi';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -12,6 +12,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -21,7 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
-import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { AllFoursResponse } from '../types/card';
 import { AllFoursPhase } from '../types/phases';
@@ -193,11 +194,7 @@ function AllFoursPageContent() {
   );
 
   if (!state) {
-    return (
-      <div className={`flex-1 flex items-center justify-center ${gameTheme.allfours.bg}`}>
-        <div className="text-ds-text-primary">Loading...</div>
-      </div>
-    );
+    return <GameSkeleton gameKey="allfours" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 6 }} />;
   }
 
   const phaseName = t(`phase.${PHASE_KEYS[state.phase] ?? 'beg'}`);
@@ -335,7 +332,12 @@ function AllFoursPageContent() {
               </div>
             )}
 
-            {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
 
           <GameFooter className={`${gameTheme.allfours.footer} px-4 pt-3`}>
@@ -438,30 +440,17 @@ function AllFoursPageContent() {
                     ? t('result.humanWin')
                     : t('result.cpuWin', { cpuId: state.winnerIdx })}
                 </div>
-                <div className="flex justify-center gap-2">
-                  <GameResetButton
-                    isGameEnd={isGameEnd}
-                    onReset={handleManualReset}
-                    requestConfirm={requestConfirm}
-                    loading={loading}
-                  />
-                </div>
               </div>
             )}
 
             <div className="flex justify-center gap-2 pb-2">
-              <button
-                type="button"
-                data-tutorial="af-reset-button"
-                className={btnDanger}
-                onClick={() => requestConfirm(handleManualReset)}
-                disabled={loading}
-              >
-                {tc('button.reset')}
-              </button>
-              <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-                {tc('actionLog.view')}
-              </button>
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="af-reset-button"
+              />
             </div>
           </GameFooter>
         </>
