@@ -24,6 +24,7 @@
   "nextRound": "次のラウンドへ",
   "roundLoser": "{{name}} が最も低いカードでライフを失いました。",
   "roundLosersTitle": "今ラウンドの敗者",
+  "roundLowestValue": "最低値: {{value}}",
   "settings": {
     "title": "設定",
     "cpuDifficulty": "CPU難易度",
