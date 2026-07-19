@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { KlondikeMoveZone, klondikeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { AutoCompleteReadyBadge } from '../components/AutoCompleteReadyBadge';
@@ -25,6 +25,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
+import { klondikeWinRate, useKlondikeStats } from '../hooks/useKlondikeStats';
 import { useKlondikeTimer } from '../hooks/useKlondikeTimer';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
@@ -164,6 +165,35 @@ function KlondikePageContent() {
   const [drawCountSetting, setDrawCountSetting] = useState(1);
   const [scoringModeSetting, setScoringModeSetting] = useState(0);
 
+  // Per-variant (drawCount × scoringMode) play statistics persisted in localStorage (#3031).
+  const { getStat, recordResult } = useKlondikeStats();
+  // Badge shown on the clear screen when a game beats a stored personal best.
+  const [bestUpdate, setBestUpdate] = useState<{ newBestTime: boolean; newFewestMoves: boolean } | null>(null);
+  // Guard so a completed game is recorded exactly once (phase stays ended across re-renders).
+  const recordedRef = useRef(false);
+  const currentPhase = state?.phase;
+  const currentDraw = state?.drawCount;
+  const currentScoring = state?.scoringMode;
+  const currentMoves = state?.moveCount;
+  useEffect(() => {
+    const ended = currentPhase === KlondikePhase.GAME_CLEAR || currentPhase === KlondikePhase.GAME_OVER;
+    if (!ended) {
+      recordedRef.current = false;
+      return;
+    }
+    if (recordedRef.current) return;
+    recordedRef.current = true;
+    const won = currentPhase === KlondikePhase.GAME_CLEAR;
+    const update = recordResult({
+      drawCount: currentDraw ?? 1,
+      scoringMode: currentScoring ?? 0,
+      won,
+      timeSeconds: elapsedSeconds,
+      moves: currentMoves ?? 0,
+    });
+    setBestUpdate(won ? update : null);
+  }, [currentPhase, currentDraw, currentScoring, currentMoves, elapsedSeconds, recordResult]);
+
   // Drag-and-drop: dispatches the same move command as click-based selection.
   const dispatchMove = useCallback(
     (source: KlondikeMoveZone, target: KlondikeMoveZone) => {
@@ -217,6 +247,7 @@ function KlondikePageContent() {
   const isGameOver = state.phase === KlondikePhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
   const isVegas = state.scoringMode === KlondikeScoringMode.VEGAS;
+  const currentStat = getStat(state.drawCount, state.scoringMode);
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -552,6 +583,17 @@ function KlondikePageContent() {
               messageParams={state.messageParams}
             />
 
+            {/* Personal-best badge on the clear screen (#3031). */}
+            {isGameClear && bestUpdate && (bestUpdate.newBestTime || bestUpdate.newFewestMoves) && (
+              <div
+                data-testid="kl-best-badge"
+                role="status"
+                className="text-center text-ds-success font-semibold text-sm mb-2"
+              >
+                {t('stats.newBest')}
+              </div>
+            )}
+
             {/* Action log */}
             <ActionLogSection
               isEndPhase={isEnded}
@@ -687,6 +729,16 @@ function KlondikePageContent() {
                 <option value={0}>{t('scoringNone')}</option>
                 <option value={1}>{t('scoringVegas')}</option>
               </select>
+              {/* Per-variant stats: win rate + best time / fewest moves (#3031). */}
+              <div data-testid="kl-stats-panel" className="w-full text-game-text-muted text-xs">
+                {t('stats.winRate', { rate: klondikeWinRate(currentStat) })} ({currentStat.wins}/{currentStat.plays})
+                {currentStat.bestTimeSeconds !== null && (
+                  <> · {t('stats.bestTime', { time: formatTime(currentStat.bestTimeSeconds) })}</>
+                )}
+                {currentStat.fewestMoves !== null && (
+                  <> · {t('stats.fewestMoves', { moves: currentStat.fewestMoves })}</>
+                )}
+              </div>
               <GameResetButton
                 isGameEnd={isEnded}
                 onReset={handleManualReset}

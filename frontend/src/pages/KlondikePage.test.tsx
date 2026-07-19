@@ -1107,4 +1107,38 @@ describe('KlondikePage', () => {
       );
     });
   });
+
+  describe('local statistics (#3031)', () => {
+    it('renders the stats panel with a win rate readout', async () => {
+      localStorage.removeItem('klondike_stats');
+      renderWithProviders(<KlondikePage />);
+      const panel = await screen.findByTestId('kl-stats-panel');
+      expect(panel).toHaveTextContent(/勝率/);
+    });
+
+    it('records a cleared game and shows the personal-best badge', async () => {
+      localStorage.removeItem('klondike_stats');
+      mockExec.mockResolvedValue(gameClearState);
+      renderWithProviders(<KlondikePage />);
+      // Win recorded once on GAME_CLEAR; first clear beats the (empty) fewest-moves best.
+      expect(await screen.findByTestId('kl-best-badge')).toBeInTheDocument();
+      await waitFor(() => {
+        const raw = localStorage.getItem('klondike_stats');
+        expect(raw).not.toBeNull();
+        const stats = JSON.parse(raw ?? '{}');
+        expect(stats['1:0']).toMatchObject({ plays: 1, wins: 1, fewestMoves: 5 });
+      });
+    });
+
+    it('records a lost game as a play without a win', async () => {
+      localStorage.removeItem('klondike_stats');
+      mockExec.mockResolvedValue(gameOverState);
+      renderWithProviders(<KlondikePage />);
+      await waitFor(() => {
+        const stats = JSON.parse(localStorage.getItem('klondike_stats') ?? '{}');
+        expect(stats['1:0']).toMatchObject({ plays: 1, wins: 0, fewestMoves: null });
+      });
+      expect(screen.queryByTestId('kl-best-badge')).not.toBeInTheDocument();
+    });
+  });
 });

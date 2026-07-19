@@ -48,5 +48,11 @@
     "revealFaceDown": "Move cards to reveal a face-down card underneath",
     "moveKingToEmpty": "A King can be moved to an empty column",
     "drawFromStock": "No obvious moves — try drawing from the stock"
+  },
+  "stats": {
+    "winRate": "Win rate {{rate}}%",
+    "bestTime": "Best {{time}}",
+    "fewestMoves": "{{moves}} moves",
+    "newBest": "New personal best!"
   }
 }
