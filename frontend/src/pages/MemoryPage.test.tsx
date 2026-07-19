@@ -576,4 +576,84 @@ describe('MemoryPage', () => {
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
+
+  // --- Keyboard grid navigation (#3029) ---
+  // matchMedia is mocked to matches:false in test setup, so the grid resolves to
+  // 7 columns (the base breakpoint).
+
+  it('gives the first board cell the roving tab-stop', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    expect(screen.getByTestId('board-0')).toHaveAttribute('tabindex', '0');
+    expect(screen.getByTestId('board-1')).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('ArrowRight moves focus to the next cell', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    fireEvent.keyDown(screen.getByTestId('board-0'), { key: 'ArrowRight' });
+    expect(screen.getByTestId('board-1')).toHaveFocus();
+    expect(screen.getByTestId('board-1')).toHaveAttribute('tabindex', '0');
+    expect(screen.getByTestId('board-0')).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('ArrowDown moves focus down one row (by column count)', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    fireEvent.keyDown(screen.getByTestId('board-0'), { key: 'ArrowDown' });
+    expect(screen.getByTestId('board-7')).toHaveFocus();
+  });
+
+  it('ArrowLeft at the left edge keeps focus clamped', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    const first = screen.getByTestId('board-0');
+    first.focus();
+    fireEvent.keyDown(first, { key: 'ArrowLeft' });
+    expect(first).toHaveFocus();
+    expect(first).toHaveAttribute('tabindex', '0');
+  });
+
+  it('arrow navigation skips taken cells', async () => {
+    // board-1 is taken, so ArrowRight from board-0 lands on board-2.
+    mockExec.mockResolvedValue({
+      ...flip1State,
+      board: makeBoard({ 1: { taken: true } }),
+    });
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    fireEvent.keyDown(screen.getByTestId('board-0'), { key: 'ArrowRight' });
+    expect(screen.getByTestId('board-2')).toHaveFocus();
+  });
+
+  // --- Flip-result live region (#3029) ---
+
+  it('announces a match result in the polite live region', async () => {
+    mockExec.mockResolvedValue(resultMatchState);
+    renderWithProviders(<MemoryPage />);
+    const region = await screen.findByTestId('mem-flip-announce');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveAttribute('role', 'status');
+    await waitFor(() => expect(region).toHaveTextContent('♠ A / ♥ A — 一致'));
+  });
+
+  it('announces a mismatch result in the polite live region', async () => {
+    mockExec.mockResolvedValue({
+      ...resultMatchState,
+      lastMatchResult: false,
+      board: makeBoard({
+        0: { faceUp: true, card: { design: 'SPADE' as const, value: 1 } },
+        1: { faceUp: true, card: { design: 'HEART' as const, value: 5 } },
+      }),
+    });
+    renderWithProviders(<MemoryPage />);
+    const region = await screen.findByTestId('mem-flip-announce');
+    await waitFor(() => expect(region).toHaveTextContent('♠ A / ♥ 5 — 不一致'));
+  });
+
+  it('keeps the live region empty outside the result phase', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    expect(screen.getByTestId('mem-flip-announce')).toHaveTextContent('');
+  });
 });
