@@ -134,6 +134,53 @@ describe('FrenchTarotPage', () => {
     expect(screen.getAllByText('デクレアラー').length).toBeGreaterThan(0);
   });
 
+  it('shows the bouts held in hand (the 21 and the Excuse) and excludes a suit Ace', async () => {
+    // The default hand holds the 21 (purple trump) + the Excuse (gold), plus a black CLOVER Ace
+    // (value 1) that must NOT be counted as the Petit.
+    renderWithProviders(<FrenchTarotPage />);
+    const panel = await screen.findByTestId('frenchtarot-bouts');
+    expect(panel).toHaveTextContent('保有ブー（2/3）');
+    expect(screen.getByTestId('frenchtarot-bout-twentyOne')).toBeInTheDocument();
+    expect(screen.getByTestId('frenchtarot-bout-excuse')).toBeInTheDocument();
+    expect(screen.queryByTestId('frenchtarot-bout-petit')).not.toBeInTheDocument();
+    // 2 bouts → target 41.
+    expect(panel).toHaveTextContent('41');
+  });
+
+  it('shows no bouts when the hand holds none', async () => {
+    mockExec.mockResolvedValue(
+      makeFrenchTarotState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 3,
+            cards: [
+              { design: 'HEART' as const, value: 13, glyph: '♥', label: 'D', color: 'red', deck: 'tarot' },
+              { design: 'CLOVER' as const, value: 1, glyph: '♣', label: '1', color: 'black', deck: 'tarot' },
+              { design: 'JOKER' as const, value: 5, glyph: '✦', label: '5', color: 'purple', deck: 'tarot' },
+            ],
+            trickCount: 0,
+            cardPoints: 0,
+            score: 0,
+            isDeclarer: true,
+          },
+          { id: 1, isHuman: false, cardCount: 3, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+          { id: 2, isHuman: false, cardCount: 3, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+          { id: 3, isHuman: false, cardCount: 3, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+        ],
+        playableIndices: [0, 1, 2],
+      }),
+    );
+    renderWithProviders(<FrenchTarotPage />);
+    const panel = await screen.findByTestId('frenchtarot-bouts');
+    expect(panel).toHaveTextContent('保有ブー（0/3）');
+    expect(panel).toHaveTextContent('なし');
+    expect(screen.queryByTestId('frenchtarot-bout-twentyOne')).not.toBeInTheDocument();
+    // 0 bouts → target 56.
+    expect(panel).toHaveTextContent('56');
+  });
+
   it('renders the bid phase with Pass and the four contract buttons', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<FrenchTarotPage />);
