@@ -140,6 +140,23 @@ describe('KoiKoiPage', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
+  it('offers the frontend hint toggle, off by default with no tooltip', async () => {
+    renderWithProviders(<KoiKoiPage />);
+    const toggle = await screen.findByLabelText('ヒント表示');
+    expect(toggle).not.toBeChecked();
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  it('shows the hint tooltip when the toggle is enabled and state.hint is set', async () => {
+    localStorage.setItem('hint_enabled_koikoi', 'true');
+    mockExec.mockResolvedValue(
+      makeKoiKoiState({ hint: { cardIndex: 0, fieldIndex: 0, koikoi: -1, reason: 'capture' } }),
+    );
+    renderWithProviders(<KoiKoiPage />);
+    const tooltip = await screen.findByTestId('hint-tooltip');
+    expect(tooltip).toHaveTextContent('価値の高い場札を捕獲する');
+  });
+
   it('ignores a field click that is not a capture candidate', async () => {
     mockExec.mockResolvedValue(makeKoiKoiState({ captureOptions: { 0: [0, 1] } }));
     renderWithProviders(<KoiKoiPage />);

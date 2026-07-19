@@ -57,7 +57,25 @@ func (p *KoiKoiWebPresenter) Output(g interfaces.KoiKoiGame, lastErr error) stri
 		resObj.MessageCode = "koikoi.result.scores"
 		resObj.MessageParams = map[string]string{"scores": p.encodeScoresParam(g)}
 	}
+	// 人間の手番 (プレイ／こいこい判断) ではヒントを埋め、フロントエンドのヒントトグルを
+	// 機能させる。GetHint は CPU 手番・ゲーム終了・対象外フェーズでは nil を返すため、
+	// その場合 Hint は設定されない。
+	p.applyHint(resObj, g)
 	return marshalOrError(resObj)
+}
+
+// applyHint は人間の手番であればヒント情報を出力オブジェクトへ埋める。
+// g.GetHint() は CPU 手番・ゲーム終了・対象外フェーズでは nil を返すため、
+// その場合 Hint は設定されず、omitempty により JSON からも省かれる。
+func (p *KoiKoiWebPresenter) applyHint(resObj *controller.KoiKoiWebOutput, g interfaces.KoiKoiGame) {
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.KoiKoiWebOutputHint{
+			CardIndex:  hint.CardIndex,
+			FieldIndex: hint.FieldIndex,
+			KoiKoi:     hint.KoiKoi,
+			Reason:     hint.Reason,
+		}
+	}
 }
 
 // buildBase は基本フィールドを埋めた出力オブジェクトを生成する。
@@ -180,14 +198,7 @@ func (p *KoiKoiWebPresenter) buildResultMessage(g interfaces.KoiKoiGame) string 
 // HintOutput はヒント情報を JSON 出力する。
 func (p *KoiKoiWebPresenter) HintOutput(g interfaces.KoiKoiGame) string {
 	resObj := p.buildBase(g)
-	if hint := g.GetHint(); hint != nil {
-		resObj.Hint = &controller.KoiKoiWebOutputHint{
-			CardIndex:  hint.CardIndex,
-			FieldIndex: hint.FieldIndex,
-			KoiKoi:     hint.KoiKoi,
-			Reason:     hint.Reason,
-		}
-	}
+	p.applyHint(resObj, g)
 	return marshalOrError(resObj)
 }
 
