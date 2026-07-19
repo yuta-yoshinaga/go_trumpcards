@@ -32,6 +32,14 @@
   "currentTrick": "現在のトリック",
   "players": "プレイヤー",
   "chienLabel": "シアン（公開）",
+  "bouts": {
+    "title": "保有ブー（{{count}}/3）",
+    "twentyOne": "21",
+    "petit": "プティ（切り札1）",
+    "excuse": "エクスキューズ",
+    "none": "なし",
+    "target": "{{count}}ブーの必要点: {{points}} 点"
+  },
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "declarerBadge": "デクレアラー",

@@ -32,6 +32,14 @@
   "currentTrick": "Current Trick",
   "players": "Players",
   "chienLabel": "Chien (revealed)",
+  "bouts": {
+    "title": "Bouts held ({{count}}/3)",
+    "twentyOne": "21",
+    "petit": "Petit (trump 1)",
+    "excuse": "Excuse",
+    "none": "None",
+    "target": "Target with {{count}} bout(s): {{points}} pts"
+  },
   "you": "You",
   "cpu": "CPU {{id}}",
   "declarerBadge": "Declarer",

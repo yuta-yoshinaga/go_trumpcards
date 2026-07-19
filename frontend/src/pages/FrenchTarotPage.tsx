@@ -36,6 +36,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { FRENCH_TAROT_HELP, parseFrenchTarotCommand } from '../utils/cli/commands/frenchtarotCommands';
 import { formatFrenchTarotState } from '../utils/cli/formatters/frenchtarotFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { frenchTarotTarget, heldBouts } from '../utils/frenchTarotBouts';
 import { playerName } from '../utils/playerUtils';
 
 /** French Tarot tutorial step definitions. */
@@ -174,6 +175,9 @@ function FrenchTarotPageContent() {
   const canDiscard = isChienPhase && state.isHumanDiscard;
   const canPlay = isPlayPhase && isHumanTurn;
 
+  // Bouts (oudlers) the human currently holds in hand: the 21, the Petit (trump 1), and the Excuse.
+  const heldBoutList = humanPlayer ? heldBouts(humanPlayer.cards) : [];
+
   const contractLabel = t(CONTRACT_KEYS[state.contract] ?? 'contractNone');
   const highestBidLabel = state.highestBid > 0 ? t(CONTRACT_KEYS[state.highestBid] ?? 'contractNone') : t('bidNone');
 
@@ -296,6 +300,36 @@ function FrenchTarotPageContent() {
                     </div>
                   ))}
                 </div>
+
+                {/* Bouts (oudlers) held in the human's hand — drive the contract's point target. */}
+                {humanPlayer && humanPlayer.cards.length > 0 && (
+                  <div className="mb-2 p-2 rounded bg-black/30" data-testid="frenchtarot-bouts">
+                    <div className="text-ds-text-muted text-sm mb-1">
+                      {t('bouts.title', { count: heldBoutList.length })}
+                    </div>
+                    {heldBoutList.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {heldBoutList.map((b) => (
+                          <span
+                            key={b}
+                            className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs"
+                            data-testid={`frenchtarot-bout-${b}`}
+                          >
+                            {t(`bouts.${b}`)}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-ds-text-muted text-sm">{t('bouts.none')}</div>
+                    )}
+                    <div className="text-ds-text-muted text-xs mt-1">
+                      {t('bouts.target', {
+                        count: heldBoutList.length,
+                        points: frenchTarotTarget(heldBoutList.length),
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Players: cards / tricks / captured points */}
                 {isMobile ? (
