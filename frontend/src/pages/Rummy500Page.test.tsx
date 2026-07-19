@@ -102,14 +102,48 @@ describe('Rummy500Page', () => {
 
   it('clicking discard card in Draw phase calls drawdiscard', async () => {
     renderWithProviders(<Rummy500Page />);
-    await waitFor(() => {
-      expect(screen.getAllByLabelText(/\(0\)$/).length).toBeGreaterThan(0);
-    });
-    const card = screen.getAllByLabelText(/\(0\)$/)[0];
+    const card = await screen.findByTestId('disc-card-0');
     fireEvent.click(card);
     await waitFor(() => {
       expect(mockExec).toHaveBeenCalledWith('drawdiscard', undefined, undefined, undefined, 0);
     });
+  });
+
+  it('previews the whole take-range when hovering a mid-pile discard card', async () => {
+    renderWithProviders(<Rummy500Page />);
+    // drawPhaseState.discardPile has 2 cards: [♥3 (idx 0), ♣5 (idx 1, top)].
+    const bottom = await screen.findByTestId('disc-card-0');
+    const top = screen.getByTestId('disc-card-1');
+    // Nothing highlighted before hover.
+    expect(bottom).not.toHaveAttribute('data-in-pickup-range');
+    expect(top).not.toHaveAttribute('data-in-pickup-range');
+
+    fireEvent.mouseEnter(bottom);
+    // Hovering the bottom card highlights it AND every card above it (the whole pile).
+    expect(bottom).toHaveAttribute('data-in-pickup-range', 'true');
+    expect(top).toHaveAttribute('data-in-pickup-range', 'true');
+    // The badge announces the number of cards that would be taken (2).
+    const badge = screen.getByTestId('pickup-range-badge');
+    expect(badge).toHaveTextContent('2');
+    // The aria-label of the hovered card also carries the count.
+    expect(bottom).toHaveAttribute('aria-label', expect.stringContaining('2枚引き取る'));
+
+    fireEvent.mouseLeave(bottom);
+    expect(bottom).not.toHaveAttribute('data-in-pickup-range');
+    expect(top).not.toHaveAttribute('data-in-pickup-range');
+  });
+
+  it('previews only the top card when hovering the top of the discard pile', async () => {
+    renderWithProviders(<Rummy500Page />);
+    const bottom = await screen.findByTestId('disc-card-0');
+    const top = screen.getByTestId('disc-card-1');
+
+    fireEvent.focus(top);
+    // Hovering/focusing the top card previews just that one card.
+    expect(top).toHaveAttribute('data-in-pickup-range', 'true');
+    expect(bottom).not.toHaveAttribute('data-in-pickup-range');
+    expect(screen.getByTestId('pickup-range-badge')).toHaveTextContent('1');
+    expect(top).toHaveAttribute('aria-label', expect.stringContaining('1枚引き取る'));
   });
 
   it('shows meld + discard buttons in Play phase', async () => {
