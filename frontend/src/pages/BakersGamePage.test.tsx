@@ -860,4 +860,98 @@ describe('BakersGamePage', () => {
       );
     });
   });
+
+  // --- Double-click / double-tap auto-move ---
+
+  describe('double-click auto-move', () => {
+    it('double-clicking a tableau top card that can reach a foundation issues the foundation move', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        tableau: [[card('SPADE', 2)], [], [], [], [], [], [], []],
+        foundation: [[card('SPADE', 1)], [], [], []],
+      });
+      renderWithProviders(<BakersGamePage />);
+      const cardButton = (await screen.findByAltText('♠ 2')).closest('button') as HTMLButtonElement;
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      fireEvent.doubleClick(cardButton);
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', expect.objectContaining({ zone: 'tableau', col: 0 }), {
+          zone: 'foundation',
+          col: 0,
+        }),
+      );
+    });
+
+    it('double-clicking a free-cell card that can reach a foundation issues the foundation move', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        freeCells: [card('SPADE', 1), null, null, null],
+        foundation: [[], [], [], []],
+      });
+      renderWithProviders(<BakersGamePage />);
+      const cardButton = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      fireEvent.doubleClick(cardButton);
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', { zone: 'freecell', cell: 0 }, { zone: 'foundation', col: 0 }),
+      );
+    });
+
+    it('double-clicking a card with no foundation move falls back to an empty free cell', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        tableau: [[card('SPADE', 13)], [], [], [], [], [], [], []],
+        freeCells: [null, null, null, null],
+        foundation: [[], [], [], []],
+      });
+      renderWithProviders(<BakersGamePage />);
+      const cardButton = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      fireEvent.doubleClick(cardButton);
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', expect.objectContaining({ zone: 'tableau', col: 0 }), {
+          zone: 'freecell',
+          cell: 0,
+        }),
+      );
+    });
+
+    it('double-clicking a card with no legal auto-move issues no move', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        tableau: [[card('SPADE', 13)], [], [], [], [], [], [], []],
+        freeCells: [card('HEART', 5), card('CLOVER', 6), card('DIAMOND', 7), card('SPADE', 8)],
+        foundation: [[], [], [], []],
+      });
+      renderWithProviders(<BakersGamePage />);
+      const cardButton = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+
+      mockExec.mockClear();
+      fireEvent.doubleClick(cardButton);
+      await Promise.resolve();
+      expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+    });
+
+    it('single-clicking a card still selects it without issuing a move (no regression)', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        tableau: [[card('SPADE', 2)], [], [], [], [], [], [], []],
+        foundation: [[card('SPADE', 1)], [], [], []],
+      });
+      renderWithProviders(<BakersGamePage />);
+      const cardButton = (await screen.findByAltText('♠ 2')).closest('button') as HTMLButtonElement;
+
+      mockExec.mockClear();
+      fireEvent.click(cardButton);
+      await Promise.resolve();
+      expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+      expect(cardButton).toHaveAttribute('aria-pressed', 'true');
+    });
+  });
 });
