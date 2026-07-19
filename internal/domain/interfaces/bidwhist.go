@@ -79,6 +79,8 @@ type BidWhistGame interface {
 	GetHighestBidder() int
 	// GetKitty キティを取得する
 	GetKitty() []*domain.Card
+	// GetKittyIndices キティ交換フェーズ中、落札者の手札のうちキティ由来カードのインデックスを取得する
+	GetKittyIndices() []int
 	// GetTeamScore チームスコアを取得する
 	GetTeamScore(team int) int
 	// GetWinnerTeam 勝利チームを取得する (-1 = 未確定)

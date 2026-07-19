@@ -54,6 +54,7 @@ function makeState(overrides: Partial<BidWhistResponse> = {}): BidWhistResponse 
     highestBid: null,
     highestBidder: -1,
     kittyCount: 6,
+    kittyIndices: [],
     currentTrick: [],
     teamScores: [0, 0],
     gameEndFlag: false,
@@ -163,6 +164,41 @@ describe('BidWhistPage', () => {
     }
     expect(progress).toHaveTextContent('6 / 6');
     expect(progress.querySelector('.bg-ds-success')).not.toBeNull();
+  });
+
+  it('highlights kitty-origin cards during the human exchange', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        declarerIdx: 0,
+        kittyIndices: [1, 3],
+        players: [
+          player(0, true, sixCards, { isDeclarer: true }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<BidWhistPage />);
+    // Legend appears and only the flagged cards carry the warning ring + badge.
+    expect(await screen.findByTestId('kitty-legend')).toBeInTheDocument();
+    expect(screen.getByTestId('hand-card-1')).toHaveAttribute('data-kitty', 'true');
+    expect(screen.getByTestId('hand-card-3')).toHaveAttribute('data-kitty', 'true');
+    expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-warning');
+    expect(screen.getByTestId('kitty-badge-1')).toBeInTheDocument();
+    // Non-kitty cards are not flagged.
+    expect(screen.getByTestId('hand-card-0')).not.toHaveAttribute('data-kitty');
+    expect(screen.queryByTestId('kitty-badge-0')).not.toBeInTheDocument();
+  });
+
+  it('does not highlight kitty cards outside the exchange phase', async () => {
+    // kittyIndices is only honoured during KITTY_EXCHANGE; in play it is ignored.
+    mockExec.mockResolvedValue(makeState({ phase: 3, currentPlayerIdx: 0, kittyIndices: [1, 3] }));
+    renderWithProviders(<BidWhistPage />);
+    await screen.findByTestId('hand-card-0');
+    expect(screen.queryByTestId('kitty-legend')).not.toBeInTheDocument();
+    expect(screen.getByTestId('hand-card-1')).not.toHaveAttribute('data-kitty');
   });
 
   it('hides the kitty progress outside the exchange phase', async () => {

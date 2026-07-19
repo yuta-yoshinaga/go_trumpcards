@@ -5928,6 +5928,12 @@ export interface BidWhistResponse extends BaseGameResponse {
   highestBid?: BidWhistBidData | null;
   highestBidder: number;
   kittyCount: number;
+  /**
+   * Indices, within the human declarer's hand, of the six cards that came from
+   * the kitty. Populated only while the human is exchanging during
+   * KITTY_EXCHANGE; empty in every other phase and for a CPU declarer.
+   */
+  kittyIndices: number[];
   currentTrick: BidWhistTrickCard[];
   teamScores: [number, number];
   gameEndFlag: boolean;
