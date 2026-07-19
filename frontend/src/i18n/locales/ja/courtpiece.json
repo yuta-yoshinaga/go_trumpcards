@@ -47,6 +47,10 @@
     "heart": "♥ ハート",
     "diamond": "♦ ダイヤ"
   },
+  "liveTricks": {
+    "title": "今ラウンド",
+    "team": "{{team}} {{tricks}}/{{target}}"
+  },
   "roundResult": {
     "title": "ラウンド結果（獲得トリック）",
     "teamA": "チームA: {{tricks}}トリック",
