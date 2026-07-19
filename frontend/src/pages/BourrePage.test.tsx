@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bourreApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -78,6 +78,42 @@ describe('BourrePage', () => {
     await waitFor(() => {
       expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'reset' }));
     });
+  });
+
+  it('header renders the trump suit as a symbol, not the raw design string', async () => {
+    renderWithProviders(<BourrePage />); // default trumpSuit: SPADE
+    const trump = await screen.findByTestId('bourre-trump');
+    expect(trump).toHaveTextContent('♠');
+    expect(trump).not.toHaveTextContent('SPADE');
+  });
+
+  it('header colors a red trump suit (hearts) with the error token', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 'HEART' }));
+    renderWithProviders(<BourrePage />);
+    const trump = await screen.findByTestId('bourre-trump');
+    expect(within(trump).getByText('♥')).toHaveClass('text-ds-error');
+  });
+
+  it('header colors a red trump suit (diamonds) with the error token', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 'DIAMOND' }));
+    renderWithProviders(<BourrePage />);
+    const trump = await screen.findByTestId('bourre-trump');
+    expect(within(trump).getByText('♦')).toHaveClass('text-ds-error');
+  });
+
+  it('header does not color a black trump suit (clubs) with the error token', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 'CLOVER' }));
+    renderWithProviders(<BourrePage />);
+    const trump = await screen.findByTestId('bourre-trump');
+    expect(within(trump).getByText('♣')).not.toHaveClass('text-ds-error');
+  });
+
+  it('header shows a dash when the trump suit is unset', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 'JOKER' }));
+    renderWithProviders(<BourrePage />);
+    const trump = await screen.findByTestId('bourre-trump');
+    expect(trump).toHaveTextContent('-');
+    expect(trump).not.toHaveTextContent('JOKER');
   });
 
   it('renders CPU player areas after load', async () => {
@@ -370,5 +406,19 @@ describe('BourrePage', () => {
       expect(screen.getAllByText(/Unknown command/).length).toBeGreaterThan(0);
     });
     expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('CLI formatter renders the trump suit as a symbol, not the raw design string', async () => {
+    localStorage.setItem('cli-mode-bourre', 'true');
+    // Distinct objects so useCliGame's [state] effect fires after the command re-renders.
+    mockExec.mockResolvedValueOnce(makeState({ phase: 'decide', trumpSuit: 'HEART' })); // mount reset
+    mockExec.mockResolvedValue(makeState({ phase: 'play', trumpSuit: 'HEART' })); // after command
+    renderWithProviders(<BourrePage />);
+    const input = await screen.findByRole('textbox');
+    fireEvent.change(input, { target: { value: 'n' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    const output = await screen.findByText(/Trump: ♥/);
+    expect(output).toBeInTheDocument();
+    expect(output).not.toHaveTextContent('HEART');
   });
 });
