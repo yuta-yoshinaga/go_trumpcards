@@ -34,5 +34,6 @@
     "useEmptyColumn": "空の列があります — 整理に活用しましょう",
     "useFreeCells": "フリーセルにカードを移動して手を広げましょう"
   },
-  "emptyTableauColumnAriaLabel": "空のタブロー列 {{idx}}（カードの移動先）"
+  "emptyTableauColumnLabel": "任意",
+  "emptyTableauColumnAriaLabel": "空のタブロー列 {{idx}}（任意のカードを置けます）"
 }

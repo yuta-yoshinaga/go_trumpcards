@@ -365,7 +365,7 @@ function BakersGamePageContent() {
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                               aria-label={t('emptyTableauColumnAriaLabel', { idx: String(colIdx) })}
                             >
-                              K
+                              {t('emptyTableauColumnLabel')}
                             </button>
                           ) : (
                             col.map((card: Card | null, cardIdx: number) => {

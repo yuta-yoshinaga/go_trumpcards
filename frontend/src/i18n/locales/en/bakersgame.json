@@ -34,5 +34,6 @@
     "useEmptyColumn": "An empty column is available — use it for reorganization",
     "useFreeCells": "Consider moving a card to a free cell to open up moves"
   },
-  "emptyTableauColumnAriaLabel": "Empty tableau column {{idx}} (move target)"
+  "emptyTableauColumnLabel": "Any",
+  "emptyTableauColumnAriaLabel": "Empty tableau column {{idx}} (any card can be placed)"
 }
