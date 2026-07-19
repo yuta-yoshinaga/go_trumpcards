@@ -132,6 +132,8 @@ function DoubleKlondikePageContent() {
   };
 
   const cardH = Math.round(w * 1.4);
+  // Fan the most-recent up to 3 waste cards so a 3-card draw stays visible.
+  const wasteFan = Math.round(w * 0.4);
 
   const renderTableau = (column: (typeof state.tableau)[number], col: number) => (
     <div
@@ -168,7 +170,8 @@ function DoubleKlondikePageContent() {
     </div>
   );
 
-  const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
+  // The most-recent up to 3 waste cards, oldest-first; only the last is playable.
+  const wasteDisplay = state.waste.slice(-3);
 
   return (
     <GamePageShell
@@ -201,24 +204,47 @@ function DoubleKlondikePageContent() {
           >
             {state.stockCount}
           </button>
-          <button
-            type="button"
-            className={`rounded ${selected?.zone === 'waste' ? 'ring-2 ring-ds-warning' : ''}`}
-            style={{ width: w, height: cardH }}
-            onClick={canAct ? clickWaste : undefined}
-            disabled={!canAct || !wasteTop}
-            title={t('waste')}
-            data-testid="waste"
-          >
-            {wasteTop ? (
-              <CardImage card={wasteTop} width={w} />
-            ) : (
-              <div
-                className="rounded border border-dashed border-white/25 bg-black/20"
-                style={{ width: w, height: cardH }}
-              />
-            )}
-          </button>
+          {wasteDisplay.length > 0 ? (
+            <div
+              className="relative"
+              style={{ width: w + (wasteDisplay.length - 1) * wasteFan, height: cardH }}
+              data-testid="waste-fan"
+            >
+              {wasteDisplay.map((c, i) => {
+                const isTop = i === wasteDisplay.length - 1;
+                return isTop ? (
+                  <button
+                    key={`waste-${i.toString()}`}
+                    type="button"
+                    className={`absolute top-0 rounded ${selected?.zone === 'waste' ? 'ring-2 ring-ds-warning' : ''}`}
+                    style={{ left: i * wasteFan }}
+                    onClick={canAct ? clickWaste : undefined}
+                    disabled={!canAct}
+                    title={t('waste')}
+                    data-testid="waste"
+                  >
+                    <CardImage card={c} width={w} />
+                  </button>
+                ) : (
+                  <div
+                    key={`waste-${i.toString()}`}
+                    className="absolute top-0 rounded opacity-60"
+                    style={{ left: i * wasteFan }}
+                    aria-hidden="true"
+                    data-testid={`waste-under-${i.toString()}`}
+                  >
+                    <CardImage card={c} width={w} />
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div
+              className="rounded border border-dashed border-white/25 bg-black/20"
+              style={{ width: w, height: cardH }}
+              data-testid="waste-empty"
+            />
+          )}
           <div className="ml-auto grid grid-cols-4 gap-1">
             {state.foundation.map((f, i) => {
               const top = f.length > 0 ? f[f.length - 1] : null;
