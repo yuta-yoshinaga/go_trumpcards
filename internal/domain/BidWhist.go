@@ -125,7 +125,12 @@ type BidWhist struct {
 	currentTrick     []*BidWhistTrickCard
 	dealerIdx        int
 	kitty            []*Card
-	leadPlayerIdx    int
+	// declarerKitty retains a copy of the six kitty cards handed to the declarer
+	// at bid finalisation, kept only through the kitty-exchange phase so the UI
+	// can highlight which cards in the declarer's merged hand came from the
+	// kitty. Cleared once play begins. Never used for game logic.
+	declarerKitty []*Card
+	leadPlayerIdx int
 	// --- bidding state ---
 	bidPlayerIdx  int
 	passed        [BidWhistPlayerCnt]bool
@@ -213,6 +218,7 @@ func (g *BidWhist) startRound() {
 func (g *BidWhist) dealRound() {
 	g.trumpCards.Shuffle()
 	g.kitty = nil
+	g.declarerKitty = nil
 	for range BidWhistHandSize {
 		for j := range BidWhistPlayerCnt {
 			if card := g.trumpCards.DrawCard(); card != nil {
@@ -343,6 +349,7 @@ func (g *BidWhist) finalizeBid() {
 	g.contract = *g.highestBid
 	g.declarerIdx = g.highestBidder
 	g.players[g.declarerIdx].SetIsDeclarer(true)
+	g.declarerKitty = append([]*Card(nil), g.kitty...)
 	for _, c := range g.kitty {
 		g.players[g.declarerIdx].AddCard(c)
 	}
@@ -457,6 +464,7 @@ func (g *BidWhist) doExchange(discardIndices []int) error {
 func (g *BidWhist) startPlayPhase() {
 	g.trickNumber = 1
 	g.currentTrick = nil
+	g.declarerKitty = nil
 	g.leadPlayerIdx = g.declarerIdx
 	g.currentPlayerIdx = g.declarerIdx
 	g.phase = BidWhistPhasePlay
@@ -1114,6 +1122,43 @@ func (g *BidWhist) GetHighestBidder() int { return g.highestBidder }
 // GetKitty キティ取得
 func (g *BidWhist) GetKitty() []*Card { return g.kitty }
 
+// SetDeclarerKitty 落札者へ渡したキティを設定 (テスト用)
+func (g *BidWhist) SetDeclarerKitty(cards []*Card) { g.declarerKitty = cards }
+
+// bidWhistCardKey は Card を (design, value) で一意に識別するキーを返す。
+// 標準52枚 + ジョーカー2枚 (value 1/2 で区別) を通じて衝突しない。
+func bidWhistCardKey(c *Card) int { return c.GetDesign()*100 + c.GetValue() }
+
+// GetKittyIndices はキティ交換フェーズ中、落札者の手札のうちキティ由来の6枚の
+// インデックスを返す。それ以外のフェーズ・落札者未確定・キティ非保持時は空スライスを返す。
+// カード値で照合するためシリアライズを跨いでも安定する。読み取り専用でゲーム状態を変更しない。
+func (g *BidWhist) GetKittyIndices() []int {
+	if g.phase != BidWhistPhaseKittyExchange || g.declarerIdx < 0 ||
+		g.declarerIdx >= len(g.players) || len(g.declarerKitty) == 0 {
+		return []int{}
+	}
+	want := make(map[int]int, len(g.declarerKitty))
+	for _, c := range g.declarerKitty {
+		if c != nil {
+			want[bidWhistCardKey(c)]++
+		}
+	}
+	player := g.players[g.declarerIdx]
+	indices := make([]int, 0, len(g.declarerKitty))
+	for i := 0; i < player.GetCardsSize(); i++ {
+		c := player.GetCard(i)
+		if c == nil {
+			continue
+		}
+		key := bidWhistCardKey(c)
+		if want[key] > 0 {
+			want[key]--
+			indices = append(indices, i)
+		}
+	}
+	return indices
+}
+
 // GetTeamScore チームスコア取得
 func (g *BidWhist) GetTeamScore(team int) int {
 	if team < 0 || team >= BidWhistTeamCnt {
@@ -1302,6 +1347,7 @@ type bidWhistJSON struct {
 	CurrentTrick     []*BidWhistTrickCard    `json:"ct"`
 	DealerIdx        int                     `json:"di"`
 	Kitty            []*Card                 `json:"kt"`
+	DeclarerKitty    []*Card                 `json:"dk"`
 	LeadPlayerIdx    int                     `json:"li"`
 	BidPlayerIdx     int                     `json:"bi"`
 	Passed           [BidWhistPlayerCnt]bool `json:"pd"`
@@ -1329,6 +1375,7 @@ func (g *BidWhist) MarshalJSON() ([]byte, error) {
 		CurrentTrick:     g.currentTrick,
 		DealerIdx:        g.dealerIdx,
 		Kitty:            g.kitty,
+		DeclarerKitty:    g.declarerKitty,
 		LeadPlayerIdx:    g.leadPlayerIdx,
 		BidPlayerIdx:     g.bidPlayerIdx,
 		Passed:           g.passed,
@@ -1359,7 +1406,7 @@ func (g *BidWhist) UnmarshalJSON(data []byte) error {
 		return fmt.Errorf("bidwhist: invalid player count: %d", len(j.Players))
 	}
 	if len(j.CurrentTrick) > BidWhistPlayerCnt || len(j.Kitty) > BidWhistKittySize ||
-		len(j.ActionLog) > bidWhistMaxActionLogLen {
+		len(j.DeclarerKitty) > BidWhistKittySize || len(j.ActionLog) > bidWhistMaxActionLogLen {
 		return fmt.Errorf("bidwhist: input array exceeds maximum allowed size")
 	}
 	g.trumpCards = j.TrumpCards
@@ -1397,6 +1444,12 @@ func (g *BidWhist) UnmarshalJSON(data []byte) error {
 	for _, c := range g.kitty {
 		if c == nil {
 			return fmt.Errorf("bidwhist: kitty card is nil")
+		}
+	}
+	g.declarerKitty = j.DeclarerKitty
+	for _, c := range g.declarerKitty {
+		if c == nil {
+			return fmt.Errorf("bidwhist: declarer kitty card is nil")
 		}
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
