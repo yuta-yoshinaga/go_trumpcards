@@ -182,6 +182,39 @@ describe('PigsTailPage', () => {
     await waitFor(() => expect(screen.queryByTestId('pt-center-history')).not.toBeInTheDocument());
   });
 
+  it('flips the drawn card face-up in the reveal area on a draw', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastDrawCard: { design: 'SPADE', value: 1 },
+      lastPenalty: false,
+    });
+    renderWithProviders(<PigsTailPage />);
+    const reveal = await screen.findByTestId('pt-draw-reveal');
+    // The card face (AnimatedCard) is rendered, not just a text label.
+    expect(reveal.querySelector('[data-testid="animated-card"]')).not.toBeNull();
+    // The flip wrapper carries the motion-safe flip animation class.
+    expect(reveal.querySelector('.motion-safe\\:animate-flipIn')).not.toBeNull();
+    expect(reveal).toHaveTextContent('セーフ');
+  });
+
+  it('adds a red highlight ring to the drawn card on a penalty', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastDrawCard: { design: 'HEART', value: 3 },
+      lastPenalty: true,
+    });
+    renderWithProviders(<PigsTailPage />);
+    const reveal = await screen.findByTestId('pt-draw-reveal');
+    expect(reveal.querySelector('.ring-ds-error')).not.toBeNull();
+    expect(reveal).toHaveTextContent('ペナルティ');
+  });
+
+  it('does not render the draw reveal before any card is drawn', async () => {
+    renderWithProviders(<PigsTailPage />);
+    await waitFor(() => expect(screen.getByTestId('circular-deck')).toBeInTheDocument());
+    expect(screen.queryByTestId('pt-draw-reveal')).not.toBeInTheDocument();
+  });
+
   it('draw button is disabled on game end', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PigsTailPage />);
