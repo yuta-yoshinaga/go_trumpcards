@@ -6,6 +6,10 @@
     "winner": "{{name}} (+{{amount}})",
     "hiTakesAll": "No qualifying low — Hi scoops the pot"
   },
+  "scoop": {
+    "badge": "🏆 Scoop! {{name}} takes both Hi & Lo (+{{total}})",
+    "youBadge": "🏆 Scoop! You take both Hi & Lo (+{{total}})"
+  },
   "phase": {
     "preFlop": "Pre-Flop",
     "flop": "Flop",

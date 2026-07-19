@@ -6,6 +6,10 @@
     "winner": "{{name}} (+{{amount}})",
     "hiTakesAll": "ロー該当者なし — ハイが総取り"
   },
+  "scoop": {
+    "badge": "🏆 スクープ! {{name}} がハイ・ロー総取り (+{{total}})",
+    "youBadge": "🏆 スクープ達成! ハイ・ローを総取り (+{{total}})"
+  },
   "phase": {
     "preFlop": "プリフロップ",
     "flop": "フロップ",

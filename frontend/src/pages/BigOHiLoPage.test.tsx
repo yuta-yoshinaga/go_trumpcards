@@ -426,6 +426,53 @@ describe('BigOHiLoPage', () => {
     expect(screen.getByTestId('bigohilo-hi-takes-all')).toBeInTheDocument();
   });
 
+  it('shows a scoop badge when one player wins both Hi and Lo', async () => {
+    const scoopState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        { ...showdownState.roundResults[0], wonAmount: 300, hiWonAmount: 200, lowWonAmount: 100 },
+        { ...showdownState.roundResults[1], wonAmount: 0, hiWonAmount: 0, lowWonAmount: 0 },
+      ],
+    };
+    mockExec.mockResolvedValue(scoopState);
+    renderWithProviders(<BigOHiLoPage />);
+    const badge = await screen.findByTestId('bigohilo-scoop-badge');
+    // Human (playerIdx 0) scooped: personalized message + emphasis marker.
+    expect(badge).toHaveTextContent('スクープ達成');
+    expect(badge).toHaveTextContent('300');
+    expect(badge).toHaveAttribute('data-scoop-human', 'true');
+  });
+
+  it('shows a CPU name in the scoop badge when a CPU scoops', async () => {
+    const scoopState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        { ...showdownState.roundResults[0], wonAmount: 0, hiWonAmount: 0, lowWonAmount: 0 },
+        { ...showdownState.roundResults[1], wonAmount: 300, hiWonAmount: 250, lowWonAmount: 50 },
+      ],
+    };
+    mockExec.mockResolvedValue(scoopState);
+    renderWithProviders(<BigOHiLoPage />);
+    const badge = await screen.findByTestId('bigohilo-scoop-badge');
+    expect(badge).toHaveTextContent('スクープ');
+    expect(badge).toHaveTextContent('300');
+    expect(badge).not.toHaveAttribute('data-scoop-human');
+  });
+
+  it('does not show a scoop badge on a split win (different Hi and Lo winners)', async () => {
+    const splitState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        { ...showdownState.roundResults[0], hiWonAmount: 200, lowWonAmount: 0 },
+        { ...showdownState.roundResults[1], wonAmount: 100, hiWonAmount: 0, lowWonAmount: 100 },
+      ],
+    };
+    mockExec.mockResolvedValue(splitState);
+    renderWithProviders(<BigOHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('bigohilo-split')).toBeInTheDocument());
+    expect(screen.queryByTestId('bigohilo-scoop-badge')).not.toBeInTheDocument();
+  });
+
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<BigOHiLoPage />);
