@@ -242,6 +242,37 @@ describe('SevenCardStudPage', () => {
     await waitFor(() => expect(screen.getAllByText('ドアカード').length).toBeGreaterThanOrEqual(1));
   });
 
+  // ---- live current-hand strength (issue #3118) ----
+  it('shows the human live best-hand strength during the streets', async () => {
+    const pairedHuman = humanPlayer({
+      holeCards: [
+        { design: 'SPADE', value: 7 },
+        { design: 'HEART', value: 7 },
+        { design: 'DIAMOND', value: 10 },
+      ],
+      doorCards: [{ design: 'CLOVER', value: 2 }],
+    });
+    mockExec.mockResolvedValue({ ...thirdStreetState, players: [pairedHuman, cpuPlayer(1)] });
+    renderWithProviders(<SevenCardStudPage />);
+    const badge = await screen.findByTestId('scs-current-hand');
+    expect(badge).toHaveTextContent('現在の役: ワンペア');
+  });
+
+  it('does not show the live strength badge at showdown (server handName takes over)', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
+    expect(screen.queryByTestId('scs-current-hand')).not.toBeInTheDocument();
+  });
+
+  it('does not show the live strength badge when the human has folded', async () => {
+    const foldedHuman = humanPlayer({ folded: true });
+    mockExec.mockResolvedValue({ ...thirdStreetState, players: [foldedHuman, cpuPlayer(1)] });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
+    expect(screen.queryByTestId('scs-current-hand')).not.toBeInTheDocument();
+  });
+
   it('shows CPU hole cards face-up during showdown when not folded', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<SevenCardStudPage />);

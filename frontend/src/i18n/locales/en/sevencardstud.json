@@ -13,6 +13,7 @@
   "doorCards": "Door Cards",
   "holeCards": "Hole Cards",
   "yourHand": "Your Hand",
+  "currentHand": "Current Hand",
   "anteBringIn": "Ante/Bring-in",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {
@@ -54,5 +55,17 @@
     "strongHandRank": "Strong hand — raise recommended",
     "decentHandRank": "Decent hand — call recommended",
     "weakHandRank": "Weak hand — fold recommended"
+  },
+  "hand": {
+    "highCard": "High Card",
+    "onePair": "One Pair",
+    "twoPair": "Two Pair",
+    "threeOfAKind": "Three of a Kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full House",
+    "fourOfAKind": "Four of a Kind",
+    "straightFlush": "Straight Flush",
+    "royalFlush": "Royal Flush"
   }
 }
