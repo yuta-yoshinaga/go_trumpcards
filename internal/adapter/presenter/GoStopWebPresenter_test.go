@@ -91,6 +91,57 @@ func TestGoStopWebPresenter_GameEnd(t *testing.T) {
 	assert.Equal(t, "gostop.result.scores", decoded["messageCode"])
 }
 
+// humanCpuIdx は人間/CPU の座席インデックスを返すヘルパ。
+func humanCpuIdx(g interface {
+	GetPlayerCnt() int
+	GetPlayer(int) *domain.GoStopPlayer
+}) (human, cpu int) {
+	human, cpu = -1, -1
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		if g.GetPlayer(i).GetIsHuman() {
+			human = i
+		} else {
+			cpu = i
+		}
+	}
+	return human, cpu
+}
+
+// TestGoStopWebPresenter_OutputHint は通常 Output() が人間手番でヒントを含み、CPU 手番では
+// 含まないことを検証する (#3519: 死んでいたヒントトグルを機能させる)。
+func TestGoStopWebPresenter_OutputHint(t *testing.T) {
+	g := domain.NewDefaultGoStop()
+	g.Reset()
+	human, cpu := humanCpuIdx(g)
+	require.GreaterOrEqual(t, human, 0)
+	require.GreaterOrEqual(t, cpu, 0)
+	p := new(presenter.GoStopWebPresenter)
+
+	// 人間手番のプレイフェーズ: hint が載る。
+	g.SetCurrentTurn(human)
+	g.SetPhase(domain.GoStopPhasePlay)
+	var withHint struct {
+		Hint *struct {
+			Reason string `json:"reason"`
+		} `json:"hint"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &withHint))
+	require.NotNil(t, withHint.Hint)
+	assert.NotEmpty(t, withHint.Hint.Reason)
+
+	// CPU 手番: hint は載らない。
+	g.SetCurrentTurn(cpu)
+	var cpuTurn map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &cpuTurn))
+	assert.NotContains(t, cpuTurn, "hint")
+
+	// エラー時: hint は載らない。
+	g.SetCurrentTurn(human)
+	var errOut map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, errors.New("boom"))), &errOut))
+	assert.NotContains(t, errOut, "hint")
+}
+
 func TestGoStopWebPresenter_HintOutput(t *testing.T) {
 	g := domain.NewDefaultGoStop()
 	g.Reset()
