@@ -116,4 +116,45 @@ describe('LaBelleLuciePage', () => {
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
     expect(screen.queryByTestId('redeal-button')).not.toBeInTheDocument();
   });
+
+  it('highlights the hint source and destination fans after a hint', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { fromFan: 1, toFan: 0, toFoundation: false } }));
+    renderWithProviders(<LaBelleLuciePage />);
+    await screen.findByTestId('hint-button');
+    // No highlight until the player asks for a hint.
+    expect(screen.getByTestId('fan-1')).not.toHaveAttribute('data-hint-source');
+    fireEvent.click(screen.getByTestId('hint-button'));
+    await waitFor(() => expect(screen.getByTestId('fan-1')).toHaveAttribute('data-hint-source', 'true'));
+    expect(screen.getByTestId('fan-0')).toHaveAttribute('data-hint-dest', 'true');
+    expect(screen.getByTestId('ll-foundation-row')).not.toHaveAttribute('data-hint-foundation');
+  });
+
+  it('highlights the foundation row for a to-foundation hint', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { fromFan: 2, toFan: -1, toFoundation: true } }));
+    renderWithProviders(<LaBelleLuciePage />);
+    await screen.findByTestId('hint-button');
+    fireEvent.click(screen.getByTestId('hint-button'));
+    await waitFor(() =>
+      expect(screen.getByTestId('ll-foundation-row')).toHaveAttribute('data-hint-foundation', 'true'),
+    );
+    expect(screen.getByTestId('fan-2')).toHaveAttribute('data-hint-source', 'true');
+    // No fan is marked as the destination when the move targets a foundation.
+    expect(screen.getByTestId('fan-0')).not.toHaveAttribute('data-hint-dest');
+  });
+
+  it('clears the hint highlight when the board changes', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState()) // mount reset
+      .mockResolvedValueOnce(makeState({ hint: { fromFan: 1, toFan: 0, toFoundation: false } })) // hint
+      .mockResolvedValue(makeState({ moveCount: 1 })); // subsequent move advances the board
+    renderWithProviders(<LaBelleLuciePage />);
+    await screen.findByTestId('hint-button');
+    fireEvent.click(screen.getByTestId('hint-button'));
+    await waitFor(() => expect(screen.getByTestId('fan-1')).toHaveAttribute('data-hint-source', 'true'));
+    // Perform a move: select fan-1 then drop on fan-0.
+    fireEvent.click(screen.getByTestId('fan-1'));
+    fireEvent.click(screen.getByTestId('fan-0'));
+    await waitFor(() => expect(screen.getByTestId('fan-1')).not.toHaveAttribute('data-hint-source'));
+    expect(screen.getByTestId('fan-0')).not.toHaveAttribute('data-hint-dest');
+  });
 });
