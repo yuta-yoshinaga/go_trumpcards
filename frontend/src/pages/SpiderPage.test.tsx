@@ -79,6 +79,10 @@ const gameOverState: SpiderResponse = {
 };
 
 beforeEach(() => {
+  localStorage.clear();
+  // Re-suppress the first-visit tutorial dialog: the global setup sets this in its
+  // own beforeEach, which runs before ours, so our clear() would otherwise wipe it.
+  localStorage.setItem('tutorial_no_suggest', 'true');
   mockExec.mockResolvedValue(playingState);
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   playSoundMock.mockClear();
@@ -807,6 +811,61 @@ describe('SpiderPage', () => {
           expect.objectContaining({ zone: 'tableau' }),
         ),
       );
+    });
+  });
+
+  describe('per-difficulty stats (#3062)', () => {
+    it('renders the stats panel with a zeroed win rate initially', async () => {
+      renderWithProviders(<SpiderPage />);
+      const panel = await screen.findByTestId('spd-stats-panel');
+      expect(panel).toHaveTextContent('勝率 0% (0/0)');
+    });
+
+    it('records a win to localStorage and shows the best badge', async () => {
+      mockExec.mockResolvedValue(gameClearState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => {
+        const stored = JSON.parse(localStorage.getItem('trumpcards-spider-stats') ?? '{}');
+        expect(stored['1']).toEqual({ plays: 1, wins: 1, bestScore: 500, fewestMoves: 5 });
+      });
+      // Win rate reflects the recorded game and the personal-best badge appears.
+      expect(await screen.findByTestId('spd-stats-panel')).toHaveTextContent('勝率 100% (1/1)');
+      expect(screen.getByTestId('spd-best-badge')).toBeInTheDocument();
+    });
+
+    it('records a loss (plays only) and shows no best badge', async () => {
+      mockExec.mockResolvedValue(gameOverState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => {
+        const stored = JSON.parse(localStorage.getItem('trumpcards-spider-stats') ?? '{}');
+        expect(stored['1']).toEqual({ plays: 1, wins: 0, bestScore: null, fewestMoves: null });
+      });
+      expect(await screen.findByTestId('spd-stats-panel')).toHaveTextContent('勝率 0% (0/1)');
+      expect(screen.queryByTestId('spd-best-badge')).not.toBeInTheDocument();
+    });
+
+    it('reads back previously stored stats for the current difficulty', async () => {
+      localStorage.setItem(
+        'trumpcards-spider-stats',
+        JSON.stringify({ '1': { plays: 4, wins: 3, bestScore: 620, fewestMoves: 33 } }),
+      );
+      renderWithProviders(<SpiderPage />);
+      const panel = await screen.findByTestId('spd-stats-panel');
+      expect(panel).toHaveTextContent('勝率 75% (3/4)');
+      expect(panel).toHaveTextContent('ベスト 620');
+      expect(panel).toHaveTextContent('最少 33手');
+    });
+
+    it('keeps difficulties separate (difficulty 2 stats hidden while on difficulty 1)', async () => {
+      localStorage.setItem(
+        'trumpcards-spider-stats',
+        JSON.stringify({ '2': { plays: 5, wins: 5, bestScore: 900, fewestMoves: 10 } }),
+      );
+      renderWithProviders(<SpiderPage />);
+      const panel = await screen.findByTestId('spd-stats-panel');
+      // Playing state is difficulty 1, so difficulty 2's best must not leak in.
+      expect(panel).toHaveTextContent('勝率 0% (0/0)');
+      expect(panel).not.toHaveTextContent('ベスト 900');
     });
   });
 });

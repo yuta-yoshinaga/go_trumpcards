@@ -45,5 +45,11 @@
     "useEmptyColumn": "空の列があります — 整理に活用しましょう",
     "dealFromStock": "すぐにできる手がありません — 山札から配ってみましょう"
   },
-  "suitCompleted": "スート完成！"
+  "suitCompleted": "スート完成！",
+  "stats": {
+    "winRate": "勝率 {{rate}}%",
+    "best": "ベスト {{score}}",
+    "fewestMoves": "最少 {{moves}}手",
+    "newBest": "自己ベスト更新！"
+  }
 }

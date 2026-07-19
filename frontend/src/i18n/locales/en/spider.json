@@ -45,5 +45,11 @@
     "useEmptyColumn": "An empty column is available — use it to reorganize",
     "dealFromStock": "No obvious moves — try dealing from the stock"
   },
-  "suitCompleted": "Suit complete!"
+  "suitCompleted": "Suit complete!",
+  "stats": {
+    "winRate": "Win rate {{rate}}%",
+    "best": "Best {{score}}",
+    "fewestMoves": "{{moves}} moves",
+    "newBest": "New personal best!"
+  }
 }
