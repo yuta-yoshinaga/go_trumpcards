@@ -30,13 +30,14 @@ import i18n from '../i18n';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { EasthavenResponse } from '../types/card';
+import type { Card, EasthavenResponse } from '../types/card';
 import { EasthavenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { easthavenHelp, parseEasthavenCommand } from '../utils/cli/commands/easthavenCommands';
 import { formatEasthavenState } from '../utils/cli/formatters/easthavenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { easthavenFoundationTarget } from '../utils/easthavenFoundationTarget';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -249,6 +250,21 @@ function EasthavenPageContent() {
       playSound('cardPlace');
     },
     [apiExec, selectedSource, playSound],
+  );
+
+  // Double-click / double-tap shortcut: auto-send a column's exposed top card
+  // to its foundation when a legal target exists; otherwise do nothing (no
+  // error, selection untouched). Mirrors the FreeCell foundation shortcut.
+  const handleFoundationShortcut = useCallback(
+    (col: number, card: Card) => {
+      if (!state) return;
+      const target = easthavenFoundationTarget(card, state.foundation);
+      if (!target) return;
+      void apiExec('move', { zone: 'tableau', col }, target);
+      setSelectedSource(null);
+      playSound('cardPlace');
+    },
+    [state, apiExec, playSound],
   );
 
   const isPlayingForKbd = state?.phase === EasthavenPhase.PLAYING;
@@ -478,7 +494,12 @@ function EasthavenPageContent() {
                                       } ${hintTo ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${
                                         inHoverBlock && !isSelected ? 'ring-2 ring-ds-accent/70' : ''
                                       }`}
-                                      onClick={() => {
+                                      onClick={(e) => {
+                                        // The second click of a double-click also
+                                        // fires onClick (detail === 2); ignore it so
+                                        // onDoubleClick owns the foundation shortcut
+                                        // without issuing a stray select/target move.
+                                        if (e.detail >= 2) return;
                                         if (selectedSource) {
                                           if (isSelected) {
                                             setSelectedSource(null);
@@ -491,8 +512,16 @@ function EasthavenPageContent() {
                                           handleSelectSource('tableau', colIdx, cardIdx);
                                         }
                                       }}
+                                      onDoubleClick={
+                                        // Only a column's exposed top card can move
+                                        // straight to a foundation.
+                                        isLast && tcard.card
+                                          ? () => handleFoundationShortcut(colIdx, tcard.card as Card)
+                                          : undefined
+                                      }
                                       disabled={!isPlaying}
                                       aria-label={tcard.card ? cardAlt(tcard.card) : ''}
+                                      data-testid={isLast ? `eh-tableau-top-${colIdx.toString()}` : undefined}
                                     >
                                       {tcard.card && <AnimatedCard card={tcard.card} width={eh.cw} />}
                                     </button>
