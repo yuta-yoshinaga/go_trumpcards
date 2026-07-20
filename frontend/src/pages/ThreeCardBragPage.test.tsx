@@ -69,6 +69,84 @@ describe('ThreeCardBragPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet'));
   });
 
+  // Builds a human Betting turn at a given stake/seen status; CPUs stay blind.
+  const humanBetTurn = (stake: number, seen: boolean, chips = 200) =>
+    makeThreeCardBragState({
+      phase: 0,
+      currentPlayerIdx: 0,
+      isHumanTurn: true,
+      stake,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          chips,
+          seen,
+          folded: false,
+          out: false,
+          roundBet: 1,
+          cardCount: 3,
+          cards: [
+            { design: 'SPADE' as const, value: 13 },
+            { design: 'SPADE' as const, value: 12 },
+            { design: 'SPADE' as const, value: 11 },
+          ],
+        },
+        {
+          id: 1,
+          isHuman: false,
+          chips: 100,
+          seen: false,
+          folded: false,
+          out: false,
+          roundBet: 1,
+          cardCount: 3,
+          cards: [],
+        },
+        {
+          id: 2,
+          isHuman: false,
+          chips: 100,
+          seen: false,
+          folded: false,
+          out: false,
+          roundBet: 1,
+          cardCount: 3,
+          cards: [],
+        },
+        {
+          id: 3,
+          isHuman: false,
+          chips: 100,
+          seen: false,
+          folded: false,
+          out: false,
+          roundBet: 1,
+          cardCount: 3,
+          cards: [],
+        },
+      ],
+    });
+
+  it('shows the nominal bet cost for a Blind player', async () => {
+    mockExec.mockResolvedValue(humanBetTurn(20, false));
+    renderWithProviders(<ThreeCardBragPage />);
+    // Blind: cost equals the stake (20).
+    expect(await screen.findByRole('button', { name: 'ベット (20)' })).toBeInTheDocument();
+    expect(screen.getByTestId('tcb-cost-notice')).toHaveTextContent('20');
+  });
+
+  it('doubles the bet and raise cost on the button labels for a Seen player', async () => {
+    mockExec.mockResolvedValue(humanBetTurn(20, true));
+    renderWithProviders(<ThreeCardBragPage />);
+    // Seen: a call to the stake (20) costs 40 chips.
+    expect(await screen.findByRole('button', { name: 'ベット (40)' })).toBeInTheDocument();
+    // The raise button starts at the minimum raise (stake + 1 = 21) -> 42 chips seen.
+    expect(screen.getByRole('button', { name: 'レイズ (42)' })).toBeInTheDocument();
+    // The Seen cost notice warns about the doubled cost.
+    expect(screen.getByTestId('tcb-cost-notice')).toHaveTextContent('2倍');
+  });
+
   it('labels the raise steppers and announces the amount', async () => {
     renderWithProviders(<ThreeCardBragPage />);
     const inc = await screen.findByRole('button', { name: 'レイズ額を増やす' });

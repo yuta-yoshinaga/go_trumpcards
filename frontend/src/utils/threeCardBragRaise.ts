@@ -31,6 +31,20 @@ export function threeCardBragRaiseBounds(stake: number, chips: number, seen: boo
 }
 
 /**
+ * Computes the actual chips a player pays for a Brag bet or raise at a given
+ * nominal stake, mirroring the domain's `callCost` rule
+ * (`internal/domain/ThreeCardBrag.go`): a Seen player pays double the nominal
+ * amount, a Blind player pays the nominal amount.
+ *
+ * @param nominal - The nominal stake to call or raise to.
+ * @param seen - Whether the player has looked at their hand (Seen vs Blind).
+ * @returns The real chips cost (`nominal * 2` when Seen, else `nominal`).
+ */
+export function threeCardBragActualCost(nominal: number, seen: boolean): number {
+  return seen ? nominal * 2 : nominal;
+}
+
+/**
  * Clamps a raise amount into the `[min, max]` range. When no legal raise
  * exists (`max < min`), returns `min` so the value never drops below the stake.
  *
