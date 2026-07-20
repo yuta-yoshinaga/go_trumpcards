@@ -166,7 +166,6 @@ function AgnesPageContent() {
   );
   useActionKeyboardNav({ bindings: agnesBindings, enabled: canPlayForKbd });
 
-  if (error) return <ErrorAlert message={error} onRetry={retry} />;
   if (!state) return null;
 
   return (
@@ -382,6 +381,8 @@ function AgnesPageContent() {
           </div>
 
           <GameFooter className={`${theme.footer} px-4 py-2.5`}>
+            {/* Show transient API errors inline so the board stays visible (issue #3290). */}
+            <ErrorAlert message={error} onRetry={retry} />
             <div className="flex flex-wrap items-center gap-2" data-tutorial="ag-action-buttons">
               {isPlaying && (
                 <>

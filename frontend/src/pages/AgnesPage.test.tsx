@@ -172,10 +172,18 @@ describe('AgnesPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 
-  it('shows error alert when API fails on mount', async () => {
-    mockExec.mockRejectedValue(new Error('network error'));
+  it('shows the error inline without replacing the board (issue #3290)', async () => {
+    // First load succeeds, then a subsequent action fails: the error must appear
+    // inline while the board (stock count, base rank) stays rendered.
     renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByText(/山札: 23/)).toBeInTheDocument());
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: '配る' }));
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    // Board is still present alongside the error banner.
+    expect(screen.getByText(/山札: 23/)).toBeInTheDocument();
+    expect(screen.getByText(/ベースランク/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument();
   });
 
   it('per-column action button moves tableau end card to foundation', async () => {
