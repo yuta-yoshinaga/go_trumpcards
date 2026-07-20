@@ -23,6 +23,8 @@ import { RookPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { formatRookState, parseRookCommand, ROOK_HELP, type RookCliArgs } from '../utils/cli/commands/rookCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
+import { rookBidStatus } from '../utils/rookBidStatus';
 
 const CPU_DIFFICULTY_SELECT = [
   { value: '0', label: 'Easy' },
@@ -163,6 +165,10 @@ function RookPageContent() {
   const bidOptions: number[] = [];
   for (let v = minSelectableBid; v <= ROOK_MAX_BID; v += ROOK_BID_STEP) bidOptions.push(v);
   const effectiveBid = bidOptions.includes(bidValue) ? bidValue : (bidOptions[0] ?? ROOK_MIN_BID);
+
+  // Bid-turn context: the standing high bid plus who is still in the auction.
+  const bidStatus = rookBidStatus(state.players);
+  const passedNames = bidStatus.passed.map((p) => playerName(p.id, p.isHuman)).join(', ');
 
   const handleExchange = () => {
     if (selectedCardIndices.length === ROOK_DISCARD_COUNT && trumpChoice !== null) {
@@ -352,6 +358,19 @@ function RookPageContent() {
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="rook-actions">
               {isHumanBidTurn && (
                 <>
+                  <div
+                    className="w-full text-center text-xs text-ds-text-muted space-y-0.5"
+                    data-testid="rook-bid-status"
+                  >
+                    <div>
+                      {state.highestBid > 0
+                        ? t('bidStatus.highest', { value: state.highestBid })
+                        : t('bidStatus.highestNone')}
+                      {' · '}
+                      {t('bidStatus.remaining', { n: bidStatus.activeBidders })}
+                    </div>
+                    {passedNames && <div>{t('bidStatus.passed', { names: passedNames })}</div>}
+                  </div>
                   <label
                     htmlFor="rook-bid"
                     className="text-xs text-ds-text-muted self-center"

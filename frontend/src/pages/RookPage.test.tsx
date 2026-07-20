@@ -105,6 +105,40 @@ describe('RookPage', () => {
     expect(values).toEqual(['95', '100', '105', '110', '115', '120']);
   });
 
+  it('shows the bid status with the highest bid and active bidder count on the human bid turn', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        highestBid: 80,
+        highestBidder: 2,
+        players: [
+          player(0, true, [card('5', 5)]),
+          player(1, false, [], { passed: true }),
+          player(2, false, []),
+          player(3, false, []),
+        ] as RookResponse['players'],
+      }),
+    );
+    renderWithProviders(<RookPage />);
+    const status = await screen.findByTestId('rook-bid-status');
+    expect(status).toHaveTextContent('現在最高: 80点');
+    expect(status).toHaveTextContent('残り入札者: 3人');
+    expect(status).toHaveTextContent('パス済み: CPU 1');
+  });
+
+  it('shows the bid status as undecided when no bid has been made yet', async () => {
+    renderWithProviders(<RookPage />);
+    const status = await screen.findByTestId('rook-bid-status');
+    expect(status).toHaveTextContent('現在最高: 未決定');
+    expect(status).toHaveTextContent('残り入札者: 4人');
+  });
+
+  it('hides the bid status outside the bid phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, currentPlayerIdx: 0, contractBid: 75, trumpColor: 1 }));
+    renderWithProviders(<RookPage />);
+    await screen.findByTestId('play-button');
+    expect(screen.queryByTestId('rook-bid-status')).not.toBeInTheDocument();
+  });
+
   it('passes when pass is clicked', async () => {
     renderWithProviders(<RookPage />);
     fireEvent.click(await screen.findByTestId('pass-button'));
