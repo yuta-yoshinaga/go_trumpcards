@@ -863,6 +863,81 @@ describe('EightOffPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 3));
   });
 
+  // --- Double-click foundation shortcut ---
+
+  describe('double-click foundation shortcut', () => {
+    const tableauAceTop: EightOffResponse = {
+      ...playingState,
+      tableau: [[card('SPADE', 1)], [card('HEART', 12)], [], [], [], [], [], []],
+      foundation: [[], [], [], []],
+    };
+
+    const freeCellPlayable: EightOffResponse = {
+      ...playingState,
+      freeCells: [card('DIAMOND', 7), null, null, null, null, null, null, null],
+      foundation: [[], [], [], [card('DIAMOND', 6)]],
+    };
+
+    it('double-clicking a foundation-playable tableau top card auto-sends it to the foundation', async () => {
+      mockExec.mockResolvedValue(tableauAceTop);
+      renderWithProviders(<EightOffPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      const cardButton = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+      fireEvent.doubleClick(cardButton);
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith(
+          'move',
+          expect.objectContaining({ zone: 'tableau', col: 0, cardIndex: 0 }),
+          { zone: 'foundation', col: 0 },
+        ),
+      );
+    });
+
+    it('double-clicking a foundation-playable free-cell card auto-sends it to the foundation', async () => {
+      mockExec.mockResolvedValue(freeCellPlayable);
+      renderWithProviders(<EightOffPage />);
+      await waitFor(() => expect(screen.getByAltText('♦ 7')).toBeInTheDocument());
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      const cardButton = screen.getByAltText('♦ 7').closest('button') as HTMLButtonElement;
+      fireEvent.doubleClick(cardButton);
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', expect.objectContaining({ zone: 'freecell', cell: 0 }), {
+          zone: 'foundation',
+          col: 3,
+        }),
+      );
+    });
+
+    it('double-clicking a non-foundation-playable tableau top card does nothing', async () => {
+      // playingState: tableau[0] top is ♠ K with an empty foundation → no legal target.
+      renderWithProviders(<EightOffPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      mockExec.mockClear();
+      const cardButton = screen.getByAltText('♠ K').closest('button') as HTMLButtonElement;
+      fireEvent.doubleClick(cardButton);
+
+      expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+    });
+
+    it('ignores the trailing single-click of a double-click (detail >= 2) so no stray selection occurs', async () => {
+      mockExec.mockResolvedValue(tableauAceTop);
+      renderWithProviders(<EightOffPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+      const cardButton = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+      fireEvent.click(cardButton, { detail: 2 });
+      expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+    });
+  });
+
   describe('drag and drop', () => {
     function buildDataTransfer() {
       const store: Record<string, string> = {};
