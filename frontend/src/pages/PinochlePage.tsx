@@ -115,6 +115,10 @@ function PinochlePageContent() {
     handlePlay,
     handleNextTrick,
     handleNextRound,
+    hint,
+    hintError,
+    hintLoading,
+    handleHint,
   } = usePinochleGame();
 
   const { cardWidth } = useCardDimensions();
@@ -448,9 +452,59 @@ function PinochlePageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} onRetry={retry} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {/* Server hint result (bid amount / pass / trump suit / play card) */}
+            {hint?.reason && (
+              <div
+                className="text-ds-warning text-sm mb-2 flex items-center gap-2 flex-wrap"
+                data-testid="pn-server-hint"
+              >
+                <span>
+                  {hint.pass
+                    ? t('serverHintPass')
+                    : hint.bidAmount !== undefined
+                      ? t('serverHintBid', { n: hint.bidAmount })
+                      : hint.suit !== undefined
+                        ? t('serverHintTrump', { suit: SUIT_LABELS[hint.suit] ?? '-' })
+                        : hint.cardIndex !== undefined
+                          ? t('serverHintPlay', {
+                              card: humanPlayer?.cards[hint.cardIndex]
+                                ? cardAlt(humanPlayer.cards[hint.cardIndex])
+                                : '-',
+                              idx: hint.cardIndex,
+                            })
+                          : ''}{' '}
+                  ({t(`hintReason.${hint.reason}`)})
+                </span>
+                {isBidTurn && hint.bidAmount !== undefined && (
+                  <button
+                    type="button"
+                    className={btnOutline}
+                    data-testid="pn-hint-apply-bid"
+                    onClick={() => hint.bidAmount !== undefined && setBidAmount(hint.bidAmount)}
+                    disabled={loading}
+                  >
+                    {t('applyBid')}
+                  </button>
+                )}
+              </div>
+            )}
 
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="pn-action-buttons">
+              {/* Server hint */}
+              {(isBidTurn || isTrumpTurn || isPlayTurn) && (
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  data-testid="pn-hint-button"
+                  onClick={handleHint}
+                  disabled={loading || hintLoading}
+                >
+                  {tc('button.hint')}
+                </button>
+              )}
+
               {/* Bid */}
               {isBidTurn && (
                 <>

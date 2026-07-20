@@ -61,6 +61,11 @@
     "hint_trump": "This suit is optimal for trump",
     "hint_play": "This card is the best play"
   },
+  "serverHintPass": "Recommended: Pass",
+  "serverHintBid": "Recommended bid: {{n}}",
+  "serverHintTrump": "Recommended trump: {{suit}}",
+  "serverHintPlay": "Recommended play: {{card}} [{{idx}}]",
+  "applyBid": "Apply",
   "tutorial": {
     "gameInfo": "Shows the round/trick number, team scores, trump suit, and highest bid.",
     "playerInfo": "Each player's team, bid, meld score, and tricks taken.",

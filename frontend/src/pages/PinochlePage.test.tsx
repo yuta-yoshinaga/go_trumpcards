@@ -483,6 +483,68 @@ describe('PinochlePage', () => {
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 
+  it('shows a server-hint button on the human bid turn', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
+  });
+
+  it('fetches and displays the recommended bid, and applies it to the input', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ bidAmount: 30, reason: 'hint_bid' } as unknown as PinochleResponse);
+    fireEvent.click(screen.getByTestId('pn-hint-button'));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    const hintBox = await screen.findByTestId('pn-server-hint');
+    expect(hintBox).toHaveTextContent('推奨ビッド: 30');
+
+    // Applying the hint updates the bid input value.
+    fireEvent.click(screen.getByTestId('pn-hint-apply-bid'));
+    expect(screen.getByLabelText('ビッド額（最低 20）')).toHaveDisplayValue('30');
+  });
+
+  it('displays a pass recommendation from the server hint', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ pass: true, reason: 'hint_pass' } as unknown as PinochleResponse);
+    fireEvent.click(screen.getByTestId('pn-hint-button'));
+
+    const hintBox = await screen.findByTestId('pn-server-hint');
+    expect(hintBox).toHaveTextContent('推奨: パス');
+    // No apply-bid button for a pass recommendation.
+    expect(screen.queryByTestId('pn-hint-apply-bid')).not.toBeInTheDocument();
+  });
+
+  it('displays a card recommendation on the human play turn', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ cardIndex: 1, reason: 'hint_play' } as unknown as PinochleResponse);
+    fireEvent.click(screen.getByTestId('pn-hint-button'));
+
+    const hintBox = await screen.findByTestId('pn-server-hint');
+    expect(hintBox).toHaveTextContent('推奨プレイ');
+    expect(hintBox).toHaveTextContent('[1]');
+  });
+
+  it('shows an error alert when the hint request fails', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockRejectedValueOnce(new Error('network'));
+    fireEvent.click(screen.getByTestId('pn-hint-button'));
+
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    expect(screen.queryByTestId('pn-server-hint')).not.toBeInTheDocument();
+  });
+
   it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PinochlePage />);

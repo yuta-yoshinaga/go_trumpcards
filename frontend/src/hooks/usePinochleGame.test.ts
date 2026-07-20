@@ -173,15 +173,66 @@ describe('usePinochleGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
-  it('handleHint calls exec with hint command', async () => {
+  it('handleHint fetches the server hint and stores it without touching game state', async () => {
     mockExec.mockResolvedValue(basePinochleState);
     const { result } = renderHook(() => usePinochleGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
     mockExec.mockClear();
+    // The hint command returns only the bare hint object (top-level fields).
+    mockExec.mockResolvedValue({ bidAmount: 25, reason: 'hint_bid' } as unknown as PinochleResponse);
+    await act(async () => {
+      await result.current.handleHint();
+    });
+
+    expect(mockExec).toHaveBeenCalledWith('hint');
+    expect(result.current.hint).toEqual({ bidAmount: 25, reason: 'hint_bid' });
+    expect(result.current.hintError).toBeNull();
+    // Game state is unaffected by a hint fetch.
+    expect(result.current.state).toEqual(basePinochleState);
+  });
+
+  it('handleHint ignores an empty (no-reason) hint response', async () => {
     mockExec.mockResolvedValue(basePinochleState);
-    act(() => result.current.handleHint());
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    const { result } = renderHook(() => usePinochleGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ message: 'ヒントなし' } as unknown as PinochleResponse);
+    await act(async () => {
+      await result.current.handleHint();
+    });
+    expect(result.current.hint).toBeNull();
+  });
+
+  it('handleHint sets hintError when the request fails', async () => {
+    mockExec.mockResolvedValue(basePinochleState);
+    const { result } = renderHook(() => usePinochleGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    mockExec.mockClear();
+    mockExec.mockRejectedValueOnce(new Error('network'));
+    await act(async () => {
+      await result.current.handleHint();
+    });
+    expect(result.current.hintError).not.toBeNull();
+    expect(result.current.hint).toBeNull();
+  });
+
+  it('clears the hint after a subsequent game action succeeds', async () => {
+    mockExec.mockResolvedValue(basePinochleState);
+    const { result } = renderHook(() => usePinochleGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    mockExec.mockResolvedValue({ suit: 1, reason: 'hint_trump' } as unknown as PinochleResponse);
+    await act(async () => {
+      await result.current.handleHint();
+    });
+    expect(result.current.hint).not.toBeNull();
+
+    mockExec.mockResolvedValue(basePinochleState);
+    act(() => result.current.handleCallTrump(1));
+    await waitFor(() => expect(result.current.hint).toBeNull());
   });
 
   it('handleReset calls exec with reset command and current config', async () => {
