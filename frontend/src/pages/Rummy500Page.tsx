@@ -29,6 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 import { rummy500HandPenalty } from '../utils/rummy500HandPenalty';
+import { classifyRummy500Meld } from '../utils/rummy500MeldValidator';
 import { rummy500PickupCount } from '../utils/rummy500PickupCount';
 
 const RUMMY500_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -125,6 +126,15 @@ function Rummy500PageContent() {
   const isRoundEnd = state.phase === Rummy500Phase.ROUND_END;
   const isGameEnd = state.phase === Rummy500Phase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isDrawPhase || isPlayPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  // Front-side meld pre-validation: mirror the backend set/run rules so the Meld
+  // button stays disabled (and a warning shows) for an invalid 3+ card selection,
+  // instead of only learning it is invalid from a server error. See issue #3320.
+  const selectedMeldCards = selectedCardIndices
+    .map((i) => humanPlayer?.cards[i])
+    .filter((c): c is NonNullable<typeof c> => c !== undefined);
+  const meldValid = classifyRummy500Meld(selectedMeldCards).valid;
+  const showInvalidMeld = selectedCardIndices.length >= 3 && !meldValid;
 
   return (
     <GamePageShell
@@ -340,11 +350,20 @@ function Rummy500PageContent() {
           )}
           {isPlayPhase && isHumanTurn && (
             <>
+              {showInvalidMeld && (
+                <p
+                  role="status"
+                  data-testid="r5-invalid-meld"
+                  className="w-full text-center font-medium text-ds-warning text-xs"
+                >
+                  {t('invalidMeld')}
+                </p>
+              )}
               <button
                 type="button"
                 className={btnPrimary}
                 onClick={handleMeld}
-                disabled={loading || selectedCardIndices.length < 3}
+                disabled={loading || selectedCardIndices.length < 3 || !meldValid}
                 data-tutorial="r5-meld-button"
               >
                 {t('meldButton')}

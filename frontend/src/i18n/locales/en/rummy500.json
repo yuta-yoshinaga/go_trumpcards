@@ -23,6 +23,7 @@
   "laidMelds": "Laid melds",
   "drawStockButton": "Draw from stock",
   "meldButton": "Meld",
+  "invalidMeld": "Not a valid set or run",
   "layoffMeldTarget": "Select {{owner}}'s meld {{idx}} as lay-off target",
   "layoffTargetLabel": "Lay-off target: {{owner}} #{{idx}}",
   "layoffTargetNone": "Lay-off target: click a meld above",

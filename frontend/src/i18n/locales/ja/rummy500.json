@@ -23,6 +23,7 @@
   "laidMelds": "場のメルド",
   "drawStockButton": "山札から引く",
   "meldButton": "メルドする",
+  "invalidMeld": "セットまたはランになっていません",
   "layoffMeldTarget": "{{owner}} のメルド {{idx}} をレイオフ先に選択",
   "layoffTargetLabel": "レイオフ先: {{owner}} #{{idx}}",
   "layoffTargetNone": "レイオフ先: 上のメルドをクリック",
