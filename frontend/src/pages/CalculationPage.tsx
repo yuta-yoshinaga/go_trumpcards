@@ -167,7 +167,9 @@ function formatCalculationState(state: CalculationResponse): string {
     `Foundations: ${state.foundations
       .map((pile, i) => {
         const top = pile[pile.length - 1];
-        return top ? `F${i}(${STEP_LABELS[i]}):${top.design[0]}${top.value}(${pile.length}/13)` : `F${i}:-`;
+        return top
+          ? `F${i}(${STEP_LABELS[i]}):${top.design[0]}${top.value}(${pile.length}/${FOUNDATION_PILE_FULL})`
+          : `F${i}:-`;
       })
       .join(' ')}`,
   );
@@ -441,7 +443,9 @@ function CalculationPageContent() {
                           </span>
                         )}
                       </div>
-                      <span className="text-[11px] text-ds-text-muted mt-0.5">{pile.length}/13</span>
+                      <span className="text-[11px] text-ds-text-muted mt-0.5">
+                        {pile.length}/{FOUNDATION_PILE_FULL}
+                      </span>
                       {upcomingRanks.length > 1 && (
                         <span
                           data-testid={`calc-foundation-upcoming-${idx}`}
