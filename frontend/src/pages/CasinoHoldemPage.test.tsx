@@ -112,12 +112,23 @@ describe('CasinoHoldemPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
-  it('gives the hint-toggle checkbox a keyboard focus ring', async () => {
-    mockApi.mockResolvedValue(betPhaseState);
+  it('toggles the hint tooltip through the settings panel', async () => {
+    mockApi.mockResolvedValue({ ...flopState, playerHandRank: 1 });
     renderWithProviders(<CasinoHoldemPage />);
-    const checkbox = await screen.findByRole('checkbox', { name: 'ヒント表示' });
-    // Matches the focus-ring style used by the page's other interactive controls.
-    expect(checkbox.className).toContain('focus-visible:ring');
+    await waitFor(() => expect(screen.getByRole('button', { name: /コール/ })).toBeInTheDocument());
+
+    // Hint is off by default, so no tooltip renders.
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    // Open the shared settings panel and enable the hint via its checkbox.
+    fireEvent.click(screen.getByText('設定'));
+    const checkbox = screen.getByRole('checkbox', { name: 'ヒント表示' });
+    fireEvent.click(checkbox);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+
+    // Disabling it hides the hint again.
+    fireEvent.click(checkbox);
+    await waitFor(() => expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument());
   });
 
   it('shows flop with call and fold buttons', async () => {
