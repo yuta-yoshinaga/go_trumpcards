@@ -140,15 +140,40 @@ describe('SultanPage', () => {
     expect(imgs.length).toBeGreaterThanOrEqual(8);
   });
 
-  it('renders empty foundation placeholder with K', async () => {
+  it('labels each foundation with its position number and suit so they are distinguishable', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    // Position number + King-base suit disambiguates the two piles per suit.
+    expect(screen.getByTestId('sultan-foundation-label-0')).toHaveTextContent('1 ♠');
+    expect(screen.getByTestId('sultan-foundation-label-1')).toHaveTextContent('2 ♠');
+    expect(screen.getByTestId('sultan-foundation-label-4')).toHaveTextContent('5 ♥');
+    expect(screen.getByTestId('sultan-foundation-label-7')).toHaveTextContent('8 ♦');
+    // Each foundation cell carries a distinct aria-label (not a uniform "K").
+    const labels = [1, 2, 3, 4, 5, 6, 7, 8].map(
+      (n) => screen.getByTestId(`sultan-foundation-label-${(n - 1).toString()}`).textContent,
+    );
+    expect(new Set(labels).size).toBe(8);
+  });
+
+  it('exposes a numbered aria-label for each foundation card', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    // Two spade piles both top a King, but their aria-labels differ by position.
+    expect(screen.getByRole('img', { name: '組札1 一番上 ♠ K' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '組札2 一番上 ♠ K' })).toBeInTheDocument();
+  });
+
+  it('renders empty foundation placeholder with position number and K build hint', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       foundation: [[], [], [], [], [], [], [], []],
     });
     renderWithProviders(<SultanPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
-    const kElements = screen.getAllByText('K');
-    expect(kElements.length).toBeGreaterThanOrEqual(1);
+    // "K" build hint is retained, and each empty slot is announced by position.
+    expect(screen.getAllByText('K').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole('img', { name: '組札1 空（Kから積む）' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '組札8 空（Kから積む）' })).toBeInTheDocument();
   });
 
   it('renders divan slots, empty ones show placeholder', async () => {
