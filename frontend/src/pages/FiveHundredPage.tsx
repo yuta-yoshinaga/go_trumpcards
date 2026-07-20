@@ -34,6 +34,7 @@ import {
   FIVEHUNDRED_OPEN_MISERE_VALUE,
   fivehundredBidValue,
 } from '../utils/fivehundredBidValue';
+import { playerName } from '../utils/playerUtils';
 
 const CPU_DIFFICULTY_SELECT = [
   { value: '0', label: 'Easy' },
@@ -253,9 +254,34 @@ function FiveHundredPageContent() {
                 {state.currentTrick.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('trickEmpty')}</span>
                 ) : (
-                  state.currentTrick.map((tcard) => (
-                    <AnimatedCard key={tcard.playerIdx} card={tcard.card} width={cardWidth * 0.9} />
-                  ))
+                  // The first card in the trick was played by the lead player.
+                  state.currentTrick.map((tcard, i) => {
+                    const player = state.players[tcard.playerIdx];
+                    const isLead = i === 0;
+                    const isAlly = player !== undefined && player.team === humanTeam;
+                    return (
+                      <div
+                        key={tcard.playerIdx}
+                        className="relative text-center"
+                        data-testid="fh-trick-card"
+                        data-trick-lead={isLead || undefined}
+                      >
+                        {isLead && (
+                          <span
+                            data-testid="fh-trick-lead"
+                            className="absolute top-0 left-0 z-10 px-1 rounded bg-ds-accent text-ds-text-on-accent text-[8px] font-extrabold tracking-wider shadow-md pointer-events-none"
+                          >
+                            {t('lead')}
+                          </span>
+                        )}
+                        <AnimatedCard card={tcard.card} width={cardWidth * 0.9} />
+                        <div className={`text-xs mt-1 ${isAlly ? 'text-ds-info font-semibold' : 'text-ds-text-muted'}`}>
+                          {playerName(player?.id ?? tcard.playerIdx, player?.isHuman ?? false)}{' '}
+                          <span className="opacity-70">({t('teamShort', { team: player?.team ?? 0 })})</span>
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>

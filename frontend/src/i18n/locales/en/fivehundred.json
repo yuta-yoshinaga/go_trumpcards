@@ -17,6 +17,7 @@
   "passed": "pass",
   "currentTrick": "Current trick",
   "trickEmpty": "(no cards yet)",
+  "lead": "Lead",
   "tricksLabel": "Tricks",
   "selectTricks": "Select tricks (6-10):",
   "misereButton": "Misere",
