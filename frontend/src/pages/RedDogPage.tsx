@@ -31,10 +31,8 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseReddogCommand, REDDOG_HELP } from '../utils/cli/commands/reddogCommands';
 import { formatReddogState } from '../utils/cli/formatters/reddogFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { canRedDogRaise } from '../utils/reddogBet';
 import { rankLabel, redDogRank, reddogWinningRanks } from '../utils/reddogWinningRanks';
-
-/** Minimum bet amount matching backend RedDogMinBet. */
-const REDDOG_MIN_BET = 10;
 
 const RD_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -260,7 +258,7 @@ function RedDogPageContent() {
                     type="button"
                     className={btnSuccess}
                     onClick={handleRaise}
-                    disabled={loading || state.chips < REDDOG_MIN_BET}
+                    disabled={loading || !canRedDogRaise(state.chips)}
                   >
                     {t('button.raise')}
                   </button>
