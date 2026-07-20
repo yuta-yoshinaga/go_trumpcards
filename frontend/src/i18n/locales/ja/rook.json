@@ -29,6 +29,7 @@
   "bidButton": "ビッド",
   "passButton": "パス",
   "nestExchangeHint": "ネストを含む18枚から5枚を捨て、切り札色を宣言してください。",
+  "recommendedDiscardHint": "淡い枠の付いた札は推奨の捨て札です（従わなくても構いません）。",
   "selectTrump": "切り札色:",
   "exchangeButton": "交換 ({{count}}/5)",
   "playButton": "出す",

@@ -176,6 +176,63 @@ describe('RookPage', () => {
     );
   });
 
+  it('highlights the backend-recommended discard cards during nest exchange when hints are enabled', async () => {
+    localStorage.setItem('hint_enabled_rook', 'true');
+    const cards = [card('5', 5), card('6', 6), card('7', 7), card('8', 8), card('9', 9), card('10', 10)];
+    const exchangeState = makeState({
+      phase: 1,
+      declarerIdx: 0,
+      contractBid: 75,
+      players: [
+        player(0, true, cards, { isDeclarer: true }),
+        player(1, false, []),
+        player(2, false, []),
+        player(3, false, []),
+      ] as RookResponse['players'],
+    });
+    mockExec.mockImplementation((cmd) =>
+      cmd === 'hint'
+        ? Promise.resolve({ ...exchangeState, hint: { discardIndices: [1, 3], reason: 'discard_weakest' } })
+        : Promise.resolve(exchangeState),
+    );
+    renderWithProviders(<RookPage />);
+
+    // The backend hint command is queried to obtain the weak cards.
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    await waitFor(() => expect(screen.getByTestId('hand-card-1')).toHaveAttribute('data-recommended-discard', 'true'));
+    const c1 = screen.getByTestId('hand-card-1');
+    const c3 = screen.getByTestId('hand-card-3');
+    expect(c1.className).toContain('ring-ds-warning');
+    expect(c3).toHaveAttribute('data-recommended-discard', 'true');
+    // Non-recommended cards carry no discard highlight.
+    expect(screen.getByTestId('hand-card-0')).not.toHaveAttribute('data-recommended-discard');
+    // A non-colour cue explains the pale outline.
+    expect(screen.getByTestId('rook-discard-hint')).toBeInTheDocument();
+  });
+
+  it('shows no discard highlight during nest exchange when hints are disabled', async () => {
+    const cards = [card('5', 5), card('6', 6), card('7', 7), card('8', 8), card('9', 9), card('10', 10)];
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        declarerIdx: 0,
+        contractBid: 75,
+        players: [
+          player(0, true, cards, { isDeclarer: true }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ] as RookResponse['players'],
+      }),
+    );
+    renderWithProviders(<RookPage />);
+    await screen.findByTestId('exchange-button');
+    expect(screen.getByTestId('hand-card-0')).not.toHaveAttribute('data-recommended-discard');
+    expect(screen.queryByTestId('rook-discard-hint')).not.toBeInTheDocument();
+    // No hint request is issued while hints are off.
+    expect(mockExec).not.toHaveBeenCalledWith('hint');
+  });
+
   it('plays a selected card in the play phase', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 2, currentPlayerIdx: 0, contractBid: 75, trumpColor: 1 }));
     renderWithProviders(<RookPage />);
