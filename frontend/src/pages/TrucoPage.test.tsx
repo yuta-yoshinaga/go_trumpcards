@@ -199,4 +199,36 @@ describe('TrucoPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
+
+  it('hides the hint tooltip by default and reveals a reasoned recommendation when the toggle is enabled', async () => {
+    localStorage.removeItem('hint_enabled_truco');
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() => expect(screen.getByTestId('truco-hint-toggle')).toBeInTheDocument());
+    expect(screen.queryByTestId('hint-tooltip')).toBeNull();
+
+    fireEvent.click(screen.getByRole('checkbox'));
+    // Default hand leads with 1♠ (top matador) and canDeclareTruco → declare-Truco advice.
+    await waitFor(() =>
+      expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('強い手です。Truco を宣言しましょう'),
+    );
+  });
+
+  it('shows the follow-to-win hint when a stronger card can beat the lead', async () => {
+    localStorage.setItem('hint_enabled_truco', 'true');
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTrick: [{ playerIdx: 1, card: card('DIAMOND', 5) }],
+        canDeclareTruco: false,
+        players: [
+          { id: 0, isHuman: true, cardCount: 2, cards: [card('HEART', 4), card('HEART', 3)], trickCount: 0 },
+          { id: 1, isHuman: false, cardCount: 2, cards: [], trickCount: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('強い札を出してこのバサを取りましょう'),
+    );
+    localStorage.removeItem('hint_enabled_truco');
+  });
 });
