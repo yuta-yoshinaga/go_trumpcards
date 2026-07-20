@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { durakApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -8,6 +9,16 @@ import { DurakPage } from './DurakPage';
 vi.mock('../api/gameApi', () => ({
   durakApi: { exec: vi.fn() },
   actionLogApi: { durak: vi.fn() },
+}));
+
+// Mock the sound provider so we can assert playback without loading audio. The
+// page renders AnimatedCard, which calls useOptionalSound, so both hooks are stubbed.
+const mockPlaySound = vi.fn();
+const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: ReactNode }) => children,
+  useSound: () => mockSoundValue,
+  useOptionalSound: () => mockSoundValue,
 }));
 
 const mockExec = vi.mocked(durakApi.exec);
@@ -71,6 +82,7 @@ const gameEndState: DurakResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(baseState);
+  mockPlaySound.mockClear();
 });
 
 afterEach(() => {
@@ -302,6 +314,40 @@ describe('DurakPage', () => {
     expect(attack.className).not.toContain('animate-pulse');
     // Defended ARIA label names both attack and defense cards.
     expect(screen.getByTestId('dk-pair-0')).toHaveAttribute('aria-label', '防御済みペア: ♣ 7 を ♥ 9 で防御');
+  });
+
+  it('plays a card-place sound when attacking', async () => {
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♠ A'));
+    fireEvent.click(screen.getByRole('button', { name: '攻撃' }));
+    expect(mockPlaySound).toHaveBeenCalledWith('cardPlace');
+  });
+
+  it('plays a card-place sound when defending', async () => {
+    mockExec.mockResolvedValue(defendPhaseState);
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '防御' })).toBeInTheDocument());
+    // Select a hand card and a table pair so the defend button is enabled.
+    fireEvent.click(screen.getByAltText('♠ A'));
+    fireEvent.click(screen.getByTestId('dk-pair-0'));
+    fireEvent.click(screen.getByRole('button', { name: '防御' }));
+    expect(mockPlaySound).toHaveBeenCalledWith('cardPlace');
+  });
+
+  it('plays an error buzz when taking the table (disadvantageous action)', async () => {
+    mockExec.mockResolvedValue(defendPhaseState);
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '引き取り' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '引き取り' }));
+    expect(mockPlaySound).toHaveBeenCalledWith('errorBuzz');
+  });
+
+  it('plays a win fanfare when the human wins', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByTestId('win-celebration')).toBeInTheDocument());
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('winFanfare'));
   });
 
   it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
