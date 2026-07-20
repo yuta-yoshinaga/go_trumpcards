@@ -6349,6 +6349,8 @@ export interface JassResponse extends BaseGameResponse {
   makerTeam: number;
   makerPlayerIdx: number;
   currentTrick: JassTrickCard[];
+  lastTrick: JassTrickCard[];
+  lastTrickWinner: number;
   teamScores: number[];
   roundPoints: number[];
   roundWeisPoints: number[];

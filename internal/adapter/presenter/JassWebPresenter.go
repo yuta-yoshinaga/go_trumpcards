@@ -50,8 +50,63 @@ func (p *JassWebPresenter) buildBase(g interfaces.JassGame) *controller.JassWebO
 	}
 
 	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.LastTrick, resObj.LastTrickWinner = p.buildLastTrickOutput(g)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
+}
+
+// buildLastTrickOutput は直前に解決されたトリック（誰が何を出し誰が取ったか）を
+// アクションログから再構築する。ドメインは専用の lastTrick 札フィールドを持たないが、
+// 各トリックの "play" ログ（プレイヤーと札）と "trick_win" ログ（勝者）から
+// 現ラウンドの直近トリックを復元できる。ビッドフェーズおよびラウンド最初のトリックの
+// プレイ中（この局にまだ確定済みトリックが無い）は空スライスと -1 を返す。
+// アクションログはゲーム全体で累積されるため、フェーズガードにより前ラウンドの
+// トリックを誤って表示しないようにする。
+func (p *JassWebPresenter) buildLastTrickOutput(g interfaces.JassGame) ([]*controller.JassWebOutputTrickCard, int) {
+	empty := make([]*controller.JassWebOutputTrickCard, 0)
+	switch g.GetPhase() {
+	case domain.JassPhaseBidTrump, domain.JassPhaseBidPartner:
+		// 新ラウンドのビッド中は当ラウンドの確定済みトリックが無いため空を返す。
+		return empty, -1
+	case domain.JassPhasePlay:
+		// ラウンド最初のトリックのプレイ中は確定済みトリックが無い。
+		if g.GetTrickNumber() <= 1 {
+			return empty, -1
+		}
+	}
+
+	log := g.GetActionLog()
+	winIdx := -1
+	for i := len(log) - 1; i >= 0; i-- {
+		if log[i] != nil && log[i].ActionType == "trick_win" {
+			winIdx = i
+			break
+		}
+	}
+	if winIdx < 0 {
+		return empty, -1
+	}
+
+	// trick_win 直前の "play" ログ（プレイ順）が、そのトリックの各札に対応する。
+	var plays []*domain.ActionLogEntry
+	for i := 0; i < winIdx; i++ {
+		if e := log[i]; e != nil && e.ActionType == "play" && len(e.Cards) > 0 {
+			plays = append(plays, e)
+		}
+	}
+	if len(plays) < domain.JassPlayerCnt {
+		return empty, -1
+	}
+	plays = plays[len(plays)-domain.JassPlayerCnt:]
+
+	out := make([]*controller.JassWebOutputTrickCard, 0, len(plays))
+	for _, e := range plays {
+		out = append(out, &controller.JassWebOutputTrickCard{
+			PlayerIdx: e.PlayerIdx,
+			Card:      cardToOutput(e.Cards[0]),
+		})
+	}
+	return out, log[winIdx].PlayerIdx
 }
 
 func (p *JassWebPresenter) buildTrickOutput(trick []*domain.JassTrickCard) []*controller.JassWebOutputTrickCard {

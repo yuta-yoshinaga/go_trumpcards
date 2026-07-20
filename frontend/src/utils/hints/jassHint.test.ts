@@ -32,6 +32,8 @@ function makeState(overrides: Partial<JassResponse> = {}): JassResponse {
     makerTeam: 0,
     makerPlayerIdx: 0,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
     teamScores: [0, 0],
     roundPoints: [0, 0],
     roundWeisPoints: [0, 0],
