@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { paiGowFoulCheck } from './paiGowFoul';
+import { paiGowAutoSplit, paiGowFoulCheck } from './paiGowFoul';
 
 const c = (design: Card['design'], value: number): Card => ({ design, value });
 
@@ -169,5 +169,57 @@ describe('paiGowFoulCheck', () => {
       c('DIAMOND', 13),
     ];
     expect(paiGowFoulCheck(cards, [0])).toEqual({ isFoul: false });
+  });
+});
+
+describe('paiGowAutoSplit', () => {
+  it('picks the strongest legal high-card low hand and never fouls (all singletons)', () => {
+    // S10, H11, D13, C5, H7, S3, D9 — the 13 must stay high, so the best legal
+    // low hand is {S10, H11} at indices [0, 1].
+    const cards = [
+      c('SPADE', 10),
+      c('HEART', 11),
+      c('DIAMOND', 13),
+      c('CLOVER', 5),
+      c('HEART', 7),
+      c('SPADE', 3),
+      c('DIAMOND', 9),
+    ];
+    const split = paiGowAutoSplit(cards);
+    expect(split).toEqual([0, 1]);
+    expect(paiGowFoulCheck(cards, split as [number, number])).toEqual({ isFoul: false });
+  });
+
+  it('prefers a legal low pair over any high-card low hand', () => {
+    // Pair of 5s can sit in the low hand because the high hand holds a higher pair (aces).
+    const cards = [
+      c('SPADE', 5),
+      c('HEART', 5),
+      c('SPADE', 1),
+      c('HEART', 1),
+      c('DIAMOND', 2),
+      c('CLOVER', 3),
+      c('HEART', 4),
+    ];
+    const split = paiGowAutoSplit(cards);
+    expect(split).toEqual([0, 1]);
+    expect(paiGowFoulCheck(cards, split as [number, number])).toEqual({ isFoul: false });
+  });
+
+  it('returns null when a joker is present (foul evaluation unavailable)', () => {
+    const cards = [
+      c('JOKER', 0),
+      c('HEART', 13),
+      c('SPADE', 2),
+      c('DIAMOND', 3),
+      c('CLOVER', 4),
+      c('SPADE', 5),
+      c('HEART', 7),
+    ];
+    expect(paiGowAutoSplit(cards)).toBeNull();
+  });
+
+  it('returns null when the hand is not exactly 7 cards', () => {
+    expect(paiGowAutoSplit([c('SPADE', 2), c('SPADE', 3)])).toBeNull();
   });
 });
