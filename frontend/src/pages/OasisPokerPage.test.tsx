@@ -230,6 +230,39 @@ describe('OasisPokerPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200, 10));
   });
 
+  it('shows a play hint in the action phase when hints are enabled (strong hand)', async () => {
+    const strongAction: OasisPokerResponse = { ...actionPhaseState, playerHandRank: 1 };
+    mockApi.mockResolvedValue(strongAction);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+
+    // No hint until the toggle is enabled.
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('ヒント表示'));
+    expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('ペア以上 — プレイ推奨');
+  });
+
+  it('shows a fold hint in the action phase for a weak hand when hints are enabled', async () => {
+    // exchangePhaseState hand (10/J/K/5/7 offsuit) has rank 0 and no Ace-King pair.
+    const weakAction: OasisPokerResponse = { ...actionPhaseState, playerHandRank: 0 };
+    mockApi.mockResolvedValue(weakAction);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByLabelText('ヒント表示'));
+    expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('弱い手札 — フォールド推奨');
+  });
+
+  it('shows an exchange hint in the exchange phase for a weak hand when hints are enabled', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByLabelText('ヒント表示'));
+    expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('弱い手札 — カード交換で改善を狙う');
+  });
+
   it('shows network error', async () => {
     mockApi.mockResolvedValueOnce(betPhaseState).mockRejectedValueOnce(new Error('Network'));
     renderWithProviders(<OasisPokerPage />);
