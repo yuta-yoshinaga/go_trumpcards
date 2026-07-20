@@ -92,4 +92,32 @@ describe('RussianPokerPage', () => {
     expect(within(line).getByText(/⚠/)).toBeInTheDocument();
     expect(line.querySelector('.text-ds-error')).not.toBeNull();
   });
+
+  const betState = makeState({ phase: RussianPokerPhase.BET, playerHand: [], dealerHand: [], chips: 900 });
+
+  it('renders the ante as a ChipBetInput with steppers', async () => {
+    mockExec.mockResolvedValue(betState);
+    renderWithProviders(<RussianPokerPage />);
+    expect(await screen.findByRole('button', { name: 'アンテ +10' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'アンテ −10' })).toBeInTheDocument();
+  });
+
+  it('sends the bet command with the ante entered via ChipBetInput', async () => {
+    mockExec.mockResolvedValue(betState);
+    renderWithProviders(<RussianPokerPage />);
+    const anteInput = (await screen.findByLabelText('アンテ')) as HTMLInputElement;
+    fireEvent.change(anteInput, { target: { value: '200' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 200));
+  });
+
+  it('disables Bet and shows an alert for an out-of-range ante', async () => {
+    mockExec.mockResolvedValue(betState);
+    renderWithProviders(<RussianPokerPage />);
+    const anteInput = (await screen.findByLabelText('アンテ')) as HTMLInputElement;
+    // 15 is not a multiple of 10 → invalid (below-min/over-balance are auto-clamped away).
+    fireEvent.change(anteInput, { target: { value: '15' } });
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+  });
 });
