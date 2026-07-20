@@ -38,8 +38,14 @@
     "highcard": "ハイカード"
   },
   "callButton": "コール",
+  "callButtonAmount": "コール（{{amount}}）",
   "raiseButton": "レイズ（ヴィ）",
+  "raiseButtonAmount": "レイズ／ヴィ（{{amount}}）",
   "foldButton": "フォールド（降りる）",
+  "potOdds": {
+    "value": "ポットオッズ: ポット {{pot}} にコール {{call}} — {{percentage}}%（{{ratioPot}}:{{ratioCall}}）",
+    "free": "コール不要 — 追加投資なしで参加できます（チェック）。"
+  },
   "nextRound": "次のラウンド",
   "roundResult": {
     "title": "ラウンド結果",
