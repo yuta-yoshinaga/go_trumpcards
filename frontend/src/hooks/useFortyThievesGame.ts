@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { type FortyThievesMoveZone, fortyThievesApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
-import type { FortyThievesHint } from '../types/card';
+import type { Card, FortyThievesHint } from '../types/card';
+import { fortyThievesFoundationTarget } from '../utils/fortyThievesFoundationTarget';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
 
@@ -89,6 +90,23 @@ export function useFortyThievesGame() {
     [selectedSource, exec],
   );
 
+  /**
+   * Double-click / double-tap shortcut: auto-send an exposed top card (from the
+   * waste or a tableau column) straight to a foundation when a legal target
+   * exists; otherwise do nothing (no error, selection cleared). Mirrors the
+   * Easthaven foundation shortcut. `source` is the card's own zone.
+   */
+  const handleFoundationShortcut = useCallback(
+    (source: FortyThievesMoveZone, card: Card) => {
+      const target = fortyThievesFoundationTarget(card, state?.foundation ?? []);
+      if (!target) return;
+      setHint(null);
+      exec('move', source, target);
+      setSelectedSource(null);
+    },
+    [state?.foundation, exec],
+  );
+
   return {
     state,
     loading,
@@ -106,6 +124,7 @@ export function useFortyThievesGame() {
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
+    handleFoundationShortcut,
     isAutoCompleting,
     retry,
   };
