@@ -98,6 +98,28 @@ describe('SpiderettePage', () => {
     expect(status.textContent).toContain('場札');
   });
 
+  it('hides the frontend hint tooltip when hints are disabled', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'move', reason: 'frontendHint.buildSameSuit', confidence: 'strong' },
+      hintEnabled: false,
+      setHintEnabled: vi.fn(),
+    });
+    renderWithProviders(<SpiderettePage />);
+    await screen.findByTestId('spdt-card-1-1');
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  it('shows the frontend hint tooltip when hints are enabled', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'move', reason: 'frontendHint.buildSameSuit', confidence: 'strong' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    renderWithProviders(<SpiderettePage />);
+    const tooltip = await screen.findByTestId('hint-tooltip');
+    expect(tooltip).toHaveTextContent('同スートで積み重ねられるカードがあります');
+  });
+
   it('announces the empty-column deal guard to screen readers', async () => {
     renderWithProviders(<SpiderettePage />);
     // playingState has empty columns and stock remaining, so a deal is guarded.
