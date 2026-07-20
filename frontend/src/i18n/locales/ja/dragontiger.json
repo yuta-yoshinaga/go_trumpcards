@@ -13,7 +13,11 @@
     "betTiger": "タイガー",
     "betTie": "タイ (8:1)",
     "reset": "リセット",
-    "clearHistory": "履歴クリア"
+    "clearHistory": "履歴クリア",
+    "rebet": "再ベット ({{type}} {{amount}})"
+  },
+  "kbd": {
+    "rebet": "E"
   },
   "phase": {
     "bet": "ベット",
