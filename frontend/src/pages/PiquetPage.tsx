@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
@@ -52,7 +53,8 @@ function declKindLabel(kind: number): string {
 export const PiquetPage = withTutorial(PiquetPageContent, 'piquet', PIQUET_TUTORIAL_STEPS);
 
 function PiquetPageContent() {
-  const { t, tc, confirmOpen, requestConfirm, confirmReset, cancelReset } = useGamePageSetup('piquet');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('piquet');
   const game = usePiquetGame();
   const { state, loading, error, retry } = game;
   const { cardWidth } = useCardDimensions();
@@ -250,6 +252,13 @@ function PiquetPageContent() {
           {state.winnerIdx === -1 ? t('partieDraw') : t('partieWinner', { idx: state.winnerIdx })}
         </div>
       ) : null}
+
+      <ActionLogSection
+        isEndPhase={inGameEndPhase}
+        actionLog={actionLog}
+        showActionLog={showActionLog}
+        hideActionLog={hideActionLog}
+      />
     </GamePageShell>
   );
 }
