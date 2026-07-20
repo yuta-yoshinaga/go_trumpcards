@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { casinowarApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -13,9 +13,11 @@ import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { RoadmapTrendBar } from '../components/RoadmapTrendBar';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { CasinoWarOutcome, outcomeFromResult, useCasinoWarStats } from '../hooks/useCasinoWarStats';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -79,6 +81,25 @@ function CasinoWarPageContent() {
   const isBetPhase = state?.phase === CasinoWarPhase.BET;
   const isTieDecision = state?.phase === CasinoWarPhase.TIE_DECISION;
   const isEndPhase = state?.phase === CasinoWarPhase.END;
+
+  // Client-side win/loss history persisted in localStorage.
+  const { history, tally, recordOutcome, clearHistory } = useCasinoWarStats();
+  // Record each finished round exactly once. The guard keys on the END-phase
+  // episode: it flips true when the round resolves and resets whenever the phase
+  // leaves END (a new round begins), so re-renders at END never double-count.
+  const recordedRef = useRef(false);
+  const phase = state?.phase;
+  const result = state?.result;
+  useEffect(() => {
+    if (phase === CasinoWarPhase.END) {
+      if (!recordedRef.current && result !== undefined) {
+        recordedRef.current = true;
+        recordOutcome(outcomeFromResult(result));
+      }
+    } else {
+      recordedRef.current = false;
+    }
+  }, [phase, result, recordOutcome]);
 
   const handleBet = useCallback(() => {
     setLastBetAmount(betAmount);
@@ -232,6 +253,61 @@ function CasinoWarPageContent() {
               <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
                 <div className="font-bold">
                   {t('payout.total')}: {state.totalPayout}
+                </div>
+              </div>
+            )}
+
+            {history.length > 0 && (
+              <div className="mb-4" data-testid="cw-history">
+                <div className="text-ds-text-primary text-center text-sm font-bold mb-1">{t('trend.title')}</div>
+                <div className="mx-auto max-w-3xl">
+                  <RoadmapTrendBar
+                    history={history}
+                    leftCode={CasinoWarOutcome.WIN}
+                    rightCode={CasinoWarOutcome.LOSS}
+                    leftLabel={t('trend.win')}
+                    rightLabel={t('trend.loss')}
+                    testId="cw-trend-bar"
+                  />
+                </div>
+                <div className="flex justify-center gap-1 flex-wrap max-w-3xl mx-auto">
+                  {history.map((r, i) => {
+                    const label =
+                      r === CasinoWarOutcome.WIN
+                        ? t('trend.winShort')
+                        : r === CasinoWarOutcome.LOSS
+                          ? t('trend.lossShort')
+                          : t('trend.tieShort');
+                    const tone =
+                      r === CasinoWarOutcome.WIN
+                        ? 'bg-ds-success text-ds-text-on-accent'
+                        : r === CasinoWarOutcome.LOSS
+                          ? 'bg-ds-error text-white'
+                          : 'bg-ds-warning text-ds-text-on-accent';
+                    return (
+                      <span
+                        key={`cw-pip-${i}-${r}`}
+                        data-testid="cw-history-pip"
+                        className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${tone}`}
+                      >
+                        {label}
+                      </span>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center justify-center gap-3 mt-1 text-xs text-ds-text-muted">
+                  <span data-testid="cw-tally">
+                    {t('trend.tally', { wins: tally.wins, losses: tally.losses, ties: tally.ties })}
+                  </span>
+                  <button
+                    type="button"
+                    className="underline hover:text-ds-text-primary"
+                    onClick={clearHistory}
+                    disabled={loading}
+                    data-testid="cw-clear-history"
+                  >
+                    {t('trend.clear')}
+                  </button>
                 </div>
               </div>
             )}
