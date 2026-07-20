@@ -330,4 +330,52 @@ describe('TrashPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
   });
+
+  it('defaults the CPU speed select to normal when unset', async () => {
+    renderWithProviders(<TrashPage />);
+    const select = (await screen.findByTestId('trash-cpu-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('normal');
+  });
+
+  it('loads the persisted CPU speed from localStorage on mount', async () => {
+    localStorage.setItem('trash:cpuSpeed', 'fast');
+    renderWithProviders(<TrashPage />);
+    const select = (await screen.findByTestId('trash-cpu-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('fast');
+  });
+
+  it('persists the chosen CPU speed to localStorage', async () => {
+    renderWithProviders(<TrashPage />);
+    const select = (await screen.findByTestId('trash-cpu-speed-select')) as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: 'slow' } });
+    expect(select.value).toBe('slow');
+    expect(localStorage.getItem('trash:cpuSpeed')).toBe('slow');
+  });
+
+  it('uses the selected speed as the CPU turn delay', async () => {
+    vi.useFakeTimers();
+    try {
+      // 'fast' → 200ms delay. Verify the boundary at 200ms.
+      localStorage.setItem('trash:cpuSpeed', 'fast');
+      mockExec.mockImplementation(async () => cpuTurnState);
+      renderWithProviders(<TrashPage />);
+      // Flush the mount reset + initial render so the CPU-turn effect subscribes.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      mockExec.mockClear();
+      // Just before the 200ms fast delay no cpu step has fired yet.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(199);
+      });
+      expect(mockExec).not.toHaveBeenCalledWith('cpu');
+      // Crossing 200ms fires the fast cpu step.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1);
+      });
+      expect(mockExec).toHaveBeenCalledWith('cpu');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
