@@ -3,6 +3,7 @@ import { paigowApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -116,6 +117,11 @@ function PaiGowPageContent() {
   const isSetHandsPhase = state?.phase === PaiGowPhase.SET_HANDS;
   const isEndPhase = state?.phase === PaiGowPhase.END;
 
+  // Bet is invalid unless it is a positive multiple of 10, at least 10, and
+  // within the player's chip balance. Invalid bets disable submission.
+  const betInvalid =
+    Number.isNaN(betAmount) || betAmount < 10 || betAmount % 10 !== 0 || betAmount > (state?.chips ?? 0);
+
   const foul = useMemo(
     () =>
       isSetHandsPhase && state && selectedIndices.length === 2
@@ -139,7 +145,7 @@ function PaiGowPageContent() {
       {
         key: 'b',
         action: () => execApi('bet', betAmount),
-        enabled: isBetPhase,
+        enabled: isBetPhase && !betInvalid,
       },
       {
         key: 's',
@@ -152,7 +158,7 @@ function PaiGowPageContent() {
       },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
     ],
-    [execApi, betAmount, selectedIndices, isBetPhase, isSetHandsPhase, isEndPhase, foul.isFoul],
+    [execApi, betAmount, betInvalid, selectedIndices, isBetPhase, isSetHandsPhase, isEndPhase, foul.isFoul],
   );
 
   useActionKeyboardNav({
@@ -357,22 +363,25 @@ function PaiGowPageContent() {
             />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="pg-bet-controls">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="paigow-bet-amount" className="text-ds-text-primary text-sm">
-                    {t('label.bet')}
-                  </label>
-                  <input
-                    id="paigow-bet-amount"
-                    type="number"
-                    min={10}
-                    max={state.chips}
-                    step={10}
-                    value={betAmount}
-                    onChange={(e) => setBetAmount(Number(e.target.value))}
-                    className="w-24 px-2 py-1 rounded text-sm"
-                  />
-                </div>
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <ChipBetInput
+                  id="paigow-bet-amount"
+                  label={t('label.bet')}
+                  value={betAmount}
+                  onChange={setBetAmount}
+                  min={10}
+                  max={state.chips}
+                  step={10}
+                  disabled={loading}
+                  showSteppers
+                  invalid={betInvalid}
+                  describedBy={betInvalid ? 'paigow-bet-error' : undefined}
+                />
+                {betInvalid && (
+                  <p id="paigow-bet-error" role="alert" className="text-ds-error text-xs">
+                    {t('betError')}
+                  </p>
+                )}
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || betInvalid}>
                   {t('button.bet')}
                 </button>
               </div>
