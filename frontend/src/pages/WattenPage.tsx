@@ -14,6 +14,7 @@ import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -31,7 +32,8 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseWattenCommand, WATTEN_HELP } from '../utils/cli/commands/wattenCommands';
 import { formatWattenState } from '../utils/cli/formatters/wattenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
+import { buildWattenStakeHistory, WATTEN_BASE_STAKE } from '../utils/wattenStakeHistory';
 import { wattenTrumpCards } from '../utils/wattenTrumps';
 
 /** Watten tutorial step definitions. */
@@ -156,6 +158,19 @@ function WattenPageContent() {
   } = useGameHint('watten', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('watten', WATTEN_PHASE_KEYS);
+
+  // Dedicated action-log fetch used only to reconstruct the stake-escalation
+  // mini-history. Kept separate from the page's shared action-log panel so the
+  // history stays fresh during play (the shared log is opened manually at end).
+  const { actionLog: stakeLog, showActionLog: refreshStakeLog } = useActionLog('watten');
+  // Re-fetch the log whenever a stake-relevant field changes so the mini-history
+  // tracks the latest raise/respond exchange; these fields are triggers, not
+  // values read inside the effect body.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: stake fields are re-fetch triggers, not deps read in the callback.
+  useEffect(() => {
+    void refreshStakeLog();
+  }, [refreshStakeLog, state?.stake, state?.pendingStake, state?.raiseCount, state?.roundNumber]);
+  const stakeHistory = useMemo(() => buildWattenStakeHistory(stakeLog), [stakeLog]);
 
   if (!state)
     return <GameSkeleton gameKey="watten" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
@@ -307,6 +322,32 @@ function WattenPageContent() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Stake-escalation mini-history (raise/hold/fold sequence) */}
+                {stakeHistory.length > 0 && (
+                  <div
+                    className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="watten-stake-history"
+                  >
+                    <div className="text-ds-text-primary mb-1">{t('stakeHistory.title')}</div>
+                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                      <span>{t('stakeHistory.start', { stake: WATTEN_BASE_STAKE })}</span>
+                      {stakeHistory.map((ev) => (
+                        <span key={ev.key} className="flex items-center gap-x-1.5">
+                          <span aria-hidden="true" className="text-ds-text-muted">
+                            →
+                          </span>
+                          <span className={ev.type === 'fold' ? 'text-ds-warning' : 'text-ds-accent'}>
+                            {t(`stakeHistory.${ev.type}`, {
+                              player: findPlayerName(state.players, ev.playerIdx),
+                              stake: ev.stake,
+                            })}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Players: cards / tricks */}
                 {isMobile ? (
@@ -479,6 +520,9 @@ function WattenPageContent() {
               {canRespond && (
                 <>
                   <span className="text-ds-text-muted text-sm">{t('respondPhase', { stake: state.pendingStake })}</span>
+                  <span className="text-ds-warning text-sm" data-testid="watten-respond-loss">
+                    {t('respondLoss', { stake: state.stake })}
+                  </span>
                   <button type="button" className={btnPrimary} onClick={() => handleRespond(true)} disabled={loading}>
                     {t('holdButton')}
                   </button>

@@ -57,6 +57,14 @@
   "playButton": "Play",
   "raiseButton": "Raise (Watten)",
   "respondPhase": "Stake raised to {{stake}} — hold or fold.",
+  "respondLoss": "Folding concedes {{stake}} points to the opponent team.",
+  "stakeHistory": {
+    "title": "Stake history",
+    "start": "Start {{stake}}",
+    "raise": "{{player}} raise →{{stake}}",
+    "hold": "{{player}} hold ({{stake}})",
+    "fold": "{{player}} fold ({{stake}})"
+  },
   "holdButton": "Hold",
   "foldButton": "Fold",
   "nextRound": "Next deal",
