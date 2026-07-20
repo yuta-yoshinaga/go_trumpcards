@@ -46,6 +46,7 @@
   "vulnerable": "バル",
   "notVulnerable": "ノンバル",
   "bidHistory": "ビッド履歴",
+  "auctionTableCaption": "オークション表。列は各プレイヤー、行は巡目を表し、各セルにビッド・パス・ダブルが入ります。",
   "bidLevel": "レベル",
   "bidSuit": "スート",
   "dummyHand": "ダミーの手札",

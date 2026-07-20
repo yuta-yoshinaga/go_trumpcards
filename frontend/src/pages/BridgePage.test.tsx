@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bridgeApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -119,6 +119,19 @@ const bidHistoryState: BridgeResponse = {
     { playerIdx: 0, bidType: 1, level: 1, suit: 5 },
     { playerIdx: 1, bidType: 0, level: 0, suit: 0 },
     { playerIdx: 2, bidType: 2, level: 0, suit: 0 },
+  ],
+};
+
+// A full opening round plus the winning 1NT contract for auction-table tests.
+const auctionTableState: BridgeResponse = {
+  ...bidPhaseState,
+  contractLevel: 1,
+  contractSuit: 5,
+  bidHistory: [
+    { playerIdx: 0, bidType: 1, level: 1, suit: 5 },
+    { playerIdx: 1, bidType: 0, level: 0, suit: 0 },
+    { playerIdx: 2, bidType: 2, level: 0, suit: 0 },
+    { playerIdx: 3, bidType: 0, level: 0, suit: 0 },
   ],
 };
 
@@ -444,6 +457,46 @@ describe('BridgePage', () => {
     await waitFor(() => {
       expect(screen.getByText('\u30d3\u30c3\u30c9\u5c65\u6b74')).toBeInTheDocument();
     });
+  });
+
+  it('renders the bid history as a 4-column auction table with column headers', async () => {
+    mockExec.mockResolvedValue(auctionTableState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('bridge-auction-table')).toBeInTheDocument());
+    const table = within(screen.getByTestId('bridge-auction-table'));
+    // One column per seat, opener (human seat 0) first.
+    expect(table.getAllByRole('columnheader')).toHaveLength(4);
+    // Single opening round -> one body row.
+    expect(table.getAllByRole('row')).toHaveLength(2); // header row + 1 auction round
+  });
+
+  it('places each bid in its seat cell of the auction table', async () => {
+    mockExec.mockResolvedValue(auctionTableState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('bridge-auction-table')).toBeInTheDocument());
+    const table = within(screen.getByTestId('bridge-auction-table'));
+    const cells = table.getAllByRole('cell');
+    expect(cells).toHaveLength(4);
+    expect(cells[0]).toHaveTextContent('1NT');
+    expect(cells[1]).toHaveTextContent('\u30d1\u30b9'); // Pass
+    expect(cells[2]).toHaveTextContent('\u30c0\u30d6\u30eb'); // Double
+    expect(cells[3]).toHaveTextContent('\u30d1\u30b9'); // seat 3 Pass
+  });
+
+  it('highlights the winning contract cell', async () => {
+    mockExec.mockResolvedValue(auctionTableState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('bridge-auction-table')).toBeInTheDocument());
+    const winning = screen.getByTestId('bridge-auction-table').querySelectorAll('[data-winning-contract="true"]');
+    expect(winning).toHaveLength(1);
+    expect(winning[0]).toHaveTextContent('1NT');
+  });
+
+  it('hides the auction table when there are no bids', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' })).toBeInTheDocument());
+    expect(screen.queryByTestId('bridge-auction-table')).not.toBeInTheDocument();
   });
 
   it('shows vulnerability info', async () => {
