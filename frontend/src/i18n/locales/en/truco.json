@@ -41,6 +41,15 @@
     "cpuWin": "CPU wins ({{p0}}-{{p1}})"
   },
   "respondPrompt": "{{name}} called {{level}}. Respond.",
+  "hintReason": {
+    "leadStrong": "Lead with a strong card",
+    "leadLow": "Lead low to save your strong cards",
+    "followWin": "Play a stronger card to win this baza",
+    "followDump": "Dump a weak card and let this baza go",
+    "call": "Strong hand — declare Truco",
+    "accept": "Accept (Quiero) and play it out",
+    "decline": "Weak hand — decline (No Quiero)"
+  },
   "caller": {
     "you": "You",
     "cpu": "CPU"

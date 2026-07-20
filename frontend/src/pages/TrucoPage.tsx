@@ -5,12 +5,14 @@ import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -50,6 +52,7 @@ function TrucoPageContent() {
     retry,
   } = useGameApi<TrucoResponse, Parameters<typeof trucoApi.exec>>(trucoApi.exec);
   const { cardWidth } = useCardDimensions();
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('truco', state);
 
   useEffect(() => {
     void dispatch('reset');
@@ -214,6 +217,7 @@ function TrucoPageContent() {
         )}
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
         <ErrorAlert message={error} onRetry={retry} />
 
         {human && human.cards.length > 0 && (
@@ -273,6 +277,10 @@ function TrucoPageContent() {
           <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
             {t('actions.reset')}
           </button>
+          <label className="flex items-center gap-1 text-ds-text-primary text-sm" data-testid="truco-hint-toggle">
+            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+            {tc('hint')}
+          </label>
         </div>
       </div>
 

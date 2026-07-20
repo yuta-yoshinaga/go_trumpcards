@@ -41,6 +41,15 @@
     "cpuWin": "CPUの勝ち ({{p0}}-{{p1}})"
   },
   "respondPrompt": "{{name}} が {{level}} を宣言しました。応答してください。",
+  "hintReason": {
+    "leadStrong": "強いカードでリードしましょう",
+    "leadLow": "弱いカードでリードして強い札を温存",
+    "followWin": "強い札を出してこのバサを取りましょう",
+    "followDump": "弱い札を捨ててこのバサは捨てましょう",
+    "call": "強い手です。Truco を宣言しましょう",
+    "accept": "受諾 (Quiero) して戦いましょう",
+    "decline": "手が弱いので拒否 (No Quiero) しましょう"
+  },
   "caller": {
     "you": "あなた",
     "cpu": "CPU"

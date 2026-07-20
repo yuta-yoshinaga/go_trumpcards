@@ -158,6 +158,7 @@ import type {
   TrenteEtQuaranteResponse,
   TressetteResponse,
   TriPeaksResponse,
+  TrucoResponse,
   TuteResponse,
   TwentyNineResponse,
   TwoTenJackResponse,
@@ -338,6 +339,7 @@ import { getTrashHint } from '../utils/hints/trashHint';
 import { getTrenteEtQuaranteHint } from '../utils/hints/trenteetquaranteHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
+import { getTrucoHint } from '../utils/hints/trucoHint';
 import { getTuteHint } from '../utils/hints/tuteHint';
 import { getTwentyNineHint } from '../utils/hints/twentyNineHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
@@ -553,6 +555,7 @@ const hintFactories = {
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),
   pan: (s) => getPanHint(s as PanResponse),
+  truco: (s) => getTrucoHint(s as TrucoResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */
