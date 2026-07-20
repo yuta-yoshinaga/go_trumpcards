@@ -214,6 +214,24 @@ describe('BadugiPage', () => {
     );
   });
 
+  it('exposes next-hand application notes for the betting-limit and meta-AI settings', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.END, gameEndFlag: true }));
+    renderWithProviders(<BadugiPage />);
+    const summary = await screen.findByText('設定');
+    fireEvent.click(summary);
+
+    // Each setting exposes a (?) help button that reveals a note explaining the
+    // change only takes effect from the next reset (new hand).
+    const helpButtons = await screen.findAllByRole('button', { name: '説明を表示' });
+    expect(helpButtons.length).toBeGreaterThanOrEqual(2);
+
+    fireEvent.click(helpButtons[0]);
+    expect(screen.getByText(/リミットの変更は現在のハンドには反映されず/)).toBeInTheDocument();
+
+    fireEvent.click(helpButtons[1]);
+    expect(screen.getByText(/メタAIの変更は現在のハンドには反映されず/)).toBeInTheDocument();
+  });
+
   it('shows the complete-Badugi banner and pulses the stand button when the hand is already a 4-card Badugi', async () => {
     // The default humanPlayer() has 4 distinct ranks AND 4 distinct suits → complete Badugi.
     mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));

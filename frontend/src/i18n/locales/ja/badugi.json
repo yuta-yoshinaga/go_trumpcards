@@ -22,7 +22,9 @@
   "subsetExchange": "交換候補",
   "settings": {
     "title": "設定",
-    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）",
+    "bettingLimitHelp": "リミットの変更は現在のハンドには反映されず、次のリセット（新しいハンド）から適用されます。",
+    "cpuMetaAIHelp": "メタAIの変更は現在のハンドには反映されず、次のリセット（新しいハンド）から適用されます。"
   },
   "bestCards": "ベスト手札",
   "tutorial": {

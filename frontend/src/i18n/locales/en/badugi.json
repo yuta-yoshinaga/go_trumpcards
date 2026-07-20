@@ -22,7 +22,9 @@
   "subsetExchange": "exchange candidate",
   "settings": {
     "title": "Settings",
-    "cpuMetaAI": "Meta-AI (CPUs learn your style)"
+    "cpuMetaAI": "Meta-AI (CPUs learn your style)",
+    "bettingLimitHelp": "Changing the limit does not affect the current hand; it applies from the next reset (new hand).",
+    "cpuMetaAIHelp": "Changing Meta-AI does not affect the current hand; it applies from the next reset (new hand)."
   },
   "bestCards": "Best cards",
   "tutorial": {
