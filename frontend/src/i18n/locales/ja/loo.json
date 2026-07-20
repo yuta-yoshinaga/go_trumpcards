@@ -22,6 +22,11 @@
   "decideCpu": "CPU {{id}} が参加判断中です…",
   "decidePlay": "参加",
   "decidePass": "降りる",
+  "potRisk": {
+    "label": "参加した場合の想定損益",
+    "win": "勝てば最大 +{{pot}} 獲得（1トリックにつき +{{perTrick}}）",
+    "loss": "0トリックだと -{{penalty}} をポットへ支払い（looed）"
+  },
   "statusPlay": "参加",
   "statusPass": "降り",
   "cards": "{{count}}枚",
