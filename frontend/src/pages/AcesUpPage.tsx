@@ -103,9 +103,16 @@ function AcesUpPageContent() {
     handleUndo,
     handleUndoEscape,
     handleRemove,
+    handleRemoveAll,
     handleMove,
+    isRemovingAll,
   } = useAcesUpGame();
   const { cardHeight, cardWidth, isMobile } = useCardDimensions();
+
+  // The batch loop bypasses useGameApi's `loading` flag (it calls the API
+  // directly), so combine both to gate every interactive control while a batch
+  // discard is in flight (issue #3347).
+  const busy = loading || isRemovingAll;
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('acesup');
@@ -143,7 +150,7 @@ function AcesUpPageContent() {
     ],
     [handleDraw, handleHint, confirmGiveUpAction, handleUndo],
   );
-  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !busy });
 
   // Drag a movable top card onto an empty column to move it (the "Move [n]" buttons
   // remain as keyboard/tap-friendly fallbacks; D&D is additive, never required).
@@ -151,7 +158,7 @@ function AcesUpPageContent() {
   const dnd = useSolitaireDragDrop<{ zone: string; col: number }>({
     onMove: (source) => handleMove(source.col),
     isPlaying: state?.phase === AcesUpPhase.PLAYING,
-    disabled: loading,
+    disabled: busy,
   });
 
   if (!state)
@@ -161,6 +168,7 @@ function AcesUpPageContent() {
   const isGameClear = state.phase === AcesUpPhase.GAME_CLEAR;
   const isGameOver = state.phase === AcesUpPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const hasRemovable = state.columns.some((col) => col.length > 0 && col[col.length - 1]?.removable === true);
 
   const cardGap = 6;
   const ROW_OVERLAP_RATIO = isMobile ? 0.45 : 0.4;
@@ -246,9 +254,9 @@ function AcesUpPageContent() {
                                 <button
                                   type="button"
                                   onClick={() => handleRemove(colIdx)}
-                                  disabled={!isPlaying || loading || !c.removable}
+                                  disabled={!isPlaying || busy || !c.removable}
                                   aria-label={cardAlt(c.card)}
-                                  draggable={isPlaying && !loading && c.movable === true}
+                                  draggable={isPlaying && !busy && c.movable === true}
                                   onDragStart={dnd.handleDragStart(columnZone)}
                                   onDragEnd={dnd.handleDragEnd}
                                   className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
@@ -279,7 +287,7 @@ function AcesUpPageContent() {
                       type="button"
                       className={`${btnSecondary} mt-1 text-xs`}
                       onClick={() => handleMove(colIdx)}
-                      disabled={!isPlaying || loading || !topCard?.movable}
+                      disabled={!isPlaying || busy || !topCard?.movable}
                     >
                       {t('move')} [{colIdx}]
                     </button>
@@ -297,7 +305,7 @@ function AcesUpPageContent() {
                 {state.stockCount > 0 ? (
                   <AnimatedCardBack
                     width={cardWidth}
-                    onClick={isPlaying ? handleDraw : undefined}
+                    onClick={isPlaying && !busy ? handleDraw : undefined}
                     ariaLabel={t('draw')}
                   />
                 ) : (
@@ -368,29 +376,33 @@ function AcesUpPageContent() {
                     type="button"
                     className={btnPrimary}
                     onClick={handleDraw}
-                    disabled={loading || state.stockCount === 0}
+                    disabled={busy || state.stockCount === 0}
                   >
                     {t('draw')}
                   </button>
                   <button
                     type="button"
-                    className={btnPrimary}
-                    onClick={handleUndo}
-                    disabled={loading || !state.canUndo}
+                    className={btnSecondary}
+                    onClick={handleRemoveAll}
+                    disabled={busy || !hasRemovable}
+                    data-testid="acesup-remove-all"
                   >
+                    {t('removeAll')}
+                  </button>
+                  <button type="button" className={btnPrimary} onClick={handleUndo} disabled={busy || !state.canUndo}>
                     {t('undo')}
                   </button>
                   {state.isStalemate && (
                     <StalemateEscapeButton
                       undoToEscape={state.undoToEscape ?? 0}
                       onEscape={handleUndoEscape}
-                      disabled={loading}
+                      disabled={busy}
                     />
                   )}
-                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={busy}>
                     {t('hint')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
+                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={busy}>
                     {t('giveup')}
                   </button>
                 </div>
@@ -399,7 +411,7 @@ function AcesUpPageContent() {
                 isGameEnd={isEnded}
                 onReset={handleManualReset}
                 requestConfirm={requestConfirm}
-                loading={loading}
+                loading={busy}
                 dataTutorial="acesup-reset-button"
               />
             </div>
