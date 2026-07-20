@@ -29,6 +29,7 @@
   "bidButton": "Bid",
   "passButton": "Pass",
   "nestExchangeHint": "Discard 5 of your 18 cards (hand + nest) and declare a trump color.",
+  "recommendedDiscardHint": "Cards with a faint outline are recommended discards (you may ignore them).",
   "selectTrump": "Trump color:",
   "exchangeButton": "Exchange ({{count}}/5)",
   "playButton": "Play",

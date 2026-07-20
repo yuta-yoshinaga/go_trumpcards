@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { rookApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -101,6 +102,36 @@ function RookPageContent() {
 
   const [bidValue, setBidValue] = useState(ROOK_MIN_BID);
   const [trumpChoice, setTrumpChoice] = useState<number | null>(null);
+
+  // Recommended weak cards to discard during the nest exchange. The backend
+  // computes the authoritative list (Rook.go GetHint → "discard_weakest",
+  // surfaced via the `hint` command); the frontend has no equivalent model, so
+  // we fetch it here rather than invent one. Gated on the hint toggle: disabling
+  // hints clears the highlight. Fetched with rookApi directly (not the game
+  // hook's exec) so it never disturbs the main state or the player's selection.
+  const [recommendedDiscards, setRecommendedDiscards] = useState<number[] | null>(null);
+  // `inHumanExchange` flips false during the intervening play phase, so it
+  // re-triggers the fetch for each round's exchange without a round dependency.
+  const inHumanExchange = state?.phase === RookPhase.NEST_EXCHANGE && state?.declarerIdx === 0;
+
+  useEffect(() => {
+    if (!inHumanExchange || !frontendHintEnabled) {
+      setRecommendedDiscards(null);
+      return;
+    }
+    let cancelled = false;
+    rookApi
+      .exec('hint')
+      .then((res) => {
+        if (!cancelled) setRecommendedDiscards(res.hint?.discardIndices ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setRecommendedDiscards(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [inHumanExchange, frontendHintEnabled]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('rook');
@@ -284,17 +315,25 @@ function RookPageContent() {
                 {human.isDeclarer && <span className="font-bold text-ds-warning"> ★</span>}
               </div>
               {isHumanExchange && <div className="text-xs text-ds-info mb-1">{t('nestExchangeHint')}</div>}
+              {isHumanExchange && recommendedDiscards && recommendedDiscards.length > 0 && (
+                <div className="text-xs text-ds-warning mb-1" data-testid="rook-discard-hint">
+                  {t('recommendedDiscardHint')}
+                </div>
+              )}
               <div className="flex flex-wrap justify-center gap-2">
                 {human.cards.map((c, i) => {
                   const selected = selectedCardIndices.includes(i);
                   const selectable = isHumanPlayTurn || isHumanExchange;
-                  const cardClass = selected
-                    ? selectable
-                      ? 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-pointer hover:opacity-90'
-                      : 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-default'
-                    : selectable
-                      ? 'rounded transition-all cursor-pointer hover:opacity-90'
-                      : 'rounded transition-all cursor-default';
+                  // A pale ring marks the backend's recommended discards, but an
+                  // explicit selection (info ring) always takes visual priority.
+                  const recommendedDiscard = isHumanExchange && !selected && !!recommendedDiscards?.includes(i);
+                  const cursorClass = selectable ? 'cursor-pointer hover:opacity-90' : 'cursor-default';
+                  const ringClass = selected
+                    ? 'ring-2 ring-ds-info -translate-y-2'
+                    : recommendedDiscard
+                      ? 'ring-2 ring-ds-warning/70'
+                      : '';
+                  const cardClass = `rounded transition-all ${ringClass} ${cursorClass}`.replace(/\s+/g, ' ').trim();
                   return (
                     <button
                       key={i}
@@ -303,6 +342,7 @@ function RookPageContent() {
                       disabled={!selectable}
                       className={cardClass}
                       data-testid={`hand-card-${i}`}
+                      data-recommended-discard={recommendedDiscard ? 'true' : undefined}
                     >
                       <AnimatedCard card={c} width={cardWidth} />
                     </button>
