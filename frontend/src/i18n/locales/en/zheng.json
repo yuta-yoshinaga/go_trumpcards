@@ -14,7 +14,14 @@
   "tableEmpty": "(empty)",
   "playButton": "Play Selected",
   "passButton": "Pass",
-  "invalidCombo": "Not a valid combination (single, pair, triple, straight, pair run, bomb, or joker bomb)",
+  "invalidReason": {
+    "invalidType": "Not a valid combination (single, pair, triple, straight, pair run, bomb, or joker bomb)",
+    "wrongType": "Match the table's combination type — you can't play a different type",
+    "wrongCount": "Play the same number of cards as the table",
+    "tooWeak": "You need a higher rank than the table",
+    "needBomb": "Only a bomb or joker bomb can beat the table's bomb",
+    "unbeatable": "The table's joker bomb cannot be beaten"
+  },
   "phase": {
     "play": "Play",
     "end": "End"

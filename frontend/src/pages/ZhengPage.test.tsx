@@ -130,7 +130,52 @@ describe('ZhengPage', () => {
     fireEvent.click(await screen.findByTestId('hand-card-0'));
     fireEvent.click(screen.getByTestId('hand-card-1'));
     expect(screen.getByTestId('play-button')).toBeDisabled();
-    expect(screen.getByTestId('zheng-invalid-combo')).toBeInTheDocument();
+    expect(screen.getByTestId('zheng-invalid-combo')).toHaveTextContent('有効な役ではありません');
+  });
+
+  it('warns with a wrong-count reason when the card count does not match the table', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [card('SPADE', 3), card('HEART', 4), card('CLOVER', 5), card('DIAMOND', 6)]),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+        tableCards: [card('DIAMOND', 6), card('HEART', 7), card('SPADE', 8)],
+        tablePlayType: 4, // straight of 3
+        lastPlayPlayerIdx: 1,
+      }),
+    );
+    renderWithProviders(<ZhengPage />);
+    // Select a 4-card straight against a 3-card table straight → wrong count.
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    fireEvent.click(screen.getByTestId('hand-card-2'));
+    fireEvent.click(screen.getByTestId('hand-card-3'));
+    expect(screen.getByTestId('zheng-invalid-combo')).toHaveTextContent('場と同じ枚数にしてください');
+  });
+
+  it("warns with a doesn't-beat reason when the type matches but the rank is too low", async () => {
+    mockExec.mockResolvedValue(
+      followState({
+        tableCards: [card('CLOVER', 10)],
+        tablePlayType: 1, // single
+      }),
+    );
+    renderWithProviders(<ZhengPage />);
+    // ♠3 single cannot beat the table's 10 → too weak (button stays enabled; backend still validates).
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    expect(screen.getByTestId('zheng-invalid-combo')).toHaveTextContent('場より高いランクが必要です');
+  });
+
+  it('shows no warning for a legal beating play', async () => {
+    mockExec.mockResolvedValue(followState());
+    renderWithProviders(<ZhengPage />);
+    // ♦7 beats the table's ♣4 single → legal, no warning.
+    fireEvent.click(await screen.findByTestId('hand-card-2'));
+    expect(screen.queryByTestId('zheng-invalid-combo')).not.toBeInTheDocument();
+    expect(screen.getByTestId('play-button')).toBeEnabled();
   });
 
   it('passes when the pass button is clicked', async () => {

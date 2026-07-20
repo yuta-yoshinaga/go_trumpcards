@@ -29,7 +29,7 @@ import {
   type ZhengCliArgs,
 } from '../utils/cli/commands/zhengCommands';
 import type { CliGameConfig } from '../utils/cli/types';
-import { isValidZhengCombo } from '../utils/zhengComboValidator';
+import { isValidZhengCombo, zhengInvalidReason } from '../utils/zhengComboValidator';
 
 /** Tutorial steps for Zheng Shangyou. */
 const ZHENG_TUTORIAL_STEPS: TutorialStep[] = [
@@ -161,7 +161,13 @@ function ZhengPageContent() {
   const selectedCards = selectedIndices.map((i) => human.cards[i]).filter((c): c is NonNullable<typeof c> => c != null);
   const hasValidCombo = isValidZhengCombo(selectedCards);
   const canPlay = isHumanTurn && selectedIndices.length > 0 && hasValidCombo;
-  const showInvalidCombo = isHumanTurn && selectedIndices.length > 0 && !hasValidCombo;
+  // Warn-only: explain WHY the selection can't be played (invalid type, wrong
+  // count, doesn't beat the table, …). The play button gating is unchanged; the
+  // backend remains the authority, this only guides the human toward a fix.
+  const invalidReason =
+    isHumanTurn && selectedIndices.length > 0
+      ? zhengInvalidReason(selectedCards, state.tableCards, state.tablePlayType)
+      : null;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
 
   // Standings: finished players first (by confirmed rank), then still-playing
@@ -331,13 +337,13 @@ function ZhengPageContent() {
             <span className="sr-only" role="status" aria-live="polite" data-testid="zheng-turn-announce">
               {liveMsg}
             </span>
-            {showInvalidCombo && (
+            {invalidReason && (
               <p
                 role="status"
                 data-testid="zheng-invalid-combo"
                 className="mb-1 text-center font-medium text-ds-warning text-xs"
               >
-                {t('invalidCombo')}
+                {t(`invalidReason.${invalidReason}`)}
               </p>
             )}
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="zheng-play-pass">
