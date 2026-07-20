@@ -56,6 +56,16 @@ const fourthStreetState: MississippiStudResponse = {
   chips: 600,
 };
 
+const lowPairStreetState: MississippiStudResponse = {
+  ...thirdStreetState,
+  playerHand: [card('SPADE', 4), card('HEART', 4)],
+};
+
+const highCardStreetState: MississippiStudResponse = {
+  ...thirdStreetState,
+  playerHand: [card('SPADE', 8), card('HEART', 3)],
+};
+
 const endPhaseWin: MississippiStudResponse = {
   ...antePhaseState,
   phase: MississippiStudPhase.END,
@@ -158,6 +168,39 @@ describe('MississippiStudPage', () => {
     renderWithProviders(<MississippiStudPage />);
     await waitFor(() => expect(screen.getByText('プレイヤー')).toBeInTheDocument());
     expect(screen.getByText('コミュニティカード')).toBeInTheDocument();
+  });
+
+  it('shows the current made hand with a pay-table badge for a paying pair', async () => {
+    mockApi.mockResolvedValue(thirdStreetState); // pair of jacks (11)
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByTestId('ms-made-hand')).toBeInTheDocument());
+    const madeHand = screen.getByTestId('ms-made-hand');
+    expect(madeHand).toHaveTextContent('現在');
+    expect(madeHand).toHaveTextContent('ワンペア');
+    expect(madeHand).toHaveTextContent('配当対象');
+  });
+
+  it('shows a low pair as a made hand without the pay-table badge', async () => {
+    mockApi.mockResolvedValue(lowPairStreetState); // pair of 4s
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByTestId('ms-made-hand')).toBeInTheDocument());
+    const madeHand = screen.getByTestId('ms-made-hand');
+    expect(madeHand).toHaveTextContent('ワンペア');
+    expect(madeHand).not.toHaveTextContent('配当対象');
+  });
+
+  it('hides the made-hand readout when no made hand exists yet (high card)', async () => {
+    mockApi.mockResolvedValue(highCardStreetState);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByText('プレイヤー')).toBeInTheDocument());
+    expect(screen.queryByTestId('ms-made-hand')).not.toBeInTheDocument();
+  });
+
+  it('does not show the made-hand readout in the end phase', async () => {
+    mockApi.mockResolvedValue(endPhaseWin);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    expect(screen.queryByTestId('ms-made-hand')).not.toBeInTheDocument();
   });
 
   it('shows the community reveal-count status text', async () => {
