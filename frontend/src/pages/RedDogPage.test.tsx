@@ -128,6 +128,13 @@ describe('RedDogPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('raise', 100));
   });
 
+  it('disables the raise button when chips fall below the minimum bet', async () => {
+    mockApi.mockResolvedValue({ ...spreadState, chips: 5 });
+    renderWithProviders(<RedDogPage />);
+    const raiseBtn = await screen.findByRole('button', { name: /レイズ/ });
+    expect(raiseBtn).toBeDisabled();
+  });
+
   it('renders end phase with reset and payout', async () => {
     mockApi.mockResolvedValue(winState);
     renderWithProviders(<RedDogPage />);
