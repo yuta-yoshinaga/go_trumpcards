@@ -330,6 +330,37 @@ describe('ShitheadPage', () => {
     expect(first).not.toHaveAttribute('aria-pressed');
   });
 
+  it('resets via the API instead of reloading the page when the reset button is clicked', async () => {
+    // Guard against a regression to window.location.reload(): spy on it and
+    // assert it is never called, while the reset command drives a fresh game.
+    const reloadSpy = vi.fn();
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, reload: reloadSpy },
+    });
+    try {
+      mockExec.mockResolvedValue(gameEndState);
+      renderWithProviders(
+        <MemoryRouter initialEntries={['/shithead']}>
+          <ShitheadPage />
+        </MemoryRouter>,
+      );
+      // At game end the button reads "次のゲーム" and fires the reset immediately.
+      const resetButton = await screen.findByRole('button', { name: '次のゲーム' });
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(humanTurnState);
+      fireEvent.click(resetButton);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: baseConfig }));
+      expect(reloadSpy).not.toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    }
+  });
+
   it('renders a joker discard top as a card image with an accessible label', async () => {
     mockExec.mockResolvedValue({
       ...humanTurnState,

@@ -61,8 +61,18 @@ export const ShitheadPage = withTutorial(ShitheadPageContent, 'shithead', SHITHE
 function ShitheadPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('shithead');
-  const { state, loading, error, selectedCardIndices, toggleCard, handlePlay, handlePickup, retry, dispatch } =
-    useShitheadGame();
+  const {
+    state,
+    loading,
+    error,
+    selectedCardIndices,
+    toggleCard,
+    handlePlay,
+    handlePickup,
+    handleReset,
+    retry,
+    dispatch,
+  } = useShitheadGame();
   const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('shithead', state);
   const cliMode = useCliMode('shithead');
@@ -84,8 +94,8 @@ function ShitheadPageContent() {
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
-    window.location.reload();
-  }, [hideActionLog]);
+    handleReset();
+  }, [hideActionLog, handleReset]);
 
   // Hook order must stay stable across renders — compute the lookup above the
   // skeleton guard. buildMagicLookup safely handles a null config.
