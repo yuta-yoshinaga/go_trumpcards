@@ -70,5 +70,11 @@
     "meldInitial": "Make your initial meld to open",
     "meldExtend": "Extend an existing meld for more points",
     "discardHighSafe": "Discard a high-rank card the opponent cannot use"
+  },
+  "sort": {
+    "label": "Sort hand",
+    "original": "Original",
+    "rank": "Rank",
+    "suit": "Suit"
   }
 }

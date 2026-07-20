@@ -247,7 +247,7 @@ describe('BurracoPage', () => {
   it('switches the reason to selectOneMore once the player selects one card', async () => {
     renderWithProviders(<BurracoPage />);
     await waitFor(() => expect(screen.getByTestId('ca-draw-discard-reason')).toBeInTheDocument());
-    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    const handCards = screen.getAllByTestId(/^bu-hand-card-/);
     fireEvent.click(handCards[0]);
     expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent('もう1枚選択してください');
   });
@@ -255,7 +255,7 @@ describe('BurracoPage', () => {
   it('clears the reason and enables the draw button when exactly 2 cards are selected', async () => {
     renderWithProviders(<BurracoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
-    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    const handCards = screen.getAllByTestId(/^bu-hand-card-/);
     fireEvent.click(handCards[0]);
     fireEvent.click(handCards[1]);
     expect(screen.queryByTestId('ca-draw-discard-reason')).not.toBeInTheDocument();
@@ -266,7 +266,7 @@ describe('BurracoPage', () => {
   it('warns when more than 2 cards are selected', async () => {
     renderWithProviders(<BurracoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
-    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    const handCards = screen.getAllByTestId(/^bu-hand-card-/);
     fireEvent.click(handCards[0]);
     fireEvent.click(handCards[1]);
     fireEvent.click(handCards[2]);
@@ -278,7 +278,7 @@ describe('BurracoPage', () => {
     mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
     renderWithProviders(<BurracoPage />);
     await waitFor(() => expect(screen.getByTestId('ca-frozen-badge')).toBeInTheDocument());
-    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    const handCards = screen.getAllByTestId(/^bu-hand-card-/);
     fireEvent.click(handCards[0]);
     expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent(
       'フリーズ中はワイルドカードでの代用ができません',
@@ -328,6 +328,64 @@ describe('BurracoPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
     await waitFor(() => expect(screen.getByTestId('bu-round-score-0')).toHaveClass('motion-safe:animate-pulse'));
+  });
+
+  it('reorders the displayed hand when the suit-sort toggle is pressed', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<BurracoPage />);
+    await waitFor(() => expect(screen.getByTestId('bu-hand-card-0')).toBeInTheDocument());
+
+    // Original server order: SPADE7(0) CLOVER7(1) HEART7(2) SPADE10(3) CLOVER10(4).
+    const originalOrder = screen.getAllByTestId(/^bu-hand-card-/).map((b) => b.getAttribute('data-testid'));
+    expect(originalOrder).toEqual([
+      'bu-hand-card-0',
+      'bu-hand-card-1',
+      'bu-hand-card-2',
+      'bu-hand-card-3',
+      'bu-hand-card-4',
+    ]);
+
+    fireEvent.click(screen.getByTestId('bu-sort-suit'));
+    expect(screen.getByTestId('bu-sort-suit')).toHaveAttribute('aria-pressed', 'true');
+
+    // Suit-grouped ♠♥♦♣: SPADE7(0) SPADE10(3) HEART7(2) CLOVER7(1) CLOVER10(4).
+    const sortedOrder = screen.getAllByTestId(/^bu-hand-card-/).map((b) => b.getAttribute('data-testid'));
+    expect(sortedOrder).toEqual([
+      'bu-hand-card-0',
+      'bu-hand-card-3',
+      'bu-hand-card-2',
+      'bu-hand-card-1',
+      'bu-hand-card-4',
+    ]);
+  });
+
+  it('melds the correct original indices after the hand is display-sorted', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<BurracoPage />);
+    await waitFor(() => expect(screen.getByTestId('bu-hand-card-0')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('bu-sort-suit'));
+
+    // In suit order the three 7s sit at DOM positions 0, 2 and 3. Select them by
+    // DOM position and confirm the meld targets their ORIGINAL indices (0,2,1),
+    // proving the sort only reorders the display, never the action indices.
+    const handButtons = screen.getAllByTestId(/^bu-hand-card-/);
+    fireEvent.click(handButtons[0]); // SPADE7  -> index 0
+    fireEvent.click(handButtons[2]); // HEART7  -> index 2
+    fireEvent.click(handButtons[3]); // CLOVER7 -> index 1
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'メルドする' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, undefined, [[0, 2, 1]]));
+  });
+
+  it('persists the chosen sort mode to localStorage', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<BurracoPage />);
+    await waitFor(() => expect(screen.getByTestId('bu-sort-rank')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('bu-sort-rank'));
+    expect(localStorage.getItem('burraco-sort-mode')).toBe('rank');
   });
 
   afterEach(() => {
