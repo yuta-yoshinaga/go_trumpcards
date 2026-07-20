@@ -29,6 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BridgeResponse } from '../types/card';
 import { BridgePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { buildBridgeAuctionGrid, finalContractBid } from '../utils/bridgeAuction';
 import { canBid, canDouble, canRedouble } from '../utils/bridgeBidRules';
 import { cardAlt } from '../utils/cardAlt';
 import { BRIDGE_HELP, parseBridgeCommand } from '../utils/cli/commands/bridgeCommands';
@@ -203,6 +204,18 @@ function BridgePageContent() {
 
   const suitLabel = (suit: number) => (SUIT_DISPLAY[suit] ? t(SUIT_DISPLAY[suit]) : '');
 
+  // Render one auction cell: pass/double/redouble labels, or level+strain.
+  const bidCellLabel = (entry: { bidType: number; level: number; suit: number } | null) => {
+    if (!entry) return '';
+    if (entry.bidType === 0) return t('passButton');
+    if (entry.bidType === 2) return t('doubleButton');
+    if (entry.bidType === 3) return t('redoubleButton');
+    return `${entry.level}${suitLabel(entry.suit)}`;
+  };
+
+  const auctionGrid = buildBridgeAuctionGrid(state.bidHistory);
+  const winningBid = state.contractLevel > 0 ? finalContractBid(state.bidHistory) : null;
+
   const contractDisplay = () => {
     if (state.contractLevel <= 0) return null;
     const suit = suitLabel(state.contractSuit);
@@ -304,27 +317,53 @@ function BridgePageContent() {
                 {/* Bid phase instruction */}
                 {isHumanBidTurn && <div className="text-ds-warning text-center mb-2">{t('bidPhase')}</div>}
 
-                {/* Bid History */}
-                {state.bidHistory.length > 0 && (
+                {/* Bid History — traditional 4-column auction grid */}
+                {auctionGrid && (
                   <div className="my-2 p-2 rounded bg-black/30" data-tutorial="br-bid-history">
                     <div className="text-ds-text-muted text-sm mb-1">{t('bidHistory')}</div>
-                    <div className="flex flex-wrap gap-1">
-                      {state.bidHistory.map((entry, idx) => (
-                        <span key={idx} className="text-ds-text-primary text-xs bg-black/20 px-1 rounded">
-                          {playerName(
-                            state.players[entry.playerIdx]?.id ?? entry.playerIdx,
-                            state.players[entry.playerIdx]?.isHuman ?? false,
-                          )}
-                          :{' '}
-                          {entry.bidType === 0
-                            ? t('passButton')
-                            : entry.bidType === 2
-                              ? t('doubleButton')
-                              : entry.bidType === 3
-                                ? t('redoubleButton')
-                                : `${entry.level}${suitLabel(entry.suit)}`}
-                        </span>
-                      ))}
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs text-ds-text-primary" data-testid="bridge-auction-table">
+                        <caption className="sr-only">{t('auctionTableCaption')}</caption>
+                        <thead>
+                          <tr>
+                            {auctionGrid.columns.map((seat) => {
+                              const seatPlayer = state.players[seat];
+                              const isHumanCol = seatPlayer?.isHuman === true;
+                              return (
+                                <th
+                                  key={seat}
+                                  scope="col"
+                                  className={`px-2 py-0.5 text-center font-semibold ${
+                                    isHumanCol ? 'text-ds-accent' : 'text-ds-text-muted'
+                                  }`}
+                                >
+                                  {playerName(seatPlayer?.id ?? seat, seatPlayer?.isHuman ?? false)}
+                                </th>
+                              );
+                            })}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {auctionGrid.rows.map((row, rIdx) => (
+                            <tr key={rIdx}>
+                              {row.map((cell, cIdx) => {
+                                const isWinning = cell !== null && cell === winningBid;
+                                return (
+                                  <td
+                                    key={cIdx}
+                                    className={`px-2 py-0.5 text-center ${
+                                      isWinning ? 'rounded bg-ds-accent/30 font-bold text-ds-accent' : ''
+                                    }`}
+                                    data-winning-contract={isWinning ? 'true' : undefined}
+                                  >
+                                    {bidCellLabel(cell)}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 )}

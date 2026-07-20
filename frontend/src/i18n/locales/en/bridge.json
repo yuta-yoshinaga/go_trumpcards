@@ -46,6 +46,7 @@
   "vulnerable": "Vul",
   "notVulnerable": "Non-Vul",
   "bidHistory": "Bid History",
+  "auctionTableCaption": "Auction table. Columns are the players, rows are the bidding rounds, and each cell holds a bid, pass, or double.",
   "bidLevel": "Level",
   "bidSuit": "Suit",
   "dummyHand": "Dummy's Hand",
