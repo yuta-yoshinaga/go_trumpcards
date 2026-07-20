@@ -38,6 +38,8 @@
   "scoresTotal": "Total",
   "yourTeam": "Your team",
   "opponentTeam": "Opponents",
+  "breakdownTitle": "Per-player trick breakdown",
+  "breakdownTricks": "{{count}} tricks",
   "bidButton": "Bid",
   "passButton": "Pass",
   "bidSelectLabel": "Select your bid",

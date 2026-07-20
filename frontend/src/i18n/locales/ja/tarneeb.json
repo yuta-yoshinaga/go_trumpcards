@@ -38,6 +38,8 @@
   "scoresTotal": "累計",
   "yourTeam": "あなたのチーム",
   "opponentTeam": "相手チーム",
+  "breakdownTitle": "プレイヤー別トリック内訳",
+  "breakdownTricks": "{{count}}トリック",
   "bidButton": "ビッド",
   "passButton": "パス",
   "bidSelectLabel": "ビッド数を選択",
