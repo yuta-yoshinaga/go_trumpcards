@@ -78,6 +78,13 @@ describe('BriscolaPage', () => {
     expect(screen.getByRole('button', { name: '♦ J を出す' })).toBeInTheDocument();
   });
 
+  it('renders hand and trump cards with the AnimatedCard component', async () => {
+    renderWithProviders(<BriscolaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A を出す' })).toBeInTheDocument());
+    // 3 hand cards + 1 face-up trump card are rendered as animated cards.
+    expect(screen.getAllByTestId('animated-card')).toHaveLength(4);
+  });
+
   it('fires play with the selected card index when a card is clicked', async () => {
     renderWithProviders(<BriscolaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '♥ 5 を出す' })).toBeInTheDocument());

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { briscolaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
@@ -183,7 +183,7 @@ function BriscolaPageContent() {
                     transformOrigin: 'left center',
                   }}
                 >
-                  <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
+                  <AnimatedCard card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
                 </div>
                 {/* Card-back stack — width tapers down as cards are drawn so the
                     physical "thinning deck" reads at a glance. */}
@@ -252,7 +252,7 @@ function BriscolaPageContent() {
                     selectedIdx === idx ? 'ring-2 ring-ds-accent -translate-y-1 transition-transform' : ''
                   }`}
                 >
-                  <CardImage card={card} width={cardWidth} />
+                  <AnimatedCard card={card} width={cardWidth} />
                 </button>
               ))}
             </div>
