@@ -58,6 +58,15 @@
   },
   "hintBury": "Recommended bury",
   "hintPlay": "Recommended card",
+  "hintApply": "Apply",
+  "hintReason": {
+    "strategic_bury": "Bury to set a reachable bid",
+    "lead_strong": "Lead with a strong card",
+    "lead_low": "Lead with a low card",
+    "follow_suit": "Follow the led suit",
+    "trump_cut": "Cut with a trump",
+    "discard_high": "Discard a high card"
+  },
   "suitName": {
     "1": "Spades",
     "2": "Clubs",

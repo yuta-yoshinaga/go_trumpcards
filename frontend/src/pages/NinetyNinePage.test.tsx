@@ -367,6 +367,54 @@ describe('NinetyNinePage', () => {
     await waitFor(() => expect(actionLogApi.ninetynine).toHaveBeenCalledTimes(1));
   });
 
+  it('play-phase hint fetches and shows the recommended card with its reason', async () => {
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByTestId('nn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({ ...playPhaseState, hint: { cardIndex: 1, reason: 'follow_suit' } });
+    fireEvent.click(screen.getByTestId('nn-hint-button'));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    expect(screen.getByTestId('nn-server-hint')).toHaveTextContent('推奨カード: [1] (リードスートに追随)');
+  });
+
+  it('bid-phase hint shows the bury recommendation and Apply selects those three cards', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByTestId('nn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({ ...bidPhaseState, hint: { buryIndices: [0, 1, 2], reason: 'strategic_bury' } });
+    fireEvent.click(screen.getByTestId('nn-hint-button'));
+
+    await waitFor(() => expect(screen.getByTestId('nn-server-hint')).toBeInTheDocument());
+    expect(screen.getByTestId('nn-server-hint')).toHaveTextContent('到達可能なビッドになるよう埋める');
+
+    // Applying the bury hint replaces the selection with the recommended 3 cards,
+    // so the Bury button becomes ready (no aria-disabled).
+    fireEvent.click(screen.getByTestId('nn-hint-apply'));
+    expect(screen.getByTestId('nn-bury-progress')).toHaveTextContent('3枚選択しました。埋めるボタンで確定できます');
+    expect(screen.getByRole('button', { name: '3枚埋める' })).not.toHaveAttribute('aria-disabled');
+  });
+
+  it('shows a network error when the hint request fails', async () => {
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByTestId('nn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockRejectedValueOnce(new Error('boom'));
+    fireEvent.click(screen.getByTestId('nn-hint-button'));
+
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+  });
+
+  it('does not show the hint button on a cpu turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
+    expect(screen.queryByTestId('nn-hint-button')).not.toBeInTheDocument();
+  });
+
   it('renders accessible h1 heading and tutorial button', async () => {
     renderWithProviders(<NinetyNinePage />);
     await waitFor(() => {

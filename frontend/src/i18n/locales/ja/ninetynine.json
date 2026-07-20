@@ -58,6 +58,15 @@
   },
   "hintBury": "推奨の埋めカード",
   "hintPlay": "推奨カード",
+  "hintApply": "適用",
+  "hintReason": {
+    "strategic_bury": "到達可能なビッドになるよう埋める",
+    "lead_strong": "強いカードでリード",
+    "lead_low": "低いカードでリード",
+    "follow_suit": "リードスートに追随",
+    "trump_cut": "切り札でカット",
+    "discard_high": "高いカードを捨てる"
+  },
   "suitName": {
     "1": "スペード",
     "2": "クラブ",

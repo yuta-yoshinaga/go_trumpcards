@@ -16,6 +16,7 @@ import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardSelection } from '../hooks/useCardSelection';
 import { useCliGame } from '../hooks/useCliGame';
@@ -29,7 +30,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { NinetyNineResponse } from '../types/card';
+import type { NinetyNineHint, NinetyNineResponse } from '../types/card';
 import { NinetyNinePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -111,10 +112,19 @@ function NinetyNinePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('ninetynine');
   const { playSound } = useSound();
-  const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
+  const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection, setSelected } = useCardSelection();
   const [config, setConfig] = useState<{ cpuDifficulty: number; targetScore: number }>({ ...DEFAULT_CONFIG });
 
-  const onSuccess = useCallback(() => clearSelection(), [clearSelection]);
+  // Server-computed hint (fetched via the `hint` command). Separate from the
+  // frontend `useGameHint` toggle below. Any successful game action clears it.
+  const [serverHint, setServerHint] = useState<NinetyNineHint | null>(null);
+  const [hintError, setHintError] = useState<string | null>(null);
+  const [hintLoading, setHintLoading] = useState(false);
+
+  const onSuccess = useCallback(() => {
+    clearSelection();
+    setServerHint(null);
+  }, [clearSelection]);
   const { state, loading, error, exec, retry } = useGameApi(ninetyNineApi.exec, { onSuccess });
 
   const configRef = useRef(config);
@@ -156,6 +166,28 @@ function NinetyNinePageContent() {
     if (selectedCardIndices.length !== 1) return;
     void exec('play', undefined, selectedCardIndices[0]);
   }, [exec, selectedCardIndices]);
+
+  // The `hint` command returns full game state plus a nested `hint` object, so
+  // it is fetched directly and the hint stored separately rather than through
+  // `exec`, whose onSuccess would immediately clear the freshly-fetched hint.
+  const handleHint = useCallback(async () => {
+    setHintLoading(true);
+    try {
+      const res = await ninetyNineApi.exec('hint');
+      setServerHint(res.hint ?? null);
+      setHintError(null);
+    } catch {
+      setHintError(NETWORK_ERROR_MESSAGE());
+    } finally {
+      setHintLoading(false);
+    }
+  }, []);
+
+  // Apply the bury hint: replace the current selection with the recommended
+  // three cards so the player can confirm with the Bury button in one tap.
+  const handleApplyBury = useCallback(() => {
+    if (serverHint?.buryIndices) setSelected([...serverHint.buryIndices]);
+  }, [serverHint, setSelected]);
 
   const handleNextTrick = useCallback(() => void exec('next'), [exec]);
   const handleNextRound = useCallback(() => void exec('nextround'), [exec]);
@@ -428,12 +460,49 @@ function NinetyNinePageContent() {
                 </div>
               ))}
 
-            <ErrorAlert message={error} onRetry={retry} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {serverHint && (
+              <div className="text-ds-warning text-sm mb-2" data-testid="nn-server-hint">
+                {serverHint.buryIndices && serverHint.buryIndices.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <span>
+                      {t('hintBury')}:{' '}
+                      {serverHint.buryIndices
+                        .map((i) => {
+                          const c = humanPlayer?.cards[i];
+                          return c ? cardAlt(c) : `[${i}]`;
+                        })
+                        .join(' ')}{' '}
+                      ({t(`hintReason.${serverHint.reason}`)})
+                    </span>
+                    <button type="button" className={btnSuccess} onClick={handleApplyBury} data-testid="nn-hint-apply">
+                      {t('hintApply')}
+                    </button>
+                  </div>
+                ) : serverHint.cardIndex != null ? (
+                  <span>
+                    {t('hintPlay')}: [{serverHint.cardIndex}] ({t(`hintReason.${serverHint.reason}`)})
+                  </span>
+                ) : null}
+              </div>
+            )}
 
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
             )}
             <div className="flex gap-2 items-center" data-tutorial="nn-play-button">
+              {(isHumanBidTurn || isHumanTurn) && (
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={handleHint}
+                  disabled={loading || hintLoading}
+                  data-testid="nn-hint-button"
+                >
+                  {tc('button.hint')}
+                </button>
+              )}
               {isHumanBidTurn && (
                 // Use aria-disabled (not the HTML `disabled` attribute) for the
                 // not-enough-cards state so the button stays focusable and a screen
