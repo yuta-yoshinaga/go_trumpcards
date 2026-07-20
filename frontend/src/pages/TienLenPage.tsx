@@ -29,6 +29,7 @@ import {
   type TienLenCliArgs,
 } from '../utils/cli/commands/tienlenCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 import { classifyTienLenCombo } from '../utils/tienLenComboValidator';
 
 // Values match the Go domain constants: 0=Normal, 1=Easy, 2=Hard
@@ -192,6 +193,11 @@ function TienLenPageContent() {
             {/* Table cards */}
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="tl-table-cards">
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('tableCards')}</div>
+              {state.tableCards.length > 0 && state.lastPlayPlayerIdx >= 0 && (
+                <div className="text-center text-xs font-semibold text-ds-info mb-2" data-testid="tl-table-owner">
+                  {t('tablePlayedBy', { name: findPlayerName(state.players, state.lastPlayPlayerIdx) })}
+                </div>
+              )}
               <div className="flex justify-center gap-2 min-h-[60px]">
                 {state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('tableEmpty')}</span>
