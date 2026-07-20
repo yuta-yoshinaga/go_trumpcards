@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sevenBridgeApi } from '../api/gameApi';
+import { gameTheme } from '../styles/gameTheme';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SevenBridgeResponse } from '../types/card';
 import { SevenBridgePage } from './SevenBridgePage';
@@ -61,6 +62,14 @@ describe('SevenBridgePage', () => {
     mockExec.mockResolvedValue(drawState);
     renderWithProviders(<SevenBridgePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
+  });
+
+  it('applies the shared gameTheme background instead of a hardcoded class', async () => {
+    mockExec.mockResolvedValue(drawState);
+    const { container } = renderWithProviders(<SevenBridgePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(container.querySelector(`.${gameTheme.sevenbridge.bg}`)).toBeInTheDocument();
+    expect(container.querySelector('.bg-ds-bg')).not.toBeInTheDocument();
   });
 
   it('renders draw phase controls', async () => {
