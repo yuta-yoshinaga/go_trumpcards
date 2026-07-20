@@ -33,6 +33,33 @@ import { isGoalTopPlayableToFoundation } from '../utils/spiteAndMaliceUtils';
 
 const samRunner = spiteAndMaliceApi;
 
+/** CPU cadence presets — a shorter delay makes the CPU take its turn sooner. */
+type SamCpuSpeed = 'slow' | 'normal' | 'fast';
+
+/**
+ * CPU turn wait (ms) per speed preset. A smaller delay advances the CPU turn
+ * sooner; `normal` (500ms) preserves the historical default for backward
+ * compatibility.
+ */
+const SAM_CPU_DELAY_MS: Record<SamCpuSpeed, number> = {
+  slow: 900,
+  normal: 500,
+  fast: 200,
+};
+
+const SAM_CPU_SPEED_STORAGE_KEY = 'spiteandmalice:cpuSpeed';
+
+/** Read the persisted CPU speed, falling back to `normal` when unset/invalid. */
+function loadSamCpuSpeed(): SamCpuSpeed {
+  try {
+    const v = localStorage.getItem(SAM_CPU_SPEED_STORAGE_KEY);
+    if (v === 'slow' || v === 'normal' || v === 'fast') return v;
+  } catch {
+    // localStorage may be unavailable (private mode / SSR); fall through to default.
+  }
+  return 'normal';
+}
+
 const SAM_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="sam-opponent"]', messageKey: 'tutorial.opponent', placement: 'bottom', advanceOn: 'next' },
   {
@@ -129,18 +156,32 @@ function SpiteAndMalicePageContent() {
   const apiCall = gameApi.exec;
 
   const [selection, setSelection] = useState<Selection>(null);
+  const [cpuSpeed, setCpuSpeed] = useState<SamCpuSpeed>(loadSamCpuSpeed);
+
+  const handleSelectCpuSpeed = useCallback((v: string) => {
+    const speed: SamCpuSpeed = v === 'slow' || v === 'fast' ? v : 'normal';
+    setCpuSpeed(speed);
+    try {
+      localStorage.setItem(SAM_CPU_SPEED_STORAGE_KEY, speed);
+    } catch {
+      // Persistence is best-effort; ignore storage failures.
+    }
+  }, []);
 
   useMountReset(apiCall);
 
+  // CPU turn driver: after a short delay, advance the CPU's turn. The delay is
+  // scaled by the chosen speed preset; changing the speed restarts the timer so
+  // the new cadence takes effect from the next CPU turn.
   useEffect(() => {
     if (!state) return;
     if (state.phase === SpiteAndMalicePhase.GAME_OVER) return;
     if (state.current !== 1) return;
     const timer = setTimeout(() => {
       void apiCall('cpu');
-    }, 500);
+    }, SAM_CPU_DELAY_MS[cpuSpeed]);
     return () => clearTimeout(timer);
-  }, [state, apiCall]);
+  }, [state, apiCall, cpuSpeed]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spiteandmalice');
   const samCliConfig: CliGameConfig<SpiteAndMaliceResponse, ApiArgs> = useMemo(
@@ -276,6 +317,20 @@ function SpiteAndMalicePageContent() {
                     label: tc('hint.toggle', { ns: 'tutorial' }),
                     checked: hintEnabled,
                     onToggle: setHintEnabled,
+                  },
+                  {
+                    type: 'select' as const,
+                    id: 'samCpuSpeed',
+                    testId: 'sam-cpu-speed-select',
+                    label: t('settings.cpuSpeed'),
+                    tooltip: t('settings.cpuSpeedHelp'),
+                    value: cpuSpeed,
+                    options: [
+                      { value: 'slow', label: t('settings.speedSlow') },
+                      { value: 'normal', label: t('settings.speedNormal') },
+                      { value: 'fast', label: t('settings.speedFast') },
+                    ],
+                    onSelect: handleSelectCpuSpeed,
                   },
                 ],
               },

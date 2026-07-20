@@ -260,4 +260,46 @@ describe('SpiteAndMalicePage', () => {
     const tooltip = await screen.findByTestId('hint-tooltip');
     expect(tooltip).toHaveTextContent('ゴールパイルのトップをファウンデーションに出せます');
   });
+
+  it('defaults the CPU speed select to normal when unset', async () => {
+    renderWithProviders(<SpiteAndMalicePage />);
+    const select = (await screen.findByTestId('sam-cpu-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('normal');
+  });
+
+  it('loads the persisted CPU speed from localStorage on mount', async () => {
+    localStorage.setItem('spiteandmalice:cpuSpeed', 'fast');
+    renderWithProviders(<SpiteAndMalicePage />);
+    const select = (await screen.findByTestId('sam-cpu-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('fast');
+  });
+
+  it('persists the chosen CPU speed to localStorage', async () => {
+    renderWithProviders(<SpiteAndMalicePage />);
+    const select = (await screen.findByTestId('sam-cpu-speed-select')) as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: 'slow' } });
+    expect(select.value).toBe('slow');
+    expect(localStorage.getItem('spiteandmalice:cpuSpeed')).toBe('slow');
+  });
+
+  it('uses the selected speed as the CPU turn wait', async () => {
+    vi.useFakeTimers();
+    try {
+      // 'fast' → 200ms delay. Verify the CPU turn fires only after the boundary.
+      localStorage.setItem('spiteandmalice:cpuSpeed', 'fast');
+      mockExec.mockResolvedValue(cpuTurnState);
+      renderWithProviders(<SpiteAndMalicePage />);
+      // Flush the mount reset + initial render so the CPU-turn effect subscribes.
+      await vi.advanceTimersByTimeAsync(0);
+      mockExec.mockClear();
+      // Just before the 200ms fast delay no CPU turn has fired yet.
+      await vi.advanceTimersByTimeAsync(199);
+      expect(mockExec).not.toHaveBeenCalledWith('cpu');
+      // Crossing 200ms fires the fast CPU turn.
+      await vi.advanceTimersByTimeAsync(1);
+      expect(mockExec).toHaveBeenCalledWith('cpu');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
