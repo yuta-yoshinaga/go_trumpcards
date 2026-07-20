@@ -94,6 +94,7 @@ import type {
   NapResponse,
   NertzResponse,
   NinetyNineResponse,
+  OasisPokerResponse,
   OhHellResponse,
   OichoKabuResponse,
   OldMaidResponse,
@@ -272,6 +273,7 @@ import { getNapHint } from '../utils/hints/napHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getNinetyNineHint } from '../utils/hints/ninetynineHint';
+import { getOasisPokerHint } from '../utils/hints/oasispokerHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOichokabuHint } from '../utils/hints/oichokabuHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
@@ -425,6 +427,7 @@ const hintFactories = {
   gofish: (s) => getGoFishHint(s as GoFishResponse),
   golf: (s) => getGolfHint(s as GolfResponse),
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
+  oasispoker: (s) => getOasisPokerHint(s as OasisPokerResponse),
   casinoholdem: (s) => getCasinoHoldemHint(s as CasinoHoldemResponse),
   texasholdembonus: (s) => getTexasHoldemBonusHint(s as TexasHoldemBonusResponse),
   ultimatetexasholdem: (s) => getUltimateTexasHoldemHint(s as UltimateTexasHoldemResponse),

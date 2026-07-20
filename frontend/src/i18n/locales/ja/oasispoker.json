@@ -88,5 +88,12 @@
     "actionButtons": "コールでアンテの2倍を賭けるか、フォールドで降りるか選択してください。",
     "results": "結果と配当を確認してください。"
   },
-  "hiddenCard": "非公開のカード"
+  "hiddenCard": "非公開のカード",
+  "hint": {
+    "pairOrBetter": "ペア以上 — プレイ推奨",
+    "aceKingHigh": "A-K ハイ — プレイ推奨",
+    "weakHand": "弱い手札 — フォールド推奨",
+    "exchangeKeep": "ペア以上 — 交換せずスタンド推奨",
+    "exchangeImprove": "弱い手札 — カード交換で改善を狙う"
+  }
 }
