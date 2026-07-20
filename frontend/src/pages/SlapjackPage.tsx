@@ -4,6 +4,7 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
@@ -13,6 +14,7 @@ import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { SlapBurst, type SlapOutcome } from '../components/SlapBurst';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -154,13 +156,7 @@ function SlapjackPageContent() {
   });
 
   if (!state || state.players.length < 2) {
-    return (
-      <div
-        className={`flex-1 flex flex-col min-h-0 ${gameTheme.slapjack.bg} items-center justify-center text-ds-text-muted`}
-      >
-        Loading…
-      </div>
-    );
+    return <GameSkeleton gameKey="slapjack" layout={{ kind: 'centered', rows: [1, 1, 1] }} />;
   }
 
   const isGameEnd = state.gameEndFlag || state.phase === SlapjackPhase.GAME_END;
@@ -191,11 +187,7 @@ function SlapjackPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
-            {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
-                {error}
-              </button>
-            )}
+            <ErrorAlert message={error} onRetry={retry} />
 
             {/* CPU pile */}
             <div className="flex items-center justify-center gap-4" data-tutorial="sj-cpu-pile">

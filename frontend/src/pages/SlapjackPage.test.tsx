@@ -86,6 +86,26 @@ describe('SlapjackPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('renders the GameSkeleton while state is null', () => {
+    // Keep exec pending so `state` stays null and the loading guard renders.
+    mockExec.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<SlapjackPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.queryByTestId('step-button')).not.toBeInTheDocument();
+  });
+
+  it('renders an ErrorAlert with a retry button when an action fails', async () => {
+    // Mount reset resolves so state loads; a subsequent action rejects.
+    mockExec.mockResolvedValueOnce(baseState);
+    renderWithProviders(<SlapjackPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    mockExec.mockRejectedValue(new Error('boom'));
+    fireEvent.click(screen.getByTestId('step-button'));
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('通信エラー');
+    expect(screen.getByRole('button', { name: /再試行/i })).toBeInTheDocument();
+  });
+
   it('renders stock counts after state loads', async () => {
     renderWithProviders(<SlapjackPage />);
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
