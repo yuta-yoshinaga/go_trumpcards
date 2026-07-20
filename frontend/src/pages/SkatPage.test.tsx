@@ -227,6 +227,38 @@ describe('SkatPage', () => {
     );
   });
 
+  it('resets via the API instead of reloading the page when the reset button is clicked', async () => {
+    // Guard against a regression to window.location.reload(): spy on it and
+    // assert it is never called, while the reset command drives a fresh game.
+    const reloadSpy = vi.fn();
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, reload: reloadSpy },
+    });
+    try {
+      renderWithProviders(
+        <MemoryRouter initialEntries={['/skat']}>
+          <SkatPage />
+        </MemoryRouter>,
+      );
+      await waitFor(() => expect(screen.getByRole('button', { name: '18でコールする' })).toBeInTheDocument());
+
+      mockExec.mockClear();
+      fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+      fireEvent.click(screen.getByRole('button', { name: '確認' }));
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 1, targetScore: 500 } }),
+      );
+      expect(reloadSpy).not.toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    }
+  });
+
   it('renders bid controls with "call 18" button when no current bid', async () => {
     renderWithProviders(
       <MemoryRouter initialEntries={['/skat']}>
