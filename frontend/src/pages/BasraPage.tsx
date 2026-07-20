@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BasraResponse } from '../types/card';
 import { BasraPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { basraFindCaptures, resolveBasraAction } from '../utils/basraCaptures';
 import { cardAlt } from '../utils/cardAlt';
 import { BASRA_HELP, parseBasraCommand } from '../utils/cli/commands/basraCommands';
 import { formatBasraState } from '../utils/cli/formatters/basraFormatter';
@@ -156,9 +157,13 @@ function BasraPageContent() {
   const humanWon = isGameEnd && state.winners.includes(0);
   const phaseName = isGameEnd ? t('phase.gameEnd') : t('phase.play');
 
-  // Table indices the currently-selected hand card can capture (backend hint).
-  const captureCandidates =
-    handIndex !== null && isHumanTurn ? new Set(state.captureOptions[handIndex] ?? []) : new Set<number>();
+  // Preview which table cards the selected hand card would capture. Derived on the
+  // frontend (basraFindCaptures) so the highlight matches the domain rule exactly —
+  // including the Jack sweep, which the backend captureOptions hint omits for a Jack.
+  const selectedHandCard = handIndex !== null && isHumanTurn ? (human?.cards[handIndex] ?? null) : null;
+  const previewCaptures = selectedHandCard ? basraFindCaptures(selectedHandCard, state.tableCards) : [];
+  const captureCandidates = new Set(previewCaptures);
+  const captureAction = resolveBasraAction(selectedHandCard, previewCaptures, tableIndices);
   const canPlay = isHumanTurn && handIndex !== null;
 
   const winnerNames = state.winners.map((i) => (state.players[i]?.isHuman ? t('you') : t('cpu', { id: i }))).join(', ');
@@ -401,7 +406,11 @@ function BasraPageContent() {
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="basra-actions">
               {!isGameEnd && isHumanTurn && (
                 <button type="button" className={btnPrimary} onClick={playCard} disabled={loading || !canPlay}>
-                  {tableIndices.length > 0 ? t('captureButton') : t('playButton')}
+                  {captureAction.kind === 'sweep' || captureAction.kind === 'capture'
+                    ? t('captureButtonCount', { count: captureAction.count })
+                    : captureAction.kind === 'trail'
+                      ? t('trailButton')
+                      : t('playButton')}
                 </button>
               )}
               {isGameEnd && (
