@@ -24,7 +24,7 @@
   "meldExtra": "Lay extra meld",
   "layoff": "Lay off",
   "meldAria": "{{player}}'s meld {{meld}}",
-  "cardInSlotAria": "in slot",
+  "cardInSlotRemoveAria": "{{card}} (in slot {{n}}, click to remove)",
   "layoffTargetSummary": "→ Lay off to: {{player}} meld {{meld}}",
   "discard": "Discard card",
   "nextRound": "Next round",

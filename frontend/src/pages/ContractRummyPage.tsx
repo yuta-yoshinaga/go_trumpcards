@@ -160,6 +160,12 @@ function ContractRummyPageContent() {
     setContractSlots((prev) => prev.slice(0, -1));
   }, []);
 
+  // Remove a single staged card from whichever slot holds it; drop the slot
+  // entirely once it becomes empty so slotsBuilt / per-slot progress stay in sync.
+  const handleRemoveCardFromSlot = useCallback((idx: number) => {
+    setContractSlots((prev) => prev.map((slot) => slot.filter((i) => i !== idx)).filter((slot) => slot.length > 0));
+  }, []);
+
   const handleSubmitContract = useCallback(() => {
     if (contractSlots.length === 0) return;
     void execApi('meldcontract', { indicesPerSlot: contractSlots });
@@ -363,19 +369,32 @@ function ContractRummyPageContent() {
               <div className="flex flex-wrap gap-1">
                 {humanPlayer.cards.map((c: Card, idx: number) => {
                   const isSelected = selectedCards.includes(idx);
-                  const isInSlot = contractSlots.some((slot) => slot.includes(idx));
+                  const slotOfCard = contractSlots.findIndex((slot) => slot.includes(idx));
+                  const isInSlot = slotOfCard !== -1;
                   return (
                     <button
                       type="button"
                       key={`${idx}-${c.design}-${c.value}`}
-                      onClick={() => toggleCard(idx)}
-                      disabled={isInSlot}
-                      aria-pressed={isSelected}
-                      aria-label={isInSlot ? `${cardAlt(c)} (${t('cardInSlotAria')})` : cardAlt(c)}
-                      className={`${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${
+                      // A staged card removes itself from its slot; an unstaged card toggles selection.
+                      onClick={() => (isInSlot ? handleRemoveCardFromSlot(idx) : toggleCard(idx))}
+                      aria-pressed={isInSlot ? undefined : isSelected}
+                      aria-label={
+                        isInSlot ? t('cardInSlotRemoveAria', { card: cardAlt(c), n: slotOfCard + 1 }) : cardAlt(c)
+                      }
+                      data-testid={isInSlot ? `cr-slot-card-${idx}` : undefined}
+                      data-slot={isInSlot ? slotOfCard + 1 : undefined}
+                      className={`relative ${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${
                         isInSlot ? 'opacity-40' : ''
                       }`}
                     >
+                      {isInSlot && (
+                        <span
+                          className={`absolute top-0 left-0 z-10 px-1 rounded-br text-[10px] font-bold ${badgeWarningColors}`}
+                          aria-hidden="true"
+                        >
+                          {slotOfCard + 1}
+                        </span>
+                      )}
                       <AnimatedCard card={c} width={cardWidth} />
                     </button>
                   );
