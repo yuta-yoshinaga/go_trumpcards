@@ -25,6 +25,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useReflexShortcuts } from '../hooks/useReflexShortcuts';
 import i18n from '../i18n';
+import { useSound } from '../providers/SoundProvider';
 import { gameTheme } from '../styles/gameTheme';
 import type { SlapjackResponse } from '../types/card';
 import { SlapjackEventKind, SlapjackPhase } from '../types/phases';
@@ -70,13 +71,19 @@ function SlapjackPageContent() {
     useGamePageSetup('slapjack');
   const { state, loading, error, exec: execApi, retry } = useGameApi(slapjackApi.exec);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('slapjack', state);
 
-  const handleStep = useCallback(() => execApi('step'), [execApi]);
+  // Flipping the next card onto the arena is the human's tap — give it a card
+  // sound (respects the global mute via SoundProvider).
+  const handleStep = useCallback(() => {
+    playSound('cardPlace');
+    return execApi('step');
+  }, [execApi, playSound]);
   const handleSlap = useCallback(() => execApi('slap'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
 
@@ -111,9 +118,15 @@ function SlapjackPageContent() {
       setSlapBurst((prevBurst) => ({ key: prevBurst.key + 1, outcome, label }));
       const slapper = player === 0 ? tc('player.you') : tc('player.cpu', { id: player });
       setSlapAnnounce(t(`slapjack.slapAnnounce.${outcome}`, { player: slapper }));
+      // Sound only for the human's own slap so a fanfare never celebrates the
+      // CPU (and a buzz never blames the player for the CPU's miss). Mute is
+      // handled globally by SoundProvider.
+      if (player === 0) {
+        playSound(outcome === 'correct' ? 'winFanfare' : 'errorBuzz');
+      }
       prevSlapEventRef.current = { kind, player };
     }
-  }, [state, t, tc]);
+  }, [state, t, tc, playSound]);
 
   useMountReset(execApi);
 
@@ -176,6 +189,7 @@ function SlapjackPageContent() {
       gamePath="/slapjack"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
+      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
