@@ -335,6 +335,53 @@ describe('TwoTenJackPage', () => {
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 
+  it('fetches and displays a server play recommendation when the hint button is clicked', async () => {
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const hintState = makeTwoTenJackState({ hint: { reason: 'lead', cardIndex: 0 } });
+    mockExec.mockResolvedValue(hintState);
+    fireEvent.click(screen.getByTestId('tt-hint-button'));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    await waitFor(() => {
+      const el = screen.getByTestId('tt-hint');
+      expect(el).toHaveTextContent('推奨プレイ');
+      expect(el).toHaveTextContent('[0]');
+    });
+  });
+
+  it('fetches and displays a server trump recommendation during the declare phase', async () => {
+    mockExec.mockResolvedValue(declarePhaseState);
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByTestId('tt-declare-prompt')).toBeInTheDocument());
+
+    const hintState = makeTwoTenJackState({
+      phase: 0,
+      declarerIdx: 0,
+      trumpSuit: -1,
+      hint: { reason: 'strategic_trump', trumpSuit: 1 },
+    });
+    mockExec.mockResolvedValue(hintState);
+    fireEvent.click(screen.getByTestId('tt-hint-button'));
+
+    await waitFor(() => {
+      const el = screen.getByTestId('tt-hint');
+      expect(el).toHaveTextContent('推奨トランプ');
+      expect(el).toHaveTextContent('♠');
+    });
+  });
+
+  it('shows the hint error in the ErrorAlert when the hint request fails', async () => {
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    mockExec.mockRejectedValueOnce(new Error('network'));
+    fireEvent.click(screen.getByTestId('tt-hint-button'));
+
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
+  });
+
   it('renders CPU info as collapsible details on mobile', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });

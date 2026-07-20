@@ -55,5 +55,7 @@
     "trump_cut": "切り札で刈り取るのが最適",
     "discard": "勝てないトリックなので弱いカードで逃す"
   },
-  "scoresCaption": "チーム別の得点集計"
+  "scoresCaption": "チーム別の得点集計",
+  "hintDeclare": "推奨トランプ",
+  "hintPlay": "推奨プレイ"
 }

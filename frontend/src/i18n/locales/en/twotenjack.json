@@ -55,5 +55,7 @@
     "trump_cut": "Cut the trick with a trump",
     "discard": "Cannot win — discard a low card"
   },
-  "scoresCaption": "Score summary by team"
+  "scoresCaption": "Score summary by team",
+  "hintDeclare": "Suggested trump",
+  "hintPlay": "Suggested play"
 }
