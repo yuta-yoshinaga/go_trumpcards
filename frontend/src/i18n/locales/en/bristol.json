@@ -33,6 +33,13 @@
     "moveToFoundation": "A card can move to a foundation",
     "moveToTableau": "A card can move between tableau columns"
   },
+  "kbd": {
+    "draw": "D",
+    "hint": "H",
+    "auto": "A",
+    "undo": "Z",
+    "giveup": "G"
+  },
   "tutorial": {
     "foundation": "The four foundations. Build up from Ace to King regardless of suit. Complete all four to win.",
     "tableau": "The eight tableau columns. Move the top card onto another column (any suit, descending). Once a column empties it can no longer be used.",

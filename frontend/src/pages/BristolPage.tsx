@@ -10,10 +10,12 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -165,6 +167,31 @@ function BristolPageContent() {
     : phase === BristolPhase.GAME_OVER
       ? t('phase.gameOver')
       : t('phase.playing');
+
+  // Keyboard shortcuts for the primary actions, matching other solitaire pages.
+  // Give-up (g) is routed through its confirm dialog since it is irreversible;
+  // draw (d) and undo (z) are no-ops when the stock is empty / nothing to undo.
+  const canPlayForKbd = isPlaying && !loading;
+  const bristolBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDraw, enabled: canPlayForKbd && (state?.stockCount ?? 0) > 0 },
+      { key: 'h', action: handleHint, enabled: canPlayForKbd },
+      { key: 'a', action: handleAutoComplete, enabled: canPlayForKbd },
+      { key: 'z', action: handleUndo, enabled: canPlayForKbd && (state?.canUndo ?? false) },
+      { key: 'g', action: confirmGiveUpAction, enabled: canPlayForKbd },
+    ],
+    [
+      handleDraw,
+      handleHint,
+      handleAutoComplete,
+      handleUndo,
+      confirmGiveUpAction,
+      canPlayForKbd,
+      state?.stockCount,
+      state?.canUndo,
+    ],
+  );
+  useActionKeyboardNav({ bindings: bristolBindings, enabled: canPlayForKbd });
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
   if (!state) return null;
@@ -396,40 +423,50 @@ function BristolPageContent() {
                     className={`${btnPrimary} ${focusRingWhite}`}
                     onClick={handleDraw}
                     disabled={loading || state.stockCount === 0}
+                    aria-keyshortcuts="d"
                   >
                     {t('draw')}
+                    <KbdBadge label={t('kbd.draw')} />
                   </button>
                   <button
                     type="button"
                     className={`${btnSuccess} ${focusRingWhite}`}
                     onClick={handleHint}
                     disabled={loading}
+                    aria-keyshortcuts="h"
                   >
                     {t('hint')}
+                    <KbdBadge label={t('kbd.hint')} />
                   </button>
                   <button
                     type="button"
                     className={`${btnSuccess} ${focusRingWhite}`}
                     onClick={handleAutoComplete}
                     disabled={loading}
+                    aria-keyshortcuts="a"
                   >
                     {t('autoComplete')}
+                    <KbdBadge label={t('kbd.auto')} />
                   </button>
                   <button
                     type="button"
                     className={`${btnOutline} ${focusRingWhite}`}
                     onClick={handleUndo}
                     disabled={!state.canUndo || loading}
+                    aria-keyshortcuts="z"
                   >
                     {t('undo')}
+                    <KbdBadge label={t('kbd.undo')} />
                   </button>
                   <button
                     type="button"
                     className={`${btnDanger} ${focusRingWhite}`}
                     onClick={confirmGiveUpAction}
                     disabled={loading}
+                    aria-keyshortcuts="g"
                   >
                     {t('giveup')}
+                    <KbdBadge label={t('kbd.giveup')} />
                   </button>
                 </>
               )}
