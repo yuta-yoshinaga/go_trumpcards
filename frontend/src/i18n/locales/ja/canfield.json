@@ -23,6 +23,7 @@
   "playing": "プレイ中",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
+  "hintAnnouncement": "ヒント: {{card}}を{{dest}}へ移動",
   "moveReserveToFoundation": "リザーブ→組札",
   "moveReserveToTableau": "リザーブ→場札",
   "moveWasteToFoundation": "ウェイスト→組札",
