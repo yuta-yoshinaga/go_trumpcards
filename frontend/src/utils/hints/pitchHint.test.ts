@@ -33,6 +33,8 @@ const makeState = (override: Partial<PitchResponse> = {}): PitchResponse => ({
   bidWinnerIdx: -1,
   trumpSuit: 0,
   currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
   gameEndFlag: false,
   winnerIdx: -1,
   leadPlayerIdx: -1,

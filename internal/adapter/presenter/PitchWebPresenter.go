@@ -39,6 +39,7 @@ func (p *PitchWebPresenter) buildBase(s interfaces.PitchGame) *controller.PitchW
 	}
 
 	resObj.CurrentTrick = p.buildTrickOutput(s.GetCurrentTrick())
+	resObj.LastTrick, resObj.LastTrickWinner = p.buildLastTrickOutput(s)
 	resObj.Players = p.buildPlayersOutput(s)
 
 	// human の有効プレイインデックスを供給
@@ -59,6 +60,52 @@ func (p *PitchWebPresenter) buildTrickOutput(trick []*domain.PitchTrickCard) []*
 	return buildTrickCards(trick, func(tc *domain.PitchTrickCard) *controller.PitchWebOutputTrickCard {
 		return &controller.PitchWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
+}
+
+// buildLastTrickOutput は直前に解決されたトリック（誰が何を出し誰が取ったか）を
+// アクションログから再構築する。ドメインは専用の lastTrick フィールドを持たないが、
+// 各トリックの "play" ログ（プレイヤーと札）と "trick_win" ログ（勝者）から
+// 現ラウンドの直近トリックを復元できる。ラウンド開始直後（プレイフェーズのトリック 1
+// で、この局のトリックがまだ確定していない）は空スライスと -1 を返す。
+func (p *PitchWebPresenter) buildLastTrickOutput(s interfaces.PitchGame) ([]*controller.PitchWebOutputTrickCard, int) {
+	empty := make([]*controller.PitchWebOutputTrickCard, 0)
+	// ラウンド最初のトリックがプレイ中は、この局に確定済みトリックが無いため空を返す。
+	if s.GetPhase() == domain.PitchPhasePlay && s.GetTrickNumber() <= 1 {
+		return empty, -1
+	}
+
+	log := s.GetActionLog()
+	winIdx := -1
+	for i := len(log) - 1; i >= 0; i-- {
+		if log[i] != nil && log[i].ActionType == "trick_win" {
+			winIdx = i
+			break
+		}
+	}
+	if winIdx < 0 {
+		return empty, -1
+	}
+
+	// trick_win 直前の "play" ログ（プレイ順）が、そのトリックの各札に対応する。
+	var plays []*domain.ActionLogEntry
+	for i := 0; i < winIdx; i++ {
+		if e := log[i]; e != nil && e.ActionType == "play" && len(e.Cards) > 0 {
+			plays = append(plays, e)
+		}
+	}
+	if len(plays) < domain.PitchPlayerCnt {
+		return empty, -1
+	}
+	plays = plays[len(plays)-domain.PitchPlayerCnt:]
+
+	out := make([]*controller.PitchWebOutputTrickCard, 0, len(plays))
+	for _, e := range plays {
+		out = append(out, &controller.PitchWebOutputTrickCard{
+			PlayerIdx: e.PlayerIdx,
+			Card:      cardToOutput(e.Cards[0]),
+		})
+	}
+	return out, log[winIdx].PlayerIdx
 }
 
 // buildPlayersOutput プレイヤー情報を構築

@@ -31,6 +31,9 @@
   "bidPass": "Pass",
   "bidNone": "Not bid",
   "currentTrick": "Current trick",
+  "previousTrick": "Previous Trick",
+  "previousTrickEmpty": "No previous trick yet this round",
+  "previousTrickWinner": "Won by {{name}}",
   "leadBadge": "Lead",
   "trickLegend": {
     "lead": "Lead suit",

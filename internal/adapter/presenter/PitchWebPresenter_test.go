@@ -129,6 +129,80 @@ func TestPitchWebPresenter_HintOutput(t *testing.T) {
 	})
 }
 
+// setupPitchWebMockCustom builds a fully-wired mock with a caller-controlled
+// phase, trick number and action log so the last-trick reconstruction can be
+// exercised deterministically.
+func setupPitchWebMockCustom(phase domain.PitchPhase, trickNumber int, log []*domain.ActionLogEntry) *interfaces.MockPitchGame {
+	m := new(interfaces.MockPitchGame)
+	m.On("GetRoundNumber").Return(1)
+	m.On("GetTrickNumber").Return(trickNumber)
+	m.On("GetDealerIdx").Return(3)
+	m.On("GetCurrentBid").Return(0)
+	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
+	m.On("GetBidWinnerIdx").Return(0)
+	m.On("GetCurrentTrick").Return([]*domain.PitchTrickCard(nil))
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetPhase").Return(phase)
+	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetBidPlayerIdx").Return(0)
+	m.On("GetWinnerIdx").Return(-1)
+	m.On("GetLeadPlayerIdx").Return(0)
+	m.On("GetConfig").Return(domain.DefaultPitchConfig())
+	m.On("GetActionLog").Return(log)
+	m.On("GetValidPlayIndices", 0).Return([]int{0})
+	players := makePitchPlayers()
+	m.On("GetPlayerCnt").Return(4)
+	for i := 0; i < 4; i++ {
+		m.On("GetPlayer", i).Return(players[i])
+	}
+	return m
+}
+
+func TestPitchWebPresenter_LastTrick(t *testing.T) {
+	p := new(presenter.PitchWebPresenter)
+
+	t.Run("reconstructs the just-completed trick with its winner", func(t *testing.T) {
+		log := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)}},
+			{TurnNumber: 1, PlayerIdx: 1, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 10, false)}},
+			{TurnNumber: 1, PlayerIdx: 2, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}},
+			{TurnNumber: 1, PlayerIdx: 3, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)}},
+			{TurnNumber: 1, PlayerIdx: 2, ActionType: "trick_win", Cards: nil},
+		}
+		// After pressing "next": play phase, trick 2, current trick cleared.
+		m := setupPitchWebMockCustom(domain.PitchPhasePlay, 2, log)
+		result := p.Output(m, nil)
+		var resObj controller.PitchWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Len(t, resObj.LastTrick, 4)
+		assert.Equal(t, 0, resObj.LastTrick[0].PlayerIdx)
+		assert.Equal(t, 3, resObj.LastTrick[3].PlayerIdx)
+		assert.Equal(t, 2, resObj.LastTrickWinner)
+	})
+
+	t.Run("hidden on the round's first trick", func(t *testing.T) {
+		m := setupPitchWebMockCustom(domain.PitchPhasePlay, 1, nil)
+		result := p.Output(m, nil)
+		var resObj controller.PitchWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.LastTrick)
+		assert.Equal(t, -1, resObj.LastTrickWinner)
+	})
+
+	t.Run("empty when no trick_win logged yet", func(t *testing.T) {
+		// TrickEnd phase but the log has no trick_win (e.g. partial play): empty.
+		log := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)}},
+		}
+		m := setupPitchWebMockCustom(domain.PitchPhaseTrickEnd, 2, log)
+		result := p.Output(m, nil)
+		var resObj controller.PitchWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.LastTrick)
+		assert.Equal(t, -1, resObj.LastTrickWinner)
+	})
+}
+
 func TestPitchWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.PitchWebPresenter)
 	m := new(interfaces.MockPitchGame)

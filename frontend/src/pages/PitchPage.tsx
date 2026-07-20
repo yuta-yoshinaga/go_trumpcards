@@ -13,6 +13,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
+import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -401,6 +402,35 @@ function PitchPageContent() {
                 </>
               )}
             </div>
+
+            {/* Previous trick reviewer: lets the player recount the just-completed trick */}
+            <details className="mb-3 p-2 rounded border border-ds-border-subtle" data-testid="pt-previous-trick">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('previousTrick')}</summary>
+              <div className="mt-2">
+                {state.lastTrick.length > 0 ? (
+                  <TrickDisplay
+                    currentTrick={state.lastTrick}
+                    players={state.players}
+                    cardWidth={Math.round(cardWidth * 0.7)}
+                    label={
+                      state.lastTrickWinner >= 0
+                        ? t('previousTrickWinner', {
+                            name: playerName(
+                              state.lastTrickWinner,
+                              state.players[state.lastTrickWinner]?.isHuman === true,
+                            ),
+                          })
+                        : t('previousTrick')
+                    }
+                    winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                  />
+                ) : (
+                  <div className="text-ds-text-muted text-sm" data-testid="pt-previous-trick-empty">
+                    {t('previousTrickEmpty')}
+                  </div>
+                )}
+              </div>
+            </details>
 
             {/* Player hand (always visible) */}
             {human && human.cards.length > 0 && (
