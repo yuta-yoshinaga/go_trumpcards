@@ -490,4 +490,82 @@ describe('ThreeCardPage', () => {
     fireEvent.click(checkbox);
     expect(mockSetHintEnabled).toHaveBeenCalledWith(true);
   });
+
+  // --- Rebet (same-amount replay) tests ---
+
+  it('shows a rebet button in end phase after a bet and replays the prior ante', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByTestId('tc-rebet-button')).toBeInTheDocument());
+    // Default ante 100 + pair plus 0 → the button advertises a total of 100.
+    expect(screen.getByTestId('tc-rebet-button')).toHaveTextContent('100');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(actionPhaseState);
+    fireEvent.click(screen.getByTestId('tc-rebet-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0));
+  });
+
+  it('rebet replays the previous ante and pair plus amounts', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '200' } });
+    fireEvent.change(screen.getByLabelText('ペアプラス'), { target: { value: '50' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByTestId('tc-rebet-button')).toBeInTheDocument());
+    // 200 ante + 50 pair plus → advertised total of 250.
+    expect(screen.getByTestId('tc-rebet-button')).toHaveTextContent('250');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(actionPhaseState);
+    fireEvent.click(screen.getByTestId('tc-rebet-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 200, 50));
+  });
+
+  it('does not show a rebet button in end phase when no prior bet exists', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    expect(screen.queryByTestId('tc-rebet-button')).not.toBeInTheDocument();
+  });
+
+  it('hides the rebet button when chips are below the previous bet', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce({ ...endPhaseDealerWins, chips: 50 });
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    // Snapshotted ante was 100 but only 50 chips remain → rebet is unaffordable.
+    expect(screen.queryByTestId('tc-rebet-button')).not.toBeInTheDocument();
+  });
+
+  it('pressing n replays the previous bet in END phase', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByTestId('tc-rebet-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(actionPhaseState);
+    fireEvent.keyDown(document, { key: 'n' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0));
+  });
+
+  it('pressing n does nothing in END phase without a prior bet', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'n' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
 });

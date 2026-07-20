@@ -13,7 +13,8 @@
     "bet": "Bet",
     "play": "Play",
     "fold": "Fold",
-    "reset": "Reset"
+    "reset": "Reset",
+    "rebet": "Rebet ({{amount}})"
   },
   "phase": {
     "bet": "Betting",
