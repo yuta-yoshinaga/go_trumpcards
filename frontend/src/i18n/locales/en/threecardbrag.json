@@ -45,6 +45,8 @@
   "raisePrompt": "Raise to:",
   "raiseDecrease": "Decrease raise amount",
   "raiseIncrease": "Increase raise amount",
+  "raiseRange": "Range: {{min}}-{{max}}",
+  "raiseUnavailable": "Not enough chips to raise",
   "foldButton": "Fold",
   "showButton": "Show",
   "nextRound": "Next Deal",
