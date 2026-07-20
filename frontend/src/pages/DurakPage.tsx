@@ -120,6 +120,21 @@ function DurakPageContent() {
     void gameExec('reset', undefined, undefined, durakConfig);
   }, [gameExec, hideActionLog, durakConfig]);
 
+  // Play a card-place sound when the human commits an attack or defense card, and
+  // an error buzz for the disadvantageous "take" action (defender scoops the table).
+  const handleAttackWithSound = useCallback(() => {
+    playSound('cardPlace');
+    handleAttack();
+  }, [playSound, handleAttack]);
+  const handleDefendWithSound = useCallback(() => {
+    playSound('cardPlace');
+    handleDefend();
+  }, [playSound, handleDefend]);
+  const handleTakeWithSound = useCallback(() => {
+    playSound('errorBuzz');
+    handleTake();
+  }, [playSound, handleTake]);
+
   if (!state)
     return (
       <GameSkeleton
@@ -418,7 +433,7 @@ function DurakPageContent() {
                   type="button"
                   className={`${btnDanger} min-w-[90px]`}
                   disabled={loading || selectedCardIdx === null}
-                  onClick={handleAttack}
+                  onClick={handleAttackWithSound}
                 >
                   {t('attackButton')}
                 </button>
@@ -428,7 +443,7 @@ function DurakPageContent() {
                   type="button"
                   className={`${btnSuccess} min-w-[90px]`}
                   disabled={loading || selectedCardIdx === null || selectedAttackIdx === null}
-                  onClick={handleDefend}
+                  onClick={handleDefendWithSound}
                 >
                   {t('defendButton')}
                 </button>
@@ -444,7 +459,12 @@ function DurakPageContent() {
                 </button>
               )}
               {showTakeBtn && (
-                <button type="button" className={`${btnPrimary} min-w-[90px]`} disabled={loading} onClick={handleTake}>
+                <button
+                  type="button"
+                  className={`${btnPrimary} min-w-[90px]`}
+                  disabled={loading}
+                  onClick={handleTakeWithSound}
+                >
                   {t('takeButton')}
                 </button>
               )}
