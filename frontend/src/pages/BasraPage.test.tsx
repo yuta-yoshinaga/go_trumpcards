@@ -68,7 +68,7 @@ describe('BasraPage', () => {
     fireEvent.click(screen.getByTestId('table-card-0'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '捕獲' }));
+    fireEvent.click(screen.getByRole('button', { name: '1枚捕獲' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, tableIndices: [0] }));
   });
 
@@ -90,12 +90,43 @@ describe('BasraPage', () => {
 
   it('trailing (no table cards) dispatches play with an empty capture set', async () => {
     renderWithProviders(<BasraPage />);
-    const handCard = await screen.findByTestId('hand-card-1');
+    // Hand card 3 (♣3) matches nothing on the table [♠5, ♥9], so it can only trail.
+    const handCard = await screen.findByTestId('hand-card-3');
     fireEvent.click(handCard);
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '出す' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1, tableIndices: [] }));
+    fireEvent.click(screen.getByRole('button', { name: 'トレイル' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 3, tableIndices: [] }));
+  });
+
+  it('previews the capture set and shows the captured count on the button', async () => {
+    renderWithProviders(<BasraPage />);
+    // Selecting hand card 0 (♥5) previews table card 0 (♠5, same rank) as capturable.
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('data-capture-candidate', 'true');
+    expect(screen.getByTestId('table-card-1')).not.toHaveAttribute('data-capture-candidate');
+    // Selecting it makes the action button report the captured count.
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    expect(screen.getByRole('button', { name: '1枚捕獲' })).toBeInTheDocument();
+  });
+
+  it('previews a Jack as a full board sweep and labels the button with the swept count', async () => {
+    renderWithProviders(<BasraPage />);
+    // Hand card 1 (♠J) sweeps every non-Jack table card ([♠5, ♥9]) — a 2-card sweep,
+    // previewed without any manual table selection.
+    fireEvent.click(await screen.findByTestId('hand-card-1'));
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('data-capture-candidate', 'true');
+    expect(screen.getByTestId('table-card-1')).toHaveAttribute('data-capture-candidate', 'true');
+    expect(screen.getByRole('button', { name: '2枚捕獲' })).toBeInTheDocument();
+  });
+
+  it('offers only the trail button for a hand card that captures nothing', async () => {
+    renderWithProviders(<BasraPage />);
+    // Hand card 3 (♣3) captures nothing: no candidates highlighted, trail button only.
+    fireEvent.click(await screen.findByTestId('hand-card-3'));
+    expect(screen.getByTestId('table-card-0')).not.toHaveAttribute('data-capture-candidate');
+    expect(screen.getByRole('button', { name: 'トレイル' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /捕獲/ })).not.toBeInTheDocument();
   });
 
   it('does not show the play button on a CPU turn', async () => {

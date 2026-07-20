@@ -27,6 +27,7 @@
   "turnCpu": "CPU {{id}} がプレイ中です…",
   "playButton": "出す",
   "captureButton": "捕獲",
+  "captureButtonCount": "{{count}}枚捕獲",
   "trailButton": "トレイル",
   "newGame": "新しいゲーム",
   "result": {

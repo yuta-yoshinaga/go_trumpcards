@@ -27,6 +27,7 @@
   "turnCpu": "CPU {{id}} is playing…",
   "playButton": "Play",
   "captureButton": "Capture",
+  "captureButtonCount": "Capture {{count}}",
   "trailButton": "Trail",
   "newGame": "New Game",
   "result": {
