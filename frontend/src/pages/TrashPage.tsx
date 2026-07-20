@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { trashApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -57,6 +58,32 @@ const TR_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
+
+/** CPU turn-pacing presets — a shorter delay advances the CPU turn faster. */
+type TrashCpuSpeed = 'slow' | 'normal' | 'fast';
+
+/**
+ * Delay (ms) before the CPU turn auto-advances, per speed preset. `normal`
+ * (500ms) preserves the historical default for backward compatibility.
+ */
+const TRASH_CPU_DELAY_MS: Record<TrashCpuSpeed, number> = {
+  slow: 900,
+  normal: 500,
+  fast: 200,
+};
+
+const TRASH_CPU_SPEED_STORAGE_KEY = 'trash:cpuSpeed';
+
+/** Read the persisted CPU speed, falling back to `normal` when unset/invalid. */
+function loadTrashCpuSpeed(): TrashCpuSpeed {
+  try {
+    const v = localStorage.getItem(TRASH_CPU_SPEED_STORAGE_KEY);
+    if (v === 'slow' || v === 'normal' || v === 'fast') return v;
+  } catch {
+    // localStorage may be unavailable (private mode / SSR); fall through to default.
+  }
+  return 'normal';
+}
 
 type ApiArgs = Parameters<typeof trashRunner.exec>;
 
@@ -115,21 +142,33 @@ function TrashPageContent() {
   const { state, loading, error, retry } = gameApi;
   const apiCall = gameApi.exec;
   const { hint, hintEnabled, setHintEnabled } = useGameHint('trash', state);
+  const [cpuSpeed, setCpuSpeed] = useState<TrashCpuSpeed>(loadTrashCpuSpeed);
+
+  const handleSelectCpuSpeed = useCallback((v: string) => {
+    const speed: TrashCpuSpeed = v === 'slow' || v === 'fast' ? v : 'normal';
+    setCpuSpeed(speed);
+    try {
+      localStorage.setItem(TRASH_CPU_SPEED_STORAGE_KEY, speed);
+    } catch {
+      // Persistence is best-effort; ignore storage failures.
+    }
+  }, []);
 
   useMountReset(apiCall);
 
   // Drive the CPU turn automatically. Whenever it becomes the CPU's turn
-  // (current === 1) and the game has not ended, fire one step after a short
-  // delay so the UI can render the intermediate state.
+  // (current === 1) and the game has not ended, fire one step after a delay
+  // (scaled by the chosen speed preset) so the UI can render the intermediate
+  // state. Changing the speed reschedules the pending timer.
   useEffect(() => {
     if (!state) return;
     if (state.phase === TrashPhase.GAME_OVER) return;
     if (state.current !== 1) return;
     const timer = setTimeout(() => {
       void apiCall('cpu');
-    }, 500);
+    }, TRASH_CPU_DELAY_MS[cpuSpeed]);
     return () => clearTimeout(timer);
-  }, [state, apiCall]);
+  }, [state, apiCall, cpuSpeed]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('trash');
   const trashCliConfig: CliGameConfig<TrashResponse, ApiArgs> = useMemo(
@@ -299,6 +338,30 @@ function TrashPageContent() {
               message={state.message}
               messageCode={state.messageCode}
               messageParams={state.messageParams}
+            />
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select' as const,
+                      id: 'trashCpuSpeed',
+                      testId: 'trash-cpu-speed-select',
+                      label: t('settings.cpuSpeed'),
+                      tooltip: t('settings.cpuSpeedHelp'),
+                      value: cpuSpeed,
+                      options: [
+                        { value: 'slow', label: t('settings.speedSlow') },
+                        { value: 'normal', label: t('settings.speedNormal') },
+                        { value: 'fast', label: t('settings.speedFast') },
+                      ],
+                      onSelect: handleSelectCpuSpeed,
+                    },
+                  ],
+                },
+              ]}
             />
 
             <ActionLogSection
