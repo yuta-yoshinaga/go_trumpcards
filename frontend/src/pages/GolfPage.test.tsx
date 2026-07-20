@@ -307,6 +307,56 @@ describe('GolfPage', () => {
     expect(badge.className).toContain('bg-ds-error');
   });
 
+  it('does not show the 9-hole scorecard by default', async () => {
+    renderWithProviders(<GolfPage />);
+    await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+    expect(screen.queryByTestId('golf-scorecard')).not.toBeInTheDocument();
+  });
+
+  it('shows the scorecard when 9-hole mode is enabled via the settings toggle', async () => {
+    renderWithProviders(<GolfPage />);
+    await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('golf-ninehole-toggle'));
+    expect(screen.getByTestId('golf-scorecard')).toBeInTheDocument();
+    // Fresh card: hole 1 pending, total 0.
+    expect(screen.getByTestId('golf-scorecard-total')).toHaveTextContent('0');
+  });
+
+  it('records the finished deal once as the current hole (remaining cards = score)', async () => {
+    // 9-hole mode on; the test layout has all 35 cards present → hole score 35.
+    localStorage.setItem('trumpcards-golf-ninehole', JSON.stringify({ enabled: true, scores: [] }));
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<GolfPage />);
+    await waitFor(() => expect(screen.getByTestId('golf-hole-1')).toHaveTextContent('35'));
+    // Only hole 1 is recorded — no double-count on re-render.
+    expect(screen.getByTestId('golf-hole-2')).toHaveTextContent('-');
+    expect(screen.getByTestId('golf-scorecard-total')).toHaveTextContent('35');
+    expect(JSON.parse(localStorage.getItem('trumpcards-golf-ninehole') ?? '{}').scores).toEqual([35]);
+  });
+
+  it('shows the completion message and total after 9 holes', async () => {
+    localStorage.setItem(
+      'trumpcards-golf-ninehole',
+      JSON.stringify({ enabled: true, scores: [1, 2, 3, 4, 5, 6, 7, 8, 9] }),
+    );
+    renderWithProviders(<GolfPage />);
+    await waitFor(() => expect(screen.getByTestId('golf-scorecard')).toBeInTheDocument());
+    expect(screen.getByText(/合計スコア: 45/)).toBeInTheDocument();
+    expect(screen.getByTestId('golf-scorecard-restart')).toBeInTheDocument();
+  });
+
+  it('restart button clears the completed scorecard', async () => {
+    localStorage.setItem(
+      'trumpcards-golf-ninehole',
+      JSON.stringify({ enabled: true, scores: [1, 2, 3, 4, 5, 6, 7, 8, 9] }),
+    );
+    renderWithProviders(<GolfPage />);
+    await waitFor(() => expect(screen.getByTestId('golf-scorecard-restart')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('golf-scorecard-restart'));
+    expect(screen.getByTestId('golf-scorecard-total')).toHaveTextContent('0');
+    expect(screen.getByTestId('golf-hole-1')).toHaveTextContent('-');
+  });
+
   it('pulses the stock pile when a draw hint is active', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<GolfPage />);
