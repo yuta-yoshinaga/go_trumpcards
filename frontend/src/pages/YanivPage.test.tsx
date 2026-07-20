@@ -75,6 +75,23 @@ describe('YanivPage', () => {
     expect(screen.getByTestId('discard-button')).toBeDisabled();
   });
 
+  it('does not warn for a valid single-card selection', async () => {
+    renderWithProviders(<YanivPage />);
+    const card0 = await screen.findByTestId('hand-card-0');
+    fireEvent.click(card0);
+    expect(screen.queryByTestId('discard-warning')).not.toBeInTheDocument();
+  });
+
+  it('warns when the selected combination is not a legal discard', async () => {
+    renderWithProviders(<YanivPage />);
+    // Default hand is [SPADE 1, HEART 2] — selecting both is a non-pair, non-run.
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    const warning = await screen.findByTestId('discard-warning');
+    expect(warning.textContent).toMatch(/同じ数字/);
+    expect(screen.getByTestId('discard-button')).toHaveAttribute('title');
+  });
+
   it('highlights the hand-total badge in success color and pulses the Yaniv button when total <= 5', async () => {
     renderWithProviders(<YanivPage />);
     const badge = await screen.findByTestId('hand-total-badge');
