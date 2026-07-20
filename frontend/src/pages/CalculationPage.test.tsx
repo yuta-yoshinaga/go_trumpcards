@@ -345,6 +345,8 @@ describe('CalculationPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByTestId('calc-foundation-next-0')).not.toBeInTheDocument();
     expect(screen.getByTestId('calc-foundation-next-1')).toHaveTextContent('次:4');
+    // The count readout reflects the foundation-cap constant (13/13) for a full pile.
+    expect(screen.getByText('13/13')).toBeInTheDocument();
   });
 
   it('exposes the full upcoming-rank sequence as visible, tappable text (not only a title attr)', async () => {
