@@ -19,6 +19,12 @@
   "pointsSuffix": " pts",
   "currentTrick": "Current trick",
   "trickEmpty": "(no cards yet)",
+  "bidStatus": {
+    "highest": "Highest bid: {{value}}",
+    "highestNone": "Highest bid: undecided",
+    "remaining": "Active bidders: {{n}}",
+    "passed": "Passed: {{names}}"
+  },
   "selectBid": "Select bid (70-120):",
   "bidButton": "Bid",
   "passButton": "Pass",
