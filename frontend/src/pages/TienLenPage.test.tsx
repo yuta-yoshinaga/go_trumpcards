@@ -140,6 +140,26 @@ describe('TienLenPage', () => {
     expect(badge).toHaveClass('text-ds-warning');
   });
 
+  it('labels the table combo with the CPU player who played it', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        tableCards: [card('SPADE', 3)],
+        lastPlayPlayerIdx: 2,
+        currentTurn: 0,
+      }),
+    );
+    renderWithProviders(<TienLenPage />);
+    const owner = await screen.findByTestId('tl-table-owner');
+    expect(owner).toHaveTextContent('CPU 2'); // findPlayerName for a non-human player
+  });
+
+  it('does not show the table owner label when the table is empty (new round lead)', async () => {
+    mockExec.mockResolvedValue(makeState({ tableCards: [], lastPlayPlayerIdx: -1 }));
+    renderWithProviders(<TienLenPage />);
+    await screen.findByTestId('pass-button');
+    expect(screen.queryByTestId('tl-table-owner')).not.toBeInTheDocument();
+  });
+
   it('passes when the pass button is clicked', async () => {
     renderWithProviders(<TienLenPage />);
     fireEvent.click(await screen.findByTestId('pass-button'));
