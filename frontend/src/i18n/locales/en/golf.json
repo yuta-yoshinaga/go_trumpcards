@@ -36,5 +36,15 @@
     "canRemove": "An exposed card can be removed — it is adjacent to the waste top",
     "multipleRemovable": "Multiple cards can be removed — look for chain opportunities",
     "drawFromStock": "No removable cards — try drawing from the stock"
+  },
+  "nineHole": {
+    "label": "9-Hole Mode",
+    "progress": "Hole {{current}} / {{total}}",
+    "hole": "Hole",
+    "score": "Score",
+    "total": "Total",
+    "complete": "9 holes done! Total score: {{total}} (lower is better)",
+    "restart": "New scorecard",
+    "pending": "-"
   }
 }
