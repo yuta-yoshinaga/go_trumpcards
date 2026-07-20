@@ -369,6 +369,8 @@ function LetItRidePageContent() {
                   label={t('label.bet')}
                   value={betAmount}
                   onChange={setBetAmount}
+                  min={10}
+                  step={10}
                   max={Math.floor(state.chips / 3)}
                 />
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
