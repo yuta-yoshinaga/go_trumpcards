@@ -30,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseSultanCommand, SULTAN_HELP } from '../utils/cli/commands/sultanCommands';
 import { formatSultanState } from '../utils/cli/formatters/sultanFormatter';
+import { sultanFoundationInfo } from '../utils/sultanFoundation';
 
 /**
  * Maximum number of waste redeals allowed in Sultan of Turkey.
@@ -260,26 +261,45 @@ function SultanPageContent() {
 
               {/* Foundation piles (8 King-based piles) */}
               <div className="flex gap-1 sm:gap-2 flex-wrap" data-tutorial="sultan-foundation">
-                {state.foundation.map((pile, idx) => (
-                  <div key={`f-${idx.toString()}`} className="text-center">
-                    <div className="text-game-text-muted text-xs mb-1">{idx + 1}</div>
-                    {pile.length > 0 ? (
-                      <AnimatedCard
-                        card={pile[pile.length - 1]}
-                        width={sultan.cw}
-                        draggable={false}
-                        dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                      />
-                    ) : (
+                {state.foundation.map((pile, idx) => {
+                  const info = sultanFoundationInfo(pile);
+                  return (
+                    <div key={`f-${idx.toString()}`} className="text-center">
                       <div
-                        style={{ width: sultan.cw, height: sultan.ch }}
-                        className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
+                        className="text-game-text-muted text-xs mb-1"
+                        data-testid={`sultan-foundation-label-${idx.toString()}`}
                       >
-                        K
+                        {info.suit ? `${idx + 1} ${info.suit}` : idx + 1}
                       </div>
-                    )}
-                  </div>
-                ))}
+                      {pile.length > 0 ? (
+                        <div
+                          role="img"
+                          aria-label={t('foundationSlot', {
+                            idx: idx + 1,
+                            top: cardAlt(pile[pile.length - 1]),
+                          })}
+                        >
+                          <AnimatedCard
+                            card={pile[pile.length - 1]}
+                            width={sultan.cw}
+                            draggable={false}
+                            dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          role="img"
+                          aria-label={t('emptyFoundationSlot', { idx: idx + 1 })}
+                          style={{ width: sultan.cw, height: sultan.ch }}
+                          className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex flex-col items-center justify-center leading-tight"
+                        >
+                          <span>{idx + 1}</span>
+                          <span>K</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

@@ -15,6 +15,8 @@
   "giveup": "Give Up",
   "empty": "Empty",
   "emptyDivanSlot": "Empty divan slot {{idx}}",
+  "foundationSlot": "Foundation {{idx}}, top {{top}}",
+  "emptyFoundationSlot": "Foundation {{idx}}, empty (build from K)",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto Complete",
