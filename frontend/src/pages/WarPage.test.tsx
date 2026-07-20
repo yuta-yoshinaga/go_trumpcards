@@ -1,4 +1,5 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { warApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -6,6 +7,17 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { WarResponse } from '../types/card';
 import { WarPhase } from '../types/phases';
 import { WarPage } from './WarPage';
+
+const mockPlaySound = vi.fn();
+const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+// Replace SoundProvider so the page's `useSound()` calls are captured. Leaf card
+// components read `useOptionalSound`; return null there so their incidental deal
+// SFX don't pollute the sound assertions below.
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: ReactNode }) => children,
+  useSound: () => mockSoundValue,
+  useOptionalSound: () => null,
+}));
 
 vi.mock('../hooks/useCliMode', () => ({
   useCliMode: vi.fn(() => ({
@@ -69,6 +81,7 @@ const gameEndState: WarResponse = {
 };
 
 beforeEach(() => {
+  mockPlaySound.mockClear();
   mockExec.mockResolvedValue(baseState);
   mockUseCliMode.mockReturnValue({
     cliEnabled: false,
@@ -178,6 +191,35 @@ describe('WarPage', () => {
     mockExec.mockResolvedValueOnce(gameEndState);
     renderWithProviders(<WarPage />);
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeDisabled());
+  });
+
+  it('plays the win fanfare when the human wins the game', async () => {
+    mockExec.mockResolvedValueOnce(gameEndState);
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('winFanfare'));
+  });
+
+  it('plays a card-place sound when a battle resolves', async () => {
+    // Mount reveals REVEAL; the next step settles the round into RESOLVED.
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({
+      ...baseState,
+      phase: WarPhase.RESOLVED,
+      playerRevealed: { design: 'SPADE', value: 13 },
+      cpuRevealed: { design: 'HEART', value: 5 },
+      lastWinnerIdx: 0,
+    });
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('cardPlace'));
+  });
+
+  it('plays a tension cue when a tie triggers a war', async () => {
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce(warPhaseState);
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('chipClick'));
   });
 
   it('autoplay auto-advances via repeated step calls and stops at game end', async () => {
