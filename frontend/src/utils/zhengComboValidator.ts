@@ -94,3 +94,77 @@ export function classifyZhengCombo(cards: Card[]): ZhengCombo {
 export function isValidZhengCombo(cards: Card[]): boolean {
   return cards.length > 0 && classifyZhengCombo(cards) !== 'invalid';
 }
+
+/**
+ * Maps the wire `tablePlayType` (Go domain `ZhengPlayType` constants) to its
+ * combo category. Kept in sync with `ZhengEval.go`.
+ */
+const ZHENG_PLAY_TYPE_BY_NUMBER: Record<number, ZhengCombo> = {
+  0: 'invalid',
+  1: 'single',
+  2: 'pair',
+  3: 'triple',
+  4: 'straight',
+  5: 'pairRun',
+  6: 'bomb',
+  7: 'jokerBomb',
+};
+
+/** Highest rank strength across the cards (joker bomb reaches the max, 14). */
+function zhengMaxStrength(cards: Card[]): number {
+  let max = -1;
+  for (const c of cards) {
+    const s = zhengRankStrength(c);
+    if (s > max) max = s;
+  }
+  return max;
+}
+
+/**
+ * A specific reason a selection cannot be played:
+ * - `invalidType`: the cards do not form any legal combination type.
+ * - `wrongType`: a legal type, but not the same type as the current table play.
+ * - `wrongCount`: the right type, but a different number of cards than the table play.
+ * - `tooWeak`: the right type and count, but the rank is not strictly higher.
+ * - `needBomb`: a normal play cannot beat a four-of-a-kind bomb on the table.
+ * - `unbeatable`: a joker bomb is on the table and cannot be beaten.
+ */
+export type ZhengInvalidReason = 'invalidType' | 'wrongType' | 'wrongCount' | 'tooWeak' | 'needBomb' | 'unbeatable';
+
+/**
+ * Returns the specific reason the selected cards cannot be played against the
+ * current table play, or `null` when the selection is a legal play. Mirrors the
+ * Go domain `zhengIsPlayable`: on a lead any legal combo is allowed; a joker
+ * bomb beats everything; a four-of-a-kind bomb cuts any non-bomb and compares
+ * by rank against another bomb; otherwise a normal play must match the table's
+ * type and card count and be strictly higher in rank.
+ */
+export function zhengInvalidReason(
+  cards: Card[],
+  tableCards: Card[],
+  tablePlayType: number,
+): ZhengInvalidReason | null {
+  const play = classifyZhengCombo(cards);
+  if (play === 'invalid') return 'invalidType';
+
+  // Lead: any legal combination is playable.
+  if (tableCards.length === 0) return null;
+
+  const tableType = ZHENG_PLAY_TYPE_BY_NUMBER[tablePlayType] ?? classifyZhengCombo(tableCards);
+
+  // Joker bomb beats everything (two joker bombs cannot coexist).
+  if (play === 'jokerBomb') return null;
+  if (tableType === 'jokerBomb') return 'unbeatable';
+
+  // A four-of-a-kind bomb cuts any non-bomb; bomb vs bomb compares by rank.
+  if (play === 'bomb') {
+    if (tableType !== 'bomb') return null;
+    return zhengMaxStrength(cards) > zhengMaxStrength(tableCards) ? null : 'tooWeak';
+  }
+  if (tableType === 'bomb') return 'needBomb';
+
+  // Normal play: type and count must match, and the rank must be strictly higher.
+  if (play !== tableType) return 'wrongType';
+  if (cards.length !== tableCards.length) return 'wrongCount';
+  return zhengMaxStrength(cards) > zhengMaxStrength(tableCards) ? null : 'tooWeak';
+}
