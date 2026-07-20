@@ -75,6 +75,15 @@ const winState: OichoKabuResponse = {
   message: 'You win!',
 };
 
+const bankerDrewState: OichoKabuResponse = {
+  ...winState,
+  bankerHand: [kabu(2), kabu(1), kabu(6)],
+  bankerRank: 9,
+  result: -1,
+  totalPayout: 0,
+  message: 'You lose',
+};
+
 beforeEach(() => {
   vi.clearAllMocks();
   mockApi.mockResolvedValue(betState);
@@ -152,6 +161,29 @@ describe('OichoKabuPage', () => {
     expect(screen.getByRole('img', { name: '親の目7' })).toBeInTheDocument();
     // The payout/result block is announced.
     expect(screen.getByTestId('payout-breakdown')).toHaveAttribute('role', 'status');
+  });
+
+  it('discloses the banker stand policy with its revealed rank at result', async () => {
+    mockApi.mockResolvedValue(winState); // 2-card banker, rank 7 (> threshold 6) => stood
+    renderWithProviders(<OichoKabuPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
+    const policy = screen.getByTestId('dealer-policy');
+    expect(policy).toHaveTextContent('親のドロー方針');
+    expect(policy).toHaveTextContent('親は目7で規定値（6）を超えていたため引かなかった');
+  });
+
+  it('discloses the banker draw policy when the banker took a third card', async () => {
+    mockApi.mockResolvedValue(bankerDrewState); // 3-card banker => drew
+    renderWithProviders(<OichoKabuPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
+    expect(screen.getByTestId('dealer-policy')).toHaveTextContent('親は目が規定値（6）以下だったため3枚目を引いた');
+  });
+
+  it('hides the banker draw policy before the result phase', async () => {
+    mockApi.mockResolvedValue(drawState);
+    renderWithProviders(<OichoKabuPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /引く/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('dealer-policy')).not.toBeInTheDocument();
   });
 
   it('reads from useCliMode', async () => {

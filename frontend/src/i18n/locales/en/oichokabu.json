@@ -32,6 +32,11 @@
   "payout": {
     "total": "Total payout"
   },
+  "dealerPolicy": {
+    "label": "Banker draw rule",
+    "drew": "Banker drew a third card (draws on rank {{threshold}} or below)",
+    "stood": "Banker stood on rank {{rank}} (draws on rank {{threshold}} or below)"
+  },
   "tutorial": {
     "betControls": "Enter your bet and place it",
     "actionButtons": "Draw a third card or stand to settle",

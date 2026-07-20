@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { OICHOKABU_HELP, parseOichokabuCommand } from '../utils/cli/commands/oichokabuCommands';
 import { formatOichokabuState } from '../utils/cli/formatters/oichokabuFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { oichokabuDealerPolicy } from '../utils/oichokabuDealerPolicy';
 
 const OK_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -220,6 +221,14 @@ function OichoKabuPageContent() {
                 <div className="font-bold">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
+                {(() => {
+                  const policy = oichokabuDealerPolicy(state.bankerHand.length, state.bankerRank);
+                  return (
+                    <div className="text-ds-text-muted text-xs mt-1" data-testid="dealer-policy">
+                      {t('dealerPolicy.label')}: {t(policy.i18nKey, policy.params)}
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
