@@ -17,7 +17,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { FaroResponse } from '../types/card';
 import { FaroPhase } from '../types/phases';
@@ -360,29 +360,37 @@ function FaroPageContent() {
                 <div className="text-ds-text-primary text-sm mb-1">{t('callTitle')}</div>
                 <div className="text-ds-text-muted text-xs mb-2">{t('callHint')}</div>
                 <div className="flex flex-wrap justify-center gap-3 mb-2">
-                  {state.callCards.map((c, i) => (
-                    <CardImage key={`call-card-${i}`} card={c} width={cardWidth} />
-                  ))}
-                </div>
-                <div className="flex flex-wrap justify-center gap-2 mb-2">
                   {state.callCards.map((card, i) => {
                     const pos = callOrder.indexOf(i);
                     const isSelected = pos >= 0;
                     return (
                       <button
-                        key={`call-rank-${card.value}-${i}`}
+                        key={`call-card-${card.value}-${i}`}
                         type="button"
                         onClick={() => toggleCallCard(i)}
                         disabled={loading}
-                        className={`px-3 py-2 rounded border text-sm font-semibold transition-all ${
+                        aria-pressed={isSelected}
+                        className={`relative rounded-md border-2 transition-all ${focusRingWhite} ${
                           isSelected
-                            ? 'border-ds-warning bg-ds-warning/20 text-ds-warning'
-                            : 'border-white/30 bg-black/30 text-ds-text-primary'
+                            ? 'border-ds-warning -translate-y-1'
+                            : 'border-transparent hover:border-white/40 hover:-translate-y-0.5'
+                        } ${loading ? 'cursor-default' : 'cursor-pointer'}`}
+                        style={{ background: 'none', padding: 0, lineHeight: 0 }}
+                        data-testid={`call-card-${card.value}-${i}`}
+                        aria-label={`${t('rankName')} ${rankLabel(card.value)}${
+                          isSelected ? `, ${t('callSlot', { n: pos + 1 })}` : ''
                         }`}
-                        data-testid={`call-rank-${card.value}-${i}`}
                       >
-                        {rankLabel(card.value)}
-                        {isSelected ? ` (${t('callSlot', { n: pos + 1 })})` : ''}
+                        <CardImage card={card} width={cardWidth} />
+                        {isSelected && (
+                          <span
+                            className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-ds-warning text-black text-xs font-bold shadow"
+                            aria-hidden="true"
+                            data-testid={`call-order-badge-${card.value}-${i}`}
+                          >
+                            {pos + 1}
+                          </span>
+                        )}
                       </button>
                     );
                   })}

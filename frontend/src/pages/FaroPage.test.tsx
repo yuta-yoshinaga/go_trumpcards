@@ -168,16 +168,53 @@ describe('FaroPage', () => {
     await waitFor(() => expect(screen.getByText('スプリット（バンクが半分回収）')).toBeInTheDocument());
   });
 
-  it('submits a call once all three ranks are ordered', async () => {
+  it('submits a call once all three ranks are ordered by tapping the card images', async () => {
     mockExec.mockResolvedValue(callState);
     renderWithProviders(<FaroPage />);
-    await screen.findByTestId('call-rank-3-0');
-    fireEvent.click(screen.getByTestId('call-rank-3-0'));
-    fireEvent.click(screen.getByTestId('call-rank-9-1'));
-    fireEvent.click(screen.getByTestId('call-rank-12-2'));
+    await screen.findByTestId('call-card-3-0');
+    fireEvent.click(screen.getByTestId('call-card-3-0'));
+    fireEvent.click(screen.getByTestId('call-card-9-1'));
+    fireEvent.click(screen.getByTestId('call-card-12-2'));
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'コールする' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', { order: [3, 9, 12] }));
+  });
+
+  it('shows an order badge and marks the tapped card as pressed', async () => {
+    mockExec.mockResolvedValue(callState);
+    renderWithProviders(<FaroPage />);
+    const secondCard = await screen.findByTestId('call-card-9-1');
+    // Nothing selected yet: no badges and no pressed cards.
+    expect(screen.queryByTestId('call-order-badge-9-1')).not.toBeInTheDocument();
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(screen.getByTestId('call-card-3-0'));
+    fireEvent.click(secondCard);
+    // The second tap becomes position 2.
+    expect(screen.getByTestId('call-order-badge-9-1')).toHaveTextContent('2');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'true');
+
+    // Tapping again clears the selection and its badge.
+    fireEvent.click(secondCard);
+    expect(screen.queryByTestId('call-order-badge-9-1')).not.toBeInTheDocument();
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('selects duplicate ranks independently by index', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 3, callCards: [card('SPADE', 5), card('HEART', 5), card('DIAMOND', 9)] }),
+    );
+    renderWithProviders(<FaroPage />);
+    // Tap the second 5 first, then the first 5, then the 9.
+    await screen.findByTestId('call-card-5-1');
+    fireEvent.click(screen.getByTestId('call-card-5-1'));
+    fireEvent.click(screen.getByTestId('call-card-5-0'));
+    fireEvent.click(screen.getByTestId('call-card-9-2'));
+    expect(screen.getByTestId('call-order-badge-5-1')).toHaveTextContent('1');
+    expect(screen.getByTestId('call-order-badge-5-0')).toHaveTextContent('2');
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'コールする' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', { order: [5, 5, 9] }));
   });
 
   it('skips the call without an order', async () => {
