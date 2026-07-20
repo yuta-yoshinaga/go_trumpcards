@@ -189,6 +189,55 @@ describe('HandAndFootPage', () => {
     expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
   });
 
+  it('shows the initial-meld minimum and updates the running total as cards are selected', async () => {
+    // Team 0 has no melds and cumulative score 0 -> initial-meld minimum is 50.
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toBeInTheDocument());
+    const readout = screen.getByTestId('hf-meld-points');
+    // Nothing selected: total 0, below the 50 minimum -> warning styling.
+    expect(readout).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 0');
+    expect(readout.className).toContain('text-ds-warning');
+
+    // Select the two 10s (10 points each) -> running total 20.
+    fireEvent.click(screen.getByRole('button', { name: '♠ 10' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 10' }));
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('選択合計: 20'));
+    expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 20');
+  });
+
+  it('highlights the readout in success when the selection meets the minimum', async () => {
+    // Negative cumulative score -> minimum 15; selecting the two 10s totals 20.
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [{ ...basePlayers[0], cumulativeScore: -10 }, basePlayers[1]],
+    });
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toBeInTheDocument());
+    // Nothing selected yet: 0 < 15 -> warning.
+    expect(screen.getByTestId('hf-meld-points').className).toContain('text-ds-warning');
+    fireEvent.click(screen.getByRole('button', { name: '♠ 10' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 10' }));
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('選択合計: 20'));
+    expect(screen.getByTestId('hf-meld-points').className).toContain('text-ds-success');
+  });
+
+  it('shows only the selected total once the team has already opened', async () => {
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      teams: [
+        { team: 0, melds: [{ cards: [], isNatural: true, isCanasta: false, rank: 7 }], red3Count: 0, red3s: [] },
+        { team: 1, melds: [], red3Count: 0, red3s: [] },
+      ],
+    });
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toBeInTheDocument());
+    const readout = screen.getByTestId('hf-meld-points');
+    expect(readout).toHaveTextContent('選択合計: 0');
+    expect(readout).not.toHaveTextContent('初回メルド最低点');
+    expect(readout.className).toContain('text-ds-text-muted');
+  });
+
   it('calls skipmeld command when skip button clicked', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<HandAndFootPage />);
