@@ -68,6 +68,7 @@ const winState: CasinoWarResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.clear();
   mockApi.mockResolvedValue(betState);
 });
 
@@ -299,5 +300,53 @@ describe('CasinoWarPage', () => {
     renderWithProviders(<CasinoWarPage />);
     await screen.findByRole('button', { name: /^ベット$/ });
     expect(screen.queryByTestId('cw-previous-bet')).not.toBeInTheDocument();
+  });
+
+  it('records a finished round to the win/loss trend with a pip and tally', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    const betBtn = await screen.findByRole('button', { name: /^ベット$/ });
+    mockApi.mockResolvedValue(winState); // result: 1 -> WIN
+    fireEvent.click(betBtn);
+
+    await waitFor(() => expect(screen.getByTestId('cw-history')).toBeInTheDocument());
+    expect(screen.getByTestId('cw-trend-bar')).toBeInTheDocument();
+    expect(screen.getAllByTestId('cw-history-pip')).toHaveLength(1);
+    expect(screen.getByTestId('cw-tally')).toHaveTextContent('1勝 0敗 0分');
+  });
+
+  it('does not double-count the same round when the END phase re-renders', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    const betBtn = await screen.findByRole('button', { name: /^ベット$/ });
+    mockApi.mockResolvedValue(winState);
+    fireEvent.click(betBtn);
+    await waitFor(() => expect(screen.getAllByTestId('cw-history-pip')).toHaveLength(1));
+
+    // Toggling the hint checkbox forces a re-render while still at END phase;
+    // the record-once guard must keep the pip count at 1.
+    fireEvent.click(screen.getAllByRole('checkbox')[0]);
+    expect(screen.getAllByTestId('cw-history-pip')).toHaveLength(1);
+  });
+
+  it('clears the trend history when the clear button is clicked', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    const betBtn = await screen.findByRole('button', { name: /^ベット$/ });
+    mockApi.mockResolvedValue(winState);
+    fireEvent.click(betBtn);
+    await waitFor(() => expect(screen.getByTestId('cw-clear-history')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('cw-clear-history'));
+    await waitFor(() => expect(screen.queryByTestId('cw-history')).not.toBeInTheDocument());
+  });
+
+  it('rehydrates a persisted trend history from localStorage on mount', async () => {
+    localStorage.setItem('trumpcards-casinowar-history', JSON.stringify([1, 2, 1]));
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    await waitFor(() => expect(screen.getByTestId('cw-history')).toBeInTheDocument());
+    expect(screen.getAllByTestId('cw-history-pip')).toHaveLength(3);
+    expect(screen.getByTestId('cw-tally')).toHaveTextContent('2勝 1敗 0分');
   });
 });
