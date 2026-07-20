@@ -189,6 +189,18 @@ describe('EgyptianRatscrewPage', () => {
     expect(slap.className).toMatch(/animate-pulse/);
   });
 
+  it('gives the step and slap buttons a 44x44px minimum tap target', async () => {
+    mockExec.mockResolvedValueOnce(slappableState);
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('slap-button')).toBeInTheDocument());
+    const slap = screen.getByTestId('slap-button');
+    expect(slap.className).toContain('min-h-[44px]');
+    expect(slap.className).toContain('min-w-[44px]');
+    const step = screen.getByTestId('step-button');
+    expect(step.className).toContain('min-h-[44px]');
+    expect(step.className).toContain('min-w-[44px]');
+  });
+
   it('shows a pair slap-reason badge while slappable', async () => {
     mockExec.mockResolvedValueOnce({ ...slappableState, lastSlapReason: EgyptianRatscrewSlapReason.PAIR });
     renderWithProviders(<EgyptianRatscrewPage />);
