@@ -459,6 +459,64 @@ describe('NertzPage', () => {
     expect(screen.getAllByTestId(/nertz-foundation-/)).toHaveLength(8);
   });
 
+  it('defaults the CPU speed select to normal when unset', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    const select = (await screen.findByTestId('nertz-cpu-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('normal');
+  });
+
+  it('loads the persisted CPU speed from localStorage on mount', async () => {
+    localStorage.setItem('nertz:cpuSpeed', 'fast');
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    const select = (await screen.findByTestId('nertz-cpu-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('fast');
+  });
+
+  it('persists the chosen CPU speed to localStorage', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    const select = (await screen.findByTestId('nertz-cpu-speed-select')) as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: 'slow' } });
+    expect(select.value).toBe('slow');
+    expect(localStorage.getItem('nertz:cpuSpeed')).toBe('slow');
+  });
+
+  it('uses the selected speed as the CPU tick interval', async () => {
+    vi.useFakeTimers();
+    try {
+      // 'fast' → 400ms interval; 'slow' → 1200ms. Verify the boundary at 400ms.
+      localStorage.setItem('nertz:cpuSpeed', 'fast');
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(
+        <MemoryRouter initialEntries={['/nertz']}>
+          <NertzPage />
+        </MemoryRouter>,
+      );
+      // Flush the mount reset + initial render so the interval effect subscribes.
+      await vi.advanceTimersByTimeAsync(0);
+      mockExec.mockClear();
+      // Just before the 400ms fast interval no tick has fired yet.
+      await vi.advanceTimersByTimeAsync(399);
+      expect(mockExec).not.toHaveBeenCalledWith('tick');
+      // Crossing 400ms fires the fast tick.
+      await vi.advanceTimersByTimeAsync(1);
+      expect(mockExec).toHaveBeenCalledWith('tick');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('does not attribute a later unrelated error to a previously-resolved foundation move', async () => {
     // Bug 1 from the gemini/Claude review: after a foundation move succeeds, the
     // pending-foundation ref must be cleared so a later unrelated error (e.g. a

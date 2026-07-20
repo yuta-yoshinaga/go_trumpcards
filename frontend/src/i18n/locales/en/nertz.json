@@ -45,7 +45,12 @@
     "cpuDifficulty": "CPU difficulty",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "cpuSpeed": "CPU speed",
+    "cpuSpeedHelp": "Adjust how often the CPUs play a card. Faster ticks make the race harder (Slow = 1200ms / Normal = 700ms / Fast = 400ms).",
+    "speedSlow": "Slow",
+    "speedNormal": "Normal",
+    "speedFast": "Fast"
   },
   "tutorial": {
     "intro": "Nertz is a real-time competitive solitaire where several players race in parallel.",
