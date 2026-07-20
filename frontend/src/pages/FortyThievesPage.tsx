@@ -28,6 +28,7 @@ import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { Card } from '../types/card';
 import { FortyThievesPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -110,6 +111,7 @@ function FortyThievesPageContent() {
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
+    handleFoundationShortcut,
     isAutoCompleting,
   } = useFortyThievesGame();
 
@@ -285,16 +287,22 @@ function FortyThievesPageContent() {
                   {wasteDisplay.length > 0 ? (
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        // The second click of a double-click also fires onClick
+                        // (detail === 2); ignore it so onDoubleClick owns the
+                        // foundation shortcut without leaving a stray selection.
+                        if (e.detail >= 2) return;
                         if (selectedSource) return;
                         handleSelectSource({ zone: 'waste' });
                       }}
+                      onDoubleClick={() => handleFoundationShortcut({ zone: 'waste' }, wasteDisplay[0])}
                       disabled={!isPlaying || loading}
                       aria-label={cardAlt(wasteDisplay[0])}
                       aria-pressed={isSourceSelected('waste')}
                       draggable={isPlaying && !loading}
                       onDragStart={dnd.handleDragStart({ zone: 'waste' })}
                       onDragEnd={dnd.handleDragEnd}
+                      data-testid="ft-waste-top"
                       className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-ds-warning' : isHintFromWaste ? HINT_RING : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
                     >
                       <AnimatedCard card={wasteDisplay[0]} width={ft.cw} draggable={false} />
@@ -399,6 +407,9 @@ function FortyThievesPageContent() {
                               col: colIdx,
                               cardIndex: cardIdx,
                             };
+                            // Only a column's exposed top card can be sent
+                            // straight to a foundation (single-card move rule).
+                            const isLast = cardIdx === col.length - 1;
                             return (
                               <div
                                 key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -408,19 +419,31 @@ function FortyThievesPageContent() {
                                 {tc.faceUp && tc.card ? (
                                   <button
                                     type="button"
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      // The second click of a double-click also
+                                      // fires onClick (detail === 2); ignore it
+                                      // so onDoubleClick owns the foundation
+                                      // shortcut without a stray select/target.
+                                      if (e.detail >= 2) return;
                                       if (selectedSource) {
                                         handleSelectTarget(tableauColZone);
                                       } else {
                                         handleSelectSource(cardZone);
                                       }
                                     }}
+                                    onDoubleClick={
+                                      // Only the exposed top card can jump to a foundation.
+                                      isLast && tc.card
+                                        ? () => handleFoundationShortcut(cardZone, tc.card as Card)
+                                        : undefined
+                                    }
                                     disabled={!isPlaying || loading}
                                     aria-label={cardAlt(tc.card)}
                                     aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                                     draggable={isPlaying && !loading}
                                     onDragStart={dnd.handleDragStart(cardZone)}
                                     onDragEnd={dnd.handleDragEnd}
+                                    data-testid={isLast ? `ft-tableau-top-${colIdx.toString()}` : undefined}
                                     className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : isHintFromTableau(colIdx, cardIdx) ? HINT_RING : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                   >
                                     <AnimatedCard

@@ -396,6 +396,63 @@ describe('FortyThievesPage', () => {
     }
   });
 
+  it('double-clicking a foundation-playable tableau top card sends it to a foundation', async () => {
+    const aceState: FortyThievesResponse = {
+      ...playingState,
+      tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
+      waste: [],
+      foundation: [[], [], [], [], [], [], [], []],
+    };
+    mockExec.mockResolvedValue(aceState);
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByTestId('ft-tableau-top-0')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(aceState);
+    fireEvent.dblClick(screen.getByTestId('ft-tableau-top-0'));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'foundation', col: 0 },
+      ),
+    );
+  });
+
+  it('double-clicking a foundation-playable waste card sends it to a foundation', async () => {
+    const aceWasteState: FortyThievesResponse = {
+      ...playingState,
+      tableau: makeTableau([]),
+      waste: [card('SPADE', 1)],
+      foundation: [[], [], [], [], [], [], [], []],
+    };
+    mockExec.mockResolvedValue(aceWasteState);
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByTestId('ft-waste-top')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(aceWasteState);
+    fireEvent.dblClick(screen.getByTestId('ft-waste-top'));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 0 }),
+    );
+  });
+
+  it('double-clicking a card with no legal foundation target does nothing', async () => {
+    // playingState: tableau col 0 top is ♠K and waste top is ♣3 with every
+    // foundation empty, so neither card has a legal foundation move.
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByTestId('ft-waste-top')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.dblClick(screen.getByTestId('ft-tableau-top-0'));
+    fireEvent.dblClick(screen.getByTestId('ft-waste-top'));
+
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('shows hint text after clicking hint', async () => {
     renderWithProviders(<FortyThievesPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
