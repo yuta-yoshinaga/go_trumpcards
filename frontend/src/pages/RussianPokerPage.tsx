@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { russianpokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -16,6 +16,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -118,31 +119,45 @@ function RussianPokerPageContent() {
   const anteInvalid =
     Number.isNaN(anteAmount) || anteAmount < 10 || anteAmount % 10 !== 0 || anteAmount > (state?.chips ?? 0);
 
-  const toggleSelected = (idx: number) => {
+  const toggleSelected = useCallback((idx: number) => {
     setSelectedIndices((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx].sort((a, b) => a - b),
     );
-  };
+  }, []);
+
+  const clearSelection = useCallback(() => setSelectedIndices([]), []);
+
+  /** No-op handler for keyboard-nav callbacks that a given phase does not use. */
+  const noop = useCallback(() => {}, []);
 
   const handleBet = () => {
     setSelectedIndices([]);
     execApi('bet', anteAmount);
   };
 
-  const handleExchange = () => {
+  const handleExchange = useCallback(() => {
     const toExchange = [...selectedIndices];
     setSelectedIndices([]);
     execApi('exchange', undefined, toExchange);
-  };
+  }, [selectedIndices, execApi]);
+
+  /** Confirm the exchange from the keyboard (Enter); no-op when nothing is selected. */
+  const handleExchangeConfirm = useCallback(() => {
+    if (selectedIndices.length === 0) return;
+    handleExchange();
+  }, [selectedIndices, handleExchange]);
 
   const handleBuy6th = () => {
     setSelectedIndices([]);
     execApi('buy6th');
   };
 
-  const handleSelect = (discardIdx: number) => {
-    execApi('select', undefined, undefined, discardIdx);
-  };
+  const handleSelect = useCallback(
+    (discardIdx: number) => {
+      execApi('select', undefined, undefined, discardIdx);
+    },
+    [execApi],
+  );
 
   const handlePlay = () => {
     setSelectedIndices([]);
@@ -186,6 +201,27 @@ function RussianPokerPageContent() {
   useActionKeyboardNav({
     bindings: actionBindings,
     enabled: !!state && !loading,
+  });
+
+  // ACTION phase: number keys 1-9/0 toggle which cards to exchange, Enter confirms
+  // the exchange, Escape clears the selection. Digit 6 falls through to buy6th (the
+  // hand has only 5 cards, so index 5 is out of range here — no conflict).
+  useCardKeyboardNav({
+    cardCount: state?.playerHand.length ?? 0,
+    onToggle: toggleSelected,
+    onConfirm: handleExchangeConfirm,
+    onClear: clearSelection,
+    enabled: isActionPhase && !loading,
+  });
+
+  // SELECT phase: number keys 1-9/0 pick the discard directly (6-card discard step).
+  useCardKeyboardNav({
+    cardCount: state?.playerHand.length ?? 0,
+    onToggle: noop,
+    onConfirm: noop,
+    onClear: noop,
+    onDirectPlay: handleSelect,
+    enabled: isSelectPhase && !loading,
   });
 
   if (!state) return <GameSkeleton gameKey="russianpoker" layout={{ kind: 'casino-table', sections: [5, 5] }} />;
@@ -297,12 +333,15 @@ function RussianPokerPageContent() {
                     const selected = selectedIndices.includes(i);
                     const selectable = isActionPhase;
                     const discardable = isSelectPhase;
+                    // Advertise the number-key shortcut (1-9, then 0 for the 10th card).
+                    const kbdShortcut = i < 9 ? String(i + 1) : i === 9 ? '0' : undefined;
                     return (
                       <button
                         key={`p-${i}`}
                         type="button"
                         aria-label={cardAlt(card)}
                         aria-pressed={selectable ? selected : undefined}
+                        aria-keyshortcuts={(selectable || discardable) && kbdShortcut ? kbdShortcut : undefined}
                         data-testid={`player-card-${i}`}
                         data-selected={selected ? 'true' : 'false'}
                         onClick={selectable ? () => toggleSelected(i) : discardable ? () => handleSelect(i) : undefined}
@@ -420,6 +459,9 @@ function RussianPokerPageContent() {
                   data-testid="russian-exchange-fee-line"
                 >
                   <p>{t('exchangeGuide')}</p>
+                  <p className="text-ds-text-muted text-xs" data-testid="russian-exchange-kbd-hint">
+                    {t('exchangeKbdHint')}
+                  </p>
                   <p
                     className={
                       selectedIndices.length >= 4
@@ -460,6 +502,9 @@ function RussianPokerPageContent() {
             {isSelectPhase && (
               <div className="flex flex-col items-center gap-2 pb-2">
                 <p className="text-ds-text-muted text-sm">{t('selectGuide')}</p>
+                <p className="text-ds-text-muted text-xs" data-testid="russian-select-kbd-hint">
+                  {t('selectKbdHint')}
+                </p>
               </div>
             )}
             {isPostActionPhase && (
