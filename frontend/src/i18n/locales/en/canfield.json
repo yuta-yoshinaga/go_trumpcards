@@ -23,6 +23,7 @@
   "playing": "Playing",
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
+  "hintAnnouncement": "Hint: move {{card}} to {{dest}}",
   "moveReserveToFoundation": "Reserve → Foundation",
   "moveReserveToTableau": "Reserve → Tableau",
   "moveWasteToFoundation": "Waste → Foundation",

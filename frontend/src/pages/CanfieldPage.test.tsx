@@ -130,6 +130,53 @@ describe('CanfieldPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('shows the hint source → destination text after clicking hint (tableau → foundation)', async () => {
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // The hint response carries the suggested move: tableau col 0 top card → foundation.
+    mockExec.mockResolvedValueOnce({
+      ...playingState,
+      hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 2 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    const display = await screen.findByTestId('cf-hint-display');
+    // Visible line names both source (場札 0) and destination (組札).
+    await waitFor(() => expect(display).toHaveTextContent('場札 0'));
+    expect(display).toHaveTextContent('組札');
+    // Screen-reader announcement resolves the hinted card face + destination.
+    expect(screen.getByTestId('cf-hint-announcement')).toHaveTextContent('♠ 7');
+  });
+
+  it('announces a reserve → tableau hint using the reserve top card', async () => {
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValueOnce({
+      ...playingState,
+      hint: { fromZone: 'reserve', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 1 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    const display = await screen.findByTestId('cf-hint-display');
+    await waitFor(() => expect(display).toHaveTextContent('リザーブ'));
+    expect(display).toHaveTextContent('場札 1');
+    // Reserve top card is ♠ 3 in playingState.
+    expect(screen.getByTestId('cf-hint-announcement')).toHaveTextContent('♠ 3');
+  });
+
+  it('clears the hint display after the next move (response without a hint field)', async () => {
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValueOnce({
+      ...playingState,
+      hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'foundation', toCol: 0 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByTestId('cf-hint-display')).toHaveTextContent('ヒントがあります'));
+    // A subsequent move returns the plain state (no hint) → the display empties.
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(screen.getByRole('button', { name: /ウェイスト→組札/ }));
+    await waitFor(() => expect(screen.getByTestId('cf-hint-display')).not.toHaveTextContent('ヒントがあります'));
+  });
+
   it('autocomplete button triggers autocomplete command', async () => {
     renderWithProviders(<CanfieldPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

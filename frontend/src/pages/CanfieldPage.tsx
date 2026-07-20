@@ -29,9 +29,29 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CanfieldResponse } from '../types/card';
 import { CanfieldPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { CANFIELD_HELP, parseCanfieldCommand } from '../utils/cli/commands/canfieldCommands';
 import { formatCanfieldState } from '../utils/cli/formatters/canfieldFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+
+/** Ring styling applied to the hinted source / target cards (mirrors Yukon / Forty Thieves). */
+const HINT_RING = 'ring-2 ring-ds-info motion-safe:animate-pulse';
+
+/**
+ * Formats a Canfield hint zone into human-readable text, mirroring
+ * `CanfieldCuiPresenter.HintOutput`. Tableau destinations include the 0-based
+ * column number so source and target are unambiguous.
+ */
+function formatCanfieldHintZone(
+  t: (key: string, opts?: Record<string, unknown>) => string,
+  zone: string,
+  col: number,
+): string {
+  if (zone === 'reserve') return t('reserve');
+  if (zone === 'waste') return t('waste');
+  if (zone === 'foundation') return t('foundation');
+  return `${t('tableau')} ${col}`;
+}
 
 /** Tutorial steps for the Canfield solitaire game. */
 const CF_TUTORIAL_STEPS: TutorialStep[] = [
@@ -184,6 +204,27 @@ function CanfieldPageContent() {
   const topWaste = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const topReserve = state.reserve.length > 0 ? state.reserve[state.reserve.length - 1] : null;
 
+  // Server hint (populated by the "hint" button; cleared on the next move since
+  // regular responses omit the field). Resolve the hinted card + destination so
+  // the move can be highlighted with a ring and announced to screen readers,
+  // matching Yukon / Forty Thieves. The click handler itself needs no change.
+  const hint = state.hint ?? null;
+  const hintCard = hint
+    ? hint.fromZone === 'reserve'
+      ? topReserve
+      : hint.fromZone === 'waste'
+        ? topWaste
+        : (state.tableau[hint.fromCol]?.[hint.cardIndex]?.card ?? null)
+    : null;
+  const hintCardName = hintCard ? cardAlt(hintCard) : '';
+  const hintDest = hint ? formatCanfieldHintZone(t, hint.toZone, hint.toCol) : '';
+  const isHintFromReserve = hint?.fromZone === 'reserve';
+  const isHintFromWaste = hint?.fromZone === 'waste';
+  const isHintFromTableau = (col: number, idx: number) =>
+    hint != null && hint.fromZone === 'tableau' && hint.fromCol === col && hint.cardIndex === idx;
+  const isHintToFoundation = (col: number) => hint?.toZone === 'foundation' && hint.toCol === col;
+  const isHintToTableau = (col: number) => hint?.toZone === 'tableau' && hint.toCol === col;
+
   return (
     <GamePageShell
       title={tc('nav.canfield')}
@@ -255,7 +296,7 @@ function CanfieldPageContent() {
                     onDragLeave={dnd.handleDragLeave}
                   >
                     <div
-                      className="relative rounded border border-white/30"
+                      className={`relative rounded border border-white/30 ${isHintToFoundation(i) ? HINT_RING : ''}`}
                       style={{ width: cardWidth, height: cardHeight }}
                     >
                       {pile.length > 0 ? (
@@ -301,7 +342,7 @@ function CanfieldPageContent() {
                       draggable={isPlaying && !loading}
                       onDragStart={dnd.handleDragStart({ zone: 'waste' })}
                       onDragEnd={dnd.handleDragEnd}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isHintFromWaste ? HINT_RING : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
                     >
                       <AnimatedCard card={topWaste} width={cardWidth} draggable={false} />
                     </button>
@@ -326,6 +367,7 @@ function CanfieldPageContent() {
                   handleDragStart={dnd.handleDragStart({ zone: 'reserve' })}
                   handleDragEnd={dnd.handleDragEnd}
                   isDragSource={dnd.isDragSource({ zone: 'reserve' })}
+                  isHintSource={!!isHintFromReserve}
                 />
                 <span className="mt-1 text-xs text-ds-text-muted">
                   {t('reserve')}: {state.reserve.length}
@@ -346,7 +388,10 @@ function CanfieldPageContent() {
                       onDrop={dnd.handleDrop(tZone)}
                       onDragLeave={dnd.handleDragLeave}
                     >
-                      <div className="relative" style={{ width: cardWidth, minHeight: cardHeight }}>
+                      <div
+                        className={`relative rounded ${isHintToTableau(i) ? HINT_RING : ''}`}
+                        style={{ width: cardWidth, minHeight: cardHeight }}
+                      >
                         {col.length === 0 ? (
                           <div
                             className="rounded border border-dashed border-white/30"
@@ -362,7 +407,7 @@ function CanfieldPageContent() {
                                   draggable={isPlaying && !loading}
                                   onDragStart={dnd.handleDragStart(cardZone)}
                                   onDragEnd={dnd.handleDragEnd}
-                                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isHintFromTableau(i, j) ? HINT_RING : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                 >
                                   <AnimatedCard card={tc.card} width={cardWidth} draggable={false} />
                                 </button>
@@ -443,6 +488,21 @@ function CanfieldPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            {/* Server hint display: a visible source → target line plus a screen-reader
+                announcement, mirroring CanfieldCuiPresenter.HintOutput. The hinted cards
+                are also ring-highlighted above. Clears automatically once the move is
+                played (the next response omits the hint field). */}
+            <div data-testid="cf-hint-display">
+              {hint && (
+                <div className="text-sm text-ds-text-muted">
+                  {t('hintAvailable')}: {formatCanfieldHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
+                  {formatCanfieldHintZone(t, hint.toZone, hint.toCol)}
+                </div>
+              )}
+              <div className="sr-only" role="status" aria-live="polite" data-testid="cf-hint-announcement">
+                {hint ? t('hintAnnouncement', { card: hintCardName, dest: hintDest }) : ''}
+              </div>
+            </div>
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
             )}
@@ -540,6 +600,7 @@ interface ReserveStackProps {
   handleDragStart: (e: DragEvent<HTMLElement>) => void;
   handleDragEnd: () => void;
   isDragSource: boolean;
+  isHintSource: boolean;
 }
 
 /** Reserve pile with visible stack-edge layers behind the top card.
@@ -555,6 +616,7 @@ function ReserveStack({
   handleDragStart,
   handleDragEnd,
   isDragSource,
+  isHintSource,
 }: ReserveStackProps) {
   const layers = Math.max(0, Math.min(count - 1, RESERVE_STACK_MAX_LAYERS));
   // Container is sized for the maximum stack so the top card sits at a
@@ -588,7 +650,7 @@ function ReserveStack({
             draggable={isPlaying && !loading}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
-            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isDragSource ? 'opacity-50' : ''}`}
+            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isHintSource ? HINT_RING : ''} ${isDragSource ? 'opacity-50' : ''}`}
           >
             <AnimatedCard card={topCard} width={cardWidth} draggable={false} />
           </button>
