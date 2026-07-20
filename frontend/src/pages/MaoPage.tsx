@@ -24,13 +24,14 @@ import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/butto
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { MaoResponse } from '../types/card';
+import type { Card, MaoResponse } from '../types/card';
 import { CrazyEightsSuit, MaoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { MAO_HELP, parseMaoCommand } from '../utils/cli/commands/maoCommands';
 import { formatMaoState } from '../utils/cli/formatters/maoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { appendSayWordAttempt, type MaoSayWordAttempt } from '../utils/maoSayWordHistory';
 import { playerName } from '../utils/playerUtils';
 
 const MAO_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -124,6 +125,14 @@ function MaoPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const [wordInput, setWordInput] = useState('');
+  // Local log of say-word attempts and their outcome; the server never returns
+  // this history, but the player types the word and the response's rulePenalty
+  // flag reveals whether it broke the hidden rule.
+  const [sayWordHistory, setSayWordHistory] = useState<MaoSayWordAttempt[]>([]);
+  // Holds a submitted word until its response arrives; prevState pins the state
+  // object present at submit time so the outcome is read from the *response*,
+  // not from an interim re-render.
+  const pendingWordRef = useRef<{ word: string; board: Card | null; prevState: MaoResponse | null } | null>(null);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('mao');
   const cliConfig: CliGameConfig<MaoResponse, Parameters<typeof maoApi.exec>> = useMemo(
@@ -146,18 +155,40 @@ function MaoPageContent() {
   }, [handlePlay]);
 
   const submitWord = useCallback(() => {
-    handleDeclareWord(wordInput);
+    const trimmed = wordInput.trim();
+    if (trimmed.length === 0) return;
+    pendingWordRef.current = { word: trimmed, board: state?.discardTop ?? null, prevState: state };
+    handleDeclareWord(trimmed);
     setWordInput('');
-  }, [handleDeclareWord, wordInput]);
+  }, [handleDeclareWord, wordInput, state]);
+
+  // When the say-word response lands (a new state object), record the attempt
+  // together with the outcome the server reported for it.
+  useEffect(() => {
+    const pending = pendingWordRef.current;
+    if (!state || !pending || state === pending.prevState) return;
+    pendingWordRef.current = null;
+    setSayWordHistory((h) =>
+      appendSayWordAttempt(h, { word: pending.word, board: pending.board, penalty: state.rulePenalty }),
+    );
+  }, [state]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
     setWordInput('');
+    setSayWordHistory([]);
+    pendingWordRef.current = null;
     void gameExec('reset', undefined, undefined, {
       cpuDifficulty: maoConfig.cpuDifficulty,
       pointLimit: maoConfig.pointLimit,
     });
   }, [gameExec, hideActionLog, maoConfig.cpuDifficulty, maoConfig.pointLimit]);
+
+  const handleNextRoundWithHistory = useCallback(() => {
+    setSayWordHistory([]);
+    pendingWordRef.current = null;
+    handleNextRound();
+  }, [handleNextRound]);
 
   useCardKeyboardNav({
     cardCount: humanCardCountForKbd,
@@ -427,6 +458,33 @@ function MaoPageContent() {
                   {t('sayWordButton')}
                 </button>
               </div>
+
+              {/* Attempt log: track which words were tried and how the hidden rule reacted. */}
+              {sayWordHistory.length > 0 && (
+                <details className="rounded bg-black/20 px-2 py-1" data-testid="mao-sayword-history">
+                  <summary className="cursor-pointer select-none text-ds-text-muted">
+                    {t('sayWordHistory.title', { count: sayWordHistory.length })}
+                  </summary>
+                  <ul className="mt-1 flex flex-col gap-1">
+                    {sayWordHistory.map((attempt, idx) => (
+                      <li
+                        key={`${attempt.word}-${idx}`}
+                        className="flex items-center gap-2 flex-wrap"
+                        data-testid="mao-sayword-history-row"
+                      >
+                        <span className="text-ds-text-primary font-medium">“{attempt.word}”</span>
+                        {attempt.board && <span className="text-ds-text-muted">{cardAlt(attempt.board)}</span>}
+                        <span
+                          className={`font-semibold ${attempt.penalty ? 'text-ds-error' : 'text-ds-success'}`}
+                          data-testid={attempt.penalty ? 'sayword-outcome-penalty' : 'sayword-outcome-correct'}
+                        >
+                          {attempt.penalty ? t('sayWordHistory.penalty') : t('sayWordHistory.correct')}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
             </div>
 
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="mao-magic">
@@ -495,7 +553,7 @@ function MaoPageContent() {
                 </div>
               )}
               {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                <button type="button" className={btnSuccess} onClick={handleNextRoundWithHistory} disabled={loading}>
                   {t('nextRound')}
                 </button>
               )}
