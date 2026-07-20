@@ -289,6 +289,34 @@ describe('PaiGowPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 200));
   });
 
+  it('steppers adjust the bet by the step and submit the new amount', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    // Default bet is 100; the +10 stepper raises it to 110.
+    fireEvent.click(screen.getByRole('button', { name: 'ベット +10' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 110));
+  });
+
+  it('prevents an out-of-range bet: disables submit and shows an alert', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    // A non-multiple-of-10 amount is invalid.
+    const betInput = screen.getByLabelText('ベット');
+    fireEvent.change(betInput, { target: { value: '15' } });
+
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    expect(mockExec).not.toHaveBeenCalledWith('bet', 15);
+  });
+
   it('resets after end phase', async () => {
     mockExec
       .mockResolvedValueOnce(betPhaseState)

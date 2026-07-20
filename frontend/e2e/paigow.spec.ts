@@ -5,8 +5,8 @@ test.describe('Pai Gow Poker E2E', () => {
   test('plays a round: bet → set hands → result → reset', async ({ page }) => {
     await navigateTo(page, '/paigow');
 
-    // BET phase: click ベット
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    // BET phase: click ベット (exact match to avoid matching the ChipBetInput ± steppers)
+    const betButton = page.getByRole('button', { name: 'ベット', exact: true });
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -31,6 +31,6 @@ test.describe('Pai Gow Poker E2E', () => {
     // Reset back to bet phase
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'ベット', exact: true })).toBeVisible();
   });
 });
