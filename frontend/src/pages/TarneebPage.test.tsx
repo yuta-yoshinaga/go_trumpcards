@@ -103,6 +103,23 @@ describe('TarneebPage', () => {
     expect(within(oppRow).getByText('5')).toBeInTheDocument();
   });
 
+  it('shows a per-player trick breakdown grouped by team (#3306)', async () => {
+    const { container } = renderWithProviders(<TarneebPage />);
+    const breakdown = (await screen.findByTestId('tn-player-breakdown')) as HTMLDetailsElement;
+    // Both teams appear as breakdown groups.
+    const yourTeamGroup = within(breakdown).getByTestId('tn-breakdown-team-0');
+    const oppTeamGroup = within(breakdown).getByTestId('tn-breakdown-team-1');
+    expect(within(yourTeamGroup).getByText('あなたのチーム')).toBeInTheDocument();
+    expect(within(oppTeamGroup).getByText('相手チーム')).toBeInTheDocument();
+    // Each player's individual trick count is shown (players 0/2 → team 0, 1/3 → team 1).
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-0"]')?.textContent).toBe('3トリック');
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-2"]')?.textContent).toBe('1トリック');
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-1"]')?.textContent).toBe('2トリック');
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-3"]')?.textContent).toBe('0トリック');
+    // The aggregate team table is preserved alongside the breakdown.
+    expect(container.querySelector('[data-tutorial="tn-score-table"] table')).not.toBeNull();
+  });
+
   it('renders a bid button group from minBid to 13 and bids the selected value', async () => {
     renderWithProviders(<TarneebPage />);
     // minBid 7 → buttons 7..13, none below 7.
