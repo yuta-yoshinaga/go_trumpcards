@@ -4,8 +4,13 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { acesupApi } from '../api/gameApi';
-import type { AcesUpResponse } from '../types/card';
+import type { AcesUpCard, AcesUpResponse, Card } from '../types/card';
 import { useAcesUpGame } from './useAcesUpGame';
+
+/** Builds a minimal Aces Up top card; only the `removable` flag is exercised here. */
+function topCard(removable: boolean): AcesUpCard {
+  return { card: {} as Card, top: true, removable, movable: false };
+}
 
 vi.mock('../api/gameApi', () => ({
   acesupApi: { exec: vi.fn() },
@@ -145,6 +150,80 @@ describe('useAcesUpGame', () => {
     });
 
     expect(result.current.hint).toBeNull();
+  });
+
+  it('handleRemoveAll discards every removable card, chaining newly exposed ones', async () => {
+    // Start: col 0 removable, col 1 not. Removing col 0 exposes a card that
+    // makes col 1 removable — a chain the batch loop must sweep up sequentially.
+    const start: AcesUpResponse = {
+      ...defaultState,
+      columns: [[topCard(true)], [topCard(false)], [], []],
+    };
+    const afterFirst: AcesUpResponse = {
+      ...defaultState,
+      columns: [[], [topCard(true)], [], []],
+    };
+    const afterSecond: AcesUpResponse = {
+      ...defaultState,
+      columns: [[], [], [], []],
+    };
+
+    mockExec.mockResolvedValue(start);
+    const { result } = renderHook(() => useAcesUpGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).toEqual(start));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValueOnce(afterFirst).mockResolvedValueOnce(afterSecond);
+
+    await act(async () => {
+      await result.current.handleRemoveAll();
+    });
+
+    expect(mockExec).toHaveBeenCalledTimes(2);
+    expect(mockExec).toHaveBeenNthCalledWith(1, 'remove', 0);
+    expect(mockExec).toHaveBeenNthCalledWith(2, 'remove', 1);
+    expect(result.current.state).toEqual(afterSecond);
+    expect(result.current.isRemovingAll).toBe(false);
+  });
+
+  it('handleRemoveAll is a no-op when no card is removable', async () => {
+    const start: AcesUpResponse = {
+      ...defaultState,
+      columns: [[topCard(false)], [], [], []],
+    };
+    mockExec.mockResolvedValue(start);
+    const { result } = renderHook(() => useAcesUpGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).toEqual(start));
+
+    mockExec.mockClear();
+    await act(async () => {
+      await result.current.handleRemoveAll();
+    });
+
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('handleRemoveAll surfaces a network error through exec', async () => {
+    const start: AcesUpResponse = {
+      ...defaultState,
+      columns: [[topCard(true)], [topCard(false)], [], []],
+    };
+    mockExec.mockResolvedValue(start);
+    const { result } = renderHook(() => useAcesUpGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).toEqual(start));
+
+    mockExec.mockClear();
+    // First direct remove throws; the fallback re-issue via exec also rejects,
+    // which useGameApi catches and turns into an error message.
+    mockExec.mockRejectedValue(new Error('Network error'));
+
+    await act(async () => {
+      await result.current.handleRemoveAll();
+    });
+
+    expect(mockExec).toHaveBeenCalledWith('remove', 0);
+    await waitFor(() => expect(result.current.error).toBeTruthy());
+    expect(result.current.isRemovingAll).toBe(false);
   });
 
   it('handleHint sets hintError on failure', async () => {
