@@ -13,7 +13,11 @@
     "betTiger": "Tiger",
     "betTie": "Tie (8:1)",
     "reset": "Reset",
-    "clearHistory": "Clear history"
+    "clearHistory": "Clear history",
+    "rebet": "Rebet ({{type}} {{amount}})"
+  },
+  "kbd": {
+    "rebet": "E"
   },
   "phase": {
     "bet": "BET",
