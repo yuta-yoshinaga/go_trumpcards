@@ -177,8 +177,8 @@ function KalookiPageContent() {
     setSelectedCards([]);
   }, [selectedCards]);
 
-  const handleRemoveLastGroup = useCallback(() => {
-    setMeldGroups((prev) => prev.slice(0, -1));
+  const handleRemoveGroup = useCallback((groupIdx: number) => {
+    setMeldGroups((prev) => prev.filter((_, i) => i !== groupIdx));
   }, []);
 
   const handleMeld = useCallback(() => {
@@ -414,6 +414,40 @@ function KalookiPageContent() {
             </section>
           )}
 
+          {isMeldPhase && humanPlayer && meldGroups.length > 0 && (
+            <section className="px-4 py-2" data-testid="kalooki-staged-groups">
+              <div className="text-white text-sm mb-1">{t('stagedGroupsTitle')}</div>
+              <div className="flex flex-col gap-2">
+                {meldGroups.map((group, gi) => (
+                  <div
+                    // Group order is stable within a staging session; index keys are safe here.
+                    key={`staged-group-${gi}`}
+                    data-testid={`kalooki-staged-group-${gi}`}
+                    className="flex items-center gap-2 flex-wrap p-2 rounded border border-white/30 bg-black/20"
+                  >
+                    <span className="text-white text-xs font-semibold">{t('groupLabel', { n: gi + 1 })}</span>
+                    <div className="flex flex-wrap gap-1">
+                      {group.map((cardIdx) => {
+                        const c = humanPlayer.cards[cardIdx];
+                        if (!c) return null;
+                        return <AnimatedCard key={`staged-${gi}-${cardIdx}`} card={c} width={cardWidth * 0.6} />;
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveGroup(gi)}
+                      aria-label={t('removeGroupAria', { n: gi + 1 })}
+                      data-testid={`kalooki-remove-group-${gi}`}
+                      className={`${btnDanger} ml-auto`}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           <section className="px-4 py-2 flex flex-wrap gap-2" data-tutorial="kalooki-actions">
             {isDrawPhase && (
               <>
@@ -436,14 +470,6 @@ function KalookiPageContent() {
                   className={btnOutline}
                 >
                   {t('addGroup')}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleRemoveLastGroup}
-                  disabled={meldGroups.length === 0}
-                  className={btnOutline}
-                >
-                  {t('removeLastGroup')}
                 </button>
                 <button
                   type="button"
