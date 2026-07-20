@@ -28,6 +28,7 @@ import {
   type ScopaCliArgs,
 } from '../utils/cli/commands/scopaCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { scopaScoreBreakdown } from '../utils/scopaScoreBreakdown';
 import { scopaTakeCandidates } from '../utils/scopaTakeCandidates';
 
 const DIFFICULTY_OPTIONS = [
@@ -147,6 +148,13 @@ function ScopaPageContent() {
         : t('label.noTakeCandidate')
       : '';
   const phaseName = isGameEnd ? t('phase.end') : t(`phase.${state.phase}`, t('phase.play'));
+  // Round-end score breakdown: only surfaced once the round is scored so the
+  // player can see why each point was awarded (carte/denari/primiera/settebello
+  // + scopa sweeps). The award data comes straight from the presenter's
+  // `lastRoundDetail`; scopa/gained rows read the per-player maps directly.
+  const roundDetail = state.lastRoundDetail;
+  const breakdownRows = roundDetail ? scopaScoreBreakdown(roundDetail) : [];
+  const playerName = (idx: number) => (idx === 0 ? tc('player.you') : tc('player.cpu', { id: idx }));
 
   return (
     <GamePageShell
@@ -273,6 +281,51 @@ function ScopaPageContent() {
                 data-testid="sc-round-end-banner"
               >
                 {t('label.roundEnd')}
+              </div>
+            )}
+
+            {isRoundEnd && roundDetail && (
+              <div className="bg-black/25 rounded-lg p-3 text-sm text-ds-text" data-testid="sc-score-breakdown">
+                <div className="text-center font-semibold mb-2">{t('breakdown.title')}</div>
+                <dl className="max-w-xs mx-auto space-y-1">
+                  {breakdownRows.map((row) => (
+                    <div key={row.key} className="flex justify-between gap-3" data-testid={`sc-breakdown-${row.key}`}>
+                      <dt className="text-ds-text-muted">{t(`breakdown.${row.key}`)}</dt>
+                      <dd className={row.winner < 0 ? 'text-ds-text-muted' : 'font-medium'}>
+                        {row.winner < 0
+                          ? t('breakdown.tie')
+                          : t('breakdown.winner', { name: playerName(row.winner), points: row.points })}
+                      </dd>
+                    </div>
+                  ))}
+                  <div className="flex justify-between gap-3" data-testid="sc-breakdown-scopa">
+                    <dt className="text-ds-text-muted">{t('breakdown.scopa')}</dt>
+                    <dd className="font-medium text-right">
+                      {state.players
+                        .map((p) => {
+                          const count = roundDetail.scopas[p.id] ?? 0;
+                          return t('breakdown.scopaCount', { name: playerName(p.id), count, points: count });
+                        })
+                        .join(' / ')}
+                    </dd>
+                  </div>
+                  <div
+                    className="flex justify-between gap-3 border-t border-ds-border/40 pt-1 mt-1"
+                    data-testid="sc-breakdown-gained"
+                  >
+                    <dt className="text-ds-text-muted">{t('breakdown.gained')}</dt>
+                    <dd className="font-semibold text-right">
+                      {state.players
+                        .map((p) =>
+                          t('breakdown.gainedValue', {
+                            name: playerName(p.id),
+                            points: roundDetail.gained[p.id] ?? 0,
+                          }),
+                        )
+                        .join(' / ')}
+                    </dd>
+                  </div>
+                </dl>
               </div>
             )}
 

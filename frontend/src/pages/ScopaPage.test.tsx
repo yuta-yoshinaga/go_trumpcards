@@ -219,6 +219,61 @@ describe('ScopaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('n'));
   });
 
+  it('hides the score breakdown during normal play', async () => {
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('sc-score-breakdown')).not.toBeInTheDocument();
+  });
+
+  it('renders the per-category score breakdown at round end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'roundEnd',
+        currentTurn: 1,
+        lastRoundDetail: {
+          cards: { 0: 20, 1: 16 },
+          diamonds: { 0: 4, 1: 6 },
+          sevens: { 0: 3, 1: 1 },
+          hasSetteBello: 0,
+          scopas: { 0: 2, 1: 0 },
+          gained: { 0: 5, 1: 1 },
+        },
+      }),
+    );
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('sc-score-breakdown')).toBeInTheDocument());
+    // Carte (most cards) and settebello go to the human; denari goes to CPU 1.
+    expect(screen.getByTestId('sc-breakdown-cards')).toHaveTextContent('あなた +1');
+    expect(screen.getByTestId('sc-breakdown-denari')).toHaveTextContent('CPU 1 +1');
+    expect(screen.getByTestId('sc-breakdown-primiera')).toHaveTextContent('あなた +1');
+    expect(screen.getByTestId('sc-breakdown-settebello')).toHaveTextContent('あなた +1');
+    // Scopa sweeps and per-player round totals are listed too.
+    expect(screen.getByTestId('sc-breakdown-scopa')).toHaveTextContent('あなた ×2');
+    expect(screen.getByTestId('sc-breakdown-gained')).toHaveTextContent('あなた +5');
+    expect(screen.getByTestId('sc-breakdown-gained')).toHaveTextContent('CPU 1 +1');
+  });
+
+  it('marks a tied category as no-points in the breakdown', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'roundEnd',
+        currentTurn: 1,
+        lastRoundDetail: {
+          cards: { 0: 18, 1: 18 },
+          diamonds: { 0: 0, 1: 0 },
+          sevens: { 0: 0, 1: 0 },
+          hasSetteBello: -1,
+          scopas: { 0: 0, 1: 0 },
+          gained: { 0: 0, 1: 0 },
+        },
+      }),
+    );
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('sc-breakdown-cards')).toBeInTheDocument());
+    expect(screen.getByTestId('sc-breakdown-cards')).toHaveTextContent('引き分け（点なし）');
+    expect(screen.getByTestId('sc-breakdown-settebello')).toHaveTextContent('引き分け（点なし）');
+  });
+
   it('shows loading state when state has fewer than 2 players', async () => {
     mockExec.mockResolvedValue(
       makeState({
