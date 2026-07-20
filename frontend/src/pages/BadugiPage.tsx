@@ -437,6 +437,7 @@ function BadugiPageContent() {
                       type: 'select',
                       id: 'badugiBettingLimit',
                       label: tc('betting.bettingLimit'),
+                      tooltip: t('settings.bettingLimitHelp'),
                       value: bettingLimit,
                       options: [
                         { value: 0, label: tc('betting.fixed') },
@@ -449,6 +450,7 @@ function BadugiPageContent() {
                       type: 'checkbox',
                       id: 'badugiCpuMetaAI',
                       label: t('settings.cpuMetaAI'),
+                      tooltip: t('settings.cpuMetaAIHelp'),
                       checked: cpuMetaAI,
                       onToggle: setCpuMetaAI,
                     },
