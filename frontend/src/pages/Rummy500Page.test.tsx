@@ -68,6 +68,23 @@ const playPhaseState: Rummy500Response = {
   ],
 };
 
+const playPhaseInvalidHandState: Rummy500Response = {
+  ...drawPhaseState,
+  phase: 1,
+  players: [
+    {
+      ...drawPhaseState.players[0],
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE', value: 3 },
+        { design: 'HEART', value: 8 },
+        { design: 'CLOVER', value: 11 },
+      ],
+    },
+    drawPhaseState.players[1],
+  ],
+};
+
 const roundEndState: Rummy500Response = {
   ...drawPhaseState,
   phase: 2,
@@ -237,6 +254,36 @@ describe('Rummy500Page', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /メルドする/ })).toBeDisabled();
     });
+  });
+
+  it('enables the meld button and shows no warning for a valid set selection', async () => {
+    // playPhaseState hand is ♠7 ♥7 ♣7 — a valid same-rank set.
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<Rummy500Page />);
+    const meldBtn = await screen.findByRole('button', { name: /メルドする/ });
+    // No cards selected yet → disabled and no warning.
+    expect(meldBtn).toBeDisabled();
+    expect(screen.queryByTestId('r5-invalid-meld')).not.toBeInTheDocument();
+
+    const handCards = document.querySelectorAll('[data-tutorial="r5-player-hand"] button');
+    for (const c of handCards) fireEvent.click(c);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: /メルドする/ })).toBeEnabled());
+    expect(screen.queryByTestId('r5-invalid-meld')).not.toBeInTheDocument();
+  });
+
+  it('warns and disables the meld button for an invalid 3-card selection', async () => {
+    // playPhaseInvalidHandState hand is ♠3 ♥8 ♣11 — neither a set nor a run.
+    mockExec.mockResolvedValue(playPhaseInvalidHandState);
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /メルドする/ });
+
+    const handCards = document.querySelectorAll('[data-tutorial="r5-player-hand"] button');
+    for (const c of handCards) fireEvent.click(c);
+
+    await waitFor(() => expect(screen.getByTestId('r5-invalid-meld')).toBeInTheDocument());
+    expect(screen.getByTestId('r5-invalid-meld')).toHaveTextContent('セットまたはランになっていません');
+    expect(screen.getByRole('button', { name: /メルドする/ })).toBeDisabled();
   });
 
   it('drawstock button triggers exec', async () => {
