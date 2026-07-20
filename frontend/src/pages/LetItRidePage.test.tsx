@@ -127,6 +127,48 @@ describe('LetItRidePage', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
   });
 
+  it('applies min=10 and step=10 guardrails to the bet input', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    const input = screen.getByLabelText('ベット') as HTMLInputElement;
+    expect(input).toHaveAttribute('min', '10');
+    expect(input).toHaveAttribute('step', '10');
+    // max is capped at 1/3 of the chip balance (1000 → 333).
+    expect(input).toHaveAttribute('max', '333');
+  });
+
+  it('clamps a below-min bet up to the minimum of 10', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    const input = screen.getByLabelText('ベット') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: '5' } });
+    expect(input.value).toBe('10');
+  });
+
+  it('clamps an over-max bet down to the chip-capped maximum', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    const input = screen.getByLabelText('ベット') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: '99999' } });
+    // 1000 / 3 floored = 333.
+    expect(input.value).toBe('333');
+  });
+
+  it('submits a valid clamped bet amount', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    const input = screen.getByLabelText('ベット') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: '200' } });
+    expect(input.value).toBe('200');
+    mockApi.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200));
+  });
+
   it('shows payout reference panel in bet phase', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<LetItRidePage />);
