@@ -20,12 +20,15 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
+import { badgeSuccessColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { Card } from '../types/card';
 import { isMaskedCard } from '../types/card';
 import { MississippiStudPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { evaluateMississippiStudMadeHand } from '../utils/mississippiStudMadeHand';
 
 const TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -109,6 +112,12 @@ function MississippiStudPageContent() {
   );
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
+
+  const madeHand = useMemo(() => {
+    if (!isStreetPhase || !state) return null;
+    const revealed = state.communityCards.filter((c): c is Card => !isMaskedCard(c));
+    return evaluateMississippiStudMadeHand([...state.playerHand, ...revealed]);
+  }, [isStreetPhase, state]);
 
   if (!state) return <GameSkeleton gameKey="mississippistud" layout={{ kind: 'casino-table', sections: [3, 2] }} />;
 
@@ -203,6 +212,18 @@ function MississippiStudPageContent() {
                 <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
               ))}
             </div>
+            {isStreetPhase && madeHand && (
+              <div className="text-center mt-2" data-testid="ms-made-hand" aria-live="polite" aria-atomic="true">
+                <span className="text-ds-text-muted text-xs mr-1">{t('madeHand.label')}:</span>
+                {madeHand.paytableEligible ? (
+                  <span className={`${badgeSuccessColors} rounded px-2 py-0.5 text-sm font-bold`}>
+                    {t(HAND_RANK_KEYS[madeHand.rank] ?? 'handRank.0')} ({t('madeHand.eligible')})
+                  </span>
+                ) : (
+                  <span className="text-ds-text-muted text-sm">{t(HAND_RANK_KEYS[madeHand.rank] ?? 'handRank.0')}</span>
+                )}
+              </div>
+            )}
           </div>
         )}
 
