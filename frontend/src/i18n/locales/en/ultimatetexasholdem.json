@@ -59,6 +59,10 @@
     "title": "Settings"
   },
   "betGuide": "Set the Ante (the Blind matches automatically). Trips is an optional side bet.",
+  "betSummary": {
+    "total": "Total bet (Ante ×2 + Trips)",
+    "overBalance": "Total bet exceeds your chip balance"
+  },
   "preflopEval": {
     "strong": "Assessment: strong hand → 4× recommended",
     "moderate": "Assessment: marginal hand → 3× recommended",

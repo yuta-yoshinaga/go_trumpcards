@@ -388,4 +388,66 @@ describe('UltimateTexasHoldemPage', () => {
     expect(evalText).toHaveTextContent('弱い手札 → チェック推奨');
     expect(evalText.className).toContain('text-ds-text-muted');
   });
+
+  it('displays the combined bet total (ante*2 + trips) before submitting', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    // Default ante 100 (×2) + trips 0 = 200 committed of 1000 chips.
+    expect(screen.getByTestId('uth-bet-total')).toHaveTextContent('200 / 1000');
+
+    fireEvent.change(screen.getByLabelText('トリップス'), { target: { value: '150' } });
+    expect(screen.getByTestId('uth-bet-total')).toHaveTextContent('350 / 1000');
+  });
+
+  it('submits when ante*2 + trips is within chips', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '300' } });
+    fireEvent.change(screen.getByLabelText('トリップス'), { target: { value: '400' } });
+    // 300*2 + 400 = 1000 === chips → valid boundary.
+    const betButton = screen.getByRole('button', { name: 'ベット' });
+    expect(betButton).not.toBeDisabled();
+    expect(screen.queryByTestId('uth-bet-error')).not.toBeInTheDocument();
+
+    fireEvent.click(betButton);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 300, 400));
+  });
+
+  it('disables submit and shows an alert when ante*2 + trips exceeds chips', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    // Ante 100 (×2 = 200) + trips 900 = 1100 > 1000 chips.
+    fireEvent.change(screen.getByLabelText('トリップス'), { target: { value: '900' } });
+
+    const alert = await screen.findByTestId('uth-bet-error');
+    expect(alert).toHaveAttribute('role', 'alert');
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+    expect(screen.getByLabelText('トリップス')).toHaveAttribute('aria-invalid', 'true');
+
+    // A blocked over-balance bet must not reach the server.
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    expect(mockApi).not.toHaveBeenCalledWith('bet', expect.anything(), expect.anything());
+  });
+
+  it('re-clamps trips immediately when the ante increases past the combined limit', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    // Trips at 800 (max while ante=100: 1000 - 200).
+    const tripsInput = screen.getByLabelText('トリップス') as HTMLInputElement;
+    fireEvent.change(tripsInput, { target: { value: '800' } });
+    expect(Number(tripsInput.value)).toBe(800);
+
+    // Raise ante to 400 → new max trips = 1000 - 800 = 200; trips must re-cap.
+    fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '400' } });
+    await waitFor(() => expect(Number(tripsInput.value)).toBe(200));
+    expect(screen.queryByTestId('uth-bet-error')).not.toBeInTheDocument();
+  });
 });
