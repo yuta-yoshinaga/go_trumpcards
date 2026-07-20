@@ -60,6 +60,8 @@ type PitchWebOutput struct {
 	BidWinnerIdx     int                        `json:"bidWinnerIdx"`
 	TrumpSuit        int                        `json:"trumpSuit"`
 	CurrentTrick     []*PitchWebOutputTrickCard `json:"currentTrick"`
+	LastTrick        []*PitchWebOutputTrickCard `json:"lastTrick"`
+	LastTrickWinner  int                        `json:"lastTrickWinner"`
 	GameEndFlag      bool                       `json:"gameEndFlag"`
 	WinnerIdx        int                        `json:"winnerIdx"`
 	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
@@ -99,11 +101,13 @@ var NewPitchWebController, NewPitchWebControllerWithProvider = webControllerPair
 
 func newPitchDefaultOutput(msg string) *PitchWebOutput {
 	return &PitchWebOutput{
-		Players:       make([]*PitchWebOutputPlayer, 0),
-		CurrentTrick:  make([]*PitchWebOutputTrickCard, 0),
-		WinnerIdx:     -1,
-		BidWinnerIdx:  -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:         make([]*PitchWebOutputPlayer, 0),
+		CurrentTrick:    make([]*PitchWebOutputTrickCard, 0),
+		LastTrick:       make([]*PitchWebOutputTrickCard, 0),
+		LastTrickWinner: -1,
+		WinnerIdx:       -1,
+		BidWinnerIdx:    -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

@@ -57,6 +57,8 @@ const bidState: PitchResponse = {
   bidWinnerIdx: -1,
   trumpSuit: 0,
   currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
   gameEndFlag: false,
   winnerIdx: -1,
   leadPlayerIdx: -1,
@@ -286,5 +288,31 @@ describe('PitchPage', () => {
     expect(screen.getByTestId('pitch-game-pips-popover')).toBeInTheDocument();
     fireEvent.mouseDown(document.body);
     expect(screen.queryByTestId('pitch-game-pips-popover')).not.toBeInTheDocument();
+  });
+
+  it('previous-trick panel shows the just-completed trick and its winner', async () => {
+    const lastTrickState: PitchResponse = {
+      ...playState,
+      trickNumber: 2,
+      lastTrick: [
+        { playerIdx: 0, card: makeCard('HEART', 9) },
+        { playerIdx: 1, card: makeCard('HEART', 4) },
+        { playerIdx: 2, card: makeCard('SPADE', 12) },
+        { playerIdx: 3, card: makeCard('HEART', 2) },
+      ],
+      lastTrickWinner: 2,
+    };
+    mockApi.mockResolvedValue(lastTrickState);
+    renderWithProviders(<PitchPage />);
+    await waitFor(() => expect(screen.getByTestId('pt-previous-trick')).toBeInTheDocument());
+    // The winner label is rendered (CPU 2 won the trick) and the empty placeholder is not.
+    expect(screen.getByTestId('pt-previous-trick')).toHaveTextContent(/獲得/);
+    expect(screen.queryByTestId('pt-previous-trick-empty')).not.toBeInTheDocument();
+  });
+
+  it('previous-trick panel is empty on the round first trick', async () => {
+    mockApi.mockResolvedValue(playState); // trickNumber 1, lastTrick []
+    renderWithProviders(<PitchPage />);
+    await waitFor(() => expect(screen.getByTestId('pt-previous-trick-empty')).toBeInTheDocument());
   });
 });

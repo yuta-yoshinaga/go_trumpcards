@@ -31,6 +31,9 @@
   "bidPass": "パス",
   "bidNone": "未ビッド",
   "currentTrick": "現在のトリック",
+  "previousTrick": "前のトリック",
+  "previousTrickEmpty": "このラウンドにはまだ前のトリックがありません",
+  "previousTrickWinner": "{{name}} が獲得",
   "leadBadge": "リード",
   "trickLegend": {
     "lead": "リードスート",

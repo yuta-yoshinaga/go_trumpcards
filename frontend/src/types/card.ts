@@ -4482,6 +4482,10 @@ export interface PitchResponse extends BaseGameResponse {
   bidWinnerIdx: number;
   trumpSuit: number;
   currentTrick: PitchTrickCard[];
+  /** Cards of the just-completed trick (empty on the round's first trick). */
+  lastTrick: PitchTrickCard[];
+  /** Winner index of the just-completed trick, or -1 when none. */
+  lastTrickWinner: number;
   gameEndFlag: boolean;
   winnerIdx: number;
   leadPlayerIdx: number;
