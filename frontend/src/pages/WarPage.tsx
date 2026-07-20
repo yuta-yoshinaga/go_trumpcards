@@ -20,6 +20,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
+import { useSound } from '../providers/SoundProvider';
 import { gameTheme } from '../styles/gameTheme';
 import type { WarResponse } from '../types/card';
 import { WarPhase } from '../types/phases';
@@ -110,6 +111,7 @@ function WarPageContent() {
     useGamePageSetup('war');
   const { state, loading, error, exec: execApi, retry } = useGameApi(warApi.exec);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const [maxRounds, setMaxRounds] = useState(DEFAULT_MAX_ROUNDS);
   const {
     hint: frontendHint,
@@ -135,8 +137,30 @@ function WarPageContent() {
   }, []);
   const handleReset = useCallback(() => {
     setAutoPlaying(false);
+    playSound('shuffle');
     return execApi('reset', { maxRounds });
-  }, [execApi, maxRounds]);
+  }, [execApi, maxRounds, playSound]);
+
+  // Play a card-resolution SFX each time a battle settles (RESOLVED) and a
+  // tension cue when a tie triggers a war (WAR_BURY). Tracks the previous phase
+  // so the sound fires on the transition, not on every re-render, and skips the
+  // initial mount. Muting is honored inside `playSound`.
+  const prevPhaseRef = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    const phase = state?.phase;
+    const prev = prevPhaseRef.current;
+    prevPhaseRef.current = phase;
+    if (phase === undefined || prev === undefined || prev === phase) return;
+    if (phase === WarPhase.RESOLVED) playSound('cardPlace');
+    else if (phase === WarPhase.WAR_BURY) playSound('chipClick');
+  }, [state?.phase, playSound]);
+
+  // Buzz once when a new error surfaces (e.g. a failed step/reset request).
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current) playSound('errorBuzz');
+    prevErrorRef.current = error;
+  }, [error, playSound]);
 
   // Latest state/speed read from a self-scheduling autoplay loop without
   // re-subscribing the effect on every render.
@@ -230,6 +254,7 @@ function WarPageContent() {
       gamePath="/war"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
+      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
