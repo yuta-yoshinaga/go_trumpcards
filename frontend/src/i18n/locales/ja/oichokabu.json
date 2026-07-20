@@ -32,6 +32,11 @@
   "payout": {
     "total": "合計配当"
   },
+  "dealerPolicy": {
+    "label": "親のドロー方針",
+    "drew": "親は目が規定値（{{threshold}}）以下だったため3枚目を引いた",
+    "stood": "親は目{{rank}}で規定値（{{threshold}}）を超えていたため引かなかった"
+  },
   "tutorial": {
     "betControls": "賭け金を入力してベットします",
     "actionButtons": "3枚目を引くか、このまま勝負するかを選びます",
