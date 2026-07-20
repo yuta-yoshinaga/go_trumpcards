@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fiveHundredApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -206,6 +206,34 @@ describe('FiveHundredPage', () => {
     expect(playBtn).toBeEnabled();
     fireEvent.click(playBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, jokerSuit: undefined }));
+  });
+
+  it('labels each current-trick card with its player name and marks the lead card', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        currentPlayerIdx: 3,
+        // Player 2 (CPU) led the trick, then the human (player 0) followed.
+        currentTrick: [
+          { playerIdx: 2, card: card('SPADE', 10) },
+          { playerIdx: 0, card: card('HEART', 9) },
+        ],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+
+    // Both cards carry a player-name label (scoped to the trick, not the CPU roster).
+    const trickCards = await screen.findAllByTestId('fh-trick-card');
+    expect(trickCards).toHaveLength(2);
+    expect(within(trickCards[0]).getByText(/CPU 2/)).toBeInTheDocument();
+    expect(within(trickCards[1]).getByText(/あなた/)).toBeInTheDocument();
+
+    // Exactly the lead (first) card shows the lead marker.
+    const leadBadges = screen.getAllByTestId('fh-trick-lead');
+    expect(leadBadges).toHaveLength(1);
+    expect(leadBadges[0]).toHaveTextContent('リード');
+    expect(trickCards[0]).toHaveAttribute('data-trick-lead', 'true');
+    expect(trickCards[1]).not.toHaveAttribute('data-trick-lead');
   });
 
   it('advances to the next trick', async () => {

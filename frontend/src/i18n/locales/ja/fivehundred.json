@@ -17,6 +17,7 @@
   "passed": "パス",
   "currentTrick": "現在のトリック",
   "trickEmpty": "(まだカードがありません)",
+  "lead": "リード",
   "tricksLabel": "トリック数",
   "selectTricks": "トリック数を選択 (6-10):",
   "misereButton": "ミゼール",
