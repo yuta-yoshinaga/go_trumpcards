@@ -155,6 +155,14 @@ describe('TexasHoldemBonusPage', () => {
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
+  it('previews the Play bet cost (2× ante) on the pre-flop button', async () => {
+    mockApi.mockResolvedValue(preFlopState);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    // anteBet 100 → flop Play bet = 2× = 200 chips.
+    const playButton = await screen.findByTestId('thb-play-button');
+    expect(playButton).toHaveTextContent('プレイ (2× = 200)');
+  });
+
   it('shows flop with check and raise buttons', async () => {
     mockApi.mockResolvedValueOnce(preFlopState).mockResolvedValueOnce(flopState);
     renderWithProviders(<TexasHoldemBonusPage />);
@@ -163,6 +171,18 @@ describe('TexasHoldemBonusPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /プレイ/ }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: /レイズ/ })).toBeInTheDocument();
+  });
+
+  it('previews the Raise bet cost (1× ante) on the flop and turn buttons', async () => {
+    mockApi.mockResolvedValueOnce(flopState).mockResolvedValueOnce(turnState);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    // anteBet 100 → each Raise = 1× = 100 chips, on both flop and turn.
+    const flopRaise = await screen.findByTestId('thb-raise-button');
+    expect(flopRaise).toHaveTextContent('レイズ (1× = 100)');
+
+    fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
+    const turnRaise = await screen.findByTestId('thb-raise-button');
+    expect(turnRaise).toHaveTextContent('レイズ (1× = 100)');
   });
 
   it('shows turn after flop check', async () => {

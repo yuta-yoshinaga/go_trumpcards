@@ -15,10 +15,10 @@
   },
   "button": {
     "bet": "Bet",
-    "play": "Play (2×)",
+    "play": "Play (2× = {{cost}})",
     "fold": "Fold",
     "check": "Check",
-    "raise": "Raise (1×)",
+    "raise": "Raise (1× = {{cost}})",
     "reset": "Reset"
   },
   "phase": {

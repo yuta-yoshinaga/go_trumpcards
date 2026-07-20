@@ -34,6 +34,11 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseTexasholdembonusCommand, TEXASHOLDEMBONUS_HELP } from '../utils/cli/commands/texasholdembonusCommands';
 import { formatTexasholdembonusState } from '../utils/cli/formatters/texasholdembonusFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import {
+  TEXASHOLDEMBONUS_FLOP_MULTIPLIER,
+  TEXASHOLDEMBONUS_RAISE_MULTIPLIER,
+  texasHoldemBonusBetCost,
+} from '../utils/texasHoldemBonusBet';
 
 /** Texas Hold'em Bonus Poker tutorial step definitions. */
 const THB_TUTORIAL_STEPS: TutorialStep[] = [
@@ -145,6 +150,11 @@ function TexasHoldemBonusPageContent() {
   const handleCheck = () => execApi('check');
   const handleRaise = () => execApi('raise');
   const handleReset = () => execApi('reset');
+
+  // Actual chips the Play (2× ante) and Raise (1× ante) bets will cost, shown on
+  // the button labels so the player sees the cost before committing.
+  const playCost = texasHoldemBonusBetCost(state.anteBet, TEXASHOLDEMBONUS_FLOP_MULTIPLIER);
+  const raiseCost = texasHoldemBonusBetCost(state.anteBet, TEXASHOLDEMBONUS_RAISE_MULTIPLIER);
 
   const phaseName = isBetPhase
     ? t('phase.bet')
@@ -371,8 +381,14 @@ function TexasHoldemBonusPageContent() {
             )}
             {isPreFlopPhase && (
               <div className="flex justify-center gap-2 pb-2" data-tutorial="thb-pre-flop-buttons">
-                <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
-                  {t('button.play')}
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={handlePlay}
+                  disabled={loading}
+                  data-testid="thb-play-button"
+                >
+                  {t('button.play', { cost: playCost })}
                 </button>
                 <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
                   {t('button.fold')}
@@ -384,8 +400,14 @@ function TexasHoldemBonusPageContent() {
                 <button type="button" className={btnSecondary} onClick={handleCheck} disabled={loading}>
                   {t('button.check')}
                 </button>
-                <button type="button" className={btnWarning} onClick={handleRaise} disabled={loading}>
-                  {t('button.raise')}
+                <button
+                  type="button"
+                  className={btnWarning}
+                  onClick={handleRaise}
+                  disabled={loading}
+                  data-testid="thb-raise-button"
+                >
+                  {t('button.raise', { cost: raiseCost })}
                 </button>
               </div>
             )}
