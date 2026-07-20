@@ -1,7 +1,8 @@
 {
   "button": {
     "step": "Play Card",
-    "autoplay": "Auto Play"
+    "autoplay": "Auto Play",
+    "stopAutoplay": "Stop"
   },
   "phase": {
     "play": "Playing",
@@ -21,7 +22,12 @@
   },
   "settings": {
     "maxRounds": "Max Rounds",
-    "maxRoundsHelp": "A cap that prevents the game from running indefinitely when penalty chains loop. The game ends when either player runs out of cards or the max round is reached."
+    "maxRoundsHelp": "A cap that prevents the game from running indefinitely when penalty chains loop. The game ends when either player runs out of cards or the max round is reached.",
+    "speed": "Playback speed",
+    "speedHelp": "How fast each play's animation runs while autoplaying. Faster races to the finish; slower lets each play out.",
+    "speedSlow": "Slow",
+    "speedNormal": "Normal",
+    "speedFast": "Fast"
   },
   "hint": {
     "playCard": "Play the next card",
