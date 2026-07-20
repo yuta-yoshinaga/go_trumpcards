@@ -177,6 +177,52 @@ describe('YanivPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawpickup', { end: 0 }));
   });
 
+  it('marks only the two ends of a discarded run as pickup-able in the draw phase', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: YanivPhase.DRAW,
+        pickupCards: [card('SPADE', 4), card('SPADE', 5), card('SPADE', 6)],
+      }),
+    );
+    renderWithProviders(<YanivPage />);
+    await screen.findByTestId('pickup-card-0');
+    // Guide text is shown for a multi-card discard.
+    expect(screen.getByTestId('pickup-hint')).toBeInTheDocument();
+    // Both ends carry a "take" badge; the middle card does not.
+    expect(screen.getByTestId('pickup-badge-0')).toBeInTheDocument();
+    expect(screen.getByTestId('pickup-badge-2')).toBeInTheDocument();
+    expect(screen.queryByTestId('pickup-badge-1')).not.toBeInTheDocument();
+    // The middle card is not clickable and is marked as such.
+    const middle = screen.getByTestId('pickup-card-1');
+    expect(middle).toBeDisabled();
+    expect(middle).toHaveAttribute('aria-disabled', 'true');
+    // Ends are actionable and take the correct discard end.
+    fireEvent.click(screen.getByTestId('pickup-card-2'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawpickup', { end: 1 }));
+  });
+
+  it('marks the single card of a single-card discard as pickup-able', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: YanivPhase.DRAW, pickupCards: [card('DIAMOND', 4)] }));
+    renderWithProviders(<YanivPage />);
+    await screen.findByTestId('pickup-card-0');
+    expect(screen.getByTestId('pickup-badge-0')).toBeInTheDocument();
+    // No middle-card guide for a lone card (no "ends only" ambiguity).
+    expect(screen.queryByTestId('pickup-hint')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('pickup-card-0'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawpickup', { end: 0 }));
+  });
+
+  it('does not mark pickup cards outside the human draw turn', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: YanivPhase.DISCARD, pickupCards: [card('SPADE', 4), card('SPADE', 6)] }),
+    );
+    renderWithProviders(<YanivPage />);
+    await screen.findByTestId('pickup-card-0');
+    expect(screen.queryByTestId('pickup-badge-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('pickup-hint')).not.toBeInTheDocument();
+    expect(screen.getByTestId('pickup-card-0')).toBeDisabled();
+  });
+
   it('shows the next-round button at round end', async () => {
     mockExec.mockResolvedValue(makeState({ phase: YanivPhase.ROUND_END, callerIdx: 0 }));
     renderWithProviders(<YanivPage />);
