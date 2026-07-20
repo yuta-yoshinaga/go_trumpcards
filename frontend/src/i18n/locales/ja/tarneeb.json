@@ -27,6 +27,7 @@
     "diamond": "ダイヤ"
   },
   "highestBid": "現在の最高ビッド",
+  "redeal": "リディール {{count}}回",
   "cards": "{{count}}枚",
   "bid": "ビッド {{n}}",
   "bidNone": "未ビッド",
