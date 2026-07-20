@@ -34,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { EIGHTOFF_HELP, parseEightOffCommand } from '../utils/cli/commands/eightoffCommands';
 import { formatEightoffState } from '../utils/cli/formatters/eightoffFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { eightOffFoundationTarget } from '../utils/eightOffFoundationTarget';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -172,6 +173,21 @@ function EightOffPageContent() {
     },
     [exec],
   );
+
+  // Double-click / double-tap shortcut: auto-send an exposed card (a column's
+  // top card or a free-cell card) straight to its foundation when a legal target
+  // exists; otherwise do nothing (single-click selection is left untouched).
+  // Mirrors the FreeCell / Easthaven foundation shortcut.
+  const handleFoundationShortcut = useCallback(
+    (source: EightOffMoveZone, card: Card) => {
+      if (!state) return;
+      const target = eightOffFoundationTarget(card, state.foundation);
+      if (!target) return;
+      dispatchMove(source, target);
+      playSound('cardPlace');
+    },
+    [state, dispatchMove, playSound],
+  );
   const dnd = useSolitaireDragDrop<EightOffMoveZone>({
     onMove: dispatchMove,
     isPlaying: !!isPlayingForKbd,
@@ -294,7 +310,14 @@ function EightOffPageContent() {
                         {card ? (
                           <button
                             type="button"
-                            onClick={() => handleSelectSource(freeCellZone)}
+                            onClick={(e) => {
+                              // The second click of a double-click also fires
+                              // onClick (detail === 2); ignore it so onDoubleClick
+                              // owns the foundation shortcut without a stray select.
+                              if (e.detail >= 2) return;
+                              handleSelectSource(freeCellZone);
+                            }}
+                            onDoubleClick={() => handleFoundationShortcut(freeCellZone, card)}
                             disabled={!isPlaying || loading}
                             aria-label={cardAlt(card)}
                             aria-pressed={isSourceSelected('freecell', undefined, idx)}
@@ -418,6 +441,7 @@ function EightOffPageContent() {
                               };
                               const stackSize = col.length - cardIdx;
                               const exceedsSupermove = stackSize > supermoveLimit;
+                              const isTopCard = cardIdx === col.length - 1;
                               const isInHoveredBlock =
                                 hoveredStack !== null &&
                                 hoveredStack.col === colIdx &&
@@ -432,13 +456,23 @@ function EightOffPageContent() {
                                   {card ? (
                                     <button
                                       type="button"
-                                      onClick={() => {
+                                      onClick={(e) => {
+                                        // The second click of a double-click also
+                                        // fires onClick (detail === 2); ignore it so
+                                        // onDoubleClick owns the foundation shortcut
+                                        // without a stray select/target move.
+                                        if (e.detail >= 2) return;
                                         if (selectedSource) {
                                           handleSelectTarget(tableauColZone);
                                         } else {
                                           handleSelectSource(cardZone);
                                         }
                                       }}
+                                      onDoubleClick={
+                                        // Only a column's exposed top card can move
+                                        // straight to a foundation.
+                                        isTopCard ? () => handleFoundationShortcut(cardZone, card) : undefined
+                                      }
                                       disabled={!isPlaying || loading}
                                       aria-label={cardAlt(card)}
                                       data-testid={`eo-tableau-${colIdx.toString()}-${cardIdx.toString()}`}
