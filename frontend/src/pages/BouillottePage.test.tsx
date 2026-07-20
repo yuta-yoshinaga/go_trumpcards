@@ -113,7 +113,7 @@ describe('BouillottePage', () => {
   it('shows the betting action buttons on the human betting turn', async () => {
     renderWithProviders(<BouillottePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'レイズ（ヴィ）' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /レイズ／ヴィ/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド（降りる）' })).toBeInTheDocument();
   });
 
@@ -127,7 +127,7 @@ describe('BouillottePage', () => {
 
   it('dispatches bet raise when the Raise button is clicked', async () => {
     renderWithProviders(<BouillottePage />);
-    const btn = await screen.findByRole('button', { name: 'レイズ（ヴィ）' });
+    const btn = await screen.findByRole('button', { name: /レイズ／ヴィ/ });
     mockExec.mockClear();
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 'raise'));
@@ -153,7 +153,7 @@ describe('BouillottePage', () => {
     mockExec.mockResolvedValue(makeBouillotteState({ phase: 0, isHumanTurn: true, canRaise: false }));
     renderWithProviders(<BouillottePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: 'レイズ（ヴィ）' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /レイズ／ヴィ/ })).not.toBeInTheDocument();
   });
 
   it('shows the next-round button at the result phase and dispatches nextround', async () => {
@@ -223,6 +223,34 @@ describe('BouillottePage', () => {
     expect(screen.getByTestId('hand-card-0').className).toContain('ring-ds-accent');
     expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-accent');
     expect(screen.getByTestId('hand-card-2').className).not.toContain('ring-ds-accent');
+  });
+
+  it('shows the pot odds and call amount when chips are owed to call', async () => {
+    // pot 40, currentBet 20, human roundBet 10 -> call 10 into pot 40:
+    // odds 10 / (40 + 10) = 20%, ratio 40:10 -> 4:1.
+    const oddsState = makeBouillotteState({
+      phase: 0,
+      isHumanTurn: true,
+      canRaise: true,
+      pot: 40,
+      currentBet: 20,
+    });
+    mockExec.mockResolvedValue(oddsState);
+    renderWithProviders(<BouillottePage />);
+    const odds = await screen.findByTestId('bouillotte-pot-odds');
+    expect(odds.textContent).toContain('20%');
+    expect(odds.textContent).toContain('4:1');
+    // The Call button spells out the required amount.
+    expect(screen.getByRole('button', { name: 'コール（10）' })).toBeInTheDocument();
+  });
+
+  it('shows the free-check state when nothing is owed to call', async () => {
+    // Default betting state: currentBet 10 equals the human's roundBet 10 -> call 0.
+    renderWithProviders(<BouillottePage />);
+    const odds = await screen.findByTestId('bouillotte-pot-odds');
+    expect(odds.textContent).toContain('コール不要');
+    // With nothing owed the Call button shows the plain label (no amount).
+    expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument();
   });
 
   it('does not highlight any card when no hand card matches the retourne', async () => {

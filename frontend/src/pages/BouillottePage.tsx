@@ -32,6 +32,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BouillotteResponse } from '../types/card';
 import { BouillottePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { computeBouillottePotOdds } from '../utils/bouillottePotOdds';
 import { analyzeRetourneMatch } from '../utils/bouillotteRetourne';
 import { BOUILLOTTE_HELP, parseBouillotteCommand } from '../utils/cli/commands/bouillotteCommands';
 import { formatBouillotteState } from '../utils/cli/formatters/bouillotteFormatter';
@@ -123,6 +124,11 @@ function BouillottePageContent() {
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanIdx = state.players.findIndex((p) => p.isHuman);
+
+  // Pot odds and chip costs facing the human at the Call/Raise/Fold decision.
+  const humanRoundBet = humanPlayer?.roundBet ?? 0;
+  const potOdds = computeBouillottePotOdds(state.pot, state.currentBet, humanRoundBet);
+  const raiseCost = Math.max(0, state.currentBet + state.ante - humanRoundBet);
 
   // Which of the human's cards share the retourne's rank, and any combo it completes.
   const retourneMatch = analyzeRetourneMatch(humanPlayer?.cards ?? [], state.retourne);
@@ -344,15 +350,29 @@ function BouillottePageContent() {
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
             )}
 
+            {isBettingPhase && isHumanTurn && !isGameEnd && (
+              <div className="mb-2 text-ds-text-muted text-sm" data-testid="bouillotte-pot-odds" aria-live="polite">
+                {potOdds.isFree
+                  ? t('potOdds.free')
+                  : t('potOdds.value', {
+                      call: potOdds.callAmount,
+                      pot: state.pot,
+                      percentage: potOdds.percentage,
+                      ratioPot: potOdds.ratioPot,
+                      ratioCall: potOdds.ratioCall,
+                    })}
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="bouillotte-action-buttons">
               {isBettingPhase && isHumanTurn && !isGameEnd && (
                 <>
                   <button type="button" className={btnPrimary} onClick={handleCall} disabled={loading}>
-                    {t('callButton')}
+                    {potOdds.isFree ? t('callButton') : t('callButtonAmount', { amount: potOdds.callAmount })}
                   </button>
                   {state.canRaise && (
                     <button type="button" className={btnSuccess} onClick={handleRaise} disabled={loading}>
-                      {t('raiseButton')}
+                      {t('raiseButtonAmount', { amount: raiseCost })}
                     </button>
                   )}
                   <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>

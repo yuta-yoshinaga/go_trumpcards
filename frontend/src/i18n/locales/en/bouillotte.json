@@ -38,8 +38,14 @@
     "highcard": "High card"
   },
   "callButton": "Call",
+  "callButtonAmount": "Call ({{amount}})",
   "raiseButton": "Raise (Vie)",
+  "raiseButtonAmount": "Raise / Vie ({{amount}})",
   "foldButton": "Fold",
+  "potOdds": {
+    "value": "Pot odds: call {{call}} into pot {{pot}} — {{percentage}}% ({{ratioPot}}:{{ratioCall}})",
+    "free": "No chips to call — you can stay in for free (check)."
+  },
   "nextRound": "Next Round",
   "roundResult": {
     "title": "Round Result",
