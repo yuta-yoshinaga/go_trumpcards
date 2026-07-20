@@ -11,6 +11,16 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { prsi: vi.fn() },
 }));
 
+const mockPlaySound = vi.fn();
+const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSound: () => mockSoundValue,
+  // AnimatedCard consumes useOptionalSound; return null so cards stay silent
+  // and only the page's explicit playSound calls are asserted.
+  useOptionalSound: () => null,
+}));
+
 const mockExec = vi.mocked(prsiApi.exec);
 
 const playPhaseState: PrsiResponse = {
@@ -73,6 +83,7 @@ const noDiscardState: PrsiResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
+  mockPlaySound.mockReset();
 });
 
 describe('PrsiPage', () => {
@@ -365,5 +376,60 @@ describe('PrsiPage', () => {
   it('renders accessible h1 heading', async () => {
     renderWithProviders(<PrsiPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  it('plays the card-place sound when a card is played', async () => {
+    renderWithProviders(<PrsiPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    mockPlaySound.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    expect(mockPlaySound).toHaveBeenCalledWith('cardPlace');
+  });
+
+  it('plays the shuffle sound when a card is drawn', async () => {
+    renderWithProviders(<PrsiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument());
+
+    mockPlaySound.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '引く' }));
+
+    expect(mockPlaySound).toHaveBeenCalledWith('shuffle');
+  });
+
+  it('plays the shuffle sound when drawing via the stock pile', async () => {
+    renderWithProviders(<PrsiPage />);
+    const stock = await screen.findByTestId('prsi-stock');
+
+    mockPlaySound.mockClear();
+    fireEvent.click(stock);
+
+    expect(mockPlaySound).toHaveBeenCalledWith('shuffle');
+  });
+
+  it('does not play the card-place sound when no single card is selected', async () => {
+    renderWithProviders(<PrsiPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    // No card selected: keyboard Enter triggers play, which must stay silent.
+    mockPlaySound.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+
+    expect(mockPlaySound).not.toHaveBeenCalledWith('cardPlace');
+  });
+
+  it('plays the error buzz when an action fails', async () => {
+    renderWithProviders(<PrsiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+    mockPlaySound.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('errorBuzz'));
   });
 });
