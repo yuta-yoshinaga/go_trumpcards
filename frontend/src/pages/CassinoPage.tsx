@@ -349,7 +349,15 @@ function CassinoPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
-            {frontendHintEnabled && frontendHint && (
+            {/*
+             * Single hint surface: the registry-driven advisory hint (`getCassinoHint`,
+             * mirroring the domain heuristic) and the selection-derived one-click
+             * suggestion are mutually exclusive. When the player's current selection
+             * already forms a concrete take/build, that actionable suggestion supersedes
+             * the generic advisory so only ONE piece of guidance is ever shown and the
+             * two can never contradict each other.
+             */}
+            {frontendHintEnabled && frontendHint && !suggestion && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
             )}
           </div>
