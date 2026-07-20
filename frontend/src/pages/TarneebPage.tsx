@@ -275,9 +275,12 @@ function TarneebPageContent() {
                 {t('trump')}: {TRUMP_LABELS[state.trumpSuit] ?? t('trumpUndeclared')}
               </span>
               {state.highestBid > 0 && (
-                <span>
+                <span className="mr-4">
                   {t('highestBid')}: {state.highestBid}
                 </span>
+              )}
+              {state.redealCount > 0 && (
+                <span data-testid="tarneeb-redeal-count">{t('redeal', { count: state.redealCount })}</span>
               )}
             </div>
 

@@ -75,6 +75,20 @@ describe('TarneebPage', () => {
     expect(screen.queryByRole('button', { name: 'trump-1' })).not.toBeInTheDocument();
   });
 
+  it('shows the redeal count in the round info when a redeal has occurred', async () => {
+    mockExec.mockResolvedValue(makeState({ redealCount: 2 }));
+    renderWithProviders(<TarneebPage />);
+    const redeal = await screen.findByTestId('tarneeb-redeal-count');
+    expect(redeal).toHaveTextContent('リディール 2回');
+  });
+
+  it('hides the redeal count when no redeal has occurred', async () => {
+    mockExec.mockResolvedValue(makeState({ redealCount: 0 }));
+    renderWithProviders(<TarneebPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
+    expect(screen.queryByTestId('tarneeb-redeal-count')).not.toBeInTheDocument();
+  });
+
   it('labels the human team and opponents and shows round tricks + total per team', async () => {
     const { container } = renderWithProviders(<TarneebPage />);
     await waitFor(() => expect(container.querySelector('[data-tutorial="tn-score-table"] table')).not.toBeNull());
