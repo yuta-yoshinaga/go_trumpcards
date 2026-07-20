@@ -45,7 +45,12 @@
     "cpuDifficulty": "CPU難易度",
     "easy": "簡単",
     "normal": "普通",
-    "hard": "難しい"
+    "hard": "難しい",
+    "cpuSpeed": "CPU速度",
+    "cpuSpeedHelp": "CPUがカードを出す間隔を切り替えます。速いほど競争が厳しくなります（ゆっくり=1200ms / ふつう=700ms / はやい=400ms）。",
+    "speedSlow": "ゆっくり",
+    "speedNormal": "ふつう",
+    "speedFast": "はやい"
   },
   "tutorial": {
     "intro": "Nertzは複数プレイヤーが同時に進める対戦型ソリティアです。",

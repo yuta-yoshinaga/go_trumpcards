@@ -3,6 +3,7 @@ import { type NertzMoveZone, nertzApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -28,8 +29,32 @@ import { NERTZ_HELP, parseNertzCommand } from '../utils/cli/commands/nertzComman
 import { formatNertzState } from '../utils/cli/formatters/nertzFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 
-/** CPU tick interval in milliseconds while the round is active. */
-const NERTZ_TICK_INTERVAL_MS = 700;
+/** CPU cadence presets — faster ticks make the CPUs harder to out-race. */
+type NertzCpuSpeed = 'slow' | 'normal' | 'fast';
+
+/**
+ * CPU tick interval (ms) per speed preset while the round is active. A smaller
+ * interval advances the CPUs more often, raising the real-time difficulty;
+ * `normal` (700ms) preserves the historical default for backward compatibility.
+ */
+const NERTZ_TICK_INTERVAL_MS: Record<NertzCpuSpeed, number> = {
+  slow: 1200,
+  normal: 700,
+  fast: 400,
+};
+
+const NERTZ_CPU_SPEED_STORAGE_KEY = 'nertz:cpuSpeed';
+
+/** Read the persisted CPU speed, falling back to `normal` when unset/invalid. */
+function loadNertzCpuSpeed(): NertzCpuSpeed {
+  try {
+    const v = localStorage.getItem(NERTZ_CPU_SPEED_STORAGE_KEY);
+    if (v === 'slow' || v === 'normal' || v === 'fast') return v;
+  } catch {
+    // localStorage may be unavailable (private mode / SSR); fall through to default.
+  }
+  return 'normal';
+}
 
 /** Duration to leave the collision shake/red-ring on a rejected foundation. */
 const NERTZ_COLLISION_FEEDBACK_MS = 500;
@@ -107,18 +132,31 @@ function NertzPageContent() {
   });
 
   const [selection, setSelection] = useState<Selection>(null);
+  const [cpuSpeed, setCpuSpeed] = useState<NertzCpuSpeed>(loadNertzCpuSpeed);
+
+  const handleSelectCpuSpeed = useCallback((v: string) => {
+    const speed: NertzCpuSpeed = v === 'slow' || v === 'fast' ? v : 'normal';
+    setCpuSpeed(speed);
+    try {
+      localStorage.setItem(NERTZ_CPU_SPEED_STORAGE_KEY, speed);
+    } catch {
+      // Persistence is best-effort; ignore storage failures.
+    }
+  }, []);
 
   useMountReset(apiCall);
 
-  // CPU tick driver: while the round is active, periodically advance CPUs.
+  // CPU tick driver: while the round is active, periodically advance CPUs. The
+  // interval is scaled by the chosen speed preset; changing the speed restarts
+  // the timer so the new cadence takes effect from the next tick.
   useEffect(() => {
     if (!state) return;
     if (state.phase !== NertzPhase.PLAYING) return;
     const id = window.setInterval(() => {
       void apiCall('tick');
-    }, NERTZ_TICK_INTERVAL_MS);
+    }, NERTZ_TICK_INTERVAL_MS[cpuSpeed]);
     return () => window.clearInterval(id);
-  }, [state, apiCall]);
+  }, [state, apiCall, cpuSpeed]);
 
   const human = state?.players[0];
   const isHumanTurn = state?.phase === NertzPhase.PLAYING;
@@ -567,6 +605,30 @@ function NertzPageContent() {
                 </div>
               </div>
             </div>
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select' as const,
+                      id: 'nertzCpuSpeed',
+                      testId: 'nertz-cpu-speed-select',
+                      label: t('settings.cpuSpeed'),
+                      tooltip: t('settings.cpuSpeedHelp'),
+                      value: cpuSpeed,
+                      options: [
+                        { value: 'slow', label: t('settings.speedSlow') },
+                        { value: 'normal', label: t('settings.speedNormal') },
+                        { value: 'fast', label: t('settings.speedFast') },
+                      ],
+                      onSelect: handleSelectCpuSpeed,
+                    },
+                  ],
+                },
+              ]}
+            />
 
             <ActionLogSection
               isEndPhase={isGameEnd || isRoundEnd}
