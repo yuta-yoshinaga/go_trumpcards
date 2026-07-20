@@ -102,6 +102,23 @@ describe('LooPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('decide', { play: false }));
   });
 
+  it('shows the pot reward and loo risk at the decide phase', async () => {
+    // Default deal pot/potStart = 12 → win up to +12 (+2 per trick), loo penalty -12.
+    mockExec.mockResolvedValue(decidePhaseState);
+    renderWithProviders(<LooPage />);
+    const potRisk = await screen.findByTestId('loo-pot-risk');
+    expect(potRisk).toHaveTextContent('+12');
+    expect(potRisk).toHaveTextContent('+2');
+    expect(potRisk).toHaveTextContent('-12');
+  });
+
+  it('does not show the pot-risk block outside the human decide turn', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<LooPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByTestId('loo-pot-risk')).not.toBeInTheDocument();
+  });
+
   it('shows a CPU decide notice on a CPU decide turn', async () => {
     mockExec.mockResolvedValue(cpuDecideState);
     renderWithProviders(<LooPage />);

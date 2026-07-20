@@ -22,6 +22,11 @@
   "decideCpu": "CPU {{id}} is deciding…",
   "decidePlay": "Play",
   "decidePass": "Pass",
+  "potRisk": {
+    "label": "If you play",
+    "win": "Win: up to +{{pot}} ( +{{perTrick}} per trick )",
+    "loss": "No trick: -{{penalty}} into the pot (looed)"
+  },
   "statusPlay": "In",
   "statusPass": "Out",
   "cards": "{{count}} cards",
