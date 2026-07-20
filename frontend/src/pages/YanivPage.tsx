@@ -25,6 +25,7 @@ import type { YanivResponse } from '../types/card';
 import { YanivPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { classifyYanivDiscard } from '../utils/yanivCombos';
 
 type YanivArgs = Parameters<typeof yanivApi.exec>;
 
@@ -179,6 +180,13 @@ function YanivPageContent() {
         ? t('phase.discard')
         : t('phase.draw');
   const pickup = state.pickupCards;
+
+  // Pre-validate the selected discard combination on the client (warn-only;
+  // the server still validates). Mirrors the domain `YanivValidCombo`.
+  const selectedCards = selected.map((i) => human.cards[i]).filter((c): c is NonNullable<typeof c> => c != null);
+  const discardCheck =
+    isDiscard && isHumanTurn && selectedCards.length > 0 ? classifyYanivDiscard(selectedCards) : null;
+  const discardWarning = discardCheck?.reasonKey ? t(discardCheck.reasonKey) : null;
 
   return (
     <GamePageShell
@@ -351,11 +359,17 @@ function YanivPageContent() {
           />
 
           <GameFooter className={`${gameTheme.yaniv.footer} px-4 py-2.5`}>
+            {discardWarning && (
+              <div role="status" data-testid="discard-warning" className="mb-2 text-center text-xs text-ds-warning">
+                ⚠️ {discardWarning}
+              </div>
+            )}
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="y-action-buttons">
               <button
                 type="button"
                 onClick={handleDiscard}
                 disabled={loading || !isHumanTurn || !isDiscard || selected.length === 0}
+                title={discardWarning ?? undefined}
                 className="px-4 py-2 rounded-lg bg-ds-success text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="discard-button"
               >
