@@ -130,7 +130,7 @@ test.describe('Chinese Poker E2E', () => {
     await navigateTo(page, '/chinesepoker');
 
     // BET phase: click ベット
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = page.getByRole('button', { name: 'ベット', exact: true });
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -171,6 +171,6 @@ test.describe('Chinese Poker E2E', () => {
     // Reset back to bet phase
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'ベット', exact: true })).toBeVisible();
   });
 });
