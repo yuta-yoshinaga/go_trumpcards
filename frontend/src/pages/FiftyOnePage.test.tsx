@@ -20,6 +20,14 @@ vi.mock('../api/gameApi', () => ({
   fiftyoneApi: { exec: (...args: unknown[]) => mockExec(...args) },
 }));
 
+const mockPlaySound = vi.fn();
+const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSound: () => mockSoundValue,
+  useOptionalSound: () => mockSoundValue,
+}));
+
 const baseState: FiftyOneResponse = {
   players: [
     {
@@ -177,6 +185,43 @@ describe('FiftyOnePage', () => {
     renderWithProviders(<FiftyOnePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByText(/を選択してください/)).not.toBeInTheDocument();
+  });
+
+  it('plays a card-place sound when exchanging all cards', async () => {
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByTestId('exchange-all-button'));
+    expect(mockPlaySound).toHaveBeenCalledWith('cardPlace');
+  });
+
+  it('plays a card-place sound when exchanging a single selected card', async () => {
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    mockPlaySound.mockClear();
+    fireEvent.click(screen.getByTestId('exchange-button'));
+    expect(mockPlaySound).toHaveBeenCalledWith('cardPlace');
+  });
+
+  it('plays a chip-click sound when calling stop', async () => {
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByTestId('stop-button'));
+    expect(mockPlaySound).toHaveBeenCalledWith('chipClick');
+  });
+
+  it('plays an error buzz when the api call fails', async () => {
+    mockExec.mockRejectedValueOnce(new Error('boom'));
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('errorBuzz'));
   });
 
   it('renders suit score badges and highlights the leading suit', async () => {

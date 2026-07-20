@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fiftyoneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -20,6 +20,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
+import { useSound } from '../providers/SoundProvider';
 import { gameTheme } from '../styles/gameTheme';
 import type { FiftyOneResponse } from '../types/card';
 import { FiftyOnePhase } from '../types/phases';
@@ -72,6 +73,7 @@ function FiftyOnePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('fiftyone');
   const { state, loading, error, exec: execApi, retry } = useGameApi(fiftyoneApi.exec);
+  const { playSound } = useSound();
   const { cardWidth } = useCardDimensions();
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
   const [selectedHandIdx, setSelectedHandIdx] = useState<number | null>(null);
@@ -86,21 +88,33 @@ function FiftyOnePageContent() {
 
   const handleExchange = useCallback(() => {
     if (selectedHandIdx !== null && selectedTableIdx !== null) {
+      playSound('cardPlace');
       execApi('play', { handIdx: selectedHandIdx, tableIdx: selectedTableIdx });
       setSelectedHandIdx(null);
       setSelectedTableIdx(null);
     }
-  }, [execApi, selectedHandIdx, selectedTableIdx]);
+  }, [execApi, playSound, selectedHandIdx, selectedTableIdx]);
 
   const handleExchangeAll = useCallback(() => {
+    playSound('cardPlace');
     execApi('exchangeall');
     setSelectedHandIdx(null);
     setSelectedTableIdx(null);
-  }, [execApi]);
+  }, [execApi, playSound]);
 
-  const handleStop = useCallback(() => execApi('stop'), [execApi]);
+  const handleStop = useCallback(() => {
+    playSound('chipClick');
+    return execApi('stop');
+  }, [execApi, playSound]);
 
   useMountReset(execApi);
+
+  // Buzz once on the error appearance edge so a fast follow-up doesn't swallow it.
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && !prevErrorRef.current) playSound('errorBuzz');
+    prevErrorRef.current = error;
+  }, [error, playSound]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fiftyone');
@@ -175,6 +189,7 @@ function FiftyOnePageContent() {
       gamePath="/fiftyone"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
+      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
