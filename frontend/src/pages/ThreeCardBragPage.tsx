@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseThreeCardBragCommand, THREE_CARD_BRAG_HELP } from '../utils/cli/commands/threeCardBragCommands';
 import { formatThreeCardBragState } from '../utils/cli/formatters/threeCardBragFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { clampThreeCardBragRaise, threeCardBragRaiseBounds } from '../utils/threeCardBragRaise';
 
 /** Three Card Brag tutorial step definitions. */
 const THREE_CARD_BRAG_TUTORIAL_STEPS: TutorialStep[] = [
@@ -108,11 +109,27 @@ function ThreeCardBragPageContent() {
   // Raise stake amount (local UI state).
   const [raiseStake, setRaiseStake] = useState(2);
 
+  // Raise bounds mirror the CUI (ThreeCardBragCuiPresenter.threeCardBragRaiseRangeStr):
+  // min = stake + 1; max = affordable ceiling (Seen players pay double, halving it).
+  const humanForBounds = state?.players.find((p) => p.isHuman);
+  const {
+    min: raiseMin,
+    max: raiseMax,
+    canRaise,
+  } = threeCardBragRaiseBounds(state?.stake ?? 0, humanForBounds?.chips ?? 0, humanForBounds?.seen ?? false);
+
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
     reset();
   }, []);
+
+  // Keep the raise amount synced to the current stake/chip bounds: when the
+  // stake rises (or chips/seen change) re-clamp so it never sits below min or
+  // above the affordable max.
+  useEffect(() => {
+    setRaiseStake((a) => clampThreeCardBragRaise(a, raiseMin, raiseMax));
+  }, [raiseMin, raiseMax]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('threecardbrag');
@@ -340,12 +357,12 @@ function ThreeCardBragPageContent() {
                   <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                     {t('betButton', { amount: state.stake })}
                   </button>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1" data-testid="tcb-raise-controls">
                     <button
                       type="button"
                       className={btnSecondary}
-                      onClick={() => setRaiseStake((a) => Math.max(state.stake + 1, a - 1))}
-                      disabled={loading}
+                      onClick={() => setRaiseStake((a) => clampThreeCardBragRaise(a - 1, raiseMin, raiseMax))}
+                      disabled={loading || !canRaise || raiseStake <= raiseMin}
                       aria-label={t('raiseDecrease')}
                     >
                       −
@@ -360,8 +377,8 @@ function ThreeCardBragPageContent() {
                     <button
                       type="button"
                       className={btnSecondary}
-                      onClick={() => setRaiseStake((a) => a + 1)}
-                      disabled={loading}
+                      onClick={() => setRaiseStake((a) => clampThreeCardBragRaise(a + 1, raiseMin, raiseMax))}
+                      disabled={loading || !canRaise || raiseStake >= raiseMax}
                       aria-label={t('raiseIncrease')}
                     >
                       ＋
@@ -370,10 +387,13 @@ function ThreeCardBragPageContent() {
                       type="button"
                       className={btnWarning}
                       onClick={() => handleRaise(raiseStake)}
-                      disabled={loading}
+                      disabled={loading || !canRaise || raiseStake < raiseMin || raiseStake > raiseMax}
                     >
                       {t('raiseButton', { amount: raiseStake })}
                     </button>
+                    <span className="text-ds-text-muted text-xs ml-1" data-testid="tcb-raise-range">
+                      {canRaise ? t('raiseRange', { min: raiseMin, max: raiseMax }) : t('raiseUnavailable')}
+                    </span>
                   </div>
                   <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
                     {t('foldButton')}
