@@ -34,6 +34,10 @@
   "drawStockButton": "Draw from stock",
   "drawDiscardButton": "Pick up discard",
   "meldButton": "Meld",
+  "meldPoints": {
+    "initial": "Min initial meld: {{min}} / selected: {{points}}",
+    "selected": "Selected: {{points}}"
+  },
   "skipMeldButton": "Skip",
   "discardButton": "Discard",
   "goOutButton": "Go out",

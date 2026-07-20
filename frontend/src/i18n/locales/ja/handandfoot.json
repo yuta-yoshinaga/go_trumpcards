@@ -34,6 +34,10 @@
   "drawStockButton": "山札から引く",
   "drawDiscardButton": "捨て札を取る",
   "meldButton": "メルドする",
+  "meldPoints": {
+    "initial": "初回メルド最低点: {{min}} / 選択合計: {{points}}",
+    "selected": "選択合計: {{points}}"
+  },
   "skipMeldButton": "スキップ",
   "discardButton": "捨てる",
   "goOutButton": "上がる",
