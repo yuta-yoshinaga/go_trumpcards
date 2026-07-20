@@ -10,6 +10,7 @@
   "giveup": "Give up",
   "hint": "Hint",
   "undo": "Undo",
+  "autoComplete": "Auto Complete",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "result": {
@@ -43,6 +44,7 @@
     "title": "Keyboard shortcuts",
     "move": "Move the pile selection",
     "merge": "Merge the selected pile 1 or 3 piles to the left",
+    "autoComplete": "Auto-play the recommended merges in sequence",
     "hint": "Show a hint",
     "undo": "Undo one move",
     "giveup": "Give up",
