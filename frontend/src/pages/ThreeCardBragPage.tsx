@@ -35,7 +35,11 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseThreeCardBragCommand, THREE_CARD_BRAG_HELP } from '../utils/cli/commands/threeCardBragCommands';
 import { formatThreeCardBragState } from '../utils/cli/formatters/threeCardBragFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { clampThreeCardBragRaise, threeCardBragRaiseBounds } from '../utils/threeCardBragRaise';
+import {
+  clampThreeCardBragRaise,
+  threeCardBragActualCost,
+  threeCardBragRaiseBounds,
+} from '../utils/threeCardBragRaise';
 
 /** Three Card Brag tutorial step definitions. */
 const THREE_CARD_BRAG_TUTORIAL_STEPS: TutorialStep[] = [
@@ -169,6 +173,13 @@ function ThreeCardBragPageContent() {
   const isHumanTurn = state.isHumanTurn;
   const isHumanBetTurn = isBettingPhase && isHumanTurn;
 
+  // Actual chips the human pays: a Seen player pays double the nominal stake
+  // (matches the domain's callCost rule in ThreeCardBrag.go). Surface the real
+  // cost on the Bet/Raise buttons so a Seen player isn't surprised by the 2x.
+  const humanSeen = humanPlayer?.seen ?? false;
+  const betCost = threeCardBragActualCost(state.stake, humanSeen);
+  const raiseCost = threeCardBragActualCost(raiseStake, humanSeen);
+
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
 
   const handName = (key?: string): string => (key ? t(`hand.${key.toLowerCase()}`, { defaultValue: key }) : '');
@@ -249,7 +260,12 @@ function ThreeCardBragPageContent() {
             </div>
 
             {isHumanBetTurn && (
-              <div className="text-ds-text-muted text-center mb-2 text-sm font-semibold">{t('betNotice')}</div>
+              <>
+                <div className="text-ds-text-muted text-center mb-2 text-sm font-semibold">{t('betNotice')}</div>
+                <div className="text-ds-text-muted text-center mb-2 text-xs" data-testid="tcb-cost-notice">
+                  {humanSeen ? t('costNotice.seen', { cost: betCost }) : t('costNotice.blind', { cost: betCost })}
+                </div>
+              </>
             )}
 
             {/* Players */}
@@ -355,7 +371,7 @@ function ThreeCardBragPageContent() {
                     </button>
                   )}
                   <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
-                    {t('betButton', { amount: state.stake })}
+                    {t('betButton', { amount: betCost })}
                   </button>
                   <div className="flex items-center gap-1" data-testid="tcb-raise-controls">
                     <button
@@ -389,7 +405,7 @@ function ThreeCardBragPageContent() {
                       onClick={() => handleRaise(raiseStake)}
                       disabled={loading || !canRaise || raiseStake < raiseMin || raiseStake > raiseMax}
                     >
-                      {t('raiseButton', { amount: raiseStake })}
+                      {t('raiseButton', { amount: raiseCost })}
                     </button>
                     <span className="text-ds-text-muted text-xs ml-1" data-testid="tcb-raise-range">
                       {canRaise ? t('raiseRange', { min: raiseMin, max: raiseMax }) : t('raiseUnavailable')}

@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { clampThreeCardBragRaise, threeCardBragRaiseBounds } from './threeCardBragRaise';
+import { clampThreeCardBragRaise, threeCardBragActualCost, threeCardBragRaiseBounds } from './threeCardBragRaise';
+
+describe('threeCardBragActualCost', () => {
+  it('charges a Blind player the nominal stake', () => {
+    expect(threeCardBragActualCost(20, false)).toBe(20);
+  });
+
+  it('charges a Seen player double the nominal stake', () => {
+    expect(threeCardBragActualCost(20, true)).toBe(40);
+  });
+
+  it('returns 0 for a zero stake regardless of seen status', () => {
+    expect(threeCardBragActualCost(0, true)).toBe(0);
+    expect(threeCardBragActualCost(0, false)).toBe(0);
+  });
+});
 
 describe('threeCardBragRaiseBounds', () => {
   it('sets min to stake + 1', () => {
