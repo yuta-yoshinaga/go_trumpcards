@@ -334,10 +334,14 @@ function FlowerGardenPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="flex gap-2 sm:gap-3 items-start justify-center mb-3">
-              <div className="flex flex-wrap gap-1 sm:gap-2 items-start" data-tutorial="fg-reserve">
-                <span className="self-center text-game-text-muted text-xs mr-1">{t('reserve')}</span>
-                {state.reserve.map((_, idx) => renderReserveCell(idx))}
+            <div className="flex flex-wrap gap-2 sm:gap-3 items-start justify-center mb-3">
+              <div className="flex flex-col gap-1" data-tutorial="fg-reserve">
+                <span className="text-game-text-muted text-xs">{t('reserve')}</span>
+                {/* 16 bouquet cards laid out as a grid (4 cols on mobile, 8 on sm+) so every
+                    slot stays clearly visible instead of cramming into one wrapping row (#3283). */}
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 sm:gap-2 justify-items-center">
+                  {state.reserve.map((_, idx) => renderReserveCell(idx))}
+                </div>
               </div>
 
               <div className="flex items-start gap-1 sm:gap-2" data-tutorial="fg-foundation">

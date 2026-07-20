@@ -102,6 +102,21 @@ describe('FlowerGardenPage', () => {
     }
   });
 
+  it('lays the 16-card bouquet out as a responsive grid (4 cols mobile, 8 cols sm+)', async () => {
+    mockExec.mockResolvedValue(playingState);
+    const { container } = renderWithProviders(<FlowerGardenPage />);
+    await waitFor(() => expect(screen.getByText('#0')).toBeInTheDocument());
+    // The reserve slots live in a responsive grid so all 16 stay visible on mobile
+    // instead of wrapping into a single cramped flex row (#3283).
+    const grid = container.querySelector('[data-tutorial="fg-reserve"] .grid');
+    expect(grid).not.toBeNull();
+    expect(grid).toHaveClass('grid-cols-4', 'sm:grid-cols-8');
+    // All 16 bouquet slots render inside the grid.
+    for (let i = 0; i < 16; i++) {
+      expect(screen.getByText(`#${i}`)).toBeInTheDocument();
+    }
+  });
+
   it('selecting a reserve card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FlowerGardenPage />);
