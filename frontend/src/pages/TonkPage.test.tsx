@@ -170,6 +170,30 @@ describe('TonkPage', () => {
     expect(screen.getByTestId('tonk-hand-2')).not.toHaveAttribute('data-meld');
   });
 
+  const drawPhaseState = () => makeState({ phase: TonkPhase.DRAW });
+
+  it('draws from the discard pile when its top card is clicked on the human draw turn', async () => {
+    mockExec.mockResolvedValue(drawPhaseState());
+    renderWithProviders(<TonkPage />);
+    const pile = await screen.findByTestId('tonk-discard-pile');
+    expect(pile).not.toBeDisabled();
+    expect(pile.className).toContain('ring-ds-info');
+    mockExec.mockClear();
+    fireEvent.click(pile);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard'));
+  });
+
+  it('does not draw from the discard pile when it is not the draw phase', async () => {
+    // Default makeState() is the DISCARD phase → the pile is inert/disabled.
+    renderWithProviders(<TonkPage />);
+    const pile = await screen.findByTestId('tonk-discard-pile');
+    expect(pile).toBeDisabled();
+    expect(pile.className).not.toContain('ring-ds-info');
+    mockExec.mockClear();
+    fireEvent.click(pile);
+    expect(mockExec).not.toHaveBeenCalledWith('drawdiscard');
+  });
+
   it('clears the warning when opponents drop back above the threshold', async () => {
     // First render: opponent at 2 → warning on.
     mockExec.mockResolvedValueOnce(

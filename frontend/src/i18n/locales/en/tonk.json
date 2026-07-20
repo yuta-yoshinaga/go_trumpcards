@@ -25,6 +25,7 @@
   "scoresTotal": "Total",
   "drawStockButton": "Draw Stock",
   "drawDiscardButton": "Draw Discard",
+  "drawDiscardCardLabel": "Draw from discard: {{card}}",
   "discardButton": "Discard",
   "knockButton": "Knock",
   "knockUndercutWarning": "Opponent's hand is low — undercut risk is high",
