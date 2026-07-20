@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { piquetApi } from '../api/gameApi';
+import { actionLogApi, piquetApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PiquetResponse } from '../types/card';
 import { PiquetDeclarationKind, PiquetExchangeTurn, PiquetPhase } from '../types/phases';
@@ -12,6 +12,7 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(piquetApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.piquet);
 
 function makeState(overrides: Partial<PiquetResponse> = {}): PiquetResponse {
   return {
@@ -274,5 +275,24 @@ describe('PiquetPage', () => {
     renderWithProviders(<PiquetPage />);
     const hint = await screen.findByTestId('piquet-hint');
     expect(hint).toHaveTextContent('1, 2');
+  });
+
+  it('does not show the action log view button before the partie ends', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: PiquetPhase.PLAY }));
+    renderWithProviders(<PiquetPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByRole('button', { name: '棋譜を見る' })).not.toBeInTheDocument();
+  });
+
+  it('shows the action log view button at game end and renders fetched entries on click', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: PiquetPhase.GAME_END, gameEndFlag: true, winnerIdx: 0 }));
+    mockActionLog.mockResolvedValue({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'play', detail: 'plays a card' }],
+    });
+    renderWithProviders(<PiquetPage />);
+    const viewBtn = await screen.findByRole('button', { name: '棋譜を見る' });
+    fireEvent.click(viewBtn);
+    await waitFor(() => expect(mockActionLog).toHaveBeenCalled());
+    expect(await screen.findByText(/plays a card/)).toBeInTheDocument();
   });
 });
