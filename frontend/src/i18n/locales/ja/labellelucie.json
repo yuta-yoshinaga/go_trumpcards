@@ -9,6 +9,7 @@
   "fan": "扇",
   "redealsLeft": "残りシャッフル: {{count}}",
   "stuckRedeal": "手詰まり: 再ディール推奨",
+  "stuckDeadlock": "これ以上動かせる手がありません。ギブアップしますか？",
   "redealsLeftBadge": "残り{{count}}回",
   "moveCount": "手数: {{count}}",
   "redeal": "集めて配り直す",

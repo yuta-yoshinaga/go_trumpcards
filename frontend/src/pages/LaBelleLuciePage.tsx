@@ -88,9 +88,13 @@ function LaBelleLuciePageContent() {
   const isOver = state.phase === LaBelleLuciePhase.GAME_OVER;
   const isEnd = isClear || isOver;
   const canAct = !isEnd;
+  const hasLegalMove = labelleLucieHasLegalMove(state.fans, state.foundation);
   // No legal move left but redeals remain: recommend a redeal before the
   // player wastes time hunting for a move that does not exist.
-  const stuck = canAct && state.redealsLeft > 0 && !labelleLucieHasLegalMove(state.fans, state.foundation);
+  const stuck = canAct && state.redealsLeft > 0 && !hasLegalMove;
+  // No legal move left and redeals are exhausted: a true deadlock. Guide the
+  // player to give up instead of hunting for a move that cannot exist.
+  const deadlocked = canAct && state.redealsLeft <= 0 && !hasLegalMove;
   const phaseName = phaseNames[state.phase] ?? '';
 
   const handleReset = () => {
@@ -242,6 +246,15 @@ function LaBelleLuciePageContent() {
             </span>
           </div>
         )}
+        {deadlocked && (
+          <div
+            className="mt-1 flex items-center gap-2 text-ds-danger text-sm font-medium"
+            role="status"
+            data-testid="ll-deadlock-banner"
+          >
+            <span>{t('stuckDeadlock')}</span>
+          </div>
+        )}
         {canAct && (
           <div className="mt-1 text-ds-text-primary text-xs">
             {selected === null ? t('selectSource') : t('selectDestination')}
@@ -308,7 +321,7 @@ function LaBelleLuciePageContent() {
           {canAct && (
             <button
               type="button"
-              className={btnSecondary}
+              className={`${btnSecondary}${deadlocked ? ' motion-safe:animate-pulse' : ''}`}
               onClick={() => exec('giveup')}
               disabled={loading}
               data-testid="giveup-button"
