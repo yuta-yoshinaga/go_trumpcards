@@ -43,6 +43,11 @@
   "ruleHintLabel": "ヒント",
   "sayWordButton": "発言する",
   "sayWordPlaceholder": "唱える言葉を入力…",
+  "sayWordHistory": {
+    "title": "発話履歴 ({{count}})",
+    "correct": "正解",
+    "penalty": "ペナルティ"
+  },
   "playPhase": "カードを出すか、山札から引いてください",
   "chooseSuitPhase": "スートを選択してください",
   "mustDeclarePhase": "手札が残り1枚！「マオ！」と宣言してください",
