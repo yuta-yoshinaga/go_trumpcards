@@ -3,6 +3,7 @@ import { chinesepokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -123,6 +124,10 @@ function ChinesePokerPageContent() {
   const isSetHandsPhase = state?.phase === ChinesePokerPhase.SET_HANDS;
   const isEndPhase = state?.phase === ChinesePokerPhase.END;
 
+  // Validate the staged bet: must be a positive multiple of 10 within the balance.
+  const betInvalid =
+    Number.isNaN(betAmount) || betAmount < 10 || betAmount % 10 !== 0 || betAmount > (state?.chips ?? 0);
+
   const frontIndices = useMemo(
     () => assignments.map((a, i) => (a === 'front' ? i : -1)).filter((i) => i >= 0),
     [assignments],
@@ -167,7 +172,7 @@ function ChinesePokerPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase },
+      { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase && !betInvalid },
       {
         key: 's',
         action: () => {
@@ -177,7 +182,7 @@ function ChinesePokerPageContent() {
       },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
     ],
-    [execApi, betAmount, frontIndices, middleIndices, isBetPhase, isSetHandsPhase, isEndPhase, canSet],
+    [execApi, betAmount, betInvalid, frontIndices, middleIndices, isBetPhase, isSetHandsPhase, isEndPhase, canSet],
   );
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
@@ -428,22 +433,25 @@ function ChinesePokerPageContent() {
             />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="cp-bet-controls">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="cp-bet-amount" className="text-ds-text-primary text-sm">
-                    {t('label.bet')}
-                  </label>
-                  <input
-                    id="cp-bet-amount"
-                    type="number"
-                    min={10}
-                    max={state.chips}
-                    step={10}
-                    value={betAmount}
-                    onChange={(e) => setBetAmount(Number(e.target.value))}
-                    className="w-24 px-2 py-1 rounded text-sm"
-                  />
-                </div>
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <ChipBetInput
+                  id="cp-bet-amount"
+                  label={t('label.bet')}
+                  value={betAmount}
+                  onChange={setBetAmount}
+                  min={10}
+                  max={state.chips}
+                  step={10}
+                  disabled={loading}
+                  showSteppers
+                  invalid={betInvalid}
+                  describedBy={betInvalid ? 'cp-bet-error' : undefined}
+                />
+                {betInvalid && (
+                  <p id="cp-bet-error" role="alert" className="text-ds-error text-xs">
+                    {t('betError')}
+                  </p>
+                )}
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || betInvalid}>
                   {t('button.bet')}
                 </button>
               </div>

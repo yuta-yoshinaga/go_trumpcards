@@ -168,6 +168,28 @@ describe('ChinesePokerPage', () => {
     expect(mockExec).toHaveBeenCalledWith('bet', 100);
   });
 
+  it('submits the edited bet amount via the ChipBetInput', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('ベット'), { target: { value: '200' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 200));
+  });
+
+  it('disables the bet button, blocks the b key, and shows an error for an out-of-range bet', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    // 15 is not a multiple of 10 → invalid.
+    fireEvent.change(screen.getByLabelText('ベット'), { target: { value: '15' } });
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'b' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   // Assign the cards at the given indices in order: the first 3 become the front
   // row, the next 5 the middle row, and the remaining 5 stay in the back row.
   const assignFrontMiddle = (frontMid: number[]) => {

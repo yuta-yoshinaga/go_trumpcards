@@ -53,6 +53,7 @@
     "title": "Settings"
   },
   "betGuide": "Enter your bet amount",
+  "betError": "Bet must be at least 10, in steps of 10, and within your balance",
   "selectCards": "Select 3 cards for Front and 5 cards for Middle",
   "selectedFront": "Front: {{count}} / 3",
   "selectedMiddle": "Middle: {{count}} / 5",
