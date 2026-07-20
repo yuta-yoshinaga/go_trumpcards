@@ -142,6 +142,13 @@ describe('RedDogPage', () => {
     expect(screen.getByText(/200/)).toBeInTheDocument();
   });
 
+  it('does not render an empty settings panel', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /ベット/ })).toBeInTheDocument());
+    expect(screen.queryByText('設定')).not.toBeInTheDocument();
+  });
+
   it('reads from useCliMode', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<RedDogPage />);
