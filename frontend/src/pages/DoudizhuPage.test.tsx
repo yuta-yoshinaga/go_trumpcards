@@ -273,6 +273,91 @@ describe('DoudizhuPage', () => {
     });
   });
 
+  it('warns that a mismatched selection is not a valid combo', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          isLandlord: true,
+          cardCount: 2,
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'HEART', value: 9 },
+          ],
+        },
+        { id: 1, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
+        { id: 2, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
+      ],
+    });
+    renderWithProviders(<DoudizhuPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 9' }));
+    expect(await screen.findByTestId('ddz-invalid-combo')).toBeInTheDocument();
+  });
+
+  it('warns that a valid-but-too-low combo cannot beat the table', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      tableCards: [
+        { design: 'SPADE', value: 8 },
+        { design: 'HEART', value: 8 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      tableCombo: 'trio',
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          isLandlord: false,
+          cardCount: 3,
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'HEART', value: 5 },
+            { design: 'DIAMOND', value: 5 },
+          ],
+        },
+        { id: 1, isHuman: false, isFinished: false, isLandlord: true, cardCount: 17, cards: [] },
+        { id: 2, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
+      ],
+    });
+    renderWithProviders(<DoudizhuPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5' }));
+    fireEvent.click(screen.getByRole('button', { name: '♦ 5' }));
+    expect(await screen.findByTestId('ddz-no-beat')).toBeInTheDocument();
+  });
+
+  it('shows the combo type for a valid beating play', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      tableCards: [{ design: 'CLOVER', value: 13 }],
+      tableCombo: 'single',
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          isLandlord: false,
+          cardCount: 1,
+          cards: [{ design: 'SPADE', value: 2 }],
+        },
+        { id: 1, isHuman: false, isFinished: false, isLandlord: true, cardCount: 17, cards: [] },
+        { id: 2, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
+      ],
+    });
+    renderWithProviders(<DoudizhuPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 2' }));
+    const badge = await screen.findByTestId('ddz-combo-type');
+    // "選択中: 単張（1枚）" — single, and no warning is shown.
+    expect(badge).toHaveTextContent('単張');
+    expect(screen.queryByTestId('ddz-invalid-combo')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('ddz-no-beat')).not.toBeInTheDocument();
+  });
+
   it('opens the reset confirmation and resets on confirm', async () => {
     renderWithProviders(<DoudizhuPage />);
     const resetButton = await screen.findByRole('button', { name: 'リセット' });
