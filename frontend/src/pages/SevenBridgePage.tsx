@@ -23,6 +23,7 @@ import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
+import { gameTheme } from '../styles/gameTheme';
 import type { SevenBridgeResponse } from '../types/card';
 import { SevenBridgePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -135,7 +136,7 @@ function SevenBridgePageContent() {
   return (
     <GamePageShell
       title={tc('nav.sevenbridge')}
-      gameThemeBg="bg-ds-bg"
+      gameThemeBg={gameTheme.sevenbridge.bg}
       phaseName={phaseNames[state?.phase ?? 0] ?? ''}
       isHumanTurn={!!isHumanTurn}
       gamePath="/sevenbridge"
