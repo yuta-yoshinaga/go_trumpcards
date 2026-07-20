@@ -32,5 +32,12 @@
     "controls": "Control buttons: Undo, Hint, Auto-complete.",
     "resetButton": "Press the reset button to start a new game."
   },
-  "landscapeBanner": "Rotate to landscape for easier play"
+  "landscapeBanner": "Rotate to landscape for easier play",
+  "frontendHint": {
+    "completeSuit": "A suit sequence is nearly complete — focus on finishing it",
+    "buildSameSuit": "A same-suit build move is available",
+    "revealFaceDown": "Move cards to reveal face-down cards underneath",
+    "useEmptyColumn": "An empty column is available — use it to reorganize",
+    "dealFromStock": "No obvious moves — try dealing from the stock"
+  }
 }
