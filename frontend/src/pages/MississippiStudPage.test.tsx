@@ -143,6 +143,26 @@ describe('MississippiStudPage', () => {
     expect(screen.getByText('ペイテーブル')).toBeInTheDocument();
   });
 
+  it('shows the collapsible payout reference panel during a betting street', async () => {
+    mockApi.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByTestId('ms-play-1x')).toBeInTheDocument());
+    const paytable = screen.getByTestId('ms-paytable');
+    expect(paytable).toBeInTheDocument();
+    expect(paytable.tagName).toBe('DETAILS');
+    // Default closed so it does not crowd the betting layout.
+    expect(paytable).not.toHaveAttribute('open');
+    expect(paytable).toHaveTextContent('ペイテーブル');
+    expect(paytable).toHaveTextContent('ロイヤルフラッシュ: 500:1');
+  });
+
+  it('shows the payout reference panel in the end phase', async () => {
+    mockApi.mockResolvedValue(endPhaseWin);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    expect(screen.getByTestId('ms-paytable')).toHaveTextContent('ペイテーブル');
+  });
+
   it('calls execApi with bet and default amount when ante button clicked', async () => {
     mockApi.mockResolvedValue(antePhaseState);
     renderWithProviders(<MississippiStudPage />);

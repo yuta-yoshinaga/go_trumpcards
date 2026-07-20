@@ -128,6 +128,36 @@ function MississippiStudPageContent() {
 
   const phaseName = t(PHASE_KEY[state.phase] ?? 'phase.ante');
 
+  // Paytable reference: collapsible and available in every phase so players can
+  // check it while deciding 1x/2x/3x/fold on the betting streets, not just at ante.
+  const paytable = (
+    <details data-testid="ms-paytable" className="bg-black/30 rounded-lg w-full max-w-sm">
+      <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
+        {t('payoutRef.title')}
+      </summary>
+      <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
+        <ul className="space-y-0.5">
+          {(
+            [
+              'payRoyalFlush',
+              'payStraightFlush',
+              'payFourOfAKind',
+              'payFullHouse',
+              'payFlush',
+              'payStraight',
+              'payThreeOfAKind',
+              'payTwoPair',
+              'payHighPair',
+              'payMidPair',
+            ] as const
+          ).map((key) => (
+            <li key={key}>{t(`payoutRef.${key}`)}</li>
+          ))}
+        </ul>
+      </div>
+    </details>
+  );
+
   return (
     <GamePageShell
       title={tc('nav.mississippistud')}
@@ -171,31 +201,7 @@ function MississippiStudPageContent() {
         {isAntePhase && (
           <div className="flex flex-col items-center justify-center py-4 gap-4">
             <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
-            <details className="bg-black/30 rounded-lg w-full max-w-sm">
-              <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
-                {t('payoutRef.title')}
-              </summary>
-              <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
-                <ul className="space-y-0.5">
-                  {(
-                    [
-                      'payRoyalFlush',
-                      'payStraightFlush',
-                      'payFourOfAKind',
-                      'payFullHouse',
-                      'payFlush',
-                      'payStraight',
-                      'payThreeOfAKind',
-                      'payTwoPair',
-                      'payHighPair',
-                      'payMidPair',
-                    ] as const
-                  ).map((key) => (
-                    <li key={key}>{t(`payoutRef.${key}`)}</li>
-                  ))}
-                </ul>
-              </div>
-            </details>
+            {paytable}
           </div>
         )}
 
@@ -271,6 +277,8 @@ function MississippiStudPageContent() {
             </span>
           </div>
         )}
+
+        {!isAntePhase && <div className="flex justify-center mb-2">{paytable}</div>}
 
         {isEndPhase && (
           <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
