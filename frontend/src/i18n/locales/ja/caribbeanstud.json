@@ -82,5 +82,13 @@
     "aceKingHigh": "A-K ハイ — コール推奨",
     "weakHand": "弱い手札 — フォールド推奨"
   },
-  "hiddenCard": "非公開のカード"
+  "hiddenCard": "非公開のカード",
+  "session": {
+    "title": "セッション成績",
+    "tally": "{{wins}}勝 {{losses}}敗 {{pushes}}分",
+    "hands": "{{hands}}ハンド",
+    "net": "収支",
+    "clear": "履歴をクリア",
+    "note": "リセットしても保持されます（ページ再読み込みで消去）"
+  }
 }

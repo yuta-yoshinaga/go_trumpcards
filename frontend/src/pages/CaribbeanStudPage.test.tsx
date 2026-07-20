@@ -315,4 +315,71 @@ describe('CaribbeanStudPage', () => {
     renderWithProviders(<CaribbeanStudPage />);
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
+
+  describe('session stats', () => {
+    it('has no session summary before any round completes', async () => {
+      mockApi.mockResolvedValue(betPhaseState);
+      renderWithProviders(<CaribbeanStudPage />);
+      await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+      expect(screen.queryByTestId('csp-session-stats')).not.toBeInTheDocument();
+    });
+
+    it('records a win at END and shows the tally + positive net', async () => {
+      // net = totalPayout(1000) - (ante 100 + jackpot 0 + play 200) = +700
+      mockApi.mockResolvedValue(endPhasePlayerWins);
+      renderWithProviders(<CaribbeanStudPage />);
+      await waitFor(() => expect(screen.getByTestId('csp-session-stats')).toBeInTheDocument());
+      expect(screen.getByTestId('csp-session-tally')).toHaveTextContent('1勝 0敗 0分');
+      const netEl = screen.getByTestId('csp-session-net');
+      expect(netEl).toHaveTextContent('収支: +700');
+      expect(netEl).toHaveClass('text-ds-success');
+    });
+
+    it('records a loss at END and shows a negative net', async () => {
+      // net = totalPayout(0) - (ante 100 + jackpot 0 + play 200) = -300
+      mockApi.mockResolvedValue(endPhaseDealerWins);
+      renderWithProviders(<CaribbeanStudPage />);
+      await waitFor(() => expect(screen.getByTestId('csp-session-stats')).toBeInTheDocument());
+      expect(screen.getByTestId('csp-session-tally')).toHaveTextContent('0勝 1敗 0分');
+      const netEl = screen.getByTestId('csp-session-net');
+      expect(netEl).toHaveTextContent('収支: -300');
+      expect(netEl).toHaveClass('text-ds-error');
+    });
+
+    it('does not double-count the same END round on re-render', async () => {
+      mockApi.mockResolvedValue(endPhasePlayerWins);
+      renderWithProviders(<CaribbeanStudPage />);
+      await waitFor(() => expect(screen.getByTestId('csp-session-stats')).toBeInTheDocument());
+      expect(JSON.parse(localStorage.getItem('trumpcards-caribbeanstud-history') ?? '[]')).toHaveLength(1);
+      // Re-render the page while it stays at END (toggling the hint checkbox
+      // updates local state) — the record-once guard must not append again.
+      fireEvent.click(screen.getByRole('checkbox'));
+      await waitFor(() => expect(screen.getByTestId('csp-session-tally')).toHaveTextContent('1勝 0敗 0分'));
+      expect(JSON.parse(localStorage.getItem('trumpcards-caribbeanstud-history') ?? '[]')).toHaveLength(1);
+    });
+
+    it('rehydrates prior session stats from localStorage on mount', async () => {
+      localStorage.setItem(
+        'trumpcards-caribbeanstud-history',
+        JSON.stringify([
+          { outcome: 1, net: 500 },
+          { outcome: 2, net: -200 },
+        ]),
+      );
+      mockApi.mockResolvedValue(betPhaseState);
+      renderWithProviders(<CaribbeanStudPage />);
+      await waitFor(() => expect(screen.getByTestId('csp-session-stats')).toBeInTheDocument());
+      expect(screen.getByTestId('csp-session-tally')).toHaveTextContent('1勝 1敗 0分');
+      expect(screen.getByTestId('csp-session-net')).toHaveTextContent('収支: +300');
+    });
+
+    it('clears the session summary when the clear button is pressed', async () => {
+      mockApi.mockResolvedValue(endPhasePlayerWins);
+      renderWithProviders(<CaribbeanStudPage />);
+      await waitFor(() => expect(screen.getByTestId('csp-session-stats')).toBeInTheDocument());
+      fireEvent.click(screen.getByTestId('csp-session-clear'));
+      await waitFor(() => expect(screen.queryByTestId('csp-session-stats')).not.toBeInTheDocument());
+      expect(localStorage.getItem('trumpcards-caribbeanstud-history')).toBeNull();
+    });
+  });
 });

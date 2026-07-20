@@ -82,5 +82,13 @@
     "aceKingHigh": "Ace-King high — call recommended",
     "weakHand": "Weak hand — fold recommended"
   },
-  "hiddenCard": "Hidden card"
+  "hiddenCard": "Hidden card",
+  "session": {
+    "title": "Session Stats",
+    "tally": "{{wins}}W {{losses}}L {{pushes}}P",
+    "hands": "{{hands}} hands",
+    "net": "Net",
+    "clear": "Clear history",
+    "note": "Kept across resets (cleared on page reload)"
+  }
 }
