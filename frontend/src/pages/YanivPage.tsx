@@ -26,6 +26,7 @@ import { YanivPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { classifyYanivDiscard } from '../utils/yanivCombos';
+import { isPickupable } from '../utils/yanivPickup';
 
 type YanivArgs = Parameters<typeof yanivApi.exec>;
 
@@ -248,25 +249,43 @@ function YanivPageContent() {
               </div>
               <div className="text-center">
                 <div className="text-xs text-ds-text-muted mb-1">{t('label.discardPile')}</div>
+                {isDraw && isHumanTurn && pickup.length > 1 && (
+                  <div className="text-[10px] text-ds-info mb-1" data-testid="pickup-hint">
+                    {t('pickup.hint')}
+                  </div>
+                )}
                 <div className="flex gap-1 justify-center">
                   {pickup.length > 0 ? (
                     pickup.map((c, i) => {
-                      const isEnd = i === 0 || i === pickup.length - 1;
+                      const pickable = isPickupable(i, pickup.length);
+                      const active = pickable && isDraw && isHumanTurn;
+                      const blocked = !pickable && isDraw && isHumanTurn;
                       return (
-                        <button
-                          key={i}
-                          type="button"
-                          data-testid={`pickup-card-${i}`}
-                          onClick={() => isEnd && isDraw && isHumanTurn && handleDrawPickup(i === 0 ? 0 : 1)}
-                          disabled={!isEnd || !isDraw || !isHumanTurn || loading}
-                          className={
-                            isEnd && isDraw && isHumanTurn
-                              ? 'rounded ring-2 ring-ds-info cursor-pointer hover:opacity-90'
-                              : 'rounded opacity-70 cursor-default'
-                          }
-                        >
-                          <AnimatedCard card={c} width={cardWidth * 0.8} />
-                        </button>
+                        <div key={i} className="relative" title={blocked ? t('pickup.disabledReason') : undefined}>
+                          <button
+                            type="button"
+                            data-testid={`pickup-card-${i}`}
+                            onClick={() => active && handleDrawPickup(i === 0 ? 0 : 1)}
+                            disabled={!active || loading}
+                            aria-disabled={blocked || undefined}
+                            aria-label={active ? t('pickup.endLabel') : undefined}
+                            className={
+                              active
+                                ? 'rounded ring-2 ring-ds-info cursor-pointer hover:opacity-90'
+                                : 'rounded opacity-70 cursor-default'
+                            }
+                          >
+                            <AnimatedCard card={c} width={cardWidth * 0.8} />
+                          </button>
+                          {active && (
+                            <span
+                              data-testid={`pickup-badge-${i}`}
+                              className="absolute -top-1 -right-1 rounded bg-ds-info text-white text-[9px] font-bold px-1 pointer-events-none"
+                            >
+                              {t('pickup.badge')}
+                            </span>
+                          )}
+                        </div>
                       );
                     })
                   ) : (

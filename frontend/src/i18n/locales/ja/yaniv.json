@@ -19,6 +19,12 @@
     "hand": "手札",
     "selectCard": "捨てるカードを選択 (単札 / 同数の組 / 連番)"
   },
+  "pickup": {
+    "hint": "取れるのは捨て札の両端のカードのみです。",
+    "badge": "取れる",
+    "endLabel": "この端のカードを取る",
+    "disabledReason": "中間のカードは取れません（引けるのは両端のみ）"
+  },
   "settings": {
     "cpuDifficulty": "CPU難易度",
     "scoreLimit": "脱落スコア"

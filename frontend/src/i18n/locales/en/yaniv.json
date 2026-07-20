@@ -19,6 +19,12 @@
     "hand": "Hand",
     "selectCard": "Select cards to discard (single / set / run)"
   },
+  "pickup": {
+    "hint": "You can only take a card from either end of the discard.",
+    "badge": "Take",
+    "endLabel": "Take this end card",
+    "disabledReason": "Middle cards can't be taken (only the two ends)"
+  },
   "settings": {
     "cpuDifficulty": "CPU Difficulty",
     "scoreLimit": "Elimination Score"
