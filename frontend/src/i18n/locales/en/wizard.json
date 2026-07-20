@@ -33,6 +33,12 @@
     "under": "(under)",
     "exact": "(exact)"
   },
+  "bidAccuracy": {
+    "title": "Bid accuracy (previous round)",
+    "made": "Made",
+    "over": "+{{delta}} over",
+    "under": "{{delta}} under"
+  },
   "currentTrick": "Current Trick",
   "scores": "Scores",
   "scoresPlayer": "Player",

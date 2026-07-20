@@ -126,6 +126,18 @@ const cpuTurnState: WizardResponse = {
   currentPlayerIdx: 1,
 };
 
+/** Round end where the human made their bid exactly and CPUs over/undershoot. */
+const bidAccuracyRoundEndState: WizardResponse = {
+  ...playPhaseState,
+  phase: 3,
+  players: [
+    { ...playPhaseState.players[0], bid: 3, trickCount: 3 },
+    { ...playPhaseState.players[1], bid: 2, trickCount: 4 },
+    { ...playPhaseState.players[2], bid: 2, trickCount: 1 },
+    { ...playPhaseState.players[3], bid: 1, trickCount: 2 },
+  ],
+};
+
 beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
@@ -337,6 +349,25 @@ describe('WizardPage', () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<WizardPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+  });
+
+  it('shows bid-accuracy summary at round end with made/over/under outcomes', async () => {
+    mockExec.mockResolvedValue(bidAccuracyRoundEndState);
+    renderWithProviders(<WizardPage />);
+    await waitFor(() => expect(screen.getByTestId('wiz-bid-accuracy')).toBeInTheDocument());
+    // Human bid 3, took 3 -> exact hit.
+    expect(screen.getByText('的中')).toBeInTheDocument();
+    // CPU 1 bid 2, took 4 -> +2 overshoot delta.
+    expect(screen.getByText('+2 超過')).toBeInTheDocument();
+    // CPU 2 bid 2, took 1 -> -1 undershoot delta.
+    expect(screen.getByText('-1 不足')).toBeInTheDocument();
+  });
+
+  it('does not show the bid-accuracy summary during play', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<WizardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+    expect(screen.queryByTestId('wiz-bid-accuracy')).not.toBeInTheDocument();
   });
 
   it('shows game end with action log button', async () => {

@@ -40,6 +40,7 @@ import { formatWizardState } from '../utils/cli/formatters/wizardFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { ohHellBidSummary } from '../utils/ohHellBid';
 import { playerName } from '../utils/playerUtils';
+import { type WizardBidOutcome, wizardBidAccuracy } from '../utils/wizardBidAccuracy';
 import { isWizardLegalPlay } from '../utils/wizardLegal';
 
 /** DOM id linking each illegal card button to the shared screen-reader reason text. */
@@ -90,6 +91,12 @@ function progressChipColors(bid: number, won: number, remainingTricks: number): 
   if (won === bid) return badgeSuccessColors;
   if (won > bid) return badgeWarningColors;
   return bid - won > remainingTricks ? badgeErrorColors : badgeInfoColors;
+}
+
+/** Badge color tokens for a bid-accuracy outcome pill: green made, yellow overshot, red undershot. */
+function bidAccuracyPillColors(outcome: WizardBidOutcome): string {
+  if (outcome === 'made') return badgeSuccessColors;
+  return outcome === 'over' ? badgeWarningColors : badgeErrorColors;
 }
 
 const WIZARD_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -215,6 +222,16 @@ function WizardPageContent() {
           return acc;
         }, [])
       : undefined;
+
+  // At round/game end, `state.players` still carries the finished round's bid and
+  // trickCount, so we can summarize how far each player's actual tricks landed
+  // from their declared bid before the next deal resets them.
+  const showBidAccuracy = isRoundEnd || isGameEnd;
+  const bidAccuracyEntries = showBidAccuracy
+    ? wizardBidAccuracy(
+        state.players.map((p) => ({ name: playerName(p.id, p.isHuman), bid: p.bid, trickCount: p.trickCount })),
+      )
+    : [];
 
   return (
     <GamePageShell
@@ -451,6 +468,33 @@ function WizardPageContent() {
                     cumulativeScore: p.cumulativeScore,
                   }))}
                 />
+
+                {/* Bid-vs-actual accuracy summary for the just-finished round. */}
+                {showBidAccuracy && bidAccuracyEntries.length > 0 && (
+                  <div className="my-3 p-2 rounded bg-black/30" data-testid="wiz-bid-accuracy">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('bidAccuracy.title')}</div>
+                    <ul className="flex flex-col gap-1">
+                      {bidAccuracyEntries.map((e) => (
+                        <li
+                          key={e.name}
+                          className="flex items-center justify-between gap-2 text-sm text-ds-text-muted"
+                          data-testid={`wiz-bid-accuracy-row-${e.outcome}`}
+                        >
+                          <span className="truncate">
+                            {e.name}: {t('scoresBid')} {e.bid} / {t('scoresTricks')} {e.trickCount}
+                          </span>
+                          <span
+                            className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${bidAccuracyPillColors(e.outcome)}`}
+                          >
+                            {e.outcome === 'made'
+                              ? t('bidAccuracy.made')
+                              : t(`bidAccuracy.${e.outcome}`, { delta: e.delta })}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
 
