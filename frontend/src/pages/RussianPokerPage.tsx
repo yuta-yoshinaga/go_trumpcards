@@ -3,6 +3,7 @@ import { russianpokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -113,6 +114,10 @@ function RussianPokerPageContent() {
 
   const isExchangeSelecting = isActionPhase && selectedIndices.length > 0;
 
+  // Ante validation: mandatory (>= 10), in 10-chip increments, and within the balance.
+  const anteInvalid =
+    Number.isNaN(anteAmount) || anteAmount < 10 || anteAmount % 10 !== 0 || anteAmount > (state?.chips ?? 0);
+
   const toggleSelected = (idx: number) => {
     setSelectedIndices((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx].sort((a, b) => a - b),
@@ -164,7 +169,7 @@ function RussianPokerPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', anteAmount), enabled: isBetPhase },
+      { key: 'b', action: () => execApi('bet', anteAmount), enabled: isBetPhase && !anteInvalid },
       {
         key: 'e',
         action: () => execApi('exchange', undefined, [...selectedIndices]),
@@ -175,7 +180,7 @@ function RussianPokerPageContent() {
       { key: 'f', action: () => execApi('fold'), enabled: isActionPhase || isPostActionPhase },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
     ],
-    [execApi, isBetPhase, isActionPhase, isPostActionPhase, isEndPhase, anteAmount, selectedIndices],
+    [execApi, isBetPhase, isActionPhase, isPostActionPhase, isEndPhase, anteAmount, anteInvalid, selectedIndices],
   );
 
   useActionKeyboardNav({
@@ -384,22 +389,25 @@ function RussianPokerPageContent() {
             <SettingsPanel title={t('settings.title')} groups={[]} />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="russian-bet-controls">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="russianpoker-ante-amount" className="text-ds-text-primary text-sm">
-                    {t('label.ante')}
-                  </label>
-                  <input
-                    id="russianpoker-ante-amount"
-                    type="number"
-                    min={10}
-                    max={state.chips}
-                    step={10}
-                    value={anteAmount}
-                    onChange={(e) => setAnteAmount(Number(e.target.value))}
-                    className="w-24 px-2 py-1 rounded text-sm"
-                  />
-                </div>
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <ChipBetInput
+                  id="russianpoker-ante-amount"
+                  label={t('label.ante')}
+                  value={anteAmount}
+                  onChange={setAnteAmount}
+                  min={10}
+                  max={state.chips}
+                  step={10}
+                  disabled={loading}
+                  showSteppers
+                  invalid={anteInvalid}
+                  describedBy={anteInvalid ? 'russianpoker-bet-error' : undefined}
+                />
+                {anteInvalid && (
+                  <p id="russianpoker-bet-error" role="alert" className="text-ds-error text-xs">
+                    {t('betError')}
+                  </p>
+                )}
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || anteInvalid}>
                   {t('button.bet')}
                 </button>
               </div>

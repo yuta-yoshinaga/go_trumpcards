@@ -59,6 +59,7 @@
     "title": "Settings"
   },
   "betGuide": "Place your Ante bet",
+  "betError": "Ante must be at least 10, in steps of 10, and within your balance",
   "actionGuide": "Fold, Call, Exchange cards, or Buy a 6th card",
   "exchangeGuide": "Tap cards to select them, then press Exchange",
   "exchangeFeeInfo": "Fee: ante × {{ante}} per card = {{fee}}",
