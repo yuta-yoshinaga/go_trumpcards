@@ -230,6 +230,30 @@ function JassPageContent() {
           dataTutorial="ja-trick-display"
         />
 
+        {/* Previous trick reviewer: lets the player recount the just-completed trick + winner */}
+        <details className="mb-2 p-2 rounded bg-black/30" data-testid="ja-previous-trick">
+          <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('previousTrick')}</summary>
+          <div className="mt-1">
+            {state.lastTrick.length > 0 ? (
+              <TrickDisplay
+                currentTrick={state.lastTrick}
+                players={state.players}
+                cardWidth={Math.round(cardWidth * 0.7)}
+                label={
+                  state.lastTrickWinner >= 0
+                    ? t('previousTrickWinner', {
+                        name: playerName(state.lastTrickWinner, state.players[state.lastTrickWinner]?.isHuman === true),
+                      })
+                    : t('previousTrick')
+                }
+                winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+              />
+            ) : (
+              <div className="text-ds-text-muted text-sm">{t('previousTrickEmpty')}</div>
+            )}
+          </div>
+        </details>
+
         {/* Team scores */}
         <div className="my-3 p-2 rounded bg-black/30" data-tutorial="ja-score-table">
           <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>

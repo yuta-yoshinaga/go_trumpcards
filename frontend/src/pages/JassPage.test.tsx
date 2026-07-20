@@ -50,6 +50,8 @@ function makeState(overrides: Partial<JassResponse> = {}): JassResponse {
     makerTeam: -1,
     makerPlayerIdx: -1,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
     teamScores: [0, 0],
     roundPoints: [0, 0],
     roundWeisPoints: [0, 0],
@@ -198,6 +200,36 @@ describe('JassPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(screen.getByText(/最善手/)).toBeInTheDocument());
     expect(screen.queryByText(/brand_new_reason/)).not.toBeInTheDocument();
+  });
+
+  it('shows an empty previous-trick reviewer when no trick has completed yet', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.PLAY, trumpSuit: 1, lastTrick: [], lastTrickWinner: -1 }));
+    renderWithProviders(<JassPage />);
+    const panel = await screen.findByTestId('ja-previous-trick');
+    expect(panel).toBeInTheDocument();
+    expect(panel).toHaveTextContent('このラウンドにはまだ前のトリックがありません');
+  });
+
+  it('renders the previous trick cards and the winner label when a trick has completed', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: JassPhase.PLAY,
+        trumpSuit: 1,
+        trickNumber: 2,
+        lastTrick: [
+          { playerIdx: 1, card: card('SPADE', 3) },
+          { playerIdx: 2, card: card('SPADE', 1) },
+          { playerIdx: 3, card: card('SPADE', 5) },
+          { playerIdx: 0, card: card('SPADE', 7) },
+        ],
+        lastTrickWinner: 2,
+      }),
+    );
+    renderWithProviders(<JassPage />);
+    const panel = await screen.findByTestId('ja-previous-trick');
+    expect(panel).toBeInTheDocument();
+    // Winner label references the winning player's name.
+    await waitFor(() => expect(panel).toHaveTextContent('が獲得'));
   });
 
   it('shows reset button mid-game and opens confirm dialog', async () => {
