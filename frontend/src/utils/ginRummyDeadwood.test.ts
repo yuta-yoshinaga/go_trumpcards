@@ -6,6 +6,7 @@ import {
   calcDeadwoodValue,
   ginRummyCardValue,
   ginRummyMeldLabel,
+  ginRummyScoreBreakdown,
 } from './ginRummyDeadwood';
 
 const c = (design: Card['design'], value: number): Card => ({ design, value });
@@ -137,5 +138,66 @@ describe('ginRummyMeldLabel', () => {
 
   it('returns an empty string for an empty meld', () => {
     expect(ginRummyMeldLabel([])).toBe('');
+  });
+});
+
+describe('ginRummyScoreBreakdown', () => {
+  const knocker = { id: 0, cards: [] as Card[] };
+  const opp = (cards: Card[]) => ({ id: 1, cards });
+
+  it('scores a plain knock as the deadwood difference to the knocker', () => {
+    // knocker deadwood 9, opponent 5+6+8=19 (no meld) → 19-9=10, no bonus.
+    const b = ginRummyScoreBreakdown(
+      [knocker, opp([c('DIAMOND', 5), c('CLOVER', 6), c('HEART', 8)])],
+      0,
+      [c('CLOVER', 9)],
+      false,
+    );
+    expect(b).toEqual({
+      outcome: 'knock',
+      winnerId: 0,
+      knockerDeadwood: 9,
+      opponentDeadwood: 19,
+      base: 10,
+      bonus: 0,
+      total: 10,
+    });
+  });
+
+  it('scores a gin as opponent deadwood + 25 bonus to the knocker', () => {
+    const b = ginRummyScoreBreakdown([knocker, opp([c('DIAMOND', 5), c('CLOVER', 6), c('HEART', 8)])], 0, [], true);
+    expect(b).toMatchObject({ outcome: 'gin', winnerId: 0, opponentDeadwood: 19, base: 19, bonus: 25, total: 44 });
+  });
+
+  it('scores an undercut as the difference + 25 bonus to the defender', () => {
+    // knocker deadwood 9, opponent ♦5-6-7 run + ♥2 = 2 ≤ 9 → 7 diff + 25 = 32 to opponent.
+    const b = ginRummyScoreBreakdown(
+      [knocker, opp([c('DIAMOND', 5), c('DIAMOND', 6), c('DIAMOND', 7), c('HEART', 2)])],
+      0,
+      [c('CLOVER', 9)],
+      false,
+    );
+    expect(b).toEqual({
+      outcome: 'undercut',
+      winnerId: 1,
+      knockerDeadwood: 9,
+      opponentDeadwood: 2,
+      base: 7,
+      bonus: 25,
+      total: 32,
+    });
+  });
+
+  it('treats equal deadwood as an undercut for the defender', () => {
+    const b = ginRummyScoreBreakdown([knocker, opp([c('CLOVER', 9)])], 0, [c('SPADE', 9)], false);
+    expect(b).toMatchObject({ outcome: 'undercut', winnerId: 1, base: 0, bonus: 25, total: 25 });
+  });
+
+  it('returns null for a drawn round (no knocker)', () => {
+    expect(ginRummyScoreBreakdown([knocker, opp([c('CLOVER', 9)])], -1, [], false)).toBeNull();
+  });
+
+  it('returns null when the players cannot be resolved', () => {
+    expect(ginRummyScoreBreakdown([knocker], 0, [], false)).toBeNull();
   });
 });
