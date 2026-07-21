@@ -36,6 +36,26 @@ func TestScorpionCuiControllerDeal(t *testing.T) {
 	assert.Equal(t, "deal_output", c.Exec("deal"))
 }
 
+func TestScorpionCuiControllerLegal(t *testing.T) {
+	si := newMockScorpionInteractor()
+	c := NewScorpionCuiController(si)
+	si.On("LegalMoves", 2).Return("legal_output")
+	assert.Equal(t, "legal_output", c.Exec("legal 2"))
+}
+
+func TestScorpionCuiControllerLegalPrompt(t *testing.T) {
+	si := newMockScorpionInteractor()
+	c := NewScorpionCuiController(si)
+	result := c.Exec("legal")
+	assert.Contains(t, result, cuiutil.PromptPrefix)
+}
+
+func TestScorpionCuiControllerLegalInvalidCol(t *testing.T) {
+	si := newMockScorpionInteractor()
+	c := NewScorpionCuiController(si)
+	assert.NotEmpty(t, c.Exec("legal abc"))
+}
+
 func TestScorpionCuiControllerGiveUp(t *testing.T) {
 	si := newMockScorpionInteractor()
 	c := NewScorpionCuiController(si)

@@ -128,6 +128,113 @@ func TestScorpionCuiPresenter_HintOutput(t *testing.T) {
 	})
 }
 
+func TestScorpionCuiPresenter_LegalMovesOutput(t *testing.T) {
+	// scorpionTableauWith builds a full-length tableau, overriding specific columns.
+	scorpionTableauWith := func(overrides map[int][]*domain.KlondikeTableauCard) [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard {
+		var tableau [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
+		for i := range domain.ScorpionTableauCnt {
+			if cards, ok := overrides[i]; ok {
+				tableau[i] = cards
+			}
+		}
+		return tableau
+	}
+
+	t.Run("lists suit-matching column, empty not flagged for non-King", func(t *testing.T) {
+		sg := new(interfaces.MockScorpionGame)
+		sg.On("GetPhase").Return(domain.ScorpionPhasePlaying).Maybe()
+		// Column 0 top card: Spade 5 (movable, non-King). Column 1 top: Spade 6 (legal target).
+		// Column 2 top: Heart 6 (wrong suit). Column 3 empty (NOT legal for a non-King in Scorpion).
+		tableau := scorpionTableauWith(map[int][]*domain.KlondikeTableauCard{
+			0: {{Card: domain.NewCard(domain.CardDesignSpade, 5, false), FaceUp: true}},
+			1: {{Card: domain.NewCard(domain.CardDesignSpade, 6, false), FaceUp: true}},
+			2: {{Card: domain.NewCard(domain.CardDesignHeart, 6, false), FaceUp: true}},
+		})
+		sg.On("GetTableau").Return(tableau).Maybe()
+
+		p := new(ScorpionCuiPresenter)
+		result := p.LegalMovesOutput(sg, 0)
+		assert.Contains(t, result, "列0")
+		assert.Contains(t, result, "列1")    // suit-matching target
+		assert.NotContains(t, result, "空列") // empty columns NOT accepted for non-King
+	})
+
+	t.Run("flags empty columns for a King", func(t *testing.T) {
+		sg := new(interfaces.MockScorpionGame)
+		sg.On("GetPhase").Return(domain.ScorpionPhasePlaying).Maybe()
+		// Column 0 top card: Spade King (movable). Column 3 empty (legal for a King).
+		tableau := scorpionTableauWith(map[int][]*domain.KlondikeTableauCard{
+			0: {{Card: domain.NewCard(domain.CardDesignSpade, domain.CardValueMax, false), FaceUp: true}},
+		})
+		sg.On("GetTableau").Return(tableau).Maybe()
+
+		p := new(ScorpionCuiPresenter)
+		result := p.LegalMovesOutput(sg, 0)
+		assert.Contains(t, result, "空列")
+	})
+
+	t.Run("no movable card in empty column", func(t *testing.T) {
+		sg := new(interfaces.MockScorpionGame)
+		sg.On("GetPhase").Return(domain.ScorpionPhasePlaying).Maybe()
+		sg.On("GetTableau").Return(scorpionTableauWith(nil)).Maybe()
+
+		p := new(ScorpionCuiPresenter)
+		result := p.LegalMovesOutput(sg, 0)
+		assert.Contains(t, result, "移動可能")
+	})
+
+	t.Run("face-down top card", func(t *testing.T) {
+		sg := new(interfaces.MockScorpionGame)
+		sg.On("GetPhase").Return(domain.ScorpionPhasePlaying).Maybe()
+		tableau := scorpionTableauWith(map[int][]*domain.KlondikeTableauCard{
+			0: {{Card: domain.NewCard(domain.CardDesignSpade, 5, false), FaceUp: false}},
+		})
+		sg.On("GetTableau").Return(tableau).Maybe()
+
+		p := new(ScorpionCuiPresenter)
+		result := p.LegalMovesOutput(sg, 0)
+		assert.Contains(t, result, "移動可能")
+	})
+
+	t.Run("no legal destinations", func(t *testing.T) {
+		sg := new(interfaces.MockScorpionGame)
+		sg.On("GetPhase").Return(domain.ScorpionPhasePlaying).Maybe()
+		// Every other column occupied with a non-matching card, none empty; moving card non-King.
+		overrides := map[int][]*domain.KlondikeTableauCard{}
+		for i := range domain.ScorpionTableauCnt {
+			overrides[i] = []*domain.KlondikeTableauCard{
+				{Card: domain.NewCard(domain.CardDesignHeart, 2, false), FaceUp: true},
+			}
+		}
+		overrides[0] = []*domain.KlondikeTableauCard{
+			{Card: domain.NewCard(domain.CardDesignSpade, 5, false), FaceUp: true},
+		}
+		sg.On("GetTableau").Return(scorpionTableauWith(overrides)).Maybe()
+
+		p := new(ScorpionCuiPresenter)
+		result := p.LegalMovesOutput(sg, 0)
+		assert.Contains(t, result, "なし")
+	})
+
+	t.Run("invalid column", func(t *testing.T) {
+		sg := new(interfaces.MockScorpionGame)
+		sg.On("GetPhase").Return(domain.ScorpionPhasePlaying).Maybe()
+
+		p := new(ScorpionCuiPresenter)
+		assert.NotEmpty(t, p.LegalMovesOutput(sg, -1))
+		assert.NotEmpty(t, p.LegalMovesOutput(sg, domain.ScorpionTableauCnt))
+	})
+
+	t.Run("not in playing phase", func(t *testing.T) {
+		sg := new(interfaces.MockScorpionGame)
+		sg.On("GetPhase").Return(domain.ScorpionPhaseGameOver).Maybe()
+
+		p := new(ScorpionCuiPresenter)
+		result := p.LegalMovesOutput(sg, 0)
+		assert.NotEmpty(t, result)
+	})
+}
+
 func TestScorpionCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("playing", func(t *testing.T) {
 		sg := new(interfaces.MockScorpionGame)

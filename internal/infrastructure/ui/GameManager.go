@@ -1128,6 +1128,7 @@ var gameRegistry = []GameRegistryEntry{
 					"scorpion.helpDeal",
 					"scorpion.helpGiveUp",
 					"scorpion.helpHint",
+					"scorpion.helpLegal",
 					"scorpion.helpAutoComplete",
 				},
 				ExtraCommandLines: []string{"  l                        action log"},

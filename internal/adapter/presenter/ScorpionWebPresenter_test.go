@@ -112,6 +112,17 @@ func TestScorpionWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestScorpionWebPresenter_LegalMovesOutput(t *testing.T) {
+	sg := new(interfaces.MockScorpionGame)
+	setupScorpionWebMockDefaults(sg)
+	p := new(ScorpionWebPresenter)
+
+	// Web delegates legal-move previews to the normal state JSON (targets are
+	// computed client-side), so the output mirrors Output.
+	result := parseScorpionOutput(t, p.LegalMovesOutput(sg, 0))
+	assert.Equal(t, "scorpion.playing", result.MessageCode)
+}
+
 func TestScorpionWebPresenter_HintOutput(t *testing.T) {
 	t.Run("with hint", func(t *testing.T) {
 		sg := new(interfaces.MockScorpionGame)

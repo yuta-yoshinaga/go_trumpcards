@@ -22,7 +22,7 @@ var scorpionNoArgCommands = cuiutil.NewCommandMap[usecase.ScorpionInteractorIF](
 
 // scorpionArgfulCommands lists alias names for argful commands handled in the
 // Exec switch.
-var scorpionArgfulCommands = []string{"m", "move"}
+var scorpionArgfulCommands = []string{"m", "move", "legal"}
 
 // ScorpionCuiController スコーピオンCUIコントローラークラス
 type ScorpionCuiController struct {
@@ -47,6 +47,8 @@ func (c *ScorpionCuiController) Exec(command string) string {
 			switch cmd {
 			case "m", "move":
 				return c.handleMove(args), true
+			case "legal":
+				return c.handleLegal(args), true
 			default:
 				return "", false
 			}
@@ -92,6 +94,20 @@ func (c *ScorpionCuiController) handleMove(args []string) string {
 		return i18n.Tf("invalidColumn", "val", args[4])
 	}
 	return c.si.MoveTableauToTableau(fromCol, cardIdx, toCol)
+}
+
+// handleLegal previews the legal destination columns for the top card of the
+// given column. In Scorpion an empty column only accepts a King.
+// Format: legal <col>
+func (c *ScorpionCuiController) handleLegal(args []string) string {
+	if len(args) == 0 {
+		return cuiutil.PromptRequest(i18n.T("scorpion.promptFromColumn"), "legal {0}")
+	}
+	col, err := strconv.Atoi(args[0])
+	if err != nil {
+		return i18n.Tf("invalidColumn", "val", args[0])
+	}
+	return c.si.LegalMoves(col)
 }
 
 func (c *ScorpionCuiController) handleMoveShorthand(args []string) string {

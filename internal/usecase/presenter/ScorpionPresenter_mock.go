@@ -23,6 +23,11 @@ func (_m *MockScorpionPresenter) HintOutput(s interfaces.ScorpionGame) string {
 	return ret.String(0)
 }
 
+func (_m *MockScorpionPresenter) LegalMovesOutput(s interfaces.ScorpionGame, col int) string {
+	ret := _m.Called(s, col)
+	return ret.String(0)
+}
+
 func (_m *MockScorpionPresenter) ActionLogOutput(s interfaces.ScorpionGame) string {
 	ret := _m.Called(s)
 	return ret.String(0)
