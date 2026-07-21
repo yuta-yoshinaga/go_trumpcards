@@ -23,6 +23,11 @@ func (_m *MockWaspPresenter) HintOutput(s interfaces.WaspGame) string {
 	return ret.String(0)
 }
 
+func (_m *MockWaspPresenter) LegalMovesOutput(s interfaces.WaspGame, col int) string {
+	ret := _m.Called(s, col)
+	return ret.String(0)
+}
+
 func (_m *MockWaspPresenter) ActionLogOutput(s interfaces.WaspGame) string {
 	ret := _m.Called(s)
 	return ret.String(0)

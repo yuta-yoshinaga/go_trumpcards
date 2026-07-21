@@ -57,6 +57,12 @@ func (p *WaspWebPresenter) HintOutput(s interfaces.WaspGame) string {
 	return marshalOrError(resObj)
 }
 
+// LegalMovesOutput は合法な移動先を返す。Web版は WaspPage の waspLegalTargets が
+// クライアント側で移動先を算出・ハイライトするため、通常の状態JSONへ委譲する。
+func (p *WaspWebPresenter) LegalMovesOutput(s interfaces.WaspGame, _ int) string {
+	return p.Output(s, nil)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (p *WaspWebPresenter) ActionLogOutput(s interfaces.WaspGame) string {
 	return actionLogOutputJSON(s)

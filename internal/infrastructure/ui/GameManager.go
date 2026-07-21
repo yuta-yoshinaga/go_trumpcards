@@ -1145,6 +1145,7 @@ var gameRegistry = []GameRegistryEntry{
 					"wasp.helpDeal",
 					"wasp.helpGiveUp",
 					"wasp.helpHint",
+					"wasp.helpLegal",
 					"wasp.helpAutoComplete",
 				},
 				ExtraCommandLines: []string{"  l                        action log"},

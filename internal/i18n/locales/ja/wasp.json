@@ -5,6 +5,7 @@
   "helpDeal": "  d                    deal 3 stock cards to columns 0-2",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
+  "helpLegal": "  legal <col>          list legal destinations for the column's top card",
   "helpAutoComplete": "  ac                   auto-complete",
   "promptFromColumn": "移動元の列番号を入力してください",
   "promptCardIndex": "カード番号を入力してください",
@@ -19,5 +20,11 @@
   "header": "完成スーツ: {{completed}}/{{total}} | 山札: {{stock}}枚",
   "columnLabel": "列{{col}}:",
   "hintDeal": "ヒント: d でストックから配ってください",
-  "hintLine": "ヒント: タブロー列{{fromCol}}[{{idx}}] → タブロー列{{toCol}}"
+  "hintLine": "ヒント: タブロー列{{fromCol}}[{{idx}}] → タブロー列{{toCol}}",
+  "legalHeader": "列{{col}}のトップカード{{card}}の合法な移動先:",
+  "legalTarget": "  列{{col}} ({{card}}の上)",
+  "legalTargetEmpty": "  列{{col}} (空列 — 任意のカード可)",
+  "legalNone": "  なし",
+  "legalNoCard": "列{{col}}には移動可能な表向きカードがありません",
+  "legalNotPlaying": "表示できる合法手はありません（プレイ中ではありません）"
 }

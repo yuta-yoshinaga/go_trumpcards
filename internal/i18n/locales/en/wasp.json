@@ -5,6 +5,7 @@
   "helpDeal": "  d                    deal 3 stock cards to columns 0-2",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
+  "helpLegal": "  legal <col>          list legal destinations for the column's top card",
   "helpAutoComplete": "  ac                   auto-complete",
   "promptFromColumn": "Enter source column number",
   "promptCardIndex": "Enter card index",
@@ -19,5 +20,11 @@
   "header": "Completed: {{completed}}/{{total}} | Stock: {{stock}}",
   "columnLabel": "Column {{col}}:",
   "hintDeal": "Hint: deal stock cards with d",
-  "hintLine": "Hint: tableau column {{fromCol}}[{{idx}}] → tableau column {{toCol}}"
+  "hintLine": "Hint: tableau column {{fromCol}}[{{idx}}] → tableau column {{toCol}}",
+  "legalHeader": "Legal destinations for column {{col}} top card {{card}}:",
+  "legalTarget": "  column {{col}} (onto {{card}})",
+  "legalTargetEmpty": "  column {{col}} (empty — accepts any card)",
+  "legalNone": "  none",
+  "legalNoCard": "Column {{col}} has no movable face-up card",
+  "legalNotPlaying": "No legal moves to show (game is not in play)"
 }
