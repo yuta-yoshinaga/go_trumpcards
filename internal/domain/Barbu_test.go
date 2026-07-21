@@ -528,6 +528,61 @@ func TestBarbuDealDetail_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, d.Gained, got.Gained)
 }
 
+// --- Deal history retention ---
+
+func TestBarbuDealHistory_AppendsAndResets(t *testing.T) {
+	b := domain.NewDefaultBarbu()
+	b.Reset()
+	// A fresh game has an empty (non-nil) history.
+	assert.Empty(t, b.GetDealHistory())
+
+	// Finishing a deal records exactly one entry mirroring the last deal detail.
+	b.BarbuTestSetContract(domain.BarbuContractNoTricks, -1)
+	b.BarbuTestAddTrick(0, []*domain.Card{card(domain.CardDesignSpade, 5)})
+	b.BarbuTestFinishDeal()
+	hist := b.GetDealHistory()
+	require.Len(t, hist, 1)
+	assert.Same(t, b.GetLastDealDetail(), hist[0])
+	assert.Equal(t, domain.BarbuContractNoTricks, hist[0].Contract)
+
+	// Reset clears the retained history.
+	b.Reset()
+	assert.Empty(t, b.GetDealHistory())
+}
+
+func TestBarbuDealHistory_JSONRoundTrip(t *testing.T) {
+	b := domain.NewDefaultBarbu()
+	b.Reset()
+	b.BarbuTestSetContract(domain.BarbuContractTrumps, domain.CardDesignSpade)
+	b.BarbuTestAddTrick(0, []*domain.Card{card(domain.CardDesignSpade, 5)})
+	b.BarbuTestFinishDeal()
+
+	data, err := json.Marshal(b)
+	require.NoError(t, err)
+	var got domain.Barbu
+	require.NoError(t, json.Unmarshal(data, &got))
+	require.Len(t, got.GetDealHistory(), 1)
+	assert.Equal(t, domain.BarbuContractTrumps, got.GetDealHistory()[0].Contract)
+}
+
+func TestBarbuDealHistory_UnmarshalRejectsOversizedHistory(t *testing.T) {
+	// Build a valid state then swap in an oversized deal-history array.
+	b := domain.NewDefaultBarbu()
+	b.Reset()
+	data, err := json.Marshal(b)
+	require.NoError(t, err)
+	var raw map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &raw))
+	big := make([]map[string]int, 1001)
+	rawBig, err := json.Marshal(big)
+	require.NoError(t, err)
+	raw["dh"] = rawBig
+	tampered, err := json.Marshal(raw)
+	require.NoError(t, err)
+	var got domain.Barbu
+	assert.Error(t, json.Unmarshal(tampered, &got))
+}
+
 // --- NextDeal guard ---
 
 func TestBarbuNextDeal_RotatesDealer(t *testing.T) {

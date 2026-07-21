@@ -69,6 +69,11 @@
     "lose": "Lose",
     "draw": "Draw"
   },
+  "history": {
+    "caption": "Score by deal (completed)",
+    "deal": "#",
+    "contract": "Contract"
+  },
   "hint": {
     "win": "Trumps contract — try to win this trick.",
     "avoid": "Negative contract — play a low card and avoid taking the trick.",

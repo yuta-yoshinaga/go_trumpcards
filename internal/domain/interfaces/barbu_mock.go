@@ -160,6 +160,15 @@ func (_m *MockBarbuGame) GetLastDealDetail() *domain.BarbuDealDetail {
 	return nil
 }
 
+// GetDealHistory モック
+func (_m *MockBarbuGame) GetDealHistory() []*domain.BarbuDealDetail {
+	ret := _m.Called()
+	if v, ok := ret.Get(0).([]*domain.BarbuDealDetail); ok {
+		return v
+	}
+	return nil
+}
+
 // GetConfig モック
 func (_m *MockBarbuGame) GetConfig() domain.BarbuConfig {
 	ret := _m.Called()

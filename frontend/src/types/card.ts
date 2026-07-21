@@ -9178,6 +9178,7 @@ export interface BarbuResponse extends BaseGameResponse {
   config: BarbuConfig;
   roundWinners: number[];
   lastDealDetail: BarbuDealDetail | null;
+  dealHistory: BarbuDealDetail[];
 }
 
 // --- Spite and Malice (スパイト・アンド・マリス) ---

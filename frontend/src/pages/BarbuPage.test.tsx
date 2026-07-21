@@ -48,6 +48,7 @@ function makeState(overrides: Partial<BarbuResponse> = {}): BarbuResponse {
     config: { cpuDifficulty: 1 },
     roundWinners: [],
     lastDealDetail: null,
+    dealHistory: [],
     message: '',
     ...overrides,
   };
@@ -162,6 +163,41 @@ describe('BarbuPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('pass-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: -1 }));
+  });
+
+  it('shows the deal × player score matrix at deal end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'dealEnd',
+        currentContract: 0,
+        dealHistory: [
+          { contract: 0, trumpSuit: -1, dealerIdx: 0, gained: { 0: -4, 1: 0, 2: -2, 3: 0 } },
+          { contract: 5, trumpSuit: 1, dealerIdx: 1, gained: { 0: 5, 1: 10, 2: 0, 3: 5 } },
+        ],
+      }),
+    );
+    renderWithProviders(<BarbuPage />);
+    const matrix = await screen.findByTestId('bb-score-matrix');
+    // Two recorded deals => two body rows.
+    expect(matrix.querySelectorAll('tbody tr')).toHaveLength(2);
+    // Positive gains are rendered with a leading plus sign.
+    expect(matrix).toHaveTextContent('+10');
+    // The Trumps row shows its suit symbol.
+    expect(matrix).toHaveTextContent('♠');
+  });
+
+  it('hides the score matrix while a deal is in progress', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'play',
+        currentContract: 0,
+        currentTurn: 0,
+        dealHistory: [{ contract: 0, trumpSuit: -1, dealerIdx: 0, gained: { 0: -4, 1: 0, 2: -2, 3: 0 } }],
+      }),
+    );
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(screen.getByTestId('play-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('bb-score-matrix')).not.toBeInTheDocument();
   });
 
   it('shows the next-deal button at deal end', async () => {

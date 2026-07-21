@@ -77,6 +77,22 @@ func TestBarbuWebPresenter_GameEnd(t *testing.T) {
 	assert.NotEmpty(t, out.RoundWinners)
 }
 
+func TestBarbuWebPresenter_DealHistory(t *testing.T) {
+	b := domain.NewDefaultBarbu()
+	b.Reset()
+	// Record one completed deal.
+	b.BarbuTestSetContract(domain.BarbuContractNoTricks, -1)
+	b.BarbuTestAddTrick(0, []*domain.Card{bcard(domain.CardDesignSpade, 5)})
+	b.BarbuTestFinishDeal()
+
+	p := new(presenter.BarbuWebPresenter)
+	var out controller.BarbuWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.Output(b, nil)), &out))
+	require.Len(t, out.DealHistory, 1)
+	assert.Equal(t, domain.BarbuContractNoTricks, out.DealHistory[0].Contract)
+	assert.Equal(t, 0, out.DealHistory[0].DealerIdx)
+}
+
 func TestBarbuWebPresenter_ActionLog(t *testing.T) {
 	b := domain.NewDefaultBarbu()
 	b.Reset()

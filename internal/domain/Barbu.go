@@ -96,6 +96,7 @@ type Barbu struct {
 	dominoFinished  int // Dominoes で上がった人数
 	gameEndFlag     bool
 	lastDealDetail  *BarbuDealDetail
+	dealHistory     []*BarbuDealDetail // 完了した各ディールの得点内訳 (最大 BarbuTotalDeals 件)
 	actionLog       []*ActionLogEntry
 }
 
@@ -133,6 +134,7 @@ func (b *Barbu) Reset() {
 	b.gameEndFlag = false
 	b.usedContracts = [BarbuPlayerCnt][BarbuContractCnt]bool{}
 	b.lastDealDetail = nil
+	b.dealHistory = make([]*BarbuDealDetail, 0, BarbuTotalDeals)
 	b.actionLog = make([]*ActionLogEntry, 0)
 	b.startDeal()
 }
@@ -387,6 +389,7 @@ func (b *Barbu) cardBeats(candidate, current *Card, leadSuit int) bool {
 func (b *Barbu) finishDeal() {
 	detail := b.scoreDeal()
 	b.lastDealDetail = detail
+	b.dealHistory = append(b.dealHistory, detail)
 	for i, p := range b.players {
 		p.AddScore(detail.Gained[i])
 	}
@@ -533,6 +536,9 @@ func (b *Barbu) GetUsedContracts(dealerIdx int) [BarbuContractCnt]bool {
 // GetLastDealDetail は直前ディールの得点内訳を返す (nil の場合もある)。
 func (b *Barbu) GetLastDealDetail() *BarbuDealDetail { return b.lastDealDetail }
 
+// GetDealHistory は完了した各ディールの得点内訳を古い順に返す。
+func (b *Barbu) GetDealHistory() []*BarbuDealDetail { return b.dealHistory }
+
 // GetConfig はローカルルール設定を返す。
 func (b *Barbu) GetConfig() BarbuConfig { return b.config }
 
@@ -586,6 +592,7 @@ type barbuJSON struct {
 	DominoFinished  int                                    `json:"df"`
 	GameEndFlag     bool                                   `json:"ge"`
 	LastDealDetail  *BarbuDealDetail                       `json:"ld"`
+	DealHistory     []*BarbuDealDetail                     `json:"dh"`
 	ActionLog       []*ActionLogEntry                      `json:"al"`
 }
 
@@ -615,6 +622,7 @@ func (b *Barbu) MarshalJSON() ([]byte, error) {
 		DominoFinished:  b.dominoFinished,
 		GameEndFlag:     b.gameEndFlag,
 		LastDealDetail:  b.lastDealDetail,
+		DealHistory:     b.dealHistory,
 		ActionLog:       b.actionLog,
 	})
 }
@@ -626,7 +634,8 @@ func (b *Barbu) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Players) > barbuMaxSliceLen || len(j.CurrentTrick) > barbuMaxSliceLen ||
-		len(j.LastTrick) > barbuMaxSliceLen || len(j.ActionLog) > barbuMaxSliceLen {
+		len(j.LastTrick) > barbuMaxSliceLen || len(j.ActionLog) > barbuMaxSliceLen ||
+		len(j.DealHistory) > barbuMaxSliceLen {
 		return fmt.Errorf("barbu: input array exceeds maximum allowed size")
 	}
 	if j.TrumpCards == nil {
@@ -658,6 +667,7 @@ func (b *Barbu) UnmarshalJSON(data []byte) error {
 	b.dominoFinished = j.DominoFinished
 	b.gameEndFlag = j.GameEndFlag
 	b.lastDealDetail = j.LastDealDetail
+	b.dealHistory = j.dealHistoryOrEmpty()
 	b.actionLog = j.actionLogOrEmpty()
 	return nil
 }
@@ -668,6 +678,14 @@ func (j barbuJSON) actionLogOrEmpty() []*ActionLogEntry {
 		return make([]*ActionLogEntry, 0)
 	}
 	return j.ActionLog
+}
+
+// dealHistoryOrEmpty returns the deal history, defaulting to an empty slice.
+func (j barbuJSON) dealHistoryOrEmpty() []*BarbuDealDetail {
+	if j.DealHistory == nil {
+		return make([]*BarbuDealDetail, 0, BarbuTotalDeals)
+	}
+	return j.DealHistory
 }
 
 // barbuTrickCardJSON / BarbuDealDetail serialization ------------------------
