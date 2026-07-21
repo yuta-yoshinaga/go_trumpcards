@@ -17,6 +17,15 @@
     "rebuy": "リバイ/アドオン"
   },
   "communityCards": "コミュニティカード",
+  "boardLow": {
+    "label": "ロー",
+    "live": "成立圏",
+    "possible": "成立可能",
+    "impossible": "不成立確定",
+    "ariaLive": "ボードに8以下が3ランクあり、ロー成立圏です",
+    "ariaPossible": "ロー成立まであと{{needed}}ランク（8以下）が必要です",
+    "ariaImpossible": "ボードの8以下が3ランク未満のため、ローは不成立確定です"
+  },
   "yourHand": "あなたの手札",
   "mandatoryRule": "ルール: 手札から2枚 + 場札から3枚 (Hi/Lo別に組合せ可)",
   "mandatoryRuleAria": "Hi-Loルール: ハイとローそれぞれで手札2枚と場札3枚を使います",

@@ -45,7 +45,7 @@ import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaComman
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { omahaBestFive } from '../utils/omahaBestFive';
-import { lowCardIndexSets } from '../utils/omahaLowCards';
+import { type BoardLowStatus, boardLowPossibility, lowCardIndexSets } from '../utils/omahaLowCards';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** Omaha Hi-Lo (8 or Better) tutorial step definitions. */
@@ -153,6 +153,44 @@ function OmahaLoCard({
         </>
       )}
     </div>
+  );
+}
+
+/** Design-system token classes per board-low status (live=success, possible=info, impossible=muted). */
+const BOARD_LOW_STATUS_CLASS: Readonly<Record<BoardLowStatus, string>> = {
+  live: 'border-ds-success bg-ds-success/20 text-ds-success',
+  possible: 'border-ds-info bg-ds-info/20 text-ds-info',
+  impossible: 'border-ds-border bg-ds-surface text-ds-text-muted',
+};
+
+/** Additive badge showing whether the community board can still make a qualifying
+ * Omaha Hi-Lo low (8-or-better): 3+ distinct low ranks on board = live, still
+ * reachable = possible, mathematically out = impossible. Inspects the board only. */
+function BoardLowBadge({
+  communityCards,
+  t,
+}: {
+  communityCards: Card[];
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}) {
+  const { status, needed } = boardLowPossibility(communityCards);
+  const aria =
+    status === 'live'
+      ? t('boardLow.ariaLive')
+      : status === 'possible'
+        ? t('boardLow.ariaPossible', { needed })
+        : t('boardLow.ariaImpossible');
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${BOARD_LOW_STATUS_CLASS[status]}`}
+      data-testid="omahahilo-board-low-badge"
+      data-status={status}
+      title={aria}
+    >
+      <span aria-hidden="true">{t('boardLow.label')}:</span>
+      <span aria-hidden="true">{t(`boardLow.${status}`)}</span>
+      <span className="sr-only">{aria}</span>
+    </span>
   );
 }
 
@@ -318,7 +356,12 @@ function OmahaHiLoPageContent() {
             {(() => {
               const communityCardsContent = (
                 <>
-                  <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
+                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                    <span className="text-ds-text-primary text-lg">{t('communityCards')}</span>
+                    {phase >= OmahaPhase.FLOP && phase <= OmahaPhase.RIVER && (
+                      <BoardLowBadge communityCards={state?.communityCards ?? []} t={t} />
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {
