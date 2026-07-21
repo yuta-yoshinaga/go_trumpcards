@@ -45,6 +45,7 @@ import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaComman
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { omahaBestFive } from '../utils/omahaBestFive';
+import { hiLoRingStyle } from '../utils/omahaHiLoRing';
 import { lowCardIndexSets } from '../utils/omahaLowCards';
 import { findPlayerName } from '../utils/playerUtils';
 
@@ -275,16 +276,13 @@ function BigOHiLoPageContent() {
                           const inBest = showdownBest5.boardSet.has(idx);
                           const inLo = lowSets.loBoardSet.has(idx);
                           const dim = showdownBest5.boardSet.size > 0 && !inBest && !inLo;
-                          const ring = inLo
-                            ? 'ring-2 ring-ds-info motion-safe:animate-pulse'
-                            : inBest
-                              ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse'
-                              : '';
+                          const { category, ring } = hiLoRingStyle(inBest, inLo);
                           return (
                             <div
                               key={`${card.design}-${card.value}`}
                               className={`transition-all ${ring} ${dim ? 'opacity-50' : ''}`}
                               data-best5-board={inBest || undefined}
+                              data-hilo={category === 'none' ? undefined : category}
                               data-testid={inLo ? 'bigohilo-lo-card' : undefined}
                             >
                               <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
@@ -485,16 +483,13 @@ function BigOHiLoPageContent() {
                         const inBest = showdownBest5.holeSet.has(idx);
                         const inLo = lowSets.loHoleSet.has(idx);
                         const dim = showdownBest5.holeSet.size > 0 && !inBest && !inLo;
-                        const ring = inLo
-                          ? 'ring-2 ring-ds-info motion-safe:animate-pulse'
-                          : inBest
-                            ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse'
-                            : '';
+                        const { category, ring } = hiLoRingStyle(inBest, inLo);
                         return (
                           <div
                             key={`${card.design}-${card.value}`}
                             className={`transition-all ${ring} ${dim ? 'opacity-50' : ''}`}
                             data-best5-hole={inBest || undefined}
+                            data-hilo={category === 'none' ? undefined : category}
                             data-testid={inLo ? 'bigohilo-lo-card' : undefined}
                           >
                             <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
