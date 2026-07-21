@@ -361,6 +361,42 @@ describe('BourrePage', () => {
     });
   });
 
+  it('settings: changing CPU difficulty resets the game with the config', async () => {
+    renderWithProviders(<BourrePage />);
+    const select = (await screen.findByTestId('bourre-difficulty')) as HTMLSelectElement;
+    expect(select.value).toBe('0');
+    fireEvent.change(select, { target: { value: '2' } });
+    await waitFor(() => {
+      expect(mockExec).toHaveBeenCalledWith(
+        expect.objectContaining({ command: 'reset', config: { cpuDifficulty: 2 } }),
+      );
+    });
+    expect(select.value).toBe('2');
+  });
+
+  it('settings: the next-game button reuses the selected CPU difficulty', async () => {
+    // At game end the footer button fires reset directly (no confirm dialog).
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'gameEnd',
+        gameEndFlag: true,
+        winnerIdx: 0,
+        results: [{ playerIdx: 0, tricks: 5, wonAmount: 50, bourreed: false, folded: false }],
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+    const select = (await screen.findByTestId('bourre-difficulty')) as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: '1' } });
+    await waitFor(() => expect(select.value).toBe('1'));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => {
+      expect(mockExec).toHaveBeenCalledWith(
+        expect.objectContaining({ command: 'reset', config: { cpuDifficulty: 1 } }),
+      );
+    });
+  });
+
   it('toggles CLI mode', async () => {
     renderWithProviders(<BourrePage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());

@@ -1,5 +1,9 @@
 {
   "title": "Bourré",
+  "settings": {
+    "cpuDifficulty": "CPU difficulty",
+    "cpuDifficultyNote": "Difficulty changes take effect from the next game."
+  },
   "decideSummary": "Pot: {{pot}} chips | Play and win no tricks: {{penalty}}-chip penalty (folding avoids it)",
   "decideSummaryHelp": "If you play and take zero tricks you are 'bourréd' and pay {{penalty}} chips. Folding incurs no penalty.",
   "label": {

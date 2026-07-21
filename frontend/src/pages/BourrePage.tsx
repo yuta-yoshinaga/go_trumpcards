@@ -3,6 +3,7 @@ import { bourreApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -35,6 +36,13 @@ type ApiArgs = {
 };
 
 const BOURRE_PENALTY_WARN_THRESHOLD = 10;
+
+// Values match the Go domain constants (BourreConfig.go): 0=Normal, 1=Easy, 2=Hard.
+const DIFFICULTY_OPTIONS = [
+  { value: '0', label: 'Normal' },
+  { value: '1', label: 'Easy' },
+  { value: '2', label: 'Hard' },
+];
 
 /** Plain-text trump-suit glyph for the CLI formatter: a suit symbol, or '-' when unset. */
 function trumpSuitText(design: string): string {
@@ -134,10 +142,11 @@ function BourrePageContent() {
   const { playSound } = useSound();
 
   const [selectedCards, setSelectedCards] = useState<Set<number>>(new Set());
+  const [cpuDifficulty, setCpuDifficulty] = useState(0);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only reset
   useEffect(() => {
-    void apiCall({ command: 'reset' });
+    void apiCall({ command: 'reset', config: { cpuDifficulty } });
   }, []);
 
   const phase = state?.phase ?? '';
@@ -181,8 +190,16 @@ function BourrePageContent() {
     void apiCall({ command: 'next' });
   }, [apiCall]);
   const handleReset = useCallback(() => {
-    void apiCall({ command: 'reset' });
-  }, [apiCall]);
+    void apiCall({ command: 'reset', config: { cpuDifficulty } });
+  }, [apiCall, cpuDifficulty]);
+
+  const handleDifficultyChange = useCallback(
+    (value: number) => {
+      setCpuDifficulty(value);
+      void apiCall({ command: 'reset', config: { cpuDifficulty: value } });
+    },
+    [apiCall],
+  );
 
   const toggleCard = useCallback((idx: number) => {
     setSelectedCards((prev) => {
@@ -405,6 +422,25 @@ function BourrePageContent() {
           />
         </div>
       )}
+      <SettingsPanel
+        title={tc('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select' as const,
+                id: 'cpuDifficulty',
+                label: t('settings.cpuDifficulty'),
+                tooltip: t('settings.cpuDifficultyNote'),
+                value: String(cpuDifficulty),
+                options: DIFFICULTY_OPTIONS,
+                onSelect: (v: string) => handleDifficultyChange(Number.parseInt(v, 10)),
+                testId: 'bourre-difficulty',
+              },
+            ],
+          },
+        ]}
+      />
       <GameFooter className={gameTheme.bourre.footer}>
         <GameResetButton
           isGameEnd={isGameEnd}
