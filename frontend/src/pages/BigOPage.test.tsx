@@ -601,6 +601,32 @@ describe('BigOPage', () => {
     expect(screen.getByAltText('♣ 5')).toBeInTheDocument();
   });
 
+  // ---- mobile hole-card layout (#3007) ----
+  it('keeps the 5 hole cards on a single scrollable row on mobile (no wrap)', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(preFlopState);
+      renderWithProviders(<BigOPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+      const hole = screen.getByTestId('bigo-hole-cards');
+      expect(hole.className).toContain('flex-nowrap');
+      expect(hole.className).toContain('overflow-x-auto');
+      expect(hole.className).not.toContain('flex-wrap');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: original });
+    }
+  });
+
+  it('wraps the hole cards on desktop (no horizontal scroll)', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    const hole = screen.getByTestId('bigo-hole-cards');
+    expect(hole.className).toContain('flex-wrap');
+    expect(hole.className).not.toContain('overflow-x-auto');
+  });
+
   it('shows CardBack for human when cards is empty and not folded', async () => {
     mockExec.mockResolvedValue({
       ...preFlopState,
