@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -11,6 +12,7 @@ import (
 type PigsTailWebInput struct {
 	BaseWebInput
 	CpuHesitationEnabled bool `json:"cpuHesitationEnabled"`
+	PlayerCount          *int `json:"playerCount,omitempty"`
 }
 
 // PigsTailWebOutputPlayer ぶたのしっぽWebアウトプットプレイヤー
@@ -67,9 +69,9 @@ func newPigsTailDefaultOutput(msg string) *PigsTailWebOutput {
 func pigsTailDispatch(bc *baseController, w http.ResponseWriter, pti usecase.PigsTailInteractorIF, param PigsTailWebInput, _ func(string) *PigsTailWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		cfg := domain.PigsTailConfig{
-			CpuHesitationEnabled: param.CpuHesitationEnabled,
-		}
+		cfg := domain.DefaultPigsTailConfig()
+		cfg.CpuHesitationEnabled = param.CpuHesitationEnabled
+		webutil.ApplyBoundedInt(&cfg.PlayerCount, param.PlayerCount, domain.PigsTailMinPlayers, domain.PigsTailMaxPlayers)
 		bc.writePresenterResponse(w, pti.Reset(cfg))
 	case "d", "draw":
 		bc.writePresenterResponse(w, pti.Action(0))

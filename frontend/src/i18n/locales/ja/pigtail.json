@@ -1,7 +1,9 @@
 {
   "setup": {
     "title": "ぶたのしっぽ 設定",
-    "start": "ゲーム開始"
+    "start": "ゲーム開始",
+    "playerCount": "参加人数",
+    "playerCountUnit": "{{count}}人"
   },
   "button": {
     "draw": "山札から引く",

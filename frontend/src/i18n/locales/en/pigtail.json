@@ -1,7 +1,9 @@
 {
   "setup": {
     "title": "Pig's Tail Settings",
-    "start": "Start Game"
+    "start": "Start Game",
+    "playerCount": "Players",
+    "playerCountUnit": "{{count}} players"
   },
   "button": {
     "draw": "Draw from Circle",

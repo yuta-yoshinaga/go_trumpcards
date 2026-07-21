@@ -216,9 +216,33 @@ func TestPigsTail_SetConfig(t *testing.T) {
 	assert.Equal(t, cfg, pt.GetConfig())
 }
 
+func TestPigsTail_Reset_RebuildsRosterFromConfig(t *testing.T) {
+	pt, _ := newTestPigsTail()
+	for _, count := range []int{PigsTailMinPlayers, 3, PigsTailMaxPlayers} {
+		pt.SetConfig(PigsTailConfig{PlayerCount: count})
+		pt.Reset()
+		assert.Equal(t, count, pt.GetPlayerCnt())
+		// 常に人間がちょうど1人。
+		humans := 0
+		for i := 0; i < pt.GetPlayerCnt(); i++ {
+			if pt.GetPlayer(i).GetIsHuman() {
+				humans++
+			}
+		}
+		assert.Equal(t, 1, humans)
+	}
+}
+
+func TestPigsTail_Reset_ClampsOutOfRangePlayerCount(t *testing.T) {
+	pt, _ := newTestPigsTail()
+	pt.SetConfig(PigsTailConfig{PlayerCount: 99})
+	pt.Reset()
+	assert.Equal(t, PigsTailMaxPlayers, pt.GetPlayerCnt())
+}
+
 func TestPigsTail_CpuHesitation(t *testing.T) {
 	pt, _ := newTestPigsTail()
-	pt.SetConfig(PigsTailConfig{CpuHesitationEnabled: true})
+	pt.SetConfig(PigsTailConfig{CpuHesitationEnabled: true, PlayerCount: PigsTailPlayerCnt})
 	pt.Reset()
 
 	// Find a CPU player's turn

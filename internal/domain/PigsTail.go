@@ -89,16 +89,27 @@ func NewPigsTail(trumpCards *TrumpCards, players []*PigsTailPlayer) *PigsTail {
 	}
 }
 
+// buildPigsTailPlayers builds a roster of the given size: 1 human followed by
+// (count-1) CPUs. The count is clamped to the supported range so callers can
+// pass an unvalidated config value safely.
+func buildPigsTailPlayers(count int) []*PigsTailPlayer {
+	if count < PigsTailMinPlayers {
+		count = PigsTailMinPlayers
+	} else if count > PigsTailMaxPlayers {
+		count = PigsTailMaxPlayers
+	}
+	players := make([]*PigsTailPlayer, count)
+	players[0] = NewPigsTailPlayer(true)
+	for i := 1; i < count; i++ {
+		players[i] = NewPigsTailPlayer(false)
+	}
+	return players
+}
+
 // NewDefaultPigsTail returns PigsTail with the standard 4-player setup (1 human, 3 CPU).
 // Used as the single source of truth for CUI, Web, and Worker construction sites.
 func NewDefaultPigsTail() *PigsTail {
-	players := []*PigsTailPlayer{
-		NewPigsTailPlayer(true),
-		NewPigsTailPlayer(false),
-		NewPigsTailPlayer(false),
-		NewPigsTailPlayer(false),
-	}
-	return NewPigsTail(NewTrumpCards(0), players)
+	return NewPigsTail(NewTrumpCards(0), buildPigsTailPlayers(PigsTailPlayerCnt))
 }
 
 // SetConfig ゲーム設定をセット
@@ -119,8 +130,8 @@ func (pt *PigsTail) Reset() {
 	pt.center = make([]*Card, 0)
 	pt.actionLog = nil
 
-	// 全プレイヤーのカードリセット
-	resetPlayers(pt.players, func(_ *PigsTailPlayer) {})
+	// 設定の参加人数に合わせてロスター (人間1 + CPU) を再構築する。
+	pt.players = buildPigsTailPlayers(pt.config.PlayerCount)
 
 	// プレイ順をランダムにする
 	rand.Shuffle(len(pt.players), func(i, j int) {

@@ -4,6 +4,7 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CircularDeck } from '../components/CircularDeck';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
@@ -43,6 +44,12 @@ function centerCardLabel(card: Card): string {
 
 /** Max number of recent center-pile tops kept in the client-side tail strip. */
 const CENTER_HISTORY_MAX = 6;
+
+/** Default participant count (1 human + 3 CPU). Mirrors the domain default. */
+const PIGTAIL_DEFAULT_PLAYER_COUNT = 4;
+
+/** Selectable participant counts (1 human + CPUs). Mirrors the domain 2..6 range. */
+const PIGTAIL_PLAYER_COUNT_OPTIONS = [2, 3, 4, 5, 6] as const;
 
 const PT_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -86,8 +93,9 @@ function PigsTailPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pigtail');
   const { state, loading, exec: execApi } = useGameApi(pigtailApi.exec);
+  const [playerCount, setPlayerCount] = useState<number>(PIGTAIL_DEFAULT_PLAYER_COUNT);
   const handleDraw = useCallback(() => execApi('draw'), [execApi]);
-  const handleReset = useCallback(() => execApi('reset'), [execApi]);
+  const handleReset = useCallback(() => execApi('reset', undefined, playerCount), [execApi, playerCount]);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('pigtail', state);
 
   useMountReset(execApi);
@@ -172,6 +180,27 @@ function PigsTailPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <SettingsPanel
+            title={t('setup.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'select' as const,
+                    id: 'playerCount',
+                    label: t('setup.playerCount'),
+                    value: playerCount,
+                    options: PIGTAIL_PLAYER_COUNT_OPTIONS.map((n) => ({
+                      value: n,
+                      label: t('setup.playerCountUnit', { count: n }),
+                    })),
+                    onSelect: (v) => setPlayerCount(Number(v)),
+                    testId: 'pigtail-player-count',
+                  },
+                ],
+              },
+            ]}
+          />
           {penaltyFlash > 0 && (
             <div
               aria-hidden="true"

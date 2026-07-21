@@ -4533,8 +4533,8 @@ export const acesupApi = {
 
 /** Pig's Tail game API client. */
 export const pigtailApi = {
-  exec: (command: 'reset' | 'draw', cpuHesitationEnabled?: boolean) =>
-    gameExec<PigsTailResponse>('pigtail', { command, cpuHesitationEnabled }),
+  exec: (command: 'reset' | 'draw', cpuHesitationEnabled?: boolean, playerCount?: number) =>
+    gameExec<PigsTailResponse>('pigtail', { command, cpuHesitationEnabled, playerCount }),
 };
 
 /** API client for the Clock Solitaire /clocksolitaire/exec endpoint. */
