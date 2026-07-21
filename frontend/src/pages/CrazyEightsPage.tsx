@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { crazyeightsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -22,7 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -34,6 +34,12 @@ import { CRAZYEIGHTS_HELP, parseCrazyeightsCommand } from '../utils/cli/commands
 import { formatCrazyeightsState } from '../utils/cli/formatters/crazyeightsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isCrazyEightsLegalPlay } from '../utils/crazyEightsLegal';
+import {
+  type CrazyEightsSortMode,
+  loadCrazyEightsSortMode,
+  saveCrazyEightsSortMode,
+  sortedCrazyEightsHand,
+} from '../utils/crazyEightsSort';
 import { playerName } from '../utils/playerUtils';
 
 const CRAZYEIGHTS_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -67,6 +73,13 @@ const SUIT_NAME_KEYS: Record<number, string> = {
 
 /** DOM id linking each illegal card button to the shared screen-reader reason text. */
 const ILLEGAL_REASON_ID = 'ce-illegal-reason';
+
+/** Hand sort options for the Crazy Eights footer. */
+const CRAZYEIGHTS_SORT_MODES: { mode: CrazyEightsSortMode; labelKey: string }[] = [
+  { mode: 'original', labelKey: 'sort.original' },
+  { mode: 'rank', labelKey: 'sort.rank' },
+  { mode: 'suit', labelKey: 'sort.suit' },
+];
 
 /** Crazy Eights tutorial step definitions. */
 const CE_TUTORIAL_STEPS: TutorialStep[] = [
@@ -139,9 +152,32 @@ function CrazyEightsPageContent() {
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
+  // Display-only hand sort: reorders the rendered hand while every click maps
+  // back to the card's ORIGINAL server index, so selection/play stay correct.
+  const [sortMode, setSortMode] = useState<CrazyEightsSortMode>(loadCrazyEightsSortMode);
+  const handleSortMode = useCallback((mode: CrazyEightsSortMode) => {
+    setSortMode(mode);
+    saveCrazyEightsSortMode(mode);
+  }, []);
+
   const isPlayPhaseForKbd = state?.phase === CrazyEightsPhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
-  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  const humanCardsForKbd = state?.players.find((p) => p.isHuman)?.cards;
+  const humanCardCountForKbd = humanCardsForKbd?.length ?? 0;
+
+  // Original server indices in current display order, so the digit keys select
+  // the visually Nth card (following the sort) while still toggling its real index.
+  const displayIndexOrder = useMemo(
+    () => (humanCardsForKbd ? sortedCrazyEightsHand(humanCardsForKbd, sortMode).map((e) => e.index) : []),
+    [humanCardsForKbd, sortMode],
+  );
+  const toggleByDisplayIndex = useCallback(
+    (displayIdx: number) => {
+      const original = displayIndexOrder[displayIdx];
+      if (original !== undefined) toggleCard(original);
+    },
+    [displayIndexOrder, toggleCard],
+  );
 
   const confirmAction = useCallback(() => {
     handlePlay();
@@ -157,7 +193,7 @@ function CrazyEightsPageContent() {
 
   useCardKeyboardNav({
     cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
+    onToggle: toggleByDisplayIndex,
     onConfirm: confirmAction,
     onClear: clearSelection,
     enabled: !!isHumanTurnForKbd && !loading,
@@ -345,6 +381,23 @@ function CrazyEightsPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.crazyeights.footer} px-4 py-2.5`}>
+            {humanPlayer && humanPlayer.cards.length > 0 && (
+              <fieldset className="flex flex-wrap justify-center gap-1.5 mb-2 border-0 p-0 m-0">
+                <legend className="sr-only">{t('sort.label')}</legend>
+                {CRAZYEIGHTS_SORT_MODES.map(({ mode, labelKey }) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => handleSortMode(mode)}
+                    className={sortMode === mode ? `${btnPrimary} min-w-[64px]` : `${btnSecondary} min-w-[64px]`}
+                    aria-pressed={sortMode === mode}
+                    data-testid={`ce-sort-${mode}`}
+                  >
+                    {t(labelKey)}
+                  </button>
+                ))}
+              </fieldset>
+            )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ce-player-hand">
                 {/* Shared screen-reader reason, referenced by every illegal card via
@@ -352,7 +405,7 @@ function CrazyEightsPageContent() {
                 <span id={ILLEGAL_REASON_ID} className="sr-only">
                   {t('illegalHint')}
                 </span>
-                {humanPlayer.cards.map((card, idx) => {
+                {sortedCrazyEightsHand(humanPlayer.cards, sortMode).map(({ card, index: idx }) => {
                   // On the human's turn, highlight playable cards (matching suit/rank or an 8)
                   // and dim the rest with a reason tooltip, so the rule is visible at a glance.
                   const legal = !isHumanTurn || isCrazyEightsLegalPlay(card, state.discardTop, state.chosenSuit);
