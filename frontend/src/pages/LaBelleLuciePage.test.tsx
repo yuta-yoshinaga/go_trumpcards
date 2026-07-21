@@ -63,6 +63,49 @@ describe('LaBelleLuciePage', () => {
     expect(screen.queryByTestId('ll-stuck-banner')).not.toBeInTheDocument();
   });
 
+  it('shows the deadlock banner and pulses give up when redeals are exhausted with no move', async () => {
+    // No legal move AND no redeals left -> true deadlock.
+    mockExec.mockResolvedValue(
+      makeState({
+        fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
+        foundation: [[], [], [], []],
+        redealsLeft: 0,
+      }),
+    );
+    renderWithProviders(<LaBelleLuciePage />);
+    await waitFor(() => expect(screen.getByTestId('ll-deadlock-banner')).toBeInTheDocument());
+    // The redeal-recommendation banner must not show when redeals are gone.
+    expect(screen.queryByTestId('ll-stuck-banner')).not.toBeInTheDocument();
+    expect(screen.getByTestId('giveup-button').className).toContain('animate-pulse');
+  });
+
+  it('hides the deadlock banner when a legal move exists even with no redeals', async () => {
+    // Redeals exhausted but a move (SPADE 8 stacks under SPADE 9) still exists.
+    mockExec.mockResolvedValue(
+      makeState({
+        fans: [[card('SPADE', 9)], [card('SPADE', 8)], [card('DIAMOND', 1)]],
+        redealsLeft: 0,
+      }),
+    );
+    renderWithProviders(<LaBelleLuciePage />);
+    await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('ll-deadlock-banner')).not.toBeInTheDocument();
+    expect(screen.getByTestId('giveup-button').className).not.toContain('animate-pulse');
+  });
+
+  it('hides the deadlock banner while redeals remain', async () => {
+    // No move, but redeals remain -> stuck banner, not the deadlock banner.
+    mockExec.mockResolvedValue(
+      makeState({
+        fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
+        redealsLeft: 2,
+      }),
+    );
+    renderWithProviders(<LaBelleLuciePage />);
+    await waitFor(() => expect(screen.getByTestId('ll-stuck-banner')).toBeInTheDocument());
+    expect(screen.queryByTestId('ll-deadlock-banner')).not.toBeInTheDocument();
+  });
+
   it('renders fans and foundations', async () => {
     renderWithProviders(<LaBelleLuciePage />);
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
