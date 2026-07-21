@@ -17,6 +17,7 @@ import type { Card, VideoPokerResponse } from '../types/card';
 import { VideoPokerPhase } from '../types/phases';
 import type { CliGameConfig } from '../utils/cli/types';
 import { getVideoPokerBaseHint } from '../utils/hints/videoPokerBaseHint';
+import { evaluateJokerPokerMadeHand } from '../utils/jokerPokerMadeHand';
 import {
   VIDEO_POKER_MAX_BET,
   videoPokerHandNameToRowKey,
@@ -284,6 +285,16 @@ export function VideoPokerGameContent({
     return t('phase.result');
   }, [isBetPhase, isDrawPhase, t]);
 
+  // Joker Poker only: evaluate the current 5 cards during the draw phase so the
+  // player sees whether they already hold a paying hand (Kings or Better+). The
+  // readout depends solely on the dealt hand, so toggling holds never changes
+  // it, and it disappears once the phase leaves DRAW. `rowKey === null` means
+  // the hand does not reach the pay minimum.
+  const madeHand = useMemo(() => {
+    if (gameName !== 'jokerpoker' || !isDrawPhase || !state || state.hand.length !== 5) return null;
+    return evaluateJokerPokerMadeHand(state.hand);
+  }, [gameName, isDrawPhase, state]);
+
   const actionBindings = useMemo(
     () => [
       { key: 'b', action: handleDeal, enabled: isBetPhase },
@@ -361,6 +372,19 @@ export function VideoPokerGameContent({
             >
               {resultAnnounce}
             </div>
+
+            {madeHand && (
+              <div className="text-center mb-2" data-testid="vp-made-hand" aria-live="polite" aria-atomic="true">
+                <span className="text-ds-text-muted text-xs mr-1">{tNs('madeHand.label')}:</span>
+                {madeHand.rowKey ? (
+                  <span className="text-ds-success text-sm font-bold">
+                    {tNs(`payoutTable.name.${madeHand.rowKey}`)}
+                  </span>
+                ) : (
+                  <span className="text-ds-text-muted text-sm">{tNs('madeHand.none')}</span>
+                )}
+              </div>
+            )}
 
             {state.hand.length > 0 && (
               <div className="mb-4" data-tutorial="vp-hand">

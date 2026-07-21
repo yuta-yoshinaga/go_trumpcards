@@ -45,6 +45,10 @@
       "kingsOrBetter": "Kings or Better"
     }
   },
+  "madeHand": {
+    "label": "Current hand",
+    "none": "No paying hand"
+  },
   "tutorial": {
     "betControls": "Place 1–5 coins. The Joker acts as a wild card!",
     "hand": "Click cards to HOLD. Always hold the Joker — it's wild!",
