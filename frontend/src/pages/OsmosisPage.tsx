@@ -4,6 +4,7 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -23,6 +24,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
+import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, OsmosisResponse } from '../types/card';
@@ -146,6 +148,20 @@ function OsmosisPageContent() {
   const isGameClear = phase === OsmosisPhase.GAME_CLEAR;
   const isEnded = phase === OsmosisPhase.GAME_CLEAR || phase === OsmosisPhase.GAME_OVER;
 
+  // Drag-and-drop: dragging a waste/reserve top onto a foundation row issues the
+  // same `move` command as the click-to-select flow, so both interactions coexist.
+  const dispatchMove = useCallback(
+    (source: OsmosisMoveZone, target: OsmosisMoveZone) => {
+      execApi('move', source, target);
+    },
+    [execApi],
+  );
+  const dnd = useSolitaireDragDrop<OsmosisMoveZone>({
+    onMove: dispatchMove,
+    isPlaying,
+    disabled: loading,
+  });
+
   const phaseName = isGameClear
     ? t('phase.gameClear')
     : phase === OsmosisPhase.GAME_OVER
@@ -177,15 +193,20 @@ function OsmosisPageContent() {
   const topWaste = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const isSelected = (zone: OsmosisMoveZone) => !!selected && selected.zone === zone.zone && selected.col === zone.col;
 
-  // The actual card currently selected (waste top or a reserve-column top), used
-  // to flag foundation rows the card cannot be placed on.
-  let selectedCard: Card | null = null;
-  if (selected?.zone === 'waste') {
-    selectedCard = topWaste;
-  } else if (selected?.zone === 'reserve' && selected.col != null) {
-    const col = state.reserve[selected.col] ?? [];
-    selectedCard = col.length > 0 ? col[col.length - 1] : null;
-  }
+  // Resolve a source zone (waste top or a reserve-column top) to its actual card,
+  // used to flag foundation rows the card cannot be placed on.
+  const topCardOf = (zone: OsmosisMoveZone | null): Card | null => {
+    if (zone?.zone === 'waste') return topWaste;
+    if (zone?.zone === 'reserve' && zone.col != null) {
+      const col = state.reserve[zone.col] ?? [];
+      return col.length > 0 ? col[col.length - 1] : null;
+    }
+    return null;
+  };
+  // The card currently held via click selection or an in-flight drag; both drive
+  // the "cannot place here" foundation-row highlight.
+  const selectedCard = topCardOf(selected);
+  const draggedCard = topCardOf(dnd.dragSource);
 
   return (
     <GamePageShell
@@ -242,45 +263,61 @@ function OsmosisPageContent() {
             <div className="mb-3 flex flex-col gap-2" data-tutorial="os-foundation">
               <span className="text-xs text-ds-text-muted">{t('foundation')}</span>
               {state.foundation.map((pile, i) => {
+                const fZone: OsmosisMoveZone = { zone: 'foundation', col: i };
                 const allowed = osmosisAllowedRanks(state.foundation, state.baseRank, i);
-                const blocked =
+                // Click selection flags every invalid row; a drag only warns on the
+                // row currently hovered (the drop target).
+                const clickBlocked =
                   selectedCard != null && !osmosisCanPlace(state.foundation, state.baseRank, i, selectedCard);
+                const isDropHover = dnd.isDropTarget(fZone);
+                const dragBlocked =
+                  isDropHover &&
+                  draggedCard != null &&
+                  !osmosisCanPlace(state.foundation, state.baseRank, i, draggedCard);
+                const blocked = clickBlocked || dragBlocked;
                 return (
-                  <button
+                  <DropZone
                     key={`f-${i}`}
-                    type="button"
-                    onClick={() => handleFoundationClick(i)}
-                    disabled={!isPlaying || !selected || loading}
-                    aria-label={`${t('foundation')} ${i}`}
-                    title={blocked ? t('cannotPlaceHere') : undefined}
-                    className={
-                      blocked
-                        ? `flex items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-ds-error`
-                        : selected
-                          ? `flex items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-ds-info`
-                          : `flex items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-white/30`
-                    }
+                    isDropTarget={isDropHover && !dragBlocked}
+                    onDragOver={dnd.handleDragOver(fZone)}
+                    onDrop={dnd.handleDrop(fZone)}
+                    onDragLeave={dnd.handleDragLeave}
                   >
-                    <span className="w-5 text-xs text-ds-text-muted">#{i}</span>
-                    <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
-                      {pile.length > 0 ? (
-                        <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
-                      ) : (
-                        <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted/80">
-                          {t('foundation')}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs text-ds-text-muted">({pile.length})</span>
-                    <span className="text-xs text-ds-text-muted" data-testid={`os-allowed-${i}`}>
-                      {i === 0 && <span className="text-ds-warning">★ </span>}
-                      {allowed.length === 0
-                        ? '—'
-                        : i === 0 && pile.length > 0
-                          ? t('anyRank')
-                          : allowed.map((r) => RANK_LABELS[r]).join(' ')}
-                    </span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => handleFoundationClick(i)}
+                      disabled={!isPlaying || !selected || loading}
+                      aria-label={`${t('foundation')} ${i}`}
+                      title={blocked ? t('cannotPlaceHere') : undefined}
+                      className={
+                        blocked
+                          ? `flex w-full items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-ds-error`
+                          : selected || dnd.isDragging
+                            ? `flex w-full items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-ds-info`
+                            : `flex w-full items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-white/30`
+                      }
+                    >
+                      <span className="w-5 text-xs text-ds-text-muted">#{i}</span>
+                      <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
+                        {pile.length > 0 ? (
+                          <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} draggable={false} />
+                        ) : (
+                          <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted/80">
+                            {t('foundation')}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-ds-text-muted">({pile.length})</span>
+                      <span className="text-xs text-ds-text-muted" data-testid={`os-allowed-${i}`}>
+                        {i === 0 && <span className="text-ds-warning">★ </span>}
+                        {allowed.length === 0
+                          ? '—'
+                          : i === 0 && pile.length > 0
+                            ? t('anyRank')
+                            : allowed.map((r) => RANK_LABELS[r]).join(' ')}
+                      </span>
+                    </button>
+                  </DropZone>
                 );
               })}
             </div>
@@ -296,14 +333,17 @@ function OsmosisPageContent() {
                     {top ? (
                       <button
                         type="button"
+                        draggable={isPlaying && !loading}
+                        onDragStart={dnd.handleDragStart(zone)}
+                        onDragEnd={dnd.handleDragEnd}
                         onClick={() => handleSelectSource(zone)}
                         disabled={!isPlaying || loading}
                         aria-label={`${t('reserve')} ${i}`}
                         aria-pressed={isSelected(zone)}
                         className={
                           isSelected(zone)
-                            ? `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-ds-info`
-                            : `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-transparent`
+                            ? `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-ds-info ${dnd.isDragSource(zone) ? 'opacity-50' : ''}`
+                            : `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-transparent ${dnd.isDragSource(zone) ? 'opacity-50' : ''}`
                         }
                       >
                         <AnimatedCard card={top} width={cardWidth} draggable={false} />
@@ -347,14 +387,17 @@ function OsmosisPageContent() {
                   {topWaste ? (
                     <button
                       type="button"
+                      draggable={isPlaying && !loading}
+                      onDragStart={dnd.handleDragStart({ zone: 'waste' })}
+                      onDragEnd={dnd.handleDragEnd}
                       onClick={() => handleSelectSource({ zone: 'waste' })}
                       disabled={!isPlaying || loading}
                       aria-label={t('waste')}
                       aria-pressed={isSelected({ zone: 'waste' })}
                       className={
                         isSelected({ zone: 'waste' })
-                          ? `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-ds-info`
-                          : `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-transparent`
+                          ? `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-ds-info ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`
+                          : `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-transparent ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`
                       }
                     >
                       <AnimatedCard card={topWaste} width={cardWidth} draggable={false} />
