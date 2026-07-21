@@ -12,6 +12,7 @@
   "ante": "Ante",
   "settings": {
     "ante": "Ante",
+    "anteAmount": "Ante (applies next game)",
     "bettingLimit": "Betting Limit",
     "metaAI": "Meta AI"
   },

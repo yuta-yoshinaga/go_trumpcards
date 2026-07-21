@@ -760,6 +760,23 @@ describe('IndianPokerPage', () => {
     );
   });
 
+  // ---- ante select ----
+  it('sends updated ante when the ante select changes before reset', async () => {
+    renderWithProviders(<IndianPokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const anteSelect = screen.getByRole('combobox', { name: 'アンティ額（次のゲームから反映）' });
+    fireEvent.change(anteSelect, { target: { value: '50' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ante: 50, bettingLimit: 2, cpuMetaAI: true }),
+    );
+  });
+
   it('renders tutorial button', async () => {
     renderWithProviders(<IndianPokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());

@@ -91,7 +91,7 @@ function IndianPokerPageContent() {
   const isMobile = useIsMobile();
   const { state, loading, error, exec: execApi, retry } = useGameApi(indianpokerApi.exec);
   const [betAmount, setBetAmount] = useState(20);
-  const [ante] = useState(10);
+  const [ante, setAnte] = useState(10);
   const [bettingLimit, setBettingLimit] = useState(2);
   const [cpuMetaAI, setCpuMetaAI] = useState(true);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('indianpoker', state);
@@ -404,6 +404,19 @@ function IndianPokerPageContent() {
               groups={[
                 {
                   items: [
+                    {
+                      type: 'select' as const,
+                      id: 'indianpoker-ante',
+                      label: t('settings.anteAmount'),
+                      value: ante,
+                      options: [
+                        { value: 5, label: '5' },
+                        { value: 10, label: '10' },
+                        { value: 20, label: '20' },
+                        { value: 50, label: '50' },
+                      ],
+                      onSelect: (v: string) => setAnte(Number(v)),
+                    },
                     {
                       type: 'select' as const,
                       id: 'indianpoker-betting-limit',
