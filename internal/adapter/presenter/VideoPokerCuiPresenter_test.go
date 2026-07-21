@@ -265,47 +265,132 @@ func TestVideoPokerCuiPresenter_HintOutput(t *testing.T) {
 	defer color.SetNoColor(orig)
 	p := new(VideoPokerCuiPresenter)
 
-	deucesDraw := func(hand []*domain.Card) *interfaces.MockVideoPokerGame {
+	drawGame := func(variant string, hand []*domain.Card) *interfaces.MockVideoPokerGame {
 		m := new(interfaces.MockVideoPokerGame)
 		m.On("GetPhase").Return(domain.VideoPokerPhaseDraw)
-		m.On("GetVariantName").Return("deuceswild")
+		m.On("GetVariantName").Return(variant)
 		m.On("GetHand").Return(hand)
 		return m
 	}
+	holdPrefix := strings.SplitN(i18n.T("videopoker.hintHold"), "{{", 2)[0]
 
-	t.Run("holds deuces and a made pair", func(t *testing.T) {
+	t.Run("deuces wild holds deuces and a made pair", func(t *testing.T) {
 		hand := []*domain.Card{
 			domain.NewCard(domain.CardDesignSpade, 2, false),  // deuce (wild)
 			domain.NewCard(domain.CardDesignHeart, 8, false),  // pair of 8s
 			domain.NewCard(domain.CardDesignClover, 8, false), // pair of 8s
 			domain.NewCard(domain.CardDesignDiamond, 5, false),
-			domain.NewCard(domain.CardDesignSpade, 11, false),
+			domain.NewCard(domain.CardDesignHeart, 9, false),
 		}
-		out := p.HintOutput(deucesDraw(hand))
-		prefix := strings.SplitN(i18n.T("videopoker.hintHold"), "{{", 2)[0]
-		assert.Contains(t, out, prefix)
+		out := p.HintOutput(drawGame("deuceswild", hand))
+		assert.Contains(t, out, holdPrefix)
+		assert.Contains(t, out, i18n.T("videopoker.holdWildAndPair"))
 		assert.Contains(t, out, "[0]") // deuce
 		assert.Contains(t, out, "[1]") // pair
 		assert.Contains(t, out, "[2]") // pair
 		assert.NotContains(t, out, "[3]")
 	})
 
-	t.Run("recommends redraw with no deuces or pair", func(t *testing.T) {
+	t.Run("deuces wild holds the lone deuce", func(t *testing.T) {
+		hand := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 2, false), // deuce (wild)
+			domain.NewCard(domain.CardDesignHeart, 4, false),
+			domain.NewCard(domain.CardDesignClover, 7, false),
+			domain.NewCard(domain.CardDesignDiamond, 9, false),
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+		}
+		out := p.HintOutput(drawGame("deuceswild", hand))
+		assert.Contains(t, out, i18n.T("videopoker.holdWild"))
+		assert.Contains(t, out, "[0]")
+		assert.NotContains(t, out, "[1]")
+	})
+
+	t.Run("joker poker holds the joker", func(t *testing.T) {
+		hand := []*domain.Card{
+			domain.NewCard(domain.CardDesignJoker, 0, false), // joker (wild)
+			domain.NewCard(domain.CardDesignHeart, 4, false),
+			domain.NewCard(domain.CardDesignClover, 7, false),
+			domain.NewCard(domain.CardDesignDiamond, 9, false),
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+		}
+		out := p.HintOutput(drawGame("jokerpoker", hand))
+		assert.Contains(t, out, i18n.T("videopoker.holdWild"))
+		assert.Contains(t, out, "[0]")
+	})
+
+	t.Run("jacks or better holds a pair", func(t *testing.T) {
+		hand := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 8, false),
+			domain.NewCard(domain.CardDesignHeart, 8, false),
+			domain.NewCard(domain.CardDesignClover, 3, false),
+			domain.NewCard(domain.CardDesignDiamond, 5, false),
+			domain.NewCard(domain.CardDesignHeart, 9, false),
+		}
+		out := p.HintOutput(drawGame("jacksorbetter", hand))
+		assert.Contains(t, out, i18n.T("videopoker.holdPair"))
+		assert.Contains(t, out, "[0]")
+		assert.Contains(t, out, "[1]")
+		assert.NotContains(t, out, "[2]")
+	})
+
+	t.Run("jacks or better holds a flush draw", func(t *testing.T) {
+		hand := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			domain.NewCard(domain.CardDesignSpade, 6, false),
+			domain.NewCard(domain.CardDesignSpade, 8, false),
+			domain.NewCard(domain.CardDesignSpade, 10, false),
+			domain.NewCard(domain.CardDesignHeart, 4, false),
+		}
+		out := p.HintOutput(drawGame("jacksorbetter", hand))
+		assert.Contains(t, out, i18n.T("videopoker.holdFlushDraw"))
+		assert.Contains(t, out, "[0]")
+		assert.Contains(t, out, "[3]")
+		assert.NotContains(t, out, "[4]")
+	})
+
+	t.Run("jacks or better holds a straight draw", func(t *testing.T) {
+		hand := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignHeart, 6, false),
+			domain.NewCard(domain.CardDesignClover, 7, false),
+			domain.NewCard(domain.CardDesignDiamond, 8, false),
+			domain.NewCard(domain.CardDesignHeart, 10, false),
+		}
+		out := p.HintOutput(drawGame("jacksorbetter", hand))
+		assert.Contains(t, out, i18n.T("videopoker.holdStraightDraw"))
+		assert.Contains(t, out, "[0]")
+		assert.Contains(t, out, "[3]")
+		assert.NotContains(t, out, "[4]")
+	})
+
+	t.Run("jacks or better holds the high cards", func(t *testing.T) {
 		hand := []*domain.Card{
 			domain.NewCard(domain.CardDesignSpade, 3, false),
 			domain.NewCard(domain.CardDesignHeart, 7, false),
 			domain.NewCard(domain.CardDesignClover, 9, false),
-			domain.NewCard(domain.CardDesignDiamond, 11, false),
-			domain.NewCard(domain.CardDesignSpade, 13, false),
+			domain.NewCard(domain.CardDesignDiamond, 11, false), // jack
+			domain.NewCard(domain.CardDesignSpade, 13, false),   // king
 		}
-		assert.Contains(t, p.HintOutput(deucesDraw(hand)), i18n.T("videopoker.hintHoldNone"))
+		out := p.HintOutput(drawGame("jacksorbetter", hand))
+		assert.Contains(t, out, i18n.T("videopoker.holdHighCards"))
+		assert.Contains(t, out, "[3]")
+		assert.Contains(t, out, "[4]")
+		assert.NotContains(t, out, "[0]")
 	})
 
-	t.Run("no hint for a non-deuceswild variant", func(t *testing.T) {
-		m := new(interfaces.MockVideoPokerGame)
-		m.On("GetPhase").Return(domain.VideoPokerPhaseDraw)
-		m.On("GetVariantName").Return("jacksorbetter")
-		assert.Contains(t, p.HintOutput(m), i18n.T("videopoker.hintNone"))
+	t.Run("recommends redraw when nothing is worth keeping", func(t *testing.T) {
+		hand := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			domain.NewCard(domain.CardDesignHeart, 4, false),
+			domain.NewCard(domain.CardDesignClover, 6, false),
+			domain.NewCard(domain.CardDesignDiamond, 8, false),
+			domain.NewCard(domain.CardDesignHeart, 10, false),
+		}
+		assert.Contains(t, p.HintOutput(drawGame("jacksorbetter", hand)), i18n.T("videopoker.hintHoldNone"))
+	})
+
+	t.Run("no hint with an empty hand", func(t *testing.T) {
+		assert.Contains(t, p.HintOutput(drawGame("jacksorbetter", nil)), i18n.T("videopoker.hintNone"))
 	})
 
 	t.Run("no hint outside the draw phase", func(t *testing.T) {

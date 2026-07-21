@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 
@@ -115,37 +116,211 @@ func (vpp *VideoPokerCuiPresenter) phaseStr(phase int) string {
 	}
 }
 
-// videoPokerDeucesWildHold returns a hold mask for Deuces Wild: always hold the
-// wild deuces, plus any rank group of two or more (a made pair or better).
-func videoPokerDeucesWildHold(hand []*domain.Card) []bool {
-	hold := make([]bool, len(hand))
-	rankIdx := map[int][]int{}
-	for i, c := range hand {
-		if c.GetValue() == 2 { // deuces are wild
-			hold[i] = true
-			continue
-		}
-		rankIdx[c.GetValue()] = append(rankIdx[c.GetValue()], i)
+// videoPokerHighCardThreshold is the lowest rank (Jack) treated as a high card.
+const videoPokerHighCardThreshold = 11
+
+// videoPokerDrawCount is the minimum matching count that makes a flush or
+// straight draw worth holding (4 of the 5 cards).
+const videoPokerDrawCount = 4
+
+// videoPokerIsWild reports whether a card is wild for the given variant. Deuces
+// Wild treats every 2 as wild; Joker Poker treats the joker as wild; other
+// variants (Jacks or Better) have no wild cards.
+func videoPokerIsWild(variant string, c *domain.Card) bool {
+	if c == nil {
+		return false
 	}
-	for _, idxs := range rankIdx {
-		if len(idxs) >= 2 {
-			for _, i := range idxs {
+	switch variant {
+	case "deuceswild":
+		return c.GetValue() == 2
+	case "jokerpoker":
+		return c.GetDesign() == domain.CardDesignJoker
+	default:
+		return false
+	}
+}
+
+// videoPokerHold computes the recommended hold mask and a reason i18n key
+// (without the "videopoker." prefix) for a draw-phase hand. It is a faithful
+// port of the frontend getVideoPokerBaseHint heuristic
+// (frontend/src/utils/hints/videoPokerBaseHint.ts): hold wilds plus any made
+// pair, otherwise keep the best made group, a four-card flush/straight draw, or
+// the high cards. An empty mask (reason "") means redraw all five.
+func videoPokerHold(hand []*domain.Card, variant string) ([]bool, string) {
+	hold := make([]bool, len(hand))
+
+	// Wild-aware: always hold wilds, then any made pair-or-better among the rest.
+	var wildIdx []int
+	for i, c := range hand {
+		if videoPokerIsWild(variant, c) {
+			wildIdx = append(wildIdx, i)
+		}
+	}
+	if len(wildIdx) > 0 {
+		for _, i := range wildIdx {
+			hold[i] = true
+		}
+		pairIdx := videoPokerGroupIndices(hand, variant)
+		if len(pairIdx) >= 2 {
+			for _, i := range pairIdx {
 				hold[i] = true
+			}
+			return hold, "holdWildAndPair"
+		}
+		return hold, "holdWild"
+	}
+
+	// Made pair/trips/quads: hold every rank group of two or more.
+	groups := map[int][]int{}
+	for i, c := range hand {
+		groups[c.GetValue()] = append(groups[c.GetValue()], i)
+	}
+	var groupIdx []int
+	maxCount := 0
+	for _, idxs := range groups {
+		if len(idxs) >= 2 {
+			groupIdx = append(groupIdx, idxs...)
+			if len(idxs) > maxCount {
+				maxCount = len(idxs)
 			}
 		}
 	}
-	return hold
+	if len(groupIdx) > 0 {
+		for _, i := range groupIdx {
+			hold[i] = true
+		}
+		switch {
+		case maxCount >= 4:
+			return hold, "holdQuads"
+		case maxCount >= 3:
+			return hold, "holdTrips"
+		default:
+			return hold, "holdPair"
+		}
+	}
+
+	// Four-card flush draw.
+	if fd := videoPokerFlushDraw(hand); fd != nil {
+		for _, i := range fd {
+			hold[i] = true
+		}
+		return hold, "holdFlushDraw"
+	}
+
+	// Four-card straight draw.
+	if sd := videoPokerStraightDraw(hand); sd != nil {
+		for _, i := range sd {
+			hold[i] = true
+		}
+		return hold, "holdStraightDraw"
+	}
+
+	// High cards (Jack or higher, plus the ace).
+	var highIdx []int
+	for i, c := range hand {
+		if v := c.GetValue(); v == 1 || v >= videoPokerHighCardThreshold {
+			highIdx = append(highIdx, i)
+		}
+	}
+	if len(highIdx) > 0 {
+		for _, i := range highIdx {
+			hold[i] = true
+		}
+		return hold, "holdHighCards"
+	}
+
+	return hold, ""
 }
 
-// HintOutput recommends which cards to hold during the draw phase of Deuces
-// Wild (hold all deuces and any made pair-or-better). Other variants and phases
-// get no hint.
+// videoPokerGroupIndices returns the indices of all non-wild cards belonging to
+// a rank group of two or more.
+func videoPokerGroupIndices(hand []*domain.Card, variant string) []int {
+	groups := map[int][]int{}
+	for i, c := range hand {
+		if videoPokerIsWild(variant, c) {
+			continue
+		}
+		groups[c.GetValue()] = append(groups[c.GetValue()], i)
+	}
+	var idx []int
+	for _, idxs := range groups {
+		if len(idxs) >= 2 {
+			idx = append(idx, idxs...)
+		}
+	}
+	return idx
+}
+
+// videoPokerFlushDraw returns the indices of four or more same-suit cards, or
+// nil if none.
+func videoPokerFlushDraw(hand []*domain.Card) []int {
+	suits := map[int][]int{}
+	for i, c := range hand {
+		suits[c.GetDesign()] = append(suits[c.GetDesign()], i)
+	}
+	for _, idxs := range suits {
+		if len(idxs) >= videoPokerDrawCount {
+			return idxs
+		}
+	}
+	return nil
+}
+
+// videoPokerStraightDraw returns the indices of the longest run of four or more
+// consecutive ranks (aces count both low and high), or nil if none.
+func videoPokerStraightDraw(hand []*domain.Card) []int {
+	type entry struct{ value, index int }
+	entries := make([]entry, 0, len(hand)+1)
+	for i, c := range hand {
+		v := c.GetValue()
+		entries = append(entries, entry{v, i})
+		if v == 1 { // ace also plays high for 10-J-Q-K-A
+			entries = append(entries, entry{14, i})
+		}
+	}
+	sort.Slice(entries, func(a, b int) bool { return entries[a].value < entries[b].value })
+
+	var best []entry
+	for start := range entries {
+		seq := []entry{entries[start]}
+		for j := start + 1; j < len(entries); j++ {
+			last := seq[len(seq)-1].value
+			if entries[j].value == last+1 {
+				seq = append(seq, entries[j])
+			} else if entries[j].value != last {
+				break
+			}
+		}
+		if len(seq) > len(best) {
+			best = seq
+		}
+	}
+	if len(best) < videoPokerDrawCount {
+		return nil
+	}
+	seen := map[int]bool{}
+	var idx []int
+	for _, e := range best {
+		if !seen[e.index] {
+			seen[e.index] = true
+			idx = append(idx, e.index)
+		}
+	}
+	return idx
+}
+
+// HintOutput recommends which cards to hold during the draw phase for any Video
+// Poker variant (Jacks or Better, Deuces Wild, Joker Poker), based on the shared
+// getVideoPokerBaseHint heuristic. Outside the draw phase it returns no hint.
 func (p *VideoPokerCuiPresenter) HintOutput(g interfaces.VideoPokerGame) string {
-	if g.GetPhase() != domain.VideoPokerPhaseDraw || g.GetVariantName() != "deuceswild" {
+	if g.GetPhase() != domain.VideoPokerPhaseDraw {
 		return i18n.T("videopoker.hintNone") + "\n"
 	}
 	hand := g.GetHand()
-	hold := videoPokerDeucesWildHold(hand)
+	if len(hand) == 0 {
+		return i18n.T("videopoker.hintNone") + "\n"
+	}
+	hold, reasonKey := videoPokerHold(hand, g.GetVariantName())
 	var parts []string
 	for i, h := range hold {
 		if h {
@@ -155,5 +330,8 @@ func (p *VideoPokerCuiPresenter) HintOutput(g interfaces.VideoPokerGame) string 
 	if len(parts) == 0 {
 		return color.Yellow(i18n.T("videopoker.hintHoldNone")) + "\n"
 	}
-	return color.Yellow(i18n.Tf("videopoker.hintHold", "cards", strings.Join(parts, " "))) + "\n"
+	return color.Yellow(i18n.Tf("videopoker.hintHold",
+		"cards", strings.Join(parts, " "),
+		"reason", i18n.T("videopoker."+reasonKey),
+	)) + "\n"
 }

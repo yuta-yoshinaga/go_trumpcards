@@ -583,7 +583,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultVideoPoker(), new(presenter.VideoPokerCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:          "videopoker.helpTitle",
-				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold"},
+				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold", "videopoker.helpHint"},
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
@@ -593,7 +593,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDeucesWildVideoPoker(), new(presenter.VideoPokerCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:          "deuceswild.helpTitle",
-				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold"},
+				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold", "videopoker.helpHint"},
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
@@ -603,7 +603,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewJokerPokerVideoPoker(), new(presenter.VideoPokerCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:          "jokerpoker.helpTitle",
-				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold"},
+				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold", "videopoker.helpHint"},
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
