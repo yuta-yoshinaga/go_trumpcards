@@ -71,6 +71,19 @@ func TestCourtPieceCuiPresenter_Output_PhaseLabels(t *testing.T) {
 		out := p.Output(cp, nil)
 		assert.NotEmpty(t, out)
 	})
+
+	t.Run("caller and player lines render with team labels", func(t *testing.T) {
+		cp := newCourtPieceForCuiTest()
+		cp.SetPhase(domain.CourtPiecePhasePlay)
+		cp.SetTrumpSuit(domain.CardDesignSpade)
+		cp.SetCallerIdx(0)
+		out := p.Output(cp, nil)
+		// The caller line (which now carries the caller's team) and one player
+		// line per seat are rendered. Assertions key on the section markers
+		// because i18n templates resolve to their literal keys in tests.
+		assert.Contains(t, out, "courtpiece.callerLine")
+		assert.Contains(t, out, "courtpiece.playerLine")
+	})
 }
 
 func TestCourtPieceCuiPresenter_HintOutput(t *testing.T) {
