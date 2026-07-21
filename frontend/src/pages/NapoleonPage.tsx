@@ -41,10 +41,10 @@ import type { NapoleonResponse } from '../types/card';
 import { NapoleonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import { valueName } from '../utils/cardUtils';
 import { NAPOLEON_HELP, parseNapoleonCommand } from '../utils/cli/commands/napoleonCommands';
 import { formatNapoleonState } from '../utils/cli/formatters/napoleonFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { type AdjutantCardOption, buildAdjutantCardRows, isAdjutantCardInHand } from '../utils/napoleonAdjutant';
 import { playerName } from '../utils/playerUtils';
 
 /** Napoleon tutorial step definitions. */
@@ -150,8 +150,10 @@ function NapoleonPageContent() {
 
   const [bidValue, setBidValue] = useState(12);
   const [trumpSuitValue, setTrumpSuitValue] = useState(1);
-  const [adjSuitValue, setAdjSuitValue] = useState(1);
-  const [adjValueValue, setAdjValueValue] = useState(1);
+  // Adjutant designation: the card tapped in the visual picker, carrying the
+  // numeric (suit, value) the `trump` action submits (null until chosen).
+  const [adjSelection, setAdjSelection] = useState<AdjutantCardOption | null>(null);
+  const adjutantRows = useMemo(() => buildAdjutantCardRows(), []);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('napoleon');
   const cliConfig: CliGameConfig<NapoleonResponse, Parameters<typeof napoleonApi.exec>> = useMemo(
@@ -362,6 +364,53 @@ function NapoleonPageContent() {
                 {isHumanNapoleon && (
                   <div className="text-ds-warning text-center mb-2" data-tutorial="np-trump-declaration">
                     {t('trumpDeclarationPhase')}
+                  </div>
+                )}
+
+                {/* Adjutant card picker: tap a card face to designate the adjutant */}
+                {isHumanNapoleon && (
+                  <div className="my-2 p-2 rounded bg-black/40" data-testid="np-adjutant-picker">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('adjutantPickerLabel')}</div>
+                    <div className="text-ds-info text-xs mb-2">{t('adjutantInHandNote')}</div>
+                    <div className="overflow-x-auto -mx-1 px-1">
+                      <div className="flex flex-col gap-1 min-w-max">
+                        {adjutantRows.map((row, rowIdx) => (
+                          <div key={`adj-row-${SUIT_KEYS[row[0].suit] ?? 'joker'}-${rowIdx}`} className="flex gap-1">
+                            {row.map((opt) => {
+                              const isSelected = adjSelection?.suit === opt.suit && adjSelection?.value === opt.value;
+                              const inHand = isAdjutantCardInHand(opt, humanPlayer?.cards ?? []);
+                              return (
+                                <button
+                                  type="button"
+                                  key={`adj-${opt.card.design}-${opt.value}`}
+                                  data-testid={`np-adjutant-option-${opt.suit}-${opt.value}`}
+                                  onClick={() => setAdjSelection(opt)}
+                                  aria-label={cardAlt(opt.card)}
+                                  aria-pressed={isSelected}
+                                  title={inHand ? t('adjutantInHandNote') : undefined}
+                                  className={`transition-transform ${focusRingCard}`}
+                                  style={{
+                                    background: 'none',
+                                    padding: 0,
+                                    borderRadius: 8,
+                                    opacity: inHand && !isSelected ? 0.4 : 1,
+                                    ...selectedCardStyle(isSelected),
+                                    boxSizing: 'border-box',
+                                  }}
+                                >
+                                  <AnimatedCard card={opt.card} width={44} silent />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {adjSelection && (
+                      <div className="text-ds-text-primary text-sm mt-2" data-testid="np-adjutant-selected">
+                        {t('adjutantSelected', { card: cardAlt(adjSelection.card) })}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -631,7 +680,7 @@ function NapoleonPageContent() {
                 </>
               )}
 
-              {/* Trump declaration controls */}
+              {/* Trump declaration controls (adjutant card is chosen via the visual picker above) */}
               {isHumanNapoleon && (
                 <>
                   <select
@@ -646,40 +695,13 @@ function NapoleonPageContent() {
                       </option>
                     ))}
                   </select>
-                  <select
-                    value={adjSuitValue}
-                    onChange={(e) => setAdjSuitValue(Number(e.target.value))}
-                    className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
-                    aria-label={t('adjutantSuitLabel')}
-                  >
-                    <option value={0}>{t('joker')}</option>
-                    {[1, 2, 3, 4].map((s) => (
-                      <option key={s} value={s}>
-                        {t(`suitName.${SUIT_KEYS[s]}`)}
-                      </option>
-                    ))}
-                  </select>
-                  {adjSuitValue > 0 && (
-                    <select
-                      value={adjValueValue}
-                      onChange={(e) => setAdjValueValue(Number(e.target.value))}
-                      className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
-                      aria-label={t('adjutantValueLabel')}
-                    >
-                      {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
-                        <option key={v} value={v}>
-                          {valueName(v)}
-                        </option>
-                      ))}
-                    </select>
-                  )}
                   <button
                     type="button"
                     className={btnPrimary}
-                    onClick={() =>
-                      handleTrumpDeclaration(trumpSuitValue, adjSuitValue, adjSuitValue === 0 ? 0 : adjValueValue)
-                    }
-                    disabled={loading}
+                    onClick={() => {
+                      if (adjSelection) handleTrumpDeclaration(trumpSuitValue, adjSelection.suit, adjSelection.value);
+                    }}
+                    disabled={loading || !adjSelection}
                   >
                     {t('declareButton')}
                   </button>
