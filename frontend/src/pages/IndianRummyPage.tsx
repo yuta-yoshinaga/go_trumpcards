@@ -38,6 +38,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { INDIANRUMMY_HELP, parseIndianrummyCommand } from '../utils/cli/commands/indianrummyCommands';
 import { formatIndianrummyState } from '../utils/cli/formatters/indianrummyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { evaluateIndianRummyDeclare, INDIAN_RUMMY_HAND_SIZE } from '../utils/indianRummyDeclare';
 import { playerName } from '../utils/playerUtils';
 
 const INDIANRUMMY_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -148,6 +149,21 @@ function IndianRummyPageContent() {
   });
 
   const phaseNames = usePhaseNames('indianrummy', INDIANRUMMY_PHASE_KEYS);
+
+  // Client-side declaration preview: when a finish card is selected during the
+  // discard phase, evaluate whether the remaining 13 cards form a valid declare.
+  // The backend still re-validates on submit; this only powers a non-blocking hint.
+  const declarePreview = useMemo(() => {
+    if (!state || state.phase !== IndianRummyPhase.DISCARD) return null;
+    if (state.players[state.currentPlayerIdx]?.isHuman !== true) return null;
+    if (selectedCardIndices.length !== 1) return null;
+    const human = state.players.find((p) => p.isHuman);
+    if (!human) return null;
+    const finishIdx = selectedCardIndices[0];
+    const remaining = human.cards.filter((_, i) => i !== finishIdx);
+    if (remaining.length !== INDIAN_RUMMY_HAND_SIZE) return null;
+    return evaluateIndianRummyDeclare(remaining, state.wildRank);
+  }, [state, selectedCardIndices]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -404,6 +420,40 @@ function IndianRummyPageContent() {
 
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
+
+            {isDiscardPhase && isHumanTurn && declarePreview && (
+              <div
+                role="status"
+                aria-live="polite"
+                data-testid="indianrummy-declare-preview"
+                className={`mb-2 px-3 py-2 rounded text-sm ${
+                  declarePreview.valid ? 'bg-ds-success/20 text-ds-success' : 'bg-ds-warning/20 text-ds-warning'
+                }`}
+              >
+                {declarePreview.valid ? (
+                  <span data-testid="indianrummy-declare-preview-valid">{t('declarePreview.valid')}</span>
+                ) : (
+                  <div data-testid="indianrummy-declare-preview-invalid">
+                    <div className="font-semibold">{t('declarePreview.title')}</div>
+                    <ul className="list-disc list-inside">
+                      {!declarePreview.hasPureSequence && <li>{t('declarePreview.noPureSequence')}</li>}
+                      {declarePreview.unmeldedCount > 0 && (
+                        <li>
+                          {t('declarePreview.unmelded', {
+                            count: declarePreview.unmeldedCount,
+                            points: declarePreview.unmeldedPoints,
+                          })}
+                        </li>
+                      )}
+                      {declarePreview.hasPureSequence && declarePreview.unmeldedCount === 0 && (
+                        <li>{t('declarePreview.incomplete')}</li>
+                      )}
+                    </ul>
+                    <div>{t('declarePreview.penalty', { penalty: declarePreview.penalty })}</div>
+                  </div>
+                )}
+              </div>
             )}
 
             <div className="flex gap-2 items-center flex-wrap">

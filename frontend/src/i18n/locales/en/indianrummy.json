@@ -32,6 +32,14 @@
   "drawDiscardButton": "Draw Discard",
   "discardButton": "Discard",
   "declareButton": "Declare",
+  "declarePreview": {
+    "valid": "Ready to declare — valid arrangement",
+    "title": "Declaring now would be invalid",
+    "noPureSequence": "No pure sequence yet",
+    "unmelded": "{{count}} card(s) unmelded ({{points}} pts)",
+    "incomplete": "At least two sequences are required",
+    "penalty": "Declaring now costs +{{penalty}} pts"
+  },
   "nextRound": "Next Round",
   "drawPhase": "Draw a card from the stock or discard pile",
   "discardPhase": "Discard a card, or declare if your 13 cards are valid",
