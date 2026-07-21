@@ -10609,6 +10609,22 @@ export interface AllFoursConfig {
   pointLimit: number;
 }
 
+/** A High/Low point award: the capturing player and the trump card, or -1 if unawarded. */
+export interface AllFoursBreakdownAward {
+  winnerIdx: number;
+  card: Card | null;
+}
+
+/** The round-end point breakdown for All Fours (High/Low/Jack/Game). */
+export interface AllFoursRoundBreakdown {
+  high: AllFoursBreakdownAward;
+  low: AllFoursBreakdownAward;
+  /** Captor of the trump Jack, or -1 if no trump Jack was in play. */
+  jack: { winnerIdx: number };
+  /** Game point (most card pips): winner (-1 on tie/zero) and per-player pip totals. */
+  game: { winnerIdx: number; points: number[] };
+}
+
 /** Full All Fours game state returned from the API. */
 export interface AllFoursResponse extends BaseGameResponse {
   players: AllFoursPlayerData[];
@@ -10629,6 +10645,8 @@ export interface AllFoursResponse extends BaseGameResponse {
   winnerIdx: number;
   leadPlayerIdx: number;
   validPlayIndices: number[];
+  /** Present only at ROUND_END / GAME_END: the High/Low/Jack/Game point breakdown. */
+  roundBreakdown?: AllFoursRoundBreakdown;
   config: AllFoursConfig;
   hint?: AllFoursHint;
 }

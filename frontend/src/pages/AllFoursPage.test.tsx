@@ -194,4 +194,51 @@ describe('AllFoursPage', () => {
     renderWithProviders(<AllFoursPage />);
     await waitFor(() => expect(screen.getByText('あなたの勝利！')).toBeInTheDocument());
   });
+
+  it('renders the High/Low/Jack/Game breakdown at round end', async () => {
+    const roundEndState: AllFoursResponse = {
+      ...baseState,
+      phase: AllFoursPhase.ROUND_END,
+      roundBreakdown: {
+        high: { winnerIdx: 0, card: { design: 'HEART', value: 1 } },
+        low: { winnerIdx: 1, card: { design: 'HEART', value: 2 } },
+        jack: { winnerIdx: 0 },
+        game: { winnerIdx: 0, points: [5, 0] },
+      },
+    };
+    mockExec.mockResolvedValueOnce(roundEndState);
+    renderWithProviders(<AllFoursPage />);
+    const panel = await screen.findByTestId('af-breakdown');
+    expect(panel).toHaveTextContent('得点内訳');
+    expect(panel).toHaveTextContent('High');
+    expect(panel).toHaveTextContent('Jack');
+    // Per-player Game pip totals are shown.
+    expect(panel).toHaveTextContent('5 / 0');
+  });
+
+  it('shows "−" for the Jack row when no trump Jack was captured', async () => {
+    const roundEndState: AllFoursResponse = {
+      ...baseState,
+      phase: AllFoursPhase.ROUND_END,
+      roundBreakdown: {
+        high: { winnerIdx: 0, card: { design: 'HEART', value: 5 } },
+        low: { winnerIdx: 1, card: { design: 'HEART', value: 3 } },
+        jack: { winnerIdx: -1 },
+        game: { winnerIdx: -1, points: [0, 0] },
+      },
+    };
+    mockExec.mockResolvedValueOnce(roundEndState);
+    renderWithProviders(<AllFoursPage />);
+    const panel = await screen.findByTestId('af-breakdown');
+    // The Jack and Game rows both fall back to the em-dash placeholder.
+    expect(panel.querySelectorAll('td')).not.toHaveLength(0);
+    expect(panel).toHaveTextContent('−');
+  });
+
+  it('omits the breakdown panel outside round/game end', async () => {
+    mockExec.mockResolvedValueOnce(playState);
+    renderWithProviders(<AllFoursPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('af-breakdown')).not.toBeInTheDocument();
+  });
 });

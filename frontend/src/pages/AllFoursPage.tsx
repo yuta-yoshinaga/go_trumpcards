@@ -280,6 +280,54 @@ function AllFoursPageContent() {
               </table>
             </div>
 
+            {(isRoundEnd || isGameEnd) && state.roundBreakdown && (
+              <div
+                data-testid="af-breakdown"
+                className="border border-ds-border-subtle rounded p-2 mb-3 text-ds-text-primary"
+              >
+                <div className="text-xs uppercase opacity-60 mb-1">{t('breakdown.title')}</div>
+                <div className="overflow-x-auto">
+                  <table className="text-sm w-full border-collapse">
+                    <tbody>
+                      {(['high', 'low'] as const).map((k) => {
+                        const award = state.roundBreakdown?.[k];
+                        return (
+                          <tr key={k} className="border-b border-white/10">
+                            <td className="p-1 opacity-80 whitespace-nowrap">{t(`breakdown.${k}`)}</td>
+                            <td className="p-1">
+                              {!award || award.winnerIdx < 0
+                                ? t('breakdown.none')
+                                : findPlayerName(state.players, award.winnerIdx)}
+                            </td>
+                            <td className="p-1">
+                              {award?.card && <CardImage card={award.card} width={Math.round(cardWidth * 0.6)} />}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      <tr className="border-b border-white/10">
+                        <td className="p-1 opacity-80 whitespace-nowrap">{t('breakdown.jack')}</td>
+                        <td className="p-1" colSpan={2}>
+                          {state.roundBreakdown.jack.winnerIdx < 0
+                            ? t('breakdown.none')
+                            : findPlayerName(state.players, state.roundBreakdown.jack.winnerIdx)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="p-1 opacity-80 whitespace-nowrap">{t('breakdown.game')}</td>
+                        <td className="p-1" colSpan={2}>
+                          {state.roundBreakdown.game.winnerIdx < 0
+                            ? t('breakdown.none')
+                            : findPlayerName(state.players, state.roundBreakdown.game.winnerIdx)}
+                          <span className="opacity-50 ml-1">({state.roundBreakdown.game.points.join(' / ')})</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
             <div
               data-tutorial="af-trick-display"
               className="border border-ds-border-subtle rounded p-2 min-h-[80px] mb-3 text-ds-text-primary"
