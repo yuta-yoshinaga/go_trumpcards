@@ -16,5 +16,21 @@
   "payoutLine": "payout: {{payout}}",
   "hintNone": "No hint available.",
   "hintHold": "Hold recommendation: {{cards}} (h <idx...> to hold)",
-  "hintHoldNone": "Nothing to hold; consider redrawing all five."
+  "hintHoldNone": "Nothing to hold; consider redrawing all five.",
+  "payoutTitle": "--- PAYOUT TABLE (per coin) ---",
+  "payoutMaxBetNote": "(x800 at max bet)",
+  "ptRoyalFlush": "Royal Flush",
+  "ptNaturalRoyalFlush": "Natural Royal Flush",
+  "ptWildRoyalFlush": "Wild Royal Flush",
+  "ptFourDeuces": "Four Deuces",
+  "ptFiveOfAKind": "Five of a Kind",
+  "ptStraightFlush": "Straight Flush",
+  "ptFourOfAKind": "Four of a Kind",
+  "ptFullHouse": "Full House",
+  "ptFlush": "Flush",
+  "ptStraight": "Straight",
+  "ptThreeOfAKind": "Three of a Kind",
+  "ptTwoPair": "Two Pair",
+  "ptJacksOrBetter": "Jacks or Better",
+  "ptKingsOrBetter": "Kings or Better"
 }
