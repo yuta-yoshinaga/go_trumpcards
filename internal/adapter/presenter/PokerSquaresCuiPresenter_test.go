@@ -61,6 +61,44 @@ func TestPokerSquaresCuiPresenter_Output_Complete(t *testing.T) {
 	assert.NotContains(t, out, "カードを置く: p")
 }
 
+func TestPokerSquaresCuiPresenter_Hint_Synergy(t *testing.T) {
+	pg := new(interfaces.MockPokerSquaresGame)
+	pg.On("GetHint").Return(&domain.PokerSquaresHint{Row: 1, Col: 2, Score: 6, Synergy: true})
+	pg.On("GetCurrentCard").Return(domain.NewCard(domain.CardDesignSpade, 5, false))
+	p := &PokerSquaresCuiPresenter{}
+	out := p.HintOutput(pg)
+	assert.Contains(t, out, "ヒント")
+	assert.Contains(t, out, "(1,2)")
+	assert.Contains(t, out, "ペア")
+}
+
+func TestPokerSquaresCuiPresenter_Hint_NoSynergy(t *testing.T) {
+	pg := new(interfaces.MockPokerSquaresGame)
+	pg.On("GetHint").Return(&domain.PokerSquaresHint{Row: 0, Col: 0, Score: 0, Synergy: false})
+	pg.On("GetCurrentCard").Return(domain.NewCard(domain.CardDesignHeart, 9, false))
+	p := &PokerSquaresCuiPresenter{}
+	out := p.HintOutput(pg)
+	assert.Contains(t, out, "(0,0)")
+	assert.Contains(t, out, "相乗効果はありません")
+}
+
+func TestPokerSquaresCuiPresenter_Hint_None(t *testing.T) {
+	pg := new(interfaces.MockPokerSquaresGame)
+	pg.On("GetHint").Return((*domain.PokerSquaresHint)(nil))
+	p := &PokerSquaresCuiPresenter{}
+	out := p.HintOutput(pg)
+	assert.Contains(t, out, "ヒントはありません")
+}
+
+func TestPokerSquaresCuiPresenter_Hint_NoCurrentCard(t *testing.T) {
+	pg := new(interfaces.MockPokerSquaresGame)
+	pg.On("GetHint").Return(&domain.PokerSquaresHint{Row: 3, Col: 4, Score: 2, Synergy: true})
+	pg.On("GetCurrentCard").Return((*domain.Card)(nil))
+	p := &PokerSquaresCuiPresenter{}
+	out := p.HintOutput(pg)
+	assert.Contains(t, out, "(3,4)")
+}
+
 func TestPokerSquaresCuiPresenter_ActionLog_Playing(t *testing.T) {
 	pg := new(interfaces.MockPokerSquaresGame)
 	pg.On("GetPhase").Return(domain.PokerSquaresPhasePlaying)

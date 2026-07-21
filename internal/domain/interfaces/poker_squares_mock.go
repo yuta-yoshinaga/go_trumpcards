@@ -116,3 +116,13 @@ func (_m *MockPokerSquaresGame) GetGameEndFlag() bool {
 	ret := _m.Called()
 	return ret.Bool(0)
 }
+
+// GetHint モック
+func (_m *MockPokerSquaresGame) GetHint() *domain.PokerSquaresHint {
+	ret := _m.Called()
+	v := ret.Get(0)
+	if v == nil {
+		return nil
+	}
+	return v.(*domain.PokerSquaresHint)
+}

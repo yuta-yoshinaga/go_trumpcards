@@ -20,6 +20,8 @@ type PokerSquaresInteractorIF interface {
 	Undo() string
 	// GiveUp ギブアップ
 	GiveUp() string
+	// Hint 現在のカードを置く最善のセルのヒントを出力する
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -54,6 +56,11 @@ func (pi *PokerSquaresInteractor) Undo() string {
 // GiveUp ギブアップ
 func (pi *PokerSquaresInteractor) GiveUp() string {
 	return runAndPresent(pi.Game, pi.pp, pi.Game.GiveUp)
+}
+
+// Hint 現在のカードを置く最善のセルのヒントを出力する
+func (pi *PokerSquaresInteractor) Hint() string {
+	return pi.pp.HintOutput(pi.Game)
 }
 
 // ActionLog 棋譜を出力する

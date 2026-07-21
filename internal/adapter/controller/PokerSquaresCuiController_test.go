@@ -61,6 +61,14 @@ func TestPokerSquaresCuiController_GiveUp(t *testing.T) {
 	assert.Equal(t, "giveup_output", c.Exec("giveup"))
 }
 
+func TestPokerSquaresCuiController_Hint(t *testing.T) {
+	pi := newMockPokerSquaresInteractor()
+	c := NewPokerSquaresCuiController(pi)
+	pi.On("Hint").Return("hint_output")
+	assert.Equal(t, "hint_output", c.Exec("h"))
+	assert.Equal(t, "hint_output", c.Exec("hint"))
+}
+
 func TestPokerSquaresCuiController_ActionLog(t *testing.T) {
 	pi := newMockPokerSquaresInteractor()
 	c := NewPokerSquaresCuiController(pi)

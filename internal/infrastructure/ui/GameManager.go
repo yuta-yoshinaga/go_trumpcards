@@ -1023,6 +1023,7 @@ var gameRegistry = []GameRegistryEntry{
 				"  p <row> <col>            カードを配置 (0-4)",
 				"  u                        アンドゥ",
 				"  g                        ギブアップ",
+				"  h                        ヒント (現在のカードの最善配置)",
 				"  l                        action log",
 				"",
 				i18n.T("session"),
