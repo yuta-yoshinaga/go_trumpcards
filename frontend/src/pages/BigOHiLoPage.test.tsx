@@ -415,6 +415,64 @@ describe('BigOHiLoPage', () => {
     expect(screen.getByTestId('bigohilo-lo-badge')).toHaveTextContent('A 5 8 2 5');
   });
 
+  it('dual-highlights cards used by both Hi and Lo, distinct from hi-only and lo-only', async () => {
+    // Hole A♠ 2♠ + board 5♠ 6♠ 7♠ = A-high spade flush (Hi). Lo = A 3 5 6 7.
+    // → A♠ (hole) is used by BOTH; 2♠ is Hi-only; 3♦ is Lo-only.
+    const dualState: OmahaResponse = {
+      ...showdownState,
+      players: [
+        humanPlayer({
+          handName: 'フラッシュ',
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'SPADE', value: 2 },
+            { design: 'DIAMOND', value: 3 },
+            { design: 'HEART', value: 4 },
+            { design: 'CLOVER', value: 13 },
+          ],
+        }),
+        cpuPlayer(1, { folded: true }),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 5 },
+        { design: 'SPADE', value: 6 },
+        { design: 'SPADE', value: 7 },
+        { design: 'DIAMOND', value: 12 },
+        { design: 'CLOVER', value: 11 },
+      ],
+      roundResults: [
+        {
+          ...showdownState.roundResults[0],
+          hiWonAmount: 100,
+          lowWonAmount: 100,
+          lowBestHand: [
+            { design: 'SPADE', value: 1 },
+            { design: 'DIAMOND', value: 3 },
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'SPADE', value: 7 },
+          ],
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(dualState);
+    const { container } = renderWithProviders(<BigOHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('bigohilo-split')).toBeInTheDocument());
+    // A♠ (hole) + 5♠/6♠/7♠ (board) belong to both the flush and the low.
+    const both = container.querySelectorAll('[data-hilo="both"]');
+    expect(both.length).toBeGreaterThan(0);
+    // The dual ring carries both green (Hi) and blue-offset (Lo) attributes.
+    expect(both[0].className).toContain('ring-ds-success');
+    expect(both[0].className).toContain('ring-offset-ds-info');
+    // 2♠ is Hi-only (green, no blue); 3♦ is Lo-only (blue, no green).
+    const hiOnly = container.querySelectorAll('[data-hilo="hi"]');
+    const loOnly = container.querySelectorAll('[data-hilo="lo"]');
+    expect(hiOnly.length).toBeGreaterThan(0);
+    expect(loOnly.length).toBeGreaterThan(0);
+    expect(hiOnly[0].className).not.toContain('ring-offset-ds-info');
+    expect(loOnly[0].className).not.toContain('ring-ds-success');
+  });
+
   it('states Hi scoops the pot when no low qualifies', async () => {
     const hiOnlyState: OmahaResponse = {
       ...showdownState,
