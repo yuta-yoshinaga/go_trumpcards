@@ -55,6 +55,8 @@ type TeenPattiGame interface {
 	GetSideShowRequester() int
 	// GetSideShowTarget サイドショー対象者インデックスを取得する (-1=なし)
 	GetSideShowTarget() int
+	// GetLastSideShow 直近で成立したサイドショーの申請者・対象・敗者を返す (ok=false=結果なし)
+	GetLastSideShow() (requester, target, loser int, ok bool)
 	// GetGameEndFlag ゲーム終了フラグを取得する
 	GetGameEndFlag() bool
 	// GetMatchWinnerIdx 試合の勝者を取得する (-1=未確定)

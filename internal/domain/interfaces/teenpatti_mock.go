@@ -147,6 +147,12 @@ func (_m *MockTeenPattiGame) GetSideShowTarget() int {
 	return ret.Get(0).(int)
 }
 
+// GetLastSideShow モック
+func (_m *MockTeenPattiGame) GetLastSideShow() (int, int, int, bool) {
+	ret := _m.Called()
+	return ret.Int(0), ret.Int(1), ret.Int(2), ret.Bool(3)
+}
+
 // GetGameEndFlag モック
 func (_m *MockTeenPattiGame) GetGameEndFlag() bool {
 	ret := _m.Called()

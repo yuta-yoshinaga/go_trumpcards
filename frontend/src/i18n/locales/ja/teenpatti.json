@@ -53,6 +53,10 @@
   "betNotice": "あなたの番です — シー／ベット／レイズ／フォールドを選んでください。",
   "sideShowTitle": "サイドショー要求",
   "sideShowPending": "{{requester}} が {{target}} にサイドショーを要求しました。承諾か拒否を選んでください。",
+  "sideShowResult": {
+    "title": "サイドショー結果",
+    "outcome": "{{winner}}（{{winnerHand}}）が {{loser}}（{{loserHand}}）に勝ち、{{loser}} がフォールドしました。"
+  },
   "roundResult": {
     "title": "ディール結果",
     "winner": "{{name}} がポット {{pot}} を獲得しました。"
