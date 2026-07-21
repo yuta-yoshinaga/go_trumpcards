@@ -115,6 +115,16 @@ func TestScorpionInteractorHint(t *testing.T) {
 	assert.Equal(t, "hint_output", si.Hint())
 }
 
+func TestScorpionInteractorLegalMoves(t *testing.T) {
+	sg := newMockScorpionGame()
+	sp := newMockScorpionPresenter()
+	si := NewScorpionInteractor(sg, sp)
+
+	sp.On("LegalMovesOutput", sg, 2).Return("legal_output")
+
+	assert.Equal(t, "legal_output", si.LegalMoves(2))
+}
+
 func TestScorpionInteractorAutoComplete(t *testing.T) {
 	sg := newMockScorpionGame()
 	sp := newMockScorpionPresenter()

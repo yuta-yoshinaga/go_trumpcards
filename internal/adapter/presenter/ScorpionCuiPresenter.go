@@ -72,6 +72,59 @@ func (p *ScorpionCuiPresenter) HintOutput(s interfaces.ScorpionGame) string {
 		"toCol", strconv.Itoa(hint.ToCol)) + "\n"
 }
 
+// LegalMovesOutput lists the tableau columns onto which the top (last) card of
+// the given column may legally move. In Scorpion an empty column only accepts a
+// King, so empty columns are listed only when the moving card is a King.
+// Outside the playing phase, for an out-of-range column, or when the column has
+// no movable face-up card, an explanatory line is returned instead.
+func (p *ScorpionCuiPresenter) LegalMovesOutput(s interfaces.ScorpionGame, col int) string {
+	if s.GetPhase() != domain.ScorpionPhasePlaying {
+		return i18n.T("scorpion.legalNotPlaying") + "\n"
+	}
+	if col < 0 || col >= domain.ScorpionTableauCnt {
+		return i18n.Tf("invalidColumn", "val", strconv.Itoa(col)) + "\n"
+	}
+	tableau := s.GetTableau()
+	fromCards := tableau[col]
+	if len(fromCards) == 0 || !fromCards[len(fromCards)-1].FaceUp {
+		return i18n.Tf("scorpion.legalNoCard", "col", strconv.Itoa(col)) + "\n"
+	}
+	moving := fromCards[len(fromCards)-1].Card
+	isKing := moving.GetValue() == domain.CardValueMax
+
+	var b strings.Builder
+	b.WriteString(i18n.Tf("scorpion.legalHeader",
+		"col", strconv.Itoa(col),
+		"card", cuiCardStr(moving)) + "\n")
+
+	found := false
+	for idx := range domain.ScorpionTableauCnt {
+		if idx == col {
+			continue
+		}
+		colCards := tableau[idx]
+		if len(colCards) == 0 {
+			if isKing {
+				b.WriteString(i18n.Tf("scorpion.legalTargetEmpty", "col", strconv.Itoa(idx)) + "\n")
+				found = true
+			}
+			continue
+		}
+		top := colCards[len(colCards)-1]
+		if top.FaceUp && top.Card.GetDesign() == moving.GetDesign() &&
+			top.Card.GetValue() == moving.GetValue()+1 {
+			b.WriteString(i18n.Tf("scorpion.legalTarget",
+				"col", strconv.Itoa(idx),
+				"card", cuiCardStr(top.Card)) + "\n")
+			found = true
+		}
+	}
+	if !found {
+		b.WriteString(i18n.T("scorpion.legalNone") + "\n")
+	}
+	return b.String()
+}
+
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ScorpionCuiPresenter) ActionLogOutput(s interfaces.ScorpionGame) string {
 	if s.GetPhase() == domain.ScorpionPhasePlaying {

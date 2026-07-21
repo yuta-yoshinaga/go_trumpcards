@@ -57,6 +57,13 @@ func (p *ScorpionWebPresenter) HintOutput(s interfaces.ScorpionGame) string {
 	return marshalOrError(resObj)
 }
 
+// LegalMovesOutput は合法な移動先を返す。Web版は ScorpionPage が
+// scorpionLegalTargets でクライアント側に移動先を算出・ハイライトするため、
+// 通常の状態JSONへ委譲する。
+func (p *ScorpionWebPresenter) LegalMovesOutput(s interfaces.ScorpionGame, _ int) string {
+	return p.Output(s, nil)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (p *ScorpionWebPresenter) ActionLogOutput(s interfaces.ScorpionGame) string {
 	return actionLogOutputJSON(s)

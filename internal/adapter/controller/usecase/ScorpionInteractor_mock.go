@@ -36,6 +36,11 @@ func (_m *MockScorpionInteractor) Hint() string {
 	return ret.Get(0).(string)
 }
 
+func (_m *MockScorpionInteractor) LegalMoves(col int) string {
+	ret := _m.Called(col)
+	return ret.Get(0).(string)
+}
+
 func (_m *MockScorpionInteractor) AutoComplete() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
