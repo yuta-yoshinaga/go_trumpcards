@@ -431,7 +431,9 @@ describe('RazzPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ante: 1, tournamentMode: false, cpuMetaAI: false }),
+    );
   });
 
   it('uses outline style for reset button', async () => {
@@ -736,7 +738,32 @@ describe('RazzPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ante: 1, tournamentMode: false, cpuMetaAI: true }),
+    );
+  });
+
+  // ---- settings ante + tournament mode ----
+  it('changes ante and tournament mode, then passes them to reset', async () => {
+    renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const anteSelect = screen.getByTestId('razz-ante-select') as HTMLSelectElement;
+    fireEvent.change(anteSelect, { target: { value: '5' } });
+    expect(anteSelect.value).toBe('5');
+
+    const tournamentCheckbox = screen.getByRole('checkbox', { name: 'トーナメントモード' });
+    expect(tournamentCheckbox).not.toBeChecked();
+    fireEvent.click(tournamentCheckbox);
+    expect(tournamentCheckbox).toBeChecked();
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ante: 5, tournamentMode: true, cpuMetaAI: false }),
+    );
   });
 
   // ---- end phase + win celebration ----
