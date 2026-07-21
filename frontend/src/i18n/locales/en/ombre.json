@@ -23,8 +23,12 @@
   "bidEntrar": "Entrar",
   "bidSolo": "Solo",
   "bidPass": "Pass",
-  "bidPhase": "Bidding — pass, or pick a trump suit and declare entrar / solo.",
+  "bidPhase": "Bidding — first choose your bid (entrar / solo / pass), then pick a trump suit.",
   "chooseTrump": "Trump",
+  "chooseBidType": "Choose bid",
+  "chooseTrumpFor": "Trump for {{bid}}",
+  "confirmBid": "Confirm",
+  "bidBack": "Back",
   "suitNone": "-",
   "suitSpade": "Spades",
   "suitClub": "Clubs",
@@ -83,7 +87,7 @@
   "tutorial": {
     "trickDisplay": "This is the current trick. You must follow the led suit. The trump group ranks Spadille (♠A) > Manille (7 of trump) > Basto (♣A) > Punto (Ace of trump, red trumps only) > K > Q > J > 6..2 of trump; other suits rank K > Q > J > 7..A (black) or K > Q > J > A..7 (red).",
     "playerHand": "This is your hand. Click a playable card to select it. The Ombre plays alone against the coalition of the other two players.",
-    "playButton": "Once a card is selected, play it with this button. In the Bid phase pick a trump suit and declare entrar / solo, or pass.",
+    "playButton": "Once a card is selected, play it with this button. In the Bid phase first choose entrar / solo / pass, then for entrar or solo pick a trump suit and confirm.",
     "info": "Ombre (Hombre) is a 3-player soloist-vs-coalition trick-taker on a 40-card Spanish deck (no 8/9/10). A Bid phase (pass / entrar / solo) plus a chosen trump suit decides the Ombre, who plays alone against the coalition of the other two over nine tricks. Sacar (Ombre takes the most tricks) scores for the Ombre; Puesta (a tie) penalizes the Ombre; Codille (an opponent beats the Ombre) doubles the penalty. The highest cumulative score after the set number of deals wins the match.",
     "resetButton": "Use the reset button to start a new game."
   }
