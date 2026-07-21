@@ -738,4 +738,116 @@ describe('CrazyEightsPage', () => {
     renderWithProviders(<CrazyEightsPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  // -- Hand sort toggle (display-only) --
+
+  // Human hand where sorting visibly reorders: original order is [♥5, ♠3],
+  // but suit-sorted display is [♠3, ♥5]. The ♠3 stays at original index 1.
+  const sortableHandState: CrazyEightsResponse = {
+    ...playPhaseState,
+    players: [
+      {
+        id: 0,
+        isHuman: true,
+        cardCount: 2,
+        cards: [
+          { design: 'HEART', value: 5 },
+          { design: 'SPADE', value: 3 },
+        ],
+        roundScore: 0,
+        cumulativeScore: 0,
+      },
+      ...playPhaseState.players.slice(1),
+    ],
+  };
+
+  /** Returns the human hand's card aria-labels in current DOM (display) order. */
+  const handOrder = (container: HTMLElement): string[] =>
+    Array.from(container.querySelectorAll<HTMLElement>('[data-tutorial="ce-player-hand"] button[aria-label]')).map(
+      (b) => b.getAttribute('aria-label') ?? '',
+    );
+
+  it('renders the three sort-mode toggles with original selected by default', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(sortableHandState);
+    renderWithProviders(<CrazyEightsPage />);
+    const original = await screen.findByTestId('ce-sort-original');
+    expect(original).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('ce-sort-rank')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('ce-sort-suit')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('suit sort reorders the displayed hand while original order is served', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(sortableHandState);
+    const { container } = renderWithProviders(<CrazyEightsPage />);
+    await screen.findByTestId('ce-sort-suit');
+    // Original (served) order.
+    expect(handOrder(container)).toEqual(['♥ 5', '♠ 3']);
+
+    fireEvent.click(screen.getByTestId('ce-sort-suit'));
+    // Display re-sorted ♠ before ♥.
+    expect(handOrder(container)).toEqual(['♠ 3', '♥ 5']);
+    expect(screen.getByTestId('ce-sort-suit')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('plays the correct ORIGINAL index after the display is sorted', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(sortableHandState);
+    renderWithProviders(<CrazyEightsPage />);
+    await screen.findByTestId('ce-sort-suit');
+
+    // Sort by suit: ♠3 now renders first, but its original server index is 1.
+    fireEvent.click(screen.getByTestId('ce-sort-suit'));
+    fireEvent.click(screen.getByLabelText('♠ 3').closest('button') as HTMLButtonElement);
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(sortableHandState);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
+  });
+
+  it('keyboard digit selection follows the sorted display order', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(sortableHandState);
+    renderWithProviders(<CrazyEightsPage />);
+    await screen.findByTestId('ce-sort-suit');
+
+    fireEvent.click(screen.getByTestId('ce-sort-suit'));
+    // Digit "1" selects the visually first card (♠3 = original index 1).
+    fireEvent.keyDown(document, { key: '1' });
+    const spade = screen.getByLabelText('♠ 3').closest('button') as HTMLButtonElement;
+    expect(spade).toHaveAttribute('aria-pressed', 'true');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(sortableHandState);
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
+  });
+
+  it('persists the chosen sort mode to localStorage', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(sortableHandState);
+    renderWithProviders(<CrazyEightsPage />);
+    await screen.findByTestId('ce-sort-rank');
+
+    fireEvent.click(screen.getByTestId('ce-sort-rank'));
+    expect(localStorage.getItem('crazyeights-sort-mode')).toBe('rank');
+  });
+
+  it('does not render sort toggles when the human has no cards', async () => {
+    localStorage.clear();
+    const noCards: CrazyEightsResponse = {
+      ...playPhaseState,
+      players: [
+        { id: 0, isHuman: true, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0 },
+        ...playPhaseState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(noCards);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('ce-sort-original')).not.toBeInTheDocument();
+  });
 });

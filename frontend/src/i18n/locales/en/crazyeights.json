@@ -61,5 +61,11 @@
     "drawCard": "No playable cards — draw from the pile",
     "chooseMostSuit": "Choose the suit you have the most of"
   },
-  "illegalHint": "Can't play this card (no matching suit, rank, or 8)"
+  "illegalHint": "Can't play this card (no matching suit, rank, or 8)",
+  "sort": {
+    "label": "Sort hand",
+    "original": "Original",
+    "rank": "Rank",
+    "suit": "Suit"
+  }
 }
