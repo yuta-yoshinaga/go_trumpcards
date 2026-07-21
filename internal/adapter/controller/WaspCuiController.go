@@ -22,7 +22,7 @@ var waspNoArgCommands = cuiutil.NewCommandMap[usecase.WaspInteractorIF]().
 
 // waspArgfulCommands lists alias names for argful commands handled in the
 // Exec switch.
-var waspArgfulCommands = []string{"m", "move"}
+var waspArgfulCommands = []string{"m", "move", "legal"}
 
 // WaspCuiController ワスプCUIコントローラークラス
 type WaspCuiController struct {
@@ -47,6 +47,8 @@ func (c *WaspCuiController) Exec(command string) string {
 			switch cmd {
 			case "m", "move":
 				return c.handleMove(args), true
+			case "legal":
+				return c.handleLegal(args), true
 			default:
 				return "", false
 			}
@@ -92,6 +94,20 @@ func (c *WaspCuiController) handleMove(args []string) string {
 		return i18n.Tf("invalidColumn", "val", args[4])
 	}
 	return c.si.MoveTableauToTableau(fromCol, cardIdx, toCol)
+}
+
+// handleLegal previews the legal destination columns for the top card of the
+// given column, including empty columns (which always accept a card in Wasp).
+// Format: legal <col>
+func (c *WaspCuiController) handleLegal(args []string) string {
+	if len(args) == 0 {
+		return cuiutil.PromptRequest(i18n.T("wasp.promptFromColumn"), "legal {0}")
+	}
+	col, err := strconv.Atoi(args[0])
+	if err != nil {
+		return i18n.Tf("invalidColumn", "val", args[0])
+	}
+	return c.si.LegalMoves(col)
 }
 
 func (c *WaspCuiController) handleMoveShorthand(args []string) string {
