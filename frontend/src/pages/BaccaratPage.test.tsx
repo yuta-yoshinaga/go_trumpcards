@@ -341,6 +341,29 @@ describe('BaccaratPage', () => {
     await waitFor(() => expect(screen.getByTestId('big-road')).toBeInTheDocument());
   });
 
+  it('wraps the Big Road in a bounded, horizontally scrollable container', async () => {
+    mockExec.mockResolvedValue(endPhaseWithHistory);
+    renderWithProviders(<BaccaratPage />);
+    const scroller = await screen.findByTestId('big-road-scroll');
+    expect(scroller).toHaveClass('overflow-x-auto');
+  });
+
+  it('auto-scrolls the Big Road to the latest (right-most) results', async () => {
+    // jsdom does no layout, so fake a wide scroll width and assert the effect
+    // pins scrollLeft to the right edge.
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
+      configurable: true,
+      get() {
+        return 500;
+      },
+    });
+    mockExec.mockResolvedValue(endPhaseWithHistory);
+    renderWithProviders(<BaccaratPage />);
+    const scroller = await screen.findByTestId('big-road-scroll');
+    await waitFor(() => expect(scroller.scrollLeft).toBe(500));
+    delete (HTMLElement.prototype as unknown as { scrollWidth?: number }).scrollWidth;
+  });
+
   it('does not render Big Road when history is only ties', async () => {
     mockExec.mockResolvedValue(endPhaseWithOnlyTies);
     renderWithProviders(<BaccaratPage />);
