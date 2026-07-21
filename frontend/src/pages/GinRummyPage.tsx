@@ -38,6 +38,7 @@ import {
   bestMeldSplit,
   GIN_RUMMY_KNOCK_THRESHOLD,
   ginRummyMeldLabel,
+  ginRummyScoreBreakdown,
 } from '../utils/ginRummyDeadwood';
 import { playerName } from '../utils/playerUtils';
 
@@ -194,6 +195,17 @@ function GinRummyPageContent() {
     const human = state.players.find((p) => p.isHuman);
     if (!human || human.cards.length === 0) return new Set();
     return bestMeldSplit(human.cards).meldedIndices;
+  }, [state]);
+
+  // At round/game end, derive the additive score breakdown (outcome, each
+  // player's deadwood, and the deadwood-difference + bonus components) from the
+  // exposed round result, mirroring the domain's scoreRound. `null` for a drawn
+  // round (stock exhausted) so the panel stays hidden.
+  const scoreBreakdown = useMemo(() => {
+    if (!state) return null;
+    const atRoundEnd = state.phase === GinRummyPhase.ROUND_END || state.phase === GinRummyPhase.GAME_END;
+    if (!atRoundEnd && !state.gameEndFlag) return null;
+    return ginRummyScoreBreakdown(state.players, state.knockerIdx, state.knockerDeadwood, state.isGin);
   }, [state]);
 
   if (!state)
@@ -373,6 +385,48 @@ function GinRummyPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {scoreBreakdown &&
+              (() => {
+                const winner = state.players.find((p) => p.id === scoreBreakdown.winnerId);
+                const winnerLabel = winner ? playerName(winner.id, winner.isHuman) : '';
+                const basePart =
+                  scoreBreakdown.outcome === 'gin'
+                    ? t('breakdown.opponentDeadwoodPart', { value: scoreBreakdown.base })
+                    : t('breakdown.differencePart', { value: scoreBreakdown.base });
+                const bonusPart =
+                  scoreBreakdown.bonus > 0
+                    ? scoreBreakdown.outcome === 'gin'
+                      ? t('breakdown.ginBonusPart', { value: scoreBreakdown.bonus })
+                      : t('breakdown.undercutBonusPart', { value: scoreBreakdown.bonus })
+                    : null;
+                const formula = `${basePart}${bonusPart ? ` + ${bonusPart}` : ''} = ${scoreBreakdown.total}`;
+                return (
+                  <div className="my-3 p-3 rounded bg-black/30" data-testid="ginrummy-score-breakdown">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('breakdown.title')}</div>
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span
+                        data-testid="ginrummy-breakdown-outcome"
+                        className="inline-block rounded border border-ds-secondary px-1.5 py-0.5 text-ds-text-primary text-xs"
+                      >
+                        {t(`breakdown.outcome.${scoreBreakdown.outcome}`)}
+                      </span>
+                      <span className="text-ds-accent text-sm font-bold">
+                        {t('breakdown.winner', { name: winnerLabel, total: scoreBreakdown.total })}
+                      </span>
+                    </div>
+                    <div className="text-ds-text-muted text-xs mb-1">
+                      {t('breakdown.deadwood', {
+                        knocker: scoreBreakdown.knockerDeadwood,
+                        opponent: scoreBreakdown.opponentDeadwood,
+                      })}
+                    </div>
+                    <div className="text-ds-text-primary text-sm" data-testid="ginrummy-breakdown-formula">
+                      {formula}
+                    </div>
+                  </div>
+                );
+              })()}
 
             <ActionLogSection
               isEndPhase={isGameEnd}

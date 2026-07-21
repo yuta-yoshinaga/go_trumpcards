@@ -20,6 +20,105 @@ export function ginRummyMeldLabel(cards: readonly Card[]): string {
   return `${suitSymbol(first.design)} ${valueName(sorted[0])}-${valueName(sorted[sorted.length - 1])}`;
 }
 
+/** Gin bonus points. Mirrors `GinRummyGinBonus` in internal/domain/GinRummy.go. */
+export const GIN_RUMMY_GIN_BONUS = 25;
+/** Undercut bonus points. Mirrors `GinRummyUndercutBonus` in internal/domain/GinRummy.go. */
+export const GIN_RUMMY_UNDERCUT_BONUS = 25;
+
+/** Which side scored the round: a gin, a plain knock, or an undercut. */
+export type GinRummyOutcome = 'gin' | 'knock' | 'undercut';
+
+/**
+ * Additive score breakdown for a completed Gin Rummy round. Mirrors the scoring
+ * in `scoreRound` of internal/domain/GinRummy.go:
+ * - gin: the knocker scores the opponent's deadwood + a 25-pt bonus;
+ * - undercut (opponent deadwood ≤ knocker deadwood): the defender scores the
+ *   deadwood difference + a 25-pt bonus;
+ * - plain knock: the knocker scores the deadwood difference (no bonus).
+ *
+ * `base + bonus === total` always holds.
+ */
+export interface GinRummyScoreBreakdown {
+  /** The scoring outcome. */
+  outcome: GinRummyOutcome;
+  /** Player id awarded the round's points. */
+  winnerId: number;
+  /** The knocker's deadwood value. */
+  knockerDeadwood: number;
+  /** The opponent's (defender's) deadwood value. */
+  opponentDeadwood: number;
+  /** Deadwood-based component: the opponent's deadwood for a gin, otherwise the
+   * absolute deadwood difference between the two hands. */
+  base: number;
+  /** Bonus component (25 for gin/undercut, 0 for a plain knock). */
+  bonus: number;
+  /** Total points awarded this round (`base + bonus`). */
+  total: number;
+}
+
+/** Minimal player shape needed to derive the round-end score breakdown. */
+interface GinRummyBreakdownPlayer {
+  id: number;
+  cards: readonly Card[];
+}
+
+/**
+ * Derive the additive round-end score breakdown from the exposed round result,
+ * faithfully mirroring `scoreRound` in internal/domain/GinRummy.go. The knocker's
+ * deadwood comes from the exposed `knockerDeadwood` cards; the opponent's is
+ * recomputed from their (post-layoff) hand via {@link bestDeadwoodValue}, so the
+ * derived total matches the backend's `roundScore`. Returns `null` for a drawn
+ * round (`knockerIdx < 0`, stock exhausted) or when the players can't be resolved.
+ */
+export function ginRummyScoreBreakdown(
+  players: readonly GinRummyBreakdownPlayer[],
+  knockerIdx: number,
+  knockerDeadwoodCards: readonly Card[],
+  isGin: boolean,
+): GinRummyScoreBreakdown | null {
+  if (knockerIdx < 0) return null; // drawn round (stock empty) — no scoring
+  const knocker = players.find((p) => p.id === knockerIdx);
+  const opponent = players.find((p) => p.id !== knockerIdx);
+  if (!knocker || !opponent) return null;
+
+  const knockerDeadwood = calcDeadwoodValue(knockerDeadwoodCards);
+  const opponentDeadwood = bestDeadwoodValue(opponent.cards);
+
+  if (isGin) {
+    return {
+      outcome: 'gin',
+      winnerId: knockerIdx,
+      knockerDeadwood,
+      opponentDeadwood,
+      base: opponentDeadwood,
+      bonus: GIN_RUMMY_GIN_BONUS,
+      total: opponentDeadwood + GIN_RUMMY_GIN_BONUS,
+    };
+  }
+  if (opponentDeadwood <= knockerDeadwood) {
+    const diff = knockerDeadwood - opponentDeadwood;
+    return {
+      outcome: 'undercut',
+      winnerId: opponent.id,
+      knockerDeadwood,
+      opponentDeadwood,
+      base: diff,
+      bonus: GIN_RUMMY_UNDERCUT_BONUS,
+      total: diff + GIN_RUMMY_UNDERCUT_BONUS,
+    };
+  }
+  const diff = opponentDeadwood - knockerDeadwood;
+  return {
+    outcome: 'knock',
+    winnerId: knockerIdx,
+    knockerDeadwood,
+    opponentDeadwood,
+    base: diff,
+    bonus: 0,
+    total: diff,
+  };
+}
+
 /** Gin Rummy card value (A=1, 2-9=face, 10/J/Q/K=10). */
 export function ginRummyCardValue(card: Card): number {
   if (card.value === 1) return 1;
