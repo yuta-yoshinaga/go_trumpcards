@@ -594,6 +594,32 @@ describe('PineapplePage', () => {
     expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
   });
 
+  it('shows the Irish Poker discard-upcoming banner during the flop bet phase', async () => {
+    // phase 2 = FLOP betting round; Irish Poker discards two cards afterwards.
+    mockIrishExec.mockResolvedValue({ ...preFlopState, phase: 2, initialDealCount: 4 });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('cp-discard-upcoming-banner')).toBeInTheDocument());
+    expect(screen.getByTestId('cp-discard-upcoming-banner')).toHaveTextContent(
+      'フロップベット終了後にカードを2枚捨てます',
+    );
+  });
+
+  it('does not show the Irish Poker discard-upcoming banner outside the flop bet phase', async () => {
+    // preFlopState is phase 1 (PRE_FLOP), before the flop betting round.
+    mockIrishExec.mockResolvedValue({ ...preFlopState, initialDealCount: 4 });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-discard-upcoming-banner')).not.toBeInTheDocument();
+  });
+
+  it('does not show the discard-upcoming banner for the plain Pineapple variant during the flop', async () => {
+    // Plain Pineapple discards before the flop, so no forewarning banner applies.
+    mockExec.mockResolvedValue({ ...preFlopState, phase: 2 });
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-discard-upcoming-banner')).not.toBeInTheDocument();
+  });
+
   it('annotates each Crazy Pineapple hole card with the keep-hand if discarded', async () => {
     const crazyDiscardState: PineappleResponse = {
       ...discardState,

@@ -12,6 +12,7 @@
   },
   "communityCards": "Community Cards",
   "yourHand": "Your Hand",
+  "discardUpcoming": "You will discard two cards after the flop betting round",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "discard": {
     "prompt": "Discard a card.",

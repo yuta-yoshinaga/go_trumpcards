@@ -522,9 +522,10 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
 
           {/* Sticky footer: player hand + buttons */}
           <GameFooter className={`${gameTheme[variant].footer} px-5 py-3`}>
-            {/* Crazy Pineapple discards after the flop betting round (unlike plain
-                Pineapple's immediate discard) — forewarn the player during the flop bet. */}
-            {variant === 'crazypineapple' && phase === PineapplePhase.FLOP && (
+            {/* Crazy Pineapple and Irish Poker discard after the flop betting round
+                (unlike plain Pineapple's immediate discard) — forewarn the player during
+                the flop bet so they can factor the upcoming discard into their decision. */}
+            {(variant === 'crazypineapple' || variant === 'irishpoker') && phase === PineapplePhase.FLOP && (
               <div
                 data-testid="cp-discard-upcoming-banner"
                 className="mb-2 rounded border border-ds-info bg-ds-surface px-3 py-1.5 text-center text-ds-info text-sm"
