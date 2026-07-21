@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { btnDanger, btnPrimary } from '../../styles/buttonStyles';
+import { KbdBadge } from '../KbdBadge';
 import { BJ_SUGGEST_STAND, BJ_SUGGEST_SURRENDER, highlightClass } from './bjConstants';
 
 /** Props for BlackJack early surrender phase controls. */
@@ -23,16 +24,20 @@ export function BjEarlySurrenderPhaseControls(props: BjEarlySurrenderPhaseContro
         className={highlightClass(btnDanger, surHighlight)}
         disabled={props.loading}
         onClick={props.onSurrender}
+        aria-keyshortcuts="u"
       >
         {t('button.earlySurrender')}
+        <KbdBadge label={t('kbd.earlySurrender')} />
       </button>
       <button
         type="button"
         className={highlightClass(btnPrimary, contHighlight)}
         disabled={props.loading}
         onClick={props.onContinue}
+        aria-keyshortcuts="n"
       >
         {t('button.continue')}
+        <KbdBadge label={t('kbd.continue')} />
       </button>
     </div>
   );

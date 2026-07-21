@@ -272,6 +272,32 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
     enabled: phase === BjPhase.ACTION && !loading,
   });
 
+  const insuranceBindings = useMemo(
+    () => [
+      { key: 'i', action: () => exec('insurance') },
+      { key: 'n', action: () => exec('declineinsurance') },
+    ],
+    [exec],
+  );
+
+  useActionKeyboardNav({
+    bindings: insuranceBindings,
+    enabled: phase === BjPhase.INSURANCE && !loading,
+  });
+
+  const earlySurrenderBindings = useMemo(
+    () => [
+      { key: 'u', action: () => exec('earlysurrender') },
+      { key: 'n', action: () => exec('declineearlysurrender') },
+    ],
+    [exec],
+  );
+
+  useActionKeyboardNav({
+    bindings: earlySurrenderBindings,
+    enabled: phase === BjPhase.EARLY_SURRENDER && !loading,
+  });
+
   const handleReset = useCallback(() => {
     hideActionLog();
     const config: BlackJackConfigInput = {

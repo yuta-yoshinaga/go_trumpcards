@@ -123,5 +123,11 @@
     "push": "プッシュ (引き分け: 返金)",
     "surrender": "サレンダー (ベットの半額返金)",
     "bust": "バスト (21超過: 負け)"
+  },
+  "kbd": {
+    "insurance": "I",
+    "decline": "N",
+    "earlySurrender": "U",
+    "continue": "N"
   }
 }
