@@ -41,6 +41,8 @@
   "betChip.min": "Min",
   "betChip.half": "Half",
   "betChip.max": "Max",
+  "betChip.add": "+{{amount}}",
+  "betChip.clear": "Clear",
   "deckCount": "Decks:",
   "cpuCount": "CPU Players:",
   "cpuUnit": "",

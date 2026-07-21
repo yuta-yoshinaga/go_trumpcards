@@ -40,6 +40,8 @@
   "betChip.min": "最小",
   "betChip.half": "半額",
   "betChip.max": "全額",
+  "betChip.add": "+{{amount}}",
+  "betChip.clear": "クリア",
   "deckCount": "デッキ数:",
   "cpuCount": "CPU人数:",
   "cpuUnit": "人",

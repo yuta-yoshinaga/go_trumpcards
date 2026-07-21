@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { btnPrimary, btnSuccess, btnWarning } from '../../styles/buttonStyles';
-import { type BjQuickBetKind, bjQuickBetAmount } from '../../utils/blackjackBet';
+import { BJ_CHIP_VALUES, BJ_MIN_BET, type BjQuickBetKind, bjAddChip, bjQuickBetAmount } from '../../utils/blackjackBet';
 import { ChipBetInput } from '../common/ChipBetInput';
 import {
   BJ_COUNTING_HILO,
@@ -70,6 +70,30 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
             {t(`betChip.${kind}`)}
           </button>
         ))}
+      </div>
+      {/* Additive quick-chip buttons: add to the current bet (clamped to chips), plus a clear/reset */}
+      <div className="flex items-center justify-center gap-2 mb-2 flex-wrap" data-testid="bj-chip-add">
+        {BJ_CHIP_VALUES.map((value) => (
+          <button
+            key={value}
+            type="button"
+            data-testid={`bj-chip-add-${value}`}
+            className={`${btnPrimary} min-w-[44px] min-h-[44px] px-3 text-sm`}
+            disabled={props.loading || props.betAmount + value > props.playerChips}
+            onClick={() => props.onBetAmountChange(bjAddChip(props.betAmount, value, props.playerChips))}
+          >
+            {t('betChip.add', { amount: value })}
+          </button>
+        ))}
+        <button
+          type="button"
+          data-testid="bj-chip-clear"
+          className={`${btnWarning} min-w-[44px] min-h-[44px] px-3 text-sm`}
+          disabled={props.loading}
+          onClick={() => props.onBetAmountChange(BJ_MIN_BET)}
+        >
+          {t('betChip.clear')}
+        </button>
       </div>
       {/* Basic settings: bet amount, hand count */}
       <div className="flex items-center justify-center gap-2 mb-2">

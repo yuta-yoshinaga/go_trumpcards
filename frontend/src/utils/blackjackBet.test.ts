@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BJ_MIN_BET, bjQuickBetAmount } from './blackjackBet';
+import { BJ_CHIP_VALUES, BJ_MIN_BET, bjAddChip, bjQuickBetAmount } from './blackjackBet';
 
 describe('bjQuickBetAmount', () => {
   it('returns the table minimum for "min"', () => {
@@ -22,5 +22,21 @@ describe('bjQuickBetAmount', () => {
       expect(bjQuickBetAmount(kind, 5)).toBeLessThanOrEqual(5);
       expect(bjQuickBetAmount(kind, 15)).toBeLessThanOrEqual(15);
     }
+  });
+});
+
+describe('bjAddChip', () => {
+  it('adds the chip value to the current bet', () => {
+    expect(bjAddChip(10, 25, 1000)).toBe(35);
+    expect(bjAddChip(100, 100, 1000)).toBe(200);
+  });
+
+  it('clamps the result to the available chips', () => {
+    expect(bjAddChip(90, 25, 100)).toBe(100);
+    expect(bjAddChip(500, 100, 500)).toBe(500);
+  });
+
+  it('offers the +10 / +25 / +100 denominations', () => {
+    expect(BJ_CHIP_VALUES).toEqual([10, 25, 100]);
   });
 });
