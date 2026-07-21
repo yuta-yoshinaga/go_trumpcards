@@ -48,24 +48,54 @@ type AllFoursWebOutputHint struct {
 	Reason    string `json:"reason"`
 }
 
+// AllFoursWebOutputBreakdownAward は High / Low 項目の獲得者と該当トランプ札を表す。
+// WinnerIdx が -1 のときは付与なし (トランプ未確定など)。
+type AllFoursWebOutputBreakdownAward struct {
+	WinnerIdx int            `json:"winnerIdx"`
+	Card      *WebOutputCard `json:"card"`
+}
+
+// AllFoursWebOutputBreakdownJack は Jack 項目 (J トランプの捕獲) の獲得者を表す。
+// WinnerIdx が -1 のときは、そのディールで J トランプが場に出なかったことを示す。
+type AllFoursWebOutputBreakdownJack struct {
+	WinnerIdx int `json:"winnerIdx"`
+}
+
+// AllFoursWebOutputBreakdownGame は Game 項目 (カードピップ合計) の内訳を表す。
+// WinnerIdx が -1 のときは付与なし (同点または全員 0 点)。Points はプレイヤーごとのピップ合計。
+type AllFoursWebOutputBreakdownGame struct {
+	WinnerIdx int   `json:"winnerIdx"`
+	Points    []int `json:"points"`
+}
+
+// AllFoursWebOutputRoundBreakdown はラウンド確定時の High / Low / Jack / Game 得点内訳。
+// ROUND_END / GAME_END フェーズでのみ出力される。
+type AllFoursWebOutputRoundBreakdown struct {
+	High AllFoursWebOutputBreakdownAward `json:"high"`
+	Low  AllFoursWebOutputBreakdownAward `json:"low"`
+	Jack AllFoursWebOutputBreakdownJack  `json:"jack"`
+	Game AllFoursWebOutputBreakdownGame  `json:"game"`
+}
+
 // AllFoursWebOutput All Fours Webアウトプット
 type AllFoursWebOutput struct {
-	Players          []*AllFoursWebOutputPlayer    `json:"players"`
-	Phase            int                           `json:"phase"`
-	RoundNumber      int                           `json:"roundNumber"`
-	TrickNumber      int                           `json:"trickNumber"`
-	DealerIdx        int                           `json:"dealerIdx"`
-	NonDealerIdx     int                           `json:"nonDealerIdx"`
-	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
-	TrumpSuit        int                           `json:"trumpSuit"`
-	TurnUp           *WebOutputCard                `json:"turnUp"`
-	RunCount         int                           `json:"runCount"`
-	CurrentTrick     []*AllFoursWebOutputTrickCard `json:"currentTrick"`
-	GameEndFlag      bool                          `json:"gameEndFlag"`
-	WinnerIdx        int                           `json:"winnerIdx"`
-	LeadPlayerIdx    int                           `json:"leadPlayerIdx"`
-	ValidPlayIndices []int                         `json:"validPlayIndices,omitempty"`
-	Hint             *AllFoursWebOutputHint        `json:"hint,omitempty"`
+	Players          []*AllFoursWebOutputPlayer       `json:"players"`
+	Phase            int                              `json:"phase"`
+	RoundNumber      int                              `json:"roundNumber"`
+	TrickNumber      int                              `json:"trickNumber"`
+	DealerIdx        int                              `json:"dealerIdx"`
+	NonDealerIdx     int                              `json:"nonDealerIdx"`
+	CurrentPlayerIdx int                              `json:"currentPlayerIdx"`
+	TrumpSuit        int                              `json:"trumpSuit"`
+	TurnUp           *WebOutputCard                   `json:"turnUp"`
+	RunCount         int                              `json:"runCount"`
+	CurrentTrick     []*AllFoursWebOutputTrickCard    `json:"currentTrick"`
+	GameEndFlag      bool                             `json:"gameEndFlag"`
+	WinnerIdx        int                              `json:"winnerIdx"`
+	LeadPlayerIdx    int                              `json:"leadPlayerIdx"`
+	ValidPlayIndices []int                            `json:"validPlayIndices,omitempty"`
+	RoundBreakdown   *AllFoursWebOutputRoundBreakdown `json:"roundBreakdown,omitempty"`
+	Hint             *AllFoursWebOutputHint           `json:"hint,omitempty"`
 	WebOutputBase
 	Config AllFoursWebOutputConfig `json:"config"`
 }
