@@ -60,7 +60,11 @@
     "handOdds": "Hand Odds"
   },
   "settings": {
-    "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+    "cpuMetaAI": "Meta-AI (CPU learns your play style)",
+    "tournamentMode": "Tournament mode (rising blinds / rebuy / addon)",
+    "rebuyEnabled": "Enable rebuy",
+    "addonEnabled": "Enable addon",
+    "tournamentNote": "Tournament settings apply from the next reset"
   },
   "tutorial": {
     "communityCards": "Community cards shared by all players. Five cards are revealed progressively.",

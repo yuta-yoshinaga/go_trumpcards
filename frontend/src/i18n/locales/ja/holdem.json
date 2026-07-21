@@ -60,7 +60,11 @@
     "handOdds": "ハンドオッズ"
   },
   "settings": {
-    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）",
+    "tournamentMode": "トーナメントモード（ブラインド上昇/リバイ/アドオン）",
+    "rebuyEnabled": "リバイを有効化",
+    "addonEnabled": "アドオンを有効化",
+    "tournamentNote": "トーナメント設定は次のリセットから反映されます"
   },
   "tutorial": {
     "communityCards": "コミュニティカードです。全プレイヤー共有の5枚のカードが順次公開されます。",
