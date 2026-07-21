@@ -10,6 +10,9 @@
     "title": "設定",
     "cpuDifficulty": "CPU難易度",
     "pointLimit": "目標スコア",
+    "nilBonus": "ニルボーナス",
+    "bagPenaltyThreshold": "バッグペナルティ閾値",
+    "nextGameNote": "設定変更は次のゲームから有効になります。",
     "easy": "Easy",
     "normal": "Normal",
     "hard": "Hard"

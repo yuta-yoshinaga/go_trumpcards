@@ -23,7 +23,13 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSpadesGame } from '../hooks/useSpadesGame';
+import {
+  BAG_PENALTY_THRESHOLD_OPTIONS,
+  CPU_DIFFICULTY_OPTIONS,
+  NIL_BONUS_OPTIONS,
+  POINT_LIMIT_OPTIONS,
+  useSpadesGame,
+} from '../hooks/useSpadesGame';
 import { badgeError, badgeInfo, badgeSuccess, badgeWarning } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -241,6 +247,26 @@ function SpadesPageContent() {
                     value: spadesConfig.pointLimit,
                     options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('pointLimit', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'nilBonus',
+                    label: t('settings.nilBonus'),
+                    value: spadesConfig.nilBonus,
+                    options: NIL_BONUS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('nilBonus', v),
+                    tooltip: t('settings.nextGameNote'),
+                    testId: 'sp-setting-nil-bonus',
+                  },
+                  {
+                    type: 'select',
+                    id: 'bagPenaltyThreshold',
+                    label: t('settings.bagPenaltyThreshold'),
+                    value: spadesConfig.bagPenaltyThreshold,
+                    options: BAG_PENALTY_THRESHOLD_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('bagPenaltyThreshold', v),
+                    tooltip: t('settings.nextGameNote'),
+                    testId: 'sp-setting-bag-threshold',
                   },
                   {
                     type: 'checkbox',
