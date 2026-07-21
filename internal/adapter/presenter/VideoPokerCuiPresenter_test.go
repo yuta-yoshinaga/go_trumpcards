@@ -35,6 +35,49 @@ func TestVideoPokerCuiPresenter_Output_BetPhase(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
 	assert.Contains(t, result, "フェーズ: ベット")
+	// ベットフェーズでは配当表を表示する（デフォルト videopoker バリアント）。
+	assert.Contains(t, result, i18n.T("videopoker.payoutTitle"))
+	assert.Contains(t, result, "ロイヤルフラッシュ x250")
+	assert.Contains(t, result, i18n.T("videopoker.payoutMaxBetNote"))
+	assert.Contains(t, result, "ジャックス・オア・ベター x1")
+}
+
+func TestVideoPokerCuiPresenter_Output_BetPhase_JokerPokerPaytable(t *testing.T) {
+	p := new(VideoPokerCuiPresenter)
+	m := new(interfaces.MockVideoPokerGame)
+	setupVideoPokerCuiMockDefaults(m)
+	// バリアント固有の役（Kings or Better / Five of a Kind / Wild Royal Flush）が出ること。
+	m.ExpectedCalls = nil
+	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetPhase").Return(domain.VideoPokerPhaseBet).Maybe()
+	m.On("GetHand").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetGameEndFlag").Return(false).Maybe()
+	m.On("GetVariantName").Return("jokerpoker").Maybe()
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "キングス・オア・ベター x1")
+	assert.Contains(t, result, "ファイブカード x200")
+	assert.Contains(t, result, "ワイルドロイヤルフラッシュ x100")
+	// jacksorbetter 固有行は出ないこと。
+	assert.NotContains(t, result, "ジャックス・オア・ベター")
+}
+
+func TestVideoPokerCuiPresenter_Output_BetPhase_Paytable_EnLocale(t *testing.T) {
+	i18n.SetLang("en")
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	p := new(VideoPokerCuiPresenter)
+	m := new(interfaces.MockVideoPokerGame)
+	setupVideoPokerCuiMockDefaults(m)
+	m.ExpectedCalls = nil
+	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetPhase").Return(domain.VideoPokerPhaseBet).Maybe()
+	m.On("GetHand").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetGameEndFlag").Return(false).Maybe()
+	m.On("GetVariantName").Return("jokerpoker").Maybe()
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "Kings or Better x1")
+	assert.Contains(t, result, "Natural Royal Flush x250")
 }
 
 func TestVideoPokerCuiPresenter_Output_DrawPhase_WithHand(t *testing.T) {

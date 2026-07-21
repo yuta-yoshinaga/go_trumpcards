@@ -410,3 +410,50 @@ func TestVariantConfigFactories(t *testing.T) {
 		assert.NotNil(t, cfg.GetResult)
 	})
 }
+
+// --- VideoPokerPaytable tests ---
+
+func TestVideoPokerPaytable(t *testing.T) {
+	t.Run("jokerpoker rows and order", func(t *testing.T) {
+		rows := VideoPokerPaytable("jokerpoker")
+		assert.Len(t, rows, 11)
+		assert.Equal(t, "ptNaturalRoyalFlush", rows[0].HandKey)
+		assert.Equal(t, 250, rows[0].Multiplier)
+		assert.True(t, rows[0].RoyalJackpot)
+		assert.Equal(t, "ptKingsOrBetter", rows[len(rows)-1].HandKey)
+	})
+
+	t.Run("deuceswild rows", func(t *testing.T) {
+		rows := VideoPokerPaytable("deuceswild")
+		assert.Len(t, rows, 10)
+		assert.Equal(t, "ptFourDeuces", rows[1].HandKey)
+		assert.Equal(t, 200, rows[1].Multiplier)
+	})
+
+	t.Run("unknown variant falls back to jacks or better", func(t *testing.T) {
+		rows := VideoPokerPaytable("does-not-exist")
+		assert.Len(t, rows, 9)
+		assert.Equal(t, "ptRoyalFlush", rows[0].HandKey)
+		assert.Equal(t, "ptJacksOrBetter", rows[len(rows)-1].HandKey)
+	})
+
+	t.Run("multipliers match GetResult (SSoT consistency)", func(t *testing.T) {
+		// Joker + four Kings evaluates to Five of a Kind, which the paytable lists at 200x.
+		cfg := JokerPokerConfig()
+		hand := []*Card{
+			NewCard(CardDesignJoker, 1, false),
+			NewCard(CardDesignSpade, 13, false),
+			NewCard(CardDesignHeart, 13, false),
+			NewCard(CardDesignClover, 13, false),
+			NewCard(CardDesignDiamond, 13, false),
+		}
+		_, multiplier, _ := cfg.GetResult(hand, 1)
+		var fiveOfAKind int
+		for _, row := range VideoPokerPaytable("jokerpoker") {
+			if row.HandKey == "ptFiveOfAKind" {
+				fiveOfAKind = row.Multiplier
+			}
+		}
+		assert.Equal(t, fiveOfAKind, multiplier)
+	})
+}

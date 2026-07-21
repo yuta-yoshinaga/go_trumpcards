@@ -41,6 +41,11 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 		sb.WriteString("\n")
 	}
 
+	// ベットフェーズではベット額決定の判断材料として配当表を表示する。
+	if vp.GetPhase() == domain.VideoPokerPhaseBet {
+		sb.WriteString(vpp.paytableStr(vp.GetVariantName()))
+	}
+
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
@@ -79,6 +84,21 @@ func (vpp *VideoPokerCuiPresenter) cardStr(vp interfaces.VideoPokerGame, card *d
 		return color.Yellow(cuiSuitName(card.GetDesign()) + " 2")
 	}
 	return cuiCardStr(card)
+}
+
+// paytableStr はバリアント固有の配当表（役名と 1 コインあたりの倍率）を組み立てる。
+// 配当値は domain.VideoPokerPaytable を単一情報源として参照する。
+func (vpp *VideoPokerCuiPresenter) paytableStr(variantName string) string {
+	var sb strings.Builder
+	sb.WriteString(i18n.T("videopoker.payoutTitle") + "\n")
+	for _, row := range domain.VideoPokerPaytable(variantName) {
+		line := i18n.T("videopoker."+row.HandKey) + " x" + strconv.Itoa(row.Multiplier)
+		if row.RoyalJackpot {
+			line += " " + i18n.T("videopoker.payoutMaxBetNote")
+		}
+		sb.WriteString(line + "\n")
+	}
+	return sb.String()
 }
 
 // phaseStr フェーズ文字列

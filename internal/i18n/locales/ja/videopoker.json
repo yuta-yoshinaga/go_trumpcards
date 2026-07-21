@@ -16,5 +16,21 @@
   "payoutLine": "払戻し: {{payout}}",
   "hintNone": "現在ヒントはありません。",
   "hintHold": "ホールド推奨: {{cards}}（h <idx...> でホールド）",
-  "hintHoldNone": "ホールド推奨なし。5枚すべて引き直しを検討してください。"
+  "hintHoldNone": "ホールド推奨なし。5枚すべて引き直しを検討してください。",
+  "payoutTitle": "--- 配当表（1コインあたり） ---",
+  "payoutMaxBetNote": "(最大ベット時 x800)",
+  "ptRoyalFlush": "ロイヤルフラッシュ",
+  "ptNaturalRoyalFlush": "ナチュラルロイヤルフラッシュ",
+  "ptWildRoyalFlush": "ワイルドロイヤルフラッシュ",
+  "ptFourDeuces": "フォーデューシーズ",
+  "ptFiveOfAKind": "ファイブカード",
+  "ptStraightFlush": "ストレートフラッシュ",
+  "ptFourOfAKind": "フォーカード",
+  "ptFullHouse": "フルハウス",
+  "ptFlush": "フラッシュ",
+  "ptStraight": "ストレート",
+  "ptThreeOfAKind": "スリーカード",
+  "ptTwoPair": "ツーペア",
+  "ptJacksOrBetter": "ジャックス・オア・ベター",
+  "ptKingsOrBetter": "キングス・オア・ベター"
 }
