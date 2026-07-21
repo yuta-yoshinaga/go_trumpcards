@@ -280,4 +280,73 @@ describe('BristolPage', () => {
     expect(screen.getByRole('button', { name: '元に戻す' })).toHaveAttribute('aria-keyshortcuts', 'z');
     expect(screen.getByRole('button', { name: 'ギブアップ' })).toHaveAttribute('aria-keyshortcuts', 'g');
   });
+
+  describe('drag and drop', () => {
+    function buildDataTransfer() {
+      const store: Record<string, string> = {};
+      return {
+        setData: (type: string, val: string) => {
+          store[type] = val;
+        },
+        getData: (type: string) => store[type] ?? '',
+        effectAllowed: '',
+        dropEffect: '',
+      };
+    }
+
+    it('tableau column top card is draggable while playing', async () => {
+      renderWithProviders(<BristolPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      expect(screen.getByRole('button', { name: /降順ビルド列 1/ })).toHaveAttribute('draggable', 'true');
+    });
+
+    it('dragging a tableau column onto a foundation dispatches move', async () => {
+      renderWithProviders(<BristolPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      const source = screen.getByRole('button', { name: /降順ビルド列 1/ });
+      const dataTransfer = buildDataTransfer();
+      fireEvent.dragStart(source, { dataTransfer });
+
+      const dropZone = screen.getByRole('button', { name: /^組札 0/ }).closest('div') as HTMLElement;
+      mockExec.mockClear();
+      fireEvent.dragOver(dropZone, { dataTransfer });
+      fireEvent.drop(dropZone, { dataTransfer });
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation', col: 0 }),
+      );
+    });
+
+    it('dragging a fan top onto a tableau column dispatches move', async () => {
+      renderWithProviders(<BristolPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      const source = screen.getByRole('button', { name: /^ファン 0/ });
+      const dataTransfer = buildDataTransfer();
+      fireEvent.dragStart(source, { dataTransfer });
+
+      const dropZone = screen.getByRole('button', { name: /降順ビルド列 2/ }).closest('div') as HTMLElement;
+      mockExec.mockClear();
+      fireEvent.dragOver(dropZone, { dataTransfer });
+      fireEvent.drop(dropZone, { dataTransfer });
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', { zone: 'fan', col: 0 }, { zone: 'tableau', col: 1 }),
+      );
+    });
+
+    it('a drop with no active drag issues no move', async () => {
+      renderWithProviders(<BristolPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      const dropZone = screen.getByRole('button', { name: /^組札 0/ }).closest('div') as HTMLElement;
+      mockExec.mockClear();
+      const dataTransfer = buildDataTransfer();
+      fireEvent.drop(dropZone, { dataTransfer });
+
+      // No source was dragged, so getData returns '' and no move is dispatched.
+      expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+    });
+  });
 });

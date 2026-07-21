@@ -4,6 +4,7 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -23,6 +24,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
+import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BristolMoveZone, BristolResponse } from '../types/card';
@@ -155,6 +157,23 @@ function BristolPageContent() {
     [execApi, selected],
   );
 
+  // Drag-and-drop: a dropped card fires the same `move` command as a click, so
+  // click/tap selection and DnD share one code path. Clearing the click
+  // selection keeps the two interaction modes from stepping on each other.
+  const dispatchMove = useCallback(
+    (source: BristolMoveZone, target: BristolMoveZone) => {
+      execApi('move', source, target);
+      setSelected(null);
+    },
+    [execApi],
+  );
+  const isPlayingForDnd = state?.phase === BristolPhase.PLAYING;
+  const dnd = useSolitaireDragDrop<BristolMoveZone>({
+    onMove: dispatchMove,
+    isPlaying: isPlayingForDnd,
+    disabled: loading,
+  });
+
   const theme = useMemo(() => gameTheme.bristol, []);
 
   const phase = state?.phase ?? BristolPhase.PLAYING;
@@ -251,33 +270,43 @@ function BristolPageContent() {
             <div className="mb-3 flex items-start gap-2" data-tutorial="br-foundation">
               <span className="w-14 shrink-0 pt-2 text-xs text-ds-text-muted">{t('foundation')}</span>
               <div className="flex gap-2">
-                {state.foundation.map((pile, i) => (
-                  <button
-                    key={`f-${i}`}
-                    type="button"
-                    onClick={() => handleFoundationClick(i)}
-                    disabled={!isPlaying || !selected || loading}
-                    aria-label={
-                      pile.length > 0
-                        ? t('foundationAria', { num: i, card: cardAlt(pile[pile.length - 1]), count: pile.length })
-                        : t('foundationAriaEmpty', { num: i })
-                    }
-                    className={
-                      selected
-                        ? `rounded border p-0.5 ${focusRingWhite} border-ds-info`
-                        : `rounded border p-0.5 ${focusRingWhite} border-white/30`
-                    }
-                    style={{ width: cardWidth + 4, height: cardHeight + 4 }}
-                  >
-                    {pile.length > 0 ? (
-                      <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
-                    ) : (
-                      <span className="flex h-full w-full items-center justify-center text-xs text-ds-text-muted/80">
-                        A
-                      </span>
-                    )}
-                  </button>
-                ))}
+                {state.foundation.map((pile, i) => {
+                  const zone: BristolMoveZone = { zone: 'foundation', col: i };
+                  return (
+                    <DropZone
+                      key={`f-${i}`}
+                      onDrop={dnd.handleDrop(zone)}
+                      onDragOver={dnd.handleDragOver(zone)}
+                      onDragLeave={dnd.handleDragLeave}
+                      isDropTarget={dnd.isDropTarget(zone)}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleFoundationClick(i)}
+                        disabled={!isPlaying || !selected || loading}
+                        aria-label={
+                          pile.length > 0
+                            ? t('foundationAria', { num: i, card: cardAlt(pile[pile.length - 1]), count: pile.length })
+                            : t('foundationAriaEmpty', { num: i })
+                        }
+                        className={
+                          selected
+                            ? `rounded border p-0.5 ${focusRingWhite} border-ds-info`
+                            : `rounded border p-0.5 ${focusRingWhite} border-white/30`
+                        }
+                        style={{ width: cardWidth + 4, height: cardHeight + 4 }}
+                      >
+                        {pile.length > 0 ? (
+                          <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
+                        ) : (
+                          <span className="flex h-full w-full items-center justify-center text-xs text-ds-text-muted/80">
+                            A
+                          </span>
+                        )}
+                      </button>
+                    </DropZone>
+                  );
+                })}
               </div>
             </div>
 
@@ -292,38 +321,49 @@ function BristolPageContent() {
                 return (
                   <div key={`col-${colIdx}`} className="flex flex-1 flex-col items-center gap-1 min-w-0">
                     <span className="text-xs text-ds-text-muted">#{colIdx + 1}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleTableauClick(colIdx)}
-                      disabled={!isPlaying || loading || (col.length === 0 && !selected)}
-                      aria-label={t('tableauColAria', { num: colIdx + 1, count: col.length })}
-                      aria-pressed={isSelected(zone)}
-                      className={
-                        isSelected(zone)
-                          ? `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} border-ds-info`
-                          : `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} border-transparent`
-                      }
-                      style={{ height: colHeight }}
+                    <DropZone
+                      onDrop={dnd.handleDrop(zone)}
+                      onDragOver={dnd.handleDragOver(zone)}
+                      onDragLeave={dnd.handleDragLeave}
+                      isDropTarget={dnd.isDropTarget(zone)}
+                      className="w-full"
                     >
-                      {col.length === 0 ? (
-                        <span
-                          className="flex w-full items-center justify-center rounded border-2 border-dashed border-white/20 text-xs text-ds-text-muted"
-                          style={{ height: cardHeight }}
-                        >
-                          {t('empty')}
-                        </span>
-                      ) : (
-                        col.map((card, cardIdx) => (
-                          <div
-                            key={`c-${colIdx}-${cardIdx}`}
-                            className="absolute left-0 right-0"
-                            style={{ top: cardIdx * colOffset }}
+                      <button
+                        type="button"
+                        draggable={isPlaying && !loading && col.length > 0}
+                        onDragStart={dnd.handleDragStart(zone)}
+                        onDragEnd={dnd.handleDragEnd}
+                        onClick={() => handleTableauClick(colIdx)}
+                        disabled={!isPlaying || loading || (col.length === 0 && !selected)}
+                        aria-label={t('tableauColAria', { num: colIdx + 1, count: col.length })}
+                        aria-pressed={isSelected(zone)}
+                        className={
+                          isSelected(zone)
+                            ? `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} border-ds-info`
+                            : `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} border-transparent`
+                        }
+                        style={{ height: colHeight }}
+                      >
+                        {col.length === 0 ? (
+                          <span
+                            className="flex w-full items-center justify-center rounded border-2 border-dashed border-white/20 text-xs text-ds-text-muted"
+                            style={{ height: cardHeight }}
                           >
-                            <AnimatedCard card={card} width={cardWidth} draggable={false} style={{ width: '100%' }} />
-                          </div>
-                        ))
-                      )}
-                    </button>
+                            {t('empty')}
+                          </span>
+                        ) : (
+                          col.map((card, cardIdx) => (
+                            <div
+                              key={`c-${colIdx}-${cardIdx}`}
+                              className="absolute left-0 right-0"
+                              style={{ top: cardIdx * colOffset }}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} draggable={false} style={{ width: '100%' }} />
+                            </div>
+                          ))
+                        )}
+                      </button>
+                    </DropZone>
                   </div>
                 );
               })}
@@ -343,6 +383,9 @@ function BristolPageContent() {
                       {top ? (
                         <button
                           type="button"
+                          draggable={isPlaying && !loading}
+                          onDragStart={dnd.handleDragStart(zone)}
+                          onDragEnd={dnd.handleDragEnd}
                           onClick={() => handleFanClick(i)}
                           disabled={!isPlaying || loading}
                           aria-label={t('fanAria', { num: i, card: cardAlt(top), count: pile.length })}
