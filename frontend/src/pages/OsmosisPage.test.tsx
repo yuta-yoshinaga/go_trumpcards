@@ -256,4 +256,80 @@ describe('OsmosisPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByRole('button', { name: 'ウェイスト' })).not.toBeInTheDocument();
   });
+
+  describe('drag and drop', () => {
+    // Minimal stand-in for the browser DataTransfer object (jsdom lacks one).
+    function buildDataTransfer() {
+      const store: Record<string, string> = {};
+      return {
+        setData: (type: string, val: string) => {
+          store[type] = val;
+        },
+        getData: (type: string) => store[type] ?? '',
+        effectAllowed: '',
+        dropEffect: '',
+      };
+    }
+
+    it('reserve and waste top cards are draggable while playing', async () => {
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      expect(screen.getByRole('button', { name: 'ウェイスト' })).toHaveAttribute('draggable', 'true');
+      expect(screen.getByRole('button', { name: 'リザーブ 0' })).toHaveAttribute('draggable', 'true');
+    });
+
+    it('dragging the waste top onto a foundation row dispatches move', async () => {
+      mockExec.mockResolvedValue({ ...playingState, waste: [card('SPADE', 3)] });
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const wasteBtn = screen.getByRole('button', { name: 'ウェイスト' });
+      const dt = buildDataTransfer();
+      fireEvent.dragStart(wasteBtn, { dataTransfer: dt });
+      const dropZone = screen.getByRole('button', { name: '組札 0' }).parentElement as HTMLElement;
+      mockExec.mockClear();
+      fireEvent.dragOver(dropZone, { dataTransfer: dt });
+      fireEvent.drop(dropZone, { dataTransfer: dt });
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 0 }),
+      );
+    });
+
+    it('dragging a reserve top onto a foundation row dispatches move', async () => {
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const reserveBtn = screen.getByRole('button', { name: 'リザーブ 0' });
+      const dt = buildDataTransfer();
+      fireEvent.dragStart(reserveBtn, { dataTransfer: dt });
+      const dropZone = screen.getByRole('button', { name: '組札 0' }).parentElement as HTMLElement;
+      mockExec.mockClear();
+      fireEvent.dragOver(dropZone, { dataTransfer: dt });
+      fireEvent.drop(dropZone, { dataTransfer: dt });
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 0 }, { zone: 'foundation', col: 0 }),
+      );
+    });
+
+    it('a drop with no active drag does not dispatch a move', async () => {
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const dropZone = screen.getByRole('button', { name: '組札 0' }).parentElement as HTMLElement;
+      mockExec.mockClear();
+      // No dragStart ran, so the dataTransfer carries no source payload.
+      fireEvent.drop(dropZone, { dataTransfer: buildDataTransfer() });
+      expect(mockExec).not.toHaveBeenCalled();
+    });
+
+    it('marks a foundation row that cannot accept the dragged card with an error border', async () => {
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      // Reserve col 1 top is ♥9 — wrong suit for the ♠ base row and not the base rank.
+      const reserveBtn = screen.getByRole('button', { name: 'リザーブ 1' });
+      const dt = buildDataTransfer();
+      fireEvent.dragStart(reserveBtn, { dataTransfer: dt });
+      const foundation0 = screen.getByRole('button', { name: '組札 0' });
+      fireEvent.dragOver(foundation0.parentElement as HTMLElement, { dataTransfer: dt });
+      await waitFor(() => expect(foundation0.className).toContain('border-ds-error'));
+      expect(foundation0).toHaveAttribute('title', 'この段には置けません');
+    });
+  });
 });
