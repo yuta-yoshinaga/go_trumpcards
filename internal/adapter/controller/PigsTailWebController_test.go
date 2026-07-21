@@ -7,8 +7,10 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -69,4 +71,39 @@ func TestPigsTailWebController_Method(t *testing.T) {
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`[]`)
 	})
+}
+
+func TestPigsTailWebController_ResetAppliesPlayerCount(t *testing.T) {
+	mockOutput := `{}`
+	tests := []struct {
+		name      string
+		body      string
+		wantCount int
+	}{
+		{"explicit valid count", `{"command":"reset","playerCount":3,"sessionId":"s"}`, 3},
+		{"max valid count", `{"command":"reset","playerCount":6,"sessionId":"s"}`, domain.PigsTailMaxPlayers},
+		{"omitted uses default", `{"command":"reset","sessionId":"s"}`, domain.PigsTailPlayerCnt},
+		{"above max falls back to default", `{"command":"reset","playerCount":99,"sessionId":"s"}`, domain.PigsTailPlayerCnt},
+		{"below min falls back to default", `{"command":"reset","playerCount":1,"sessionId":"s"}`, domain.PigsTailPlayerCnt},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ptiMock := new(usecase.MockPigsTailInteractor)
+			var gotCfg domain.PigsTailConfig
+			ptiMock.On("Reset", mock.MatchedBy(func(c domain.PigsTailConfig) bool {
+				gotCfg = c
+				return true
+			})).Return(mockOutput)
+
+			factory := func() uc.PigsTailInteractorIF { return ptiMock }
+			towc := controller.NewPigsTailWebController(factory)
+			defer towc.Stop()
+
+			var in controller.PigsTailWebInput
+			_ = json.Unmarshal([]byte(tt.body), &in)
+			recorded := execRequest(t, towc.Exec, &in)
+			recorded.CodeIs(http.StatusOK)
+			assert.Equal(t, tt.wantCount, gotCfg.PlayerCount)
+		})
+	}
 }

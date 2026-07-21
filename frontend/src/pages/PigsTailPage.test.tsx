@@ -304,6 +304,25 @@ describe('PigsTailPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
+  it('resets with the default player count on mount', async () => {
+    mockExec.mockClear();
+    renderWithProviders(<PigsTailPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Mount reset carries no explicit player count (server uses the default).
+    expect(mockExec.mock.calls[0]).toEqual(['reset']);
+  });
+
+  it('applies the selected player count on the next reset', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<PigsTailPage />);
+    const select = await screen.findByTestId('pigtail-player-count');
+    fireEvent.change(select, { target: { value: '6' } });
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 6));
+  });
+
   it('places the action log section inside the scrollable area before the footer', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PigsTailPage />);
