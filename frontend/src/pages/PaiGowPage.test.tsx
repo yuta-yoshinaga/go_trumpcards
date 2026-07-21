@@ -196,6 +196,57 @@ describe('PaiGowPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('set', undefined, 3, 5));
   });
 
+  it('auto-set button fills a legal non-foul split and enables Set', async () => {
+    mockExec.mockResolvedValueOnce(setHandsPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByTestId('auto-set-button')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('auto-set-button'));
+
+    // House-way max-low split for the singleton fixture is {S10, H11} = indices [0, 1].
+    const cardButtons = getCardButtons();
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('foul-warning')).toHaveTextContent('');
+    expect(screen.getByTestId('set-hands-button')).toBeEnabled();
+
+    fireEvent.click(screen.getByTestId('set-hands-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('set', undefined, 0, 1));
+  });
+
+  it('lets the player re-select manually after an auto-set', async () => {
+    mockExec.mockResolvedValue(setHandsPhaseState);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByTestId('auto-set-button')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('auto-set-button'));
+    const cardButtons = getCardButtons();
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true');
+
+    // Deselect one auto-picked card — the auto choice is not locked in.
+    fireEvent.click(cardButtons[0]);
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('disables the auto-set button when a joker is present', async () => {
+    mockExec.mockResolvedValue({
+      ...setHandsPhaseState,
+      playerCards: [
+        card('JOKER', 0),
+        card('HEART', 13),
+        card('SPADE', 2),
+        card('DIAMOND', 3),
+        card('CLOVER', 4),
+        card('SPADE', 5),
+        card('HEART', 7),
+      ],
+    });
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByTestId('auto-set-button')).toBeInTheDocument());
+    expect(screen.getByTestId('auto-set-button')).toBeDisabled();
+  });
+
   it('blocks Set and shows a foul warning when the low hand outranks the high hand', async () => {
     mockExec.mockResolvedValue(setHandsPhaseState);
     renderWithProviders(<PaiGowPage />);

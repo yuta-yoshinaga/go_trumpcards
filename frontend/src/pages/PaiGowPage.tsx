@@ -33,7 +33,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { PAIGOW_HELP, parsePaigowCommand } from '../utils/cli/commands/paigowCommands';
 import { formatPaigowState } from '../utils/cli/formatters/paigowFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { paiGowFoulCheck } from '../utils/paiGowFoul';
+import { paiGowAutoSplit, paiGowFoulCheck } from '../utils/paiGowFoul';
 
 /** High hand rank display name lookup. */
 const HIGH_HAND_RANK_KEYS: Record<number, string> = {
@@ -130,6 +130,17 @@ function PaiGowPageContent() {
     [isSetHandsPhase, state, selectedIndices],
   );
 
+  // House-way auto-split: the strongest legal low-hand indices, or null when it
+  // cannot be safely computed (e.g. a joker is present).
+  const autoSplit = useMemo(
+    () => (isSetHandsPhase && state ? paiGowAutoSplit(state.playerCards) : null),
+    [isSetHandsPhase, state],
+  );
+
+  const handleAutoSet = useCallback(() => {
+    if (autoSplit) setSelectedIndices([autoSplit[0], autoSplit[1]]);
+  }, [autoSplit]);
+
   const toggleCardSelection = useCallback((index: number) => {
     setSelectedIndices((prev) => {
       if (prev.includes(index)) {
@@ -156,9 +167,21 @@ function PaiGowPageContent() {
         },
         enabled: isSetHandsPhase && selectedIndices.length === 2 && !foul.isFoul,
       },
+      { key: 'a', action: handleAutoSet, enabled: isSetHandsPhase && autoSplit !== null },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
     ],
-    [execApi, betAmount, betInvalid, selectedIndices, isBetPhase, isSetHandsPhase, isEndPhase, foul.isFoul],
+    [
+      execApi,
+      betAmount,
+      betInvalid,
+      selectedIndices,
+      isBetPhase,
+      isSetHandsPhase,
+      isEndPhase,
+      foul.isFoul,
+      handleAutoSet,
+      autoSplit,
+    ],
   );
 
   useActionKeyboardNav({
@@ -398,15 +421,26 @@ function PaiGowPageContent() {
                   <summary className="cursor-pointer text-ds-info">{t('foulRuleHelpTitle')}</summary>
                   <p className="pt-1">{t('foulRuleHelp')}</p>
                 </details>
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handleSet}
-                  disabled={loading || selectedIndices.length !== 2 || foul.isFoul}
-                  data-testid="set-hands-button"
-                >
-                  {t('button.set')}
-                </button>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={handleAutoSet}
+                    disabled={loading || autoSplit === null}
+                    data-testid="auto-set-button"
+                  >
+                    {t('button.auto')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleSet}
+                    disabled={loading || selectedIndices.length !== 2 || foul.isFoul}
+                    data-testid="set-hands-button"
+                  >
+                    {t('button.set')}
+                  </button>
+                </div>
               </div>
             )}
             {isEndPhase && (
