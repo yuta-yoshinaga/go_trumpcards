@@ -165,6 +165,9 @@ function RazzPageContent() {
 
   const [betAmount, setBetAmount] = useState(20);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
+  // Tournament / ante config applied on the next reset (mirrors the CUI's tournament + ante options).
+  const [ante, setAnte] = useState(1);
+  const [tournamentMode, setTournamentMode] = useState(false);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('razz', state);
   const turnStartRef = useRef(0);
 
@@ -172,8 +175,8 @@ function RazzPageContent() {
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
-    void execApi('reset', undefined, { cpuMetaAI });
-  }, [execApi, hideActionLog, cpuMetaAI]);
+    void execApi('reset', undefined, { ante, tournamentMode, cpuMetaAI });
+  }, [execApi, hideActionLog, ante, tournamentMode, cpuMetaAI]);
 
   useEffect(() => {
     if (state?.minRaise && state.minRaise > 0) {
@@ -382,6 +385,29 @@ function RazzPageContent() {
             groups={[
               {
                 items: [
+                  {
+                    type: 'select' as const,
+                    id: 'razzAnte',
+                    label: t('settings.ante'),
+                    tooltip: t('settings.anteHelp'),
+                    value: ante,
+                    options: [
+                      { value: 1, label: '1' },
+                      { value: 2, label: '2' },
+                      { value: 5, label: '5' },
+                      { value: 10, label: '10' },
+                    ],
+                    onSelect: (v) => setAnte(Number(v)),
+                    testId: 'razz-ante-select',
+                  },
+                  {
+                    type: 'checkbox' as const,
+                    id: 'razzTournamentMode',
+                    label: t('settings.tournamentMode'),
+                    tooltip: t('settings.tournamentModeHelp'),
+                    checked: tournamentMode,
+                    onToggle: setTournamentMode,
+                  },
                   {
                     type: 'checkbox' as const,
                     id: 'frontendHint',
