@@ -343,6 +343,50 @@ describe('SpadesPage', () => {
     );
   });
 
+  it('settings panel changes nilBonus and passes it on reset', async () => {
+    renderWithProviders(<SpadesPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.change(screen.getByTestId('sp-setting-nil-bonus'), { target: { value: '200' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 500,
+        nilBonus: 200,
+        bagPenaltyThreshold: 10,
+      }),
+    );
+  });
+
+  it('settings panel changes bagPenaltyThreshold and passes it on reset', async () => {
+    renderWithProviders(<SpadesPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.change(screen.getByTestId('sp-setting-bag-threshold'), { target: { value: '5' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 500,
+        nilBonus: 100,
+        bagPenaltyThreshold: 5,
+      }),
+    );
+  });
+
   it('card selection toggle via aria-pressed', async () => {
     renderWithProviders(<SpadesPage />);
     await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
