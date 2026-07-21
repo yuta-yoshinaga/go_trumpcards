@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, napoleonApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -297,82 +297,86 @@ describe('NapoleonPage', () => {
     expect(badge).toHaveTextContent('絵札 3/13 枚');
   });
 
-  it('shows trump declaration controls when human is napoleon', async () => {
+  it('shows trump declaration controls and the adjutant card picker when human is napoleon', async () => {
     mockExec.mockResolvedValue(trumpDeclarationState);
     renderWithProviders(<NapoleonPage />);
     await waitFor(() => {
       expect(screen.getByLabelText('切り札スート')).toBeInTheDocument();
-      expect(screen.getByLabelText('副官カードのスート')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: '\u5ba3\u8a00' })).toBeInTheDocument();
+      expect(screen.getByTestId('np-adjutant-picker')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '宣言' })).toBeInTheDocument();
     });
+    // 52 suit cards + 1 joker = 53 tappable adjutant options.
+    expect(screen.getAllByTestId(/^np-adjutant-option-/)).toHaveLength(53);
   });
 
   it('does not show trump declaration controls when cpu is napoleon', async () => {
     mockExec.mockResolvedValue(trumpDeclarationCpuState);
     renderWithProviders(<NapoleonPage />);
-    await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
     expect(screen.queryByLabelText('切り札スート')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('np-adjutant-picker')).not.toBeInTheDocument();
   });
 
   it('shows trump declaration instruction when human is napoleon', async () => {
     mockExec.mockResolvedValue(trumpDeclarationState);
     renderWithProviders(<NapoleonPage />);
     await waitFor(() => {
-      expect(
-        screen.getByText(
-          '\u5207\u308a\u672d\u30b9\u30fc\u30c8\u3068\u526f\u5b98\u30ab\u30fc\u30c9\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044',
-        ),
-      ).toBeInTheDocument();
+      expect(screen.getByText('切り札スートと副官カードを選択してください')).toBeInTheDocument();
     });
   });
 
-  it('calls trump command when declare button is clicked', async () => {
+  it('disables the declare button until an adjutant card is picked', async () => {
     mockExec.mockResolvedValue(trumpDeclarationState);
     renderWithProviders(<NapoleonPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '\u5ba3\u8a00' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '宣言' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '宣言' })).toBeDisabled();
+
+    fireEvent.click(screen.getByTestId('np-adjutant-option-1-1'));
+    expect(screen.getByRole('button', { name: '宣言' })).toBeEnabled();
+  });
+
+  it('designates the tapped card as adjutant when declare is clicked', async () => {
+    mockExec.mockResolvedValue(trumpDeclarationState);
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByTestId('np-adjutant-picker')).toBeInTheDocument());
+
+    // Tap Heart 13 (K): adjutant suit 3, value 13.
+    fireEvent.click(screen.getByTestId('np-adjutant-option-3-13'));
+    expect(screen.getByTestId('np-adjutant-selected')).toBeInTheDocument();
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '\u5ba3\u8a00' }));
+    fireEvent.click(screen.getByRole('button', { name: '宣言' }));
 
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('trump', undefined, 1, 3, 13));
+  });
+
+  it('submits suit 0 / value 1 when the joker card is picked', async () => {
+    mockExec.mockResolvedValue(trumpDeclarationState);
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByTestId('np-adjutant-picker')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('np-adjutant-option-0-1'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '宣言' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('trump', undefined, 1, 0, 1));
+  });
+
+  it('dims cards the human already holds but still allows designating them', async () => {
+    mockExec.mockResolvedValue(trumpDeclarationState);
+    renderWithProviders(<NapoleonPage />);
+    // Human holds SPADE A (suit 1, value 1) in trumpDeclarationState.
+    const heldOption = await screen.findByTestId('np-adjutant-option-1-1');
+    expect(heldOption).toHaveStyle({ opacity: '0.4' });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(heldOption);
+    fireEvent.click(screen.getByRole('button', { name: '宣言' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('trump', undefined, 1, 1, 1));
-  });
-
-  it('shows adjutant value selector when adjutant suit is non-joker', async () => {
-    mockExec.mockResolvedValue(trumpDeclarationState);
-    renderWithProviders(<NapoleonPage />);
-    await waitFor(() => expect(screen.getByLabelText('副官カードのランク')).toBeInTheDocument());
-  });
-
-  it('hides adjutant value selector when adjutant suit is joker', async () => {
-    mockExec.mockResolvedValue(trumpDeclarationState);
-    renderWithProviders(<NapoleonPage />);
-    await waitFor(() => expect(screen.getByLabelText('副官カードのスート')).toBeInTheDocument());
-
-    fireEvent.change(screen.getByLabelText('副官カードのスート'), { target: { value: '0' } });
-    expect(screen.queryByLabelText('副官カードのランク')).not.toBeInTheDocument();
-  });
-
-  it('renders the joker option with a localized label', async () => {
-    mockExec.mockResolvedValue(trumpDeclarationState);
-    renderWithProviders(<NapoleonPage />);
-    const select = await screen.findByLabelText('副官カードのスート');
-    // The value=0 option is localized (ja) rather than the raw "JOKER".
-    expect(within(select).getByRole('option', { name: 'ジョーカー' })).toBeInTheDocument();
-  });
-
-  it('sends adjutant value 0 when joker is selected', async () => {
-    mockExec.mockResolvedValue(trumpDeclarationState);
-    renderWithProviders(<NapoleonPage />);
-    await waitFor(() => expect(screen.getByLabelText('副官カードのスート')).toBeInTheDocument());
-
-    fireEvent.change(screen.getByLabelText('副官カードのスート'), { target: { value: '0' } });
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '\u5ba3\u8a00' }));
-
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('trump', undefined, 1, 0, 0));
   });
 
   it('shows kitty exchange controls when human is napoleon', async () => {
