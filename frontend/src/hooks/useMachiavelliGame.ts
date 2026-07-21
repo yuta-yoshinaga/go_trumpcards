@@ -59,6 +59,14 @@ export function useMachiavelliGame() {
     [exec, selectedCardIndices],
   );
 
+  const handleRearrange = useCallback(
+    (tableMelds: { design: number; value: number }[][], handIndices: number[]) => {
+      if (handIndices.length < 1 || tableMelds.length < 1) return;
+      exec('play', { tableMelds, handIndices });
+    },
+    [exec],
+  );
+
   const handleNextRound = useCallback(() => {
     exec('nextround');
   }, [exec]);
@@ -76,6 +84,7 @@ export function useMachiavelliGame() {
     handleDraw,
     handleNewMeld,
     handleLayoff,
+    handleRearrange,
     handleNextRound,
     retry,
   };

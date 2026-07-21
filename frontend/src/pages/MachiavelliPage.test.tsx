@@ -442,4 +442,107 @@ describe('MachiavelliPage', () => {
     renderWithProviders(<MachiavelliPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  describe('rearrange preview', () => {
+    // Table run ♠3-4-5; human holds ♠6 so assigning it into the run yields a
+    // valid rearrangement (♠3-4-5-6) that conserves all cards.
+    const rearrangeState: MachiavelliResponse = {
+      ...turnState,
+      players: [
+        player({
+          cards: [
+            { design: 'SPADE', value: 6 },
+            { design: 'HEART', value: 11 },
+          ],
+        }),
+        turnState.players[1],
+      ],
+    };
+
+    it('rearrange toggle is disabled until a hand card is selected', async () => {
+      mockExec.mockResolvedValue(rearrangeState);
+      renderWithProviders(<MachiavelliPage />);
+      await waitFor(() => expect(screen.getByTestId('machiavelli-rearrange-toggle')).toBeDisabled());
+      fireEvent.click(screen.getByAltText('♠ 6').closest('button') as HTMLButtonElement);
+      expect(screen.getByTestId('machiavelli-rearrange-toggle')).not.toBeDisabled();
+    });
+
+    it('opens the rearrange panel with pool assign controls', async () => {
+      mockExec.mockResolvedValue(rearrangeState);
+      renderWithProviders(<MachiavelliPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ 6')).toBeInTheDocument());
+      fireEvent.click(screen.getByAltText('♠ 6').closest('button') as HTMLButtonElement);
+      fireEvent.click(screen.getByTestId('machiavelli-rearrange-toggle'));
+      expect(screen.getByTestId('machiavelli-rearrange-panel')).toBeInTheDocument();
+      // Three table cards + one selected hand card in the pool.
+      expect(screen.getByTestId('machiavelli-assign-t-0-0')).toBeInTheDocument();
+      expect(screen.getByTestId('machiavelli-assign-t-0-1')).toBeInTheDocument();
+      expect(screen.getByTestId('machiavelli-assign-t-0-2')).toBeInTheDocument();
+      expect(screen.getByTestId('machiavelli-assign-h-0')).toBeInTheDocument();
+    });
+
+    it('blocks submit until every card is assigned into a valid meld, then submits play', async () => {
+      mockExec.mockResolvedValue(rearrangeState);
+      renderWithProviders(<MachiavelliPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ 6')).toBeInTheDocument());
+      fireEvent.click(screen.getByAltText('♠ 6').closest('button') as HTMLButtonElement);
+      fireEvent.click(screen.getByTestId('machiavelli-rearrange-toggle'));
+
+      // The played hand card starts unassigned → submit blocked, conservation status.
+      const submit = screen.getByTestId('machiavelli-rearrange-submit');
+      expect(submit).toBeDisabled();
+      expect(screen.getByTestId('machiavelli-rearrange-status')).toHaveTextContent(
+        'すべてのカードをグループに割り当ててください（未割り当てが残っています）',
+      );
+
+      // Assign the ♠6 into the existing run group (group 1 in the UI = index 0).
+      fireEvent.change(screen.getByTestId('machiavelli-assign-h-0'), { target: { value: '0' } });
+      expect(submit).not.toBeDisabled();
+      expect(screen.getByTestId('machiavelli-rearrange-status')).toHaveTextContent('有効な再構成です。送信できます');
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(rearrangeState);
+      fireEvent.click(submit);
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('play', {
+          tableMelds: [
+            [
+              { design: 1, value: 3 },
+              { design: 1, value: 4 },
+              { design: 1, value: 5 },
+              { design: 1, value: 6 },
+            ],
+          ],
+          handIndices: [0],
+        }),
+      );
+    });
+
+    it('shows an invalid badge for a group that is not a valid meld', async () => {
+      mockExec.mockResolvedValue(rearrangeState);
+      renderWithProviders(<MachiavelliPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ 6')).toBeInTheDocument());
+      fireEvent.click(screen.getByAltText('♠ 6').closest('button') as HTMLButtonElement);
+      fireEvent.click(screen.getByTestId('machiavelli-rearrange-toggle'));
+      // Assign ♠6 to its own new group: cards are conserved, but the singleton
+      // group is not a valid meld, so submit stays blocked with a melds status.
+      fireEvent.change(screen.getByTestId('machiavelli-assign-h-0'), { target: { value: '1' } });
+      expect(screen.getByTestId('machiavelli-rearrange-group-1')).toHaveTextContent('無効');
+      expect(screen.getByTestId('machiavelli-rearrange-status')).toHaveTextContent(
+        '各グループを有効なメルド（3枚以上のセットまたはシーケンス）にしてください',
+      );
+      expect(screen.getByTestId('machiavelli-rearrange-submit')).toBeDisabled();
+    });
+
+    it('cancel closes the rearrange panel', async () => {
+      mockExec.mockResolvedValue(rearrangeState);
+      renderWithProviders(<MachiavelliPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ 6')).toBeInTheDocument());
+      fireEvent.click(screen.getByAltText('♠ 6').closest('button') as HTMLButtonElement);
+      fireEvent.click(screen.getByTestId('machiavelli-rearrange-toggle'));
+      expect(screen.getByTestId('machiavelli-rearrange-panel')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'やめる' }));
+      expect(screen.queryByTestId('machiavelli-rearrange-panel')).not.toBeInTheDocument();
+    });
+  });
 });
