@@ -70,6 +70,29 @@ func (pr *PokerSquaresCuiPresenter) Output(p interfaces.PokerSquaresGame, lastEr
 	})
 }
 
+// HintOutput emits the best-placement hint for the current card. It suggests
+// the empty cell whose row/column offer the strongest poker-hand synergy, or an
+// explanatory line when no hint is available (game over or no current card).
+func (pr *PokerSquaresCuiPresenter) HintOutput(p interfaces.PokerSquaresGame) string {
+	hint := p.GetHint()
+	if hint == nil {
+		return i18n.T("cuiHintNone") + "\n"
+	}
+	reason := i18n.T("pokersquares.hintAny")
+	if hint.Synergy {
+		reason = i18n.T("pokersquares.hintSynergy")
+	}
+	card := i18n.T("pokersquares.currentCardNone")
+	if cc := p.GetCurrentCard(); cc != nil {
+		card = cuiCardStr(cc)
+	}
+	return i18n.Tf("pokersquares.hintLine",
+		"card", card,
+		"r", strconv.Itoa(hint.Row),
+		"c", strconv.Itoa(hint.Col),
+		"reason", reason) + "\n"
+}
+
 // ActionLogOutput emits the action-log transcript as plain text.
 func (pr *PokerSquaresCuiPresenter) ActionLogOutput(p interfaces.PokerSquaresGame) string {
 	if p.GetPhase() == domain.PokerSquaresPhasePlaying {

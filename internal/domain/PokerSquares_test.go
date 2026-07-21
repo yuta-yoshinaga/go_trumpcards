@@ -71,6 +71,61 @@ func TestPokerSquares_PlaceErrors(t *testing.T) {
 	assert.Error(t, g2.Place(0, 0))
 }
 
+func TestPokerSquares_GetHint_NotPlaying(t *testing.T) {
+	g := newPokerSquaresForTest()
+	g.SetCurrentCard(NewCard(CardDesignSpade, 5, false))
+	g.SetPhase(PokerSquaresPhaseComplete)
+	assert.Nil(t, g.GetHint())
+}
+
+func TestPokerSquares_GetHint_NoCurrentCard(t *testing.T) {
+	g := newPokerSquaresForTest()
+	g.SetCurrentCard(nil)
+	assert.Nil(t, g.GetHint())
+}
+
+func TestPokerSquares_GetHint_EmptyBoard(t *testing.T) {
+	g := newPokerSquaresForTest()
+	g.SetCurrentCard(NewCard(CardDesignSpade, 5, false))
+	hint := g.GetHint()
+	assert.NotNil(t, hint)
+	// No existing cards → no synergy; the first empty cell (0,0) is suggested.
+	assert.Equal(t, 0, hint.Row)
+	assert.Equal(t, 0, hint.Col)
+	assert.Equal(t, 0, hint.Score)
+	assert.False(t, hint.Synergy)
+}
+
+func TestPokerSquares_GetHint_ValuePairSynergy(t *testing.T) {
+	g := newPokerSquaresForTest()
+	g.SetCurrentCard(NewCard(CardDesignSpade, 5, false))
+	var b [PokerSquaresGridSize][PokerSquaresGridSize]*Card
+	// A same-value card in row 0 gives every empty row-0 cell a pair bonus (+4).
+	b[0][1] = NewCard(CardDesignHeart, 5, false)
+	g.SetBoard(b)
+
+	hint := g.GetHint()
+	assert.NotNil(t, hint)
+	assert.True(t, hint.Synergy)
+	assert.Equal(t, 4, hint.Score)
+	assert.Equal(t, 0, hint.Row)
+	assert.Equal(t, 0, hint.Col)
+}
+
+func TestPokerSquares_GetHint_SuitAndStraightSynergy(t *testing.T) {
+	g := newPokerSquaresForTest()
+	g.SetCurrentCard(NewCard(CardDesignSpade, 5, false))
+	var b [PokerSquaresGridSize][PokerSquaresGridSize]*Card
+	// Same suit (+2) and adjacent value (+1) in row 0 → +3 for empty row-0 cells.
+	b[0][1] = NewCard(CardDesignSpade, 6, false)
+	g.SetBoard(b)
+
+	hint := g.GetHint()
+	assert.NotNil(t, hint)
+	assert.True(t, hint.Synergy)
+	assert.Equal(t, 3, hint.Score)
+}
+
 func TestPokerSquares_IsCompleteAndPhase(t *testing.T) {
 	g := newPokerSquaresForTest()
 	g.Reset()

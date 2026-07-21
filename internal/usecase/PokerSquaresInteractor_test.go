@@ -91,6 +91,17 @@ func TestPokerSquaresInteractor_GiveUp(t *testing.T) {
 	assert.Equal(t, "giveup_output", pi.GiveUp())
 }
 
+func TestPokerSquaresInteractor_Hint(t *testing.T) {
+	pg := newMockPokerSquaresGame()
+	pp := newMockPokerSquaresPresenter()
+	pi := NewPokerSquaresInteractor(pg, pp)
+
+	pp.On("HintOutput", pg).Return("hint_output")
+
+	assert.Equal(t, "hint_output", pi.Hint())
+	pp.AssertCalled(t, "HintOutput", pg)
+}
+
 func TestPokerSquaresInteractor_ActionLog(t *testing.T) {
 	pg := newMockPokerSquaresGame()
 	pp := newMockPokerSquaresPresenter()

@@ -245,6 +245,76 @@ func (p *PokerSquares) TotalScore() int {
 	return total
 }
 
+// PokerSquaresHint は現在のカードを置く最善のセルを表す配置ヒント。
+type PokerSquaresHint struct {
+	// Row は推奨する行 (0-4)。
+	Row int
+	// Col は推奨する列 (0-4)。
+	Col int
+	// Score はその配置が生む行・列の相乗効果スコア。
+	Score int
+	// Synergy はスコアが正 (既存カードと相乗効果あり) かどうか。
+	Synergy bool
+}
+
+// GetHint は現在のカードを置く最善のセルを返す。
+//
+// 各空きセルについて、そのセルが属する行と列に既にあるカードとの
+// ポーカーハンド相乗効果 (同ランクのペア/スリー、同スートのフラッシュ、
+// 隣接ランクのストレート) を評価し、最も高い合計スコアのセルを推奨する。
+// プレイ中でない、または現在のカードが無い場合は nil を返す。
+func (p *PokerSquares) GetHint() *PokerSquaresHint {
+	if p.phase != PokerSquaresPhasePlaying || p.currentCard == nil {
+		return nil
+	}
+	var best *PokerSquaresHint
+	for r := range PokerSquaresGridSize {
+		for c := range PokerSquaresGridSize {
+			if p.board[r][c] != nil {
+				continue
+			}
+			score := p.scorePlacement(p.currentCard, r, c)
+			if best == nil || score > best.Score {
+				best = &PokerSquaresHint{Row: r, Col: c, Score: score, Synergy: score > 0}
+			}
+		}
+	}
+	return best
+}
+
+// scorePlacement は card を (row, col) に置いたときの行・列の合計相乗効果スコア。
+func (p *PokerSquares) scorePlacement(card *Card, row, col int) int {
+	score := 0
+	for c := range PokerSquaresGridSize {
+		if cell := p.board[row][c]; cell != nil {
+			score += pokerSquaresLineSynergy(card, cell)
+		}
+	}
+	for r := range PokerSquaresGridSize {
+		if cell := p.board[r][col]; cell != nil {
+			score += pokerSquaresLineSynergy(card, cell)
+		}
+	}
+	return score
+}
+
+// pokerSquaresLineSynergy は card と既存カード existing の相乗効果を評価する。
+// ペア/スリー候補が最も強い信号 (x4)、フラッシュ候補が次点 (x2)、
+// ストレート候補が最も弱い (x1)。
+func pokerSquaresLineSynergy(card, existing *Card) int {
+	score := 0
+	if existing.GetValue() == card.GetValue() {
+		score += 4
+	}
+	if existing.GetDesign() == card.GetDesign() {
+		score += 2
+	}
+	if diff := existing.GetValue() - card.GetValue(); diff == 1 || diff == -1 {
+		score++
+	}
+	return score
+}
+
 // pokerSquaresRankToScore はハンドランクを得点に変換する。
 func pokerSquaresRankToScore(rank int) int {
 	if s, ok := pokerSquaresScoreTable[rank]; ok {

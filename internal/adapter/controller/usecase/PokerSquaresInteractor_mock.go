@@ -33,6 +33,12 @@ func (_m *MockPokerSquaresInteractor) GiveUp() string {
 	return ret.Get(0).(string)
 }
 
+// Hint モック
+func (_m *MockPokerSquaresInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // ActionLog モック
 func (_m *MockPokerSquaresInteractor) ActionLog() string {
 	ret := _m.Called()

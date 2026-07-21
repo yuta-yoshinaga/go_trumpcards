@@ -22,6 +22,10 @@ func (s *stubPokerSquaresPresenter) ActionLogOutput(_ interfaces.PokerSquaresGam
 	return `{"log":[]}`
 }
 
+func (s *stubPokerSquaresPresenter) HintOutput(_ interfaces.PokerSquaresGame) string {
+	return `{"hint":true}`
+}
+
 func TestPokerSquaresInteractor_SnapshotRestore(t *testing.T) {
 	g := domain.NewPokerSquares(domain.NewTrumpCards(0))
 	pi := NewPokerSquaresInteractor(g, new(stubPokerSquaresPresenter))
