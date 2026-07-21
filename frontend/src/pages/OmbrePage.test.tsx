@@ -80,21 +80,58 @@ describe('OmbrePage', () => {
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
   });
 
-  it('entrar is disabled until a trump suit is picked, then dispatches bid with the suit', async () => {
+  it('stages entrar → trump selection → confirm and dispatches the bid with the suit', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<OmbrePage />);
-    const entrarBtn = await screen.findByRole('button', { name: 'エントラール' });
-    expect(entrarBtn).toBeDisabled();
-    // Pick spades (♠) as trump.
+    // Stage 1: only bid-type buttons, no trump/confirm yet.
+    await screen.findByTestId('ombre-bid-stage1');
+    expect(screen.queryByTestId('ombre-bid-stage2')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'スペード' })).not.toBeInTheDocument();
+
+    // Choose entrar → advance to stage 2 (trump + confirm/back).
+    fireEvent.click(screen.getByRole('button', { name: 'エントラール' }));
+    await screen.findByTestId('ombre-bid-stage2');
+    const confirmBtn = screen.getByTestId('ombre-bid-confirm');
+    expect(confirmBtn).toBeDisabled();
+
+    // Pick spades (♠) as trump → confirm enabled.
     fireEvent.click(screen.getByRole('button', { name: 'スペード' }));
-    expect(screen.getByRole('button', { name: 'エントラール' })).toBeEnabled();
+    expect(screen.getByTestId('ombre-bid-confirm')).toBeEnabled();
+
     mockExec.mockClear();
     mockExec.mockResolvedValue(bidPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: 'エントラール' }));
+    fireEvent.click(screen.getByTestId('ombre-bid-confirm'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 1, trumpSuit: 1 }));
   });
 
-  it('passing dispatches bid with bid=0 and no trump requirement', async () => {
+  it('stages solo → trump selection → confirm and dispatches solo with the suit', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<OmbrePage />);
+    await screen.findByTestId('ombre-bid-stage1');
+    fireEvent.click(screen.getByRole('button', { name: 'ソロ' }));
+    await screen.findByTestId('ombre-bid-stage2');
+    fireEvent.click(screen.getByRole('button', { name: 'ハート' }));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(bidPhaseState);
+    fireEvent.click(screen.getByTestId('ombre-bid-confirm'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 2, trumpSuit: 3 }));
+  });
+
+  it('back returns from trump selection to bid-type selection without dispatching', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<OmbrePage />);
+    await screen.findByTestId('ombre-bid-stage1');
+    fireEvent.click(screen.getByRole('button', { name: 'エントラール' }));
+    await screen.findByTestId('ombre-bid-stage2');
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('ombre-bid-back'));
+    // Back to stage 1; no bid dispatched.
+    await screen.findByTestId('ombre-bid-stage1');
+    expect(screen.queryByTestId('ombre-bid-stage2')).not.toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('passing dispatches bid with bid=0 in one tap and no trump requirement', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<OmbrePage />);
     const passBtn = await screen.findByRole('button', { name: 'パス' });

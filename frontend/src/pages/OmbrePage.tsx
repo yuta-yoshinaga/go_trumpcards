@@ -111,6 +111,10 @@ function OmbrePageContent() {
     handleNextRound,
   } = useOmbreGame();
 
+  // Two-stage bid flow. Stage 1 picks the bid type (entrar/solo/pass); choosing
+  // entrar or solo sets `pendingBid` (1 or 2) and advances to stage 2, where a
+  // trump suit is picked and the declaration is confirmed. `null` = stage 1.
+  const [pendingBid, setPendingBid] = useState<number | null>(null);
   // Trump suit chosen for a pending entrar/solo declaration (null until picked).
   const [selectedTrump, setSelectedTrump] = useState<number | null>(null);
 
@@ -174,9 +178,27 @@ function OmbrePageContent() {
     reset();
   };
 
-  const declare = (bid: number) => {
-    if (selectedTrump === null) return;
-    handleBid(bid, selectedTrump);
+  // Stage 1 → pass immediately, or stage into trump selection for entrar/solo.
+  const chooseBid = (bid: number) => {
+    if (bid === 0) {
+      handleBid(0);
+      return;
+    }
+    setPendingBid(bid);
+    setSelectedTrump(null);
+  };
+
+  // Stage 2 → back to bid-type selection, discarding the pending choice.
+  const cancelBid = () => {
+    setPendingBid(null);
+    setSelectedTrump(null);
+  };
+
+  // Stage 2 → confirm the pending declaration with the chosen trump suit.
+  const confirmBid = () => {
+    if (pendingBid === null || selectedTrump === null) return;
+    handleBid(pendingBid, selectedTrump);
+    setPendingBid(null);
     setSelectedTrump(null);
   };
 
@@ -363,9 +385,25 @@ function OmbrePageContent() {
             )}
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="ombre-action-buttons">
-              {canBid && (
-                <>
-                  <span className="text-ds-text-muted text-sm">{t('chooseTrump')}:</span>
+              {canBid && pendingBid === null && (
+                <div className="flex flex-wrap gap-2 items-center" data-testid="ombre-bid-stage1">
+                  <span className="text-ds-text-muted text-sm">{t('chooseBidType')}:</span>
+                  <button type="button" className={btnPrimary} onClick={() => chooseBid(1)} disabled={loading}>
+                    {t('bidEntrar')}
+                  </button>
+                  <button type="button" className={btnPrimary} onClick={() => chooseBid(2)} disabled={loading}>
+                    {t('bidSolo')}
+                  </button>
+                  <button type="button" className={btnSecondary} onClick={() => chooseBid(0)} disabled={loading}>
+                    {t('bidPass')}
+                  </button>
+                </div>
+              )}
+              {canBid && pendingBid !== null && (
+                <div className="flex flex-wrap gap-2 items-center" data-testid="ombre-bid-stage2">
+                  <span className="text-ds-text-muted text-sm">
+                    {t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid] ?? 'bidNone') })}:
+                  </span>
                   {TRUMP_CHOICES.map((c) => (
                     <button
                       key={c.code}
@@ -381,24 +419,23 @@ function OmbrePageContent() {
                   ))}
                   <button
                     type="button"
-                    className={btnPrimary}
-                    onClick={() => declare(1)}
+                    className={btnSuccess}
+                    onClick={confirmBid}
                     disabled={loading || selectedTrump === null}
+                    data-testid="ombre-bid-confirm"
                   >
-                    {t('bidEntrar')}
+                    {t('confirmBid')}
                   </button>
                   <button
                     type="button"
-                    className={btnPrimary}
-                    onClick={() => declare(2)}
-                    disabled={loading || selectedTrump === null}
+                    className={btnSecondary}
+                    onClick={cancelBid}
+                    disabled={loading}
+                    data-testid="ombre-bid-back"
                   >
-                    {t('bidSolo')}
+                    {t('bidBack')}
                   </button>
-                  <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
-                    {t('bidPass')}
-                  </button>
-                </>
+                </div>
               )}
               {canPlay && (
                 <button
