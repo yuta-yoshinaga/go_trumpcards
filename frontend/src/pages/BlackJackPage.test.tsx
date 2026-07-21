@@ -1562,6 +1562,66 @@ describe('BlackJackPage', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
+  it('pressing i triggers insurance in INSURANCE phase', async () => {
+    mockExec.mockResolvedValue(insurancePhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'インシュランス' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(insurancePhaseState);
+    fireEvent.keyDown(document, { key: 'i' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('insurance'));
+  });
+
+  it('pressing n triggers declineinsurance in INSURANCE phase', async () => {
+    mockExec.mockResolvedValue(insurancePhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '辞退' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(insurancePhaseState);
+    fireEvent.keyDown(document, { key: 'n' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declineinsurance'));
+  });
+
+  it('insurance keyboard shortcuts are disabled outside INSURANCE phase', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'i' });
+    expect(mockExec).not.toHaveBeenCalledWith('insurance');
+  });
+
+  it('pressing u triggers earlysurrender in EARLY_SURRENDER phase', async () => {
+    const earlySurrenderState: BlackJackResponse = { ...actionPhaseState, phase: 6 };
+    mockExec.mockResolvedValue(earlySurrenderState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'アーリーサレンダー' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(earlySurrenderState);
+    fireEvent.keyDown(document, { key: 'u' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('earlysurrender'));
+  });
+
+  it('pressing n triggers declineearlysurrender in EARLY_SURRENDER phase', async () => {
+    const earlySurrenderState: BlackJackResponse = { ...actionPhaseState, phase: 6 };
+    mockExec.mockResolvedValue(earlySurrenderState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '続行' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(earlySurrenderState);
+    fireEvent.keyDown(document, { key: 'n' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declineearlysurrender'));
+  });
+
+  it('early surrender keyboard shortcuts are disabled outside EARLY_SURRENDER phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'u' });
+    expect(mockExec).not.toHaveBeenCalledWith('earlysurrender');
+  });
+
   // --- PhaseIndicator coverage ---
 
   it('phase indicator shows your turn during action phase', async () => {
