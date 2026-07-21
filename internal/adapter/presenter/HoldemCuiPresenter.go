@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -86,6 +87,27 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 
 			if player.GetIsHuman() && !player.GetFolded() {
 				b.WriteString(i18n.Tf("holdem.humanHand", "cards", cuiCardListStrEmoji(player)) + "\n")
+			}
+		}
+
+		// Learning mode: show equity (win probability) and pot odds on the
+		// human's turn while equity is available (pre-flop through river, human
+		// not folded). GetEquity returns nil otherwise, hiding the display.
+		if h.IsHumanTurn() {
+			if eq := h.GetEquity(); eq != nil {
+				potOdds := h.GetPotOdds()
+				b.WriteString("----------\n")
+				b.WriteString(color.Bold(i18n.T("holdem.learningHeader")) + "\n")
+				b.WriteString(i18n.Tf("holdem.learningLine",
+					"equity", fmt.Sprintf("%.1f", eq.Equity*100),
+					"potodds", fmt.Sprintf("%.1f", potOdds)) + "\n")
+				if potOdds > 0 {
+					if eq.Equity*100 > potOdds {
+						b.WriteString(i18n.T("holdem.learningEvPlus") + "\n")
+					} else {
+						b.WriteString(i18n.T("holdem.learningEvMinus") + "\n")
+					}
+				}
 			}
 		}
 
