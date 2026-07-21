@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { lowCardIndexSets } from './omahaLowCards';
+import { boardLowPossibility, lowCardIndexSets } from './omahaLowCards';
 
 const c = (design: Card['design'], value: number): Card => ({ design, value });
 
@@ -27,5 +27,56 @@ describe('lowCardIndexSets', () => {
     const { loHoleSet, loBoardSet } = lowCardIndexSets(low, hole, board);
     expect(loHoleSet.size).toBe(0);
     expect(loBoardSet.size).toBe(0);
+  });
+});
+
+describe('boardLowPossibility', () => {
+  it('reports possible on an empty (pre-flop) board', () => {
+    const result = boardLowPossibility([]);
+    expect(result.status).toBe('possible');
+    expect(result.lowRankCount).toBe(0);
+    expect(result.needed).toBe(3);
+  });
+
+  it('reports live once the board shows 3 distinct low ranks', () => {
+    // Flop 2,4,7 — all ≤ 8 and distinct.
+    const board = [c('SPADE', 2), c('HEART', 4), c('DIAMOND', 7)];
+    const result = boardLowPossibility(board);
+    expect(result.status).toBe('live');
+    expect(result.lowRankCount).toBe(3);
+    expect(result.needed).toBe(0);
+  });
+
+  it('counts the ace as a low rank', () => {
+    const board = [c('SPADE', 1), c('HEART', 5), c('DIAMOND', 8)];
+    const result = boardLowPossibility(board);
+    expect(result.status).toBe('live');
+    expect(result.lowRankCount).toBe(3);
+  });
+
+  it('treats duplicate low ranks as a single distinct rank', () => {
+    // Two 4s + one 6 → only 2 distinct low ranks, one board card still to come.
+    const board = [c('SPADE', 4), c('HEART', 4), c('DIAMOND', 6), c('CLOVER', 11)];
+    const result = boardLowPossibility(board);
+    expect(result.status).toBe('possible');
+    expect(result.lowRankCount).toBe(2);
+    expect(result.needed).toBe(1);
+  });
+
+  it('reports impossible on a full board with fewer than 3 distinct low ranks', () => {
+    // River: only 5 and 8 are ≤ 8 → 2 distinct low ranks, no cards left.
+    const board = [c('SPADE', 5), c('HEART', 8), c('DIAMOND', 10), c('CLOVER', 12), c('SPADE', 13)];
+    const result = boardLowPossibility(board);
+    expect(result.status).toBe('impossible');
+    expect(result.lowRankCount).toBe(2);
+    expect(result.needed).toBe(1);
+  });
+
+  it('reports impossible on a full board with no low ranks at all', () => {
+    const board = [c('SPADE', 9), c('HEART', 10), c('DIAMOND', 11), c('CLOVER', 12), c('SPADE', 13)];
+    const result = boardLowPossibility(board);
+    expect(result.status).toBe('impossible');
+    expect(result.lowRankCount).toBe(0);
+    expect(result.needed).toBe(3);
   });
 });

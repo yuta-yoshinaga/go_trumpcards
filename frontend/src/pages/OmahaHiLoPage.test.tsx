@@ -317,6 +317,57 @@ describe('OmahaHiLoPage', () => {
     expect(screen.getByAltText('♦ 8')).toBeInTheDocument();
   });
 
+  // ---- board low-possibility badge (#3005) ----
+  it('does not show the board-low badge pre-flop', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByText('コミュニティカード')).toBeInTheDocument());
+    expect(screen.queryByTestId('omahahilo-board-low-badge')).not.toBeInTheDocument();
+  });
+
+  it('shows the "possible" board-low badge on a flop with 2 distinct low ranks', async () => {
+    // flopState board is 10,5,8 → only 5 and 8 are ≤ 8 (2 distinct low ranks).
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<OmahaHiLoPage />);
+    const badge = await screen.findByTestId('omahahilo-board-low-badge');
+    expect(badge).toHaveAttribute('data-status', 'possible');
+    expect(badge).toHaveClass('text-ds-info');
+  });
+
+  it('shows the "live" board-low badge when the board has 3 distinct low ranks', async () => {
+    mockExec.mockResolvedValue({
+      ...flopState,
+      communityCards: [
+        { design: 'SPADE', value: 2 },
+        { design: 'HEART', value: 4 },
+        { design: 'DIAMOND', value: 7 },
+      ],
+    });
+    renderWithProviders(<OmahaHiLoPage />);
+    const badge = await screen.findByTestId('omahahilo-board-low-badge');
+    expect(badge).toHaveAttribute('data-status', 'live');
+    expect(badge).toHaveClass('text-ds-success');
+  });
+
+  it('shows the "impossible" board-low badge on a full board with fewer than 3 low ranks', async () => {
+    // River with only 5 and 8 low → cannot reach 3 distinct low ranks.
+    mockExec.mockResolvedValue({
+      ...flopState,
+      phase: 4,
+      communityCards: [
+        { design: 'SPADE', value: 5 },
+        { design: 'HEART', value: 8 },
+        { design: 'DIAMOND', value: 10 },
+        { design: 'CLOVER', value: 12 },
+        { design: 'SPADE', value: 13 },
+      ],
+    });
+    renderWithProviders(<OmahaHiLoPage />);
+    const badge = await screen.findByTestId('omahahilo-board-low-badge');
+    expect(badge).toHaveAttribute('data-status', 'impossible');
+    expect(badge).toHaveClass('text-ds-text-muted');
+  });
+
   // ---- CPU players ----
   it('renders CPU player info with playStyleName and chips', async () => {
     mockExec.mockResolvedValue(preFlopState);
