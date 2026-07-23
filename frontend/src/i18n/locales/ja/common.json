@@ -903,6 +903,7 @@
     "cribbage.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "cribbage.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "cribbage.discardPhase": "クリブに捨てるカードを2枚選んでください",
+    "cribbage.cutPhase": "デッキをカットしてスターターカードをめくってください",
     "cribbage.peggingPhase": "カードを1枚選んで出してください",
     "cribbage.showPhase": "スコアを計算中",
     "cribbage.roundEnd": "ラウンド終了",

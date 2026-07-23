@@ -146,6 +146,66 @@ func TestCribbageInteractor_Discard(t *testing.T) {
 	})
 }
 
+func TestCribbageInteractor_Cut(t *testing.T) {
+	mockOutput := `{"phase":1}`
+
+	t.Run("game ended returns output without cutting", func(t *testing.T) {
+		pMock := new(presenter.MockCribbagePresenter)
+		pMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+		gameMock := new(interfaces.MockCribbageGame)
+		gameMock.On("GetGameEndFlag").Return(true)
+
+		ci := usecase.NewCribbageInteractor(gameMock, pMock)
+		result := ci.Cut()
+		assert.Equal(t, mockOutput, result)
+		gameMock.AssertNotCalled(t, "PlayerCut")
+	})
+
+	t.Run("not human turn returns output without cutting", func(t *testing.T) {
+		pMock := new(presenter.MockCribbagePresenter)
+		pMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+		gameMock := new(interfaces.MockCribbageGame)
+		gameMock.On("GetGameEndFlag").Return(false)
+		gameMock.On("IsHumanTurn").Return(false)
+
+		ci := usecase.NewCribbageInteractor(gameMock, pMock)
+		result := ci.Cut()
+		assert.Equal(t, mockOutput, result)
+		gameMock.AssertNotCalled(t, "PlayerCut")
+	})
+
+	t.Run("cut error is returned to presenter", func(t *testing.T) {
+		cutErr := errors.New("cut error")
+		pMock := new(presenter.MockCribbagePresenter)
+		pMock.On("Output", mock.Anything, cutErr).Return(mockOutput)
+		gameMock := new(interfaces.MockCribbageGame)
+		gameMock.On("GetGameEndFlag").Return(false)
+		gameMock.On("IsHumanTurn").Return(true)
+		gameMock.On("PlayerCut").Return(cutErr)
+
+		ci := usecase.NewCribbageInteractor(gameMock, pMock)
+		result := ci.Cut()
+		assert.Equal(t, mockOutput, result)
+	})
+
+	t.Run("valid cut runs CPU turns", func(t *testing.T) {
+		pMock := new(presenter.MockCribbagePresenter)
+		pMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+		gameMock := new(interfaces.MockCribbageGame)
+		gameMock.On("GetGameEndFlag").Return(false)
+		gameMock.On("IsHumanTurn").Return(true).Once()
+		gameMock.On("PlayerCut").Return(nil)
+		// runCpuTurns: pegging phase, human turn → break
+		gameMock.On("GetPhase").Return(domain.CribbagePhasePegging)
+		gameMock.On("IsHumanTurn").Return(true)
+
+		ci := usecase.NewCribbageInteractor(gameMock, pMock)
+		result := ci.Cut()
+		assert.Equal(t, mockOutput, result)
+		gameMock.AssertCalled(t, "PlayerCut")
+	})
+}
+
 func TestCribbageInteractor_Peg(t *testing.T) {
 	mockOutput := `{"phase":0}`
 

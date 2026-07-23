@@ -222,7 +222,7 @@ func (g *Cribbage) doDiscard(playerIdx int, indices []int) error {
 		for i := range CribbagePlayerCnt {
 			g.originalHands[i] = g.getPlayerCards(i)
 		}
-		g.doCut()
+		g.enterCutPhase()
 	} else {
 		// もう一方のプレイヤーに切り替え
 		g.currentPlayerIdx = 1 - playerIdx
@@ -230,9 +230,31 @@ func (g *Cribbage) doDiscard(playerIdx int, indices []int) error {
 	return nil
 }
 
-// doCut スターターカードを公開
-func (g *Cribbage) doCut() {
+// enterCutPhase カットフェーズに入る。スターターはまだ公開せず、非ディーラー
+// (切り手) の明示的なカット操作を待つ。切り手が人間なら PlayerCut を、CPU なら
+// CpuPlay 経由で doCut が呼ばれてスターターが公開される。
+func (g *Cribbage) enterCutPhase() {
 	g.phase = CribbagePhaseCut
+	g.currentPlayerIdx = 1 - g.dealerIdx // 非ディーラーがデッキをカットする
+}
+
+// PlayerCut 人間の非ディーラーがデッキをカットしてスターターを公開する
+func (g *Cribbage) PlayerCut() error {
+	if g.gameEndFlag {
+		return ErrGameEnded
+	}
+	if g.phase != CribbagePhaseCut {
+		return ErrWrongPhase
+	}
+	if !g.players[g.currentPlayerIdx].GetIsHuman() {
+		return ErrNotHumanTurn
+	}
+	g.doCut()
+	return nil
+}
+
+// doCut スターターカードを公開し、His Heels を適用してペギングへ移行する
+func (g *Cribbage) doCut() {
 	if len(g.drawPile) > 0 {
 		g.starter = g.drawPile[len(g.drawPile)-1]
 		g.drawPile = g.drawPile[:len(g.drawPile)-1]
@@ -497,6 +519,9 @@ func (g *Cribbage) CpuPlay() {
 	switch g.phase {
 	case CribbagePhaseDiscard:
 		g.cpuDiscard(playerIdx)
+	case CribbagePhaseCut:
+		// CPU が切り手 (非ディーラー) の場合は従来通り自動でカットする
+		g.doCut()
 	case CribbagePhasePegging:
 		g.cpuPeg(playerIdx)
 	}

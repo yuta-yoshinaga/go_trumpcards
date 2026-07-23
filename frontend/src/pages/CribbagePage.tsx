@@ -12,6 +12,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -181,6 +182,7 @@ function CribbagePageContent() {
     clearSelection,
     handleConfigChange,
     handleDiscard,
+    handleCut,
     handlePeg,
     handleGo,
     handleShowNext,
@@ -288,11 +290,18 @@ function CribbagePageContent() {
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isDiscardPhase = state.phase === CribbagePhase.DISCARD;
+  const isCutPhase = state.phase === CribbagePhase.CUT;
   const isPeggingPhase = state.phase === CribbagePhase.PEGGING;
   const isShowPhase = state.phase === CribbagePhase.SHOW;
   const isRoundEnd = state.phase === CribbagePhase.ROUND_END;
   const isGameEnd = state.phase === CribbagePhase.GAME_END || state.gameEndFlag;
-  const isHumanTurn = (isDiscardPhase || isPeggingPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const isHumanTurn =
+    (isDiscardPhase || isCutPhase || isPeggingPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+  // During the cut phase the current player is the non-dealer (the cutter); only
+  // surface the cut affordance when that cutter is the human.
+  const isHumanCutTurn = isCutPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  // His Heels: the dealer scores 2 when the revealed starter is a Jack (value 11).
+  const starterIsJack = state.starter?.value === 11;
   const canHumanPeg =
     isPeggingPhase &&
     isHumanTurn &&
@@ -373,12 +382,35 @@ function CribbagePageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
               <div>
+                {/* Cut phase: the human non-dealer cuts the deck to reveal the starter. */}
+                {isCutPhase && isHumanCutTurn && (
+                  <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-testid="cb-cut-area">
+                    <button
+                      type="button"
+                      onClick={handleCut}
+                      disabled={loading}
+                      aria-label={t('cutDeckAria')}
+                      className={`transition-transform ${focusRingCard} ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-0.5'}`}
+                      style={{ background: 'none', padding: 0, borderRadius: 8 }}
+                      data-testid="cb-cut-deck"
+                    >
+                      <AnimatedCardBack width={cardWidth} />
+                    </button>
+                    <div className="text-ds-text-muted text-sm">{t('cutPrompt')}</div>
+                  </div>
+                )}
+
                 {/* Starter card */}
                 {state.starter && (
                   <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
                     <AnimatedCard card={state.starter} width={cardWidth} />
                     <div className="text-ds-text-muted text-sm">
                       <div>{t('starter')}</div>
+                      {starterIsJack && (
+                        <div className="text-ds-warning font-bold" data-testid="cb-his-heels" role="status">
+                          {t('hisHeels')}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -608,6 +640,17 @@ function CribbagePageContent() {
                   data-tutorial="cb-discard-button"
                 >
                   {t('discardButton')}
+                </button>
+              )}
+              {isCutPhase && isHumanCutTurn && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleCut}
+                  disabled={loading}
+                  data-testid="cb-cut-button"
+                >
+                  {t('cutButton')}
                 </button>
               )}
               {isPeggingPhase && isHumanTurn && (

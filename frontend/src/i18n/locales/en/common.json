@@ -903,6 +903,7 @@
     "cribbage.result.humanWin": "Game over! You win!",
     "cribbage.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "cribbage.discardPhase": "Select 2 cards to discard to the crib",
+    "cribbage.cutPhase": "Cut the deck to reveal the starter card",
     "cribbage.peggingPhase": "Select a card to play",
     "cribbage.showPhase": "Scoring hands",
     "cribbage.roundEnd": "Round over",

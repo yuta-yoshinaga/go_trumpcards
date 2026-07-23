@@ -97,6 +97,11 @@ func (p *CribbageCuiPresenter) Output(g interfaces.CribbageGame, lastErr error) 
 			b.WriteString(i18n.Tf("cribbage.promptDiscard",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("cribbage.promptDiscardHelp") + "\n")
+		case domain.CribbagePhaseCut:
+			currentIdx := g.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("cribbage.promptCut",
+				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("cribbage.promptCutHelp") + "\n")
 		case domain.CribbagePhasePegging:
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("cribbage.promptPegging",

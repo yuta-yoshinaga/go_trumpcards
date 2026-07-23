@@ -21,6 +21,7 @@ func TestCribbageCuiController_Exec(t *testing.T) {
 		m.On("GetConfig").Return(domain.DefaultCribbageConfig())
 		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 		m.On("Discard", mock.Anything).Return(mockOutput)
+		m.On("Cut").Return(mockOutput)
 		m.On("Peg", mock.Anything).Return(mockOutput)
 		m.On("Go").Return(mockOutput)
 		m.On("ShowNext").Return(mockOutput)
@@ -100,6 +101,23 @@ func TestCribbageCuiController_Exec(t *testing.T) {
 		result := c.Exec("d 1,abc")
 		assert.Equal(t, mockOutput, result)
 		m.AssertCalled(t, "Discard", []int{1})
+	})
+
+	// cut
+	t.Run("cut command c", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewCribbageCuiController(m)
+		result := c.Exec("c")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Cut")
+	})
+
+	t.Run("cut command cut", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewCribbageCuiController(m)
+		result := c.Exec("cut")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Cut")
 	})
 
 	// peg

@@ -18,6 +18,8 @@ type CribbageInteractorIF interface {
 	ResetWithConfig(cfg domain.CribbageConfig) string
 	// Discard クリブに2枚捨てる
 	Discard(cardIndices []int) string
+	// Cut 非ディーラーがデッキをカットしてスターターを公開する
+	Cut() string
 	// Peg ペギングでカードを出す
 	Peg(cardIndex int) string
 	// Go Goを宣言する
@@ -69,6 +71,19 @@ func (ci *CribbageInteractor) Discard(cardIndices []int) string {
 		return out
 	}
 	err := ci.Game.PlayerDiscard(cardIndices)
+	if err != nil {
+		return ci.gp.Output(ci.Game, err)
+	}
+	ci.runCpuTurns()
+	return ci.gp.Output(ci.Game, nil)
+}
+
+// Cut 非ディーラーがデッキをカットしてスターターを公開する
+func (ci *CribbageInteractor) Cut() string {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
+		return out
+	}
+	err := ci.Game.PlayerCut()
 	if err != nil {
 		return ci.gp.Output(ci.Game, err)
 	}

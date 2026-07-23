@@ -667,7 +667,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultCribbage(), new(presenter.CribbageCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:          "cribbage.helpTitle",
-				CommandKeys:       []string{"cribbage.helpDiscard", "cribbage.helpPeg", "cribbage.helpGo", "cribbage.helpHint", "cribbage.helpShowNext", "cribbage.helpNextRound"},
+				CommandKeys:       []string{"cribbage.helpDiscard", "cribbage.helpCut", "cribbage.helpPeg", "cribbage.helpGo", "cribbage.helpHint", "cribbage.helpShowNext", "cribbage.helpNextRound"},
 				ExtraCommandLines: []string{"  l                    action log"},
 				SettingKeys:       []string{"cribbage.helpSetDifficulty", "cribbage.helpSetLimit"},
 			})
