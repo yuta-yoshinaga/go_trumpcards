@@ -180,11 +180,55 @@ func TestCribbage_BothDiscard_TransitionsToCut(t *testing.T) {
 	assert.Equal(t, 1, g.GetCurrentPlayerIdx())
 	assert.Equal(t, CribbagePhaseDiscard, g.GetPhase())
 
-	// CPU discards
+	// CPU discards → dealer is CPU(1), so the non-dealer human(0) is the cutter.
+	// The game must STOP at the cut phase (starter not yet revealed) and wait
+	// for the human's explicit cut.
 	g.CpuPlay()
-	// Should have transitioned to pegging (cut is automatic)
-	assert.Equal(t, CribbagePhasePegging, g.GetPhase())
+	assert.Equal(t, CribbagePhaseCut, g.GetPhase())
+	assert.Equal(t, 0, g.GetCurrentPlayerIdx()) // human is the cutter
+	assert.Nil(t, g.GetStarter())
 	assert.Equal(t, 4, len(g.GetCrib()))
+
+	// Human cuts the deck → starter revealed and pegging begins.
+	err = g.PlayerCut()
+	require.NoError(t, err)
+	assert.Equal(t, CribbagePhasePegging, g.GetPhase())
+	assert.NotNil(t, g.GetStarter())
+}
+
+func TestCribbage_PlayerCut_WrongPhase(t *testing.T) {
+	g := newTestCribbage()
+	g.SetPhase(CribbagePhaseDiscard)
+	g.SetCurrentPlayerIdx(0)
+	err := g.PlayerCut()
+	assert.ErrorIs(t, err, ErrWrongPhase)
+}
+
+func TestCribbage_PlayerCut_GameEnded(t *testing.T) {
+	g := newTestCribbage()
+	g.SetGameEndFlag(true)
+	err := g.PlayerCut()
+	assert.ErrorIs(t, err, ErrGameEnded)
+}
+
+func TestCribbage_PlayerCut_NotHumanTurn(t *testing.T) {
+	g := newTestCribbage()
+	g.SetPhase(CribbagePhaseCut)
+	g.SetCurrentPlayerIdx(1) // CPU is the cutter
+	err := g.PlayerCut()
+	assert.ErrorIs(t, err, ErrNotHumanTurn)
+}
+
+func TestCribbage_CpuPlay_Cut_Auto(t *testing.T) {
+	g := newTestCribbage()
+	g.SetPhase(CribbagePhaseCut)
+	g.SetDealerIdx(0)        // human is dealer → CPU(1) is the non-dealer cutter
+	g.SetCurrentPlayerIdx(1) // CPU's cut
+	g.drawPile = []*Card{cCard(CardDesignSpade, 10)}
+
+	g.CpuPlay()
+	// CPU auto-cuts: starter revealed and pegging begins.
+	assert.Equal(t, CribbagePhasePegging, g.GetPhase())
 	assert.NotNil(t, g.GetStarter())
 }
 

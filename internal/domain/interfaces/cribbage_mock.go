@@ -16,6 +16,7 @@ type MockCribbageGame struct {
 func (m *MockCribbageGame) Reset()                            { m.Called() }
 func (m *MockCribbageGame) NextRound()                        { m.Called() }
 func (m *MockCribbageGame) PlayerDiscard(indices []int) error { return m.Called(indices).Error(0) }
+func (m *MockCribbageGame) PlayerCut() error                  { return m.Called().Error(0) }
 func (m *MockCribbageGame) PlayerPeg(cardIndex int) error     { return m.Called(cardIndex).Error(0) }
 func (m *MockCribbageGame) PlayerGo() error                   { return m.Called().Error(0) }
 func (m *MockCribbageGame) ShowNext() error                   { return m.Called().Error(0) }

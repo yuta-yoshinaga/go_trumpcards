@@ -69,6 +69,26 @@ const peggingPhaseState: CribbageResponse = {
   pegPlayedCards: [],
 };
 
+// Cut phase with the human as the non-dealer cutter (dealer=1 → cutter=0).
+const cutPhaseState: CribbageResponse = {
+  ...discardPhaseState,
+  phase: 1,
+  dealerIdx: 1,
+  currentPlayerIdx: 0,
+  starter: null,
+  players: [
+    { ...discardPhaseState.players[0], cardCount: 4, cards: discardPhaseState.players[0].cards.slice(0, 4) },
+    discardPhaseState.players[1],
+  ],
+};
+
+// Cut phase where the CPU is the cutter (dealer=0 → cutter=1) — no human affordance.
+const cutPhaseCpuState: CribbageResponse = {
+  ...cutPhaseState,
+  dealerIdx: 0,
+  currentPlayerIdx: 1,
+};
+
 const showPhaseState: CribbageResponse = {
   ...discardPhaseState,
   phase: 3,
@@ -189,6 +209,51 @@ describe('CribbagePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'クリブに捨てる' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, [0, 1]));
+  });
+
+  it('renders cut deck and cut button when human is the cutter', async () => {
+    mockExec.mockResolvedValue(cutPhaseState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('cb-cut-deck')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'デッキをカットする' })).toBeInTheDocument();
+    });
+  });
+
+  it('calls cut command when the cut button is clicked', async () => {
+    mockExec.mockResolvedValue(cutPhaseState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByTestId('cb-cut-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(peggingPhaseState);
+    fireEvent.click(screen.getByTestId('cb-cut-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('cut'));
+  });
+
+  it('calls cut command when the deck is clicked', async () => {
+    mockExec.mockResolvedValue(cutPhaseState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByTestId('cb-cut-deck')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(peggingPhaseState);
+    fireEvent.click(screen.getByTestId('cb-cut-deck'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('cut'));
+  });
+
+  it('does not show cut affordance when the CPU is the cutter', async () => {
+    mockExec.mockResolvedValue(cutPhaseCpuState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('cb-cut-button')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('cb-cut-deck')).not.toBeInTheDocument();
+  });
+
+  it('shows the His Heels note when the starter is a Jack', async () => {
+    mockExec.mockResolvedValue({ ...peggingPhaseState, starter: { design: 'HEART', value: 11 } });
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByTestId('cb-his-heels')).toBeInTheDocument());
   });
 
   it('renders peg and go buttons when human pegging turn', async () => {

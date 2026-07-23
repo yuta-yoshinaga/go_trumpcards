@@ -7,6 +7,8 @@ type CribbageArgs = Parameters<typeof cribbageApi.exec>;
 const VALID_COMMANDS = [
   'dis',
   'discard',
+  'c',
+  'cut',
   'peg',
   'go',
   'sn',
@@ -31,6 +33,9 @@ export function parseCribbageCommand(input: string): CliParseResult<CribbageArgs
       if ('error' in parsed) return { error: 'Usage: dis <idx...> (2 cards to crib)' };
       return { args: ['discard', undefined, parsed.values] };
     }
+    case 'c':
+    case 'cut':
+      return { args: ['cut'] };
     case 'peg': {
       const parsed = parseIntArg(args, 0);
       if ('error' in parsed) return { error: 'Usage: peg <idx>' };
@@ -60,6 +65,7 @@ export function parseCribbageCommand(input: string): CliParseResult<CribbageArgs
 /** Help text for Cribbage CLI mode. */
 export const CRIBBAGE_HELP: string[] = [
   'dis <idx...>   - Discard to crib (2 cards)',
+  'c/cut          - Cut the deck to reveal the starter',
   'peg <idx>      - Play card in pegging',
   'go             - Say "Go"',
   'sn/shownext    - Show next scoring',

@@ -1856,7 +1856,7 @@ export interface CribbageConfigInput {
 /** API client for the Cribbage /cribbage/exec endpoint. */
 export const cribbageApi = {
   exec: (
-    command: 'reset' | 'discard' | 'peg' | 'go' | 'shownext' | 'nextround' | 'log',
+    command: 'reset' | 'discard' | 'cut' | 'peg' | 'go' | 'shownext' | 'nextround' | 'log',
     cardIndex?: number,
     cardIndices?: number[],
     config?: CribbageConfigInput,

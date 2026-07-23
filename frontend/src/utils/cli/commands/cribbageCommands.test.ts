@@ -11,6 +11,11 @@ describe('parseCribbageCommand', () => {
     expect(parseCribbageCommand('dis')).toEqual({ args: ['discard', undefined, []] });
   });
 
+  it('parses cut', () => {
+    expect(parseCribbageCommand('c')).toEqual({ args: ['cut'] });
+    expect(parseCribbageCommand('cut')).toEqual({ args: ['cut'] });
+  });
+
   it('parses peg with index', () => {
     expect(parseCribbageCommand('peg 2')).toEqual({ args: ['peg', 2] });
   });
