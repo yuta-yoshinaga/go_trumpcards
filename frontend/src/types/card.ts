@@ -4101,6 +4101,35 @@ export interface TeenPattiHint {
   reason: string;
 }
 
+/** One participant's revealed hand in a resolved Side Show. */
+export interface TeenPattiSideShowHand {
+  /** Seat index of this participant. */
+  playerIdx: number;
+  /** Hand ranking name key (see `hand.*` i18n). */
+  handName: string;
+  /** The participant's three cards, revealed for the comparison. */
+  cards: Card[];
+}
+
+/**
+ * The comparison result of the most recent accepted Side Show, present only
+ * when the human was a participant (CPU-vs-CPU comparisons stay hidden).
+ */
+export interface TeenPattiSideShowResult {
+  /** Seat index that requested the Side Show. */
+  requesterIdx: number;
+  /** Seat index that accepted the Side Show. */
+  targetIdx: number;
+  /** Seat index that won the comparison. */
+  winnerIdx: number;
+  /** Seat index that lost and folded. */
+  loserIdx: number;
+  /** The requester's revealed hand. */
+  requester: TeenPattiSideShowHand;
+  /** The target's revealed hand. */
+  target: TeenPattiSideShowHand;
+}
+
 /**
  * Full Teen Patti game state returned from the API.
  *
@@ -4144,6 +4173,8 @@ export interface TeenPattiResponse extends BaseGameResponse {
   /** Whether it is currently the human's turn to act. */
   isHumanTurn: boolean;
   hint?: TeenPattiHint | null;
+  /** Result of the last human-involved Side Show comparison, if any. */
+  lastSideShow?: TeenPattiSideShowResult | null;
   config: TeenPattiConfig;
 }
 

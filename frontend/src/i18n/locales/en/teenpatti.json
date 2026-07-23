@@ -53,6 +53,10 @@
   "betNotice": "Your turn — choose See, Bet, Raise or Fold.",
   "sideShowTitle": "Side Show Request",
   "sideShowPending": "{{requester}} requested a Side Show with {{target}}. Accept or decline.",
+  "sideShowResult": {
+    "title": "Side Show Result",
+    "outcome": "{{winner}} ({{winnerHand}}) beat {{loser}} ({{loserHand}}); {{loser}} folded."
+  },
   "roundResult": {
     "title": "Deal Result",
     "winner": "{{name}} wins the pot of {{pot}}."

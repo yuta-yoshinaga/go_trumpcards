@@ -130,6 +130,43 @@ func TestTeenPatti_SideShowAcceptLoserFolds(t *testing.T) {
 	require.NoError(t, g.PlayerRespondSideShow(true))
 	assert.True(t, g.GetPlayer(3).GetFolded()) // seat 3 lost and folded
 	assert.Equal(t, domain.TeenPattiPhaseBetting, g.GetPhase())
+	// The accepted side show result is retained for display.
+	req, tgt, loser, ok := g.GetLastSideShow()
+	require.True(t, ok)
+	assert.Equal(t, 0, req)
+	assert.Equal(t, 3, tgt)
+	assert.Equal(t, 3, loser)
+}
+
+func TestTeenPatti_LastSideShowLifecycle(t *testing.T) {
+	g := newAllHumanTeenPatti()
+	g.Reset()
+	// No side show has happened yet.
+	_, _, _, ok := g.GetLastSideShow()
+	assert.False(t, ok)
+
+	for i := 0; i < domain.TeenPattiPlayerCnt; i++ {
+		g.GetPlayer(i).SetSeen(true)
+	}
+	g.SetStake(1)
+	g.SetCurrentPlayerIdx(0)
+
+	// Declining does not record a comparison result.
+	require.NoError(t, g.PlayerRequestSideShow())
+	require.NoError(t, g.PlayerRespondSideShow(false))
+	_, _, _, ok = g.GetLastSideShow()
+	assert.False(t, ok)
+
+	// Accepting records a result; a new deal clears it.
+	g.SetCurrentPlayerIdx(0)
+	require.NoError(t, g.PlayerRequestSideShow())
+	require.NoError(t, g.PlayerRespondSideShow(true))
+	_, _, _, ok = g.GetLastSideShow()
+	require.True(t, ok)
+	g.SetPhase(domain.TeenPattiPhaseRoundEnd)
+	g.NextRound()
+	_, _, _, ok = g.GetLastSideShow()
+	assert.False(t, ok)
 }
 
 func TestTeenPatti_SideShowDeclineContinues(t *testing.T) {
@@ -253,4 +290,34 @@ func TestTeenPatti_UnmarshalRejectsInvalid(t *testing.T) {
 	assert.Error(t, bad2.UnmarshalJSON([]byte(`{"ps":[null]}`)))
 	var bad3 domain.TeenPatti
 	assert.Error(t, bad3.UnmarshalJSON([]byte(`not json`)))
+}
+
+func TestTeenPatti_JSONRoundTripSideShow(t *testing.T) {
+	g := newAllHumanTeenPatti()
+	g.Reset()
+	for i := 0; i < domain.TeenPattiPlayerCnt; i++ {
+		g.GetPlayer(i).SetSeen(true)
+	}
+	g.SetStake(1)
+	g.SetCurrentPlayerIdx(0)
+	tpSetHand(g.GetPlayer(0), tpCard(domain.CardDesignSpade, 13), tpCard(domain.CardDesignClover, 13), tpCard(domain.CardDesignHeart, 13))
+	tpSetHand(g.GetPlayer(3), tpCard(domain.CardDesignSpade, 2), tpCard(domain.CardDesignClover, 7), tpCard(domain.CardDesignHeart, 9))
+	require.NoError(t, g.PlayerRequestSideShow())
+	require.NoError(t, g.PlayerRespondSideShow(true))
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var g2 domain.TeenPatti
+	require.NoError(t, json.Unmarshal(data, &g2))
+	req, tgt, loser, ok := g2.GetLastSideShow()
+	require.True(t, ok)
+	assert.Equal(t, 0, req)
+	assert.Equal(t, 3, tgt)
+	assert.Equal(t, 3, loser)
+
+	// A side show whose loser is neither participant is rejected.
+	tampered := strings.Replace(string(data), `"ls":{"rq":0,"tg":3,"ls":3}`, `"ls":{"rq":0,"tg":3,"ls":1}`, 1)
+	require.NotEqual(t, string(data), tampered)
+	var bad domain.TeenPatti
+	assert.Error(t, bad.UnmarshalJSON([]byte(tampered)))
 }

@@ -31,6 +31,7 @@ func tpSetupWebMock() *interfaces.MockTeenPattiGame {
 	m.On("CanRequestSideShow").Return(false)
 	m.On("GetSideShowRequester").Return(-1)
 	m.On("GetSideShowTarget").Return(-1)
+	m.On("GetLastSideShow").Return(-1, -1, -1, false)
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultTeenPattiConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
@@ -142,6 +143,45 @@ func TestTeenPattiWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "teenpatti.roundEndCpuWin", resObj.MessageCode)
 		assert.Equal(t, map[string]string{"player": "1"}, resObj.MessageParams)
+	})
+
+	t.Run("human-involved side show reveals both hands", func(t *testing.T) {
+		m, players := tpSetupWebMockWithPlayers()
+		// 人間 (0) が申請者、CPU (2) が対象。人間の勝ち (トレイル) → 対象が敗者。
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[2].SetFolded(true)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastSideShow")
+		m.On("GetLastSideShow").Return(0, 2, 2, true)
+		result := p.Output(m, nil)
+		var resObj controller.TeenPattiWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.NotNil(t, resObj.LastSideShow)
+		assert.Equal(t, 0, resObj.LastSideShow.RequesterIdx)
+		assert.Equal(t, 2, resObj.LastSideShow.TargetIdx)
+		assert.Equal(t, 0, resObj.LastSideShow.WinnerIdx)
+		assert.Equal(t, 2, resObj.LastSideShow.LoserIdx)
+		assert.Len(t, resObj.LastSideShow.Requester.Cards, 3)
+		assert.Equal(t, "trail", resObj.LastSideShow.Requester.HandName)
+		assert.Len(t, resObj.LastSideShow.Target.Cards, 3)
+		assert.Equal(t, "highcard", resObj.LastSideShow.Target.HandName)
+	})
+
+	t.Run("cpu-vs-cpu side show stays hidden", func(t *testing.T) {
+		m, players := tpSetupWebMockWithPlayers()
+		// CPU (1) 申請者・CPU (2) 対象 → 人間非関与のため非公開。
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastSideShow")
+		m.On("GetLastSideShow").Return(1, 2, 2, true)
+		result := p.Output(m, nil)
+		var resObj controller.TeenPattiWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Nil(t, resObj.LastSideShow)
 	})
 
 	t.Run("error message takes priority", func(t *testing.T) {
