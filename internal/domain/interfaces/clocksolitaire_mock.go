@@ -27,6 +27,16 @@ func (_m *MockClockSolitaireGame) AutoPlay() error {
 	return ret.Error(0)
 }
 
+func (_m *MockClockSolitaireGame) Undo() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+func (_m *MockClockSolitaireGame) CanUndo() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 func (_m *MockClockSolitaireGame) GetPhase() domain.ClockSolitairePhase {
 	ret := _m.Called()
 	return ret.Get(0).(domain.ClockSolitairePhase)

@@ -344,4 +344,32 @@ describe('ClockSolitairePage', () => {
       vi.useRealTimers();
     }
   });
+
+  it('disables the undo button when canUndo is false', async () => {
+    restoreCliModeDefault();
+    mockExec.mockResolvedValue({ ...playingState, canUndo: false });
+    renderWithProviders(<ClockSolitairePage />);
+    const undoBtn = await screen.findByTestId('cs-undo-button');
+    expect(undoBtn).toBeDisabled();
+  });
+
+  it('enables the undo button and dispatches undo on click', async () => {
+    restoreCliModeDefault();
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<ClockSolitairePage />);
+    const undoBtn = await screen.findByTestId('cs-undo-button');
+    await waitFor(() => expect(undoBtn).not.toBeDisabled());
+    fireEvent.click(undoBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('shows an enabled undo button after game over so the last move can be reverted', async () => {
+    restoreCliModeDefault();
+    mockExec.mockResolvedValue({ ...gameOverState, canUndo: true });
+    renderWithProviders(<ClockSolitairePage />);
+    const undoBtn = await screen.findByTestId('cs-undo-button');
+    await waitFor(() => expect(undoBtn).not.toBeDisabled());
+    // The step/autoplay controls are hidden once the game has ended.
+    expect(screen.queryByTestId('cs-step-button')).not.toBeInTheDocument();
+  });
 });

@@ -9,6 +9,7 @@
   "step": "ステップ",
   "autoplay": "オートプレイ",
   "stopAutoplay": "停止",
+  "undo": "元に戻す",
   "currentCard": "手持ちカード",
   "settings": {
     "speed": "演出速度",
