@@ -445,4 +445,12 @@ func init() {
 			return usecase.RestoreYanivInteractor(data, new(presenter.YanivWebPresenter))
 		},
 		controller.NewYanivWebControllerWithProvider)
+	games.RegisterKVGame("ulti", games.CategorySolo,
+		func() usecase.UltiInteractorIF {
+			return usecase.NewUltiInteractor(domain.NewDefaultUlti(), new(presenter.UltiWebPresenter))
+		},
+		func(data []byte) (usecase.UltiInteractorIF, error) {
+			return usecase.RestoreUltiInteractor(data, new(presenter.UltiWebPresenter))
+		},
+		controller.NewUltiWebControllerWithProvider)
 }

@@ -195,14 +195,6 @@ func init() {
 			return usecase.RestoreOmbreInteractor(data, new(presenter.OmbreWebPresenter))
 		},
 		controller.NewOmbreWebControllerWithProvider)
-	games.RegisterKVGame("ulti", games.CategoryExtra,
-		func() usecase.UltiInteractorIF {
-			return usecase.NewUltiInteractor(domain.NewDefaultUlti(), new(presenter.UltiWebPresenter))
-		},
-		func(data []byte) (usecase.UltiInteractorIF, error) {
-			return usecase.RestoreUltiInteractor(data, new(presenter.UltiWebPresenter))
-		},
-		controller.NewUltiWebControllerWithProvider)
 	games.RegisterKVGame("king", games.CategoryExtra,
 		func() usecase.KingInteractorIF {
 			return usecase.NewKingInteractor(domain.NewDefaultKing(), new(presenter.KingWebPresenter))

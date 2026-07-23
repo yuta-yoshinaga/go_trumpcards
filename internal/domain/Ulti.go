@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || solo
 
 // Package domain ウルティ / ウルティモ (Ulti / Ultimó) のドメインモデル。
 //
