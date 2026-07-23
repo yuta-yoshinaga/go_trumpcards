@@ -9,6 +9,7 @@
   "step": "Step",
   "autoplay": "Auto Play",
   "stopAutoplay": "Stop",
+  "undo": "Undo",
   "currentCard": "Current Card",
   "settings": {
     "speed": "Animation Speed",

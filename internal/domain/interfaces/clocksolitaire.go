@@ -15,6 +15,10 @@ type ClockSolitaireGame interface {
 	Step() error
 	// AutoPlay 自動プレイ（全ステップ実行）
 	AutoPlay() error
+	// Undo 直前のステップを取り消す
+	Undo() error
+	// CanUndo アンドゥ可能か
+	CanUndo() bool
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.ClockSolitairePhase
 	// GetPiles パイルを取得する

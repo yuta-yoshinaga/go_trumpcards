@@ -811,7 +811,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultClockSolitaire(), new(presenter.ClockSolitaireCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:          "clocksolitaire.helpTitle",
-				CommandKeys:       []string{"clocksolitaire.helpStep", "clocksolitaire.helpAutoPlay"},
+				CommandKeys:       []string{"clocksolitaire.helpStep", "clocksolitaire.helpAutoPlay", "clocksolitaire.helpUndo"},
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},

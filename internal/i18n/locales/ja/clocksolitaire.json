@@ -2,6 +2,7 @@
   "helpTitle": "Clock Solitaire (クロックソリティア)",
   "helpStep": "  s                        ステップ（次のカードをめくる）",
   "helpAutoPlay": "  a                        オートプレイ（全ステップ実行）",
+  "helpUndo": "  u                        アンドゥ（直前の1手を取り消す）",
   "hourLabel": "[{{label}}時]",
   "centerLabel": "[中央K]",
   "pileFootnote": " ({{up}}/{{total}})",

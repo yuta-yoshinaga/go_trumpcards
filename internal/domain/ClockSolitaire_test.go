@@ -484,3 +484,113 @@ func TestClockSolitaire_MarshalJSON_InvalidJSON(t *testing.T) {
 	require.NoError(t, err)
 	assert.True(t, strings.HasPrefix(string(data), "{"))
 }
+
+func TestClockSolitaire_CanUndo_InitiallyFalse(t *testing.T) {
+	cs := newTestClockSolitaire()
+	assert.False(t, cs.CanUndo())
+}
+
+func TestClockSolitaire_Undo_ErrorWhenNoHistory(t *testing.T) {
+	cs := newTestClockSolitaire()
+	err := cs.Undo()
+	assert.Error(t, err)
+}
+
+func TestClockSolitaire_Undo_RestoresPreviousState(t *testing.T) {
+	cs := newTestClockSolitaire()
+
+	// Force a deterministic first move: place an Ace on pile 0.
+	ace := NewCard(CardDesignSpade, 1, false)
+	cs.SetCurrentCard(ace)
+
+	prevPiles := cs.GetPiles()
+	prevFuc := cs.GetFaceUpCount()
+	prevStep := cs.GetStepCount()
+
+	require.NoError(t, cs.Step())
+	assert.True(t, cs.CanUndo())
+	assert.Equal(t, prevStep+1, cs.GetStepCount())
+
+	require.NoError(t, cs.Undo())
+
+	// State reverts to the pre-step snapshot.
+	assert.Equal(t, prevStep, cs.GetStepCount())
+	assert.Equal(t, prevFuc, cs.GetFaceUpCount())
+	assert.Equal(t, prevPiles, cs.GetPiles())
+	assert.Equal(t, ace, cs.GetCurrentCard())
+	assert.Equal(t, ClockSolitairePhasePlaying, cs.GetPhase())
+	// No more history to undo.
+	assert.False(t, cs.CanUndo())
+}
+
+func TestClockSolitaire_Undo_RecordsActionLog(t *testing.T) {
+	cs := newTestClockSolitaire()
+	cs.SetCurrentCard(NewCard(CardDesignSpade, 1, false))
+	require.NoError(t, cs.Step())
+
+	logLenAfterStep := len(cs.GetActionLog())
+	require.NoError(t, cs.Undo())
+
+	// Undo appends its own action-log entry (not removed).
+	log := cs.GetActionLog()
+	assert.Equal(t, logLenAfterStep+1, len(log))
+	assert.Equal(t, "undo", log[len(log)-1].ActionType)
+}
+
+func TestClockSolitaire_Undo_RevertsGameOver(t *testing.T) {
+	cs := newTestClockSolitaire()
+	// Arrange the center pile so the next King placement is the fourth face-up King.
+	cs.SetFaceUpCount(func() [ClockSolitairePileCount]int {
+		var fuc [ClockSolitairePileCount]int
+		fuc[ClockSolitaireKingPileIdx] = 3
+		return fuc
+	}())
+	cs.SetCurrentCard(NewCard(CardDesignSpade, 13, false))
+
+	require.NoError(t, cs.Step())
+	assert.Equal(t, ClockSolitairePhaseGameOver, cs.GetPhase())
+	assert.True(t, cs.CanUndo())
+
+	require.NoError(t, cs.Undo())
+	assert.Equal(t, ClockSolitairePhasePlaying, cs.GetPhase())
+	assert.Equal(t, 3, cs.GetFaceUpCount()[ClockSolitaireKingPileIdx])
+}
+
+func TestClockSolitaire_Reset_ClearsUndoHistory(t *testing.T) {
+	cs := newTestClockSolitaire()
+	cs.SetCurrentCard(NewCard(CardDesignSpade, 1, false))
+	require.NoError(t, cs.Step())
+	assert.True(t, cs.CanUndo())
+
+	cs.Reset()
+	assert.False(t, cs.CanUndo())
+}
+
+func TestClockSolitaire_Undo_StackCappedAtMaxDepth(t *testing.T) {
+	cs := newTestClockSolitaire()
+	// Push more snapshots than the cap by repeatedly stepping with a fresh Ace.
+	for i := 0; i < ClockSolitaireMaxUndoDepth+10; i++ {
+		cs.SetPhase(ClockSolitairePhasePlaying)
+		cs.SetCurrentCard(NewCard(CardDesignSpade, 1, false))
+		require.NoError(t, cs.Step())
+	}
+	assert.LessOrEqual(t, len(cs.history), ClockSolitaireMaxUndoDepth)
+}
+
+func TestClockSolitaire_JSON_RoundTrip_PreservesUndoHistory(t *testing.T) {
+	cs := newTestClockSolitaire()
+	cs.SetCurrentCard(NewCard(CardDesignSpade, 1, false))
+	require.NoError(t, cs.Step())
+	require.True(t, cs.CanUndo())
+
+	data, err := json.Marshal(cs)
+	require.NoError(t, err)
+
+	cs2 := &ClockSolitaire{}
+	require.NoError(t, json.Unmarshal(data, cs2))
+	assert.True(t, cs2.CanUndo())
+
+	// Undo works after a JSON round-trip (survives page reload / KV persistence).
+	require.NoError(t, cs2.Undo())
+	assert.False(t, cs2.CanUndo())
+}

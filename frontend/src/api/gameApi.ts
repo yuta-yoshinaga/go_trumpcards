@@ -4539,7 +4539,7 @@ export const pigtailApi = {
 
 /** API client for the Clock Solitaire /clocksolitaire/exec endpoint. */
 export const clocksolitaireApi = {
-  exec: (command: 'reset' | 'step' | 'autoplay' | 'log') =>
+  exec: (command: 'reset' | 'step' | 'autoplay' | 'undo' | 'log') =>
     gameExec<ClockSolitaireResponse>('clocksolitaire', { command }),
 };
 

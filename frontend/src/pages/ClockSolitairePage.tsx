@@ -22,7 +22,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ClockSolitaireResponse } from '../types/card';
 import { ClockSolitairePhase } from '../types/phases';
@@ -103,6 +103,12 @@ function ClockSolitairePageContent() {
   const [autoPlaying, setAutoPlaying] = useState(false);
 
   const handleStep = useCallback(() => execApi('step'), [execApi]);
+  // Undo the last placed card. Stop autoplay first so the timed loop doesn't
+  // race the rewind.
+  const handleUndo = useCallback(() => {
+    setAutoPlaying(false);
+    return execApi('undo');
+  }, [execApi]);
   // Autoplay is driven client-side as a timed sequence of `step` calls (see the
   // effect below) so each card's landing highlight plays out; the button toggles it.
   const handleAutoPlay = useCallback(() => setAutoPlaying((prev) => !prev), []);
@@ -166,6 +172,7 @@ function ClockSolitairePageContent() {
         if (cmd === 'reset' || cmd === 'r') return { args: ['reset'] };
         if (cmd === 'step' || cmd === 's') return { args: ['step'] };
         if (cmd === 'autoplay' || cmd === 'auto' || cmd === 'a') return { args: ['autoplay'] };
+        if (cmd === 'undo' || cmd === 'u') return { args: ['undo'] };
         if (cmd === 'log' || cmd === 'l') return { args: ['log'] };
         return { error: `Unknown command: ${cmd}` };
       },
@@ -189,6 +196,7 @@ function ClockSolitairePageContent() {
       helpText: [
         's/step     - Place one card',
         'a/autoplay - Auto-play to end',
+        'u/undo     - Undo the last step',
         'l/log      - Show action log',
         'r/reset    - Reset game',
       ],
@@ -449,6 +457,15 @@ function ClockSolitairePageContent() {
                   </button>
                 </div>
               )}
+              <button
+                type="button"
+                className={`${btnOutline} ${focusRingWhite}`}
+                onClick={handleUndo}
+                disabled={!state.canUndo || loading || autoPlaying}
+                data-testid="cs-undo-button"
+              >
+                {t('undo')}
+              </button>
               <GameResetButton
                 isGameEnd={isEnded}
                 onReset={handleReset}

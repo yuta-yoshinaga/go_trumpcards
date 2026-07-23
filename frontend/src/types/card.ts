@@ -7862,6 +7862,7 @@ export interface ClockSolitaireResponse extends BaseGameResponse {
   phase: number;
   stepCount: number;
   currentCard?: Card;
+  canUndo?: boolean;
 }
 
 /** Durak player data. */

@@ -18,6 +18,8 @@ type ClockSolitaireInteractorIF interface {
 	Step() string
 	// AutoPlay 自動プレイ
 	AutoPlay() string
+	// Undo 直前のステップを取り消す
+	Undo() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -47,6 +49,11 @@ func (ci *ClockSolitaireInteractor) Step() string {
 // AutoPlay 自動プレイ
 func (ci *ClockSolitaireInteractor) AutoPlay() string {
 	return execAndPresent(ci.Game, ci.p, ci.Game.AutoPlay)
+}
+
+// Undo 直前のステップを取り消す
+func (ci *ClockSolitaireInteractor) Undo() string {
+	return execAndPresent(ci.Game, ci.p, ci.Game.Undo)
 }
 
 // ActionLog 棋譜を出力する
