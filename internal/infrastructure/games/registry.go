@@ -557,8 +557,9 @@ var registry = []*Game{
 	// non-competitively declares one of three contracts — Party (name trump, take >half
 	// the 126 card points), Betli (no trump, lose every trick), or Durchmarsch (no trump,
 	// win every trick) — takes the talon, discards 2, then leads 10 tricks. Coin
-	// settlement ±2/±5/±6 per defender. Extra worker bucket.
-	{Name: "ulti", Category: CategoryExtra},
+	// settlement ±2/±5/±6 per defender. Solo worker bucket (rebucketed off the
+	// full extra worker for size headroom).
+	{Name: "ulti", Category: CategorySolo},
 	// King (Greek/Brazilian compendium): a 4-player 52-card trick-avoidance game.
 	// Each deal the dealer picks one of 7 not-yet-played contracts (No Tricks /
 	// No Hearts / No Queens / No King♥ / No Last Two / No Men / King-Trump); the

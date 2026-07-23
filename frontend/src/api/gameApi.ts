@@ -405,7 +405,7 @@ const workerUrl: Record<string, string> = {
   tysiac: WORKER_EXTRA,
   calabresella: WORKER_EXTRA,
   ombre: WORKER_EXTRA,
-  ulti: WORKER_EXTRA,
+  ulti: WORKER_SOLO,
   scarto: WORKER_SOLO,
   cego: WORKER_SOLO,
   frenchtarot: WORKER_EXTRA,
