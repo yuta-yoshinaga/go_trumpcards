@@ -1797,12 +1797,12 @@ func TestApplyTrailingGlobalFlags_TrailingQuietPropagates(t *testing.T) {
 	}
 }
 
-// TestApplyColorMode verifies issue #1554: the new tristate --color flag
-// resolves to per-stream color settings with the documented precedence
-// (NO_COLOR > --color=never / --no-color > --color=always > auto). The
-// helper is the SSoT for color resolution; the run() integration relies
-// on it for the explicit-flag path, so any drift here would silently
-// change CLI behavior.
+// TestApplyColorMode verifies issue #1554 + the #4310 precedence flip: the
+// tristate --color flag resolves to per-stream color settings with the
+// documented precedence --color=never / --no-color > --color=always > NO_COLOR
+// > auto (an explicit --color=always now overrides NO_COLOR). The helper is the
+// SSoT for color resolution; the run() integration relies on it for the
+// explicit-flag path, so any drift here would silently change CLI behavior.
 func TestApplyColorMode(t *testing.T) {
 	// stdout-non-TTY/stderr-non-TTY: under `go test` both are pipes.
 	const nonTTY = uintptr(0xDEADBEEF) // any value that IsTerminal returns false for
@@ -1849,8 +1849,30 @@ func TestApplyColorMode(t *testing.T) {
 			wantStdout:  false, wantStderr: false, wantOK: true,
 		},
 		{
-			name:       "NO_COLOR env beats --color=always (POSIX spec)",
+			// #4310: explicit --color=always now beats NO_COLOR (was: never).
+			name:       "--color=always overrides NO_COLOR env",
 			mode:       "always",
+			noColorEnv: "1",
+			wantStdout: true, wantStderr: true, wantOK: true,
+		},
+		{
+			// --no-color still beats --color=always even under NO_COLOR.
+			name:        "--no-color beats --color=always under NO_COLOR",
+			mode:        "always",
+			noColorFlag: true,
+			noColorEnv:  "1",
+			wantStdout:  false, wantStderr: false, wantOK: true,
+		},
+		{
+			// NO_COLOR still disables the default/auto path (only explicit always overrides).
+			name:       "NO_COLOR env disables auto",
+			mode:       "auto",
+			noColorEnv: "1",
+			wantStdout: false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:       "NO_COLOR env disables empty/unset mode",
+			mode:       "",
 			noColorEnv: "1",
 			wantStdout: false, wantStderr: false, wantOK: true,
 		},
@@ -1963,13 +1985,13 @@ func TestApplyTrailingColorFlag(t *testing.T) {
 			wantStdout: false, wantStderr: false,
 		},
 		{
-			// NO_COLOR env beats --color=always even in trailing position
-			// (matches the top-level applyColorMode precedence; PR #1583
-			// review #2 — single SSoT for resolution).
-			name:       "--color=always with NO_COLOR set forces off",
+			// #4310: an explicit --color=always now overrides NO_COLOR even in
+			// trailing position (matches the top-level applyColorMode precedence;
+			// single SSoT for resolution).
+			name:       "--color=always overrides NO_COLOR (trailing)",
 			args:       []string{"--color=always"},
 			noColorEnv: "1",
-			wantStdout: false, wantStderr: false,
+			wantStdout: true, wantStderr: true,
 		},
 		{
 			// Within trailing args, --no-color must beat --color=always
