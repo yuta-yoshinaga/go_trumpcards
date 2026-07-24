@@ -689,11 +689,11 @@ func subcommandHelp(name string) ([]string, bool) {
 	if !ok {
 		return nil, false
 	}
-	text := i18n.T(key)
+	// Only the games help carries {{catPipe}}/{{catProse}} placeholders.
 	if name == "games" {
-		text = i18n.Tf(key, "catPipe", categoryFilterPipe, "catProse", categoryFilterProse)
+		return splitHelpLines(i18n.Tf(key, "catPipe", categoryFilterPipe, "catProse", categoryFilterProse)), true
 	}
-	return splitHelpLines(text), true
+	return splitHelpLines(i18n.T(key)), true
 }
 
 // splitHelpLines splits a help blob into printable lines, dropping the single

@@ -88,7 +88,7 @@ func TestRunHelpCommandResolvesAlias(t *testing.T) {
 
 func TestRunHelpCommandForBuiltinSubcommand(t *testing.T) {
 	// "web" is a builtin subcommand (not a game). runHelpCommand should fall
-	// through the game-registry lookup and emit the entry from builtinSubcommandHelp.
+	// through the game-registry lookup and emit the entry from subcommandHelp.
 	var stdout, stderr bytes.Buffer
 	helpText := buildHelpText()
 	code := runHelpCommand([]string{"web"}, helpText, &stdout, &stderr)
@@ -336,7 +336,7 @@ func TestFlagSetVisitedDistinguishesExplicitFromDefault(t *testing.T) {
 // flagged: under the previous portUnset=-1 sentinel, `--port -1` silently
 // fell through to the default 8080. With the fs.Visit approach the explicit
 // -1 must be rejected with cliInvalidPort and exit 2 (usage error, per the
-// documented EXIT CODES in builtinSubcommandHelp["web"]) before any bind.
+// documented EXIT CODES in the web subcommand help) before any bind.
 func TestRunWebRejectsExplicitInvalidPort(t *testing.T) {
 	origArgs := os.Args
 	origCmdLine := flag.CommandLine
