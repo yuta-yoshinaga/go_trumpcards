@@ -98,6 +98,24 @@ export function GoFishPlayerArea({
             })}
           </div>
         )}
+        {player.books.length > 0 && (
+          <div
+            data-testid={`book-ranks-${player.id}`}
+            className="mt-1 text-xs text-ds-text-muted flex flex-wrap gap-1 items-center"
+          >
+            <span aria-hidden="true">📚</span>
+            <span className="sr-only">{t('bookRanksLabel')}</span>
+            {player.books.map((book) => (
+              <span
+                key={book.rank}
+                data-rank={book.rank}
+                className="px-1.5 py-0.5 rounded font-medium bg-ds-success/50 text-white"
+              >
+                {valueName(book.rank)}
+              </span>
+            ))}
+          </div>
+        )}
       </button>
     </div>
   );

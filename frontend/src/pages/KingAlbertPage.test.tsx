@@ -91,6 +91,27 @@ describe('KingAlbertPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '♦ 7' })).toBeInTheDocument());
   });
 
+  it('gives each empty reserve slot a role=img with a numbered aria-label', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KingAlbertPage />);
+    // Reserve slots 2..7 (1-based) are empty and each is now an announced,
+    // numbered slot instead of an anonymous div.
+    await waitFor(() => expect(screen.getByRole('img', { name: '空のリザーブ枠 2' })).toBeInTheDocument());
+    expect(screen.getByRole('img', { name: '空のリザーブ枠 7' })).toBeInTheDocument();
+    // Slot 1 holds ♦7 (a button), so it is not an empty-slot image.
+    expect(screen.queryByRole('img', { name: '空のリザーブ枠 1' })).not.toBeInTheDocument();
+  });
+
+  it('labels all 7 reserve slots with 0-based numbers matching the hint text', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KingAlbertPage />);
+    await waitFor(() => expect(screen.getByTestId('ka-reserve-label-0')).toBeInTheDocument());
+    for (let i = 0; i < 7; i++) {
+      const label = screen.getByTestId(`ka-reserve-label-${i.toString()}`);
+      expect(label).toHaveTextContent(`r${i.toString()}`);
+    }
+  });
+
   it('selecting a reserve card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<KingAlbertPage />);

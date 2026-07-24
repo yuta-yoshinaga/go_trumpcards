@@ -13,9 +13,7 @@
   },
   "button": {
     "bet": "ベット",
-    "raise1x": "レイズ x1",
-    "raise2x": "レイズ x2",
-    "raise3x": "レイズ x3",
+    "raiseAmount": "レイズ x{{multiplier}}（{{amount}}）",
     "fold": "フォールド",
     "reset": "リセット"
   },
@@ -71,6 +69,8 @@
   "dealerQualified": "クオリファイ",
   "dealerNotQualified": "未クオリファイ",
   "flushLine": "{{count}}枚フラッシュ",
+  "flushCardAria": "フラッシュ対象",
+  "nonFlushCardAria": "フラッシュ対象外",
   "tutorial": {
     "betControls": "アンテと任意のサイドベットを設定し、ベットを押してください。",
     "actionButtons": "プレイヤーのフラッシュ枚数で許される最大倍率まで「レイズ」できます。「フォールド」でアンテを放棄します。",

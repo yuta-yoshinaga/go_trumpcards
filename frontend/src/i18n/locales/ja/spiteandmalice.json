@@ -23,6 +23,8 @@
   "moveCount": "手数",
   "endTurn": "ターン終了",
   "discard": "ディスカード",
+  "discardNeedHand": "先に手札のカードを選択してください",
+  "discardReady": "手札を選択済みです。ディスカードできます",
   "autoComplete": "自動完成",
   "selectSource": "出すカードを選んでください",
   "selectFoundation": "出すファウンデーションを選んでください",
@@ -34,6 +36,13 @@
   "playing": "プレイ中",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
+  "settings": {
+    "cpuSpeed": "CPU速度",
+    "cpuSpeedHelp": "CPUが手番を進める速さを切り替えます（ゆっくり=900ms / ふつう=500ms / はやい=200ms）。",
+    "speedSlow": "ゆっくり",
+    "speedNormal": "ふつう",
+    "speedFast": "はやい"
+  },
   "frontendHint": {
     "goalToFoundation": "ゴールパイルのトップをファウンデーションに出せます",
     "handToFoundation": "手札からファウンデーションに出せます",

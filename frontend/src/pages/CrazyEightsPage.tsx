@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { crazyeightsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -22,7 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -34,6 +34,12 @@ import { CRAZYEIGHTS_HELP, parseCrazyeightsCommand } from '../utils/cli/commands
 import { formatCrazyeightsState } from '../utils/cli/formatters/crazyeightsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isCrazyEightsLegalPlay } from '../utils/crazyEightsLegal';
+import {
+  type CrazyEightsSortMode,
+  loadCrazyEightsSortMode,
+  saveCrazyEightsSortMode,
+  sortedCrazyEightsHand,
+} from '../utils/crazyEightsSort';
 import { playerName } from '../utils/playerUtils';
 
 const CRAZYEIGHTS_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -56,6 +62,24 @@ const SUIT_SYMBOLS: Record<number, string> = {
   [CrazyEightsSuit.HEART]: '♥',
   [CrazyEightsSuit.DIAMOND]: '♦',
 };
+
+/** Chosen-suit number → i18n key for the spoken suit name (used in the live-region announcement). */
+const SUIT_NAME_KEYS: Record<number, string> = {
+  [CrazyEightsSuit.SPADE]: 'suitName.spade',
+  [CrazyEightsSuit.CLOVER]: 'suitName.clover',
+  [CrazyEightsSuit.HEART]: 'suitName.heart',
+  [CrazyEightsSuit.DIAMOND]: 'suitName.diamond',
+};
+
+/** DOM id linking each illegal card button to the shared screen-reader reason text. */
+const ILLEGAL_REASON_ID = 'ce-illegal-reason';
+
+/** Hand sort options for the Crazy Eights footer. */
+const CRAZYEIGHTS_SORT_MODES: { mode: CrazyEightsSortMode; labelKey: string }[] = [
+  { mode: 'original', labelKey: 'sort.original' },
+  { mode: 'rank', labelKey: 'sort.rank' },
+  { mode: 'suit', labelKey: 'sort.suit' },
+];
 
 /** Crazy Eights tutorial step definitions. */
 const CE_TUTORIAL_STEPS: TutorialStep[] = [
@@ -128,9 +152,32 @@ function CrazyEightsPageContent() {
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
+  // Display-only hand sort: reorders the rendered hand while every click maps
+  // back to the card's ORIGINAL server index, so selection/play stay correct.
+  const [sortMode, setSortMode] = useState<CrazyEightsSortMode>(loadCrazyEightsSortMode);
+  const handleSortMode = useCallback((mode: CrazyEightsSortMode) => {
+    setSortMode(mode);
+    saveCrazyEightsSortMode(mode);
+  }, []);
+
   const isPlayPhaseForKbd = state?.phase === CrazyEightsPhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
-  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  const humanCardsForKbd = state?.players.find((p) => p.isHuman)?.cards;
+  const humanCardCountForKbd = humanCardsForKbd?.length ?? 0;
+
+  // Original server indices in current display order, so the digit keys select
+  // the visually Nth card (following the sort) while still toggling its real index.
+  const displayIndexOrder = useMemo(
+    () => (humanCardsForKbd ? sortedCrazyEightsHand(humanCardsForKbd, sortMode).map((e) => e.index) : []),
+    [humanCardsForKbd, sortMode],
+  );
+  const toggleByDisplayIndex = useCallback(
+    (displayIdx: number) => {
+      const original = displayIndexOrder[displayIdx];
+      if (original !== undefined) toggleCard(original);
+    },
+    [displayIndexOrder, toggleCard],
+  );
 
   const confirmAction = useCallback(() => {
     handlePlay();
@@ -146,7 +193,7 @@ function CrazyEightsPageContent() {
 
   useCardKeyboardNav({
     cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
+    onToggle: toggleByDisplayIndex,
     onConfirm: confirmAction,
     onClear: clearSelection,
     enabled: !!isHumanTurnForKbd && !loading,
@@ -168,6 +215,12 @@ function CrazyEightsPageContent() {
   const isRoundEnd = state.phase === CrazyEightsPhase.ROUND_END;
   const isGameEnd = state.phase === CrazyEightsPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  // Announce the active suit whenever an 8 has changed it. The watermark and the
+  // sidebar readout are aria-hidden / static, so this sr-only live region is the
+  // only channel that tells a screen-reader user a suit was chosen (e.g. by a CPU).
+  const suitNameKey = SUIT_NAME_KEYS[state.chosenSuit];
+  const suitAnnouncement = state.chosenSuit > 0 && suitNameKey ? t('suitChanged', { suit: t(suitNameKey) }) : '';
 
   return (
     <GamePageShell
@@ -228,6 +281,12 @@ function CrazyEightsPageContent() {
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>{t('drawPile', { count: state.drawPileCount })}</span>
+            </div>
+
+            {/* Always-rendered polite live region announcing the active suit after an 8.
+                Empty when no suit is chosen so the announcement fires on the transition. */}
+            <div className="sr-only" role="status" aria-live="polite" data-testid="ce-suit-live-region">
+              {suitAnnouncement}
             </div>
 
             <div className={lgTwoColGrid}>
@@ -322,9 +381,31 @@ function CrazyEightsPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.crazyeights.footer} px-4 py-2.5`}>
+            {humanPlayer && humanPlayer.cards.length > 0 && (
+              <fieldset className="flex flex-wrap justify-center gap-1.5 mb-2 border-0 p-0 m-0">
+                <legend className="sr-only">{t('sort.label')}</legend>
+                {CRAZYEIGHTS_SORT_MODES.map(({ mode, labelKey }) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => handleSortMode(mode)}
+                    className={sortMode === mode ? `${btnPrimary} min-w-[64px]` : `${btnSecondary} min-w-[64px]`}
+                    aria-pressed={sortMode === mode}
+                    data-testid={`ce-sort-${mode}`}
+                  >
+                    {t(labelKey)}
+                  </button>
+                ))}
+              </fieldset>
+            )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ce-player-hand">
-                {humanPlayer.cards.map((card, idx) => {
+                {/* Shared screen-reader reason, referenced by every illegal card via
+                    aria-describedby so the "why" is spoken (title alone is skipped by SRs). */}
+                <span id={ILLEGAL_REASON_ID} className="sr-only">
+                  {t('illegalHint')}
+                </span>
+                {sortedCrazyEightsHand(humanPlayer.cards, sortMode).map(({ card, index: idx }) => {
                   // On the human's turn, highlight playable cards (matching suit/rank or an 8)
                   // and dim the rest with a reason tooltip, so the rule is visible at a glance.
                   const legal = !isHumanTurn || isCrazyEightsLegalPlay(card, state.discardTop, state.chosenSuit);
@@ -336,6 +417,7 @@ function CrazyEightsPageContent() {
                       aria-label={cardAlt(card)}
                       aria-pressed={selectedCardIndices.includes(idx)}
                       title={isHumanTurn && !legal ? t('illegalHint') : undefined}
+                      aria-describedby={isHumanTurn && !legal ? ILLEGAL_REASON_ID : undefined}
                       data-legal={isHumanTurn ? legal : undefined}
                       className={`transition-transform ${focusRingCard} ${
                         isHumanTurn && legal ? 'rounded-lg ring-2 ring-ds-success' : ''

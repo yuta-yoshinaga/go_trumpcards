@@ -40,6 +40,9 @@ func (m *MockPageOneGame) GetPlayerCnt() int           { return m.Called().Int(0
 func (m *MockPageOneGame) GetPlayer(i int) *domain.PageOnePlayer {
 	return m.Called(i).Get(0).(*domain.PageOnePlayer)
 }
+func (m *MockPageOneGame) IsValidPlay(card *domain.Card) bool {
+	return m.Called(card).Bool(0)
+}
 func (m *MockPageOneGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }

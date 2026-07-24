@@ -22,6 +22,7 @@ import { usePresidentGame } from '../hooks/usePresidentGame';
 import { gameTheme } from '../styles/gameTheme';
 import type { PresidentResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import {
   formatPresidentState,
   PRESIDENT_HELP,
@@ -124,16 +125,31 @@ function PresidentPageContent() {
   // One-shot full-screen flash when revolution toggles on (false → true), to
   // make the strength inversion impossible to miss. flashKey re-triggers the
   // CSS animation without AnimatePresence; the timer hides the scrim after 400ms.
+  // The reverse transition (true → false, i.e. revolution reverting to normal)
+  // fires a distinct info-coloured status banner so it is never mistaken for the
+  // activation flash and is announced to screen readers via role="status".
   const [revolutionFlash, setRevolutionFlash] = useState(0);
+  const [revolutionEndFlash, setRevolutionEndFlash] = useState(0);
   const prevRevolution = useRef(false);
   const revolutionFlashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => () => clearTimeout(revolutionFlashTimer.current ?? undefined), []);
+  const revolutionEndFlashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      clearTimeout(revolutionFlashTimer.current ?? undefined);
+      clearTimeout(revolutionEndFlashTimer.current ?? undefined);
+    },
+    [],
+  );
   useEffect(() => {
     const active = state?.revolutionActive ?? false;
     if (active && !prevRevolution.current) {
       setRevolutionFlash((k) => k + 1);
       clearTimeout(revolutionFlashTimer.current ?? undefined);
       revolutionFlashTimer.current = setTimeout(() => setRevolutionFlash(0), 400);
+    } else if (!active && prevRevolution.current) {
+      setRevolutionEndFlash((k) => k + 1);
+      clearTimeout(revolutionEndFlashTimer.current ?? undefined);
+      revolutionEndFlashTimer.current = setTimeout(() => setRevolutionEndFlash(0), 1800);
     }
     prevRevolution.current = active;
   }, [state?.revolutionActive]);
@@ -195,6 +211,18 @@ function PresidentPageContent() {
               className="pointer-events-none fixed inset-0 z-40 bg-ds-warning/40 motion-safe:animate-[fadeIn_0.2s_ease-out] motion-reduce:hidden"
             />
           )}
+          {revolutionEndFlash > 0 && (
+            <div
+              key={revolutionEndFlash}
+              data-testid="president-revolution-end-flash"
+              role="status"
+              className="pointer-events-none fixed inset-x-0 top-16 z-40 flex justify-center px-4 motion-safe:animate-[fadeIn_0.2s_ease-out]"
+            >
+              <span className="rounded-full bg-ds-info px-4 py-2 font-semibold text-ds-text-on-accent shadow-lg">
+                {t('flash.revolutionEnd')}
+              </span>
+            </div>
+          )}
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
               <button type="button" onClick={retry} className="text-ds-error underline">
@@ -241,7 +269,14 @@ function PresidentPageContent() {
                 {state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('label.tableEmpty')}</span>
                 ) : (
-                  state.tableCards.map((c, i) => <AnimatedCard key={i} card={c} width={cardWidth * 0.9} />)
+                  state.tableCards.map((c, i) => (
+                    // Wrap each display-only table card in a role="img" group so
+                    // screen readers announce it as a single named unit (the card),
+                    // independent of the inner <img alt>. Visuals are unchanged.
+                    <span key={i} role="img" aria-label={cardAlt(c)}>
+                      <AnimatedCard card={c} width={cardWidth * 0.9} />
+                    </span>
+                  ))
                 )}
               </div>
             </div>

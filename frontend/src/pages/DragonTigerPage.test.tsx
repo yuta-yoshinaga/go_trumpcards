@@ -111,6 +111,20 @@ describe('DragonTigerPage', () => {
     });
   });
 
+  it('anchors the tutorial steps to the bet controls and card area', async () => {
+    const { container } = renderWithProviders(<DragonTigerPage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="dt-bet-controls"]')).toBeInTheDocument());
+    expect(container.querySelector('[data-tutorial="dt-cards"]')).toBeInTheDocument();
+  });
+
+  it('runs a tutorial that explains the Tie 8:1 payout', async () => {
+    renderWithProviders(<DragonTigerPage />);
+    const startBtn = await screen.findByRole('button', { name: 'チュートリアル' });
+    fireEvent.click(startBtn);
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('8:1');
+  });
+
   it('issues a reset on mount', async () => {
     renderWithProviders(<DragonTigerPage />);
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
@@ -215,5 +229,58 @@ describe('DragonTigerPage', () => {
     expect(diff).toHaveTextContent('-50');
     expect(diff).toHaveClass('text-ds-error');
     expect(screen.getByTestId('payout-result')).toHaveTextContent('返還'); // tieRefund text
+  });
+
+  it('shows a Rebet button at end-phase after a bet, replaying the same amount and target', async () => {
+    renderWithProviders(<DragonTigerPage />);
+    const dragonBtn = await screen.findByRole('button', { name: 'ドラゴン' });
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(dragonWinState); // bet Dragon 100 → END
+    fireEvent.click(dragonBtn);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100, DragonTigerBetType.DRAGON));
+    const rebet = await screen.findByTestId('dt-rebet-button');
+    // The button advertises the previous target (Dragon) and amount (100).
+    expect(rebet).toHaveTextContent('ドラゴン');
+    expect(rebet).toHaveTextContent('100');
+    expect(rebet).toHaveAttribute('aria-keyshortcuts', 'e');
+
+    mockApi.mockClear();
+    mockApi.mockResolvedValueOnce(betState);
+    mockApi.mockResolvedValueOnce(dragonWinState);
+    fireEvent.click(rebet);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100, DragonTigerBetType.DRAGON));
+  });
+
+  it('does not show the Rebet button at end-phase when no prior bet exists (state seeded at END)', async () => {
+    mockApi.mockResolvedValueOnce(dragonWinState); // mount lands directly at END, no bet snapshotted
+    renderWithProviders(<DragonTigerPage />);
+    await screen.findByTestId('payout-breakdown');
+    expect(screen.queryByTestId('dt-rebet-button')).not.toBeInTheDocument();
+  });
+
+  it('hides the Rebet button when chips are insufficient to replay', async () => {
+    renderWithProviders(<DragonTigerPage />);
+    const dragonBtn = await screen.findByRole('button', { name: 'ドラゴン' });
+    // End state with only 50 chips left — cannot afford the 100 rebet.
+    mockApi.mockResolvedValue({ ...dragonWinState, chips: 50 });
+    fireEvent.click(dragonBtn);
+    await screen.findByTestId('payout-breakdown');
+    expect(screen.queryByTestId('dt-rebet-button')).not.toBeInTheDocument();
+  });
+
+  it("the 'e' keyboard shortcut replays the last bet at end phase", async () => {
+    renderWithProviders(<DragonTigerPage />);
+    const tigerBtn = await screen.findByRole('button', { name: 'タイガー' });
+    mockApi.mockResolvedValue(tigerWinOnTigerBetState); // bet Tiger 100 → END
+    fireEvent.click(tigerBtn);
+    await screen.findByTestId('dt-rebet-button');
+
+    mockApi.mockClear();
+    mockApi.mockResolvedValueOnce(betState);
+    mockApi.mockResolvedValueOnce(tigerWinOnTigerBetState);
+    fireEvent.keyDown(document, { key: 'e' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100, DragonTigerBetType.TIGER));
   });
 });

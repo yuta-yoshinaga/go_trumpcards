@@ -30,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { LOO_HELP, parseLooCommand } from '../utils/cli/commands/looCommands';
 import { formatLooState } from '../utils/cli/formatters/looFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { computeLooPotRisk } from '../utils/looPotRisk';
 import { playerName } from '../utils/playerUtils';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; 0 = unset). */
@@ -229,7 +230,16 @@ function LooPageContent() {
                         className={`px-1.5 py-0.5 rounded text-xs ${
                           p.playing ? 'bg-ds-accent/30 text-ds-accent' : 'bg-black/40 text-ds-text-muted'
                         }`}
+                        role="status"
+                        aria-label={t('statusAria', {
+                          name: playerName(p.id, p.isHuman),
+                          status: p.playing ? t('statusPlay') : t('statusPass'),
+                        })}
+                        title={t('playRiskTooltip')}
+                        data-testid={`loo-status-${p.id}`}
                       >
+                        {/* Colour-independent icon (● play / ○ pass) alongside the label. */}
+                        <span aria-hidden="true">{p.playing ? '● ' : '○ '}</span>
                         {p.playing ? t('statusPlay') : t('statusPass')}
                       </span>
                     </div>
@@ -316,6 +326,20 @@ function LooPageContent() {
                 {t('decidePrompt')}
               </div>
             )}
+            {canDecide &&
+              (() => {
+                const { pot, looPenalty, perTrick } = computeLooPotRisk(state.pot, state.potStart);
+                return (
+                  <div
+                    className="mb-2 mx-auto max-w-md p-2 rounded bg-black/30 text-center text-sm"
+                    data-testid="loo-pot-risk"
+                  >
+                    <div className="text-ds-text-muted mb-0.5">{t('potRisk.label')}</div>
+                    <div className="text-ds-accent">{t('potRisk.win', { pot, perTrick })}</div>
+                    <div className="text-ds-error">{t('potRisk.loss', { penalty: looPenalty })}</div>
+                  </div>
+                );
+              })()}
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

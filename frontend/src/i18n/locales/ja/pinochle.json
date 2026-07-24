@@ -61,6 +61,11 @@
     "hint_trump": "このスートをトランプに宣言するのが最適です",
     "hint_play": "このカードをプレイするのが最適です"
   },
+  "serverHintPass": "推奨: パス",
+  "serverHintBid": "推奨ビッド: {{n}}",
+  "serverHintTrump": "推奨トランプ: {{suit}}",
+  "serverHintPlay": "推奨プレイ: {{card}} [{{idx}}]",
+  "applyBid": "反映",
   "tutorial": {
     "gameInfo": "ラウンド・トリック番号、両チームの得点、切り札、最高ビッドを確認できます。",
     "playerInfo": "各プレイヤーのチーム・ビッド・メルド得点・獲得トリック数が表示されます。",
@@ -69,5 +74,7 @@
     "playerHand": "あなたの手札です。プレイ可能なカードが明るく表示されます。",
     "actionButtons": "ビッド・パス・トランプ宣言・プレイなど状況に応じたアクションを選びます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
-  }
+  },
+  "bidAmountLabel": "ビッド額（最低 {{min}}）",
+  "bidTooLow": "ビッド額は {{min}} 以上にしてください"
 }

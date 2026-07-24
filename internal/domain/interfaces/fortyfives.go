@@ -57,6 +57,8 @@ type FortyFivesGame interface {
 	GetContract() domain.FortyFivesBid
 	// GetBids 各プレイヤーの入札を取得する
 	GetBids() [domain.FortyFivesPlayerCnt]domain.FortyFivesBid
+	// GetBidDone 各プレイヤーが入札を済ませたかを取得する (未入札とパスの区別用)
+	GetBidDone() [domain.FortyFivesPlayerCnt]bool
 	// GetTrumpSuit 切り札スートを取得する (0=なし)
 	GetTrumpSuit() int
 	// GetTeamScores チーム別累積点を取得する

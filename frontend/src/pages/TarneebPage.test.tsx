@@ -63,6 +63,32 @@ describe('TarneebPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
   });
 
+  it('labels the trump-declaration buttons with translated suit names', async () => {
+    // Trump-declaration phase with the human (player 0) as bid winner.
+    mockExec.mockResolvedValue(makeState({ phase: 1, bidWinnerIdx: 0, highestBid: 8 }));
+    renderWithProviders(<TarneebPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スペード' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'クラブ' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ハート' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ダイヤ' })).toBeInTheDocument();
+    // The old untranslated "trump-N" label is gone.
+    expect(screen.queryByRole('button', { name: 'trump-1' })).not.toBeInTheDocument();
+  });
+
+  it('shows the redeal count in the round info when a redeal has occurred', async () => {
+    mockExec.mockResolvedValue(makeState({ redealCount: 2 }));
+    renderWithProviders(<TarneebPage />);
+    const redeal = await screen.findByTestId('tarneeb-redeal-count');
+    expect(redeal).toHaveTextContent('リディール 2回');
+  });
+
+  it('hides the redeal count when no redeal has occurred', async () => {
+    mockExec.mockResolvedValue(makeState({ redealCount: 0 }));
+    renderWithProviders(<TarneebPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
+    expect(screen.queryByTestId('tarneeb-redeal-count')).not.toBeInTheDocument();
+  });
+
   it('labels the human team and opponents and shows round tricks + total per team', async () => {
     const { container } = renderWithProviders(<TarneebPage />);
     await waitFor(() => expect(container.querySelector('[data-tutorial="tn-score-table"] table')).not.toBeNull());
@@ -75,6 +101,23 @@ describe('TarneebPage', () => {
     const oppRow = within(table).getByText('相手チーム').closest('tr') as HTMLTableRowElement;
     expect(within(oppRow).getByText('2')).toBeInTheDocument();
     expect(within(oppRow).getByText('5')).toBeInTheDocument();
+  });
+
+  it('shows a per-player trick breakdown grouped by team (#3306)', async () => {
+    const { container } = renderWithProviders(<TarneebPage />);
+    const breakdown = (await screen.findByTestId('tn-player-breakdown')) as HTMLDetailsElement;
+    // Both teams appear as breakdown groups.
+    const yourTeamGroup = within(breakdown).getByTestId('tn-breakdown-team-0');
+    const oppTeamGroup = within(breakdown).getByTestId('tn-breakdown-team-1');
+    expect(within(yourTeamGroup).getByText('あなたのチーム')).toBeInTheDocument();
+    expect(within(oppTeamGroup).getByText('相手チーム')).toBeInTheDocument();
+    // Each player's individual trick count is shown (players 0/2 → team 0, 1/3 → team 1).
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-0"]')?.textContent).toBe('3トリック');
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-2"]')?.textContent).toBe('1トリック');
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-1"]')?.textContent).toBe('2トリック');
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-3"]')?.textContent).toBe('0トリック');
+    // The aggregate team table is preserved alongside the breakdown.
+    expect(container.querySelector('[data-tutorial="tn-score-table"] table')).not.toBeNull();
   });
 
   it('renders a bid button group from minBid to 13 and bids the selected value', async () => {

@@ -86,6 +86,16 @@ func (p *TressetteCuiPresenter) Output(g interfaces.TressetteGame, lastErr error
 			b.WriteString(i18n.T("tressette.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("tressette.promptTrickEndHelp") + "\n")
 		case domain.TressettePhaseRoundEnd:
+			// Break down each team's thirds this round and name the team that took
+			// the last trick (the ultima-presa +1/3 bonus goes to that trick's
+			// winner, who becomes the next lead).
+			lastTeam := domain.TressetteTeamOf(g.GetLeadPlayerIdx())
+			b.WriteString(i18n.Tf("tressette.roundBreakdown",
+				"a", tressetteTeamLabel(0),
+				"athird", strconv.Itoa(thirds[0]),
+				"b", tressetteTeamLabel(1),
+				"bthird", strconv.Itoa(thirds[1]),
+				"lastteam", tressetteTeamLabel(lastTeam)) + "\n")
 			b.WriteString(i18n.T("tressette.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("tressette.promptRoundEndHelp") + "\n")
 		}

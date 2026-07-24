@@ -90,6 +90,20 @@ describe('GaigelPage', () => {
     expect(screen.getByText('山札: 28')).toBeInTheDocument();
   });
 
+  it('renders the face-up turn-up card when the stock still holds it', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpCard: card('HEART', 10) }));
+    renderWithProviders(<GaigelPage />);
+    await waitFor(() => expect(screen.getByTestId('gaigel-trump-card')).toBeInTheDocument());
+    expect(screen.getByText('めくり札')).toBeInTheDocument();
+  });
+
+  it('omits the turn-up card once the stock is exhausted', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpCard: undefined, stockRemaining: 0 }));
+    renderWithProviders(<GaigelPage />);
+    await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('gaigel-trump-card')).not.toBeInTheDocument();
+  });
+
   it('dispatches play with the selected card index during play', async () => {
     renderWithProviders(<GaigelPage />);
     const cardBtn = await screen.findByRole('button', { name: '♠ K' });
@@ -116,6 +130,31 @@ describe('GaigelPage', () => {
     fireEvent.click(cardBtn);
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'マリッジ' })).not.toBeInTheDocument();
+  });
+
+  it('badges both King and Queen when a marriage is available on the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ marriageIndices: [0, 1] }));
+    renderWithProviders(<GaigelPage />);
+    await waitFor(() => expect(screen.getByTestId('card-role-badge-0')).toBeInTheDocument());
+    expect(screen.getByTestId('card-role-badge-1')).toBeInTheDocument();
+    // The non-marriage card (index 2) gets no badge.
+    expect(screen.queryByTestId('card-role-badge-2')).not.toBeInTheDocument();
+    expect(screen.getByTestId('card-role-badge-0')).toHaveTextContent('💍');
+  });
+
+  it('shows no marriage badge when no marriage is available', async () => {
+    renderWithProviders(<GaigelPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument());
+    expect(screen.queryByTestId('card-role-badge-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('card-role-badge-1')).not.toBeInTheDocument();
+  });
+
+  it('shows no marriage badge when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ marriageIndices: [0, 1], currentPlayerIdx: 1 }));
+    renderWithProviders(<GaigelPage />);
+    await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('card-role-badge-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('card-role-badge-1')).not.toBeInTheDocument();
   });
 
   it('shows reset button mid-game and opens confirm dialog', async () => {

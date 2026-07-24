@@ -398,6 +398,23 @@ describe('BigOPage', () => {
     expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
   });
 
+  it('rings the 2 hole cards each non-folded CPU used at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    // Only CPU 1 is unfolded (CPU 2 folded), so exactly its 2 used hole cards are ringed.
+    const used = screen.getAllByTestId('cpu-hole-used');
+    expect(used).toHaveLength(2);
+    for (const el of used) expect(el.className).toContain('ring-ds-success');
+  });
+
+  it('does not ring any CPU hole cards outside showdown', async () => {
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    expect(screen.queryByTestId('cpu-hole-used')).not.toBeInTheDocument();
+  });
+
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<BigOPage />);
@@ -582,6 +599,32 @@ describe('BigOPage', () => {
     expect(screen.getByAltText('♥ K')).toBeInTheDocument();
     expect(screen.getByAltText('♦ 10')).toBeInTheDocument();
     expect(screen.getByAltText('♣ 5')).toBeInTheDocument();
+  });
+
+  // ---- mobile hole-card layout (#3007) ----
+  it('keeps the 5 hole cards on a single scrollable row on mobile (no wrap)', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(preFlopState);
+      renderWithProviders(<BigOPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+      const hole = screen.getByTestId('bigo-hole-cards');
+      expect(hole.className).toContain('flex-nowrap');
+      expect(hole.className).toContain('overflow-x-auto');
+      expect(hole.className).not.toContain('flex-wrap');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: original });
+    }
+  });
+
+  it('wraps the hole cards on desktop (no horizontal scroll)', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    const hole = screen.getByTestId('bigo-hole-cards');
+    expect(hole.className).toContain('flex-wrap');
+    expect(hole.className).not.toContain('overflow-x-auto');
   });
 
   it('shows CardBack for human when cards is empty and not folded', async () => {

@@ -250,6 +250,19 @@ function LetItRidePageContent() {
                     </div>
                   </div>
                 </details>
+                <details className="bg-black/30 rounded-lg w-full max-w-sm" data-testid="bet-structure">
+                  <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
+                    {t('betStructure.title')}
+                  </summary>
+                  <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
+                    <p>{t('betStructure.intro')}</p>
+                    <ul className="space-y-0.5 list-disc list-inside">
+                      <li>{t('betStructure.pull3')}</li>
+                      <li>{t('betStructure.pull2')}</li>
+                      <li>{t('betStructure.ride')}</li>
+                    </ul>
+                  </div>
+                </details>
               </div>
             )}
 
@@ -257,8 +270,8 @@ function LetItRidePageContent() {
               <div className="mb-4" data-tutorial="lir-results">
                 <div className="text-ds-warning font-bold text-center mb-1">
                   <span aria-hidden="true">🟡</span> {t('player')}
-                  {isEndPhase && (
-                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.handRank] ?? 'handRank.0')})</span>
+                  {isEndPhase && HAND_RANK_KEYS[state.handRank] && (
+                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.handRank])})</span>
                   )}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
@@ -307,7 +320,14 @@ function LetItRidePageContent() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-1 text-center text-ds-text-primary text-sm" data-testid="current-risk">
+                {/* aria-live so each pull (which lowers the total at risk) is announced
+                    to screen-reader users as the amount changes. Layout is unchanged. */}
+                <div
+                  className="mt-1 text-center text-ds-text-primary text-sm"
+                  data-testid="current-risk"
+                  role="status"
+                  aria-live="polite"
+                >
                   {t('label.currentRisk')}: {currentRisk}
                 </div>
               </div>
@@ -349,6 +369,8 @@ function LetItRidePageContent() {
                   label={t('label.bet')}
                   value={betAmount}
                   onChange={setBetAmount}
+                  min={10}
+                  step={10}
                   max={Math.floor(state.chips / 3)}
                 />
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>

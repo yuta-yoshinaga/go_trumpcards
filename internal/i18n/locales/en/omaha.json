@@ -11,6 +11,7 @@
   "helpAllIn": "  a                    all-in",
   "helpBettingLimit": "  bl [0-2]             betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
   "helpTournament": "  tm [0-1]             tournament mode",
+  "mandatoryRuleLine": "* Use exactly 2 of your {{hole}} hole cards + 3 board cards",
   "tournamentLine": "Tournament hand #{{hand}} SB:{{sb}} BB:{{bb}} (level-up every {{levelup}} hands)",
   "rebuyLine": "Rebuy: {{chips}} chips (max {{max}}, through hand {{period}})",
   "addonLine": "Add-on: {{chips}} chips (offered after hand {{after}})",
@@ -27,7 +28,7 @@
   "playerBet": " bet:{{bet}}",
   "humanHand": "  hand: {{cards}}",
   "cpuActionsHeader": "[CPU actions]",
-  "cpuActionLine": "  Player {{idx}}: {{action}}",
+  "cpuActionLine": "  {{name}}: {{action}}",
   "cpuActionAmount": " ({{amount}})",
   "resultsHeader": "[Results]",
   "resultMucked": "  {{name}}: muck",
@@ -42,5 +43,6 @@
   "muckPrompt": "Muck? (m=muck / sh=show)",
   "rebuyPrompt": "Rebuy? ({{chips}} chips, used {{used}}/{{max}}) (rb=rebuy / sr=skip)",
   "addonPrompt": "Add-on? ({{chips}} chips) (ad=addon / sa=skip)",
-  "gameEnd": "Game over"
+  "gameEnd": "Game over",
+  "hiLoRuleLine": "Low: five distinct cards 8-or-lower (8 or Better); if none qualifies, Hi takes the whole pot"
 }

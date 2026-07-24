@@ -123,33 +123,74 @@ describe('HighCardFlushPage', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
   });
 
+  it('labels player flush vs non-flush cards with text, not just glow/opacity', async () => {
+    mockExec.mockResolvedValue(actionPhase5Flush);
+    renderWithProviders(<HighCardFlushPage />);
+    // ♠ cards form the flush; the ♥ is not part of it.
+    await waitFor(() => expect(screen.getByRole('img', { name: '♠ 5 フラッシュ対象' })).toBeInTheDocument());
+    expect(screen.getByRole('img', { name: '♥ 9 フラッシュ対象外' })).toBeInTheDocument();
+  });
+
+  it('labels the dealer flush cards at showdown', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<HighCardFlushPage />);
+    // Dealer's ♣ cards form its 3-card flush; the ♥ is not in it.
+    await waitFor(() => expect(screen.getByRole('img', { name: '♣ 4 フラッシュ対象' })).toBeInTheDocument());
+    expect(screen.getByRole('img', { name: '♥ 8 フラッシュ対象外' })).toBeInTheDocument();
+  });
+
   it('shows action phase with raise/fold buttons matching multiplier cap', async () => {
     mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(actionPhase5Flush);
     renderWithProviders(<HighCardFlushPage />);
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x2' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'レイズ x1' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'レイズ x3' })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: /レイズ x2/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /レイズ x1/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /レイズ x3/ })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+  });
+
+  it('previews the resulting bet amount (anteBet × multiplier) on each raise button', async () => {
+    // actionPhase5Flush has anteBet=100, maxRaiseMultiplier=2 → x1 = 100, x2 = 200.
+    mockExec.mockResolvedValue(actionPhase5Flush);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByTestId('raise-1x')).toBeInTheDocument());
+    expect(screen.getByTestId('raise-1x')).toHaveTextContent('レイズ x1（100）');
+    expect(screen.getByTestId('raise-2x')).toHaveTextContent('レイズ x2（200）');
+    expect(screen.queryByTestId('raise-3x')).not.toBeInTheDocument();
+  });
+
+  it('scales the previewed bet amount with a larger ante', async () => {
+    // anteBet=300, maxRaiseMultiplier=3 → x1 = 300, x2 = 600, x3 = 900.
+    mockExec.mockResolvedValue({
+      ...actionPhase5Flush,
+      anteBet: 300,
+      playerFlushLen: 6,
+      maxRaiseMultiplier: 3,
+    });
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByTestId('raise-3x')).toBeInTheDocument());
+    expect(screen.getByTestId('raise-1x')).toHaveTextContent('レイズ x1（300）');
+    expect(screen.getByTestId('raise-2x')).toHaveTextContent('レイズ x2（600）');
+    expect(screen.getByTestId('raise-3x')).toHaveTextContent('レイズ x3（900）');
   });
 
   it('calls raise API on raise button click', async () => {
     mockExec.mockResolvedValueOnce(actionPhase5Flush).mockResolvedValueOnce(endPhasePlayerWins);
     renderWithProviders(<HighCardFlushPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x2' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /レイズ x2/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'レイズ x2' }));
+    fireEvent.click(screen.getByRole('button', { name: /レイズ x2/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', undefined, undefined, undefined, 2));
   });
 
   it('shows end phase with player wins and payout breakdown', async () => {
     mockExec.mockResolvedValueOnce(actionPhase5Flush).mockResolvedValueOnce(endPhasePlayerWins);
     renderWithProviders(<HighCardFlushPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x1' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /レイズ x1/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'レイズ x1' }));
+    fireEvent.click(screen.getByRole('button', { name: /レイズ x1/ }));
     await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
     expect(screen.getByText(/合計: 400/)).toBeInTheDocument();
   });
@@ -166,7 +207,7 @@ describe('HighCardFlushPage', () => {
   it('keyboard shortcut "1" triggers raise 1x during action phase', async () => {
     mockExec.mockResolvedValue(actionPhase5Flush);
     renderWithProviders(<HighCardFlushPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x1' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /レイズ x1/ })).toBeInTheDocument());
 
     fireEvent.keyDown(document, { key: '1' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', undefined, undefined, undefined, 1));
@@ -242,8 +283,8 @@ describe('HighCardFlushPage', () => {
       maxRaiseMultiplier: 3,
     });
     renderWithProviders(<HighCardFlushPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x3' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'レイズ x2' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: /レイズ x3/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /レイズ x2/ })).toBeInTheDocument();
   });
 
   it('lifts and glows the cards in the longest flush, dims off-suit cards', async () => {
@@ -251,7 +292,7 @@ describe('HighCardFlushPage', () => {
     renderWithProviders(<HighCardFlushPage />);
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x2' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /レイズ x2/ })).toBeInTheDocument());
     // actionPhase5Flush has 5 SPADE + 1 HEART + 1 CLOVER → SPADE is the longest flush.
     const flushCards = document.querySelectorAll('[data-flush-card="true"]');
     const offCards = document.querySelectorAll('[data-flush-card="false"]');
@@ -269,7 +310,7 @@ describe('HighCardFlushPage', () => {
     renderWithProviders(<HighCardFlushPage />);
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x2' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /レイズ x2/ })).toBeInTheDocument());
     // Scope by data-card-section so we don't rely on alt-text matching (which
     // would silently start testing the wrong element if AnimatedCard's alt
     // format ever changes).

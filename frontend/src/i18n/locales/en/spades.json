@@ -10,6 +10,9 @@
     "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
     "pointLimit": "Point Limit",
+    "nilBonus": "Nil Bonus",
+    "bagPenaltyThreshold": "Bag Penalty Threshold",
+    "nextGameNote": "Setting changes take effect from the next game.",
     "easy": "Easy",
     "normal": "Normal",
     "hard": "Hard"
@@ -28,6 +31,7 @@
   "bidProgress.made": "Bid made (+{{bags}} bags)",
   "bidProgress.nilOk": "Nil on track",
   "bidProgress.nilFail": "Nil failed",
+  "bagWarning": "Bags {{bags}}/{{threshold}} — watch out",
   "currentTrick": "Current Trick",
   "scores": "Scores",
   "scoresPlayer": "Player",

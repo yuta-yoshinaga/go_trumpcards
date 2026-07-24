@@ -42,7 +42,8 @@
     "lead_strong": "強いカードでリード",
     "follow_suit": "リードスートに追随",
     "trump_cut": "トランプでカット",
-    "discard_high": "高いカードを捨てる"
+    "discard_high": "高いカードを捨てる",
+    "fallback": "最善手"
   },
   "suitNames": {
     "1": "♠ スペード",
@@ -63,5 +64,12 @@
     "followSuit": "リードされたスートに従ってプレイ推奨",
     "trumpCut": "切り札で勝ちに行くチャンス",
     "discardLowest": "最も低いカードを捨てることを推奨"
+  },
+  "kbd": {
+    "title": "キーボードショートカット",
+    "selectCard": "数字キーで手札のカードを選択",
+    "confirm": "選択したカードを出す",
+    "clear": "カードの選択を解除",
+    "advance": "次のトリック / ラウンドへ進む"
   }
 }

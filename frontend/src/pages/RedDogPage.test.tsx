@@ -128,11 +128,25 @@ describe('RedDogPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('raise', 100));
   });
 
+  it('disables the raise button when chips fall below the minimum bet', async () => {
+    mockApi.mockResolvedValue({ ...spreadState, chips: 5 });
+    renderWithProviders(<RedDogPage />);
+    const raiseBtn = await screen.findByRole('button', { name: /レイズ/ });
+    expect(raiseBtn).toBeDisabled();
+  });
+
   it('renders end phase with reset and payout', async () => {
     mockApi.mockResolvedValue(winState);
     renderWithProviders(<RedDogPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
     expect(screen.getByText(/200/)).toBeInTheDocument();
+  });
+
+  it('does not render an empty settings panel', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /ベット/ })).toBeInTheDocument());
+    expect(screen.queryByText('設定')).not.toBeInTheDocument();
   });
 
   it('reads from useCliMode', async () => {

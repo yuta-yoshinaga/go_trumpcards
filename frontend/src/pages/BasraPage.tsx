@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { basraApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -19,11 +19,14 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BasraResponse } from '../types/card';
 import { BasraPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { basraFindCaptures, resolveBasraAction } from '../utils/basraCaptures';
+import { cardAlt } from '../utils/cardAlt';
 import { BASRA_HELP, parseBasraCommand } from '../utils/cli/commands/basraCommands';
 import { formatBasraState } from '../utils/cli/formatters/basraFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -81,11 +84,46 @@ function BasraPageContent() {
     handleResetWithConfig,
   } = useBasraGame();
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('basra', state);
+
+  // Celebrate a Basra (clearing the whole table with a single non-Jack card) the
+  // instant any player's basraCount rises — the sweep is the game's namesake score
+  // but was easy to miss amid fast CPU turns and the GameMessageBox (#3626).
+  // basraCount accumulates over the game, so a rising edge marks a fresh sweep; a
+  // reset drops every count back to 0, which clears any stale badge (no false re-fire).
+  const [basraCelebration, setBasraCelebration] = useState<{ key: number; own: boolean; seat: number } | null>(null);
+  const prevBasraRef = useRef<number[] | null>(null);
+  useEffect(() => {
+    if (!state) return;
+    const current = state.players.map((p) => p.basraCount);
+    const prev = prevBasraRef.current;
+    prevBasraRef.current = current;
+    if (prev === null || prev.length !== current.length) {
+      // First render or a player-count change: seed the baseline without firing.
+      if (prev !== null) setBasraCelebration(null);
+      return;
+    }
+    let seat = -1;
+    let dropped = false;
+    for (let i = 0; i < current.length; i++) {
+      const delta = current[i] - prev[i];
+      if (delta > 0) seat = i;
+      else if (delta < 0) dropped = true;
+    }
+    if (seat >= 0) {
+      const own = state.players[seat]?.isHuman ?? false;
+      setBasraCelebration((c) => ({ key: (c?.key ?? 0) + 1, own, seat }));
+      playSound('winFanfare', { pitchVariation: 0.05 });
+    } else if (dropped) {
+      // A reset / next game drops basraCount back to 0; clear the stale badge.
+      setBasraCelebration(null);
+    }
+  }, [state, playSound]);
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -119,16 +157,20 @@ function BasraPageContent() {
   const humanWon = isGameEnd && state.winners.includes(0);
   const phaseName = isGameEnd ? t('phase.gameEnd') : t('phase.play');
 
-  // Table indices the currently-selected hand card can capture (backend hint).
-  const captureCandidates =
-    handIndex !== null && isHumanTurn ? new Set(state.captureOptions[handIndex] ?? []) : new Set<number>();
+  // Preview which table cards the selected hand card would capture. Derived on the
+  // frontend (basraFindCaptures) so the highlight matches the domain rule exactly —
+  // including the Jack sweep, which the backend captureOptions hint omits for a Jack.
+  const selectedHandCard = handIndex !== null && isHumanTurn ? (human?.cards[handIndex] ?? null) : null;
+  const previewCaptures = selectedHandCard ? basraFindCaptures(selectedHandCard, state.tableCards) : [];
+  const captureCandidates = new Set(previewCaptures);
+  const captureAction = resolveBasraAction(selectedHandCard, previewCaptures, tableIndices);
   const canPlay = isHumanTurn && handIndex !== null;
 
   const winnerNames = state.winners.map((i) => (state.players[i]?.isHuman ? t('you') : t('cpu', { id: i }))).join(', ');
 
-  const humanStats = human
-    ? `${t('cards', { count: human.cardCount })} · ${t('captured', { count: human.capturedCount })} · ${t('basra', { count: human.basraCount })}`
-    : '';
+  // A player's Basra counter is emphasised while their most recent sweep is celebrated.
+  const basraEmphasisClass =
+    'inline-block rounded px-1 ring-2 ring-ds-accent text-ds-accent font-bold motion-safe:animate-pulse';
 
   return (
     <GamePageShell
@@ -163,7 +205,13 @@ function BasraPageContent() {
                   <div key={p.id} className="text-center">
                     <div className="text-xs text-ds-text-muted mb-1">
                       {t('cpu', { id: p.id })} — {t('captured', { count: p.capturedCount })} ·{' '}
-                      {t('basra', { count: p.basraCount })}
+                      <span
+                        className={basraCelebration?.seat === p.id ? basraEmphasisClass : undefined}
+                        data-testid={`basra-count-${p.id}`}
+                        data-emphasised={basraCelebration?.seat === p.id || undefined}
+                      >
+                        {t('basra', { count: p.basraCount })}
+                      </span>
                     </div>
                     <div className="flex gap-0.5 justify-center">
                       {Array.from({ length: Math.min(p.cardCount, 8) }, (_, i) => (
@@ -175,7 +223,20 @@ function BasraPageContent() {
             </div>
 
             {/* Table cards */}
-            <div className="py-3 bg-black/20 rounded-lg" data-tutorial="basra-table-cards">
+            <div className="relative py-3 bg-black/20 rounded-lg" data-tutorial="basra-table-cards">
+              {basraCelebration && (
+                <div
+                  key={basraCelebration.key}
+                  className="absolute inset-x-0 -top-3 z-10 flex justify-center motion-safe:animate-bounce pointer-events-none"
+                  role="status"
+                  aria-live="polite"
+                  data-testid="basra-celebration"
+                >
+                  <span className="rounded-full px-3 py-1 text-sm font-bold shadow-lg bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent">
+                    {basraCelebration.own ? t('basraBadgeOwn') : t('basraBadge')}
+                  </span>
+                </div>
+              )}
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('table')}</div>
               <div className="flex justify-center gap-2 min-h-[60px] flex-wrap">
                 {state.tableCards.length === 0 ? (
@@ -183,14 +244,20 @@ function BasraPageContent() {
                 ) : (
                   state.tableCards.map((c, i) => {
                     const isCandidate = captureCandidates.has(i);
+                    const isSelected = tableIndices.includes(i);
+                    const ariaLabel = isSelected
+                      ? t('tableSelectedAria', { card: cardAlt(c) })
+                      : isCandidate
+                        ? t('tableCandidateAria', { card: cardAlt(c) })
+                        : cardAlt(c);
                     return (
                       <button
                         key={i}
                         type="button"
                         onClick={() => isHumanTurn && toggleTable(i)}
                         disabled={!isHumanTurn}
-                        className={`rounded transition-all ${
-                          tableIndices.includes(i)
+                        className={`relative rounded transition-all ${
+                          isSelected
                             ? 'ring-2 ring-ds-warning -translate-y-1'
                             : isCandidate
                               ? 'ring-2 ring-ds-success motion-safe:animate-pulse'
@@ -198,8 +265,27 @@ function BasraPageContent() {
                         } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
                         data-testid={`table-card-${i}`}
                         data-capture-candidate={isCandidate || undefined}
+                        aria-label={ariaLabel}
+                        aria-pressed={isSelected}
                       >
                         <AnimatedCard card={c} width={cardWidth * 0.9} />
+                        {/* Colour-independent shape cue: ✓ badge for a capturable card,
+                            filled ● dot for a selected one. */}
+                        {isSelected ? (
+                          <span
+                            aria-hidden="true"
+                            className="absolute -top-1 -right-1 rounded-full bg-ds-warning text-white text-[10px] leading-none px-1 py-0.5"
+                          >
+                            ●
+                          </span>
+                        ) : isCandidate ? (
+                          <span
+                            aria-hidden="true"
+                            className="absolute -top-1 -right-1 rounded-full bg-ds-success text-white text-[10px] leading-none px-1 py-0.5"
+                          >
+                            ✓
+                          </span>
+                        ) : null}
                       </button>
                     );
                   })
@@ -210,7 +296,20 @@ function BasraPageContent() {
             {/* Human hand */}
             <div className="text-center" data-tutorial="basra-player-hand">
               <div className="text-xs text-ds-text-muted mb-1">
-                {t('you')} — {humanStats}
+                {t('you')}
+                {human && (
+                  <>
+                    {' — '}
+                    {t('cards', { count: human.cardCount })} · {t('captured', { count: human.capturedCount })} ·{' '}
+                    <span
+                      className={basraCelebration?.seat === human.id ? basraEmphasisClass : undefined}
+                      data-testid={`basra-count-${human.id}`}
+                      data-emphasised={basraCelebration?.seat === human.id || undefined}
+                    >
+                      {t('basra', { count: human.basraCount })}
+                    </span>
+                  </>
+                )}
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {human?.cards.map((c, i) => (
@@ -307,7 +406,11 @@ function BasraPageContent() {
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="basra-actions">
               {!isGameEnd && isHumanTurn && (
                 <button type="button" className={btnPrimary} onClick={playCard} disabled={loading || !canPlay}>
-                  {tableIndices.length > 0 ? t('captureButton') : t('playButton')}
+                  {captureAction.kind === 'sweep' || captureAction.kind === 'capture'
+                    ? t('captureButtonCount', { count: captureAction.count })
+                    : captureAction.kind === 'trail'
+                      ? t('trailButton')
+                      : t('playButton')}
                 </button>
               )}
               {isGameEnd && (

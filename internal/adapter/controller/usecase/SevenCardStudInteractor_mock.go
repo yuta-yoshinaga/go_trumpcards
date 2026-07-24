@@ -79,6 +79,12 @@ func (_m *MockSevenCardStudInteractor) ActionLog() string {
 	return ret.Get(0).(string)
 }
 
+// Hint モック
+func (_m *MockSevenCardStudInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // Snapshot モック
 func (_m *MockSevenCardStudInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()

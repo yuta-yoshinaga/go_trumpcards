@@ -453,6 +453,17 @@ func TestBurracoInteractor_ActionLog(t *testing.T) {
 	pMock.AssertExpectations(t)
 }
 
+func TestBurracoInteractor_Hint(t *testing.T) {
+	pMock := new(presenter.MockBurracoPresenter)
+	gameMock := new(interfaces.MockBurracoGame)
+	pMock.On("HintOutput", gameMock).Return("recommended: draw from stock")
+
+	ci := usecase.NewBurracoInteractor(gameMock, pMock)
+	result := ci.Hint()
+	assert.Equal(t, "recommended: draw from stock", result)
+	pMock.AssertExpectations(t)
+}
+
 func TestBurracoInteractor_RunCpuTurns(t *testing.T) {
 	mockOutput := `{"phase":0}`
 

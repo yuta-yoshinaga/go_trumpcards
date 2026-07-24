@@ -162,6 +162,74 @@ describe('OsmosisPage', () => {
     expect(screen.getByRole('button', { name: '元に戻す' })).toBeDisabled();
   });
 
+  it('advertises the keyboard shortcuts on the action buttons', async () => {
+    renderWithProviders(<OsmosisPage />);
+    const draw = await screen.findByRole('button', { name: '引く' });
+    expect(draw).toHaveAttribute('aria-keyshortcuts', 'd');
+    expect(draw.querySelector('kbd')?.textContent).toBe('D');
+    // KbdBadge text is aria-hidden, so button accessible names stay clean.
+    expect(screen.getByRole('button', { name: 'ヒント' })).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(screen.getByRole('button', { name: '自動完成' })).toHaveAttribute('aria-keyshortcuts', 'a');
+    expect(screen.getByRole('button', { name: '元に戻す' })).toHaveAttribute('aria-keyshortcuts', 'z');
+    expect(screen.getByRole('button', { name: 'ギブアップ' })).toHaveAttribute('aria-keyshortcuts', 'g');
+  });
+
+  it('fires draw when the d key is pressed while playing', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('fires hint when the h key is pressed', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'h' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('fires autocomplete when the a key is pressed', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('fires undo when the z key is pressed', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'z' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('routes the g key through the give-up confirm dialog', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'g' });
+    // The key must not dispatch giveup directly — it opens the confirm dialog first.
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('does not fire shortcuts once the game has ended', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    fireEvent.keyDown(document.body, { key: 'h' });
+    expect(mockExec).not.toHaveBeenCalledWith('draw');
+    expect(mockExec).not.toHaveBeenCalledWith('hint');
+  });
+
   it('shows game clear phase', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<OsmosisPage />);
@@ -187,5 +255,81 @@ describe('OsmosisPage', () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByRole('button', { name: 'ウェイスト' })).not.toBeInTheDocument();
+  });
+
+  describe('drag and drop', () => {
+    // Minimal stand-in for the browser DataTransfer object (jsdom lacks one).
+    function buildDataTransfer() {
+      const store: Record<string, string> = {};
+      return {
+        setData: (type: string, val: string) => {
+          store[type] = val;
+        },
+        getData: (type: string) => store[type] ?? '',
+        effectAllowed: '',
+        dropEffect: '',
+      };
+    }
+
+    it('reserve and waste top cards are draggable while playing', async () => {
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      expect(screen.getByRole('button', { name: 'ウェイスト' })).toHaveAttribute('draggable', 'true');
+      expect(screen.getByRole('button', { name: 'リザーブ 0' })).toHaveAttribute('draggable', 'true');
+    });
+
+    it('dragging the waste top onto a foundation row dispatches move', async () => {
+      mockExec.mockResolvedValue({ ...playingState, waste: [card('SPADE', 3)] });
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const wasteBtn = screen.getByRole('button', { name: 'ウェイスト' });
+      const dt = buildDataTransfer();
+      fireEvent.dragStart(wasteBtn, { dataTransfer: dt });
+      const dropZone = screen.getByRole('button', { name: '組札 0' }).parentElement as HTMLElement;
+      mockExec.mockClear();
+      fireEvent.dragOver(dropZone, { dataTransfer: dt });
+      fireEvent.drop(dropZone, { dataTransfer: dt });
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 0 }),
+      );
+    });
+
+    it('dragging a reserve top onto a foundation row dispatches move', async () => {
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const reserveBtn = screen.getByRole('button', { name: 'リザーブ 0' });
+      const dt = buildDataTransfer();
+      fireEvent.dragStart(reserveBtn, { dataTransfer: dt });
+      const dropZone = screen.getByRole('button', { name: '組札 0' }).parentElement as HTMLElement;
+      mockExec.mockClear();
+      fireEvent.dragOver(dropZone, { dataTransfer: dt });
+      fireEvent.drop(dropZone, { dataTransfer: dt });
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 0 }, { zone: 'foundation', col: 0 }),
+      );
+    });
+
+    it('a drop with no active drag does not dispatch a move', async () => {
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const dropZone = screen.getByRole('button', { name: '組札 0' }).parentElement as HTMLElement;
+      mockExec.mockClear();
+      // No dragStart ran, so the dataTransfer carries no source payload.
+      fireEvent.drop(dropZone, { dataTransfer: buildDataTransfer() });
+      expect(mockExec).not.toHaveBeenCalled();
+    });
+
+    it('marks a foundation row that cannot accept the dragged card with an error border', async () => {
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      // Reserve col 1 top is ♥9 — wrong suit for the ♠ base row and not the base rank.
+      const reserveBtn = screen.getByRole('button', { name: 'リザーブ 1' });
+      const dt = buildDataTransfer();
+      fireEvent.dragStart(reserveBtn, { dataTransfer: dt });
+      const foundation0 = screen.getByRole('button', { name: '組札 0' });
+      fireEvent.dragOver(foundation0.parentElement as HTMLElement, { dataTransfer: dt });
+      await waitFor(() => expect(foundation0.className).toContain('border-ds-error'));
+      expect(foundation0).toHaveAttribute('title', 'この段には置けません');
+    });
   });
 });

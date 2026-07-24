@@ -56,5 +56,16 @@
   "actionPromptCheck": "あなたの手番: チェック可 / 最低ベット {{raise}} / フォールド可",
   "rebuyPrompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済) (rb=リバイ / sr=スキップ)",
   "addonPrompt": "アドオンしますか? ({{chips}}チップ) (ad=アドオン / sa=スキップ)",
-  "gameEnd": "ゲーム終了"
+  "gameEnd": "ゲーム終了",
+  "razzLowComplete": "現在のベストロー: {{cards}}",
+  "razzLowIncomplete": "ベストロー(未完成): {{cards}}",
+  "hintNone": "現在ヒントはありません。",
+  "hint": "推奨: {{action}}（{{reason}}）",
+  "hintContinue": "続行（コール／ベット）",
+  "hintFold": "フォールド",
+  "hintReasonPair": "ワンペア以上",
+  "hintReasonFlush": "3枚同スート（フラッシュの目）",
+  "hintReasonStraight": "3枚連続（ストレートの目）",
+  "hintReasonHigh": "3枚とも高札",
+  "hintReasonFold": "続行条件を満たしません"
 }

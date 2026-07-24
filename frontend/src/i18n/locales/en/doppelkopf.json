@@ -58,5 +58,10 @@
     "info": "A=11, 10=10, K=4, Q=3, J=2. Of the 240 total points, the Re team wins by taking 121 or more. Chips move with each round's result.",
     "resetButton": "Use the reset button to start a new game."
   },
-  "announceDescription": "Announcing earlier raises your score multiplier; declare before playing your team's 2nd card."
+  "announceDescription": "Announcing earlier raises your score multiplier; declare before playing your team's 2nd card.",
+  "trumpLegend": {
+    "title": "Trump ranking",
+    "caption": "strong → weak",
+    "badgeTitle": "Trump"
+  }
 }

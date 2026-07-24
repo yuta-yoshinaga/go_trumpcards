@@ -1,5 +1,8 @@
 {
   "discardTop": "捨て札",
+  "discardPileViewer": "捨て札の山を見る ({{count}}枚)",
+  "discardPileEmpty": "捨て札の山は空です。",
+  "discardPileOrderHint": "古い順（下 → 上）に並んでいます。",
   "phase": {
     "draw": "ドロー",
     "meld": "メルド",
@@ -67,5 +70,11 @@
     "meldInitial": "初回メルド条件を満たしてメルド推奨",
     "meldExtend": "既存メルドに追加カードを出すと得点が伸びます",
     "discardHighSafe": "相手に使われにくい高ランクのカードを捨てる"
+  },
+  "sort": {
+    "label": "手札の並べ替え",
+    "original": "元の順",
+    "rank": "ランク順",
+    "suit": "スート順"
   }
 }

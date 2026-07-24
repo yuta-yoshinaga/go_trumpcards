@@ -75,6 +75,11 @@ func (m *MockVideoPokerGame) GetHandName() string {
 	return args.String(0)
 }
 
+func (m *MockVideoPokerGame) GetHandKey() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 func (m *MockVideoPokerGame) GetHeldIndices() [domain.VideoPokerHandSize]bool {
 	args := m.Called()
 	return args.Get(0).([domain.VideoPokerHandSize]bool)

@@ -79,6 +79,7 @@ const gameEndState: NertzResponse = {
 };
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockResolvedValue(playingState);
 });
 
@@ -251,6 +252,111 @@ describe('NertzPage', () => {
     );
   });
 
+  it('rings valid foundation and tableau drop targets while a source is selected', async () => {
+    const foundations: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
+    // Foundation 0 holds ♥5 → only ♥6 completes it; empty foundations need an Ace.
+    foundations[0] = { suit: 2, size: 5, top: { design: 'HEART', value: 5 } };
+    const state: NertzResponse = {
+      ...playingState,
+      foundations,
+      players: [
+        {
+          ...playingState.players[0],
+          nertzTop: { design: 'HEART', value: 6 },
+          tableau: [
+            [{ card: { design: 'SPADE', value: 7 }, faceUp: true }], // valid: black 7 below red 6
+            [{ card: { design: 'HEART', value: 8 }, faceUp: true }], // invalid: same colour
+            [], // valid: empty column accepts anything
+            [{ card: { design: 'SPADE', value: 9 }, faceUp: true }], // invalid: rank gap
+          ],
+        },
+        playingState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+
+    // No selection → no target rings anywhere.
+    await waitFor(() => expect(screen.getByAltText('♥ 6')).toBeInTheDocument());
+    expect(screen.getByTestId('nertz-foundation-0')).not.toHaveAttribute('data-valid-target');
+    expect(screen.getByTestId('nertz-tableau-col-0')).not.toHaveAttribute('data-valid-target');
+
+    // Select the nertz pile (♥6).
+    fireEvent.click(screen.getByAltText('♥ 6').closest('button') as HTMLElement);
+
+    // Foundation 0 (♥5) is a legal target; empty foundation 1 is not (needs an Ace).
+    const f0 = screen.getByTestId('nertz-foundation-0');
+    expect(f0).toHaveAttribute('data-valid-target', 'true');
+    expect(f0.className).toContain('ring-ds-success');
+    const f1 = screen.getByTestId('nertz-foundation-1');
+    expect(f1).not.toHaveAttribute('data-valid-target');
+    expect(f1.className).toContain('opacity-60');
+
+    // Tableau: black-7 column and the empty column are legal; the others are not.
+    expect(screen.getByTestId('nertz-tableau-col-0')).toHaveAttribute('data-valid-target', 'true');
+    expect(screen.getByTestId('nertz-tableau-col-2')).toHaveAttribute('data-valid-target', 'true');
+    expect(screen.getByTestId('nertz-tableau-col-1')).not.toHaveAttribute('data-valid-target');
+    expect(screen.getByTestId('nertz-tableau-col-3')).not.toHaveAttribute('data-valid-target');
+    expect(screen.getByTestId('nertz-tableau-col-0').className).toContain('ring-ds-success');
+
+    // Deselecting (click the source again) clears every ring.
+    fireEvent.click(screen.getByAltText('♥ 6').closest('button') as HTMLElement);
+    expect(screen.getByTestId('nertz-foundation-0')).not.toHaveAttribute('data-valid-target');
+    expect(screen.getByTestId('nertz-tableau-col-0')).not.toHaveAttribute('data-valid-target');
+  });
+
+  it('announces a foundation placement to screen readers', async () => {
+    const foundations: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
+    foundations[2] = { suit: 3, size: 1, top: { design: 'HEART', value: 1 } };
+    mockExec.mockResolvedValue({ ...playingState, foundations });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      const announce = screen.getByTestId('nertz-announce');
+      expect(announce).toHaveAttribute('aria-live', 'polite');
+      expect(announce.textContent).toMatch(/ファウンデーション3/);
+    });
+  });
+
+  it("announces the human's own foundation placement", async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♥ 7').closest('button') as HTMLElement);
+    // The move to foundation 0 succeeds and grows it, so pendingFoundationRef → 0
+    // makes the growth attribute to the human.
+    const grown: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
+    grown[0] = { suit: 3, size: 1, top: { design: 'HEART', value: 1 } };
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playingState, foundations: grown });
+    fireEvent.click(screen.getByLabelText(/ファウンデーション0|Foundation 0/));
+    await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/あなたが配置/));
+  });
+
+  it('announces a collision when a foundation move is rejected', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♥ 7').closest('button') as HTMLElement);
+    mockExec.mockClear();
+    mockExec.mockRejectedValue(new Error('invalid move'));
+    fireEvent.click(screen.getByLabelText(/ファウンデーション0|Foundation 0/));
+    await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/移動が失敗/));
+  });
+
   it('shows the next-round button at round end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(
@@ -351,6 +457,64 @@ describe('NertzPage', () => {
     await waitFor(() => expect(screen.getByTestId('nertz-foundation-1')).toHaveAttribute('data-collided', 'true'));
     // Foundation grid is still rendered; the page didn't unmount into ErrorAlert.
     expect(screen.getAllByTestId(/nertz-foundation-/)).toHaveLength(8);
+  });
+
+  it('defaults the CPU speed select to normal when unset', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    const select = (await screen.findByTestId('nertz-cpu-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('normal');
+  });
+
+  it('loads the persisted CPU speed from localStorage on mount', async () => {
+    localStorage.setItem('nertz:cpuSpeed', 'fast');
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    const select = (await screen.findByTestId('nertz-cpu-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('fast');
+  });
+
+  it('persists the chosen CPU speed to localStorage', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    const select = (await screen.findByTestId('nertz-cpu-speed-select')) as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: 'slow' } });
+    expect(select.value).toBe('slow');
+    expect(localStorage.getItem('nertz:cpuSpeed')).toBe('slow');
+  });
+
+  it('uses the selected speed as the CPU tick interval', async () => {
+    vi.useFakeTimers();
+    try {
+      // 'fast' → 400ms interval; 'slow' → 1200ms. Verify the boundary at 400ms.
+      localStorage.setItem('nertz:cpuSpeed', 'fast');
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(
+        <MemoryRouter initialEntries={['/nertz']}>
+          <NertzPage />
+        </MemoryRouter>,
+      );
+      // Flush the mount reset + initial render so the interval effect subscribes.
+      await vi.advanceTimersByTimeAsync(0);
+      mockExec.mockClear();
+      // Just before the 400ms fast interval no tick has fired yet.
+      await vi.advanceTimersByTimeAsync(399);
+      expect(mockExec).not.toHaveBeenCalledWith('tick');
+      // Crossing 400ms fires the fast tick.
+      await vi.advanceTimersByTimeAsync(1);
+      expect(mockExec).toHaveBeenCalledWith('tick');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('does not attribute a later unrelated error to a previously-resolved foundation move', async () => {

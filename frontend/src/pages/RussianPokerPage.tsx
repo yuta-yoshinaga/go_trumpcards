@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { russianpokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -15,6 +16,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -113,31 +115,49 @@ function RussianPokerPageContent() {
 
   const isExchangeSelecting = isActionPhase && selectedIndices.length > 0;
 
-  const toggleSelected = (idx: number) => {
+  // Ante validation: mandatory (>= 10), in 10-chip increments, and within the balance.
+  const anteInvalid =
+    Number.isNaN(anteAmount) || anteAmount < 10 || anteAmount % 10 !== 0 || anteAmount > (state?.chips ?? 0);
+
+  const toggleSelected = useCallback((idx: number) => {
     setSelectedIndices((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx].sort((a, b) => a - b),
     );
-  };
+  }, []);
+
+  const clearSelection = useCallback(() => setSelectedIndices([]), []);
+
+  /** No-op handler for keyboard-nav callbacks that a given phase does not use. */
+  const noop = useCallback(() => {}, []);
 
   const handleBet = () => {
     setSelectedIndices([]);
     execApi('bet', anteAmount);
   };
 
-  const handleExchange = () => {
+  const handleExchange = useCallback(() => {
     const toExchange = [...selectedIndices];
     setSelectedIndices([]);
     execApi('exchange', undefined, toExchange);
-  };
+  }, [selectedIndices, execApi]);
+
+  /** Confirm the exchange from the keyboard (Enter); no-op when nothing is selected. */
+  const handleExchangeConfirm = useCallback(() => {
+    if (selectedIndices.length === 0) return;
+    handleExchange();
+  }, [selectedIndices, handleExchange]);
 
   const handleBuy6th = () => {
     setSelectedIndices([]);
     execApi('buy6th');
   };
 
-  const handleSelect = (discardIdx: number) => {
-    execApi('select', undefined, undefined, discardIdx);
-  };
+  const handleSelect = useCallback(
+    (discardIdx: number) => {
+      execApi('select', undefined, undefined, discardIdx);
+    },
+    [execApi],
+  );
 
   const handlePlay = () => {
     setSelectedIndices([]);
@@ -164,7 +184,7 @@ function RussianPokerPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', anteAmount), enabled: isBetPhase },
+      { key: 'b', action: () => execApi('bet', anteAmount), enabled: isBetPhase && !anteInvalid },
       {
         key: 'e',
         action: () => execApi('exchange', undefined, [...selectedIndices]),
@@ -175,12 +195,33 @@ function RussianPokerPageContent() {
       { key: 'f', action: () => execApi('fold'), enabled: isActionPhase || isPostActionPhase },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
     ],
-    [execApi, isBetPhase, isActionPhase, isPostActionPhase, isEndPhase, anteAmount, selectedIndices],
+    [execApi, isBetPhase, isActionPhase, isPostActionPhase, isEndPhase, anteAmount, anteInvalid, selectedIndices],
   );
 
   useActionKeyboardNav({
     bindings: actionBindings,
     enabled: !!state && !loading,
+  });
+
+  // ACTION phase: number keys 1-9/0 toggle which cards to exchange, Enter confirms
+  // the exchange, Escape clears the selection. Digit 6 falls through to buy6th (the
+  // hand has only 5 cards, so index 5 is out of range here — no conflict).
+  useCardKeyboardNav({
+    cardCount: state?.playerHand.length ?? 0,
+    onToggle: toggleSelected,
+    onConfirm: handleExchangeConfirm,
+    onClear: clearSelection,
+    enabled: isActionPhase && !loading,
+  });
+
+  // SELECT phase: number keys 1-9/0 pick the discard directly (6-card discard step).
+  useCardKeyboardNav({
+    cardCount: state?.playerHand.length ?? 0,
+    onToggle: noop,
+    onConfirm: noop,
+    onClear: noop,
+    onDirectPlay: handleSelect,
+    enabled: isSelectPhase && !loading,
   });
 
   if (!state) return <GameSkeleton gameKey="russianpoker" layout={{ kind: 'casino-table', sections: [5, 5] }} />;
@@ -292,12 +333,15 @@ function RussianPokerPageContent() {
                     const selected = selectedIndices.includes(i);
                     const selectable = isActionPhase;
                     const discardable = isSelectPhase;
+                    // Advertise the number-key shortcut (1-9, then 0 for the 10th card).
+                    const kbdShortcut = i < 9 ? String(i + 1) : i === 9 ? '0' : undefined;
                     return (
                       <button
                         key={`p-${i}`}
                         type="button"
                         aria-label={cardAlt(card)}
                         aria-pressed={selectable ? selected : undefined}
+                        aria-keyshortcuts={(selectable || discardable) && kbdShortcut ? kbdShortcut : undefined}
                         data-testid={`player-card-${i}`}
                         data-selected={selected ? 'true' : 'false'}
                         onClick={selectable ? () => toggleSelected(i) : discardable ? () => handleSelect(i) : undefined}
@@ -384,22 +428,25 @@ function RussianPokerPageContent() {
             <SettingsPanel title={t('settings.title')} groups={[]} />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="russian-bet-controls">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="russianpoker-ante-amount" className="text-ds-text-primary text-sm">
-                    {t('label.ante')}
-                  </label>
-                  <input
-                    id="russianpoker-ante-amount"
-                    type="number"
-                    min={10}
-                    max={state.chips}
-                    step={10}
-                    value={anteAmount}
-                    onChange={(e) => setAnteAmount(Number(e.target.value))}
-                    className="w-24 px-2 py-1 rounded text-sm"
-                  />
-                </div>
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <ChipBetInput
+                  id="russianpoker-ante-amount"
+                  label={t('label.ante')}
+                  value={anteAmount}
+                  onChange={setAnteAmount}
+                  min={10}
+                  max={state.chips}
+                  step={10}
+                  disabled={loading}
+                  showSteppers
+                  invalid={anteInvalid}
+                  describedBy={anteInvalid ? 'russianpoker-bet-error' : undefined}
+                />
+                {anteInvalid && (
+                  <p id="russianpoker-bet-error" role="alert" className="text-ds-error text-xs">
+                    {t('betError')}
+                  </p>
+                )}
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || anteInvalid}>
                   {t('button.bet')}
                 </button>
               </div>
@@ -412,6 +459,9 @@ function RussianPokerPageContent() {
                   data-testid="russian-exchange-fee-line"
                 >
                   <p>{t('exchangeGuide')}</p>
+                  <p className="text-ds-text-muted text-xs" data-testid="russian-exchange-kbd-hint">
+                    {t('exchangeKbdHint')}
+                  </p>
                   <p
                     className={
                       selectedIndices.length >= 4
@@ -452,6 +502,9 @@ function RussianPokerPageContent() {
             {isSelectPhase && (
               <div className="flex flex-col items-center gap-2 pb-2">
                 <p className="text-ds-text-muted text-sm">{t('selectGuide')}</p>
+                <p className="text-ds-text-muted text-xs" data-testid="russian-select-kbd-hint">
+                  {t('selectKbdHint')}
+                </p>
               </div>
             )}
             {isPostActionPhase && (

@@ -120,6 +120,28 @@ describe('CrescentPage', () => {
     expect(screen.getByRole('button', { name: /再配り \(3\)/ })).toBeInTheDocument();
   });
 
+  it('exposes the redeal count via an aria-live status region', async () => {
+    renderWithProviders(<CrescentPage />);
+    const status = await screen.findByText(/残り再配り回数/);
+    expect(status).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('announces a stalemate via a role=alert region', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: 2 });
+    renderWithProviders(<CrescentPage />);
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toMatch(/手詰まり/);
+    expect(alert.textContent).toMatch(/2/);
+  });
+
+  it('defaults the escape count to 0 when undoToEscape is absent', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: undefined });
+    renderWithProviders(<CrescentPage />);
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toMatch(/手詰まり/);
+    expect(alert.textContent).toMatch(/0/);
+  });
+
   it('clicking redeal dispatches redeal', async () => {
     renderWithProviders(<CrescentPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /再配り \(3\)/ })).toBeInTheDocument());
@@ -192,6 +214,48 @@ describe('CrescentPage', () => {
         expect.objectContaining({ zone: 'foundation', col: 0 }),
       ),
     );
+  });
+
+  it('rings valid destinations when a source is selected (no hover needed)', async () => {
+    // col0 top ♠4 can go onto foundation ♠3 (asc) and onto tableau ♠5; ♥6 is invalid.
+    const highlightState: CrescentResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        [{ card: card('SPADE', 4), faceUp: true }],
+        [{ card: card('SPADE', 5), faceUp: true }],
+        [{ card: card('HEART', 6), faceUp: true }],
+      ]),
+      foundation: [
+        [card('SPADE', 3)],
+        [card('CLOVER', 1)],
+        [card('HEART', 1)],
+        [card('DIAMOND', 1)],
+        [card('SPADE', 13)],
+        [card('CLOVER', 13)],
+        [card('HEART', 13)],
+        [card('DIAMOND', 13)],
+      ],
+    };
+    mockExec.mockResolvedValue(highlightState);
+
+    const { container } = renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const foundations = container.querySelector('[data-tutorial="crescent-foundations"]') as HTMLElement;
+    const tableau = container.querySelector('[data-tutorial="crescent-tableau"]') as HTMLElement;
+    // No selection yet -> nothing highlighted.
+    expect(foundations.querySelectorAll('.ring-ds-success')).toHaveLength(0);
+    expect(tableau.querySelectorAll('.ring-ds-success')).toHaveLength(0);
+
+    // Select ♠4 as the source.
+    const cardButton = screen.getByAltText('♠ 4').closest('button') as HTMLButtonElement;
+    fireEvent.click(cardButton);
+
+    await waitFor(() => expect(foundations.querySelectorAll('.ring-ds-success').length).toBe(1));
+    // Exactly the ♠5 column rings; the ♥6 column and the source do not.
+    expect(tableau.querySelectorAll('.ring-ds-success')).toHaveLength(1);
+    const invalidTop = screen.getByAltText('♥ 6').closest('button') as HTMLButtonElement;
+    expect(invalidTop.className).toContain('opacity-40');
   });
 
   it('clicking reset dispatches reset (after confirm)', async () => {

@@ -12,12 +12,23 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// courtPieceTeamLabels maps a team index (0/1) to its display name.
+var courtPieceTeamLabels = [domain.CourtPieceTeamCnt]string{"A", "B"}
+
+// courtPieceTeamLabel returns the team label (A/B) for a team index, or "?" when out of range.
+func courtPieceTeamLabel(team int) string {
+	if team < 0 || team >= len(courtPieceTeamLabels) {
+		return "?"
+	}
+	return courtPieceTeamLabels[team]
+}
+
 // courtPiecePlayerStr returns the display string for a single Court Piece player.
 func courtPiecePlayerStr(player *domain.CourtPiecePlayer, i int) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("courtpiece.playerLine",
 		"name", cuiPlayerName(player, i),
-		"team", strconv.Itoa(player.GetTeam()),
+		"team", courtPieceTeamLabel(player.GetTeam()),
 		"tricks", strconv.Itoa(player.GetTrickCount()),
 		"cards", strconv.Itoa(player.GetCardsSize()),
 	))
@@ -62,7 +73,8 @@ func (p *CourtPieceCuiPresenter) Output(t interfaces.CourtPieceGame, lastErr err
 		if callerIdx >= 0 {
 			caller := t.GetPlayer(callerIdx)
 			b.WriteString(i18n.Tf("courtpiece.callerLine",
-				"name", cuiPlayerName(caller, callerIdx)) + "\n")
+				"name", cuiPlayerName(caller, callerIdx),
+				"team", courtPieceTeamLabel(caller.GetTeam())) + "\n")
 		}
 
 		for i := 0; i < t.GetPlayerCnt(); i++ {
@@ -81,7 +93,7 @@ func (p *CourtPieceCuiPresenter) Output(t interfaces.CourtPieceGame, lastErr err
 		cuiErrorBlock(b, lastErr)
 
 		if t.GetGameEndFlag() {
-			banner := i18n.Tf("courtpiece.gameEnd", "team", strconv.Itoa(t.GetWinnerTeam()))
+			banner := i18n.Tf("courtpiece.gameEnd", "team", courtPieceTeamLabel(t.GetWinnerTeam()))
 			b.WriteString(color.Green(banner) + "\n")
 			return
 		}

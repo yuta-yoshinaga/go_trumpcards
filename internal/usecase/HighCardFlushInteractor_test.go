@@ -106,6 +106,15 @@ func TestHighCardFlushInteractor_ActionLog(t *testing.T) {
 	assert.Equal(t, "log", hi.ActionLog())
 }
 
+func TestHighCardFlushInteractor_Hint(t *testing.T) {
+	mockGame := new(interfaces.MockHighCardFlushGame)
+	mockPresenter := new(presenter.MockHighCardFlushPresenter)
+	hi := NewHighCardFlushInteractor(mockGame, mockPresenter)
+
+	mockPresenter.On("HintOutput", mockGame).Return("hint")
+	assert.Equal(t, "hint", hi.Hint())
+}
+
 func TestRestoreHighCardFlushInteractor(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockPresenter := new(presenter.MockHighCardFlushPresenter)

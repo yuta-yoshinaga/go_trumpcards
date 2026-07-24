@@ -15,10 +15,10 @@
   },
   "button": {
     "bet": "ベット",
-    "play": "プレイ (2×)",
+    "play": "プレイ (2× = {{cost}})",
     "fold": "フォールド",
     "check": "チェック",
-    "raise": "レイズ (1×)",
+    "raise": "レイズ (1× = {{cost}})",
     "reset": "リセット"
   },
   "phase": {
@@ -87,5 +87,6 @@
     "broadwayCards": "ブロードウェイ — プレイ推奨",
     "pairOrBetter": "ペア以上 — レイズ推奨",
     "weakHand": "弱い手札"
-  }
+  },
+  "hiddenCard": "非公開のカード"
 }

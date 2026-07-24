@@ -9,6 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -31,6 +32,33 @@ import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { isGoalTopPlayableToFoundation } from '../utils/spiteAndMaliceUtils';
 
 const samRunner = spiteAndMaliceApi;
+
+/** CPU cadence presets — a shorter delay makes the CPU take its turn sooner. */
+type SamCpuSpeed = 'slow' | 'normal' | 'fast';
+
+/**
+ * CPU turn wait (ms) per speed preset. A smaller delay advances the CPU turn
+ * sooner; `normal` (500ms) preserves the historical default for backward
+ * compatibility.
+ */
+const SAM_CPU_DELAY_MS: Record<SamCpuSpeed, number> = {
+  slow: 900,
+  normal: 500,
+  fast: 200,
+};
+
+const SAM_CPU_SPEED_STORAGE_KEY = 'spiteandmalice:cpuSpeed';
+
+/** Read the persisted CPU speed, falling back to `normal` when unset/invalid. */
+function loadSamCpuSpeed(): SamCpuSpeed {
+  try {
+    const v = localStorage.getItem(SAM_CPU_SPEED_STORAGE_KEY);
+    if (v === 'slow' || v === 'normal' || v === 'fast') return v;
+  } catch {
+    // localStorage may be unavailable (private mode / SSR); fall through to default.
+  }
+  return 'normal';
+}
 
 const SAM_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="sam-opponent"]', messageKey: 'tutorial.opponent', placement: 'bottom', advanceOn: 'next' },
@@ -128,18 +156,32 @@ function SpiteAndMalicePageContent() {
   const apiCall = gameApi.exec;
 
   const [selection, setSelection] = useState<Selection>(null);
+  const [cpuSpeed, setCpuSpeed] = useState<SamCpuSpeed>(loadSamCpuSpeed);
+
+  const handleSelectCpuSpeed = useCallback((v: string) => {
+    const speed: SamCpuSpeed = v === 'slow' || v === 'fast' ? v : 'normal';
+    setCpuSpeed(speed);
+    try {
+      localStorage.setItem(SAM_CPU_SPEED_STORAGE_KEY, speed);
+    } catch {
+      // Persistence is best-effort; ignore storage failures.
+    }
+  }, []);
 
   useMountReset(apiCall);
 
+  // CPU turn driver: after a short delay, advance the CPU's turn. The delay is
+  // scaled by the chosen speed preset; changing the speed restarts the timer so
+  // the new cadence takes effect from the next CPU turn.
   useEffect(() => {
     if (!state) return;
     if (state.phase === SpiteAndMalicePhase.GAME_OVER) return;
     if (state.current !== 1) return;
     const timer = setTimeout(() => {
       void apiCall('cpu');
-    }, 500);
+    }, SAM_CPU_DELAY_MS[cpuSpeed]);
     return () => clearTimeout(timer);
-  }, [state, apiCall]);
+  }, [state, apiCall, cpuSpeed]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spiteandmalice');
   const samCliConfig: CliGameConfig<SpiteAndMaliceResponse, ApiArgs> = useMemo(
@@ -276,10 +318,27 @@ function SpiteAndMalicePageContent() {
                     checked: hintEnabled,
                     onToggle: setHintEnabled,
                   },
+                  {
+                    type: 'select' as const,
+                    id: 'samCpuSpeed',
+                    testId: 'sam-cpu-speed-select',
+                    label: t('settings.cpuSpeed'),
+                    tooltip: t('settings.cpuSpeedHelp'),
+                    value: cpuSpeed,
+                    options: [
+                      { value: 'slow', label: t('settings.speedSlow') },
+                      { value: 'normal', label: t('settings.speedNormal') },
+                      { value: 'fast', label: t('settings.speedFast') },
+                    ],
+                    onSelect: handleSelectCpuSpeed,
+                  },
                 ],
               },
             ]}
           />
+          {hintEnabled && currentHint ? (
+            <HintTooltip reason={t(currentHint.reason)} confidence={currentHint.confidence} />
+          ) : null}
           <LandscapeBanner message={t('landscapeBanner', { defaultValue: '' })} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 space-y-4">
@@ -351,6 +410,7 @@ function SpiteAndMalicePageContent() {
               label={t('label.side')}
               discardLabel={t('discard')}
               discardEnabled={selectionIsHand}
+              discardHint={selectionIsHand ? t('discardReady') : t('discardNeedHand')}
             />
           </div>
 
@@ -624,6 +684,7 @@ function SideRow({
   label,
   discardLabel,
   discardEnabled,
+  discardHint,
 }: {
   sides: [Card[], Card[], Card[], Card[]];
   cardWidth: number;
@@ -635,10 +696,16 @@ function SideRow({
   label: string;
   discardLabel: string;
   discardEnabled: boolean;
+  discardHint: string;
 }) {
   return (
     <div className="flex flex-col items-center gap-2" data-tutorial={dataTutorial}>
       <span className="text-sm text-ds-secondary">{cpuLabel ? `CPU ${label}` : label}</span>
+      {/* Shared reason for the discard buttons' disabled state (they all gate on
+          a selected hand card), announced via aria-describedby below. */}
+      <span id="sam-discard-hint" className="sr-only" data-testid="sam-discard-hint">
+        {discardHint}
+      </span>
       <div className="grid grid-cols-4 gap-2">
         {sides.map((pile, idx) => {
           const top = pile.length > 0 ? pile[pile.length - 1] : undefined;
@@ -671,6 +738,7 @@ function SideRow({
                 className={`${btnPrimary} text-xs px-2 py-1`}
                 onClick={() => onDiscard(idx)}
                 disabled={!discardEnabled}
+                aria-describedby="sam-discard-hint"
               >
                 {discardLabel}
               </button>

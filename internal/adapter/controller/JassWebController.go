@@ -65,6 +65,8 @@ type JassWebOutput struct {
 	MakerTeam        int                       `json:"makerTeam"`
 	MakerPlayerIdx   int                       `json:"makerPlayerIdx"`
 	CurrentTrick     []*JassWebOutputTrickCard `json:"currentTrick"`
+	LastTrick        []*JassWebOutputTrickCard `json:"lastTrick"`
+	LastTrickWinner  int                       `json:"lastTrickWinner"`
 	TeamScores       [2]int                    `json:"teamScores"`
 	RoundPoints      [2]int                    `json:"roundPoints"`
 	RoundWeisPoints  [2]int                    `json:"roundWeisPoints"`
@@ -113,10 +115,12 @@ var NewJassWebController, NewJassWebControllerWithProvider = webControllerPair[u
 
 func newJassDefaultOutput(msg string) *JassWebOutput {
 	return &JassWebOutput{
-		Players:       make([]*JassWebOutputPlayer, 0),
-		CurrentTrick:  make([]*JassWebOutputTrickCard, 0),
-		WinnerTeam:    -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:         make([]*JassWebOutputPlayer, 0),
+		CurrentTrick:    make([]*JassWebOutputTrickCard, 0),
+		LastTrick:       make([]*JassWebOutputTrickCard, 0),
+		LastTrickWinner: -1,
+		WinnerTeam:      -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

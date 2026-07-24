@@ -18,5 +18,7 @@
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintReasonLeadHigh": "高い札でリードしてトリックを取りにいく",
   "hintReasonTakeTrick": "このトリックを取りにいく（3トリックでポット獲得）",
-  "hintReasonDiscardLow": "取れないので低い札を捨てる"
+  "hintReasonDiscardLow": "取れないので低い札を捨てる",
+  "leaderMark": "▶(リード) ",
+  "winnerMark": "★(勝者) "
 }

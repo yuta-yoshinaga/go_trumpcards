@@ -28,6 +28,7 @@ func TestMacauCuiController_Exec(t *testing.T) {
 		m.On("SkipDeclare").Return(mockOutput)
 		m.On("NextRound").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
+		m.On("Hint").Return(mockOutput)
 		m.On("IsHumanChooseSuitTurn").Return(false)
 		m.On("IsHumanDeclareTurn").Return(false)
 		return m
@@ -49,6 +50,14 @@ func TestMacauCuiController_Exec(t *testing.T) {
 		c := controller.NewMacauCuiController(m)
 		assert.Equal(t, mockOutput, c.Exec("p 3"))
 		m.AssertCalled(t, "Play", 3)
+	})
+
+	t.Run("hint command", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewMacauCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("h"))
+		assert.Equal(t, mockOutput, c.Exec("hint"))
+		m.AssertCalled(t, "Hint")
 	})
 
 	t.Run("play no args", func(t *testing.T) {

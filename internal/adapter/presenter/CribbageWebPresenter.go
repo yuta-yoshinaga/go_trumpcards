@@ -116,6 +116,8 @@ func (p *CribbageWebPresenter) buildMessage(g interfaces.CribbageGame, lastErr e
 	switch g.GetPhase() {
 	case domain.CribbagePhaseDiscard:
 		return "", "cribbage.discardPhase", nil
+	case domain.CribbagePhaseCut:
+		return "", "cribbage.cutPhase", nil
 	case domain.CribbagePhasePegging:
 		return "", "cribbage.peggingPhase", nil
 	case domain.CribbagePhaseShow:

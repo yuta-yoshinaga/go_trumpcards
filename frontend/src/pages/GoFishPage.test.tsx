@@ -141,6 +141,48 @@ describe('GoFishPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('ask', expect.any(Number), 7));
   });
 
+  it('keyboard: number key selects an opponent and arrows cycle the rank, then "a" asks', async () => {
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
+    // "1" picks the first opponent (CPU 1) and announces it.
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(screen.getByTestId('gf-kbd-announce').textContent).toMatch(/CPU 1/));
+    // ArrowRight cycles to the first hand rank (3) and announces it.
+    fireEvent.keyDown(document.body, { key: 'ArrowRight' });
+    await waitFor(() => expect(screen.getByTestId('gf-kbd-announce').textContent).toMatch(/3/));
+    // A second ArrowRight advances from the current rank to the next one (7).
+    fireEvent.keyDown(document.body, { key: 'ArrowRight' });
+    await waitFor(() => expect(screen.getByTestId('gf-kbd-announce').textContent).toMatch(/7/));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(baseState);
+    // "a" asks the selected opponent for the selected rank.
+    fireEvent.keyDown(document.body, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('ask', 1, 7));
+  });
+
+  it('keyboard: "a" also asks once a target and rank are chosen', async () => {
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
+    fireEvent.keyDown(document.body, { key: '2' }); // CPU 2
+    fireEvent.keyDown(document.body, { key: 'ArrowLeft' }); // wraps to the last rank (7)
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(baseState);
+    fireEvent.keyDown(document.body, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('ask', 2, 7));
+  });
+
+  it('keyboard: bindings are inert on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: '1' });
+    fireEvent.keyDown(document.body, { key: 'ArrowRight' });
+    fireEvent.keyDown(document.body, { key: 'a' });
+    expect(mockExec).not.toHaveBeenCalledWith('ask', expect.anything(), expect.anything());
+    expect(screen.getByTestId('gf-kbd-announce').textContent).toBe('');
+  });
+
   it('rank buttons appear on human turn', async () => {
     renderWithProviders(<GoFishPage />);
     await waitFor(() => expect(screen.getByText('7')).toBeInTheDocument());

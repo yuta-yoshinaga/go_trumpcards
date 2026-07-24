@@ -34,6 +34,12 @@ func (m *MockCasinoHoldemInteractor) ActionLog() string {
 	return args.String(0)
 }
 
+// Hint モック
+func (m *MockCasinoHoldemInteractor) Hint() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 // Snapshot モック
 func (m *MockCasinoHoldemInteractor) Snapshot() ([]byte, error) {
 	ret := m.Called()

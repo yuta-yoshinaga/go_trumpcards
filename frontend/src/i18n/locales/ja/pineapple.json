@@ -18,7 +18,14 @@
     "select": "捨てるカードを選択してください",
     "confirm": "{{card}} を捨てますか？",
     "confirmYes": "確定",
-    "confirmNo": "キャンセル"
+    "confirmNo": "キャンセル",
+    "limitReached": "選択できるのは{{count}}枚までです。先に選択を解除してください",
+    "limitDescription": "ディスカードで選択できるのは最大{{count}}枚です",
+    "keepLabel": "残り2枚",
+    "featurePair": "ペア",
+    "featureSuited": "スーテッド",
+    "featureConnector": "コネクター",
+    "featureHighcard": "ハイカード"
   },
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",

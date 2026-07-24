@@ -17,5 +17,6 @@
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintReasonLeadLow": "低い札でリードして温存する",
   "hintReasonCapture": "奪取する（同ランクまたは7）",
-  "hintReasonDiscardLow": "取れない／取る価値がないので低い札を捨てる"
+  "hintReasonDiscardLow": "取れない／取る価値がないので低い札を捨てる",
+  "trickWinner": "{{name}} がトリックを獲得 (+{{points}}点)"
 }

@@ -30,6 +30,13 @@
   "teamScore": "{{team}}: {{score}} pts",
   "playButton": "Play",
   "declareMarriage": "Marriage {{suit}}",
+  "marriageAria": "Declare {{suit}} marriage ({{points}} points)",
+  "suitName": {
+    "spade": "Spade",
+    "club": "Club",
+    "heart": "Heart",
+    "diamond": "Diamond"
+  },
   "declareTute": "Declare Tute",
   "declarationsLabel": "Available declarations",
   "tuteHelp": "Tute: declare when you hold all four Kings (or all four Queens) for a large bonus.",
@@ -39,6 +46,12 @@
     "title": "Round Result",
     "teamA": "Team A points: {{points}}",
     "teamB": "Team B points: {{points}}"
+  },
+  "declaredMarriages": {
+    "title": "Declared marriages",
+    "declared": "Declared",
+    "undeclared": "Not declared",
+    "trumpNote": "Trump suit scores +40"
   },
   "hintAvailable": "Hint",
   "hint": {

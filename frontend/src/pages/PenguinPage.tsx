@@ -243,6 +243,13 @@ function PenguinPageContent() {
           <span>
             {t('baseRank')}: {baseRankLabel(state.baseRank)}
           </span>
+          <span data-testid="pg-supermove-badge" title={t('supermoveBadgeTooltip')}>
+            {t('supermoveBadge', {
+              limit: supermoveLimit,
+              cells: emptyFreeCells,
+              cols: emptyTableauCols,
+            })}
+          </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
@@ -400,6 +407,7 @@ function PenguinPageContent() {
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading || !selectedSource}
+                              aria-label={t('emptyColumnAriaLabel', { rank: emptyColPlaceholder })}
                               style={{ height: cardHeight }}
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                             >
@@ -448,7 +456,11 @@ function PenguinPageContent() {
                                       onBlur={() => setHoveredStack(null)}
                                       title={
                                         exceedsSupermove
-                                          ? t('supermoveLimitTooltip', { limit: supermoveLimit })
+                                          ? t('supermoveLimitTooltip', {
+                                              limit: supermoveLimit,
+                                              cells: emptyFreeCells,
+                                              cols: emptyTableauCols,
+                                            })
                                           : undefined
                                       }
                                       data-supermove-blocked={exceedsSupermove ? 'true' : undefined}

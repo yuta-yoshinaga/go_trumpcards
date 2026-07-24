@@ -55,6 +55,84 @@ const drawPhaseState: IndianRummyResponse = {
 };
 
 const discardPhaseState: IndianRummyResponse = { ...drawPhaseState, phase: 1 };
+
+// 13-card arrangement that IS a valid declaration (two pure runs + two sets),
+// verified against the Go domain. The 14th card (♣2) is the finish/discard card.
+const declareValidHand: IndianRummyPlayer['cards'] = [
+  { design: 'SPADE', value: 3 },
+  { design: 'SPADE', value: 4 },
+  { design: 'SPADE', value: 5 },
+  { design: 'HEART', value: 7 },
+  { design: 'HEART', value: 8 },
+  { design: 'HEART', value: 9 },
+  { design: 'DIAMOND', value: 10 },
+  { design: 'CLOVER', value: 10 },
+  { design: 'SPADE', value: 10 },
+  { design: 'DIAMOND', value: 13 },
+  { design: 'CLOVER', value: 13 },
+  { design: 'HEART', value: 13 },
+  { design: 'SPADE', value: 13 },
+  { design: 'CLOVER', value: 2 }, // finish card (index 13)
+];
+
+const declareValidState: IndianRummyResponse = {
+  ...discardPhaseState,
+  wildJoker: null,
+  wildRank: 0,
+  players: [player({ cards: declareValidHand }), player({ id: 1, isHuman: false })],
+};
+
+// 13-card arrangement that is INVALID: only sets, no sequence at all (no pure
+// sequence). The 14th card (♥8) is the finish card.
+const declareNoPureHand: IndianRummyPlayer['cards'] = [
+  { design: 'DIAMOND', value: 2 },
+  { design: 'CLOVER', value: 2 },
+  { design: 'SPADE', value: 2 },
+  { design: 'DIAMOND', value: 6 },
+  { design: 'CLOVER', value: 6 },
+  { design: 'SPADE', value: 6 },
+  { design: 'DIAMOND', value: 10 },
+  { design: 'CLOVER', value: 10 },
+  { design: 'SPADE', value: 10 },
+  { design: 'DIAMOND', value: 13 },
+  { design: 'CLOVER', value: 13 },
+  { design: 'HEART', value: 13 },
+  { design: 'SPADE', value: 13 },
+  { design: 'HEART', value: 8 }, // finish card (index 13)
+];
+
+const declareNoPureState: IndianRummyResponse = {
+  ...discardPhaseState,
+  wildJoker: null,
+  wildRank: 0,
+  players: [player({ cards: declareNoPureHand }), player({ id: 1, isHuman: false })],
+};
+
+// 13-card arrangement that is INVALID: one pure run but 10 cards cannot all be
+// melded (76 deadwood points). The 14th card (♣9) is the finish card.
+const declareUncoveredHand: IndianRummyPlayer['cards'] = [
+  { design: 'SPADE', value: 3 },
+  { design: 'SPADE', value: 4 },
+  { design: 'SPADE', value: 5 },
+  { design: 'HEART', value: 7 },
+  { design: 'DIAMOND', value: 9 },
+  { design: 'CLOVER', value: 11 },
+  { design: 'DIAMOND', value: 2 },
+  { design: 'CLOVER', value: 13 },
+  { design: 'SPADE', value: 8 },
+  { design: 'HEART', value: 6 },
+  { design: 'DIAMOND', value: 4 },
+  { design: 'HEART', value: 12 },
+  { design: 'SPADE', value: 1 },
+  { design: 'CLOVER', value: 9 }, // finish card (index 13)
+];
+
+const declareUncoveredState: IndianRummyResponse = {
+  ...discardPhaseState,
+  wildJoker: null,
+  wildRank: 0,
+  players: [player({ cards: declareUncoveredHand }), player({ id: 1, isHuman: false })],
+};
 const roundEndState: IndianRummyResponse = { ...drawPhaseState, phase: 2 };
 const gameEndState: IndianRummyResponse = {
   ...drawPhaseState,
@@ -122,6 +200,37 @@ describe('IndianRummyPage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♥ J')).toBeInTheDocument();
     });
+  });
+
+  it('marks wild-rank cards in the human hand with a WILD badge', async () => {
+    const wildInHandState: IndianRummyResponse = {
+      ...drawPhaseState,
+      players: [
+        player({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'DIAMOND', value: 5 }, // matches wildJoker rank 5 -> wild
+            { design: 'JOKER', value: 0 }, // printed joker -> wild
+          ],
+        }),
+        drawPhaseState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(wildInHandState);
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    // Two of the three hand cards are wild (the rank-5 card and the printed joker).
+    expect(screen.getAllByTestId('ir-wild-badge')).toHaveLength(2);
+    // The non-wild ace carries no wild annotation in its label.
+    expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♦ 5 .*ワイルド/ })).toBeInTheDocument();
+  });
+
+  it('marks wild-rank cards in revealed CPU hands with a WILD badge', async () => {
+    mockExec.mockResolvedValue(roundEndCpuCardsState);
+    renderWithProviders(<IndianRummyPage />);
+    // CPU hand has a rank-5 card (DIAMOND 5) matching the wild joker.
+    await waitFor(() => expect(screen.getAllByTestId('ir-wild-badge').length).toBeGreaterThanOrEqual(1));
   });
 
   it('renders draw stock and draw discard buttons on human draw turn', async () => {
@@ -200,6 +309,49 @@ describe('IndianRummyPage', () => {
     mockExec.mockResolvedValue(roundEndState);
     fireEvent.click(screen.getByRole('button', { name: '宣言' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declare', 0));
+  });
+
+  // -- Declaration preview (client-side) --
+  it('does not show the declare preview until a finish card is selected', async () => {
+    mockExec.mockResolvedValue(declareValidState);
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '宣言' })).toBeInTheDocument());
+    expect(screen.queryByTestId('indianrummy-declare-preview')).not.toBeInTheDocument();
+  });
+
+  it('shows a valid declare preview when the remaining 13 cards form a valid declaration', async () => {
+    mockExec.mockResolvedValue(declareValidState);
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByAltText('♣ 2')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♣ 2').closest('button') as HTMLButtonElement);
+    const preview = await screen.findByTestId('indianrummy-declare-preview');
+    expect(preview).toBeInTheDocument();
+    expect(screen.getByTestId('indianrummy-declare-preview-valid')).toBeInTheDocument();
+    expect(screen.queryByTestId('indianrummy-declare-preview-invalid')).not.toBeInTheDocument();
+    // Declare button is never blocked by the preview.
+    expect(screen.getByRole('button', { name: '宣言' })).not.toBeDisabled();
+  });
+
+  it('warns about a missing pure sequence and the penalty for an invalid declaration', async () => {
+    mockExec.mockResolvedValue(declareNoPureState);
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ 8')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♥ 8').closest('button') as HTMLButtonElement);
+    await screen.findByTestId('indianrummy-declare-preview-invalid');
+    expect(screen.getByText('純シーケンス未成立')).toBeInTheDocument();
+    expect(screen.getByText('このまま宣言すると +80 点')).toBeInTheDocument();
+    // Player can still force the declaration through.
+    expect(screen.getByRole('button', { name: '宣言' })).not.toBeDisabled();
+  });
+
+  it('warns about unmelded cards when a pure sequence exists but cards are uncovered', async () => {
+    mockExec.mockResolvedValue(declareUncoveredState);
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByAltText('♣ 9')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♣ 9').closest('button') as HTMLButtonElement);
+    await screen.findByTestId('indianrummy-declare-preview-invalid');
+    expect(screen.queryByText('純シーケンス未成立')).not.toBeInTheDocument();
+    expect(screen.getByText(/未メルド .*枚（76 点）/)).toBeInTheDocument();
   });
 
   it('does not show draw buttons when not human turn', async () => {

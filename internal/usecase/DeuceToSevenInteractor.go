@@ -27,6 +27,8 @@ type DeuceToSevenInteractorIF interface {
 	Exchange(indices []int) string
 	// Stand passes on the current draw.
 	Stand() string
+	// Hint returns the draw-phase hint output.
+	Hint() string
 	// ActionLog returns the log output for the current hand.
 	ActionLog() string
 }
@@ -94,6 +96,11 @@ func (di *DeuceToSevenInteractor) Stand() string {
 // ActionLog returns the log output for the current hand.
 func (di *DeuceToSevenInteractor) ActionLog() string {
 	return di.pp.ActionLogOutput(di.Game)
+}
+
+// Hint returns the draw-phase hint output.
+func (di *DeuceToSevenInteractor) Hint() string {
+	return di.pp.HintOutput(di.Game)
 }
 
 // RestoreDeuceToSevenInteractor deserialises JSON into a DeuceToSevenInteractor.

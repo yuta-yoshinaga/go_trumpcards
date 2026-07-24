@@ -159,6 +159,10 @@ func (p *KoenigrufenCuiPresenter) writePrompt(b *strings.Builder, g interfaces.K
 		b.WriteString(i18n.Tf("koenigrufen.promptTalon",
 			"name", cuiPlayerName(g.GetPlayer(g.GetDeclarerIdx()), g.GetDeclarerIdx())) + "\n")
 		b.WriteString(i18n.T("koenigrufen.promptTalonHelp") + "\n")
+		// The web UI greys out cards that can't be buried; on the CLI, state the
+		// fill constraints (Kings and the trull honours are never buriable, plain
+		// trumps only when short of plain-suit cards) so the choice isn't guesswork.
+		b.WriteString(i18n.T("koenigrufen.promptTalonLegend") + "\n")
 	case domain.KoenigrufenPhasePlay:
 		currentIdx := g.GetCurrentPlayerIdx()
 		b.WriteString(i18n.Tf("koenigrufen.promptPlay",

@@ -74,6 +74,30 @@ func gostopScoreStr(bd *domain.GoStopBreakdown) string {
 	return strings.Join(parts, " ") + " (" + strconv.Itoa(bd.Base) + ")"
 }
 
+// gostopCategoryCountStr counts captured cards by card category (光/열끗/띠/피),
+// letting CLI players gauge role progress before a category actually scores.
+// Captured piles are public in Go-Stop, so this is shown for every player.
+func gostopCategoryCountStr(captured []*domain.Card) string {
+	var gwang, yeol, tti, pi int
+	for _, c := range captured {
+		switch domain.GoStopCardCategory(c) {
+		case domain.GoStopGwang:
+			gwang++
+		case domain.GoStopYeol:
+			yeol++
+		case domain.GoStopTti:
+			tti++
+		case domain.GoStopPi:
+			pi++
+		}
+	}
+	return i18n.Tf("gostop.categoryCounts",
+		"gwang", strconv.Itoa(gwang),
+		"yeol", strconv.Itoa(yeol),
+		"tti", strconv.Itoa(tti),
+		"pi", strconv.Itoa(pi))
+}
+
 func gostopPlayerStr(g interfaces.GoStopGame, idx int) string {
 	player := g.GetPlayer(idx)
 	if player == nil {
@@ -88,6 +112,9 @@ func gostopPlayerStr(g interfaces.GoStopGame, idx int) string {
 		"score", strconv.Itoa(player.GetScore()),
 		"go", strconv.Itoa(player.GetGoCount()),
 		"breakdown", gostopScoreStr(bd)) + "\n")
+	if player.CapturedCount() > 0 {
+		b.WriteString(gostopCategoryCountStr(player.GetCapturedCards()) + "\n")
+	}
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(gostopCuiHandStr(player) + "\n")
 	}

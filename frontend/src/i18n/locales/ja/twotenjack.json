@@ -31,6 +31,7 @@
   "team1": "相手チーム (1,3)",
   "declarePhase": "切り札スートを宣言してください (♠/♣/♥/♦)",
   "declarePrompt": "切り札を選択 →",
+  "cpuDeclaring": "CPUが切り札を宣言中...",
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
@@ -53,5 +54,8 @@
     "follow_suit": "リードスートに従ってこのカードを出すのが最適",
     "trump_cut": "切り札で刈り取るのが最適",
     "discard": "勝てないトリックなので弱いカードで逃す"
-  }
+  },
+  "scoresCaption": "チーム別の得点集計",
+  "hintDeclare": "推奨トランプ",
+  "hintPlay": "推奨プレイ"
 }

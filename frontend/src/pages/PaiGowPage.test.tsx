@@ -196,18 +196,79 @@ describe('PaiGowPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('set', undefined, 3, 5));
   });
 
+  it('auto-set button fills a legal non-foul split and enables Set', async () => {
+    mockExec.mockResolvedValueOnce(setHandsPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByTestId('auto-set-button')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('auto-set-button'));
+
+    // House-way max-low split for the singleton fixture is {S10, H11} = indices [0, 1].
+    const cardButtons = getCardButtons();
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('foul-warning')).toHaveTextContent('');
+    expect(screen.getByTestId('set-hands-button')).toBeEnabled();
+
+    fireEvent.click(screen.getByTestId('set-hands-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('set', undefined, 0, 1));
+  });
+
+  it('lets the player re-select manually after an auto-set', async () => {
+    mockExec.mockResolvedValue(setHandsPhaseState);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByTestId('auto-set-button')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('auto-set-button'));
+    const cardButtons = getCardButtons();
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true');
+
+    // Deselect one auto-picked card — the auto choice is not locked in.
+    fireEvent.click(cardButtons[0]);
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('disables the auto-set button when a joker is present', async () => {
+    mockExec.mockResolvedValue({
+      ...setHandsPhaseState,
+      playerCards: [
+        card('JOKER', 0),
+        card('HEART', 13),
+        card('SPADE', 2),
+        card('DIAMOND', 3),
+        card('CLOVER', 4),
+        card('SPADE', 5),
+        card('HEART', 7),
+      ],
+    });
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByTestId('auto-set-button')).toBeInTheDocument());
+    expect(screen.getByTestId('auto-set-button')).toBeDisabled();
+  });
+
   it('blocks Set and shows a foul warning when the low hand outranks the high hand', async () => {
     mockExec.mockResolvedValue(setHandsPhaseState);
     renderWithProviders(<PaiGowPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'セット' })).toBeInTheDocument());
+
+    // Before selecting, the assertive live region is present but empty (so a
+    // later foul — and its clearing — are both announced).
+    const foulRegion = screen.getByTestId('foul-warning');
+    expect(foulRegion).toHaveAttribute('aria-live', 'assertive');
+    expect(foulRegion).toHaveTextContent('');
 
     // Low = [D13, S3] (top 13); high = [S10, H11, C5, H7, D9] (top 11) → foul.
     const cardButtons = getCardButtons();
     fireEvent.click(cardButtons[2]);
     fireEvent.click(cardButtons[5]);
 
-    expect(screen.getByTestId('foul-warning')).toBeInTheDocument();
+    expect(foulRegion).not.toHaveTextContent('');
     expect(screen.getByTestId('set-hands-button')).toBeDisabled();
+
+    // Deselecting a card clears the foul → the region empties (announcing the change).
+    fireEvent.click(cardButtons[5]);
+    await waitFor(() => expect(screen.getByTestId('foul-warning')).toHaveTextContent(''));
   });
 
   it('deselects a card when clicked again', async () => {
@@ -277,6 +338,34 @@ describe('PaiGowPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 200));
+  });
+
+  it('steppers adjust the bet by the step and submit the new amount', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    // Default bet is 100; the +10 stepper raises it to 110.
+    fireEvent.click(screen.getByRole('button', { name: 'ベット +10' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 110));
+  });
+
+  it('prevents an out-of-range bet: disables submit and shows an alert', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    // A non-multiple-of-10 amount is invalid.
+    const betInput = screen.getByLabelText('ベット');
+    fireEvent.change(betInput, { target: { value: '15' } });
+
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    expect(mockExec).not.toHaveBeenCalledWith('bet', 15);
   });
 
   it('resets after end phase', async () => {

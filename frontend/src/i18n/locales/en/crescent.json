@@ -24,6 +24,7 @@
   "autoCompleteNotReady": "Available when all tops can reach the foundations",
   "undo": "Undo",
   "stalemate": "Stalemate",
+  "stalemateAlert": "Stalemate. Undo {{count}} time(s) to escape.",
   "playing": "Build the eight foundations: 4 ascending from A and 4 descending from K, all by suit",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",

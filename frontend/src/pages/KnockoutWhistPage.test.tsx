@@ -30,6 +30,7 @@ const gameEndState = makeKnockoutWhistState({
 const cpuTurnState = makeKnockoutWhistState({ currentPlayerIdx: 1, isHumanTurn: false });
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
@@ -82,6 +83,28 @@ describe('KnockoutWhistPage', () => {
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
   });
 
+  it('previews the next round hand size (one fewer card) and trump chooser at round end', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<KnockoutWhistPage />);
+    const preview = await screen.findByTestId('kw-next-round-preview');
+    // Default round-end hand size is 7, so the next round deals 6 cards; winner idx 0 is the human.
+    expect(preview).toHaveTextContent('次ラウンド: 手札6枚 / 切り札選択: あなた');
+  });
+
+  it('flags the final round when the next hand size bottoms out at 1', async () => {
+    mockExec.mockResolvedValue(makeKnockoutWhistState({ phase: 2, roundWinnerIdx: 1, handSize: 2 }));
+    renderWithProviders(<KnockoutWhistPage />);
+    const preview = await screen.findByTestId('kw-next-round-preview');
+    expect(preview).toHaveTextContent('最終ラウンド: 手札1枚');
+  });
+
+  it('does not preview the next round at game end', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<KnockoutWhistPage />);
+    await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ち！')).toBeInTheDocument());
+    expect(screen.queryByTestId('kw-next-round-preview')).not.toBeInTheDocument();
+  });
+
   it('renders the game end message', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<KnockoutWhistPage />);
@@ -106,12 +129,60 @@ describe('KnockoutWhistPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('selecttrump', { trumpSuit: 3 }));
   });
 
-  it('greys out an eliminated player panel', async () => {
+  it('greys out an eliminated player panel with a readable (not too faint) dim', async () => {
     const eliminatedState = makeKnockoutWhistState();
     eliminatedState.players[1] = { ...eliminatedState.players[1], eliminated: true, dogbones: 0 };
     mockExec.mockResolvedValue(eliminatedState);
-    renderWithProviders(<KnockoutWhistPage />);
+    const { container } = renderWithProviders(<KnockoutWhistPage />);
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.getAllByText(/脱落/).length).toBeGreaterThan(0);
+    // Eliminated rows keep the strike-through but use a lighter dim for WCAG-AA legibility.
+    const rows = container.querySelectorAll('[data-eliminated="true"]');
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      expect(row.className).toContain('opacity-70');
+      expect(row.className).not.toContain('opacity-40');
+    }
+  });
+
+  // Build a state whose human (seat 0) is knocked out, using a fresh players array so the
+  // shared base fixture (referenced by makeKnockoutWhistState's shallow spread) is not mutated.
+  const eliminatedHumanState = (overrides?: Parameters<typeof makeKnockoutWhistState>[0]) => {
+    const base = makeKnockoutWhistState(overrides);
+    return {
+      ...base,
+      players: base.players.map((p) => (p.isHuman ? { ...p, eliminated: true, dogbones: 0 } : p)),
+    };
+  };
+
+  it('shows the spectator banner while the human is eliminated and the match continues', async () => {
+    mockExec.mockResolvedValue(eliminatedHumanState({ isHumanTurn: false, currentPlayerIdx: 1, activeCount: 2 }));
+    renderWithProviders(<KnockoutWhistPage />);
+    const banner = await screen.findByTestId('kw-spectator-banner');
+    expect(banner).toHaveAttribute('role', 'status');
+    expect(banner).toHaveTextContent('観戦中');
+    expect(banner).toHaveTextContent('残り 2人');
+  });
+
+  it('does not show the spectator banner while the human is still active', async () => {
+    renderWithProviders(<KnockoutWhistPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByTestId('kw-spectator-banner')).not.toBeInTheDocument();
+  });
+
+  it('does not show the spectator banner once the game has ended', async () => {
+    mockExec.mockResolvedValue(eliminatedHumanState({ phase: 3, gameEndFlag: true, winnerPlayer: 1, activeCount: 1 }));
+    renderWithProviders(<KnockoutWhistPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('kw-spectator-banner')).not.toBeInTheDocument();
+  });
+
+  it('renders the leader badge with an opaque, high-contrast surface', async () => {
+    // Default state: leadPlayerIdx 0 → the human is the leader.
+    renderWithProviders(<KnockoutWhistPage />);
+    const badge = await screen.findByText('リーダー');
+    // Opaque surface token (badgeInfoColors) instead of the old translucent bg-white/20.
+    expect(badge.className).toContain('bg-ds-surface');
+    expect(badge.className).not.toContain('bg-white/20');
   });
 });

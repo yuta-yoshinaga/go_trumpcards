@@ -9,5 +9,8 @@
   "stockLine": "Stock: {{stock}}  Waste: {{waste}}",
   "foundationLabel": "Foundation {{idx}}:",
   "tableauLabel": "Col {{idx}}:",
-  "hintLine": "[HINT: {{from}}{{fromCol}} -> {{to}}{{toCol}}]"
+  "hintLine": "[HINT: {{from}}{{fromCol}} -> {{to}}{{toCol}}]",
+  "zoneWaste": "Waste",
+  "zoneTableau": "Tableau",
+  "zoneFoundation": "Foundation"
 }

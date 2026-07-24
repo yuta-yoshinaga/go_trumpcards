@@ -28,6 +28,7 @@ func TestHandAndFootCuiController_Exec(t *testing.T) {
 		m.On("GoOut").Return(mockOutput)
 		m.On("NextRound").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
+		m.On("Hint").Return(mockOutput)
 		return m
 	}
 
@@ -49,6 +50,14 @@ func TestHandAndFootCuiController_Exec(t *testing.T) {
 		c := controller.NewHandAndFootCuiController(m)
 		assert.Equal(t, mockOutput, c.Exec("ds"))
 		m.AssertCalled(t, "DrawFromStock")
+	})
+
+	t.Run("hint h", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewHandAndFootCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("h"))
+		assert.Equal(t, mockOutput, c.Exec("hint"))
+		m.AssertCalled(t, "Hint")
 	})
 
 	t.Run("drawdiscard dd with indices", func(t *testing.T) {

@@ -152,6 +152,12 @@ func (_m *MockSoloWhistGame) GetBids() [domain.SoloWhistPlayerCnt]domain.SoloWhi
 	return ret.Get(0).([domain.SoloWhistPlayerCnt]domain.SoloWhistBid)
 }
 
+// GetBidDone モック
+func (_m *MockSoloWhistGame) GetBidDone() [domain.SoloWhistPlayerCnt]bool {
+	ret := _m.Called()
+	return ret.Get(0).([domain.SoloWhistPlayerCnt]bool)
+}
+
 // GetTrumpSuit モック
 func (_m *MockSoloWhistGame) GetTrumpSuit() int {
 	ret := _m.Called()

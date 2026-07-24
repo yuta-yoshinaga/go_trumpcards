@@ -1017,6 +1017,9 @@ func (g *KoiKoi) GetCurrentTurn() int { return g.state.currentTurn }
 // SetCurrentTurn は現在の手番を設定する (テスト用)。
 func (g *KoiKoi) SetCurrentTurn(idx int) { g.state.currentTurn = idx }
 
+// SetKoikoiCount はこのラウンドのこいこい宣言回数を設定する (テスト用)。
+func (g *KoiKoi) SetKoikoiCount(n int) { g.state.koikoiCount = n }
+
 // GetFieldCards は場札を返す。
 func (g *KoiKoi) GetFieldCards() []*Card { return g.state.fieldCards }
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
@@ -52,7 +53,8 @@ function declKindLabel(kind: number): string {
 export const PiquetPage = withTutorial(PiquetPageContent, 'piquet', PIQUET_TUTORIAL_STEPS);
 
 function PiquetPageContent() {
-  const { t, tc, confirmOpen, requestConfirm, confirmReset, cancelReset } = useGamePageSetup('piquet');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('piquet');
   const game = usePiquetGame();
   const { state, loading, error, retry } = game;
   const { cardWidth } = useCardDimensions();
@@ -220,6 +222,11 @@ function PiquetPageContent() {
             {t('nextDeal')}
           </button>
         ) : null}
+        {humanCanPlay || humanCanExchange ? (
+          <button type="button" onClick={game.handleHint} className={btnSuccess} disabled={loading}>
+            {t('hintButton')}
+          </button>
+        ) : null}
         <GameResetButton
           isGameEnd={inGameEndPhase}
           onReset={game.handleReset}
@@ -227,6 +234,14 @@ function PiquetPageContent() {
           loading={loading}
         />
       </div>
+
+      {state.hint ? (
+        <p className="mt-2 text-sm text-ds-accent" data-testid="piquet-hint">
+          {state.hint.cardIndex !== undefined
+            ? t('hintPlay', { index: state.hint.cardIndex })
+            : t('hintDiscard', { indices: (state.hint.discardIndices ?? []).join(', ') })}
+        </p>
+      ) : null}
 
       {state.declResults.length > 0 ? <DeclarationList results={state.declResults} elderIdx={elderIdx} /> : null}
 
@@ -237,6 +252,13 @@ function PiquetPageContent() {
           {state.winnerIdx === -1 ? t('partieDraw') : t('partieWinner', { idx: state.winnerIdx })}
         </div>
       ) : null}
+
+      <ActionLogSection
+        isEndPhase={inGameEndPhase}
+        actionLog={actionLog}
+        showActionLog={showActionLog}
+        hideActionLog={hideActionLog}
+      />
     </GamePageShell>
   );
 }
@@ -289,7 +311,16 @@ function DeclarationList({ results, elderIdx }: { results: PiquetDeclaration[]; 
   const { t } = useTranslation('piquet');
   const youngerIdx = elderIdx === 0 ? 1 : 0;
   return (
-    <div className="rounded border border-white/20 p-2 mx-2 text-sm">
+    // role="log" defaults to aria-atomic="false", so a screen reader announces
+    // only each newly-appended declaration, not the whole list again. We rely on
+    // the default aria-relevant ("additions text") rather than forcing "additions"
+    // alone, which can make some readers (JAWS/NVDA) announce the change silently.
+    <div
+      className="rounded border border-white/20 p-2 mx-2 text-sm"
+      role="log"
+      aria-live="polite"
+      data-testid="piquet-declaration-list"
+    >
       <div className="mb-1 font-bold">{t('declarationsList')}</div>
       {results.map((r) => {
         const playerLabel =

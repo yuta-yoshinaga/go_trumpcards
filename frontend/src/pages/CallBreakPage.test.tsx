@@ -4,7 +4,7 @@ import { callBreakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeCallBreakState } from '../test/stateFactories';
-import { CallBreakPage } from './CallBreakPage';
+import { CallBreakPage, fmtScore } from './CallBreakPage';
 
 vi.mock('../api/gameApi', () => ({
   callBreakApi: { exec: vi.fn() },
@@ -58,6 +58,21 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
 
+describe('fmtScore', () => {
+  it('formats int×10 scores as X.Y for en/ja locales (period separator)', () => {
+    expect(fmtScore(41, 'en')).toBe('4.1');
+    expect(fmtScore(40, 'en')).toBe('4.0');
+    expect(fmtScore(5, 'en')).toBe('0.5');
+    expect(fmtScore(-41, 'en')).toBe('-4.1');
+    expect(fmtScore(105, 'ja')).toBe('10.5');
+  });
+
+  it('uses the locale decimal separator for comma-decimal locales', () => {
+    expect(fmtScore(41, 'de-DE')).toBe('4,1');
+    expect(fmtScore(-5, 'de-DE')).toBe('-0,5');
+  });
+});
+
 describe('CallBreakPage', () => {
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
@@ -81,6 +96,20 @@ describe('CallBreakPage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♥ J')).toBeInTheDocument();
     });
+  });
+
+  it('shows a bags counter with each player overtricks derived from bid and tricks', async () => {
+    const bagsState = makeCallBreakState({
+      players: makeCallBreakState().players.map((p, i) =>
+        // Player 0 (human): bid 3, 5 tricks -> 2 bags; others below/at bid -> 0.
+        i === 0 ? { ...p, bid: 3, trickCount: 5 } : { ...p, bid: 4, trickCount: 1 },
+      ),
+    });
+    mockExec.mockResolvedValue(bagsState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByTestId('cb-bags-counter')).toBeInTheDocument());
+    expect(screen.getByTestId('cb-bags-0')).toHaveTextContent('2');
+    expect(screen.getByTestId('cb-bags-1')).toHaveTextContent('0');
   });
 
   it('renders bid phase with a 1-13 bid button group', async () => {
@@ -204,7 +233,15 @@ describe('CallBreakPage', () => {
   it('renders spades-broken status text', async () => {
     mockExec.mockResolvedValue(spadesBrokenState);
     renderWithProviders(<CallBreakPage />);
-    await waitFor(() => expect(screen.getByText('スペードブレイク済')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('スペードブレイク済').length).toBeGreaterThan(0));
+  });
+
+  it('shows a persistent spades-break indicator in the footer hand area', async () => {
+    mockExec.mockResolvedValue(spadesBrokenState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('cb-spades-break-footer')).toHaveTextContent('スペードブレイク済');
+    });
   });
 
   it('shows decimal score in the score table (cumulativeScore 41 → 4.1)', async () => {

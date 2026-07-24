@@ -57,6 +57,46 @@ func TestIndianPokerCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "推定勝率:")
 	})
 
+	t.Run("betting shows check-available on human turn with no outstanding bet", func(t *testing.T) {
+		ip, players := makeIndianPokerForPresenter()
+		ip.SetPhase(domain.IndianPokerPhaseBetting)
+		ip.SetCurrentTurn(0)
+		ip.SetLastBet(0)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+
+		result := p.Output(ip, nil)
+		assert.Contains(t, result, "チェック可能")
+		assert.NotContains(t, result, "コール:")
+	})
+
+	t.Run("betting shows call amount and min raise on human turn", func(t *testing.T) {
+		ip, players := makeIndianPokerForPresenter()
+		ip.SetPhase(domain.IndianPokerPhaseBetting)
+		ip.SetCurrentTurn(0)
+		ip.SetLastBet(50)
+		ip.SetMinRaise(20)
+		players[0].SetCurrentBet(10)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+
+		result := p.Output(ip, nil)
+		assert.Contains(t, result, "コール: 40") // 50 - 10 already committed
+		assert.Contains(t, result, "ミニマムレイズ: 20")
+		assert.NotContains(t, result, "チェック可能")
+	})
+
+	t.Run("betting hides call info when it is not the human's turn", func(t *testing.T) {
+		ip, players := makeIndianPokerForPresenter()
+		ip.SetPhase(domain.IndianPokerPhaseBetting)
+		ip.SetCurrentTurn(1) // a CPU is to act
+		ip.SetLastBet(50)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+
+		result := p.Output(ip, nil)
+		assert.Contains(t, result, "推定勝率:")
+		assert.NotContains(t, result, "コール:")
+		assert.NotContains(t, result, "チェック可能")
+	})
+
 	t.Run("showdown phase hides equity", func(t *testing.T) {
 		ip, players := makeIndianPokerForPresenter()
 		ip.SetPhase(domain.IndianPokerPhaseShowdown)

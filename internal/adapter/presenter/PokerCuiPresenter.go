@@ -129,12 +129,39 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 			}
 		}
 
+		b.WriteString(i18n.Tf("poker.phaseLine", "phase", pokerPhaseName(p.GetPhase())) + "\n")
+
 		cuiErrorBlock(b, lastErr)
 
 		if p.GetGameEndFlag() {
 			b.WriteString(i18n.T("poker.gameEnd") + "\n")
+		} else {
+			// Tell the human what to do this phase (draw poker: bet, then exchange,
+			// then bet again).
+			switch p.GetPhase() {
+			case domain.PokerPhaseDeal, domain.PokerPhaseSecondBet:
+				b.WriteString(i18n.T("poker.promptBet") + "\n")
+			case domain.PokerPhaseExchange:
+				b.WriteString(i18n.T("poker.promptExchange") + "\n")
+			}
 		}
 	})
+}
+
+// pokerPhaseName returns the localized name for a Poker phase constant.
+func pokerPhaseName(phase int) string {
+	switch phase {
+	case domain.PokerPhaseDeal:
+		return i18n.T("poker.phaseDeal")
+	case domain.PokerPhaseExchange:
+		return i18n.T("poker.phaseExchange")
+	case domain.PokerPhaseSecondBet:
+		return i18n.T("poker.phaseSecondBet")
+	case domain.PokerPhaseEnd:
+		return i18n.T("poker.phaseEnd")
+	default:
+		return i18n.T("poker.phaseInit")
+	}
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

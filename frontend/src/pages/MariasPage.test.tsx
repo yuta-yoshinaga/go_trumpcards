@@ -78,6 +78,15 @@ describe('MariasPage', () => {
     await waitFor(() => expect(screen.getByTestId('marias-marriage')).toHaveTextContent('♥ K-Q (+20)'));
   });
 
+  it('announces the marriage banner with a spoken suit name (symbol hidden from SR)', async () => {
+    // Default hand: ♥K + ♥Q with trump ♥ → +40. SR reads the suit name, not the glyph.
+    renderWithProviders(<MariasPage />);
+    const banner = await screen.findByTestId('marias-marriage');
+    expect(banner).toHaveAttribute('role', 'status');
+    expect(banner).toHaveAttribute('aria-live', 'polite');
+    expect(banner).toHaveAttribute('aria-label', 'マリッジ可能: ハート K-Q +40');
+  });
+
   it('shows no marriage banner when the hand has no K-Q pair', async () => {
     mockExec.mockResolvedValue(
       makeMariasState({
@@ -126,6 +135,30 @@ describe('MariasPage', () => {
     renderWithProviders(<MariasPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
+  });
+
+  it('shows the Soloist-vs-Defenders total comparison, highlighting the winning Soloist', async () => {
+    // Seat 0 is the Soloist: 55 + 40 = 95. Defenders (seats 1,2): 35 + 30 = 65.
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<MariasPage />);
+    const row = await screen.findByTestId('marias-side-totals');
+    const soloist = screen.getByText('ソリスト: 95点');
+    const defenders = screen.getByText('ディフェンダー合計: 65点');
+    expect(row).toContainElement(soloist);
+    expect(row).toContainElement(defenders);
+    // Soloist outscores the Defenders, so the Soloist side is emphasised.
+    expect(soloist).toHaveClass('text-ds-warning');
+    expect(defenders).not.toHaveClass('text-ds-warning');
+  });
+
+  it('highlights the Defenders when their combined total wins the round', async () => {
+    // Soloist (seat 0): 20 + 0 = 20. Defenders (seats 1,2): 50 + 50 = 100.
+    mockExec.mockResolvedValue(makeMariasState({ phase: 2, roundCardPoints: [20, 50, 50], roundMarriage: [0, 0, 0] }));
+    renderWithProviders(<MariasPage />);
+    const defenders = await screen.findByText('ディフェンダー合計: 100点');
+    const soloist = screen.getByText('ソリスト: 20点');
+    expect(defenders).toHaveClass('text-ds-warning');
+    expect(soloist).not.toHaveClass('text-ds-warning');
   });
 
   it('renders the game end message', async () => {

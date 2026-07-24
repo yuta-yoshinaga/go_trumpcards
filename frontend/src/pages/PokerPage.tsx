@@ -129,13 +129,14 @@ function PokerPageContent() {
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
   const turnStartRef = useRef(0);
 
+  // Sync the raise amount to the current minimum only when that minimum actually
+  // changes (a raise, or a new round). Keying on `state` would re-run on every CPU
+  // action and clobber the amount the player is typing (#2980).
+  const minRaiseValue = state?.minRaise;
   useEffect(() => {
-    if (state?.minRaise && state.minRaise > 0) {
-      setBetAmount(state.minRaise);
-    } else if (state) {
-      setBetAmount(10);
-    }
-  }, [state]);
+    if (minRaiseValue === undefined) return;
+    setBetAmount(minRaiseValue > 0 ? minRaiseValue : 10);
+  }, [minRaiseValue]);
 
   useEffect(() => {
     if (state && state.currentTurn === state.players?.find((p) => p.isHuman)?.id) {
@@ -231,6 +232,21 @@ function PokerPageContent() {
         <>
           {/* Scrollable: CPU players + logs */}
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Lowball hand-rank quick reference (only meaningful in 2-7 lowball). */}
+            {state?.isLowball && (
+              <details className="mb-2" data-testid="pk-lowball-reference">
+                <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                  {t('lowballRank.title')}
+                </summary>
+                <ul className="list-disc list-inside text-ds-text-muted text-xs py-1 space-y-0.5">
+                  <li className="text-ds-text-primary font-semibold">{t('lowballRank.best')}</li>
+                  <li>{t('lowballRank.aceHigh')}</li>
+                  <li>{t('lowballRank.straightFlushCount')}</li>
+                  <li>{t('lowballRank.goal')}</li>
+                </ul>
+              </details>
+            )}
+
             {/* CPU players */}
             {(() => {
               const cpuCards = cpuPlayers.map((p) => (

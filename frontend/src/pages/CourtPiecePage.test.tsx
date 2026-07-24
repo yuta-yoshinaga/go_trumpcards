@@ -39,6 +39,33 @@ const playPhaseState = makeCourtPieceState({
     { id: 3, isHuman: false, team: 1, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
   ],
 });
+// A human play turn where a heart has been led, so the human must follow with a
+// heart. ♥Q and ♥K are legal; ♠A is illegal but must stay clickable.
+const followSuitState = makeCourtPieceState({
+  phase: 1,
+  trumpSuit: 3,
+  currentPlayerIdx: 0,
+  currentTrick: [{ playerIdx: 3, card: { design: 'HEART', value: 7 } }],
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      team: 0,
+      cardCount: 3,
+      cards: [
+        { design: 'HEART', value: 12 },
+        { design: 'HEART', value: 13 },
+        { design: 'SPADE', value: 1 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, team: 1, cardCount: 3, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+    { id: 2, isHuman: false, team: 0, cardCount: 3, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+    { id: 3, isHuman: false, team: 1, cardCount: 3, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+  ],
+});
 const cpuTurnState = makeCourtPieceState({ phase: 1, trumpSuit: 3, currentPlayerIdx: 1 });
 const trickEndState = makeCourtPieceState({ phase: 2, trumpSuit: 3 });
 const roundEndState = makeCourtPieceState({
@@ -122,6 +149,31 @@ describe('CourtPiecePage', () => {
     expect(screen.getByText('コーラー')).toBeInTheDocument();
   });
 
+  it('rings the follow-suit-legal cards during a human play turn', async () => {
+    mockExec.mockResolvedValue(followSuitState);
+    renderWithProviders(<CourtPiecePage />);
+    const legalCard = (await screen.findByAltText('♥ Q')).closest('button');
+    // Legal cards carry the additive success ring.
+    expect(legalCard?.className).toContain('ring-ds-success');
+    // The other heart is also legal.
+    expect((await screen.findByAltText('♥ K')).closest('button')?.className).toContain('ring-ds-success');
+    // The illegal spade gets no success ring.
+    const illegalCard = (await screen.findByAltText('♠ A')).closest('button');
+    expect(illegalCard?.className).not.toContain('ring-ds-success');
+  });
+
+  it('keeps an illegal card clickable (ring-only, no hard block)', async () => {
+    mockExec.mockResolvedValue(followSuitState);
+    renderWithProviders(<CourtPiecePage />);
+    const illegalCard = (await screen.findByAltText('♠ A')).closest('button');
+    // The card must NOT be disabled — the backend still validates the play.
+    expect(illegalCard).not.toHaveAttribute('aria-disabled');
+    expect(illegalCard?.className).not.toContain('cursor-not-allowed');
+    // Clicking it selects the card (does not throw / is not blocked).
+    if (illegalCard) fireEvent.click(illegalCard);
+    await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeEnabled());
+  });
+
   it('does not show the play button on a CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<CourtPiecePage />);
@@ -134,6 +186,58 @@ describe('CourtPiecePage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<CourtPiecePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+  });
+
+  it('shows the live team-trick tally toward the 7-trick target during play', async () => {
+    mockExec.mockResolvedValue(
+      makeCourtPieceState({
+        phase: 1,
+        trumpSuit: 3,
+        currentPlayerIdx: 0,
+        players: [
+          { id: 0, isHuman: true, team: 0, cardCount: 9, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 3 },
+          { id: 1, isHuman: false, team: 1, cardCount: 9, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 1 },
+          { id: 2, isHuman: false, team: 0, cardCount: 9, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 1 },
+          { id: 3, isHuman: false, team: 1, cardCount: 9, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 1 },
+        ],
+      }),
+    );
+    renderWithProviders(<CourtPiecePage />);
+    // Team 0 = seats 0(3) + 2(1) = 4 tricks; team 1 = seats 1(1) + 3(1) = 2 tricks.
+    const teamA = await screen.findByTestId('cp-live-tricks-team-0');
+    expect(teamA).toHaveTextContent('チームA 4/7');
+    expect(screen.getByTestId('cp-live-tricks-team-1')).toHaveTextContent('チームB 2/7');
+    // Neither team has reached the target, so no accent emphasis.
+    expect(teamA.className).not.toContain('text-ds-accent');
+  });
+
+  it('emphasizes a team that has reached the 7-trick target during play', async () => {
+    mockExec.mockResolvedValue(
+      makeCourtPieceState({
+        phase: 1,
+        trumpSuit: 3,
+        currentPlayerIdx: 0,
+        players: [
+          { id: 0, isHuman: true, team: 0, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 4 },
+          { id: 1, isHuman: false, team: 1, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 2 },
+          { id: 2, isHuman: false, team: 0, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 3 },
+          { id: 3, isHuman: false, team: 1, cardCount: 2, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 2 },
+        ],
+      }),
+    );
+    renderWithProviders(<CourtPiecePage />);
+    // Team 0 = 4 + 3 = 7 tricks (target reached); team 1 = 4.
+    const teamA = await screen.findByTestId('cp-live-tricks-team-0');
+    expect(teamA).toHaveTextContent('チームA 7/7');
+    expect(teamA.className).toContain('text-ds-accent');
+    expect(screen.getByTestId('cp-live-tricks-team-1').className).not.toContain('text-ds-accent');
+  });
+
+  it('hides the live team-trick tally once the round ends', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-live-tricks')).not.toBeInTheDocument();
   });
 
   it('renders round end with the next round button and the round result', async () => {

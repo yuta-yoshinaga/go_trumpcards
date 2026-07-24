@@ -49,6 +49,10 @@ type ChinchonGame interface {
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.ChinchonPlayer
+	// GetPlayerDeadwoodValue プレイヤーの最善メルド分割でのデッドウッド点を取得する
+	GetPlayerDeadwoodValue(i int) int
+	// GetKnockThreshold ノック可能なデッドウッド点の上限を取得する
+	GetKnockThreshold() int
 	// GetKnockerIdx ノッカーのインデックスを取得する (-1 = ノックなし)
 	GetKnockerIdx() int
 	// GetKnockerMelds ノッカーのメルドを取得する

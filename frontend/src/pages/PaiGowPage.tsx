@@ -3,6 +3,7 @@ import { paigowApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -32,7 +33,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { PAIGOW_HELP, parsePaigowCommand } from '../utils/cli/commands/paigowCommands';
 import { formatPaigowState } from '../utils/cli/formatters/paigowFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { paiGowFoulCheck } from '../utils/paiGowFoul';
+import { paiGowAutoSplit, paiGowFoulCheck } from '../utils/paiGowFoul';
 
 /** High hand rank display name lookup. */
 const HIGH_HAND_RANK_KEYS: Record<number, string> = {
@@ -116,6 +117,11 @@ function PaiGowPageContent() {
   const isSetHandsPhase = state?.phase === PaiGowPhase.SET_HANDS;
   const isEndPhase = state?.phase === PaiGowPhase.END;
 
+  // Bet is invalid unless it is a positive multiple of 10, at least 10, and
+  // within the player's chip balance. Invalid bets disable submission.
+  const betInvalid =
+    Number.isNaN(betAmount) || betAmount < 10 || betAmount % 10 !== 0 || betAmount > (state?.chips ?? 0);
+
   const foul = useMemo(
     () =>
       isSetHandsPhase && state && selectedIndices.length === 2
@@ -123,6 +129,17 @@ function PaiGowPageContent() {
         : { isFoul: false },
     [isSetHandsPhase, state, selectedIndices],
   );
+
+  // House-way auto-split: the strongest legal low-hand indices, or null when it
+  // cannot be safely computed (e.g. a joker is present).
+  const autoSplit = useMemo(
+    () => (isSetHandsPhase && state ? paiGowAutoSplit(state.playerCards) : null),
+    [isSetHandsPhase, state],
+  );
+
+  const handleAutoSet = useCallback(() => {
+    if (autoSplit) setSelectedIndices([autoSplit[0], autoSplit[1]]);
+  }, [autoSplit]);
 
   const toggleCardSelection = useCallback((index: number) => {
     setSelectedIndices((prev) => {
@@ -139,7 +156,7 @@ function PaiGowPageContent() {
       {
         key: 'b',
         action: () => execApi('bet', betAmount),
-        enabled: isBetPhase,
+        enabled: isBetPhase && !betInvalid,
       },
       {
         key: 's',
@@ -150,9 +167,21 @@ function PaiGowPageContent() {
         },
         enabled: isSetHandsPhase && selectedIndices.length === 2 && !foul.isFoul,
       },
+      { key: 'a', action: handleAutoSet, enabled: isSetHandsPhase && autoSplit !== null },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
     ],
-    [execApi, betAmount, selectedIndices, isBetPhase, isSetHandsPhase, isEndPhase, foul.isFoul],
+    [
+      execApi,
+      betAmount,
+      betInvalid,
+      selectedIndices,
+      isBetPhase,
+      isSetHandsPhase,
+      isEndPhase,
+      foul.isFoul,
+      handleAutoSet,
+      autoSplit,
+    ],
   );
 
   useActionKeyboardNav({
@@ -357,46 +386,61 @@ function PaiGowPageContent() {
             />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="pg-bet-controls">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="paigow-bet-amount" className="text-ds-text-primary text-sm">
-                    {t('label.bet')}
-                  </label>
-                  <input
-                    id="paigow-bet-amount"
-                    type="number"
-                    min={10}
-                    max={state.chips}
-                    step={10}
-                    value={betAmount}
-                    onChange={(e) => setBetAmount(Number(e.target.value))}
-                    className="w-24 px-2 py-1 rounded text-sm"
-                  />
-                </div>
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <ChipBetInput
+                  id="paigow-bet-amount"
+                  label={t('label.bet')}
+                  value={betAmount}
+                  onChange={setBetAmount}
+                  min={10}
+                  max={state.chips}
+                  step={10}
+                  disabled={loading}
+                  showSteppers
+                  invalid={betInvalid}
+                  describedBy={betInvalid ? 'paigow-bet-error' : undefined}
+                />
+                {betInvalid && (
+                  <p id="paigow-bet-error" role="alert" className="text-ds-error text-xs">
+                    {t('betError')}
+                  </p>
+                )}
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || betInvalid}>
                   {t('button.bet')}
                 </button>
               </div>
             )}
             {isSetHandsPhase && (
               <div className="flex flex-col items-center gap-1 pb-2">
-                {foul.isFoul && (
-                  <p data-testid="foul-warning" className="text-ds-error text-sm font-medium">
-                    {t('foulWarning')}
-                  </p>
-                )}
+                {/* Always-rendered assertive live region so both the onset and the
+                    clearing of a foul are announced (an unmounted region can't
+                    announce its own removal). Empty <p> collapses to no height. */}
+                <p data-testid="foul-warning" aria-live="assertive" className="text-ds-error text-sm font-medium">
+                  {foul.isFoul ? t('foulWarning') : ''}
+                </p>
                 <details data-testid="foul-rule-help" className="text-xs text-ds-text-muted max-w-sm text-center">
                   <summary className="cursor-pointer text-ds-info">{t('foulRuleHelpTitle')}</summary>
                   <p className="pt-1">{t('foulRuleHelp')}</p>
                 </details>
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handleSet}
-                  disabled={loading || selectedIndices.length !== 2 || foul.isFoul}
-                  data-testid="set-hands-button"
-                >
-                  {t('button.set')}
-                </button>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={handleAutoSet}
+                    disabled={loading || autoSplit === null}
+                    data-testid="auto-set-button"
+                  >
+                    {t('button.auto')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleSet}
+                    disabled={loading || selectedIndices.length !== 2 || foul.isFoul}
+                    data-testid="set-hands-button"
+                  >
+                    {t('button.set')}
+                  </button>
+                </div>
               </div>
             )}
             {isEndPhase && (

@@ -24,6 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { KempsResponse } from '../types/card';
 import { KempsPhase, KempsSignal } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { KEMPS_HELP, parseKempsCommand } from '../utils/cli/commands/kempsCommands';
 import { formatKempsState } from '../utils/cli/formatters/kempsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -143,12 +144,22 @@ function KempsPageContent() {
     return <GameSkeleton gameKey="kemps" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  // The backend flags four-of-a-kind for the human only; when set, the Kemps
+  // call button is emphasised so the player does not miss the declare chance
+  // while focused on field swaps (#3553). The flag clears the moment a swap
+  // breaks the quad, so the emphasis follows the current hand automatically.
+  const humanHasFour = !!humanPlayer?.hasFourOfAKind;
   const isExchange = state.phase === KempsPhase.EXCHANGE;
   const isDeclare = state.phase === KempsPhase.DECLARE;
   const isRoundEnd = state.phase === KempsPhase.ROUND_END;
   const isGameEnd = state.phase === KempsPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = state.isHumanTurn;
   const canSwap = isExchange && isHumanTurn && !isGameEnd;
+  // Rank of the currently selected hand card; field cards sharing this rank are
+  // highlighted to help the human spot four-of-a-kind swaps (#3554). Null unless a
+  // swap is possible and a hand card is selected, so nothing is highlighted otherwise.
+  const selectedRank =
+    canSwap && selectedHand !== null && humanPlayer ? (humanPlayer.hand[selectedHand]?.value ?? null) : null;
   const humanTeam = humanPlayer ? humanPlayer.team : 0;
   const humanWon = isGameEnd && state.winnerTeam === humanTeam;
 
@@ -243,17 +254,29 @@ function KempsPageContent() {
                 {t('fieldLabel')}
                 {canSwap && selectedHand !== null ? ` — ${t('fieldNotice')}` : ''}
               </div>
+              {/* Describes the swap-pending state for each field button (sr-only). */}
+              <span id="kemps-swap-pending" className="sr-only">
+                {t('swapPending')}
+              </span>
               <div className="flex gap-1 flex-wrap">
                 {state.field.map((c, i) => {
                   const card = <CardImage key={`field-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />;
+                  const rankMatch = selectedRank !== null && c.value === selectedRank;
                   return canSwap && selectedHand !== null ? (
                     <button
                       type="button"
                       key={`field-btn-${c.design}-${c.value}-${i}`}
                       onClick={() => handleFieldClick(i)}
                       disabled={loading}
-                      className="p-0 bg-transparent border-0 cursor-pointer disabled:cursor-not-allowed"
-                      aria-label={t('swapButton')}
+                      className={`p-0 bg-transparent border-0 cursor-pointer disabled:cursor-not-allowed rounded ${rankMatch ? 'ring-2 ring-ds-success' : 'ring-0'}`}
+                      aria-label={
+                        rankMatch
+                          ? t('swapCardRankMatchAria', { card: cardAlt(c) })
+                          : t('swapCardAria', { card: cardAlt(c) })
+                      }
+                      aria-describedby="kemps-swap-pending"
+                      data-testid={`kemps-field-${i}`}
+                      data-rank-match={rankMatch ? 'true' : 'false'}
                     >
                       {card}
                     </button>
@@ -283,6 +306,19 @@ function KempsPageContent() {
                 data-testid="kemps-opponent-signaling"
               >
                 {t('opponentSignaling')}
+              </div>
+            )}
+
+            {/* Four-of-a-kind readiness — announced (and shown during EXCHANGE)
+                so the human notices the quad before the declare window. */}
+            {humanHasFour && !isGameEnd && (
+              <div
+                className="my-2 p-2 rounded bg-ds-success/20 text-ds-success text-sm font-semibold"
+                role="status"
+                aria-live="polite"
+                data-testid="kemps-four-ready"
+              >
+                {t('fourOfAKindReady')}
               </div>
             )}
 
@@ -320,7 +356,8 @@ function KempsPageContent() {
                         disabled={loading}
                         aria-pressed={selected}
                         className={`p-0 bg-transparent border-2 rounded cursor-pointer disabled:cursor-not-allowed ${selected ? 'border-ds-warning' : 'border-transparent'}`}
-                        aria-label={t('selectHandCard')}
+                        aria-label={t('selectHandCardAria', { card: cardAlt(c) })}
+                        data-testid={`kemps-hand-${i}`}
                       >
                         {card}
                       </button>
@@ -368,7 +405,14 @@ function KempsPageContent() {
 
               {isDeclare && !isGameEnd && (
                 <>
-                  <button type="button" className={btnWarning} onClick={() => exec('kemps')} disabled={loading}>
+                  <button
+                    type="button"
+                    className={`${btnWarning}${humanHasFour ? ' ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
+                    onClick={() => exec('kemps')}
+                    disabled={loading}
+                    data-testid="kemps-declare-button"
+                    data-emphasized={humanHasFour ? 'true' : 'false'}
+                  >
                     {t('kempsButton')}
                   </button>
                   {opponentSeats.map(({ p, idx }) => (

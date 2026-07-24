@@ -22,13 +22,19 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BurracoResponse } from '../types/card';
 import { BurracoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import {
+  type BurracoSortMode,
+  loadBurracoSortMode,
+  saveBurracoSortMode,
+  sortedBurracoHand,
+} from '../utils/burracoSort';
 import { cardAlt } from '../utils/cardAlt';
 import { BURRACO_HELP, parseBurracoCommand } from '../utils/cli/commands/burracoCommands';
 import { formatBurracoState } from '../utils/cli/formatters/burracoFormatter';
@@ -42,6 +48,13 @@ const BURRACO_PHASE_KEYS: Readonly<Record<number, string>> = {
   [BurracoPhase.ROUND_END]: 'roundEnd',
   [BurracoPhase.GAME_END]: 'gameEnd',
 };
+
+/** Hand sort options for the Burraco footer. */
+const BURRACO_SORT_MODES: { mode: BurracoSortMode; labelKey: string }[] = [
+  { mode: 'original', labelKey: 'sort.original' },
+  { mode: 'rank', labelKey: 'sort.rank' },
+  { mode: 'suit', labelKey: 'sort.suit' },
+];
 
 /** Burraco tutorial step definitions. */
 const CA_TUTORIAL_STEPS: TutorialStep[] = [
@@ -136,6 +149,15 @@ function BurracoPageContent() {
 
   // Transient feedback when a player grabs the pozzetto (a pivotal Burraco moment)
   // and a one-shot pulse on round-score cells that just changed.
+  // Display-only hand sort: reorders the rendered hand while every click maps
+  // back to the card's original (server-dealt) index, so selection / meld /
+  // discard stay index-correct. Persisted across sessions in localStorage.
+  const [sortMode, setSortMode] = useState<BurracoSortMode>(loadBurracoSortMode);
+  const handleSortMode = useCallback((mode: BurracoSortMode) => {
+    setSortMode(mode);
+    saveBurracoSortMode(mode);
+  }, []);
+
   const [pozzettoBanner, setPozzettoBanner] = useState<string | null>(null);
   const [pulsingScoreIds, setPulsingScoreIds] = useState<Set<number>>(new Set());
   const prevPozzettoRef = useRef<boolean[]>([]);
@@ -300,6 +322,34 @@ function BurracoPageContent() {
                   </div>
                 )}
 
+                {/* Full discard pile viewer: in Burraco the whole pile is taken at once,
+                    so its contents are decision-critical public information. */}
+                <details
+                  className="my-3 rounded bg-black/30 p-2"
+                  data-testid="ca-discard-pile-viewer"
+                  open={isDrawPhase}
+                >
+                  <summary className="cursor-pointer select-none text-sm text-ds-text-muted">
+                    {t('discardPileViewer', { count: state.discardPile.length })}
+                  </summary>
+                  {state.discardPile.length === 0 ? (
+                    <div className="mt-2 text-xs text-ds-text-muted">{t('discardPileEmpty')}</div>
+                  ) : (
+                    <>
+                      <div className="mt-1 text-xs text-ds-text-muted">{t('discardPileOrderHint')}</div>
+                      <div className="mt-2 flex flex-wrap gap-1" data-testid="ca-discard-pile-cards">
+                        {state.discardPile.map((card, di) => (
+                          <AnimatedCard
+                            key={`discard-${card.design}-${card.value}-${di}`}
+                            card={card}
+                            width={cardWidth * 0.6}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </details>
+
                 {/* Player melds */}
                 {state.players.map((p, pi) => {
                   if (p.melds.length === 0 && p.red3s.length === 0) return null;
@@ -416,9 +466,26 @@ function BurracoPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.burraco.footer} px-4 py-2.5`}>
+            {humanPlayer && humanPlayer.cards.length > 0 && (
+              <fieldset className="flex flex-wrap justify-center gap-1.5 mb-2 border-0 p-0 m-0">
+                <legend className="sr-only">{t('sort.label')}</legend>
+                {BURRACO_SORT_MODES.map(({ mode, labelKey }) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => handleSortMode(mode)}
+                    className={sortMode === mode ? `${btnPrimary} min-w-[64px]` : `${btnSecondary} min-w-[64px]`}
+                    aria-pressed={sortMode === mode}
+                    data-testid={`bu-sort-${mode}`}
+                  >
+                    {t(labelKey)}
+                  </button>
+                ))}
+              </fieldset>
+            )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
+                {sortedBurracoHand(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
                   <button
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
@@ -433,6 +500,7 @@ function BurracoPageContent() {
                       ...selectedCardStyle(selectedCardIndices.includes(idx)),
                       boxSizing: 'border-box',
                     }}
+                    data-testid={`bu-hand-card-${idx}`}
                   >
                     <AnimatedCard card={card} width={cardWidth} />
                   </button>

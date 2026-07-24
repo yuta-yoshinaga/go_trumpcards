@@ -36,6 +36,7 @@ import { parseScartoCommand, SCARTO_HELP } from '../utils/cli/commands/scartoCom
 import { formatScartoState } from '../utils/cli/formatters/scartoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { scartoUndiscardableReason } from '../utils/scartoDiscard';
 
 /** Scarto tutorial step definitions. */
 const SCARTO_TUTORIAL_STEPS: TutorialStep[] = [
@@ -85,6 +86,17 @@ const OUTCOME_KEYS = ['outcomeNone', 'outcomeWin', 'outcomeLoss'] as const;
  */
 function isUndiscardable(card: Card): boolean {
   return card?.color === 'purple' || card?.color === 'gold' || (card?.value ?? 0) >= 11;
+}
+
+/** Formats a card-point number with up to one decimal place, dropping a trailing `.0`. */
+function formatPoints(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
+
+/** Formats a signed difference, prefixing a leading `+` for positive values. */
+function formatSigned(n: number): string {
+  const s = formatPoints(n);
+  return n > 0 ? `+${s}` : s;
 }
 
 /** Renders the Scarto (スカルト) game page: a 3-player 78-card Italian tarocchi trick-taker with a dealer scarto (discard) and trump-priority tricks — no bidding, chien, or partnership. */
@@ -154,6 +166,11 @@ function ScartoPageContent() {
   const canScarto = isScartoPhase && state.isHumanScarto;
   const canPlay = isPlayPhase && isHumanTurn;
 
+  // Scarto settles each deal against the mean: dealScore_i = N × (cardPoints_i − average),
+  // so surfacing the table average and each seat's captured card-points explains the ± delta.
+  const totalCardPoints = state.players.reduce((sum, p) => sum + p.cardPoints, 0);
+  const averageCardPoints = state.players.length > 0 ? totalCardPoints / state.players.length : 0;
+
   // During the scarto, restrict selection to buryable pips (no trumps / Excuse / counting cards).
   const discardableIndices =
     canScarto && humanPlayer
@@ -161,6 +178,17 @@ function ScartoPageContent() {
       : undefined;
 
   const handValidIndices = canPlay ? state.playableIndices : canScarto ? discardableIndices : undefined;
+
+  // During the scarto, explain per-card why an un-buriable card cannot be
+  // discarded (trump / Excuse / bout / counting card) via the card tooltip.
+  // Purely additive — it never blocks selection; the backend still rejects
+  // illegal discards.
+  const scartoTitleFor = (idx: number): string | undefined => {
+    const card = humanPlayer?.cards[idx];
+    if (!card) return undefined;
+    const reason = scartoUndiscardableReason(card);
+    return reason ? t(`scartoUndiscardable.${reason}`) : undefined;
+  };
 
   const handleManualReset = () => {
     hideActionLog();
@@ -299,6 +327,19 @@ function ScartoPageContent() {
                         </div>
                       );
                     })}
+                    {/* Average-difference breakdown: each seat's captured points vs. the table mean. */}
+                    <div className="mt-1 pt-1 border-t border-white/10" data-testid="scarto-breakdown">
+                      <div>{t('roundResult.average', { avg: formatPoints(averageCardPoints) })}</div>
+                      {state.players.map((p) => (
+                        <div key={p.id}>
+                          {t('roundResult.earnedLine', {
+                            name: playerName(p.id, p.isHuman),
+                            points: p.cardPoints,
+                            diff: formatSigned(p.cardPoints - averageCardPoints),
+                          })}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -344,6 +385,7 @@ function ScartoPageContent() {
                 dataTutorialPrefix="scarto"
                 validIndices={handValidIndices}
                 restrictedTooltip={canScarto ? t('scartoRestricted') : t('playButton')}
+                cardTitleFor={canScarto ? scartoTitleFor : undefined}
               />
             )}
 

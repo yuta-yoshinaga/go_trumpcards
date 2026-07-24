@@ -12,6 +12,7 @@
   },
   "communityCards": "コミュニティカード",
   "yourHand": "あなたの手札",
+  "discardUpcoming": "フロップベット終了後にカードを2枚捨てます",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "discard": {
     "prompt": "カードを捨ててください。",
@@ -21,7 +22,10 @@
     "confirmNo": "キャンセル",
     "selectedCount": "{{n}}/{{total}} 枚選択済み",
     "keepLabel": "残す札",
-    "previewHand": "暫定役"
+    "previewHand": "暫定役",
+    "candidateHand": "この札も捨てると",
+    "limitReached": "選択できるのは{{count}}枚までです。先に選択を解除してください",
+    "limitDescription": "ディスカードで選択できるのは最大{{count}}枚です"
   },
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",

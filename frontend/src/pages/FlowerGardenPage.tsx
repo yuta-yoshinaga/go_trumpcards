@@ -274,30 +274,31 @@ function FlowerGardenPageContent() {
   const renderReserveCell = (cellIdx: number) => {
     const reserveCard = state.reserve[cellIdx];
     const reserveZone: FlowerGardenMoveZone = { zone: 'reserve', col: cellIdx };
-    if (!reserveCard) {
-      return (
-        <div
-          key={`r-${cellIdx.toString()}`}
-          className="rounded border border-dashed border-white/10"
-          style={{ width: dims.cw, height: dims.ch }}
-        />
-      );
-    }
+    // Number each bouquet slot 0..15 to match formatHintZone's raw reserve col
+    // (and the CUI's [r0]..[r15]), so players can map hint text to a card.
     return (
-      <button
-        key={`r-${cellIdx.toString()}`}
-        type="button"
-        onClick={() => game.handleSelectSource(reserveZone)}
-        disabled={!isPlaying || loading}
-        aria-label={cardAlt(reserveCard)}
-        aria-pressed={isSourceSelected('reserve', cellIdx)}
-        draggable={isPlaying && !loading}
-        onDragStart={dnd.handleDragStart(reserveZone)}
-        onDragEnd={dnd.handleDragEnd}
-        className={`p-0 border-0 bg-transparent rounded cursor-pointer ${focusRingWhite} ${isSourceSelected('reserve', cellIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(reserveZone) ? 'opacity-50' : ''}`}
-      >
-        <AnimatedCard card={reserveCard} width={dims.cw} draggable={false} />
-      </button>
+      <div key={`r-${cellIdx.toString()}`} className="flex flex-col items-center">
+        {reserveCard ? (
+          <button
+            type="button"
+            onClick={() => game.handleSelectSource(reserveZone)}
+            disabled={!isPlaying || loading}
+            aria-label={cardAlt(reserveCard)}
+            aria-pressed={isSourceSelected('reserve', cellIdx)}
+            draggable={isPlaying && !loading}
+            onDragStart={dnd.handleDragStart(reserveZone)}
+            onDragEnd={dnd.handleDragEnd}
+            className={`p-0 border-0 bg-transparent rounded cursor-pointer ${focusRingWhite} ${isSourceSelected('reserve', cellIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(reserveZone) ? 'opacity-50' : ''}`}
+          >
+            <AnimatedCard card={reserveCard} width={dims.cw} draggable={false} />
+          </button>
+        ) : (
+          <div className="rounded border border-dashed border-white/10" style={{ width: dims.cw, height: dims.ch }} />
+        )}
+        <span className="text-xs text-ds-text-muted mt-0.5" aria-hidden="true">
+          #{cellIdx}
+        </span>
+      </div>
     );
   };
 
@@ -333,10 +334,14 @@ function FlowerGardenPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="flex gap-2 sm:gap-3 items-start justify-center mb-3">
-              <div className="flex flex-wrap gap-1 sm:gap-2 items-start" data-tutorial="fg-reserve">
-                <span className="self-center text-game-text-muted text-xs mr-1">{t('reserve')}</span>
-                {state.reserve.map((_, idx) => renderReserveCell(idx))}
+            <div className="flex flex-wrap gap-2 sm:gap-3 items-start justify-center mb-3">
+              <div className="flex flex-col gap-1" data-tutorial="fg-reserve">
+                <span className="text-game-text-muted text-xs">{t('reserve')}</span>
+                {/* 16 bouquet cards laid out as a grid (4 cols on mobile, 8 on sm+) so every
+                    slot stays clearly visible instead of cramming into one wrapping row (#3283). */}
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 sm:gap-2 justify-items-center">
+                  {state.reserve.map((_, idx) => renderReserveCell(idx))}
+                </div>
               </div>
 
               <div className="flex items-start gap-1 sm:gap-2" data-tutorial="fg-foundation">

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { SeahavenTowersMoveZone, seahaventowersApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { AutoCompleteReadyBadge } from '../components/AutoCompleteReadyBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -34,6 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSeahavenTowersCommand, SEAHAVENTOWERS_HELP } from '../utils/cli/commands/seahaventowersCommands';
 import { formatSeahavenTowersState } from '../utils/cli/formatters/seahaventowersFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { freeCellAutoCompleteReady } from '../utils/freeCellAutoComplete';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -195,6 +197,13 @@ function SeahavenTowersPageContent() {
   const isGameClear = state.phase === SeahavenTowersPhase.GAME_CLEAR;
   const isGameOver = state.phase === SeahavenTowersPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+
+  // "Auto-complete ready" readiness: like FreeCell, the server's auto-complete
+  // deterministically clears the board exactly when every tableau column is
+  // strictly rank-descending from bottom to top (the smallest unplayed card is
+  // then always an exposed top card). Seahaven's reserved cells hold single
+  // exposed cards and never block, so the FreeCell check applies unchanged.
+  const autoCompleteReady = freeCellAutoCompleteReady(state.tableau);
 
   // Seahaven Towers supermove limit: with only 2 reserved cells and Kings-only
   // empty columns, max-movable is (1 + emptyReservedCells). Empty tableau columns
@@ -463,8 +472,10 @@ function SeahavenTowersPageContent() {
             {/* Hint display */}
             {hint && (
               <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {hint.fromZone}
-                {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {hint.toZone}
+                {/* Zone identifiers (tableau/reserved/foundation) double as i18n
+                    keys, matching the CUI HintOutput terminology. */}
+                {t('hintAvailable')}: {t(hint.fromZone)}
+                {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {t(hint.toZone)}
                 {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
               </div>
             )}
@@ -536,12 +547,17 @@ function SeahavenTowersPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={`${btnSuccess}${
+                      autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''
+                    }`}
                     onClick={handleAutoComplete}
-                    disabled={loading || isAutoCompleting}
+                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>
+                  <AutoCompleteReadyBadge ready={autoCompleteReady} testId="seahaventowers-autocomplete-ready-badge" />
                   <button
                     type="button"
                     className={btnDanger}

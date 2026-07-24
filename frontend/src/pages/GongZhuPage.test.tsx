@@ -60,6 +60,16 @@ describe('GongZhuPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '公開しない' })).toBeInTheDocument());
   });
 
+  it('names the exposable cards (index + card name) in a role=status hint', async () => {
+    mockExec.mockResolvedValue(exposePhaseState); // exposableIndices [0, 1] → ♠ Q, ♦ J
+    const { container } = renderWithProviders(<GongZhuPage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="gz-expose-area"]')).not.toBeNull());
+    const hint = container.querySelector('[data-tutorial="gz-expose-area"]') as HTMLElement;
+    expect(hint).toHaveAttribute('role', 'status');
+    expect(hint.textContent).toContain('[0] ♠ Q');
+    expect(hint.textContent).toContain('[1] ♦ J');
+  });
+
   it('shows exposed point cards with localized symbols and an aria-label', async () => {
     mockExec.mockResolvedValue(makeGongZhuState({ exposed: { pig: true, sheep: true, ace: true, doubler: true } }));
     renderWithProviders(<GongZhuPage />);
@@ -142,6 +152,67 @@ describe('GongZhuPage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<GongZhuPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！')).toBeInTheDocument());
+  });
+
+  it('shows each player captured point cards summary in the score table', async () => {
+    mockExec.mockResolvedValue(
+      makeGongZhuState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 11,
+            cards: [{ design: 'SPADE', value: 12 }],
+            capturedPointCards: [
+              { design: 'SPADE', value: 12 }, // pig
+              { design: 'HEART', value: 5 },
+              { design: 'HEART', value: 13 },
+            ],
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 1,
+          },
+          {
+            id: 1,
+            isHuman: false,
+            cardCount: 11,
+            cards: [],
+            capturedPointCards: [{ design: 'DIAMOND', value: 11 }], // sheep
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 1,
+          },
+          {
+            id: 2,
+            isHuman: false,
+            cardCount: 12,
+            cards: [],
+            capturedPointCards: [],
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 0,
+          },
+          {
+            id: 3,
+            isHuman: false,
+            cardCount: 12,
+            cards: [],
+            capturedPointCards: [],
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 0,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<GongZhuPage />);
+    const p0 = await screen.findByTestId('gz-captured-0');
+    expect(p0).toHaveTextContent('♠Q');
+    expect(p0).toHaveTextContent('♥×2');
+    expect(p0).toHaveAttribute('aria-label');
+    expect(screen.getByTestId('gz-captured-1')).toHaveTextContent('♦J');
+    // A player with no captured point cards shows the "none" placeholder.
+    expect(screen.getByTestId('gz-captured-2')).toHaveTextContent('なし');
   });
 
   it('does not show play button on CPU turn', async () => {

@@ -83,6 +83,7 @@ const cpuWinState = makeState({
 });
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockReset();
   mockPlaySound.mockReset();
   mockExec.mockResolvedValue(playState);
@@ -117,10 +118,61 @@ describe('CuarentaPage', () => {
     expect(screen.getAllByText(/捕獲 0枚/).length).toBe(4);
   });
 
+  it('sums each team captured-card total from its two players', async () => {
+    // Team A = seats {0,2}: 8 + 5 = 13; Team B = seats {1,3}: 6 + 1 = 7.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ id: 0, team: 0, isHuman: true, capturedCount: 8 }),
+          makePlayer({ id: 1, team: 1, capturedCount: 6 }),
+          makePlayer({ id: 2, team: 0, capturedCount: 5 }),
+          makePlayer({ id: 3, team: 1, capturedCount: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<CuarentaPage />);
+    await waitFor(() => expect(screen.getByTestId('cuarenta-team-captured-0')).toHaveTextContent('獲得 13枚'));
+    expect(screen.getByTestId('cuarenta-team-captured-1')).toHaveTextContent('獲得 7枚');
+  });
+
+  it('highlights a team counter as it approaches the 20-card bonus', async () => {
+    // Team A at 19 (approaching) is emphasized; Team B at 7 is not.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ id: 0, team: 0, isHuman: true, capturedCount: 10 }),
+          makePlayer({ id: 1, team: 1, capturedCount: 4 }),
+          makePlayer({ id: 2, team: 0, capturedCount: 9 }),
+          makePlayer({ id: 3, team: 1, capturedCount: 3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<CuarentaPage />);
+    const teamA = await screen.findByTestId('cuarenta-team-captured-0');
+    expect(teamA).toHaveTextContent('獲得 19枚');
+    expect(teamA.className).toContain('text-ds-accent');
+    const teamB = screen.getByTestId('cuarenta-team-captured-1');
+    expect(teamB.className).not.toContain('text-ds-accent');
+  });
+
+  it('resets team captured totals to zero on a fresh round', async () => {
+    // Default fixture has all capturedCount 0 — both team counters read 0.
+    renderWithProviders(<CuarentaPage />);
+    await waitFor(() => expect(screen.getByTestId('cuarenta-team-captured-0')).toHaveTextContent('獲得 0枚'));
+    expect(screen.getByTestId('cuarenta-team-captured-1')).toHaveTextContent('獲得 0枚');
+  });
+
   it('renders the human hand cards', async () => {
     renderWithProviders(<CuarentaPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
     expect(screen.getByTestId('hand-card-4')).toBeInTheDocument();
+  });
+
+  it('names each hand card in its aria-label', async () => {
+    renderWithProviders(<CuarentaPage />);
+    // hand[0] is ♠5, hand[2] is ♦A.
+    expect(await screen.findByRole('button', { name: '♠ 5 を出す' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ A を出す' })).toBeInTheDocument();
   });
 
   it('plays a hand card on the human turn', async () => {
@@ -129,6 +181,32 @@ describe('CuarentaPage', () => {
     mockExec.mockClear();
     fireEvent.click(cardBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { handIndex: 1 }));
+  });
+
+  it('rings capturable table cards while a hand card is focused, then clears on blur', async () => {
+    // hand[3] is ♣7; table[0] is ♣7 (equal rank → capturable), table[1] is ♥3.
+    renderWithProviders(<CuarentaPage />);
+    const handCard = await screen.findByTestId('hand-card-3');
+    // No preview yet: nothing is ringed.
+    expect(screen.getByTestId('cuarenta-table-card-0')).not.toHaveAttribute('data-capturable');
+
+    fireEvent.focus(handCard);
+    await waitFor(() => expect(screen.getByTestId('cuarenta-table-card-0')).toHaveAttribute('data-capturable', 'true'));
+    expect(screen.getByTestId('cuarenta-table-card-0').className).toContain('ring-ds-success');
+    // The non-matching table card stays un-ringed.
+    expect(screen.getByTestId('cuarenta-table-card-1')).not.toHaveAttribute('data-capturable');
+
+    fireEvent.blur(handCard);
+    await waitFor(() => expect(screen.getByTestId('cuarenta-table-card-0')).not.toHaveAttribute('data-capturable'));
+  });
+
+  it('does not ring any table card when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentTurn: 2 }));
+    renderWithProviders(<CuarentaPage />);
+    const handCard = await screen.findByTestId('hand-card-3');
+    fireEvent.focus(handCard);
+    // Hover preview is suppressed off-turn — no capturable ring appears.
+    expect(screen.getByTestId('cuarenta-table-card-0')).not.toHaveAttribute('data-capturable');
   });
 
   it('shows the empty-table label when the table is empty', async () => {
@@ -167,6 +245,10 @@ describe('CuarentaPage', () => {
     const popped = screen.getAllByTestId('cuarenta-bonus-pop');
     expect(popped.length).toBeGreaterThan(0);
     expect(popped[0].className).toContain('motion-safe:animate-bounce');
+    // ...and the bonus row is announced to assistive tech.
+    const announce = screen.getByTestId('cuarenta-bonus-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
   });
 
   it('chimes once when a fresh human bonus lands, but not on a plain play', async () => {

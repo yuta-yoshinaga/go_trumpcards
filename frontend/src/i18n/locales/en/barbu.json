@@ -48,7 +48,8 @@
     "yourTricks": "Tricks",
     "selectTrump": "Pick a trump suit",
     "you": "You",
-    "cpu": "CPU {{id}}"
+    "cpu": "CPU {{id}}",
+    "lead": "Lead"
   },
   "button": {
     "play": "Play",
@@ -58,12 +59,20 @@
   },
   "settings": {
     "title": "Settings",
-    "cpuDifficulty": "CPU Difficulty"
+    "cpuDifficulty": "CPU Difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
   },
   "result": {
     "win": "Win",
     "lose": "Lose",
     "draw": "Draw"
+  },
+  "history": {
+    "caption": "Score by deal (completed)",
+    "deal": "#",
+    "contract": "Contract"
   },
   "hint": {
     "win": "Trumps contract — try to win this trick.",

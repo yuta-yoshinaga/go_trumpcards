@@ -94,6 +94,36 @@ describe('VideoPokerPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /ドロー/ })).toBeInTheDocument());
   });
 
+  it('draw phase: number key 1 toggles hold on the first card and announces it', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(drawPhaseState);
+    renderWithProviders(<VideoPokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: /ディール/ }));
+    await screen.findByRole('button', { name: /ドロー/ });
+
+    expect(screen.queryByTestId('vp-hold-badge-0')).not.toBeInTheDocument();
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(screen.getByTestId('vp-hold-badge-0')).toBeInTheDocument());
+    expect(screen.getByTestId('vp-hold-announce').textContent).toMatch(/カード1をホールド/);
+
+    // Pressing it again releases the hold.
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(screen.queryByTestId('vp-hold-badge-0')).not.toBeInTheDocument());
+    expect(screen.getByTestId('vp-hold-announce').textContent).toMatch(/カード1のホールドを解除/);
+  });
+
+  it('number keys do not toggle hold outside the draw phase', async () => {
+    // Result phase: held cards come from the server; local keyboard toggles are ignored.
+    mockExec.mockResolvedValue(resultPhaseWin);
+    renderWithProviders(<VideoPokerPage />);
+    await waitFor(() => expect(screen.getByText(/次のゲーム/)).toBeInTheDocument());
+    // Card index 2 is not held in resultPhaseWin.
+    expect(screen.queryByTestId('vp-hold-badge-2')).not.toBeInTheDocument();
+    fireEvent.keyDown(document.body, { key: '3' });
+    expect(screen.queryByTestId('vp-hold-badge-2')).not.toBeInTheDocument();
+    expect(screen.getByTestId('vp-hold-announce').textContent).toBe('');
+  });
+
   it('renders result phase with win message', async () => {
     mockExec.mockResolvedValue(resultPhaseWin);
     renderWithProviders(<VideoPokerPage />);

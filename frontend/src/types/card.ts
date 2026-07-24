@@ -670,6 +670,43 @@ export interface TienLenResponse extends BaseGameResponse {
   config: TienLenConfig;
 }
 
+/** Zheng Shangyou player data. */
+export interface ZhengPlayerData {
+  id: number;
+  isHuman: boolean;
+  isFinished: boolean;
+  rank: number;
+  cardCount: number;
+  cards: Card[];
+}
+
+/** A play or pass action in Zheng Shangyou (null playedCards = pass). */
+export interface ZhengAction {
+  playerIdx: number;
+  playedCards: Card[] | null;
+}
+
+/** Zheng Shangyou game rule configuration. */
+export interface ZhengConfig {
+  cpuDifficulty: number;
+}
+
+/** Input type alias for Zheng Shangyou configuration. */
+export type ZhengConfigInput = ZhengConfig;
+
+/** Full Zheng Shangyou game state returned from the API. */
+export interface ZhengResponse extends BaseGameResponse {
+  players: ZhengPlayerData[];
+  currentTurn: number;
+  tableCards: Card[];
+  tablePlayType: number;
+  lastPlayPlayerIdx: number;
+  gameEndFlag: boolean;
+  cpuActions: ZhengAction[];
+  humanAction: ZhengAction | null;
+  config: ZhengConfig;
+}
+
 /** Sevens player data with pass count and card info. */
 export interface SevensPlayerData {
   id: number;
@@ -952,6 +989,8 @@ export interface HeartsPlayerData {
   roundScore: number;
   cumulativeScore: number;
   trickCount: number;
+  /** Captured penalty cards so far: every heart plus the Q♠ (J♦ excluded). */
+  penaltyCards: Card[];
 }
 
 /** A card played in a Hearts trick. */
@@ -998,6 +1037,8 @@ export interface GongZhuPlayerData {
   isHuman: boolean;
   cardCount: number;
   cards: Card[];
+  /** Point cards this player has captured so far (hearts, ♠Q pig, ♦J sheep, ♣10 doubler). Public info revealed as tricks are taken. */
+  capturedPointCards: Card[];
   roundScore: number;
   cumulativeScore: number;
   trickCount: number;
@@ -1085,6 +1126,8 @@ export interface TressetteResponse extends BaseGameResponse {
   trickNumber: number;
   currentPlayerIdx: number;
   currentTrick: TressetteTrickCard[];
+  lastTrick: TressetteTrickCard[];
+  lastTrickWinner: number;
   leadPlayerIdx: number;
   teamScores: number[];
   teamRoundThirds: number[];
@@ -2137,6 +2180,11 @@ export interface CalabresellaResponse extends BaseGameResponse {
   /** The winning bid (0=none, 1=chiamo, 2=solo). */
   winningBid: number;
   currentTrick: CalabresellaTrickCard[];
+  /**
+   * The four monte (widow) cards, revealed to every player once the Soloist has
+   * taken them (present from the Discard phase onward; omitted during Bidding).
+   */
+  monte?: Card[];
   /** Cumulative match scores per player — [p0, p1, p2]. */
   playerScores: number[];
   /** Thirds of a point captured per player this round — [p0, p1, p2]. */
@@ -4058,6 +4106,35 @@ export interface TeenPattiHint {
   reason: string;
 }
 
+/** One participant's revealed hand in a resolved Side Show. */
+export interface TeenPattiSideShowHand {
+  /** Seat index of this participant. */
+  playerIdx: number;
+  /** Hand ranking name key (see `hand.*` i18n). */
+  handName: string;
+  /** The participant's three cards, revealed for the comparison. */
+  cards: Card[];
+}
+
+/**
+ * The comparison result of the most recent accepted Side Show, present only
+ * when the human was a participant (CPU-vs-CPU comparisons stay hidden).
+ */
+export interface TeenPattiSideShowResult {
+  /** Seat index that requested the Side Show. */
+  requesterIdx: number;
+  /** Seat index that accepted the Side Show. */
+  targetIdx: number;
+  /** Seat index that won the comparison. */
+  winnerIdx: number;
+  /** Seat index that lost and folded. */
+  loserIdx: number;
+  /** The requester's revealed hand. */
+  requester: TeenPattiSideShowHand;
+  /** The target's revealed hand. */
+  target: TeenPattiSideShowHand;
+}
+
 /**
  * Full Teen Patti game state returned from the API.
  *
@@ -4101,6 +4178,8 @@ export interface TeenPattiResponse extends BaseGameResponse {
   /** Whether it is currently the human's turn to act. */
   isHumanTurn: boolean;
   hint?: TeenPattiHint | null;
+  /** Result of the last human-involved Side Show comparison, if any. */
+  lastSideShow?: TeenPattiSideShowResult | null;
   config: TeenPattiConfig;
 }
 
@@ -4439,6 +4518,10 @@ export interface PitchResponse extends BaseGameResponse {
   bidWinnerIdx: number;
   trumpSuit: number;
   currentTrick: PitchTrickCard[];
+  /** Cards of the just-completed trick (empty on the round's first trick). */
+  lastTrick: PitchTrickCard[];
+  /** Winner index of the just-completed trick, or -1 when none. */
+  lastTrickWinner: number;
   gameEndFlag: boolean;
   winnerIdx: number;
   leadPlayerIdx: number;
@@ -5147,11 +5230,13 @@ export interface ThreeThirteenResponse extends BaseGameResponse {
 
 // --- Memory (神経衰弱) ---
 
-/** Memory player data with pair count. */
+/** Memory player data with pair count and captured-pair representative cards. */
 export interface MemoryPlayerData {
   id: number;
   isHuman: boolean;
   pairCount: number;
+  /** One representative card per captured pair, in ascending rank order. */
+  pairs: Card[];
 }
 
 /** A card on the Memory game board. */
@@ -5889,6 +5974,12 @@ export interface BidWhistResponse extends BaseGameResponse {
   highestBid?: BidWhistBidData | null;
   highestBidder: number;
   kittyCount: number;
+  /**
+   * Indices, within the human declarer's hand, of the six cards that came from
+   * the kitty. Populated only while the human is exchanging during
+   * KITTY_EXCHANGE; empty in every other phase and for a CPU declarer.
+   */
+  kittyIndices: number[];
   currentTrick: BidWhistTrickCard[];
   teamScores: [number, number];
   gameEndFlag: boolean;
@@ -6298,6 +6389,8 @@ export interface JassResponse extends BaseGameResponse {
   makerTeam: number;
   makerPlayerIdx: number;
   currentTrick: JassTrickCard[];
+  lastTrick: JassTrickCard[];
+  lastTrickWinner: number;
   teamScores: number[];
   roundPoints: number[];
   roundWeisPoints: number[];
@@ -6584,6 +6677,13 @@ export interface VideoPokerResponse extends BaseGameResponse {
   payout: number;
   handRank: number;
   handName: string;
+  /**
+   * Stable, locale-independent hand key (e.g. `"wildRoyalFlush"`) matching the
+   * `payoutTable.name.*` / `videoPokerPayoutRows` row keys. Empty on a losing
+   * hand, and absent on responses that predate this field. Preferred over
+   * reverse-looking up the English `handName`.
+   */
+  handKey?: string;
   heldIndices: boolean[];
   variantName: string;
 }
@@ -7328,6 +7428,9 @@ export interface BurracoResponse extends BaseGameResponse {
   roundNumber: number;
   currentPlayerIdx: number;
   discardTop: Card | null;
+  /** The full discard pile, oldest (bottom) first. In Burraco the whole pile is
+   * taken at once, so its contents are public information for all players. */
+  discardPile: Card[];
   drawPileCount: number;
   discardPileCount: number;
   pozzettoCount: number;
@@ -7530,6 +7633,8 @@ export interface AcesUpResponse extends BaseGameResponse {
   columns: AcesUpCard[][];
   stockCount: number;
   discardCount: number;
+  /** The most recently removed card (top of the discard pile); absent when nothing has been discarded. */
+  discardTop?: Card | null;
   phase: number;
   moveCount: number;
   canUndo: boolean;
@@ -7769,6 +7874,7 @@ export interface ClockSolitaireResponse extends BaseGameResponse {
   phase: number;
   stepCount: number;
   currentCard?: Card;
+  canUndo?: boolean;
 }
 
 /** Durak player data. */
@@ -9017,6 +9123,8 @@ export interface EscobaPlayerData {
   handCount: number;
   cards: Card[];
   capturedCount: number;
+  /** The captured pile's actual cards. Populated only for the human player; CPUs stay count-only (empty array). */
+  capturedCards: Card[];
   escobaCount: number;
   score: number;
 }
@@ -9114,6 +9222,7 @@ export interface BarbuResponse extends BaseGameResponse {
   config: BarbuConfig;
   roundWinners: number[];
   lastDealDetail: BarbuDealDetail | null;
+  dealHistory: BarbuDealDetail[];
 }
 
 // --- Spite and Malice (スパイト・アンド・マリス) ---
@@ -10545,6 +10654,22 @@ export interface AllFoursConfig {
   pointLimit: number;
 }
 
+/** A High/Low point award: the capturing player and the trump card, or -1 if unawarded. */
+export interface AllFoursBreakdownAward {
+  winnerIdx: number;
+  card: Card | null;
+}
+
+/** The round-end point breakdown for All Fours (High/Low/Jack/Game). */
+export interface AllFoursRoundBreakdown {
+  high: AllFoursBreakdownAward;
+  low: AllFoursBreakdownAward;
+  /** Captor of the trump Jack, or -1 if no trump Jack was in play. */
+  jack: { winnerIdx: number };
+  /** Game point (most card pips): winner (-1 on tie/zero) and per-player pip totals. */
+  game: { winnerIdx: number; points: number[] };
+}
+
 /** Full All Fours game state returned from the API. */
 export interface AllFoursResponse extends BaseGameResponse {
   players: AllFoursPlayerData[];
@@ -10565,6 +10690,8 @@ export interface AllFoursResponse extends BaseGameResponse {
   winnerIdx: number;
   leadPlayerIdx: number;
   validPlayIndices: number[];
+  /** Present only at ROUND_END / GAME_END: the High/Low/Jack/Game point breakdown. */
+  roundBreakdown?: AllFoursRoundBreakdown;
   config: AllFoursConfig;
   hint?: AllFoursHint;
 }

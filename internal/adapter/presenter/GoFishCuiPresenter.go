@@ -46,7 +46,7 @@ func writeGoFishKnownRanks(b *strings.Builder, gf interfaces.GoFishGame) {
 		}
 		parts := make([]string, len(ranks))
 		for k, r := range ranks {
-			s := strconv.Itoa(r)
+			s := cuiRankLabel(r)
 			if human != nil && human.HasRank(r) {
 				s += "*" // you hold this rank too — a strong ask target
 			}
@@ -80,7 +80,7 @@ func (p *GoFishCuiPresenter) Output(gf interfaces.GoFishGame, lastErr error) str
 		if gf.GetLastAskPlayerIdx() >= 0 {
 			askerName := cuiPlayerName(gf.GetPlayer(gf.GetLastAskPlayerIdx()), gf.GetLastAskPlayerIdx())
 			targetName := cuiPlayerName(gf.GetPlayer(gf.GetLastAskTargetIdx()), gf.GetLastAskTargetIdx())
-			rankStr := strconv.Itoa(gf.GetLastAskRank())
+			rankStr := cuiRankLabel(gf.GetLastAskRank())
 			if gf.GetLastAskSuccess() {
 				b.WriteString(i18n.Tf("gofish.askSuccess",
 					"asker", askerName,
@@ -95,7 +95,7 @@ func (p *GoFishCuiPresenter) Output(gf interfaces.GoFishGame, lastErr error) str
 			}
 			if gf.GetLastBookFormed() {
 				b.WriteString(i18n.Tf("gofish.bookFormed",
-					"rank", strconv.Itoa(gf.GetLastBookRank())) + "\n")
+					"rank", cuiRankLabel(gf.GetLastBookRank())) + "\n")
 			}
 		}
 
@@ -103,7 +103,7 @@ func (p *GoFishCuiPresenter) Output(gf interfaces.GoFishGame, lastErr error) str
 		for _, action := range gf.GetCpuActions() {
 			askerName := cuiPlayerName(gf.GetPlayer(action.AskPlayerIdx), action.AskPlayerIdx)
 			targetName := cuiPlayerName(gf.GetPlayer(action.AskTargetIdx), action.AskTargetIdx)
-			rankStr := strconv.Itoa(action.AskRank)
+			rankStr := cuiRankLabel(action.AskRank)
 			if action.Success {
 				b.WriteString(i18n.Tf("gofish.cpuAskSuccess",
 					"asker", askerName,
@@ -119,7 +119,7 @@ func (p *GoFishCuiPresenter) Output(gf interfaces.GoFishGame, lastErr error) str
 			if action.BookFormed {
 				b.WriteString(i18n.Tf("gofish.cpuBookFormed",
 					"asker", askerName,
-					"rank", strconv.Itoa(action.BookRank)) + "\n")
+					"rank", cuiRankLabel(action.BookRank)) + "\n")
 			}
 		}
 

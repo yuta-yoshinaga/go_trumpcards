@@ -206,6 +206,21 @@ function KoenigrufenPageContent() {
 
   const contractLabel = t(CONTRACT_KEYS[state.contract] ?? 'contractNone');
 
+  // Called-King clue derivation. Uses only information the human legitimately holds:
+  // the public called suit and the human's own hand — never the hidden partnerIdx.
+  const calledSuitLabel =
+    state.calledKing >= 1
+      ? `${SUIT_GLYPHS[state.calledKing] ?? ''} ${t(SUIT_KEYS[state.calledKing] ?? '-')}`.trim()
+      : '';
+  // The human knows they are the secret partner when they hold the called King themselves
+  // (the frontend never lets the human declarer call a King they hold, so this is unambiguous).
+  const humanHoldsCalledKing =
+    state.calledKing >= 1 &&
+    !humanPlayer?.isDeclarer &&
+    !!humanPlayer?.cards.some(
+      (c) => isKing(c) && CALL_SUITS.find((s) => s.design === c.design)?.suit === state.calledKing,
+    );
+
   // King suits the human declarer already holds cannot be called.
   const heldKingSuits = new Set<number>(
     humanPlayer
@@ -306,21 +321,29 @@ function KoenigrufenPageContent() {
 
               {/* Right: info sidebar */}
               <div data-tutorial="koenigrufen-info">
-                {/* Called King (public once named) */}
+                {/* Called King (public once named) + secret-partner clues */}
                 {state.calledKing >= 1 && (
                   <div
                     className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
                     data-testid="koenigrufen-called-king"
                   >
-                    {t('calledKing', {
-                      suit: `${SUIT_GLYPHS[state.calledKing] ?? ''} ${t(SUIT_KEYS[state.calledKing] ?? '-')}`.trim(),
-                    })}
-                    {state.partnerRevealed && state.partnerIdx >= 0 && (
+                    {t('calledKing', { suit: calledSuitLabel })}
+                    {state.partnerRevealed && state.partnerIdx >= 0 ? (
                       <span className="ml-2">
                         {t('partnerRevealed', {
                           name: playerName(state.partnerIdx, state.partnerIdx === humanIdx),
                         })}
                       </span>
+                    ) : (
+                      // Partner not yet revealed: organize the clues the human legitimately has.
+                      <div className="mt-1" data-testid="koenigrufen-partner-clue">
+                        <div>{t('partnerClue.unknown', { suit: calledSuitLabel })}</div>
+                        {humanHoldsCalledKing && (
+                          <div className="text-ds-warning font-semibold" data-testid="koenigrufen-partner-clue-you">
+                            {t('partnerClue.youArePartner')}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
@@ -480,18 +503,25 @@ function KoenigrufenPageContent() {
                 </>
               )}
               {canCall &&
-                CALL_SUITS.map((s) => (
-                  <button
-                    key={s.suit}
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => handleCallKing(s.suit)}
-                    disabled={loading || heldKingSuits.has(s.suit)}
-                    aria-label={t(s.labelKey)}
-                  >
-                    {s.glyph} {t(s.labelKey)}
-                  </button>
-                ))}
+                CALL_SUITS.map((s) => {
+                  const held = heldKingSuits.has(s.suit);
+                  const reason = held ? t('callKingHeldReason') : undefined;
+                  // Wrap in a span so the explanatory tooltip still shows on the disabled button.
+                  return (
+                    <span key={s.suit} title={reason} className="inline-flex">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} ${held ? 'line-through' : ''}`}
+                        onClick={() => handleCallKing(s.suit)}
+                        disabled={loading || held}
+                        aria-label={reason ? `${t(s.labelKey)} — ${reason}` : t(s.labelKey)}
+                        data-testid={`call-king-${s.suit}`}
+                      >
+                        {s.glyph} {t(s.labelKey)}
+                      </button>
+                    </span>
+                  );
+                })}
               {canDiscard && (
                 <button
                   type="button"

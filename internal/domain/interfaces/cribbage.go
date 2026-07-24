@@ -13,6 +13,8 @@ type CribbageGame interface {
 	NextRound()
 	// PlayerDiscard プレイヤーがクリブに2枚捨てる
 	PlayerDiscard(indices []int) error
+	// PlayerCut 人間の非ディーラーがデッキをカットしてスターターを公開する
+	PlayerCut() error
 	// PlayerPeg プレイヤーがペギングでカードを出す
 	PlayerPeg(cardIndex int) error
 	// PlayerGo プレイヤーがGoを宣言する

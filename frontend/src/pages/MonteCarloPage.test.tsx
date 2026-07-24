@@ -94,9 +94,17 @@ describe('MonteCarloPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     const cell00 = screen.getByTestId('mc-cell-0-0');
+    expect(cell00).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(cell00);
     expect(cell00.className).toContain('ring-ds-accent');
+    // Selection state is exposed via aria-pressed, and the prompt announces the card.
+    expect(cell00).toHaveAttribute('aria-pressed', 'true');
+    const prompt = screen.getByTestId('mc-prompt');
+    expect(prompt).toHaveAttribute('aria-live', 'polite');
+    // Selecting the first card switches the (aria-live) prompt to the second-pick guidance.
+    expect(prompt.textContent).toMatch(/隣接/);
     fireEvent.click(cell00);
+    expect(cell00).toHaveAttribute('aria-pressed', 'false');
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -224,6 +232,37 @@ describe('MonteCarloPage', () => {
 
     expect(screen.getByTestId('mc-cell-0-0').className).toContain('ring-ds-warning');
     expect(screen.getByTestId('mc-cell-0-1').className).toContain('ring-ds-warning');
+  });
+
+  it('shows the removable-pair counter with the current board pair count', async () => {
+    // boardWithPair has exactly one removable pair (♠7 at (0,0), ♥7 at (0,1)).
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const counter = screen.getByTestId('mc-removable-count');
+    expect(counter.textContent).toContain('1');
+    // With a removable pair available the counter is not in the warning state.
+    expect(counter).not.toHaveAttribute('data-removable-zero');
+    expect(counter.className).toContain('text-ds-text-muted');
+    // Deal button is not urged when a pair is still removable.
+    expect(screen.getByTestId('mc-deal-button').className).not.toContain('ring-ds-warning');
+  });
+
+  it('warns and urges Deal when no removable pairs remain', async () => {
+    // Two adjacent cards of different ranks — no removable pair on the board.
+    const board = emptyBoard();
+    board[0][0] = { card: card('SPADE', 7) };
+    board[0][1] = { card: card('HEART', 9) };
+    mockExec.mockResolvedValue({ ...playingState, board });
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const counter = screen.getByTestId('mc-removable-count');
+    expect(counter.textContent).toContain('0');
+    expect(counter).toHaveAttribute('data-removable-zero', 'true');
+    expect(counter.className).toContain('text-ds-warning');
+    // The Deal button gets the warning ring to prompt the player.
+    expect(screen.getByTestId('mc-deal-button').className).toContain('ring-ds-warning');
   });
 
   it('lifts a matching adjacent pair candidate and shows a transient success toast on removal', async () => {

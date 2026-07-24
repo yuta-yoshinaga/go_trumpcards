@@ -20,6 +20,7 @@ import { useScopaGame } from '../hooks/useScopaGame';
 import { gameTheme } from '../styles/gameTheme';
 import type { ScopaResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import {
   formatScopaState,
   parseScopaCommand,
@@ -27,6 +28,7 @@ import {
   type ScopaCliArgs,
 } from '../utils/cli/commands/scopaCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { scopaScoreBreakdown } from '../utils/scopaScoreBreakdown';
 import { scopaTakeCandidates } from '../utils/scopaTakeCandidates';
 
 const DIFFICULTY_OPTIONS = [
@@ -127,6 +129,9 @@ function ScopaPageContent() {
   }
 
   const isGameEnd = state.gameEndFlag;
+  // A round finished but the game continues — surface the round boundary and the
+  // "next round" control instead of letting the deal-again flow slip by silently.
+  const isRoundEnd = state.phase === 'roundEnd';
   const humanWon = isGameEnd && state.roundWinners.includes(0);
   const takeCandidateIndices =
     handIndex !== null && isHumanTurn
@@ -134,7 +139,22 @@ function ScopaPageContent() {
       : new Set<number>();
   const canTake = isHumanTurn && handIndex !== null && tableIndices.length > 0;
   const canLay = isHumanTurn && handIndex !== null && tableIndices.length === 0;
+  // Announce how many table cards the selected hand card could capture, since the
+  // green candidate rings are purely visual.
+  const takeCandidateAnnounce =
+    handIndex !== null && isHumanTurn
+      ? takeCandidateIndices.size > 0
+        ? t('label.takeCandidateAnnounce', { count: takeCandidateIndices.size })
+        : t('label.noTakeCandidate')
+      : '';
   const phaseName = isGameEnd ? t('phase.end') : t(`phase.${state.phase}`, t('phase.play'));
+  // Round-end score breakdown: only surfaced once the round is scored so the
+  // player can see why each point was awarded (carte/denari/primiera/settebello
+  // + scopa sweeps). The award data comes straight from the presenter's
+  // `lastRoundDetail`; scopa/gained rows read the per-player maps directly.
+  const roundDetail = state.lastRoundDetail;
+  const breakdownRows = roundDetail ? scopaScoreBreakdown(roundDetail) : [];
+  const playerName = (idx: number) => (idx === 0 ? tc('player.you') : tc('player.cpu', { id: idx }));
 
   return (
     <GamePageShell
@@ -183,6 +203,9 @@ function ScopaPageContent() {
 
             {/* Table cards */}
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="sc-table-cards">
+              <div className="sr-only" role="status" aria-live="polite" data-testid="sc-take-candidate-live">
+                {takeCandidateAnnounce}
+              </div>
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>
               <div className="flex justify-center gap-2 min-h-[60px] flex-wrap">
                 {state.tableCards.length === 0 ? (
@@ -196,6 +219,14 @@ function ScopaPageContent() {
                         type="button"
                         onClick={() => isHumanTurn && toggleTable(i)}
                         disabled={!isHumanTurn}
+                        aria-pressed={tableIndices.includes(i)}
+                        aria-label={`${cardAlt(c)}${
+                          tableIndices.includes(i)
+                            ? ` ${t('label.selected')}`
+                            : isCandidate
+                              ? ` ${t('label.takeCandidate')}`
+                              : ''
+                        }`}
                         className={`rounded transition-all ${
                           tableIndices.includes(i)
                             ? 'ring-2 ring-ds-warning -translate-y-1'
@@ -242,6 +273,61 @@ function ScopaPageContent() {
                 ))}
               </div>
             </div>
+
+            {isRoundEnd && (
+              <div
+                role="status"
+                className="text-center text-sm font-medium text-ds-info bg-ds-info/10 border border-ds-info/30 rounded-lg py-2 px-3"
+                data-testid="sc-round-end-banner"
+              >
+                {t('label.roundEnd')}
+              </div>
+            )}
+
+            {isRoundEnd && roundDetail && (
+              <div className="bg-black/25 rounded-lg p-3 text-sm text-ds-text" data-testid="sc-score-breakdown">
+                <div className="text-center font-semibold mb-2">{t('breakdown.title')}</div>
+                <dl className="max-w-xs mx-auto space-y-1">
+                  {breakdownRows.map((row) => (
+                    <div key={row.key} className="flex justify-between gap-3" data-testid={`sc-breakdown-${row.key}`}>
+                      <dt className="text-ds-text-muted">{t(`breakdown.${row.key}`)}</dt>
+                      <dd className={row.winner < 0 ? 'text-ds-text-muted' : 'font-medium'}>
+                        {row.winner < 0
+                          ? t('breakdown.tie')
+                          : t('breakdown.winner', { name: playerName(row.winner), points: row.points })}
+                      </dd>
+                    </div>
+                  ))}
+                  <div className="flex justify-between gap-3" data-testid="sc-breakdown-scopa">
+                    <dt className="text-ds-text-muted">{t('breakdown.scopa')}</dt>
+                    <dd className="font-medium text-right">
+                      {state.players
+                        .map((p) => {
+                          const count = roundDetail.scopas[p.id] ?? 0;
+                          return t('breakdown.scopaCount', { name: playerName(p.id), count, points: count });
+                        })
+                        .join(' / ')}
+                    </dd>
+                  </div>
+                  <div
+                    className="flex justify-between gap-3 border-t border-ds-border/40 pt-1 mt-1"
+                    data-testid="sc-breakdown-gained"
+                  >
+                    <dt className="text-ds-text-muted">{t('breakdown.gained')}</dt>
+                    <dd className="font-semibold text-right">
+                      {state.players
+                        .map((p) =>
+                          t('breakdown.gainedValue', {
+                            name: playerName(p.id),
+                            points: roundDetail.gained[p.id] ?? 0,
+                          }),
+                        )
+                        .join(' / ')}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            )}
 
             <GameMessageBox
               message={state.message}
@@ -306,15 +392,17 @@ function ScopaPageContent() {
               >
                 {t('button.lay')}
               </button>
-              <button
-                type="button"
-                onClick={handleNextRound}
-                disabled={loading || !isGameEnd === false}
-                className="px-4 py-2 rounded-lg bg-ds-info/70 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm hidden"
-                data-testid="next-round-button"
-              >
-                {t('button.nextRound')}
-              </button>
+              {isRoundEnd && (
+                <button
+                  type="button"
+                  onClick={handleNextRound}
+                  disabled={loading}
+                  className="px-4 py-2 rounded-lg bg-ds-info/70 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  data-testid="next-round-button"
+                >
+                  {t('button.nextRound')}
+                </button>
+              )}
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={onReset}

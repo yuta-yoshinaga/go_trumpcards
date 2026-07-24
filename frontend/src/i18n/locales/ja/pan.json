@@ -21,6 +21,8 @@
   "chips": "チップ: {{count}}",
   "melded": "メルド: {{count}}枚",
   "winMeld": "上がりに必要なメルド数: {{count}}枚",
+  "meldProgress": "メルド {{count}}/{{total}}",
+  "meldRemaining": "あと {{count}} 枚",
   "cumulativeScore": "累計: {{score}}",
   "meldsTitle": "場のメルド",
   "noMelds": "まだメルドはありません",
@@ -48,6 +50,12 @@
     "drawFromStock": "山札から引きましょう",
     "meld": "メルドを場に出せます — 選んで出しましょう",
     "discard": "不要なカードを捨てましょう"
+  },
+  "candidates": {
+    "title": "メルド候補",
+    "set": "セット",
+    "run": "ラン",
+    "hint": "候補をタップすると手札が選択されます。黄色い枠のカードはレイオフできます。"
   },
   "tutorial": {
     "drawArea": "山札または捨て札から1枚引いてターンを始めます。",

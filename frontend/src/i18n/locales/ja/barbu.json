@@ -48,7 +48,8 @@
     "yourTricks": "トリック",
     "selectTrump": "切札スートを選んでください",
     "you": "あなた",
-    "cpu": "CPU {{id}}"
+    "cpu": "CPU {{id}}",
+    "lead": "リード"
   },
   "button": {
     "play": "出す",
@@ -58,12 +59,20 @@
   },
   "settings": {
     "title": "設定",
-    "cpuDifficulty": "CPU 難易度"
+    "cpuDifficulty": "CPU 難易度",
+    "easy": "かんたん",
+    "normal": "ふつう",
+    "hard": "むずかしい"
   },
   "result": {
     "win": "勝ち",
     "lose": "負け",
     "draw": "引き分け"
+  },
+  "history": {
+    "caption": "ディール別スコア (完了分)",
+    "deal": "#",
+    "contract": "コントラクト"
   },
   "hint": {
     "win": "トランプ・コントラクトです。このトリックを取りにいきましょう。",

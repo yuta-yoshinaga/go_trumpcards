@@ -24,6 +24,12 @@ func (_m *MockClockSolitaireInteractor) AutoPlay() string {
 	return ret.Get(0).(string)
 }
 
+// Undo モック
+func (_m *MockClockSolitaireInteractor) Undo() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 func (_m *MockClockSolitaireInteractor) ActionLog() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)

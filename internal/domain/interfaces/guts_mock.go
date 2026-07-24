@@ -64,6 +64,12 @@ func (_m *MockGutsGame) GetCarryPot() int {
 	return ret.Get(0).(int)
 }
 
+// GetCarryCount モック
+func (_m *MockGutsGame) GetCarryCount() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetAnte モック
 func (_m *MockGutsGame) GetAnte() int {
 	ret := _m.Called()

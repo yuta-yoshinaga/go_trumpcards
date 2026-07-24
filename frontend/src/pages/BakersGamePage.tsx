@@ -30,6 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, FreeCellResponse } from '../types/card';
 import { FreeCellPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { bakersGameAutoMoveTarget } from '../utils/bakersGameAutoMoveTarget';
 import { cardAlt } from '../utils/cardAlt';
 import { FREECELL_HELP, parseFreecellCommand } from '../utils/cli/commands/freecellCommands';
 import { formatFreecellState } from '../utils/cli/formatters/freecellFormatter';
@@ -108,6 +109,7 @@ function BakersGamePageContent() {
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
+    handleAutoMove,
     isAutoCompleting,
   } = useBakersGameGame();
   const {
@@ -142,6 +144,21 @@ function BakersGamePageContent() {
     isPlaying: !!isPlayingForKbd,
     disabled: loading,
   });
+
+  // Double-click / double-tap shortcut: auto-send an exposed card (a tableau
+  // top card or a free-cell card) to its foundation, falling back to an empty
+  // free cell, when a legal target exists; otherwise do nothing (no error,
+  // selection untouched). Disabled while auto-completing.
+  const handleAutoMoveShortcut = useCallback(
+    (source: FreeCellMoveZone, card: Card) => {
+      if (!state || isAutoCompleting) return;
+      const target = bakersGameAutoMoveTarget(card, state.foundation, state.freeCells);
+      if (!target) return;
+      handleAutoMove(source, target);
+      playSound('cardPlace');
+    },
+    [state, isAutoCompleting, handleAutoMove, playSound],
+  );
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -253,7 +270,14 @@ function BakersGamePageContent() {
                         {card ? (
                           <button
                             type="button"
-                            onClick={() => handleSelectSource(freeCellZone)}
+                            onClick={(e) => {
+                              // The second click of a double-click also fires
+                              // onClick (detail === 2); ignore it so onDoubleClick
+                              // owns the auto-move and selection stays put.
+                              if (e.detail >= 2) return;
+                              handleSelectSource(freeCellZone);
+                            }}
+                            onDoubleClick={() => handleAutoMoveShortcut(freeCellZone, card)}
                             disabled={!isPlaying || loading}
                             aria-label={cardAlt(card)}
                             aria-pressed={isSourceSelected('freecell', undefined, idx)}
@@ -365,7 +389,7 @@ function BakersGamePageContent() {
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                               aria-label={t('emptyTableauColumnAriaLabel', { idx: String(colIdx) })}
                             >
-                              K
+                              {t('emptyTableauColumnLabel')}
                             </button>
                           ) : (
                             col.map((card: Card | null, cardIdx: number) => {
@@ -390,13 +414,24 @@ function BakersGamePageContent() {
                                   {card ? (
                                     <button
                                       type="button"
-                                      onClick={() => {
+                                      onClick={(e) => {
+                                        // The second click of a double-click also
+                                        // fires onClick (detail === 2); ignore it so
+                                        // onDoubleClick owns the auto-move without
+                                        // issuing a stray self-target move.
+                                        if (e.detail >= 2) return;
                                         if (selectedSource) {
                                           handleSelectTarget(tableauColZone);
                                         } else {
                                           handleSelectSource(cardZone);
                                         }
                                       }}
+                                      onDoubleClick={
+                                        // Only the exposed top card of a column can auto-move.
+                                        cardIdx === col.length - 1
+                                          ? () => handleAutoMoveShortcut(cardZone, card)
+                                          : undefined
+                                      }
                                       disabled={!isPlaying || loading}
                                       aria-label={cardAlt(card)}
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
@@ -452,8 +487,10 @@ function BakersGamePageContent() {
             {/* Hint display */}
             {hint && (
               <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {hint.fromZone}
-                {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {hint.toZone}
+                {/* Zone identifiers (tableau/freecell/foundation) double as i18n
+                    keys, so they localize instead of showing raw English. */}
+                {t('hintAvailable')}: {t(hint.fromZone)}
+                {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {t(hint.toZone)}
                 {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
               </div>
             )}

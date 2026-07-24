@@ -188,6 +188,10 @@ function SevensPageContent() {
     humanPlayer != null &&
     (humanPlayer.maxPasses === 0 || humanPlayer.passesUsed < humanPlayer.maxPasses);
 
+  // Passes remaining before a forced dobon; null when passes are unlimited (maxPasses=0).
+  const passesRemaining =
+    humanPlayer != null && humanPlayer.maxPasses > 0 ? humanPlayer.maxPasses - humanPlayer.passesUsed : null;
+
   const settingsGroups: SettingsGroup[] = [
     {
       title: t('config.groupRules'),
@@ -424,6 +428,13 @@ function SevensPageContent() {
                   loading={loading}
                   onPlay={handleCardPlay}
                 />
+                {/* Number-key shortcut hint, shown while the human's card bindings are
+                    active (matches useCardKeyboardNav onDirectPlay above). */}
+                {isHumanTurn && (
+                  <p className="text-center text-game-text-muted text-xs mt-1" data-testid="sevens-key-hints">
+                    {t('keyHints')}
+                  </p>
+                )}
               </div>
             )}
 
@@ -449,12 +460,12 @@ function SevensPageContent() {
               />
               <button
                 type="button"
-                className={`${btnSecondary} min-w-[90px]`}
+                className={`${btnSecondary} min-w-[90px] ${passesRemaining === 1 ? 'text-ds-warning' : ''}`}
                 disabled={loading || !canPass}
                 onClick={() => exec('play', -1)}
                 data-tutorial="sv-play-pass"
               >
-                {tc('button.pass')}
+                {passesRemaining === null ? tc('button.pass') : t('passRemaining', { count: passesRemaining })}
               </button>
               {jokerCardIdx !== null && (
                 <button type="button" className={`${btnSecondary} min-w-[90px]`} onClick={() => setJokerCardIdx(null)}>

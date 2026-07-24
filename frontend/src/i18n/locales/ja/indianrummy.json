@@ -17,6 +17,8 @@
   "round": "ラウンド {{n}}/{{total}}",
   "drawPile": "山札: {{count}}枚",
   "wildJoker": "ワイルドジョーカー",
+  "wildBadge": "WILD",
+  "wildAria": "（ワイルド）",
   "discardTop": "捨て札",
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",
@@ -30,6 +32,14 @@
   "drawDiscardButton": "捨て札から引く",
   "discardButton": "捨てる",
   "declareButton": "宣言",
+  "declarePreview": {
+    "valid": "宣言OK: 有効な宣言です",
+    "title": "このまま宣言すると無効になります",
+    "noPureSequence": "純シーケンス未成立",
+    "unmelded": "未メルド {{count}} 枚（{{points}} 点）",
+    "incomplete": "シーケンスが 2 組以上必要です",
+    "penalty": "このまま宣言すると +{{penalty}} 点"
+  },
   "nextRound": "次のラウンド",
   "drawPhase": "山札または捨て札から1枚引いてください",
   "discardPhase": "1枚捨てるか、13枚が有効なら宣言してください",

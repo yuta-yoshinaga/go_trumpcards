@@ -21,10 +21,13 @@
   "cards": "{{count}} cards",
   "captured": "Captured: {{count}}",
   "basra": "Basra: {{count}}",
+  "basraBadge": "Basra! Table swept",
+  "basraBadgeOwn": "Basra! You swept it",
   "turnYours": "Your turn — pick a hand card, then tap table cards to capture (or none to trail).",
   "turnCpu": "CPU {{id}} is playing…",
   "playButton": "Play",
   "captureButton": "Capture",
+  "captureButtonCount": "Capture {{count}}",
   "trailButton": "Trail",
   "newGame": "New Game",
   "result": {
@@ -45,5 +48,7 @@
     "playButton": "Play the selected card. If you selected table cards, they are captured; otherwise the card trails.",
     "info": "Basra (Bastra) is a 4-player (you + 3 CPU) fishing game on a 52-card deck. You are dealt four cards with four on the table; fresh hands are dealt until the stock is exhausted. Score the most cards, the 7♦, the 10♦, each Ace, and every Basra sweep. Highest total wins.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "tableCandidateAria": "{{card}}, capturable",
+  "tableSelectedAria": "{{card}}, selected"
 }

@@ -40,6 +40,7 @@
     "exact": "(ぴったり)"
   },
   "currentTrick": "現在のトリック",
+  "trickWinnerBadge": "勝ち",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
   "scoresBid": "ビッド",
@@ -90,5 +91,6 @@
     "followSuit": "リードされたスートに従ってプレイ推奨",
     "trumpWithCard": "切り札を使うチャンス",
     "discardLowest": "最も低いカードを捨てることを推奨"
-  }
+  },
+  "restrictedBidAria": "{{n}} をビッド（ディーラー制約により選択できません）"
 }

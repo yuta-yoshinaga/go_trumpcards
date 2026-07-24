@@ -47,6 +47,18 @@ export function useFreeCellGame() {
     [selectedSource, base],
   );
 
+  // Double-click / double-tap shortcut: dispatch a pre-computed foundation
+  // move for the given source without requiring the two-step target click, and
+  // clear any pending selection so it stays in lockstep.
+  const handleAutoFoundation = useCallback(
+    (source: FreeCellMoveZone, target: FreeCellMoveZone) => {
+      base.setHint(null);
+      void base.apiCall('move', source, target);
+      setSelectedSource(null);
+    },
+    [base],
+  );
+
   return {
     state: base.state,
     loading: base.loading,
@@ -63,6 +75,7 @@ export function useFreeCellGame() {
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
+    handleAutoFoundation,
     isAutoCompleting: base.isAutoCompleting,
     retry: base.retry,
   };

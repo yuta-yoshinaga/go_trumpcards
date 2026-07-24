@@ -22,6 +22,39 @@ func prsiPlayerStr(player *domain.PrsiPlayer, i int) string {
 	return b.String()
 }
 
+// prsiIsLegalPlay reports whether card may be played on top given the discard
+// top and pending 7-penalty. Mirrors Prsi.isValidPlay so the CUI can flag
+// playable cards without a domain accessor: during a 7-penalty only a 7 stacks;
+// otherwise the card must match the top's suit or rank (any card on an empty pile).
+func prsiIsLegalPlay(card, top *domain.Card, penalty int) bool {
+	if card == nil {
+		return false
+	}
+	if penalty > 0 {
+		return card.GetValue() == domain.PrsiSevenValue
+	}
+	if top == nil {
+		return true
+	}
+	return card.GetDesign() == top.GetDesign() || card.GetValue() == top.GetValue()
+}
+
+// prsiLegalCardsLine returns the localized "playable cards" line for the human's
+// hand, or the draw guidance when no card is legal (the human must draw).
+func prsiLegalCardsLine(player *domain.PrsiPlayer, top *domain.Card, penalty int) string {
+	var legal []string
+	for i := 0; i < player.GetCardsSize(); i++ {
+		card := player.GetCard(i)
+		if prsiIsLegalPlay(card, top, penalty) {
+			legal = append(legal, "["+strconv.Itoa(i)+"]"+cuiCardStr(card))
+		}
+	}
+	if len(legal) == 0 {
+		return color.Yellow(i18n.T("prsi.noLegalPlay")) + "\n"
+	}
+	return color.Yellow(i18n.Tf("prsi.legalPlays", "cards", strings.Join(legal, ", "))) + "\n"
+}
+
 // PrsiCuiPresenter renders the Prší CUI view.
 type PrsiCuiPresenter struct{}
 
@@ -60,6 +93,11 @@ func (p *PrsiCuiPresenter) Output(g interfaces.PrsiGame, lastErr error) string {
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("prsi.promptCurrentPlayer",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			// On the human's turn, spell out which hand indices are legal (or that
+			// they must draw) so they need not re-derive the match rule each turn.
+			if human := g.GetPlayer(currentIdx); human != nil && human.GetIsHuman() {
+				b.WriteString(prsiLegalCardsLine(human, g.GetDiscardTop(), g.GetPenaltyDrawCount()))
+			}
 			b.WriteString(i18n.T("prsi.promptPlayHelp") + "\n")
 			b.WriteString(i18n.T("prsi.promptDrawHelp") + "\n")
 		}

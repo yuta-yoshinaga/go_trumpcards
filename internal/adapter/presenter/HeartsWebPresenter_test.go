@@ -112,6 +112,41 @@ func TestHeartsWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 1, resObj.Players[1].TrickCount)
 	})
 
+	t.Run("penalty cards filtered and sorted", func(t *testing.T) {
+		m, players := setupHeartsWebMockWithPlayers()
+		// Player 1 captured two tricks containing hearts, the Q♠, plus
+		// non-penalty cards (a low spade, a club) and an omnibus J♦ which
+		// must NOT be counted as a penalty card.
+		players[1].AddTrick([]*domain.Card{
+			domain.NewCard(domain.CardDesignHeart, 10, false),
+			domain.NewCard(domain.CardDesignClover, 4, false),
+			domain.NewCard(domain.CardDesignSpade, 12, false), // Q♠
+			domain.NewCard(domain.CardDesignSpade, 3, false),  // low spade (not penalty)
+		})
+		players[1].AddTrick([]*domain.Card{
+			domain.NewCard(domain.CardDesignHeart, 2, false),
+			domain.NewCard(domain.CardDesignDiamond, 11, false), // J♦ (omnibus bonus, not penalty)
+		})
+
+		result := p.Output(m, nil)
+		var resObj controller.HeartsWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		// Player 0 has no tricks: empty (never nil) slice.
+		assert.NotNil(t, resObj.Players[0].PenaltyCards)
+		assert.Len(t, resObj.Players[0].PenaltyCards, 0)
+
+		// Player 1: two hearts (2, 10) sorted ascending, then Q♠.
+		pen := resObj.Players[1].PenaltyCards
+		assert.Len(t, pen, 3)
+		assert.Equal(t, "HEART", pen[0].Design)
+		assert.Equal(t, 2, pen[0].Value)
+		assert.Equal(t, "HEART", pen[1].Design)
+		assert.Equal(t, 10, pen[1].Value)
+		assert.Equal(t, "SPADE", pen[2].Design)
+		assert.Equal(t, 12, pen[2].Value)
+	})
+
 	t.Run("current trick populated", func(t *testing.T) {
 		m, _ := setupHeartsWebMockWithPlayers()
 		m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetCurrentTrick")

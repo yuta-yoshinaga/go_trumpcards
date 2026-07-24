@@ -25,6 +25,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
+import i18n from '../i18n';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -32,9 +33,22 @@ import type { CruelResponse } from '../types/card';
 import { CruelPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { cruelHelp, parseCruelCommand } from '../utils/cli/commands/cruelCommands';
+import { formatCruelState } from '../utils/cli/formatters/cruelFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+/**
+ * Maps a card design to its 0-based foundation index, matching the foundation
+ * row order (`♠`=0, `♣`=1, `♥`=2, `♦`=3) and mirroring the backend's suit layout.
+ * Used to highlight only the foundation pile whose suit matches the moving card.
+ */
+const DESIGN_TO_FOUNDATION_INDEX: Record<string, number> = {
+  SPADE: 0,
+  CLOVER: 1,
+  HEART: 2,
+  DIAMOND: 3,
+};
 const noop = () => {};
 
 /** Cruel tutorial step definitions. */
@@ -70,82 +84,6 @@ const CRUEL_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
-
-/** CLI help text for Cruel. */
-const CRUEL_HELP = [
-  'm <from> <to>  Move top card between tableau columns',
-  'm <from> f     Move tableau top card to foundation',
-  's              Shift (rebuild tableau)',
-  'g              Give up',
-  'h              Hint',
-  'ac             Auto-complete',
-  'u              Undo',
-  'r              Reset',
-];
-
-/** Parse a Cruel CLI command into API call arguments. */
-function parseCruelCommand(input: string): { args: Parameters<typeof cruelApi.exec> } | { error: string } {
-  const parts = input.trim().split(/\s+/);
-  const cmd = parts[0]?.toLowerCase();
-  switch (cmd) {
-    case 'r':
-    case 'reset':
-      return { args: ['reset'] };
-    case 's':
-    case 'shift':
-      return { args: ['shift'] };
-    case 'g':
-    case 'giveup':
-      return { args: ['giveup'] };
-    case 'h':
-    case 'hint':
-      return { args: ['hint'] };
-    case 'ac':
-    case 'autocomplete':
-      return { args: ['autocomplete'] };
-    case 'u':
-    case 'undo':
-      return { args: ['undo'] };
-    case 'm':
-    case 'move': {
-      if (parts.length === 3) {
-        const from = Number.parseInt(parts[1], 10);
-        if (Number.isNaN(from)) return { error: 'Invalid source column' };
-        if (parts[2] === 'f') {
-          return { args: ['move', { zone: 'tableau', col: from }, { zone: 'foundation' }] };
-        }
-        const to = Number.parseInt(parts[2], 10);
-        if (Number.isNaN(to)) return { error: 'Invalid destination' };
-        return { args: ['move', { zone: 'tableau', col: from }, { zone: 'tableau', col: to }] };
-      }
-      return { error: 'Usage: m <fromCol> <toCol|f>' };
-    }
-    default:
-      return { error: `Unknown command: ${cmd}` };
-  }
-}
-
-/** Format Cruel state for CLI display. */
-function formatCruelState(state: CruelResponse): string {
-  const lines: string[] = [];
-  lines.push('Foundation:');
-  for (let i = 0; i < state.foundation.length; i++) {
-    const pile = state.foundation[i];
-    const top = pile.length > 0 ? `${pile[pile.length - 1].design}-${pile[pile.length - 1].value}` : 'empty';
-    lines.push(`  ${FOUNDATION_SUITS[i]}: ${top} (${pile.length})`);
-  }
-  lines.push('');
-  lines.push('Tableau:');
-  for (let col = 0; col < state.tableau.length; col++) {
-    const cards = state.tableau[col]
-      .map((tc, i) => (tc.faceUp && tc.card ? `[${i}]${tc.card.design}-${tc.card.value}` : `[${i}]??`))
-      .join(' ');
-    lines.push(`  ${col}: ${cards || '(empty)'}`);
-  }
-  lines.push('');
-  lines.push(`Moves: ${state.moveCount}  Phase: ${state.phase}`);
-  return lines.join('\n');
-}
 
 /** Renders the Cruel solitaire page. */
 export const CruelPage = withTutorial(CruelPageContent, 'cruel', CRUEL_TUTORIAL_STEPS);
@@ -190,14 +128,17 @@ function CruelPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('cruel');
+  // cruelHelp() reads i18n internally, so depend on i18n.language to
+  // re-localize the CLI help after a runtime language switch.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: i18n.language drives help re-localization
   const cruelCliConfig: CliGameConfig<CruelResponse, Parameters<typeof cruelApi.exec>> = useMemo(
     () => ({
       gameName: 'cruel',
       parseCommand: parseCruelCommand,
       formatResponse: formatCruelState,
-      helpText: CRUEL_HELP,
+      helpText: cruelHelp(),
     }),
-    [],
+    [i18n.language],
   );
   const { handleCommand } = useCliGame(apiExec, cruelCliConfig, state, {
     addInput,
@@ -343,6 +284,16 @@ function CruelPageContent() {
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
 
+  // Suit of the card currently being moved (a dragged card takes priority over a
+  // click-selected one). Cruel only ever moves a column's top card, so the moving
+  // card is the last card of the source tableau column. Deriving its foundation
+  // index lets us light only the matching pile instead of all four at once (#3040).
+  const movingCol = dnd.dragSource?.col ?? selectedSource?.col;
+  const movingColCards = movingCol !== undefined ? state.tableau[movingCol] : undefined;
+  const movingCard =
+    movingColCards && movingColCards.length > 0 ? movingColCards[movingColCards.length - 1].card : null;
+  const activeFoundationIdx = movingCard ? DESIGN_TO_FOUNDATION_INDEX[movingCard.design] : undefined;
+
   return (
     <GamePageShell
       title={tc('nav.cruel')}
@@ -395,19 +346,25 @@ function CruelPageContent() {
               {state.foundation.map((pile, i) => {
                 const topCard = pile.length > 0 ? pile[pile.length - 1] : null;
                 const isTarget = selectedSource !== null;
+                // Only the pile whose suit matches the card being moved (dragged or
+                // click-selected) is highlighted, so the player sees where it lands (#3040).
+                const suitMatch = activeFoundationIdx === i;
+                const showSuitTarget = suitMatch && (dnd.isDragging || isTarget);
                 return (
                   <DropZone
                     key={i}
                     onDrop={dnd.handleDrop({ zone: 'foundation' })}
                     onDragOver={dnd.handleDragOver({ zone: 'foundation' })}
                     onDragLeave={dnd.handleDragLeave}
-                    isDropTarget={dnd.isDropTarget({ zone: 'foundation' })}
+                    isDropTarget={dnd.isDropTarget({ zone: 'foundation' }) && suitMatch}
                   >
                     <button
                       type="button"
+                      data-testid={`cruel-foundation-${i}`}
+                      data-suit-target={showSuitTarget ? 'true' : undefined}
                       className={`${focusRingWhite} rounded-lg transition-colors ${
-                        isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
-                      }`}
+                        showSuitTarget ? 'ring-2 ring-ds-info' : ''
+                      } ${isTarget && suitMatch ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''}`}
                       onClick={() => isTarget && handleSelectTarget('foundation')}
                       disabled={!isPlaying || !isTarget}
                       aria-label={

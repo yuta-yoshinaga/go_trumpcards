@@ -139,17 +139,24 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 
 		b.WriteString("----------\n")
 
-		// Board state
+		// Board state: render each suit's 1..13 positions individually (from the
+		// placed bitmask) so joker substitutions and skip placements show
+		// exactly which cards are down, unlike the old min~max range.
 		b.WriteString(i18n.T("sevens.boardLabel") + "\n")
 		suits := []int{domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond}
-		suitNames := []string{"SPADE", "CLOVER", "HEART", "DIAMOND"}
-		mins := s.GetTableMinVals()
-		maxs := s.GetTableMaxVals()
-		for i, suit := range suits {
-			b.WriteString(i18n.Tf("sevens.boardSuitRange",
-				"suit", suitNames[i],
-				"min", strconv.Itoa(mins[suit]),
-				"max", strconv.Itoa(maxs[suit])) + "\n")
+		placed := s.GetTablePlaced()
+		for _, suit := range suits {
+			cells := make([]string, 13)
+			for v := 1; v <= 13; v++ {
+				if placed[suit]&(1<<uint(v)) != 0 {
+					cells[v-1] = cuiRankLabel(v)
+				} else {
+					cells[v-1] = "_"
+				}
+			}
+			b.WriteString(i18n.Tf("sevens.boardSuitLine",
+				"suit", cuiSuitName(suit),
+				"cells", strings.Join(cells, " ")) + "\n")
 		}
 
 		// Human's previous action

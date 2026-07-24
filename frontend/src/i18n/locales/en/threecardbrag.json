@@ -43,10 +43,18 @@
   "betButton": "Bet ({{amount}})",
   "raiseButton": "Raise ({{amount}})",
   "raisePrompt": "Raise to:",
+  "raiseDecrease": "Decrease raise amount",
+  "raiseIncrease": "Increase raise amount",
+  "raiseRange": "Range: {{min}}-{{max}}",
+  "raiseUnavailable": "Not enough chips to raise",
   "foldButton": "Fold",
   "showButton": "Show",
   "nextRound": "Next Deal",
   "betNotice": "Your turn — choose See, Bet, Raise or Fold.",
+  "costNotice": {
+    "blind": "Blind: your bet costs the stake ({{cost}} chips). Seeing your hand doubles future bets.",
+    "seen": "Seen: your bets cost double the stake — a call now costs {{cost}} chips."
+  },
   "roundResult": {
     "title": "Deal Result",
     "winner": "{{name}} wins the pot of {{pot}}."

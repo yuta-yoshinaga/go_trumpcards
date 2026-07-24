@@ -13,7 +13,8 @@
     "cpu": "CPU {{id}}",
     "faceDown": "Face Down",
     "finalTurn": "Final Turn",
-    "columnScore": "{{score}} pt"
+    "columnScore": "{{score}} pt",
+    "columnScoreUncertain": "{{score}}+? pt"
   },
   "button": {
     "flipInitial": "Flip",
@@ -68,5 +69,8 @@
     "discardHigh": "Drawn card is high, discard it",
     "columnMatch": "Column match opportunity!",
     "flipCard": "Flip a face-down card"
-  }
+  },
+  "gridSlotFaceDownAria": "Position {{pos}} (face down)",
+  "cliUsagePos": "Usage: {{cmd}} <pos>",
+  "cliUnknown": "Unknown: {{cmd}}"
 }

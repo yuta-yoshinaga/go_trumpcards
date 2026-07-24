@@ -14,6 +14,66 @@ type VideoPokerVariantConfig struct {
 	GetResult func(hand []*Card, betAmount int) (rank int, multiplier int, handName string)
 }
 
+// --- 配当表（表示用の単一情報源） ---
+
+// VideoPokerPayoutRow は配当表の 1 行（表示用）を表す。
+// Multiplier は 1 コインあたりの配当倍率で、各バリアントの GetResult が返す値と一致する。
+type VideoPokerPayoutRow struct {
+	// HandKey は i18n ハンド名キー（"videopoker." 名前空間の接尾辞）
+	HandKey string
+	// Multiplier は 1 コインあたりの配当倍率
+	Multiplier int
+	// RoyalJackpot が true の行は最大ベット時に 1 コインあたり 800（合計 4000）を支払う
+	RoyalJackpot bool
+}
+
+// VideoPokerPaytable は指定バリアントの配当表を高い役から順に返す。倍率は本ファイル内の
+// 各 GetResult 実装と同じ単一情報源であり、Web 版 frontend/src/utils/videoPokerPayout.ts と一致する。
+// 未知のバリアントは Jacks or Better（videopoker）の表を返す。
+func VideoPokerPaytable(variant string) []VideoPokerPayoutRow {
+	switch variant {
+	case "jokerpoker":
+		return []VideoPokerPayoutRow{
+			{HandKey: "ptNaturalRoyalFlush", Multiplier: 250, RoyalJackpot: true},
+			{HandKey: "ptFiveOfAKind", Multiplier: 200},
+			{HandKey: "ptWildRoyalFlush", Multiplier: 100},
+			{HandKey: "ptStraightFlush", Multiplier: 50},
+			{HandKey: "ptFourOfAKind", Multiplier: 20},
+			{HandKey: "ptFullHouse", Multiplier: 7},
+			{HandKey: "ptFlush", Multiplier: 5},
+			{HandKey: "ptStraight", Multiplier: 3},
+			{HandKey: "ptThreeOfAKind", Multiplier: 2},
+			{HandKey: "ptTwoPair", Multiplier: 1},
+			{HandKey: "ptKingsOrBetter", Multiplier: 1},
+		}
+	case "deuceswild":
+		return []VideoPokerPayoutRow{
+			{HandKey: "ptNaturalRoyalFlush", Multiplier: 250, RoyalJackpot: true},
+			{HandKey: "ptFourDeuces", Multiplier: 200},
+			{HandKey: "ptWildRoyalFlush", Multiplier: 25},
+			{HandKey: "ptFiveOfAKind", Multiplier: 15},
+			{HandKey: "ptStraightFlush", Multiplier: 9},
+			{HandKey: "ptFourOfAKind", Multiplier: 5},
+			{HandKey: "ptFullHouse", Multiplier: 3},
+			{HandKey: "ptFlush", Multiplier: 2},
+			{HandKey: "ptStraight", Multiplier: 2},
+			{HandKey: "ptThreeOfAKind", Multiplier: 1},
+		}
+	default:
+		return []VideoPokerPayoutRow{
+			{HandKey: "ptRoyalFlush", Multiplier: 250, RoyalJackpot: true},
+			{HandKey: "ptStraightFlush", Multiplier: 50},
+			{HandKey: "ptFourOfAKind", Multiplier: 25},
+			{HandKey: "ptFullHouse", Multiplier: 9},
+			{HandKey: "ptFlush", Multiplier: 6},
+			{HandKey: "ptStraight", Multiplier: 4},
+			{HandKey: "ptThreeOfAKind", Multiplier: 3},
+			{HandKey: "ptTwoPair", Multiplier: 2},
+			{HandKey: "ptJacksOrBetter", Multiplier: 1},
+		}
+	}
+}
+
 // --- Jacks or Better ---
 
 // jacksOrBetterPayouts Jacks or Betterのペイアウト倍率テーブル

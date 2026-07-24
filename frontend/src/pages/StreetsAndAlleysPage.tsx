@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
@@ -220,6 +221,12 @@ function StreetsAndAlleysPageContent() {
                   cardIndex: cardIdx,
                 };
                 const isTop = cardIdx === col.length - 1;
+                const isSelfSource = isSourceSelected('tableau', colIdx, cardIdx);
+                // When a source is picked, each column's top card is a drop
+                // target. Give it a subtle ring so keyboard/Tab users can see
+                // which cards are now selectable as a destination (the disabled
+                // state alone was invisible). Excludes the picked source itself.
+                const isTargetCandidate = !!selectedSource && isTop && !isSelfSource;
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -238,11 +245,12 @@ function StreetsAndAlleysPageContent() {
                         }}
                         disabled={!isPlaying || loading || (!isTop && !selectedSource)}
                         aria-label={cardAlt(tc.card)}
-                        aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
+                        aria-pressed={isSelfSource}
+                        data-target-candidate={isTargetCandidate || undefined}
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(cardZone)}
                         onDragEnd={dnd.handleDragEnd}
-                        className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                        className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSelfSource ? 'ring-2 ring-ds-warning' : ''} ${isTargetCandidate ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                       >
                         <AnimatedCard
                           card={tc.card}
@@ -344,6 +352,13 @@ function StreetsAndAlleysPageContent() {
                           </button>
                         )}
                       </DropZone>
+                      <div
+                        data-testid={`sa-foundation-progress-${idx.toString()}`}
+                        className={`text-xs mt-1 tabular-nums ${pile.length === 13 ? 'text-ds-success' : 'text-game-text-muted'}`}
+                      >
+                        {pile.length === 13 && <span aria-hidden="true">✓ </span>}
+                        {t('foundationProgress', { count: pile.length })}
+                      </div>
                     </div>
                   );
                 })}
@@ -416,8 +431,10 @@ function StreetsAndAlleysPageContent() {
                     className={btnPrimary}
                     onClick={game.handleUndo}
                     disabled={loading || isAutoCompleting || !state.canUndo}
+                    aria-keyshortcuts="z"
                   >
                     {t('undo')}
+                    <KbdBadge label={t('kbd.undo')} />
                   </button>
                   {state.isStalemate && (
                     <StalemateEscapeButton
@@ -431,8 +448,10 @@ function StreetsAndAlleysPageContent() {
                     className={btnSuccess}
                     onClick={game.handleHint}
                     disabled={loading || isAutoCompleting}
+                    aria-keyshortcuts="h"
                   >
                     {t('hint')}
+                    <KbdBadge label={t('kbd.hint')} />
                   </button>
                   <button
                     type="button"
@@ -441,16 +460,20 @@ function StreetsAndAlleysPageContent() {
                     disabled={loading || isAutoCompleting || !autoCompleteReady}
                     data-testid="autocomplete-button"
                     title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+                    aria-keyshortcuts="a"
                   >
                     {t('autoComplete')}
+                    <KbdBadge label={t('kbd.autoComplete')} />
                   </button>
                   <button
                     type="button"
                     className={btnDanger}
                     onClick={confirmGiveUpAction}
                     disabled={loading || isAutoCompleting}
+                    aria-keyshortcuts="g"
                   >
                     {t('giveup')}
+                    <KbdBadge label={t('kbd.giveUp')} />
                   </button>
                 </div>
               )}

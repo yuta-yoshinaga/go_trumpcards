@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { prsiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -11,6 +11,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -91,6 +92,32 @@ function PrsiPageContent() {
   } = useGameHint('prsi', state);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
+
+  // Play a distinct buzz the moment an illegal move / network error surfaces,
+  // so the failure is audible (respects the global mute via SoundProvider).
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current) {
+      playSound('errorBuzz');
+    }
+    prevErrorRef.current = error;
+  }, [error, playSound]);
+
+  // Card-operation SFX: place a card on play, shuffle on draw. Fired on the
+  // human's own action only (the play/draw controls render solely on the
+  // human turn), mirroring SpiteAndMalicePage's fire-and-forget approach.
+  const handlePlayWithSound = useCallback(() => {
+    if (selectedCardIndices.length === 1) {
+      playSound('cardPlace');
+    }
+    handlePlay();
+  }, [handlePlay, playSound, selectedCardIndices]);
+
+  const handleDrawWithSound = useCallback(() => {
+    playSound('shuffle');
+    handleDraw();
+  }, [handleDraw, playSound]);
+
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('prsi');
   const cliConfig: CliGameConfig<PrsiResponse, Parameters<typeof prsiApi.exec>> = useMemo(
@@ -109,8 +136,8 @@ function PrsiPageContent() {
   const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
 
   const confirmAction = useCallback(() => {
-    handlePlay();
-  }, [handlePlay]);
+    handlePlayWithSound();
+  }, [handlePlayWithSound]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -196,18 +223,50 @@ function PrsiPageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
               <div>
-                {/* Discard pile top */}
-                {state.discardTop && (
-                  <div
-                    className="my-3 p-3 rounded bg-black/40 flex items-center gap-3"
-                    data-tutorial="prsi-discard-pile"
-                  >
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
-                    <div className="text-ds-text-muted text-sm">
-                      <div>{t('discardTop')}</div>
+                {/* Discard pile top + clickable stock pile */}
+                <div className="my-3 flex items-start gap-4 flex-wrap">
+                  {state.discardTop && (
+                    <div className="p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="prsi-discard-pile">
+                      <AnimatedCard card={state.discardTop} width={cardWidth} />
+                      <div className="text-ds-text-muted text-sm">
+                        <div>{t('discardTop')}</div>
+                      </div>
                     </div>
+                  )}
+
+                  {/* Stock pile: a face-down stack the human can click to draw. */}
+                  <div className="p-3 rounded bg-black/40 flex flex-col items-center gap-1">
+                    <button
+                      type="button"
+                      data-testid="prsi-stock"
+                      onClick={handleDrawWithSound}
+                      disabled={!isHumanTurn || loading || state.drawPileCount === 0}
+                      aria-label={t('stockAria', { count: state.drawPileCount })}
+                      className={`relative ${focusRingCard} ${
+                        isHumanTurn && state.drawPileCount > 0 ? 'cursor-pointer' : 'cursor-default opacity-70'
+                      }`}
+                      style={{ background: 'none', padding: 0, border: 'none', lineHeight: 0 }}
+                    >
+                      <AnimatedCardBack width={cardWidth} silent />
+                      <span
+                        className="absolute -top-1 -right-1 min-w-[1.25rem] px-1 rounded-full bg-ds-surface text-ds-text-primary text-xs font-bold text-center leading-5 shadow"
+                        aria-hidden="true"
+                      >
+                        {state.drawPileCount}
+                      </span>
+                      {hasPenalty && (
+                        <span
+                          className="absolute -bottom-1 -left-1 px-1.5 rounded-full bg-ds-warning text-black text-xs font-bold leading-5 shadow"
+                          aria-hidden="true"
+                          data-testid="prsi-stock-penalty"
+                        >
+                          +{state.penaltyDrawCount}
+                        </span>
+                      )}
+                    </button>
+                    <div className="text-ds-text-muted text-sm">{t('stock')}</div>
                   </div>
-                )}
+                </div>
 
                 {hasPenalty && (
                   <div
@@ -293,12 +352,12 @@ function PrsiPageContent() {
                   <button
                     type="button"
                     className={btnPrimary}
-                    onClick={handlePlay}
+                    onClick={handlePlayWithSound}
                     disabled={loading || selectedCardIndices.length !== 1}
                   >
                     {t('playButton')}
                   </button>
-                  <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
+                  <button type="button" className={btnPrimary} onClick={handleDrawWithSound} disabled={loading}>
                     {t('drawButton')}
                   </button>
                 </div>

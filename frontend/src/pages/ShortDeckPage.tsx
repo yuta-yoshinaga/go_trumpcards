@@ -115,6 +115,8 @@ function ShortDeckPageContent() {
   const { state, loading, error, exec: execApi, retry } = useGameApi(shortdeckApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
+  // Touch/keyboard-accessible toggle for the ★ rank-override note (title alone is hover-only).
+  const [showRuleNote, setShowRuleNote] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('shortdeck', state);
   const turnStartRef = useRef(0);
@@ -261,7 +263,7 @@ function ShortDeckPageContent() {
                       className={`${badgeWarning} px-2 py-0.5 text-[11px] uppercase tracking-wider`}
                       title={t('rankOverrideReminder')}
                     >
-                      ♣♠♥♦ Flush &gt; Full House
+                      {t('rankWatermark')}
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -365,15 +367,24 @@ function ShortDeckPageContent() {
                       className={`inline-flex items-center gap-1 ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
                     >
                       {humanPlayer.handName}
-                      <span
+                      {/* Button (not a hover-only title span) so touch + keyboard users can
+                          read the rank-override note; desktop hover title is preserved. */}
+                      <button
+                        type="button"
                         data-testid="shortdeck-handname-rule"
-                        role="img"
                         aria-label={t('rankOverrideReminder')}
+                        aria-expanded={showRuleNote}
                         title={t('rankOverrideReminder')}
+                        onClick={() => setShowRuleNote((v) => !v)}
                         className="cursor-help text-ds-warning"
                       >
                         ★
-                      </span>
+                      </button>
+                    </span>
+                  )}
+                  {isShowdown && !humanPlayer.folded && humanPlayer.handName && showRuleNote && (
+                    <span className="ml-2 text-xs text-ds-warning" data-testid="shortdeck-rule-note" role="status">
+                      {t('rankOverrideReminder')}
                     </span>
                   )}
                 </div>

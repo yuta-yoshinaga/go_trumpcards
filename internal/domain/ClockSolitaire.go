@@ -36,6 +36,11 @@ type ClockSolitaireCard struct {
 	FaceUp bool  `json:"f"`
 }
 
+// ClockSolitaireMaxUndoDepth caps the undo history so the serialised state
+// stays bounded. A full game places at most 52 cards, so this ceiling is never
+// hit in practice; it exists purely as a safety bound on the KV payload.
+const ClockSolitaireMaxUndoDepth = 50
+
 // ClockSolitaire クロックソリティアゲームクラス
 type ClockSolitaire struct {
 	trumpCards  *TrumpCards
@@ -45,6 +50,16 @@ type ClockSolitaire struct {
 	phase       ClockSolitairePhase
 	stepCount   int
 	actionLog   []*ActionLogEntry
+	history     []*clockSolitaireSnapshot
+}
+
+// clockSolitaireSnapshot アンドゥ用スナップショット
+type clockSolitaireSnapshot struct {
+	piles       [ClockSolitairePileCount][]*ClockSolitaireCard
+	faceUpCount [ClockSolitairePileCount]int
+	currentCard *Card
+	phase       ClockSolitairePhase
+	stepCount   int
 }
 
 // NewClockSolitaire コンストラクタ
@@ -67,6 +82,7 @@ func (cs *ClockSolitaire) Reset() {
 	cs.stepCount = 0
 	cs.actionLog = nil
 	cs.currentCard = nil
+	cs.history = nil
 
 	// 13パイルに4枚ずつ裏向きで配る
 	for i := range ClockSolitairePileCount {
@@ -93,6 +109,9 @@ func (cs *ClockSolitaire) Step() error {
 	if cs.currentCard == nil {
 		return errors.New("no current card")
 	}
+
+	// Snapshot the pre-move state so this step can be undone (#3121).
+	cs.takeSnapshot()
 
 	// カードの値から配置先パイルを決定（A=1→pile0, ..., Q=12→pile11, K=13→pile12）
 	destIdx := cs.currentCard.GetValue() - 1
@@ -143,6 +162,55 @@ func (cs *ClockSolitaire) AutoPlay() error {
 		}
 	}
 	return nil
+}
+
+// Undo 直前のステップを取り消す。ゲーム終了後でも巻き戻せる（スナップショットが
+// プレイ中フェーズを復元するため）。
+func (cs *ClockSolitaire) Undo() error {
+	if len(cs.history) == 0 {
+		return errors.New("cannot undo: no history")
+	}
+	snap := cs.history[len(cs.history)-1]
+	cs.history = cs.history[:len(cs.history)-1]
+	cs.restoreSnapshot(snap)
+	cs.appendLog("undo", "1手戻す", nil)
+	return nil
+}
+
+// CanUndo アンドゥ可能か
+func (cs *ClockSolitaire) CanUndo() bool {
+	return len(cs.history) > 0
+}
+
+// takeSnapshot 現在の可変状態をアンドゥ履歴に積む。履歴は
+// ClockSolitaireMaxUndoDepth 件で頭打ちにする。
+func (cs *ClockSolitaire) takeSnapshot() {
+	snap := &clockSolitaireSnapshot{
+		faceUpCount: cs.faceUpCount,
+		currentCard: cs.currentCard,
+		phase:       cs.phase,
+		stepCount:   cs.stepCount,
+	}
+	for i := range ClockSolitairePileCount {
+		snap.piles[i] = make([]*ClockSolitaireCard, len(cs.piles[i]))
+		for j, pc := range cs.piles[i] {
+			snap.piles[i][j] = &ClockSolitaireCard{Card: pc.Card, FaceUp: pc.FaceUp}
+		}
+	}
+	cs.history = append(cs.history, snap)
+	if len(cs.history) > ClockSolitaireMaxUndoDepth {
+		cs.history = cs.history[len(cs.history)-ClockSolitaireMaxUndoDepth:]
+	}
+}
+
+// restoreSnapshot スナップショットの状態を復元する。actionLog と history は
+// 復元対象外（アンドゥ操作自体を棋譜に残すため）。
+func (cs *ClockSolitaire) restoreSnapshot(snap *clockSolitaireSnapshot) {
+	cs.piles = snap.piles
+	cs.faceUpCount = snap.faceUpCount
+	cs.currentCard = snap.currentCard
+	cs.phase = snap.phase
+	cs.stepCount = snap.stepCount
 }
 
 // checkGameClear 全12時計位置がクリアかチェック
@@ -220,6 +288,53 @@ type clockSolitaireJSON struct {
 	Phase       ClockSolitairePhase                            `json:"ps"`
 	StepCount   int                                            `json:"sc"`
 	ActionLog   []*ActionLogEntry                              `json:"al"`
+	History     []*clockSolitaireSnapshot                      `json:"hi,omitempty"`
+}
+
+// clockSolitaireSnapshotJSON is the wire format for a single undo snapshot.
+// clockSolitaireSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods.
+type clockSolitaireSnapshotJSON struct {
+	Piles       [ClockSolitairePileCount][]*ClockSolitaireCard `json:"pi"`
+	FaceUpCount [ClockSolitairePileCount]int                   `json:"fu"`
+	CurrentCard *Card                                          `json:"cc"`
+	Phase       ClockSolitairePhase                            `json:"ps"`
+	StepCount   int                                            `json:"sc"`
+}
+
+// MarshalJSON implements json.Marshaler for clockSolitaireSnapshot.
+func (s *clockSolitaireSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(clockSolitaireSnapshotJSON{
+		Piles:       s.piles,
+		FaceUpCount: s.faceUpCount,
+		CurrentCard: s.currentCard,
+		Phase:       s.phase,
+		StepCount:   s.stepCount,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for clockSolitaireSnapshot.
+func (s *clockSolitaireSnapshot) UnmarshalJSON(data []byte) error {
+	var j clockSolitaireSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	for i := range ClockSolitairePileCount {
+		if len(j.Piles[i]) > clockSolitaireMaxSliceLen {
+			return fmt.Errorf("clocksolitaire: snapshot pile %d exceeds maximum allowed size", i)
+		}
+	}
+	s.piles = j.Piles
+	for i := range ClockSolitairePileCount {
+		if s.piles[i] == nil {
+			s.piles[i] = make([]*ClockSolitaireCard, 0)
+		}
+	}
+	s.faceUpCount = j.FaceUpCount
+	s.currentCard = j.CurrentCard
+	s.phase = j.Phase
+	s.stepCount = j.StepCount
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -232,6 +347,7 @@ func (cs *ClockSolitaire) MarshalJSON() ([]byte, error) {
 		Phase:       cs.phase,
 		StepCount:   cs.stepCount,
 		ActionLog:   cs.actionLog,
+		History:     cs.history,
 	})
 }
 
@@ -244,7 +360,7 @@ func (cs *ClockSolitaire) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.ActionLog) > clockSolitaireMaxSliceLen {
+	if len(j.ActionLog) > clockSolitaireMaxSliceLen || len(j.History) > clockSolitaireMaxSliceLen {
 		return fmt.Errorf("clocksolitaire: input array exceeds maximum allowed size")
 	}
 	for i := range ClockSolitairePileCount {
@@ -270,6 +386,10 @@ func (cs *ClockSolitaire) UnmarshalJSON(data []byte) error {
 	cs.actionLog = j.ActionLog
 	if cs.actionLog == nil {
 		cs.actionLog = make([]*ActionLogEntry, 0)
+	}
+	cs.history = j.History
+	if cs.history == nil {
+		cs.history = make([]*clockSolitaireSnapshot, 0)
 	}
 	return nil
 }

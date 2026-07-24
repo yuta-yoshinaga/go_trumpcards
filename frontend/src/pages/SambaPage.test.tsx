@@ -49,6 +49,18 @@ describe('SambaPage', () => {
     expect(screen.getByTestId('sa-team-scores')).toBeInTheDocument();
   });
 
+  it('announces when the discard pile becomes frozen', async () => {
+    renderWithProviders(<SambaPage />);
+    const announce = await screen.findByTestId('sa-frozen-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    expect(announce).toHaveTextContent(''); // no transition yet
+    // A draw resolves to a frozen state → isFrozen false→true triggers the announcement.
+    mockExec.mockResolvedValue(makeSambaState({ isFrozen: true }));
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(screen.getByTestId('sa-frozen-announce')).toHaveTextContent('捨札が凍結されました'));
+  });
+
   it('calls drawstock command when button clicked', async () => {
     renderWithProviders(<SambaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
@@ -153,5 +165,42 @@ describe('SambaPage', () => {
     fireEvent.click(handCards[1]);
     expect(screen.queryByTestId('sa-draw-discard-reason')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '捨て札を取る' })).not.toBeDisabled();
+  });
+
+  it('shows canasta/samba progress and a completion pulse per meld', async () => {
+    const base = makeSambaState();
+    const human = {
+      ...base.players[0],
+      melds: [
+        // Incomplete set: 5 cards → 2 more for a canasta.
+        {
+          cards: Array.from({ length: 5 }, () => ({ design: 'SPADE' as const, value: 4 })),
+          kind: 0,
+          isNatural: true,
+          isCanasta: false,
+          isSamba: false,
+          rank: 4,
+        },
+        // Completed 7-card sequence → samba, with pulse emphasis.
+        {
+          cards: Array.from({ length: 7 }, (_, i) => ({ design: 'HEART' as const, value: i + 3 })),
+          kind: 1,
+          isNatural: true,
+          isCanasta: false,
+          isSamba: true,
+          rank: 3,
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(makeSambaState({ players: [human, ...base.players.slice(1)] }));
+    renderWithProviders(<SambaPage />);
+
+    const setProgress = await screen.findByTestId('sa-meld-progress-0-0');
+    expect(setProgress).toHaveTextContent('あと2枚でカナスタ');
+    expect(setProgress.className).not.toContain('animate-pulse');
+
+    const sambaProgress = screen.getByTestId('sa-meld-progress-0-1');
+    expect(sambaProgress).toHaveTextContent('サンバ成立！');
+    expect(sambaProgress.className).toContain('animate-pulse');
   });
 });

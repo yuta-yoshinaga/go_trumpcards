@@ -30,6 +30,7 @@
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
+  "roundPointsTitle": "獲得カード点（現ラウンド）",
   "roundResult": {
     "title": "ラウンド結果",
     "teamA": "チームAのカード点: {{points}}",

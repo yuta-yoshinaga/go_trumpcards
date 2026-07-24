@@ -65,6 +65,22 @@ describe('BristolPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('labels foundations and fans with the top card + count, or empty', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BristolPage />);
+    // All foundations empty.
+    await waitFor(() => expect(screen.getByRole('button', { name: '組札 0: 空' })).toBeInTheDocument());
+    // Fan 0 holds ♥4; fans 1 and 2 are empty (rendered as role=img placeholders).
+    expect(screen.getByRole('button', { name: 'ファン 0: ♥ 4（1枚）' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'ファン 1: 空' })).toBeInTheDocument();
+  });
+
+  it('includes the top card + count on a non-empty foundation', async () => {
+    mockExec.mockResolvedValue({ ...playingState, foundation: [[card('SPADE', 1)], [], [], []] });
+    renderWithProviders(<BristolPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '組札 0: ♠ A（1枚）' })).toBeInTheDocument());
+  });
+
   it('gives tableau columns a contextual aria-label (1-based number, role, depth) and a rule header', async () => {
     renderWithProviders(<BristolPage />);
     // Column 1 (0-based idx 0) holds 1 card → "降順ビルド列 1（1枚）".
@@ -120,8 +136,8 @@ describe('BristolPage', () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     screen.getByRole('button', { name: /降順ビルド列 1/ }).click();
-    await waitFor(() => expect(screen.getByRole('button', { name: '組札 0' })).toBeEnabled());
-    screen.getByRole('button', { name: '組札 0' }).click();
+    await waitFor(() => expect(screen.getByRole('button', { name: /^組札 0/ })).toBeEnabled());
+    screen.getByRole('button', { name: /^組札 0/ }).click();
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation', col: 0 }),
     );
@@ -130,9 +146,9 @@ describe('BristolPage', () => {
   it('selects a fan then moves it to a foundation', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: 'ファン 0' }).click();
-    await waitFor(() => expect(screen.getByRole('button', { name: '組札 1' })).toBeEnabled());
-    screen.getByRole('button', { name: '組札 1' }).click();
+    screen.getByRole('button', { name: /^ファン 0/ }).click();
+    await waitFor(() => expect(screen.getByRole('button', { name: /^組札 1/ })).toBeEnabled());
+    screen.getByRole('button', { name: /^組札 1/ }).click();
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'fan', col: 0 }, { zone: 'foundation', col: 1 }),
     );
@@ -141,7 +157,7 @@ describe('BristolPage', () => {
   it('foundations are disabled until a source is selected', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getByRole('button', { name: '組札 0' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^組札 0/ })).toBeDisabled();
   });
 
   it('hint button triggers hint command', async () => {
@@ -201,5 +217,136 @@ describe('BristolPage', () => {
     mockExec.mockRejectedValue(new Error('network error'));
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+  });
+
+  it('keyboard: "d" draws, "h" hints, "a" auto-completes', async () => {
+    renderWithProviders(<BristolPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'h' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('keyboard: "d" is a no-op when the stock is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<BristolPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    expect(mockExec).not.toHaveBeenCalledWith('draw');
+  });
+
+  it('keyboard: "z" undoes only when canUndo is true', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<BristolPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '元に戻す' })).toBeEnabled());
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'z' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('keyboard: "z" is a no-op when canUndo is false', async () => {
+    renderWithProviders(<BristolPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'z' });
+    expect(mockExec).not.toHaveBeenCalledWith('undo');
+  });
+
+  it('keyboard: "g" opens the give-up confirm and only gives up after confirming', async () => {
+    renderWithProviders(<BristolPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'g' });
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('advertises the keyboard shortcuts on the action buttons', async () => {
+    renderWithProviders(<BristolPage />);
+    const draw = await screen.findByRole('button', { name: '配る' });
+    expect(draw).toHaveAttribute('aria-keyshortcuts', 'd');
+    expect(draw.querySelector('kbd')?.textContent).toBe('D');
+    expect(screen.getByRole('button', { name: 'ヒント' })).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(screen.getByRole('button', { name: '自動完成' })).toHaveAttribute('aria-keyshortcuts', 'a');
+    expect(screen.getByRole('button', { name: '元に戻す' })).toHaveAttribute('aria-keyshortcuts', 'z');
+    expect(screen.getByRole('button', { name: 'ギブアップ' })).toHaveAttribute('aria-keyshortcuts', 'g');
+  });
+
+  describe('drag and drop', () => {
+    function buildDataTransfer() {
+      const store: Record<string, string> = {};
+      return {
+        setData: (type: string, val: string) => {
+          store[type] = val;
+        },
+        getData: (type: string) => store[type] ?? '',
+        effectAllowed: '',
+        dropEffect: '',
+      };
+    }
+
+    it('tableau column top card is draggable while playing', async () => {
+      renderWithProviders(<BristolPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      expect(screen.getByRole('button', { name: /降順ビルド列 1/ })).toHaveAttribute('draggable', 'true');
+    });
+
+    it('dragging a tableau column onto a foundation dispatches move', async () => {
+      renderWithProviders(<BristolPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      const source = screen.getByRole('button', { name: /降順ビルド列 1/ });
+      const dataTransfer = buildDataTransfer();
+      fireEvent.dragStart(source, { dataTransfer });
+
+      const dropZone = screen.getByRole('button', { name: /^組札 0/ }).closest('div') as HTMLElement;
+      mockExec.mockClear();
+      fireEvent.dragOver(dropZone, { dataTransfer });
+      fireEvent.drop(dropZone, { dataTransfer });
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation', col: 0 }),
+      );
+    });
+
+    it('dragging a fan top onto a tableau column dispatches move', async () => {
+      renderWithProviders(<BristolPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      const source = screen.getByRole('button', { name: /^ファン 0/ });
+      const dataTransfer = buildDataTransfer();
+      fireEvent.dragStart(source, { dataTransfer });
+
+      const dropZone = screen.getByRole('button', { name: /降順ビルド列 2/ }).closest('div') as HTMLElement;
+      mockExec.mockClear();
+      fireEvent.dragOver(dropZone, { dataTransfer });
+      fireEvent.drop(dropZone, { dataTransfer });
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', { zone: 'fan', col: 0 }, { zone: 'tableau', col: 1 }),
+      );
+    });
+
+    it('a drop with no active drag issues no move', async () => {
+      renderWithProviders(<BristolPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      const dropZone = screen.getByRole('button', { name: /^組札 0/ }).closest('div') as HTMLElement;
+      mockExec.mockClear();
+      const dataTransfer = buildDataTransfer();
+      fireEvent.drop(dropZone, { dataTransfer });
+
+      // No source was dragged, so getData returns '' and no move is dispatched.
+      expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+    });
   });
 });

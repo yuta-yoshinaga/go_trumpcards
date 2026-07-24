@@ -36,6 +36,8 @@ type LaBelleLucieGame interface {
 	GetMoveCount() int
 	// GetRedealsLeft 残り再シャッフル回数を取得する。
 	GetRedealsLeft() int
+	// HasAnyLegalMove 合法手が存在するかを返す (なければリディールが必要)。
+	HasAnyLegalMove() bool
 	// GetFans 扇の一覧を取得する。
 	GetFans() [][]*domain.Card
 	// GetFoundation ファウンデーションを取得する。

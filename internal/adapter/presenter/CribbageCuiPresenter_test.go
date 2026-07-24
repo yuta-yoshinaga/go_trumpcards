@@ -119,6 +119,35 @@ func TestCribbageCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "invalid card index")
 	})
 
+	t.Run("pegging legend lists indices playable within 31 (boundary)", func(t *testing.T) {
+		m, players := setupCribbageCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPegCount")
+		m.On("GetPhase").Return(domain.CribbagePhasePegging)
+		m.On("GetPegCount").Return(25)
+		// [0]=6 → 25+6=31 (exactly the limit, legal); [1]=7 → 32 (illegal).
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "出せる手札: [0]")
+		assert.NotContains(t, result, "出せる手札: [0] [1]")
+	})
+
+	t.Run("pegging warns to declare go when nothing fits", func(t *testing.T) {
+		m, players := setupCribbageCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPegCount")
+		m.On("GetPhase").Return(domain.CribbagePhasePegging)
+		m.On("GetPegCount").Return(30)
+		// Only a 2 in hand → 30+2=32 > 31, so nothing is playable.
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "go を宣言してください")
+		assert.NotContains(t, result, "出せる手札:")
+	})
+
 	t.Run("game ended shows winner human", func(t *testing.T) {
 		m, _ := setupCribbageCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

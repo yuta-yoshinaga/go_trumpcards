@@ -35,10 +35,14 @@ import type { TutorialStep } from '../types/tutorial';
 import { COURT_PIECE_HELP, parseCourtPieceCommand } from '../utils/cli/commands/courtPieceCommands';
 import { formatCourtPieceState } from '../utils/cli/formatters/courtPieceFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { courtPieceLegalPlayIndices } from '../utils/courtPieceLegal';
 import { playerName } from '../utils/playerUtils';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = undeclared). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
+
+/** Tricks a team must take within a 13-trick round to win it (Sar); mirrors CourtPieceTricksToWin in internal/domain/CourtPiece.go. */
+const COURT_PIECE_TRICKS_TO_WIN = 7;
 
 /** Court Piece (Rang) tutorial step definitions. */
 const COURT_PIECE_TUTORIAL_STEPS: TutorialStep[] = [
@@ -142,6 +146,13 @@ function CourtPiecePageContent() {
   const isHumanTurn = isPlayPhase && isHumanCurrent;
   const canPlay = isHumanTurn;
 
+  // On the human's play turn, mirror the server's follow-suit rule
+  // (internal/domain/CourtPiece.go validatePlay) so legal cards get a success
+  // ring. This is an additive hint only — illegal cards stay clickable and the
+  // backend remains the source of truth for rejecting an illegal play.
+  const legalPlayIndices =
+    canPlay && humanPlayer ? courtPieceLegalPlayIndices(humanPlayer.cards, state.currentTrick) : undefined;
+
   const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
 
   const handleManualReset = () => {
@@ -242,6 +253,31 @@ function CourtPiecePageContent() {
                   <div className="mt-1">
                     {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
                   </div>
+                  {/* Live running trick tally toward the 7-trick round target (during play). */}
+                  {(isPlayPhase || isTrickEnd) && (
+                    <div className="mt-1 pt-1 border-t border-white/10" data-testid="cp-live-tricks">
+                      <span className="text-ds-text-primary">{t('liveTricks.title')}: </span>
+                      {([0, 1] as const).map((team, i) => {
+                        const tricks = teamTricks(team);
+                        const reached = tricks >= COURT_PIECE_TRICKS_TO_WIN;
+                        return (
+                          <span key={team}>
+                            {i > 0 && ' · '}
+                            <span
+                              className={reached ? 'text-ds-accent font-semibold' : ''}
+                              data-testid={`cp-live-tricks-team-${team}`}
+                            >
+                              {t('liveTricks.team', {
+                                team: team === 0 ? t('team.a') : t('team.b'),
+                                tricks,
+                                target: COURT_PIECE_TRICKS_TO_WIN,
+                              })}
+                            </span>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Players grouped by team, with the caller badge */}
@@ -298,7 +334,7 @@ function CourtPiecePageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="courtpiece"
-                restrictedTooltip={t('playButton')}
+                legalIndices={legalPlayIndices}
               />
             )}
 

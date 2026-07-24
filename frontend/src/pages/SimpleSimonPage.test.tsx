@@ -62,6 +62,20 @@ describe('SimpleSimonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
   });
 
+  it('labels cards with name+position and reflects selection with aria-pressed', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    // column[1] is ♠8 at the top → "♠ 8（列2・上から1枚目）".
+    const src = await screen.findByTestId('card-1-0');
+    expect(src).toHaveAttribute('aria-label', '♠ 8（列2・上から1枚目）');
+    expect(src).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(src);
+    expect(screen.getByTestId('card-1-0')).toHaveAttribute('aria-pressed', 'true');
+    // Empty column drop targets are named too.
+    expect(screen.getByTestId('column-2-drop')).toHaveAttribute('aria-label', '列3（空）');
+    // The selection guidance is a live region.
+    expect(screen.getByTestId('ss-guidance')).toHaveAttribute('role', 'status');
+  });
+
   it('moves onto an empty column', async () => {
     renderWithProviders(<SimpleSimonPage />);
     const srcCard = await screen.findByTestId('card-0-0');
@@ -84,6 +98,67 @@ describe('SimpleSimonPage', () => {
       fireEvent.click(screen.getByTestId(testid));
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith(cmd));
     }
+  });
+
+  it('marks only the movable-run cards as grabbable and blocks invalid source selection', async () => {
+    // Column 3: ♠9 (not a run head), then ♥6 ♥5 ♥4 (a same-suit descending run).
+    mockExec.mockResolvedValue(
+      makeState({
+        columns: (() => {
+          const cols: Card[][] = Array.from({ length: 10 }, () => []);
+          cols[0] = [card('SPADE', 5)];
+          cols[3] = [card('SPADE', 9), card('HEART', 6), card('HEART', 5), card('HEART', 4)];
+          return cols;
+        })(),
+      }),
+    );
+    renderWithProviders(<SimpleSimonPage />);
+    const top = await screen.findByTestId('card-3-0');
+    // The out-of-run top card is not grabbable and is disabled.
+    expect(top).toHaveAttribute('data-grabbable', 'false');
+    expect(top).toBeDisabled();
+    // The run head and its tail are grabbable.
+    expect(screen.getByTestId('card-3-1')).toHaveAttribute('data-grabbable', 'true');
+    expect(screen.getByTestId('card-3-3')).toHaveAttribute('data-grabbable', 'true');
+
+    // Clicking the invalid top card selects nothing (no aria-pressed run).
+    fireEvent.click(top);
+    expect(screen.getByTestId('card-3-1')).toHaveAttribute('aria-pressed', 'false');
+
+    // Clicking the run head selects it and its descendants.
+    fireEvent.click(screen.getByTestId('card-3-1'));
+    expect(screen.getByTestId('card-3-1')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('card-3-3')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('card-3-0')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('double-clicks a grabbable card to auto-move it to the best column', async () => {
+    // Default state: col0 = ♠9, col1 = ♠8. Double-clicking ♠8 links same-suit onto ♠9.
+    renderWithProviders(<SimpleSimonPage />);
+    const srcCard = await screen.findByTestId('card-1-0');
+    mockExec.mockClear();
+    fireEvent.doubleClick(srcCard);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
+  });
+
+  it('shows a notice and issues no move when a double-click has no destination', async () => {
+    // A lone ♠2 has no valid destination (no rank-3 top; empty columns are not
+    // offered for a whole-column move).
+    mockExec.mockResolvedValue(
+      makeState({
+        columns: (() => {
+          const cols: Card[][] = Array.from({ length: 10 }, () => []);
+          cols[0] = [card('SPADE', 2)];
+          return cols;
+        })(),
+      }),
+    );
+    renderWithProviders(<SimpleSimonPage />);
+    const srcCard = await screen.findByTestId('card-0-0');
+    mockExec.mockClear();
+    fireEvent.doubleClick(srcCard);
+    await waitFor(() => expect(screen.getByTestId('ss-automove-notice')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalledWith('m', expect.anything());
   });
 
   it('hides controls at game over', async () => {

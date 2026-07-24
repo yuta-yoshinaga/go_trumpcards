@@ -11,6 +11,7 @@
   "helpAllIn": "  a                    オールイン",
   "helpBettingLimit": "  bl [0-2]             ベッティングリミット (0=Fixed, 1=PotLimit, 2=NoLimit)",
   "helpTournament": "  tm [0-1]             トーナメントモード",
+  "mandatoryRuleLine": "※手札{{hole}}枚のうちちょうど2枚＋ボード3枚を使用",
   "tournamentLine": "トーナメント ハンド#{{hand}} SB:{{sb}} BB:{{bb}} (レベルアップ:{{levelup}}ハンド毎)",
   "rebuyLine": "リバイ: {{chips}}チップ (最大{{max}}回, {{period}}ハンド目まで)",
   "addonLine": "アドオン: {{chips}}チップ ({{after}}ハンド目に提供)",
@@ -27,7 +28,7 @@
   "playerBet": " ベット:{{bet}}",
   "humanHand": "  手札: {{cards}}",
   "cpuActionsHeader": "[CPU行動]",
-  "cpuActionLine": "  Player {{idx}}: {{action}}",
+  "cpuActionLine": "  {{name}}: {{action}}",
   "cpuActionAmount": " ({{amount}})",
   "resultsHeader": "[結果]",
   "resultMucked": "  {{name}}: マック",
@@ -42,5 +43,6 @@
   "muckPrompt": "マックしますか? (m=マック / sh=ショー)",
   "rebuyPrompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済) (rb=リバイ / sr=スキップ)",
   "addonPrompt": "アドオンしますか? ({{chips}}チップ) (ad=アドオン / sa=スキップ)",
-  "gameEnd": "ゲーム終了"
+  "gameEnd": "ゲーム終了",
+  "hiLoRuleLine": "※ロー: 8以下5枚(8 or Better)。不成立時はHiが総取り"
 }

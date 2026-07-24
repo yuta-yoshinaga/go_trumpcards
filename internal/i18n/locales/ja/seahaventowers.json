@@ -25,5 +25,6 @@
   "promptToZoneFromCell": "移動先を指定してください (t = タブロー、f = 組札):",
   "invalidFromZone": "無効な移動元です: {{val}}",
   "invalidToZone": "無効な移動先です: {{val}}",
-  "moveUsage": "使い方: m t <col> [<idx>] t|f|c <toCol|cell>"
+  "moveUsage": "使い方: m t <col> [<idx>] t|f|c <toCol|cell>",
+  "supermoveLine": "一括移動可能: 最大{{limit}}枚（空きリザーブ{{reserved}}）"
 }

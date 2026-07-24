@@ -41,6 +41,25 @@ describe('SuecaPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('exposes the trump suit by name in the header and sidebar (symbol hidden from SR)', async () => {
+    mockExec.mockResolvedValue(playPhaseState); // trumpSuit 4 = ♦ → ダイヤ
+    renderWithProviders(<SuecaPage />);
+    const sidebar = await screen.findByTestId('sueca-sidebar-trump');
+    expect(sidebar).toHaveAttribute('role', 'img');
+    expect(sidebar).toHaveAttribute('aria-label', '切り札: ダイヤ');
+    // Header + sidebar both expose a named trump element (glyph is aria-hidden).
+    expect(screen.getAllByRole('img', { name: '切り札: ダイヤ' }).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('falls back to the raw symbol when the trump suit is unset', async () => {
+    // trumpSuit 0 has no suit-name key → the label falls back to the symbol string.
+    mockExec.mockResolvedValue(makeSuecaState({ trumpSuit: 0 }));
+    renderWithProviders(<SuecaPage />);
+    const sidebar = await screen.findByTestId('sueca-sidebar-trump');
+    expect(sidebar).toHaveAttribute('role', 'img');
+    expect(sidebar).toHaveAttribute('aria-label', '切り札: ');
+  });
+
   it('calls reset on mount with the default config', async () => {
     renderWithProviders(<SuecaPage />);
     await waitFor(() =>
@@ -90,6 +109,22 @@ describe('SuecaPage', () => {
     mockExec.mockResolvedValue(makeSuecaState({ phase: 1, leadPlayerIdx: 1 }));
     renderWithProviders(<SuecaPage />);
     await waitFor(() => expect(screen.getByTestId('sueca-trick-winner')).toHaveTextContent('チームB がトリック獲得'));
+  });
+
+  it('shows the live captured card points against the 61 win line during play', async () => {
+    mockExec.mockResolvedValue(makeSuecaState({ roundCardPoints: [45, 20] }));
+    renderWithProviders(<SuecaPage />);
+    const panel = await screen.findByTestId('sueca-round-points');
+    expect(panel).toHaveTextContent('チームA: 45 / 61');
+    expect(panel).toHaveTextContent('チームB: 20 / 61');
+    expect(panel).toHaveAttribute('role', 'status');
+  });
+
+  it('hides the live points panel once the round ends (round result takes over)', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<SuecaPage />);
+    await waitFor(() => expect(screen.getByText('ラウンド結果')).toBeInTheDocument());
+    expect(screen.queryByTestId('sueca-round-points')).not.toBeInTheDocument();
   });
 
   it('renders round end with the next round button and the round result', async () => {

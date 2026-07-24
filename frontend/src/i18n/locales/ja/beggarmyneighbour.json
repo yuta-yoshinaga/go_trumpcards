@@ -1,7 +1,8 @@
 {
   "button": {
     "step": "カードを出す",
-    "autoplay": "自動進行"
+    "autoplay": "自動進行",
+    "stopAutoplay": "停止"
   },
   "phase": {
     "play": "プレイ中",
@@ -21,12 +22,22 @@
   },
   "settings": {
     "maxRounds": "最大ラウンド数",
-    "maxRoundsHelp": "ペナルティカードの連鎖でゲームが長引く場合の上限です。どちらかの手札が尽きるか、最大ラウンドに到達するとゲーム終了です。"
+    "maxRoundsHelp": "ペナルティカードの連鎖でゲームが長引く場合の上限です。どちらかの手札が尽きるか、最大ラウンドに到達するとゲーム終了です。",
+    "speed": "再生速度",
+    "speedHelp": "自動進行中に1手ごとの演出をどれくらいの速さで再生するかを選びます。速いほど決着まで一気に進みます。",
+    "speedSlow": "ゆっくり",
+    "speedNormal": "普通",
+    "speedFast": "高速"
   },
   "hint": {
     "playCard": "カードを出しましょう",
     "payPenalty": "ペナルティを支払いましょう",
     "collectPile": "場の山を回収しましょう"
+  },
+  "readout": {
+    "cardCount": "計 {{count}} 枚",
+    "roundProgress": "ラウンド {{played}} / {{max}}",
+    "countBarLabel": "持ち札 あなた {{you}} 枚、CPU {{cpu}} 枚"
   },
   "tutorial": {
     "cpuPile": "CPUの山札です。残り枚数が表示されます。",
@@ -35,5 +46,7 @@
     "stepButton": "このボタンでカードを出します。",
     "autoplayButton": "決着まで自動で進めるボタンです。",
     "resetButton": "新しいゲームを始めるボタンです。"
-  }
+  },
+  "phaseAnnounce": "フェーズ: {{phase}}",
+  "phaseAnnouncePenalty": "フェーズ: {{phase}}。残りペナルティ {{count}} 枚"
 }

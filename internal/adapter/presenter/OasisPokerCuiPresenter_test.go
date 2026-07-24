@@ -1,12 +1,14 @@
 package presenter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupOasisPokerCuiMockDefaults(m *interfaces.MockOasisPokerGame) {
@@ -224,4 +226,54 @@ func TestOasisPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "棋譜はありません")
+}
+
+func TestOasisPokerCuiPresenter_HintOutput(t *testing.T) {
+	p := new(OasisPokerCuiPresenter)
+	c := func(suit, val int) *domain.Card { return domain.NewCard(suit, val, false) }
+
+	t.Run("exchange lists low cards to swap", func(t *testing.T) {
+		m := new(interfaces.MockOasisPokerGame)
+		m.On("GetPhase").Return(domain.OasisPokerPhaseExchange)
+		// Pair of Kings held; low singles 3,5,7 recommended for exchange.
+		m.On("GetPlayerHand").Return([]*domain.Card{
+			c(domain.CardDesignSpade, 13), c(domain.CardDesignHeart, 13),
+			c(domain.CardDesignClover, 3), c(domain.CardDesignDiamond, 5), c(domain.CardDesignSpade, 7),
+		})
+		out := p.HintOutput(m)
+		prefix := strings.SplitN(i18n.T("oasispoker.hintExchange"), "{{", 2)[0]
+		assert.Contains(t, out, prefix)
+		assert.Contains(t, out, "[2]")
+		assert.NotContains(t, out, "[0]") // king held
+	})
+
+	t.Run("exchange recommends stand when all held", func(t *testing.T) {
+		m := new(interfaces.MockOasisPokerGame)
+		m.On("GetPhase").Return(domain.OasisPokerPhaseExchange)
+		m.On("GetPlayerHand").Return([]*domain.Card{
+			c(domain.CardDesignSpade, 1), c(domain.CardDesignHeart, 13),
+			c(domain.CardDesignClover, 12), c(domain.CardDesignDiamond, 11), c(domain.CardDesignSpade, 1),
+		})
+		assert.Contains(t, p.HintOutput(m), i18n.T("oasispoker.hintStand"))
+	})
+
+	t.Run("action recommends play", func(t *testing.T) {
+		m := new(interfaces.MockOasisPokerGame)
+		m.On("GetPhase").Return(domain.OasisPokerPhaseAction)
+		m.On("RecommendPlay").Return(true)
+		assert.Contains(t, p.HintOutput(m), i18n.T("oasispoker.hintPlay"))
+	})
+
+	t.Run("action recommends fold", func(t *testing.T) {
+		m := new(interfaces.MockOasisPokerGame)
+		m.On("GetPhase").Return(domain.OasisPokerPhaseAction)
+		m.On("RecommendPlay").Return(false)
+		assert.Contains(t, p.HintOutput(m), i18n.T("oasispoker.hintFold"))
+	})
+
+	t.Run("no hint outside decision phases", func(t *testing.T) {
+		m := new(interfaces.MockOasisPokerGame)
+		m.On("GetPhase").Return(domain.OasisPokerPhaseBet)
+		assert.Contains(t, p.HintOutput(m), i18n.T("oasispoker.hintNone"))
+	})
 }

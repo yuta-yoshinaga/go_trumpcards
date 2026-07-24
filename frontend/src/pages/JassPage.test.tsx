@@ -50,6 +50,8 @@ function makeState(overrides: Partial<JassResponse> = {}): JassResponse {
     makerTeam: -1,
     makerPlayerIdx: -1,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
     teamScores: [0, 0],
     roundPoints: [0, 0],
     roundWeisPoints: [0, 0],
@@ -142,6 +144,92 @@ describe('JassPage', () => {
     mockExec.mockResolvedValue(makeState({ phase: JassPhase.PLAY, trumpSuit: 1, teamScores: [40, 25] }));
     renderWithProviders(<JassPage />);
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+  });
+
+  it('shows the Weis panel with per-team totals and a counted marker when Weis is declared', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.TRICK_END, trumpSuit: 1, roundWeisPoints: [20, 0] }));
+    renderWithProviders(<JassPage />);
+    const panel = await screen.findByTestId('jass-weis-panel');
+    expect(panel).toBeInTheDocument();
+    expect(panel).toHaveTextContent('Weis（メルド）宣言');
+    // Human is on team 0, so the (You) marker appears on team 0.
+    expect(panel).toHaveTextContent('チーム0（あなた）');
+    expect(panel).toHaveTextContent('20点');
+    // Only the scoring team (team 0) gets the "獲得" marker.
+    expect(screen.getAllByText('獲得')).toHaveLength(1);
+  });
+
+  it('hides the Weis panel when the feature is disabled', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: JassPhase.TRICK_END,
+        trumpSuit: 1,
+        roundWeisPoints: [20, 0],
+        config: { cpuDifficulty: 1, targetScore: 1000, lastTrickBonus: 5, enableWeis: false },
+      }),
+    );
+    renderWithProviders(<JassPage />);
+    await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('jass-weis-panel')).not.toBeInTheDocument();
+  });
+
+  it('hides the Weis panel when no Weis points were declared', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.TRICK_END, trumpSuit: 1, roundWeisPoints: [0, 0] }));
+    renderWithProviders(<JassPage />);
+    await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('jass-weis-panel')).not.toBeInTheDocument();
+  });
+
+  it('translates a known hint reason', async () => {
+    const playState = makeState({ phase: JassPhase.PLAY, trumpSuit: 1, currentPlayerIdx: 0 });
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<JassPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValueOnce({ ...playState, hint: { cardIndex: 0, reason: 'trump_cut' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/切り札でカット/)).toBeInTheDocument());
+  });
+
+  it('falls back to a generic label for an unknown hint reason', async () => {
+    const playState = makeState({ phase: JassPhase.PLAY, trumpSuit: 1, currentPlayerIdx: 0 });
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<JassPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    // Omit cardIndex to also exercise the `?? '-'` fallback for a missing index.
+    mockExec.mockResolvedValueOnce({ ...playState, hint: { reason: 'brand_new_reason' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/最善手/)).toBeInTheDocument());
+    expect(screen.queryByText(/brand_new_reason/)).not.toBeInTheDocument();
+  });
+
+  it('shows an empty previous-trick reviewer when no trick has completed yet', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.PLAY, trumpSuit: 1, lastTrick: [], lastTrickWinner: -1 }));
+    renderWithProviders(<JassPage />);
+    const panel = await screen.findByTestId('ja-previous-trick');
+    expect(panel).toBeInTheDocument();
+    expect(panel).toHaveTextContent('このラウンドにはまだ前のトリックがありません');
+  });
+
+  it('renders the previous trick cards and the winner label when a trick has completed', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: JassPhase.PLAY,
+        trumpSuit: 1,
+        trickNumber: 2,
+        lastTrick: [
+          { playerIdx: 1, card: card('SPADE', 3) },
+          { playerIdx: 2, card: card('SPADE', 1) },
+          { playerIdx: 3, card: card('SPADE', 5) },
+          { playerIdx: 0, card: card('SPADE', 7) },
+        ],
+        lastTrickWinner: 2,
+      }),
+    );
+    renderWithProviders(<JassPage />);
+    const panel = await screen.findByTestId('ja-previous-trick');
+    expect(panel).toBeInTheDocument();
+    // Winner label references the winning player's name.
+    await waitFor(() => expect(panel).toHaveTextContent('が獲得'));
   });
 
   it('shows reset button mid-game and opens confirm dialog', async () => {

@@ -106,6 +106,46 @@ describe('BlackHolePage', () => {
     expect(screen.getByTestId('card-0-1').className).toContain('ring-ds-success');
     // The non-adjacent fan top is never marked.
     expect(otherTop).not.toHaveAttribute('data-hinted-legal');
+    // With no backend recommendation, it falls back to the plain legal highlight.
+    expect(screen.getByTestId('card-0-1')).not.toHaveAttribute('data-hinted-recommended');
+    // Non-visual channels: aria-label gains "置けます" and the live region lists it.
+    expect(screen.getByTestId('card-0-1')).toHaveAttribute('aria-label', '♣ 6（ファン1） · 置けます');
+    expect(screen.getByTestId('bh-hint-announce')).toHaveTextContent('置けるカード: ♣ 6（ファン1）');
+  });
+
+  it('strongly emphasises the backend-recommended fan, distinct from other legal fans', async () => {
+    // Hole top 7 → fan0 top ♣6 and fan2 top ♠8 are both legal; the backend
+    // recommends fan 2.
+    const state = makeState({ blackHole: [card('SPADE', 7)], hint: { fan: 2 } });
+    state.fans[2] = [card('SPADE', 8)];
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<BlackHolePage />);
+    await screen.findByTestId('hint-button');
+    fireEvent.click(screen.getByTestId('hint-button'));
+
+    // The recommended fan carries both the legal ring and the distinct gold outline.
+    const recommended = await screen.findByTestId('card-2-0');
+    await waitFor(() => expect(recommended).toHaveAttribute('data-hinted-recommended', 'true'));
+    expect(recommended).toHaveAttribute('data-hinted-legal', 'true');
+    expect(recommended.className).toContain('outline-ds-warning');
+    expect(recommended).toHaveAttribute('aria-label', '♠ 8（ファン3） · おすすめ · 置けます');
+
+    // The other legal fan is highlighted but NOT recommended (two-tier).
+    const otherLegal = screen.getByTestId('card-0-1');
+    expect(otherLegal).toHaveAttribute('data-hinted-legal', 'true');
+    expect(otherLegal).not.toHaveAttribute('data-hinted-recommended');
+    expect(otherLegal.className).not.toContain('outline-ds-warning');
+
+    // The live region leads with the recommendation.
+    expect(screen.getByTestId('bh-hint-announce')).toHaveTextContent('おすすめ: ♠ 8（ファン3）');
+  });
+
+  it('labels fan cards and the black hole for screen readers', async () => {
+    mockExec.mockResolvedValue(makeState({ blackHole: [card('DIAMOND', 6)] }));
+    renderWithProviders(<BlackHolePage />);
+    // fan0 top ♣6, hole ♦6.
+    expect(await screen.findByRole('button', { name: '♣ 6（ファン1）' })).toBeInTheDocument();
+    expect(screen.getByTestId('bh-hole-top')).toHaveAttribute('aria-label', 'ブラックホール: ♦ 6');
   });
 
   it('clears the hint highlight on reset even though moveCount stays 0', async () => {
@@ -119,6 +159,41 @@ describe('BlackHolePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(screen.getByTestId('card-0-1')).not.toHaveAttribute('data-hinted-legal'));
+  });
+
+  it('always shows the acceptable ranks (hole top ±1) and the legal-move count', async () => {
+    // Hole top 7 → accepts 6 and 8. fan0 top ♣6 is legal, fan1 top ♦10 is not.
+    mockExec.mockResolvedValue(makeState({ blackHole: [card('SPADE', 7)] }));
+    renderWithProviders(<BlackHolePage />);
+    const readout = await screen.findByTestId('bh-acceptable');
+    expect(readout).toHaveTextContent('受け入れ可能: 6 / 8');
+    const count = screen.getByTestId('bh-legal-count');
+    expect(count).toHaveTextContent('合法手: 1');
+    expect(count.className).toContain('text-ds-text-muted');
+  });
+
+  it('shows only one side of the acceptable ranks at the A and K ends', async () => {
+    // Hole top A(1): no wrap, so only rank 2 is acceptable.
+    mockExec.mockResolvedValue(makeState({ blackHole: [card('SPADE', 1)] }));
+    const { unmount } = renderWithProviders(<BlackHolePage />);
+    expect(await screen.findByTestId('bh-acceptable')).toHaveTextContent('受け入れ可能: 2');
+    unmount();
+
+    // Hole top K(13): only rank Q(12) is acceptable.
+    mockExec.mockResolvedValue(makeState({ blackHole: [card('SPADE', 13)] }));
+    renderWithProviders(<BlackHolePage />);
+    expect(await screen.findByTestId('bh-acceptable')).toHaveTextContent('受け入れ可能: Q');
+  });
+
+  it('marks the legal-move count with a warning colour when no move remains', async () => {
+    // Hole top 7, but neither fan top is ±1 (fan0 ♣6 replaced by ♦Q, fan1 ♦10).
+    const stuck = makeState({ blackHole: [card('SPADE', 7)] });
+    stuck.fans[0] = [card('DIAMOND', 12)];
+    mockExec.mockResolvedValue(stuck);
+    renderWithProviders(<BlackHolePage />);
+    const count = await screen.findByTestId('bh-legal-count');
+    expect(count).toHaveTextContent('合法手: 0');
+    expect(count.className).toContain('text-ds-warning');
   });
 
   it('does not ring an A-K wrap (no wrap in Black Hole)', async () => {

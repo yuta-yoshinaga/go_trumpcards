@@ -112,6 +112,55 @@ describe('AgnesPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('keyboard: "d" deals and "h" hints', async () => {
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'h' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('keyboard: "z" undoes only when canUndo is true', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '元に戻す' })).toBeEnabled());
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'z' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('keyboard: "z" is a no-op when canUndo is false', async () => {
+    mockExec.mockResolvedValue(playingState); // canUndo: false
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'z' });
+    expect(mockExec).not.toHaveBeenCalledWith('undo');
+  });
+
+  it('keyboard: "g" opens the give-up confirm and only gives up after confirming', async () => {
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'g' });
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('advertises the keyboard shortcuts on the action buttons', async () => {
+    renderWithProviders(<AgnesPage />);
+    const deal = await screen.findByRole('button', { name: '配る' });
+    expect(deal).toHaveAttribute('aria-keyshortcuts', 'd');
+    expect(deal.querySelector('kbd')?.textContent).toBe('D');
+    expect(screen.getByRole('button', { name: 'ヒント' })).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(screen.getByRole('button', { name: 'ギブアップ' })).toHaveAttribute('aria-keyshortcuts', 'g');
+  });
+
   it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -123,10 +172,18 @@ describe('AgnesPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 
-  it('shows error alert when API fails on mount', async () => {
-    mockExec.mockRejectedValue(new Error('network error'));
+  it('shows the error inline without replacing the board (issue #3290)', async () => {
+    // First load succeeds, then a subsequent action fails: the error must appear
+    // inline while the board (stock count, base rank) stays rendered.
     renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByText(/山札: 23/)).toBeInTheDocument());
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: '配る' }));
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    // Board is still present alongside the error banner.
+    expect(screen.getByText(/山札: 23/)).toBeInTheDocument();
+    expect(screen.getByText(/ベースランク/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument();
   });
 
   it('per-column action button moves tableau end card to foundation', async () => {
@@ -213,5 +270,113 @@ describe('AgnesPage', () => {
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByTestId('ag-col-actions-0')).not.toBeInTheDocument();
+  });
+
+  // --- Auto-complete (issue #3289) ---
+
+  it('disables auto-complete while the stock is not empty', async () => {
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByTestId('ag-autocomplete-button')).toBeDisabled();
+  });
+
+  it('enables auto-complete once stock is empty and all cards are face up, then sweeps to foundation', async () => {
+    const ready: AgnesResponse = {
+      ...playingState,
+      stockCount: 0,
+      tableau: [[up('SPADE', 6)], [up('HEART', 9)]],
+      foundation: [[card('SPADE', 5)], [], [], []],
+    };
+    // After the sweep move, column 0 is empty and no foundation move remains.
+    const swept: AgnesResponse = {
+      ...ready,
+      tableau: [[], [up('HEART', 9)]],
+      foundation: [[card('SPADE', 5), card('SPADE', 6)], [], [], []],
+      canUndo: true,
+    };
+    mockExec.mockResolvedValue(ready);
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByTestId('ag-autocomplete-button')).toBeEnabled());
+    mockExec.mockClear();
+    mockExec.mockResolvedValueOnce(swept);
+    fireEvent.click(screen.getByTestId('ag-autocomplete-button'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation' }),
+    );
+    // Loop stops after the swept state (no further foundation move): exactly one move.
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(1));
+  });
+
+  it('keyboard: "a" triggers auto-complete when ready', async () => {
+    const ready: AgnesResponse = {
+      ...playingState,
+      stockCount: 0,
+      tableau: [[up('SPADE', 6)]],
+      foundation: [[card('SPADE', 5)], [], [], []],
+    };
+    mockExec.mockResolvedValue(ready);
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByTestId('ag-autocomplete-button')).toBeEnabled());
+    mockExec.mockClear();
+    mockExec.mockResolvedValueOnce({
+      ...ready,
+      tableau: [[]],
+      foundation: [[card('SPADE', 5), card('SPADE', 6)], [], [], []],
+    });
+    fireEvent.keyDown(document.body, { key: 'a' });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation' }),
+    );
+  });
+
+  // --- Stalemate detection + undo-escape (issue #3289) ---
+
+  it('shows the stalemate banner when no legal move remains', async () => {
+    const stuck: AgnesResponse = {
+      ...playingState,
+      stockCount: 0,
+      tableau: [[up('SPADE', 8)], [up('HEART', 3)]],
+      foundation: [[], [], [], []],
+    };
+    mockExec.mockResolvedValue(stuck);
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByTestId('ag-stalemate-banner')).toBeInTheDocument());
+  });
+
+  it('does not show the stalemate banner while a legal move exists', async () => {
+    // Default playing state still has stock, so a deal is always possible.
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('ag-stalemate-banner')).not.toBeInTheDocument();
+  });
+
+  it('offers an undo-to-escape button in the stalemate banner and fires undo', async () => {
+    const stuck: AgnesResponse = {
+      ...playingState,
+      stockCount: 0,
+      canUndo: true,
+      tableau: [[up('SPADE', 8)], [up('HEART', 3)]],
+      foundation: [[], [], [], []],
+    };
+    mockExec.mockResolvedValue(stuck);
+    renderWithProviders(<AgnesPage />);
+    const escapeBtn = await screen.findByTestId('ag-stalemate-undo');
+    mockExec.mockClear();
+    fireEvent.click(escapeBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('hides the undo-to-escape button when there is nothing to undo', async () => {
+    const stuck: AgnesResponse = {
+      ...playingState,
+      stockCount: 0,
+      canUndo: false,
+      tableau: [[up('SPADE', 8)], [up('HEART', 3)]],
+      foundation: [[], [], [], []],
+    };
+    mockExec.mockResolvedValue(stuck);
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByTestId('ag-stalemate-banner')).toBeInTheDocument());
+    expect(screen.queryByTestId('ag-stalemate-undo')).not.toBeInTheDocument();
   });
 });

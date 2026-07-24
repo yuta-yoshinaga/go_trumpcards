@@ -17,6 +17,7 @@ func newMockRedDogInteractor() *usecase.MockRedDogInteractor {
 	m.On("Bet", 100).Return("bet result")
 	m.On("Raise", 50).Return("raise result")
 	m.On("Stay").Return("stay result")
+	m.On("Hint").Return("hint result")
 	m.On("ActionLog").Return("action log result")
 	return m
 }
@@ -61,6 +62,12 @@ func TestRedDogCuiController_Stay(t *testing.T) {
 	c := controller.NewRedDogCuiController(newMockRedDogInteractor())
 	assert.Equal(t, "stay result", c.Exec("s"))
 	assert.Equal(t, "stay result", c.Exec("stay"))
+}
+
+func TestRedDogCuiController_Hint(t *testing.T) {
+	c := controller.NewRedDogCuiController(newMockRedDogInteractor())
+	assert.Equal(t, "hint result", c.Exec("h"))
+	assert.Equal(t, "hint result", c.Exec("hint"))
 }
 
 func TestRedDogCuiController_ActionLog(t *testing.T) {

@@ -31,5 +31,6 @@
   "cat.pi": "피",
   "bak.gwang": "光박",
   "bak.pi": "피박",
-  "bak.go": "고박"
+  "bak.go": "고박",
+  "categoryCounts": "  獲得内訳: 光{{gwang}} 열끗{{yeol}} 띠{{tti}} 피{{pi}}"
 }

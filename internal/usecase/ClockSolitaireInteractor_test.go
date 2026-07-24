@@ -100,6 +100,33 @@ func TestClockSolitaireInteractorAutoPlay(t *testing.T) {
 	})
 }
 
+func TestClockSolitaireInteractorUndo(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		g := newMockClockSolitaireGame()
+		p := newMockClockSolitairePresenter()
+		ci := NewClockSolitaireInteractor(g, p)
+
+		g.On("Undo").Return(nil)
+		p.On("Output", g, nil).Return("undo_output")
+
+		result := ci.Undo()
+		assert.Equal(t, "undo_output", result)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		g := newMockClockSolitaireGame()
+		p := newMockClockSolitairePresenter()
+		ci := NewClockSolitaireInteractor(g, p)
+
+		err := errors.New("no history")
+		g.On("Undo").Return(err)
+		p.On("Output", g, err).Return("error_output")
+
+		result := ci.Undo()
+		assert.Equal(t, "error_output", result)
+	})
+}
+
 func TestClockSolitaireInteractorActionLog(t *testing.T) {
 	g := newMockClockSolitaireGame()
 	p := newMockClockSolitairePresenter()

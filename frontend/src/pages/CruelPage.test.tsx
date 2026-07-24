@@ -205,6 +205,42 @@ describe('CruelPage', () => {
     expect(screen.getByText('空')).toBeInTheDocument();
   });
 
+  it('highlights only the suit-matching foundation when a card is click-selected (#3040)', async () => {
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    // Column 0 is fourColumn('SPADE', 2) → its top card is ♠5. Selecting it should
+    // mark only foundation pile 0 (♠) as the suit target, leaving ♣/♥/♦ unmarked.
+    fireEvent.click(screen.getByRole('button', { name: '♠ 5' }));
+
+    await waitFor(() => expect(screen.getByTestId('cruel-foundation-0')).toHaveAttribute('data-suit-target', 'true'));
+    expect(screen.getByTestId('cruel-foundation-1')).not.toHaveAttribute('data-suit-target');
+    expect(screen.getByTestId('cruel-foundation-2')).not.toHaveAttribute('data-suit-target');
+    expect(screen.getByTestId('cruel-foundation-3')).not.toHaveAttribute('data-suit-target');
+    // The matching pile gets the design-token ring; non-matching piles do not.
+    expect(screen.getByTestId('cruel-foundation-0').className).toContain('ring-ds-info');
+    expect(screen.getByTestId('cruel-foundation-3').className).not.toContain('ring-ds-info');
+  });
+
+  it('highlights the ♦ foundation when a diamond card is selected (#3040)', async () => {
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    // Column 3 is fourColumn('DIAMOND', 2) → top card ♦5 maps to foundation pile 3 (♦).
+    fireEvent.click(screen.getByRole('button', { name: '♦ 5' }));
+
+    await waitFor(() => expect(screen.getByTestId('cruel-foundation-3')).toHaveAttribute('data-suit-target', 'true'));
+    expect(screen.getByTestId('cruel-foundation-0')).not.toHaveAttribute('data-suit-target');
+  });
+
+  it('marks no foundation as a suit target when nothing is selected (#3040)', async () => {
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    for (let i = 0; i < 4; i += 1) {
+      expect(screen.getByTestId(`cruel-foundation-${i}`)).not.toHaveAttribute('data-suit-target');
+    }
+  });
+
   it('renders foundation suit labels above placed Aces', async () => {
     const stateWithEmptyFoundation: CruelResponse = {
       ...playingState,

@@ -114,7 +114,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	} else {
 		b.WriteString("\n")
 		if dealer.GetCardsSize() > 0 {
-			fmt.Fprintf(&b, "%s,\n", cuiCardStr(dealer.GetCard(0)))
+			fmt.Fprintf(&b, "%s, %s\n", cuiCardStr(dealer.GetCard(0)), i18n.T("blackjack.hiddenCard"))
 		}
 	}
 	b.WriteString("----------\n")
@@ -204,6 +204,14 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 				b.WriteString(color.Green(i18n.T("blackjack.resultWin")) + "\n")
 			case domain.GameResultLose:
 				b.WriteString(color.Red(i18n.T("blackjack.resultLose")) + "\n")
+			}
+		}
+		// Variant bonuses (e.g. Spanish 21's 5/6/7-card 21, 6-7-8, 7-7-7). Empty
+		// for standard Blackjack, so this leaves the normal output unchanged.
+		if bonusKeys := bj.GetBonusKeys(); len(bonusKeys) > 0 {
+			b.WriteString(color.BoldYellow(i18n.T("blackjack.bonusHeader")) + "\n")
+			for _, key := range bonusKeys {
+				b.WriteString(color.Yellow(i18n.Tf("blackjack.bonusLine", "name", i18n.T(key))) + "\n")
 			}
 		}
 		b.WriteString("\n----------\n")

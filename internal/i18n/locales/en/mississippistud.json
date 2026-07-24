@@ -21,5 +21,6 @@
   "phaseUnknown": "UNKNOWN",
   "playerWins": "Player wins!",
   "playerLoses": "Player loses.",
-  "push": "Push."
+  "push": "Push.",
+  "foldLossLine": "Loss on fold: {{loss}}"
 }

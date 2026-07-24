@@ -83,6 +83,10 @@ func (p *KingAlbertCuiPresenter) Output(bc interfaces.KingAlbertGame, lastErr er
 		case domain.KingAlbertPhasePlaying:
 			if bc.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Point the player at the concrete escape (how many undos are
+				// needed), matching the web StalemateEscapeButton.
+				b.WriteString(color.Yellow(i18n.Tf("kingalbert.stalemateEscape",
+					"count", strconv.Itoa(bc.UndoToEscape()))) + "\n")
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(bc.GetMoveCount())) + "\n")

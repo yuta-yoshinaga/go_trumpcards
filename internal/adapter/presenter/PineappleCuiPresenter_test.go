@@ -34,6 +34,9 @@ func setupPineappleCuiMock() *interfaces.MockPineappleGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("IsMuckAvailable").Return(false)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetInitialDealCount").Return(3).Maybe()
+	m.On("IsDiscardAfterFlopBetting").Return(false).Maybe()
+	m.On("GetDiscardDone").Return(([]bool)(nil)).Maybe()
 	return m
 }
 
@@ -125,6 +128,70 @@ func TestPineappleCuiPresenter_Output(t *testing.T) {
 		m.On("GetGameEndFlag").Return(true)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ゲーム終了")
+	})
+
+	t.Run("discard prompt says 1 card for a 3-card deal (Pineapple)", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.PineapplePhaseDiscard)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "手札から1枚選んで")
+	})
+
+	t.Run("discard prompt says 2 cards for a 4-card deal (Irish Poker)", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetInitialDealCount")
+		m.On("GetPhase").Return(domain.PineapplePhaseDiscard)
+		m.On("GetInitialDealCount").Return(4)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "手札から2枚選んで")
+	})
+
+	t.Run("hand is indexed during the discard phase before discarding", func(t *testing.T) {
+		m, players := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.PineapplePhaseDiscard)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[0]")
+		assert.Contains(t, result, "[2]")
+	})
+
+	t.Run("hand is not indexed outside the discard phase", func(t *testing.T) {
+		m, players := setupPineappleCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+
+		result := p.Output(m, nil) // default phase is pre-flop
+		assert.NotContains(t, result, "[0]")
+	})
+
+	t.Run("title is plain Pineapple for a 3-card pre-flop-discard deal", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "パイナップルポーカー")
+		assert.NotContains(t, result, "クレイジー")
+		assert.NotContains(t, result, "アイリッシュ")
+	})
+
+	t.Run("title is Crazy Pineapple when discarding after flop betting", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsDiscardAfterFlopBetting")
+		m.On("IsDiscardAfterFlopBetting").Return(true)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "クレイジーパイナップル")
+	})
+
+	t.Run("title is Irish Poker for a 4-card deal", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetInitialDealCount")
+		m.On("GetInitialDealCount").Return(4)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "アイリッシュポーカー")
 	})
 }
 

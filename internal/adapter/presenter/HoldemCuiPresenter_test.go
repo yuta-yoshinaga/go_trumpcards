@@ -416,6 +416,86 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestHoldemCuiPresenter_Output_LearningMode(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.HoldemCuiPresenter)
+
+	t.Run("equity and pot odds shown on human turn", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		h.SetCurrentTurn(0)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "[学習モード]")
+		assert.Contains(t, result, "勝率:")
+		assert.Contains(t, result, "ポットオッズ:")
+	})
+
+	t.Run("EV verdict shown when a call amount exists", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		h.SetCurrentTurn(0)
+		h.SetPot(100)
+		h.SetLastBet(50)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "EV (")
+	})
+
+	t.Run("no EV verdict when there is no call amount", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		h.SetCurrentTurn(0)
+		h.SetLastBet(0)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "[学習モード]")
+		assert.NotContains(t, result, "EV (")
+	})
+
+	t.Run("not shown when it is not the human's turn", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		h.SetCurrentTurn(1)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+
+		result := p.Output(h, nil)
+		assert.NotContains(t, result, "[学習モード]")
+	})
+
+	t.Run("not shown when the human has folded", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		h.SetCurrentTurn(0)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		players[0].SetFolded(true)
+
+		result := p.Output(h, nil)
+		assert.NotContains(t, result, "[学習モード]")
+	})
+
+	t.Run("not shown outside the betting phases", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseShowdown)
+		h.SetCurrentTurn(0)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+
+		result := p.Output(h, nil)
+		assert.NotContains(t, result, "[学習モード]")
+	})
+}
+
 func TestHoldemCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

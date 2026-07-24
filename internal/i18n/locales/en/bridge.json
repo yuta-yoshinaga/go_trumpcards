@@ -34,5 +34,7 @@
   "bidRedouble": "redouble",
   "bidUnknown": "unknown({{n}})",
   "hintReasonSupportPartner": "support partner",
-  "hintReasonCompetitiveBid": "competitive bid"
+  "hintReasonCompetitiveBid": "competitive bid",
+  "bidHistory": "Auction: {{bids}}",
+  "bidHistoryEntry": "{{name}}: {{bid}}"
 }

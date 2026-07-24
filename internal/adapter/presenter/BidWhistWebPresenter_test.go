@@ -46,6 +46,80 @@ func TestBidWhistWebPresenter_Output(t *testing.T) {
 	}
 }
 
+func TestBidWhistWebPresenter_KittyIndices(t *testing.T) {
+	kitty := []*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 5, false),
+		domain.NewCard(domain.CardDesignDiamond, 9, false),
+	}
+	orig := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 3, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+	}
+
+	parseOutput := func(t *testing.T, g *domain.BidWhist) controller.BidWhistWebOutput {
+		t.Helper()
+		p := &presenter.BidWhistWebPresenter{}
+		var parsed controller.BidWhistWebOutput
+		if err := json.Unmarshal([]byte(p.Output(g, nil)), &parsed); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		return parsed
+	}
+
+	// Entitled: the human is the declarer during kitty exchange, so the six
+	// kitty-origin cards in their merged hand are surfaced as indices.
+	t.Run("human declarer during exchange -> populated", func(t *testing.T) {
+		g := newBidWhistGame()
+		human := g.GetPlayer(0)
+		for _, c := range orig {
+			human.AddCard(c)
+		}
+		for _, c := range kitty {
+			human.AddCard(c) // kitty cards appended after the originals -> indices 2,3
+		}
+		g.SetDeclarerKitty(kitty)
+		g.SetDeclarerIdx(0)
+		g.SetPhase(domain.BidWhistPhaseKittyExchange)
+
+		parsed := parseOutput(t, g)
+		if got := parsed.KittyIndices; len(got) != 2 || got[0] != 2 || got[1] != 3 {
+			t.Errorf("kittyIndices = %v, want [2 3]", got)
+		}
+	})
+
+	// Gated (presenter): a CPU declarer must not leak its kitty to the human.
+	t.Run("cpu declarer during exchange -> empty", func(t *testing.T) {
+		g := newBidWhistGame()
+		cpu := g.GetPlayer(1)
+		for _, c := range kitty {
+			cpu.AddCard(c)
+		}
+		g.SetDeclarerKitty(kitty)
+		g.SetDeclarerIdx(1)
+		g.SetPhase(domain.BidWhistPhaseKittyExchange)
+
+		if got := parseOutput(t, g).KittyIndices; len(got) != 0 {
+			t.Errorf("kittyIndices = %v, want empty for CPU declarer", got)
+		}
+	})
+
+	// Gated (domain): outside the exchange phase there is nothing to highlight.
+	t.Run("human declarer after exchange -> empty", func(t *testing.T) {
+		g := newBidWhistGame()
+		human := g.GetPlayer(0)
+		for _, c := range kitty {
+			human.AddCard(c)
+		}
+		g.SetDeclarerKitty(kitty)
+		g.SetDeclarerIdx(0)
+		g.SetPhase(domain.BidWhistPhasePlay)
+
+		if got := parseOutput(t, g).KittyIndices; len(got) != 0 {
+			t.Errorf("kittyIndices = %v, want empty outside exchange phase", got)
+		}
+	})
+}
+
 func TestBidWhistWebPresenter_Error(t *testing.T) {
 	g := newBidWhistGame()
 	g.Reset()

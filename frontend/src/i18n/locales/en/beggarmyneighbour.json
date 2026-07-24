@@ -1,7 +1,8 @@
 {
   "button": {
     "step": "Play Card",
-    "autoplay": "Auto Play"
+    "autoplay": "Auto Play",
+    "stopAutoplay": "Stop"
   },
   "phase": {
     "play": "Playing",
@@ -21,12 +22,22 @@
   },
   "settings": {
     "maxRounds": "Max Rounds",
-    "maxRoundsHelp": "A cap that prevents the game from running indefinitely when penalty chains loop. The game ends when either player runs out of cards or the max round is reached."
+    "maxRoundsHelp": "A cap that prevents the game from running indefinitely when penalty chains loop. The game ends when either player runs out of cards or the max round is reached.",
+    "speed": "Playback speed",
+    "speedHelp": "How fast each play's animation runs while autoplaying. Faster races to the finish; slower lets each play out.",
+    "speedSlow": "Slow",
+    "speedNormal": "Normal",
+    "speedFast": "Fast"
   },
   "hint": {
     "playCard": "Play the next card",
     "payPenalty": "Pay your penalty card",
     "collectPile": "Collect the central pile"
+  },
+  "readout": {
+    "cardCount": "{{count}} cards",
+    "roundProgress": "Round {{played}} / {{max}}",
+    "countBarLabel": "Held cards: you {{you}}, CPU {{cpu}}"
   },
   "tutorial": {
     "cpuPile": "CPU's card pile. Shows remaining card count.",
@@ -35,5 +46,7 @@
     "stepButton": "Press this button to play the next card.",
     "autoplayButton": "Press this button to auto-play until the game ends.",
     "resetButton": "Start a new game."
-  }
+  },
+  "phaseAnnounce": "Phase: {{phase}}",
+  "phaseAnnouncePenalty": "Phase: {{phase}}. Penalty remaining {{count}} cards"
 }

@@ -29,5 +29,6 @@
   "promptDoubtPhaseGeneric": "Doubt phase",
   "promptDoubtHelp": "d <idx...>: doubt / s: skip",
   "promptCurrentPlayer": "{{name}} to play",
-  "promptPlayHelp": "p <value> <idx...>: play cards"
+  "promptPlayHelp": "p <value> <idx...>: play cards",
+  "tell": "(looks nervous…)"
 }

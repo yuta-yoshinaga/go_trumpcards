@@ -17,6 +17,7 @@
   "trump": "Trump {{suit}}",
   "pot": "Pot {{n}}",
   "potIncrease": "+{{n}}",
+  "potIncreaseAnnounce": "Pot +{{delta}} (total {{total}})",
   "target": "Target {{n}}",
   "cards": "{{count}} cards",
   "roundTricks": "{{count}} round tricks",
@@ -34,6 +35,12 @@
     "title": "Round Result",
     "winner": "Round winner: {{name}} takes the pot",
     "spoil": "Spoil (流局)! Nobody reached 3 tricks — the pot carries to the next round"
+  },
+  "trumpLegend": {
+    "title": "Top-trump order",
+    "caption": "Trump strength is fixed (current trump: {{suit}}). The three top trumps (trump 5, J, and ♥A) carry no follow obligation and may be held back (Reneging). Other trumps use a simplified 10-high order (no red/black reversal).",
+    "otherTrumps": "other trumps (10-high)",
+    "nonTrump": "non-trump"
   },
   "hintAvailable": "Hint",
   "hint": {

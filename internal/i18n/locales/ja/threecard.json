@@ -23,5 +23,7 @@
   "dealerWins": "ディーラーの勝ち！",
   "playerFolded": "プレイヤーがフォールド。",
   "push": "プッシュ！",
+  "anteBonusPayoutLine": "アンテボーナス配当: {{payout}}",
+  "pairPlusPayoutLine": "ペアプラス配当: {{payout}}",
   "totalPayoutLine": "合計払戻し: {{payout}}"
 }

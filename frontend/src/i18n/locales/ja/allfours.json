@@ -46,6 +46,14 @@
     "jack": "Jack (Jトランプの捕獲)",
     "game": "Game (ピップ合計最大)"
   },
+  "breakdown": {
+    "title": "得点内訳",
+    "high": "High",
+    "low": "Low",
+    "jack": "Jack",
+    "game": "Game",
+    "none": "−"
+  },
   "hint": {
     "begBeg": "弱い手札なのでベグ",
     "begStand": "十分な手札なのでスタンド",
@@ -63,5 +71,11 @@
     "playButton": "カードを選んだらこのボタンで出します。",
     "scoreTable": "スコア表です。High/Low/Jack/Game の4ポイントを競い、先に7点で勝利です。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "suitName": {
+    "spade": "スペード",
+    "club": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
   }
 }

@@ -25,6 +25,8 @@ import { gameTheme } from '../styles/gameTheme';
 import type { DurakResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { DURAK_HELP, parseDurakCommand } from '../utils/cli/commands/durakCommands';
+import { formatDurakState } from '../utils/cli/formatters/durakFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
@@ -96,9 +98,9 @@ function DurakPageContent() {
   const durakCliConfig: CliGameConfig<DurakResponse, Parameters<typeof gameExec>> = useMemo(
     () => ({
       gameName: 'durak',
-      parseCommand: (_cmd: string) => ({ error: 'CLI not supported' }) as const,
-      formatResponse: (_res: DurakResponse): string => '',
-      helpText: [] as string[],
+      parseCommand: parseDurakCommand,
+      formatResponse: formatDurakState,
+      helpText: DURAK_HELP,
     }),
     [],
   );
@@ -117,6 +119,21 @@ function DurakPageContent() {
     hideActionLog();
     void gameExec('reset', undefined, undefined, durakConfig);
   }, [gameExec, hideActionLog, durakConfig]);
+
+  // Play a card-place sound when the human commits an attack or defense card, and
+  // an error buzz for the disadvantageous "take" action (defender scoops the table).
+  const handleAttackWithSound = useCallback(() => {
+    playSound('cardPlace');
+    handleAttack();
+  }, [playSound, handleAttack]);
+  const handleDefendWithSound = useCallback(() => {
+    playSound('cardPlace');
+    handleDefend();
+  }, [playSound, handleDefend]);
+  const handleTakeWithSound = useCallback(() => {
+    playSound('errorBuzz');
+    handleTake();
+  }, [playSound, handleTake]);
 
   if (!state)
     return (
@@ -310,7 +327,12 @@ function DurakPageContent() {
 
                 {/* CPU actions */}
                 {state.cpuActions.length > 0 && (
-                  <div className="bg-black/40 rounded-lg text-game-text-muted py-2 px-3.5 my-2 whitespace-pre-line text-xs">
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    data-testid="durak-cpu-actions"
+                    className="bg-black/40 rounded-lg text-game-text-muted py-2 px-3.5 my-2 whitespace-pre-line text-xs"
+                  >
                     {[
                       tc('label.cpuActions'),
                       ...state.cpuActions.map(
@@ -411,7 +433,7 @@ function DurakPageContent() {
                   type="button"
                   className={`${btnDanger} min-w-[90px]`}
                   disabled={loading || selectedCardIdx === null}
-                  onClick={handleAttack}
+                  onClick={handleAttackWithSound}
                 >
                   {t('attackButton')}
                 </button>
@@ -421,7 +443,7 @@ function DurakPageContent() {
                   type="button"
                   className={`${btnSuccess} min-w-[90px]`}
                   disabled={loading || selectedCardIdx === null || selectedAttackIdx === null}
-                  onClick={handleDefend}
+                  onClick={handleDefendWithSound}
                 >
                   {t('defendButton')}
                 </button>
@@ -437,7 +459,12 @@ function DurakPageContent() {
                 </button>
               )}
               {showTakeBtn && (
-                <button type="button" className={`${btnPrimary} min-w-[90px]`} disabled={loading} onClick={handleTake}>
+                <button
+                  type="button"
+                  className={`${btnPrimary} min-w-[90px]`}
+                  disabled={loading}
+                  onClick={handleTakeWithSound}
+                >
                   {t('takeButton')}
                 </button>
               )}

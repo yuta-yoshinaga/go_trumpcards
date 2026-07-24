@@ -95,6 +95,43 @@ describe('ThirtyOnePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
+  it('summarizes life losses at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.ROUND_END, roundWinnerIdx: 0, roundLosers: [1] }));
+    renderWithProviders(<ThirtyOnePage />);
+    const summary = await screen.findByTestId('thirtyone-round-summary');
+    expect(summary).toHaveTextContent('CPU 1 がライフを1つ失った');
+    // No 31 achiever and player 1 not eliminated in this fixture.
+    expect(screen.queryByTestId('thirtyone-achiever')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('eliminated-1')).not.toBeInTheDocument();
+  });
+
+  it('highlights the 31 achiever and newly eliminated players in the summary', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: ThirtyOnePhase.ROUND_END,
+        thirtyOneIdx: 2,
+        roundLosers: [1, 3],
+        players: [
+          player(0, true, [card('SPADE', 3)]),
+          player(1, false, [], { lives: 1 }),
+          player(2, false, []),
+          player(3, false, [], { lives: 0, isEliminated: true }),
+        ],
+      }),
+    );
+    renderWithProviders(<ThirtyOnePage />);
+    expect(await screen.findByTestId('thirtyone-achiever')).toHaveTextContent('CPU 2 が31達成');
+    // Player 3 dropped to 0 lives → shown as eliminated; player 1 merely lost a life.
+    expect(screen.getByTestId('eliminated-3')).toBeInTheDocument();
+    expect(screen.queryByTestId('eliminated-1')).not.toBeInTheDocument();
+  });
+
+  it('states when nobody lost a life at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.ROUND_END, roundLosers: [] }));
+    renderWithProviders(<ThirtyOnePage />);
+    expect(await screen.findByTestId('no-life-loss')).toBeInTheDocument();
+  });
+
   it('reveals CPU lives at all times', async () => {
     renderWithProviders(<ThirtyOnePage />);
     await screen.findByTestId('draw-stock-button');
@@ -206,6 +243,58 @@ describe('ThirtyOnePage', () => {
     renderWithProviders(<ThirtyOnePage />);
     expect(await screen.findByPlaceholderText(/コマンド/)).toBeInTheDocument();
     expect(screen.queryByTestId('draw-stock-button')).not.toBeInTheDocument();
+  });
+
+  it('advertises keyboard shortcuts on the action buttons', async () => {
+    renderWithProviders(<ThirtyOnePage />);
+    const drawStock = await screen.findByTestId('draw-stock-button');
+    expect(drawStock).toHaveAttribute('aria-keyshortcuts', 's');
+    expect(drawStock).toHaveTextContent('S');
+    expect(screen.getByTestId('draw-discard-button')).toHaveAttribute('aria-keyshortcuts', 'd');
+    expect(screen.getByTestId('knock-button')).toHaveAttribute('aria-keyshortcuts', 'k');
+    expect(screen.getByTestId('discard-button')).toHaveAttribute('aria-keyshortcuts', 'x');
+  });
+
+  it('draws from stock when the "s" key is pressed', async () => {
+    renderWithProviders(<ThirtyOnePage />);
+    await screen.findByTestId('draw-stock-button');
+    fireEvent.keyDown(document.body, { key: 's' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+  });
+
+  it('draws from the discard pile when the "d" key is pressed', async () => {
+    renderWithProviders(<ThirtyOnePage />);
+    await screen.findByTestId('draw-discard-button');
+    fireEvent.keyDown(document.body, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard'));
+  });
+
+  it('knocks when the "k" key is pressed', async () => {
+    renderWithProviders(<ThirtyOnePage />);
+    await screen.findByTestId('knock-button');
+    fireEvent.keyDown(document.body, { key: 'k' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('knock'));
+  });
+
+  it('discards the selected card when the "x" key is pressed in the discard phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.DISCARD }));
+    renderWithProviders(<ThirtyOnePage />);
+    // The key is inert until a card is selected (mirrors the disabled button).
+    fireEvent.keyDown(document.body, { key: 'x' });
+    expect(mockExec).not.toHaveBeenCalledWith('discard', expect.anything());
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    fireEvent.keyDown(document.body, { key: 'x' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', 0));
+  });
+
+  it('ignores action keys when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+    renderWithProviders(<ThirtyOnePage />);
+    await screen.findByTestId('draw-stock-button');
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 's' });
+    fireEvent.keyDown(document.body, { key: 'k' });
+    await waitFor(() => expect(mockExec).not.toHaveBeenCalled());
   });
 
   it('shows a retry button when an action fails', async () => {

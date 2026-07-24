@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { caribbeanstudApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -17,6 +17,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { outcomeFromResult, useCaribbeanStudStats } from '../hooks/useCaribbeanStudStats';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -108,6 +109,27 @@ function CaribbeanStudPageContent() {
   const isActionPhase = state?.phase === CaribbeanStudPhase.ACTION;
   const isEndPhase = state?.phase === CaribbeanStudPhase.END;
 
+  // Session stats persisted in localStorage; survive game resets, cleared only
+  // by the explicit clear button (or a page reload).
+  const { tally, recordRound, clearHistory } = useCaribbeanStudStats();
+  // Record each finished round exactly once. The guard keys on the END-phase
+  // episode: it flips true when the round resolves and resets whenever the phase
+  // leaves END (a new round begins), so re-renders at END never double-count.
+  const recordedRef = useRef(false);
+  const phase = state?.phase;
+  const result = state?.result;
+  const net = state === null ? 0 : state.totalPayout - (state.anteBet + state.jackpotBet + state.playBet);
+  useEffect(() => {
+    if (phase === CaribbeanStudPhase.END) {
+      if (!recordedRef.current && result !== undefined) {
+        recordedRef.current = true;
+        recordRound({ outcome: outcomeFromResult(result), net });
+      }
+    } else {
+      recordedRef.current = false;
+    }
+  }, [phase, result, net, recordRound]);
+
   const actionBindings = useMemo(
     () => [
       {
@@ -186,14 +208,48 @@ function CaribbeanStudPageContent() {
               messageParams={state.messageParams}
             />
 
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={frontendHintEnabled}
-                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-              />
-              {tc('hint.toggle', { ns: 'tutorial' })}
-            </label>
+            {tally.hands > 0 && (
+              <div
+                data-testid="csp-session-stats"
+                className="mx-auto mb-3 max-w-sm rounded-lg bg-black/30 px-4 py-2 text-center text-sm"
+              >
+                <div className="font-bold text-ds-text-primary mb-1">{t('session.title')}</div>
+                <div className="flex items-center justify-center gap-3 text-ds-text-muted">
+                  <span data-testid="csp-session-tally">
+                    {t('session.tally', {
+                      wins: tally.wins,
+                      losses: tally.losses,
+                      pushes: tally.pushes,
+                    })}
+                  </span>
+                  <span>{t('session.hands', { hands: tally.hands })}</span>
+                  <span
+                    data-testid="csp-session-net"
+                    className={
+                      tally.net > 0
+                        ? 'font-bold text-ds-success'
+                        : tally.net < 0
+                          ? 'font-bold text-ds-error'
+                          : 'font-bold text-ds-text-muted'
+                    }
+                  >
+                    {t('session.net')}: {tally.net > 0 ? `+${tally.net}` : tally.net}
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center justify-center gap-3 text-xs text-ds-text-muted">
+                  <span>{t('session.note')}</span>
+                  <button
+                    type="button"
+                    className="underline hover:text-ds-text-primary"
+                    onClick={clearHistory}
+                    disabled={loading}
+                    data-testid="csp-session-clear"
+                  >
+                    {t('session.clear')}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
@@ -252,8 +308,8 @@ function CaribbeanStudPageContent() {
               <div className="mb-4" data-tutorial="csp-results">
                 <div className="text-ds-warning font-bold text-center mb-1">
                   <span aria-hidden="true">🟡</span> {t('player')}
-                  {isEndPhase && (
-                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0')})</span>
+                  {isEndPhase && HAND_RANK_KEYS[state.playerHandRank] && (
+                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank])})</span>
                   )}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
@@ -268,8 +324,8 @@ function CaribbeanStudPageContent() {
               <div className="mb-4">
                 <div className="text-ds-error font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
-                  {isEndPhase && (
-                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank] ?? 'handRank.0')})</span>
+                  {isEndPhase && HAND_RANK_KEYS[state.dealerHandRank] && (
+                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>
                   )}
                   {isEndPhase && (
                     <span className="ml-2 text-xs">
@@ -280,7 +336,11 @@ function CaribbeanStudPageContent() {
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.dealerHand.map((card, i) =>
                     isMaskedCard(card) ? (
-                      <AnimatedCardBack key={`d-back-${i}`} width={cardWidth} />
+                      // role="img" + aria-label makes AT announce "hidden card"
+                      // instead of the generic card-back alt on the inner image.
+                      <span key={`d-back-${i}`} role="img" aria-label={t('hiddenCard')} className="inline-flex">
+                        <AnimatedCardBack width={cardWidth} />
+                      </span>
                     ) : (
                       <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                     ),
@@ -317,7 +377,22 @@ function CaribbeanStudPageContent() {
 
           <GameFooter className={`${gameTheme.caribbeanstud.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel title={t('settings.title')} groups={[]} />
+            <SettingsPanel
+              title={t('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'checkbox',
+                      id: 'frontendHint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: frontendHintEnabled,
+                      onToggle: setFrontendHintEnabled,
+                    },
+                  ],
+                },
+              ]}
+            />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="csp-bet-controls">
                 <ChipBetInput

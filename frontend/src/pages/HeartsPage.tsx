@@ -27,12 +27,13 @@ import { badgeErrorColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { HeartsResponse } from '../types/card';
+import type { Card, HeartsResponse } from '../types/card';
 import { HeartsPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { HEARTS_HELP, parseHeartsCommand } from '../utils/cli/commands/heartsCommands';
 import { formatHeartsState } from '../utils/cli/formatters/heartsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { heartsLegalPlayIndices } from '../utils/heartsLegal';
 import { heartsPassTarget } from '../utils/heartsPass';
 import { shootTheMoonAlertIdx } from '../utils/heartsShootMoonAlert';
 import { playerName } from '../utils/playerUtils';
@@ -189,6 +190,18 @@ function HeartsPageContent() {
   const isGameEnd = state.phase === HeartsPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
+  // On the human's play turn, mirror the server's legal-move rules
+  // (internal/domain/Hearts.go validatePlay) so legal cards are ringed and
+  // illegal ones are dimmed with a reason tooltip.
+  const heartsPlayCtx = {
+    currentTrick: state.currentTrick,
+    heartsBroken: state.heartsBroken,
+    trickNumber: state.trickNumber,
+    omnibusJD: state.config.omnibusJD,
+  };
+  const legalPlayIndices =
+    isHumanTurn && humanPlayer ? heartsLegalPlayIndices(humanPlayer.cards, heartsPlayCtx) : undefined;
+
   return (
     <GamePageShell
       title={tc('nav.hearts')}
@@ -313,7 +326,8 @@ function HeartsPageContent() {
                           <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                             {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                             {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                            {t('roundScore', { score: p.roundScore })}
+                            {t('roundScore', { score: p.roundScore })} |{' '}
+                            <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
                             {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
                           </div>
                         ))}
@@ -327,7 +341,8 @@ function HeartsPageContent() {
                         <div className="text-ds-text-muted text-sm">
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                          {t('roundScore', { score: p.roundScore })}
+                          {t('roundScore', { score: p.roundScore })} |{' '}
+                          <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
                           {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
                         </div>
                       </div>
@@ -351,6 +366,7 @@ function HeartsPageContent() {
                           <th scope="col">{t('scoresRound')}</th>
                           <th scope="col">{t('scoresTotal')}</th>
                           <th scope="col">{t('scoresTricks')}</th>
+                          <th scope="col">{t('penaltyTaken')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -360,6 +376,9 @@ function HeartsPageContent() {
                             <td className="text-center">{p.roundScore}</td>
                             <td className="text-center">{p.cumulativeScore}</td>
                             <td className="text-center">{p.trickCount}</td>
+                            <td className="text-center">
+                              <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -377,6 +396,7 @@ function HeartsPageContent() {
                           <th scope="col">{t('scoresRound')}</th>
                           <th scope="col">{t('scoresTotal')}</th>
                           <th scope="col">{t('scoresTricks')}</th>
+                          <th scope="col">{t('penaltyTaken')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -386,6 +406,9 @@ function HeartsPageContent() {
                             <td className="text-center">{p.roundScore}</td>
                             <td className="text-center">{p.cumulativeScore}</td>
                             <td className="text-center">{p.trickCount}</td>
+                            <td className="text-center">
+                              <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -432,6 +455,7 @@ function HeartsPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="ht"
+                legalIndices={legalPlayIndices}
               />
             )}
 
@@ -508,6 +532,53 @@ function HeartsPageContent() {
         </>
       )}
     </GamePageShell>
+  );
+}
+
+/** Queen of Spades value constant (matches the backend penalty-card filter). */
+const QUEEN_VALUE = 12;
+
+/**
+ * Compact, accessible breakdown of a player's captured penalty cards:
+ * "♥×N" for the hearts count and "♠Q" when the Queen of Spades has been taken.
+ * The visible glyphs are decorative; the full description is exposed to screen
+ * readers via aria-label. Renders "—" when no penalty cards are held.
+ */
+function HeartsPenaltyBreakdown({
+  cards,
+  t,
+}: {
+  cards: Card[];
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}) {
+  const heartsCount = cards.filter((c) => c.design === 'HEART').length;
+  const hasQueenSpades = cards.some((c) => c.design === 'SPADE' && c.value === QUEEN_VALUE);
+  const parts: string[] = [];
+  if (heartsCount > 0) parts.push(t('penaltyHearts', { count: heartsCount }));
+  if (hasQueenSpades) parts.push(t('penaltyQueenSpades'));
+  const summary = parts.length > 0 ? parts.join(', ') : t('penaltyNone');
+  return (
+    <span
+      data-testid="hearts-penalty-breakdown"
+      className="inline-flex items-center gap-1"
+      role="img"
+      aria-label={`${t('penaltyTaken')}: ${summary}`}
+    >
+      {heartsCount === 0 && !hasQueenSpades ? (
+        <span aria-hidden="true" className="text-ds-text-muted">
+          —
+        </span>
+      ) : (
+        <>
+          {heartsCount > 0 && <span aria-hidden="true" className="text-ds-text-primary">{`♥×${heartsCount}`}</span>}
+          {hasQueenSpades && (
+            <span aria-hidden="true" className="text-ds-text-primary font-bold">
+              ♠Q
+            </span>
+          )}
+        </>
+      )}
+    </span>
   );
 }
 

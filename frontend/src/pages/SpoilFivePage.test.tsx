@@ -79,6 +79,23 @@ describe('SpoilFivePage', () => {
     fireEvent.click(playBtn);
     const delta = await screen.findByTestId('spoilfive-pot-delta');
     expect(delta).toHaveTextContent('+5');
+    // The visible pulse is decorative (colour-only, transient) → hidden from SR.
+    expect(delta).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('announces the pot change to screen readers with delta and total', async () => {
+    renderWithProviders(<SpoilFivePage />);
+    const card = await screen.findByAltText('♥ Q');
+    const announce = screen.getByTestId('spoilfive-pot-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    // Empty until the pot grows.
+    expect(announce).toHaveTextContent('');
+    fireEvent.click(card);
+    const playBtn = await screen.findByRole('button', { name: '出す' });
+    mockExec.mockResolvedValue(spoilState); // pot 5 -> 10
+    fireEvent.click(playBtn);
+    await waitFor(() => expect(screen.getByTestId('spoilfive-pot-announce')).toHaveTextContent('ポット +5（合計 10）'));
   });
 
   it('renders trick end with the next trick button', async () => {
@@ -117,6 +134,29 @@ describe('SpoilFivePage', () => {
     renderWithProviders(<SpoilFivePage />);
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.getByText(/ポット/)).toBeInTheDocument();
-    expect(screen.getByText(/切り札/)).toBeInTheDocument();
+    expect(screen.getByText('切り札 ♥')).toBeInTheDocument();
+  });
+
+  it('renders the top-trump order legend without a duplicate trump ace when Hearts is trump', async () => {
+    // Default state has trumpSuit 3 (Hearts): the ♥A is the trump ace, so it must not be duplicated.
+    renderWithProviders(<SpoilFivePage />);
+    const legend = await screen.findByTestId('spoilfive-trump-legend');
+    expect(legend).toHaveTextContent('トップトランプ順序');
+    expect(legend).toHaveTextContent('5♥');
+    expect(legend).toHaveTextContent('J♥');
+    expect(legend).toHaveTextContent('A♥');
+    expect(legend).toHaveTextContent('その他の切り札');
+    expect(legend).toHaveTextContent('非切り札');
+    // Hearts trump: A♥ appears exactly once (no separate trump-ace entry).
+    expect(legend.textContent?.match(/A♥/g)?.length).toBe(1);
+  });
+
+  it('lists the trump ace separately when a black suit is trump', async () => {
+    mockExec.mockResolvedValue(makeSpoilFiveState({ trumpSuit: 1 })); // ♠
+    renderWithProviders(<SpoilFivePage />);
+    const legend = await screen.findByTestId('spoilfive-trump-legend');
+    expect(legend).toHaveTextContent('5♠');
+    expect(legend).toHaveTextContent('A♠');
+    expect(legend).toHaveTextContent('A♥');
   });
 });

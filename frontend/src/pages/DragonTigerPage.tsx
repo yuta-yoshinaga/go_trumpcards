@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { dragontigerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { RoadmapTrendBar } from '../components/RoadmapTrendBar';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -31,7 +32,16 @@ import { DRAGONTIGER_CLI_HELP, parseDragonTigerCommand } from '../utils/cli/comm
 import { formatDragonTigerState } from '../utils/cli/formatters/dragontigerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 
-const DT_TUTORIAL_STEPS: TutorialStep[] = [];
+const DT_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="dt-bet-controls"]',
+    messageKey: 'tutorial.betControls',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  { target: '[data-tutorial="dt-cards"]', messageKey: 'tutorial.cards', placement: 'bottom', advanceOn: 'next' },
+  { target: '[data-tutorial="dt-bigroad"]', messageKey: 'tutorial.bigRoad', placement: 'top', advanceOn: 'next' },
+];
 
 /** Renders the Dragon Tiger game page (#1684). */
 export const DragonTigerPage = withTutorial(DragonTigerPageContent, 'dragontiger', DT_TUTORIAL_STEPS);
@@ -41,6 +51,9 @@ function DragonTigerPageContent() {
     useGamePageSetup('dragontiger');
 
   const [betAmount, setBetAmount] = useState(100);
+  // Snapshot of the last submitted bet (amount + target) so the player can
+  // replay the same wager at end phase with a single action (#3242).
+  const [lastBet, setLastBet] = useState<{ amount: number; type: number } | null>(null);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(dragontigerApi.exec);
@@ -62,14 +75,35 @@ function DragonTigerPageContent() {
   const isBetPhase = state?.phase === DragonTigerPhase.BET;
   const isEndPhase = state?.phase === DragonTigerPhase.END;
 
+  const handleBet = useCallback(
+    (betType: number) => {
+      setLastBet({ amount: betAmount, type: betType });
+      return execApi('bet', betAmount, betType);
+    },
+    [execApi, betAmount],
+  );
+  // A rebet is possible only when a prior bet exists and the player can still
+  // afford it against the current chip balance.
+  const canRebet = lastBet !== null && lastBet.amount > 0 && !!state && lastBet.amount <= state.chips;
+  const handleRebet = useCallback(async () => {
+    if (lastBet === null) return;
+    await execApi('reset');
+    await execApi('bet', lastBet.amount, lastBet.type);
+  }, [execApi, lastBet]);
+
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: () => execApi('bet', betAmount, DragonTigerBetType.DRAGON), enabled: isBetPhase },
-      { key: 't', action: () => execApi('bet', betAmount, DragonTigerBetType.TIGER), enabled: isBetPhase },
-      { key: 'e', action: () => execApi('bet', betAmount, DragonTigerBetType.TIE), enabled: isBetPhase },
+      { key: 'd', action: () => handleBet(DragonTigerBetType.DRAGON), enabled: isBetPhase },
+      { key: 't', action: () => handleBet(DragonTigerBetType.TIGER), enabled: isBetPhase },
+      // 'e' bets Tie during the bet phase, then replays the last wager at end phase.
+      {
+        key: 'e',
+        action: () => (isEndPhase ? handleRebet() : handleBet(DragonTigerBetType.TIE)),
+        enabled: isBetPhase || (isEndPhase && canRebet),
+      },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
     ],
-    [execApi, betAmount, isBetPhase, isEndPhase],
+    [execApi, handleBet, handleRebet, isBetPhase, isEndPhase, canRebet],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
@@ -81,7 +115,6 @@ function DragonTigerPageContent() {
     );
   }
 
-  const handleBet = (betType: number) => execApi('bet', betAmount, betType);
   const handleReset = () => execApi('reset');
   const handleClearHistory = () => execApi('clear');
 
@@ -136,6 +169,7 @@ function DragonTigerPageContent() {
         <>
           <div
             data-testid="card-area"
+            data-tutorial="dt-cards"
             className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
               .filter(Boolean)
               .join(' ')}
@@ -172,7 +206,7 @@ function DragonTigerPageContent() {
             )}
 
             {state.history.length > 0 && (
-              <div className="mb-4" data-testid="bigroad">
+              <div className="mb-4" data-testid="bigroad" data-tutorial="dt-bigroad">
                 <div className="text-ds-text-primary text-center text-sm font-bold mb-1">{t('label.bigRoad')}</div>
                 <div className="mx-auto max-w-3xl">
                   <RoadmapTrendBar
@@ -234,7 +268,7 @@ function DragonTigerPageContent() {
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel title={tc('settings.title')} groups={[]} />
             {isBetPhase && (
-              <div className="flex flex-col items-center gap-2 pb-2">
+              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="dt-bet-controls">
                 <ChipBetInput
                   id="dragontiger-bet-amount"
                   label={t('label.bet')}
@@ -272,6 +306,28 @@ function DragonTigerPageContent() {
             )}
             {isEndPhase && (
               <div className="flex justify-center gap-2 pb-2 flex-wrap">
+                {canRebet && lastBet !== null && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleRebet}
+                    disabled={loading}
+                    data-testid="dt-rebet-button"
+                    aria-keyshortcuts="e"
+                  >
+                    {t('button.rebet', {
+                      type: t(
+                        lastBet.type === DragonTigerBetType.DRAGON
+                          ? 'payout.dragon'
+                          : lastBet.type === DragonTigerBetType.TIGER
+                            ? 'payout.tiger'
+                            : 'payout.tie',
+                      ),
+                      amount: lastBet.amount,
+                    })}
+                    <KbdBadge label={t('kbd.rebet')} />
+                  </button>
+                )}
                 <GameResetButton
                   isGameEnd={isEndPhase}
                   onReset={handleReset}

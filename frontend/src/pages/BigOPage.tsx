@@ -282,26 +282,35 @@ function BigOPageContent() {
                   </div>
                 </>
               );
-              const cpuPlayerCards = cpuPlayers.map((player) => (
-                <CpuPlayerCard
-                  key={player.id}
-                  player={player}
-                  showCards={isShowdown}
-                  faceDownCount={5}
-                  showHandName={isShowdown}
-                  extraInfo={
-                    player.totalHands > 0 ? (
-                      <HudStats
-                        namespace="bigo"
-                        vpip={player.vpip}
-                        pfr={player.pfr}
-                        threeBet={player.threeBet}
-                        af={player.af}
-                      />
-                    ) : undefined
-                  }
-                />
-              ));
+              const cpuPlayerCards = cpuPlayers.map((player) => {
+                // At showdown, highlight the exactly-2 hole cards this CPU used
+                // in its best hand under Big O's must-use-2-hole + 3-board rule.
+                const cpuUsedHoleIdx =
+                  isShowdown && !player.folded
+                    ? (omahaBestFive(player.cards ?? [], state?.communityCards ?? [])?.holeIdx ?? undefined)
+                    : undefined;
+                return (
+                  <CpuPlayerCard
+                    key={player.id}
+                    player={player}
+                    showCards={isShowdown}
+                    faceDownCount={5}
+                    showHandName={isShowdown}
+                    usedHoleIdx={cpuUsedHoleIdx}
+                    extraInfo={
+                      player.totalHands > 0 ? (
+                        <HudStats
+                          namespace="bigo"
+                          vpip={player.vpip}
+                          pfr={player.pfr}
+                          threeBet={player.threeBet}
+                          af={player.af}
+                        />
+                      ) : undefined
+                    }
+                  />
+                );
+              });
 
               if (isLargeDesktop) {
                 return (
@@ -384,14 +393,21 @@ function BigOPageContent() {
                   <span aria-hidden="true">🎯</span>
                   {t('mandatoryRule')}
                 </div>
-                <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="bo-combination-rule">
+                {/* Big O deals 5 hole cards; on mobile keep them on a single
+                    scrollable row (never wrap) so all 5 stay visible with
+                    full-size tap targets. Desktop keeps the wrapping layout. */}
+                <div
+                  className={`gap-1.5 mb-2 ${isMobile ? 'flex flex-nowrap overflow-x-auto pb-1' : 'flex flex-wrap'}`}
+                  data-testid="bigo-hole-cards"
+                  data-tutorial="bo-combination-rule"
+                >
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
                         const inBest = showdownBest5.holeSet.has(idx);
                         const showUsage = showdownBest5.holeSet.size > 0;
                         const dim = showUsage && !inBest;
                         return (
-                          <div key={`${card.design}-${card.value}`} className="flex flex-col items-center">
+                          <div key={`${card.design}-${card.value}`} className="flex shrink-0 flex-col items-center">
                             <div
                               className={`transition-all ${
                                 inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
@@ -412,7 +428,11 @@ function BigOPageContent() {
                         );
                       })
                     : !humanPlayer.folded &&
-                      Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="shrink-0">
+                          <AnimatedCardBack width={cardWidth} />
+                        </div>
+                      ))}
                 </div>
               </div>
             )}

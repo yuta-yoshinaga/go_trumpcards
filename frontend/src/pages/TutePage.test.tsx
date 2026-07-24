@@ -32,6 +32,7 @@ const gameEndState = makeTuteState({
 const cpuTurnState = makeTuteState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
@@ -74,9 +75,18 @@ describe('TutePage', () => {
   it('shows marriage declaration buttons when allowed and dispatches a suit', async () => {
     mockExec.mockResolvedValue(marriageState);
     renderWithProviders(<TutePage />);
-    const heartBtn = await screen.findByRole('button', { name: '結婚宣言 ♥' });
+    // The button's accessible name is now the spoken aria-label (suit name + points);
+    // heart is not the trump (♦) so the marriage is worth 20.
+    const heartBtn = await screen.findByRole('button', { name: 'ハートのマリッジを宣言（20点）' });
     fireEvent.click(heartBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('marriage', { suit: 3 }));
+  });
+
+  it('labels a trump-suit marriage as worth 40 points', async () => {
+    // Make heart (the human's K+Q suit) the trump so the marriage is worth 40.
+    mockExec.mockResolvedValue(makeTuteState({ canDeclareMarriage: true, trumpSuit: 3 }));
+    renderWithProviders(<TutePage />);
+    expect(await screen.findByRole('button', { name: 'ハートのマリッジを宣言（40点）' })).toBeInTheDocument();
   });
 
   it('shows the Tute declaration button when allowed and dispatches', async () => {
@@ -123,6 +133,18 @@ describe('TutePage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<TutePage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたのチームの勝ち！')).toBeInTheDocument());
+  });
+
+  it('shows the declared-marriage readout reflecting declaredSuits', async () => {
+    // Club (suit 2) declared; the other three suits remain undeclared.
+    mockExec.mockResolvedValue(makeTuteState({ declaredSuits: [false, false, true, false, false] }));
+    renderWithProviders(<TutePage />);
+    const panel = await screen.findByTestId('tute-declared-marriages');
+    expect(panel).toHaveTextContent('宣言済みマリッジ');
+    // One suit declared, three not declared.
+    expect(screen.getAllByText('宣言済')).toHaveLength(1);
+    expect(screen.getAllByText('未宣言')).toHaveLength(3);
+    expect(panel).toHaveTextContent('切り札スートは +40 点');
   });
 
   it('does not show the play button on a CPU turn', async () => {

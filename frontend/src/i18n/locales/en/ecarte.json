@@ -26,6 +26,17 @@
     "dealerRespond": "Dealer's response",
     "discard": "Card exchange"
   },
+  "negHelp": {
+    "elderDecide": "Propose asks the dealer for an exchange; Stand plays your hand as dealt.",
+    "dealerRespond": "Accept lets both players redraw; Refuse keeps your hand but concedes an extra point to your opponent if you fail to take 3 tricks (vulnerable).",
+    "discard": "Choose how many cards to discard and draw the same number from the stock."
+  },
+  "consequence": {
+    "propose": "Ask the dealer for an exchange. If accepted, both players redraw; if refused, the dealer becomes vulnerable (an extra point for you if the dealer loses the deal).",
+    "stand": "Play the hand as dealt without exchanging (no redraw, no penalty).",
+    "accept": "Accept the exchange; both players discard any number of cards and redraw from the stock.",
+    "refuse": "Refuse and play your current hand. If you then fail to take 3 tricks, your opponent scores an extra point (2 instead of 1, or 3 with the Vole)."
+  },
   "currentTrick": "Current Trick",
   "you": "You",
   "cpu": "CPU {{id}}",
@@ -38,6 +49,9 @@
   "refuseButton": "Refuse",
   "discardPrompt": "Choose cards to discard:",
   "discardButton": "Exchange ({{count}})",
+  "discardSelectionGuide": "{{count}} selected",
+  "discardReasonEmpty": "Select at least one card",
+  "discardReasonExceed": "Not enough stock",
   "nextRound": "Next Deal",
   "target": "Target: {{points}} pts",
   "roundResult": {

@@ -208,3 +208,13 @@ func TestSevenCardStudInteractor_ResetWithConfig_WithProfile(t *testing.T) {
 	assert.Equal(t, "profile output", result)
 	mg.AssertCalled(t, "ImportProfile", mock.Anything)
 }
+
+func TestSevenCardStudInteractor_Hint(t *testing.T) {
+	mg := new(interfaces.MockSevenCardStudGame)
+	mp := new(presenter.MockSevenCardStudPresenter)
+	si := NewSevenCardStudInteractor(mg, mp)
+
+	mp.On("HintOutput", mg).Return("hint output")
+
+	assert.Equal(t, "hint output", si.Hint())
+}

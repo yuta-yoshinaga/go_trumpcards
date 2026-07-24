@@ -85,6 +85,37 @@ describe('DoubleKlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mwt', { col: 0 }));
   });
 
+  it('fans out the top 3 waste cards, keeping only the top selectable', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ waste: [card('CLOVER', 2), card('SPADE', 3), card('HEART', 4), card('DIAMOND', 5)] }),
+    );
+    renderWithProviders(<DoubleKlondikePage />);
+    // The top card stays interactive as the `waste` source button.
+    await screen.findByTestId('waste');
+    // The two cards beneath it are shown for visibility only (not selectable).
+    expect(screen.getByTestId('waste-under-0')).toBeInTheDocument();
+    expect(screen.getByTestId('waste-under-1')).toBeInTheDocument();
+    // Only 3 of the 4 waste cards are rendered (the fan is capped at 3).
+    expect(screen.queryByTestId('waste-under-2')).not.toBeInTheDocument();
+    // The under-cards are plain divs, not buttons.
+    expect(screen.getAllByTestId('waste', { exact: true }).length).toBe(1);
+  });
+
+  it('shows fewer waste cards when fewer than 3 are present', async () => {
+    mockExec.mockResolvedValue(makeState({ waste: [card('CLOVER', 2), card('SPADE', 3)] }));
+    renderWithProviders(<DoubleKlondikePage />);
+    await screen.findByTestId('waste');
+    expect(screen.getByTestId('waste-under-0')).toBeInTheDocument();
+    expect(screen.queryByTestId('waste-under-1')).not.toBeInTheDocument();
+  });
+
+  it('shows an empty waste placeholder when the waste is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ waste: [] }));
+    renderWithProviders(<DoubleKlondikePage />);
+    await waitFor(() => expect(screen.getByTestId('waste-empty')).toBeInTheDocument());
+    expect(screen.queryByTestId('waste')).not.toBeInTheDocument();
+  });
+
   it('moves the waste card onto a foundation', async () => {
     renderWithProviders(<DoubleKlondikePage />);
     fireEvent.click(await screen.findByTestId('waste'));
@@ -138,5 +169,34 @@ describe('DoubleKlondikePage', () => {
     renderWithProviders(<DoubleKlondikePage />);
     await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
     expect(screen.queryByTestId('hint-button')).not.toBeInTheDocument();
+  });
+
+  it('scrolls the tableau and foundations with 44px+ tap targets on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const { container } = renderWithProviders(<DoubleKlondikePage />);
+      await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+      // The 9-column tableau and 8-foundation rows become horizontally scrollable.
+      expect(container.querySelector('[data-tutorial="dk-board"]')).toHaveClass('overflow-x-auto');
+      expect(screen.getByTestId('foundation-row')).toHaveClass('overflow-x-auto');
+      // Cards render at least 44px wide so suits stay legible and tap targets
+      // meet the DESIGN.md 44px minimum.
+      const cardImg = screen.getByTestId('card-0-0').querySelector('img');
+      expect(cardImg?.style.width).toBe('44px');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('keeps the desktop tableau as a fixed 9-column grid', async () => {
+    // Default jsdom width (1024) is desktop; the board should not scroll.
+    const { container } = renderWithProviders(<DoubleKlondikePage />);
+    await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+    const board = container.querySelector('[data-tutorial="dk-board"]');
+    expect(board).toHaveClass('grid-cols-9');
+    expect(board).not.toHaveClass('overflow-x-auto');
   });
 });

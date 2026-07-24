@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { clocksolitaireApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -22,7 +22,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ClockSolitaireResponse } from '../types/card';
 import { ClockSolitairePhase } from '../types/phases';
@@ -66,14 +66,96 @@ const CLOCK_POSITIONS = Array.from({ length: 12 }, (_, i) => {
 /** Labels for clock positions (1-12). */
 const CLOCK_LABELS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
+/** Autoplay animation speed presets. */
+type AutoPlaySpeed = 'slow' | 'normal' | 'fast';
+
+/**
+ * Delay (ms) between auto-advanced `step` calls per speed preset. A larger delay
+ * gives each card's `isFlightTarget` landing highlight more time to play out; a
+ * smaller delay races to the finish.
+ */
+const AUTOPLAY_DELAY_MS: Record<AutoPlaySpeed, number> = {
+  slow: 900,
+  normal: 450,
+  fast: 150,
+};
+
+const AUTOPLAY_SPEED_STORAGE_KEY = 'clocksolitaire:autoPlaySpeed';
+
+/** Read the persisted autoplay speed, falling back to `normal` when unset/invalid. */
+function loadAutoPlaySpeed(): AutoPlaySpeed {
+  try {
+    const v = localStorage.getItem(AUTOPLAY_SPEED_STORAGE_KEY);
+    if (v === 'slow' || v === 'normal' || v === 'fast') return v;
+  } catch {
+    // localStorage may be unavailable (private mode / SSR); fall through to default.
+  }
+  return 'normal';
+}
+
 /** Clock Solitaire page content component. */
 function ClockSolitairePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('clocksolitaire');
   const { state, loading, error, exec: execApi, retry } = useGameApi(clocksolitaireApi.exec);
-  const handleReset = useCallback(() => execApi('reset'), [execApi]);
+
+  const [autoPlaySpeed, setAutoPlaySpeed] = useState<AutoPlaySpeed>(loadAutoPlaySpeed);
+  const [autoPlaying, setAutoPlaying] = useState(false);
+
   const handleStep = useCallback(() => execApi('step'), [execApi]);
-  const handleAutoPlay = useCallback(() => execApi('autoplay'), [execApi]);
+  // Undo the last placed card. Stop autoplay first so the timed loop doesn't
+  // race the rewind.
+  const handleUndo = useCallback(() => {
+    setAutoPlaying(false);
+    return execApi('undo');
+  }, [execApi]);
+  // Autoplay is driven client-side as a timed sequence of `step` calls (see the
+  // effect below) so each card's landing highlight plays out; the button toggles it.
+  const handleAutoPlay = useCallback(() => setAutoPlaying((prev) => !prev), []);
+  const handleSelectSpeed = useCallback((v: string) => {
+    const speed: AutoPlaySpeed = v === 'slow' || v === 'fast' ? v : 'normal';
+    setAutoPlaySpeed(speed);
+    try {
+      localStorage.setItem(AUTOPLAY_SPEED_STORAGE_KEY, speed);
+    } catch {
+      // Persistence is best-effort; ignore storage failures.
+    }
+  }, []);
+  const handleReset = useCallback(() => {
+    setAutoPlaying(false);
+    return execApi('reset');
+  }, [execApi]);
+
+  // Latest state/speed read from a self-scheduling autoplay loop without
+  // re-subscribing the effect on every render.
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const speedRef = useRef(autoPlaySpeed);
+  speedRef.current = autoPlaySpeed;
+
+  // Drive autoplay client-side: recursively `step` on a speed-scaled timer so each
+  // card's `isFlightTarget` landing highlight plays out, stopping as soon as the
+  // game reaches GAME_CLEAR / GAME_OVER.
+  useEffect(() => {
+    if (!autoPlaying) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const tick = async () => {
+      const s = stateRef.current;
+      if (!s || s.phase !== ClockSolitairePhase.PLAYING) {
+        setAutoPlaying(false);
+        return;
+      }
+      await execApi('step');
+      if (cancelled) return;
+      timer = setTimeout(() => void tick(), AUTOPLAY_DELAY_MS[speedRef.current]);
+    };
+    timer = setTimeout(() => void tick(), AUTOPLAY_DELAY_MS[speedRef.current]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [autoPlaying, execApi]);
 
   useMountReset(execApi);
   const { cardWidth, cardHeight } = useCardDimensions();
@@ -90,6 +172,7 @@ function ClockSolitairePageContent() {
         if (cmd === 'reset' || cmd === 'r') return { args: ['reset'] };
         if (cmd === 'step' || cmd === 's') return { args: ['step'] };
         if (cmd === 'autoplay' || cmd === 'auto' || cmd === 'a') return { args: ['autoplay'] };
+        if (cmd === 'undo' || cmd === 'u') return { args: ['undo'] };
         if (cmd === 'log' || cmd === 'l') return { args: ['log'] };
         return { error: `Unknown command: ${cmd}` };
       },
@@ -113,6 +196,7 @@ function ClockSolitairePageContent() {
       helpText: [
         's/step     - Place one card',
         'a/autoplay - Auto-play to end',
+        'u/undo     - Undo the last step',
         'l/log      - Show action log',
         'r/reset    - Reset game',
       ],
@@ -141,6 +225,17 @@ function ClockSolitairePageContent() {
   if (!state) return <GameSkeleton gameKey="clocksolitaire" layout={{ kind: 'centered', rows: [4, 5, 4] }} />;
 
   const radius = Math.min(cardWidth * 5, 180);
+
+  // Resolve the same text GameMessageBox shows so it can also be announced in a
+  // dedicated live region (the visible box is not guaranteed to be a live region).
+  const liveMessage = (() => {
+    if (state.messageCode) {
+      const key = `messageCode.${state.messageCode}`;
+      const translated = tc(key, state.messageParams ?? {});
+      if (translated !== key) return translated;
+    }
+    return state.message ?? '';
+  })();
 
   return (
     <GamePageShell
@@ -291,6 +386,10 @@ function ClockSolitairePageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            {/* Announce each step's result (and game clear/over) to screen readers. */}
+            <div className="sr-only" role="status" aria-live="polite" data-testid="cs-live-region">
+              {liveMessage}
+            </div>
 
             <ActionLogSection
               isEndPhase={isEnded}
@@ -308,6 +407,20 @@ function ClockSolitairePageContent() {
             groups={[
               {
                 items: [
+                  {
+                    type: 'select' as const,
+                    id: 'autoPlaySpeed',
+                    testId: 'autoplay-speed-select',
+                    label: t('settings.speed'),
+                    tooltip: t('settings.speedHelp'),
+                    value: autoPlaySpeed,
+                    options: [
+                      { value: 'slow', label: t('settings.speedSlow') },
+                      { value: 'normal', label: t('settings.speedNormal') },
+                      { value: 'fast', label: t('settings.speedFast') },
+                    ],
+                    onSelect: handleSelectSpeed,
+                  },
                   {
                     type: 'checkbox' as const,
                     id: 'frontendHint',
@@ -328,7 +441,8 @@ function ClockSolitairePageContent() {
                     type="button"
                     className={`${btnPrimary} ${focusRingWhite}`}
                     onClick={handleStep}
-                    disabled={loading}
+                    disabled={loading || autoPlaying}
+                    data-testid="cs-step-button"
                   >
                     {t('step')}
                   </button>
@@ -336,12 +450,22 @@ function ClockSolitairePageContent() {
                     type="button"
                     className={`${btnSuccess} ${focusRingWhite}`}
                     onClick={handleAutoPlay}
-                    disabled={loading}
+                    aria-pressed={autoPlaying}
+                    data-testid="cs-autoplay-button"
                   >
-                    {t('autoplay')}
+                    {autoPlaying ? t('stopAutoplay') : t('autoplay')}
                   </button>
                 </div>
               )}
+              <button
+                type="button"
+                className={`${btnOutline} ${focusRingWhite}`}
+                onClick={handleUndo}
+                disabled={!state.canUndo || loading || autoPlaying}
+                data-testid="cs-undo-button"
+              >
+                {t('undo')}
+              </button>
               <GameResetButton
                 isGameEnd={isEnded}
                 onReset={handleReset}

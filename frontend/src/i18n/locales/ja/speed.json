@@ -6,9 +6,9 @@
     "gameEnd": "ゲーム終了"
   },
   "yourHand": "手札",
+  "playable": "今すぐ出せる",
   "cpuHand": "CPU手札",
   "drawPile": "山札",
-  "centerPile": "台札",
   "selectCard": "手札からカードを選択",
   "selectPile": "台札をクリックして出す",
   "playButton": "出す",
@@ -16,6 +16,10 @@
   "flipCenterPile": "台札{{n}}をめくる",
   "stuckMessage": "膠着状態です。めくるボタンを押してください。",
   "autoFlipInline": "自動でめくる",
+  "timer": "経過",
+  "bestTime": "ベスト",
+  "clearTime": "クリアタイム {{time}}",
+  "newBest": "ベスト更新! {{time}}",
   "autoFlipCountdownAria": "自動めくりカウントダウン",
   "autoFlipCountdownRemaining": "あと {{n}} 秒で自動めくり",
   "settings": {
@@ -36,5 +40,6 @@
     "playerHand": "あなたの手札：タップして台札に出します",
     "drawPile": "山札：カードを出すと自動で補充されます",
     "flipButton": "めくるボタン：膠着時に押してカードをめくります"
-  }
+  },
+  "centerPileCard": "台札{{n}}: {{card}}"
 }

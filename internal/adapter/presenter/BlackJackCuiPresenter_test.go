@@ -62,6 +62,10 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		assert.Contains(t, output, "フェーズ: ACTION")
 		assert.Contains(t, output, "ベット=100")
 		assert.Contains(t, output, "SPADE 5")
+		// In-progress dealer shows the up-card plus a hidden-card placeholder, with no trailing comma.
+		assert.Contains(t, output, "[??]")
+		assert.Contains(t, output, "CLOVER 10, [??]")
+		assert.NotContains(t, output, "CLOVER 10,\n")
 	})
 	t.Run("success Output end phase lose", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -123,6 +127,31 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		_ = bj.PlayerStand()
 		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "あなたの勝ちです")
+		// Standard Blackjack has no variant bonuses, so no bonus section.
+		assert.NotContains(t, output, "[ボーナス]")
+	})
+	t.Run("success Output shows Spanish 21 variant bonuses", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(900)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		bj.Reset()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		_ = bj.PlayerStand()
+		bj.SetBonusKeys([]string{"spanish21.bonus.fivecard21", "spanish21.bonus.678.spade"})
+
+		output := tbp.Output(bj, nil)
+		assert.Contains(t, output, "[ボーナス]")
+		assert.Contains(t, output, "5枚で21 ボーナス")
+		assert.Contains(t, output, "6-7-8 (全スペード)")
 	})
 	t.Run("success Output insurance phase", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)

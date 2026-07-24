@@ -341,6 +341,19 @@ describe('ShortDeckPage', () => {
     expect(marker).toHaveAttribute('aria-label', 'ショートデック特殊ルール：フラッシュ > フルハウス');
   });
 
+  it('toggles the rank-override note on tap so touch users can read it', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<ShortDeckPage />);
+    const marker = await screen.findByTestId('shortdeck-handname-rule');
+    // It is a real button (focusable, activatable), not a hover-only span.
+    expect(marker.tagName).toBe('BUTTON');
+    expect(screen.queryByTestId('shortdeck-rule-note')).not.toBeInTheDocument();
+    fireEvent.click(marker);
+    expect(screen.getByTestId('shortdeck-rule-note')).toHaveTextContent('ショートデック特殊ルール');
+    fireEvent.click(marker);
+    expect(screen.queryByTestId('shortdeck-rule-note')).not.toBeInTheDocument();
+  });
+
   it('shows CPU cards face-up during showdown when not folded', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<ShortDeckPage />);
@@ -1149,8 +1162,11 @@ describe('ShortDeckPage', () => {
     renderWithProviders(<ShortDeckPage />);
     const chip = await screen.findByTestId('shortdeck-rank-watermark');
     expect(chip).toBeInTheDocument();
-    expect(chip.textContent).toContain('Flush');
-    expect(chip.textContent).toContain('Full House');
+    // Visible text now comes from the i18n key (ja locale in tests); suit
+    // symbols stay locale-independent.
+    expect(chip.textContent).toContain('フラッシュ');
+    expect(chip.textContent).toContain('フルハウス');
+    expect(chip.textContent).toContain('♣♠♥♦');
     // Uses the design-system warning state-badge tokens, not opacity-modified ones.
     expect(chip.className).toContain('border-ds-warning');
     expect(chip.className).toContain('text-ds-warning');

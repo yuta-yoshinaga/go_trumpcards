@@ -17,6 +17,8 @@ import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { BlackHolePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 
 /** Black Hole tutorial step definitions. */
 const BH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -115,6 +117,43 @@ function BlackHolePageContent() {
       : [],
   );
 
+  // Ranks currently accepted by the hole: the hole top's rank ±1, clamped to
+  // [1, 13] with no A↔K wrap (matching the Go domain's blackHoleAdjacent). At the
+  // A/K ends only one neighbour survives the clamp, so a single rank is shown.
+  const acceptableRanks = holeTop ? [holeTop.value - 1, holeTop.value + 1].filter((v) => v >= 1 && v <= 13) : [];
+
+  // The backend's strategic recommendation (single "best" fan to dig, e.g. one
+  // that avoids getting stuck). `state.hint` is only populated by a `hint`
+  // request and is cleared on the next move, so gate it on `showLegalHint` to
+  // match the legal-highlight window. It is a stronger, distinct emphasis layered
+  // on top of the ±1 legal highlight (the recommended fan is always legal).
+  const recommendedFan = showLegalHint ? (state.hint?.fan ?? null) : null;
+  const recommendedTop =
+    recommendedFan !== null && state.fans[recommendedFan]?.length
+      ? state.fans[recommendedFan][state.fans[recommendedFan].length - 1]
+      : null;
+
+  // Spoken hint result: lead with the backend's recommended card (when any),
+  // then list every playable fan-top (or "none"), shown only while the visual
+  // highlight is active.
+  const legalFansAnnounce =
+    legalFans.size > 0
+      ? t('hintLegalFans', {
+          list: [...legalFans]
+            .map((idx) => {
+              const top = state.fans[idx][state.fans[idx].length - 1];
+              return top ? t('fanCardAria', { card: cardAlt(top), fan: idx + 1 }) : '';
+            })
+            .filter(Boolean)
+            .join('、'),
+        })
+      : t('hintNoLegal');
+  const hintAnnounce = !showLegalHint
+    ? ''
+    : recommendedTop && recommendedFan !== null
+      ? `${t('hintRecommendedAnnounce', { card: cardAlt(recommendedTop), fan: recommendedFan + 1 })} · ${legalFansAnnounce}`
+      : legalFansAnnounce;
+
   const renderFan = (fan: (typeof state.fans)[number], idx: number) => (
     <div
       key={`fan-${idx}`}
@@ -132,18 +171,47 @@ function BlackHolePageContent() {
         fan.map((c, i) => {
           const isTop = i === fan.length - 1;
           const isHintedLegal = showLegalHint && isTop && legalFans.has(idx);
+          // The backend's recommended fan gets an additive, distinct emphasis
+          // (a gold outline + ★ badge) layered on top of the green legal ring.
+          const isRecommended = recommendedFan === idx && isTop;
+          const cardLabel = t('fanCardAria', { card: cardAlt(c), fan: idx + 1 });
+          const marks = [isRecommended ? t('hintRecommended') : '', isHintedLegal ? t('hintPlayable') : '']
+            .filter(Boolean)
+            .join(' · ');
           return (
             <button
               type="button"
               key={`fan-${idx}-${i}`}
-              className={`rounded ${isHintedLegal ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
+              className={`relative rounded ${isHintedLegal ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${
+                isRecommended ? 'outline outline-2 outline-offset-2 outline-ds-warning' : ''
+              }`}
               style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
               onClick={canAct && isTop ? () => playFan(idx) : undefined}
               disabled={!canAct || !isTop}
               data-testid={`card-${idx}-${i}`}
               data-hinted-legal={isHintedLegal ? 'true' : undefined}
+              data-hinted-recommended={isRecommended ? 'true' : undefined}
+              aria-label={marks ? `${cardLabel} · ${marks}` : cardLabel}
             >
               <CardImage card={c} width={w} />
+              {/* Colour-independent hint marker (a ✓ badge) alongside the ring. */}
+              {isHintedLegal && (
+                <span
+                  aria-hidden="true"
+                  className="absolute -top-1 -right-1 rounded-full bg-ds-success text-white text-[10px] leading-none px-1 py-0.5"
+                >
+                  ✓
+                </span>
+              )}
+              {/* Distinct recommended marker (a ★ badge) for the backend's pick. */}
+              {isRecommended && (
+                <span
+                  aria-hidden="true"
+                  className="absolute -bottom-1 -left-1 rounded-full bg-ds-warning text-white text-[10px] leading-none px-1 py-0.5"
+                >
+                  ★
+                </span>
+              )}
             </button>
           );
         })
@@ -171,11 +239,34 @@ function BlackHolePageContent() {
           <div
             className="rounded-full bg-black/60 border-2 border-ds-accent flex items-center justify-center"
             style={{ width: cardH, height: cardH }}
+            role="img"
+            aria-label={holeTop ? t('holeAria', { card: cardAlt(holeTop) }) : t('holeEmptyAria')}
+            data-testid="bh-hole-top"
           >
             {holeTop ? <CardImage card={holeTop} width={w} /> : null}
           </div>
           <div className="text-ds-text-muted text-xs">{t('moveCount', { count: state.moveCount })}</div>
+          {/* Always-on readout of which rank(s) the hole accepts next, plus the
+              current legal-move count (warning colour when no move remains). */}
+          <div className="flex flex-col gap-0.5 text-xs" data-testid="bh-acceptable">
+            <span className="text-ds-text-primary">
+              {acceptableRanks.length > 0
+                ? t('acceptableRanks', { ranks: acceptableRanks.map(valueName).join(' / ') })
+                : t('acceptableRanksNone')}
+            </span>
+            <span
+              className={legalFans.size === 0 ? 'text-ds-warning' : 'text-ds-text-muted'}
+              data-testid="bh-legal-count"
+            >
+              {t('legalMoveCount', { count: legalFans.size })}
+            </span>
+          </div>
         </div>
+
+        {/* Hint result also spoken (colour/animation is not enough). */}
+        <span className="sr-only" role="status" aria-live="polite" data-testid="bh-hint-announce">
+          {hintAnnounce}
+        </span>
 
         <div className="grid grid-cols-6 sm:grid-cols-9 gap-1 items-start" data-tutorial="bh-fans">
           {state.fans.map((fan, i) => renderFan(fan, i))}

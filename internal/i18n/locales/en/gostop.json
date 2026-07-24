@@ -31,5 +31,6 @@
   "cat.pi": "Pi",
   "bak.gwang": "Gwang-bak",
   "bak.pi": "Pi-bak",
-  "bak.go": "Go-bak"
+  "bak.go": "Go-bak",
+  "categoryCounts": "  Captured: Gwang {{gwang}} / Yeol {{yeol}} / Tti {{tti}} / Pi {{pi}}"
 }

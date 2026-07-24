@@ -274,6 +274,14 @@ describe('CaribbeanStudPage', () => {
     expect(screen.getByText('🔴')).toBeInTheDocument();
   });
 
+  it('does not label unevaluated hand ranks as High Card', async () => {
+    mockApi.mockResolvedValue({ ...endPhasePlayerWins, playerHandRank: -1, dealerHandRank: -1 });
+    renderWithProviders(<CaribbeanStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    // Ranks of -1 (unevaluated) must not fall back to the "High Card" label.
+    expect(screen.queryByText(/ハイカード/)).not.toBeInTheDocument();
+  });
+
   it('renders 1 face-up and 4 face-down dealer cards in action phase', async () => {
     mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(actionPhaseState);
     renderWithProviders(<CaribbeanStudPage />);
@@ -282,9 +290,8 @@ describe('CaribbeanStudPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
 
-    // 5 player face-up + 1 dealer face-up + 4 dealer face-down (CardBack images) = 10 imgs
-    const imgs = screen.getAllByRole('img');
-    expect(imgs.length).toBe(10);
+    // The 4 masked dealer cards are each announced as "hidden card".
+    expect(screen.getAllByRole('img', { name: '非公開のカード' })).toHaveLength(4);
     // Dealer section is shown
     expect(screen.getByText('🔴')).toBeInTheDocument();
   });
@@ -307,5 +314,72 @@ describe('CaribbeanStudPage', () => {
     mockApi.mockResolvedValue(actionPhaseState);
     renderWithProviders(<CaribbeanStudPage />);
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+  });
+
+  describe('session stats', () => {
+    it('has no session summary before any round completes', async () => {
+      mockApi.mockResolvedValue(betPhaseState);
+      renderWithProviders(<CaribbeanStudPage />);
+      await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+      expect(screen.queryByTestId('csp-session-stats')).not.toBeInTheDocument();
+    });
+
+    it('records a win at END and shows the tally + positive net', async () => {
+      // net = totalPayout(1000) - (ante 100 + jackpot 0 + play 200) = +700
+      mockApi.mockResolvedValue(endPhasePlayerWins);
+      renderWithProviders(<CaribbeanStudPage />);
+      await waitFor(() => expect(screen.getByTestId('csp-session-stats')).toBeInTheDocument());
+      expect(screen.getByTestId('csp-session-tally')).toHaveTextContent('1勝 0敗 0分');
+      const netEl = screen.getByTestId('csp-session-net');
+      expect(netEl).toHaveTextContent('収支: +700');
+      expect(netEl).toHaveClass('text-ds-success');
+    });
+
+    it('records a loss at END and shows a negative net', async () => {
+      // net = totalPayout(0) - (ante 100 + jackpot 0 + play 200) = -300
+      mockApi.mockResolvedValue(endPhaseDealerWins);
+      renderWithProviders(<CaribbeanStudPage />);
+      await waitFor(() => expect(screen.getByTestId('csp-session-stats')).toBeInTheDocument());
+      expect(screen.getByTestId('csp-session-tally')).toHaveTextContent('0勝 1敗 0分');
+      const netEl = screen.getByTestId('csp-session-net');
+      expect(netEl).toHaveTextContent('収支: -300');
+      expect(netEl).toHaveClass('text-ds-error');
+    });
+
+    it('does not double-count the same END round on re-render', async () => {
+      mockApi.mockResolvedValue(endPhasePlayerWins);
+      renderWithProviders(<CaribbeanStudPage />);
+      await waitFor(() => expect(screen.getByTestId('csp-session-stats')).toBeInTheDocument());
+      expect(JSON.parse(localStorage.getItem('trumpcards-caribbeanstud-history') ?? '[]')).toHaveLength(1);
+      // Re-render the page while it stays at END (toggling the hint checkbox
+      // updates local state) — the record-once guard must not append again.
+      fireEvent.click(screen.getByRole('checkbox'));
+      await waitFor(() => expect(screen.getByTestId('csp-session-tally')).toHaveTextContent('1勝 0敗 0分'));
+      expect(JSON.parse(localStorage.getItem('trumpcards-caribbeanstud-history') ?? '[]')).toHaveLength(1);
+    });
+
+    it('rehydrates prior session stats from localStorage on mount', async () => {
+      localStorage.setItem(
+        'trumpcards-caribbeanstud-history',
+        JSON.stringify([
+          { outcome: 1, net: 500 },
+          { outcome: 2, net: -200 },
+        ]),
+      );
+      mockApi.mockResolvedValue(betPhaseState);
+      renderWithProviders(<CaribbeanStudPage />);
+      await waitFor(() => expect(screen.getByTestId('csp-session-stats')).toBeInTheDocument());
+      expect(screen.getByTestId('csp-session-tally')).toHaveTextContent('1勝 1敗 0分');
+      expect(screen.getByTestId('csp-session-net')).toHaveTextContent('収支: +300');
+    });
+
+    it('clears the session summary when the clear button is pressed', async () => {
+      mockApi.mockResolvedValue(endPhasePlayerWins);
+      renderWithProviders(<CaribbeanStudPage />);
+      await waitFor(() => expect(screen.getByTestId('csp-session-stats')).toBeInTheDocument());
+      fireEvent.click(screen.getByTestId('csp-session-clear'));
+      await waitFor(() => expect(screen.queryByTestId('csp-session-stats')).not.toBeInTheDocument());
+      expect(localStorage.getItem('trumpcards-caribbeanstud-history')).toBeNull();
+    });
   });
 });

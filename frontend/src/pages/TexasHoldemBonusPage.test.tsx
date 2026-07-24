@@ -155,6 +155,14 @@ describe('TexasHoldemBonusPage', () => {
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
+  it('previews the Play bet cost (2× ante) on the pre-flop button', async () => {
+    mockApi.mockResolvedValue(preFlopState);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    // anteBet 100 → flop Play bet = 2× = 200 chips.
+    const playButton = await screen.findByTestId('thb-play-button');
+    expect(playButton).toHaveTextContent('プレイ (2× = 200)');
+  });
+
   it('shows flop with check and raise buttons', async () => {
     mockApi.mockResolvedValueOnce(preFlopState).mockResolvedValueOnce(flopState);
     renderWithProviders(<TexasHoldemBonusPage />);
@@ -163,6 +171,18 @@ describe('TexasHoldemBonusPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /プレイ/ }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: /レイズ/ })).toBeInTheDocument();
+  });
+
+  it('previews the Raise bet cost (1× ante) on the flop and turn buttons', async () => {
+    mockApi.mockResolvedValueOnce(flopState).mockResolvedValueOnce(turnState);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    // anteBet 100 → each Raise = 1× = 100 chips, on both flop and turn.
+    const flopRaise = await screen.findByTestId('thb-raise-button');
+    expect(flopRaise).toHaveTextContent('レイズ (1× = 100)');
+
+    fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
+    const turnRaise = await screen.findByTestId('thb-raise-button');
+    expect(turnRaise).toHaveTextContent('レイズ (1× = 100)');
   });
 
   it('shows turn after flop check', async () => {
@@ -185,6 +205,14 @@ describe('TexasHoldemBonusPage', () => {
     mockApi.mockResolvedValue(endDealerWins);
     renderWithProviders(<TexasHoldemBonusPage />);
     await waitFor(() => expect(screen.getByText('ディーラー勝利！')).toBeInTheDocument());
+  });
+
+  it('does not label an unevaluated hand rank as High Card', async () => {
+    mockApi.mockResolvedValue({ ...endPlayerWins, playerHandRank: -1, dealerHandRank: -1 });
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
+    // Ranks of -1 (unevaluated) must not fall back to the handRank.0 "High Card" label.
+    expect(screen.queryByText(/ハイカード/)).not.toBeInTheDocument();
   });
 
   it('shows end phase with fold', async () => {
@@ -252,8 +280,8 @@ describe('TexasHoldemBonusPage', () => {
   it('renders board and player cards in flop phase', async () => {
     mockApi.mockResolvedValue(flopState);
     renderWithProviders(<TexasHoldemBonusPage />);
-    // 2 player face-up + 3 community face-up + 2 dealer face-down = 7 imgs
-    await waitFor(() => expect(screen.getAllByRole('img').length).toBe(7));
+    // 2 dealer face-down cards are each announced as "hidden card".
+    await waitFor(() => expect(screen.getAllByRole('img', { name: '非公開のカード' })).toHaveLength(2));
     expect(screen.getByText('🟡')).toBeInTheDocument();
     expect(screen.getByText('🔴')).toBeInTheDocument();
     expect(screen.getByText('🃏')).toBeInTheDocument();

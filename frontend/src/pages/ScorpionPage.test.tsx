@@ -73,10 +73,35 @@ describe('ScorpionPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it("adds a 'selected' hint to the aria-label of the picked source card", async () => {
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Base labels carry no selection hint.
+    expect(screen.getByRole('button', { name: '♠ K' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /選択中/ })).not.toBeInTheDocument();
+    // Selecting the top card of a column marks it selected in its label.
+    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K 選択中' })).toBeInTheDocument());
+    // Other cards keep their plain, hint-free label.
+    expect(screen.getByRole('button', { name: '♥ 8' })).toBeInTheDocument();
+  });
+
   it('shows move count and stock', async () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());
     expect(screen.getByText(/Stock|ストック/)).toBeInTheDocument();
+  });
+
+  it('renders a face-up slot without a card as an empty-labelled button (defensive guard)', async () => {
+    // A face-up card with no card object should not crash; the aria-label guard
+    // falls back to an empty string.
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[{ card: null, faceUp: true }], [], [], [], [], [], []],
+    });
+    const { container } = renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(container.querySelector('button[aria-label=""]')).toBeInTheDocument();
   });
 
   it('shows game clear phase', async () => {
@@ -158,6 +183,33 @@ describe('ScorpionPage', () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '配る' })).toHaveAttribute('title', '空の列をすべて埋めないと配れません');
+  });
+
+  it('shows the deal-blocked reason as visible text when an empty column exists', async () => {
+    const stateWithEmptyCol: ScorpionResponse = {
+      ...playingState,
+      tableau: [
+        [{ card: card('SPADE', 13), faceUp: true }],
+        [],
+        [{ card: card('CLOVER', 5), faceUp: true }],
+        [{ card: card('DIAMOND', 10), faceUp: true }],
+        [{ card: card('SPADE', 3), faceUp: true }],
+        [{ card: card('HEART', 7), faceUp: true }],
+        [{ card: card('CLOVER', 2), faceUp: true }],
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithEmptyCol);
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument());
+    const reason = screen.getByTestId('sc-deal-blocked-reason');
+    expect(reason).toHaveTextContent('空の列をすべて埋めないと配れません');
+    expect(reason).toHaveAttribute('role', 'status');
+  });
+
+  it('does not show the deal-blocked reason when every column is filled', async () => {
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('sc-deal-blocked-reason')).not.toBeInTheDocument();
   });
 
   it('autocomplete button triggers autocomplete command', async () => {

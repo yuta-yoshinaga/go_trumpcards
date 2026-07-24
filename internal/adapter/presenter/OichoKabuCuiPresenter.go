@@ -43,6 +43,17 @@ func (p *OichoKabuCuiPresenter) Output(o interfaces.OichoKabuGame, lastErr error
 		sb.WriteString(i18n.Tf("oichokabu.betLine", "bet", strconv.Itoa(o.GetBet())) + "\n")
 	}
 
+	// Give CLI players the same guidance the web UI shows: the bet ceiling
+	// (current chips) while betting, and the draw/stand choice while drawing.
+	if !o.GetGameEndFlag() {
+		switch o.GetPhase() {
+		case domain.OichoKabuPhaseBet:
+			sb.WriteString(i18n.Tf("oichokabu.maxBetHint", "max", strconv.Itoa(o.GetChips())) + "\n")
+		case domain.OichoKabuPhaseDraw:
+			sb.WriteString(i18n.T("oichokabu.drawHint") + "\n")
+		}
+	}
+
 	if hand := o.GetPlayerHand(); len(hand) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("oichokabu.playerHeader")) + " ---\n")
 		sb.WriteString(i18n.Tf("oichokabu.handLine", "cards", oichoKabuHandStr(hand)) + "\n")

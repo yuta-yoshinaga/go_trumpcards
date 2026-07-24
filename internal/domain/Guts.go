@@ -100,6 +100,7 @@ type gutsState struct {
 	roundNumber    int
 	pot            int   // 現在のラウンドのポット
 	carryPot       int   // 次ラウンドへ持ち越す種銭 (マッチ額 or 全員アウト時の持ち越し)
+	carryCount     int   // 全員アウトでポットが連続繰り越しになった回数
 	winnerIdx      int   // 直近ラウンドの勝者 (-1 = なし)
 	matchWinnerIdx int   // ゲーム全体の勝者 (-1 = 未確定)
 	matchers       []int // このラウンドでマッチしたプレイヤー (負けたイン宣言者)
@@ -278,10 +279,12 @@ func (g *Guts) settle() {
 	case 0:
 		// 誰も残らなかった: ポットを丸ごと次ラウンドへ持ち越す。
 		g.state.carryPot = g.state.pot
+		g.state.carryCount++
 		g.appendLog(-1, "result", fmt.Sprintf("nobody stayed; pot %d carries over", g.state.pot), nil)
 	default:
 		winner := g.bestHand(inPlayers)
 		g.state.winnerIdx = winner
+		g.state.carryCount = 0
 		g.players[winner].AddChips(g.state.pot)
 		g.appendLog(winner, "win",
 			fmt.Sprintf("%s wins the pot (%d)", g.playerName(winner), g.state.pot), nil)
@@ -514,6 +517,9 @@ func (g *Guts) SetPot(v int) { g.state.pot = v }
 
 // GetCarryPot は次ラウンドへの持ち越し種銭を返す。
 func (g *Guts) GetCarryPot() int { return g.state.carryPot }
+
+// GetCarryCount 全員アウトでポットが連続して繰り越された回数を返す。
+func (g *Guts) GetCarryCount() int { return g.state.carryCount }
 
 // GetAnte はアンティ額を返す。
 func (g *Guts) GetAnte() int { return g.config.Ante }

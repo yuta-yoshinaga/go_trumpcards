@@ -49,6 +49,40 @@ func TestHachiHachiWebPresenter_Output(t *testing.T) {
 	assert.Contains(t, decoded, "captureOptions")
 }
 
+// TestHachiHachiWebPresenter_Output_HintOnHumanTurn は通常の Output() が人間の手番
+// (プレイフェーズ) でヒントを埋めることを検証する (#3522: フロントエンドのヒントトグルが
+// 機能する前提条件)。
+func TestHachiHachiWebPresenter_Output_HintOnHumanTurn(t *testing.T) {
+	g := domain.NewDefaultHachiHachi()
+	g.Reset()
+	g.SetCurrentTurn(0) // player 0 は人間
+
+	p := new(presenter.HachiHachiWebPresenter)
+	var decoded struct {
+		Hint *struct {
+			CardIndex  int    `json:"cardIndex"`
+			FieldIndex int    `json:"fieldIndex"`
+			Reason     string `json:"reason"`
+		} `json:"hint"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	require.NotNil(t, decoded.Hint, "human play turn must include a hint")
+	assert.NotEmpty(t, decoded.Hint.Reason)
+}
+
+// TestHachiHachiWebPresenter_Output_NoHintOnCpuTurn は CPU の手番では Output() が
+// ヒントを出力しない (omitempty で省かれる) ことを検証する (#3522)。
+func TestHachiHachiWebPresenter_Output_NoHintOnCpuTurn(t *testing.T) {
+	g := domain.NewDefaultHachiHachi()
+	g.Reset()
+	g.SetCurrentTurn(1) // player 1 は CPU
+
+	p := new(presenter.HachiHachiWebPresenter)
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	assert.NotContains(t, decoded, "hint", "cpu turn must not include a hint")
+}
+
 // TestHachiHachiWebPresenter_ProceduralFaces は花札の札が deck:"hanafuda" + 絵文字グリフ +
 // ラベルで手続き描画用にシリアライズされることを検証する (ADR-0033)。
 func TestHachiHachiWebPresenter_ProceduralFaces(t *testing.T) {

@@ -1,15 +1,16 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { briscolaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
@@ -68,6 +69,39 @@ function BriscolaPageContent() {
   const handleNext = useCallback(() => {
     void dispatch('next');
   }, [dispatch]);
+
+  const handleHint = useCallback(() => {
+    void dispatch('hint');
+  }, [dispatch]);
+
+  // Keyboard hand selection: number keys highlight a card, Enter plays it,
+  // Escape clears. Mouse/touch still plays a card directly on click.
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const isHumanTurnForKbd =
+    state?.phase === BriscolaPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  // Drop any stale highlight when the turn or trick moves on.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset the highlight whenever the turn/phase changes.
+  useEffect(() => {
+    setSelectedIdx(null);
+  }, [state?.currentPlayerIdx, state?.phase]);
+  const toggleSelect = useCallback((idx: number) => {
+    setSelectedIdx((prev) => (prev === idx ? null : idx));
+  }, []);
+  const clearSelect = useCallback(() => setSelectedIdx(null), []);
+  const confirmPlay = useCallback(() => {
+    if (selectedIdx !== null) {
+      handlePlay(selectedIdx);
+      setSelectedIdx(null);
+    }
+  }, [selectedIdx, handlePlay]);
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleSelect,
+    onConfirm: confirmPlay,
+    onClear: clearSelect,
+    enabled: !!isHumanTurnForKbd && !loading,
+  });
 
   if (!state) {
     return <GameSkeleton gameKey="briscola" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 3 }} />;
@@ -149,7 +183,7 @@ function BriscolaPageContent() {
                     transformOrigin: 'left center',
                   }}
                 >
-                  <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
+                  <AnimatedCard card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
                 </div>
                 {/* Card-back stack — width tapers down as cards are drawn so the
                     physical "thinning deck" reads at a glance. */}
@@ -213,13 +247,24 @@ function BriscolaPageContent() {
                   onClick={() => handlePlay(idx)}
                   disabled={loading || !isHumanTurn}
                   aria-label={tc('card.play', { card: cardAlt(card) })}
-                  className="disabled:opacity-50"
+                  aria-pressed={selectedIdx === idx}
+                  className={`rounded disabled:opacity-50 ${
+                    selectedIdx === idx ? 'ring-2 ring-ds-accent -translate-y-1 transition-transform' : ''
+                  }`}
                 >
-                  <CardImage card={card} width={cardWidth} />
+                  <AnimatedCard card={card} width={cardWidth} />
                 </button>
               ))}
             </div>
           </div>
+        )}
+
+        {/* Server hint text (populated by the hint command). */}
+        {state.hint && (
+          <p className="mt-3 text-sm text-ds-accent" data-testid="briscola-hint">
+            {t('hint.available')}: {t(`hint.${state.hint.reason}`)}
+            {state.hint.cardIndex !== undefined && ` ${t('hint.card', { index: state.hint.cardIndex })}`}
+          </p>
         )}
 
         {/* Phase-specific controls */}
@@ -227,6 +272,11 @@ function BriscolaPageContent() {
           {isTrickEnd && (
             <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
               {t('actions.next')}
+            </button>
+          )}
+          {isHumanTurn && (
+            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+              {t('actions.hint')}
             </button>
           )}
           <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>

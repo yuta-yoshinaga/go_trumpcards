@@ -85,6 +85,32 @@ describe('ManillePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
   });
 
+  it('shows the trick winner and team in a status banner at trick end', async () => {
+    // leadPlayerIdx 0 = the human (Team A), so their own-team banner appears.
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<ManillePage />);
+    const banner = await screen.findByTestId('manille-trick-winner');
+    expect(banner).toHaveTextContent('あなた（チームA）がトリック獲得');
+    expect(banner).toHaveClass('text-ds-accent');
+    expect(banner).toHaveAttribute('role', 'status');
+    expect(banner).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('shows an opponent-team win without own-team emphasis', async () => {
+    mockExec.mockResolvedValue({ ...trickEndState, leadPlayerIdx: 1 });
+    renderWithProviders(<ManillePage />);
+    const banner = await screen.findByTestId('manille-trick-winner');
+    expect(banner).toHaveTextContent('チームB');
+    expect(banner).not.toHaveClass('text-ds-accent');
+  });
+
+  it('does not show the trick-winner banner during play', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<ManillePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('manille-trick-winner')).not.toBeInTheDocument();
+  });
+
   it('renders round end with the next round button and the round result', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<ManillePage />);
@@ -113,6 +139,15 @@ describe('ManillePage', () => {
     expect(screen.getByTestId('manille-player-2')).toHaveAttribute('data-own-team', 'true');
     expect(screen.getByTestId('manille-player-1')).not.toHaveAttribute('data-own-team');
     expect(screen.getByTestId('manille-player-3')).not.toHaveAttribute('data-own-team');
+  });
+
+  it('renders the card-strength legend with the reversed rank order and points', async () => {
+    renderWithProviders(<ManillePage />);
+    const legend = await screen.findByTestId('manille-strength-legend');
+    // Manille (10) tops the order, then Manillon (A); note lists 10 > A > K > Q > J > 9 > 8 > 7.
+    expect(legend).toHaveTextContent('10 (マニーユ)');
+    expect(legend).toHaveTextContent('A (マニヨン)');
+    expect(legend).toHaveTextContent('10 > A > K > Q > J > 9 > 8 > 7（切り札・非切り札で共通）。得点合計60点。');
   });
 
   it('applies the same-team highlight in the mobile player list', async () => {

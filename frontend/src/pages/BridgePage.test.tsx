@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bridgeApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -122,6 +122,19 @@ const bidHistoryState: BridgeResponse = {
   ],
 };
 
+// A full opening round plus the winning 1NT contract for auction-table tests.
+const auctionTableState: BridgeResponse = {
+  ...bidPhaseState,
+  contractLevel: 1,
+  contractSuit: 5,
+  bidHistory: [
+    { playerIdx: 0, bidType: 1, level: 1, suit: 5 },
+    { playerIdx: 1, bidType: 0, level: 0, suit: 0 },
+    { playerIdx: 2, bidType: 2, level: 0, suit: 0 },
+    { playerIdx: 3, bidType: 0, level: 0, suit: 0 },
+  ],
+};
+
 const vulnerableState: BridgeResponse = {
   ...bidPhaseState,
   vulnerability: [true, false],
@@ -135,6 +148,29 @@ const doubledContractState: BridgeResponse = {
 const redoubledContractState: BridgeResponse = {
   ...playPhaseState,
   doubled: 2,
+};
+
+// Human (seat 0, team 0) to bid; opponent (seat 1, team 1) made the last bid,
+// so Double is legal.
+const doublableBidTurnState: BridgeResponse = {
+  ...bidPhaseState,
+  contractLevel: 1,
+  contractSuit: 5,
+  doubled: 0,
+  bidHistory: [{ playerIdx: 1, bidType: 1, level: 1, suit: 5 }],
+};
+
+// Human (seat 0, team 0) made the last bid and the opponent doubled it, so
+// Redouble is legal for the human.
+const redoublableBidTurnState: BridgeResponse = {
+  ...bidPhaseState,
+  contractLevel: 1,
+  contractSuit: 5,
+  doubled: 1,
+  bidHistory: [
+    { playerIdx: 0, bidType: 1, level: 1, suit: 5 },
+    { playerIdx: 1, bidType: 2, level: 0, suit: 0 },
+  ],
 };
 
 beforeEach(() => {
@@ -204,14 +240,52 @@ describe('BridgePage', () => {
   });
 
   it('calls double command when double button is clicked', async () => {
+    mockExec.mockResolvedValue(doublableBidTurnState);
     renderWithProviders(<BridgePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '\u30c0\u30d6\u30eb' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('br-double')).toBeEnabled());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(bidPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '\u30c0\u30d6\u30eb' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, 2, undefined, undefined));
+  });
+
+  it('disables Double when no opposing bid precedes it', async () => {
+    // bidPhaseState has no bid yet -> Double is illegal.
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('br-double')).toBeInTheDocument());
+    expect(screen.getByTestId('br-double')).toBeDisabled();
+    expect(screen.getByTestId('br-double')).toHaveAttribute(
+      'title',
+      '\u76f4\u524d\u306b\u76f8\u624b\u5074\u306e\u30d3\u30c3\u30c9\u304c\u306a\u3044\u305f\u3081\u30c0\u30d6\u30eb\u3067\u304d\u307e\u305b\u3093',
+    );
+  });
+
+  it('enables Double after an opposing bid', async () => {
+    mockExec.mockResolvedValue(doublableBidTurnState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('br-double')).toBeEnabled());
+  });
+
+  it('disables Redouble when the contract is not doubled', async () => {
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('br-redouble')).toBeInTheDocument());
+    expect(screen.getByTestId('br-redouble')).toBeDisabled();
+  });
+
+  it('enables Redouble when our bid has been doubled by the opponent', async () => {
+    mockExec.mockResolvedValue(redoublableBidTurnState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('br-redouble')).toBeEnabled());
+  });
+
+  it('disables the bid button when the selection is at or below the current contract', async () => {
+    // Contract already 1NT (level 1, suit 5); default selectors are level 1 / NT (suit 5),
+    // which is not higher, so the bid button is disabled.
+    mockExec.mockResolvedValue(doublableBidTurnState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('br-bid-submit')).toBeDisabled());
   });
 
   it('renders play phase with human cards', async () => {
@@ -383,6 +457,46 @@ describe('BridgePage', () => {
     await waitFor(() => {
       expect(screen.getByText('\u30d3\u30c3\u30c9\u5c65\u6b74')).toBeInTheDocument();
     });
+  });
+
+  it('renders the bid history as a 4-column auction table with column headers', async () => {
+    mockExec.mockResolvedValue(auctionTableState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('bridge-auction-table')).toBeInTheDocument());
+    const table = within(screen.getByTestId('bridge-auction-table'));
+    // One column per seat, opener (human seat 0) first.
+    expect(table.getAllByRole('columnheader')).toHaveLength(4);
+    // Single opening round -> one body row.
+    expect(table.getAllByRole('row')).toHaveLength(2); // header row + 1 auction round
+  });
+
+  it('places each bid in its seat cell of the auction table', async () => {
+    mockExec.mockResolvedValue(auctionTableState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('bridge-auction-table')).toBeInTheDocument());
+    const table = within(screen.getByTestId('bridge-auction-table'));
+    const cells = table.getAllByRole('cell');
+    expect(cells).toHaveLength(4);
+    expect(cells[0]).toHaveTextContent('1NT');
+    expect(cells[1]).toHaveTextContent('\u30d1\u30b9'); // Pass
+    expect(cells[2]).toHaveTextContent('\u30c0\u30d6\u30eb'); // Double
+    expect(cells[3]).toHaveTextContent('\u30d1\u30b9'); // seat 3 Pass
+  });
+
+  it('highlights the winning contract cell', async () => {
+    mockExec.mockResolvedValue(auctionTableState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('bridge-auction-table')).toBeInTheDocument());
+    const winning = screen.getByTestId('bridge-auction-table').querySelectorAll('[data-winning-contract="true"]');
+    expect(winning).toHaveLength(1);
+    expect(winning[0]).toHaveTextContent('1NT');
+  });
+
+  it('hides the auction table when there are no bids', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' })).toBeInTheDocument());
+    expect(screen.queryByTestId('bridge-auction-table')).not.toBeInTheDocument();
   });
 
   it('shows vulnerability info', async () => {

@@ -15,7 +15,7 @@ test.describe('Tonk E2E', () => {
     await expect(page.getByText('スコア', { exact: true }).first()).toBeVisible();
 
     const drawStockButton = page.getByRole('button', { name: '山札から引く' });
-    const drawDiscardButton = page.getByRole('button', { name: '捨て札から引く' });
+    const drawDiscardButton = page.getByRole('button', { name: '捨て札から引く', exact: true });
     const discardButton = page.getByRole('button', { name: '捨てる' });
     const knockButton = page.getByRole('button', { name: 'ノック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });

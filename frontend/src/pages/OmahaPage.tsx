@@ -45,6 +45,7 @@ import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { omahaBestFive } from '../utils/omahaBestFive';
 import { findPlayerName } from '../utils/playerUtils';
+import { evaluateFiveCardHand, pokerHandKey } from '../utils/pokerSquaresUtils';
 
 /** Omaha Hold'em tutorial step definitions. */
 const OH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -174,6 +175,19 @@ function OmahaPageContent() {
     if (!best) return empty;
     return { holeSet: new Set(best.holeIdx), boardSet: new Set(best.boardIdx) };
   }, [isShowdown, humanPlayer, state?.communityCards]);
+  // During play (flop..river), preview the human's current best hand name under
+  // Omaha's must-use-exactly-2-hole + 3-board rule. Returns null pre-flop (fewer
+  // than 3 board cards) or at showdown (where the winning hand is already shown).
+  const liveBestHandKey = useMemo(() => {
+    if (!isActive || isShowdown || !humanPlayer || humanPlayer.folded) return null;
+    const hole = humanPlayer.cards ?? [];
+    const board = state?.communityCards ?? [];
+    const best = omahaBestFive(hole, board);
+    if (!best) return null;
+    const five = [...best.holeIdx.map((i) => hole[i]), ...best.boardIdx.map((i) => board[i])];
+    const rank = evaluateFiveCardHand(five);
+    return rank == null ? null : pokerHandKey(rank);
+  }, [isActive, isShowdown, humanPlayer, state?.communityCards]);
   const humanFolded = humanPlayer?.folded ?? false;
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
@@ -236,7 +250,7 @@ function OmahaPageContent() {
             {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
           </span>
           <span>
-            SB/BB:{' '}
+            {tc('label.blinds')}{' '}
             <strong>
               {state?.smallBlind ?? 0}/{state?.bigBlind ?? 0}
             </strong>
@@ -385,6 +399,17 @@ function OmahaPageContent() {
                   <span aria-hidden="true">🎯</span>
                   {t('mandatoryRule')}
                 </div>
+                {liveBestHandKey && (
+                  <div className="mb-1" data-testid="omaha-live-besthand">
+                    <span className="text-ds-text-primary text-xs">{t('livePreview')}</span>
+                    <span
+                      className={`inline-block ml-1.5 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                      data-testid="omaha-live-besthand-name"
+                    >
+                      {t(`hand.${liveBestHandKey}`)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="oh-combination-rule">
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {

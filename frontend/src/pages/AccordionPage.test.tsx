@@ -69,6 +69,18 @@ describe('AccordionPage', () => {
     expect(screen.getByText(/パイル数/)).toBeInTheDocument();
   });
 
+  it('lists the keyboard shortcuts in a collapsible panel and tags action buttons', async () => {
+    renderWithProviders(<AccordionPage />);
+    const panel = await screen.findByTestId('ac-kbd-shortcuts');
+    // Closed by default so it stays discreet.
+    expect(panel).not.toHaveAttribute('open');
+    expect(screen.getByText('キーボードショートカット')).toBeInTheDocument();
+    expect(screen.getByText('選択を解除')).toBeInTheDocument();
+    // Action buttons advertise their single-key shortcuts to assistive tech.
+    expect(screen.getByRole('button', { name: 'ヒント' })).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(screen.getByRole('button', { name: 'ギブアップ' })).toHaveAttribute('aria-keyshortcuts', 'g');
+  });
+
   it('shows game clear phase', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<AccordionPage />);
@@ -211,6 +223,28 @@ describe('AccordionPage', () => {
     fireEvent.mouseEnter(pile3);
     fireEvent.mouseLeave(pile3);
     expect(screen.getByRole('button', { name: /0:/ }).dataset.hoverTarget).toBe('false');
+  });
+
+  it('selecting a pile persistently highlights its legal merge targets without hover (touch parity)', async () => {
+    // pile 3 (SPADE 9) can merge onto pile 0 (SPADE 7) at offset 3 (suit match).
+    mockExec.mockResolvedValue({
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 7)], size: 1 },
+        { cards: [card('HEART', 2)], size: 1 },
+        { cards: [card('CLOVER', 3)], size: 1 },
+        { cards: [card('SPADE', 9)], size: 1 },
+      ],
+    });
+    renderWithProviders(<AccordionPage />);
+    const pile3 = await screen.findByRole('button', { name: /^3:/ });
+    // Select via click only — no mouseEnter, mimicking a touch device.
+    fireEvent.click(pile3);
+    const pile0 = screen.getByRole('button', { name: /^0:/ });
+    await waitFor(() => expect(pile0.dataset.legalTarget).toBe('true'));
+    expect(pile0.className).toContain('ring-ds-success');
+    // Adjacent pile (index 2, CLOVER 3) shares neither suit nor rank with SPADE 9.
+    expect(screen.getByRole('button', { name: /^2:/ }).dataset.legalTarget).toBe('false');
   });
 
   it('shows error alert when API fails on mount', async () => {
@@ -497,6 +531,98 @@ describe('AccordionPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'u' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('autocomplete button is disabled when no legal merge remains', async () => {
+    // playingState: SPADE1/HEART2/CLOVER3/DIAMOND4 → no suit/rank match anywhere.
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByTestId('ac-autocomplete')).toBeDisabled();
+  });
+
+  it('autocomplete button is enabled and advertises its shortcut when a merge is available', async () => {
+    // pile 3 (SPADE 9) merges onto pile 0 (SPADE 7) at offset 3.
+    mockExec.mockResolvedValue({
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 7)], size: 1 },
+        { cards: [card('HEART', 2)], size: 1 },
+        { cards: [card('CLOVER', 3)], size: 1 },
+        { cards: [card('SPADE', 9)], size: 1 },
+      ],
+    });
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const autoBtn = screen.getByTestId('ac-autocomplete');
+    expect(autoBtn).toBeEnabled();
+    expect(autoBtn).toHaveAttribute('aria-keyshortcuts', 'a');
+  });
+
+  it('autocomplete drives the recommended merges in sequence until none remain', async () => {
+    const stateA: AccordionResponse = {
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 7)], size: 1 },
+        { cards: [card('HEART', 2)], size: 1 },
+        { cards: [card('CLOVER', 3)], size: 1 },
+        { cards: [card('SPADE', 9)], size: 1 }, // idx3→idx0 (suit) offset 3
+      ],
+    };
+    // After the offset-3 merge: idx1 (SPADE 3) → idx0 (SPADE 9) offset 1.
+    const stateB: AccordionResponse = {
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 9)], size: 2 },
+        { cards: [card('SPADE', 3)], size: 1 },
+        { cards: [card('CLOVER', 3)], size: 1 },
+      ],
+      pileCount: 3,
+    };
+    // No further match (SPADE 3 vs CLOVER 5) → loop stops.
+    const stateC: AccordionResponse = {
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 3)], size: 3 },
+        { cards: [card('CLOVER', 5)], size: 1 },
+      ],
+      pileCount: 2,
+    };
+    mockExec.mockResolvedValueOnce(stateA); // reset on mount
+    mockExec.mockResolvedValueOnce(stateB); // first merge
+    mockExec.mockResolvedValue(stateC); // second merge + rest
+
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('ac-autocomplete'));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'pile', index: 3 }, { zone: 'pile', index: 0 }),
+    );
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'pile', index: 1 }, { zone: 'pile', index: 0 }),
+    );
+    // Exactly two merges, then the loop halts (stateC has no legal move).
+    expect(mockExec.mock.calls.filter((c) => c[0] === 'move')).toHaveLength(2);
+    await waitFor(() => expect(screen.getByTestId('ac-autocomplete')).toBeDisabled());
+  });
+
+  it('pressing "a" triggers autocomplete', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 7)], size: 1 },
+        { cards: [card('HEART', 2)], size: 1 },
+        { cards: [card('CLOVER', 3)], size: 1 },
+        { cards: [card('SPADE', 9)], size: 1 },
+      ],
+    });
+    mockExec.mockResolvedValue({ ...playingState, piles: [{ cards: [card('SPADE', 9)], size: 2 }], pileCount: 1 });
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
   });
 
   it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {

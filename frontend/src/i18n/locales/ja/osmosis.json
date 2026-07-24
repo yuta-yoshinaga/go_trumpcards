@@ -31,6 +31,13 @@
   "frontendHint": {
     "moveToFoundation": "組札へ浸透できるカードがあります"
   },
+  "kbd": {
+    "draw": "D",
+    "hint": "H",
+    "autoComplete": "A",
+    "undo": "Z",
+    "giveUp": "G"
+  },
   "tutorial": {
     "foundation": "縦4段の組札です。最上段は同じスートを順不同で集め、下段は「すぐ上の段にあるランク」だけを積めます（浸透）。",
     "reserve": "4列のリザーブです。各列の一番上のカードを組札へ移動できます。",

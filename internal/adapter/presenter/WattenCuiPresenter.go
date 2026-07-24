@@ -43,7 +43,7 @@ func (p *WattenCuiPresenter) Output(g interfaces.WattenGame, lastErr error) stri
 
 		if g.GetCriticalSuit() > 0 {
 			out.WriteString(i18n.Tf("watten.declaredLine",
-				"rank", strconv.Itoa(g.GetSchlagRank()),
+				"rank", cuiRankLabel(g.GetSchlagRank()),
 				"suit", cuiSuitName(g.GetCriticalSuit())) + "\n")
 		} else {
 			out.WriteString(i18n.T("watten.undeclared") + "\n")
@@ -119,7 +119,7 @@ func (p *WattenCuiPresenter) HintOutput(g interfaces.WattenGame) string {
 			suit = *hint.Suit
 		}
 		return color.Yellow(i18n.Tf("watten.hintDeclare",
-			"rank", strconv.Itoa(rank),
+			"rank", cuiRankLabel(rank),
 			"suit", cuiSuitName(suit),
 			"reason", reason)) + "\n"
 	case "raise":

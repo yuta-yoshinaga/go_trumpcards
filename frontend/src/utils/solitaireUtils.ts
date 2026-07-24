@@ -21,3 +21,61 @@ export function isTableauAllFaceUp(tableau: readonly (readonly TableauCardLike[]
   }
   return true;
 }
+
+/** Minimal card shape for movable-run detection: suit (`design`) + rank (`value`). */
+interface SuitRankCard {
+  design: string;
+  value: number;
+}
+
+/** Tableau card with a nullable face and a face-up flag (Spider column shape). */
+interface RunTableauCard {
+  card: SuitRankCard | null;
+  faceUp: boolean;
+}
+
+/**
+ * Computes the contiguous same-suit descending run that moves as a single unit when the
+ * card at `index` is grabbed in a Spider-style tableau column. Grabbing a card in Spider
+ * always takes every card below it, so the grab is only legal when the entire tail
+ * `[index .. bottom]` is face-up, all the same suit, and strictly descending by one rank
+ * (mirroring the backend's `isValidSpiderSequence`). Returns the indices of that tail when
+ * it forms a valid movable run, or an empty array when the card is face-down, missing, or
+ * the tail is broken (i.e. not movable, so no highlight should appear).
+ */
+export function spiderMovableRun(column: readonly RunTableauCard[], index: number): number[] {
+  if (index < 0 || index >= column.length) return [];
+  const start = column[index];
+  if (!start.faceUp || !start.card) return [];
+  for (let i = index + 1; i < column.length; i++) {
+    const prev = column[i - 1].card;
+    const curr = column[i];
+    if (!curr.faceUp || !curr.card || !prev) return [];
+    if (curr.card.design !== prev.design) return [];
+    if (curr.card.value !== prev.value - 1) return [];
+  }
+  const run: number[] = [];
+  for (let i = index; i < column.length; i++) run.push(i);
+  return run;
+}
+
+/** A selected tableau card: the column and the index within that column. */
+export interface TableauSelection {
+  col: number;
+  cardIndex: number;
+}
+
+/**
+ * Determines whether the tableau card at (`col`, `cardIdx`) belongs to the
+ * "block" that would be lifted together when the card at `selected` is picked
+ * up. In Yukon a face-up card moves with every card sitting on top of it
+ * regardless of suit/rank order, so the block spans from the selected index
+ * down to the column bottom. Returns `false` when nothing is selected, or the
+ * candidate is in a different column, or the candidate sits above the selection.
+ *
+ * This powers the tap-to-preview block highlight on touch devices, where hover
+ * is unavailable (#3152).
+ */
+export function isInMoveBlock(selected: TableauSelection | null, col: number, cardIdx: number): boolean {
+  return selected !== null && selected.col === col && cardIdx >= selected.cardIndex;
+}

@@ -23,8 +23,14 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSpadesGame } from '../hooks/useSpadesGame';
-import { badgeInfo, badgeSuccess, badgeWarning } from '../styles/badgeStyles';
+import {
+  BAG_PENALTY_THRESHOLD_OPTIONS,
+  CPU_DIFFICULTY_OPTIONS,
+  NIL_BONUS_OPTIONS,
+  POINT_LIMIT_OPTIONS,
+  useSpadesGame,
+} from '../hooks/useSpadesGame';
+import { badgeError, badgeInfo, badgeSuccess, badgeWarning } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -35,7 +41,7 @@ import { parseSpadesCommand, SPADES_HELP } from '../utils/cli/commands/spadesCom
 import { formatSpadesState } from '../utils/cli/formatters/spadesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
-import { spadesBidProgress } from '../utils/spadesBid';
+import { spadesBagWarning, spadesBidProgress } from '../utils/spadesBid';
 
 /** Spades tutorial step definitions. */
 const SP_TUTORIAL_STEPS: TutorialStep[] = [
@@ -189,6 +195,15 @@ function SpadesPageContent() {
     (isPlayPhase || isTrickEnd) && humanPlayer && humanPlayer.bid >= 0
       ? spadesBidProgress(humanPlayer.bid, humanPlayer.trickCount)
       : null;
+  // Bag-penalty proximity warning for the human player.
+  const bagThreshold = state.config.bagPenaltyThreshold;
+  const humanBagWarning = humanPlayer ? spadesBagWarning(humanPlayer.bags, bagThreshold) : null;
+  // Warning color for a score-table bags cell based on that player's own bags.
+  const bagCellClass = (bags: number): string => {
+    const w = spadesBagWarning(bags, bagThreshold);
+    if (!w) return '';
+    return w.level === 'danger' ? 'text-ds-warning font-bold' : 'text-ds-warning';
+  };
 
   return (
     <GamePageShell
@@ -234,6 +249,26 @@ function SpadesPageContent() {
                     onSelect: (v) => handleConfigChange('pointLimit', v),
                   },
                   {
+                    type: 'select',
+                    id: 'nilBonus',
+                    label: t('settings.nilBonus'),
+                    value: spadesConfig.nilBonus,
+                    options: NIL_BONUS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('nilBonus', v),
+                    tooltip: t('settings.nextGameNote'),
+                    testId: 'sp-setting-nil-bonus',
+                  },
+                  {
+                    type: 'select',
+                    id: 'bagPenaltyThreshold',
+                    label: t('settings.bagPenaltyThreshold'),
+                    value: spadesConfig.bagPenaltyThreshold,
+                    options: BAG_PENALTY_THRESHOLD_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('bagPenaltyThreshold', v),
+                    tooltip: t('settings.nextGameNote'),
+                    testId: 'sp-setting-bag-threshold',
+                  },
+                  {
                     type: 'checkbox',
                     id: 'frontendHint',
                     label: tc('hint.toggle', { ns: 'tutorial' }),
@@ -254,26 +289,38 @@ function SpadesPageContent() {
               <span>{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
             </div>
 
-            {bidProgress && (
-              <div className="text-center mb-2">
-                <span
-                  data-testid="sp-bid-progress"
-                  className={
-                    bidProgress.kind === 'nilFail'
-                      ? badgeWarning
+            {(bidProgress || humanBagWarning) && (
+              <div className="text-center mb-2 flex flex-wrap gap-2 justify-center items-center">
+                {bidProgress && (
+                  <span
+                    data-testid="sp-bid-progress"
+                    className={
+                      bidProgress.kind === 'nilFail'
+                        ? badgeWarning
+                        : bidProgress.kind === 'made'
+                          ? badgeSuccess
+                          : badgeInfo
+                    }
+                  >
+                    {bidProgress.kind === 'remaining'
+                      ? t('bidProgress.remaining', { n: bidProgress.remaining })
                       : bidProgress.kind === 'made'
-                        ? badgeSuccess
-                        : badgeInfo
-                  }
-                >
-                  {bidProgress.kind === 'remaining'
-                    ? t('bidProgress.remaining', { n: bidProgress.remaining })
-                    : bidProgress.kind === 'made'
-                      ? t('bidProgress.made', { bags: bidProgress.bags })
-                      : bidProgress.kind === 'nilFail'
-                        ? t('bidProgress.nilFail')
-                        : t('bidProgress.nilOk')}
-                </span>
+                        ? t('bidProgress.made', { bags: bidProgress.bags })
+                        : bidProgress.kind === 'nilFail'
+                          ? t('bidProgress.nilFail')
+                          : t('bidProgress.nilOk')}
+                  </span>
+                )}
+                {humanBagWarning && (
+                  <span
+                    data-testid="sp-bag-warning"
+                    className={
+                      humanBagWarning.level === 'danger' ? `${badgeError} motion-safe:animate-pulse` : badgeWarning
+                    }
+                  >
+                    {t('bagWarning', { bags: humanBagWarning.bags, threshold: humanBagWarning.threshold })}
+                  </span>
+                )}
               </div>
             )}
 
@@ -361,7 +408,12 @@ function SpadesPageContent() {
                               <td>{playerName(p.id, p.isHuman)}</td>
                               <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
                               <td className="text-center">{p.trickCount}</td>
-                              <td className="text-center">{p.bags}</td>
+                              <td
+                                className={`text-center ${bagCellClass(p.bags)}`}
+                                data-testid={`sp-bags-cell-${p.id}`}
+                              >
+                                {p.bags}
+                              </td>
                               <td className="text-center">{p.roundScore}</td>
                               <td className="text-center">{p.cumulativeScore}</td>
                             </tr>
@@ -394,7 +446,12 @@ function SpadesPageContent() {
                               <td>{playerName(p.id, p.isHuman)}</td>
                               <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
                               <td className="text-center">{p.trickCount}</td>
-                              <td className="text-center">{p.bags}</td>
+                              <td
+                                className={`text-center ${bagCellClass(p.bags)}`}
+                                data-testid={`sp-bags-cell-${p.id}`}
+                              >
+                                {p.bags}
+                              </td>
                               <td className="text-center">{p.roundScore}</td>
                               <td className="text-center">{p.cumulativeScore}</td>
                             </tr>

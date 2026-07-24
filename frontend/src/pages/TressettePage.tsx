@@ -240,6 +240,35 @@ function TressettePageContent() {
                   label={t('currentTrick')}
                   dataTutorial="tr-trick-display"
                 />
+
+                {/* Previous trick reviewer: lets the player recount the just-completed trick */}
+                <details className="mb-2 p-2 rounded bg-black/30" data-testid="tr-previous-trick">
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('previousTrick')}
+                  </summary>
+                  <div className="mt-1">
+                    {state.lastTrick.length > 0 ? (
+                      <TrickDisplay
+                        currentTrick={state.lastTrick}
+                        players={state.players}
+                        cardWidth={Math.round(cardWidth * 0.7)}
+                        label={
+                          state.lastTrickWinner >= 0
+                            ? t('previousTrickWinner', {
+                                name: playerName(
+                                  state.lastTrickWinner,
+                                  state.players[state.lastTrickWinner]?.isHuman === true,
+                                ),
+                              })
+                            : t('previousTrick')
+                        }
+                        winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                      />
+                    ) : (
+                      <div className="text-ds-text-muted text-sm">{t('previousTrickEmpty')}</div>
+                    )}
+                  </div>
+                </details>
               </div>
 
               {/* Right: info sidebar */}
@@ -319,6 +348,46 @@ function TressettePageContent() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Card-point legend (static reference) */}
+                <details className="my-3 p-2 rounded bg-black/30" data-testid="tr-point-legend">
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('pointLegend.title')}
+                  </summary>
+                  <div className="mt-1 text-ds-text-muted text-xs">
+                    <table className="w-full">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left font-normal">
+                            {t('pointLegend.cardCol')}
+                          </th>
+                          <th scope="col" className="text-right font-normal">
+                            {t('pointLegend.pointCol')}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{t('pointLegend.ace')}</td>
+                          <td className="text-right">{t('pointLegend.aceValue')}</td>
+                        </tr>
+                        <tr>
+                          <td>{t('pointLegend.figures')}</td>
+                          <td className="text-right">{t('pointLegend.figuresValue')}</td>
+                        </tr>
+                        <tr>
+                          <td>{t('pointLegend.others')}</td>
+                          <td className="text-right">{t('pointLegend.othersValue')}</td>
+                        </tr>
+                        <tr>
+                          <td>{t('pointLegend.lastTrick')}</td>
+                          <td className="text-right">{t('pointLegend.lastTrickValue')}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div className="mt-1">{t('pointLegend.note')}</div>
+                  </div>
+                </details>
               </div>
             </div>
 

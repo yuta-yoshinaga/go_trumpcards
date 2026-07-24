@@ -292,9 +292,28 @@ function BarbuPageContent() {
                       {state.currentTrick.length === 0 ? (
                         <span className="text-ds-text-muted text-sm self-center">—</span>
                       ) : (
-                        state.currentTrick.map((tcard, i) => (
-                          <AnimatedCard key={i} card={tcard.card} width={cardWidth * 0.9} />
-                        ))
+                        state.currentTrick.map((tcard, i) => {
+                          const tp = state.players[tcard.playerIdx];
+                          const tIsHuman = tp?.isHuman === true;
+                          const isLead = i === 0;
+                          return (
+                            <div key={i} className="text-center" data-testid="bb-trick-card">
+                              <div className={`inline-block rounded ${isLead ? 'ring-2 ring-ds-info' : ''}`}>
+                                <AnimatedCard card={tcard.card} width={cardWidth * 0.9} />
+                              </div>
+                              <div
+                                className={`text-xs mt-1 ${tIsHuman ? 'text-ds-accent font-semibold' : 'text-ds-text-muted'}`}
+                              >
+                                {isLead && (
+                                  <span aria-hidden="true" className="mr-0.5" title={t('label.lead')}>
+                                    ▸
+                                  </span>
+                                )}
+                                {tIsHuman ? tc('player.you') : tc('player.cpu', { id: tp?.id ?? tcard.playerIdx })}
+                              </div>
+                            </div>
+                          );
+                        })
                       )}
                     </div>
                   </>
@@ -337,6 +356,54 @@ function BarbuPageContent() {
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
             )}
+
+            {/* Deal × player score matrix (completed deals only) */}
+            {(isDealEnd || isGameEnd) && state.dealHistory.length > 0 && (
+              <div className="overflow-x-auto" data-testid="bb-score-matrix">
+                <table className="w-full text-xs text-ds-text-muted border-collapse">
+                  <caption className="mb-1 text-xs text-ds-text-muted">{t('history.caption')}</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="px-2 py-1 text-center">
+                        {t('history.deal')}
+                      </th>
+                      <th scope="col" className="px-2 py-1 text-left">
+                        {t('history.contract')}
+                      </th>
+                      {state.players.map((p) => (
+                        <th key={p.id} scope="col" className="px-2 py-1 text-center">
+                          {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {state.dealHistory.map((d, i) => (
+                      <tr key={i} className="border-t border-white/10">
+                        <td className="px-2 py-1 text-center">{i + 1}</td>
+                        <td className="px-2 py-1 whitespace-nowrap text-ds-text">
+                          {t(`contract.${d.contract}`)}
+                          {d.contract === CONTRACT_TRUMPS && d.trumpSuit >= 1 && ` (${SUIT_SYMBOLS[d.trumpSuit]})`}
+                        </td>
+                        {state.players.map((p) => {
+                          const gained = d.gained[p.id] ?? 0;
+                          return (
+                            <td
+                              key={p.id}
+                              className={`px-2 py-1 text-center ${
+                                gained > 0 ? 'text-ds-success' : gained < 0 ? 'text-ds-error' : ''
+                              }`}
+                            >
+                              {gained > 0 ? `+${gained}` : gained}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           <SettingsPanel
@@ -349,7 +416,10 @@ function BarbuPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: String(configInput.cpuDifficulty ?? 1),
-                    options: DIFFICULTY_OPTIONS,
+                    options: DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
                     onSelect: (v: string) => handleConfigChange('cpuDifficulty', Number.parseInt(v, 10)),
                   },
                   {

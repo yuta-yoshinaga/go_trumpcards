@@ -79,14 +79,27 @@ describe('MusPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mus', { mus: false }));
   });
 
-  it('renders the discard button in the discard phase', async () => {
+  it('disables the discard button and shows the guide when nothing is selected', async () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<MusPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /交換する/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /交換する/ })).toBeDisabled();
+    expect(screen.getByTestId('mus-discard-guide')).toHaveTextContent('交換するカードを1〜4枚選んでください');
+  });
+
+  it('enables the discard button once a card is selected and dispatches the discard', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<MusPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /交換する/ })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    expect(screen.getByRole('button', { name: /交換する/ })).toBeEnabled();
+    expect(screen.getByTestId('mus-discard-guide')).toHaveTextContent('1枚選択中');
+
     mockExec.mockClear();
     mockExec.mockResolvedValue(discardState);
     fireEvent.click(screen.getByRole('button', { name: /交換する/ }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { discardIndices: [] }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { discardIndices: [0] }));
   });
 
   it('renders bet buttons gated by can flags and dispatches envido', async () => {
@@ -132,5 +145,52 @@ describe('MusPage', () => {
     renderWithProviders(<MusPage />);
     await waitFor(() => expect(screen.getByText('アマラコ')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'パソ（パス）' })).not.toBeInTheDocument();
+  });
+
+  it('shows the hand-summary panel with Pares and Juego (default hand: par of Q, Punto 28)', async () => {
+    renderWithProviders(<MusPage />);
+    await waitFor(() => expect(screen.getByTestId('mus-hand-summary')).toBeInTheDocument());
+    expect(screen.getByText('手札評価')).toBeInTheDocument();
+    // A(1) + Q(12) + Q(12) + 7 -> pair of queens, points 28 (< 31 -> Punto).
+    expect(screen.getByTestId('mus-summary-pares')).toHaveTextContent('パレス: ペア');
+    expect(screen.getByTestId('mus-summary-juego')).toHaveTextContent('プント 28点');
+  });
+
+  it('highlights the Pares row during the Pares betting round', async () => {
+    mockExec.mockResolvedValue(makeMusState({ phase: 4 }));
+    renderWithProviders(<MusPage />);
+    await waitFor(() => expect(screen.getByTestId('mus-summary-pares')).toBeInTheDocument());
+    expect(screen.getByTestId('mus-summary-pares').className).toContain('font-semibold');
+    expect(screen.getByTestId('mus-summary-juego').className).not.toContain('font-semibold');
+  });
+
+  it('shows the best-hand marker for a 31-point Juego', async () => {
+    const juego31 = makeMusState({
+      phase: 5,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 4,
+          cards: [
+            { design: 'SPADE', value: 13 },
+            { design: 'CLOVER', value: 13 },
+            { design: 'HEART', value: 13 },
+            { design: 'DIAMOND', value: 1 },
+          ],
+          teamScore: 5,
+        },
+        { id: 1, isHuman: false, cardCount: 4, cards: [], teamScore: 3 },
+        { id: 2, isHuman: false, cardCount: 4, cards: [], teamScore: 5 },
+        { id: 3, isHuman: false, cardCount: 4, cards: [], teamScore: 3 },
+      ],
+    });
+    mockExec.mockResolvedValue(juego31);
+    renderWithProviders(<MusPage />);
+    await waitFor(() => expect(screen.getByTestId('mus-summary-juego')).toBeInTheDocument());
+    // Three Kings = medias; 10+10+10+1 = 31 -> best.
+    expect(screen.getByTestId('mus-summary-pares')).toHaveTextContent('パレス: メディアス');
+    expect(screen.getByTestId('mus-summary-juego')).toHaveTextContent('31点 ★');
+    expect(screen.getByTestId('mus-summary-juego').className).toContain('font-semibold');
   });
 });

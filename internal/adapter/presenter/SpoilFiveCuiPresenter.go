@@ -29,6 +29,14 @@ func spoilFivePlayerStr(g interfaces.SpoilFiveGame, idx int) string {
 		return ""
 	}
 	var b strings.Builder
+	// Mark the current lead and (at round end) the round winner so seat status is
+	// visible at a glance in the 5-player game, matching the web player panels.
+	if idx == g.GetLeadPlayerIdx() {
+		b.WriteString(i18n.T("spoilfive.leaderMark"))
+	}
+	if idx == g.GetRoundWinnerIdx() {
+		b.WriteString(i18n.T("spoilfive.winnerMark"))
+	}
 	b.WriteString(i18n.Tf("spoilfive.playerLine",
 		"name", cuiPlayerName(player, idx),
 		"cards", strconv.Itoa(player.GetCardsSize()),

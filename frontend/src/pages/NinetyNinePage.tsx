@@ -16,6 +16,7 @@ import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardSelection } from '../hooks/useCardSelection';
 import { useCliGame } from '../hooks/useCliGame';
@@ -29,13 +30,14 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { NinetyNineResponse } from '../types/card';
+import type { NinetyNineHint, NinetyNineResponse } from '../types/card';
 import { NinetyNinePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { NINETYNINE_HELP, parseNinetynineCommand } from '../utils/cli/commands/ninetynineCommands';
 import { formatNinetynineState } from '../utils/cli/formatters/ninetynineFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { ninetynineDeclaredTricks } from '../utils/hints/ninetynineHint';
 import { playerName } from '../utils/playerUtils';
 
 /** Number of cards the human must bury during the bid phase. */
@@ -110,10 +112,19 @@ function NinetyNinePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('ninetynine');
   const { playSound } = useSound();
-  const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
+  const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection, setSelected } = useCardSelection();
   const [config, setConfig] = useState<{ cpuDifficulty: number; targetScore: number }>({ ...DEFAULT_CONFIG });
 
-  const onSuccess = useCallback(() => clearSelection(), [clearSelection]);
+  // Server-computed hint (fetched via the `hint` command). Separate from the
+  // frontend `useGameHint` toggle below. Any successful game action clears it.
+  const [serverHint, setServerHint] = useState<NinetyNineHint | null>(null);
+  const [hintError, setHintError] = useState<string | null>(null);
+  const [hintLoading, setHintLoading] = useState(false);
+
+  const onSuccess = useCallback(() => {
+    clearSelection();
+    setServerHint(null);
+  }, [clearSelection]);
   const { state, loading, error, exec, retry } = useGameApi(ninetyNineApi.exec, { onSuccess });
 
   const configRef = useRef(config);
@@ -156,6 +167,28 @@ function NinetyNinePageContent() {
     void exec('play', undefined, selectedCardIndices[0]);
   }, [exec, selectedCardIndices]);
 
+  // The `hint` command returns full game state plus a nested `hint` object, so
+  // it is fetched directly and the hint stored separately rather than through
+  // `exec`, whose onSuccess would immediately clear the freshly-fetched hint.
+  const handleHint = useCallback(async () => {
+    setHintLoading(true);
+    try {
+      const res = await ninetyNineApi.exec('hint');
+      setServerHint(res.hint ?? null);
+      setHintError(null);
+    } catch {
+      setHintError(NETWORK_ERROR_MESSAGE());
+    } finally {
+      setHintLoading(false);
+    }
+  }, []);
+
+  // Apply the bury hint: replace the current selection with the recommended
+  // three cards so the player can confirm with the Bury button in one tap.
+  const handleApplyBury = useCallback(() => {
+    if (serverHint?.buryIndices) setSelected([...serverHint.buryIndices]);
+  }, [serverHint, setSelected]);
+
   const handleNextTrick = useCallback(() => void exec('next'), [exec]);
   const handleNextRound = useCallback(() => void exec('nextround'), [exec]);
   const handleManualReset = useCallback(() => {
@@ -176,6 +209,22 @@ function NinetyNinePageContent() {
   const isGameEnd = state.phase === NinetyNinePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
+  // Bury-selection progress. Selection is not capped, so the player can pick
+  // more than BURY_COUNT; clamp both directions so neither the remaining nor
+  // the over-selected count ever goes negative. `buryReady` is an exact match
+  // (over-selection is not ready). Drives the aria-live announcement and the
+  // focusable aria-disabled bury button.
+  const burySelectedCount = selectedCardIndices.length;
+  const buryRemaining = Math.max(0, BURY_COUNT - burySelectedCount);
+  const buryOverBy = Math.max(0, burySelectedCount - BURY_COUNT);
+  const buryReady = burySelectedCount === BURY_COUNT;
+  // Live declared-trick preview: sum of the currently-selected cards' suit
+  // bid values (♦=0 ♠=1 ♥=2 ♣=3). Equals the bid the backend registers once
+  // exactly 3 cards are selected, and updates immediately on every change.
+  const burySelectedCards = selectedCardIndices
+    .map((i) => humanPlayer?.cards[i])
+    .filter((c): c is NonNullable<typeof c> => c != null);
+  const buryPreviewTricks = ninetynineDeclaredTricks(burySelectedCards);
 
   const dealerName = playerName(
     state.players[state.dealerIdx]?.id ?? state.dealerIdx,
@@ -252,7 +301,29 @@ function NinetyNinePageContent() {
                 {isHumanBidTurn && (
                   <div className="text-ds-warning text-center mb-2" data-tutorial="nn-bid-controls">
                     <div>{t('buryPhase')}</div>
-                    <div className="text-sm">{t('burySelected', { count: selectedCardIndices.length })}</div>
+                    {/* Announce the remaining-count as it changes so a screen-reader user
+                        knows how many more cards to select before Bury becomes actionable. */}
+                    <div className="text-sm" role="status" aria-live="polite" data-testid="nn-bury-progress">
+                      {buryReady
+                        ? t('buryReady')
+                        : buryOverBy > 0
+                          ? t('buryTooMany', { count: buryOverBy })
+                          : t('buryRemaining', { count: buryRemaining })}
+                    </div>
+                    {/* Live declared-trick preview + suit→value legend so the player can
+                        see what bid their current 3-card selection will produce without
+                        memorising the suit mapping. Announced politely as it updates. */}
+                    <div
+                      className="text-sm text-ds-text-primary mt-1"
+                      role="status"
+                      aria-live="polite"
+                      data-testid="nn-bid-preview"
+                    >
+                      {t('bidPreview', { count: buryPreviewTricks })}
+                    </div>
+                    <div className="text-xs text-ds-text-muted" data-testid="nn-bid-legend">
+                      {t('bidLegend')}
+                    </div>
                   </div>
                 )}
 
@@ -389,18 +460,68 @@ function NinetyNinePageContent() {
                 </div>
               ))}
 
-            <ErrorAlert message={error} onRetry={retry} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {serverHint && (
+              <div className="text-ds-warning text-sm mb-2" data-testid="nn-server-hint">
+                {serverHint.buryIndices && serverHint.buryIndices.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <span>
+                      {t('hintBury')}:{' '}
+                      {serverHint.buryIndices
+                        .map((i) => {
+                          const c = humanPlayer?.cards[i];
+                          return c ? cardAlt(c) : `[${i}]`;
+                        })
+                        .join(' ')}{' '}
+                      ({t(`hintReason.${serverHint.reason}`)})
+                    </span>
+                    <button type="button" className={btnSuccess} onClick={handleApplyBury} data-testid="nn-hint-apply">
+                      {t('hintApply')}
+                    </button>
+                  </div>
+                ) : serverHint.cardIndex != null ? (
+                  <span>
+                    {t('hintPlay')}: [{serverHint.cardIndex}] ({t(`hintReason.${serverHint.reason}`)})
+                  </span>
+                ) : null}
+              </div>
+            )}
 
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
             )}
             <div className="flex gap-2 items-center" data-tutorial="nn-play-button">
-              {isHumanBidTurn && (
+              {(isHumanBidTurn || isHumanTurn) && (
                 <button
                   type="button"
-                  className={btnPrimary}
+                  className={btnSuccess}
+                  onClick={handleHint}
+                  disabled={loading || hintLoading}
+                  data-testid="nn-hint-button"
+                >
+                  {tc('button.hint')}
+                </button>
+              )}
+              {isHumanBidTurn && (
+                // Use aria-disabled (not the HTML `disabled` attribute) for the
+                // not-enough-cards state so the button stays focusable and a screen
+                // reader can read why it can't be pressed yet; handleBury guards the
+                // count so activating it while not-ready is a no-op. `disabled` is
+                // still applied while loading. Mirrors the Cribbage pegRestricted pattern.
+                <button
+                  type="button"
+                  className={`${btnPrimary}${buryReady ? '' : ' opacity-50 cursor-not-allowed'}`}
                   onClick={handleBury}
-                  disabled={loading || selectedCardIndices.length !== BURY_COUNT}
+                  disabled={loading}
+                  aria-disabled={!buryReady || undefined}
+                  aria-label={
+                    buryReady
+                      ? undefined
+                      : buryOverBy > 0
+                        ? t('buryButtonTooManyAria', { count: buryOverBy })
+                        : t('buryButtonDisabledAria', { count: buryRemaining })
+                  }
                 >
                   {t('buryButton')}
                 </button>

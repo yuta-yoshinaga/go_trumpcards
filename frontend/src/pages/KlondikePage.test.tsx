@@ -517,6 +517,18 @@ describe('KlondikePage', () => {
     expect(screen.getByTestId('kl-hint-card')).toBeInTheDocument();
   });
 
+  it('ring-highlights the hint source (info) and destination (success) on the board', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    // withHintState: waste (face-up source) → tableau column 3 (destination).
+    mockExec.mockResolvedValue(withHintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => {
+      expect(document.querySelector('.ring-ds-info')).not.toBeNull();
+      expect(document.querySelector('.ring-ds-success')).not.toBeNull();
+    });
+  });
+
   it('omits the hint card image when the source card cannot be resolved', async () => {
     // Mount with an empty waste, then surface a waste-sourced hint → no source card.
     mockExec.mockResolvedValueOnce(playingNoWasteState);
@@ -1093,6 +1105,40 @@ describe('KlondikePage', () => {
           expect.objectContaining({ zone: 'foundation', col: 0 }),
         ),
       );
+    });
+  });
+
+  describe('local statistics (#3031)', () => {
+    it('renders the stats panel with a win rate readout', async () => {
+      localStorage.removeItem('klondike_stats');
+      renderWithProviders(<KlondikePage />);
+      const panel = await screen.findByTestId('kl-stats-panel');
+      expect(panel).toHaveTextContent(/勝率/);
+    });
+
+    it('records a cleared game and shows the personal-best badge', async () => {
+      localStorage.removeItem('klondike_stats');
+      mockExec.mockResolvedValue(gameClearState);
+      renderWithProviders(<KlondikePage />);
+      // Win recorded once on GAME_CLEAR; first clear beats the (empty) fewest-moves best.
+      expect(await screen.findByTestId('kl-best-badge')).toBeInTheDocument();
+      await waitFor(() => {
+        const raw = localStorage.getItem('klondike_stats');
+        expect(raw).not.toBeNull();
+        const stats = JSON.parse(raw ?? '{}');
+        expect(stats['1:0']).toMatchObject({ plays: 1, wins: 1, fewestMoves: 5 });
+      });
+    });
+
+    it('records a lost game as a play without a win', async () => {
+      localStorage.removeItem('klondike_stats');
+      mockExec.mockResolvedValue(gameOverState);
+      renderWithProviders(<KlondikePage />);
+      await waitFor(() => {
+        const stats = JSON.parse(localStorage.getItem('klondike_stats') ?? '{}');
+        expect(stats['1:0']).toMatchObject({ plays: 1, wins: 0, fewestMoves: null });
+      });
+      expect(screen.queryByTestId('kl-best-badge')).not.toBeInTheDocument();
     });
   });
 });

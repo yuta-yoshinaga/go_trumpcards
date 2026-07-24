@@ -23,7 +23,17 @@ func (m *MockSevenBridgeGame) PlayerLayoff(t, mi, ci int) error {
 	return m.Called(t, mi, ci).Error(0)
 }
 func (m *MockSevenBridgeGame) PlayerDiscard(i int) error { return m.Called(i).Error(0) }
-func (m *MockSevenBridgeGame) CpuPlay()                  { m.Called() }
+func (m *MockSevenBridgeGame) SuggestMeld(playerIdx int) []int {
+	ret := m.Called(playerIdx)
+	if v := ret.Get(0); v != nil {
+		return v.([]int)
+	}
+	return nil
+}
+func (m *MockSevenBridgeGame) SuggestDiscard(playerIdx int) int {
+	return m.Called(playerIdx).Int(0)
+}
+func (m *MockSevenBridgeGame) CpuPlay() { m.Called() }
 func (m *MockSevenBridgeGame) GetConfig() domain.SevenBridgeConfig {
 	return m.Called().Get(0).(domain.SevenBridgeConfig)
 }

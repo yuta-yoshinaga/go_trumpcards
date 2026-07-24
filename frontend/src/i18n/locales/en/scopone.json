@@ -20,7 +20,9 @@
     "yourTeam": "Your Team",
     "cpuStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}}",
     "humanStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}}",
-    "teamScore": "Team {{team}}: {{score}} pt"
+    "teamScore": "Team {{team}}: {{score}} pt",
+    "scopaBadge": "Scopa!",
+    "scopaBadgeOwn": "Scopa! Your team"
   },
   "button": {
     "take": "Take",
@@ -31,7 +33,10 @@
   "settings": {
     "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
-    "targetScore": "Target Score"
+    "targetScore": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
   },
   "result": {
     "win": "Win",

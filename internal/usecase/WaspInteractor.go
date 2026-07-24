@@ -22,6 +22,8 @@ type WaspInteractorIF interface {
 	GiveUp() string
 	// Hint ヒント取得
 	Hint() string
+	// LegalMoves 指定列のトップカードの合法な移動先を出力する
+	LegalMoves(col int) string
 	// AutoComplete オートコンプリート
 	AutoComplete() string
 	// ActionLog 棋譜を出力する
@@ -69,6 +71,11 @@ func (si *WaspInteractor) MoveTableauToTableau(fromCol, cardIndex, toCol int) st
 // Hint ヒント取得
 func (si *WaspInteractor) Hint() string {
 	return si.sp.HintOutput(si.Game)
+}
+
+// LegalMoves 指定列のトップカードの合法な移動先を出力する
+func (si *WaspInteractor) LegalMoves(col int) string {
+	return si.sp.LegalMovesOutput(si.Game, col)
 }
 
 // ActionLog 棋譜を出力する

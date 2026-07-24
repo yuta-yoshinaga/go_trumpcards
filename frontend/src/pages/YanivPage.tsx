@@ -25,6 +25,8 @@ import type { YanivResponse } from '../types/card';
 import { YanivPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { classifyYanivDiscard } from '../utils/yanivCombos';
+import { isPickupable } from '../utils/yanivPickup';
 
 type YanivArgs = Parameters<typeof yanivApi.exec>;
 
@@ -180,6 +182,13 @@ function YanivPageContent() {
         : t('phase.draw');
   const pickup = state.pickupCards;
 
+  // Pre-validate the selected discard combination on the client (warn-only;
+  // the server still validates). Mirrors the domain `YanivValidCombo`.
+  const selectedCards = selected.map((i) => human.cards[i]).filter((c): c is NonNullable<typeof c> => c != null);
+  const discardCheck =
+    isDiscard && isHumanTurn && selectedCards.length > 0 ? classifyYanivDiscard(selectedCards) : null;
+  const discardWarning = discardCheck?.reasonKey ? t(discardCheck.reasonKey) : null;
+
   return (
     <GamePageShell
       title={tc('nav.yaniv')}
@@ -240,25 +249,43 @@ function YanivPageContent() {
               </div>
               <div className="text-center">
                 <div className="text-xs text-ds-text-muted mb-1">{t('label.discardPile')}</div>
+                {isDraw && isHumanTurn && pickup.length > 1 && (
+                  <div className="text-[10px] text-ds-info mb-1" data-testid="pickup-hint">
+                    {t('pickup.hint')}
+                  </div>
+                )}
                 <div className="flex gap-1 justify-center">
                   {pickup.length > 0 ? (
                     pickup.map((c, i) => {
-                      const isEnd = i === 0 || i === pickup.length - 1;
+                      const pickable = isPickupable(i, pickup.length);
+                      const active = pickable && isDraw && isHumanTurn;
+                      const blocked = !pickable && isDraw && isHumanTurn;
                       return (
-                        <button
-                          key={i}
-                          type="button"
-                          data-testid={`pickup-card-${i}`}
-                          onClick={() => isEnd && isDraw && isHumanTurn && handleDrawPickup(i === 0 ? 0 : 1)}
-                          disabled={!isEnd || !isDraw || !isHumanTurn || loading}
-                          className={
-                            isEnd && isDraw && isHumanTurn
-                              ? 'rounded ring-2 ring-ds-info cursor-pointer hover:opacity-90'
-                              : 'rounded opacity-70 cursor-default'
-                          }
-                        >
-                          <AnimatedCard card={c} width={cardWidth * 0.8} />
-                        </button>
+                        <div key={i} className="relative" title={blocked ? t('pickup.disabledReason') : undefined}>
+                          <button
+                            type="button"
+                            data-testid={`pickup-card-${i}`}
+                            onClick={() => active && handleDrawPickup(i === 0 ? 0 : 1)}
+                            disabled={!active || loading}
+                            aria-disabled={blocked || undefined}
+                            aria-label={active ? t('pickup.endLabel') : undefined}
+                            className={
+                              active
+                                ? 'rounded ring-2 ring-ds-info cursor-pointer hover:opacity-90'
+                                : 'rounded opacity-70 cursor-default'
+                            }
+                          >
+                            <AnimatedCard card={c} width={cardWidth * 0.8} />
+                          </button>
+                          {active && (
+                            <span
+                              data-testid={`pickup-badge-${i}`}
+                              className="absolute -top-1 -right-1 rounded bg-ds-info text-white text-[9px] font-bold px-1 pointer-events-none"
+                            >
+                              {t('pickup.badge')}
+                            </span>
+                          )}
+                        </div>
                       );
                     })
                   ) : (
@@ -351,11 +378,17 @@ function YanivPageContent() {
           />
 
           <GameFooter className={`${gameTheme.yaniv.footer} px-4 py-2.5`}>
+            {discardWarning && (
+              <div role="status" data-testid="discard-warning" className="mb-2 text-center text-xs text-ds-warning">
+                ⚠️ {discardWarning}
+              </div>
+            )}
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="y-action-buttons">
               <button
                 type="button"
                 onClick={handleDiscard}
                 disabled={loading || !isHumanTurn || !isDiscard || selected.length === 0}
+                title={discardWarning ?? undefined}
                 className="px-4 py-2 rounded-lg bg-ds-success text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="discard-button"
               >

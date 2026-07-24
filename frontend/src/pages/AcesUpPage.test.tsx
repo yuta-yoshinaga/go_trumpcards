@@ -32,6 +32,7 @@ const playingState: AcesUpResponse = {
   columns: makeColumns(),
   stockCount: 44,
   discardCount: 4,
+  discardTop: card('CLOVER', 7),
   phase: 0,
   moveCount: 3,
   canUndo: true,
@@ -84,6 +85,26 @@ describe('AcesUpPage', () => {
     expect(colDivs.length).toBe(4);
   });
 
+  it('renders the discard pile with progress and the top card', async () => {
+    renderWithProviders(<AcesUpPage />);
+    await waitFor(() => expect(screen.getByTestId('acesup-discard-pile')).toBeInTheDocument());
+    // Progress readout: discardCount out of the 48-card goal.
+    expect(screen.getByText(/捨て札/)).toBeInTheDocument();
+    expect(screen.getByText(/\(4\/48\)/)).toBeInTheDocument();
+    // The most recently removed card is shown face-up.
+    expect(screen.getByTestId('acesup-discard-top')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /♣ 7/ })).toBeInTheDocument();
+  });
+
+  it('renders an empty discard placeholder when nothing has been removed', async () => {
+    mockExec.mockResolvedValue({ ...playingState, discardCount: 0, discardTop: null });
+    renderWithProviders(<AcesUpPage />);
+    await waitFor(() => expect(screen.getByTestId('acesup-discard-pile')).toBeInTheDocument());
+    expect(screen.getByTestId('acesup-discard-empty')).toBeInTheDocument();
+    expect(screen.getByText(/\(0\/48\)/)).toBeInTheDocument();
+    expect(screen.queryByTestId('acesup-discard-top')).not.toBeInTheDocument();
+  });
+
   it('renders empty column placeholder', async () => {
     renderWithProviders(<AcesUpPage />);
     await waitFor(() => expect(screen.getAllByText('空').length).toBeGreaterThanOrEqual(1));
@@ -119,6 +140,36 @@ describe('AcesUpPage', () => {
     fireEvent.click(cardButtons[0]);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0));
+  });
+
+  it('clicking discard-all dispatches remove for every removable card', async () => {
+    renderWithProviders(<AcesUpPage />);
+    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+
+    mockExec.mockClear();
+    // After the first removal nothing is removable, so the batch loop stops.
+    const cleared: AcesUpResponse = { ...playingState, columns: [[], [], [], []] };
+    mockExec.mockResolvedValueOnce(cleared);
+
+    fireEvent.click(screen.getByTestId('acesup-remove-all'));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0));
+    expect(mockExec).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables discard-all when no card is removable', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      columns: [
+        [makeCard(card('SPADE', 5), { top: true })],
+        [makeCard(card('SPADE', 9), { top: true, movable: true })],
+        [],
+        [makeCard(card('DIAMOND', 6), { top: true })],
+      ],
+    });
+    renderWithProviders(<AcesUpPage />);
+    await waitFor(() => expect(screen.getByTestId('acesup-remove-all')).toBeInTheDocument());
+    expect(screen.getByTestId('acesup-remove-all')).toBeDisabled();
   });
 
   it('clicking a move button dispatches move', async () => {

@@ -23,16 +23,23 @@
   "dirUptown": "アップタウン",
   "dirDowntown": "ダウンタウン",
   "dirNoTrump": "ノートランプ",
+  "bidTooLow": "現在の最高ビッド ({{tricks}} {{dir}}) を上回る必要があります",
   "passButton": "パス",
   "declareTrumpPrompt": "切り札スートを選択:",
   "exchangeButton": "交換 ({{count}}/6)",
   "kittyProgress": "選択済み: {{count}} / 6",
+  "kittyBadge": "K",
+  "kittyCardLabel": "キティ由来のカード",
+  "kittyLegend": "枠付き＝キティ由来の6枚",
   "playButton": "出す",
   "nextTrickButton": "次のトリック",
   "nextRoundButton": "次のラウンド",
   "settings": {
     "cpuDifficulty": "CPU難易度",
-    "targetScore": "目標スコア"
+    "targetScore": "目標スコア",
+    "easy": "かんたん",
+    "normal": "ふつう",
+    "hard": "むずかしい"
   },
   "tutorial": {
     "info": "ここにラウンド・契約・チームスコアが表示されます。先に7点に到達したチームの勝ちです。",

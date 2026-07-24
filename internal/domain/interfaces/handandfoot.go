@@ -17,6 +17,8 @@ type HandAndFootGame interface {
 	PlayerDrawFromDiscard(naturalPairIndices []int) error
 	// PlayerMeld プレイヤーがメルドを出す
 	PlayerMeld(meldGroups [][]int) error
+	// SuggestMelds playerIdx が作れるメルド候補 (カード群) を返す。無ければ nil
+	SuggestMelds(playerIdx int) [][]*domain.Card
 	// PlayerSkipMeld メルドフェーズをスキップする
 	PlayerSkipMeld() error
 	// PlayerDiscard プレイヤーがカードを捨てる

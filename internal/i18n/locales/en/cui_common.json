@@ -24,5 +24,16 @@
   "cuiSolitaireGameClear": "Game clear!",
   "cuiSolitaireGameOver": "Game over",
   "cuiSolitaireMoves": "Moves: {{count}}",
-  "cuiEmptyCol": "[empty]"
+  "cuiEmptyCol": "[empty]",
+  "pokerHandRank0": "High Card",
+  "pokerHandRank1": "One Pair",
+  "pokerHandRank2": "Two Pair",
+  "pokerHandRank3": "Three of a Kind",
+  "pokerHandRank4": "Straight",
+  "pokerHandRank5": "Flush",
+  "pokerHandRank6": "Full House",
+  "pokerHandRank7": "Four of a Kind",
+  "pokerHandRank8": "Straight Flush",
+  "pokerHandRank9": "Royal Flush",
+  "pokerHandRank10": "Five of a Kind"
 }

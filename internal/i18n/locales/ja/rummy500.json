@@ -27,5 +27,8 @@
   "playPhase": "プレイフェーズ",
   "roundEnd": "ラウンド終了",
   "winnerHuman": "あなたの勝利！",
-  "winnerCpu": "CPU {{idx}}の勝利"
+  "winnerCpu": "CPU {{idx}}の勝利",
+  "hintNone": "現在ヒントはありません。",
+  "hintMeld": "メルド候補: {{cands}}（m <idx...> で場に出す）",
+  "hintNoMeld": "メルドできる組み合わせがありません。d <idx> で捨て札を検討してください。"
 }

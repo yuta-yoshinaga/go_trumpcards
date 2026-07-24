@@ -102,14 +102,17 @@ describe('BigTwoPage', () => {
     expect(screen.queryByTestId('play-button')).not.toBeInTheDocument();
   });
 
-  it('shows a retry button when an action fails', async () => {
+  it('shows the shared ErrorAlert with a retry button when an action fails', async () => {
     renderWithProviders(<BigTwoPage />);
     const passBtn = await screen.findByTestId('pass-button');
     mockExec.mockRejectedValueOnce(new Error('boom'));
     fireEvent.click(passBtn);
-    const retry = await screen.findByText(NETWORK_ERROR_MESSAGE());
+    // The error now surfaces via the shared ErrorAlert (role=alert), not a bare underline button.
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(NETWORK_ERROR_MESSAGE());
+    mockExec.mockClear();
     mockExec.mockResolvedValue(makeState());
-    fireEvent.click(retry);
+    fireEvent.click(screen.getByRole('button', { name: '再試行' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', []));
   });
 
@@ -128,6 +131,47 @@ describe('BigTwoPage', () => {
     // The play command still references the original dealt index.
     fireEvent.click(screen.getByTestId('play-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [2]));
+  });
+
+  it('previews the combo type of a single selected card', async () => {
+    renderWithProviders(<BigTwoPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    const preview = screen.getByTestId('bt-selected-playtype');
+    expect(preview).toHaveTextContent('選択中');
+    expect(preview).toHaveTextContent('シングル');
+  });
+
+  it('previews a pair when two same-rank cards are selected', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [card('SPADE', 7), card('HEART', 7), card('DIAMOND', 3)]),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<BigTwoPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    expect(screen.getByTestId('bt-selected-playtype')).toHaveTextContent('ペア');
+    expect(screen.getByTestId('play-button')).toBeEnabled();
+  });
+
+  it('warns and disables play for an invalid combination', async () => {
+    renderWithProviders(<BigTwoPage />);
+    // Default hand is ♠3, ♥5, ♦7 — selecting two of them is not a valid pair.
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    expect(screen.getByTestId('bt-selected-playtype')).toHaveTextContent('無効な組み合わせ');
+    expect(screen.getByTestId('play-button')).toBeDisabled();
+  });
+
+  it('hides the selection preview when nothing is selected', async () => {
+    renderWithProviders(<BigTwoPage />);
+    await screen.findByTestId('hand-card-0');
+    expect(screen.queryByTestId('bt-selected-playtype')).not.toBeInTheDocument();
   });
 
   it('shows the table play-type label for the cards in play', async () => {

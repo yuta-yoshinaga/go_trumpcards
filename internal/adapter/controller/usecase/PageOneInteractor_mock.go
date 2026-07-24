@@ -49,6 +49,11 @@ func (_m *MockPageOneInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }
 
+// Hint モック
+func (_m *MockPageOneInteractor) Hint() string {
+	return _m.Called().String(0)
+}
+
 // Snapshot モック
 func (_m *MockPageOneInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()

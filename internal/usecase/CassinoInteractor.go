@@ -20,6 +20,8 @@ type CassinoInteractorIF interface {
 	Build(handIdx int, tableIdxs []int, declaredValue int) string
 	// Trail 場に置くだけ (捕獲しない)
 	Trail(handIdx int) string
+	// Hint ヒント取得
+	Hint() string
 	// ResetWithConfig 設定を変更してゲームを初期化
 	ResetWithConfig(config domain.CassinoConfig) string
 	// GetConfig 現在の設定を返す
@@ -94,6 +96,11 @@ func (ci *CassinoInteractor) Trail(handIdx int) string {
 		ci.runCpuTurns()
 	}
 	return ci.cp.Output(ci.Game, err)
+}
+
+// Hint ヒント取得。
+func (ci *CassinoInteractor) Hint() string {
+	return ci.cp.HintOutput(ci.Game)
 }
 
 // GetConfig 現在の設定を返す。

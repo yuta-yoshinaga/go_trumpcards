@@ -31,13 +31,14 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { IndianRummyResponse } from '../types/card';
+import type { Card, IndianRummyResponse } from '../types/card';
 import { IndianRummyPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { INDIANRUMMY_HELP, parseIndianrummyCommand } from '../utils/cli/commands/indianrummyCommands';
 import { formatIndianrummyState } from '../utils/cli/formatters/indianrummyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { evaluateIndianRummyDeclare, INDIAN_RUMMY_HAND_SIZE } from '../utils/indianRummyDeclare';
 import { playerName } from '../utils/playerUtils';
 
 const INDIANRUMMY_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -149,6 +150,21 @@ function IndianRummyPageContent() {
 
   const phaseNames = usePhaseNames('indianrummy', INDIANRUMMY_PHASE_KEYS);
 
+  // Client-side declaration preview: when a finish card is selected during the
+  // discard phase, evaluate whether the remaining 13 cards form a valid declare.
+  // The backend still re-validates on submit; this only powers a non-blocking hint.
+  const declarePreview = useMemo(() => {
+    if (!state || state.phase !== IndianRummyPhase.DISCARD) return null;
+    if (state.players[state.currentPlayerIdx]?.isHuman !== true) return null;
+    if (selectedCardIndices.length !== 1) return null;
+    const human = state.players.find((p) => p.isHuman);
+    if (!human) return null;
+    const finishIdx = selectedCardIndices[0];
+    const remaining = human.cards.filter((_, i) => i !== finishIdx);
+    if (remaining.length !== INDIAN_RUMMY_HAND_SIZE) return null;
+    return evaluateIndianRummyDeclare(remaining, state.wildRank);
+  }, [state, selectedCardIndices]);
+
   const handleManualReset = useCallback(() => {
     hideActionLog();
     void gameExec('reset', undefined, {
@@ -179,6 +195,21 @@ function IndianRummyPageContent() {
   const isGameEnd = state.phase === IndianRummyPhase.GAME_END || state.gameEndFlag;
   const revealCpu = isRoundEnd || isGameEnd;
   const isHumanTurn = (isDrawPhase || isDiscardPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  // A card counts as wild when it is a printed joker or shares the rank of the round's wild joker.
+  const wildValue = state.wildJoker?.value;
+  const isWildCard = (card: Card): boolean =>
+    card.design === 'JOKER' || (wildValue !== undefined && card.value === wildValue);
+  const wildBadge = (card: Card) =>
+    isWildCard(card) ? (
+      <span
+        aria-hidden="true"
+        className="absolute top-0.5 right-0.5 px-1 rounded bg-ds-info text-ds-text-on-accent text-[8px] font-extrabold tracking-wider shadow-md pointer-events-none"
+        data-testid="ir-wild-badge"
+      >
+        {t('wildBadge')}
+      </span>
+    ) : null;
 
   return (
     <GamePageShell
@@ -300,11 +331,16 @@ function IndianRummyPageContent() {
                       {revealCpu && p.cards.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {p.cards.map((card, idx) => (
-                            <AnimatedCard
+                            <div
                               key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
-                              card={card}
-                              width={cardWidth * 0.8}
-                            />
+                              className={`relative inline-block rounded ${
+                                isWildCard(card) ? 'ring-2 ring-ds-info' : ''
+                              }`}
+                            >
+                              <AnimatedCard card={card} width={cardWidth * 0.8} />
+                              {isWildCard(card) && <span className="sr-only">{t('wildAria')}</span>}
+                              {wildBadge(card)}
+                            </div>
                           ))}
                         </div>
                       )}
@@ -360,9 +396,11 @@ function IndianRummyPageContent() {
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
                     onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
+                    aria-label={`${cardAlt(card)}${isWildCard(card) ? ` ${t('wildAria')}` : ''}`}
                     aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
+                    className={`relative transition-transform ${focusRingCard} ${
+                      isWildCard(card) ? 'ring-2 ring-ds-info' : ''
+                    }`}
                     style={{
                       background: 'none',
                       padding: 0,
@@ -372,6 +410,7 @@ function IndianRummyPageContent() {
                     }}
                   >
                     <AnimatedCard card={card} width={cardWidth} />
+                    {wildBadge(card)}
                   </button>
                 ))}
               </div>
@@ -381,6 +420,40 @@ function IndianRummyPageContent() {
 
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
+
+            {isDiscardPhase && isHumanTurn && declarePreview && (
+              <div
+                role="status"
+                aria-live="polite"
+                data-testid="indianrummy-declare-preview"
+                className={`mb-2 px-3 py-2 rounded text-sm ${
+                  declarePreview.valid ? 'bg-ds-success/20 text-ds-success' : 'bg-ds-warning/20 text-ds-warning'
+                }`}
+              >
+                {declarePreview.valid ? (
+                  <span data-testid="indianrummy-declare-preview-valid">{t('declarePreview.valid')}</span>
+                ) : (
+                  <div data-testid="indianrummy-declare-preview-invalid">
+                    <div className="font-semibold">{t('declarePreview.title')}</div>
+                    <ul className="list-disc list-inside">
+                      {!declarePreview.hasPureSequence && <li>{t('declarePreview.noPureSequence')}</li>}
+                      {declarePreview.unmeldedCount > 0 && (
+                        <li>
+                          {t('declarePreview.unmelded', {
+                            count: declarePreview.unmeldedCount,
+                            points: declarePreview.unmeldedPoints,
+                          })}
+                        </li>
+                      )}
+                      {declarePreview.hasPureSequence && declarePreview.unmeldedCount === 0 && (
+                        <li>{t('declarePreview.incomplete')}</li>
+                      )}
+                    </ul>
+                    <div>{t('declarePreview.penalty', { penalty: declarePreview.penalty })}</div>
+                  </div>
+                )}
+              </div>
             )}
 
             <div className="flex gap-2 items-center flex-wrap">

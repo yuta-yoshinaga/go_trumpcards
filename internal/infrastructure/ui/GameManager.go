@@ -583,7 +583,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultVideoPoker(), new(presenter.VideoPokerCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:          "videopoker.helpTitle",
-				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold"},
+				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold", "videopoker.helpHint"},
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
@@ -593,7 +593,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDeucesWildVideoPoker(), new(presenter.VideoPokerCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:          "deuceswild.helpTitle",
-				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold"},
+				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold", "videopoker.helpHint"},
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
@@ -603,7 +603,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewJokerPokerVideoPoker(), new(presenter.VideoPokerCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:          "jokerpoker.helpTitle",
-				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold"},
+				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold", "videopoker.helpHint"},
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
@@ -667,7 +667,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultCribbage(), new(presenter.CribbageCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:          "cribbage.helpTitle",
-				CommandKeys:       []string{"cribbage.helpDiscard", "cribbage.helpPeg", "cribbage.helpGo", "cribbage.helpHint", "cribbage.helpShowNext", "cribbage.helpNextRound"},
+				CommandKeys:       []string{"cribbage.helpDiscard", "cribbage.helpCut", "cribbage.helpPeg", "cribbage.helpGo", "cribbage.helpHint", "cribbage.helpShowNext", "cribbage.helpNextRound"},
 				ExtraCommandLines: []string{"  l                    action log"},
 				SettingKeys:       []string{"cribbage.helpSetDifficulty", "cribbage.helpSetLimit"},
 			})
@@ -811,7 +811,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultClockSolitaire(), new(presenter.ClockSolitaireCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:          "clocksolitaire.helpTitle",
-				CommandKeys:       []string{"clocksolitaire.helpStep", "clocksolitaire.helpAutoPlay"},
+				CommandKeys:       []string{"clocksolitaire.helpStep", "clocksolitaire.helpAutoPlay", "clocksolitaire.helpUndo"},
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
@@ -1023,6 +1023,7 @@ var gameRegistry = []GameRegistryEntry{
 				"  p <row> <col>            カードを配置 (0-4)",
 				"  u                        アンドゥ",
 				"  g                        ギブアップ",
+				"  h                        ヒント (現在のカードの最善配置)",
 				"  l                        action log",
 				"",
 				i18n.T("session"),
@@ -1054,7 +1055,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultRedDog(), new(presenter.RedDogCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:          "reddog.helpTitle",
-				CommandKeys:       []string{"reddog.helpBet", "reddog.helpRaise", "reddog.helpStay"},
+				CommandKeys:       []string{"reddog.helpBet", "reddog.helpRaise", "reddog.helpStay", "reddog.helpHint"},
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
@@ -1092,6 +1093,7 @@ var gameRegistry = []GameRegistryEntry{
 					"deucetoseven.helpAllIn",
 					"deucetoseven.helpExchange",
 					"deucetoseven.helpStand",
+					"deucetoseven.helpHint",
 				},
 				SettingKeys: []string{"deucetoseven.helpBettingLimit", "deucetoseven.helpCpuCount"},
 			})
@@ -1127,6 +1129,7 @@ var gameRegistry = []GameRegistryEntry{
 					"scorpion.helpDeal",
 					"scorpion.helpGiveUp",
 					"scorpion.helpHint",
+					"scorpion.helpLegal",
 					"scorpion.helpAutoComplete",
 				},
 				ExtraCommandLines: []string{"  l                        action log"},
@@ -1144,6 +1147,7 @@ var gameRegistry = []GameRegistryEntry{
 					"wasp.helpDeal",
 					"wasp.helpGiveUp",
 					"wasp.helpHint",
+					"wasp.helpLegal",
 					"wasp.helpAutoComplete",
 				},
 				ExtraCommandLines: []string{"  l                        action log"},
@@ -1174,6 +1178,7 @@ var gameRegistry = []GameRegistryEntry{
 					"trash.helpDraw",
 					"trash.helpPlace",
 					"trash.helpCpu",
+					"trash.helpHint",
 					"trash.helpLog",
 				},
 			})
@@ -1192,6 +1197,7 @@ var gameRegistry = []GameRegistryEntry{
 					"sevenbridge.helpLayoff",
 					"sevenbridge.helpDiscard",
 					"sevenbridge.helpNextRound",
+					"sevenbridge.helpHint",
 				},
 				SettingKeys: []string{"sevenbridge.helpSetDifficulty", "sevenbridge.helpSetLimit"},
 			})
@@ -1205,6 +1211,7 @@ var gameRegistry = []GameRegistryEntry{
 				CommandKeys: []string{
 					"president.helpPlay",
 					"president.helpPass",
+					"president.helpHint",
 					"president.helpLog",
 				},
 				SettingKeys: []string{
@@ -1224,6 +1231,7 @@ var gameRegistry = []GameRegistryEntry{
 					"cassino.helpBuild",
 					"cassino.helpTrail",
 					"cassino.helpNext",
+					"cassino.helpHint",
 					"cassino.helpLog",
 				},
 				SettingKeys: []string{
@@ -2080,6 +2088,7 @@ var gameRegistry = []GameRegistryEntry{
 				"  d <idx>              discard a card",
 				"  go                   go out (requires the pozzetto + a burraco)",
 				"  nr                   next round",
+				"  h                    hint (recommended action)",
 				"  l                    action log",
 				"",
 				"Settings:",
@@ -2646,6 +2655,7 @@ var gameRegistry = []GameRegistryEntry{
 					"handandfoot.helpDiscard",
 					"handandfoot.helpGoOut",
 					"handandfoot.helpNextRound",
+					"handandfoot.helpHint",
 				},
 				ExtraCommandLines: []string{"  l                    action log"},
 				SettingKeys: []string{
@@ -3423,6 +3433,16 @@ var gameRegistry = []GameRegistryEntry{
 				CommandKeys:       []string{"cego.helpBid", "cego.helpPass", "cego.helpCego", "cego.helpHandspiel", "cego.helpDiscard", "cego.helpPlay", "cego.helpNext", "cego.helpNextRound"},
 				ExtraCommandLines: []string{"  l                    action log"},
 				SettingKeys:       []string{"cego.helpSetDifficulty"},
+			})
+	}},
+	{Name: "zheng", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewZhengCuiController(usecase.NewZhengInteractor(
+				domain.NewDefaultZheng(), new(presenter.ZhengCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "zheng.helpTitle",
+				CommandKeys: []string{"zheng.helpPlay"},
+				SettingKeys: []string{"zheng.helpSetDifficulty"},
 			})
 	}},
 }

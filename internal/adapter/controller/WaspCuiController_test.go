@@ -76,6 +76,26 @@ func TestWaspCuiControllerUndo(t *testing.T) {
 	assert.Equal(t, "undo_output", c.Exec("undo"))
 }
 
+func TestWaspCuiControllerLegal(t *testing.T) {
+	si := newMockWaspInteractor()
+	c := NewWaspCuiController(si)
+	si.On("LegalMoves", 2).Return("legal_output")
+	assert.Equal(t, "legal_output", c.Exec("legal 2"))
+}
+
+func TestWaspCuiControllerLegalPrompt(t *testing.T) {
+	si := newMockWaspInteractor()
+	c := NewWaspCuiController(si)
+	result := c.Exec("legal")
+	assert.Contains(t, result, cuiutil.PromptPrefix)
+}
+
+func TestWaspCuiControllerLegalInvalidCol(t *testing.T) {
+	si := newMockWaspInteractor()
+	c := NewWaspCuiController(si)
+	assert.NotEmpty(t, c.Exec("legal abc"))
+}
+
 func TestWaspCuiControllerMoveShorthandTopCard(t *testing.T) {
 	si := newMockWaspInteractor()
 	c := NewWaspCuiController(si)

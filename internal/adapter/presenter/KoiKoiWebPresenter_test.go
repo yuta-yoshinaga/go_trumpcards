@@ -92,6 +92,41 @@ func TestKoiKoiWebPresenter_GameEnd(t *testing.T) {
 	assert.Equal(t, "koikoi.result.scores", decoded["messageCode"])
 }
 
+// TestKoiKoiWebPresenter_Output_HintOnHumanTurn は通常の Output() が人間の手番 (プレイ
+// フェーズ) でヒントを埋めることを検証する (#3516: フロントエンドのヒントトグルが機能する
+// 前提条件)。
+func TestKoiKoiWebPresenter_Output_HintOnHumanTurn(t *testing.T) {
+	g := domain.NewDefaultKoiKoi()
+	g.Reset()
+	g.SetCurrentTurn(0) // player 0 は人間
+
+	p := new(presenter.KoiKoiWebPresenter)
+	var decoded struct {
+		Hint *struct {
+			CardIndex  int    `json:"cardIndex"`
+			FieldIndex int    `json:"fieldIndex"`
+			KoiKoi     int    `json:"koikoi"`
+			Reason     string `json:"reason"`
+		} `json:"hint"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	require.NotNil(t, decoded.Hint, "human play turn must include a hint")
+	assert.NotEmpty(t, decoded.Hint.Reason)
+}
+
+// TestKoiKoiWebPresenter_Output_NoHintOnCpuTurn は CPU の手番では Output() がヒントを
+// 出力しない (omitempty で省かれる) ことを検証する (#3516)。
+func TestKoiKoiWebPresenter_Output_NoHintOnCpuTurn(t *testing.T) {
+	g := domain.NewDefaultKoiKoi()
+	g.Reset()
+	g.SetCurrentTurn(1) // player 1 は CPU
+
+	p := new(presenter.KoiKoiWebPresenter)
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	assert.NotContains(t, decoded, "hint", "cpu turn must not include a hint")
+}
+
 func TestKoiKoiWebPresenter_HintOutput(t *testing.T) {
 	g := domain.NewDefaultKoiKoi()
 	g.Reset()

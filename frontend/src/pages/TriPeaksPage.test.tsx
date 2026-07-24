@@ -2,14 +2,21 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, tripeaksApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { TRIPEAKS_STATS_KEY } from '../hooks/useTriPeaksStats';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, TriPeaksCard, TriPeaksResponse } from '../types/card';
-import { TriPeaksPage } from './TriPeaksPage';
+import { computePeakRemaining, TriPeaksPage } from './TriPeaksPage';
 
 vi.mock('../api/gameApi', () => ({
   tripeaksApi: { exec: vi.fn() },
   actionLogApi: { tripeaks: vi.fn() },
 }));
+
+const mockPlaySound = vi.fn();
+vi.mock('../providers/SoundProvider', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../providers/SoundProvider')>();
+  return { ...actual, useSound: () => ({ playSound: mockPlaySound, muted: false, toggleMute: vi.fn() }) };
+});
 
 vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
@@ -76,9 +83,11 @@ const gameOverState: TriPeaksResponse = {
 };
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockResolvedValue(playingState);
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   mockCombo.mockReturnValue(0);
+  mockPlaySound.mockClear();
 });
 
 describe('TriPeaksPage', () => {
@@ -325,5 +334,109 @@ describe('TriPeaksPage', () => {
     renderWithProviders(<TriPeaksPage />);
     const badge = await screen.findByTestId('combo-badge');
     expect(badge.className).toContain('bg-ds-error');
+  });
+
+  // --- Per-peak remaining indicator (issue #3085) ---
+
+  it('renders the per-peak remaining-card indicator during play', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    const indicator = await screen.findByTestId('peak-remaining');
+    // makeTestLayout: left peak 4 cards, middle 1, right 1.
+    expect(indicator.textContent).toMatch(/4\/1\/1/);
+  });
+
+  it('shows a check mark for a peak whose remaining count is zero', async () => {
+    const layout = makeTestLayout();
+    layout[0][6] = makeTriPeaksCard(null, true, false); // clear the right peak
+    mockExec.mockResolvedValue({ ...playingState, layout });
+    renderWithProviders(<TriPeaksPage />);
+    const indicator = await screen.findByTestId('peak-remaining');
+    expect(indicator).toHaveTextContent('✓');
+  });
+
+  it('hides the peak indicator after the game ends', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByText('ゲームクリア')).toBeInTheDocument());
+    expect(screen.queryByTestId('peak-remaining')).not.toBeInTheDocument();
+  });
+
+  it('plays a sound once when a peak is cleared', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByTestId('peak-remaining')).toBeInTheDocument());
+    mockPlaySound.mockClear();
+
+    // Next server response clears the right peak (its only card is removed).
+    const cleared = makeTestLayout();
+    cleared[0][6] = makeTriPeaksCard(null, true, false);
+    mockExec.mockResolvedValue({ ...playingState, layout: cleared });
+    const drawButtons = screen.getAllByRole('button', { name: '引く' });
+    fireEvent.click(drawButtons[drawButtons.length - 1]);
+
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('cardPlace'));
+    expect(mockPlaySound.mock.calls.filter((c) => c[0] === 'cardPlace')).toHaveLength(1);
+  });
+});
+
+describe('TriPeaksPage chain-bonus score & best record (#3087)', () => {
+  it('displays the score, starting at 0', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByTestId('tp-score')).toBeInTheDocument());
+    expect(screen.getByTestId('tp-score')).toHaveTextContent('0');
+  });
+
+  it('adds chain-bonus points after removing a card', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
+    // Removing a card (moveCount rises, stock unchanged) scores 1 × 100.
+    mockExec.mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    fireEvent.click(screen.getByLabelText('♠ 5'));
+    await waitFor(() => expect(screen.getByTestId('tp-score')).toHaveTextContent('100'));
+  });
+
+  it('shows a previously stored best score in the record panel', async () => {
+    localStorage.setItem(TRIPEAKS_STATS_KEY, JSON.stringify({ plays: 5, wins: 2, bestScore: 1200 }));
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByTestId('tp-stats-panel')).toBeInTheDocument());
+    expect(screen.getByTestId('tp-stats-panel')).toHaveTextContent('1200');
+    expect(screen.getByTestId('tp-stats-panel')).toHaveTextContent('2/5');
+  });
+
+  it('records a new best score on game clear and persists it', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
+    // The clearing move both scores 100 and ends the game.
+    mockExec.mockResolvedValueOnce({
+      ...playingState,
+      moveCount: 4,
+      phase: 1,
+      messageCode: 'tripeaks.gameClear',
+      messageParams: { moveCount: '4' },
+    });
+    fireEvent.click(screen.getByLabelText('♠ 5'));
+    await waitFor(() => expect(screen.getByTestId('tp-best-badge')).toBeInTheDocument());
+    expect(JSON.parse(localStorage.getItem(TRIPEAKS_STATS_KEY) ?? '{}')).toEqual({
+      plays: 1,
+      wins: 1,
+      bestScore: 100,
+    });
+    expect(screen.getByTestId('tp-stats-panel')).toHaveTextContent('100');
+  });
+});
+
+describe('computePeakRemaining', () => {
+  it('returns [0, 0, 0] for an undefined layout', () => {
+    expect(computePeakRemaining(undefined)).toEqual([0, 0, 0]);
+  });
+
+  it('counts present, non-removed cards per peak by column range', () => {
+    expect(computePeakRemaining(makeTestLayout())).toEqual([4, 1, 1]);
+  });
+
+  it('ignores removed cells and empty positions', () => {
+    const layout = makeTestLayout();
+    layout[3][0] = makeTriPeaksCard(card('SPADE', 5), true, true); // removed (left peak)
+    layout[0][3] = makeTriPeaksCard(null, false, false); // empty (middle peak)
+    expect(computePeakRemaining(layout)).toEqual([3, 0, 1]);
   });
 });

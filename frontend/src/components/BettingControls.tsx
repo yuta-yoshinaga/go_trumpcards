@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import { useIsMobile } from '../hooks/useCardDimensions';
 import { btnPokerAccent, btnPokerAllIn, btnPokerMuted, btnPokerPrimary } from '../styles/buttonStyles';
 import { ChipBetInput } from './common/ChipBetInput';
+import { KbdBadge } from './KbdBadge';
 
 interface BettingControlsProps {
   inputId: string;
@@ -38,6 +40,9 @@ export function BettingControls({
   onAllIn,
 }: BettingControlsProps) {
   const { t } = useTranslation('common');
+  // Per-button key hints are a desktop affordance; on touch there's no keyboard.
+  const isMobile = useIsMobile();
+  const kbd = (label: string) => (isMobile ? null : <KbdBadge label={label} />);
   const max = maxBetAmount ?? 0;
   const hasMax = max > 0;
   const isOutOfRange = Number.isNaN(betAmount) || betAmount < minRaise || (hasMax && betAmount > max);
@@ -105,29 +110,78 @@ export function BettingControls({
       </div>
       {hasOutstandingBet ? (
         <>
-          <button type="button" className={`${btnPokerPrimary} min-w-[80px]`} disabled={loading} onClick={onCall}>
+          <button
+            type="button"
+            className={`${btnPokerPrimary} min-w-[80px]`}
+            disabled={loading}
+            onClick={onCall}
+            aria-keyshortcuts="c"
+          >
             {t('action.call')}
+            {kbd('C')}
           </button>
-          <button type="button" className={`${btnPokerAccent} min-w-[80px]`} disabled={!canBet} onClick={onRaise}>
+          <button
+            type="button"
+            className={`${btnPokerAccent} min-w-[80px]`}
+            disabled={!canBet}
+            onClick={onRaise}
+            aria-keyshortcuts="r"
+          >
             {t('action.raise')}
+            {kbd('R')}
           </button>
         </>
       ) : (
         <>
-          <button type="button" className={`${btnPokerAccent} min-w-[80px]`} disabled={!canBet} onClick={onBet}>
+          <button
+            type="button"
+            className={`${btnPokerAccent} min-w-[80px]`}
+            disabled={!canBet}
+            onClick={onBet}
+            aria-keyshortcuts="r"
+          >
             {t('action.bet')}
+            {kbd('R')}
           </button>
-          <button type="button" className={`${btnPokerPrimary} min-w-[80px]`} disabled={loading} onClick={onCheck}>
+          <button
+            type="button"
+            className={`${btnPokerPrimary} min-w-[80px]`}
+            disabled={loading}
+            onClick={onCheck}
+            aria-keyshortcuts="k"
+          >
             {t('action.check')}
+            {kbd('K')}
           </button>
         </>
       )}
-      <button type="button" className={`${btnPokerMuted} min-w-[80px]`} disabled={loading} onClick={onFold}>
+      <button
+        type="button"
+        className={`${btnPokerMuted} min-w-[80px]`}
+        disabled={loading}
+        onClick={onFold}
+        aria-keyshortcuts="f"
+      >
         {t('action.fold')}
+        {kbd('F')}
       </button>
-      <button type="button" className={`${btnPokerAllIn} min-w-[80px]`} disabled={loading} onClick={onAllIn}>
+      <button
+        type="button"
+        className={`${btnPokerAllIn} min-w-[80px]`}
+        disabled={loading}
+        onClick={onAllIn}
+        aria-keyshortcuts="a"
+      >
         {t('action.allIn')}
+        {kbd('A')}
       </button>
+      {/* Keyboard shortcut hint. BettingControls only renders while the human can
+          act, so the shortcuts are always live here. Show only the actions that are
+          actually on screen (call/raise vs check/bet) to avoid advertising the
+          mutually-exclusive one. */}
+      <p className="text-game-text-muted text-xs mt-2" data-testid="betting-key-hints">
+        {t(hasOutstandingBet ? 'betting.keyHintsOutstanding' : 'betting.keyHintsNormal')}
+      </p>
     </div>
   );
 }

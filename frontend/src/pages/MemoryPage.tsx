@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { type KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { memoryApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -32,6 +32,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { MEMORY_HELP, parseMemoryCommand } from '../utils/cli/commands/memoryCommands';
 import { formatMemoryState } from '../utils/cli/formatters/memoryFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { type GridDir, moveFocus } from '../utils/gridNav';
 import { playerName } from '../utils/playerUtils';
 
 /** Memory tutorial step definitions. */
@@ -68,6 +69,27 @@ const MEMORY_PHASE_KEYS: Readonly<Record<number, string>> = {
   [MemoryPhase.RESULT]: 'result',
   [MemoryPhase.GAME_END]: 'gameEnd',
 };
+
+/** Maps arrow keys to a grid navigation direction. */
+const ARROW_DIRS: Readonly<Record<string, GridDir>> = {
+  ArrowLeft: 'left',
+  ArrowRight: 'right',
+  ArrowUp: 'up',
+  ArrowDown: 'down',
+};
+
+/**
+ * Column count of the board grid at the current breakpoint, mirroring the
+ * Tailwind `grid-cols-*` classes (7 / 8 / 10 / 13). Falls back to 13 when
+ * `matchMedia` is unavailable (SSR).
+ */
+function boardColumns(): number {
+  if (typeof window === 'undefined' || !window.matchMedia) return 13;
+  if (window.matchMedia('(min-width: 1024px)').matches) return 13;
+  if (window.matchMedia('(min-width: 768px)').matches) return 10;
+  if (window.matchMedia('(min-width: 640px)').matches) return 8;
+  return 7;
+}
 
 /** Renders the Memory card matching game page with board grid and scores. */
 export const MemoryPage = withTutorial(MemoryPageContent, 'memory', MEM_TUTORIAL_STEPS);
@@ -124,6 +146,12 @@ function MemoryPageContent() {
 
   const [visited, setVisited] = useState<Set<number>>(() => new Set());
 
+  // Captured-pairs panel is expanded on desktop and collapsed on mobile so the
+  // board grid keeps its full height on small screens (#3028).
+  const [pairsOpen, setPairsOpen] = useState<boolean>(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
+  );
+
   useEffect(() => {
     if (!state) return;
     setVisited((prev) => {
@@ -138,6 +166,62 @@ function MemoryPageContent() {
       return changed ? next : prev;
     });
   }, [state]);
+
+  // Roving-focus board navigation (#3029): arrow keys move a single focus index
+  // across the card grid; Enter/Space still natively activate the focused button.
+  const boardRef = useRef<HTMLDivElement>(null);
+  const [focusedIdx, setFocusedIdx] = useState(0);
+  const [cols, setCols] = useState<number>(() => boardColumns());
+
+  useEffect(() => {
+    const onResize = () => setCols(boardColumns());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // Keep the roving tab-stop on a flippable cell: taken (removed) and face-up
+  // cards are disabled/hidden and cannot hold focus.
+  useEffect(() => {
+    const board = state?.board;
+    if (!board) return;
+    const cur = board[focusedIdx];
+    if (cur && !cur.taken && !cur.faceUp) return;
+    const firstIdx = board.findIndex((c) => !c.taken && !c.faceUp);
+    if (firstIdx >= 0) setFocusedIdx(firstIdx);
+  }, [state?.board, focusedIdx]);
+
+  const focusCell = useCallback((idx: number) => {
+    setFocusedIdx(idx);
+    boardRef.current?.querySelector<HTMLButtonElement>(`[data-testid="board-${idx.toString()}"]`)?.focus();
+  }, []);
+
+  const handleBoardKeyDown = useCallback(
+    (e: ReactKeyboardEvent<HTMLDivElement>) => {
+      const dir = ARROW_DIRS[e.key];
+      const board = state?.board;
+      if (!dir || !board) return;
+      e.preventDefault();
+      const skip = (i: number) => {
+        const bc = board[i];
+        return !bc || bc.taken || bc.faceUp;
+      };
+      const target = moveFocus(focusedIdx, dir, cols, board.length, skip);
+      if (target !== focusedIdx) focusCell(target);
+    },
+    [state?.board, cols, focusedIdx, focusCell],
+  );
+
+  // Announce the flip outcome (card faces + match/mismatch) to screen readers.
+  const flipAnnounce = useMemo(() => {
+    if (!state || state.phase !== MemoryPhase.RESULT) return '';
+    const c1 = state.board[state.firstFlipPos]?.card;
+    const c2 = state.board[state.secondFlipPos]?.card;
+    if (!c1 || !c2) return '';
+    return t(state.lastMatchResult ? 'announce.match' : 'announce.mismatch', {
+      first: cardAlt(c1),
+      second: cardAlt(c2),
+    });
+  }, [state, t]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -249,12 +333,53 @@ function MemoryPageContent() {
               ))}
             </div>
 
+            {/* Captured pairs – mini cards per player. Collapsible on mobile so
+                the board grid keeps its full height (#3028). */}
+            <details
+              className="my-1 px-2 py-1 rounded bg-black/20 text-ds-text-primary text-sm lg:shrink-0"
+              data-testid="mem-captured"
+              open={pairsOpen}
+              onToggle={(e) => setPairsOpen(e.currentTarget.open)}
+            >
+              <summary className="cursor-pointer select-none font-bold py-0.5">{t('capturedPairs')}</summary>
+              <div className="mt-1 flex flex-col gap-1">
+                {state.players.map((p) => (
+                  <div
+                    key={p.id}
+                    data-testid={`mem-captured-${p.id.toString()}`}
+                    className="flex items-center gap-1 flex-wrap"
+                  >
+                    <span className={`shrink-0 ${p.isHuman ? 'text-ds-accent' : 'text-ds-text-muted'}`}>
+                      {playerName(p.id, p.isHuman)}
+                    </span>
+                    {p.pairs.length === 0 ? (
+                      <span className="text-ds-text-muted/70">{t('noCapturedPairs')}</span>
+                    ) : (
+                      p.pairs.map((c, i) => (
+                        <AnimatedCard
+                          key={`p${p.id.toString()}-pair-${i.toString()}-${c.design}${c.value.toString()}`}
+                          card={c}
+                          width={Math.max(20, Math.round(cardWidth * 0.5))}
+                          silent
+                        />
+                      ))
+                    )}
+                  </div>
+                ))}
+              </div>
+            </details>
+
             {/* Board: responsive grid (4/8/13 columns); on lg fills remaining height */}
             <div
               className="my-3 lg:my-1 p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
               data-tutorial="mem-board"
             >
-              <div className="grid grid-cols-7 gap-0.5 sm:gap-1 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13 lg:grid-rows-4 lg:h-full">
+              {/* biome-ignore lint/a11y/noStaticElementInteractions: keydown only routes arrow keys for roving focus; the real controls are the child <button>s */}
+              <div
+                ref={boardRef}
+                onKeyDown={handleBoardKeyDown}
+                className="grid grid-cols-7 gap-0.5 sm:gap-1 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13 lg:grid-rows-4 lg:h-full"
+              >
                 {state.board.map((bc, idx) => {
                   const wasVisited = !bc.faceUp && !bc.taken && visited.has(idx);
                   return (
@@ -270,6 +395,7 @@ function MemoryPageContent() {
                             : t('cardFaceDown', { position: idx + 1 })
                       }
                       disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
+                      tabIndex={idx === focusedIdx ? 0 : -1}
                       onClick={() => handleFlip(idx)}
                       className={`memory-card relative aspect-[2/3] min-h-[44px] min-w-[44px] lg:aspect-auto rounded ${focusRingWhite} ${
                         bc.taken
@@ -305,6 +431,11 @@ function MemoryPageContent() {
                 })}
               </div>
             </div>
+
+            {/* Polite live region announcing flip results to screen readers (#3029) */}
+            <span className="sr-only" role="status" aria-live="polite" data-testid="mem-flip-announce">
+              {flipAnnounce}
+            </span>
 
             {frontendHintEnabled && frontendHint && (
               <div className="flex justify-center">

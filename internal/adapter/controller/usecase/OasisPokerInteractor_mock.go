@@ -44,6 +44,12 @@ func (m *MockOasisPokerInteractor) ActionLog() string {
 	return args.String(0)
 }
 
+// Hint モック
+func (m *MockOasisPokerInteractor) Hint() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 // Snapshot モック
 func (m *MockOasisPokerInteractor) Snapshot() ([]byte, error) {
 	ret := m.Called()

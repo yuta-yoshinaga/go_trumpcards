@@ -23,6 +23,7 @@
   "laidMelds": "Laid melds",
   "drawStockButton": "Draw from stock",
   "meldButton": "Meld",
+  "invalidMeld": "Not a valid set or run",
   "layoffMeldTarget": "Select {{owner}}'s meld {{idx}} as lay-off target",
   "layoffTargetLabel": "Lay-off target: {{owner}} #{{idx}}",
   "layoffTargetNone": "Lay-off target: click a meld above",
@@ -33,6 +34,8 @@
   "playPhase": "Meld, lay off, then discard",
   "roundEnd": "Round complete",
   "drawDiscardHint": "Click any discard card to take it plus all cards above it",
+  "drawDiscardRangeLabel": "Take {{count}} card(s) from {{card}}",
+  "pickupBadge": "Take {{count}}",
   "handPenalty": "Hand penalty: -{{points}} pts",
   "handPenaltyHint": "If anyone else goes out, this is how many points you lose",
   "winner": {

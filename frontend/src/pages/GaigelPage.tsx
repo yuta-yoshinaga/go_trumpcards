@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -127,6 +128,14 @@ function GaigelPageContent() {
   const selectedIdx = selectedCardIndices.length === 1 ? selectedCardIndices[0] : -1;
   const canDeclareMarriage = isHumanTurn && selectedIdx >= 0 && state.marriageIndices.includes(selectedIdx);
 
+  // Surface a 💍 badge on hand cards that can start a marriage (King + Queen of
+  // the same suit, both currently held) so the 20/40-point opportunity is
+  // visible without probing each card. `marriageIndices` is scoped to the
+  // current player, so restrict it to the human's own lead turn.
+  const marriageIndices = isHumanTurn ? state.marriageIndices : [];
+  const marriageBadgeFor = (idx: number): { glyph: string; title: string } | null =>
+    marriageIndices.includes(idx) ? { glyph: '💍', title: t('marriageBadge') } : null;
+
   return (
     <GamePageShell
       title={tc('nav.gaigel')}
@@ -186,6 +195,15 @@ function GaigelPageContent() {
           </span>
           <span>{t('stock', { count: state.stockRemaining })}</span>
         </div>
+
+        {/* Face-up turn-up card that fixes the trump suit. It sits under the
+            stock and is drawn last, so it disappears once the stock is empty. */}
+        {state.trumpCard && (
+          <div className="flex items-center justify-center gap-2 mb-3" data-testid="gaigel-trump-card">
+            <span className="text-ds-text-muted text-sm">{t('turnUpCard')}</span>
+            <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
+          </div>
+        )}
 
         {/* CPU players */}
         <div className="mb-3">
@@ -282,6 +300,7 @@ function GaigelPageContent() {
             cardWidth={cardWidth}
             isMobile={isMobile}
             dataTutorialPrefix="gg"
+            cardBadgeFor={marriageBadgeFor}
           />
         )}
 

@@ -195,6 +195,29 @@ describe('BelotePage', () => {
     expect(mockPlaySound).toHaveBeenCalledWith('winFanfare');
   });
 
+  it('translates a known hint reason', async () => {
+    const playState = makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, currentPlayerIdx: 0, makerTeam: 0 });
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<BelotePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValueOnce({ ...playState, hint: { cardIndex: 0, reason: 'trump_cut' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/切り札でカット/)).toBeInTheDocument());
+  });
+
+  it('falls back to a generic label for an unknown hint reason', async () => {
+    const playState = makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, currentPlayerIdx: 0, makerTeam: 0 });
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<BelotePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    // Omit cardIndex to also exercise the `?? '-'` fallback for a missing index.
+    mockExec.mockResolvedValueOnce({ ...playState, hint: { reason: 'brand_new_reason' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    // Unknown reason -> hintReason.fallback, not the raw identifier.
+    await waitFor(() => expect(screen.getByText(/最善手/)).toBeInTheDocument());
+    expect(screen.queryByText(/brand_new_reason/)).not.toBeInTheDocument();
+  });
+
   it('auto-hides the confirmation banner after the display window closes', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     try {
@@ -259,5 +282,85 @@ describe('BelotePage', () => {
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('shows the hint button during the bid phase and requests a hint', async () => {
+    renderWithProviders(<BelotePage />); // default state is BID_PICK_UP, human's bid turn
+    const btn = await screen.findByRole('button', { name: 'ヒント' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initialState);
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('renders an order-up bid hint (take/pass) after requesting it', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { orderUp: true, reason: 'strong' } }));
+    renderWithProviders(<BelotePage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/おすすめ: 取る/)).toBeInTheDocument());
+  });
+
+  it('renders a call-trump suit bid hint after requesting it', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BelotePhase.BID_CALL_TRUMP, hint: { suit: 1, reason: 'strong' } }));
+    renderWithProviders(<BelotePage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/を宣言/)).toBeInTheDocument());
+  });
+
+  it('rings only the legal follow-suit card during the human play turn', async () => {
+    // Trump ♠(1). Opponent leads ♥; the human holds ♥10 so must follow ♥.
+    // Only ♥10 is legal; ♠J and ♣9 are illegal.
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BelotePhase.PLAY,
+        trumpSuit: 1,
+        currentPlayerIdx: 0,
+        makerTeam: 0,
+        currentTrick: [{ playerIdx: 1, card: card('HEART', 13) }],
+      }),
+    );
+    renderWithProviders(<BelotePage />);
+    const legalCard = await screen.findByRole('button', { name: '♥ 10' });
+    const illegalCard = screen.getByRole('button', { name: '♠ J' });
+    expect(legalCard).toHaveAttribute('data-legal', 'true');
+    expect(illegalCard).not.toHaveAttribute('data-legal');
+  });
+
+  it('keeps an illegal card clickable so the backend still validates the play', async () => {
+    // Same setup: ♠J is illegal (must follow ♥) but must remain selectable —
+    // the highlight is additive only and never blocks clicks (see hearts #3977).
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BelotePhase.PLAY,
+        trumpSuit: 1,
+        currentPlayerIdx: 0,
+        makerTeam: 0,
+        currentTrick: [{ playerIdx: 1, card: card('HEART', 13) }],
+      }),
+    );
+    renderWithProviders(<BelotePage />);
+    const illegalCard = await screen.findByRole('button', { name: '♠ J' });
+    expect(illegalCard).not.toHaveAttribute('aria-disabled');
+    // The Play button is disabled until a card is selected.
+    expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
+    fireEvent.click(illegalCard);
+    // Clicking the illegal card selects it and enables Play — no client-side block.
+    expect(illegalCard).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: '出す' })).not.toBeDisabled();
+  });
+
+  it('does not ring any card during a CPU play turn', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BelotePhase.PLAY,
+        trumpSuit: 1,
+        currentPlayerIdx: 1,
+        makerTeam: 0,
+        currentTrick: [{ playerIdx: 1, card: card('HEART', 13) }],
+      }),
+    );
+    renderWithProviders(<BelotePage />);
+    const humanCard = await screen.findByRole('button', { name: '♥ 10' });
+    expect(humanCard).not.toHaveAttribute('data-legal');
   });
 });

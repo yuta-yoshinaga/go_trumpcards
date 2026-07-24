@@ -44,6 +44,9 @@ func (m *MockCanastaGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
 func (m *MockCanastaGame) GetDiscardTop() *domain.Card {
 	return m.Called().Get(0).(*domain.Card)
 }
+func (m *MockCanastaGame) GetDiscardPile() []*domain.Card {
+	return m.Called().Get(0).([]*domain.Card)
+}
 func (m *MockCanastaGame) GetDrawPileCount() int    { return m.Called().Int(0) }
 func (m *MockCanastaGame) GetDiscardPileCount() int { return m.Called().Int(0) }
 func (m *MockCanastaGame) GetPozzettoCount() int    { return m.Called().Int(0) }
@@ -57,3 +60,10 @@ func (m *MockCanastaGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
 func (m *MockCanastaGame) GetDrewFromDiscard() bool { return m.Called().Bool(0) }
+func (m *MockCanastaGame) GetHint() *domain.CanastaHint {
+	ret := m.Called().Get(0)
+	if ret == nil {
+		return nil
+	}
+	return ret.(*domain.CanastaHint)
+}

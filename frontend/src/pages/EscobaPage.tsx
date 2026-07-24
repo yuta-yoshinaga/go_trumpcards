@@ -16,7 +16,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useEscobaGame } from '../hooks/useEscobaGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { gameTheme } from '../styles/gameTheme';
-import type { EscobaResponse } from '../types/card';
+import type { Card, EscobaResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import {
   ESCOBA_HELP,
@@ -80,6 +80,21 @@ function captureCandidateIndices(handCaptures: number[][][], handIndex: number):
   return indices;
 }
 
+/** Escoba card point value (mirrors the backend ScopaCardValue): A(1)–7 count as their pip;
+ * J(11)=8, Q(12)=9, K(13)=10 in the 40-card Spanish deck. */
+export function escobaCardValue(c: Card): number {
+  return c.value <= 7 ? c.value : c.value - 3;
+}
+
+/** Live capture total: the selected hand card plus every selected table card, toward the target of 15. */
+export function escobaSelectionSum(handCard: Card | null, tableCards: Card[], tableIndices: number[]): number {
+  const base = handCard ? escobaCardValue(handCard) : 0;
+  return tableIndices.reduce((sum, idx) => {
+    const c = tableCards[idx];
+    return c ? sum + escobaCardValue(c) : sum;
+  }, base);
+}
+
 /** Renders the Escoba (エスコバ) game page. */
 export const EscobaPage = withTutorial(EscobaPageContent, 'escoba', ES_TUTORIAL_STEPS);
 function EscobaPageContent() {
@@ -138,6 +153,9 @@ function EscobaPageContent() {
     handIndex !== null && isHumanTurn ? captureCandidateIndices(state.handCaptures, handIndex) : new Set<number>();
   const canTake = isHumanTurn && handIndex !== null && tableIndices.length > 0;
   const canLay = isHumanTurn && handIndex !== null && tableIndices.length === 0;
+  // Live 15-counter: once a hand card is picked, show its value plus the selected table cards.
+  const selectedHandCard = handIndex !== null ? (human.cards[handIndex] ?? null) : null;
+  const selectionSum = selectedHandCard ? escobaSelectionSum(selectedHandCard, state.tableCards, tableIndices) : null;
   const phaseName = isGameEnd ? t('phase.gameEnd') : t(`phase.${state.phase}`, t('phase.play'));
   const detail = state.lastRoundDetail;
 
@@ -199,6 +217,18 @@ function EscobaPageContent() {
 
             {/* Table cards */}
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="es-table-cards">
+              {selectionSum !== null && (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  data-testid="escoba-sum-indicator"
+                  className={`text-center text-sm font-bold mb-1 ${
+                    selectionSum === 15 ? 'text-ds-success' : selectionSum > 15 ? 'text-ds-error' : 'text-ds-text-muted'
+                  }`}
+                >
+                  {t('sumIndicator', { sum: selectionSum, target: 15 })}
+                </div>
+              )}
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>
               <div className="flex justify-center gap-2 min-h-[60px] flex-wrap">
                 {state.tableCards.length === 0 ? (
@@ -256,6 +286,24 @@ function EscobaPageContent() {
                   </button>
                 ))}
               </div>
+
+              {/* Your captured pile — collapsible viewer (CPU piles stay count-only). */}
+              <details className="mt-3 mx-auto max-w-md bg-black/25 rounded-lg" data-testid="captured-viewer">
+                <summary className="cursor-pointer select-none px-3 py-2 text-xs text-ds-text-muted">
+                  {t('captured.summary', { count: human.capturedCount })}
+                </summary>
+                <div className="px-3 pb-3">
+                  {human.capturedCards.length === 0 ? (
+                    <span className="text-ds-text-muted text-xs">{t('captured.empty')}</span>
+                  ) : (
+                    <div className="flex flex-wrap justify-center gap-1" data-testid="captured-cards">
+                      {human.capturedCards.map((c, i) => (
+                        <AnimatedCard key={i} card={c} width={cardWidth * 0.55} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </details>
             </div>
 
             {/* Round-end score breakdown */}
@@ -325,7 +373,10 @@ function EscobaPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: String(configInput.cpuDifficulty ?? 1),
-                    options: DIFFICULTY_OPTIONS,
+                    options: DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
                     onSelect: (v: string) => handleConfigChange('cpuDifficulty', Number.parseInt(v, 10)),
                   },
                   {

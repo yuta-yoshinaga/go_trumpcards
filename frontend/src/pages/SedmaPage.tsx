@@ -138,6 +138,7 @@ function SedmaPageContent() {
   // Shared by the mobile (<details>) and desktop layouts.
   const renderPlayerRow = (p: (typeof state.players)[number]) => {
     const team = p.id % 2;
+    const teamName = team === 0 ? t('team.a') : t('team.b');
     return (
       <div
         key={p.id}
@@ -147,6 +148,17 @@ function SedmaPageContent() {
           team === 0 ? 'border-ds-info' : 'border-ds-error'
         }`}
       >
+        {/* Colour-independent team marker (WCAG 1.4.1): a visible A/B badge plus an
+            sr-only full team name, so team membership isn't conveyed by colour alone. */}
+        <span
+          className={`inline-block mr-1 px-1 rounded text-xs font-bold text-white ${
+            team === 0 ? 'bg-ds-info' : 'bg-ds-error'
+          }`}
+          aria-hidden="true"
+        >
+          {team === 0 ? 'A' : 'B'}
+        </span>
+        <span className="sr-only">{teamName}: </span>
         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
       </div>
     );
@@ -250,6 +262,20 @@ function SedmaPageContent() {
                   </details>
                 ) : (
                   <div className="mb-2 p-2 rounded bg-black/30">{state.players.map(renderPlayerRow)}</div>
+                )}
+
+                {/* Live captured card points during play (A and 10 = 10 pts each, +10
+                    last-trick bonus); the round-result block below takes over at round end. */}
+                {!(isRoundEnd || isGameEnd) && (
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="sedma-round-points"
+                    role="status"
+                  >
+                    <div className="mb-1 text-ds-text-primary">{t('roundPointsTitle')}</div>
+                    <div>{t('roundResult.teamA', { points: state.roundCardPoints[0] ?? 0 })}</div>
+                    <div>{t('roundResult.teamB', { points: state.roundCardPoints[1] ?? 0 })}</div>
+                  </div>
                 )}
 
                 {/* Round result */}

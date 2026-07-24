@@ -10,5 +10,6 @@
   "hintFrom": "タブロー列{{col}}[{{idx}}]",
   "hintToFoundation": "ファンデーション",
   "hintToTableau": "タブロー列{{col}}",
-  "hintLine": "ヒント: {{from}} → {{to}}"
+  "hintLine": "ヒント: {{from}} → {{to}}",
+  "undoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）"
 }

@@ -73,6 +73,25 @@ func TestSpadesCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "CPU 1: ビッド=未ビッド 獲得0トリック バッグ0 累積0点 ラウンド0点 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "play <idx>")
+		// Point-limit progress line (default limit 500, all scores at 0).
+		assert.Contains(t, result, "上限: 500点")
+		assert.Contains(t, result, "首位:")
+	})
+
+	t.Run("bag count is colored as it nears the penalty threshold", func(t *testing.T) {
+		origNo := color.NoColor()
+		color.SetNoColor(false)
+		defer color.SetNoColor(origNo)
+		m, players := setupSpadesCuiMockWithPlayers()
+		players[0].SetBags(9) // threshold 10, remaining 1 -> red
+		players[1].SetBags(8) // remaining 2 -> yellow
+		players[2].SetBags(3) // remaining 7 -> plain
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, color.Red("9"))
+		assert.Contains(t, result, color.Yellow("8"))
+		assert.NotContains(t, result, color.Red("3"))
+		assert.NotContains(t, result, color.Yellow("3"))
 	})
 
 	t.Run("spades broken shows あり", func(t *testing.T) {

@@ -31,6 +31,7 @@ func setupAcesUpWebMockDefaults(g *interfaces.MockAcesUpGame) {
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("GetStockCount").Return(44).Maybe()
 	g.On("GetDiscardCount").Return(4).Maybe()
+	g.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignClover, 7, false)).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	g.On("UndoToEscape").Return(0).Maybe()
@@ -57,6 +58,10 @@ func TestAcesUpWebPresenterOutput_Playing(t *testing.T) {
 	assert.Equal(t, 0, out.Phase)
 	assert.Equal(t, 44, out.StockCount)
 	assert.Equal(t, 4, out.DiscardCount)
+	// The discard pile top card is surfaced for the on-board discard display.
+	assert.NotNil(t, out.DiscardTop)
+	assert.Equal(t, "CLOVER", out.DiscardTop.Design)
+	assert.Equal(t, 7, out.DiscardTop.Value)
 	assert.Equal(t, "acesup.playing", out.MessageCode)
 	assert.Len(t, out.Columns, domain.AcesUpColCnt)
 	// col0 top is removable
@@ -67,6 +72,32 @@ func TestAcesUpWebPresenterOutput_Playing(t *testing.T) {
 	// col3 has two cards, only the last is top
 	assert.False(t, out.Columns[3][0].Top)
 	assert.True(t, out.Columns[3][1].Top)
+}
+
+func TestAcesUpWebPresenterOutput_EmptyDiscard(t *testing.T) {
+	g := new(interfaces.MockAcesUpGame)
+	setupAcesUpWebMockDefaults(g)
+	// Override the discard top to nil (no cards removed yet).
+	g.ExpectedCalls = nil
+	g.On("GetPhase").Return(domain.AcesUpPhasePlaying).Maybe()
+	g.On("GetMoveCount").Return(0).Maybe()
+	g.On("GetStockCount").Return(48).Maybe()
+	g.On("GetDiscardCount").Return(0).Maybe()
+	g.On("GetDiscardTop").Return((*domain.Card)(nil)).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
+	g.On("IsStalemate").Return(false).Maybe()
+	g.On("UndoToEscape").Return(0).Maybe()
+	g.On("GetColumns").Return(sampleAcesUpColumns()).Maybe()
+	for c := range domain.AcesUpColCnt {
+		g.On("CanRemove", c).Return(false).Maybe()
+		g.On("CanMove", c).Return(false).Maybe()
+	}
+	p := &AcesUpWebPresenter{}
+
+	out := parseAcesUpOutput(t, p.Output(g, nil))
+	// With an empty discard pile, the omitempty field is absent.
+	assert.Nil(t, out.DiscardTop)
+	assert.Equal(t, 0, out.DiscardCount)
 }
 
 func TestAcesUpWebPresenterOutput_Error(t *testing.T) {
@@ -84,6 +115,7 @@ func TestAcesUpWebPresenterOutput_Stalemate(t *testing.T) {
 	g.On("GetMoveCount").Return(5).Maybe()
 	g.On("GetStockCount").Return(0).Maybe()
 	g.On("GetDiscardCount").Return(10).Maybe()
+	g.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 3, false)).Maybe()
 	g.On("CanUndo").Return(true).Maybe()
 	g.On("IsStalemate").Return(true).Maybe()
 	g.On("UndoToEscape").Return(-1).Maybe()
@@ -101,6 +133,7 @@ func TestAcesUpWebPresenterOutput_GameClear(t *testing.T) {
 	g.On("GetMoveCount").Return(20).Maybe()
 	g.On("GetStockCount").Return(0).Maybe()
 	g.On("GetDiscardCount").Return(48).Maybe()
+	g.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignClover, 5, false)).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	g.On("UndoToEscape").Return(0).Maybe()
@@ -119,6 +152,7 @@ func TestAcesUpWebPresenterOutput_GameOver(t *testing.T) {
 	g.On("GetMoveCount").Return(5).Maybe()
 	g.On("GetStockCount").Return(0).Maybe()
 	g.On("GetDiscardCount").Return(2).Maybe()
+	g.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignSpade, 4, false)).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	g.On("UndoToEscape").Return(0).Maybe()

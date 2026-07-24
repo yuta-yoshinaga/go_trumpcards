@@ -23,7 +23,7 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useGinRummyGame } from '..
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { focusRingCard, meldCardStyle, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { GinRummyResponse } from '../types/card';
@@ -33,7 +33,13 @@ import { cardAlt } from '../utils/cardAlt';
 import { GINRUMMY_HELP, parseGinrummyCommand } from '../utils/cli/commands/ginrummyCommands';
 import { formatGinrummyState } from '../utils/cli/formatters/ginrummyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { bestDeadwoodValue, GIN_RUMMY_KNOCK_THRESHOLD, ginRummyMeldLabel } from '../utils/ginRummyDeadwood';
+import {
+  bestDeadwoodValue,
+  bestMeldSplit,
+  GIN_RUMMY_KNOCK_THRESHOLD,
+  ginRummyMeldLabel,
+  ginRummyScoreBreakdown,
+} from '../utils/ginRummyDeadwood';
 import { playerName } from '../utils/playerUtils';
 
 const GINRUMMY_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -179,6 +185,28 @@ function GinRummyPageContent() {
     return Number.isFinite(best) ? best : null;
   }, [state, selectedCardIndices]);
   const canKnockNow = liveDeadwood != null && liveDeadwood <= GIN_RUMMY_KNOCK_THRESHOLD;
+
+  // During DISCARD, color-code the human's hand by best meld split so the
+  // player can see which cards form melds vs. which are deadwood. Shares the
+  // same search as the deadwood indicator, so the two always agree. Empty set
+  // outside DISCARD leaves every card in its neutral (uncolored) state.
+  const meldedIndices = useMemo<ReadonlySet<number>>(() => {
+    if (!state || state.phase !== GinRummyPhase.DISCARD) return new Set();
+    const human = state.players.find((p) => p.isHuman);
+    if (!human || human.cards.length === 0) return new Set();
+    return bestMeldSplit(human.cards).meldedIndices;
+  }, [state]);
+
+  // At round/game end, derive the additive score breakdown (outcome, each
+  // player's deadwood, and the deadwood-difference + bonus components) from the
+  // exposed round result, mirroring the domain's scoreRound. `null` for a drawn
+  // round (stock exhausted) so the panel stays hidden.
+  const scoreBreakdown = useMemo(() => {
+    if (!state) return null;
+    const atRoundEnd = state.phase === GinRummyPhase.ROUND_END || state.phase === GinRummyPhase.GAME_END;
+    if (!atRoundEnd && !state.gameEndFlag) return null;
+    return ginRummyScoreBreakdown(state.players, state.knockerIdx, state.knockerDeadwood, state.isGin);
+  }, [state]);
 
   if (!state)
     return (
@@ -358,6 +386,48 @@ function GinRummyPageContent() {
               messageParams={state.messageParams}
             />
 
+            {scoreBreakdown &&
+              (() => {
+                const winner = state.players.find((p) => p.id === scoreBreakdown.winnerId);
+                const winnerLabel = winner ? playerName(winner.id, winner.isHuman) : '';
+                const basePart =
+                  scoreBreakdown.outcome === 'gin'
+                    ? t('breakdown.opponentDeadwoodPart', { value: scoreBreakdown.base })
+                    : t('breakdown.differencePart', { value: scoreBreakdown.base });
+                const bonusPart =
+                  scoreBreakdown.bonus > 0
+                    ? scoreBreakdown.outcome === 'gin'
+                      ? t('breakdown.ginBonusPart', { value: scoreBreakdown.bonus })
+                      : t('breakdown.undercutBonusPart', { value: scoreBreakdown.bonus })
+                    : null;
+                const formula = `${basePart}${bonusPart ? ` + ${bonusPart}` : ''} = ${scoreBreakdown.total}`;
+                return (
+                  <div className="my-3 p-3 rounded bg-black/30" data-testid="ginrummy-score-breakdown">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('breakdown.title')}</div>
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span
+                        data-testid="ginrummy-breakdown-outcome"
+                        className="inline-block rounded border border-ds-secondary px-1.5 py-0.5 text-ds-text-primary text-xs"
+                      >
+                        {t(`breakdown.outcome.${scoreBreakdown.outcome}`)}
+                      </span>
+                      <span className="text-ds-accent text-sm font-bold">
+                        {t('breakdown.winner', { name: winnerLabel, total: scoreBreakdown.total })}
+                      </span>
+                    </div>
+                    <div className="text-ds-text-muted text-xs mb-1">
+                      {t('breakdown.deadwood', {
+                        knocker: scoreBreakdown.knockerDeadwood,
+                        opponent: scoreBreakdown.opponentDeadwood,
+                      })}
+                    </div>
+                    <div className="text-ds-text-primary text-sm" data-testid="ginrummy-breakdown-formula">
+                      {formula}
+                    </div>
+                  </div>
+                );
+              })()}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -375,6 +445,29 @@ function GinRummyPageContent() {
                 {t('deadwoodLabel', { score: liveDeadwood, threshold: GIN_RUMMY_KNOCK_THRESHOLD })}
               </div>
             )}
+            {isDiscardPhase && (
+              <div
+                data-testid="ginrummy-meld-legend"
+                className="flex items-center gap-3 text-xs text-ds-text-muted mb-1"
+              >
+                <span className="flex items-center gap-1">
+                  <span
+                    aria-hidden="true"
+                    className="inline-block h-3 w-3 rounded-sm"
+                    style={{ outline: '2px solid var(--color-ds-success)', outlineOffset: '-2px' }}
+                  />
+                  {t('meldLegend')}
+                </span>
+                <span className="flex items-center gap-1">
+                  <span
+                    aria-hidden="true"
+                    className="inline-block h-3 w-3 rounded-sm"
+                    style={{ outline: '2px dashed rgba(148, 163, 184, 0.6)', outlineOffset: '-2px' }}
+                  />
+                  {t('deadwoodLegend')}
+                </span>
+              </div>
+            )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="gr-player-hand">
                 {humanPlayer.cards.map((card, idx) => (
@@ -384,11 +477,14 @@ function GinRummyPageContent() {
                     onClick={() => toggleCard(idx)}
                     aria-label={cardAlt(card)}
                     aria-pressed={selectedCardIndices.includes(idx)}
+                    data-testid={`gr-hand-card-${idx}`}
+                    data-meld={isDiscardPhase ? (meldedIndices.has(idx) ? 'meld' : 'deadwood') : undefined}
                     className={`transition-transform ${focusRingCard}`}
                     style={{
                       background: 'none',
                       padding: 0,
                       borderRadius: 8,
+                      ...(isDiscardPhase ? meldCardStyle(meldedIndices.has(idx)) : undefined),
                       ...selectedCardStyle(selectedCardIndices.includes(idx)),
                       boxSizing: 'border-box',
                     }}

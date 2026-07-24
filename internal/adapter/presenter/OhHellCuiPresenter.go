@@ -80,6 +80,29 @@ func (p *OhHellCuiPresenter) Output(o interfaces.OhHellGame, lastErr error) stri
 		}
 		switch o.GetPhase() {
 		case domain.OhHellPhaseBid:
+			// Table bid total vs hand size: mirrors the web bid-total chip so the
+			// player can see the over/under/exact tension without summing by hand.
+			total := 0
+			for i := 0; i < o.GetPlayerCnt(); i++ {
+				if bid := o.GetPlayer(i).GetBid(); bid >= 0 {
+					total += bid
+				}
+			}
+			hand := o.GetHandSize()
+			var state string
+			switch {
+			case total > hand:
+				state = color.Red(i18n.T("ohhell.bidStateOver"))
+			case total < hand:
+				state = color.Yellow(i18n.T("ohhell.bidStateUnder"))
+			default:
+				state = color.Green(i18n.T("ohhell.bidStateExact"))
+			}
+			b.WriteString(i18n.Tf("ohhell.bidSummary",
+				"total", strconv.Itoa(total),
+				"hand", strconv.Itoa(hand),
+				"state", state) + "\n")
+
 			bidIdx := o.GetBidPlayerIdx()
 			name := cuiPlayerName(o.GetPlayer(bidIdx), bidIdx)
 			if restricted := o.GetRestrictedBid(); restricted >= 0 {

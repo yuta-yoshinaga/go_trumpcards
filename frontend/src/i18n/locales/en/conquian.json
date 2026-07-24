@@ -23,9 +23,12 @@
   "scoresWins": "Wins",
   "melds": "Melds",
   "tableMelds": "Table Melds",
+  "meldProgress": "Melds {{count}}/{{total}}",
+  "meldRemaining": "{{count}} to go",
   "drawStockButton": "Draw Stock",
   "drawDiscardButton": "Draw Discard",
   "meldButton": "Meld",
+  "layoffButton": "Layoff",
   "discardButton": "Discard",
   "nextRound": "Next Round",
   "drawPhase": "Draw a card from the stock or discard pile",
@@ -39,9 +42,13 @@
   "tutorial": {
     "drawArea": "Draw a card from the stock or discard pile. A card taken from the discard must be melded immediately.",
     "playerHand": "This is your hand. Form sets (3+ same rank) or runs (3+ consecutive same suit).",
-    "meldButton": "Lay the selected cards onto the table. Meld out your entire hand to win.",
+    "meldButton": "Select 3+ cards and press Meld to lay a new set/run, or select a single card and press Layoff to add it to an existing meld. Meld out your entire hand to win.",
     "discardButton": "After melding, discard one card from your hand.",
     "scoreTable": "Each player's rounds won are shown here.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "kbd": {
+    "stock": "S",
+    "discard": "D"
   }
 }

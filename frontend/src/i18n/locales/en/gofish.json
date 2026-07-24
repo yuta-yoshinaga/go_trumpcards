@@ -33,6 +33,7 @@
   "deck": "Deck: {{count}} cards",
   "books": "Books: {{count}}",
   "knownRanksLabel": "Ranks they asked for",
+  "bookRanksLabel": "Completed book ranks",
   "tutorial": {
     "cpuArea": "Opponent's card count and books. Click to select them as your target.",
     "playerHand": "Your hand. Click a card to select the rank you want to ask for.",
@@ -42,5 +43,10 @@
   "hint": {
     "askKnownRank": "Ask for the rank an opponent recently took",
     "askMostCopies": "Ask for the rank you hold most copies of"
+  },
+  "a11y": {
+    "targetSelected": "Selected {{name}}",
+    "rankSelected": "Selected rank {{rank}}",
+    "kbdHint": "Number keys pick the opponent, arrows change rank, a asks"
   }
 }

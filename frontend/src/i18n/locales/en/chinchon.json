@@ -11,6 +11,7 @@
     "cpuDifficulty": "CPU Difficulty",
     "playerCount": "Players",
     "eliminationLimit": "Elimination Limit",
+    "knockThreshold": "Knock Limit",
     "easy": "Easy",
     "normal": "Normal",
     "hard": "Hard"
@@ -32,6 +33,8 @@
   "knockButton": "Knock",
   "deadwoodLabel": "Deadwood: {{score}} pts (knock ≤ {{threshold}})",
   "deadwoodBreakdown": "Breakdown: {{breakdown}}",
+  "meldLegend": "Meld",
+  "deadwoodLegend": "Deadwood",
   "layoffButton": "Lay Off",
   "skipLayoffButton": "Skip",
   "nextRound": "Next Round",

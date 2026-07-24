@@ -9,6 +9,7 @@
   "fan": "Fan",
   "redealsLeft": "Redeals left: {{count}}",
   "stuckRedeal": "Stuck — redeal recommended",
+  "stuckDeadlock": "No moves left — give up?",
   "redealsLeftBadge": "{{count}} left",
   "moveCount": "Moves: {{count}}",
   "redeal": "Gather & redeal",

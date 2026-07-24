@@ -155,24 +155,105 @@ describe('NinetyNinePage', () => {
     );
   });
 
-  it('bury button disabled until exactly 3 cards selected, then calls bid', async () => {
+  it('bury button is focusable + aria-disabled with a reason until 3 cards selected, then calls bid', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<NinetyNinePage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    const buryBtn = screen.getByRole('button', { name: '3枚埋める' });
-    expect(buryBtn).toBeDisabled();
+    // Not enough cards: the button exposes the reason in its accessible name and
+    // is aria-disabled, but NOT HTML-disabled — it stays focusable.
+    const disabledBtn = screen.getByRole('button', { name: '3枚埋める（あと 3 枚のカード選択が必要です）' });
+    expect(disabledBtn).toHaveAttribute('aria-disabled', 'true');
+    expect(disabledBtn).not.toBeDisabled();
 
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
     fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
-    expect(buryBtn).toBeDisabled();
+    expect(screen.getByRole('button', { name: '3枚埋める（あと 1 枚のカード選択が必要です）' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
-    expect(buryBtn).not.toBeDisabled();
+
+    // Exactly 3 selected: plain label, no aria-disabled.
+    const readyBtn = screen.getByRole('button', { name: '3枚埋める' });
+    expect(readyBtn).not.toHaveAttribute('aria-disabled');
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(buryBtn);
+    fireEvent.click(readyBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', [0, 1, 2]));
+  });
+
+  it('announces the remaining bury count in a polite live region as cards are selected', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<NinetyNinePage />);
+    const region = await screen.findByTestId('nn-bury-progress');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('あと 3 枚選択してください');
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('nn-bury-progress')).toHaveTextContent('あと 2 枚選択してください');
+  });
+
+  it('announces readiness once exactly 3 cards are selected', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('nn-bury-progress')).toHaveTextContent('3枚選択しました。埋めるボタンで確定できます');
+  });
+
+  it('shows a live declared-trick preview that matches the domain suit mapping, plus a legend', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    // Legend is visible throughout the bid phase.
+    expect(screen.getByTestId('nn-bid-legend')).toHaveTextContent('スート対応: ♦=0 ♠=1 ♥=2 ♣=3');
+
+    // No cards selected yet: total is 0.
+    const preview = screen.getByTestId('nn-bid-preview');
+    expect(preview).toHaveAttribute('aria-live', 'polite');
+    expect(preview).toHaveTextContent('選択中の合計 = 宣言 0 トリック');
+
+    // ♠ A → +1 (SPADE=1).
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('nn-bid-preview')).toHaveTextContent('選択中の合計 = 宣言 1 トリック');
+
+    // ♥ J → +2 (HEART=2) ⇒ 3.
+    fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('nn-bid-preview')).toHaveTextContent('選択中の合計 = 宣言 3 トリック');
+
+    // ♣ 5 → +3 (CLOVER=3) ⇒ 6, the declared bid for these exact 3 cards.
+    fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('nn-bid-preview')).toHaveTextContent('選択中の合計 = 宣言 6 トリック');
+
+    // ♦ 8 → +0 (DIAMOND=0): total stays 6.
+    fireEvent.click(screen.getByAltText('♦ 8').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('nn-bid-preview')).toHaveTextContent('選択中の合計 = 宣言 6 トリック');
+  });
+
+  it('announces an over-selection message instead of a negative count when more than 3 are picked', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    // The bid-phase hand has 4 cards; selecting all 4 over-selects by 1.
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♦ 8').closest('button') as HTMLButtonElement);
+
+    expect(screen.getByTestId('nn-bury-progress')).toHaveTextContent(
+      '1 枚多く選択されています。ちょうど3枚にしてください',
+    );
+    // Button stays aria-disabled (not ready) with the deselect-reason label.
+    const btn = screen.getByRole('button', { name: '3枚埋める（1 枚多いため選択を減らしてください）' });
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('does not show bury controls on cpu bid turn', async () => {
@@ -284,6 +365,54 @@ describe('NinetyNinePage', () => {
     vi.mocked(actionLogApi.ninetynine).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
     await waitFor(() => expect(actionLogApi.ninetynine).toHaveBeenCalledTimes(1));
+  });
+
+  it('play-phase hint fetches and shows the recommended card with its reason', async () => {
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByTestId('nn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({ ...playPhaseState, hint: { cardIndex: 1, reason: 'follow_suit' } });
+    fireEvent.click(screen.getByTestId('nn-hint-button'));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    expect(screen.getByTestId('nn-server-hint')).toHaveTextContent('推奨カード: [1] (リードスートに追随)');
+  });
+
+  it('bid-phase hint shows the bury recommendation and Apply selects those three cards', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByTestId('nn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({ ...bidPhaseState, hint: { buryIndices: [0, 1, 2], reason: 'strategic_bury' } });
+    fireEvent.click(screen.getByTestId('nn-hint-button'));
+
+    await waitFor(() => expect(screen.getByTestId('nn-server-hint')).toBeInTheDocument());
+    expect(screen.getByTestId('nn-server-hint')).toHaveTextContent('到達可能なビッドになるよう埋める');
+
+    // Applying the bury hint replaces the selection with the recommended 3 cards,
+    // so the Bury button becomes ready (no aria-disabled).
+    fireEvent.click(screen.getByTestId('nn-hint-apply'));
+    expect(screen.getByTestId('nn-bury-progress')).toHaveTextContent('3枚選択しました。埋めるボタンで確定できます');
+    expect(screen.getByRole('button', { name: '3枚埋める' })).not.toHaveAttribute('aria-disabled');
+  });
+
+  it('shows a network error when the hint request fails', async () => {
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByTestId('nn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockRejectedValueOnce(new Error('boom'));
+    fireEvent.click(screen.getByTestId('nn-hint-button'));
+
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+  });
+
+  it('does not show the hint button on a cpu turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
+    expect(screen.queryByTestId('nn-hint-button')).not.toBeInTheDocument();
   });
 
   it('renders accessible h1 heading and tutorial button', async () => {

@@ -37,6 +37,7 @@ func TestCribbageWebController_Method(t *testing.T) {
 	siMock := new(usecase.MockCribbageInteractor)
 	siMock.On("ResetWithConfig", domain.DefaultCribbageConfig()).Return(mockOutput)
 	siMock.On("Discard", []int{1, 3}).Return(mockOutput)
+	siMock.On("Cut").Return(mockOutput)
 	siMock.On("Peg", 3).Return(mockOutput)
 	siMock.On("Go").Return(mockOutput)
 	siMock.On("ShowNext").Return(mockOutput)
@@ -99,6 +100,24 @@ func TestCribbageWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "discard", SessionID: "test-session-1"},
 			CardIndices:  []int{1, 3},
 		}
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(expectedBody)
+	})
+
+	t.Run("success Exec c cut", func(t *testing.T) {
+		var input controller.CribbageWebInput
+		_ = json.Unmarshal([]byte(`{"command":"c","sessionId":"test-session-1"}`), &input)
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(expectedBody)
+	})
+
+	t.Run("success Exec cut long", func(t *testing.T) {
+		var input controller.CribbageWebInput
+		_ = json.Unmarshal([]byte(`{"command":"cut","sessionId":"test-session-1"}`), &input)
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()

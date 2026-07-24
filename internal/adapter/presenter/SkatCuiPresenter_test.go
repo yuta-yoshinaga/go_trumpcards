@@ -53,14 +53,28 @@ func TestSkatCuiPresenter_Output(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
 	defer color.SetNoColor(orig)
+	// Output strings are localized; pin English for these assertions.
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
 	p := new(presenter.SkatCuiPresenter)
 
 	t.Run("bid phase", func(t *testing.T) {
 		m := setupSkatCuiMock()
 		out := p.Output(m, nil)
-		assert.Contains(t, out, "Skat (スカート)")
+		assert.Contains(t, out, "Skat")
 		assert.Contains(t, out, "Round: 1")
 		assert.Contains(t, out, "Bidding")
+	})
+
+	t.Run("japanese locale renders translated phase text", func(t *testing.T) {
+		i18n.SetLang("ja")
+		defer i18n.SetLang("en")
+		m := setupSkatCuiMock()
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "ラウンド: 1")
+		assert.Contains(t, out, "ビッド")
+		assert.NotContains(t, out, "Round: 1")
+		assert.NotContains(t, out, "Bidding:")
 	})
 
 	t.Run("error message rendered", func(t *testing.T) {
@@ -147,6 +161,8 @@ func TestSkatCuiPresenter_OutputPhases(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
 	defer color.SetNoColor(orig)
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
 	p := new(presenter.SkatCuiPresenter)
 
 	cases := []struct {
@@ -243,10 +259,19 @@ func TestSkatCuiPresenter_PlayerSummaryRoles(t *testing.T) {
 	m.On("GetPlayer", 1).Return(pDecl)
 	m.On("GetPlayer", 2).Return(pPass)
 
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
 	out := p.Output(m, nil)
 	assert.Contains(t, out, "[Declarer]")
 	assert.Contains(t, out, "bid=18")
 	assert.Contains(t, out, "bid=pass")
+
+	// The declarer role and pass label are localized under ja.
+	i18n.SetLang("ja")
+	outJa := p.Output(m, nil)
+	assert.Contains(t, outJa, "[宣言者]")
+	assert.Contains(t, outJa, "bid=パス")
+	assert.NotContains(t, outJa, "[Declarer]")
 }
 
 // TestSkatCuiPresenter_HintOutputAllBranches covers every hint-render branch:

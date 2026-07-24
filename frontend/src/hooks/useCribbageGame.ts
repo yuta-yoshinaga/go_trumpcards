@@ -42,6 +42,10 @@ export function useCribbageGame() {
     gameExec('discard', undefined, selectedCardIndices);
   }, [gameExec, selectedCardIndices]);
 
+  const handleCut = useCallback(() => {
+    gameExec('cut');
+  }, [gameExec]);
+
   const handlePeg = useCallback(() => {
     if (selectedCardIndices.length !== 1) return;
     gameExec('peg', selectedCardIndices[0]);
@@ -70,6 +74,7 @@ export function useCribbageGame() {
     clearSelection,
     handleConfigChange,
     handleDiscard,
+    handleCut,
     handlePeg,
     handleGo,
     handleShowNext,

@@ -274,30 +274,46 @@ function KingAlbertPageContent() {
   const renderReserveCell = (cellIdx: number) => {
     const reserveCard = state.reserve[cellIdx];
     const reserveZone: KingAlbertMoveZone = { zone: 'reserve', col: cellIdx };
+    // Label matches the CUI (`[r0]`..`[r6]`) and the 0-based reserve number in the hint
+    // text (`t('frontendHint.reserve', { col })`), so players can map a hint to its slot.
+    const slotLabel = (
+      <span
+        data-testid={`ka-reserve-label-${cellIdx.toString()}`}
+        className="text-game-text-muted text-[10px] leading-none mt-0.5"
+      >
+        r{cellIdx}
+      </span>
+    );
     if (!reserveCard) {
       return (
-        <div
-          key={`r-${cellIdx.toString()}`}
-          className="rounded border border-dashed border-white/10"
-          style={{ width: dims.cw, height: dims.ch }}
-        />
+        <div key={`r-${cellIdx.toString()}`} className="flex flex-col items-center">
+          <div
+            role="img"
+            aria-label={t('emptyReserveSlot', { idx: cellIdx + 1 })}
+            className="rounded border border-dashed border-white/10"
+            style={{ width: dims.cw, height: dims.ch }}
+          />
+          {slotLabel}
+        </div>
       );
     }
     return (
-      <button
-        key={`r-${cellIdx.toString()}`}
-        type="button"
-        onClick={() => game.handleSelectSource(reserveZone)}
-        disabled={!isPlaying || loading}
-        aria-label={cardAlt(reserveCard)}
-        aria-pressed={isSourceSelected('reserve', cellIdx)}
-        draggable={isPlaying && !loading}
-        onDragStart={dnd.handleDragStart(reserveZone)}
-        onDragEnd={dnd.handleDragEnd}
-        className={`p-0 border-0 bg-transparent rounded cursor-pointer ${focusRingWhite} ${isSourceSelected('reserve', cellIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(reserveZone) ? 'opacity-50' : ''}`}
-      >
-        <AnimatedCard card={reserveCard} width={dims.cw} draggable={false} />
-      </button>
+      <div key={`r-${cellIdx.toString()}`} className="flex flex-col items-center">
+        <button
+          type="button"
+          onClick={() => game.handleSelectSource(reserveZone)}
+          disabled={!isPlaying || loading}
+          aria-label={cardAlt(reserveCard)}
+          aria-pressed={isSourceSelected('reserve', cellIdx)}
+          draggable={isPlaying && !loading}
+          onDragStart={dnd.handleDragStart(reserveZone)}
+          onDragEnd={dnd.handleDragEnd}
+          className={`p-0 border-0 bg-transparent rounded cursor-pointer ${focusRingWhite} ${isSourceSelected('reserve', cellIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(reserveZone) ? 'opacity-50' : ''}`}
+        >
+          <AnimatedCard card={reserveCard} width={dims.cw} draggable={false} />
+        </button>
+        {slotLabel}
+      </div>
     );
   };
 

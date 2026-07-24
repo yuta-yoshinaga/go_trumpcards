@@ -144,11 +144,31 @@ describe('MaoPage', () => {
   it('renders choose suit phase and calls suit', async () => {
     mockExec.mockResolvedValue(chooseSuitState);
     renderWithProviders(<MaoPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ スペード' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スペード' })).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '♥ ハート' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ハート' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('suit', undefined, 3));
+  });
+
+  it('shows a color-coded suit symbol alongside each suit-selection button', async () => {
+    mockExec.mockResolvedValue(chooseSuitState);
+    renderWithProviders(<MaoPage />);
+    // CrazyEightsSuit: SPADE=1, CLOVER=2, HEART=3, DIAMOND=4
+    await waitFor(() => expect(screen.getByTestId('suit-symbol-1')).toBeInTheDocument());
+
+    // Every suit button shows both its glyph and its text label.
+    expect(screen.getByTestId('suit-symbol-1')).toHaveTextContent('♠');
+    expect(screen.getByTestId('suit-symbol-2')).toHaveTextContent('♣');
+    expect(screen.getByTestId('suit-symbol-3')).toHaveTextContent('♥');
+    expect(screen.getByTestId('suit-symbol-4')).toHaveTextContent('♦');
+    expect(screen.getByRole('button', { name: 'ダイヤ' })).toBeInTheDocument();
+
+    // Red suits (hearts, diamonds) carry the red token; black suits use the ivory primary token.
+    expect(screen.getByTestId('suit-symbol-3').className).toContain('text-ds-error');
+    expect(screen.getByTestId('suit-symbol-4').className).toContain('text-ds-error');
+    expect(screen.getByTestId('suit-symbol-1').className).toContain('text-ds-text-primary');
+    expect(screen.getByTestId('suit-symbol-2').className).toContain('text-ds-text-primary');
   });
 
   it('calls declare when declare button clicked', async () => {
@@ -202,6 +222,51 @@ describe('MaoPage', () => {
   it('disables say-word button when the input is empty', async () => {
     renderWithProviders(<MaoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '発言する' })).toBeDisabled());
+  });
+
+  it('hides the say-word history panel until a word is spoken', async () => {
+    renderWithProviders(<MaoPage />);
+    await waitFor(() => expect(screen.getByTestId('mao-rule-panel')).toBeInTheDocument());
+    expect(screen.queryByTestId('mao-sayword-history')).not.toBeInTheDocument();
+  });
+
+  it('logs a say-word attempt with an accepted outcome and the board card', async () => {
+    renderWithProviders(<MaoPage />);
+    const input = await screen.findByLabelText('唱える言葉を入力…');
+    fireEvent.change(input, { target: { value: 'mao' } });
+    // Response reports no penalty → the attempt was accepted.
+    mockExec.mockResolvedValueOnce({ ...playPhaseState, rulePenalty: false, correctCount: 1 });
+    fireEvent.click(screen.getByRole('button', { name: '発言する' }));
+    const row = await screen.findByTestId('mao-sayword-history-row');
+    expect(row).toHaveTextContent('mao');
+    // Board captured from the discard top at submit time (HEART 7).
+    expect(row).toHaveTextContent('♥ 7');
+    expect(screen.getByTestId('sayword-outcome-correct')).toHaveTextContent('正解');
+    expect(screen.queryByTestId('sayword-outcome-penalty')).not.toBeInTheDocument();
+  });
+
+  it('color-codes a penalty say-word attempt in the history panel', async () => {
+    renderWithProviders(<MaoPage />);
+    const input = await screen.findByLabelText('唱える言葉を入力…');
+    fireEvent.change(input, { target: { value: 'oops' } });
+    mockExec.mockResolvedValueOnce({ ...playPhaseState, rulePenalty: true });
+    fireEvent.click(screen.getByRole('button', { name: '発言する' }));
+    const outcome = await screen.findByTestId('sayword-outcome-penalty');
+    expect(outcome).toHaveTextContent('ペナルティ');
+    expect(outcome.className).toContain('text-ds-error');
+  });
+
+  it('clears the say-word history on reset', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<MaoPage />);
+    const input = await screen.findByLabelText('唱える言葉を入力…');
+    fireEvent.change(input, { target: { value: 'mao' } });
+    mockExec.mockResolvedValueOnce({ ...gameEndState, rulePenalty: false });
+    fireEvent.click(screen.getByRole('button', { name: '発言する' }));
+    await screen.findByTestId('mao-sayword-history-row');
+    // At game end the reset button fires immediately (no confirm dialog) and wipes the log.
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => expect(screen.queryByTestId('mao-sayword-history')).not.toBeInTheDocument());
   });
 
   it('shows a penalty notice when rulePenalty is true', async () => {

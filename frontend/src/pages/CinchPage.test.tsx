@@ -37,6 +37,17 @@ const roundEndState = makeCinchState({
     gained: { 0: 6, 1: -1, 2: -1, 3: -1 },
   },
 });
+const setBackState = makeCinchState({
+  phase: 4,
+  lastDealDetail: {
+    trumpSuit: 1,
+    bidderIdx: 1,
+    bid: 8,
+    setBack: true,
+    points: { 0: 4, 1: 5, 2: 3, 3: 2 },
+    gained: { 0: 1, 1: -8, 2: 1, 3: 1 },
+  },
+});
 const gameEndState = makeCinchState({
   phase: 5,
   gameEndFlag: true,
@@ -103,22 +114,59 @@ describe('CinchPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 6 }));
   });
 
+  it('shows the bid-strength guide with the estimated point range and the 14-point legend', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CinchPage />);
+    const guide = await screen.findByTestId('cinch-bid-strength');
+    // Default bid hand (K♥, Q♥, A♠) holds 1 point for spades/hearts, 0 otherwise.
+    expect(screen.getByTestId('cinch-bid-strength-range')).toHaveTextContent('0〜1点');
+    expect(screen.getByTestId('cinch-bid-strength-best')).toHaveTextContent('スペード');
+    // The 14-point composition legend is present.
+    expect(guide).toHaveTextContent('14点の構成');
+    expect(guide).toHaveTextContent('Right Pedro');
+  });
+
+  it('does not show the bid-strength guide outside the human bid turn', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<CinchPage />);
+    await waitFor(() => expect(screen.getByTestId('cinch-trump-header')).toBeInTheDocument());
+    expect(screen.queryByTestId('cinch-bid-strength')).not.toBeInTheDocument();
+  });
+
   it('renders the name-trump phase with four suit buttons', async () => {
     mockExec.mockResolvedValue(nameTrumpState);
     renderWithProviders(<CinchPage />);
     await waitFor(() => expect(screen.getByTestId('cinch-trump-prompt')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '♠' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♦' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'スペード' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ダイヤ' })).toBeInTheDocument();
   });
 
   it('naming a trump suit dispatches trump with the suit index', async () => {
     mockExec.mockResolvedValue(nameTrumpState);
     renderWithProviders(<CinchPage />);
-    const spadeBtn = await screen.findByRole('button', { name: '♠' });
+    const spadeBtn = await screen.findByRole('button', { name: 'スペード' });
     mockExec.mockClear();
     mockExec.mockResolvedValue(nameTrumpState);
     fireEvent.click(spadeBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('trump', { trumpSuit: 1 }));
+  });
+
+  it('colors red suits red and keeps black suits default on the trump buttons', async () => {
+    mockExec.mockResolvedValue(nameTrumpState);
+    renderWithProviders(<CinchPage />);
+    const diamondBtn = await screen.findByRole('button', { name: 'ダイヤ' });
+    expect(diamondBtn.querySelector('span')?.className).toContain('text-ds-error');
+    const spadeBtn = screen.getByRole('button', { name: 'スペード' });
+    expect(spadeBtn.querySelector('span')?.className ?? '').not.toContain('text-ds-error');
+  });
+
+  it('shows the trump suit name and a red symbol in the header when declared', async () => {
+    mockExec.mockResolvedValue(makeCinchState({ trumpSuit: 3, isHumanTurn: false }));
+    renderWithProviders(<CinchPage />);
+    const header = await screen.findByTestId('cinch-trump-header');
+    expect(header).toHaveTextContent('ハート');
+    // The ♥ symbol is wrapped in a red span.
+    expect(header.querySelector('.text-ds-error')?.textContent).toBe('♥');
   });
 
   it('selecting a card then playing dispatches play', async () => {
@@ -137,6 +185,25 @@ describe('CinchPage', () => {
     renderWithProviders(<CinchPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のディール' })).toBeInTheDocument());
     expect(screen.getByText('ディール結果')).toBeInTheDocument();
+  });
+
+  it('shows the bidder detail without a set-back row when the bid is made', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CinchPage />);
+    const detail = await screen.findByTestId('cinch-bidder-detail');
+    // Made-bid detail is not styled with the danger color and no set-back row is present.
+    expect(detail).not.toHaveClass('text-ds-error');
+    expect(screen.queryByTestId('cinch-setback-row')).not.toBeInTheDocument();
+  });
+
+  it('emphasizes the bidder detail and set-back row when the bidder is set back', async () => {
+    mockExec.mockResolvedValue(setBackState);
+    renderWithProviders(<CinchPage />);
+    const detail = await screen.findByTestId('cinch-bidder-detail');
+    // Set-back bidder detail is emphasized with the danger color.
+    expect(detail).toHaveClass('text-ds-error');
+    // The bidder's gained row is highlighted as a set-back row.
+    expect(screen.getByTestId('cinch-setback-row')).toBeInTheDocument();
   });
 
   it('renders the game end message', async () => {

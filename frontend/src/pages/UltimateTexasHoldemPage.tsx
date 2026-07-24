@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import { isMaskedCard } from '../types/card';
 import { UltimateTexasHoldemPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { utHoldemBetBounds } from '../utils/utHoldemBet';
 import { utHoldemPreflopStrength } from '../utils/utHoldemPreflop';
 
 /** Ultimate Texas Hold'em tutorial step definitions. */
@@ -112,18 +113,30 @@ function UltimateTexasHoldemPageContent() {
     setAnteAmount((a) => (a > cap ? Math.max(cap, 0) : a));
   }, [state]);
 
+  // Keep the optional Trips side bet within the chips left after the Ante+Blind
+  // commitment (ante*2), re-capping it whenever the ante or the chip balance changes.
+  useEffect(() => {
+    if (!state) return;
+    const { maxTrips } = utHoldemBetBounds(anteAmount, 0, state.chips);
+    setTripsAmount((tr) => (tr > maxTrips ? maxTrips : tr));
+  }, [state, anteAmount]);
+
   const isBetPhase = state?.phase === UltimateTexasHoldemPhase.BET;
   const isPreFlopPhase = state?.phase === UltimateTexasHoldemPhase.PRE_FLOP;
   const isFlopPhase = state?.phase === UltimateTexasHoldemPhase.FLOP;
   const isRiverPhase = state?.phase === UltimateTexasHoldemPhase.RIVER;
   const isEndPhase = state?.phase === UltimateTexasHoldemPhase.END;
 
+  // Ante (×2 for the matched Blind) + Trips must fit within chips. Drives the
+  // trips cap, the combined-total readout, the over-balance alert, and submit gating.
+  const betBounds = utHoldemBetBounds(anteAmount, tripsAmount, state?.chips ?? 0);
+
   const actionBindings = useMemo(
     () => [
       {
         key: 'b',
         action: () => execApi('bet', anteAmount, tripsAmount),
-        enabled: isBetPhase,
+        enabled: isBetPhase && betBounds.valid,
       },
       { key: '4', action: () => execApi('play', undefined, undefined, 4), enabled: isPreFlopPhase },
       { key: '3', action: () => execApi('play', undefined, undefined, 3), enabled: isPreFlopPhase },
@@ -133,7 +146,17 @@ function UltimateTexasHoldemPageContent() {
       { key: 'f', action: () => execApi('fold'), enabled: isRiverPhase },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
     ],
-    [execApi, anteAmount, tripsAmount, isBetPhase, isPreFlopPhase, isFlopPhase, isRiverPhase, isEndPhase],
+    [
+      execApi,
+      anteAmount,
+      tripsAmount,
+      isBetPhase,
+      betBounds.valid,
+      isPreFlopPhase,
+      isFlopPhase,
+      isRiverPhase,
+      isEndPhase,
+    ],
   );
 
   useActionKeyboardNav({
@@ -354,12 +377,23 @@ function UltimateTexasHoldemPageContent() {
               value={tripsAmount}
               onChange={setTripsAmount}
               min={0}
-              max={state.chips}
+              max={betBounds.maxTrips}
               step={10}
               disabled={loading}
+              autoClamp={false}
+              invalid={!betBounds.valid}
+              describedBy={betBounds.valid ? undefined : 'uth-bet-error'}
               showSteppers
             />
-            <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+            <div className="text-ds-text-muted text-sm" data-testid="uth-bet-total">
+              {t('betSummary.total')}: {betBounds.total} / {state.chips}
+            </div>
+            {!betBounds.valid && (
+              <p id="uth-bet-error" role="alert" className="text-ds-error text-sm" data-testid="uth-bet-error">
+                {t('betSummary.overBalance')}
+              </p>
+            )}
+            <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || !betBounds.valid}>
               {t('button.bet')}
             </button>
           </div>

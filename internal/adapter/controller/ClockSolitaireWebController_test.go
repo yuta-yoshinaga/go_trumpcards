@@ -33,6 +33,7 @@ func TestClockSolitaireWebController_Commands(t *testing.T) {
 	ciMock.On("Reset").Return(mockOutput)
 	ciMock.On("Step").Return(mockOutput)
 	ciMock.On("AutoPlay").Return(mockOutput)
+	ciMock.On("Undo").Return(mockOutput)
 	ciMock.On("ActionLog").Return(mockOutput)
 
 	tests := []struct {
@@ -42,10 +43,12 @@ func TestClockSolitaireWebController_Commands(t *testing.T) {
 		{"reset", "reset"},
 		{"step", "step"},
 		{"autoplay", "autoplay"},
+		{"undo", "undo"},
 		{"log", "log"},
 		{"short-r", "r"},
 		{"short-s", "s"},
 		{"short-a", "a"},
+		{"short-u", "u"},
 		{"short-l", "l"},
 	}
 

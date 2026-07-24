@@ -17,6 +17,7 @@
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
   "trump": "Trump: {{suit}}",
+  "trumpRevealBanner": "Trump revealed: {{suit}}",
   "noTrump": "none",
   "hiddenTrump": "Hidden",
   "cards": "{{count}} cards",
@@ -41,6 +42,9 @@
   "nextRound": "Next Round",
   "target": "Target: {{points}} game pts",
   "bidPrompt": "Place a bid (only a higher bid is allowed):",
+  "bidHighest": "Highest bid: {{bid}} ({{player}})",
+  "bidNone": "No bids yet",
+  "bidDisabledReason": "Must exceed the current highest bid of {{currentBid}}",
   "bid": {
     "pass": "Pass",
     "sixteen": "16",

@@ -24,7 +24,7 @@ func (c *PokerSquaresCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.pi.Reset() },
-		[]string{"p", "place", "u", "undo", "g", "giveup", "log", "l"},
+		[]string{"p", "place", "u", "undo", "g", "giveup", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "place":
@@ -33,6 +33,8 @@ func (c *PokerSquaresCuiController) Exec(command string) string {
 				return c.pi.Undo(), true
 			case "g", "giveup":
 				return c.pi.GiveUp(), true
+			case "h", "hint":
+				return c.pi.Hint(), true
 			default:
 				return handleCuiLog(cmd, c.pi.ActionLog)
 			}

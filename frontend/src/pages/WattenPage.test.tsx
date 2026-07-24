@@ -1,8 +1,9 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { wattenApi } from '../api/gameApi';
+import { actionLogApi, wattenApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeWattenState } from '../test/stateFactories';
+import type { ActionLogEntry } from '../types/card';
 import { WattenPage } from './WattenPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -11,6 +12,12 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(wattenApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.watten);
+
+/** Builds a minimal action-log entry for tests. */
+function logEntry(turnNumber: number, actionType: string, playerIdx: number): ActionLogEntry {
+  return { turnNumber, playerIdx, actionType, detail: '' };
+}
 
 const playPhaseState = makeWattenState();
 const declarePhaseState = makeWattenState({
@@ -43,6 +50,8 @@ const cpuTurnState = makeWattenState({ phase: 1, currentPlayerIdx: 1, canRaise: 
 beforeEach(() => {
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
+  mockActionLog.mockReset();
+  mockActionLog.mockResolvedValue({ entries: [] });
 });
 
 describe('WattenPage', () => {
@@ -93,6 +102,30 @@ describe('WattenPage', () => {
     mockExec.mockResolvedValue(declarePhaseState);
     fireEvent.click(screen.getByRole('button', { name: '宣言' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declare', 13, 3));
+  });
+
+  it('previews the top-trump panel with the permanent trumps in the declare phase', async () => {
+    mockExec.mockResolvedValue(declarePhaseState);
+    renderWithProviders(<WattenPage />);
+    // Panel + rule explanation render.
+    await waitFor(() => expect(screen.getByTestId('watten-trump-panel')).toBeInTheDocument());
+    expect(screen.getByText('強札プレビュー')).toBeInTheDocument();
+    // Base hand (♥K, ♦7, ♠A): Max + Spitz are permanent trumps → count 2 before any pick.
+    expect(screen.getByTestId('watten-trump-count')).toHaveTextContent('あなたの強札: 2枚');
+    // The permanent trumps are ringed in the hand.
+    expect(screen.getByRole('button', { name: '♥ K' })).toHaveAttribute('data-trump', 'true');
+  });
+
+  it('updates the top-trump preview and hand ring when a Schlag rank is picked', async () => {
+    mockExec.mockResolvedValue(declarePhaseState);
+    renderWithProviders(<WattenPage />);
+    await waitFor(() => expect(screen.getByTestId('watten-trump-count')).toHaveTextContent('2枚'));
+    // ♠A is plain until Schlag = A is chosen.
+    expect(screen.getByRole('button', { name: '♠ A' })).not.toHaveAttribute('data-trump');
+    fireEvent.click(screen.getByRole('button', { name: 'A' }));
+    // ♠A now becomes a Schlag trump → count rises to 3 and the card is ringed.
+    expect(screen.getByTestId('watten-trump-count')).toHaveTextContent('あなたの強札: 3枚');
+    expect(screen.getByRole('button', { name: '♠ A' })).toHaveAttribute('data-trump', 'true');
   });
 
   it('selecting a card then playing dispatches play', async () => {
@@ -148,5 +181,43 @@ describe('WattenPage', () => {
     await waitFor(() => expect(screen.getByAltText('♥ K')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /レイズ/ })).not.toBeInTheDocument();
+  });
+
+  it('renders the stake-escalation mini-history in order when the action log has raises', async () => {
+    mockActionLog.mockResolvedValue({
+      entries: [
+        logEntry(1, 'declare', 0),
+        logEntry(2, 'raise', 1),
+        logEntry(3, 'hold', 0),
+        logEntry(4, 'raise', 0),
+        logEntry(5, 'hold', 1),
+      ],
+    });
+    renderWithProviders(<WattenPage />);
+    const panel = await screen.findByTestId('watten-stake-history');
+    expect(panel).toHaveTextContent('開始 2');
+    expect(panel).toHaveTextContent('CPU 1 レイズ→3');
+    expect(panel).toHaveTextContent('あなた hold（3）');
+    expect(panel).toHaveTextContent('あなた レイズ→4');
+    expect(panel).toHaveTextContent('CPU 1 hold（4）');
+    // Ordering: the first CPU raise precedes the human's later raise.
+    expect(panel.textContent?.indexOf('CPU 1 レイズ→3')).toBeLessThan(
+      panel.textContent?.indexOf('あなた レイズ→4') ?? -1,
+    );
+  });
+
+  it('does not render the mini-history when the action log has no escalation', async () => {
+    mockActionLog.mockResolvedValue({ entries: [logEntry(1, 'declare', 0), logEntry(2, 'play', 0)] });
+    renderWithProviders(<WattenPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ K')).toBeInTheDocument());
+    expect(screen.queryByTestId('watten-stake-history')).not.toBeInTheDocument();
+  });
+
+  it('shows the fold-loss amount during the respond phase', async () => {
+    mockExec.mockResolvedValue(respondPhaseState);
+    renderWithProviders(<WattenPage />);
+    const loss = await screen.findByTestId('watten-respond-loss');
+    // respondPhaseState keeps the default confirmed stake of 2.
+    expect(loss).toHaveTextContent('fold すると相手チームに 2点を献上します。');
   });
 });

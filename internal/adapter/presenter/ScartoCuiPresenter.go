@@ -43,6 +43,15 @@ func scartoCuiCardStr(c *domain.Card) string {
 	}
 }
 
+// scartoCuiDiscardable は通常スカルトに出せる札か (非切り札・非エクスキューズ・非コートの
+// ピップ) を返す。ドメインの scartoDiscardable と同じ規則を提示側で再現する。
+func scartoCuiDiscardable(c *domain.Card) bool {
+	if c == nil || c.GetDesign() == domain.ScartoTrumpDesign || c.GetDesign() == domain.ScartoExcuseDesign {
+		return false
+	}
+	return c.GetValue() < domain.ScartoCourtMin
+}
+
 // scartoIndexedHand 人間手札をインデックス付きで表示する。
 func scartoIndexedHand(p *domain.ScartoPlayer) string {
 	parts := make([]string, p.GetCardsSize())
@@ -131,9 +140,27 @@ func (p *ScartoCuiPresenter) Output(g interfaces.ScartoGame, lastErr error) stri
 func (p *ScartoCuiPresenter) writePrompt(b *strings.Builder, g interfaces.ScartoGame) {
 	switch g.GetPhase() {
 	case domain.ScartoPhaseScarto:
+		dealerIdx := g.GetDealerIdx()
 		b.WriteString(i18n.Tf("scarto.promptScarto",
-			"name", cuiPlayerName(g.GetPlayer(g.GetDealerIdx()), g.GetDealerIdx())) + "\n")
+			"name", cuiPlayerName(g.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 		b.WriteString(i18n.T("scarto.promptScartoHelp") + "\n")
+		// The web UI disables trumps/Excuse/courts; on the CLI, spell out which
+		// of the human dealer's cards may actually be discarded, plus the legend
+		// of excluded kinds so the choice isn't trial-and-error.
+		if dealer := g.GetPlayer(dealerIdx); dealer != nil && dealer.GetIsHuman() {
+			var idxs []string
+			for i := 0; i < dealer.GetCardsSize(); i++ {
+				if scartoCuiDiscardable(dealer.GetCard(i)) {
+					idxs = append(idxs, "["+strconv.Itoa(i)+"]"+scartoCuiCardStr(dealer.GetCard(i)))
+				}
+			}
+			list := strings.Join(idxs, "  ")
+			if list == "" {
+				list = i18n.T("scarto.discardableNone")
+			}
+			b.WriteString(i18n.Tf("scarto.discardableList", "cards", list) + "\n")
+			b.WriteString(i18n.T("scarto.discardableLegend") + "\n")
+		}
 	case domain.ScartoPhasePlay:
 		currentIdx := g.GetCurrentPlayerIdx()
 		b.WriteString(i18n.Tf("scarto.promptPlay",

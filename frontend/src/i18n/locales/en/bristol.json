@@ -11,6 +11,10 @@
   "tableauRule": "Tableau: {{count}} build-down columns (any suit)",
   "fan": "Fan",
   "foundation": "Foundation",
+  "foundationAria": "Foundation {{num}}: {{card}} ({{count}} cards)",
+  "foundationAriaEmpty": "Foundation {{num}}: empty",
+  "fanAria": "Fan {{num}}: {{card}} ({{count}} cards)",
+  "fanAriaEmpty": "Fan {{num}}: empty",
   "moveCount": "Moves",
   "draw": "Deal",
   "giveup": "Give Up",
@@ -28,6 +32,13 @@
   "frontendHint": {
     "moveToFoundation": "A card can move to a foundation",
     "moveToTableau": "A card can move between tableau columns"
+  },
+  "kbd": {
+    "draw": "D",
+    "hint": "H",
+    "auto": "A",
+    "undo": "Z",
+    "giveup": "G"
   },
   "tutorial": {
     "foundation": "The four foundations. Build up from Ace to King regardless of suit. Complete all four to win.",

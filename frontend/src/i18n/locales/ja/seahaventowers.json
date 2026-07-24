@@ -11,6 +11,7 @@
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "autoComplete": "オートコンプリート",
+  "autoCompleteNotReady": "全列が同スート降順に整うとオートコンプリートで確実に完走できます",
   "undo": "元に戻す",
   "moveCount": "手数",
   "empty": "空",

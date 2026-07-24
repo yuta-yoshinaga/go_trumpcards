@@ -112,6 +112,18 @@ func (p *ShitheadCuiPresenter) Output(sg interfaces.ShitheadGame, lastErr error)
 		b.WriteString(i18n.Tf("shithead.promptCurrentTurn",
 			"name", currentName,
 			"source", source) + "\n")
+		// On a blind (face-down) human turn, list the selectable slot indices so
+		// the player knows which number to play; the card faces stay hidden.
+		if source == domain.ShitheadSourceFaceDown {
+			if human := sg.GetPlayer(currentTurn); human != nil && human.GetIsHuman() && human.GetFaceDownSize() > 0 {
+				slots := make([]string, human.GetFaceDownSize())
+				for i := range slots {
+					slots[i] = "[" + strconv.Itoa(i) + "]??"
+				}
+				b.WriteString(i18n.Tf("shithead.facedownSlots",
+					"slots", strings.Join(slots, " ")) + "\n")
+			}
+		}
 		b.WriteString(i18n.T("shithead.promptPlayHelp") + "\n")
 	})
 }

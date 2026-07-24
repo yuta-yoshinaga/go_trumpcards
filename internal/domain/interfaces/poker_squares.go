@@ -39,4 +39,6 @@ type PokerSquaresGame interface {
 	ColScore(c int) int
 	// TotalScore 合計得点を返す
 	TotalScore() int
+	// GetHint 現在のカードを置く最善のセルを返す (無い場合 nil)
+	GetHint() *domain.PokerSquaresHint
 }

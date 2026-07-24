@@ -23,6 +23,13 @@
   "fantasyland": "Fantasyland reached!",
   "roundEndTitle": "Round over",
   "next": "Next round",
+  "hint": {
+    "button": "Hint",
+    "text": "Suggested: {{row}} — {{reason}}",
+    "strong_back": "Weight your strongest cards to the bottom",
+    "weak_front": "Keep the top row weak to stay safe",
+    "balance": "Balance the rows"
+  },
   "gameEnd": "Game over",
   "phase": {
     "placing": "Placing",
@@ -39,5 +46,9 @@
     "rows": "Place each dealt card into one of three rows (Top 3, Middle 5, Bottom 5).",
     "place": "Pick the row to place the dealt card. Once placed, a card cannot be moved.",
     "resetButton": "Press this button to restart the game from the beginning."
-  }
+  },
+  "placeRowAria": "Place on {{label}}",
+  "rowAriaEmpty": "{{label}} {{count}} cards",
+  "rowAriaFilled": "{{label}} {{count}} cards: {{cards}}",
+  "pendingAnnounce": "To place: {{card}}"
 }

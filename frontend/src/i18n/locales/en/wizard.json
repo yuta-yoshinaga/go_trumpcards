@@ -1,4 +1,5 @@
 {
+  "illegalHint": "Can't play this card (you must follow the led suit you still hold)",
   "phase": {
     "bid": "Bid",
     "play": "Play",
@@ -31,6 +32,12 @@
     "over": "(over)",
     "under": "(under)",
     "exact": "(exact)"
+  },
+  "bidAccuracy": {
+    "title": "Bid accuracy (previous round)",
+    "made": "Made",
+    "over": "+{{delta}} over",
+    "under": "{{delta}} under"
   },
   "currentTrick": "Current Trick",
   "scores": "Scores",

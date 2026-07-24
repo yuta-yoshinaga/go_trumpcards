@@ -129,6 +129,64 @@ describe('PokerSquaresPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('place', 2, 3));
   });
 
+  it('announces the row score preview in a live region on focus and clears it on blur', async () => {
+    const b = emptyBoard();
+    b[0][1] = { card: card('HEART', 2) };
+    b[0][2] = { card: card('HEART', 3) };
+    b[0][3] = { card: card('HEART', 4) };
+    b[0][4] = { card: card('HEART', 5) };
+    // Placing HEART 6 at (0,0) completes row 0 as a straight flush; column 0 is
+    // still empty so only the row preview is announced.
+    mockApi.mockResolvedValue({
+      ...playingState,
+      board: b,
+      currentCard: card('HEART', 6),
+      placedCount: 4,
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-0-0')).toBeInTheDocument());
+    const live = screen.getByTestId('ps-preview-live');
+    expect(live).toHaveTextContent('');
+    fireEvent.focus(screen.getByTestId('cell-0-0'));
+    await waitFor(() => expect(live).toHaveTextContent(/1行目.*完成.*点/));
+    fireEvent.blur(screen.getByTestId('cell-0-0'));
+    await waitFor(() => expect(live).toHaveTextContent(''));
+  });
+
+  it('announces the column score preview when focusing a cell that completes a column', async () => {
+    const b = emptyBoard();
+    b[1][0] = { card: card('HEART', 2) };
+    b[2][0] = { card: card('HEART', 3) };
+    b[3][0] = { card: card('HEART', 4) };
+    b[4][0] = { card: card('HEART', 5) };
+    // Placing HEART 6 at (0,0) completes column 0; row 0 is otherwise empty so
+    // only the column preview is announced.
+    mockApi.mockResolvedValue({
+      ...playingState,
+      board: b,
+      currentCard: card('HEART', 6),
+      placedCount: 4,
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-0-0')).toBeInTheDocument());
+    const live = screen.getByTestId('ps-preview-live');
+    fireEvent.focus(screen.getByTestId('cell-0-0'));
+    await waitFor(() => expect(live).toHaveTextContent(/1列目.*完成.*点/));
+  });
+
+  it('does not announce a preview when the focused cell completes no line', async () => {
+    // Only two cards in row 0 — focusing (0,0) completes nothing.
+    const b = emptyBoard();
+    b[0][1] = { card: card('HEART', 2) };
+    b[0][2] = { card: card('HEART', 3) };
+    mockApi.mockResolvedValue({ ...playingState, board: b, currentCard: card('SPADE', 9), placedCount: 2 });
+    renderWithProviders(<PokerSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-0-0')).toBeInTheDocument());
+    fireEvent.focus(screen.getByTestId('cell-0-0'));
+    // No completed line -> live region stays empty.
+    expect(screen.getByTestId('ps-preview-live')).toHaveTextContent('');
+  });
+
   it('does not call place when a filled cell is clicked (button is disabled)', async () => {
     const filledState: PokerSquaresResponse = {
       ...playingState,
@@ -298,6 +356,79 @@ describe('PokerSquaresPage', () => {
     renderWithProviders(<PokerSquaresPage />);
     await waitFor(() => expect(screen.getByRole('log')).toBeInTheDocument());
     expect(screen.queryByTestId('ps-board')).not.toBeInTheDocument();
+  });
+
+  it('shows a partial made-hand hint for an incomplete row when hovering an empty cell', async () => {
+    // Row 0 holds two 9's; placing a third 9 at (0,2) makes trips but the row is
+    // still incomplete, so the muted partial hint (not a locked +N) should show.
+    const board = emptyBoard();
+    board[0][0] = { card: card('SPADE', 9) };
+    board[0][1] = { card: card('CLOVER', 9) };
+    mockApi.mockResolvedValue({
+      ...playingState,
+      board,
+      currentCard: card('HEART', 9),
+      placedCount: 2,
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    const cell = await screen.findByTestId('cell-0-2');
+    fireEvent.pointerEnter(cell);
+    const partial = await screen.findByTestId('row-partial-preview-0');
+    expect(partial).toHaveTextContent('スリーカード');
+    // No completed-line +N preview should be present for the incomplete row.
+    expect(screen.queryByTestId('row-score-preview-0')).not.toBeInTheDocument();
+  });
+
+  it('shows a partial made-hand hint for an incomplete column when hovering an empty cell', async () => {
+    const board = emptyBoard();
+    board[0][0] = { card: card('SPADE', 4) };
+    board[1][0] = { card: card('CLOVER', 4) };
+    mockApi.mockResolvedValue({
+      ...playingState,
+      board,
+      currentCard: card('HEART', 7),
+      placedCount: 2,
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    const cell = await screen.findByTestId('cell-2-0');
+    fireEvent.pointerEnter(cell);
+    // Column 0 already has a pair of 4's; placing an unrelated card keeps the pair.
+    const partial = await screen.findByTestId('col-partial-preview-0');
+    expect(partial).toHaveTextContent('ワンペア');
+  });
+
+  it('does not show a partial hint when the placement forms no made hand', async () => {
+    const board = emptyBoard();
+    board[0][0] = { card: card('SPADE', 2) };
+    board[0][1] = { card: card('CLOVER', 5) };
+    mockApi.mockResolvedValue({
+      ...playingState,
+      board,
+      currentCard: card('HEART', 9),
+      placedCount: 2,
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    const cell = await screen.findByTestId('cell-0-2');
+    fireEvent.pointerEnter(cell);
+    await waitFor(() => expect(screen.getByTestId('cell-0-2')).toHaveAttribute('data-cross-hover', 'true'));
+    expect(screen.queryByTestId('row-partial-preview-0')).not.toBeInTheDocument();
+  });
+
+  it('announces the partial made hand in the live region for keyboard users', async () => {
+    const board = emptyBoard();
+    board[0][0] = { card: card('SPADE', 9) };
+    board[0][1] = { card: card('CLOVER', 9) };
+    mockApi.mockResolvedValue({
+      ...playingState,
+      board,
+      currentCard: card('HEART', 9),
+      placedCount: 2,
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    const cell = await screen.findByTestId('cell-0-2');
+    fireEvent.focus(cell);
+    const live = screen.getByTestId('ps-preview-live');
+    await waitFor(() => expect(live).toHaveTextContent(/1行目.*見込み/));
   });
 
   it('shows the projected row score when hovering a cell that would complete a row', async () => {

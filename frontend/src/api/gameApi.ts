@@ -236,6 +236,8 @@ import type {
   WizardResponse,
   YanivResponse,
   YukonResponse,
+  ZhengConfigInput,
+  ZhengResponse,
 } from '../types/card';
 
 /** Unique session identifier for correlating API requests. */
@@ -302,6 +304,7 @@ const workerUrl: Record<string, string> = {
   daifugo: WORKER_CLASSIC,
   bigtwo: WORKER_CLASSIC,
   tienlen: WORKER_SOLO,
+  zheng: WORKER_SOLO,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
   prsi: WORKER_CLASSIC,
@@ -363,7 +366,7 @@ const workerUrl: Record<string, string> = {
   egyptianratscrew: WORKER_CLASSIC,
   bakersdozen: WORKER_SOLO,
   thirtyone: WORKER_SOLO,
-  yaniv: WORKER_CASINO,
+  yaniv: WORKER_SOLO,
   tressette: WORKER_CASINO,
   tonk: WORKER_CLASSIC,
   dragontiger: WORKER_CASINO,
@@ -402,7 +405,7 @@ const workerUrl: Record<string, string> = {
   tysiac: WORKER_EXTRA,
   calabresella: WORKER_EXTRA,
   ombre: WORKER_EXTRA,
-  ulti: WORKER_EXTRA,
+  ulti: WORKER_SOLO,
   scarto: WORKER_SOLO,
   cego: WORKER_SOLO,
   frenchtarot: WORKER_EXTRA,
@@ -660,6 +663,12 @@ export const bigtwoApi = {
 export const tienlenApi = {
   exec: (command: 'reset' | 'play', indices?: number[], config?: TienLenConfigInput) =>
     gameExec<TienLenResponse>('tienlen', { command, indices, config }),
+};
+
+/** API client for the Zheng Shangyou /zheng/exec endpoint (empty indices = pass). */
+export const zhengApi = {
+  exec: (command: 'reset' | 'play', indices?: number[], config?: ZhengConfigInput) =>
+    gameExec<ZhengResponse>('zheng', { command, indices, config }),
 };
 
 /** API client for the Durak /durak/exec endpoint. */
@@ -1847,7 +1856,7 @@ export interface CribbageConfigInput {
 /** API client for the Cribbage /cribbage/exec endpoint. */
 export const cribbageApi = {
   exec: (
-    command: 'reset' | 'discard' | 'peg' | 'go' | 'shownext' | 'nextround' | 'log',
+    command: 'reset' | 'discard' | 'cut' | 'peg' | 'go' | 'shownext' | 'nextround' | 'log',
     cardIndex?: number,
     cardIndices?: number[],
     config?: CribbageConfigInput,
@@ -4524,13 +4533,13 @@ export const acesupApi = {
 
 /** Pig's Tail game API client. */
 export const pigtailApi = {
-  exec: (command: 'reset' | 'draw', cpuHesitationEnabled?: boolean) =>
-    gameExec<PigsTailResponse>('pigtail', { command, cpuHesitationEnabled }),
+  exec: (command: 'reset' | 'draw', cpuHesitationEnabled?: boolean, playerCount?: number) =>
+    gameExec<PigsTailResponse>('pigtail', { command, cpuHesitationEnabled, playerCount }),
 };
 
 /** API client for the Clock Solitaire /clocksolitaire/exec endpoint. */
 export const clocksolitaireApi = {
-  exec: (command: 'reset' | 'step' | 'autoplay' | 'log') =>
+  exec: (command: 'reset' | 'step' | 'autoplay' | 'undo' | 'log') =>
     gameExec<ClockSolitaireResponse>('clocksolitaire', { command }),
 };
 
@@ -5381,6 +5390,7 @@ const games = [
   'cego',
   'frenchtarot',
   'koenigrufen',
+  'zheng',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -82,6 +82,39 @@ func TestCuiSuitName(t *testing.T) {
 	}
 }
 
+func TestCuiRankLabel(t *testing.T) {
+	tests := []struct {
+		rank     int
+		expected string
+	}{
+		{1, "A"},
+		{7, "7"},
+		{10, "10"},
+		{11, "J"},
+		{12, "Q"},
+		{13, "K"},
+	}
+	for _, tt := range tests {
+		assert.Equal(t, tt.expected, cuiRankLabel(tt.rank))
+	}
+}
+
+func TestCuiPokerHandName(t *testing.T) {
+	orig := i18n.Lang()
+	i18n.SetLang("ja")
+	defer i18n.SetLang(orig)
+
+	assert.Equal(t, "ハイカード", cuiPokerHandName(0))
+	assert.Equal(t, "ロイヤルフラッシュ", cuiPokerHandName(9))
+	assert.Equal(t, "ファイブカード", cuiPokerHandName(10))
+	// Out-of-range ranks fall back to an empty string.
+	assert.Equal(t, "", cuiPokerHandName(-1))
+	assert.Equal(t, "", cuiPokerHandName(999))
+
+	i18n.SetLang("en")
+	assert.Equal(t, "Royal Flush", cuiPokerHandName(9))
+}
+
 // mockCuiPlayer implements the cuiPlayer interface for testing.
 type mockCuiPlayer struct {
 	isHuman bool

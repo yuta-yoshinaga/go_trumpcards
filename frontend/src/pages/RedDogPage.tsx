@@ -4,7 +4,6 @@ import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
-import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -31,10 +30,8 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseReddogCommand, REDDOG_HELP } from '../utils/cli/commands/reddogCommands';
 import { formatReddogState } from '../utils/cli/formatters/reddogFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { canRedDogRaise } from '../utils/reddogBet';
 import { rankLabel, redDogRank, reddogWinningRanks } from '../utils/reddogWinningRanks';
-
-/** Minimum bet amount matching backend RedDogMinBet. */
-const REDDOG_MIN_BET = 10;
 
 const RD_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -231,7 +228,6 @@ function RedDogPageContent() {
 
           <GameFooter className={`${gameTheme.reddog.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel title={tc('settings.title')} groups={[]} />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="rd-bet-controls">
                 <ChipBetInput
@@ -260,7 +256,7 @@ function RedDogPageContent() {
                     type="button"
                     className={btnSuccess}
                     onClick={handleRaise}
-                    disabled={loading || state.chips < REDDOG_MIN_BET}
+                    disabled={loading || !canRedDogRaise(state.chips)}
                   >
                     {t('button.raise')}
                   </button>

@@ -51,7 +51,12 @@
   "declineButton": "Decline",
   "nextRound": "Next Deal",
   "betNotice": "Your turn — choose See, Bet, Raise or Fold.",
+  "sideShowTitle": "Side Show Request",
   "sideShowPending": "{{requester}} requested a Side Show with {{target}}. Accept or decline.",
+  "sideShowResult": {
+    "title": "Side Show Result",
+    "outcome": "{{winner}} ({{winnerHand}}) beat {{loser}} ({{loserHand}}); {{loser}} folded."
+  },
   "roundResult": {
     "title": "Deal Result",
     "winner": "{{name}} wins the pot of {{pot}}."
@@ -71,6 +76,7 @@
     "players": "Each player's chip balance and status. Lose all your chips and you're eliminated; the last player with chips wins the match.",
     "hand": "Your 3 cards. Looking at your hand (See) turns you from Blind to Seen, after which your bets cost double. Hand ranking is Trail > Pure Sequence > Sequence > Color > Pair > High Card.",
     "bet": "On your turn choose See (look at your hand), Bet (call the stake), Raise (increase the stake), or Fold. A Seen player can request a Side Show (a private hand comparison) with the previous Seen player, who then accepts or declines. When two players remain you can Show to force a showdown.",
+    "sideShow": "When a Side Show is requested, this highlighted panel shows the request. If you are the target, respond with the Accept / Decline buttons inside the panel.",
     "resetButton": "Reset the game and start over from the beginning."
   }
 }

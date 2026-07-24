@@ -10,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupMacauCuiMock() *interfaces.MockMacauGame {
@@ -166,5 +167,65 @@ func TestMacauCuiPresenter_ActionLogOutput(t *testing.T) {
 		m.On("GetGameEndFlag").Return(false)
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜はありません")
+	})
+}
+
+func TestMacauCuiPresenter_HintOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.MacauCuiPresenter)
+
+	t.Run("lists only playable card indices", func(t *testing.T) {
+		m, players := setupMacauCuiMockWithPlayers()
+		m.On("IsHumanTurn").Return(true)
+		playable := domain.NewCard(domain.CardDesignHeart, 5, false)
+		unplayable := domain.NewCard(domain.CardDesignSpade, 9, false)
+		players[0].AddCard(playable)
+		players[0].AddCard(unplayable)
+		m.On("IsValidPlay", playable).Return(true)
+		m.On("IsValidPlay", unplayable).Return(false)
+
+		out := p.HintOutput(m)
+		assert.Contains(t, out, i18n.Tf("macau.hintPlayable", "cards", "[0]HEART 5"))
+		assert.NotContains(t, out, "[1]")
+	})
+
+	t.Run("advises drawing when nothing is playable", func(t *testing.T) {
+		m, players := setupMacauCuiMockWithPlayers()
+		m.On("IsHumanTurn").Return(true)
+		c := domain.NewCard(domain.CardDesignSpade, 9, false)
+		players[0].AddCard(c)
+		m.On("IsValidPlay", c).Return(false)
+
+		out := p.HintOutput(m)
+		assert.Contains(t, out, i18n.T("macau.hintDraw"))
+	})
+
+	t.Run("advises accepting the penalty mid-chain", func(t *testing.T) {
+		m, players := setupMacauCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPenaltyDrawCount")
+		m.On("GetPenaltyDrawCount").Return(2)
+		m.On("IsHumanTurn").Return(true)
+		c := domain.NewCard(domain.CardDesignSpade, 9, false)
+		players[0].AddCard(c)
+		m.On("IsValidPlay", c).Return(false)
+
+		out := p.HintOutput(m)
+		assert.Contains(t, out, i18n.T("macau.hintReceivePenalty"))
+	})
+
+	t.Run("no hint outside the human's play turn", func(t *testing.T) {
+		m, _ := setupMacauCuiMockWithPlayers()
+		m.On("IsHumanTurn").Return(false)
+		assert.Contains(t, p.HintOutput(m), i18n.T("macau.hintNone"))
+	})
+
+	t.Run("no hint when the current player is nil", func(t *testing.T) {
+		m := setupMacauCuiMock()
+		m.On("GetPlayerCnt").Return(4)
+		m.On("GetPlayer", 0).Return((*domain.MacauPlayer)(nil))
+		m.On("IsHumanTurn").Return(true)
+		assert.Contains(t, p.HintOutput(m), i18n.T("macau.hintNone"))
 	})
 }

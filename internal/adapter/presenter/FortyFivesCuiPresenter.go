@@ -136,6 +136,19 @@ func (p *FortyFivesCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Fo
 		b.WriteString(i18n.Tf("fortyfives.promptBid",
 			"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx),
 			"high", fortyFivesBidName(int(highBid))) + "\n")
+		// List every player's declared bid (pass included) so the opposing team's
+		// bidding is visible; players who have not yet bid show "-".
+		bidDone := g.GetBidDone()
+		entries := make([]string, g.GetPlayerCnt())
+		for i := 0; i < g.GetPlayerCnt(); i++ {
+			state := "-"
+			if bidDone[i] {
+				state = fortyFivesBidName(int(bids[i]))
+			}
+			entries[i] = cuiPlayerName(g.GetPlayer(i), i) + "=" + state
+		}
+		b.WriteString(i18n.Tf("fortyfives.bidHistory",
+			"bids", strings.Join(entries, ", ")) + "\n")
 		b.WriteString(i18n.T("fortyfives.promptBidHelp") + "\n")
 	case domain.FortyFivesPhasePlay:
 		currentIdx := g.GetCurrentPlayerIdx()

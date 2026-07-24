@@ -29,6 +29,10 @@
   "cumulativeScore": "Total: {{score}}",
   "roundScore": "Round: {{score}}",
   "shootTheMoonAlert": "Shoot-the-Moon alert",
+  "penaltyTaken": "Penalty",
+  "penaltyHearts": "{{count}} hearts",
+  "penaltyQueenSpades": "Queen of Spades taken",
+  "penaltyNone": "No penalties",
   "currentTrick": "Current Trick",
   "scores": "Scores",
   "scoresPlayer": "Player",
@@ -50,6 +54,13 @@
     "discard_queen_spades": "Chance to discard Q♠",
     "discard_hearts": "Discard hearts",
     "discard_high": "Discard a high card"
+  },
+  "illegalReason": {
+    "cannotPlay": "This card cannot be played right now",
+    "mustLeadTwoClubs": "You must lead the first trick with the 2♣",
+    "heartsNotBroken": "Hearts have not been broken yet",
+    "mustFollowSuit": "You must follow the lead suit",
+    "noPointsFirstTrick": "No hearts or Q♠ may be played on the first trick"
   },
   "tutorial": {
     "passArea": "In the pass phase, select 3 cards to pass to another player.",

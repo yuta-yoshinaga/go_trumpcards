@@ -23,9 +23,14 @@
     "win": "{{handName}}! You win {{payout}} coins!",
     "lose": "No winning hand."
   },
+  "resultAnnounce": {
+    "win": "Hand: {{handName}}, payout {{payout}} coins",
+    "lose": "No winning hand, bet forfeited"
+  },
   "payoutTable": {
     "title": "Payout Table",
     "hand": "Hand",
+    "count": "Hits",
     "name": {
       "royalFlush": "Royal Flush",
       "straightFlush": "Straight Flush",
@@ -37,6 +42,11 @@
       "twoPair": "Two Pair",
       "jacksOrBetter": "Jacks or Better"
     }
+  },
+  "stats": {
+    "summary": "{{hands}} hands / win rate {{winRate}}% / net {{net}}",
+    "empty": "No hands played yet",
+    "clear": "Clear stats"
   },
   "tutorial": {
     "betControls": "Place 1–5 coins to set your bet. Higher bets increase the Royal Flush bonus.",
@@ -56,5 +66,10 @@
   },
   "card": "Card {{index}}",
   "dealGuide": "Select coins and deal to start",
-  "wild": "WILD"
+  "wild": "WILD",
+  "a11y": {
+    "holdOn": "Hold card {{index}}",
+    "holdOff": "Release card {{index}}",
+    "kbdHint": "Press number keys 1-5 to toggle holding each card"
+  }
 }

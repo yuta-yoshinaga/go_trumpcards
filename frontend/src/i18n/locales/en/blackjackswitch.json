@@ -24,8 +24,13 @@
   },
   "guide": {
     "bet": "Pick a bet amount (per hand). Two hands will be dealt.",
-    "switch": "You may swap the second card between hand 0 and hand 1.",
+    "switch": "You may swap the second card between hand 1 and hand 2.",
     "action": "Acting on hand {{idx}}: Hit / Stand / Double Down"
+  },
+  "badge": {
+    "bust": "BUST",
+    "bj": "BJ",
+    "acting": "Acting"
   },
   "result": {
     "handWin": "win",
@@ -41,5 +46,13 @@
   },
   "rules": {
     "summary": "You play two hands and may swap the second card between them. In return, blackjacks pay 1:1 and a dealer 22 is a push."
+  },
+  "kbd": {
+    "bet": "B",
+    "switch": "S",
+    "keep": "K",
+    "hit": "H",
+    "stand": "T",
+    "doubleDown": "D"
   }
 }

@@ -11,6 +11,7 @@
   "empty": "Empty",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "foundationProgress": "{{count}}/13",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto Complete",
@@ -36,5 +37,11 @@
   "hintReason": {
     "toFoundation": "Send this card to the foundation to free up the column.",
     "toTableau": "Apply the suggested tableau move to unlock buried cards."
+  },
+  "kbd": {
+    "undo": "Z",
+    "hint": "H",
+    "autoComplete": "A",
+    "giveUp": "G"
   }
 }

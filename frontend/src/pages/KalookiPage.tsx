@@ -24,6 +24,7 @@ import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/but
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, KalookiResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { KALOOKI_HELP, parseKalookiCommand } from '../utils/cli/commands/kalookiCommands';
 import { formatKalookiState } from '../utils/cli/formatters/kalookiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -176,8 +177,8 @@ function KalookiPageContent() {
     setSelectedCards([]);
   }, [selectedCards]);
 
-  const handleRemoveLastGroup = useCallback(() => {
-    setMeldGroups((prev) => prev.slice(0, -1));
+  const handleRemoveGroup = useCallback((groupIdx: number) => {
+    setMeldGroups((prev) => prev.filter((_, i) => i !== groupIdx));
   }, []);
 
   const handleMeld = useCallback(() => {
@@ -355,6 +356,21 @@ function KalookiPageContent() {
                     })}
                   </div>
                 )}
+                {/* Reveal CPU hands at round end / game end so the human can verify penalty scores. */}
+                {!p.isHuman && (isRoundEnd || isGameEnd) && p.cards.length > 0 && (
+                  <div className="mt-2">
+                    <div className="text-xs opacity-75 mb-1">{t('revealedHand')}</div>
+                    <div className="flex flex-wrap gap-1" data-testid={`kalooki-reveal-${p.id}`}>
+                      {p.cards.map((c, ci) => (
+                        <AnimatedCard
+                          key={`reveal-${p.id}-${c.design}-${c.value}-${ci}`}
+                          card={c}
+                          width={cardWidth * 0.6}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </section>
@@ -372,13 +388,20 @@ function KalookiPageContent() {
               <div className="flex flex-wrap gap-1">
                 {humanPlayer.cards.map((c: Card, idx: number) => {
                   const isSelected = selectedCards.includes(idx);
-                  const isInGroup = meldGroups.some((g) => g.includes(idx));
+                  const groupIdx = meldGroups.findIndex((g) => g.includes(idx));
+                  const isInGroup = groupIdx >= 0;
+                  const ariaLabel = isInGroup
+                    ? t('cardInGroup', { card: cardAlt(c), group: groupIdx + 1 })
+                    : cardAlt(c);
                   return (
                     <button
                       type="button"
                       key={`${idx}-${c.design}-${c.value}`}
                       onClick={() => toggleCard(idx)}
                       disabled={isInGroup}
+                      aria-label={ariaLabel}
+                      aria-pressed={isSelected}
+                      data-testid={`kalooki-hand-${idx}`}
                       className={`${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${
                         isInGroup ? 'opacity-40' : ''
                       }`}
@@ -387,6 +410,40 @@ function KalookiPageContent() {
                     </button>
                   );
                 })}
+              </div>
+            </section>
+          )}
+
+          {isMeldPhase && humanPlayer && meldGroups.length > 0 && (
+            <section className="px-4 py-2" data-testid="kalooki-staged-groups">
+              <div className="text-white text-sm mb-1">{t('stagedGroupsTitle')}</div>
+              <div className="flex flex-col gap-2">
+                {meldGroups.map((group, gi) => (
+                  <div
+                    // Group order is stable within a staging session; index keys are safe here.
+                    key={`staged-group-${gi}`}
+                    data-testid={`kalooki-staged-group-${gi}`}
+                    className="flex items-center gap-2 flex-wrap p-2 rounded border border-white/30 bg-black/20"
+                  >
+                    <span className="text-white text-xs font-semibold">{t('groupLabel', { n: gi + 1 })}</span>
+                    <div className="flex flex-wrap gap-1">
+                      {group.map((cardIdx) => {
+                        const c = humanPlayer.cards[cardIdx];
+                        if (!c) return null;
+                        return <AnimatedCard key={`staged-${gi}-${cardIdx}`} card={c} width={cardWidth * 0.6} />;
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveGroup(gi)}
+                      aria-label={t('removeGroupAria', { n: gi + 1 })}
+                      data-testid={`kalooki-remove-group-${gi}`}
+                      className={`${btnDanger} ml-auto`}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
               </div>
             </section>
           )}
@@ -413,14 +470,6 @@ function KalookiPageContent() {
                   className={btnOutline}
                 >
                   {t('addGroup')}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleRemoveLastGroup}
-                  disabled={meldGroups.length === 0}
-                  className={btnOutline}
-                >
-                  {t('removeLastGroup')}
                 </button>
                 <button
                   type="button"

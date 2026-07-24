@@ -25,6 +25,9 @@ type DeuceToSevenGame interface {
 
 	// GetPlayers returns the seated players.
 	GetPlayers() []*domain.DeuceToSevenPlayer
+	// SuggestExchange returns the recommended exchange card indices for the
+	// given seat (nil means a made low — stand pat).
+	SuggestExchange(playerIdx int) []int
 	// GetPhase returns the current phase constant (DeuceToSevenPhase*).
 	GetPhase() int
 	// GetDrawIndex returns the current draw round counter (0..3).

@@ -35,6 +35,62 @@ func newBidWhistAllCpu() *domain.BidWhist {
 
 func bwCard(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
 
+func TestBidWhist_GetKittyIndices(t *testing.T) {
+	kitty := []*domain.Card{bwCard(domain.CardDesignClover, 5), bwCard(domain.CardDesignDiamond, 9)}
+
+	buildExchange := func() *domain.BidWhist {
+		g := newBidWhistForTest()
+		human := g.GetPlayer(0)
+		human.AddCard(bwCard(domain.CardDesignSpade, 3))
+		human.AddCard(bwCard(domain.CardDesignHeart, 7))
+		for _, c := range kitty {
+			human.AddCard(c) // appended after originals -> indices 2,3
+		}
+		g.SetDeclarerKitty(kitty)
+		g.SetDeclarerIdx(0)
+		g.SetPhase(domain.BidWhistPhaseKittyExchange)
+		return g
+	}
+
+	t.Run("during exchange returns kitty positions", func(t *testing.T) {
+		got := buildExchange().GetKittyIndices()
+		if len(got) != 2 || got[0] != 2 || got[1] != 3 {
+			t.Fatalf("GetKittyIndices() = %v, want [2 3]", got)
+		}
+	})
+
+	t.Run("survives JSON round-trip", func(t *testing.T) {
+		data, err := json.Marshal(buildExchange())
+		if err != nil {
+			t.Fatalf("marshal: %v", err)
+		}
+		restored := newBidWhistForTest()
+		if err := json.Unmarshal(data, restored); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		if got := restored.GetKittyIndices(); len(got) != 2 || got[0] != 2 || got[1] != 3 {
+			t.Fatalf("after round-trip GetKittyIndices() = %v, want [2 3]", got)
+		}
+	})
+
+	t.Run("empty outside exchange phase", func(t *testing.T) {
+		g := buildExchange()
+		g.SetPhase(domain.BidWhistPhasePlay)
+		if got := g.GetKittyIndices(); len(got) != 0 {
+			t.Fatalf("GetKittyIndices() = %v, want empty outside exchange", got)
+		}
+	})
+
+	t.Run("empty when no declarer kitty held", func(t *testing.T) {
+		g := newBidWhistForTest()
+		g.SetDeclarerIdx(0)
+		g.SetPhase(domain.BidWhistPhaseKittyExchange)
+		if got := g.GetKittyIndices(); len(got) != 0 {
+			t.Fatalf("GetKittyIndices() = %v, want empty when no kitty held", got)
+		}
+	})
+}
+
 func TestBidWhistConfig_Validate(t *testing.T) {
 	if err := domain.DefaultBidWhistConfig().Validate(); err != nil {
 		t.Errorf("default config should be valid: %v", err)

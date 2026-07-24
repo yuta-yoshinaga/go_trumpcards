@@ -10,6 +10,7 @@
   "playerLine": "{{name}}: 手札{{hand}}枚  取り札: {{captured}}  得点: {{score}}  役: {{yaku}} [{{points}}]",
   "promptPlay": "手番: {{name}}",
   "promptDecision": "役成立: {{yaku}} = {{points}}点。kk（こいこい）で続行、sb（勝負）で確定。",
+  "promptDecisionInfo": "勝負なら確定 {{confirmed}}点（倍率×{{mult}}） — 現在の累計 あなた{{you}} 対 相手{{opp}}",
   "promptGameEnd": "ゲーム終了。nr で新しいゲームを始めます。",
   "promptHelp": "p <h> [f] でプレイ（f は 2 枚一致時の場札）。kk=こいこい, sb=勝負, nr=次へ",
   "roundWin": "{{name}} がラウンド勝利！ {{yaku}} → {{total}}点（×{{mult}}）",

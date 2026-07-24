@@ -93,6 +93,51 @@ describe('SpadesPage', () => {
     expect(badge).toHaveTextContent('\u9054\u6210\u307e\u3067\u6b8b\u308a 3 \u30c8\u30ea\u30c3\u30af');
   });
 
+  it('shows a bag-penalty warning badge when human bags are within two of the threshold', async () => {
+    mockExec.mockResolvedValue(
+      makeSpadesState({
+        players: [{ ...playPhaseState.players[0], bags: 8 }, ...playPhaseState.players.slice(1)],
+      }),
+    );
+    renderWithProviders(<SpadesPage />);
+    const badge = await screen.findByTestId('sp-bag-warning');
+    // ja: "バッグ 8/10 注意"
+    expect(badge).toHaveTextContent('バッグ 8/10 注意');
+    expect(badge).toHaveClass('text-ds-warning');
+    expect(badge).not.toHaveClass('motion-safe:animate-pulse');
+  });
+
+  it('escalates the bag warning to danger (pulse) within one bag of the threshold', async () => {
+    mockExec.mockResolvedValue(
+      makeSpadesState({
+        players: [{ ...playPhaseState.players[0], bags: 9 }, ...playPhaseState.players.slice(1)],
+      }),
+    );
+    renderWithProviders(<SpadesPage />);
+    const badge = await screen.findByTestId('sp-bag-warning');
+    expect(badge).toHaveTextContent('バッグ 9/10 注意');
+    expect(badge).toHaveClass('motion-safe:animate-pulse');
+    expect(badge).toHaveClass('border-ds-error');
+  });
+
+  it('hides the bag warning when human bags are far from the threshold', async () => {
+    // Default human player has 0 bags (threshold 10) → no warning.
+    renderWithProviders(<SpadesPage />);
+    await screen.findByTestId('sp-bid-progress');
+    expect(screen.queryByTestId('sp-bag-warning')).not.toBeInTheDocument();
+  });
+
+  it('colors the human score-table bags cell when near the threshold', async () => {
+    mockExec.mockResolvedValue(
+      makeSpadesState({
+        players: [{ ...playPhaseState.players[0], bags: 8 }, ...playPhaseState.players.slice(1)],
+      }),
+    );
+    renderWithProviders(<SpadesPage />);
+    const cell = await screen.findByTestId('sp-bags-cell-0');
+    expect(cell).toHaveClass('text-ds-warning');
+  });
+
   it('warns when a Nil bid has been broken', async () => {
     mockExec.mockResolvedValue(
       makeSpadesState({
@@ -294,6 +339,50 @@ describe('SpadesPage', () => {
         pointLimit: 1000,
         nilBonus: 100,
         bagPenaltyThreshold: 10,
+      }),
+    );
+  });
+
+  it('settings panel changes nilBonus and passes it on reset', async () => {
+    renderWithProviders(<SpadesPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.change(screen.getByTestId('sp-setting-nil-bonus'), { target: { value: '200' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 500,
+        nilBonus: 200,
+        bagPenaltyThreshold: 10,
+      }),
+    );
+  });
+
+  it('settings panel changes bagPenaltyThreshold and passes it on reset', async () => {
+    renderWithProviders(<SpadesPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.change(screen.getByTestId('sp-setting-bag-threshold'), { target: { value: '5' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 500,
+        nilBonus: 100,
+        bagPenaltyThreshold: 5,
       }),
     );
   });

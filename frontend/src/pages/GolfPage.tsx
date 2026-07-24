@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { golfApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -24,6 +24,14 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGolfGame } from '../hooks/useGolfGame';
+import {
+  countGolfRemaining,
+  GOLF_TOTAL_HOLES,
+  golfCurrentHole,
+  golfNineHoleComplete,
+  golfNineHoleTotal,
+  useGolfNineHole,
+} from '../hooks/useGolfNineHole';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -157,6 +165,24 @@ function GolfPageContent() {
 
   const combo = useChainCombo(state?.moveCount, state?.stockCount);
 
+  // 9-hole mode: accumulate each finished deal's remaining-card score across 9 deals (issue #3114).
+  const { nineHole, setEnabled: setNineHoleEnabled, recordHole, resetCard } = useGolfNineHole();
+  const nineHoleEnabled = nineHole.enabled;
+  const endPhase = state?.phase;
+  const endRemaining = state?.layout ? countGolfRemaining(state.layout) : 0;
+  // Guard so each finished deal is recorded exactly once (phase stays ended across re-renders).
+  const recordedRef = useRef(false);
+  useEffect(() => {
+    const ended = endPhase === GolfPhase.GAME_CLEAR || endPhase === GolfPhase.GAME_OVER;
+    if (!ended) {
+      recordedRef.current = false;
+      return;
+    }
+    if (recordedRef.current) return;
+    recordedRef.current = true;
+    if (nineHoleEnabled) recordHole(endRemaining);
+  }, [endPhase, endRemaining, nineHoleEnabled, recordHole]);
+
   if (!state)
     return (
       <GameSkeleton
@@ -229,6 +255,70 @@ function GolfPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            {/* 9-hole scorecard (issue #3114) */}
+            {nineHoleEnabled && (
+              <div data-testid="golf-scorecard" className="mb-3 max-w-2xl mx-auto">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-game-text-muted text-xs">
+                    {golfNineHoleComplete(nineHole)
+                      ? t('nineHole.complete', { total: golfNineHoleTotal(nineHole) })
+                      : t('nineHole.progress', { current: golfCurrentHole(nineHole), total: GOLF_TOTAL_HOLES })}
+                  </span>
+                  {golfNineHoleComplete(nineHole) && (
+                    <button
+                      type="button"
+                      className={`${btnPrimary} text-xs`}
+                      onClick={resetCard}
+                      data-testid="golf-scorecard-restart"
+                    >
+                      {t('nineHole.restart')}
+                    </button>
+                  )}
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-center text-xs border-collapse">
+                    <thead>
+                      <tr className="text-game-text-muted">
+                        <th className="px-1 py-0.5 font-medium text-left">{t('nineHole.hole')}</th>
+                        {Array.from({ length: GOLF_TOTAL_HOLES }, (_, i) => (
+                          <th key={`h-${(i + 1).toString()}`} className="px-1 py-0.5 font-medium">
+                            {i + 1}
+                          </th>
+                        ))}
+                        <th className="px-1 py-0.5 font-medium text-ds-warning">{t('nineHole.total')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="px-1 py-0.5 text-left text-game-text-muted">{t('nineHole.score')}</td>
+                        {Array.from({ length: GOLF_TOTAL_HOLES }, (_, i) => {
+                          const played = i < nineHole.scores.length;
+                          const isCurrent = i === nineHole.scores.length && !golfNineHoleComplete(nineHole);
+                          return (
+                            <td
+                              key={`s-${(i + 1).toString()}`}
+                              data-testid={`golf-hole-${(i + 1).toString()}`}
+                              className={`px-1 py-0.5 tabular-nums ${
+                                isCurrent ? 'text-ds-info font-bold' : played ? 'text-ds-text' : 'text-game-text-muted'
+                              }`}
+                            >
+                              {played ? nineHole.scores[i] : t('nineHole.pending')}
+                            </td>
+                          );
+                        })}
+                        <td
+                          data-testid="golf-scorecard-total"
+                          className="px-1 py-0.5 font-bold text-ds-warning tabular-nums"
+                        >
+                          {golfNineHoleTotal(nineHole)}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
             {/* Tableau: 7 columns */}
             <div data-tutorial="golf-columns" className="flex justify-center mb-3">
               {Array.from({ length: COL_COUNT }, (_, colIdx) => (
@@ -266,7 +356,11 @@ function GolfPageContent() {
                           aria-label={cardAlt(gc.card)}
                           data-testid={isPlayable ? 'golf-playable' : undefined}
                           className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                            isHinted && exposed ? 'ring-2 ring-ds-warning' : isPlayable ? 'ring-2 ring-ds-success' : ''
+                            isHinted && exposed
+                              ? 'ring-2 ring-ds-warning motion-safe:animate-pulse'
+                              : isPlayable
+                                ? 'ring-2 ring-ds-success'
+                                : ''
                           } ${!exposed ? 'opacity-60' : ''}`}
                         >
                           <AnimatedCard card={gc.card} width={effectiveCardWidth} />
@@ -285,11 +379,20 @@ function GolfPageContent() {
                   {t('stock')} ({state.stockCount})
                 </div>
                 {state.stockCount > 0 ? (
-                  <AnimatedCardBack
-                    width={effectiveCardWidth}
-                    onClick={isPlaying ? handleDraw : undefined}
-                    ariaLabel={t('draw')}
-                  />
+                  <div
+                    data-testid="golf-stock"
+                    className={
+                      hint?.type === 'draw'
+                        ? 'inline-block rounded ring-2 ring-ds-warning motion-safe:animate-pulse'
+                        : 'inline-block'
+                    }
+                  >
+                    <AnimatedCardBack
+                      width={effectiveCardWidth}
+                      onClick={isPlaying ? handleDraw : undefined}
+                      ariaLabel={t('draw')}
+                    />
+                  </div>
                 ) : (
                   <div
                     style={{ width: effectiveCardWidth, height: cardHeight }}
@@ -354,6 +457,14 @@ function GolfPageContent() {
                     label: tc('hint.toggle', { ns: 'tutorial' }),
                     checked: frontendHintEnabled,
                     onToggle: setFrontendHintEnabled,
+                  },
+                  {
+                    type: 'checkbox' as const,
+                    id: 'golfNineHole',
+                    label: t('nineHole.label'),
+                    checked: nineHoleEnabled,
+                    onToggle: setNineHoleEnabled,
+                    testId: 'golf-ninehole-toggle',
                   },
                 ],
               },

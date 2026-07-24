@@ -105,6 +105,40 @@ describe('RookPage', () => {
     expect(values).toEqual(['95', '100', '105', '110', '115', '120']);
   });
 
+  it('shows the bid status with the highest bid and active bidder count on the human bid turn', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        highestBid: 80,
+        highestBidder: 2,
+        players: [
+          player(0, true, [card('5', 5)]),
+          player(1, false, [], { passed: true }),
+          player(2, false, []),
+          player(3, false, []),
+        ] as RookResponse['players'],
+      }),
+    );
+    renderWithProviders(<RookPage />);
+    const status = await screen.findByTestId('rook-bid-status');
+    expect(status).toHaveTextContent('現在最高: 80点');
+    expect(status).toHaveTextContent('残り入札者: 3人');
+    expect(status).toHaveTextContent('パス済み: CPU 1');
+  });
+
+  it('shows the bid status as undecided when no bid has been made yet', async () => {
+    renderWithProviders(<RookPage />);
+    const status = await screen.findByTestId('rook-bid-status');
+    expect(status).toHaveTextContent('現在最高: 未決定');
+    expect(status).toHaveTextContent('残り入札者: 4人');
+  });
+
+  it('hides the bid status outside the bid phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, currentPlayerIdx: 0, contractBid: 75, trumpColor: 1 }));
+    renderWithProviders(<RookPage />);
+    await screen.findByTestId('play-button');
+    expect(screen.queryByTestId('rook-bid-status')).not.toBeInTheDocument();
+  });
+
   it('passes when pass is clicked', async () => {
     renderWithProviders(<RookPage />);
     fireEvent.click(await screen.findByTestId('pass-button'));
@@ -129,6 +163,9 @@ describe('RookPage', () => {
     renderWithProviders(<RookPage />);
     for (let i = 0; i < 5; i++) fireEvent.click(await screen.findByTestId(`hand-card-${i}`));
     const exchangeBtn = screen.getByTestId('exchange-button');
+    // Each colour button carries a letter cue in addition to the colour name.
+    expect(screen.getByTestId('trump-choice-1')).toHaveTextContent('R');
+    expect(screen.getByTestId('trump-choice-3')).toHaveTextContent('G');
     // still disabled until a trump color is chosen
     expect(exchangeBtn).toBeDisabled();
     fireEvent.click(screen.getByTestId('trump-choice-3'));
@@ -137,6 +174,63 @@ describe('RookPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('exchange', { discardIndices: [0, 1, 2, 3, 4], trumpColor: 3 }),
     );
+  });
+
+  it('highlights the backend-recommended discard cards during nest exchange when hints are enabled', async () => {
+    localStorage.setItem('hint_enabled_rook', 'true');
+    const cards = [card('5', 5), card('6', 6), card('7', 7), card('8', 8), card('9', 9), card('10', 10)];
+    const exchangeState = makeState({
+      phase: 1,
+      declarerIdx: 0,
+      contractBid: 75,
+      players: [
+        player(0, true, cards, { isDeclarer: true }),
+        player(1, false, []),
+        player(2, false, []),
+        player(3, false, []),
+      ] as RookResponse['players'],
+    });
+    mockExec.mockImplementation((cmd) =>
+      cmd === 'hint'
+        ? Promise.resolve({ ...exchangeState, hint: { discardIndices: [1, 3], reason: 'discard_weakest' } })
+        : Promise.resolve(exchangeState),
+    );
+    renderWithProviders(<RookPage />);
+
+    // The backend hint command is queried to obtain the weak cards.
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    await waitFor(() => expect(screen.getByTestId('hand-card-1')).toHaveAttribute('data-recommended-discard', 'true'));
+    const c1 = screen.getByTestId('hand-card-1');
+    const c3 = screen.getByTestId('hand-card-3');
+    expect(c1.className).toContain('ring-ds-warning');
+    expect(c3).toHaveAttribute('data-recommended-discard', 'true');
+    // Non-recommended cards carry no discard highlight.
+    expect(screen.getByTestId('hand-card-0')).not.toHaveAttribute('data-recommended-discard');
+    // A non-colour cue explains the pale outline.
+    expect(screen.getByTestId('rook-discard-hint')).toBeInTheDocument();
+  });
+
+  it('shows no discard highlight during nest exchange when hints are disabled', async () => {
+    const cards = [card('5', 5), card('6', 6), card('7', 7), card('8', 8), card('9', 9), card('10', 10)];
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        declarerIdx: 0,
+        contractBid: 75,
+        players: [
+          player(0, true, cards, { isDeclarer: true }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ] as RookResponse['players'],
+      }),
+    );
+    renderWithProviders(<RookPage />);
+    await screen.findByTestId('exchange-button');
+    expect(screen.getByTestId('hand-card-0')).not.toHaveAttribute('data-recommended-discard');
+    expect(screen.queryByTestId('rook-discard-hint')).not.toBeInTheDocument();
+    // No hint request is issued while hints are off.
+    expect(mockExec).not.toHaveBeenCalledWith('hint');
   });
 
   it('plays a selected card in the play phase', async () => {
@@ -149,11 +243,15 @@ describe('RookPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
 
-  it('shows the trump color swatch once declared', async () => {
+  it('shows the trump color swatch once declared, named for screen readers', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 2, currentPlayerIdx: 0, contractBid: 75, trumpColor: 1 }));
     renderWithProviders(<RookPage />);
-    expect(await screen.findByTestId('trump-swatch')).toBeInTheDocument();
-    expect(screen.getByTestId('trump-name')).toBeInTheDocument();
+    const swatch = await screen.findByTestId('trump-swatch');
+    // The colour dot itself is named (not colour-only) for SR.
+    expect(swatch).toHaveAttribute('role', 'img');
+    expect(swatch).toHaveAttribute('aria-label', '赤');
+    // The visible label carries the letter cue and is hidden from SR to avoid a repeat.
+    expect(screen.getByTestId('trump-name')).toHaveTextContent('R 赤');
   });
 
   it('advances to the next trick', async () => {

@@ -1,12 +1,14 @@
 package presenter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupFourCardPokerCuiMockDefaults(m *interfaces.MockFourCardPokerGame) {
@@ -132,6 +134,12 @@ func TestFourCardPokerCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	assert.Contains(t, result, "フェーズ: END")
 	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "合計払戻し: 600")
+	// Non-zero buckets are itemized; the zero Aces Up bucket is omitted.
+	assert.Contains(t, result, i18n.Tf("fourcardpoker.antePayoutLine", "payout", "200"))
+	assert.Contains(t, result, i18n.Tf("fourcardpoker.playPayoutLine", "payout", "200"))
+	assert.Contains(t, result, i18n.Tf("fourcardpoker.anteBonusPayoutLine", "payout", "200"))
+	acesUpPrefix := strings.SplitN(i18n.T("fourcardpoker.acesUpPayoutLine"), "{{", 2)[0]
+	assert.NotContains(t, result, acesUpPrefix)
 }
 
 func TestFourCardPokerCuiPresenter_Output_EndPhase_Fold(t *testing.T) {

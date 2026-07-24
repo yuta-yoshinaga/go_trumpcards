@@ -1450,6 +1450,65 @@ func (g *Canasta) GetActionLog() []*ActionLogEntry { return g.actionLog }
 // GetDrewFromDiscard 捨て札から引いたか取得
 func (g *Canasta) GetDrewFromDiscard() bool { return g.drewFromDiscard }
 
+// --- Hint ---
+
+// CanastaHint はカナスタ / ブラーコの現在手番に対する推奨アクション。
+type CanastaHint struct {
+	// Action は推奨アクション種別。
+	// "draw_stock" / "draw_discard" / "meld" / "skip_meld" / "discard" のいずれか。
+	Action string
+	// Indices は推奨アクションの対象カードの手札インデックス。
+	// draw_discard: 捨て札トップと同ランクのナチュラルペア、meld: メルド候補、
+	// discard: 捨てる1枚。draw_stock / skip_meld では空。
+	Indices []int
+	// Reason はヒント理由の i18n キー(接頭辞なし)。
+	Reason string
+}
+
+// GetHint は現在の人間の手番フェーズに応じた推奨アクションを返す。CPU の手番や
+// ヒント不要なフェーズでは nil を返す。判定には既存の CPU AI ヘルパーを再利用する。
+func (g *Canasta) GetHint() *CanastaHint {
+	if !g.IsHumanTurn() {
+		return nil
+	}
+	player := g.players[g.currentPlayerIdx]
+	switch g.phase {
+	case CanastaPhaseDraw:
+		if top := g.GetDiscardTop(); top != nil {
+			if pair := g.cpuFindNaturalPair(player, top); pair != nil {
+				return &CanastaHint{Action: "draw_discard", Indices: pair, Reason: "draw_discard_pair"}
+			}
+		}
+		return &CanastaHint{Action: "draw_stock", Reason: "draw_stock_safe"}
+	case CanastaPhaseMeld:
+		if melds := g.cpuFindMelds(player); len(melds) > 0 {
+			return &CanastaHint{Action: "meld", Indices: g.handIndicesOf(player, melds[0]), Reason: "meld_available"}
+		}
+		return &CanastaHint{Action: "skip_meld", Reason: "no_meld"}
+	case CanastaPhaseDiscard:
+		if player.GetCardsSize() == 0 {
+			return nil
+		}
+		return &CanastaHint{Action: "discard", Indices: []int{g.cpuBestDiscard(player)}, Reason: "discard_safe"}
+	default:
+		return nil
+	}
+}
+
+// handIndicesOf は指定カード群の手札インデックスを返す(見つからないカードは除外)。
+func (g *Canasta) handIndicesOf(player *CanastaPlayer, cards []*Card) []int {
+	idxs := make([]int, 0, len(cards))
+	for _, c := range cards {
+		for i := 0; i < player.GetCardsSize(); i++ {
+			if player.GetCard(i) == c {
+				idxs = append(idxs, i)
+				break
+			}
+		}
+	}
+	return idxs
+}
+
 // --- Private helpers ---
 
 // sortAllHands 全プレイヤーの手札をソートする

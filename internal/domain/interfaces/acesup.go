@@ -38,6 +38,8 @@ type AcesUpGame interface {
 	GetStockCount() int
 	// GetDiscardCount 除去済みの枚数を取得する
 	GetDiscardCount() int
+	// GetDiscardTop 捨て札の一番上（直近に除去した札）を取得する
+	GetDiscardTop() *domain.Card
 	// GetColumns 場札の列を取得する
 	GetColumns() [domain.AcesUpColCnt][]*domain.Card
 	// CanRemove 指定列の一番上のカードが除去可能かを返す

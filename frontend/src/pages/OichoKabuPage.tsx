@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { OICHOKABU_HELP, parseOichokabuCommand } from '../utils/cli/commands/oichokabuCommands';
 import { formatOichokabuState } from '../utils/cli/formatters/oichokabuFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { oichokabuDealerPolicy } from '../utils/oichokabuDealerPolicy';
 
 const OK_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -87,6 +88,15 @@ function OichoKabuPageContent() {
   const handleStand = useCallback(() => execApi('stand'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
   const canRebet = lastBetAmount !== null && lastBetAmount > 0 && state !== null && lastBetAmount <= state.chips;
+
+  // Spoken label for a hand's Kabu score: the digit alone conveys nothing to a
+  // screen reader, so name the special ranks (9 = Kabu/strongest, 0 = Buta/weakest).
+  const rankAriaLabel = (handKey: string, rank: number): string => {
+    const name = t(`rankName.${rank}`, { defaultValue: '' });
+    return name
+      ? t('rankAriaLabelNamed', { hand: t(handKey), rank, name })
+      : t('rankAriaLabelPlain', { hand: t(handKey), rank });
+  };
   const handleRebet = useCallback(async () => {
     if (lastBetAmount === null) return;
     await execApi('reset');
@@ -170,7 +180,11 @@ function OichoKabuPageContent() {
 
             {state.playerHand.length > 0 && (
               <div className="mb-4" data-tutorial="ok-results">
-                <div className="text-ds-warning font-bold text-center mb-1">
+                <div
+                  className="text-ds-warning font-bold text-center mb-1"
+                  role="img"
+                  aria-label={rankAriaLabel('label.playerHand', state.playerRank)}
+                >
                   {t('label.playerHand')} — {t('label.rank')} {state.playerRank}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
@@ -183,7 +197,11 @@ function OichoKabuPageContent() {
 
             {isEndPhase && state.bankerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-info font-bold text-center mb-1">
+                <div
+                  className="text-ds-info font-bold text-center mb-1"
+                  role="img"
+                  aria-label={rankAriaLabel('label.bankerHand', state.bankerRank)}
+                >
                   {t('label.bankerHand')} — {t('label.rank')} {state.bankerRank}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
@@ -195,10 +213,22 @@ function OichoKabuPageContent() {
             )}
 
             {isEndPhase && (
-              <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
+              <div
+                className="text-ds-text-primary text-center text-sm mb-2"
+                data-testid="payout-breakdown"
+                role="status"
+              >
                 <div className="font-bold">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
+                {(() => {
+                  const policy = oichokabuDealerPolicy(state.bankerHand.length, state.bankerRank);
+                  return (
+                    <div className="text-ds-text-muted text-xs mt-1" data-testid="dealer-policy">
+                      {t('dealerPolicy.label')}: {t(policy.i18nKey, policy.params)}
+                    </div>
+                  );
+                })()}
               </div>
             )}
 

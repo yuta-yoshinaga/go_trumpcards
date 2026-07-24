@@ -19,10 +19,17 @@
   "pointsSuffix": " pts",
   "currentTrick": "Current trick",
   "trickEmpty": "(no cards yet)",
+  "bidStatus": {
+    "highest": "Highest bid: {{value}}",
+    "highestNone": "Highest bid: undecided",
+    "remaining": "Active bidders: {{n}}",
+    "passed": "Passed: {{names}}"
+  },
   "selectBid": "Select bid (70-120):",
   "bidButton": "Bid",
   "passButton": "Pass",
   "nestExchangeHint": "Discard 5 of your 18 cards (hand + nest) and declare a trump color.",
+  "recommendedDiscardHint": "Cards with a faint outline are recommended discards (you may ignore them).",
   "selectTrump": "Trump color:",
   "exchangeButton": "Exchange ({{count}}/5)",
   "playButton": "Play",

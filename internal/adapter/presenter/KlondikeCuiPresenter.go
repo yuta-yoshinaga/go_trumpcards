@@ -26,12 +26,27 @@ func klondikeColumnStr(colCards []*domain.KlondikeTableauCard) string {
 	return strings.Join(parts, " ")
 }
 
+// klondikeScoringModeLabel returns the localized scoring-mode name.
+func klondikeScoringModeLabel(mode domain.KlondikeScoringMode) string {
+	if mode == domain.KlondikeScoringVegas {
+		return i18n.T("klondike.scoringVegas")
+	}
+	return i18n.T("klondike.scoringNone")
+}
+
 // KlondikeCuiPresenter renders the Klondike Solitaire CUI view.
 type KlondikeCuiPresenter struct{}
 
 // Output renders the current game state for the active locale (#1699).
 func (p *KlondikeCuiPresenter) Output(k interfaces.KlondikeGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("klondike.helpTitle"), func(b *strings.Builder) {
+		// Header: draw mode, scoring mode, and the running Vegas score, matching
+		// the web header (none of which the CUI surfaced before).
+		b.WriteString(i18n.Tf("klondike.settingsLine",
+			"draw", strconv.Itoa(k.GetDrawCount()),
+			"mode", klondikeScoringModeLabel(k.GetScoringMode()),
+			"score", strconv.Itoa(k.GetScore())) + "\n")
+
 		// Foundation
 		b.WriteString(i18n.T("klondike.foundationHeader"))
 		foundation := k.GetFoundation()
@@ -52,11 +67,26 @@ func (p *KlondikeCuiPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 		b.WriteString(i18n.Tf("klondike.stockLine",
 			"count", strconv.Itoa(k.GetStockCount())))
 		waste := k.GetWaste()
-		if len(waste) > 0 {
+		switch {
+		case len(waste) == 0:
+			b.WriteString(i18n.T("klondike.wasteEmpty"))
+		case k.GetDrawCount() == 3 && len(waste) > 1:
+			// Three-draw: show the last up-to-3 cards as a fan; only the last
+			// (top) card can be played, so mark it and note the restriction.
+			start := len(waste) - 3
+			if start < 0 {
+				start = 0
+			}
+			shown := waste[start:]
+			parts := make([]string, len(shown))
+			for i, c := range shown {
+				parts[i] = cuiCardStr(c)
+			}
+			parts[len(parts)-1] += "*"
+			b.WriteString(i18n.Tf("klondike.wasteFan", "cards", strings.Join(parts, " ")))
+		default:
 			b.WriteString(i18n.Tf("klondike.wasteCard",
 				"card", cuiCardStr(waste[len(waste)-1])))
-		} else {
-			b.WriteString(i18n.T("klondike.wasteEmpty"))
 		}
 		b.WriteString("\n")
 
@@ -88,7 +118,11 @@ func (p *KlondikeCuiPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 				"count", strconv.Itoa(k.GetMoveCount())) + "\n")
 		case domain.KlondikePhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
-				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(k.GetMoveCount())) + "\n")
+				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(k.GetMoveCount())))
+			if k.GetScoringMode() == domain.KlondikeScoringVegas {
+				b.WriteString(" " + i18n.Tf("klondike.clearScore", "score", strconv.Itoa(k.GetScore())))
+			}
+			b.WriteString("\n")
 		case domain.KlondikePhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}

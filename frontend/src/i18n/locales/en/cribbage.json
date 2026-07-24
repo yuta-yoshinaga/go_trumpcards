@@ -22,6 +22,10 @@
   "pegRestrictedTooltip": "Playing this card would push the count over 31",
   "pegRestrictedAria": "cannot play (would exceed peg count of 31)",
   "discardButton": "Discard to Crib",
+  "cutButton": "Cut the Deck",
+  "cutPrompt": "Cut the deck to reveal the starter",
+  "cutDeckAria": "Cut the deck to reveal the starter",
+  "hisHeels": "His Heels! Starter is a Jack — dealer scores 2",
   "pegButton": "Play Card",
   "goButton": "Go",
   "autoGoNotice": "No playable card — Go was declared automatically",
@@ -49,7 +53,9 @@
     "runs": "Runs",
     "flush": "Flush",
     "nobs": "Nobs",
-    "total": "Total"
+    "total": "Total",
+    "caption": "Show scoring breakdown",
+    "subject": "Subject"
   },
   "handScoreLabels": {
     "you": "Your Hand",
@@ -79,5 +85,6 @@
     "resetButton": "Press the reset button to start a new game."
   },
   "pegBoardAria": "Peg board (scores)",
-  "scoreSummary": "{{name}}: {{score}} of {{limit}} points"
+  "scoreSummary": "{{name}}: {{score}} of {{limit}} points",
+  "scoresCaption": "Score by player"
 }

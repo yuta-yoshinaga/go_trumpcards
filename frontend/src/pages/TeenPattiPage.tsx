@@ -63,6 +63,12 @@ const TEEN_PATTI_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
   {
+    target: '[data-tutorial="teenpatti-sideshow"]',
+    messageKey: 'tutorial.sideShow',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
     target: '[data-tutorial="teenpatti-reset-button"]',
     messageKey: 'tutorial.resetButton',
     placement: 'top',
@@ -258,16 +264,83 @@ function TeenPattiPageContent() {
               })}
             </div>
 
-            {/* Pending Side Show request */}
+            {/* Pending Side Show request + response — unified, emphasized panel */}
             {isSideShowPhase && state.sideShowRequester >= 0 && state.sideShowTarget >= 0 && (
               <div
-                className="mb-2 p-2 rounded bg-black/30 text-ds-text-primary text-sm"
+                className="mb-2 p-3 rounded bg-black/30 ring-2 ring-ds-warning motion-safe:animate-pulse"
                 data-tutorial="teenpatti-sideshow"
+                data-testid="teenpatti-sideshow-panel"
               >
-                {t('sideShowPending', {
-                  requester: playerLabel(state.sideShowRequester, state.sideShowRequester === humanIdx),
-                  target: playerLabel(state.sideShowTarget, state.sideShowTarget === humanIdx),
-                })}
+                <div className="text-ds-warning text-sm font-semibold mb-1">{t('sideShowTitle')}</div>
+                <div className="text-ds-text-primary text-sm">
+                  {t('sideShowPending', {
+                    requester: playerLabel(state.sideShowRequester, state.sideShowRequester === humanIdx),
+                    target: playerLabel(state.sideShowTarget, state.sideShowTarget === humanIdx),
+                  })}
+                </div>
+                {isHumanSideShowTarget && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={() => handleRespondSideShow(true)}
+                      disabled={loading}
+                    >
+                      {t('acceptButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnDanger}
+                      onClick={() => handleRespondSideShow(false)}
+                      disabled={loading}
+                    >
+                      {t('declineButton')}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Resolved Side Show comparison — both hands + who won (human-involved only) */}
+            {state.lastSideShow && (
+              <div
+                className="mb-2 p-3 rounded bg-black/30 ring-1 ring-ds-warning/60"
+                data-testid="teenpatti-sideshow-result"
+              >
+                <div className="text-ds-warning text-sm font-semibold mb-1">{t('sideShowResult.title')}</div>
+                <div className="text-ds-text-primary text-sm mb-2">
+                  {t('sideShowResult.outcome', {
+                    winner: playerLabel(state.lastSideShow.winnerIdx, state.lastSideShow.winnerIdx === humanIdx),
+                    loser: playerLabel(state.lastSideShow.loserIdx, state.lastSideShow.loserIdx === humanIdx),
+                    winnerHand: handName(
+                      (state.lastSideShow.winnerIdx === state.lastSideShow.requester.playerIdx
+                        ? state.lastSideShow.requester
+                        : state.lastSideShow.target
+                      ).handName,
+                    ),
+                    loserHand: handName(
+                      (state.lastSideShow.loserIdx === state.lastSideShow.requester.playerIdx
+                        ? state.lastSideShow.requester
+                        : state.lastSideShow.target
+                      ).handName,
+                    ),
+                  })}
+                </div>
+                <div className="flex flex-wrap gap-4">
+                  {[state.lastSideShow.requester, state.lastSideShow.target].map((h) => (
+                    <div key={h.playerIdx}>
+                      <div className="text-ds-text-muted text-xs mb-0.5">
+                        {playerLabel(h.playerIdx, h.playerIdx === humanIdx)}
+                        {h.handName ? ` — ${handName(h.handName)}` : ''}
+                      </div>
+                      <div className="flex gap-1">
+                        {h.cards.map((c, i) => (
+                          <CardImage key={`ss-${h.playerIdx}-${i}`} card={c} width={cardWidth} />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -397,27 +470,6 @@ function TeenPattiPageContent() {
                       {t('sideShowButton')}
                     </button>
                   )}
-                </>
-              )}
-
-              {isHumanSideShowTarget && (
-                <>
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={() => handleRespondSideShow(true)}
-                    disabled={loading}
-                  >
-                    {t('acceptButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnDanger}
-                    onClick={() => handleRespondSideShow(false)}
-                    disabled={loading}
-                  >
-                    {t('declineButton')}
-                  </button>
                 </>
               )}
 

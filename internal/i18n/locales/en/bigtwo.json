@@ -8,7 +8,6 @@
   "tableEmpty": "Table: empty (free lead)",
   "gameEnd": "Game Over!",
   "rankN": "Rank {{rank}}",
-  "playerYou": "You",
   "yourTurn": "Your turn",
   "actionPass": "pass"
 }

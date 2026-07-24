@@ -32,5 +32,8 @@
   "dealerWins": "ディーラーの勝ち！",
   "playerFolded": "プレイヤーがフォールド。",
   "push": "プッシュ！",
+  "selectGuide": "捨てるカードの番号を選んでください",
+  "antePayoutLine": "アンテ払戻し: {{payout}}",
+  "playPayoutLine": "プレイ払戻し: {{payout}}",
   "totalPayoutLine": "合計払戻し: {{payout}}"
 }

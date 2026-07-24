@@ -32,6 +32,30 @@ const playingState: PenguinResponse = {
   messageCode: 'penguin.playing',
 };
 
+// All free cells occupied and every column non-empty → supermoveLimit = (1+0)*2^0 = 1,
+// so the 2-card stack in column 0 exceeds the limit and shows the tooltip.
+const supermoveExceedState: PenguinResponse = {
+  ...playingState,
+  freeCells: [
+    card('DIAMOND', 3),
+    card('CLOVER', 5),
+    card('HEART', 7),
+    card('SPADE', 9),
+    card('DIAMOND', 10),
+    card('CLOVER', 11),
+    card('HEART', 2),
+  ],
+  tableau: [
+    [card('SPADE', 13), card('SPADE', 12)],
+    [card('HEART', 6)],
+    [card('CLOVER', 8)],
+    [card('DIAMOND', 4)],
+    [card('SPADE', 6)],
+    [card('HEART', 9)],
+    [card('CLOVER', 2)],
+  ],
+};
+
 const gameClearState: PenguinResponse = {
   ...playingState,
   phase: 1,
@@ -88,6 +112,48 @@ describe('PenguinPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     const threeElements = screen.getAllByText('3');
     expect(threeElements.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('gives empty tableau columns a descriptive aria-label whose rank follows baseRank', async () => {
+    renderWithProviders(<PenguinPage />);
+    // baseRank 4 → only the rank one below (3) may be placed on an empty column.
+    await waitFor(() =>
+      expect(screen.getAllByRole('button', { name: '空き列（3 のみ置けます）' }).length).toBeGreaterThanOrEqual(1),
+    );
+
+    // Changing the base rank moves the placeable rank (baseRank 1 → K).
+    mockExec.mockResolvedValue({ ...playingState, baseRank: 1 });
+    renderWithProviders(<PenguinPage />);
+    await waitFor(() =>
+      expect(screen.getAllByRole('button', { name: '空き列（K のみ置けます）' }).length).toBeGreaterThanOrEqual(1),
+    );
+  });
+
+  // --- Supermove limit ---
+
+  it('supermove-limit tooltip includes the limit, free-cell count, and empty-column count', async () => {
+    mockExec.mockResolvedValue(supermoveExceedState);
+    renderWithProviders(<PenguinPage />);
+    // Top card of column 0 exceeds the limit (stack of 2 > limit of 1).
+    const topCard = await screen.findByTestId('pg-tableau-0-0');
+    expect(topCard).toHaveAttribute('data-supermove-blocked', 'true');
+    // limit=1, cells=0, cols=0
+    expect(topCard).toHaveAttribute('title', '一度に動かせるのは1枚まで（空きセル0・空き列0）');
+  });
+
+  it('shows a supermove-limit badge reflecting the free-cell/column counts', async () => {
+    // playingState: 4 empty free cells, 5 empty columns → (1+4)*2^5 = 160.
+    renderWithProviders(<PenguinPage />);
+    const badge = await screen.findByTestId('pg-supermove-badge');
+    expect(badge).toHaveTextContent('最大移動: 160枚');
+  });
+
+  it('supermove-limit badge updates when free space shrinks', async () => {
+    mockExec.mockResolvedValue(supermoveExceedState);
+    renderWithProviders(<PenguinPage />);
+    const badge = await screen.findByTestId('pg-supermove-badge');
+    // 0 empty free cells, 0 empty columns → (1+0)*2^0 = 1.
+    expect(badge).toHaveTextContent('最大移動: 1枚');
   });
 
   // --- Foundation ---

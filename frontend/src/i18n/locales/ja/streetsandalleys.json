@@ -11,6 +11,7 @@
   "empty": "空",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "foundationProgress": "{{count}}/13",
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",
   "autoComplete": "自動完成",
@@ -36,5 +37,11 @@
   "hintReason": {
     "toFoundation": "このカードを組札に上げると後の展開が楽になります",
     "toTableau": "示唆された場札への移動でロックされたカードを動かしましょう"
+  },
+  "kbd": {
+    "undo": "Z",
+    "hint": "H",
+    "autoComplete": "A",
+    "giveUp": "G"
   }
 }

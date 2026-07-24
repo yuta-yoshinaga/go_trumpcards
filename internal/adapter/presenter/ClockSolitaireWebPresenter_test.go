@@ -34,6 +34,7 @@ func setupClockSolitaireWebMockDefaults(gg *interfaces.MockClockSolitaireGame) {
 	gg.On("GetPiles").Return(piles).Maybe()
 	gg.On("GetFaceUpCount").Return(fuc).Maybe()
 	gg.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	gg.On("CanUndo").Return(false).Maybe()
 }
 
 func parseClockSolitaireOutput(t *testing.T, jsonStr string) *controller.ClockSolitaireWebOutput {
@@ -86,6 +87,7 @@ func TestClockSolitaireWebPresenterOutput_GameClear(t *testing.T) {
 	}
 	gg.On("GetPiles").Return(piles)
 	gg.On("GetFaceUpCount").Return(fuc)
+	gg.On("CanUndo").Return(false)
 
 	p := &ClockSolitaireWebPresenter{}
 
@@ -113,6 +115,7 @@ func TestClockSolitaireWebPresenterOutput_GameOver(t *testing.T) {
 	}
 	gg.On("GetPiles").Return(piles)
 	gg.On("GetFaceUpCount").Return(fuc)
+	gg.On("CanUndo").Return(false)
 
 	p := &ClockSolitaireWebPresenter{}
 
@@ -145,12 +148,14 @@ func TestClockSolitaireWebPresenterOutput_FaceUpCards(t *testing.T) {
 	gg.On("GetCurrentCard").Return(domain.NewCard(domain.CardDesignSpade, 3, false))
 	gg.On("GetPiles").Return(piles)
 	gg.On("GetFaceUpCount").Return(fuc)
+	gg.On("CanUndo").Return(true)
 
 	p := &ClockSolitaireWebPresenter{}
 
 	result := p.Output(gg, nil)
 	out := parseClockSolitaireOutput(t, result)
 
+	assert.True(t, out.CanUndo)
 	// 表向きカードにはcard情報がある
 	assert.NotNil(t, out.Piles[0][0].Card)
 	assert.True(t, out.Piles[0][0].FaceUp)

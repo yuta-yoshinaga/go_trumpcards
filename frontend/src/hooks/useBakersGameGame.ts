@@ -51,6 +51,19 @@ export function useBakersGameGame() {
     [selectedSource, base],
   );
 
+  // Double-click / double-tap shortcut: dispatch a pre-computed auto-move (a
+  // foundation move, or an empty-free-cell fallback) for the given source
+  // without the two-step target click, and clear any pending selection so it
+  // stays in lockstep.
+  const handleAutoMove = useCallback(
+    (source: FreeCellMoveZone, target: FreeCellMoveZone) => {
+      base.setHint(null);
+      void base.apiCall('move', source, target);
+      setSelectedSource(null);
+    },
+    [base],
+  );
+
   return {
     state: base.state,
     loading: base.loading,
@@ -67,6 +80,7 @@ export function useBakersGameGame() {
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
+    handleAutoMove,
     isAutoCompleting: base.isAutoCompleting,
     retry: base.retry,
   };

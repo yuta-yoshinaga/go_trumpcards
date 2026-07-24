@@ -19,9 +19,21 @@
     "hand": "Hand",
     "selectCard": "Select cards to discard (single / set / run)"
   },
+  "pickup": {
+    "hint": "You can only take a card from either end of the discard.",
+    "badge": "Take",
+    "endLabel": "Take this end card",
+    "disabledReason": "Middle cards can't be taken (only the two ends)"
+  },
   "settings": {
     "cpuDifficulty": "CPU Difficulty",
     "scoreLimit": "Elimination Score"
+  },
+  "discardWarn": {
+    "empty": "Select cards to discard.",
+    "pair": "To discard two cards they must be a same-rank set.",
+    "joker": "A joker can only be discarded on its own.",
+    "general": "You may only discard a single card, a same-rank set, or a same-suit run of 3+."
   },
   "hint": {
     "declareYaniv": "Your hand total is 5 or less — declare Yaniv!",

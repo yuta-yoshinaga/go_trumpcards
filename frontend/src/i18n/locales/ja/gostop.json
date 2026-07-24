@@ -43,6 +43,16 @@
     "go": "ゴー",
     "stop": "ストップ"
   },
+  "preview": {
+    "title": "あと少しで成立する役",
+    "item": "{{name}} あと{{remaining}}枚",
+    "samgwang": "三光",
+    "sagwang": "四光",
+    "ogwang": "五光",
+    "tti": "띠(5枚)",
+    "yeol": "열끗(5枚)",
+    "pi": "피(10枚)"
+  },
   "roundResult": {
     "title": "ラウンド結果",
     "winner": "勝者: {{name}}",

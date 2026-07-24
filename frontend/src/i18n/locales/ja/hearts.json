@@ -29,6 +29,10 @@
   "cumulativeScore": "累計: {{score}}",
   "roundScore": "ラウンド: {{score}}",
   "shootTheMoonAlert": "シュート・ザ・ムーン警戒",
+  "penaltyTaken": "ペナルティ",
+  "penaltyHearts": "ハート{{count}}枚",
+  "penaltyQueenSpades": "スペードのクイーン獲得",
+  "penaltyNone": "ペナルティなし",
   "currentTrick": "現在のトリック",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
@@ -50,6 +54,13 @@
     "discard_queen_spades": "Q♠を捨てるチャンス",
     "discard_hearts": "ハートを捨てる",
     "discard_high": "高いカードを捨てる"
+  },
+  "illegalReason": {
+    "cannotPlay": "このカードは今は出せません",
+    "mustLeadTwoClubs": "最初のトリックは2♣でリードしてください",
+    "heartsNotBroken": "ハートはまだブレイクされていません",
+    "mustFollowSuit": "リードスートに従ってください",
+    "noPointsFirstTrick": "最初のトリックではハートとQ♠を出せません"
   },
   "tutorial": {
     "passArea": "パスフェーズでは3枚のカードを選んで隣のプレイヤーに渡します。",

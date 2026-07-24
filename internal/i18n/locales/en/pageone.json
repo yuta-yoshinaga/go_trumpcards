@@ -9,8 +9,9 @@
   "helpSetLimit": "  sl <n>               point limit",
   "header": "Round: {{round}}  Draw pile: {{drawPile}}",
   "discardLine": "Discard: {{card}}",
-  "playerLine": "{{name}}: total={{cumulative}} round={{round}} cards={{cards}}{{declared}}",
+  "playerLine": "{{name}}: total={{cumulative}} round={{round}} cards={{cards}}{{declared}}{{warning}}",
   "declaredBadge": "[PAGE ONE!]",
+  "lastCardWarning": "Last card!",
   "turnLine": "Turn: {{name}}",
   "cmdPlay": "play <idx>  ... play a card",
   "cmdDraw": "draw        ... draw a card",
@@ -21,5 +22,8 @@
   "cmdSkip": "skip        ... skip declaration (penalty: draw 2)",
   "roundEnd": "Round over",
   "cmdNextRound": "nr / nextround ... advance to next round",
-  "gameEnd": "Game over! {{name}} wins!"
+  "gameEnd": "Game over! {{name}} wins!",
+  "hintNone": "No hint available.",
+  "hintPlayable": "Playable cards: {{cards}} (p <idx> to play)",
+  "hintDraw": "No playable card. Draw with d."
 }

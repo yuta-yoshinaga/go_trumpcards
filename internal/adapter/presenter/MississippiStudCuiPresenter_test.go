@@ -2,12 +2,14 @@ package presenter
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupMississippiStudCuiMockDefaults(m *interfaces.MockMississippiStudGame) {
@@ -38,6 +40,8 @@ func TestMississippiStudCuiPresenter_Output_AntePhase(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "1000")
 	assert.Contains(t, result, "ANTE")
+	// No bet placed yet → no fold-loss note.
+	assert.NotContains(t, result, strings.Split(i18n.T("mississippistud.foldLossLine"), "{{")[0])
 }
 
 func TestMississippiStudCuiPresenter_Output_Error(t *testing.T) {
@@ -82,6 +86,8 @@ func TestMississippiStudCuiPresenter_Output_ThirdSt(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "3RD")
 	assert.Contains(t, result, "??") // community masked
+	// During the street, the accumulated bet and fold-loss note are shown.
+	assert.Contains(t, result, strings.Split(i18n.T("mississippistud.foldLossLine"), "{{")[0])
 }
 
 func TestMississippiStudCuiPresenter_Output_Win(t *testing.T) {
@@ -115,8 +121,13 @@ func TestMississippiStudCuiPresenter_Output_Win(t *testing.T) {
 	m.On("GetTotalPayout").Return(1200)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "One Pair")
+	// The One Pair rank is localized (ja by default), not raw English.
+	assert.Contains(t, result, "ワンペア")
 	assert.Contains(t, result, "1200")
+
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	assert.Contains(t, p.Output(m, nil), "One Pair")
 }
 
 func TestMississippiStudCuiPresenter_Output_Push(t *testing.T) {

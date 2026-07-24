@@ -48,5 +48,11 @@
     "revealFaceDown": "カードを動かして裏向きのカードをめくりましょう",
     "moveKingToEmpty": "キングを空の列に移動できます",
     "drawFromStock": "すぐにできる手がありません — 山札から引いてみましょう"
+  },
+  "stats": {
+    "winRate": "勝率 {{rate}}%",
+    "bestTime": "ベスト {{time}}",
+    "fewestMoves": "最少 {{moves}}手",
+    "newBest": "自己ベスト更新！"
   }
 }

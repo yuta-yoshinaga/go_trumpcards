@@ -17,6 +17,7 @@
   "trump": "切り札 {{suit}}",
   "pot": "ポット {{n}}",
   "potIncrease": "+{{n}}",
+  "potIncreaseAnnounce": "ポット +{{delta}}（合計 {{total}}）",
   "target": "目標 {{n}}点",
   "cards": "{{count}}枚",
   "roundTricks": "今ラウンド {{count}}トリック",
@@ -34,6 +35,12 @@
     "title": "ラウンド結果",
     "winner": "ラウンド勝者: {{name}} がポットを獲得",
     "spoil": "流局 (Spoil)！誰も3トリックに届かず、ポットは次ラウンドへ持ち越し"
+  },
+  "trumpLegend": {
+    "title": "トップトランプ順序",
+    "caption": "切り札の強さは固定です（現在の切り札: {{suit}}）。上位3枚（切り札の5・J・♥A）はフォロー義務がなく温存できます（Reneging）。他の切り札は10を最強とする簡略順（赤黒の反転なし）です。",
+    "otherTrumps": "その他の切り札 (10高)",
+    "nonTrump": "非切り札"
   },
   "hintAvailable": "ヒント",
   "hint": {

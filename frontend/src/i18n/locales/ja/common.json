@@ -221,6 +221,7 @@
     "rummy500": "ラミー 500",
     "bigtwo": "大老二",
     "tienlen": "ティエンレン",
+    "zheng": "争上游",
     "pishti": "ピシュティ",
     "cuarenta": "クアレンタ",
     "faro": "ファロ",
@@ -286,7 +287,9 @@
       "halfPot": "1/2 Pot",
       "pot": "Pot",
       "max": "Max"
-    }
+    },
+    "keyHintsOutstanding": "C: コール / R: レイズ / F: フォールド / A: オールイン",
+    "keyHintsNormal": "K: チェック / R: ベット / F: フォールド / A: オールイン"
   },
   "button": {
     "reset": "リセット",
@@ -353,6 +356,7 @@
     "cpuActions": "[CPUの行動]",
     "cpuOpponents": "CPU対戦相手 ({{count}})",
     "pot": "ポット:",
+    "blinds": "SB/BB:",
     "dealer": "ディーラー:",
     "networkError": "通信エラーが発生しました。もう一度お試しください。",
     "chipsWon": "+{{amount}}チップ",
@@ -606,6 +610,7 @@
     "oldmaid.result.cpuLose": "ゲーム終了 CPU {{cpuId}}の負け",
     "daifugo.result.rankings": "{{rankings}}",
     "sevens.result.rankings": "{{rankings}}",
+    "zheng.result.rankings": "ゲーム終了！ {{rankings}}",
     "doubt.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "doubt.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "holdem.result.gameOver": "ゲーム終了。",
@@ -898,6 +903,7 @@
     "cribbage.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "cribbage.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "cribbage.discardPhase": "クリブに捨てるカードを2枚選んでください",
+    "cribbage.cutPhase": "デッキをカットしてスターターカードをめくってください",
     "cribbage.peggingPhase": "カードを1枚選んで出してください",
     "cribbage.showPhase": "スコアを計算中",
     "cribbage.roundEnd": "ラウンド終了",

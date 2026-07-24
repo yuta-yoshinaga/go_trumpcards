@@ -63,6 +63,49 @@ describe('LaBelleLuciePage', () => {
     expect(screen.queryByTestId('ll-stuck-banner')).not.toBeInTheDocument();
   });
 
+  it('shows the deadlock banner and pulses give up when redeals are exhausted with no move', async () => {
+    // No legal move AND no redeals left -> true deadlock.
+    mockExec.mockResolvedValue(
+      makeState({
+        fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
+        foundation: [[], [], [], []],
+        redealsLeft: 0,
+      }),
+    );
+    renderWithProviders(<LaBelleLuciePage />);
+    await waitFor(() => expect(screen.getByTestId('ll-deadlock-banner')).toBeInTheDocument());
+    // The redeal-recommendation banner must not show when redeals are gone.
+    expect(screen.queryByTestId('ll-stuck-banner')).not.toBeInTheDocument();
+    expect(screen.getByTestId('giveup-button').className).toContain('animate-pulse');
+  });
+
+  it('hides the deadlock banner when a legal move exists even with no redeals', async () => {
+    // Redeals exhausted but a move (SPADE 8 stacks under SPADE 9) still exists.
+    mockExec.mockResolvedValue(
+      makeState({
+        fans: [[card('SPADE', 9)], [card('SPADE', 8)], [card('DIAMOND', 1)]],
+        redealsLeft: 0,
+      }),
+    );
+    renderWithProviders(<LaBelleLuciePage />);
+    await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('ll-deadlock-banner')).not.toBeInTheDocument();
+    expect(screen.getByTestId('giveup-button').className).not.toContain('animate-pulse');
+  });
+
+  it('hides the deadlock banner while redeals remain', async () => {
+    // No move, but redeals remain -> stuck banner, not the deadlock banner.
+    mockExec.mockResolvedValue(
+      makeState({
+        fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
+        redealsLeft: 2,
+      }),
+    );
+    renderWithProviders(<LaBelleLuciePage />);
+    await waitFor(() => expect(screen.getByTestId('ll-stuck-banner')).toBeInTheDocument());
+    expect(screen.queryByTestId('ll-deadlock-banner')).not.toBeInTheDocument();
+  });
+
   it('renders fans and foundations', async () => {
     renderWithProviders(<LaBelleLuciePage />);
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
@@ -115,5 +158,46 @@ describe('LaBelleLuciePage', () => {
     renderWithProviders(<LaBelleLuciePage />);
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
     expect(screen.queryByTestId('redeal-button')).not.toBeInTheDocument();
+  });
+
+  it('highlights the hint source and destination fans after a hint', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { fromFan: 1, toFan: 0, toFoundation: false } }));
+    renderWithProviders(<LaBelleLuciePage />);
+    await screen.findByTestId('hint-button');
+    // No highlight until the player asks for a hint.
+    expect(screen.getByTestId('fan-1')).not.toHaveAttribute('data-hint-source');
+    fireEvent.click(screen.getByTestId('hint-button'));
+    await waitFor(() => expect(screen.getByTestId('fan-1')).toHaveAttribute('data-hint-source', 'true'));
+    expect(screen.getByTestId('fan-0')).toHaveAttribute('data-hint-dest', 'true');
+    expect(screen.getByTestId('ll-foundation-row')).not.toHaveAttribute('data-hint-foundation');
+  });
+
+  it('highlights the foundation row for a to-foundation hint', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { fromFan: 2, toFan: -1, toFoundation: true } }));
+    renderWithProviders(<LaBelleLuciePage />);
+    await screen.findByTestId('hint-button');
+    fireEvent.click(screen.getByTestId('hint-button'));
+    await waitFor(() =>
+      expect(screen.getByTestId('ll-foundation-row')).toHaveAttribute('data-hint-foundation', 'true'),
+    );
+    expect(screen.getByTestId('fan-2')).toHaveAttribute('data-hint-source', 'true');
+    // No fan is marked as the destination when the move targets a foundation.
+    expect(screen.getByTestId('fan-0')).not.toHaveAttribute('data-hint-dest');
+  });
+
+  it('clears the hint highlight when the board changes', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState()) // mount reset
+      .mockResolvedValueOnce(makeState({ hint: { fromFan: 1, toFan: 0, toFoundation: false } })) // hint
+      .mockResolvedValue(makeState({ moveCount: 1 })); // subsequent move advances the board
+    renderWithProviders(<LaBelleLuciePage />);
+    await screen.findByTestId('hint-button');
+    fireEvent.click(screen.getByTestId('hint-button'));
+    await waitFor(() => expect(screen.getByTestId('fan-1')).toHaveAttribute('data-hint-source', 'true'));
+    // Perform a move: select fan-1 then drop on fan-0.
+    fireEvent.click(screen.getByTestId('fan-1'));
+    fireEvent.click(screen.getByTestId('fan-0'));
+    await waitFor(() => expect(screen.getByTestId('fan-1')).not.toHaveAttribute('data-hint-source'));
+    expect(screen.getByTestId('fan-0')).not.toHaveAttribute('data-hint-dest');
   });
 });

@@ -84,13 +84,15 @@ func (c *PresidentCuiController) Exec(command string) string {
 			return c.pi.ResetWithConfig(cfg)
 		},
 		[]string{
-			"p", "play", "sd", "setdifficulty", "sr", "setrule", "log", "l",
+			"p", "play", "h", "hint", "sd", "setdifficulty", "sr", "setrule", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
 				indices, skipped := cuiutil.ParseIntSlice(args)
 				return cuiutil.PrependSkippedWarning(c.pi.Play(indices), skipped), true
+			case "h", "hint":
+				return c.pi.Hint(), true
 			case "sd", "setdifficulty":
 				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
 					cfg := c.pi.GetConfig()

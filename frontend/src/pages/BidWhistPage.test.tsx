@@ -54,6 +54,7 @@ function makeState(overrides: Partial<BidWhistResponse> = {}): BidWhistResponse 
     highestBid: null,
     highestBidder: -1,
     kittyCount: 6,
+    kittyIndices: [],
     currentTrick: [],
     teamScores: [0, 0],
     gameEndFlag: false,
@@ -76,6 +77,15 @@ describe('BidWhistPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', expect.objectContaining({ config: expect.any(Object) })),
     );
+  });
+
+  it('renders CPU difficulty options with localized labels', async () => {
+    renderWithProviders(<BidWhistPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    // Difficulty options are localized (ja), not the hardcoded Easy/Normal/Hard.
+    expect(screen.getByRole('option', { name: 'かんたん' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'ふつう' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'むずかしい' })).toBeInTheDocument();
   });
 
   it('shows bid controls on the human bid turn', async () => {
@@ -156,10 +166,90 @@ describe('BidWhistPage', () => {
     expect(progress.querySelector('.bg-ds-success')).not.toBeNull();
   });
 
+  it('highlights kitty-origin cards during the human exchange', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        declarerIdx: 0,
+        kittyIndices: [1, 3],
+        players: [
+          player(0, true, sixCards, { isDeclarer: true }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<BidWhistPage />);
+    // Legend appears and only the flagged cards carry the warning ring + badge.
+    expect(await screen.findByTestId('kitty-legend')).toBeInTheDocument();
+    expect(screen.getByTestId('hand-card-1')).toHaveAttribute('data-kitty', 'true');
+    expect(screen.getByTestId('hand-card-3')).toHaveAttribute('data-kitty', 'true');
+    expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-warning');
+    expect(screen.getByTestId('kitty-badge-1')).toBeInTheDocument();
+    // Non-kitty cards are not flagged.
+    expect(screen.getByTestId('hand-card-0')).not.toHaveAttribute('data-kitty');
+    expect(screen.queryByTestId('kitty-badge-0')).not.toBeInTheDocument();
+  });
+
+  it('does not highlight kitty cards outside the exchange phase', async () => {
+    // kittyIndices is only honoured during KITTY_EXCHANGE; in play it is ignored.
+    mockExec.mockResolvedValue(makeState({ phase: 3, currentPlayerIdx: 0, kittyIndices: [1, 3] }));
+    renderWithProviders(<BidWhistPage />);
+    await screen.findByTestId('hand-card-0');
+    expect(screen.queryByTestId('kitty-legend')).not.toBeInTheDocument();
+    expect(screen.getByTestId('hand-card-1')).not.toHaveAttribute('data-kitty');
+  });
+
   it('hides the kitty progress outside the exchange phase', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 3, currentPlayerIdx: 0 }));
     renderWithProviders(<BidWhistPage />);
     await screen.findByTestId('hand-card-0');
     expect(screen.queryByTestId('kitty-progress')).not.toBeInTheDocument();
+  });
+
+  it('enables every direction when there is no highest bid', async () => {
+    renderWithProviders(<BidWhistPage />);
+    // Default selected tricks is 1; with no highest bid, all directions are valid.
+    expect(await screen.findByTestId('bid-dir-0')).toBeEnabled();
+    expect(screen.getByTestId('bid-dir-1')).toBeEnabled();
+    expect(screen.getByTestId('bid-dir-2')).toBeEnabled();
+    expect(screen.getByTestId('pass-button')).toBeEnabled();
+  });
+
+  it('disables directions that do not exceed the current highest bid', async () => {
+    // Highest bid = 1 Uptown (order 10). Selected tricks default to 1, so:
+    //   Uptown (order 10) is not strictly greater → disabled,
+    //   Downtown (11) and No Trump (12) beat it → enabled.
+    mockExec.mockResolvedValue(makeState({ highestBid: { tricks: 1, direction: 0 }, highestBidder: 3 }));
+    renderWithProviders(<BidWhistPage />);
+    const uptown = await screen.findByTestId('bid-dir-0');
+    expect(uptown).toBeDisabled();
+    expect(uptown).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('bid-dir-1')).toBeEnabled();
+    expect(screen.getByTestId('bid-dir-2')).toBeEnabled();
+    // Pass is always available.
+    expect(screen.getByTestId('pass-button')).toBeEnabled();
+  });
+
+  it('surfaces a reason tooltip on a disabled direction button', async () => {
+    mockExec.mockResolvedValue(makeState({ highestBid: { tricks: 3, direction: 2 }, highestBidder: 1 }));
+    renderWithProviders(<BidWhistPage />);
+    // Highest bid 3 No Trump (order 32) beats every tricks-1 bid → all disabled with a title.
+    const wrap = await screen.findByTestId('bid-dir-wrap-0');
+    expect(wrap).toHaveAttribute('title', expect.stringContaining('3'));
+    expect(screen.getByTestId('bid-dir-0')).toBeDisabled();
+  });
+
+  it('disables lower-order directions but enables higher tricks after selecting them', async () => {
+    mockExec.mockResolvedValue(makeState({ highestBid: { tricks: 4, direction: 0 }, highestBidder: 2 }));
+    renderWithProviders(<BidWhistPage />);
+    // With tricks 1 selected, nothing beats a 4-trick bid.
+    expect(await screen.findByTestId('bid-dir-0')).toBeDisabled();
+    // Raising the selector to 5 tricks makes all directions valid again (order 50+ > 40).
+    fireEvent.change(screen.getByLabelText('トリック数を選択 (1-7):'), { target: { value: '5' } });
+    expect(screen.getByTestId('bid-dir-0')).toBeEnabled();
+    expect(screen.getByTestId('bid-dir-1')).toBeEnabled();
+    expect(screen.getByTestId('bid-dir-2')).toBeEnabled();
   });
 });

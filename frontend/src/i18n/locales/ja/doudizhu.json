@@ -51,5 +51,25 @@
     "playLowest": "弱いカードから出して強いカードを温存",
     "bomb": "爆弾で場を制する",
     "pass": "パス — 強いカードを温存"
+  },
+  "combo": {
+    "selectedLabel": "選択中",
+    "badge": "{{type}}（{{count}}枚）",
+    "notCombo": "有効な役になっていません — 選択を確認してください",
+    "noBeat": "この役では場のカードに勝てません",
+    "type": {
+      "single": "単張",
+      "pair": "対子",
+      "trio": "三条",
+      "trioSingle": "三帯一",
+      "trioPair": "三帯二",
+      "straight": "順子",
+      "consecutivePair": "連対",
+      "airplane": "飛機",
+      "airplaneSingle": "飛機帯単",
+      "airplanePair": "飛機帯対",
+      "bomb": "爆弾",
+      "rocket": "ロケット"
+    }
   }
 }

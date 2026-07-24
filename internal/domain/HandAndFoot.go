@@ -848,6 +848,17 @@ func (g *HandAndFoot) cpuFindNaturalPair(player *HandAndFootPlayer, topCard *Car
 }
 
 // cpuFindMelds CPUのメルド候補を見つける
+// SuggestMelds は playerIdx がいま作れるメルド候補 (同ランク 3 枚以上、ワイルド補完込み・
+// 既存チームメルドへの追加を含む) をカード群のリストで返す。無ければ nil。CUI ヒント用に
+// cpuFindMelds を公開する薄いラッパー。
+func (g *HandAndFoot) SuggestMelds(playerIdx int) [][]*Card {
+	player := g.GetPlayer(playerIdx)
+	if player == nil {
+		return nil
+	}
+	return g.cpuFindMelds(player, HandAndFootTeamOf(playerIdx))
+}
+
 func (g *HandAndFoot) cpuFindMelds(player *HandAndFootPlayer, team int) [][]*Card {
 	var melds [][]*Card
 

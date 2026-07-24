@@ -13,9 +13,7 @@
   },
   "button": {
     "bet": "Bet",
-    "raise1x": "Raise x1",
-    "raise2x": "Raise x2",
-    "raise3x": "Raise x3",
+    "raiseAmount": "Raise x{{multiplier}} ({{amount}})",
     "fold": "Fold",
     "reset": "Reset"
   },
@@ -71,6 +69,8 @@
   "dealerQualified": "Qualified",
   "dealerNotQualified": "Not Qualified",
   "flushLine": "{{count}}-card flush",
+  "flushCardAria": "in flush",
+  "nonFlushCardAria": "not in flush",
   "tutorial": {
     "betControls": "Set the ante and optional side bets, then press Bet.",
     "actionButtons": "Raise up to the multiplier allowed by your flush length, or Fold to forfeit the ante.",

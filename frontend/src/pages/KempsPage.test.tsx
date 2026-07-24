@@ -69,6 +69,15 @@ function makeState(overrides: Partial<KempsResponse> = {}): KempsResponse {
 }
 
 const exchangeState = makeState();
+// Field shares rank 2 with the human's ♥2 hand card at indices 0 and 2 (#3554).
+const rankMatchState = makeState({
+  field: [
+    { design: 'SPADE', value: 2 },
+    { design: 'HEART', value: 6 },
+    { design: 'CLOVER', value: 2 },
+    { design: 'DIAMOND', value: 8 },
+  ],
+});
 const declareState = makeState({ phase: 1, isHumanTurn: false, fourHolderIdx: 2 });
 const roundEndState = makeState({ phase: 2, isHumanTurn: false, roundResult: 1, roundWinnerTeam: 0 });
 const gameEndState = makeState({ phase: 3, gameEndFlag: true, winnerTeam: 0, isHumanTurn: false, teamScores: [5, 2] });
@@ -98,18 +107,49 @@ describe('KempsPage', () => {
 
   it('selecting a hand card then a field card dispatches swap', async () => {
     renderWithProviders(<KempsPage />);
-    const handButtons = await screen.findAllByRole('button', { name: '手札を選ぶ' });
-    fireEvent.click(handButtons[1]);
-    const fieldButtons = await screen.findAllByRole('button', { name: 'このカードと交換' });
+    // Hand[1] is ♥2, field[2] is ♣7 — buttons are now named by their card.
+    const heart2 = await screen.findByRole('button', { name: '♥ 2 を選択' });
+    expect(heart2).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(heart2);
+    expect(screen.getByRole('button', { name: '♥ 2 を選択' })).toHaveAttribute('aria-pressed', 'true');
+    const clover7 = await screen.findByRole('button', { name: '♣ 7 と交換' });
+    // The swap-pending state is described for SR.
+    expect(clover7).toHaveAttribute('aria-describedby', 'kemps-swap-pending');
     mockExec.mockClear();
-    fireEvent.click(fieldButtons[2]);
+    fireEvent.click(clover7);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('swap', { handIndex: 1, fieldIndex: 2 }));
+  });
+
+  it('highlights same-rank field cards when a hand card is selected and clears on deselect', async () => {
+    mockExec.mockResolvedValue(rankMatchState);
+    renderWithProviders(<KempsPage />);
+    // Select ♥2 — field indices 0 and 2 (both rank 2) should be marked as matches.
+    const heart2 = await screen.findByRole('button', { name: '♥ 2 を選択' });
+    fireEvent.click(heart2);
+    expect(screen.getByTestId('kemps-field-0')).toHaveAttribute('data-rank-match', 'true');
+    expect(screen.getByTestId('kemps-field-2')).toHaveAttribute('data-rank-match', 'true');
+    // The non-matching field cards are not highlighted.
+    expect(screen.getByTestId('kemps-field-1')).toHaveAttribute('data-rank-match', 'false');
+    expect(screen.getByTestId('kemps-field-3')).toHaveAttribute('data-rank-match', 'false');
+    // Deselecting the hand card removes the field swap buttons (and their highlight).
+    fireEvent.click(screen.getByRole('button', { name: '♥ 2 を選択' }));
+    expect(screen.queryByTestId('kemps-field-0')).not.toBeInTheDocument();
+  });
+
+  it('does not highlight field cards when no hand rank matches the selection', async () => {
+    // Default field [♠5 ♥6 ♣7 ♦8] shares no rank with the ♠1 hand card.
+    renderWithProviders(<KempsPage />);
+    const spadeAce = await screen.findByRole('button', { name: '♠ A を選択' });
+    fireEvent.click(spadeAce);
+    for (const i of [0, 1, 2, 3]) {
+      expect(screen.getByTestId(`kemps-field-${i}`)).toHaveAttribute('data-rank-match', 'false');
+    }
   });
 
   it('does not show field swap buttons until a hand card is selected', async () => {
     renderWithProviders(<KempsPage />);
     await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: 'このカードと交換' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /と交換$/ })).not.toBeInTheDocument();
   });
 
   it('dispatches pass on the exchange turn', async () => {
@@ -135,6 +175,80 @@ describe('KempsPage', () => {
     mockExec.mockClear();
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('kemps'));
+  });
+
+  it('emphasizes the Kemps button and announces readiness when the human holds four of a kind', async () => {
+    // Human holds four of a kind and the declare window is open.
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        isHumanTurn: false,
+        fourHolderIdx: 0,
+        players: [
+          makePlayer({
+            name: 'You',
+            isHuman: true,
+            team: 0,
+            hasFourOfAKind: true,
+            hand: [
+              { design: 'SPADE', value: 7 },
+              { design: 'HEART', value: 7 },
+              { design: 'CLOVER', value: 7 },
+              { design: 'DIAMOND', value: 7 },
+            ],
+          }),
+          makePlayer({ team: 1 }),
+          makePlayer({ team: 0 }),
+          makePlayer({ team: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<KempsPage />);
+    const btn = await screen.findByTestId('kemps-declare-button');
+    expect(btn).toHaveAttribute('data-emphasized', 'true');
+    expect(btn.className).toContain('ring-ds-success');
+    expect(btn.className).toContain('animate-pulse');
+    // The readiness is announced in a live region.
+    const ready = screen.getByTestId('kemps-four-ready');
+    expect(ready).toHaveAttribute('role', 'status');
+    expect(ready).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('does not emphasize the Kemps button when the human lacks four of a kind', async () => {
+    // declareState keeps the human without four of a kind (partner holds it).
+    mockExec.mockResolvedValue(declareState);
+    renderWithProviders(<KempsPage />);
+    const btn = await screen.findByTestId('kemps-declare-button');
+    expect(btn).toHaveAttribute('data-emphasized', 'false');
+    expect(btn.className).not.toContain('ring-ds-success');
+    expect(screen.queryByTestId('kemps-four-ready')).not.toBeInTheDocument();
+  });
+
+  it('announces four-of-a-kind readiness during the exchange phase', async () => {
+    // Emphasis notice appears even before the declare window opens.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({
+            name: 'You',
+            isHuman: true,
+            team: 0,
+            hasFourOfAKind: true,
+            hand: [
+              { design: 'SPADE', value: 9 },
+              { design: 'HEART', value: 9 },
+              { design: 'CLOVER', value: 9 },
+              { design: 'DIAMOND', value: 9 },
+            ],
+          }),
+          makePlayer({ team: 1 }),
+          makePlayer({ team: 0 }),
+          makePlayer({ team: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<KempsPage />);
+    expect(await screen.findByTestId('kemps-four-ready')).toBeInTheDocument();
   });
 
   it('dispatches counter against an opponent seat', async () => {

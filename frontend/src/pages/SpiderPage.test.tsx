@@ -79,6 +79,10 @@ const gameOverState: SpiderResponse = {
 };
 
 beforeEach(() => {
+  localStorage.clear();
+  // Re-suppress the first-visit tutorial dialog: the global setup sets this in its
+  // own beforeEach, which runs before ours, so our clear() would otherwise wipe it.
+  localStorage.setItem('tutorial_no_suggest', 'true');
   mockExec.mockResolvedValue(playingState);
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   playSoundMock.mockClear();
@@ -661,6 +665,105 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
   });
 
+  describe('movable-run hover highlight (#3061)', () => {
+    // Col 0 is a valid same-suit descending run (♠K ♠Q ♠J); col 1 breaks at the first
+    // card (♣7 then ♥6 — suit mismatch) so ♣7 is not movable while ♥6 rings itself.
+    const runState: SpiderResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 12), faceUp: true },
+          { card: card('SPADE', 11), faceUp: true },
+        ],
+        [
+          { card: card('CLOVER', 7), faceUp: true },
+          { card: card('HEART', 6), faceUp: true },
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+      ]),
+    };
+
+    const btnFor = (alt: string) => screen.getByAltText(alt).closest('button') as HTMLButtonElement;
+
+    it('rings the whole same-suit descending run on hover and clears on leave', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      const top = btnFor('♠ K');
+      fireEvent.mouseEnter(top);
+      await waitFor(() => expect(btnFor('♠ K')).toHaveAttribute('data-movable-run', 'true'));
+      expect(btnFor('♠ Q')).toHaveAttribute('data-movable-run', 'true');
+      expect(btnFor('♠ J')).toHaveAttribute('data-movable-run', 'true');
+      expect(btnFor('♠ K').className).toContain('ring-ds-success');
+
+      fireEvent.mouseLeave(top);
+      await waitFor(() => expect(btnFor('♠ K')).not.toHaveAttribute('data-movable-run'));
+    });
+
+    it('rings only the valid suffix when hovering a mid-run card', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ Q')).toBeInTheDocument());
+
+      fireEvent.mouseEnter(btnFor('♠ Q'));
+      await waitFor(() => expect(btnFor('♠ Q')).toHaveAttribute('data-movable-run', 'true'));
+      expect(btnFor('♠ J')).toHaveAttribute('data-movable-run', 'true');
+      // ♠K is above the hovered card, so it is not part of the run.
+      expect(btnFor('♠ K')).not.toHaveAttribute('data-movable-run');
+    });
+
+    it('does not ring a card whose tail is a broken sequence', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♣ 7')).toBeInTheDocument());
+
+      // Hovering ♣7 would drag ♥6 with it — a broken sequence — so no ring appears.
+      fireEvent.mouseEnter(btnFor('♣ 7'));
+      await waitFor(() => expect(btnFor('♥ 6')).toBeInTheDocument());
+      expect(btnFor('♣ 7')).not.toHaveAttribute('data-movable-run');
+      expect(btnFor('♥ 6')).not.toHaveAttribute('data-movable-run');
+
+      // The lone bottom card still rings itself.
+      fireEvent.mouseEnter(btnFor('♥ 6'));
+      await waitFor(() => expect(btnFor('♥ 6')).toHaveAttribute('data-movable-run', 'true'));
+    });
+
+    it('highlights the run on keyboard focus too', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      fireEvent.focus(btnFor('♠ K'));
+      await waitFor(() => expect(btnFor('♠ K')).toHaveAttribute('data-movable-run', 'true'));
+      expect(btnFor('♠ J')).toHaveAttribute('data-movable-run', 'true');
+
+      fireEvent.blur(btnFor('♠ K'));
+      await waitFor(() => expect(btnFor('♠ K')).not.toHaveAttribute('data-movable-run'));
+    });
+
+    it('keeps the selection ring (warning) when a hovered card is the selected source', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      fireEvent.click(btnFor('♠ K'));
+      await waitFor(() => expect(btnFor('♠ K')).toHaveAttribute('aria-pressed', 'true'));
+      fireEvent.mouseEnter(btnFor('♠ K'));
+      // Selection ring takes priority over the hover ring on the selected card.
+      expect(btnFor('♠ K').className).toContain('ring-ds-warning');
+      expect(btnFor('♠ K').className).not.toContain('ring-ds-success');
+    });
+  });
+
   describe('drag and drop', () => {
     function buildDataTransfer() {
       const store: Record<string, string> = {};
@@ -708,6 +811,61 @@ describe('SpiderPage', () => {
           expect.objectContaining({ zone: 'tableau' }),
         ),
       );
+    });
+  });
+
+  describe('per-difficulty stats (#3062)', () => {
+    it('renders the stats panel with a zeroed win rate initially', async () => {
+      renderWithProviders(<SpiderPage />);
+      const panel = await screen.findByTestId('spd-stats-panel');
+      expect(panel).toHaveTextContent('勝率 0% (0/0)');
+    });
+
+    it('records a win to localStorage and shows the best badge', async () => {
+      mockExec.mockResolvedValue(gameClearState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => {
+        const stored = JSON.parse(localStorage.getItem('trumpcards-spider-stats') ?? '{}');
+        expect(stored['1']).toEqual({ plays: 1, wins: 1, bestScore: 500, fewestMoves: 5 });
+      });
+      // Win rate reflects the recorded game and the personal-best badge appears.
+      expect(await screen.findByTestId('spd-stats-panel')).toHaveTextContent('勝率 100% (1/1)');
+      expect(screen.getByTestId('spd-best-badge')).toBeInTheDocument();
+    });
+
+    it('records a loss (plays only) and shows no best badge', async () => {
+      mockExec.mockResolvedValue(gameOverState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => {
+        const stored = JSON.parse(localStorage.getItem('trumpcards-spider-stats') ?? '{}');
+        expect(stored['1']).toEqual({ plays: 1, wins: 0, bestScore: null, fewestMoves: null });
+      });
+      expect(await screen.findByTestId('spd-stats-panel')).toHaveTextContent('勝率 0% (0/1)');
+      expect(screen.queryByTestId('spd-best-badge')).not.toBeInTheDocument();
+    });
+
+    it('reads back previously stored stats for the current difficulty', async () => {
+      localStorage.setItem(
+        'trumpcards-spider-stats',
+        JSON.stringify({ '1': { plays: 4, wins: 3, bestScore: 620, fewestMoves: 33 } }),
+      );
+      renderWithProviders(<SpiderPage />);
+      const panel = await screen.findByTestId('spd-stats-panel');
+      expect(panel).toHaveTextContent('勝率 75% (3/4)');
+      expect(panel).toHaveTextContent('ベスト 620');
+      expect(panel).toHaveTextContent('最少 33手');
+    });
+
+    it('keeps difficulties separate (difficulty 2 stats hidden while on difficulty 1)', async () => {
+      localStorage.setItem(
+        'trumpcards-spider-stats',
+        JSON.stringify({ '2': { plays: 5, wins: 5, bestScore: 900, fewestMoves: 10 } }),
+      );
+      renderWithProviders(<SpiderPage />);
+      const panel = await screen.findByTestId('spd-stats-panel');
+      // Playing state is difficulty 1, so difficulty 2's best must not leak in.
+      expect(panel).toHaveTextContent('勝率 0% (0/0)');
+      expect(panel).not.toHaveTextContent('ベスト 900');
     });
   });
 });

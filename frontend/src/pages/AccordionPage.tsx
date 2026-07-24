@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { type AccordionMoveZone, accordionApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -10,6 +10,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KeyboardShortcutsPanel } from '../components/KeyboardShortcutsPanel';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
@@ -24,14 +25,17 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
-import { btnDanger, btnOutline, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { AccordionResponse } from '../types/card';
 import { AccordionPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { accordionLegalOffsets, accordionLegalTargets } from '../utils/accordionUtils';
+import { accordionLegalOffsets, accordionLegalTargets, accordionNextAutoMove } from '../utils/accordionUtils';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+
+/** Upper bound on autocomplete merges (a 52-card deck needs at most 51) — loop guard (#3192). */
+const AC_MAX_AUTO_MERGES = 52;
 
 /** Accordion tutorial step definitions. */
 const AC_TUTORIAL_STEPS: TutorialStep[] = [
@@ -128,6 +132,7 @@ function AccordionPageContent() {
   const { playSound } = useSound();
   const {
     state,
+    setState,
     loading,
     error,
     exec: apiCall,
@@ -137,6 +142,14 @@ function AccordionPageContent() {
   useMountReset(apiCall);
 
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  // Autocomplete drives the single `move` action in a loop (issue #3192), which
+  // bypasses useGameApi's `loading` flag, so `isAutoCompleting` gates the UI
+  // while the batch runs and `stateRef`/`autoCompletingRef` let the loop read
+  // the freshest board and block a second concurrent run (mirrors AcesUp #3347).
+  const [isAutoCompleting, setIsAutoCompleting] = useState(false);
+  const stateRef = useRef<AccordionResponse | null>(state);
+  stateRef.current = state;
+  const autoCompletingRef = useRef(false);
   // Tracks the pile under cursor/focus so we can paint legal -1/-3 targets
   // (same suit OR same rank) without waiting for click. Reset by mouseleave/blur
   // and on every state change (handled implicitly because piles re-key on size).
@@ -203,6 +216,45 @@ function AccordionPageContent() {
     [apiCall],
   );
 
+  /**
+   * Auto-plays every forced/recommended merge in one click (issue #3192). It
+   * drives the existing single `move` action sequentially, re-reading the fresh
+   * board after each merge and applying the next {@link accordionNextAutoMove}
+   * (the same offset-3-first heuristic the backend hint uses) until no legal
+   * merge remains. Terminates because each merge removes a pile; the re-entry
+   * guard blocks a second concurrent run.
+   */
+  const handleAutoComplete = useCallback(async () => {
+    if (autoCompletingRef.current) return;
+    autoCompletingRef.current = true;
+    setIsAutoCompleting(true);
+    setSelectedIdx(null);
+    let move = stateRef.current ? accordionNextAutoMove(stateRef.current.piles) : null;
+    try {
+      // Upper bound: a 52-pile deck can never need more than 51 merges.
+      for (let step = 0; step < AC_MAX_AUTO_MERGES && move; step++) {
+        const res = await accordionApi.exec(
+          'move',
+          { zone: 'pile', index: move.fromIdx },
+          { zone: 'pile', index: move.toIdx },
+        );
+        setState(res);
+        if (res.phase !== AccordionPhase.PLAYING) break;
+        move = accordionNextAutoMove(res.piles);
+      }
+      playSound('cardPlace');
+    } catch {
+      // Surface the failure through the shared exec so the standard
+      // error/retry channel handles it.
+      if (move) {
+        await apiCall('move', { zone: 'pile', index: move.fromIdx }, { zone: 'pile', index: move.toIdx });
+      }
+    } finally {
+      autoCompletingRef.current = false;
+      setIsAutoCompleting(false);
+    }
+  }, [apiCall, setState, playSound]);
+
   const dispatchMove = useCallback(
     (fromIdx: number, toIdx: number) => {
       const from: AccordionMoveZone = { zone: 'pile', index: fromIdx };
@@ -264,16 +316,20 @@ function AccordionPageContent() {
       { key: 'ArrowRight', action: () => moveSelection(1) },
       { key: '1', action: () => mergeFromSelection(1) },
       { key: '3', action: () => mergeFromSelection(3) },
+      { key: 'a', action: () => void handleAutoComplete() },
       { key: 'u', action: handleUndo },
       { key: 'h', action: handleHint },
       { key: 'g', action: confirmGiveUpAction },
       { key: 'Escape', action: () => setSelectedIdx(null) },
     ],
-    [moveSelection, mergeFromSelection, handleUndo, handleHint, confirmGiveUpAction],
+    [moveSelection, mergeFromSelection, handleAutoComplete, handleUndo, handleHint, confirmGiveUpAction],
   );
+  // The autocomplete loop bypasses useGameApi's `loading` flag, so gate every
+  // interactive control on `busy` (loading OR a batch in flight) — issue #3192.
+  const busy = loading || isAutoCompleting;
   useActionKeyboardNav({
     bindings: accordionBindings,
-    enabled: state?.phase === AccordionPhase.PLAYING && !loading,
+    enabled: state?.phase === AccordionPhase.PLAYING && !busy,
   });
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
@@ -283,6 +339,9 @@ function AccordionPageContent() {
   const isGameClear = state.phase === AccordionPhase.GAME_CLEAR;
   const isGameOver = state.phase === AccordionPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  // Autocomplete is only useful while a legal merge remains; disable it (and skip
+  // the pulse cue) otherwise, mirroring the sibling solitaires' gating.
+  const hasAutoMove = isPlaying && accordionNextAutoMove(state.piles) !== null;
 
   const phaseName = isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing');
 
@@ -340,12 +399,20 @@ function AccordionPageContent() {
               {(() => {
                 const hoverTargets =
                   isPlaying && hoveredIdx !== null ? new Set(accordionLegalTargets(state.piles, hoveredIdx)) : null;
+                // Touch devices never fire mouseenter, so also paint the selected
+                // pile's legal -1/-3 targets persistently once it is picked (#3190).
+                const selectedTargets =
+                  isPlaying && selectedIdx !== null ? new Set(accordionLegalTargets(state.piles, selectedIdx)) : null;
                 return state.piles.map((pile, idx) => {
                   const top = pile.cards[0];
                   const isSelected = selectedIdx === idx;
                   const hintFrom = state.hint?.fromIdx === idx;
                   const hintTo = state.hint?.toIdx === idx;
                   const isHoverTarget = hoverTargets?.has(idx) ?? false;
+                  const isSelectedTarget = selectedTargets?.has(idx) ?? false;
+                  // Highlight legal targets whether reached by hover (mouse) or by
+                  // selecting a source pile (touch/keyboard) so all inputs get parity.
+                  const isLegalTarget = isHoverTarget || isSelectedTarget;
                   // When a pile is selected, spell out its legal merge offsets (1/3)
                   // in the aria-label so screen-reader users learn where it can go (#2596).
                   const mergeSuffix =
@@ -370,14 +437,15 @@ function AccordionPageContent() {
                         isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                       } ${hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''} ${
                         hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''
-                      } ${isHoverTarget && !isSelected && !hintTo && !hintFrom ? 'ring-2 ring-ds-success' : ''}`}
+                      } ${isLegalTarget && !isSelected && !hintTo && !hintFrom ? 'ring-2 ring-ds-success' : ''}`}
                       onClick={() => handlePileClick(idx)}
                       onMouseEnter={isPlaying ? () => setHoveredIdx(idx) : undefined}
                       onMouseLeave={() => setHoveredIdx((cur) => (cur === idx ? null : cur))}
                       onFocus={isPlaying ? () => setHoveredIdx(idx) : undefined}
                       onBlur={() => setHoveredIdx((cur) => (cur === idx ? null : cur))}
-                      disabled={!isPlaying}
+                      disabled={!isPlaying || busy}
                       data-hover-target={isHoverTarget ? 'true' : 'false'}
+                      data-legal-target={isLegalTarget ? 'true' : 'false'}
                       aria-label={`${baseLabel}${mergeSuffix}`}
                     >
                       {top && <AnimatedCard card={top} width={cardWidth} />}
@@ -463,30 +531,68 @@ function AccordionPageContent() {
 
               {isPlaying && (
                 <>
-                  <button type="button" className={btnOutline} onClick={handleHint} disabled={loading}>
+                  <button
+                    type="button"
+                    className={`${btnSuccess}${hasAutoMove && !busy ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+                    onClick={() => void handleAutoComplete()}
+                    disabled={busy || !hasAutoMove}
+                    aria-keyshortcuts="a"
+                    data-testid="ac-autocomplete"
+                  >
+                    {t('autoComplete')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnOutline}
+                    onClick={handleHint}
+                    disabled={busy}
+                    aria-keyshortcuts="h"
+                  >
                     {t('hint')}
                   </button>
                   <button
                     type="button"
                     className={btnOutline}
                     onClick={handleUndo}
-                    disabled={loading || !state.canUndo}
+                    disabled={busy || !state.canUndo}
+                    aria-keyshortcuts="u"
                   >
                     {t('undo')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    onClick={confirmGiveUpAction}
+                    disabled={busy}
+                    aria-keyshortcuts="g"
+                  >
                     {t('giveup')}
                   </button>
                   {state.isStalemate && (
                     <StalemateEscapeButton
                       undoToEscape={state.undoToEscape ?? -1}
                       onEscape={handleUndoEscape}
-                      disabled={loading}
+                      disabled={busy}
                     />
                   )}
                 </>
               )}
             </GameFooter>
+            {isPlaying && (
+              <KeyboardShortcutsPanel
+                title={t('kbd.title')}
+                data-testid="ac-kbd-shortcuts"
+                shortcuts={[
+                  { keys: ['←', '→'], description: t('kbd.move') },
+                  { keys: ['1', '3'], description: t('kbd.merge') },
+                  { keys: ['a'], description: t('kbd.autoComplete') },
+                  { keys: ['h'], description: t('kbd.hint') },
+                  { keys: ['u'], description: t('kbd.undo') },
+                  { keys: ['g'], description: t('kbd.giveup') },
+                  { keys: ['Esc'], description: t('kbd.clear') },
+                ]}
+              />
+            )}
           </div>
         </>
       )}

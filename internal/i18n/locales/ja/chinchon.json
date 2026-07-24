@@ -32,5 +32,7 @@
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
-  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
+  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+  "deadwoodLine": "デッドウッド: {{value}}点 (ノック閾値 {{threshold}}点以下)",
+  "knockReady": "→ ノック可能"
 }

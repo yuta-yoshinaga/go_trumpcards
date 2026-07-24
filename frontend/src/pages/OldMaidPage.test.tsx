@@ -83,6 +83,24 @@ describe('OldMaidPage', () => {
     );
   });
 
+  it('shows keyboard shortcut hints and lowercase aria-keyshortcuts on the human turn', async () => {
+    await startGame();
+    expect(screen.getByTestId('oldmaid-key-hints')).toHaveTextContent('D: 引く / S: シャッフル');
+    // Lowercase: an unmodified key (uppercase would imply Shift+D per WAI-ARIA).
+    expect(screen.getByRole('button', { name: 'ランダムに引く' })).toHaveAttribute('aria-keyshortcuts', 'd');
+    expect(screen.getByRole('button', { name: 'シャッフル' })).toHaveAttribute('aria-keyshortcuts', 's');
+  });
+
+  it('hides the key hints and drops aria-keyshortcuts on a CPU turn (bindings inactive)', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<OldMaidPage />);
+    await waitFor(() => expect(screen.getAllByText('あなた').length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('oldmaid-key-hints')).not.toBeInTheDocument();
+    // The shuffle button stays clickable on a CPU turn, but the `s` key binding is
+    // inactive, so it must not advertise a shortcut that does nothing.
+    expect(screen.getByRole('button', { name: 'シャッフル' })).not.toHaveAttribute('aria-keyshortcuts');
+  });
+
   it('renders skeleton while API call is pending on mount', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<OldMaidPage />);
@@ -1326,5 +1344,58 @@ describe('OldMaidPage', () => {
     mockExec.mockResolvedValue(gameEndState);
     await startGame();
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('終了'));
+  });
+
+  // -- Drawn-card landing highlight (issue #2984) --
+
+  it('ring-highlights the position where the human just drew a card', async () => {
+    // Human (id 0) drew HEART-2, which now sits at index 1 of their hand.
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 0,
+      lastDrawFromIdx: 1,
+      lastDrawCard: { design: 'HEART', value: 2 },
+    });
+    await startGame();
+    const container = await screen.findByTestId('human-card-container');
+    const highlighted = within(container)
+      .getAllByRole('button')
+      .filter((b) => b.dataset.drawnHighlight === 'true');
+    expect(highlighted).toHaveLength(1);
+    // Second card (index 1) is the drawn HEART-2.
+    expect(within(container).getAllByRole('button')[1]).toBe(highlighted[0]);
+    // Animation is gated behind motion-safe so reduced-motion users get no pulse.
+    expect(highlighted[0].className).toContain('ring-ds-accent');
+    expect(highlighted[0].className).toContain('motion-safe:animate-pulse');
+  });
+
+  it('does not highlight when a CPU drew from another player', async () => {
+    // CPU 1 drew from CPU 2 (no human involvement): nothing to highlight.
+    mockExec.mockResolvedValue(cpuTurnState);
+    await startGame();
+    const container = await screen.findByTestId('human-card-container');
+    const highlighted = within(container)
+      .getAllByRole('button')
+      .filter((b) => b.dataset.drawnHighlight === 'true');
+    expect(highlighted).toHaveLength(0);
+  });
+
+  it('does not highlight when the human draw was discarded as a pair', async () => {
+    // Human drew a card not present in their hand (it paired off and was discarded).
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 0,
+      lastDrawFromIdx: 1,
+      lastDrawCard: { design: 'CLOVER', value: 9 },
+      lastDiscardedPairs: 1,
+    });
+    await startGame();
+    const container = await screen.findByTestId('human-card-container');
+    const highlighted = within(container)
+      .getAllByRole('button')
+      .filter((b) => b.dataset.drawnHighlight === 'true');
+    expect(highlighted).toHaveLength(0);
   });
 });

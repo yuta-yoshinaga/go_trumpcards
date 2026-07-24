@@ -22,11 +22,11 @@
   "ruleEndStop": "[片側ストップ]",
   "ruleNoConsecutiveJokers": "[ジョーカー連続禁止]",
   "boardLabel": "ボード:",
-  "boardSuitRange": "  {{suit}}: {{min}}〜{{max}}",
   "cpuActionsLabel": "[CPUの行動]",
   "gameEnd": "ゲーム終了！",
   "rankLine": "  {{name}}: {{rank}}位",
   "turnLine": "手番: {{name}}",
   "playHint": "p [インデックス] でカードを出す / p でパス",
-  "jokerHint": "j [カードインデックス] [スート] [値] でジョーカーを配置"
+  "jokerHint": "j [カードインデックス] [スート] [値] でジョーカーを配置",
+  "boardSuitLine": "  {{suit}}: {{cells}}"
 }

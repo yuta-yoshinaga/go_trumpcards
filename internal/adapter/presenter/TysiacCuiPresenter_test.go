@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeTysiacPlayers() []*domain.TysiacPlayer {
@@ -34,6 +36,7 @@ func setupTysiacCuiMock() *interfaces.MockTysiacGame {
 	m.On("GetDeclarerIdx").Return(0)
 	m.On("GetContract").Return(100)
 	m.On("GetCurrentBid").Return(100)
+	m.On("GetConfig").Return(domain.DefaultTysiacConfig())
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetRoundCardPoints").Return([domain.TysiacPlayerCnt]int{0, 0, 0})
 	m.On("GetPlayerScores").Return([domain.TysiacPlayerCnt]int{0, 0, 0})
@@ -64,6 +67,10 @@ func TestTysiacCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "トゥシオンツ") // translated helpTitle
 		assert.Contains(t, result, "マリッジ")   // play-phase help explains the marriage bonus
 		assert.NotEmpty(t, result)
+		// The header shows the contract and target during play.
+		assert.Contains(t, result, strings.Split(i18n.T("tysiac.headerInfo"), "{{")[0])
+		// The live-bid line is only shown while bidding.
+		assert.NotContains(t, result, strings.Split(i18n.T("tysiac.headerBid"), "{{")[0])
 	})
 
 	t.Run("bid phase prompt", func(t *testing.T) {
@@ -73,6 +80,16 @@ func TestTysiacCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
 		assert.Contains(t, result, "ビッド") // translated bid prompt/help
+		// The bid phase adds the current-bid line to the header.
+		assert.Contains(t, result, strings.Split(i18n.T("tysiac.headerBid"), "{{")[0])
+	})
+
+	t.Run("unconfirmed contract shows placeholder", func(t *testing.T) {
+		m, _ := setupTysiacCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetContract")
+		m.On("GetContract").Return(0)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "契約: -")
 	})
 
 	t.Run("talon phase prompt", func(t *testing.T) {

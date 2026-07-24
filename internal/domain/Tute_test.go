@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func tuteCard(design, value int) *Card { return NewCard(design, value, false) }
@@ -168,6 +170,32 @@ func TestTute_MarriageDeclaration(t *testing.T) {
 	if g.canDeclareMarriage(0, CardDesignHeart) {
 		t.Error("cannot declare mid-trick")
 	}
+}
+
+func TestTute_GetHumanDeclarableMarriageSuits(t *testing.T) {
+	g := newTuteGame(true)
+	g.SetPhase(TutePhasePlay)
+	g.SetTrumpSuit(CardDesignDiamond)
+	g.SetCurrentPlayerIdx(0)
+	g.SetLeadPlayerIdx(0)
+	g.SetCurrentTrick(nil)
+	// Human holds K+Q of clubs and diamonds (both declarable); hearts is only a K.
+	tuteSetHand(g.GetPlayer(0),
+		tuteCard(CardDesignClover, 13), tuteCard(CardDesignClover, 12),
+		tuteCard(CardDesignDiamond, 13), tuteCard(CardDesignDiamond, 12),
+		tuteCard(CardDesignHeart, 13))
+	got := g.GetHumanDeclarableMarriageSuits()
+	assert.ElementsMatch(t, []int{CardDesignClover, CardDesignDiamond}, got)
+
+	// After declaring clubs, only diamonds remains.
+	if err := g.PlayerDeclareMarriage(CardDesignClover); err != nil {
+		t.Fatalf("marriage err: %v", err)
+	}
+	assert.Equal(t, []int{CardDesignDiamond}, g.GetHumanDeclarableMarriageSuits())
+
+	// Mid-trick (not leading) → nothing is declarable.
+	g.SetCurrentTrick([]*TuteTrickCard{{PlayerIdx: 3, Card: tuteCard(CardDesignSpade, 1)}})
+	assert.Empty(t, g.GetHumanDeclarableMarriageSuits())
 }
 
 func TestTute_TuteInstantWin(t *testing.T) {

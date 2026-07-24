@@ -27,11 +27,21 @@
   "dealer": "ディーラー",
   "maker": "メイカー: チーム{{team}}",
   "currentTrick": "現在のトリック",
+  "previousTrick": "前のトリック",
+  "previousTrickEmpty": "このラウンドにはまだ前のトリックがありません",
+  "previousTrickWinner": "{{name}} が獲得",
   "partnership": "パートナー: {{partner}}",
   "trickCount": "獲得トリック: {{count}}",
   "roundPoints": "ラウンド: {{points}}点",
   "weisPoints": "Weis: {{points}}点",
   "stockPoints": "Stöck: {{points}}点",
+  "weisPanel": {
+    "title": "Weis（メルド）宣言",
+    "note": "Weis はラウンド中に宣言されるメルド（3枚シーケンス20点、4枚シーケンス50点、同位4枚100/150/200点など）のボーナスです。最も強い Weis を宣言したチームだけが、そのラウンドの自チーム Weis 点をすべて獲得します。",
+    "teamPoints": "{{points}}点",
+    "scored": "獲得",
+    "you": "（あなた）"
+  },
   "schiebenButton": "シーバー",
   "playButton": "出す",
   "nextTrick": "次のトリック",
@@ -71,7 +81,8 @@
     "lead_strong": "強いカードでリード",
     "follow_suit": "リードスートに従う",
     "trump_cut": "切り札でカット",
-    "discard_weak": "最低点のカードを捨てる"
+    "discard_weak": "最低点のカードを捨てる",
+    "fallback": "最善手"
   },
   "tutorial": {
     "bidControls": "切り札ビッド: 切り札スートを選ぶか、シーバーでパートナーに委ねます。",

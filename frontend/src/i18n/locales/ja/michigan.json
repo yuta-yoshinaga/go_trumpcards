@@ -39,6 +39,8 @@
   "betMinusAria": "ブードル {{index}} からチップを 1 枚減らす",
   "betPlusAria": "ブードル {{index}} にチップを 1 枚足す",
   "placeBets": "賭ける",
+  "betCollectible": "回収可能",
+  "betClaimedWarning": "獲得済み・賭け注意",
   "playPrompt": "同じスートの昇順でカードを出してください。",
   "playCardAria": "手札 {{index}} を出す",
   "nextRound": "次のラウンド",
@@ -56,5 +58,11 @@
     "hand": "あなたの手札です。プレイフェーズでは出せる札がハイライトされます。クリックすると同じスートの昇順で出せます。",
     "actions": "ベットの手番では、チップを 4 つのブードルに分配して賭けます。プレイ中は出せる札をクリックします。結果フェーズでは次のラウンドを配ります。",
     "resetButton": "ゲームをリセットして最初からやり直します。"
+  },
+  "nextHint": {
+    "next": "次に出せる: {{suit}} {{value}}",
+    "new": "新しいシーケンスを開始できます",
+    "nextBadge": "次",
+    "leadBadge": "リード"
   }
 }

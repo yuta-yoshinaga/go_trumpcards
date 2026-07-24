@@ -29,6 +29,8 @@ type GutsGame interface {
 	GetPot() int
 	// GetCarryPot 次ラウンドへの持ち越し種銭を取得する
 	GetCarryPot() int
+	// GetCarryCount 全員アウトでポットが連続繰り越しになった回数を取得する
+	GetCarryCount() int
 	// GetAnte アンティ額を取得する
 	GetAnte() int
 	// GetWinnerIdx 直近ラウンドの勝者を取得する (-1 = なし)

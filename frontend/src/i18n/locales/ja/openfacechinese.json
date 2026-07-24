@@ -23,6 +23,13 @@
   "fantasyland": "ファンタジーランド達成！",
   "roundEndTitle": "ラウンド終了",
   "next": "次のラウンドへ",
+  "hint": {
+    "button": "ヒント",
+    "text": "推奨: {{row}} — {{reason}}",
+    "strong_back": "強い組み合わせはボトムに寄せましょう",
+    "weak_front": "トップは弱めにまとめて安全に",
+    "balance": "バランス良く配置しましょう"
+  },
   "gameEnd": "ゲーム終了",
   "phase": {
     "placing": "配置",
@@ -39,5 +46,9 @@
     "rows": "配られたカードを3段（トップ3枚・ミドル5枚・ボトム5枚）に置いていきます。",
     "place": "配られたカードを置く段を選びましょう。一度置いたカードは動かせません。",
     "resetButton": "ゲームを最初からやり直すにはこのボタンを押します。"
-  }
+  },
+  "placeRowAria": "{{label}} に置く",
+  "rowAriaEmpty": "{{label}} {{count}}枚",
+  "rowAriaFilled": "{{label}} {{count}}枚: {{cards}}",
+  "pendingAnnounce": "配置待ち: {{card}}"
 }

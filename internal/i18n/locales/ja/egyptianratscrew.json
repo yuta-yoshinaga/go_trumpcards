@@ -26,5 +26,9 @@
   "chanceWinCpu": "チャンスバトルで CPU に場札を奪われた...",
   "winHuman": "あなたの勝ちです！",
   "winCpu": "CPUの勝ちです...",
-  "winDraw": "引き分けです"
+  "winDraw": "引き分けです",
+  "chanceResponder": "応答者: {{name}}",
+  "responderHuman": "あなた",
+  "responderCpu": "CPU",
+  "chanceTrigger": "発動カード: {{card}}"
 }

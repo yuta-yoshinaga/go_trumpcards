@@ -7,6 +7,8 @@
   "tableauCard": "({{row}},{{col}}){{card}}",
   "playableCard": "({{row}},{{col}}){{card}}*",
   "blockedCard": "[--]{{card}}",
+  "playableSummary": "今出せるカード: {{count}}枚",
+  "drawRecommended": "ドロー推奨（出せる札がありません）",
   "stockLine": "Stock: {{count}}枚",
   "wasteCard": " | Waste: {{card}}",
   "wasteEmpty": " | Waste: [空]",

@@ -8,6 +8,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useLocalStorageToggle } from '../hooks/useLocalStorageToggle';
+import { useVideoPokerStats } from '../hooks/useVideoPokerStats';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -16,12 +17,14 @@ import type { Card, VideoPokerResponse } from '../types/card';
 import { VideoPokerPhase } from '../types/phases';
 import type { CliGameConfig } from '../utils/cli/types';
 import { getVideoPokerBaseHint } from '../utils/hints/videoPokerBaseHint';
+import { evaluateJokerPokerMadeHand } from '../utils/jokerPokerMadeHand';
 import {
   VIDEO_POKER_MAX_BET,
-  videoPokerHandNameToRowKey,
   videoPokerPayoutCell,
   videoPokerPayoutRows,
+  videoPokerRowKey,
 } from '../utils/videoPokerPayout';
+import { videoPokerNet, videoPokerWinRate } from '../utils/videoPokerStats';
 import { ActionLogPanel } from './ActionLogPanel';
 import { CliTerminal } from './cli/CliTerminal';
 import { CliToggle } from './cli/CliToggle';
@@ -67,11 +70,14 @@ function PayoutTable({
   gameName,
   betAmount,
   winningRowKey,
+  handCounts,
 }: {
   t: (key: string) => string;
   gameName: 'videopoker' | 'deuceswild' | 'jokerpoker';
   betAmount: number;
   winningRowKey: string | null;
+  /** Per-hand win counts to append as a trailing column, or null to hide the column. */
+  handCounts: Record<string, number> | null;
 }) {
   const [open, setOpen] = useLocalStorageToggle(`paytable_open_${gameName}`, true);
   const rows = videoPokerPayoutRows(gameName);
@@ -95,6 +101,7 @@ function PayoutTable({
                 {b}
               </th>
             ))}
+            {handCounts && <th className="px-1.5 py-0.5 text-right font-medium">{t('payoutTable.count')}</th>}
           </tr>
         </thead>
         <tbody>
@@ -113,6 +120,14 @@ function PayoutTable({
                     {videoPokerPayoutCell(row, b)}
                   </td>
                 ))}
+                {handCounts && (
+                  <td
+                    className="px-1.5 py-0.5 text-right text-ds-text-primary tabular-nums"
+                    data-testid={`vp-payout-count-${row.key}`}
+                  >
+                    {handCounts[row.key] ?? 0}
+                  </td>
+                )}
               </tr>
             );
           })}
@@ -137,6 +152,17 @@ export function VideoPokerGameContent({
 
   const [betAmount, setBetAmount] = useState(1);
   const [heldCards, setHeldCards] = useState<boolean[]>([false, false, false, false, false]);
+  // Screen-reader announcement for a hold toggle (aria-pressed alone is not
+  // reliably re-announced by every AT when toggled via the keyboard).
+  const [holdAnnounce, setHoldAnnounce] = useState('');
+  // Screen-reader announcement summarising the draw result (winning hand +
+  // payout, or the loss message). The payout text and the payout-table row
+  // highlight are static, so this sr-only live region is the only channel
+  // that tells a non-visual user the outcome. `resultNonce` is an invisible
+  // counter that forces re-announcement even when two consecutive hands
+  // produce identical text.
+  const [resultAnnounce, setResultAnnounce] = useState('');
+  const [resultNonce, setResultNonce] = useState(0);
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(apiExec);
@@ -165,6 +191,32 @@ export function VideoPokerGameContent({
   const isDrawPhase = state?.phase === VideoPokerPhase.DRAW;
   const isResultPhase = state?.phase === VideoPokerPhase.RESULT;
 
+  // Session statistics (hands / win rate / net) are scoped to the base
+  // Jacks-or-Better variant so the shared component leaves Deuces Wild and
+  // Joker Poker untouched. Storage is still keyed per variant, so enabling the
+  // others later needs no data migration.
+  const statsEnabled = gameName === 'videopoker';
+  const { stats, clear: clearStats } = useVideoPokerStats(gameName, state, isResultPhase, statsEnabled);
+
+  // Announce the draw outcome once per hand. Keying on the state reference (a
+  // fresh object on every API result) re-fires the effect even for an identical
+  // hand, so a repeated result is read aloud again.
+  useEffect(() => {
+    if (!isResultPhase || !state) {
+      return;
+    }
+    const rowKey = videoPokerRowKey(state.handKey, state.handName);
+    const msg =
+      state.payout > 0
+        ? tNs('resultAnnounce.win', {
+            handName: rowKey ? tNs(`payoutTable.name.${rowKey}`) : state.handName,
+            payout: state.payout,
+          })
+        : tNs('resultAnnounce.lose');
+    setResultAnnounce(msg);
+    setResultNonce((n) => n + 1);
+  }, [isResultPhase, state, tNs]);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-apply auto-hold only on the phase transition into DRAW (a fresh hand). Adding autoHoldEnabled / state / gameName to the deps would overwrite the player's manual hold edits whenever any of those change mid-draw.
   useEffect(() => {
     if (!isDrawPhase) return;
@@ -187,18 +239,22 @@ export function VideoPokerGameContent({
       }
     }
     setHeldCards(next);
+    // Clear any stale hold announcement carried over from the previous hand.
+    setHoldAnnounce('');
   }, [isDrawPhase]);
 
   const toggleHold = useCallback(
     (index: number) => {
       if (!isDrawPhase) return;
+      const willHold = !heldCards[index];
       setHeldCards((prev) => {
         const next = [...prev];
         next[index] = !next[index];
         return next;
       });
+      setHoldAnnounce(tNs(willHold ? 'a11y.holdOn' : 'a11y.holdOff', { index: index + 1 }));
     },
-    [isDrawPhase],
+    [isDrawPhase, heldCards, tNs],
   );
 
   const handleDeal = useCallback(() => {
@@ -229,13 +285,30 @@ export function VideoPokerGameContent({
     return t('phase.result');
   }, [isBetPhase, isDrawPhase, t]);
 
+  // Joker Poker only: evaluate the current 5 cards during the draw phase so the
+  // player sees whether they already hold a paying hand (Kings or Better+). The
+  // readout depends solely on the dealt hand, so toggling holds never changes
+  // it, and it disappears once the phase leaves DRAW. `rowKey === null` means
+  // the hand does not reach the pay minimum.
+  const madeHand = useMemo(() => {
+    if (gameName !== 'jokerpoker' || !isDrawPhase || !state || state.hand.length !== 5) return null;
+    return evaluateJokerPokerMadeHand(state.hand);
+  }, [gameName, isDrawPhase, state]);
+
   const actionBindings = useMemo(
     () => [
       { key: 'b', action: handleDeal, enabled: isBetPhase },
       { key: 'd', action: handleDraw, enabled: isDrawPhase },
       { key: 'r', action: handleReset, enabled: isResultPhase },
+      // Number keys 1-5 toggle HOLD on the matching card (DRAW phase only),
+      // mirroring the physical hold buttons on a real video-poker machine.
+      ...[0, 1, 2, 3, 4].map((i) => ({
+        key: String(i + 1),
+        action: () => toggleHold(i),
+        enabled: isDrawPhase,
+      })),
     ],
-    [handleDeal, handleDraw, handleReset, isBetPhase, isDrawPhase, isResultPhase],
+    [handleDeal, handleDraw, handleReset, toggleHold, isBetPhase, isDrawPhase, isResultPhase],
   );
 
   useActionKeyboardNav({
@@ -280,6 +353,38 @@ export function VideoPokerGameContent({
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            <div className="sr-only" role="status" aria-live="polite" data-testid="vp-hold-announce">
+              {holdAnnounce}
+            </div>
+
+            {/* Keying the live region on resultNonce remounts it on each result, so
+                assistive tech re-announces even two identical consecutive hands (an
+                aria-hidden counter would be invisible to the accessibility tree and
+                never trigger a re-read). data-nonce exposes the counter to tests. */}
+            <div
+              key={resultNonce}
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              data-testid="vp-result-announce"
+              data-nonce={resultNonce}
+            >
+              {resultAnnounce}
+            </div>
+
+            {madeHand && (
+              <div className="text-center mb-2" data-testid="vp-made-hand" aria-live="polite" aria-atomic="true">
+                <span className="text-ds-text-muted text-xs mr-1">{tNs('madeHand.label')}:</span>
+                {madeHand.rowKey ? (
+                  <span className="text-ds-success text-sm font-bold">
+                    {tNs(`payoutTable.name.${madeHand.rowKey}`)}
+                  </span>
+                ) : (
+                  <span className="text-ds-text-muted text-sm">{tNs('madeHand.none')}</span>
+                )}
+              </div>
+            )}
 
             {state.hand.length > 0 && (
               <div className="mb-4" data-tutorial="vp-hand">
@@ -368,7 +473,8 @@ export function VideoPokerGameContent({
               t={tNs}
               gameName={gameName}
               betAmount={betAmount}
-              winningRowKey={isResultPhase ? videoPokerHandNameToRowKey(state.handName) : null}
+              winningRowKey={isResultPhase ? videoPokerRowKey(state.handKey, state.handName) : null}
+              handCounts={statsEnabled ? stats.handCounts : null}
             />
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
@@ -378,10 +484,11 @@ export function VideoPokerGameContent({
             {!isBetPhase && <ErrorAlert message={error} onRetry={retry} />}
             {hintEnabled && hint && <HintTooltip reason={tNs(hint.reason)} confidence={hint.confidence} />}
             {isDrawPhase && (
-              <div className="flex justify-center gap-2 pb-2" data-tutorial="vp-draw-button">
+              <div className="flex flex-col items-center gap-1 pb-2" data-tutorial="vp-draw-button">
                 <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
                   {t('button.draw')}
                 </button>
+                <p className="text-ds-text-muted text-xs">{tNs('a11y.kbdHint')}</p>
               </div>
             )}
             {isResultPhase && (
@@ -396,6 +503,33 @@ export function VideoPokerGameContent({
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
                   {tc('actionLog.view')}
                 </button>
+              </div>
+            )}
+            {statsEnabled && (
+              <div
+                className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pb-2 text-ds-text-muted text-xs lg:text-sm"
+                data-testid="vp-session-stats"
+              >
+                <span data-testid="vp-stats-summary">
+                  {stats.hands === 0
+                    ? tNs('stats.empty')
+                    : tNs('stats.summary', {
+                        hands: stats.hands,
+                        winRate: Math.round(videoPokerWinRate(stats) * 100),
+                        net: `${videoPokerNet(stats) >= 0 ? '+' : ''}${videoPokerNet(stats)}`,
+                      })}
+                </span>
+                {stats.hands > 0 && (
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={clearStats}
+                    disabled={loading}
+                    data-testid="vp-stats-clear"
+                  >
+                    {tNs('stats.clear')}
+                  </button>
+                )}
               </div>
             )}
             <div className="flex flex-wrap justify-center gap-x-4 pb-2">

@@ -43,6 +43,16 @@
     "go": "Go",
     "stop": "Stop"
   },
+  "preview": {
+    "title": "Yaku a step away",
+    "item": "{{name}}: {{remaining}} to go",
+    "samgwang": "3 Brights",
+    "sagwang": "4 Brights",
+    "ogwang": "5 Brights",
+    "tti": "Tti (5)",
+    "yeol": "Yeol (5)",
+    "pi": "Pi (10)"
+  },
   "roundResult": {
     "title": "Round Result",
     "winner": "Winner: {{name}}",

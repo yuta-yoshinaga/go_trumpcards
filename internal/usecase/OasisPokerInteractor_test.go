@@ -150,3 +150,12 @@ func TestOasisPokerInteractor_ActionLog(t *testing.T) {
 
 	assert.Equal(t, "log output", oi.ActionLog())
 }
+
+func TestOasisPokerInteractor_Hint(t *testing.T) {
+	mockGame := new(interfaces.MockOasisPokerGame)
+	mockPresenter := new(presenter.MockOasisPokerPresenter)
+	oi := NewOasisPokerInteractor(mockGame, mockPresenter)
+
+	mockPresenter.On("HintOutput", mockGame).Return("hint output")
+	assert.Equal(t, "hint output", oi.Hint())
+}

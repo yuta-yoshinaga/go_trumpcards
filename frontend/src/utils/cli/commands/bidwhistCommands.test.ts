@@ -74,6 +74,7 @@ describe('formatBidWhistState', () => {
     highestBid: { tricks: 3, direction: 0 },
     highestBidder: 0,
     kittyCount: 0,
+    kittyIndices: [],
     currentTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 13 } as never }],
     teamScores: [2, 0],
     gameEndFlag: false,

@@ -40,6 +40,11 @@ import { formatWizardState } from '../utils/cli/formatters/wizardFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { ohHellBidSummary } from '../utils/ohHellBid';
 import { playerName } from '../utils/playerUtils';
+import { type WizardBidOutcome, wizardBidAccuracy } from '../utils/wizardBidAccuracy';
+import { isWizardLegalPlay } from '../utils/wizardLegal';
+
+/** DOM id linking each illegal card button to the shared screen-reader reason text. */
+const WIZARD_ILLEGAL_REASON_ID = 'wiz-illegal-reason';
 
 /** Wizard tutorial step definitions. */
 const WIZARD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -86,6 +91,12 @@ function progressChipColors(bid: number, won: number, remainingTricks: number): 
   if (won === bid) return badgeSuccessColors;
   if (won > bid) return badgeWarningColors;
   return bid - won > remainingTricks ? badgeErrorColors : badgeInfoColors;
+}
+
+/** Badge color tokens for a bid-accuracy outcome pill: green made, yellow overshot, red undershot. */
+function bidAccuracyPillColors(outcome: WizardBidOutcome): string {
+  if (outcome === 'made') return badgeSuccessColors;
+  return outcome === 'over' ? badgeWarningColors : badgeErrorColors;
 }
 
 const WIZARD_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -197,6 +208,30 @@ function WizardPageContent() {
         state.handSize,
       )
     : null;
+
+  // On the human's play turn, compute which hand cards are legal to play so the
+  // UI can highlight them. Mirrors Wizard.validatePlay in internal/domain/Wizard.go:
+  // Wizard/Jester are always legal; a normal card must follow the led suit while
+  // the player still holds it. `undefined` off-turn leaves every card unstyled.
+  const trickCards = state.currentTrick.map((tc) => tc.card);
+  const humanHand = humanPlayer?.cards ?? [];
+  const legalIndices =
+    isHumanTurn && humanPlayer
+      ? humanHand.reduce<number[]>((acc, card, idx) => {
+          if (isWizardLegalPlay(card, trickCards, humanHand)) acc.push(idx);
+          return acc;
+        }, [])
+      : undefined;
+
+  // At round/game end, `state.players` still carries the finished round's bid and
+  // trickCount, so we can summarize how far each player's actual tricks landed
+  // from their declared bid before the next deal resets them.
+  const showBidAccuracy = isRoundEnd || isGameEnd;
+  const bidAccuracyEntries = showBidAccuracy
+    ? wizardBidAccuracy(
+        state.players.map((p) => ({ name: playerName(p.id, p.isHuman), bid: p.bid, trickCount: p.trickCount })),
+      )
+    : [];
 
   return (
     <GamePageShell
@@ -433,6 +468,33 @@ function WizardPageContent() {
                     cumulativeScore: p.cumulativeScore,
                   }))}
                 />
+
+                {/* Bid-vs-actual accuracy summary for the just-finished round. */}
+                {showBidAccuracy && bidAccuracyEntries.length > 0 && (
+                  <div className="my-3 p-2 rounded bg-black/30" data-testid="wiz-bid-accuracy">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('bidAccuracy.title')}</div>
+                    <ul className="flex flex-col gap-1">
+                      {bidAccuracyEntries.map((e) => (
+                        <li
+                          key={e.name}
+                          className="flex items-center justify-between gap-2 text-sm text-ds-text-muted"
+                          data-testid={`wiz-bid-accuracy-row-${e.outcome}`}
+                        >
+                          <span className="truncate">
+                            {e.name}: {t('scoresBid')} {e.bid} / {t('scoresTricks')} {e.trickCount}
+                          </span>
+                          <span
+                            className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${bidAccuracyPillColors(e.outcome)}`}
+                          >
+                            {e.outcome === 'made'
+                              ? t('bidAccuracy.made')
+                              : t(`bidAccuracy.${e.outcome}`, { delta: e.delta })}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -465,28 +527,46 @@ function WizardPageContent() {
                   onToggle={toggleCard}
                   cardWidth={cardWidth}
                   dataTutorial="wiz-player-hand"
+                  validIndices={legalIndices}
+                  restrictedTooltip={t('illegalHint')}
                 />
               ) : (
                 <div className="flex flex-wrap gap-1 mb-2" data-tutorial="wiz-player-hand">
-                  {humanPlayer.cards.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  ))}
+                  {/* Shared screen-reader reason, referenced by every illegal card via
+                      aria-describedby so the "why" is announced (title alone is skipped by SRs). */}
+                  <span id={WIZARD_ILLEGAL_REASON_ID} className="sr-only">
+                    {t('illegalHint')}
+                  </span>
+                  {humanPlayer.cards.map((card, idx) => {
+                    // On the human's play turn, ring the legal cards and dim the rest with a
+                    // reason tooltip so the follow-suit obligation is visible before playing.
+                    const legal = legalIndices == null || legalIndices.includes(idx);
+                    const showLegal = legalIndices != null;
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={() => toggleCard(idx)}
+                        aria-label={cardAlt(card)}
+                        aria-pressed={selectedCardIndices.includes(idx)}
+                        title={showLegal && !legal ? t('illegalHint') : undefined}
+                        aria-describedby={showLegal && !legal ? WIZARD_ILLEGAL_REASON_ID : undefined}
+                        data-legal={showLegal ? legal : undefined}
+                        className={`transition-transform ${focusRingCard} ${
+                          showLegal && legal ? 'rounded-lg ring-2 ring-ds-success' : ''
+                        } ${showLegal && !legal ? 'opacity-50' : ''}`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
                 </div>
               ))}
 

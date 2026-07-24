@@ -34,5 +34,7 @@
   "bidRedouble": "リダブル",
   "bidUnknown": "不明({{n}})",
   "hintReasonSupportPartner": "パートナーをサポート",
-  "hintReasonCompetitiveBid": "競り合い"
+  "hintReasonCompetitiveBid": "競り合い",
+  "bidHistory": "オークション: {{bids}}",
+  "bidHistoryEntry": "{{name}}:{{bid}}"
 }

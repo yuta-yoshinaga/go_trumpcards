@@ -65,6 +65,45 @@ describe('BjBetPhaseControls', () => {
     expect(onBetAmountChange).toHaveBeenLastCalledWith(1000);
   });
 
+  it('renders additive quick-chip buttons and a clear button', () => {
+    render(<BjBetPhaseControls {...defaultProps()} />);
+    const row = screen.getByTestId('bj-chip-add');
+    expect(row).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+10' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+25' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+100' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'クリア' })).toBeInTheDocument();
+  });
+
+  it('adds the chip value to the current bet (clamped to chips) when a chip button is clicked', () => {
+    const onBetAmountChange = vi.fn();
+    render(<BjBetPhaseControls {...defaultProps({ onBetAmountChange, betAmount: 10, playerChips: 1000 })} />);
+    fireEvent.click(screen.getByRole('button', { name: '+25' }));
+    expect(onBetAmountChange).toHaveBeenLastCalledWith(35);
+    fireEvent.click(screen.getByRole('button', { name: '+100' }));
+    expect(onBetAmountChange).toHaveBeenLastCalledWith(110);
+  });
+
+  it('disables a chip button when adding it would exceed the chip balance', () => {
+    render(<BjBetPhaseControls {...defaultProps({ betAmount: 90, playerChips: 100 })} />);
+    expect(screen.getByRole('button', { name: '+10' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: '+25' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '+100' })).toBeDisabled();
+  });
+
+  it('resets the bet to the table minimum when the clear button is clicked', () => {
+    const onBetAmountChange = vi.fn();
+    render(<BjBetPhaseControls {...defaultProps({ onBetAmountChange, betAmount: 500 })} />);
+    fireEvent.click(screen.getByRole('button', { name: 'クリア' }));
+    expect(onBetAmountChange).toHaveBeenLastCalledWith(10);
+  });
+
+  it('disables the additive chip and clear buttons when loading', () => {
+    render(<BjBetPhaseControls {...defaultProps({ loading: true })} />);
+    expect(screen.getByRole('button', { name: '+10' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'クリア' })).toBeDisabled();
+  });
+
   it('renders deck count selector with provided value', () => {
     render(<BjBetPhaseControls {...defaultProps({ deckCount: 6 })} />);
     expect(screen.getByLabelText('デッキ数:')).toHaveValue('6');

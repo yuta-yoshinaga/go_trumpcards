@@ -135,6 +135,63 @@ const roundEndCpuCardsState: GinRummyResponse = {
   ],
 };
 
+// Round-end fixtures for the score breakdown. The opponent's (CPU, id 1) hand
+// is scored via the same meld search the domain uses.
+const knockRoundEndState: GinRummyResponse = {
+  ...drawPhaseState,
+  phase: 3,
+  knockerIdx: 0,
+  isGin: false,
+  knockerDeadwood: [{ design: 'CLOVER', value: 9 }], // knocker deadwood 9
+  players: [
+    drawPhaseState.players[0],
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 3,
+      // No meld: 5 + 6 + 8 = 19 deadwood > 9 → plain knock, knocker scores 10.
+      cards: [
+        { design: 'DIAMOND', value: 5 },
+        { design: 'CLOVER', value: 6 },
+        { design: 'HEART', value: 8 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+    },
+  ],
+};
+
+const ginRoundEndState: GinRummyResponse = {
+  ...knockRoundEndState,
+  isGin: true,
+  knockerDeadwood: [], // gin → knocker deadwood 0, scores opponent 19 + 25 bonus = 44
+};
+
+const undercutRoundEndState: GinRummyResponse = {
+  ...drawPhaseState,
+  phase: 3,
+  knockerIdx: 0,
+  isGin: false,
+  knockerDeadwood: [{ design: 'CLOVER', value: 9 }], // knocker deadwood 9
+  players: [
+    drawPhaseState.players[0],
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 4,
+      // ♦5-6-7 run (melded) + ♥2 → deadwood 2 ≤ 9 → undercut, opponent scores 7 + 25 = 32.
+      cards: [
+        { design: 'DIAMOND', value: 5 },
+        { design: 'DIAMOND', value: 6 },
+        { design: 'DIAMOND', value: 7 },
+        { design: 'HEART', value: 2 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+    },
+  ],
+};
+
 beforeEach(() => {
   mockExec.mockResolvedValue(drawPhaseState);
 });
@@ -166,6 +223,44 @@ describe('GinRummyPage', () => {
     renderWithProviders(<GinRummyPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     expect(screen.queryByTestId('ginrummy-deadwood-indicator')).not.toBeInTheDocument();
+  });
+
+  it('color-codes the hand into meld and deadwood cards during discard phase', async () => {
+    // ♠5-6-7 form a run (melded); ♥K is deadwood.
+    const meldHandState: GinRummyResponse = {
+      ...discardPhaseState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 4,
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'SPADE', value: 7 },
+            { design: 'HEART', value: 13 },
+          ],
+          roundScore: 0,
+          cumulativeScore: 0,
+        },
+        discardPhaseState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(meldHandState);
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('gr-hand-card-0')).toBeInTheDocument());
+    expect(screen.getByTestId('gr-hand-card-0')).toHaveAttribute('data-meld', 'meld');
+    expect(screen.getByTestId('gr-hand-card-1')).toHaveAttribute('data-meld', 'meld');
+    expect(screen.getByTestId('gr-hand-card-2')).toHaveAttribute('data-meld', 'meld');
+    expect(screen.getByTestId('gr-hand-card-3')).toHaveAttribute('data-meld', 'deadwood');
+    expect(screen.getByTestId('ginrummy-meld-legend')).toBeInTheDocument();
+  });
+
+  it('does not color-code the hand outside discard phase', async () => {
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('gr-hand-card-0')).toBeInTheDocument());
+    expect(screen.getByTestId('gr-hand-card-0')).not.toHaveAttribute('data-meld');
+    expect(screen.queryByTestId('ginrummy-meld-legend')).not.toBeInTheDocument();
   });
 
   it('pulses the knock button when deadwood ≤10 during discard phase', async () => {
@@ -394,6 +489,57 @@ describe('GinRummyPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  // -- Round-end score breakdown --
+
+  it('shows a plain-knock score breakdown at round end', async () => {
+    mockExec.mockResolvedValue(knockRoundEndState);
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('ginrummy-score-breakdown')).toBeInTheDocument());
+    expect(screen.getByTestId('ginrummy-breakdown-outcome')).toHaveTextContent('ノック');
+    // opponent deadwood 19 − knocker 9 = 10, no bonus.
+    expect(screen.getByTestId('ginrummy-breakdown-formula')).toHaveTextContent('デッドウッド差 10 = 10');
+    expect(screen.getByText('あなた が 10 点獲得')).toBeInTheDocument();
+  });
+
+  it('shows a gin score breakdown at round end', async () => {
+    mockExec.mockResolvedValue(ginRoundEndState);
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('ginrummy-score-breakdown')).toBeInTheDocument());
+    expect(screen.getByTestId('ginrummy-breakdown-outcome')).toHaveTextContent('ジン');
+    // opponent deadwood 19 + gin bonus 25 = 44.
+    expect(screen.getByTestId('ginrummy-breakdown-formula')).toHaveTextContent(
+      '相手デッドウッド 19 + ジンボーナス 25 = 44',
+    );
+    expect(screen.getByText('あなた が 44 点獲得')).toBeInTheDocument();
+  });
+
+  it('shows an undercut score breakdown crediting the defender at round end', async () => {
+    mockExec.mockResolvedValue(undercutRoundEndState);
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('ginrummy-score-breakdown')).toBeInTheDocument());
+    expect(screen.getByTestId('ginrummy-breakdown-outcome')).toHaveTextContent('アンダーカット');
+    // knocker 9 − opponent 2 = 7 difference + undercut bonus 25 = 32, credited to CPU.
+    expect(screen.getByTestId('ginrummy-breakdown-formula')).toHaveTextContent(
+      'デッドウッド差 7 + アンダーカットボーナス 25 = 32',
+    );
+    expect(screen.getByText('CPU 1 が 32 点獲得')).toBeInTheDocument();
+  });
+
+  it('hides the score breakdown before round end', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('ginrummy-score-breakdown')).not.toBeInTheDocument();
+  });
+
+  it('hides the score breakdown on a drawn round (no knocker)', async () => {
+    // roundEndState keeps knockerIdx -1 (stock exhausted) → no scoring to show.
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+    expect(screen.queryByTestId('ginrummy-score-breakdown')).not.toBeInTheDocument();
   });
 
   it('shows game end with action log button', async () => {

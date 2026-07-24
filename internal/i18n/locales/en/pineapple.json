@@ -43,7 +43,7 @@
   "cpuActionLine": "  Player {{idx}}: {{action}}",
   "cpuActionAmount": " ({{amount}})",
   "discardHeader": "--- Discard phase ---",
-  "discardPrompt": "Pick one card from your hand to discard",
+  "discardPrompt": "Pick {{count}} card(s) from your hand to discard",
   "resultsHeader": "[Results]",
   "resultMucked": "  {{name}}: muck",
   "resultHand": "  {{name}}: {{hand}}{{kickers}}",

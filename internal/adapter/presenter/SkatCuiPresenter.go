@@ -19,11 +19,11 @@ func skatPlayerStr(player *domain.SkatPlayer, i int) string {
 	name := cuiPlayerName(player, i)
 	role := ""
 	if player.GetIsDeclarer() {
-		role = " [Declarer]"
+		role = i18n.T("skat.roleDeclarer")
 	}
 	bidStr := "-"
 	if player.GetBid() == 0 {
-		bidStr = "pass"
+		bidStr = i18n.T("skat.choiceBidPass")
 	} else if player.GetBid() > 0 {
 		bidStr = fmt.Sprintf("%d", player.GetBid())
 	}
@@ -48,19 +48,23 @@ type SkatCuiPresenter struct{}
 // Output renders the game state as a CUI string.
 func (p *SkatCuiPresenter) Output(s interfaces.SkatGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("skat.helpTitle"), func(b *strings.Builder) {
-		fmt.Fprintf(b, "Round: %d  Trick: %d  Dealer: %d (Fore=%d / Mid=%d / Rear=%d)\n",
-			s.GetRoundNumber(), s.GetTrickNumber(), s.GetDealerIdx(),
-			s.GetForehandIdx(), s.GetMiddlehandIdx(), s.GetRearhandIdx())
+		b.WriteString(i18n.Tf("skat.statusLine",
+			"round", strconv.Itoa(s.GetRoundNumber()),
+			"trick", strconv.Itoa(s.GetTrickNumber()),
+			"dealer", strconv.Itoa(s.GetDealerIdx()),
+			"fore", strconv.Itoa(s.GetForehandIdx()),
+			"mid", strconv.Itoa(s.GetMiddlehandIdx()),
+			"rear", strconv.Itoa(s.GetRearhandIdx())) + "\n")
 
 		if s.GetGameType() != domain.SkatGameNone {
-			fmt.Fprintf(b, "Game: %s", skatGameTypeLabel(s.GetGameType()))
+			b.WriteString(i18n.Tf("skat.gameLabel", "type", skatGameTypeLabel(s.GetGameType())))
 			if s.GetGameType() == domain.SkatGameSuit {
-				fmt.Fprintf(b, " (trump=%s)", skatSuitSymbol(s.GetTrumpSuit()))
+				b.WriteString(i18n.Tf("skat.trumpLabel", "suit", skatSuitSymbol(s.GetTrumpSuit())))
 			}
 			b.WriteString("\n")
 		}
 		if s.GetCurrentBid() > 0 {
-			fmt.Fprintf(b, "Current bid: %d\n", s.GetCurrentBid())
+			b.WriteString(i18n.Tf("skat.currentBid", "bid", strconv.Itoa(s.GetCurrentBid())) + "\n")
 		}
 
 		for i := 0; i < s.GetPlayerCnt(); i++ {
@@ -79,7 +83,7 @@ func (p *SkatCuiPresenter) Output(s interfaces.SkatGame, lastErr error) string {
 		cuiErrorBlock(b, lastErr)
 
 		if s.GetGameEndFlag() {
-			b.WriteString(color.Green("Game over!") + "\n")
+			b.WriteString(color.Green(i18n.T("skat.gameOver")) + "\n")
 			return
 		}
 
@@ -88,30 +92,32 @@ func (p *SkatCuiPresenter) Output(s interfaces.SkatGame, lastErr error) string {
 			actor := s.GetActiveBidActorIdx()
 			if actor >= 0 {
 				name := cuiPlayerName(s.GetPlayer(actor), actor)
-				fmt.Fprintf(b, "Bidding: %s's turn\n", name)
+				b.WriteString(i18n.Tf("skat.biddingTurn", "name", name) + "\n")
 			}
-			b.WriteString("b 0/1 - pass (0) or accept the active bid step (1)\n")
+			b.WriteString(i18n.T("skat.promptBid") + "\n")
 		case domain.SkatPhaseSkatPickup:
-			b.WriteString("Skat pickup: declarer decides\n")
-			b.WriteString("ps 0/1 - decline (0) or pick up the skat (1)\n")
+			b.WriteString(i18n.T("skat.skatPickup") + "\n")
+			b.WriteString(i18n.T("skat.promptPickup") + "\n")
 		case domain.SkatPhaseDiscard:
-			b.WriteString("Discard 2 cards into the skat\n")
-			b.WriteString("d <i> <j>\n")
+			b.WriteString(i18n.T("skat.discardPrompt") + "\n")
+			b.WriteString(i18n.T("skat.promptDiscard") + "\n")
 		case domain.SkatPhaseGameDeclaration:
-			b.WriteString("Game declaration\n")
-			b.WriteString("g <1=Suit|2=Grand|3=Null> [trumpSuit 1-4]\n")
+			b.WriteString(i18n.T("skat.gameDeclaration") + "\n")
+			b.WriteString(i18n.T("skat.promptDeclare") + "\n")
 		case domain.SkatPhasePlay:
 			currentIdx := s.GetCurrentPlayerIdx()
 			player := s.GetPlayer(currentIdx)
-			fmt.Fprintf(b, "Turn: %s\n", cuiPlayerName(player, currentIdx))
-			b.WriteString("p <idx>\n")
+			b.WriteString(i18n.Tf("skat.turnLabel", "name", cuiPlayerName(player, currentIdx)) + "\n")
+			b.WriteString(i18n.T("skat.promptPlay") + "\n")
 		case domain.SkatPhaseTrickEnd:
-			b.WriteString("Trick complete\n")
-			b.WriteString("n / next\n")
+			b.WriteString(i18n.T("skat.trickComplete") + "\n")
+			b.WriteString(i18n.T("skat.promptNext") + "\n")
 		case domain.SkatPhaseRoundEnd:
-			fmt.Fprintf(b, "Round end. Declarer points: %d / Defenders: %d / Game value: %d\n",
-				s.GetDeclarerCardPoints(), s.GetDefendersCardPoints(), s.GetGameValue())
-			b.WriteString("nr / nextround\n")
+			b.WriteString(i18n.Tf("skat.roundEndLine",
+				"declarer", strconv.Itoa(s.GetDeclarerCardPoints()),
+				"defenders", strconv.Itoa(s.GetDefendersCardPoints()),
+				"value", strconv.Itoa(s.GetGameValue())) + "\n")
+			b.WriteString(i18n.T("skat.promptNextRound") + "\n")
 		}
 	})
 }
@@ -163,17 +169,17 @@ func (p *SkatCuiPresenter) ActionLogOutput(s interfaces.SkatGame) string {
 	return actionLogOutputText(s)
 }
 
-// skatGameTypeLabel returns the human-readable label for a Skat game type.
+// skatGameTypeLabel returns the localized label for a Skat game type.
 func skatGameTypeLabel(gt domain.SkatGameType) string {
 	switch gt {
 	case domain.SkatGameSuit:
-		return "Suit"
+		return i18n.T("skat.gameTypeSuit")
 	case domain.SkatGameGrand:
-		return "Grand"
+		return i18n.T("skat.gameTypeGrand")
 	case domain.SkatGameNull:
-		return "Null"
+		return i18n.T("skat.gameTypeNull")
 	}
-	return "None"
+	return i18n.T("skat.gameTypeNone")
 }
 
 // skatSuitSymbol returns the suit symbol.

@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupBeleagueredCastleCuiMockDefaults(bg *interfaces.MockBeleagueredCastleGame) {
@@ -54,6 +55,18 @@ func TestBeleagueredCastleCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "手数: 0")
 	})
 
+	t.Run("stalemate shows undo-to-escape guidance", func(t *testing.T) {
+		bg := new(interfaces.MockBeleagueredCastleGame)
+		setupBeleagueredCastleCuiMockDefaults(bg)
+		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
+		bg.On("IsStalemate").Return(true)
+		bg.On("UndoToEscape").Return(3)
+		p := new(BeleagueredCastleCuiPresenter)
+
+		result := p.Output(bg, nil)
+		assert.Contains(t, result, i18n.Tf("beleagueredcastle.undoToEscape", "count", "3"))
+	})
+
 	t.Run("with error", func(t *testing.T) {
 		bg := new(interfaces.MockBeleagueredCastleGame)
 		setupBeleagueredCastleCuiMockDefaults(bg)
@@ -90,6 +103,7 @@ func TestBeleagueredCastleCuiPresenter_Output(t *testing.T) {
 		setupBeleagueredCastleCuiMockDefaults(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
 		bg.On("IsStalemate").Return(true)
+		bg.On("UndoToEscape").Return(0)
 
 		p := new(BeleagueredCastleCuiPresenter)
 		result := p.Output(bg, nil)

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { klaverjasApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -121,6 +121,22 @@ function KlaverjasPageContent() {
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('klaverjas', KLAVERJAS_PHASE_KEYS);
 
+  // Transient pulse whenever the combined Roem (bonus) total grows during a hand —
+  // a scoring-relevant event that is otherwise easy to miss both visually and for SR users.
+  const [roemPulse, setRoemPulse] = useState(false);
+  const prevRoemRef = useRef<number | null>(null);
+  useEffect(() => {
+    const roemTotal = state?.roundRoem ? (state.roundRoem[0] ?? 0) + (state.roundRoem[1] ?? 0) : null;
+    if (roemTotal == null) return;
+    const prev = prevRoemRef.current;
+    prevRoemRef.current = roemTotal;
+    if (prev != null && roemTotal > prev) {
+      setRoemPulse(true);
+      const id = setTimeout(() => setRoemPulse(false), 2500);
+      return () => clearTimeout(id);
+    }
+  }, [state?.roundRoem]);
+
   if (!state)
     return <GameSkeleton gameKey="klaverjas" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
 
@@ -214,6 +230,17 @@ function KlaverjasPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="klaverjas-trick-display"
                 />
+                {/* At TrickEnd leadPlayerIdx is the trick winner, so their team is shown before Next Trick. */}
+                {isTrickEnd && (
+                  <div
+                    className="my-2 p-2 rounded bg-ds-accent/15 text-center text-sm font-semibold text-ds-accent"
+                    role="status"
+                    aria-live="polite"
+                    data-testid="klaverjas-trick-winner"
+                  >
+                    {t('trickWinner', { team: state.leadPlayerIdx % 2 === 0 ? t('team.a') : t('team.b') })}
+                  </div>
+                )}
               </div>
 
               {/* Right: info sidebar */}
@@ -230,7 +257,14 @@ function KlaverjasPageContent() {
                 {/* Live Roem (bonus) per team, shown throughout the hand to match the CUI's
                     Roem readout; the round-result block below repeats it once the round ends. */}
                 {!(isRoundEnd || isGameEnd) && (
-                  <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="klaverjas-roem">
+                  <div
+                    className={`mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm${
+                      roemPulse ? ' motion-safe:animate-pulse ring-1 ring-ds-warning' : ''
+                    }`}
+                    data-testid="klaverjas-roem"
+                    role="status"
+                    aria-live="polite"
+                  >
                     <div className="mb-1 text-ds-text-primary">{t('roem.title')}</div>
                     <div>
                       {t('roundResult.roem', { roemA: state.roundRoem[0] ?? 0, roemB: state.roundRoem[1] ?? 0 })}

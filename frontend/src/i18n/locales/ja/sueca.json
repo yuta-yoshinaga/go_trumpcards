@@ -16,6 +16,12 @@
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
   "trump": "切り札: {{suit}}",
+  "suitName": {
+    "spade": "スペード",
+    "club": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
+  },
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
@@ -32,6 +38,10 @@
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
+  "livePoints": {
+    "title": "獲得カード点",
+    "team": "{{team}}: {{points}} / {{target}}"
+  },
   "roundResult": {
     "title": "ラウンド結果",
     "teamA": "チームAのカード点: {{points}}",

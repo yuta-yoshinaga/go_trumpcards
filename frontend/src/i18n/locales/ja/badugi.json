@@ -18,9 +18,13 @@
   "cpuExchangeEntry": "Player {{idx}} (draw {{draw}}): {{count}}枚交換",
   "exchangeCount": "交換: {{count}}枚",
   "cardSelected": "(交換選択中)",
+  "subsetBest": "ベストハンドの一部",
+  "subsetExchange": "交換候補",
   "settings": {
     "title": "設定",
-    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）",
+    "bettingLimitHelp": "リミットの変更は現在のハンドには反映されず、次のリセット（新しいハンド）から適用されます。",
+    "cpuMetaAIHelp": "メタAIの変更は現在のハンドには反映されず、次のリセット（新しいハンド）から適用されます。"
   },
   "bestCards": "ベスト手札",
   "tutorial": {

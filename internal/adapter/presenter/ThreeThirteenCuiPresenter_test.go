@@ -64,6 +64,17 @@ func TestThreeThirteenCuiPresenter_Output(t *testing.T) {
 		})
 	}
 
+	t.Run("cpu deadwood masked during play, revealed at round end", func(t *testing.T) {
+		m, _ := setupThreeThirteenCuiMock(domain.ThreeThirteenPhaseDraw, false)
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "デッドウッド?") // CPU hands are hidden
+		assert.Contains(t, out, "デッドウッド5") // the human's own deadwood
+
+		m2, _ := setupThreeThirteenCuiMock(domain.ThreeThirteenPhaseRoundEnd, false)
+		out2 := p.Output(m2, nil)
+		assert.NotContains(t, out2, "デッドウッド?") // all hands revealed at round end
+	})
+
 	t.Run("error block", func(t *testing.T) {
 		m, _ := setupThreeThirteenCuiMock(domain.ThreeThirteenPhaseDraw, false)
 		assert.NotEmpty(t, p.Output(m, errors.New("err")))

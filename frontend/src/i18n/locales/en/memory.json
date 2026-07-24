@@ -22,11 +22,17 @@
   "cardFaceDown": "Card {{position}} (face down)",
   "visitedMark": "Already seen",
   "scoreLine": "{{name}}: {{count}}",
+  "capturedPairs": "Captured Pairs",
+  "noCapturedPairs": "None",
   "nextButton": "Next",
   "flipPrompt1": "Flip the first card",
   "flipPrompt2": "Flip the second card",
   "matched": "It's a match!",
   "mismatched": "No match",
+  "announce": {
+    "match": "{{first}} / {{second}} — match",
+    "mismatch": "{{first}} / {{second}} — no match"
+  },
   "landscapeBanner": "Rotate to landscape for a better experience",
   "tutorial": {
     "scoreTable": "Each player's pair count is shown here. The player with the most pairs wins.",

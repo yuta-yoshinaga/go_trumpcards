@@ -1,9 +1,35 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, NinetyNineResponse } from '../../types/card';
 import { NinetyNinePhase } from '../../types/phases';
-import { getNinetyNineHint } from './ninetynineHint';
+import { getNinetyNineHint, ninetynineBidValue, ninetynineDeclaredTricks } from './ninetynineHint';
 
 const card = (design: Card['design'], value: number): Card => ({ design, value });
+
+describe('ninetynineBidValue', () => {
+  // Must match ninetyNineSuitBidValue in internal/domain/NinetyNine.go exactly.
+  it('maps each suit to its domain bid value', () => {
+    expect(ninetynineBidValue('DIAMOND')).toBe(0);
+    expect(ninetynineBidValue('SPADE')).toBe(1);
+    expect(ninetynineBidValue('HEART')).toBe(2);
+    expect(ninetynineBidValue('CLOVER')).toBe(3);
+  });
+
+  it('treats any other design (e.g. JOKER) as 0', () => {
+    expect(ninetynineBidValue('JOKER')).toBe(0);
+  });
+});
+
+describe('ninetynineDeclaredTricks', () => {
+  it('returns 0 for no cards', () => {
+    expect(ninetynineDeclaredTricks([])).toBe(0);
+  });
+
+  it('sums the buried cards suit values (max bid = 3 clubs = 9)', () => {
+    expect(ninetynineDeclaredTricks([card('SPADE', 1), card('HEART', 2), card('CLOVER', 3)])).toBe(6);
+    expect(ninetynineDeclaredTricks([card('CLOVER', 3), card('CLOVER', 4), card('CLOVER', 5)])).toBe(9);
+    expect(ninetynineDeclaredTricks([card('DIAMOND', 3), card('DIAMOND', 4), card('DIAMOND', 5)])).toBe(0);
+  });
+});
 
 function makeState(overrides: Partial<NinetyNineResponse> = {}): NinetyNineResponse {
   return {

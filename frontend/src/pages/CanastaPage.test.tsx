@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { canastaApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -87,6 +87,37 @@ const gameEndState: CanastaResponse = {
   winnerIdx: 0,
 };
 
+// Human holds one completed natural canasta (7 cards) and one incomplete meld (3 cards)
+// so the compact stack + count badge rendering can be exercised.
+const meldDisplayState: CanastaResponse = {
+  ...meldPhaseState,
+  players: [
+    {
+      ...basePlayers[0],
+      hasCanasta: true,
+      melds: [
+        {
+          rank: 7,
+          isNatural: true,
+          isCanasta: true,
+          cards: Array.from({ length: 7 }, (_, i) => ({ design: i % 2 ? 'HEART' : 'SPADE', value: 7 })),
+        },
+        {
+          rank: 10,
+          isNatural: false,
+          isCanasta: false,
+          cards: [
+            { design: 'SPADE', value: 10 },
+            { design: 'CLOVER', value: 10 },
+            { design: 'HEART', value: 10 },
+          ],
+        },
+      ],
+    },
+    basePlayers[1],
+  ],
+};
+
 describe('CanastaPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -165,6 +196,28 @@ describe('CanastaPage', () => {
     renderWithProviders(<CanastaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument();
+  });
+
+  it('disables go out and shows the reason while the player has no canasta', async () => {
+    mockExec.mockResolvedValue(discardPhaseState); // hasCanasta: false
+    renderWithProviders(<CanastaPage />);
+    const goOut = await screen.findByTestId('ca-go-out-button');
+    expect(goOut).toBeDisabled();
+    const reason = screen.getByTestId('ca-go-out-reason');
+    expect(reason).toHaveTextContent('ゴーアウトするには完成したカナスタ（7枚メルド）が1組以上必要です');
+    expect(goOut).toHaveAttribute('aria-describedby', 'ca-go-out-reason');
+  });
+
+  it('enables go out and hides the reason once a canasta is completed', async () => {
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      players: [{ ...basePlayers[0], hasCanasta: true }, basePlayers[1]],
+    });
+    renderWithProviders(<CanastaPage />);
+    const goOut = await screen.findByTestId('ca-go-out-button');
+    expect(goOut).toBeEnabled();
+    expect(screen.queryByTestId('ca-go-out-reason')).not.toBeInTheDocument();
+    expect(goOut).not.toHaveAttribute('aria-describedby');
   });
 
   it('shows next round button at round end', async () => {
@@ -263,6 +316,32 @@ describe('CanastaPage', () => {
     expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent(
       'フリーズ中はワイルドカードでの代用ができません',
     );
+  });
+
+  it('renders melds compactly with a count badge and canasta label, collapsed by default', async () => {
+    mockExec.mockResolvedValue(meldDisplayState);
+    renderWithProviders(<CanastaPage />);
+
+    const canastaMeld = await screen.findByTestId('ca-meld-0-0');
+    // Collapsed by default so a meld occupies ~one card of height.
+    expect(canastaMeld).not.toHaveAttribute('open');
+    // Count badge shows the number of cards in the meld.
+    expect(screen.getByTestId('ca-meld-badge-0-0')).toHaveTextContent('7');
+    expect(screen.getByTestId('ca-meld-badge-0-1')).toHaveTextContent('3');
+    // Canasta type (with the ★) is visible at a glance for the completed canasta.
+    expect(within(canastaMeld).getByText(/ナチュラルカナスタ/)).toBeInTheDocument();
+  });
+
+  it('expands a meld to reveal every constituent card when the summary is clicked', async () => {
+    mockExec.mockResolvedValue(meldDisplayState);
+    renderWithProviders(<CanastaPage />);
+
+    const canastaMeld = (await screen.findByTestId('ca-meld-0-0')) as HTMLDetailsElement;
+    expect(canastaMeld.open).toBe(false);
+    const summary = canastaMeld.querySelector('summary');
+    if (!summary) throw new Error('meld summary not found');
+    fireEvent.click(summary);
+    expect(canastaMeld.open).toBe(true);
   });
 
   afterEach(() => {

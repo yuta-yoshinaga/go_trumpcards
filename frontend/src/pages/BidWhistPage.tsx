@@ -159,6 +159,10 @@ function BidWhistPageContent() {
 
   const selectedIdx = selectedCardIndices[0];
 
+  // Kitty-origin cards merged into the declarer's hand, highlighted only while
+  // the human is exchanging so they can tell which six came from the kitty.
+  const kittyIndexSet = new Set(isHumanExchange ? (state.kittyIndices ?? []) : []);
+
   const handlePlay = () => {
     if (selectedIdx === undefined) return;
     play(selectedIdx);
@@ -278,17 +282,26 @@ function BidWhistPageContent() {
                 {tc('player.you')} ({t('teamShort', { team: human.team })}) · {human.trickCount}🂠
                 {human.isDeclarer && <span className="font-bold text-ds-warning"> ★</span>}
               </div>
+              {isHumanExchange && kittyIndexSet.size > 0 && (
+                <div
+                  className="mb-1 flex items-center justify-center gap-1 text-ds-warning text-xs"
+                  data-testid="kitty-legend"
+                >
+                  <span aria-hidden="true" className="inline-block h-2.5 w-2.5 rounded-sm ring-2 ring-ds-warning" />
+                  <span>{t('kittyLegend')}</span>
+                </div>
+              )}
               <div className="flex flex-wrap justify-center gap-2">
                 {human.cards.map((c, i) => {
                   const selected = selectedCardIndices.includes(i);
                   const selectable = isHumanPlayTurn || isHumanExchange;
-                  const cardClass = selected
-                    ? selectable
-                      ? 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-pointer hover:opacity-90'
-                      : 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-default'
-                    : selectable
-                      ? 'rounded transition-all cursor-pointer hover:opacity-90'
-                      : 'rounded transition-all cursor-default';
+                  const fromKitty = kittyIndexSet.has(i);
+                  const selectedRing = selected ? 'ring-2 ring-ds-info -translate-y-2' : '';
+                  // Kitty-origin cards keep a warning outline even when unselected so the
+                  // player can distinguish them from their original hand.
+                  const kittyRing = fromKitty && !selected ? 'ring-2 ring-ds-warning' : '';
+                  const cursor = selectable ? 'cursor-pointer hover:opacity-90' : 'cursor-default';
+                  const cardClass = `relative rounded transition-all ${selectedRing} ${kittyRing} ${cursor}`.trim();
                   return (
                     <button
                       key={i}
@@ -296,9 +309,20 @@ function BidWhistPageContent() {
                       onClick={() => selectable && toggleCard(i)}
                       disabled={!selectable}
                       className={cardClass}
+                      aria-label={fromKitty ? t('kittyCardLabel') : undefined}
                       data-testid={`hand-card-${i}`}
+                      data-kitty={fromKitty ? 'true' : undefined}
                     >
                       <AnimatedCard card={c} width={cardWidth} />
+                      {fromKitty && (
+                        <span
+                          aria-hidden="true"
+                          className="absolute top-0 right-0 rounded-bl bg-ds-warning px-1 text-[10px] font-bold text-white leading-tight"
+                          data-testid={`kitty-badge-${i}`}
+                        >
+                          {t('kittyBadge')}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -325,7 +349,10 @@ function BidWhistPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: String(config.cpuDifficulty ?? 1),
-                    options: CPU_DIFFICULTY_SELECT,
+                    options: CPU_DIFFICULTY_SELECT.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
                     onSelect: (v: string) => handleConfigChange('cpuDifficulty', v),
                   },
                   {
@@ -371,18 +398,39 @@ function BidWhistPageContent() {
                       </option>
                     ))}
                   </select>
-                  {DIRECTIONS.map((d) => (
-                    <button
-                      key={d.id}
-                      type="button"
-                      onClick={() => bid(bidTricks, d.id)}
-                      disabled={loading}
-                      className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
-                      data-testid={`bid-dir-${d.id}`}
-                    >
-                      {t(d.key)}
-                    </button>
-                  ))}
+                  {DIRECTIONS.map((d) => {
+                    // A bid's strength is tricks*10 + direction (matches BidWhistBid.Order in
+                    // the Go domain). A new bid must strictly exceed the current highest bid.
+                    const highestOrder = state.highestBid
+                      ? state.highestBid.tricks * 10 + state.highestBid.direction
+                      : -1;
+                    const tooLow = bidTricks * 10 + d.id <= highestOrder;
+                    const disabled = loading || tooLow;
+                    const reason =
+                      tooLow && state.highestBid
+                        ? t('bidTooLow', {
+                            tricks: state.highestBid.tricks,
+                            dir: t(DIRECTIONS[state.highestBid.direction]?.key ?? 'dirUptown'),
+                          })
+                        : undefined;
+                    // The title lives on the wrapping span: browsers suppress native tooltips on
+                    // disabled buttons, so hovering the span still surfaces the reason.
+                    return (
+                      <span key={d.id} title={reason} data-testid={`bid-dir-wrap-${d.id}`}>
+                        <button
+                          type="button"
+                          onClick={() => bid(bidTricks, d.id)}
+                          disabled={disabled}
+                          aria-disabled={disabled}
+                          aria-label={reason ? `${t(d.key)} — ${reason}` : undefined}
+                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                          data-testid={`bid-dir-${d.id}`}
+                        >
+                          {t(d.key)}
+                        </button>
+                      </span>
+                    );
+                  })}
                   <button
                     type="button"
                     onClick={pass}

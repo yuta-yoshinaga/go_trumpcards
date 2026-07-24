@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CinchResponse } from '../types/card';
 import { CinchPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { estimateCinchBidStrength } from '../utils/cinchBidStrength';
 import { CINCH_HELP, parseCinchCommand } from '../utils/cli/commands/cinchCommands';
 import { formatCinchState } from '../utils/cli/formatters/cinchFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -34,6 +35,15 @@ import { playerName } from '../utils/playerUtils';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; 0 = unset). */
 const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'] as const;
+
+/** i18n suit-name key by suit number (1=♠ 2=♣ 3=♥ 4=♦). */
+const SUIT_KEYS: Readonly<Record<number, string>> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
+
+/** Hearts and diamonds render red; spades and clubs stay the default text color. */
+const isRedSuit = (suit: number): boolean => suit === 3 || suit === 4;
+
+/** Format a signed match-point delta for display (e.g. 6 -> "+6", -8 -> "-8", 0 -> "0"). */
+const signedDelta = (n: number): string => (n > 0 ? `+${n}` : String(n));
 
 /** Selectable trump suits named by the bid winner. */
 const TRUMP_SUITS = [1, 2, 3, 4] as const;
@@ -147,12 +157,21 @@ function CinchPageContent() {
   const canNameTrump = isNameTrumpPhase && state.bidWinnerIdx === humanIdx;
   const canPlay = isPlayPhase && isHumanTurn;
 
+  // Rough, hand-only strength guide shown alongside the bid buttons so a player
+  // can gauge how high to bid. Purely advisory — not a capture guarantee.
+  const bidStrength = canBid && humanPlayer ? estimateCinchBidStrength(humanPlayer.cards) : null;
+
   // Legal bids: pass (0) plus any raise strictly above the current highest bid, up to 14.
   const minRaise = Math.max(1, state.currentBid + 1);
   const bidChoices: number[] = [];
   for (let b = minRaise; b <= MAX_BID; b++) bidChoices.push(b);
 
-  const trumpSymbol = state.trumpSuit >= 1 ? (SUIT_SYMBOLS[state.trumpSuit] ?? '-') : '-';
+  /** Localized suit name for a suit number (e.g. 3 -> "ハート"). */
+  const suitLabel = (suit: number): string => (SUIT_KEYS[suit] ? t(`suit.${SUIT_KEYS[suit]}`) : '');
+  /** Colored suit symbol: hearts/diamonds red, spades/clubs default. */
+  const renderSuitSymbol = (suit: number) => (
+    <span className={isRedSuit(suit) ? 'text-ds-error' : undefined}>{SUIT_SYMBOLS[suit]}</span>
+  );
 
   const handleManualReset = () => {
     hideActionLog();
@@ -219,7 +238,16 @@ function CinchPageContent() {
               <span className="mr-4">{t('deal', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber, total: state.totalTricks })}</span>
               <span className="mr-4">{t('highBid', { bid: state.currentBid })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
+              <span className="mr-4" data-testid="cinch-trump-header">
+                {t('trumpLabel')}:{' '}
+                {state.trumpSuit >= 1 ? (
+                  <>
+                    {renderSuitSymbol(state.trumpSuit)} {suitLabel(state.trumpSuit)}
+                  </>
+                ) : (
+                  '-'
+                )}
+              </span>
               <span>{t('target', { points: state.config.pointLimit })}</span>
             </div>
 
@@ -284,17 +312,34 @@ function CinchPageContent() {
                     data-testid="cinch-deal-result"
                   >
                     <div className="mb-1 text-ds-text-primary">{t('dealResult.title')}</div>
-                    {state.lastDealDetail.setBack && (
-                      <div className="text-ds-error mb-1">{t('dealResult.setBack')}</div>
-                    )}
-                    {state.players.map((p) => (
-                      <div key={p.id}>
-                        {t('dealResult.gained', {
-                          name: playerName(p.id, p.isHuman),
-                          points: state.lastDealDetail?.gained[p.id] ?? 0,
+                    {state.lastDealDetail.bidderIdx >= 0 && (
+                      <div
+                        className={`mb-1 ${state.lastDealDetail.setBack ? 'text-ds-error font-semibold' : 'text-ds-text-primary'}`}
+                        data-testid="cinch-bidder-detail"
+                      >
+                        {t(state.lastDealDetail.setBack ? 'dealResult.bidderSet' : 'dealResult.bidderMade', {
+                          name: playerName(state.lastDealDetail.bidderIdx, state.lastDealDetail.bidderIdx === humanIdx),
+                          bid: state.lastDealDetail.bid,
+                          captured: state.lastDealDetail.points[state.lastDealDetail.bidderIdx] ?? 0,
+                          delta: signedDelta(state.lastDealDetail.gained[state.lastDealDetail.bidderIdx] ?? 0),
                         })}
                       </div>
-                    ))}
+                    )}
+                    {state.players.map((p) => {
+                      const isSetBackRow = p.id === state.lastDealDetail?.bidderIdx && state.lastDealDetail?.setBack;
+                      return (
+                        <div
+                          key={p.id}
+                          className={isSetBackRow ? 'text-ds-error font-semibold' : undefined}
+                          data-testid={isSetBackRow ? 'cinch-setback-row' : undefined}
+                        >
+                          {t('dealResult.gained', {
+                            name: playerName(p.id, p.isHuman),
+                            points: state.lastDealDetail?.gained[p.id] ?? 0,
+                          })}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -325,6 +370,28 @@ function CinchPageContent() {
             {canBid && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="cinch-bid-prompt">
                 {t('bidPrompt')}
+              </div>
+            )}
+            {canBid && bidStrength && (
+              <div
+                className="mb-2 mx-auto max-w-xl p-2 rounded bg-black/30 text-ds-text-muted text-xs text-center"
+                data-testid="cinch-bid-strength"
+              >
+                <div className="text-ds-text-primary" data-testid="cinch-bid-strength-range">
+                  {t('bidStrength.range', { min: bidStrength.minPoints, max: bidStrength.maxPoints })}
+                </div>
+                <div data-testid="cinch-bid-strength-best">
+                  {t('bidStrength.best', {
+                    symbol: SUIT_SYMBOLS[bidStrength.bestSuit],
+                    suit: suitLabel(bidStrength.bestSuit),
+                    points: bidStrength.pointsBySuit[bidStrength.bestSuit],
+                  })}
+                </div>
+                <div className="mt-1">
+                  <span className="text-ds-text-primary">{t('bidStrength.legendTitle')}:</span>{' '}
+                  {t('bidStrength.legend')}
+                </div>
+                <div className="mt-1 italic">{t('bidStrength.note')}</div>
               </div>
             )}
             {canNameTrump && (
@@ -387,8 +454,9 @@ function CinchPageContent() {
                       className={btnPrimary}
                       onClick={() => handleNameTrump(suit)}
                       disabled={loading}
+                      aria-label={suitLabel(suit)}
                     >
-                      {SUIT_SYMBOLS[suit]}
+                      {renderSuitSymbol(suit)}
                     </button>
                   ))}
                 </div>

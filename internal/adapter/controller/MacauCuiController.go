@@ -45,7 +45,7 @@ func (c *MacauCuiController) Exec(command string) string {
 			"p", "play", "d", "draw", "s", "suit",
 			"dc", "declare", "sk", "skipdeclare",
 			"nr", "nextround",
-			"sd", "setdifficulty", "sl", "setlimit", "log", "l",
+			"sd", "setdifficulty", "sl", "setlimit", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -76,7 +76,7 @@ func (c *MacauCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
 			}
 		},
 	)

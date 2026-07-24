@@ -33,10 +33,14 @@ import type { YukonResponse } from '../types/card';
 import { YukonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { parseYukonCommand, YUKON_HELP } from '../utils/cli/commands/yukonCommands';
 import type { CliGameConfig } from '../utils/cli/types';
-import { isTableauAllFaceUp } from '../utils/solitaireUtils';
+import { isInMoveBlock, isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+// Localized suit-name keys parallel to FOUNDATION_SUITS, used for aria-labels so
+// screen readers announce "スペード / Spades" rather than the bare "♠" glyph (#3153).
+const FOUNDATION_SUIT_KEYS = ['spade', 'club', 'heart', 'diamond'] as const;
 const noop = () => {};
 
 /** Yukon tutorial step definitions. */
@@ -68,53 +72,6 @@ const YK_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** CLI help text for Yukon. */
-const YUKON_HELP = [
-  'm <from> <to>  Move between tableau columns (top card)',
-  'm t <col> f    Move tableau to foundation',
-  'g              Give up',
-  'h              Hint',
-  'ac             Auto-complete',
-  'u              Undo',
-  'r              Reset',
-];
-
-/** Parse a Yukon CLI command into API call arguments. */
-function parseYukonCommand(input: string): { args: Parameters<typeof yukonApi.exec> } | { error: string } {
-  const parts = input.trim().split(/\s+/);
-  const cmd = parts[0]?.toLowerCase();
-  switch (cmd) {
-    case 'r':
-    case 'reset':
-      return { args: ['reset'] };
-    case 'g':
-    case 'giveup':
-      return { args: ['giveup'] };
-    case 'h':
-    case 'hint':
-      return { args: ['hint'] };
-    case 'ac':
-    case 'autocomplete':
-      return { args: ['autocomplete'] };
-    case 'u':
-    case 'undo':
-      return { args: ['undo'] };
-    case 'm':
-    case 'move': {
-      if (parts.length === 3) {
-        const from = Number.parseInt(parts[1], 10);
-        const to = Number.parseInt(parts[2], 10);
-        if (Number.isNaN(from) || Number.isNaN(to)) return { error: 'Invalid column' };
-        return {
-          args: ['move', { zone: 'tableau', col: from, cardIndex: -1 }, { zone: 'tableau', col: to }],
-        };
-      }
-      return { error: 'Usage: m <fromCol> <toCol>' };
-    }
-    default:
-      return { error: `Unknown command: ${cmd}` };
-  }
-}
-
 /** Format Yukon state for CLI display. */
 function formatYukonState(state: YukonResponse): string {
   const lines: string[] = [];
@@ -397,11 +354,11 @@ function YukonPageContent() {
                       aria-label={
                         topCard
                           ? t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[i],
+                              suit: t(`suitNames.${FOUNDATION_SUIT_KEYS[i]}`),
                               count: pile.length,
                             })
                           : t('emptyFoundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[i],
+                              suit: t(`suitNames.${FOUNDATION_SUIT_KEYS[i]}`),
                             })
                       }
                       style={{ width: yk.cw, height: yk.ch }}
@@ -477,6 +434,18 @@ function YukonPageContent() {
                               {tc.faceUp ? (
                                 (() => {
                                   const inHoverBlock = hoveredBlock?.col === colIdx && cardIdx >= hoveredBlock.cardIdx;
+                                  // Tap-to-preview: once a tableau card is selected, glow the whole
+                                  // block that would lift with it (selected card + every card on top).
+                                  // This gives touch users the hover preview they can't otherwise get (#3152).
+                                  const inSelectedBlock =
+                                    selectedSource?.zone === 'tableau' &&
+                                    selectedSource.col !== undefined &&
+                                    selectedSource.cardIndex !== undefined &&
+                                    isInMoveBlock(
+                                      { col: selectedSource.col, cardIndex: selectedSource.cardIndex },
+                                      colIdx,
+                                      cardIdx,
+                                    );
                                   return (
                                     <button
                                       type="button"
@@ -488,13 +457,14 @@ function YukonPageContent() {
                                       onFocus={() => setHoveredBlock({ col: colIdx, cardIdx })}
                                       onBlur={() => setHoveredBlock(null)}
                                       data-block-member={inHoverBlock || undefined}
+                                      data-selected-block={inSelectedBlock || undefined}
                                       className={`${focusRingWhite} rounded-lg transition-all ${
                                         isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                                       } ${isDragSrc ? 'opacity-50' : ''} ${
                                         hintFrom ? 'ring-2 ring-ds-info motion-safe:animate-pulse' : ''
                                       } ${hintTo ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${
                                         inHoverBlock && !isSelected ? 'ring-2 ring-ds-accent/70' : ''
-                                      }`}
+                                      } ${inSelectedBlock && !isSelected ? 'ring-2 ring-ds-info' : ''}`}
                                       onClick={() => {
                                         if (selectedSource) {
                                           if (isLast) {

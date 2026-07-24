@@ -26,6 +26,24 @@ func wizardCuiCardStr(card *domain.Card) string {
 	return cuiCardStr(card)
 }
 
+// wizardLeadSuit returns the lead suit (design 1..4) of the in-progress trick,
+// or -1 when none is established yet — a Wizard led (suit is irrelevant) or only
+// Jesters have been played. Mirrors Wizard.leadSuitOfTrick so the CUI can name
+// the suit players must follow without a dedicated domain accessor.
+func wizardLeadSuit(trick []*domain.WizardTrickCard) int {
+	for _, tc := range trick {
+		switch tc.Card.GetDesign() {
+		case domain.WizardDesignWizard:
+			return -1
+		case domain.WizardDesignJester:
+			continue
+		default:
+			return tc.Card.GetDesign()
+		}
+	}
+	return -1
+}
+
 // wizardIndexedCardListStr は手札をインデックス付き (ウィザード/ジェスター対応) で描画する。
 func wizardIndexedCardListStr(hand cuiCardList) string {
 	return formatCardList(hand, wizardCuiCardStr, "  ", true)
@@ -115,6 +133,15 @@ func (p *WizardCuiPresenter) Output(o interfaces.WizardGame, lastErr error) stri
 			currentIdx := o.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("wizard.promptPlay",
 				"name", cuiPlayerName(o.GetPlayer(currentIdx), currentIdx)) + "\n")
+			// Spell out the trick number and the lead suit players must follow, so
+			// the human need not infer it from the raw trick block.
+			leadName := i18n.T("wizard.leadNone")
+			if leadSuit := wizardLeadSuit(o.GetCurrentTrick()); leadSuit >= 1 && leadSuit <= 4 {
+				leadName = cuiSuitName(leadSuit)
+			}
+			b.WriteString(i18n.Tf("wizard.promptLead",
+				"trick", strconv.Itoa(o.GetTrickNumber()),
+				"lead", leadName) + "\n")
 			b.WriteString(i18n.T("wizard.promptPlayHelp") + "\n")
 		case domain.WizardPhaseTrickEnd:
 			b.WriteString(i18n.T("wizard.promptTrickEnd") + "\n")

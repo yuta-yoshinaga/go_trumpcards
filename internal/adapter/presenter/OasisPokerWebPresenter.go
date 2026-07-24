@@ -74,6 +74,12 @@ func (op *OasisPokerWebPresenter) ActionLogOutput(g interfaces.OasisPokerGame) s
 	return actionLogOutputJSON(g)
 }
 
+// HintOutput はヒントを返す。Web ではクライアント側でヒントを算出するため、
+// 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
+func (op *OasisPokerWebPresenter) HintOutput(g interfaces.OasisPokerGame) string {
+	return op.Output(g, nil)
+}
+
 // oasisPokerMaskDealerHand returns the dealer hand with all cards except the first masked.
 // 1枚目だけは表示し、それ以降は Design 空文字・Value 0 でマスクする。
 func oasisPokerMaskDealerHand(cards []*domain.Card) []*controller.WebOutputCard {

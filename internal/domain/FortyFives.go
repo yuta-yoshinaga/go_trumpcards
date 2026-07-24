@@ -827,6 +827,10 @@ func (g *FortyFives) SetContract(b FortyFivesBid) { g.contract = b }
 // GetBids 各プレイヤーの入札を取得
 func (g *FortyFives) GetBids() [FortyFivesPlayerCnt]FortyFivesBid { return g.bids }
 
+// GetBidDone は各プレイヤーが入札を済ませたか（true=済み）を返す。未入札と
+// 「パス（bid=0）」を区別できるよう、プレゼンター向けに公開する。
+func (g *FortyFives) GetBidDone() [FortyFivesPlayerCnt]bool { return g.bidDone }
+
 // GetTrumpSuit 切り札スート取得 (0=なし)
 func (g *FortyFives) GetTrumpSuit() int { return g.trumpSuit }
 

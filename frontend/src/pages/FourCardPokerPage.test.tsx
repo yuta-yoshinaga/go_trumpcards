@@ -187,6 +187,21 @@ describe('FourCardPokerPage', () => {
     }
   });
 
+  it('renders the dealer concealed cards as backs during the action phase', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<FourCardPokerPage />);
+    await screen.findByTestId('play-1x');
+    // Dealer holds 6 cards but only the upcard is revealed; the other 5 are backs.
+    expect(screen.getAllByRole('img', { name: '非公開のカード' })).toHaveLength(5);
+  });
+
+  it('reveals all dealer cards face-up (no backs) at the end phase', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<FourCardPokerPage />);
+    await waitFor(() => expect(screen.getByText('You Win!')).toBeInTheDocument());
+    expect(screen.queryByRole('img', { name: '非公開のカード' })).not.toBeInTheDocument();
+  });
+
   it('sends fold command', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<FourCardPokerPage />);

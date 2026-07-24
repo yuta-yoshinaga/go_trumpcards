@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeSoloWhistPlayers() []*domain.SoloWhistPlayer {
@@ -34,6 +36,8 @@ func setupSoloWhistCuiMock() *interfaces.MockSoloWhistGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetDeclarerIdx").Return(0)
 	m.On("GetContract").Return(domain.SoloWhistBidSolo)
+	m.On("GetBids").Return([domain.SoloWhistPlayerCnt]domain.SoloWhistBid{domain.SoloWhistBidSolo, domain.SoloWhistBidPass, domain.SoloWhistBidPass, domain.SoloWhistBidPass})
+	m.On("GetBidDone").Return([domain.SoloWhistPlayerCnt]bool{true, true, false, false})
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayerScores").Return([domain.SoloWhistPlayerCnt]int{0, 0, 0, 0})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
@@ -72,6 +76,9 @@ func TestSoloWhistCuiPresenter_Output(t *testing.T) {
 		m.On("GetDeclarerIdx").Return(-1)
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
+		// The bid-status line lists every player; an un-bid player renders "-".
+		assert.Contains(t, result, strings.Split(i18n.T("solowhist.bidHistory"), "{{")[0])
+		assert.Contains(t, result, "=-")
 	})
 
 	t.Run("misere shows no trump", func(t *testing.T) {

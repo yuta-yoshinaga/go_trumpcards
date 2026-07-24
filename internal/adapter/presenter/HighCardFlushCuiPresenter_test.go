@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupHighCardFlushCuiMockDefaults(m *interfaces.MockHighCardFlushGame) {
@@ -254,4 +255,28 @@ func TestHighCardFlushCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "棋譜はありません")
+}
+
+func TestHighCardFlushCuiPresenter_HintOutput(t *testing.T) {
+	p := new(HighCardFlushCuiPresenter)
+
+	t.Run("no hint outside the action phase", func(t *testing.T) {
+		m := new(interfaces.MockHighCardFlushGame)
+		m.On("GetPhase").Return(domain.HighCardFlushPhaseBet)
+		assert.Contains(t, p.HintOutput(m), i18n.T("highcardflush.hintNone"))
+	})
+
+	t.Run("raise when the flush qualifies", func(t *testing.T) {
+		m := new(interfaces.MockHighCardFlushGame)
+		m.On("GetPhase").Return(domain.HighCardFlushPhaseAction)
+		m.On("GetPlayerFlushLen").Return(domain.HighCardFlushDealerMinFlushLen)
+		assert.Contains(t, p.HintOutput(m), i18n.T("highcardflush.hintRaise"))
+	})
+
+	t.Run("fold when the flush is too short", func(t *testing.T) {
+		m := new(interfaces.MockHighCardFlushGame)
+		m.On("GetPhase").Return(domain.HighCardFlushPhaseAction)
+		m.On("GetPlayerFlushLen").Return(domain.HighCardFlushDealerMinFlushLen - 1)
+		assert.Contains(t, p.HintOutput(m), i18n.T("highcardflush.hintFold"))
+	})
 }

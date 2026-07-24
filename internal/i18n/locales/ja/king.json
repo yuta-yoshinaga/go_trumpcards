@@ -31,5 +31,6 @@
   "dealEnd": "ディール終了",
   "result.scores": "ゲーム終了！ 得点: {{scores}}",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
-  "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！"
+  "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
+  "remainingContracts": "残りコントラクト: {{contracts}}"
 }

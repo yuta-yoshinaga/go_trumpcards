@@ -31,6 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TwoTenJackResponse } from '../types/card';
 import { TwoTenJackPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseTwoTenJackCommand, TWOTENJACK_HELP } from '../utils/cli/commands/twoTenJackCommands';
 import { formatTwoTenJackState } from '../utils/cli/formatters/twoTenJackFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -101,6 +102,10 @@ function TwoTenJackPageContent() {
     state,
     loading,
     error,
+    hint,
+    hintError,
+    hintLoading,
+    handleHint,
     exec: dispatch,
     retry,
     twoTenJackConfig,
@@ -312,6 +317,7 @@ function TwoTenJackPageContent() {
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[320px] mt-1">
+                        <caption className="sr-only">{t('scoresCaption')}</caption>
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
@@ -342,6 +348,7 @@ function TwoTenJackPageContent() {
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[320px]">
+                        <caption className="sr-only">{t('scoresCaption')}</caption>
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
@@ -404,15 +411,52 @@ function TwoTenJackPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="tt"
+                highlightIndices={isHumanTurn && hint?.cardIndex !== undefined ? [hint.cardIndex] : undefined}
               />
             )}
 
-            <ErrorAlert message={error} onRetry={retry} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {hint && (
+              <div className="text-ds-warning text-sm mb-2" data-testid="tt-hint">
+                {hint.trumpSuit !== undefined
+                  ? `${t('hintDeclare')}: ${trumpSymbol(hint.trumpSuit)} (${t(`hint.${hint.reason}`)})`
+                  : (() => {
+                      const card = hint.cardIndex !== undefined ? humanPlayer?.cards[hint.cardIndex] : undefined;
+                      const name = card ? cardAlt(card) : '-';
+                      return `${t('hintPlay')}: ${name} [${hint.cardIndex ?? '-'}] (${t(`hint.${hint.reason}`)})`;
+                    })()}
+              </div>
+            )}
 
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="tt-play-button">
+              {(isHumanDeclarer || isHumanTurn) && (
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={handleHint}
+                  disabled={loading || hintLoading}
+                  data-testid="tt-hint-button"
+                >
+                  {tc('button.hint')}
+                </button>
+              )}
               {isHumanDeclarer && (
                 <span data-testid="tt-declare-prompt" className="text-ds-warning text-sm font-medium w-full sm:w-auto">
                   {t('declarePrompt')}
+                </span>
+              )}
+              {isDeclarePhase && !isHumanDeclarer && (
+                <span
+                  data-testid="tt-cpu-declaring"
+                  role="status"
+                  className="flex items-center gap-2 text-ds-info text-sm font-medium w-full sm:w-auto"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="inline-block w-3 h-3 rounded-full border-2 border-ds-info border-t-transparent motion-safe:animate-spin"
+                  />
+                  {t('cpuDeclaring')}
                 </span>
               )}
               {isHumanDeclarer &&

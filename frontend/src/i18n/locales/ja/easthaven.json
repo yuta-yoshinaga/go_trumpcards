@@ -21,6 +21,7 @@
   "playing": "プレイ中",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
+  "hintSentence": "移動: 列 {{fromCol}} の {{card}} → {{dest}}",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
   "stalemate": "手詰まりです",
@@ -40,5 +41,24 @@
   "nav": {
     "easthaven": "イーストヘイブン"
   },
-  "moveHereAriaLabel": "空のタブロー列 {{col}}（ここに移動）"
+  "moveHereAriaLabel": "空のタブロー列 {{col}}（ここに移動）",
+  "cli": {
+    "help": [
+      "m <列> <列>  場札間で上のカードを移動",
+      "m t <列> f    場札から組札へ移動",
+      "m t <列> <番号> t <列>  番号指定で連続札を移動",
+      "d              各列に1枚ずつ配る",
+      "g              ギブアップ",
+      "h              ヒント",
+      "ac             自動完成",
+      "u              元に戻す",
+      "r              リセット"
+    ],
+    "error": {
+      "invalidColumn": "無効な列番号です",
+      "invalidArg": "無効な引数です",
+      "usageMove": "使い方: m <移動元列> <移動先列> | m t <列> f | m t <列> <番号> t <列>",
+      "unknownCommand": "不明なコマンド: {{cmd}}"
+    }
+  }
 }

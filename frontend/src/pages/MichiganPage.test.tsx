@@ -128,6 +128,63 @@ describe('MichiganPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '賭ける' })).toBeEnabled());
   });
 
+  it('marks a boodle as collectible when the human holds its matching card', async () => {
+    // Boodle 0 is A♥ (HEART 1); give the human that card so it becomes recoverable.
+    const collectibleState = makeMichiganState({
+      phase: 0,
+      isHumanTurn: true,
+      humanBetPlaced: false,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          chips: 192,
+          roundBet: 8,
+          cardCount: 2,
+          cards: [
+            { design: 'HEART', value: 1 }, // matches boodle 0 (A♥)
+            { design: 'SPADE', value: 2 },
+          ],
+          isCurrent: true,
+          isWinner: false,
+        },
+        { id: 1, isHuman: false, chips: 192, roundBet: 8, cardCount: 5, cards: [], isCurrent: false, isWinner: false },
+        { id: 2, isHuman: false, chips: 192, roundBet: 8, cardCount: 5, cards: [], isCurrent: false, isWinner: false },
+        { id: 3, isHuman: false, chips: 192, roundBet: 8, cardCount: 5, cards: [], isCurrent: false, isWinner: false },
+      ],
+    });
+    mockExec.mockResolvedValue(collectibleState);
+    renderWithProviders(<MichiganPage />);
+    expect(await screen.findByTestId('bet-collectible-0')).toHaveTextContent('回収可能');
+    // Boodle 1 (K♣) is not held, so no collectible mark there.
+    expect(screen.queryByTestId('bet-collectible-1')).not.toBeInTheDocument();
+  });
+
+  it('shows no collectible marks when the human holds none of the boodle cards', async () => {
+    renderWithProviders(<MichiganPage />); // default betState hand matches no boodle
+    await screen.findByRole('button', { name: '賭ける' });
+    expect(screen.queryByTestId('bet-collectible-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('bet-collectible-1')).not.toBeInTheDocument();
+  });
+
+  it('warns on a boodle whose chips have already been claimed', async () => {
+    const claimedState = makeMichiganState({
+      phase: 0,
+      isHumanTurn: true,
+      humanBetPlaced: false,
+      boodles: [
+        { card: { design: 'HEART', value: 1 }, chips: 2, claimedBy: -1 },
+        { card: { design: 'CLOVER', value: 13 }, chips: 2, claimedBy: 2 }, // claimed
+        { card: { design: 'DIAMOND', value: 12 }, chips: 2, claimedBy: -1 },
+        { card: { design: 'SPADE', value: 11 }, chips: 2, claimedBy: -1 },
+      ],
+    });
+    mockExec.mockResolvedValue(claimedState);
+    renderWithProviders(<MichiganPage />);
+    expect(await screen.findByTestId('bet-claimed-warning-1')).toHaveTextContent('獲得済み・賭け注意');
+    expect(screen.queryByTestId('bet-claimed-warning-0')).not.toBeInTheDocument();
+  });
+
   it('hides the place-bets button when it is not the human turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<MichiganPage />);
@@ -149,6 +206,40 @@ describe('MichiganPage', () => {
     renderWithProviders(<MichiganPage />);
     const card = await screen.findByTestId('hand-card-1');
     expect(card).toBeDisabled();
+  });
+
+  it('highlights playable cards with a success ring and a next-play badge', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<MichiganPage />);
+    const playable = await screen.findByTestId('hand-card-0');
+    expect(playable.className).toContain('ring-ds-success');
+    expect(playable).toHaveAttribute('data-playable', 'true');
+    expect(screen.getByTestId('playable-badge-0')).toBeInTheDocument();
+  });
+
+  it('does not ring or badge a non-playable card', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<MichiganPage />);
+    const nonPlayable = await screen.findByTestId('hand-card-1');
+    expect(nonPlayable.className).not.toContain('ring-ds-success');
+    expect(nonPlayable).toHaveAttribute('data-playable', 'false');
+    expect(screen.queryByTestId('playable-badge-1')).not.toBeInTheDocument();
+  });
+
+  it('shows the next-required-card hint for an active sequence', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<MichiganPage />);
+    expect(await screen.findByTestId('michigan-next-hint')).toHaveTextContent('次に出せる: ハート 4');
+  });
+
+  it('keeps a highlighted playable card clickable (ring stays additive)', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<MichiganPage />);
+    const playable = await screen.findByTestId('hand-card-0');
+    expect(playable).not.toBeDisabled();
+    mockExec.mockClear();
+    fireEvent.click(playable);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
   });
 
   it('shows the next-round button at the result phase and dispatches nextround', async () => {

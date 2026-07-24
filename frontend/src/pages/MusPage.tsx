@@ -29,7 +29,11 @@ import type { TutorialStep } from '../types/tutorial';
 import { MUS_HELP, parseMusCommand } from '../utils/cli/commands/musCommands';
 import { formatMusState } from '../utils/cli/formatters/musFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { evalMusHand } from '../utils/musHandEval';
 import { playerName } from '../utils/playerUtils';
+
+/** i18n value keys for each Pares category (0=none, 1=par, 2=medias, 3=duples). */
+const PARES_VALUE_KEYS: readonly string[] = ['paresNone', 'paresPar', 'paresMedias', 'paresDuples'];
 
 /** Mus tutorial step definitions. */
 const MUS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -286,6 +290,35 @@ function MusPageContent() {
               />
             )}
 
+            {humanPlayer &&
+              humanPlayer.cards.length === 4 &&
+              (() => {
+                const evalResult = evalMusHand(humanPlayer.cards);
+                const paresValue = t(`handSummary.${PARES_VALUE_KEYS[evalResult.paresCategory]}`);
+                const juegoValue =
+                  evalResult.points === 31
+                    ? t('handSummary.juegoBest')
+                    : evalResult.hasJuego
+                      ? t('handSummary.juegoYes', { points: evalResult.points })
+                      : t('handSummary.juegoPunto', { points: evalResult.points });
+                const paresActive = state.phase === MusPhase.PARES;
+                const juegoActive = state.phase === MusPhase.JUEGO;
+                return (
+                  <div
+                    className="mt-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="mus-hand-summary"
+                  >
+                    <div className="mb-1 text-ds-text-primary">{t('handSummary.title')}</div>
+                    <div className={paresActive ? 'text-ds-warning font-semibold' : ''} data-testid="mus-summary-pares">
+                      {t('handSummary.pares')}: {paresValue}
+                    </div>
+                    <div className={juegoActive ? 'text-ds-warning font-semibold' : ''} data-testid="mus-summary-juego">
+                      {t('handSummary.juego')}: {juegoValue}
+                    </div>
+                  </div>
+                );
+              })()}
+
             <ErrorAlert message={error} onRetry={retry} />
 
             {frontendHintEnabled && frontendHint && (
@@ -305,9 +338,21 @@ function MusPageContent() {
               )}
 
               {isDiscardPhase && isHumanTurn && (
-                <button type="button" className={btnPrimary} onClick={handleDiscard} disabled={loading}>
-                  {t('discardButton')} ({t('discardSelected', { count: selectedCardIndices.length })})
-                </button>
+                <>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleDiscard}
+                    disabled={loading || selectedCardIndices.length === 0}
+                  >
+                    {t('discardButton')} ({t('discardSelected', { count: selectedCardIndices.length })})
+                  </button>
+                  <span className="text-ds-text-muted text-sm" data-testid="mus-discard-guide">
+                    {selectedCardIndices.length === 0
+                      ? t('discardGuide')
+                      : t('discardCount', { count: selectedCardIndices.length })}
+                  </span>
+                </>
               )}
 
               {isBetPhase && isHumanTurn && (

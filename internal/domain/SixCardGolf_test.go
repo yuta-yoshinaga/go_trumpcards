@@ -857,3 +857,68 @@ func skipSetup(g *SixCardGolf) {
 	g.SetPhase(SixCardGolfPhasePlayerTurn)
 	g.SetCurrentPlayerIdx(0)
 }
+
+func TestSixCardGolf_ShouldDrawFromDiscard(t *testing.T) {
+	g := newTestSixCardGolf()
+	g.Reset()
+	g.SetDiscardPile([]*Card{NewCard(CardDesignSpade, 13, false)}) // King = score 0
+	assert.True(t, g.ShouldDrawFromDiscard())
+	g.SetDiscardPile([]*Card{NewCard(CardDesignSpade, 9, false)}) // 9 > 3
+	assert.False(t, g.ShouldDrawFromDiscard())
+	g.SetDiscardPile(nil)
+	assert.False(t, g.ShouldDrawFromDiscard())
+}
+
+func TestSixCardGolf_RecommendedSwap(t *testing.T) {
+	fill := func(g *SixCardGolf, value int) {
+		p := g.GetPlayer(0)
+		for i := range p.Grid {
+			p.Grid[i] = makeSlot(value, CardDesignSpade, true)
+		}
+	}
+
+	t.Run("swaps a low drawn card into a high grid", func(t *testing.T) {
+		g := newTestSixCardGolf()
+		g.Reset()
+		g.SetCurrentPlayerIdx(0)
+		g.SetPhase(SixCardGolfPhaseDrawPending)
+		fill(g, 11)                                        // Jacks = 10 each
+		g.SetDrawnCard(NewCard(CardDesignSpade, 1, false)) // Ace = 1
+		pos, pair := g.RecommendedSwap()
+		assert.GreaterOrEqual(t, pos, 0)
+		assert.False(t, pair)
+	})
+
+	t.Run("recommends discard for a high drawn card over a low grid", func(t *testing.T) {
+		g := newTestSixCardGolf()
+		g.Reset()
+		g.SetCurrentPlayerIdx(0)
+		g.SetPhase(SixCardGolfPhaseDrawPending)
+		fill(g, 1)                                          // Aces = 1 each
+		g.SetDrawnCard(NewCard(CardDesignSpade, 11, false)) // Jack = 10
+		pos, _ := g.RecommendedSwap()
+		assert.Equal(t, -1, pos)
+	})
+
+	t.Run("flags a column pair", func(t *testing.T) {
+		g := newTestSixCardGolf()
+		g.Reset()
+		g.SetCurrentPlayerIdx(0)
+		g.SetPhase(SixCardGolfPhaseDrawPending)
+		fill(g, 9) // 9s so no accidental pairs
+		p := g.GetPlayer(0)
+		p.Grid[3] = makeSlot(5, CardDesignSpade, true) // column 0 partner is a 5
+		g.SetDrawnCard(NewCard(CardDesignHeart, 5, false))
+		pos, pair := g.RecommendedSwap()
+		assert.Equal(t, 0, pos)
+		assert.True(t, pair)
+	})
+
+	t.Run("no recommendation outside DrawPending", func(t *testing.T) {
+		g := newTestSixCardGolf()
+		g.Reset()
+		g.SetPhase(SixCardGolfPhasePlayerTurn)
+		pos, _ := g.RecommendedSwap()
+		assert.Equal(t, -1, pos)
+	})
+}

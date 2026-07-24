@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import i18n from '../i18n';
 import type { CardDesign } from '../types/card';
-import { cardAlt, suitSymbol } from './cardAlt';
+import { cardAlt, isRedSuitDesign, isSuitDesign, suitSymbol } from './cardAlt';
 
 describe('cardAlt', () => {
   it('returns localized joker text for JOKER', () => {
@@ -49,5 +49,25 @@ describe('suitSymbol', () => {
 
   it('falls back to the raw design for unknown designs', () => {
     expect(suitSymbol('JOKER')).toBe('JOKER');
+  });
+});
+
+describe('isSuitDesign', () => {
+  it.each(['SPADE', 'CLOVER', 'HEART', 'DIAMOND'])('is true for the known suit %s', (design) => {
+    expect(isSuitDesign(design)).toBe(true);
+  });
+
+  it.each(['JOKER', '', 'UNKNOWN'])('is false for the non-suit %s', (design) => {
+    expect(isSuitDesign(design)).toBe(false);
+  });
+});
+
+describe('isRedSuitDesign', () => {
+  it.each(['HEART', 'DIAMOND'])('is true for the red suit %s', (design) => {
+    expect(isRedSuitDesign(design)).toBe(true);
+  });
+
+  it.each(['SPADE', 'CLOVER', 'JOKER', ''])('is false for %s', (design) => {
+    expect(isRedSuitDesign(design)).toBe(false);
   });
 });

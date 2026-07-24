@@ -23,13 +23,15 @@ func (c *ClockSolitaireCuiController) Exec(command string) string {
 		func(_ []string) string {
 			return c.ci.Reset()
 		},
-		[]string{"s", "step", "a", "autoplay", "log", "l"},
+		[]string{"s", "step", "a", "autoplay", "u", "undo", "log", "l"},
 		func(cmd string, _ []string) (string, bool) {
 			switch cmd {
 			case "s", "step":
 				return c.ci.Step(), true
 			case "a", "autoplay":
 				return c.ci.AutoPlay(), true
+			case "u", "undo":
+				return c.ci.Undo(), true
 			default:
 				return handleCuiLog(cmd, c.ci.ActionLog)
 			}

@@ -94,6 +94,7 @@ import type {
   NapResponse,
   NertzResponse,
   NinetyNineResponse,
+  OasisPokerResponse,
   OhHellResponse,
   OichoKabuResponse,
   OldMaidResponse,
@@ -157,6 +158,7 @@ import type {
   TrenteEtQuaranteResponse,
   TressetteResponse,
   TriPeaksResponse,
+  TrucoResponse,
   TuteResponse,
   TwentyNineResponse,
   TwoTenJackResponse,
@@ -171,6 +173,7 @@ import type {
   WizardResponse,
   YanivResponse,
   YukonResponse,
+  ZhengResponse,
 } from '../types/card';
 import type { HintResult } from '../types/hint';
 import { getAccordionHint } from '../utils/hints/accordionHint';
@@ -271,6 +274,7 @@ import { getNapHint } from '../utils/hints/napHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getNinetyNineHint } from '../utils/hints/ninetynineHint';
+import { getOasisPokerHint } from '../utils/hints/oasispokerHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOichokabuHint } from '../utils/hints/oichokabuHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
@@ -335,6 +339,7 @@ import { getTrashHint } from '../utils/hints/trashHint';
 import { getTrenteEtQuaranteHint } from '../utils/hints/trenteetquaranteHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
+import { getTrucoHint } from '../utils/hints/trucoHint';
 import { getTuteHint } from '../utils/hints/tuteHint';
 import { getTwentyNineHint } from '../utils/hints/twentyNineHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
@@ -349,6 +354,7 @@ import { getWhistHint } from '../utils/hints/whistHint';
 import { getWizardHint } from '../utils/hints/wizardHint';
 import { getYanivHint } from '../utils/hints/yanivHint';
 import { getYukonHint } from '../utils/hints/yukonHint';
+import { getZhengHint } from '../utils/hints/zhengHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
 
 /** Hint function that takes game state and returns a hint result or null. */
@@ -388,6 +394,7 @@ const hintFactories = {
   gaigel: (s) => getGaigelHint(s as GaigelResponse),
   bigtwo: (s) => getBigTwoHint(s as BigTwoResponse),
   tienlen: (s) => getTienLenHint(s as TienLenResponse),
+  zheng: (s) => getZhengHint(s as ZhengResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),
@@ -422,6 +429,7 @@ const hintFactories = {
   gofish: (s) => getGoFishHint(s as GoFishResponse),
   golf: (s) => getGolfHint(s as GolfResponse),
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
+  oasispoker: (s) => getOasisPokerHint(s as OasisPokerResponse),
   casinoholdem: (s) => getCasinoHoldemHint(s as CasinoHoldemResponse),
   texasholdembonus: (s) => getTexasHoldemBonusHint(s as TexasHoldemBonusResponse),
   ultimatetexasholdem: (s) => getUltimateTexasHoldemHint(s as UltimateTexasHoldemResponse),
@@ -547,6 +555,7 @@ const hintFactories = {
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),
   pan: (s) => getPanHint(s as PanResponse),
+  truco: (s) => getTrucoHint(s as TrucoResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

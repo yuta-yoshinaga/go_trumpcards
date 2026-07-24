@@ -170,6 +170,47 @@ func TestPresidentCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestPresidentCuiPresenter_HintOutput(t *testing.T) {
+	p := new(presenter.PresidentCuiPresenter)
+
+	t.Run("recommends the weakest legal play", func(t *testing.T) {
+		players := makePresidentPlayersForPresenter()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		m := new(interfaces.MockPresidentGame)
+		m.On("GetGameEndFlag").Return(false)
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetCurrentTurn").Return(0)
+		m.On("GetPlayer", 0).Return(players[0])
+		m.On("SuggestWeakestPlay", 0).Return([]int{0})
+		assert.Contains(t, p.HintOutput(m), "を出す")
+	})
+
+	t.Run("recommends passing when no legal play exists", func(t *testing.T) {
+		m := new(interfaces.MockPresidentGame)
+		m.On("GetGameEndFlag").Return(false)
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetCurrentTurn").Return(0)
+		m.On("GetPlayer", 0).Return(makePresidentPlayersForPresenter()[0])
+		m.On("SuggestWeakestPlay", 0).Return(([]int)(nil))
+		assert.Contains(t, p.HintOutput(m), "パス")
+	})
+
+	t.Run("declines when it is not the human's turn", func(t *testing.T) {
+		m := new(interfaces.MockPresidentGame)
+		m.On("GetGameEndFlag").Return(false)
+		m.On("IsHumanTurn").Return(false)
+		assert.Contains(t, p.HintOutput(m), "あなたの番ではありません")
+	})
+
+	t.Run("declines when the game is over", func(t *testing.T) {
+		m := new(interfaces.MockPresidentGame)
+		m.On("GetGameEndFlag").Return(true)
+		m.On("IsHumanTurn").Return(true)
+		assert.Contains(t, p.HintOutput(m), "あなたの番ではありません")
+	})
+}
+
 func TestPresidentCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.PresidentCuiPresenter)
 	players := makePresidentPlayersForPresenter()

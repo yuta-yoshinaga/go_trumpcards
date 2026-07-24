@@ -46,6 +46,14 @@
     "jack": "Jack (capturing the trump Jack)",
     "game": "Game (most card pips)"
   },
+  "breakdown": {
+    "title": "Point Breakdown",
+    "high": "High",
+    "low": "Low",
+    "jack": "Jack",
+    "game": "Game",
+    "none": "−"
+  },
   "hint": {
     "begBeg": "weak hand, so beg",
     "begStand": "decent hand, so stand",
@@ -63,5 +71,11 @@
     "playButton": "Select a card, then play it with this button.",
     "scoreTable": "The score table. Compete for High/Low/Jack/Game; first to 7 points wins.",
     "resetButton": "The reset button starts a new game."
+  },
+  "suitName": {
+    "spade": "Spade",
+    "club": "Club",
+    "heart": "Heart",
+    "diamond": "Diamond"
   }
 }

@@ -33,6 +33,7 @@
   "deck": "山札: {{count}}枚",
   "books": "ブック: {{count}}",
   "knownRanksLabel": "既知の要求済みランク",
+  "bookRanksLabel": "完成したブックのランク",
   "tutorial": {
     "cpuArea": "相手プレイヤーのカード枚数とブックです。クリックして要求先を選択します。",
     "playerHand": "あなたの手札です。カードをクリックして要求するランクを選択します。",
@@ -42,5 +43,10 @@
   "hint": {
     "askKnownRank": "直前に相手が取ったランクを要求推奨",
     "askMostCopies": "最も多く持っているランクを要求推奨"
+  },
+  "a11y": {
+    "targetSelected": "{{name}} を選択",
+    "rankSelected": "ランク {{rank}} を選択",
+    "kbdHint": "数字キーで相手、←→ でランク、a で要求"
   }
 }

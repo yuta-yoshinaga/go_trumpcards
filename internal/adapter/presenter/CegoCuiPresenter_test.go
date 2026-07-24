@@ -3,6 +3,7 @@
 package presenter_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func cegoCuiGame() *domain.Cego {
@@ -64,6 +66,26 @@ func TestCegoCuiPresenter_Output(t *testing.T) {
 		result := p.Output(g, nil)
 		assert.Contains(t, result, "T7")
 		assert.Contains(t, result, "Sküs")
+	})
+
+	// declarerPrefix is the leading literal of the declarer line (before the
+	// {{name}} placeholder), stable enough to assert on under the default locale.
+	declarerPrefix := strings.SplitN(i18n.T("cego.declarerLine"), "{{", 2)[0]
+
+	t.Run("declarer line shown once declarer is set", func(t *testing.T) {
+		g := cegoCuiGame()
+		g.SetDeclarerIdx(0)
+		g.SetContract(domain.CegoBidPlay)
+		g.SetPhase(domain.CegoPhasePlay)
+		result := p.Output(g, nil)
+		assert.Contains(t, result, declarerPrefix)
+	})
+
+	t.Run("declarer line hidden before declarer is set", func(t *testing.T) {
+		g := cegoCuiGame() // default declarer idx is -1 during bidding
+		g.SetBidPlayerIdx(0)
+		result := p.Output(g, nil)
+		assert.NotContains(t, result, declarerPrefix)
 	})
 
 	t.Run("trick end", func(t *testing.T) {

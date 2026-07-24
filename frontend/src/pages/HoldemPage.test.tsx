@@ -1258,6 +1258,50 @@ describe('HoldemPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true }));
   });
 
+  // ---- Tournament settings ----
+  it('sends tournament config when tournament mode is enabled before reset', async () => {
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByTestId('tournament-mode-toggle'));
+    // Rebuy/addon toggles only appear once tournament mode is on
+    fireEvent.click(screen.getByTestId('tournament-rebuy-toggle'));
+    fireEvent.click(screen.getByTestId('tournament-addon-toggle'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        cpuMetaAI: false,
+        tournamentMode: true,
+        rebuyEnabled: true,
+        addonEnabled: true,
+      }),
+    );
+  });
+
+  it('hides rebuy/addon toggles until tournament mode is enabled', async () => {
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.queryByTestId('tournament-rebuy-toggle')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tournament-mode-toggle'));
+    expect(screen.getByTestId('tournament-rebuy-toggle')).toBeInTheDocument();
+  });
+
+  it('omits tournament config from reset when tournament mode is off', async () => {
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
+  });
+
   // ---- Keyboard navigation ----
   describe('keyboard navigation', () => {
     it('pressing c triggers call when canAct and hasOutstandingBet', async () => {

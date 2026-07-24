@@ -38,8 +38,9 @@ import { cardAlt } from '../utils/cardAlt';
 import { DEUCE_TO_SEVEN_HELP, parseDeuceToSevenCommand } from '../utils/cli/commands/deuceToSevenCommands';
 import { formatDeuceToSevenState } from '../utils/cli/formatters/deuceToSevenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { deuceToSevenBestIndices, isMadePatLow } from '../utils/deuceToSevenUtils';
+import { DEUCE_TO_SEVEN_MAX_DRAWS, deuceToSevenBestIndices, isMadePatLow } from '../utils/deuceToSevenUtils';
 import { findPlayerName } from '../utils/playerUtils';
+import { type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 
 /** 2-7 Triple Draw tutorial step definitions. */
 const D7_TUTORIAL_STEPS: TutorialStep[] = [
@@ -84,6 +85,10 @@ function DeuceToSevenPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const isMobile = useIsMobile();
+  // Translate the poker category via its stable rank so the badge follows the
+  // UI locale; fall back to the server's string if the rank is out of range.
+  const handLabel = (handRank: number, handName: string): string =>
+    t(`hand.${pokerHandKey(handRank as PokerHandRank)}`, { defaultValue: handName });
   const gameHook = useDeuceToSevenGame();
   const { state, loading, error, retry, selected, toggleCard, clearSelection, canExchange } = gameHook;
   const execAction = gameHook.exec;
@@ -136,9 +141,10 @@ function DeuceToSevenPageContent() {
   const drawIndex = state?.drawIndex ?? 0;
   const phaseLabel =
     phase === DeuceToSevenPhase.DRAW
-      ? t('phase.draw', { n: drawIndex })
+      ? t('phase.draw', { n: drawIndex, max: DEUCE_TO_SEVEN_MAX_DRAWS })
       : phase === DeuceToSevenPhase.BET
-        ? t('phase.bet') + (drawIndex > 0 ? ` (${t('drawBadge', { n: drawIndex })})` : '')
+        ? t('phase.bet') +
+          (drawIndex > 0 ? ` (${t('drawBadge', { n: drawIndex, max: DEUCE_TO_SEVEN_MAX_DRAWS })})` : '')
         : phase === DeuceToSevenPhase.DEAL
           ? t('phase.deal')
           : phase === DeuceToSevenPhase.SHOWDOWN
@@ -217,7 +223,7 @@ function DeuceToSevenPageContent() {
             {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           <span className="text-xs bg-black/20 text-ds-text-primary px-2 py-0.5 rounded">
-            {drawIndex === 0 ? t('preDrawLabel') : t('drawBadge', { n: drawIndex })}
+            {drawIndex === 0 ? t('preDrawLabel') : t('drawBadge', { n: drawIndex, max: DEUCE_TO_SEVEN_MAX_DRAWS })}
           </span>
         </>
       }
@@ -240,7 +246,7 @@ function DeuceToSevenPageContent() {
                     currentBet: p.currentBet,
                     folded: p.folded,
                     allIn: p.allIn,
-                    handName: p.handName,
+                    handName: handLabel(p.handRank, p.handName),
                     cards: p.cards,
                   }}
                   showCards={isEnd}
@@ -292,7 +298,7 @@ function DeuceToSevenPageContent() {
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isEnd && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
-                      {humanPlayer.handName}
+                      {handLabel(humanPlayer.handRank, humanPlayer.handName)}
                     </span>
                   )}
                 </div>

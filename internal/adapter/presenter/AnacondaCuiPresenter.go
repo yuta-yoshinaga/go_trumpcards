@@ -12,6 +12,28 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// anacondaPassRecipient returns the seat the human passes to — the next still-in
+// (not eliminated) participant to the left — or -1 when it can't be determined.
+// Mirrors the domain executePass rotation (participants[(k+1)%n]).
+func anacondaPassRecipient(g interfaces.AnacondaGame) int {
+	humanPos := -1
+	var participants []int
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		p := g.GetPlayer(i)
+		if p == nil || p.GetOut() {
+			continue
+		}
+		if p.GetIsHuman() {
+			humanPos = len(participants)
+		}
+		participants = append(participants, i)
+	}
+	if humanPos < 0 || len(participants) < 2 {
+		return -1
+	}
+	return participants[(humanPos+1)%len(participants)]
+}
+
 // AnacondaCuiPresenter renders the Anaconda CUI view.
 type AnacondaCuiPresenter struct{}
 
@@ -89,6 +111,13 @@ func (p *AnacondaCuiPresenter) Output(g interfaces.AnacondaGame, lastErr error) 
 		switch g.GetPhase() {
 		case domain.AnacondaPhasePass:
 			b.WriteString(i18n.Tf("anaconda.promptPass", "count", strconv.Itoa(g.GetPassCount())) + "\n")
+			// Name who receives the pass (the next still-in player to the left) so
+			// the human knows where their discarded cards go.
+			if recipient := anacondaPassRecipient(g); recipient >= 0 {
+				b.WriteString(i18n.Tf("anaconda.promptPassTo",
+					"name", cuiPlayerName(g.GetPlayer(recipient), recipient),
+					"count", strconv.Itoa(g.GetPassCount())) + "\n")
+			}
 		case domain.AnacondaPhaseSet:
 			b.WriteString(i18n.T("anaconda.promptKeep") + "\n")
 		case domain.AnacondaPhaseRoll:

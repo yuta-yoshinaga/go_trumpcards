@@ -82,6 +82,63 @@ export function evaluateFiveCardHand(cards: readonly Card[]): PokerHandRank | nu
   return PokerHand.HighCard;
 }
 
+/**
+ * Evaluate the best *made* hand category for a partial (1-4 card) line.
+ *
+ * Only value multiples (pairs, trips, quads) can be definitively "made" before
+ * a line is full, so straights, flushes, and full houses are intentionally
+ * excluded — they are only realised once all five cards are present, where
+ * {@link evaluateFiveCardHand} takes over. Returns `null` for an empty/full
+ * line or when nothing better than a high card is formed, letting callers keep
+ * the early-game board free of clutter while still hinting which lines are
+ * developing a pair or better.
+ */
+export function evaluatePartialHand(cards: readonly Card[]): PokerHandRank | null {
+  if (cards.length === 0 || cards.length >= 5) return null;
+  const counts = countByValue(cards.map((c) => c.value));
+  const groupSizes = Object.values(counts).sort((a, b) => b - a);
+  if (groupSizes[0] === 4) return PokerHand.FourOfAKind;
+  if (groupSizes[0] === 3) return PokerHand.ThreeOfAKind;
+  if (groupSizes[0] === 2 && groupSizes[1] === 2) return PokerHand.TwoPair;
+  if (groupSizes[0] === 2) return PokerHand.OnePair;
+  return null;
+}
+
+/**
+ * Evaluate the best 5-card poker hand reachable from up to seven cards.
+ *
+ * Composes {@link evaluateFiveCardHand} over every C(n, 5) combination once at
+ * least five cards are present (n is tiny — at most C(7,5)=21 combinations — so
+ * the brute-force scan is cheap). With one to four cards it falls back to
+ * {@link evaluatePartialHand}, defaulting to {@link PokerHand.HighCard} when no
+ * multiple is made yet, so a live readout always has a name to show. Returns
+ * `null` only for an empty card list.
+ */
+export function evaluateBestHand(cards: readonly Card[]): PokerHandRank | null {
+  if (cards.length === 0) return null;
+  if (cards.length < 5) return evaluatePartialHand(cards) ?? PokerHand.HighCard;
+  let best: PokerHandRank | null = null;
+  for (const combo of fiveCardCombinations(cards)) {
+    const rank = evaluateFiveCardHand(combo);
+    if (rank !== null && (best === null || rank > best)) best = rank;
+  }
+  return best;
+}
+
+/** Yield every 5-card combination of the given cards (n is small: n ≤ 7). */
+function* fiveCardCombinations(cards: readonly Card[]): Generator<Card[]> {
+  const n = cards.length;
+  const idx = [0, 1, 2, 3, 4];
+  while (true) {
+    yield idx.map((i) => cards[i]);
+    let k = 4;
+    while (k >= 0 && idx[k] === n - 5 + k) k--;
+    if (k < 0) return;
+    idx[k]++;
+    for (let j = k + 1; j < 5; j++) idx[j] = idx[j - 1] + 1;
+  }
+}
+
 function countByValue(sortedValues: readonly number[]): Record<number, number> {
   const out: Record<number, number> = {};
   for (const v of sortedValues) out[v] = (out[v] ?? 0) + 1;

@@ -22,11 +22,11 @@
   "ruleEndStop": "[end-stop]",
   "ruleNoConsecutiveJokers": "[no consecutive jokers]",
   "boardLabel": "Board:",
-  "boardSuitRange": "  {{suit}}: {{min}}-{{max}}",
   "cpuActionsLabel": "[CPU actions]",
   "gameEnd": "Game over!",
   "rankLine": "  {{name}}: rank {{rank}}",
   "turnLine": "Turn: {{name}}",
   "playHint": "p [index] to play a card / p to pass",
-  "jokerHint": "j [card index] [suit] [value] to place a joker"
+  "jokerHint": "j [card index] [suit] [value] to place a joker",
+  "boardSuitLine": "  {{suit}}: {{cells}}"
 }

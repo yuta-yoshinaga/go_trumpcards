@@ -26,6 +26,17 @@
     "dealerRespond": "ディーラーの応答",
     "discard": "札交換"
   },
+  "negHelp": {
+    "elderDecide": "「交換を提案」でディーラーに交換を求めるか、「勝負」で今の手札のまま戦います。",
+    "dealerRespond": "「承諾」で両者が引き直し。「拒否」は今の手札で戦いますが、3トリック取れずに敗れると相手に追加1点を与えます（vulnerable）。",
+    "discard": "捨てる枚数を選ぶと、山札から同じ枚数を引き直します。"
+  },
+  "consequence": {
+    "propose": "ディーラーに交換を求めます。承諾されれば両者が引き直し、拒否されればディーラーが不利になります（拒否側は敗れると相手に追加1点）。",
+    "stand": "交換せず、配られた手札のまま勝負します（引き直しなし・罰則なし）。",
+    "accept": "交換に応じ、両者が任意の枚数を捨てて山札から引き直します。",
+    "refuse": "交換を拒否して現状の手札で勝負します。3トリック取れずに敗れると相手に追加1点（通常2点、Voleなら3点）を与えます。"
+  },
   "currentTrick": "現在のトリック",
   "you": "あなた",
   "cpu": "CPU {{id}}",
@@ -38,6 +49,9 @@
   "refuseButton": "拒否",
   "discardPrompt": "捨てるカードを選んでください:",
   "discardButton": "交換する ({{count}})",
+  "discardSelectionGuide": "{{count}}枚選択中",
+  "discardReasonEmpty": "カードを選択してください",
+  "discardReasonExceed": "山札が足りません",
   "nextRound": "次のディール",
   "target": "目標: {{points}}点",
   "roundResult": {

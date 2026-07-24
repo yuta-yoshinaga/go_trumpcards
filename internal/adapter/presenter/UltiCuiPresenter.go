@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || solo
 
 package presenter
 
@@ -21,6 +21,8 @@ func ultiContractLabel(contract domain.UltiContract) string {
 		return i18n.T("ulti.contractBetli")
 	case domain.UltiContractDurchmarsch:
 		return i18n.T("ulti.contractDurchmarsch")
+	case domain.UltiContractUlti:
+		return i18n.T("ulti.contractUlti")
 	default:
 		return i18n.T("ulti.contractNone")
 	}
@@ -184,6 +186,7 @@ var ultiHintReasonKeys = map[string]string{
 	"bid_party":       "ulti.hintReasonBidParty",
 	"bid_betli":       "ulti.hintReasonBidBetli",
 	"bid_durchmarsch": "ulti.hintReasonBidDurchmarsch",
+	"bid_ulti":        "ulti.hintReasonBidUlti",
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

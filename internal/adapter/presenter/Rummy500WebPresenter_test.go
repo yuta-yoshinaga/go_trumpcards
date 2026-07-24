@@ -127,3 +127,11 @@ func TestRummy500WebPresenter_ActionLogOutput(t *testing.T) {
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)
 }
+
+func TestRummy500WebPresenter_HintOutput(t *testing.T) {
+	m, players := setupRummy500WebMock()
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	p := new(presenter.Rummy500WebPresenter)
+	// The web presenter computes hints client-side, so HintOutput mirrors Output.
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}

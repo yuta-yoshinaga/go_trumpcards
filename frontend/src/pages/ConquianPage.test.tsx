@@ -52,6 +52,23 @@ const meldPhaseTookDiscard: ConquianResponse = {
   tookDiscard: true,
 };
 
+// Meld phase with a 3-card hand so all three can be selected to form a new meld.
+const meldPhaseThreeCards: ConquianResponse = {
+  ...meldPhaseState,
+  players: [
+    {
+      ...drawPhaseState.players[0],
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE', value: 5 },
+        { design: 'HEART', value: 5 },
+        { design: 'CLOVER', value: 5 },
+      ],
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], melds: [], wins: 1 },
+  ],
+};
+
 const roundEndState: ConquianResponse = {
   ...drawPhaseState,
   phase: 2,
@@ -101,7 +118,39 @@ const meldsDisplayState: ConquianResponse = {
   ],
 };
 
+// Human has laid a 3-card set and a 6-card run (9 of 11 melded, 2 remaining ->
+// the "close to winning" highlight should appear).
+const meldProgressState: ConquianResponse = {
+  ...meldPhaseState,
+  players: [
+    {
+      ...drawPhaseState.players[0],
+      melds: [
+        {
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'HEART', value: 5 },
+            { design: 'CLOVER', value: 5 },
+          ],
+        },
+        {
+          cards: [
+            { design: 'DIAMOND', value: 3 },
+            { design: 'DIAMOND', value: 4 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'DIAMOND', value: 6 },
+            { design: 'DIAMOND', value: 7 },
+            { design: 'DIAMOND', value: 8 },
+          ],
+        },
+      ],
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], melds: [], wins: 1 },
+  ],
+};
+
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockResolvedValue(drawPhaseState);
 });
 
@@ -159,13 +208,112 @@ describe('ConquianPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard'));
   });
 
-  it('renders meld and discard buttons during meld phase', async () => {
+  it('keyboard: "s" draws from the stock and "d" takes the discard', async () => {
+    const { unmount } = renderWithProviders(<ConquianPage />);
+    await screen.findByRole('button', { name: '山札から引く' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(meldPhaseState);
+    fireEvent.keyDown(document.body, { key: 's' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+    unmount();
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<ConquianPage />);
+    await screen.findByRole('button', { name: '捨て札から引く' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(meldPhaseTookDiscard);
+    fireEvent.keyDown(document.body, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard'));
+  });
+
+  it('keyboard: "d" does nothing when there is no discard top', async () => {
+    mockExec.mockResolvedValue(noDiscardState);
+    renderWithProviders(<ConquianPage />);
+    await screen.findByRole('button', { name: '捨て札から引く' });
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    expect(mockExec).not.toHaveBeenCalledWith('drawdiscard');
+  });
+
+  it('keyboard: draw keys are disabled on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.anything()));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 's' });
+    fireEvent.keyDown(document.body, { key: 'd' });
+    expect(mockExec).not.toHaveBeenCalledWith('drawstock');
+    expect(mockExec).not.toHaveBeenCalledWith('drawdiscard');
+  });
+
+  it('advertises the draw keyboard shortcuts on the buttons', async () => {
+    renderWithProviders(<ConquianPage />);
+    const stockBtn = await screen.findByRole('button', { name: '山札から引く' });
+    expect(stockBtn).toHaveAttribute('aria-keyshortcuts', 's');
+    expect(stockBtn.querySelector('kbd')?.textContent).toBe('S');
+    expect(screen.getByRole('button', { name: '捨て札から引く' })).toHaveAttribute('aria-keyshortcuts', 'd');
+  });
+
+  it('renders meld, layoff and discard buttons during meld phase', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<ConquianPage />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'メルドする' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'レイオフ' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument();
     });
+  });
+
+  it('meld and layoff buttons are both disabled with no selection', async () => {
+    mockExec.mockResolvedValue(meldPhaseThreeCards);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.getByTestId('conquian-meld-button')).toBeInTheDocument());
+    expect(screen.getByTestId('conquian-meld-button')).toBeDisabled();
+    expect(screen.getByTestId('conquian-layoff-button')).toBeDisabled();
+  });
+
+  it('layoff enabled and meld disabled when exactly 1 card selected; dispatches meld', async () => {
+    mockExec.mockResolvedValue(meldPhaseThreeCards);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 5')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ 5').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('conquian-layoff-button')).not.toBeDisabled();
+    expect(screen.getByTestId('conquian-meld-button')).toBeDisabled();
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(drawPhaseState);
+    fireEvent.click(screen.getByTestId('conquian-layoff-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [[0]]));
+  });
+
+  it('both meld and layoff disabled when exactly 2 cards selected', async () => {
+    mockExec.mockResolvedValue(meldPhaseThreeCards);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 5')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ 5').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('conquian-meld-button')).toBeDisabled();
+    expect(screen.getByTestId('conquian-layoff-button')).toBeDisabled();
+  });
+
+  it('meld enabled and layoff disabled when 3 cards selected; dispatches meld', async () => {
+    mockExec.mockResolvedValue(meldPhaseThreeCards);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 5')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('conquian-meld-button')).not.toBeDisabled();
+    expect(screen.getByTestId('conquian-layoff-button')).toBeDisabled();
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(drawPhaseState);
+    fireEvent.click(screen.getByTestId('conquian-meld-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [[0, 1, 2]]));
   });
 
   it('discard button disabled when not exactly 1 card selected', async () => {
@@ -321,6 +469,26 @@ describe('ConquianPage', () => {
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(cardBtn);
     expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('shows meld progress toward 11 for the human and CPU', async () => {
+    renderWithProviders(<ConquianPage />);
+    const humanProgress = await screen.findByTestId('conquian-meld-progress');
+    // Fresh game: nobody has melded yet.
+    expect(humanProgress).toHaveTextContent('メルド 0/11');
+    expect(screen.getByTestId('conquian-meld-progress-cpu-1')).toHaveTextContent('メルド 0/11');
+  });
+
+  it('counts melded cards and highlights the final stretch', async () => {
+    mockExec.mockResolvedValue(meldProgressState);
+    renderWithProviders(<ConquianPage />);
+    const humanProgress = await screen.findByTestId('conquian-meld-progress');
+    // 3 + 6 = 9 melded of 11.
+    expect(humanProgress).toHaveTextContent('メルド 9/11');
+    expect(humanProgress).toHaveTextContent('あと 2 枚');
+    const bar = humanProgress.querySelector('[role="progressbar"]');
+    expect(bar).toHaveAttribute('aria-valuenow', '9');
+    expect(bar).toHaveAttribute('aria-valuemax', '11');
   });
 
   it('renders tutorial button', async () => {

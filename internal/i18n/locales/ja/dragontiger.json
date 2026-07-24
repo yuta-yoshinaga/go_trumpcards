@@ -20,5 +20,7 @@
   "tieWin": "タイ！タイベット的中！",
   "tieRefund": "タイ。ベット額の半分を返還します。",
   "oddsLine": "ベット: {{type}} ×{{odds}}",
-  "payoutLine": "払戻し: {{payout}}"
+  "payoutLine": "払戻し: {{payout}}",
+  "historyLine": "履歴: {{symbols}}",
+  "historyCounts": "集計: D:{{d}} T:{{t}} =:{{tie}}"
 }

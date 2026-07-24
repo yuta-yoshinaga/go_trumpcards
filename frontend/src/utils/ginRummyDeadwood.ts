@@ -20,6 +20,105 @@ export function ginRummyMeldLabel(cards: readonly Card[]): string {
   return `${suitSymbol(first.design)} ${valueName(sorted[0])}-${valueName(sorted[sorted.length - 1])}`;
 }
 
+/** Gin bonus points. Mirrors `GinRummyGinBonus` in internal/domain/GinRummy.go. */
+export const GIN_RUMMY_GIN_BONUS = 25;
+/** Undercut bonus points. Mirrors `GinRummyUndercutBonus` in internal/domain/GinRummy.go. */
+export const GIN_RUMMY_UNDERCUT_BONUS = 25;
+
+/** Which side scored the round: a gin, a plain knock, or an undercut. */
+export type GinRummyOutcome = 'gin' | 'knock' | 'undercut';
+
+/**
+ * Additive score breakdown for a completed Gin Rummy round. Mirrors the scoring
+ * in `scoreRound` of internal/domain/GinRummy.go:
+ * - gin: the knocker scores the opponent's deadwood + a 25-pt bonus;
+ * - undercut (opponent deadwood ≤ knocker deadwood): the defender scores the
+ *   deadwood difference + a 25-pt bonus;
+ * - plain knock: the knocker scores the deadwood difference (no bonus).
+ *
+ * `base + bonus === total` always holds.
+ */
+export interface GinRummyScoreBreakdown {
+  /** The scoring outcome. */
+  outcome: GinRummyOutcome;
+  /** Player id awarded the round's points. */
+  winnerId: number;
+  /** The knocker's deadwood value. */
+  knockerDeadwood: number;
+  /** The opponent's (defender's) deadwood value. */
+  opponentDeadwood: number;
+  /** Deadwood-based component: the opponent's deadwood for a gin, otherwise the
+   * absolute deadwood difference between the two hands. */
+  base: number;
+  /** Bonus component (25 for gin/undercut, 0 for a plain knock). */
+  bonus: number;
+  /** Total points awarded this round (`base + bonus`). */
+  total: number;
+}
+
+/** Minimal player shape needed to derive the round-end score breakdown. */
+interface GinRummyBreakdownPlayer {
+  id: number;
+  cards: readonly Card[];
+}
+
+/**
+ * Derive the additive round-end score breakdown from the exposed round result,
+ * faithfully mirroring `scoreRound` in internal/domain/GinRummy.go. The knocker's
+ * deadwood comes from the exposed `knockerDeadwood` cards; the opponent's is
+ * recomputed from their (post-layoff) hand via {@link bestDeadwoodValue}, so the
+ * derived total matches the backend's `roundScore`. Returns `null` for a drawn
+ * round (`knockerIdx < 0`, stock exhausted) or when the players can't be resolved.
+ */
+export function ginRummyScoreBreakdown(
+  players: readonly GinRummyBreakdownPlayer[],
+  knockerIdx: number,
+  knockerDeadwoodCards: readonly Card[],
+  isGin: boolean,
+): GinRummyScoreBreakdown | null {
+  if (knockerIdx < 0) return null; // drawn round (stock empty) — no scoring
+  const knocker = players.find((p) => p.id === knockerIdx);
+  const opponent = players.find((p) => p.id !== knockerIdx);
+  if (!knocker || !opponent) return null;
+
+  const knockerDeadwood = calcDeadwoodValue(knockerDeadwoodCards);
+  const opponentDeadwood = bestDeadwoodValue(opponent.cards);
+
+  if (isGin) {
+    return {
+      outcome: 'gin',
+      winnerId: knockerIdx,
+      knockerDeadwood,
+      opponentDeadwood,
+      base: opponentDeadwood,
+      bonus: GIN_RUMMY_GIN_BONUS,
+      total: opponentDeadwood + GIN_RUMMY_GIN_BONUS,
+    };
+  }
+  if (opponentDeadwood <= knockerDeadwood) {
+    const diff = knockerDeadwood - opponentDeadwood;
+    return {
+      outcome: 'undercut',
+      winnerId: opponent.id,
+      knockerDeadwood,
+      opponentDeadwood,
+      base: diff,
+      bonus: GIN_RUMMY_UNDERCUT_BONUS,
+      total: diff + GIN_RUMMY_UNDERCUT_BONUS,
+    };
+  }
+  const diff = opponentDeadwood - knockerDeadwood;
+  return {
+    outcome: 'knock',
+    winnerId: knockerIdx,
+    knockerDeadwood,
+    opponentDeadwood,
+    base: diff,
+    bonus: 0,
+    total: diff,
+  };
+}
+
 /** Gin Rummy card value (A=1, 2-9=face, 10/J/Q/K=10). */
 export function ginRummyCardValue(card: Card): number {
   if (card.value === 1) return 1;
@@ -42,25 +141,50 @@ interface IndexedCard {
   card: Card;
 }
 
-/** Find the minimum-deadwood split of `hand` into melds + deadwood.
- * Mirrors `FindBestMelds` in internal/domain/GinRummy.go but the only
- * value we surface back to React is the integer deadwood total. */
-export function bestDeadwoodValue(hand: readonly Card[]): number {
-  if (hand.length === 0) return 0;
-  const indexed: IndexedCard[] = hand.map((card, idx) => ({ idx, card }));
-  return search(indexed);
+/** Result of splitting a hand into melds + deadwood: which original hand
+ * indices belong to some meld in the best split, plus the deadwood total. */
+export interface MeldSplit {
+  /** Original hand indices that are part of a meld in the best split. */
+  meldedIndices: ReadonlySet<number>;
+  /** Sum of card values of the unmelded (deadwood) cards. */
+  deadwoodValue: number;
 }
 
-function search(remaining: IndexedCard[]): number {
+/** Find the minimum-deadwood split of `hand`, returning which original hand
+ * indices are melded and the deadwood total of the rest. Mirrors
+ * `FindBestMelds` in internal/domain/GinRummy.go. Shares the same search as
+ * {@link bestDeadwoodValue}, so the two stay consistent. */
+export function bestMeldSplit(hand: readonly Card[]): MeldSplit {
+  if (hand.length === 0) return { meldedIndices: new Set(), deadwoodValue: 0 };
+  const indexed: IndexedCard[] = hand.map((card, idx) => ({ idx, card }));
+  const { value, melded } = search(indexed);
+  return { meldedIndices: melded, deadwoodValue: value };
+}
+
+/** Find the minimum-deadwood split of `hand` into melds + deadwood.
+ * Mirrors `FindBestMelds` in internal/domain/GinRummy.go but the only
+ * value we surface back is the integer deadwood total. */
+export function bestDeadwoodValue(hand: readonly Card[]): number {
+  return bestMeldSplit(hand).deadwoodValue;
+}
+
+/** Minimum-deadwood split of `remaining`, returning the deadwood value and the
+ * set of original indices that end up melded in that best split. */
+function search(remaining: IndexedCard[]): { value: number; melded: Set<number> } {
   const candidates = enumerateMelds(remaining);
-  let best = calcDeadwoodValue(remaining.map((r) => r.card));
+  // Baseline: take no meld here → every remaining card is deadwood.
+  let best = { value: calcDeadwoodValue(remaining.map((r) => r.card)), melded: new Set<number>() };
   if (candidates.length === 0) return best;
   for (const meld of candidates) {
     const meldIdx = new Set(meld.map((m) => m.idx));
     const rest = remaining.filter((r) => !meldIdx.has(r.idx));
-    const dv = search(rest);
-    if (dv < best) best = dv;
-    if (best === 0) break;
+    const sub = search(rest);
+    if (sub.value < best.value) {
+      const melded = new Set<number>(meldIdx);
+      for (const i of sub.melded) melded.add(i);
+      best = { value: sub.value, melded };
+    }
+    if (best.value === 0) break;
   }
   return best;
 }

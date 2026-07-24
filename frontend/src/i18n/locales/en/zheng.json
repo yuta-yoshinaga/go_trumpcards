@@ -1,0 +1,65 @@
+{
+  "rank": {
+    "1": "1st",
+    "2": "2nd",
+    "3": "3rd",
+    "4": "4th"
+  },
+  "cardCount": "{{count}} cards",
+  "rankTable": {
+    "title": "Standings"
+  },
+  "selectToPlay": "Click cards to select",
+  "tableCards": "Table",
+  "tableEmpty": "(empty)",
+  "playButton": "Play Selected",
+  "passButton": "Pass",
+  "invalidReason": {
+    "invalidType": "Not a valid combination (single, pair, triple, straight, pair run, bomb, or joker bomb)",
+    "wrongType": "Match the table's combination type — you can't play a different type",
+    "wrongCount": "Play the same number of cards as the table",
+    "tooWeak": "You need a higher rank than the table",
+    "needBomb": "Only a bomb or joker bomb can beat the table's bomb",
+    "unbeatable": "The table's joker bomb cannot be beaten"
+  },
+  "phase": {
+    "play": "Play",
+    "end": "End"
+  },
+  "settings": {
+    "title": "Game Settings",
+    "cpuDifficulty": "CPU Difficulty:",
+    "difficultyNormal": "Normal",
+    "difficultyEasy": "Easy",
+    "difficultyHard": "Hard"
+  },
+  "tutorial": {
+    "tableCards": "Cards on the table. Play the same combination type and count with a higher rank — suits never matter.",
+    "playerHand": "Your hand. Click cards to select them.",
+    "playPass": "Play selected cards or pass your turn (you cannot pass on a lead).",
+    "cpuArea": "CPU players' remaining card counts.",
+    "resetButton": "Reset the game."
+  },
+  "hint": {
+    "canPlay": "You have a combination that beats the table",
+    "shouldPass": "Nothing beats the table — consider passing",
+    "playLow": "You lead — shed your weaker cards first"
+  },
+  "result": {
+    "rankings": "Game Over! {{rankings}}"
+  },
+  "playType": {
+    "single": "Single",
+    "pair": "Pair",
+    "triple": "Triple",
+    "straight": "Straight",
+    "pairRun": "Pair Run",
+    "bomb": "Bomb",
+    "jokerBomb": "Joker Bomb"
+  },
+  "announce": {
+    "yourTurn": "It's your turn",
+    "yourTurnLead": "It's your turn. You're leading, so you can't pass.",
+    "finished": "You finished ({{rank}})"
+  }
+}

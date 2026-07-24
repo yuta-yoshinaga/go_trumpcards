@@ -38,6 +38,9 @@ func TestCruelCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Cruel")
 		assert.Contains(t, result, "Foundation")
 		assert.Contains(t, result, "列0:")
+		// Empty foundation -> 0/52 progress; the shift/move help is always shown.
+		assert.Contains(t, result, "進捗: 0/52")
+		assert.Contains(t, result, "操作:")
 	})
 
 	t.Run("with error", func(t *testing.T) {
@@ -63,6 +66,8 @@ func TestCruelCuiPresenter_Output(t *testing.T) {
 		result := p.Output(cg, nil)
 		assert.Contains(t, result, "手詰まり")
 		assert.Contains(t, result, "シフト")
+		// Stalemate adds the give-up guidance beyond the shift hint.
+		assert.Contains(t, result, "ギブアップ")
 	})
 
 	t.Run("game clear", func(t *testing.T) {

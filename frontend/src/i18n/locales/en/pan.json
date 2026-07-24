@@ -21,6 +21,8 @@
   "chips": "Chips: {{count}}",
   "melded": "Melded: {{count}}",
   "winMeld": "Melds needed to go out: {{count}}",
+  "meldProgress": "Melds {{count}}/{{total}}",
+  "meldRemaining": "{{count}} to go",
   "cumulativeScore": "Total: {{score}}",
   "meldsTitle": "Table Melds",
   "noMelds": "No melds yet",
@@ -48,6 +50,12 @@
     "drawFromStock": "Draw from the stock pile",
     "meld": "You can lay down a meld — select and play it",
     "discard": "Discard a card you don't need"
+  },
+  "candidates": {
+    "title": "Meld candidates",
+    "set": "Set",
+    "run": "Run",
+    "hint": "Tap a candidate to select those cards. Cards with a yellow ring can be laid off."
   },
   "tutorial": {
     "drawArea": "Draw a card from the stock or discard pile to start your turn.",

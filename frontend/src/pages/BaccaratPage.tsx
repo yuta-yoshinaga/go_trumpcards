@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -30,6 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BaccaratResponse, BaccaratSideBetResult, Card } from '../types/card';
 import { BaccaratBetType, BaccaratPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { computeBaccaratShoeStats } from '../utils/baccaratStats';
 import { BACCARAT_HELP, parseBaccaratCommand } from '../utils/cli/commands/baccaratCommands';
 import { formatBaccaratState } from '../utils/cli/formatters/baccaratFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -85,12 +86,23 @@ function baccaratHandValue(cards: readonly Card[]): number {
 }
 
 function BigRoadGrid({ history }: { history: number[] }) {
+  // Auto-scroll the road to the latest (right-most) column whenever the
+  // history grows, so the most recent results are always in view without
+  // manual scrolling. Hooks must run unconditionally, before any early return.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el && history.length > 0) el.scrollLeft = el.scrollWidth;
+  }, [history.length]);
+
   if (history.length === 0) return null;
 
   // Build columns: new column on side change, ties mark previous cell
   const columns: { result: number; tie: boolean }[][] = [];
   let currentCol: { result: number; tie: boolean }[] = [];
   let lastSide: number | null = null;
+  // Track the most recently placed non-tie cell so it can be highlighted.
+  let latestCell: { result: number; tie: boolean } | null = null;
 
   for (const result of history) {
     if (result !== ROAD_PLAYER && result !== ROAD_BANKER) {
@@ -107,7 +119,9 @@ function BigRoadGrid({ history }: { history: number[] }) {
       columns.push(currentCol);
       currentCol = [];
     }
-    currentCol.push({ result, tie: false });
+    const cell = { result, tie: false };
+    currentCol.push(cell);
+    latestCell = cell;
     lastSide = result;
   }
   if (currentCol.length > 0) {
@@ -138,31 +152,75 @@ function BigRoadGrid({ history }: { history: number[] }) {
   }
 
   return (
-    <div className="mb-4" data-testid="big-road">
+    <div className="mb-4 w-full max-w-md" data-testid="big-road">
       <div
-        className="inline-grid gap-px bg-ds-surface-elevated border border-ds-border-subtle rounded overflow-x-auto"
-        style={{ gridTemplateColumns: `repeat(${maxCols}, 28px)` }}
+        ref={scrollRef}
+        data-testid="big-road-scroll"
+        className="overflow-x-auto rounded border border-ds-border-subtle bg-ds-surface-elevated"
       >
-        {grid.flatMap((row, ri) =>
-          row.map((cell, ci) => {
-            const cellKey = `r${String(ri)}c${String(ci)}`;
-            return (
-              <div key={cellKey} className="w-7 h-7 flex items-center justify-center bg-ds-surface-elevated relative">
-                {cell && (
-                  <>
-                    <span
-                      className={`w-5 h-5 rounded-full inline-block ${cell.result === ROAD_PLAYER ? 'bg-ds-info' : 'bg-ds-error'}`}
-                    />
-                    {cell.tie && (
-                      <span className="absolute inset-0 flex items-center justify-center text-ds-success font-bold text-xs">
-                        /
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-            );
-          }),
+        <div
+          className="inline-grid gap-px bg-ds-surface-elevated"
+          style={{ gridTemplateColumns: `repeat(${maxCols}, 28px)` }}
+        >
+          {grid.flatMap((row, ri) =>
+            row.map((cell, ci) => {
+              const cellKey = `r${String(ri)}c${String(ci)}`;
+              const isLatest = cell !== null && cell === latestCell;
+              return (
+                <div key={cellKey} className="w-7 h-7 flex items-center justify-center bg-ds-surface-elevated relative">
+                  {cell && (
+                    <>
+                      <span
+                        className={`w-5 h-5 rounded-full inline-block ${cell.result === ROAD_PLAYER ? 'bg-ds-info' : 'bg-ds-error'} ${isLatest ? 'ring-2 ring-ds-accent ring-offset-1 ring-offset-ds-surface-elevated' : ''}`}
+                      />
+                      {cell.tie && (
+                        <span className="absolute inset-0 flex items-center justify-center text-ds-success font-bold text-xs">
+                          /
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            }),
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Renders a compact statistics row for the shoe history: Player / Banker / Tie
+ * counts with appearance rates, plus the current side streak. Returns null when
+ * the history is empty. Aggregation is delegated to `computeBaccaratShoeStats`.
+ */
+function ShoeStatsPanel({
+  history,
+  t,
+}: {
+  history: number[];
+  t: (key: string, params?: Record<string, unknown>) => string;
+}) {
+  if (history.length === 0) return null;
+  const stats = computeBaccaratShoeStats(history);
+  const streakLabel =
+    stats.streakSide === ROAD_PLAYER
+      ? t('betType.player')
+      : stats.streakSide === ROAD_BANKER
+        ? t('betType.banker')
+        : null;
+
+  return (
+    <div className="mb-2 text-xs text-ds-text-primary" data-testid="baccarat-shoe-stats">
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+        <span className="text-ds-info">{t('stats.player', { n: stats.playerCount, pct: stats.playerPct })}</span>
+        <span className="text-ds-error">{t('stats.banker', { n: stats.bankerCount, pct: stats.bankerPct })}</span>
+        <span className="text-ds-success">{t('stats.tie', { n: stats.tieCount, pct: stats.tiePct })}</span>
+        {streakLabel && (
+          <span className="font-bold text-ds-warning">
+            {t('stats.streak', { side: streakLabel, k: stats.streakCount })}
+          </span>
         )}
       </div>
     </div>
@@ -411,6 +469,7 @@ function BaccaratPageContent() {
               {state.history.length > 0 && (
                 <div className="text-ds-text-primary text-sm font-bold mb-1">{t('road.title')}</div>
               )}
+              <ShoeStatsPanel history={state.history} t={t} />
               <RoadmapTrendBar
                 history={state.history}
                 leftCode={ROAD_PLAYER}

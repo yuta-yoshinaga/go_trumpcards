@@ -1,7 +1,8 @@
 {
   "button": {
     "step": "Flip",
-    "autoplay": "Auto Play"
+    "autoplay": "Auto Play",
+    "stopAutoplay": "Stop"
   },
   "phase": {
     "reveal": "Ready",
@@ -19,7 +20,12 @@
   },
   "settings": {
     "maxRounds": "Max rounds",
-    "maxRoundsHelp": "A cap that prevents the game from running forever through chains of wars (ties). The game ends when either player runs out of cards or the max round is reached."
+    "maxRoundsHelp": "A cap that prevents the game from running forever through chains of wars (ties). The game ends when either player runs out of cards or the max round is reached.",
+    "speed": "Animation speed",
+    "speedHelp": "How fast each round's animation plays while autoplaying. Faster races to the finish; slower lets each reveal and war play out.",
+    "speedSlow": "Slow",
+    "speedNormal": "Normal",
+    "speedFast": "Fast"
   },
   "hint": {
     "flipCard": "Flip the next card",

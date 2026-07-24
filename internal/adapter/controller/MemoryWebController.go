@@ -27,6 +27,8 @@ type MemoryWebOutputPlayer struct {
 	ID        int  `json:"id"`
 	IsHuman   bool `json:"isHuman"`
 	PairCount int  `json:"pairCount"`
+	// Pairs は獲得した各ペアの代表カード（ランク昇順）。取得ペアのミニカード表示に使う。
+	Pairs []*WebOutputCard `json:"pairs"`
 }
 
 // MemoryWebOutputBoardCard 神経衰弱Webアウトプットボードカード

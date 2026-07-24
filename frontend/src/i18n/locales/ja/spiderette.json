@@ -32,5 +32,12 @@
     "controls": "元に戻す、ヒント、自動完了などの操作ボタンです。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "landscapeBanner": "横向きにすると操作しやすくなります"
+  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "frontendHint": {
+    "completeSuit": "スート列がほぼ完成しています — 完成を目指しましょう",
+    "buildSameSuit": "同スートで積み重ねられるカードがあります",
+    "revealFaceDown": "カードを動かして裏向きのカードをめくりましょう",
+    "useEmptyColumn": "空の列があります — 整理に活用しましょう",
+    "dealFromStock": "すぐにできる手がありません — 山札から配ってみましょう"
+  }
 }

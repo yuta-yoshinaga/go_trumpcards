@@ -25,6 +25,7 @@ func setupBaccaratCuiMockDefaults(m *interfaces.MockBaccaratGame) {
 	m.On("GetPayout").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetHistory").Return(([]int)(nil)).Maybe()
+	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 }
 
 func TestBaccaratCuiPresenter_Output_BetPhase(t *testing.T) {
@@ -62,6 +63,7 @@ func TestBaccaratCuiPresenter_Output_History(t *testing.T) {
 		}).Maybe()
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "履歴: P B T")
+		assert.Contains(t, result, "集計: P:1 B:1 T:1")
 	})
 
 	t.Run("omits the history line when empty", func(t *testing.T) {
@@ -91,9 +93,16 @@ func TestBaccaratCuiPresenter_Output_History(t *testing.T) {
 		// Unknown value maps to '?'.
 		assert.Contains(t, result, "?")
 		// Only the last baccaratHistoryMaxShown symbols are shown (29 P + 1 ?);
-		// without the cap there would be 39 P. No other P/? appears in the
-		// bet-phase output, so counting the symbol chars verifies truncation.
-		assert.Equal(t, baccaratHistoryMaxShown, strings.Count(result, "P")+strings.Count(result, "?"))
+		// without the cap there would be 39 P. Count within the symbols line only
+		// (the separate totals line also contains P/B/T letters).
+		var histLine string
+		for _, ln := range strings.Split(result, "\n") {
+			if strings.HasPrefix(ln, "履歴:") {
+				histLine = ln
+				break
+			}
+		}
+		assert.Equal(t, baccaratHistoryMaxShown, strings.Count(histLine, "P")+strings.Count(histLine, "?"))
 	})
 }
 
@@ -122,6 +131,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetPayout").Return(200).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetHistory").Return(([]int)(nil)).Maybe()
+	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "フェーズ: END")
@@ -130,6 +140,44 @@ func TestBaccaratCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "払戻し: 200")
 	assert.Contains(t, result, "SPADE 9")
+	// No side bet placed -> no side-bet outcome lines.
+	assert.NotContains(t, result, "的中")
+	assert.NotContains(t, result, "外れ")
+}
+
+func TestBaccaratCuiPresenter_Output_EndPhase_SideBets(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(BaccaratCuiPresenter)
+	m := new(interfaces.MockBaccaratGame)
+	m.On("GetChips").Return(1200).Maybe()
+	m.On("GetPhase").Return(domain.BaccaratPhaseEnd).Maybe()
+	m.On("GetPlayerHand").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 4, false),
+		domain.NewCard(domain.CardDesignHeart, 4, false),
+	}).Maybe()
+	m.On("GetBankerHand").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 5, false),
+		domain.NewCard(domain.CardDesignDiamond, 2, false),
+	}).Maybe()
+	m.On("GetPlayerHandValue").Return(8).Maybe()
+	m.On("GetBankerHandValue").Return(7).Maybe()
+	m.On("GetGameEndFlag").Return(true).Maybe()
+	m.On("GetBetAmount").Return(100).Maybe()
+	m.On("GetBetType").Return(domain.BaccaratBetPlayer).Maybe()
+	m.On("GetResult").Return(domain.GameResultWin).Maybe()
+	m.On("GetPayout").Return(200).Maybe()
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetHistory").Return(([]int)(nil)).Maybe()
+	m.On("GetSideBetResults").Return([]*domain.BacSideBetResult{
+		{BetType: domain.BacSideBetPlayerPair, BetAmount: 20, Payout: 240}, // hit
+		{BetType: domain.BacSideBetBankerPair, BetAmount: 20, Payout: 0},   // miss
+	}).Maybe()
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "Player Pair: 的中 +240")
+	assert.Contains(t, result, "Banker Pair: 外れ")
 }
 
 func TestBaccaratCuiPresenter_Output_EndPhase_BankerWins(t *testing.T) {
@@ -155,6 +203,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_BankerWins(t *testing.T) {
 	m.On("GetPayout").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetHistory").Return(([]int)(nil)).Maybe()
+	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "バンカーの勝ち")
@@ -184,6 +233,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_Tie(t *testing.T) {
 	m.On("GetPayout").Return(900).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetHistory").Return(([]int)(nil)).Maybe()
+	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "タイ")
@@ -235,6 +285,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_UnknownResult(t *testing.T) {
 	m.On("GetPayout").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetHistory").Return(([]int)(nil)).Maybe()
+	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "払戻し: 0")
@@ -263,6 +314,7 @@ func TestBaccaratCuiPresenter_Output_UnknownBetType(t *testing.T) {
 	m.On("GetPayout").Return(200).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetHistory").Return(([]int)(nil)).Maybe()
+	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "UNKNOWN")

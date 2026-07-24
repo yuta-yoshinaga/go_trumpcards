@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { calabresellaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -144,6 +145,10 @@ function CalabresellaPageContent() {
   const canBid = isBidPhase && state.currentBidderIdx === humanIdx;
   const canDiscard = isDiscardPhase && state.soloistIdx === humanIdx;
   const canPlay = isPlayPhase && isHumanTurn;
+  // The soloist takes the 4-card monte (16 cards) and discards down to the regulation
+  // 12-card hand (CalabresellaHandSize in the backend).
+  const REGULATION_HAND_SIZE = 12;
+  const discardRemaining = humanPlayer ? Math.max(0, humanPlayer.cards.length - REGULATION_HAND_SIZE) : 0;
 
   const handleManualReset = () => {
     hideActionLog();
@@ -216,6 +221,26 @@ function CalabresellaPageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
               <div>
+                {/* Monte (widow): the 4 cards the Soloist took, revealed to all players. */}
+                {state.monte && state.monte.length > 0 && (
+                  <div
+                    className="mb-3 p-2 rounded bg-black/30"
+                    data-testid="calabresella-monte"
+                    data-tutorial="calabresella-monte"
+                  >
+                    <div className="text-ds-text-muted text-sm mb-1">{t('monteLabel')}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {state.monte.map((c, i) => (
+                        <CardImage
+                          key={`monte-${c.design}-${c.value}-${i}`}
+                          card={c}
+                          width={Math.round(cardWidth * 0.75)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <TrickDisplay
                   currentTrick={state.currentTrick}
                   players={state.players}
@@ -309,12 +334,12 @@ function CalabresellaPageContent() {
                 {t('bidPhase')}
               </div>
             )}
-            {canDiscard && (
+            {canDiscard && discardRemaining > 0 && (
               <div
                 className="mb-1 text-center text-sm text-ds-accent font-semibold"
                 data-testid="calabresella-discard-prompt"
               >
-                {t('discardPhase')}
+                {t('discardPhaseRemaining', { count: discardRemaining })}
               </div>
             )}
             {humanPlayer && (
@@ -364,8 +389,9 @@ function CalabresellaPageContent() {
                   className={btnPrimary}
                   onClick={handleDiscard}
                   disabled={loading || selectedCardIndices.length !== 1}
+                  data-testid="calabresella-discard-button"
                 >
-                  {t('discardCard')}
+                  {discardRemaining > 0 ? `${t('discardCard')} (${discardRemaining})` : t('discardCard')}
                 </button>
               )}
               {canPlay && (

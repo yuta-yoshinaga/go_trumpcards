@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { soloWhistApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -37,6 +37,60 @@ const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Contract i18n key suffixes indexed by contract value (0=Pass…3=Abundance). */
 const CONTRACT_KEYS = ['pass', 'solo', 'misere', 'abundance'] as const;
+
+/**
+ * Target trick count for each contract, indexed by contract value
+ * (0=Pass 1=Solo 2=Misère 3=Abundance). Mirrors the Go domain
+ * `soloWhistBidTarget`; Misère targets 0 tricks won.
+ */
+const CONTRACT_TARGET_TRICKS = [0, 8, 0, 9] as const;
+
+/** Whether the declarer has made their contract, failed it, or is still in progress. */
+type ContractStatus = 'made' | 'failed' | 'progress';
+
+/** Tailwind text color per contract status (made=success, in-progress=warning, failed=error). */
+const CONTRACT_STATUS_COLOR: Readonly<Record<ContractStatus, string>> = {
+  made: 'text-ds-success',
+  failed: 'text-ds-error',
+  progress: 'text-ds-warning',
+};
+
+/** The declarer's contract progress derived from tricks won and cards still in hand. */
+interface ContractProgress {
+  /** Tricks the declarer has won so far this round. */
+  won: number;
+  /** Tricks the declarer needs (0 for Misère). */
+  needed: number;
+  /** Made / failed / still in progress. */
+  status: ContractStatus;
+  /** Whether the contract is Misère (win no tricks). */
+  isMisere: boolean;
+}
+
+/**
+ * Computes the declarer's contract progress from tricks won and remaining tricks.
+ * `remaining` is the declarer's card count (each remaining card equals one trick still to play).
+ * Misère fails the instant a trick is won; Solo/Abundance succeed on reaching the target.
+ */
+function computeContractProgress(contract: number, won: number, remaining: number): ContractProgress {
+  const isMisere = contract === SoloWhistContract.MISERE;
+  const needed = CONTRACT_TARGET_TRICKS[contract] ?? 0;
+  let status: ContractStatus;
+  if (isMisere) {
+    // Misère fails the instant a trick is won; it is only made once the round completes clean.
+    if (won > 0) status = 'failed';
+    else if (remaining === 0) status = 'made';
+    else status = 'progress';
+  } else if (won >= needed) {
+    status = 'made';
+  } else if (won + remaining < needed) {
+    // Not enough tricks left to reach the target — failure is mathematically certain.
+    status = 'failed';
+  } else {
+    status = 'progress';
+  }
+  return { won, needed, status, isMisere };
+}
 
 /** Bid button options (Pass/Solo/Misère/Abundance). */
 const BIDS: { value: number; key: string }[] = [
@@ -128,6 +182,22 @@ function SoloWhistPageContent() {
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('solowhist', SOLO_WHIST_PHASE_KEYS);
 
+  // Transient pulse when the contract is decided (declarerIdx: -1 → a real seat) —
+  // a plan-shaping event (esp. misère) that's otherwise easy to miss in the small text row.
+  const [contractPulse, setContractPulse] = useState(false);
+  const prevDeclarerRef = useRef<number | null>(null);
+  useEffect(() => {
+    const declarer = state?.declarerIdx ?? null;
+    if (declarer == null) return;
+    const prev = prevDeclarerRef.current;
+    prevDeclarerRef.current = declarer;
+    if (prev != null && prev < 0 && declarer >= 0) {
+      setContractPulse(true);
+      const id = setTimeout(() => setContractPulse(false), 2500);
+      return () => clearTimeout(id);
+    }
+  }, [state?.declarerIdx]);
+
   if (!state)
     return <GameSkeleton gameKey="solowhist" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 13 }} />;
 
@@ -154,6 +224,13 @@ function SoloWhistPageContent() {
 
   const contractName =
     state.declarerIdx >= 0 ? t(`contractName.${CONTRACT_KEYS[state.contract] ?? 'pass'}`) : t('contractUndecided');
+
+  // Declarer's progress toward the contract, derived from tricks won and cards still in hand.
+  const declarer = state.declarerIdx >= 0 ? state.players[state.declarerIdx] : undefined;
+  const contractProgress =
+    declarer && state.contract !== SoloWhistContract.PASS
+      ? computeContractProgress(state.contract, declarer.trickCount, declarer.cardCount)
+      : undefined;
 
   const handleManualReset = () => {
     hideActionLog();
@@ -223,7 +300,14 @@ function SoloWhistPageContent() {
               <span>{t('target', { points: state.config.targetPoints })}</span>
             </div>
 
-            <div className="text-ds-text-muted text-center mb-2 text-sm">
+            <div
+              className={`text-ds-text-muted text-center mb-2 text-sm${
+                contractPulse ? ' motion-safe:animate-pulse text-ds-accent font-semibold' : ''
+              }`}
+              data-testid="solowhist-declarer"
+              role="status"
+              aria-live="polite"
+            >
               {state.declarerIdx >= 0
                 ? t('declarerLine', {
                     name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),
@@ -231,6 +315,21 @@ function SoloWhistPageContent() {
                   })
                 : t('contractUndecided')}
             </div>
+
+            {contractProgress && (
+              <div
+                className={`text-center mb-2 text-sm font-semibold ${CONTRACT_STATUS_COLOR[contractProgress.status]}`}
+                data-testid="solowhist-contract-progress"
+                role="status"
+                aria-live="polite"
+              >
+                {contractProgress.isMisere
+                  ? t('progress.misere', { won: contractProgress.won })
+                  : t('progress.line', { won: contractProgress.won, needed: contractProgress.needed })}
+                {contractProgress.status === 'made' && ` — ${t('progress.made')}`}
+                {contractProgress.status === 'failed' && ` — ${t('progress.failed')}`}
+              </div>
+            )}
 
             <div className={lgTwoColGrid}>
               {/* Left: play area */}

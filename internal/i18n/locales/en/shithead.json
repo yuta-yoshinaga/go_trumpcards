@@ -25,5 +25,6 @@
   "rankLine": "  {{name}}: rank={{rank}}{{suffix}}",
   "rankShithead": " (Shithead!)",
   "promptCurrentTurn": "{{name}} to act (source: {{source}})",
-  "promptPlayHelp": "p [indices...] to play / p to pick up the pile"
+  "promptPlayHelp": "p [indices...] to play / p to pick up the pile",
+  "facedownSlots": "Blind slots: {{slots}}"
 }

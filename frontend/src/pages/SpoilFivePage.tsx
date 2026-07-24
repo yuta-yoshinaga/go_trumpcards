@@ -35,6 +35,23 @@ import { playerName } from '../utils/playerUtils';
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
+/** Suit number of Hearts (the ♥A is always a trump, so it needs special handling). */
+const HEART_SUIT = 3;
+
+/**
+ * Builds the fixed named top-trump cards in strength order (high → low) for a given
+ * trump suit, mirroring the Go domain `spoilRank`: trump 5 > trump J > ♥A > trump A >
+ * trump K > trump Q. When Hearts is trump the ♥A *is* the trump ace, so it is not
+ * duplicated.
+ */
+function spoilFiveTopTrumps(trumpSuit: number): string[] {
+  const t = SUIT_SYMBOLS[trumpSuit] ?? '?';
+  const cards = [`5${t}`, `J${t}`, 'A♥'];
+  if (trumpSuit !== HEART_SUIT) cards.push(`A${t}`);
+  cards.push(`K${t}`, `Q${t}`);
+  return cards;
+}
+
 /** Spoil Five tutorial step definitions. */
 const SPOIL_FIVE_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -157,6 +174,7 @@ function SpoilFivePageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+  const topTrumps = spoilFiveTopTrumps(state.trumpSuit);
 
   const handleManualReset = () => {
     hideActionLog();
@@ -242,10 +260,17 @@ function SpoilFivePageContent() {
                 <span
                   data-testid="spoilfive-pot-delta"
                   className="ml-1 text-sm font-semibold text-ds-warning motion-safe:animate-pulse"
+                  aria-hidden="true"
                 >
                   {t('potIncrease', { n: potDelta })}
                 </span>
               )}
+              {/* Screen-reader announcement of the pot change: a self-contained live
+                  region so a spoiled round carrying the pot forward is spoken even
+                  though the visual "+NN" pulse is transient and colour-only. */}
+              <span className="sr-only" role="status" aria-live="polite" data-testid="spoilfive-pot-announce">
+                {potDelta > 0 ? t('potIncreaseAnnounce', { delta: potDelta, total: state.pot }) : ''}
+              </span>
             </div>
 
             <div className={lgTwoColGrid}>
@@ -262,6 +287,27 @@ function SpoilFivePageContent() {
 
               {/* Right: info sidebar — 5 player panels */}
               <div data-tutorial="spoilfive-info">
+                {/* Top-trump ordering legend (collapsible, follows the current trump suit) */}
+                <details className="mb-2 p-2 rounded bg-black/30" data-testid="spoilfive-trump-legend">
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('trumpLegend.title')}
+                  </summary>
+                  <div className="mt-1 text-ds-text-muted text-xs">
+                    <div className="mb-1">{t('trumpLegend.caption', { suit: trumpSymbol })}</div>
+                    <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                      {topTrumps.map((card) => (
+                        <span key={card} className="inline-flex items-center gap-1">
+                          <span className="font-mono text-ds-text-primary">{card}</span>
+                          <span aria-hidden="true">&gt;</span>
+                        </span>
+                      ))}
+                      <span className="text-ds-text-primary">{t('trumpLegend.otherTrumps')}</span>
+                      <span aria-hidden="true">&gt;</span>
+                      <span className="text-ds-text-primary">{t('trumpLegend.nonTrump')}</span>
+                    </div>
+                  </div>
+                </details>
+
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>

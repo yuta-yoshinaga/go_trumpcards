@@ -135,6 +135,19 @@ describe('FortyFivesPage', () => {
     expect(screen.getByText('落札者')).toBeInTheDocument();
   });
 
+  it('shows the localized bid name (Jink) in the contract line for a 25 contract', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, contract: 25 });
+    renderWithProviders(<FortyFivesPage />);
+    // Contract line shows "25 (Jink)", not the bare number.
+    await waitFor(() => expect(screen.getByText(/落札者:.*25 \(Jink\)/)).toBeInTheDocument());
+  });
+
+  it('shows the localized bid name for the current highest bid', async () => {
+    mockExec.mockResolvedValue(makeFortyFivesState({ bids: [25, 0, 0, 0] }));
+    renderWithProviders(<FortyFivesPage />);
+    await waitFor(() => expect(screen.getByText(/現在の最高ビッド: 25 \(Jink\)/)).toBeInTheDocument());
+  });
+
   it('does not show the play button on a CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<FortyFivesPage />);
@@ -160,5 +173,44 @@ describe('FortyFivesPage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<FortyFivesPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたのチームの勝ち！')).toBeInTheDocument());
+  });
+
+  it('shows the live round points panel during play with team points', async () => {
+    // Team A has won 2 tricks (10 pts), team B 1 trick (5 pts) so far this round.
+    mockExec.mockResolvedValue({ ...playPhaseState, roundTeamPoints: [10, 5] });
+    renderWithProviders(<FortyFivesPage />);
+    const panel = await screen.findByTestId('ff-live-points');
+    expect(panel).toHaveTextContent('ライブ得点');
+    expect(panel).toHaveTextContent('チームA: 10点');
+    expect(panel).toHaveTextContent('チームB: 5点');
+  });
+
+  it('shows the declarer contract progress with a "needMore" status while still reachable', async () => {
+    // Declarer team A (declarerIdx 0) has 10 of a 20-pt contract; 15 pts remain, so it is still on track.
+    mockExec.mockResolvedValue({ ...playPhaseState, contract: 20, declarerIdx: 0, roundTeamPoints: [10, 5] });
+    renderWithProviders(<FortyFivesPage />);
+    const progress = await screen.findByTestId('ff-contract-progress');
+    expect(progress).toHaveTextContent('契約20点');
+    expect(progress).toHaveTextContent('あと10点');
+  });
+
+  it('marks the contract as made once the declarer team reaches the contract', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, contract: 15, declarerIdx: 0, roundTeamPoints: [15, 5] });
+    renderWithProviders(<FortyFivesPage />);
+    await waitFor(() => expect(screen.getByTestId('ff-contract-progress')).toHaveTextContent('契約達成'));
+  });
+
+  it('marks the contract as unreachable when even every remaining trick would fall short', async () => {
+    // Contract 25 for team A: A has 5, B has 15 (4 tricks resolved), only 1 trick (5 pts) left → max 10 < 25.
+    mockExec.mockResolvedValue({ ...playPhaseState, contract: 25, declarerIdx: 0, roundTeamPoints: [5, 15] });
+    renderWithProviders(<FortyFivesPage />);
+    await waitFor(() => expect(screen.getByTestId('ff-contract-progress')).toHaveTextContent('達成不能'));
+  });
+
+  it('hides the live points panel at round end in favor of the round result', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<FortyFivesPage />);
+    await waitFor(() => expect(screen.getByText('ラウンド結果')).toBeInTheDocument());
+    expect(screen.queryByTestId('ff-live-points')).not.toBeInTheDocument();
   });
 });

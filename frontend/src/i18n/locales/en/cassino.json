@@ -13,6 +13,8 @@
   "button.reset": "Reset",
   "label.tableCards": "Table",
   "label.tableEmpty": "Empty",
+  "label.selected": "selected",
+  "label.takeCandidate": "take candidate",
   "label.builds": "Builds",
   "build.label": "Value {{value}} ({{kind}}) / owner: {{owner}}",
   "build.single": "single",

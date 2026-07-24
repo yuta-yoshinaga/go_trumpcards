@@ -28,7 +28,7 @@ func (vpc *VideoPokerCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return vpc.vi.Reset() },
-		[]string{"b", "bet", "h", "hold", "log", "l"},
+		[]string{"b", "bet", "h", "hold", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
@@ -44,7 +44,7 @@ func (vpc *VideoPokerCuiController) Exec(command string) string {
 				}
 				return vpc.vi.Hold(indices), true
 			default:
-				return handleCuiLog(cmd, vpc.vi.ActionLog)
+				return handleCuiHintAndLog(cmd, vpc.vi.Hint, vpc.vi.ActionLog)
 			}
 		},
 	)

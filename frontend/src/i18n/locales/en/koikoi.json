@@ -23,6 +23,13 @@
   "you": "You",
   "cpu": "CPU",
   "captured": "Captured: {{count}}",
+  "capturedEmpty": "No captured cards",
+  "category": {
+    "bright": "Bright",
+    "animal": "Animal",
+    "ribbon": "Ribbon",
+    "kasu": "Chaff"
+  },
   "score": "Score: {{score}}",
   "turnYours": "Your turn — pick a hand card to capture a field card.",
   "turnCpu": "CPU is playing…",
@@ -60,10 +67,10 @@
     "tsukimi": "Moon Viewing"
   },
   "hint": {
-    "koikoi_capture": "Capture the higher-value field card",
-    "koikoi_play": "Play a card from your hand",
-    "koikoi_continue": "Call koi-koi to build a bigger yaku",
-    "koikoi_stop": "Call shobu to lock in your points"
+    "capture": "Capture the higher-value field card",
+    "discard_low": "Discard a low-value card",
+    "koikoi_lowyaku": "Call koi-koi to build a bigger yaku",
+    "stop_secure": "Call shobu to lock in your points"
   },
   "tutorial": {
     "field": "These are the field cards. A played hand card captures a field card of the same month (flower). When two cards match, you choose which to take.",

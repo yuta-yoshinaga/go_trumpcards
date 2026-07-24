@@ -37,5 +37,6 @@
   "trickEnd": "Trick complete",
   "roundEnd": "Round complete",
   "result.humanWin": "Game over! Your team wins!",
-  "result.cpuWin": "Game over! Team {{team}} wins!"
+  "result.cpuWin": "Game over! Team {{team}} wins!",
+  "bidHistory": "Bids: {{bids}}"
 }

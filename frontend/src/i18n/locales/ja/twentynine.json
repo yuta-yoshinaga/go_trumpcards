@@ -17,6 +17,7 @@
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
   "trump": "切り札: {{suit}}",
+  "trumpRevealBanner": "切り札公開: {{suit}}",
   "noTrump": "なし",
   "hiddenTrump": "非公開",
   "cards": "{{count}}枚",
@@ -41,6 +42,9 @@
   "nextRound": "次のラウンド",
   "target": "目標: {{points}}ゲーム点",
   "bidPrompt": "入札してください（上回る入札のみ可）:",
+  "bidHighest": "現在の最高ビッド: {{bid}}（{{player}}）",
+  "bidNone": "まだ入札なし",
+  "bidDisabledReason": "現在の最高ビッド {{currentBid}} を超える必要があります",
   "bid": {
     "pass": "パス",
     "sixteen": "16",

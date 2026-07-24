@@ -4,12 +4,14 @@ package presenter
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupGapsCuiMock() *interfaces.MockGapsGame {
@@ -30,6 +32,7 @@ func setupGapsCuiMock() *interfaces.MockGapsGame {
 		}
 	}
 	g.On("GetGrid").Return(grid).Maybe()
+	g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{3, 0, 0, 0}).Maybe()
 	g.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	return g
 }
@@ -41,6 +44,9 @@ func TestGapsCuiPresenter_Output_Playing(t *testing.T) {
 	assert.Contains(t, out, "Gaps")
 	assert.Contains(t, out, "再配り 0/3")
 	assert.Contains(t, out, "[ . ]")
+	// Locked legend plus 3 markers on row 0 (one per locked card) → 4 asterisks.
+	assert.Contains(t, out, i18n.T("gaps.lockedLegend"))
+	assert.Equal(t, 4, strings.Count(out, "*"))
 }
 
 func TestGapsCuiPresenter_Output_GameClear(t *testing.T) {
@@ -55,6 +61,7 @@ func TestGapsCuiPresenter_Output_GameClear(t *testing.T) {
 	g.On("UndoToEscape").Return(0).Maybe()
 	var grid [domain.GapsRowCnt][domain.GapsColCnt]domain.GapsCell
 	g.On("GetGrid").Return(grid).Maybe()
+	g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{}).Maybe()
 	g.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	p := &GapsCuiPresenter{}
@@ -74,6 +81,7 @@ func TestGapsCuiPresenter_Output_GameOver(t *testing.T) {
 	g.On("UndoToEscape").Return(-1).Maybe()
 	var grid [domain.GapsRowCnt][domain.GapsColCnt]domain.GapsCell
 	g.On("GetGrid").Return(grid).Maybe()
+	g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{}).Maybe()
 	g.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	p := &GapsCuiPresenter{}
 	out := p.Output(g, nil)

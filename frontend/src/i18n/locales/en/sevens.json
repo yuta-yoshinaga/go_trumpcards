@@ -8,6 +8,7 @@
   "passUnlimited": "∞",
   "clickPlayable": "Click a playable card",
   "mustPass": "No playable cards — please pass",
+  "passRemaining": "Pass ({{count}} left)",
   "playTitle": "Play: {{design}} {{value}}",
   "rankLabel": "#{{rank}}",
   "placeAriaLabel": "Place at {{suit}} {{value}}",
@@ -68,5 +69,6 @@
     "playExtend": "You have a playable card — extend the range",
     "passAvailable": "No playable cards — pass",
     "passLimitWarning": "Almost out of passes — be careful"
-  }
+  },
+  "keyHints": "Number keys: play the matching card"
 }

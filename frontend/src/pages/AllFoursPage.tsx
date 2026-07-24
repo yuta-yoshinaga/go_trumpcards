@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { allfoursApi } from '../api/gameApi';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -12,6 +12,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -21,7 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
-import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { AllFoursResponse } from '../types/card';
 import { AllFoursPhase } from '../types/phases';
@@ -85,6 +86,22 @@ const SUIT_LABELS: Readonly<Record<number, string>> = {
   2: '♣',
   3: '♥',
   4: '♦',
+};
+
+/** Suit-name i18n key suffixes indexed by trump-suit number (1=♠ 2=♣ 3=♥ 4=♦). */
+const SUIT_NAME_KEYS: Readonly<Record<number, string>> = {
+  1: 'spade',
+  2: 'club',
+  3: 'heart',
+  4: 'diamond',
+};
+
+/** Suit-name i18n key suffixes indexed by card design string. */
+const SUIT_NAME_BY_DESIGN: Readonly<Record<string, string>> = {
+  SPADE: 'spade',
+  CLOVER: 'club',
+  HEART: 'heart',
+  DIAMOND: 'diamond',
 };
 
 const SUIT_DESIGNS: Readonly<Record<string, string>> = {
@@ -177,11 +194,7 @@ function AllFoursPageContent() {
   );
 
   if (!state) {
-    return (
-      <div className={`flex-1 flex items-center justify-center ${gameTheme.allfours.bg}`}>
-        <div className="text-ds-text-primary">Loading...</div>
-      </div>
-    );
+    return <GameSkeleton gameKey="allfours" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 6 }} />;
   }
 
   const phaseName = t(`phase.${PHASE_KEYS[state.phase] ?? 'beg'}`);
@@ -217,18 +230,31 @@ function AllFoursPageContent() {
               <span>{t('round', { n: state.roundNumber })}</span>
               <span>{t('trick', { n: state.trickNumber })}</span>
               <span>{t('dealer', { name: findPlayerName(state.players, state.dealerIdx) })}</span>
-              <span>
-                {t('trumpSuit', {
-                  suit: state.trumpSuit === 0 ? t('trumpUnset') : (SUIT_LABELS[state.trumpSuit] ?? '?'),
+              {/* Trump: symbol shown, suit read out by name to avoid "black spade symbol". */}
+              <span
+                role="img"
+                aria-label={t('trumpSuit', {
+                  suit: state.trumpSuit === 0 ? t('trumpUnset') : t(`suitName.${SUIT_NAME_KEYS[state.trumpSuit]}`, '?'),
                 })}
+              >
+                <span aria-hidden="true">
+                  {t('trumpSuit', {
+                    suit: state.trumpSuit === 0 ? t('trumpUnset') : (SUIT_LABELS[state.trumpSuit] ?? '?'),
+                  })}
+                </span>
               </span>
-              {state.turnUp && <span>{t('turnUp', { card: cardLabel(state.turnUp) })}</span>}
+              {state.turnUp && (
+                <span
+                  role="img"
+                  aria-label={t('turnUp', {
+                    card: `${t(`suitName.${SUIT_NAME_BY_DESIGN[state.turnUp.design]}`, state.turnUp.design)}${VALUE_LABELS[state.turnUp.value] ?? state.turnUp.value}`,
+                  })}
+                >
+                  <span aria-hidden="true">{t('turnUp', { card: cardLabel(state.turnUp) })}</span>
+                </span>
+              )}
             </div>
 
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer">
-              <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-              {tc('hint.toggle', { ns: 'tutorial' })}
-            </label>
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
             <div data-tutorial="af-score-table" className="overflow-x-auto mb-3">
@@ -253,6 +279,54 @@ function AllFoursPageContent() {
                 </tbody>
               </table>
             </div>
+
+            {(isRoundEnd || isGameEnd) && state.roundBreakdown && (
+              <div
+                data-testid="af-breakdown"
+                className="border border-ds-border-subtle rounded p-2 mb-3 text-ds-text-primary"
+              >
+                <div className="text-xs uppercase opacity-60 mb-1">{t('breakdown.title')}</div>
+                <div className="overflow-x-auto">
+                  <table className="text-sm w-full border-collapse">
+                    <tbody>
+                      {(['high', 'low'] as const).map((k) => {
+                        const award = state.roundBreakdown?.[k];
+                        return (
+                          <tr key={k} className="border-b border-white/10">
+                            <td className="p-1 opacity-80 whitespace-nowrap">{t(`breakdown.${k}`)}</td>
+                            <td className="p-1">
+                              {!award || award.winnerIdx < 0
+                                ? t('breakdown.none')
+                                : findPlayerName(state.players, award.winnerIdx)}
+                            </td>
+                            <td className="p-1">
+                              {award?.card && <CardImage card={award.card} width={Math.round(cardWidth * 0.6)} />}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      <tr className="border-b border-white/10">
+                        <td className="p-1 opacity-80 whitespace-nowrap">{t('breakdown.jack')}</td>
+                        <td className="p-1" colSpan={2}>
+                          {state.roundBreakdown.jack.winnerIdx < 0
+                            ? t('breakdown.none')
+                            : findPlayerName(state.players, state.roundBreakdown.jack.winnerIdx)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="p-1 opacity-80 whitespace-nowrap">{t('breakdown.game')}</td>
+                        <td className="p-1" colSpan={2}>
+                          {state.roundBreakdown.game.winnerIdx < 0
+                            ? t('breakdown.none')
+                            : findPlayerName(state.players, state.roundBreakdown.game.winnerIdx)}
+                          <span className="opacity-50 ml-1">({state.roundBreakdown.game.points.join(' / ')})</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
             <div
               data-tutorial="af-trick-display"
@@ -306,7 +380,12 @@ function AllFoursPageContent() {
               </div>
             )}
 
-            {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
 
           <GameFooter className={`${gameTheme.allfours.footer} px-4 pt-3`}>
@@ -335,6 +414,13 @@ function AllFoursPageContent() {
                       value: pointLimit,
                       options: [5, 7, 9, 11, 15, 21].map((v) => ({ value: v, label: String(v) })),
                       onSelect: (v) => handleConfigChange('pointLimit', Number(v)),
+                    },
+                    {
+                      type: 'checkbox',
+                      id: 'frontendHint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: hintEnabled,
+                      onToggle: setHintEnabled,
                     },
                   ],
                 },
@@ -402,30 +488,17 @@ function AllFoursPageContent() {
                     ? t('result.humanWin')
                     : t('result.cpuWin', { cpuId: state.winnerIdx })}
                 </div>
-                <div className="flex justify-center gap-2">
-                  <GameResetButton
-                    isGameEnd={isGameEnd}
-                    onReset={handleManualReset}
-                    requestConfirm={requestConfirm}
-                    loading={loading}
-                  />
-                </div>
               </div>
             )}
 
             <div className="flex justify-center gap-2 pb-2">
-              <button
-                type="button"
-                data-tutorial="af-reset-button"
-                className={btnDanger}
-                onClick={() => requestConfirm(handleManualReset)}
-                disabled={loading}
-              >
-                {tc('button.reset')}
-              </button>
-              <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-                {tc('actionLog.view')}
-              </button>
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="af-reset-button"
+              />
             </div>
           </GameFooter>
         </>

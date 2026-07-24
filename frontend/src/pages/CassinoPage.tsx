@@ -20,6 +20,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { gameTheme } from '../styles/gameTheme';
 import type { CassinoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { cassinoTakeCandidates } from '../utils/cassinoTakeCandidates';
 import { suggestCassinoAction } from '../utils/cassinoUtils';
 import {
@@ -252,6 +253,13 @@ function CassinoPageContent() {
                         } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
                         data-testid={`table-card-${i}`}
                         data-take-candidate={isCandidate || undefined}
+                        aria-label={`${cardAlt(c)}${
+                          tableIndices.includes(i)
+                            ? ` ${t('label.selected')}`
+                            : isCandidate
+                              ? ` ${t('label.takeCandidate')}`
+                              : ''
+                        }`}
                       >
                         <AnimatedCard card={c} width={cardWidth * 0.9} />
                       </button>
@@ -282,6 +290,7 @@ function CassinoPageContent() {
                           buildIndices.includes(i) ? 'ring-2 ring-ds-info bg-ds-info/20' : 'border-white/20 bg-black/20'
                         } ${isHumanTurn ? 'cursor-pointer' : ''}`}
                         data-testid={`build-${i}`}
+                        aria-label={`${buildLabel}${buildIndices.includes(i) ? ` ${t('label.selected')}` : ''}`}
                       >
                         {buildLabel}
                       </button>
@@ -340,7 +349,15 @@ function CassinoPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
-            {frontendHintEnabled && frontendHint && (
+            {/*
+             * Single hint surface: the registry-driven advisory hint (`getCassinoHint`,
+             * mirroring the domain heuristic) and the selection-derived one-click
+             * suggestion are mutually exclusive. When the player's current selection
+             * already forms a concrete take/build, that actionable suggestion supersedes
+             * the generic advisory so only ONE piece of guidance is ever shown and the
+             * two can never contradict each other.
+             */}
+            {frontendHintEnabled && frontendHint && !suggestion && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
             )}
           </div>

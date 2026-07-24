@@ -71,6 +71,13 @@ func TestMacauWebPresenter_Output(t *testing.T) {
 		assert.Len(t, resObj.Players[1].Cards, 0)
 	})
 
+	t.Run("HintOutput falls back to the state output", func(t *testing.T) {
+		m, players := setupMacauWebMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		// The web presenter computes hints client-side, so HintOutput mirrors Output.
+		assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+	})
+
 	t.Run("penalty and direction populated", func(t *testing.T) {
 		m, _ := setupMacauWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPenaltyDrawCount")

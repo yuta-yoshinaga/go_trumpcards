@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { labellelucieApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -54,18 +54,29 @@ function LaBelleLuciePageContent() {
     useGamePageSetup('labellelucie');
   const { state, loading, error, exec, retry } = useGameApi(labellelucieApi.exec);
   const [selected, setSelected] = useState<number | null>(null);
+  // Whether the last hint's suggested move is currently highlighted on the board.
+  // The move coordinates themselves come from `state.hint` (set by the server on a
+  // `hint` command); this flag just gates the rings so they only show after the
+  // player asks for a hint, then auto-dismiss.
+  const [showHint, setShowHint] = useState(false);
+  const hintTimerRef = useRef<number | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useEffect(() => {
     exec('reset');
   }, []);
 
-  // Clear a stale source selection whenever the board changes (redeal, undo,
-  // auto-complete) so a selected index can't point at a different fan.
+  // Clear a stale source selection (and any hint highlight) whenever the board
+  // changes (move, redeal, undo, auto-complete) so a selected/hinted index can't
+  // point at a different fan.
   // biome-ignore lint/correctness/useExhaustiveDependencies: deps are the change-trigger, not read in the body.
   useEffect(() => {
     setSelected(null);
+    setShowHint(false);
   }, [state?.moveCount, state?.redealsLeft]);
+
+  // Cancel a pending hint auto-dismiss timer on unmount.
+  useEffect(() => () => window.clearTimeout(hintTimerRef.current ?? undefined), []);
 
   const phaseNames = usePhaseNames('labellelucie', LL_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
@@ -77,16 +88,37 @@ function LaBelleLuciePageContent() {
   const isOver = state.phase === LaBelleLuciePhase.GAME_OVER;
   const isEnd = isClear || isOver;
   const canAct = !isEnd;
+  const hasLegalMove = labelleLucieHasLegalMove(state.fans, state.foundation);
   // No legal move left but redeals remain: recommend a redeal before the
   // player wastes time hunting for a move that does not exist.
-  const stuck = canAct && state.redealsLeft > 0 && !labelleLucieHasLegalMove(state.fans, state.foundation);
+  const stuck = canAct && state.redealsLeft > 0 && !hasLegalMove;
+  // No legal move left and redeals are exhausted: a true deadlock. Guide the
+  // player to give up instead of hunting for a move that cannot exist.
+  const deadlocked = canAct && state.redealsLeft <= 0 && !hasLegalMove;
   const phaseName = phaseNames[state.phase] ?? '';
 
   const handleReset = () => {
     hideActionLog();
     setSelected(null);
+    // A reset keeps moveCount/redealsLeft unchanged from a fresh board, so the
+    // board-change effect may not fire — clear any stale hint highlight here.
+    setShowHint(false);
+    window.clearTimeout(hintTimerRef.current ?? undefined);
     exec('reset');
   };
+
+  // Ask the server for a hint, then highlight the suggested move (source fan →
+  // destination fan/foundation) for a few seconds. Does not execute the move.
+  const handleHint = () => {
+    exec('hint');
+    setShowHint(true);
+    window.clearTimeout(hintTimerRef.current ?? undefined);
+    hintTimerRef.current = window.setTimeout(() => setShowHint(false), 4000);
+  };
+
+  // The move to highlight, only while the highlight is active.
+  const hint = showHint ? state.hint : undefined;
+  const hintFoundation = hint?.toFoundation === true;
 
   // Picking a fan: first click selects the source; second click moves to that fan.
   const pickFan = (idx: number) => {
@@ -110,31 +142,45 @@ function LaBelleLuciePageContent() {
   };
 
   /** Renders a fan as a small overlapping vertical pile; only the top is interactive. */
-  const renderFan = (fan: Card[], idx: number) => (
-    <button
-      type="button"
-      key={`fan-${idx}`}
-      className={`relative flex flex-col items-center rounded p-1 ${selected === idx ? 'ring-2 ring-ds-warning' : ''} ${canAct ? 'cursor-pointer' : ''}`}
-      style={{ minHeight: Math.round(w * 1.4) }}
-      onClick={canAct ? () => pickFan(idx) : undefined}
-      disabled={!canAct}
-      data-testid={`fan-${idx}`}
-    >
-      {fan.length === 0 ? (
-        <div
-          className="rounded border border-dashed border-white/25 bg-black/20"
-          style={{ width: w, height: Math.round(w * 1.4) }}
-          title={t('empty')}
-        />
-      ) : (
-        fan.map((c, i) => (
-          <div key={`fan-${idx}-${i}`} style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.0) }}>
-            <CardImage card={c} width={w} />
-          </div>
-        ))
-      )}
-    </button>
-  );
+  const renderFan = (fan: Card[], idx: number) => {
+    const isHintSource = hint?.fromFan === idx;
+    const isHintDest = hint !== undefined && !hintFoundation && hint.toFan === idx;
+    // Source ring (info) and destination ring (success) are additive hint cues.
+    // A selected fan keeps its own warning ring; hint rings take visual priority
+    // via later class order when both would apply to the same fan.
+    const hintRing = isHintSource
+      ? ' ring-2 ring-ds-info motion-safe:animate-pulse'
+      : isHintDest
+        ? ' ring-2 ring-ds-success motion-safe:animate-pulse'
+        : '';
+    return (
+      <button
+        type="button"
+        key={`fan-${idx}`}
+        className={`relative flex flex-col items-center rounded p-1 ${selected === idx ? 'ring-2 ring-ds-warning' : ''}${hintRing} ${canAct ? 'cursor-pointer' : ''}`}
+        style={{ minHeight: Math.round(w * 1.4) }}
+        onClick={canAct ? () => pickFan(idx) : undefined}
+        disabled={!canAct}
+        data-testid={`fan-${idx}`}
+        data-hint-source={isHintSource ? 'true' : undefined}
+        data-hint-dest={isHintDest ? 'true' : undefined}
+      >
+        {fan.length === 0 ? (
+          <div
+            className="rounded border border-dashed border-white/25 bg-black/20"
+            style={{ width: w, height: Math.round(w * 1.4) }}
+            title={t('empty')}
+          />
+        ) : (
+          fan.map((c, i) => (
+            <div key={`fan-${idx}-${i}`} style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.0) }}>
+              <CardImage card={c} width={w} />
+            </div>
+          ))
+        )}
+      </button>
+    );
+  };
 
   return (
     <GamePageShell
@@ -153,7 +199,11 @@ function LaBelleLuciePageContent() {
         {/* Foundations */}
         <div className="mb-3" data-tutorial="ll-foundation">
           <span className="text-ds-text-muted text-[11px]">{t('foundation')}</span>
-          <div className="flex gap-1 mt-0.5">
+          <div
+            className={`flex gap-1 mt-0.5 rounded${hintFoundation ? ' ring-2 ring-ds-success motion-safe:animate-pulse p-1' : ''}`}
+            data-testid="ll-foundation-row"
+            data-hint-foundation={hintFoundation ? 'true' : undefined}
+          >
             {state.foundation.map((pile, i) => (
               <button
                 type="button"
@@ -194,6 +244,15 @@ function LaBelleLuciePageContent() {
             <span className="rounded-full bg-ds-warning/20 px-2 py-0.5 text-xs font-bold tabular-nums">
               {t('redealsLeftBadge', { count: state.redealsLeft })}
             </span>
+          </div>
+        )}
+        {deadlocked && (
+          <div
+            className="mt-1 flex items-center gap-2 text-ds-danger text-sm font-medium"
+            role="status"
+            data-testid="ll-deadlock-banner"
+          >
+            <span>{t('stuckDeadlock')}</span>
           </div>
         )}
         {canAct && (
@@ -252,7 +311,7 @@ function LaBelleLuciePageContent() {
             <button
               type="button"
               className={btnPrimary}
-              onClick={() => exec('hint')}
+              onClick={handleHint}
               disabled={loading}
               data-testid="hint-button"
             >
@@ -262,7 +321,7 @@ function LaBelleLuciePageContent() {
           {canAct && (
             <button
               type="button"
-              className={btnSecondary}
+              className={`${btnSecondary}${deadlocked ? ' motion-safe:animate-pulse' : ''}`}
               onClick={() => exec('giveup')}
               disabled={loading}
               data-testid="giveup-button"

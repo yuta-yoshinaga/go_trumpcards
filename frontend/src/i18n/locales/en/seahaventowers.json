@@ -11,6 +11,7 @@
   "giveup": "Give Up",
   "hint": "Hint",
   "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Auto-complete guarantees a win once every column is in descending order.",
   "undo": "Undo",
   "moveCount": "Moves",
   "empty": "Empty",

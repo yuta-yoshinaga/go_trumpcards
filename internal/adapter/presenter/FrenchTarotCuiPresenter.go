@@ -152,6 +152,10 @@ func (p *FrenchTarotCuiPresenter) writePrompt(b *strings.Builder, g interfaces.F
 			"name", cuiPlayerName(g.GetPlayer(g.GetBidPlayerIdx()), g.GetBidPlayerIdx()),
 			"high", frenchTarotBidLabel(g.GetHighestBid())) + "\n")
 		b.WriteString(i18n.T("frenchtarot.promptBidHelp") + "\n")
+		// The contract multipliers are fixed rules; spell them out and remind the
+		// player a new bid must outrank the current highest, since the CLI has no
+		// button greying to signal it.
+		b.WriteString(i18n.T("frenchtarot.promptBidLegend") + "\n")
 	case domain.FrenchTarotPhaseChien:
 		b.WriteString(i18n.Tf("frenchtarot.promptChien",
 			"name", cuiPlayerName(g.GetPlayer(g.GetDeclarerIdx()), g.GetDeclarerIdx())) + "\n")

@@ -21,8 +21,10 @@ func (p *OsmosisCuiPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 		// Base rank
 		b.WriteString(i18n.Tf("osmosis.baseRank", "rank", strconv.Itoa(o.GetBaseRank())) + "\n")
 
-		// Foundation rows (top card of each)
+		// Foundation rows (top card of each), each annotated with the ranks that
+		// may be placed on it so the player need not run the hint command.
 		foundation := o.GetFoundation()
+		baseRank := o.GetBaseRank()
 		for i := range domain.OsmosisFoundationCnt {
 			b.WriteString(i18n.Tf("osmosis.foundationLabel", "idx", strconv.Itoa(i)))
 			pile := foundation[i]
@@ -31,6 +33,15 @@ func (p *OsmosisCuiPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 			} else {
 				b.WriteString(" " + cuiCardStr(pile[len(pile)-1]) +
 					i18n.Tf("osmosis.foundationCount", "count", strconv.Itoa(len(pile))))
+			}
+			var allowed string
+			if i == 0 && len(pile) > 0 {
+				allowed = i18n.T("osmosis.anyRank")
+			} else {
+				allowed = osmosisRankLabels(osmosisAllowedRanks(foundation, baseRank, i))
+			}
+			if allowed != "" {
+				b.WriteString(" " + i18n.Tf("osmosis.allowedRanks", "ranks", allowed))
 			}
 			b.WriteString("\n")
 		}

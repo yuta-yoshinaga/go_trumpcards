@@ -18,6 +18,8 @@ func mustTressetteOutputJSON(msg string) string {
 	out := &controller.TressetteWebOutput{
 		Players:         []*controller.TressetteWebOutputPlayer{},
 		CurrentTrick:    []*controller.TressetteWebOutputTrickCard{},
+		LastTrick:       []*controller.TressetteWebOutputTrickCard{},
+		LastTrickWinner: -1,
 		TeamScores:      []int{},
 		TeamRoundThirds: []int{},
 		PlayableIndices: []int{},

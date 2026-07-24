@@ -14,6 +14,7 @@ var pageOneNoArgCommands = cuiutil.NewCommandMap[usecase.PageOneInteractorIF]().
 	Add(usecase.PageOneInteractorIF.Declare, "dc", "declare").
 	Add(usecase.PageOneInteractorIF.SkipDeclare, "sk", "skip").
 	Add(usecase.PageOneInteractorIF.NextRound, "nr", "nextround").
+	Add(usecase.PageOneInteractorIF.Hint, "h", "hint").
 	Add(usecase.PageOneInteractorIF.ActionLog, "log", "l")
 
 // pageOneArgfulCommands lists alias names for argful commands handled in the

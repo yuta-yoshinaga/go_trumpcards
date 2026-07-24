@@ -28,6 +28,19 @@
     "play": "Play",
     "end": "Result"
   },
+  "comboPreview": "Selected combo",
+  "invalidCombo": "Invalid combination (cannot be played as is)",
+  "combo": {
+    "single": "Single",
+    "pair": "Pair",
+    "triple": "Triple",
+    "fullHouse": "Full house",
+    "straight": "Straight",
+    "stairs": "Stairs",
+    "bomb": "Bomb",
+    "straightFlush": "Straight flush",
+    "dog": "Dog"
+  },
   "result": {
     "youWin": "Your team wins!",
     "youLose": "Opponents win",
@@ -38,5 +51,6 @@
     "declare": "Before play you may call 'Tichu' (±100) or 'Grand Tichu' (±200). Go out first to earn the bonus, fail and you lose it.",
     "play": "Play combinations (single, pair, straight, bomb, ...) like Daifugo to control the table. The four special cards — Dragon, Phoenix, Dog, Mahjong — are the key to the game.",
     "teams": "5s, 10s and Kings, plus the Dragon (+25) and Phoenix (-25), are the card points. Teams score by card points and finishing order; first to 1000 wins."
-  }
+  },
+  "landscapeBanner": "Rotate to landscape for easier play"
 }

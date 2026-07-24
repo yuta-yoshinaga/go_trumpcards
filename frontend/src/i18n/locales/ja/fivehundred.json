@@ -17,6 +17,7 @@
   "passed": "パス",
   "currentTrick": "現在のトリック",
   "trickEmpty": "(まだカードがありません)",
+  "lead": "リード",
   "tricksLabel": "トリック数",
   "selectTricks": "トリック数を選択 (6-10):",
   "misereButton": "ミゼール",
@@ -30,7 +31,10 @@
   "nextRoundButton": "次のラウンド",
   "settings": {
     "cpuDifficulty": "CPU難易度",
-    "targetScore": "目標スコア"
+    "targetScore": "目標スコア",
+    "easy": "かんたん",
+    "normal": "ふつう",
+    "hard": "むずかしい"
   },
   "tutorial": {
     "info": "ここにラウンド・契約・チームスコアが表示されます。先に500点に到達したチームの勝ちです。",

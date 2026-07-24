@@ -264,3 +264,14 @@ func TestSpanish21BonusKeysCapturedOnResolve(t *testing.T) {
 	bj.resolvePayouts()
 	assert.Empty(t, bj.GetBonusKeys())
 }
+
+// TestBlackJack_SetBonusKeys は SetBonusKeys が成立ボーナスキーを設定し
+// GetBonusKeys で取得できることを検証する（テスト用セッター）。
+func TestBlackJack_SetBonusKeys(t *testing.T) {
+	bj := NewSpanish21BlackJack()
+	assert.Empty(t, bj.GetBonusKeys())
+
+	keys := []string{"spanish21.bonus.fivecard21", "spanish21.bonus.678.spade"}
+	bj.SetBonusKeys(keys)
+	assert.Equal(t, keys, bj.GetBonusKeys())
+}

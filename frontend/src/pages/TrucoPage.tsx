@@ -1,15 +1,18 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { trucoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -21,6 +24,7 @@ import { cardAlt } from '../utils/cardAlt';
 /** Tutorial steps for the Truco page. */
 const TRUCO_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="truco-score"]', messageKey: 'tutorial.score', placement: 'bottom', advanceOn: 'next' },
+  { target: '[data-tutorial="truco-rankref"]', messageKey: 'tutorial.rankRef', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="truco-trick"]', messageKey: 'tutorial.trick', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="truco-hand"]', messageKey: 'tutorial.hand', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="truco-call"]', messageKey: 'tutorial.call', placement: 'top', advanceOn: 'next' },
@@ -48,6 +52,7 @@ function TrucoPageContent() {
     retry,
   } = useGameApi<TrucoResponse, Parameters<typeof trucoApi.exec>>(trucoApi.exec);
   const { cardWidth } = useCardDimensions();
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('truco', state);
 
   useEffect(() => {
     void dispatch('reset');
@@ -63,6 +68,39 @@ function TrucoPageContent() {
   const handleAccept = useCallback(() => void dispatch('accept'), [dispatch]);
   const handleDecline = useCallback(() => void dispatch('decline'), [dispatch]);
   const handleNext = useCallback(() => void dispatch('next'), [dispatch]);
+
+  // Keyboard shortcuts (must run before the early return): 1/2/3 play a card,
+  // t declares truco, a/d accept/decline a truco call, n advances at a boundary.
+  const kbHumanIdx = state?.players.findIndex((p) => p.isHuman) ?? -1;
+  const kbHumanCardCount = state?.players[kbHumanIdx]?.cards?.length ?? 0;
+  const kbIsHumanPlayTurn = state?.phase === TrucoPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const kbIsHumanRespond = state?.phase === TrucoPhase.RESPOND && state.responderIdx === kbHumanIdx;
+  const kbCanTruco = !!state?.canDeclareTruco;
+  const kbIsBoundary = state?.phase === TrucoPhase.TRICK_END || state?.phase === TrucoPhase.HAND_END;
+  const actionBindings = useMemo(
+    () => [
+      { key: '1', action: () => handlePlay(0), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 1 },
+      { key: '2', action: () => handlePlay(1), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 2 },
+      { key: '3', action: () => handlePlay(2), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 3 },
+      { key: 't', action: handleTruco, enabled: (kbIsHumanPlayTurn || kbIsHumanRespond) && kbCanTruco },
+      { key: 'a', action: handleAccept, enabled: kbIsHumanRespond },
+      { key: 'd', action: handleDecline, enabled: kbIsHumanRespond },
+      { key: 'n', action: handleNext, enabled: kbIsBoundary },
+    ],
+    [
+      handlePlay,
+      handleTruco,
+      handleAccept,
+      handleDecline,
+      handleNext,
+      kbIsHumanPlayTurn,
+      kbHumanCardCount,
+      kbIsHumanRespond,
+      kbCanTruco,
+      kbIsBoundary,
+    ],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
   if (!state) {
     return <GameSkeleton gameKey="truco" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 3 }} />;
@@ -133,6 +171,25 @@ function TrucoPageContent() {
           </span>
         </div>
 
+        <details
+          className="my-3 p-2 rounded bg-black/30 max-w-md mx-auto"
+          data-testid="truco-rank-ref"
+          data-tutorial="truco-rankref"
+        >
+          <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rankRef.title')}</summary>
+          <div className="mt-2 text-ds-text-muted text-xs space-y-1">
+            <div>
+              <span className="font-semibold text-ds-text-primary">{t('rankRef.matadores')}</span>
+              <div className="mt-0.5">{t('rankRef.matadoresOrder')}</div>
+            </div>
+            <div>
+              <span className="font-semibold text-ds-text-primary">{t('rankRef.common')}</span>
+              <div className="mt-0.5">{t('rankRef.commonOrder')}</div>
+            </div>
+            <div className="pt-1">{t('rankRef.note')}</div>
+          </div>
+        </details>
+
         <div className="flex flex-wrap items-start gap-4 mb-4">
           <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
             {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.tricks')}: {cpu?.trickCount ?? 0}
@@ -160,6 +217,7 @@ function TrucoPageContent() {
         )}
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
         <ErrorAlert message={error} onRetry={retry} />
 
         {human && human.cards.length > 0 && (
@@ -219,6 +277,10 @@ function TrucoPageContent() {
           <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
             {t('actions.reset')}
           </button>
+          <label className="flex items-center gap-1 text-ds-text-primary text-sm" data-testid="truco-hint-toggle">
+            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+            {tc('hint')}
+          </label>
         </div>
       </div>
 

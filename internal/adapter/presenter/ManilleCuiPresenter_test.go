@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeManillePlayers() []*domain.ManillePlayer {
@@ -61,7 +62,8 @@ func TestManilleCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "Manille")
-		assert.NotEmpty(t, result)
+		// The play prompt includes the inverted rank-order reminder.
+		assert.Contains(t, result, i18n.T("manille.rankHelp"))
 	})
 
 	t.Run("trick end prompt", func(t *testing.T) {

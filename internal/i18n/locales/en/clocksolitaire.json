@@ -2,6 +2,7 @@
   "helpTitle": "Clock Solitaire",
   "helpStep": "  s                        step (flip next card)",
   "helpAutoPlay": "  a                        auto play (run all steps)",
+  "helpUndo": "  u                        undo (take back the last step)",
   "hourLabel": "[{{label}}:00]",
   "centerLabel": "[Center K]",
   "pileFootnote": " ({{up}}/{{total}})",

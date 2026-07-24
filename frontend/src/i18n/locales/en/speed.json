@@ -6,9 +6,9 @@
     "gameEnd": "Game End"
   },
   "yourHand": "Your Hand",
+  "playable": "playable now",
   "cpuHand": "CPU Hand",
   "drawPile": "Draw Pile",
-  "centerPile": "Center Pile",
   "selectCard": "Select a card from your hand",
   "selectPile": "Click a center pile to play",
   "playButton": "Play",
@@ -16,6 +16,10 @@
   "flipCenterPile": "Flip center pile {{n}}",
   "stuckMessage": "Stuck! Press flip to turn over new center cards.",
   "autoFlipInline": "Auto-flip",
+  "timer": "Time",
+  "bestTime": "Best",
+  "clearTime": "Clear time {{time}}",
+  "newBest": "New best! {{time}}",
   "autoFlipCountdownAria": "Auto-flip countdown",
   "autoFlipCountdownRemaining": "Auto-flip in {{n}} second(s)",
   "settings": {
@@ -36,5 +40,6 @@
     "playerHand": "Your hand: tap a card to select, then tap a center pile to play",
     "drawPile": "Draw pile: cards are automatically drawn when you play",
     "flipButton": "Flip button: press when stuck to turn over new center cards"
-  }
+  },
+  "centerPileCard": "Center pile {{n}}: {{card}}"
 }

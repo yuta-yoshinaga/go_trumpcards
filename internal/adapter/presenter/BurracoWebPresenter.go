@@ -29,6 +29,14 @@ func (p *BurracoWebPresenter) Output(g interfaces.BurracoGame, lastErr error) st
 		resObj.DiscardTop = cardToOutput(top)
 	}
 
+	// 捨て札パイル全体を古い順（下から上）に公開する。ブラーコでは山ごと引き取るため
+	// パイルの中身は全プレイヤーに見えている情報であり、取得判断の核心となる。
+	pile := g.GetDiscardPile()
+	resObj.DiscardPile = make([]*controller.WebOutputCard, 0, len(pile))
+	for _, card := range pile {
+		resObj.DiscardPile = append(resObj.DiscardPile, cardToOutput(card))
+	}
+
 	cfg := g.GetConfig()
 	resObj.Config = controller.BurracoWebOutputConfig{
 		CpuDifficulty: int(cfg.CpuDifficulty),
@@ -113,6 +121,13 @@ func (p *BurracoWebPresenter) buildMessage(g interfaces.BurracoGame, lastErr err
 		return "", "burraco.roundEnd", nil
 	}
 	return "", "", nil
+}
+
+// HintOutput ヒント情報をJSON出力する。Web GUI はフロントエンドのヒント推定を
+// 使うためバックエンドヒントは持たず、標準の状態出力をそのまま返す
+// (BurracoPresenter インタフェースを満たすための実装)。
+func (p *BurracoWebPresenter) HintOutput(g interfaces.BurracoGame) string {
+	return p.Output(g, nil)
 }
 
 // ActionLogOutput 棋譜をJSON出力

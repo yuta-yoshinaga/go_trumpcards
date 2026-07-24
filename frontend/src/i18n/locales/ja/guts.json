@@ -37,12 +37,23 @@
   "nextRound": "次のラウンド",
   "roundResult": {
     "title": "ラウンド結果",
-    "winner": "{{name}} がポット {{pot}} を獲得しました。"
+    "winner": "{{name}} がポット {{pot}} を獲得しました。",
+    "matchPayment": "マッチ支払い: {{name}} が -{{amount}}"
   },
   "matchWinner": "{{name}} がマッチに勝利しました！",
   "hint": {
     "strong_hand": "強い手 — 残る価値があります",
     "weak_hand": "弱い手 — 降りたほうが無難です"
+  },
+  "guide": {
+    "handLabel": "手役",
+    "tierLabel": "勝率目安",
+    "tier": {
+      "high": "高い",
+      "medium": "普通",
+      "low": "低い"
+    },
+    "matchRisk": "In で負けた場合の支払い: ポット {{pot}} 相当"
   },
   "tutorial": {
     "info": "ここにラウンド番号・ポット・アンティ・各プレイヤーのチップと状態が表示されます。ガッツは各自2枚の手札で「イン（残る）」か「アウト（降りる）」を同時に宣言する、テンポの速いポット争奪の賭けゲームです。",

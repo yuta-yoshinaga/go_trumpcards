@@ -315,11 +315,15 @@ function BadugiPageContent() {
                       if (inSubset) liftOrDim = '-translate-y-1';
                       else if (!isSelected) liftOrDim = 'opacity-50';
                     }
+                    // During the draw phase, mirror the visual lift/dim cue into the
+                    // aria-label so screen readers learn which cards form the current
+                    // best hand and which are exchange candidates.
+                    const subsetHint = showSubsetHint ? ` ${inSubset ? t('subsetBest') : t('subsetExchange')}` : '';
                     return (
                       <button
                         key={`${card.design}-${card.value}`}
                         type="button"
-                        aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
+                        aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}${subsetHint}`}
                         aria-pressed={isSelected}
                         onClick={() => toggleCard(i)}
                         data-badugi-subset={showSubsetHint && inSubset ? 'true' : undefined}
@@ -433,6 +437,7 @@ function BadugiPageContent() {
                       type: 'select',
                       id: 'badugiBettingLimit',
                       label: tc('betting.bettingLimit'),
+                      tooltip: t('settings.bettingLimitHelp'),
                       value: bettingLimit,
                       options: [
                         { value: 0, label: tc('betting.fixed') },
@@ -445,6 +450,7 @@ function BadugiPageContent() {
                       type: 'checkbox',
                       id: 'badugiCpuMetaAI',
                       label: t('settings.cpuMetaAI'),
+                      tooltip: t('settings.cpuMetaAIHelp'),
                       checked: cpuMetaAI,
                       onToggle: setCpuMetaAI,
                     },

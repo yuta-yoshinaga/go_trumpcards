@@ -128,6 +128,16 @@ describe('ContractRummyPage', () => {
     );
   });
 
+  it('exposes hand cards as accessible buttons with aria-pressed selection state', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    // cardAlt('DIAMOND', 5) => "♦ 5"
+    const cardBtn = await screen.findByRole('button', { name: '♦ 5' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cardBtn);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♦ 5' })).toHaveAttribute('aria-pressed', 'true'));
+  });
+
   it('shows next-round button at round end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<ContractRummyPage />);
@@ -185,6 +195,68 @@ describe('ContractRummyPage', () => {
     fireEvent.click(undoBtn);
     // After undo, the undo button is disabled again (no slots staged).
     expect(undoBtn).toBeDisabled();
+  });
+
+  it('removes a single staged card from its slot without clearing the rest', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add to slot|スロットに追加/ })).toBeInTheDocument());
+
+    // Stage the three 5s (indices 0-2) into slot 0.
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[1]);
+    fireEvent.click(cardButtons[2]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+    await waitFor(() => expect(screen.getByTestId('cr-slot-progress-0')).toHaveAttribute('data-state', 'satisfied'));
+
+    // Remove just the first staged card — the slot keeps the other two.
+    fireEvent.click(screen.getByTestId('cr-slot-card-0'));
+    await waitFor(() => expect(screen.getByTestId('cr-slot-progress-0')).toHaveAttribute('data-state', 'partial'));
+    expect(screen.getByTestId('cr-slot-card-1')).toBeInTheDocument();
+    expect(screen.getByTestId('cr-slot-card-2')).toBeInTheDocument();
+    // The slot is not deleted, so slotsBuilt still reports one staged slot.
+    expect(screen.getByText(/Slots staged|組成済スロット/)).toBeInTheDocument();
+  });
+
+  it('makes a removed staged card selectable again', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add to slot|スロットに追加/ })).toBeInTheDocument());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[1]);
+    fireEvent.click(cardButtons[2]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+    await waitFor(() => expect(screen.getByTestId('cr-slot-card-0')).toBeInTheDocument());
+
+    // Remove the ♠5 (index 0) from the slot; it returns to the hand as a plain, selectable card.
+    fireEvent.click(screen.getByTestId('cr-slot-card-0'));
+    const reselectable = await screen.findByRole('button', { name: '♠ 5' });
+    expect(reselectable).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(reselectable);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 5' })).toHaveAttribute('aria-pressed', 'true'));
+  });
+
+  it('auto-deletes a staged slot once its last card is removed', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add to slot|スロットに追加/ })).toBeInTheDocument());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[1]);
+    fireEvent.click(cardButtons[2]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+    await waitFor(() => expect(screen.getByText(/Slots staged|組成済スロット/)).toBeInTheDocument());
+
+    // Remove all three staged cards; the emptied slot disappears.
+    fireEvent.click(screen.getByTestId('cr-slot-card-0'));
+    fireEvent.click(screen.getByTestId('cr-slot-card-1'));
+    fireEvent.click(screen.getByTestId('cr-slot-card-2'));
+    await waitFor(() => expect(screen.queryByText(/Slots staged|組成済スロット/)).not.toBeInTheDocument());
+    expect(screen.getByTestId('cr-slot-progress-0')).toHaveAttribute('data-state', 'empty');
   });
 
   it('toggles a card off when clicked twice', async () => {

@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { rookApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -23,6 +24,8 @@ import { RookPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { formatRookState, parseRookCommand, ROOK_HELP, type RookCliArgs } from '../utils/cli/commands/rookCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
+import { rookBidStatus } from '../utils/rookBidStatus';
 
 const CPU_DIFFICULTY_SELECT = [
   { value: '0', label: 'Easy' },
@@ -48,11 +51,14 @@ const ROOK_DISCARD_COUNT = 5;
  * 4=black). The `ink` hex mirrors `CardFace`'s INK_COLORS so the swatch reads
  * the same as the drawn cards, never a French suit symbol.
  */
-const TRUMP_COLORS: { id: number; nameKey: string; ink: string }[] = [
-  { id: 1, nameKey: 'color.red', ink: '#B83A3A' },
-  { id: 2, nameKey: 'color.gold', ink: '#B8892E' },
-  { id: 3, nameKey: 'color.green', ink: '#2E7D46' },
-  { id: 4, nameKey: 'color.black', ink: '#1A1A1A' },
+// Rook cards have no French suit, so colour is the only identifier — carry a
+// language-neutral letter (R/Y/G/B) alongside the colour so it isn't conveyed
+// by hue alone (WCAG 1.4.1).
+const TRUMP_COLORS: { id: number; nameKey: string; ink: string; sym: string }[] = [
+  { id: 1, nameKey: 'color.red', ink: '#B83A3A', sym: 'R' },
+  { id: 2, nameKey: 'color.gold', ink: '#B8892E', sym: 'Y' },
+  { id: 3, nameKey: 'color.green', ink: '#2E7D46', sym: 'G' },
+  { id: 4, nameKey: 'color.black', ink: '#1A1A1A', sym: 'B' },
 ];
 
 /** Tutorial steps for Rook. */
@@ -96,6 +102,36 @@ function RookPageContent() {
 
   const [bidValue, setBidValue] = useState(ROOK_MIN_BID);
   const [trumpChoice, setTrumpChoice] = useState<number | null>(null);
+
+  // Recommended weak cards to discard during the nest exchange. The backend
+  // computes the authoritative list (Rook.go GetHint → "discard_weakest",
+  // surfaced via the `hint` command); the frontend has no equivalent model, so
+  // we fetch it here rather than invent one. Gated on the hint toggle: disabling
+  // hints clears the highlight. Fetched with rookApi directly (not the game
+  // hook's exec) so it never disturbs the main state or the player's selection.
+  const [recommendedDiscards, setRecommendedDiscards] = useState<number[] | null>(null);
+  // `inHumanExchange` flips false during the intervening play phase, so it
+  // re-triggers the fetch for each round's exchange without a round dependency.
+  const inHumanExchange = state?.phase === RookPhase.NEST_EXCHANGE && state?.declarerIdx === 0;
+
+  useEffect(() => {
+    if (!inHumanExchange || !frontendHintEnabled) {
+      setRecommendedDiscards(null);
+      return;
+    }
+    let cancelled = false;
+    rookApi
+      .exec('hint')
+      .then((res) => {
+        if (!cancelled) setRecommendedDiscards(res.hint?.discardIndices ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setRecommendedDiscards(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [inHumanExchange, frontendHintEnabled]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('rook');
@@ -147,11 +183,10 @@ function RookPageContent() {
             ? t('phase.roundEnd')
             : t('phase.play');
 
-  const trumpName =
-    state.trumpColor >= 1
-      ? t(TRUMP_COLORS.find((c) => c.id === state.trumpColor)?.nameKey ?? '')
-      : t('trumpUndeclared');
-  const trumpInk = TRUMP_COLORS.find((c) => c.id === state.trumpColor)?.ink;
+  const trumpMeta = TRUMP_COLORS.find((c) => c.id === state.trumpColor);
+  const trumpName = state.trumpColor >= 1 ? t(trumpMeta?.nameKey ?? '') : t('trumpUndeclared');
+  const trumpInk = trumpMeta?.ink;
+  const trumpSym = trumpMeta?.sym ?? '';
 
   // Bid options: strictly above the current highest bid, within [70, 120] step 5.
   const minSelectableBid = Math.max(
@@ -161,6 +196,10 @@ function RookPageContent() {
   const bidOptions: number[] = [];
   for (let v = minSelectableBid; v <= ROOK_MAX_BID; v += ROOK_BID_STEP) bidOptions.push(v);
   const effectiveBid = bidOptions.includes(bidValue) ? bidValue : (bidOptions[0] ?? ROOK_MIN_BID);
+
+  // Bid-turn context: the standing high bid plus who is still in the auction.
+  const bidStatus = rookBidStatus(state.players);
+  const passedNames = bidStatus.passed.map((p) => playerName(p.id, p.isHuman)).join(', ');
 
   const handleExchange = () => {
     if (selectedCardIndices.length === ROOK_DISCARD_COUNT && trumpChoice !== null) {
@@ -210,12 +249,17 @@ function RookPageContent() {
                   <>
                     <span>{t('contractLine', { value: state.contractBid })}</span>
                     <span
-                      aria-hidden
+                      role="img"
+                      aria-label={trumpName}
                       className="inline-block h-3 w-3 rounded-full border border-white/40"
                       style={{ backgroundColor: trumpInk }}
                       data-testid="trump-swatch"
                     />
-                    <span data-testid="trump-name">{trumpName}</span>
+                    {/* Visible letter + name (aria-hidden — the swatch already names the colour). */}
+                    <span data-testid="trump-name" aria-hidden="true">
+                      {trumpSym ? `${trumpSym} ` : ''}
+                      {trumpName}
+                    </span>
                   </>
                 ) : state.highestBid > 0 ? (
                   <span>{t('highestBid', { value: state.highestBid })}</span>
@@ -271,17 +315,25 @@ function RookPageContent() {
                 {human.isDeclarer && <span className="font-bold text-ds-warning"> ★</span>}
               </div>
               {isHumanExchange && <div className="text-xs text-ds-info mb-1">{t('nestExchangeHint')}</div>}
+              {isHumanExchange && recommendedDiscards && recommendedDiscards.length > 0 && (
+                <div className="text-xs text-ds-warning mb-1" data-testid="rook-discard-hint">
+                  {t('recommendedDiscardHint')}
+                </div>
+              )}
               <div className="flex flex-wrap justify-center gap-2">
                 {human.cards.map((c, i) => {
                   const selected = selectedCardIndices.includes(i);
                   const selectable = isHumanPlayTurn || isHumanExchange;
-                  const cardClass = selected
-                    ? selectable
-                      ? 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-pointer hover:opacity-90'
-                      : 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-default'
-                    : selectable
-                      ? 'rounded transition-all cursor-pointer hover:opacity-90'
-                      : 'rounded transition-all cursor-default';
+                  // A pale ring marks the backend's recommended discards, but an
+                  // explicit selection (info ring) always takes visual priority.
+                  const recommendedDiscard = isHumanExchange && !selected && !!recommendedDiscards?.includes(i);
+                  const cursorClass = selectable ? 'cursor-pointer hover:opacity-90' : 'cursor-default';
+                  const ringClass = selected
+                    ? 'ring-2 ring-ds-info -translate-y-2'
+                    : recommendedDiscard
+                      ? 'ring-2 ring-ds-warning/70'
+                      : '';
+                  const cardClass = `rounded transition-all ${ringClass} ${cursorClass}`.replace(/\s+/g, ' ').trim();
                   return (
                     <button
                       key={i}
@@ -290,6 +342,7 @@ function RookPageContent() {
                       disabled={!selectable}
                       className={cardClass}
                       data-testid={`hand-card-${i}`}
+                      data-recommended-discard={recommendedDiscard ? 'true' : undefined}
                     >
                       <AnimatedCard card={c} width={cardWidth} />
                     </button>
@@ -345,6 +398,19 @@ function RookPageContent() {
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="rook-actions">
               {isHumanBidTurn && (
                 <>
+                  <div
+                    className="w-full text-center text-xs text-ds-text-muted space-y-0.5"
+                    data-testid="rook-bid-status"
+                  >
+                    <div>
+                      {state.highestBid > 0
+                        ? t('bidStatus.highest', { value: state.highestBid })
+                        : t('bidStatus.highestNone')}
+                      {' · '}
+                      {t('bidStatus.remaining', { n: bidStatus.activeBidders })}
+                    </div>
+                    {passedNames && <div>{t('bidStatus.passed', { names: passedNames })}</div>}
+                  </div>
                   <label
                     htmlFor="rook-bid"
                     className="text-xs text-ds-text-muted self-center"
@@ -401,6 +467,9 @@ function RookPageContent() {
                       }`}
                       style={{ backgroundColor: c.ink }}
                     >
+                      <span aria-hidden="true" className="font-bold">
+                        {c.sym}
+                      </span>
                       {t(c.nameKey)}
                     </button>
                   ))}

@@ -91,6 +91,39 @@ describe('EcartePage', () => {
     expect(screen.getByTestId('ecarte-refuse')).toBeInTheDocument();
   });
 
+  it('shows the vulnerable-rule helper under the negStep label on an ElderDecide turn', async () => {
+    renderWithProviders(<EcartePage />);
+    await waitFor(() => expect(screen.getByTestId('ecarte-neg-help')).toBeInTheDocument());
+    expect(screen.getByTestId('ecarte-neg-help')).toHaveTextContent('勝負');
+  });
+
+  it('shows the refusal-vulnerability helper on a DealerRespond turn', async () => {
+    mockExec.mockResolvedValue(dealerRespondState);
+    renderWithProviders(<EcartePage />);
+    await waitFor(() => expect(screen.getByTestId('ecarte-neg-help')).toHaveTextContent('vulnerable'));
+  });
+
+  it('attaches consequence descriptions to the propose/stand buttons', async () => {
+    renderWithProviders(<EcartePage />);
+    const propose = await screen.findByTestId('ecarte-propose');
+    expect(propose).toHaveAttribute('aria-describedby', 'ecarte-propose-desc');
+    expect(propose).toHaveAttribute('title');
+    expect(screen.getByTestId('ecarte-stand')).toHaveAttribute('aria-describedby', 'ecarte-stand-desc');
+    // The sr-only description for stand spells out that there is no penalty.
+    expect(document.getElementById('ecarte-stand-desc')).toHaveTextContent('罰則なし');
+  });
+
+  it('attaches consequence descriptions to the accept/refuse buttons', async () => {
+    mockExec.mockResolvedValue(dealerRespondState);
+    renderWithProviders(<EcartePage />);
+    const refuse = await screen.findByTestId('ecarte-refuse');
+    expect(refuse).toHaveAttribute('aria-describedby', 'ecarte-refuse-desc');
+    expect(refuse).toHaveAttribute('title');
+    expect(screen.getByTestId('ecarte-accept')).toHaveAttribute('aria-describedby', 'ecarte-accept-desc');
+    // The refuse consequence names the extra-point (vulnerable) penalty.
+    expect(document.getElementById('ecarte-refuse-desc')).toHaveTextContent('追加1点');
+  });
+
   it('dispatches respond(false) when the refuse button is clicked', async () => {
     mockExec.mockResolvedValue(dealerRespondState);
     renderWithProviders(<EcartePage />);
@@ -110,6 +143,34 @@ describe('EcartePage', () => {
     mockExec.mockResolvedValue(discardState);
     fireEvent.click(screen.getByTestId('ecarte-discard'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { discardIndices: [0] }));
+  });
+
+  it('disables the discard button and shows the empty reason when no card is selected', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<EcartePage />);
+    const discard = await screen.findByTestId('ecarte-discard');
+    expect(discard).toBeDisabled();
+    expect(screen.getByTestId('ecarte-discard-reason')).toHaveTextContent('カードを選択してください');
+    expect(screen.getByTestId('ecarte-discard-guide')).toHaveTextContent('0枚選択中');
+  });
+
+  it('enables the discard button and updates the count guide once a card is selected', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<EcartePage />);
+    const card = await screen.findByAltText('♠ K');
+    fireEvent.click(card);
+    expect(screen.getByTestId('ecarte-discard')).toBeEnabled();
+    expect(screen.getByTestId('ecarte-discard-guide')).toHaveTextContent('1枚選択中');
+    expect(screen.queryByTestId('ecarte-discard-reason')).not.toBeInTheDocument();
+  });
+
+  it('disables the discard button and shows the stock reason when selecting more than the stock', async () => {
+    mockExec.mockResolvedValue(makeEcarteState({ phase: 0, negStep: 2, currentPlayerIdx: 0, stockRemaining: 0 }));
+    renderWithProviders(<EcartePage />);
+    const card = await screen.findByAltText('♠ K');
+    fireEvent.click(card);
+    expect(screen.getByTestId('ecarte-discard')).toBeDisabled();
+    expect(screen.getByTestId('ecarte-discard-reason')).toHaveTextContent('山札が足りません');
   });
 
   it('renders the play phase with the human cards and the play button', async () => {

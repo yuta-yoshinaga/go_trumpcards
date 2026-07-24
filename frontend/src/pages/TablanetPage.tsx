@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { tablanetApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -93,6 +93,40 @@ function TablanetPageContent() {
     callApi('reset');
   }, []);
 
+  // Captures and tablas are shown only via animation and count updates (the web
+  // presenter never puts them in state.message), so a screen-reader user gets no
+  // notification. A single `play` response can bundle several CPU auto-plays, so
+  // we diff EACH player's captured/tabla counts (not the total, and not
+  // lastCaptureIdx which only names the most recent capturer) and attribute the
+  // event to exactly the players whose counts rose. The nonce keys the live
+  // region so it re-announces even when consecutive events yield identical text.
+  const prevPerPlayerRef = useRef<{ captured: number; tabla: number }[] | null>(null);
+  const [captureAnnounce, setCaptureAnnounce] = useState('');
+  const [announceNonce, setAnnounceNonce] = useState(0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: react to each state update; reads the t snapshot deliberately.
+  useEffect(() => {
+    if (!state) return;
+    const cur = state.players.map((p) => ({ captured: p.capturedCount, tabla: p.tablaCount }));
+    const prev = prevPerPlayerRef.current;
+    prevPerPlayerRef.current = cur;
+    if (!prev) return;
+    const nameOf = (i: number) => {
+      const p = state.players[i];
+      return p?.isHuman ? t('you') : t('cpu', { id: p?.id ?? i });
+    };
+    const tablaPlayers = cur.map((c, i) => (c.tabla > (prev[i]?.tabla ?? c.tabla) ? i : -1)).filter((i) => i >= 0);
+    const capturePlayers = cur
+      .map((c, i) => (c.captured > (prev[i]?.captured ?? c.captured) ? i : -1))
+      .filter((i) => i >= 0);
+    if (tablaPlayers.length > 0) {
+      setCaptureAnnounce(t('tablaAnnounce', { player: tablaPlayers.map(nameOf).join(t('listSeparator')) }));
+      setAnnounceNonce((n) => n + 1);
+    } else if (capturePlayers.length > 0) {
+      setCaptureAnnounce(t('captureAnnounce', { player: capturePlayers.map(nameOf).join(t('listSeparator')) }));
+      setAnnounceNonce((n) => n + 1);
+    }
+  }, [state]);
+
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('tablanet');
   const cliConfig: CliGameConfig<TablanetResponse, Parameters<typeof tablanetApi.exec>> = useMemo(
     () => ({
@@ -123,6 +157,19 @@ function TablanetPageContent() {
   const captureCandidates =
     handIndex !== null && isHumanTurn ? new Set(state.captureOptions[handIndex] ?? []) : new Set<number>();
   const canPlay = isHumanTurn && handIndex !== null;
+
+  // Tabla (sweep) is possible when the selected non-Jack card can capture EVERY
+  // table card, clearing the board. Jack sweeps are excluded (they never score a
+  // tabla). This mirrors the backend award rule (Tablanet.go applyPlay) and is
+  // derived purely from captureOptions + tableCards.length as the issue requires.
+  const selectedHandCard = handIndex !== null ? (human?.cards[handIndex] ?? null) : null;
+  const selectedIsJack = selectedHandCard?.value === 11;
+  const tablaPossible =
+    isHumanTurn &&
+    handIndex !== null &&
+    !selectedIsJack &&
+    state.tableCards.length > 0 &&
+    captureCandidates.size === state.tableCards.length;
 
   const winnerNames = state.winners.map((i) => (state.players[i]?.isHuman ? t('you') : t('cpu', { id: i }))).join(', ');
 
@@ -175,8 +222,24 @@ function TablanetPageContent() {
             </div>
 
             {/* Table cards */}
-            <div className="py-3 bg-black/20 rounded-lg" data-tutorial="tablanet-table-cards">
-              <div className="text-center text-xs text-ds-text-muted mb-2">{t('table')}</div>
+            <div
+              className={`py-3 rounded-lg transition-all ${
+                tablaPossible ? 'bg-ds-success/20 ring-2 ring-ds-success motion-safe:animate-pulse' : 'bg-black/20'
+              }`}
+              data-tutorial="tablanet-table-cards"
+              data-tabla-ready={tablaPossible || undefined}
+            >
+              <div className="text-center text-xs text-ds-text-muted mb-2">
+                {t('table')}
+                {tablaPossible && (
+                  <span
+                    className="ml-2 px-2 py-0.5 rounded-full bg-ds-success text-ds-text-primary text-xs font-bold"
+                    data-testid="tablanet-tabla-badge"
+                  >
+                    {t('tablaReady')}
+                  </span>
+                )}
+              </div>
               <div className="flex justify-center gap-2 min-h-[60px] flex-wrap">
                 {state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('tableEmpty')}</span>
@@ -261,6 +324,18 @@ function TablanetPageContent() {
               messageParams={state.messageParams}
             />
 
+            {/* Announce capture / tabla events (visual-only otherwise) to screen readers.
+                Keyed on the nonce so repeated identical events still re-announce. */}
+            <div
+              key={announceNonce}
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              data-testid="tablanet-live-region"
+            >
+              {captureAnnounce}
+            </div>
+
             <ErrorAlert message={error} onRetry={retry} />
 
             {frontendHintEnabled && frontendHint && (
@@ -306,8 +381,14 @@ function TablanetPageContent() {
           <GameFooter className={`${gameTheme.tablanet.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="tablanet-actions">
               {!isGameEnd && isHumanTurn && (
-                <button type="button" className={btnPrimary} onClick={playCard} disabled={loading || !canPlay}>
-                  {tableIndices.length > 0 ? t('captureButton') : t('playButton')}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={playCard}
+                  disabled={loading || !canPlay}
+                  data-testid="tablanet-play-button"
+                >
+                  {tablaPossible ? t('tablaButton') : tableIndices.length > 0 ? t('captureButton') : t('playButton')}
                 </button>
               )}
               {isGameEnd && (

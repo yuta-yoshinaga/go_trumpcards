@@ -1,5 +1,6 @@
 {
   "currentTrick": "現在のトリック",
+  "endgameRuleGuide": "第2フェーズ: 同スートを出す義務（可能なら勝つ）。出せなければ切り札。緑リングが出せるカードです。",
   "title": "Schnapsen / Sixty-Six (シュナプセン / 66)",
   "subtitle": "オーストリアの2人用トリックテイキング — 20枚デッキ, マリアージュ, 66点先取",
   "header": {
@@ -24,7 +25,8 @@
     "reset": "リセット",
     "marriage": "マリアージュ宣言",
     "hint": "ヒント",
-    "marriageAria": "マリアージュ宣言: {{suit}} のKとQで{{points}}点"
+    "marriageAria": "マリアージュ宣言: {{suit}} のKとQで{{points}}点",
+    "playAria": "{{card}} を出す"
   },
   "tutorial": {
     "trump": "切り札のアップカードと山札です。切り札のスートが各トリックで最強になります。山札が尽きるとフェーズ2に入ります。",

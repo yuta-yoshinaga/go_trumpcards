@@ -18,9 +18,10 @@
   "promptDrawHelpStock": "ds・・・山札から引く",
   "promptDrawHelpDiscard": "dd・・・捨て札から引く",
   "promptPlay": "手番: {{name}} (プレイフェーズ)",
-  "promptPlayHelpMeld": "m <idx...>・・・メルドを場に出す",
-  "promptPlayHelpLayoff": "lo <owner> <meld> <idx>・・・レイオフ",
-  "promptPlayHelpDiscard": "d <idx>・・・カードを捨てる",
+  "promptPlayHelpMeld": "m <idx...>・・・メルドを場に出す (例: m 0 1 2)",
+  "promptPlayHelpLayoff": "lo <owner> <meld> <idx>・・・レイオフ (例: lo 1 0 3)",
+  "promptPlayHelpDiscard": "d <idx>・・・カードを捨てる (例: d 4)",
+  "promptPlayHelpNote": "メルドは同ランクの組か同スートの連番で最低3枚。valle(特別札)を含むメルドはチップを獲得します。",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ"
 }

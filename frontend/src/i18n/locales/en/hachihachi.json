@@ -15,7 +15,7 @@
   },
   "round": "Round {{n}} / {{total}}",
   "deck": "Stock: {{count}}",
-  "scoringNote": "Card points: Bright 20 / Animal 10 / Ribbon 5 / Chaff 1 (each settles vs the 88 baseline)",
+  "scoringNote": "Card points: Bright 20 / Animal 10 / Ribbon 5 / Chaff 1. Three players settle against the 88 baseline — the winner collects the raw-score difference from the losers.",
   "field": "Field",
   "fieldEmpty": "(empty)",
   "pickField": "Pick the field card to capture (two cards match).",
@@ -30,9 +30,13 @@
     "title": "Round settlement (delta from the 88 baseline)",
     "player": "Player",
     "raw": "Raw",
-    "bonus": "Bonus",
+    "bonus": "Yaku pts",
     "delta": "Delta",
-    "yaku": "Yaku"
+    "yaku": "Yaku",
+    "caption": "Round settlement table (raw, bonus and delta per player)",
+    "bestLabel": "Top score",
+    "deltaGain": "gained {{n}}",
+    "deltaLoss": "lost {{n}}"
   },
   "result": {
     "title": "Final Scores",

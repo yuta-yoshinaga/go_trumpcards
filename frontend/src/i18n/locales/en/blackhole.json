@@ -1,5 +1,9 @@
 {
-  "phase": { "playing": "Playing", "gameClear": "Game Clear", "gameOver": "Game Over" },
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
   "title": "Black Hole",
   "blackHole": "Black Hole",
   "fan": "Fan",
@@ -19,5 +23,16 @@
     "rules": "A fan top can be absorbed when its rank is one away from the black hole top (any suit, no King-Ace wrap). Absorb all 52 cards to win.",
     "actionButtons": "Buttons for hint, undo, give up and more.",
     "resetButton": "Start a new game."
-  }
+  },
+  "fanCardAria": "{{card}} (fan {{fan}})",
+  "holeAria": "Black hole: {{card}}",
+  "holeEmptyAria": "Black hole: empty",
+  "hintPlayable": "playable",
+  "hintRecommended": "recommended",
+  "hintRecommendedAnnounce": "Recommended: {{card}} (fan {{fan}})",
+  "hintLegalFans": "Playable: {{list}}",
+  "hintNoLegal": "No playable card",
+  "acceptableRanks": "Playable ranks: {{ranks}}",
+  "acceptableRanksNone": "Playable ranks: none",
+  "legalMoveCount": "Legal moves: {{count}}"
 }

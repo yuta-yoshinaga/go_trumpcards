@@ -42,7 +42,8 @@
     "lead_strong": "Lead with a strong card",
     "follow_suit": "Follow the lead suit",
     "trump_cut": "Cut with trump",
-    "discard_high": "Discard a high card"
+    "discard_high": "Discard a high card",
+    "fallback": "Best play"
   },
   "suitNames": {
     "1": "♠ Spades",
@@ -63,5 +64,12 @@
     "followSuit": "Follow the lead suit",
     "trumpCut": "Opportunity to cut with trump",
     "discardLowest": "Discard your lowest card"
+  },
+  "kbd": {
+    "title": "Keyboard shortcuts",
+    "selectCard": "Select a card in your hand by number",
+    "confirm": "Play the selected card",
+    "clear": "Clear the card selection",
+    "advance": "Advance to the next trick / round"
   }
 }

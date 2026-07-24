@@ -37,6 +37,7 @@ func (p *BidWhistWebPresenter) buildBase(g interfaces.BidWhistGame) *controller.
 	resObj.HighestBid = bidWhistBidToOutput(g.GetHighestBid())
 	resObj.HighestBidder = g.GetHighestBidder()
 	resObj.KittyCount = len(g.GetKitty())
+	resObj.KittyIndices = bidWhistKittyIndicesForHuman(g)
 	resObj.TeamScores = [2]int{g.GetTeamScore(0), g.GetTeamScore(1)}
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerTeam = g.GetWinnerTeam()
@@ -50,6 +51,17 @@ func (p *BidWhistWebPresenter) buildBase(g interfaces.BidWhistGame) *controller.
 	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
+}
+
+// bidWhistKittyIndicesForHuman はキティ交換フェーズで人間が落札者のときのみ、
+// 人間の手札のうちキティ由来カードのインデックスを返す。それ以外は空スライスを返し、
+// CPU 落札者のキティ内容を人間へ漏らさない。返り値は常に非 nil。
+func bidWhistKittyIndicesForHuman(g interfaces.BidWhistGame) []int {
+	declarerIdx := g.GetDeclarerIdx()
+	if declarerIdx < 0 || declarerIdx >= g.GetPlayerCnt() || !g.GetPlayer(declarerIdx).GetIsHuman() {
+		return []int{}
+	}
+	return g.GetKittyIndices()
 }
 
 // bidWhistBidToOutput ビッドをWeb出力へ変換 (nil 安全)

@@ -12,6 +12,7 @@
   "ante": "アンティ",
   "settings": {
     "ante": "アンティ",
+    "anteAmount": "アンティ額（次のゲームから反映）",
     "bettingLimit": "ベッティングリミット",
     "metaAI": "メタAI"
   },

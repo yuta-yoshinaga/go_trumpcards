@@ -40,6 +40,16 @@
   "payout": {
     "total": "合計配当"
   },
+  "trend": {
+    "title": "勝敗トレンド",
+    "win": "勝ち",
+    "loss": "負け",
+    "winShort": "勝",
+    "lossShort": "負",
+    "tieShort": "分",
+    "tally": "{{wins}}勝 {{losses}}敗 {{ties}}分",
+    "clear": "履歴をクリア"
+  },
   "tutorial": {
     "betControls": "アンテ額を入力してベットします",
     "actionButtons": "タイになったらサレンダーかウォーを選択します",
@@ -47,5 +57,11 @@
   },
   "hint": {
     "warEv": "サレンダーよりウォーの方がハウスエッジが小さい — ウォー推奨"
+  },
+  "kbd": {
+    "bet": "B",
+    "war": "W",
+    "surrender": "S",
+    "rebet": "E"
   }
 }

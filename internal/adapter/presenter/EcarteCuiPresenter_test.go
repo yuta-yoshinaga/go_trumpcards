@@ -93,16 +93,40 @@ func TestEcarteCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "拒否")
 	})
 
-	t.Run("exchange phase discard prompt", func(t *testing.T) {
+	t.Run("exchange phase discard prompt shows the limit (hand < stock)", func(t *testing.T) {
 		trump := domain.NewCard(domain.CardDesignSpade, 13, false)
-		m, _ := setupEcarteCuiMockWithPlayers(trump)
+		m, players := setupEcarteCuiMockWithPlayers(trump)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.EcartePhaseExchange)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetNegStep")
 		m.On("GetNegStep").Return(domain.EcarteNegElderDiscard)
+		// Elder (seat 0) holds 5 cards; stock is 21 → the hand caps the discard at 5.
+		for range 5 {
+			players[0].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		}
 
 		out := p.Output(m, nil)
 		assert.Contains(t, out, "discard <idx")
+		assert.Contains(t, out, "最大5枚")
+		assert.Contains(t, out, "山札残21")
+	})
+
+	t.Run("exchange phase discard limit is capped by the stock (stock < hand)", func(t *testing.T) {
+		trump := domain.NewCard(domain.CardDesignSpade, 13, false)
+		m, players := setupEcarteCuiMockWithPlayers(trump)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.EcartePhaseExchange)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetNegStep")
+		m.On("GetNegStep").Return(domain.EcarteNegDealerDiscard)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetStockRemaining")
+		m.On("GetStockRemaining").Return(2)
+		for range 5 {
+			players[0].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		}
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "最大2枚") // stock (2) < hand (5)
+		assert.Contains(t, out, "山札残2")
 	})
 
 	t.Run("trump-none line when stock exhausted", func(t *testing.T) {

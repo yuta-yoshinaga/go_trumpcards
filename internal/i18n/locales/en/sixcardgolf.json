@@ -21,5 +21,11 @@
   "promptFlip": "Flip a face-down card (fl <pos>) or skip (sf)",
   "promptNextRound": "Round over (nr for next round)",
   "playerLine": "{{name}} (Total={{cum}}, R={{round}}){{marker}}",
-  "scoreLine": "  Score: {{score}}"
+  "scoreLine": "  Score: {{score}}",
+  "hintNone": "No hint available.",
+  "hintDrawDiscard": "Recommended: draw the discard {{card}} (dd) — it is a low card",
+  "hintDrawStock": "Recommended: draw from the stock (ds)",
+  "hintSwap": "Recommended: swap the drawn card into position {{pos}} (sw {{pos}})",
+  "hintSwapPair": "Recommended: swap into position {{pos}} (sw {{pos}}) — completes a column pair",
+  "hintDiscard": "Recommended: discard the drawn card (di)"
 }

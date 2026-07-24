@@ -20,6 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useKingGame } from '../hooks/useKingGame';
+import { badgeErrorColors, badgeSuccessColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -272,15 +273,31 @@ function KingPageContent() {
                   </div>
                 )}
 
-                {/* Deal result: per-player gained points */}
+                {/* Deal result: contract played, its loss basis, and per-player gained points */}
                 {(isDealEnd || isGameEnd) && state.lastDealDetail && (
                   <div
                     className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
                     data-testid="king-deal-result"
                   >
                     <div className="mb-1 text-ds-text-primary">{t('dealResult.title')}</div>
+                    {/* Contract breakdown: which contract was played and why points moved */}
+                    <div className="mb-1.5 pb-1.5 border-b border-white/10" data-testid="king-deal-breakdown">
+                      <div className="text-ds-text-primary font-semibold">
+                        {state.lastDealDetail.contract === KING_TRUMP_CONTRACT && state.lastDealDetail.trumpSuit >= 1
+                          ? t('dealResult.contractLineTrump', {
+                              name: t(`contracts.${state.lastDealDetail.contract}`),
+                              suit: SUIT_SYMBOLS[state.lastDealDetail.trumpSuit] ?? '-',
+                            })
+                          : t('dealResult.contractLine', {
+                              name: t(`contracts.${state.lastDealDetail.contract}`),
+                            })}
+                      </div>
+                      <div className="text-xs opacity-80">
+                        {t('dealResult.basis', { desc: t(`contractDesc.${state.lastDealDetail.contract}`) })}
+                      </div>
+                    </div>
                     {state.players.map((p) => (
-                      <div key={p.id}>
+                      <div key={p.id} data-testid={`king-deal-breakdown-row-${p.id}`}>
                         {t('dealResult.gained', {
                           name: playerName(p.id, p.isHuman),
                           points: state.lastDealDetail?.gained[p.id] ?? 0,
@@ -354,18 +371,35 @@ function KingPageContent() {
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="king-action-buttons">
               {canSelect && pendingTrumpContract === null && (
                 <div className="flex flex-wrap gap-2" data-testid="king-contract-buttons">
-                  {state.usedContracts.map((used, contract) => (
-                    <button
-                      key={contract}
-                      type="button"
-                      className={btnSecondary}
-                      onClick={() => handleContractClick(contract)}
-                      disabled={loading || used}
-                      title={t(`contractDesc.${contract}`)}
-                    >
-                      {t(`contracts.${contract}`)}
-                    </button>
-                  ))}
+                  {state.usedContracts.map((used, contract) => {
+                    // Contract 6 (King/Trump) rewards taking tricks; every other
+                    // contract penalises capturing its target cards. See
+                    // internal/domain/King.go for the authoritative classification.
+                    const isAchieve = contract === KING_TRUMP_CONTRACT;
+                    return (
+                      <button
+                        key={contract}
+                        type="button"
+                        className={`${btnSecondary} flex flex-col items-center gap-1`}
+                        onClick={() => handleContractClick(contract)}
+                        disabled={loading || used}
+                        title={t(`contractDesc.${contract}`)}
+                        data-testid={`king-contract-${contract}`}
+                      >
+                        <span className={used ? 'line-through opacity-60' : ''}>{t(`contracts.${contract}`)}</span>
+                        <span
+                          className="flex items-center gap-1 text-xs"
+                          aria-hidden="true"
+                          data-testid={`king-contract-badge-${contract}`}
+                        >
+                          <span className={`rounded px-1 py-0.5 ${isAchieve ? badgeSuccessColors : badgeErrorColors}`}>
+                            {t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}
+                          </span>
+                          <span>{t(`contractIcon.${contract}`)}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
               {canSelect && pendingTrumpContract !== null && (

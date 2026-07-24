@@ -304,11 +304,27 @@ describe('KoenigrufenPage', () => {
   it('renders the call phase with four suit buttons and disables a held King suit', async () => {
     mockExec.mockResolvedValue(callPhaseState);
     renderWithProviders(<KoenigrufenPage />);
-    // Declarer holds the King of Hearts, so Hearts is disabled; the other three are enabled.
-    expect(await screen.findByRole('button', { name: 'ハート' })).toBeDisabled();
+    // Declarer holds the King of Hearts, so Hearts (suit 3) is disabled; the other three are enabled.
+    const hearts = await screen.findByTestId('call-king-3');
+    expect(hearts).toBeDisabled();
     expect(screen.getByRole('button', { name: 'スペード' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'クラブ' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'ダイヤ' })).toBeEnabled();
+  });
+
+  it('explains why a held-King suit cannot be called (aria-label + title, strike-through)', async () => {
+    mockExec.mockResolvedValue(callPhaseState);
+    renderWithProviders(<KoenigrufenPage />);
+    const hearts = await screen.findByTestId('call-king-3');
+    const reason = '既にこのスートの王を保有しているため呼べません';
+    expect(hearts).toHaveAttribute('aria-label', `ハート — ${reason}`);
+    expect(hearts.className).toContain('line-through');
+    // The tooltip lives on the wrapping span (disabled buttons suppress native tooltips).
+    expect(hearts.closest('span')).toHaveAttribute('title', reason);
+    // An enabled suit keeps its plain label and no reason.
+    const spade = screen.getByTestId('call-king-1');
+    expect(spade).toHaveAttribute('aria-label', 'スペード');
+    expect(spade.closest('span')).not.toHaveAttribute('title');
   });
 
   it('calling a King dispatches callking with the suit index', async () => {
@@ -376,10 +392,87 @@ describe('KoenigrufenPage', () => {
     expect(screen.getAllByText('パートナー').length).toBeGreaterThan(0);
   });
 
-  it('does not reveal the partner before partnerRevealed is true', async () => {
+  it('does not reveal the partner before partnerRevealed is true, but shows the called-King clue', async () => {
     renderWithProviders(<KoenigrufenPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'K ♥' })).toBeInTheDocument());
+    // The revealed-partner label must not appear yet.
     expect(screen.queryByText('パートナー')).not.toBeInTheDocument();
+    // Instead, the organized clue tells the human what they legitimately know.
+    const clue = screen.getByTestId('koenigrufen-partner-clue');
+    expect(clue).toHaveTextContent('の王を持つプレイヤーが宣言者の秘密のパートナー（まだ不明）');
+    // The human here is the declarer (does not hold the called King), so no "you are the partner" line.
+    expect(screen.queryByTestId('koenigrufen-partner-clue-you')).not.toBeInTheDocument();
+  });
+
+  it('tells the human they are the secret partner when they hold the called King', async () => {
+    const partnerState = makeKoenigrufenState({
+      calledKing: 4,
+      partnerRevealed: false,
+      isHumanTurn: false,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 12,
+          // The human is a defender-seat holder of the called Diamond King → they are the secret partner.
+          cards: [suit(8, 'DIAMOND', '♦', 'K'), suit(3, 'SPADE', '♠', '3')],
+          trickCount: 0,
+          cardPoints: 0,
+          score: 0,
+          isDeclarer: false,
+          isPartner: false,
+        },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 12,
+          cards: [],
+          trickCount: 0,
+          cardPoints: 0,
+          score: 0,
+          isDeclarer: true,
+          isPartner: false,
+        },
+        {
+          id: 2,
+          isHuman: false,
+          cardCount: 12,
+          cards: [],
+          trickCount: 0,
+          cardPoints: 0,
+          score: 0,
+          isDeclarer: false,
+          isPartner: false,
+        },
+        {
+          id: 3,
+          isHuman: false,
+          cardCount: 12,
+          cards: [],
+          trickCount: 0,
+          cardPoints: 0,
+          score: 0,
+          isDeclarer: false,
+          isPartner: false,
+        },
+      ],
+    });
+    mockExec.mockResolvedValue(partnerState);
+    renderWithProviders(<KoenigrufenPage />);
+    await waitFor(() => expect(screen.getByTestId('koenigrufen-partner-clue-you')).toBeInTheDocument());
+    expect(screen.getByTestId('koenigrufen-partner-clue-you')).toHaveTextContent('あなたがその王を持っています');
+    // Still must not leak the seat index as a revealed partner.
+    expect(screen.queryByText('パートナー')).not.toBeInTheDocument();
+  });
+
+  it('switches to the revealed-partner label once partnerRevealed is true', async () => {
+    const revealedState = makeKoenigrufenState({ partnerRevealed: true, partnerIdx: 2 });
+    mockExec.mockResolvedValue(revealedState);
+    renderWithProviders(<KoenigrufenPage />);
+    await waitFor(() => expect(screen.getByTestId('koenigrufen-called-king')).toBeInTheDocument());
+    // The unknown clue is gone; the partner is now named.
+    expect(screen.queryByTestId('koenigrufen-partner-clue')).not.toBeInTheDocument();
+    expect(screen.getByText(/パートナー: /)).toBeInTheDocument();
   });
 
   it('renders the game end message', async () => {

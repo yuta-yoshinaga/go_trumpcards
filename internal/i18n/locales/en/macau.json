@@ -24,5 +24,9 @@
   "promptMustDeclare": "Declaration phase (one card left)",
   "promptMustDeclareHelp": "dc / declare: declare \"Macau!\" / sk / skipdeclare: skip and take penalty",
   "promptRoundEnd": "Round complete",
-  "promptRoundEndHelp": "nr / nextround: advance to next round"
+  "promptRoundEndHelp": "nr / nextround: advance to next round",
+  "hintNone": "No hint available.",
+  "hintPlayable": "Playable cards: {{cards}}",
+  "hintDraw": "No playable card. Draw with d.",
+  "hintReceivePenalty": "No counter card. Accept the penalty with d."
 }

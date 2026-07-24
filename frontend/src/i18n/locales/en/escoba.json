@@ -23,6 +23,11 @@
     "humanStats": "Hand {{cards}} / Captured {{captured}} / Escoba {{escoba}}",
     "playerScore": "P{{id}}: {{score}} pt"
   },
+  "captured": {
+    "title": "Captured cards",
+    "summary": "View captured cards ({{count}})",
+    "empty": "No cards captured yet"
+  },
   "button": {
     "take": "Take",
     "lay": "Lay",
@@ -32,7 +37,10 @@
   "settings": {
     "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
-    "targetScore": "Target Score"
+    "targetScore": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
   },
   "result": {
     "win": "Win",
@@ -57,5 +65,6 @@
     "playerHand": "Your hand. Select a card to act.",
     "actions": "Choose Take (select table cards summing to 15) or Lay (select none).",
     "resetButton": "Reset the game."
-  }
+  },
+  "sumIndicator": "Sum {{sum}} / {{target}}"
 }

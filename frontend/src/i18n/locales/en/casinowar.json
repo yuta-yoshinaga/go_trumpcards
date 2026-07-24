@@ -40,6 +40,16 @@
   "payout": {
     "total": "Total payout"
   },
+  "trend": {
+    "title": "Win/loss trend",
+    "win": "Win",
+    "loss": "Loss",
+    "winShort": "W",
+    "lossShort": "L",
+    "tieShort": "T",
+    "tally": "{{wins}}W {{losses}}L {{ties}}T",
+    "clear": "Clear history"
+  },
   "tutorial": {
     "betControls": "Enter your ante and place the bet",
     "actionButtons": "On a tie, choose surrender or go to war",
@@ -47,5 +57,11 @@
   },
   "hint": {
     "warEv": "Going to war has a smaller house edge than surrender — recommended"
+  },
+  "kbd": {
+    "bet": "B",
+    "war": "W",
+    "surrender": "S",
+    "rebet": "E"
   }
 }

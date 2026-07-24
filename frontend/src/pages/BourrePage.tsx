@@ -3,6 +3,7 @@ import { bourreApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -22,7 +23,9 @@ import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BourreResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { isRedSuitDesign, isSuitDesign, suitSymbol } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
 
 type ApiArgs = {
   command: string;
@@ -33,6 +36,18 @@ type ApiArgs = {
 };
 
 const BOURRE_PENALTY_WARN_THRESHOLD = 10;
+
+// Values match the Go domain constants (BourreConfig.go): 0=Normal, 1=Easy, 2=Hard.
+const DIFFICULTY_OPTIONS = [
+  { value: '0', label: 'Normal' },
+  { value: '1', label: 'Easy' },
+  { value: '2', label: 'Hard' },
+];
+
+/** Plain-text trump-suit glyph for the CLI formatter: a suit symbol, or '-' when unset. */
+function trumpSuitText(design: string): string {
+  return isSuitDesign(design) ? suitSymbol(design) : '-';
+}
 
 const TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="bourre-hand"]', messageKey: 'tutorial.intro', placement: 'top', advanceOn: 'next' },
@@ -79,7 +94,7 @@ function parseBourreCommand(input: string): CliParseResult<[ApiArgs]> {
 }
 
 function formatBourreState(state: BourreResponse): string {
-  const lines: string[] = [`Phase: ${state.phase}`, `Pot: ${state.pot}  Trump: ${state.trumpSuit}`];
+  const lines: string[] = [`Phase: ${state.phase}`, `Pot: ${state.pot}  Trump: ${trumpSuitText(state.trumpSuit)}`];
   for (const p of state.players) {
     const name = p.isHuman ? 'You' : `CPU ${p.id}`;
     const status = p.isFinished ? 'out' : p.folded ? 'folded' : `${p.tricks} tricks`;
@@ -127,10 +142,11 @@ function BourrePageContent() {
   const { playSound } = useSound();
 
   const [selectedCards, setSelectedCards] = useState<Set<number>>(new Set());
+  const [cpuDifficulty, setCpuDifficulty] = useState(0);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only reset
   useEffect(() => {
-    void apiCall({ command: 'reset' });
+    void apiCall({ command: 'reset', config: { cpuDifficulty } });
   }, []);
 
   const phase = state?.phase ?? '';
@@ -174,8 +190,16 @@ function BourrePageContent() {
     void apiCall({ command: 'next' });
   }, [apiCall]);
   const handleReset = useCallback(() => {
-    void apiCall({ command: 'reset' });
-  }, [apiCall]);
+    void apiCall({ command: 'reset', config: { cpuDifficulty } });
+  }, [apiCall, cpuDifficulty]);
+
+  const handleDifficultyChange = useCallback(
+    (value: number) => {
+      setCpuDifficulty(value);
+      void apiCall({ command: 'reset', config: { cpuDifficulty: value } });
+    },
+    [apiCall],
+  );
 
   const toggleCard = useCallback((idx: number) => {
     setSelectedCards((prev) => {
@@ -194,14 +218,14 @@ function BourrePageContent() {
 
   const phaseName = useMemo(() => {
     if (!state) return '';
-    return t(`phase.${phase}`, { defaultValue: phase });
+    return t(`phase.${phase}`);
   }, [state, phase, t]);
 
   const playerStatus = (p: BourreResponse['players'][number]): string => {
-    if (p.isFinished) return t('label.out', { defaultValue: 'out' });
-    if (p.folded) return t('label.folded', { defaultValue: 'folded' });
-    if (p.bourreed) return t('label.bourreed', { defaultValue: 'bourréd' });
-    return `${p.tricks} ${t('label.tricks', { defaultValue: 'tricks' })}`;
+    if (p.isFinished) return t('label.out');
+    if (p.folded) return t('label.folded');
+    if (p.bourreed) return t('label.bourreed');
+    return `${p.tricks} ${t('label.tricks')}`;
   };
 
   if (!state) return <GameSkeleton gameKey="bourre" layout={{ kind: 'card-grid', count: 5, cols: 'grid-cols-5' }} />;
@@ -225,11 +249,18 @@ function BourrePageContent() {
       headerExtra={
         <div className="flex items-center gap-2">
           <span className="text-xs opacity-75">
-            {t('label.pot', { defaultValue: 'Pot' })}: {state.pot}
+            {t('label.pot')}: {state.pot}
             {state.carryPot > 0 ? ` (+${state.carryPot})` : ''}
           </span>
-          <span className="text-xs opacity-75">
-            {t('label.trump', { defaultValue: 'Trump' })}: {state.trumpSuit}
+          <span className="text-xs opacity-75" data-testid="bourre-trump">
+            {t('label.trump')}:{' '}
+            {isSuitDesign(state.trumpSuit) ? (
+              <span className={isRedSuitDesign(state.trumpSuit) ? 'text-ds-error' : undefined}>
+                {suitSymbol(state.trumpSuit)}
+              </span>
+            ) : (
+              '-'
+            )}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </div>
@@ -239,7 +270,7 @@ function BourrePageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <div className="flex flex-col gap-3 p-3 overflow-y-auto">
-          <LandscapeBanner message={t('landscapeBanner', { defaultValue: '' })} />
+          <LandscapeBanner message={t('landscapeBanner')} />
           {error && <ErrorAlert message={error} onRetry={retry} />}
           <GameMessageBox messageCode={state.messageCode} messageParams={state.messageParams} message={state.message} />
 
@@ -250,11 +281,11 @@ function BourrePageContent() {
               .map((p) => (
                 <div key={p.id} className="text-center text-ds-text-primary text-sm">
                   <div className="font-bold">
-                    CPU {p.id}
-                    {p.id === state.dealerIdx ? ` (${t('label.dealer', { defaultValue: 'Dealer' })})` : ''}
+                    {playerName(p.id, p.isHuman)}
+                    {p.id === state.dealerIdx ? ` (${t('label.dealer')})` : ''}
                   </div>
                   <div>
-                    {p.chips} {t('label.chips', { defaultValue: 'chips' })}
+                    {p.chips} {t('label.chips')}
                   </div>
                   <div className="text-xs opacity-75">{playerStatus(p)}</div>
                 </div>
@@ -270,15 +301,13 @@ function BourrePageContent() {
                     <div key={`trick-${tcd.playerIdx}-${tcd.card.design}-${tcd.card.value}`} className="text-center">
                       <AnimatedCard card={tcd.card} width={cardWidth * 0.8} />
                       <div className="text-xs text-ds-text-secondary">
-                        {tcd.playerIdx === humanIdx ? t('label.you', { defaultValue: 'You' }) : `CPU ${tcd.playerIdx}`}
+                        {playerName(tcd.playerIdx, tcd.playerIdx === humanIdx)}
                       </div>
                     </div>
                   ) : null,
                 )
               ) : (
-                <span className="text-ds-text-secondary text-sm">
-                  {t('label.table', { defaultValue: 'Trick' })}: ---
-                </span>
+                <span className="text-ds-text-secondary text-sm">{t('label.table')}: ---</span>
               )}
             </div>
           </div>
@@ -288,26 +317,26 @@ function BourrePageContent() {
             {phase === 'decide' && isHumanTurn && (
               <>
                 <button type="button" className={btnPrimary} onClick={() => handleDecide(true)}>
-                  {t('button.play', { defaultValue: 'Play' })}
+                  {t('button.play')}
                 </button>
                 <button type="button" className={btnSecondary} onClick={() => handleDecide(false)}>
-                  {t('button.fold', { defaultValue: 'Fold' })}
+                  {t('button.fold')}
                 </button>
               </>
             )}
             {phase === 'draw' && isHumanTurn && (
               <>
                 <button type="button" className={btnPrimary} onClick={handleDraw} disabled={selectedCards.size === 0}>
-                  {t('button.discard', { defaultValue: 'Discard & draw' })} ({selectedCards.size})
+                  {t('button.discard')} ({selectedCards.size})
                 </button>
                 <button type="button" className={btnSecondary} onClick={handleKeepAll}>
-                  {t('button.keepAll', { defaultValue: 'Keep all' })}
+                  {t('button.keepAll')}
                 </button>
               </>
             )}
             {phase === 'roundEnd' && (
               <button type="button" className={btnWarning} onClick={handleNext}>
-                {t('button.next', { defaultValue: 'Next hand' })}
+                {t('button.next')}
               </button>
             )}
           </div>
@@ -317,8 +346,6 @@ function BourrePageContent() {
               data-testid="bourre-decide-summary"
               title={t('decideSummaryHelp', {
                 penalty: state.pot + state.carryPot,
-                defaultValue:
-                  "If you play and take zero tricks you are 'bourréd' and pay {{penalty}} chips. Folding incurs no penalty.",
               })}
               className={`mt-1 text-center text-xs ${
                 state.pot + state.carryPot >= BOURRE_PENALTY_WARN_THRESHOLD
@@ -329,8 +356,6 @@ function BourrePageContent() {
               {t('decideSummary', {
                 pot: state.pot,
                 penalty: state.pot + state.carryPot,
-                defaultValue:
-                  'Pot: {{pot}} chips | Play and win no tricks: {{penalty}}-chip penalty (folding avoids it)',
               })}
             </p>
           )}
@@ -372,19 +397,17 @@ function BourrePageContent() {
               {isGameEnd && (
                 <div className="text-lg font-bold">
                   {humanWon
-                    ? t('result.youWin', { defaultValue: 'You win!' })
+                    ? t('result.youWin')
                     : t('result.youLose', {
-                        name: state.winnerIdx === humanIdx ? 'You' : `CPU ${state.winnerIdx}`,
-                        defaultValue: 'Game over',
+                        name: playerName(state.winnerIdx, state.winnerIdx === humanIdx),
                       })}
                 </div>
               )}
               {state.results.map((r) => (
                 <div key={`result-${r.playerIdx}`} className="text-sm">
-                  {r.playerIdx === humanIdx ? t('label.you', { defaultValue: 'You' }) : `CPU ${r.playerIdx}`}:{' '}
-                  {r.tricks} {t('label.tricks', { defaultValue: 'tricks' })}
-                  {r.folded ? ` (${t('label.folded', { defaultValue: 'folded' })})` : ''}
-                  {r.bourreed ? ` (${t('label.bourreed', { defaultValue: 'bourréd' })})` : ''}
+                  {playerName(r.playerIdx, r.playerIdx === humanIdx)}: {r.tricks} {t('label.tricks')}
+                  {r.folded ? ` (${t('label.folded')})` : ''}
+                  {r.bourreed ? ` (${t('label.bourreed')})` : ''}
                   {r.wonAmount > 0 ? ` +${r.wonAmount}` : ''}
                 </div>
               ))}
@@ -399,6 +422,25 @@ function BourrePageContent() {
           />
         </div>
       )}
+      <SettingsPanel
+        title={tc('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select' as const,
+                id: 'cpuDifficulty',
+                label: t('settings.cpuDifficulty'),
+                tooltip: t('settings.cpuDifficultyNote'),
+                value: String(cpuDifficulty),
+                options: DIFFICULTY_OPTIONS,
+                onSelect: (v: string) => handleDifficultyChange(Number.parseInt(v, 10)),
+                testId: 'bourre-difficulty',
+              },
+            ],
+          },
+        ]}
+      />
       <GameFooter className={gameTheme.bourre.footer}>
         <GameResetButton
           isGameEnd={isGameEnd}

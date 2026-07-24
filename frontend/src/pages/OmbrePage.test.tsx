@@ -80,21 +80,58 @@ describe('OmbrePage', () => {
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
   });
 
-  it('entrar is disabled until a trump suit is picked, then dispatches bid with the suit', async () => {
+  it('stages entrar → trump selection → confirm and dispatches the bid with the suit', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<OmbrePage />);
-    const entrarBtn = await screen.findByRole('button', { name: 'エントラール' });
-    expect(entrarBtn).toBeDisabled();
-    // Pick spades (♠) as trump.
+    // Stage 1: only bid-type buttons, no trump/confirm yet.
+    await screen.findByTestId('ombre-bid-stage1');
+    expect(screen.queryByTestId('ombre-bid-stage2')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'スペード' })).not.toBeInTheDocument();
+
+    // Choose entrar → advance to stage 2 (trump + confirm/back).
+    fireEvent.click(screen.getByRole('button', { name: 'エントラール' }));
+    await screen.findByTestId('ombre-bid-stage2');
+    const confirmBtn = screen.getByTestId('ombre-bid-confirm');
+    expect(confirmBtn).toBeDisabled();
+
+    // Pick spades (♠) as trump → confirm enabled.
     fireEvent.click(screen.getByRole('button', { name: 'スペード' }));
-    expect(screen.getByRole('button', { name: 'エントラール' })).toBeEnabled();
+    expect(screen.getByTestId('ombre-bid-confirm')).toBeEnabled();
+
     mockExec.mockClear();
     mockExec.mockResolvedValue(bidPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: 'エントラール' }));
+    fireEvent.click(screen.getByTestId('ombre-bid-confirm'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 1, trumpSuit: 1 }));
   });
 
-  it('passing dispatches bid with bid=0 and no trump requirement', async () => {
+  it('stages solo → trump selection → confirm and dispatches solo with the suit', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<OmbrePage />);
+    await screen.findByTestId('ombre-bid-stage1');
+    fireEvent.click(screen.getByRole('button', { name: 'ソロ' }));
+    await screen.findByTestId('ombre-bid-stage2');
+    fireEvent.click(screen.getByRole('button', { name: 'ハート' }));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(bidPhaseState);
+    fireEvent.click(screen.getByTestId('ombre-bid-confirm'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 2, trumpSuit: 3 }));
+  });
+
+  it('back returns from trump selection to bid-type selection without dispatching', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<OmbrePage />);
+    await screen.findByTestId('ombre-bid-stage1');
+    fireEvent.click(screen.getByRole('button', { name: 'エントラール' }));
+    await screen.findByTestId('ombre-bid-stage2');
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('ombre-bid-back'));
+    // Back to stage 1; no bid dispatched.
+    await screen.findByTestId('ombre-bid-stage1');
+    expect(screen.queryByTestId('ombre-bid-stage2')).not.toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('passing dispatches bid with bid=0 in one tap and no trump requirement', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<OmbrePage />);
     const passBtn = await screen.findByRole('button', { name: 'パス' });
@@ -139,5 +176,51 @@ describe('OmbrePage', () => {
     renderWithProviders(<OmbrePage />);
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+
+  it('badges Spadille (♠A) in the hand when trump is decided', async () => {
+    // Default state: trump = spades, hand[2] = ♠A → Spadille (rank 1).
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    const badge = screen.getByTestId('card-role-badge-2');
+    expect(badge).toHaveTextContent('1');
+    expect(badge).toHaveAttribute('title', 'スパディーユ (♠A)');
+  });
+
+  it('badges all three matadors including the trump-suit Manille (heart trump → ♥7)', async () => {
+    const matadorHand = makeOmbreState({
+      trumpSuit: 3, // hearts
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 3,
+          cards: [
+            { design: 'SPADE', value: 1 }, // Spadille → 1
+            { design: 'CLOVER', value: 1 }, // Basto → 3
+            { design: 'HEART', value: 7 }, // Manille (heart trump) → 2
+          ],
+          trickCount: 0,
+          score: 0,
+          isOmbre: true,
+        },
+        { id: 1, isHuman: false, cardCount: 3, cards: [], trickCount: 0, score: 0, isOmbre: false },
+        { id: 2, isHuman: false, cardCount: 3, cards: [], trickCount: 0, score: 0, isOmbre: false },
+      ],
+      playableIndices: [0, 1, 2],
+    });
+    mockExec.mockResolvedValue(matadorHand);
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByTestId('card-role-badge-0')).toHaveTextContent('1'); // Spadille
+    expect(screen.getByTestId('card-role-badge-1')).toHaveTextContent('3'); // Basto
+    expect(screen.getByTestId('card-role-badge-2')).toHaveTextContent('2'); // Manille
+  });
+
+  it('shows no matador badge while trump is undecided (bid phase)', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'エントラール' })).toBeInTheDocument());
+    expect(screen.queryByTestId('card-role-badge-2')).not.toBeInTheDocument();
   });
 });

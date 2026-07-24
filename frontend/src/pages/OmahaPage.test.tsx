@@ -317,6 +317,57 @@ describe('OmahaPage', () => {
     expect(screen.getByAltText('♦ 8')).toBeInTheDocument();
   });
 
+  // ---- Live best-hand preview (#3001) ----
+  it('shows the live best-hand preview badge post-flop (two pair)', async () => {
+    // Hole A♠ K♥ T♦ 5♣ + board T♠ 5♥ 8♦ -> best 2+3 = tens & fives (two pair).
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<OmahaPage />);
+    const badge = await screen.findByTestId('omaha-live-besthand');
+    expect(badge).toHaveTextContent('現在の役');
+    expect(screen.getByTestId('omaha-live-besthand-name')).toHaveTextContent('ツーペア');
+  });
+
+  it('updates the live best-hand preview as more board cards appear (full house on turn)', async () => {
+    // A third ten on the turn -> hole T♦ 5♣ + board T♠ T♣ 5♥ = tens full of fives.
+    mockExec.mockResolvedValue({
+      ...flopState,
+      phase: 3,
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+        { design: 'CLOVER', value: 10 },
+      ],
+    });
+    renderWithProviders(<OmahaPage />);
+    const name = await screen.findByTestId('omaha-live-besthand-name');
+    expect(name).toHaveTextContent('フルハウス');
+  });
+
+  it('does not show the live best-hand preview pre-flop (no board cards)', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<OmahaPage />);
+    await waitFor(() => expect(screen.getByText('コミュニティカード')).toBeInTheDocument());
+    expect(screen.queryByTestId('omaha-live-besthand')).not.toBeInTheDocument();
+  });
+
+  it('does not show the live best-hand preview at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<OmahaPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 10')).toBeInTheDocument());
+    expect(screen.queryByTestId('omaha-live-besthand')).not.toBeInTheDocument();
+  });
+
+  it('does not show the live best-hand preview when the human has folded', async () => {
+    mockExec.mockResolvedValue({
+      ...flopState,
+      players: [humanPlayer({ folded: true }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    renderWithProviders(<OmahaPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 10')).toBeInTheDocument());
+    expect(screen.queryByTestId('omaha-live-besthand')).not.toBeInTheDocument();
+  });
+
   // ---- CPU players ----
   it('renders CPU player info with playStyleName and chips', async () => {
     mockExec.mockResolvedValue(preFlopState);

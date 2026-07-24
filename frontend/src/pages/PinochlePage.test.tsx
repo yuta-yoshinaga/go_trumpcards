@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pinochleApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -146,6 +146,37 @@ describe('PinochlePage', () => {
     mockExec.mockResolvedValue(playPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'ビッド' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, undefined, expect.any(Number)));
+  });
+
+  it('labels the bid input and renders 44px steppers', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
+    // Accessible label including the minimum (highestBid 0 → min 20).
+    expect(screen.getByLabelText('ビッド額（最低 20）')).toBeInTheDocument();
+    const stepper = screen.getByRole('button', { name: 'ビッド額（最低 20） −5' });
+    expect(stepper.className).toContain('min-h-[44px]');
+    expect(stepper.className).toContain('min-w-[44px]');
+  });
+
+  it('blocks a below-minimum bid on the client and shows the reason', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('ビッド額（最低 20）'), { target: { value: '5' } });
+    const bidBtn = screen.getByRole('button', { name: 'ビッド' });
+    expect(bidBtn).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('alert')).toHaveTextContent('ビッド額は 20 以上にしてください');
+
+    mockExec.mockClear();
+    fireEvent.click(bidBtn);
+    expect(mockExec).not.toHaveBeenCalledWith('bid', undefined, undefined, expect.anything());
+  });
+
+  it('blocks an empty (NaN) bid on the client', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('ビッド額（最低 20）'), { target: { value: '' } });
+    expect(screen.getByRole('button', { name: 'ビッド' })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('calls pass command when pass button is clicked', async () => {
@@ -391,12 +422,15 @@ describe('PinochlePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
-  it('renders trick cards on table', async () => {
+  it('renders trick cards with localized player names (not P0/P1)', async () => {
     mockExec.mockResolvedValue(trickEndState);
-    renderWithProviders(<PinochlePage />);
-    await waitFor(() => {
-      expect(screen.getByText('P0')).toBeInTheDocument();
-    });
+    const { container } = renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="pn-trick-display"]')).toBeInTheDocument());
+    const trick = container.querySelector('[data-tutorial="pn-trick-display"]') as HTMLElement;
+    // playerIdx 0 is the human ("あなた"), playerIdx 1 a CPU ("CPU 1").
+    expect(within(trick).getByText('あなた')).toBeInTheDocument();
+    expect(within(trick).getByText('CPU 1')).toBeInTheDocument();
+    expect(within(trick).queryByText('P0')).not.toBeInTheDocument();
   });
 
   it('renders game end state', async () => {
@@ -447,6 +481,68 @@ describe('PinochlePage', () => {
     mockExec.mockResolvedValue(hintState);
     renderWithProviders(<PinochlePage />);
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+  });
+
+  it('shows a server-hint button on the human bid turn', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
+  });
+
+  it('fetches and displays the recommended bid, and applies it to the input', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ bidAmount: 30, reason: 'hint_bid' } as unknown as PinochleResponse);
+    fireEvent.click(screen.getByTestId('pn-hint-button'));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    const hintBox = await screen.findByTestId('pn-server-hint');
+    expect(hintBox).toHaveTextContent('推奨ビッド: 30');
+
+    // Applying the hint updates the bid input value.
+    fireEvent.click(screen.getByTestId('pn-hint-apply-bid'));
+    expect(screen.getByLabelText('ビッド額（最低 20）')).toHaveDisplayValue('30');
+  });
+
+  it('displays a pass recommendation from the server hint', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ pass: true, reason: 'hint_pass' } as unknown as PinochleResponse);
+    fireEvent.click(screen.getByTestId('pn-hint-button'));
+
+    const hintBox = await screen.findByTestId('pn-server-hint');
+    expect(hintBox).toHaveTextContent('推奨: パス');
+    // No apply-bid button for a pass recommendation.
+    expect(screen.queryByTestId('pn-hint-apply-bid')).not.toBeInTheDocument();
+  });
+
+  it('displays a card recommendation on the human play turn', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ cardIndex: 1, reason: 'hint_play' } as unknown as PinochleResponse);
+    fireEvent.click(screen.getByTestId('pn-hint-button'));
+
+    const hintBox = await screen.findByTestId('pn-server-hint');
+    expect(hintBox).toHaveTextContent('推奨プレイ');
+    expect(hintBox).toHaveTextContent('[1]');
+  });
+
+  it('shows an error alert when the hint request fails', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockRejectedValueOnce(new Error('network'));
+    fireEvent.click(screen.getByTestId('pn-hint-button'));
+
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    expect(screen.queryByTestId('pn-server-hint')).not.toBeInTheDocument();
   });
 
   it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {

@@ -15,9 +15,27 @@
   "label": {
     "tableCards": "場札",
     "tableEmpty": "場札なし",
+    "selected": "選択中",
+    "takeCandidate": "取り札候補",
+    "takeCandidateAnnounce": "{{count}}枚の取り札候補があります",
+    "noTakeCandidate": "取り札候補はありません",
     "yourCaptures": "獲得カード",
     "cpuStats": "{{cards}}枚 / {{score}}pt",
-    "humanStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / スコパ{{scopa}} / 累計{{score}}pt"
+    "humanStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / スコパ{{scopa}} / 累計{{score}}pt",
+    "roundEnd": "ラウンド終了 — 得点を確認して「次のラウンド」へ進んでください"
+  },
+  "breakdown": {
+    "title": "得点内訳",
+    "cards": "カルテ（最多カード）",
+    "denari": "デナリ（最多♦）",
+    "primiera": "プリメーラ（最多7）",
+    "settebello": "セッテベッロ（7♦）",
+    "scopa": "スコパ",
+    "gained": "このラウンドの獲得点",
+    "winner": "{{name}} +{{points}}",
+    "tie": "引き分け（点なし）",
+    "scopaCount": "{{name}} ×{{count}}（+{{points}}）",
+    "gainedValue": "{{name}} +{{points}}"
   },
   "button": {
     "take": "取る",

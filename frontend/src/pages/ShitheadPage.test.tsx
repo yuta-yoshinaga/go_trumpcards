@@ -288,6 +288,79 @@ describe('ShitheadPage', () => {
     expect(screen.getByText('リセット: 次のプレイヤーは何でも出せます')).toBeInTheDocument();
   });
 
+  it('renders face-down cards as card-back images rather than "?" buttons', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    // faceDownCount is 3 for the human player.
+    await waitFor(() => expect(screen.getByTestId('sh-facedown-0')).toBeInTheDocument());
+    expect(screen.getByTestId('sh-facedown-1')).toBeInTheDocument();
+    expect(screen.getByTestId('sh-facedown-2')).toBeInTheDocument();
+    // Each face-down slot renders a card-back image, not a literal "?".
+    expect(screen.getAllByTestId('animated-card-back').length).toBeGreaterThanOrEqual(3);
+    expect(screen.getByTestId('sh-facedown-0')).not.toHaveTextContent('?');
+  });
+
+  it('makes face-down cards selectable with a ring when currentSource is facedown', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, currentSource: 'facedown' });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    const first = await screen.findByTestId('sh-facedown-0');
+    expect(first).toBeEnabled();
+    expect(first).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(first);
+    await waitFor(() => expect(screen.getByTestId('sh-facedown-0')).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('sh-facedown-0').className).toContain('ring-ds-warning');
+  });
+
+  it('disables face-down cards when the current source is not facedown', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    // Default humanTurnState currentSource is 'hand'.
+    const first = await screen.findByTestId('sh-facedown-0');
+    expect(first).toBeDisabled();
+    expect(first).not.toHaveAttribute('aria-pressed');
+  });
+
+  it('resets via the API instead of reloading the page when the reset button is clicked', async () => {
+    // Guard against a regression to window.location.reload(): spy on it and
+    // assert it is never called, while the reset command drives a fresh game.
+    const reloadSpy = vi.fn();
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, reload: reloadSpy },
+    });
+    try {
+      mockExec.mockResolvedValue(gameEndState);
+      renderWithProviders(
+        <MemoryRouter initialEntries={['/shithead']}>
+          <ShitheadPage />
+        </MemoryRouter>,
+      );
+      // At game end the button reads "次のゲーム" and fires the reset immediately.
+      const resetButton = await screen.findByRole('button', { name: '次のゲーム' });
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(humanTurnState);
+      fireEvent.click(resetButton);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: baseConfig }));
+      expect(reloadSpy).not.toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    }
+  });
+
   it('renders a joker discard top as a card image with an accessible label', async () => {
     mockExec.mockResolvedValue({
       ...humanTurnState,

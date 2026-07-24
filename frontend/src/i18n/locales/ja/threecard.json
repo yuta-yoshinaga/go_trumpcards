@@ -13,7 +13,8 @@
     "bet": "ベット",
     "play": "プレイ",
     "fold": "フォールド",
-    "reset": "リセット"
+    "reset": "リセット",
+    "rebet": "同額で再ベット ({{amount}})"
   },
   "phase": {
     "bet": "ベット",
@@ -33,6 +34,11 @@
     "anteBonus": "アンテボーナス",
     "pairPlus": "ペアプラス",
     "total": "合計"
+  },
+  "betSlip": {
+    "ante": "アンテ",
+    "pairPlus": "ペアプラス",
+    "playRequired": "プレイに必要"
   },
   "handRank": {
     "1": "ハイカード",

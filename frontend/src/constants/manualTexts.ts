@@ -220,6 +220,7 @@ import whist from '../../../docs/manual/web/whist.md?raw';
 import wizard from '../../../docs/manual/web/wizard.md?raw';
 import yaniv from '../../../docs/manual/web/yaniv.md?raw';
 import yukon from '../../../docs/manual/web/yukon.md?raw';
+import zheng from '../../../docs/manual/web/zheng.md?raw';
 
 /** Map from game route path to raw Markdown manual text. */
 export const manualTexts: Readonly<Record<string, string>> = {
@@ -441,4 +442,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/truco': truco,
   '/beggarmyneighbour': beggarmyneighbour,
   '/allfours': allfours,
+  '/zheng': zheng,
 };

@@ -22,6 +22,7 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		m.On("Take", mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("Build", mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("Trail", mock.Anything).Return(mockOutput)
+		m.On("Hint").Return(mockOutput)
 		m.On("GetConfig").Return(domain.DefaultCassinoConfig())
 		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 		m.On("ActionLog").Return("log")
@@ -45,6 +46,14 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		c := controller.NewCassinoCuiController(m)
 		assert.Equal(t, mockOutput, c.Exec("n"))
 		m.AssertCalled(t, "NextRound")
+	})
+
+	t.Run("hint command", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewCassinoCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("h"))
+		assert.Equal(t, mockOutput, c.Exec("hint"))
+		m.AssertCalled(t, "Hint")
 	})
 
 	t.Run("take command", func(t *testing.T) {

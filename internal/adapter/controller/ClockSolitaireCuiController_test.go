@@ -43,6 +43,14 @@ func TestClockSolitaireCuiControllerAutoPlay(t *testing.T) {
 	assert.Equal(t, "autoplay_output", c.Exec("autoplay"))
 }
 
+func TestClockSolitaireCuiControllerUndo(t *testing.T) {
+	ci := newMockClockSolitaireInteractor()
+	c := NewClockSolitaireCuiController(ci)
+	ci.On("Undo").Return("undo_output")
+	assert.Equal(t, "undo_output", c.Exec("u"))
+	assert.Equal(t, "undo_output", c.Exec("undo"))
+}
+
 func TestClockSolitaireCuiControllerActionLog(t *testing.T) {
 	ci := newMockClockSolitaireInteractor()
 	c := NewClockSolitaireCuiController(ci)

@@ -16,9 +16,10 @@
   "promptTurn": "{{name}} to act",
   "promptDrawHelp": "dr: draw one card from stock (ends turn)",
   "promptNewMeldHelp": "nm <i j k...>: form a new meld from your hand",
-  "promptLayoffHelp": "lo <meldIdx handIdx>: add a hand card to an existing meld",
+  "promptLayoffHelp": "layoff <meld idx> <hand idx> ... add a card to a table meld ({{count}} available; e.g. layoff 0 2)",
   "promptRoundEnd": "Round complete",
   "promptRoundEndHelp": "nr / nextround: advance to next round",
   "turnPhase": "Your turn. Draw or play.",
-  "roundEnd": "Round complete. Advance to the next round."
+  "roundEnd": "Round complete. Advance to the next round.",
+  "promptLayoffNone": "Layoff unavailable: no melds on the table"
 }

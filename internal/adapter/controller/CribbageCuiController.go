@@ -29,7 +29,7 @@ func (c *CribbageCuiController) Exec(command string) string {
 			return c.ci.ResetWithConfig(cfg)
 		},
 		[]string{
-			"d", "discard", "p", "peg", "go",
+			"d", "discard", "c", "cut", "p", "peg", "go",
 			"sn", "shownext",
 			"nr", "nextround",
 			"sd", "setdifficulty", "sl", "setlimit", "log", "l", "h", "hint",
@@ -39,6 +39,8 @@ func (c *CribbageCuiController) Exec(command string) string {
 			case "d", "discard":
 				indices := parseIntList(args)
 				return c.ci.Discard(indices), true
+			case "c", "cut":
+				return c.ci.Cut(), true
 			case "p", "peg":
 				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Peg)
 			case "go":

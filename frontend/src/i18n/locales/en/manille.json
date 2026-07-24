@@ -23,6 +23,7 @@
   "you": "You",
   "cpu": "CPU {{id}}",
   "yourTeam": "Your Team",
+  "trickWinner": "{{name}} ({{team}}) won the trick",
   "team": {
     "a": "Team A",
     "b": "Team B"
@@ -35,6 +36,15 @@
     "title": "Round Result",
     "teamA": "Team A card points: {{points}}",
     "teamB": "Team B card points: {{points}}"
+  },
+  "strengthLegend": {
+    "title": "Card Strength & Points",
+    "rankCol": "Rank",
+    "cardCol": "Card",
+    "pointCol": "Points",
+    "manille": "Manille",
+    "manillon": "Manillon",
+    "note": "10 > A > K > Q > J > 9 > 8 > 7 (same for trump and non-trump). 60 points total."
   },
   "hintAvailable": "Hint",
   "hint": {

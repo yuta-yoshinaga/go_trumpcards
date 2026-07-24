@@ -1,4 +1,5 @@
 {
+  "illegalHint": "このカードは出せません（親スートを持っているため従う義務があります）",
   "phase": {
     "bid": "ビッド",
     "play": "プレイ",
@@ -31,6 +32,12 @@
     "over": "(オーバー)",
     "under": "(アンダー)",
     "exact": "(ぴったり)"
+  },
+  "bidAccuracy": {
+    "title": "ビッド的中サマリー（前ラウンド）",
+    "made": "的中",
+    "over": "+{{delta}} 超過",
+    "under": "{{delta}} 不足"
   },
   "currentTrick": "現在のトリック",
   "scores": "スコア",

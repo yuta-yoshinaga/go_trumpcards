@@ -9,8 +9,9 @@
   "helpSetLimit": "  sl <n>               ポイント上限",
   "header": "ラウンド: {{round}}  山札: {{drawPile}}枚",
   "discardLine": "捨て札: {{card}}",
-  "playerLine": "{{name}}: 累積{{cumulative}}点 ラウンド{{round}}点 {{cards}}枚{{declared}}",
+  "playerLine": "{{name}}: 累積{{cumulative}}点 ラウンド{{round}}点 {{cards}}枚{{declared}}{{warning}}",
   "declaredBadge": "[PAGE ONE!]",
+  "lastCardWarning": "残り1枚！",
   "turnLine": "手番: {{name}}",
   "cmdPlay": "play <idx>・・・カードを出す",
   "cmdDraw": "draw・・・カードを引く",
@@ -21,5 +22,8 @@
   "cmdSkip": "skip・・・宣言をスキップ（ペナルティ: 2枚引く）",
   "roundEnd": "ラウンド終了",
   "cmdNextRound": "nr / nextround・・・次のラウンドへ",
-  "gameEnd": "ゲーム終了！ {{name}}の勝利です！"
+  "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
+  "hintNone": "現在ヒントはありません。",
+  "hintPlayable": "出せるカード: {{cards}}（p <idx> で出す）",
+  "hintDraw": "出せるカードがありません。d でドローしてください。"
 }

@@ -52,6 +52,10 @@ export function useShitheadGame() {
     [dispatch],
   );
 
+  const handleReset = useCallback(() => {
+    dispatch('reset', { config: DEFAULT_SHITHEAD_CONFIG });
+  }, [dispatch]);
+
   return {
     state,
     loading,
@@ -65,6 +69,7 @@ export function useShitheadGame() {
     handlePlay,
     handlePickup,
     handleResetWithConfig,
+    handleReset,
     retry,
   };
 }

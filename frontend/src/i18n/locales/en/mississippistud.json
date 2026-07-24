@@ -43,6 +43,10 @@
     "8": "Straight Flush",
     "9": "Royal Flush"
   },
+  "madeHand": {
+    "label": "Current",
+    "eligible": "Pays"
+  },
   "settings": {
     "title": "Settings"
   },

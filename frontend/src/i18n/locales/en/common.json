@@ -221,6 +221,7 @@
     "rummy500": "Rummy 500",
     "bigtwo": "Big Two",
     "tienlen": "Tien Len",
+    "zheng": "Zheng Shangyou",
     "pishti": "Pişti",
     "cuarenta": "Cuarenta",
     "faro": "Faro",
@@ -286,7 +287,9 @@
       "halfPot": "1/2 Pot",
       "pot": "Pot",
       "max": "Max"
-    }
+    },
+    "keyHintsOutstanding": "C: Call / R: Raise / F: Fold / A: All-in",
+    "keyHintsNormal": "K: Check / R: Bet / F: Fold / A: All-in"
   },
   "button": {
     "reset": "Reset",
@@ -353,6 +356,7 @@
     "cpuActions": "[CPU Actions]",
     "cpuOpponents": "CPU Opponents ({{count}})",
     "pot": "Pot:",
+    "blinds": "SB/BB:",
     "dealer": "Dealer:",
     "networkError": "A network error occurred. Please try again.",
     "chipsWon": "+{{amount}} chips",
@@ -606,6 +610,7 @@
     "oldmaid.result.cpuLose": "Game over — CPU {{cpuId}} loses!",
     "daifugo.result.rankings": "{{rankings}}",
     "sevens.result.rankings": "{{rankings}}",
+    "zheng.result.rankings": "Game Over! {{rankings}}",
     "doubt.result.humanWin": "Game over! You win!",
     "doubt.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "holdem.result.gameOver": "Game over.",
@@ -898,6 +903,7 @@
     "cribbage.result.humanWin": "Game over! You win!",
     "cribbage.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "cribbage.discardPhase": "Select 2 cards to discard to the crib",
+    "cribbage.cutPhase": "Cut the deck to reveal the starter card",
     "cribbage.peggingPhase": "Select a card to play",
     "cribbage.showPhase": "Scoring hands",
     "cribbage.roundEnd": "Round over",

@@ -109,6 +109,37 @@ func cuiSuitName(suit int) string {
 	return "UNKNOWN"
 }
 
+// cuiRankLabel returns the card-face label for a rank value: A for 1, J/Q/K for
+// 11/12/13, and the plain number otherwise (7–10). Locale-independent — matches
+// the card-face notation used elsewhere in the UI. Used by the Watten CUI
+// presenter for Schlag-rank display.
+func cuiRankLabel(rank int) string {
+	switch rank {
+	case 1:
+		return "A"
+	case 11:
+		return "J"
+	case 12:
+		return "Q"
+	case 13:
+		return "K"
+	default:
+		return strconv.Itoa(rank)
+	}
+}
+
+// cuiPokerHandName returns the localized display name for a poker hand rank
+// (0=High Card .. 10=Five of a Kind), resolved via the shared pokerHandRank*
+// keys in cui_common. Out-of-range ranks fall back to the raw English
+// domain.PokerHandNames entry (or "" when the index is invalid). Used by the
+// UltimateTexasHoldem and MississippiStud CUI presenters.
+func cuiPokerHandName(rank int) string {
+	if rank < 0 || rank >= len(domain.PokerHandNames) {
+		return ""
+	}
+	return i18n.T("pokerHandRank" + strconv.Itoa(rank))
+}
+
 // cuiPlayerName returns the human-friendly display name for a player:
 // "You" / "あなた" for the human, "CPU N" for CPU opponents, or
 // "UNKNOWN" if the player is nil/zero. Locale-aware via i18n.T (issue

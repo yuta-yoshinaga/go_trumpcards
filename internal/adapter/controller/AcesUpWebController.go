@@ -33,7 +33,9 @@ type AcesUpWebOutput struct {
 	Columns      [][]*AcesUpWebOutputCard `json:"columns"`
 	StockCount   int                      `json:"stockCount"`
 	DiscardCount int                      `json:"discardCount"`
-	Hint         *AcesUpWebOutputHint     `json:"hint,omitempty"`
+	// DiscardTop は直近に除去した札（捨て札パイルの一番上）。捨て札が空なら省略。
+	DiscardTop *WebOutputCard       `json:"discardTop,omitempty"`
+	Hint       *AcesUpWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }

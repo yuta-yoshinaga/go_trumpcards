@@ -76,6 +76,40 @@ const discardPhaseState: HandAndFootResponse = {
   messageCode: 'handandfoot.discardPhase',
 };
 
+// A discard-phase state where the human has met every go-out requirement:
+// entered their foot and their team holds both a natural and a mixed canasta.
+const goOutReadyState: HandAndFootResponse = {
+  ...discardPhaseState,
+  players: [{ ...basePlayers[0], inFoot: true }, basePlayers[1]],
+  teams: [
+    {
+      team: 0,
+      melds: [
+        { cards: [], isNatural: true, isCanasta: true, rank: 7 },
+        { cards: [], isNatural: false, isCanasta: true, rank: 10 },
+      ],
+      red3Count: 0,
+      red3s: [],
+    },
+    { team: 1, melds: [], red3Count: 0, red3s: [] },
+  ],
+};
+
+// Human is in their foot and has a natural canasta but no mixed canasta yet.
+const goOutNeedBlackState: HandAndFootResponse = {
+  ...discardPhaseState,
+  players: [{ ...basePlayers[0], inFoot: true }, basePlayers[1]],
+  teams: [
+    {
+      team: 0,
+      melds: [{ cards: [], isNatural: true, isCanasta: true, rank: 7 }],
+      red3Count: 0,
+      red3s: [],
+    },
+    { team: 1, melds: [], red3Count: 0, red3s: [] },
+  ],
+};
+
 const roundEndState: HandAndFootResponse = {
   ...drawPhaseState,
   phase: 3,
@@ -155,6 +189,55 @@ describe('HandAndFootPage', () => {
     expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
   });
 
+  it('shows the initial-meld minimum and updates the running total as cards are selected', async () => {
+    // Team 0 has no melds and cumulative score 0 -> initial-meld minimum is 50.
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toBeInTheDocument());
+    const readout = screen.getByTestId('hf-meld-points');
+    // Nothing selected: total 0, below the 50 minimum -> warning styling.
+    expect(readout).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 0');
+    expect(readout.className).toContain('text-ds-warning');
+
+    // Select the two 10s (10 points each) -> running total 20.
+    fireEvent.click(screen.getByRole('button', { name: '♠ 10' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 10' }));
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('選択合計: 20'));
+    expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 20');
+  });
+
+  it('highlights the readout in success when the selection meets the minimum', async () => {
+    // Negative cumulative score -> minimum 15; selecting the two 10s totals 20.
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [{ ...basePlayers[0], cumulativeScore: -10 }, basePlayers[1]],
+    });
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toBeInTheDocument());
+    // Nothing selected yet: 0 < 15 -> warning.
+    expect(screen.getByTestId('hf-meld-points').className).toContain('text-ds-warning');
+    fireEvent.click(screen.getByRole('button', { name: '♠ 10' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 10' }));
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('選択合計: 20'));
+    expect(screen.getByTestId('hf-meld-points').className).toContain('text-ds-success');
+  });
+
+  it('shows only the selected total once the team has already opened', async () => {
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      teams: [
+        { team: 0, melds: [{ cards: [], isNatural: true, isCanasta: false, rank: 7 }], red3Count: 0, red3s: [] },
+        { team: 1, melds: [], red3Count: 0, red3s: [] },
+      ],
+    });
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toBeInTheDocument());
+    const readout = screen.getByTestId('hf-meld-points');
+    expect(readout).toHaveTextContent('選択合計: 0');
+    expect(readout).not.toHaveTextContent('初回メルド最低点');
+    expect(readout.className).toContain('text-ds-text-muted');
+  });
+
   it('calls skipmeld command when skip button clicked', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<HandAndFootPage />);
@@ -170,6 +253,40 @@ describe('HandAndFootPage', () => {
     renderWithProviders(<HandAndFootPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument();
+  });
+
+  it('disables go out and explains the unmet requirement when the player is not in their foot', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '上がる' })).toBeDisabled();
+    expect(screen.getByTestId('hf-go-out-guidance')).toHaveTextContent('まだフットに入っていないため上がれません');
+  });
+
+  it('shows the missing canasta reason when the player is in foot but lacks a mixed canasta', async () => {
+    mockExec.mockResolvedValue(goOutNeedBlackState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-go-out-guidance')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '上がる' })).toBeDisabled();
+    expect(screen.getByTestId('hf-go-out-guidance')).toHaveTextContent('黒（ミックス）カナスタが不足しています');
+  });
+
+  it('enables go out and confirms readiness once every requirement is met', async () => {
+    mockExec.mockResolvedValue(goOutReadyState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-go-out-guidance')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '上がる' })).not.toBeDisabled();
+    expect(screen.getByTestId('hf-go-out-guidance')).toHaveTextContent('上がれます');
+  });
+
+  it('calls goout command when go out is clicked while ready', async () => {
+    mockExec.mockResolvedValue(goOutReadyState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '上がる' })).not.toBeDisabled());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(roundEndState);
+    fireEvent.click(screen.getByRole('button', { name: '上がる' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('goout'));
   });
 
   it('shows next round button at round end', async () => {

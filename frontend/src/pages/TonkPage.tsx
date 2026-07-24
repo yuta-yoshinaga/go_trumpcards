@@ -250,14 +250,36 @@ function TonkPageContent() {
 
             <div className={lgTwoColGrid}>
               <div>
-                {state.discardTop && (
-                  <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
-                    <div className="text-ds-text-muted text-sm">
-                      <div>{t('discardTop')}</div>
-                    </div>
-                  </div>
-                )}
+                {state.discardTop &&
+                  (() => {
+                    // The discard pile top card doubles as a draw target: on the human's
+                    // draw turn, clicking it draws from the discard pile (same action as the
+                    // footer "draw from discard" button). Outside that phase it stays inert
+                    // but focusable-disabled so it never traps keyboard/tap focus.
+                    const canDrawDiscard = isDrawPhase && isHumanTurn;
+                    return (
+                      <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={handleDrawDiscard}
+                          disabled={!canDrawDiscard || loading}
+                          aria-label={t('drawDiscardCardLabel', { card: cardAlt(state.discardTop) })}
+                          data-testid="tonk-discard-pile"
+                          className={`transition-transform ${focusRingCard} ${
+                            canDrawDiscard
+                              ? 'cursor-pointer ring-2 ring-ds-info motion-safe:hover:scale-105'
+                              : 'cursor-default'
+                          }`}
+                          style={{ background: 'none', padding: 0, border: 'none' }}
+                        >
+                          <AnimatedCard card={state.discardTop} width={cardWidth} />
+                        </button>
+                        <div className="text-ds-text-muted text-sm">
+                          <div>{t('discardTop')}</div>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                 {state.knockerMelds.length > 0 && (
                   <div className="my-3 p-2 rounded bg-black/30">
@@ -426,6 +448,16 @@ function TonkPageContent() {
                       </span>
                     )}
                   </button>
+                  {undercutRisk && (
+                    <div
+                      className="text-ds-warning text-xs w-full text-center"
+                      role="status"
+                      data-testid="tonk-undercut-warning"
+                    >
+                      <span aria-hidden="true">⚠️ </span>
+                      {t('knockUndercutWarning')}
+                    </div>
+                  )}
                 </>
               )}
               {isRoundEnd && (

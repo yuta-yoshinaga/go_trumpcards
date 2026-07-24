@@ -66,6 +66,7 @@
   "scoresTotal": "Total",
   "scoresRole": "Role",
   "bidButton": "Bid",
+  "bidSelectLabel": "Select your bid",
   "passButton": "Pass",
   "declareButton": "Declare",
   "exchangeButton": "Exchange",

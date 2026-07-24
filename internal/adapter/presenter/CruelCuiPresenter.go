@@ -18,21 +18,27 @@ type CruelCuiPresenter struct{}
 // Output renders the current game state for the active locale.
 func (p *CruelCuiPresenter) Output(c interfaces.CruelGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("cruel.helpTitle"), func(b *strings.Builder) {
-		// Foundation row.
+		// Foundation row, with each pile's size and the total progress toward 52
+		// so the player can gauge how close the game is to being won.
 		b.WriteString(i18n.T("cruel.foundationHeader"))
 		foundation := c.GetFoundation()
+		total := 0
 		for i := range domain.CruelFoundationCnt {
 			if i != 0 {
 				b.WriteString(" | ")
 			}
 			pile := foundation[i]
+			total += len(pile)
 			if len(pile) == 0 {
 				b.WriteString(i18n.T("cuiEmptyCol"))
 			} else {
-				b.WriteString(cuiCardStr(pile[len(pile)-1]))
+				b.WriteString(i18n.Tf("cruel.foundationPile",
+					"card", cuiCardStr(pile[len(pile)-1]),
+					"count", strconv.Itoa(len(pile))))
 			}
 		}
 		b.WriteString("\n")
+		b.WriteString(i18n.Tf("cruel.foundationProgress", "total", strconv.Itoa(total)) + "\n")
 
 		b.WriteString("----------\n")
 
@@ -58,7 +64,9 @@ func (p *CruelCuiPresenter) Output(c interfaces.CruelGame, lastErr error) string
 			if c.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 				b.WriteString(i18n.T("cruel.shiftHint") + "\n")
+				b.WriteString(color.Yellow(i18n.T("cruel.stalemateGiveUp")) + "\n")
 			}
+			b.WriteString(i18n.T("cruel.opHelp") + "\n")
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(c.GetMoveCount())) + "\n")
 		case domain.CruelPhaseGameClear:

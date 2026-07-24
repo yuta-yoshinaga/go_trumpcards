@@ -32,5 +32,7 @@
   "promptRoundEnd": "Round complete",
   "promptRoundEndHelp": "nr / nextround: advance to next round",
   "result.humanWin": "Game over! You win!",
-  "result.cpuWin": "Game over! CPU {{cpuId}} wins!"
+  "result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+  "deadwoodLine": "Deadwood: {{value}} (knock at {{threshold}} or less)",
+  "knockReady": "→ ready to knock"
 }

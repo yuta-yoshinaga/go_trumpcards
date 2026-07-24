@@ -1,5 +1,9 @@
 {
   "title": "Bourré",
+  "settings": {
+    "cpuDifficulty": "CPU difficulty",
+    "cpuDifficultyNote": "Difficulty changes take effect from the next game."
+  },
   "decideSummary": "Pot: {{pot}} chips | Play and win no tricks: {{penalty}}-chip penalty (folding avoids it)",
   "decideSummaryHelp": "If you play and take zero tricks you are 'bourréd' and pay {{penalty}} chips. Folding incurs no penalty.",
   "label": {
@@ -42,5 +46,6 @@
     "decide": "Look at your five cards and the trump suit, then decide: play (commit to the hand) or fold. Play but win zero tricks and you're 'bourréd' — you owe the entire pot.",
     "draw": "If you play, you may discard unwanted cards and draw replacements, just like draw poker.",
     "play": "Follow the led suit if you can; if void, you must play trump. You must also beat the trick whenever able. Win the most of five tricks to take the pot."
-  }
+  },
+  "landscapeBanner": "Rotate to landscape for easier play"
 }

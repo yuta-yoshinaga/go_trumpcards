@@ -93,9 +93,37 @@ beforeEach(() => {
 });
 
 describe('AllFoursPage', () => {
+  it('renders the GameSkeleton while state is null', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<AllFoursPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<AllFoursPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows exactly one reset control mid-game that opens a confirm dialog', async () => {
+    renderWithProviders(<AllFoursPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    // Only the consolidated GameResetButton remains — no duplicate reset button.
+    expect(screen.getAllByRole('button', { name: 'リセット' })).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('shows a single 次のゲーム reset control at game end (no duplicate reset button)', async () => {
+    mockExec.mockResolvedValueOnce(gameEndState);
+    renderWithProviders(<AllFoursPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+  });
+
+  it('shows the action log via ActionLogSection at game end', async () => {
+    mockExec.mockResolvedValueOnce(gameEndState);
+    renderWithProviders(<AllFoursPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
   });
 
   it('shows stand and beg buttons in beg phase', async () => {
@@ -135,9 +163,82 @@ describe('AllFoursPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, 0));
   });
 
+  it('reads out the trump suit and turn-up by name', async () => {
+    renderWithProviders(<AllFoursPage />); // trumpSuit 3 = ♥, turnUp ♥7
+    expect(await screen.findByRole('img', { name: '切り札: ハート' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'めくり札: ハート7' })).toBeInTheDocument();
+  });
+
+  it('spells a face-card turn-up with its letter (♠J → スペードJ)', async () => {
+    mockExec.mockResolvedValueOnce({ ...baseState, trumpSuit: 1, turnUp: { design: 'SPADE', value: 11 } });
+    renderWithProviders(<AllFoursPage />);
+    expect(await screen.findByRole('img', { name: 'めくり札: スペードJ' })).toBeInTheDocument();
+  });
+
+  it('exposes the hint toggle as a labelled checkbox in the settings panel', async () => {
+    renderWithProviders(<AllFoursPage />);
+    const toggle = await screen.findByRole('checkbox', { name: /ヒント/ });
+    expect(toggle).toBeInTheDocument();
+  });
+
+  it('reads the trump as unset and omits the turn-up before it is decided', async () => {
+    mockExec.mockResolvedValueOnce({ ...baseState, trumpSuit: 0, turnUp: null });
+    renderWithProviders(<AllFoursPage />);
+    expect(await screen.findByRole('img', { name: '切り札: 未確定' })).toBeInTheDocument();
+    // No turn-up card is shown before it is flipped.
+    expect(screen.queryByRole('img', { name: /めくり札/ })).not.toBeInTheDocument();
+  });
+
   it('shows winner message at game end', async () => {
     mockExec.mockResolvedValueOnce(gameEndState);
     renderWithProviders(<AllFoursPage />);
     await waitFor(() => expect(screen.getByText('あなたの勝利！')).toBeInTheDocument());
+  });
+
+  it('renders the High/Low/Jack/Game breakdown at round end', async () => {
+    const roundEndState: AllFoursResponse = {
+      ...baseState,
+      phase: AllFoursPhase.ROUND_END,
+      roundBreakdown: {
+        high: { winnerIdx: 0, card: { design: 'HEART', value: 1 } },
+        low: { winnerIdx: 1, card: { design: 'HEART', value: 2 } },
+        jack: { winnerIdx: 0 },
+        game: { winnerIdx: 0, points: [5, 0] },
+      },
+    };
+    mockExec.mockResolvedValueOnce(roundEndState);
+    renderWithProviders(<AllFoursPage />);
+    const panel = await screen.findByTestId('af-breakdown');
+    expect(panel).toHaveTextContent('得点内訳');
+    expect(panel).toHaveTextContent('High');
+    expect(panel).toHaveTextContent('Jack');
+    // Per-player Game pip totals are shown.
+    expect(panel).toHaveTextContent('5 / 0');
+  });
+
+  it('shows "−" for the Jack row when no trump Jack was captured', async () => {
+    const roundEndState: AllFoursResponse = {
+      ...baseState,
+      phase: AllFoursPhase.ROUND_END,
+      roundBreakdown: {
+        high: { winnerIdx: 0, card: { design: 'HEART', value: 5 } },
+        low: { winnerIdx: 1, card: { design: 'HEART', value: 3 } },
+        jack: { winnerIdx: -1 },
+        game: { winnerIdx: -1, points: [0, 0] },
+      },
+    };
+    mockExec.mockResolvedValueOnce(roundEndState);
+    renderWithProviders(<AllFoursPage />);
+    const panel = await screen.findByTestId('af-breakdown');
+    // The Jack and Game rows both fall back to the em-dash placeholder.
+    expect(panel.querySelectorAll('td')).not.toHaveLength(0);
+    expect(panel).toHaveTextContent('−');
+  });
+
+  it('omits the breakdown panel outside round/game end', async () => {
+    mockExec.mockResolvedValueOnce(playState);
+    renderWithProviders(<AllFoursPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('af-breakdown')).not.toBeInTheDocument();
   });
 });

@@ -38,5 +38,6 @@
   "trickEnd": "Trick complete",
   "roundEnd": "Round complete",
   "result.humanWin": "Game over! You win!",
-  "result.cpuWin": "Game over! Player {{player}} wins!"
+  "result.cpuWin": "Game over! Player {{player}} wins!",
+  "promptBidHolder": "Current high bidder: {{name}}"
 }

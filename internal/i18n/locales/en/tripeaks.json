@@ -7,6 +7,8 @@
   "tableauCard": "({{row}},{{col}}){{card}}",
   "playableCard": "({{row}},{{col}}){{card}}*",
   "blockedCard": "[--]{{card}}",
+  "playableSummary": "Playable now: {{count}}",
+  "drawRecommended": "Draw recommended (no playable cards)",
   "stockLine": "Stock: {{count}}",
   "wasteCard": " | Waste: {{card}}",
   "wasteEmpty": " | Waste: [empty]",

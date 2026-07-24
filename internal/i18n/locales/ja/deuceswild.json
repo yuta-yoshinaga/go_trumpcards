@@ -1,3 +1,13 @@
 {
-  "helpTitle": "Deuces Wild (デューシーズワイルド)"
+  "helpTitle": "Deuces Wild (デューシーズワイルド)",
+  "hand.naturalRoyalFlush": "ナチュラルロイヤルフラッシュ",
+  "hand.fourDeuces": "フォーデューシーズ",
+  "hand.wildRoyalFlush": "ワイルドロイヤルフラッシュ",
+  "hand.fiveOfAKind": "ファイブカード",
+  "hand.straightFlush": "ストレートフラッシュ",
+  "hand.fourOfAKind": "フォーカード",
+  "hand.fullHouse": "フルハウス",
+  "hand.flush": "フラッシュ",
+  "hand.straight": "ストレート",
+  "hand.threeOfAKind": "スリーカード"
 }

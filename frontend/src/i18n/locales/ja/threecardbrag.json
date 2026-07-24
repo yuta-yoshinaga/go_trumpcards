@@ -43,10 +43,18 @@
   "betButton": "ベット ({{amount}})",
   "raiseButton": "レイズ ({{amount}})",
   "raisePrompt": "レイズ額:",
+  "raiseDecrease": "レイズ額を減らす",
+  "raiseIncrease": "レイズ額を増やす",
+  "raiseRange": "範囲: {{min}}〜{{max}}",
+  "raiseUnavailable": "チップ不足のためレイズできません",
   "foldButton": "フォールド",
   "showButton": "ショー",
   "nextRound": "次のディール",
   "betNotice": "あなたの番です — シー／ベット／レイズ／フォールドを選んでください。",
+  "costNotice": {
+    "blind": "ブラインド: ベットはステーク（{{cost}} チップ）です。手札を見ると以降のベットは2倍になります。",
+    "seen": "シーン: ベットはステークの2倍です — いまコールすると {{cost}} チップかかります。"
+  },
   "roundResult": {
     "title": "ディール結果",
     "winner": "{{name}} がポット {{pot}} を獲得しました。"

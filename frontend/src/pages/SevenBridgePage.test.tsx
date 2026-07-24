@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sevenBridgeApi } from '../api/gameApi';
+import { gameTheme } from '../styles/gameTheme';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SevenBridgeResponse } from '../types/card';
 import { SevenBridgePage } from './SevenBridgePage';
@@ -63,6 +64,14 @@ describe('SevenBridgePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
   });
 
+  it('applies the shared gameTheme background instead of a hardcoded class', async () => {
+    mockExec.mockResolvedValue(drawState);
+    const { container } = renderWithProviders(<SevenBridgePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(container.querySelector(`.${gameTheme.sevenbridge.bg}`)).toBeInTheDocument();
+    expect(container.querySelector('.bg-ds-bg')).not.toBeInTheDocument();
+  });
+
   it('renders draw phase controls', async () => {
     mockExec.mockResolvedValue(drawState);
     renderWithProviders(<SevenBridgePage />);
@@ -78,6 +87,39 @@ describe('SevenBridgePage', () => {
     renderWithProviders(<SevenBridgePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /メルド|Meld/i })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: /捨てる|Discard/i })).toBeInTheDocument();
+  });
+
+  it('describes the pon/chi selection requirement and flips it to "met" via aria-describedby', async () => {
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<SevenBridgePage />);
+    const pon = await screen.findByRole('button', { name: /ポン|Pon/i });
+    const chi = screen.getByRole('button', { name: /チー|Chi/i });
+    expect(pon).toHaveAttribute('aria-describedby', 'sb-select-two-hint');
+    expect(chi).toHaveAttribute('aria-describedby', 'sb-select-two-hint');
+    // With nothing selected the hint states the 2-card requirement and pon is disabled.
+    expect(screen.getByTestId('sb-select-two-hint')).toHaveTextContent('2枚');
+    expect(pon).toBeDisabled();
+    // Selecting exactly two cards satisfies the requirement.
+    fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 9' }));
+    await waitFor(() => expect(screen.getByTestId('sb-select-two-hint')).toHaveTextContent('実行'));
+    expect(pon).not.toBeDisabled();
+  });
+
+  it('describes the meld selection requirement and flips it to "met" via aria-describedby', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<SevenBridgePage />);
+    const meld = await screen.findByRole('button', { name: /メルド|Meld/i });
+    expect(meld).toHaveAttribute('aria-describedby', 'sb-meld-hint');
+    // With fewer than 3 selected the hint states the requirement and meld is disabled.
+    expect(screen.getByTestId('sb-meld-hint')).toHaveTextContent('3枚以上');
+    expect(meld).toBeDisabled();
+    // Selecting three cards satisfies the requirement.
+    fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 9' }));
+    fireEvent.click(screen.getByRole('button', { name: '♦ 3' }));
+    await waitFor(() => expect(screen.getByTestId('sb-meld-hint')).toHaveTextContent('実行'));
+    expect(meld).not.toBeDisabled();
   });
 
   it('renders layoff target melds as clickable card-row buttons and highlights the selection', async () => {

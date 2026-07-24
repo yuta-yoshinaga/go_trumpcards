@@ -24,6 +24,12 @@
   "hintAnnouncement": "ヒント: {{card}}を{{dest}}へ移動",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "suitNames": {
+    "spade": "スペード",
+    "club": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
+  },
   "stalemate": "手詰まりです",
   "frontendHint": {
     "moveToFoundation": "組札へ移動できるカードがあります",

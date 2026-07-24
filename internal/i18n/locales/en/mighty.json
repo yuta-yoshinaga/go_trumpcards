@@ -32,6 +32,7 @@
   "promptTrumpDeclareHelp": "Command: t <suit> <partnerSuit> <partnerVal>",
   "promptTrumpSuitLegend": "  suit: -1=No-Trump 1=♠ 2=♣ 3=♥ 4=♦   partnerSuit: 0=Joker 1=♠ 2=♣ 3=♥ 4=♦",
   "promptKittyHeader": "Kitty merged into your hand. Discard 3 cards.",
+  "promptKittyCards": "Kitty cards (positions in your hand):",
   "promptKittyHelp": "Command: e <i> <j> <k>",
   "promptPlayTurn": "Play phase: {{name}}'s turn",
   "promptPlayHelp": "Command: p <idx>   To lead the Joker: jl <idx> <suit>",

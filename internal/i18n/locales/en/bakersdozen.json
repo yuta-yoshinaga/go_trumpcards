@@ -6,6 +6,8 @@
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete",
   "foundationHeader": "Foundation: ",
+  "oneCardWarning": "(!last card)",
+  "emptyColNote": "Note: empty columns cannot be refilled",
   "columnLabel": "Column {{col}}:",
   "hintFrom": "tableau column {{col}}[{{idx}}]",
   "hintToFoundation": "foundation",

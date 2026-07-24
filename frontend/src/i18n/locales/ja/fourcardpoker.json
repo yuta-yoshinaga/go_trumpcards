@@ -3,6 +3,7 @@
   "player": "プレイヤー",
   "dealer": "ディーラー",
   "dealerUpcard": "アップカードのみ表示中",
+  "hiddenCard": "非公開のカード",
   "label": {
     "chips": "チップ",
     "ante": "アンテ",

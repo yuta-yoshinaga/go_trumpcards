@@ -415,6 +415,64 @@ describe('BigOHiLoPage', () => {
     expect(screen.getByTestId('bigohilo-lo-badge')).toHaveTextContent('A 5 8 2 5');
   });
 
+  it('dual-highlights cards used by both Hi and Lo, distinct from hi-only and lo-only', async () => {
+    // Hole A♠ 2♠ + board 5♠ 6♠ 7♠ = A-high spade flush (Hi). Lo = A 3 5 6 7.
+    // → A♠ (hole) is used by BOTH; 2♠ is Hi-only; 3♦ is Lo-only.
+    const dualState: OmahaResponse = {
+      ...showdownState,
+      players: [
+        humanPlayer({
+          handName: 'フラッシュ',
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'SPADE', value: 2 },
+            { design: 'DIAMOND', value: 3 },
+            { design: 'HEART', value: 4 },
+            { design: 'CLOVER', value: 13 },
+          ],
+        }),
+        cpuPlayer(1, { folded: true }),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 5 },
+        { design: 'SPADE', value: 6 },
+        { design: 'SPADE', value: 7 },
+        { design: 'DIAMOND', value: 12 },
+        { design: 'CLOVER', value: 11 },
+      ],
+      roundResults: [
+        {
+          ...showdownState.roundResults[0],
+          hiWonAmount: 100,
+          lowWonAmount: 100,
+          lowBestHand: [
+            { design: 'SPADE', value: 1 },
+            { design: 'DIAMOND', value: 3 },
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'SPADE', value: 7 },
+          ],
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(dualState);
+    const { container } = renderWithProviders(<BigOHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('bigohilo-split')).toBeInTheDocument());
+    // A♠ (hole) + 5♠/6♠/7♠ (board) belong to both the flush and the low.
+    const both = container.querySelectorAll('[data-hilo="both"]');
+    expect(both.length).toBeGreaterThan(0);
+    // The dual ring carries both green (Hi) and blue-offset (Lo) attributes.
+    expect(both[0].className).toContain('ring-ds-success');
+    expect(both[0].className).toContain('ring-offset-ds-info');
+    // 2♠ is Hi-only (green, no blue); 3♦ is Lo-only (blue, no green).
+    const hiOnly = container.querySelectorAll('[data-hilo="hi"]');
+    const loOnly = container.querySelectorAll('[data-hilo="lo"]');
+    expect(hiOnly.length).toBeGreaterThan(0);
+    expect(loOnly.length).toBeGreaterThan(0);
+    expect(hiOnly[0].className).not.toContain('ring-offset-ds-info');
+    expect(loOnly[0].className).not.toContain('ring-ds-success');
+  });
+
   it('states Hi scoops the pot when no low qualifies', async () => {
     const hiOnlyState: OmahaResponse = {
       ...showdownState,
@@ -424,6 +482,53 @@ describe('BigOHiLoPage', () => {
     renderWithProviders(<BigOHiLoPage />);
     await waitFor(() => expect(screen.getByTestId('bigohilo-hi-badge')).toBeInTheDocument());
     expect(screen.getByTestId('bigohilo-hi-takes-all')).toBeInTheDocument();
+  });
+
+  it('shows a scoop badge when one player wins both Hi and Lo', async () => {
+    const scoopState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        { ...showdownState.roundResults[0], wonAmount: 300, hiWonAmount: 200, lowWonAmount: 100 },
+        { ...showdownState.roundResults[1], wonAmount: 0, hiWonAmount: 0, lowWonAmount: 0 },
+      ],
+    };
+    mockExec.mockResolvedValue(scoopState);
+    renderWithProviders(<BigOHiLoPage />);
+    const badge = await screen.findByTestId('bigohilo-scoop-badge');
+    // Human (playerIdx 0) scooped: personalized message + emphasis marker.
+    expect(badge).toHaveTextContent('スクープ達成');
+    expect(badge).toHaveTextContent('300');
+    expect(badge).toHaveAttribute('data-scoop-human', 'true');
+  });
+
+  it('shows a CPU name in the scoop badge when a CPU scoops', async () => {
+    const scoopState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        { ...showdownState.roundResults[0], wonAmount: 0, hiWonAmount: 0, lowWonAmount: 0 },
+        { ...showdownState.roundResults[1], wonAmount: 300, hiWonAmount: 250, lowWonAmount: 50 },
+      ],
+    };
+    mockExec.mockResolvedValue(scoopState);
+    renderWithProviders(<BigOHiLoPage />);
+    const badge = await screen.findByTestId('bigohilo-scoop-badge');
+    expect(badge).toHaveTextContent('スクープ');
+    expect(badge).toHaveTextContent('300');
+    expect(badge).not.toHaveAttribute('data-scoop-human');
+  });
+
+  it('does not show a scoop badge on a split win (different Hi and Lo winners)', async () => {
+    const splitState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        { ...showdownState.roundResults[0], hiWonAmount: 200, lowWonAmount: 0 },
+        { ...showdownState.roundResults[1], wonAmount: 100, hiWonAmount: 0, lowWonAmount: 100 },
+      ],
+    };
+    mockExec.mockResolvedValue(splitState);
+    renderWithProviders(<BigOHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('bigohilo-split')).toBeInTheDocument());
+    expect(screen.queryByTestId('bigohilo-scoop-badge')).not.toBeInTheDocument();
   });
 
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {

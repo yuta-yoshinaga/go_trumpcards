@@ -20,6 +20,8 @@ type RedDogInteractorIF interface {
 	Raise(amount int) string
 	// Stay レイズせず3枚目を引く
 	Stay() string
+	// Hint ヒント取得
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -63,6 +65,11 @@ func (ri *RedDogInteractor) Raise(amount int) string {
 // Stay レイズせず3枚目を引く
 func (ri *RedDogInteractor) Stay() string {
 	return execAndPresent(ri.Game, ri.cp, ri.Game.Stay)
+}
+
+// Hint ヒント取得
+func (ri *RedDogInteractor) Hint() string {
+	return ri.cp.HintOutput(ri.Game)
 }
 
 // ActionLog 棋譜を出力する

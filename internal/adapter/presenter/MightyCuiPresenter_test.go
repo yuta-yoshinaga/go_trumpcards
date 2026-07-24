@@ -34,6 +34,8 @@ func setupMightyCuiMock() *interfaces.MockMightyGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultMightyConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetDeclarerIdx").Return(0)
+	m.On("GetKitty").Return([]*domain.Card{})
 	return m
 }
 
@@ -196,6 +198,47 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 		m.On("GetWinnerTeam").Return(domain.MightyWinnerOpposition)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "野党")
+	})
+
+	t.Run("kitty phase lists kitty cards with hand indices", func(t *testing.T) {
+		m, players := setupMightyCuiMockWithPlayers()
+		// Declarer (player 0, human) hand — the kitty is merged in and sorted.
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))  // idx 0
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))  // idx 1
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 9, false)) // idx 2
+		kitty := []*domain.Card{
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+			nil, // defensive: a nil kitty entry is skipped
+			domain.NewCard(domain.CardDesignClover, 9, false),
+		}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.MightyPhaseKittyExchange)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKitty")
+		m.On("GetKitty").Return(kitty)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "キティのカード")
+		// The kitty cards are shown at their positions in the declarer's hand,
+		// matching the indices the `e` (exchange) command consumes.
+		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[2]CLOVER 9")
+	})
+
+	t.Run("kitty line omitted when declarer is missing", func(t *testing.T) {
+		m, _ := setupMightyCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.MightyPhaseKittyExchange)
+		// Declarer index points at an absent player → GetPlayer returns nil.
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerIdx")
+		m.On("GetDeclarerIdx").Return(9)
+		m.On("GetPlayer", 9).Return((*domain.MightyPlayer)(nil))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKitty")
+		m.On("GetKitty").Return([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)})
+
+		result := p.Output(m, nil)
+		// No kitty line, but the phase prompt still renders.
+		assert.NotContains(t, result, "キティのカード")
+		assert.Contains(t, result, "場札")
 	})
 
 	t.Run("phase prompts", func(t *testing.T) {

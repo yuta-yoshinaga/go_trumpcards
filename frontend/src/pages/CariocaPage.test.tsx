@@ -310,6 +310,29 @@ describe('CariocaPage', () => {
     expect(screen.getByTestId('ca-submit-contract')).not.toBeDisabled();
   });
 
+  it('annotates each slot with what is still missing and clears it once satisfied', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<CariocaPage />);
+    await waitFor(() => expect(screen.getByTestId('ca-slot-progress')).toBeInTheDocument());
+    // An empty slot shows the "not started" hint.
+    expect(screen.getByTestId('ca-slot-shortfall-0')).toHaveTextContent('未着手');
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+    // Place a single 5 into slot 0 — a set of 3 still needs 2 more of the same rank.
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+    await waitFor(() => expect(screen.getByTestId('ca-slot-shortfall-0')).toHaveTextContent('あと2枚 同ランク'));
+
+    // Complete slot 0 with the three 5s — the shortfall annotation disappears.
+    fireEvent.click(screen.getByRole('button', { name: /Undo last slot|最後のスロットを取り消す/ }));
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[1]);
+    fireEvent.click(cardButtons[2]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+    await waitFor(() => expect(screen.getByTestId('ca-slot-progress-0')).toHaveAttribute('data-state', 'satisfied'));
+    expect(screen.queryByTestId('ca-slot-shortfall-0')).not.toBeInTheDocument();
+  });
+
   it('enables Submit for a joker-wild contract meld', async () => {
     // Slot 0 = 5,5,JOKER (a set completed by a wild); slot 1 = three 13s.
     const jokerHand: Card[] = [
@@ -361,6 +384,76 @@ describe('CariocaPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
     await waitFor(() => expect(screen.getByTestId('ca-slot-progress-0')).toHaveAttribute('data-state', 'invalid'));
     expect(screen.getByTestId('ca-submit-contract')).toBeDisabled();
+  });
+
+  it('marks a meld green for a card that fits and red for one that does not', async () => {
+    // Human contract met (no own melds) + opponent 1 has a trío of 5s to lay off onto.
+    const metState: CariocaResponse = {
+      ...playState,
+      players: [
+        { ...playState.players[0], contractMet: true },
+        {
+          ...playState.players[1],
+          contractMet: true,
+          melds: [{ cards: [card('SPADE', 5), card('HEART', 5), card('DIAMOND', 5)] }],
+        },
+        playState.players[2],
+      ],
+    };
+    mockExec.mockResolvedValue(metState);
+    renderWithProviders(<CariocaPage />);
+    const meld = await screen.findByTestId('ca-meld-1-0');
+    // No preview before a card is staged.
+    expect(meld).not.toHaveAttribute('data-layoff-accepts');
+
+    // Hand card buttons carry an image but (unlike meld buttons) no ca-meld test id.
+    const handCards = screen
+      .getAllByRole('button')
+      .filter((b) => b.querySelector('img') && !b.getAttribute('data-testid')?.startsWith('ca-meld'));
+
+    // baseHand[0] is the 5♠ — a valid fourth card for the 5-set.
+    fireEvent.click(handCards[0]);
+    expect(meld).toHaveAttribute('data-layoff-accepts', 'true');
+    expect(meld).toHaveClass('ring-ds-success');
+
+    // Toggle it off and pick baseHand[3] (K♣) — a mismatch that the set rejects.
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[3]);
+    expect(meld).toHaveAttribute('data-layoff-accepts', 'false');
+    expect(meld).toHaveClass('ring-ds-error');
+  });
+
+  it('annotates the layoff summary with whether the staged card fits the target meld', async () => {
+    const metState: CariocaResponse = {
+      ...playState,
+      players: [
+        { ...playState.players[0], contractMet: true },
+        {
+          ...playState.players[1],
+          contractMet: true,
+          melds: [{ cards: [card('SPADE', 5), card('HEART', 5), card('DIAMOND', 5)] }],
+        },
+        playState.players[2],
+      ],
+    };
+    mockExec.mockResolvedValue(metState);
+    renderWithProviders(<CariocaPage />);
+    const meld = await screen.findByTestId('ca-meld-1-0');
+    fireEvent.click(meld); // target this meld
+
+    const handCards = screen
+      .getAllByRole('button')
+      .filter((b) => b.querySelector('img') && !b.getAttribute('data-testid')?.startsWith('ca-meld'));
+
+    // Stage the 5♠ — the summary should report the card fits.
+    fireEvent.click(handCards[0]);
+    const acceptance = screen.getByTestId('ca-layoff-acceptance');
+    expect(acceptance).toHaveAttribute('data-accepts', 'true');
+
+    // Switch to the K♣ — the summary flips to "doesn't fit".
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[3]);
+    expect(screen.getByTestId('ca-layoff-acceptance')).toHaveAttribute('data-accepts', 'false');
   });
 
   it('shows winner banner at game end', async () => {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { twentyNineApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -126,6 +126,22 @@ function TwentyNinePageContent() {
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('twentynine', TWENTY_NINE_PHASE_KEYS);
 
+  // Flash a transient banner the moment the hidden trump is revealed mid-play,
+  // so the reveal is not missed while a CPU is playing (mirrors SpoilFive's potDelta).
+  const [showTrumpBanner, setShowTrumpBanner] = useState(false);
+  const prevTrumpRevealedRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    const revealed = state?.trumpRevealed;
+    if (revealed == null) return;
+    const prev = prevTrumpRevealedRef.current;
+    prevTrumpRevealedRef.current = revealed;
+    if (prev === false && revealed === true) {
+      setShowTrumpBanner(true);
+      const id = setTimeout(() => setShowTrumpBanner(false), 3000);
+      return () => clearTimeout(id);
+    }
+  }, [state?.trumpRevealed]);
+
   if (!state)
     return <GameSkeleton gameKey="twentynine" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
 
@@ -143,14 +159,14 @@ function TwentyNinePageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   // The trump suit is hidden until trumpRevealed flips true mid-play.
-  const trumpSymbol = !state.trumpRevealed
-    ? t('hiddenTrump')
-    : state.trumpSuit === 0
-      ? t('noTrump')
-      : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const revealedTrumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const trumpSymbol = !state.trumpRevealed ? t('hiddenTrump') : revealedTrumpSymbol;
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
+  // The seat holding that highest bid, so the bidder's name can be surfaced during bidding.
+  const highestBidder = highestBid > 0 ? state.players[state.bids.indexOf(highestBid)] : undefined;
+  const highestBidderName = highestBidder ? playerName(highestBidder.id, highestBidder.isHuman) : '';
 
   const contractLabel = state.contract === 0 ? t('contractUndecided') : String(state.contract);
 
@@ -221,6 +237,16 @@ function TwentyNinePageContent() {
               <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
               <span>{t('target', { points: state.config.targetPoints })}</span>
             </div>
+
+            {showTrumpBanner && (
+              <div
+                role="status"
+                data-testid="tn-trump-reveal-banner"
+                className="mx-auto mb-2 w-fit rounded-lg bg-ds-warning/20 px-4 py-1.5 text-center font-semibold text-ds-warning motion-safe:animate-pulse"
+              >
+                {t('trumpRevealBanner', { suit: revealedTrumpSymbol })}
+              </div>
+            )}
 
             <div className="text-ds-text-muted text-center mb-2 text-sm">
               {state.declarerIdx >= 0
@@ -344,20 +370,30 @@ function TwentyNinePageContent() {
               {isBidPhase && isHumanBidTurn && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+                  <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="tn29-highest-bid">
+                    {highestBid > 0 ? t('bidHighest', { bid: highestBid, player: highestBidderName }) : t('bidNone')}
+                  </span>
                   {BIDS.map((b) => {
                     // Pass (0) is always allowed; a non-pass bid must beat the current highest.
-                    const disabled = loading || (b.value !== 0 && b.value <= highestBid);
+                    const tooLow = b.value !== 0 && b.value <= highestBid;
+                    const disabled = loading || tooLow;
+                    const reason = tooLow ? t('bidDisabledReason', { currentBid: highestBid }) : undefined;
+                    // The title lives on the wrapping span: browsers suppress native tooltips on
+                    // disabled buttons, so hovering the span still surfaces the reason.
                     return (
-                      <button
-                        key={b.value}
-                        type="button"
-                        className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
-                        onClick={() => handleBid(b.value)}
-                        disabled={disabled}
-                        data-testid={`bid-${b.value}`}
-                      >
-                        {t(b.key)}
-                      </button>
+                      <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
+                        <button
+                          type="button"
+                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                          onClick={() => handleBid(b.value)}
+                          disabled={disabled}
+                          aria-disabled={disabled}
+                          aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
+                          data-testid={`bid-${b.value}`}
+                        >
+                          {t(b.key)}
+                        </button>
+                      </span>
                     );
                   })}
                 </>

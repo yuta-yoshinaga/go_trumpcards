@@ -87,9 +87,15 @@ function EgyptianRatscrewPageContent() {
     outcome: 'correct',
     label: '',
   });
+  const [slapAnnounce, setSlapAnnounce] = useState('');
   const prevSlapEventRef = useRef<{ kind: number; player: number }>({ kind: -1, player: -1 });
   useEffect(() => {
-    if (!state) return;
+    if (!state) {
+      // A reset blanks `state` momentarily; clear the live region so a fresh
+      // game never surfaces the previous round's stale announcement.
+      setSlapAnnounce('');
+      return;
+    }
     const kind = state.lastEventKind;
     const player = state.lastEventPlayerIdx;
     const prev = prevSlapEventRef.current;
@@ -107,9 +113,19 @@ function EgyptianRatscrewPageContent() {
       // Incrementing counter is more robust than Date.now() for trigger keys:
       // back-to-back events within the same ms still register as distinct.
       setSlapBurst((prevBurst) => ({ key: prevBurst.key + 1, outcome, label }));
+      const slapper = player === 0 ? tc('player.you') : tc('player.cpu', { id: player });
+      if (outcome === 'correct') {
+        const reason =
+          state.lastSlapReason === EgyptianRatscrewSlapReason.SANDWICH
+            ? t('egyptianratscrew.slapReason.sandwich')
+            : t('egyptianratscrew.slapReason.pair');
+        setSlapAnnounce(t('egyptianratscrew.slapAnnounce.correct', { player: slapper, reason }));
+      } else {
+        setSlapAnnounce(t('egyptianratscrew.slapAnnounce.wrong', { player: slapper }));
+      }
       prevSlapEventRef.current = { kind, player };
     }
-  }, [state, t]);
+  }, [state, t, tc]);
 
   useMountReset(execApi);
 
@@ -239,6 +255,16 @@ function EgyptianRatscrewPageContent() {
               data-tutorial="er-arena"
             >
               <SlapBurst triggerKey={slapBurst.key} outcome={slapBurst.outcome} label={slapBurst.label} />
+              {/* Screen-reader announcement for the slap outcome (parity with Slapjack #2607). */}
+              <div
+                className="sr-only"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                data-testid="er-slap-announce"
+              >
+                {slapAnnounce}
+              </div>
               <div className="text-center">
                 <div className="text-sm text-ds-text-primary font-semibold">
                   {t('label.pileCount', { count: state.centerPileSize })}
@@ -355,7 +381,7 @@ function EgyptianRatscrewPageContent() {
                 type="button"
                 onClick={handleStep}
                 disabled={loading || isGameEnd || !state.isHumanTurn}
-                className="px-6 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                className="min-h-[44px] min-w-[44px] px-6 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="step-button"
                 data-tutorial="er-step-button"
               >
@@ -366,7 +392,7 @@ function EgyptianRatscrewPageContent() {
                 type="button"
                 onClick={handleSlap}
                 disabled={loading || isGameEnd || state.centerPileSize === 0}
-                className={`px-6 py-2 rounded-lg text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed ${
+                className={`min-h-[44px] min-w-[44px] px-6 py-2 rounded-lg text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed ${
                   state.isSlappable
                     ? 'bg-ds-warning hover:bg-ds-warning-hover animate-pulse'
                     : 'bg-ds-error hover:bg-ds-error'

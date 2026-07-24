@@ -29,6 +29,7 @@ func setupMaoCuiMock() *interfaces.MockMaoGame {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetAwaitingWord").Return(false)
 	m.On("GetHintUnlocked").Return(false)
+	m.On("GetPlayerCorrectCount").Return(1)
 	m.On("GetRuleHint").Return("")
 	m.On("GetRulePenaltyFlag").Return(false)
 	return m
@@ -58,6 +59,19 @@ func TestMaoCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Mao")
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "手番: あなた")
+		// Before the hint unlocks, the compliance progress (1/3) is shown.
+		assert.Contains(t, result, "ルール適合: 1/3")
+	})
+
+	t.Run("unlocked hint replaces the compliance progress", func(t *testing.T) {
+		m, _ := setupMaoCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHintUnlocked")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRuleHint")
+		m.On("GetHintUnlocked").Return(true)
+		m.On("GetRuleHint").Return("odd cards")
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "ルール適合:")
+		assert.Contains(t, result, "odd cards")
 	})
 
 	t.Run("awaiting word prompt and no hidden rule leak", func(t *testing.T) {

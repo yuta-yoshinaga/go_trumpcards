@@ -61,6 +61,21 @@ const BJ_PHASE_KEYS: Readonly<Record<number, string>> = {
   [BjPhase.EARLY_SURRENDER]: 'earlySurrender',
 };
 
+/**
+ * Strips the i18n namespace segment from a backend bonus key so it can be
+ * resolved by the page's namespaced `t()`. Backend bonus keys are the fully
+ * qualified `<namespace>.<...path>` form (e.g. `spanish21.bonus.777.spade`,
+ * see `BlackJackVariant.go`); `t()` here is already scoped to the variant
+ * namespace, so only the leading namespace segment is removed — the rest of
+ * the dotted path is preserved. Namespace-agnostic (not coupled to the literal
+ * `spanish21.` prefix) so a namespace rename cannot silently drop translation.
+ */
+function bonusBadgeKey(fullKey: string): string {
+  // indexOf('.') is -1 when there is no namespace segment, so slice(0) returns
+  // the key unchanged — no branch needed.
+  return fullKey.slice(fullKey.indexOf('.') + 1);
+}
+
 function useSuggestionLabels(t: (key: string) => string): Record<number, string> {
   return {
     [BJ_SUGGEST_HIT]: t('suggest.hit'),
@@ -167,7 +182,8 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
   const gamePath = variant === 'spanish21' ? '/spanish21' : '/';
   const navTitleKey = variant === 'spanish21' ? 'nav.spanish21' : 'nav.blackjack';
   const themeKey: 'blackjack' | 'spanish21' = variant === 'spanish21' ? 'spanish21' : 'blackjack';
-  const { t, tc, actionLog, showActionLog, hideActionLog } = useGamePageSetup(variant);
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup(variant);
   const phaseNames = usePhaseNames(variant, BJ_PHASE_KEYS);
   const suggestionLabels = useSuggestionLabels(t);
   const { playSound } = useSound();
@@ -256,6 +272,32 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
     enabled: phase === BjPhase.ACTION && !loading,
   });
 
+  const insuranceBindings = useMemo(
+    () => [
+      { key: 'i', action: () => exec('insurance') },
+      { key: 'n', action: () => exec('declineinsurance') },
+    ],
+    [exec],
+  );
+
+  useActionKeyboardNav({
+    bindings: insuranceBindings,
+    enabled: phase === BjPhase.INSURANCE && !loading,
+  });
+
+  const earlySurrenderBindings = useMemo(
+    () => [
+      { key: 'u', action: () => exec('earlysurrender') },
+      { key: 'n', action: () => exec('declineearlysurrender') },
+    ],
+    [exec],
+  );
+
+  useActionKeyboardNav({
+    bindings: earlySurrenderBindings,
+    enabled: phase === BjPhase.EARLY_SURRENDER && !loading,
+  });
+
   const handleReset = useCallback(() => {
     hideActionLog();
     const config: BlackJackConfigInput = {
@@ -279,6 +321,11 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
     surrenderRule,
     hideActionLog,
   ]);
+
+  // Manual "Next Game" clicks route through the shared reset-confirm dialog so a stray tap
+  // does not discard the session. The auto-advance countdown keeps firing handleReset directly
+  // (see BjEndPhaseControls), so the automatic next-round flow is unaffected.
+  const requestResetConfirm = useCallback(() => requestConfirm(handleReset), [requestConfirm, handleReset]);
 
   if (!state)
     return (
@@ -305,9 +352,9 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
       winShow={phase === BjPhase.END}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
-      confirmOpen={false}
-      confirmReset={() => {}}
-      cancelReset={() => {}}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
       headerExtra={
         <>
           <span>
@@ -514,7 +561,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                     data-testid="bj-bonus-badge"
                     className="rounded-full border border-ds-warning bg-ds-surface px-3 py-0.5 text-ds-warning text-sm font-bold motion-safe:animate-pulse-once"
                   >
-                    🎉 {t(key.replace(/^spanish21\./, ''))}
+                    🎉 {t(bonusBadgeKey(key))}
                   </span>
                 ))}
               </div>
@@ -661,6 +708,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                   <BjEndPhaseControls
                     loading={loading}
                     onReset={handleReset}
+                    onRequestReset={requestResetConfirm}
                     autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
                   />
                 </div>

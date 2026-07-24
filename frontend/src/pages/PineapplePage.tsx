@@ -24,6 +24,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -45,8 +46,9 @@ import { PINEAPPLE_HELP, parsePineappleCommand } from '../utils/cli/commands/pin
 import { formatPineappleState } from '../utils/cli/formatters/pineappleFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { holdemBestFive } from '../utils/holdemBestFive';
+import { type PineappleKeepFeature, pineappleKeepFeatures } from '../utils/pineappleDiscardHint';
 import { findPlayerName } from '../utils/playerUtils';
-import { evaluateFiveCardHand, pokerHandKey } from '../utils/pokerSquaresUtils';
+import { evaluateFiveCardHand, type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 
 /** Pineapple Poker tutorial step definitions. */
 const PN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -144,6 +146,16 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const [selectedDiscards, setSelectedDiscards] = useState<number[]>([]);
   // Two-step discard: pressing "discard" enters a confirm step before committing.
   const [discardConfirming, setDiscardConfirming] = useState(false);
+  // Feedback when a click is ignored because the discard cap is already reached:
+  // a message for the live region and a nonce that re-fires it (and the shake)
+  // on every repeated over-limit attempt, even with identical text.
+  const [limitAnnounce, setLimitAnnounce] = useState('');
+  const [limitNonce, setLimitNonce] = useState(0);
+  // Mirror the selection in a ref so toggleDiscard can read it without listing
+  // selectedDiscards as a dependency — otherwise the callback (and the global
+  // keydown listener in useCardKeyboardNav) would be re-created on every toggle.
+  const selectedDiscardsRef = useRef<number[]>(selectedDiscards);
+  selectedDiscardsRef.current = selectedDiscards;
   const turnStartRef = useRef(0);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(variant);
@@ -179,11 +191,13 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     }
   }, [state]);
 
-  // Reset discard selection (and any pending confirm) when leaving discard phase
+  // Reset discard selection (and any pending confirm / limit banner) when leaving
+  // the discard phase, so a stale over-limit warning can't outlive it.
   useEffect(() => {
     if (!state?.isDiscardPhase) {
       setSelectedDiscards([]);
       setDiscardConfirming(false);
+      setLimitAnnounce('');
     }
   }, [state?.isDiscardPhase]);
 
@@ -246,8 +260,10 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   }, [variant, isDiscardPhase, humanPlayer, state?.communityCards, selectedDiscards, discardCount]);
   // Crazy Pineapple discards 1 of 3 after the flop; annotate each hole card with
   // the best hand the OTHER two would make with the board if that card is the
-  // one discarded, so the player can compare keeps before committing.
-  const candidatePreviews = useMemo<(string | null)[] | null>(() => {
+  // one discarded, so the player can compare keeps before committing. Each entry
+  // carries both the i18n hand key and the raw rank, so the strongest keep can be
+  // flagged as recommended below.
+  const candidatePreviews = useMemo<({ handKey: string; rank: PokerHandRank } | null)[] | null>(() => {
     if (variant !== 'crazypineapple' || !isDiscardPhase) return null;
     const hole = humanPlayer?.cards ?? [];
     const board = state?.communityCards ?? [];
@@ -255,17 +271,58 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       const all = [...hole.filter((_, i) => i !== discardIdx), ...board];
       const picked = holdemBestFive(all);
       const rank = picked ? evaluateFiveCardHand(picked.map((i) => all[i])) : null;
-      return rank == null ? null : pokerHandKey(rank);
+      return rank == null ? null : { handKey: pokerHandKey(rank), rank };
     });
   }, [variant, isDiscardPhase, humanPlayer, state?.communityCards]);
-  const toggleDiscard = (idx: number) => {
-    if (!canDiscard) return;
-    setSelectedDiscards((prev) => {
-      if (prev.includes(idx)) return prev.filter((i) => i !== idx);
-      if (prev.length >= discardCount) return prev; // cap reached
-      return [...prev, idx];
+  // The Crazy Pineapple discard(s) whose removal leaves the strongest resulting
+  // hand — flagged with a "recommended" badge and ring. When several discards
+  // tie for the best rank, all of them are flagged.
+  const recommendedDiscards = useMemo<Set<number>>(() => {
+    const out = new Set<number>();
+    if (!candidatePreviews) return out;
+    let best = -1;
+    for (const p of candidatePreviews) {
+      if (p && p.rank > best) best = p.rank;
+    }
+    if (best < 0) return out;
+    candidatePreviews.forEach((p, i) => {
+      if (p && p.rank === best) out.add(i);
     });
-  };
+    return out;
+  }, [candidatePreviews]);
+  // Irish Poker discards 2 of 4 hole cards. Once the FIRST card is chosen, annotate
+  // each still-selectable card with the best hand the OTHER two kept cards would make
+  // with the board if that card became the second discard — turning the C(3,1)=3
+  // remaining choices into a side-by-side comparison before the pair is committed.
+  // (At 2 selected, the full `discardPreview` above takes over instead.)
+  const irishCandidatePreviews = useMemo<(string | null)[] | null>(() => {
+    if (variant !== 'irishpoker' || !isDiscardPhase) return null;
+    if (selectedDiscards.length !== discardCount - 1) return null;
+    const hole = humanPlayer?.cards ?? [];
+    const board = state?.communityCards ?? [];
+    return hole.map((_, idx) => {
+      // The already-selected card is marked as selected, not annotated.
+      if (selectedDiscards.includes(idx)) return null;
+      const kept = hole.filter((_, i) => i !== idx && !selectedDiscards.includes(i));
+      const all = [...kept, ...board];
+      const picked = holdemBestFive(all);
+      const rank = picked ? evaluateFiveCardHand(picked.map((i) => all[i])) : null;
+      return rank == null ? null : pokerHandKey(rank);
+    });
+  }, [variant, isDiscardPhase, humanPlayer, state?.communityCards, selectedDiscards, discardCount]);
+  // Plain Pineapple discards 1 of 3 preflop (before any board), so a board-based
+  // preview is impossible. Instead annotate each hole card with the qualitative
+  // shape (pair / suited / connector / high card) the OTHER two would keep, a
+  // board-free judgment the player can use to pick which card to throw.
+  const keepFeaturePreviews = useMemo<(PineappleKeepFeature[] | null)[] | null>(() => {
+    if (variant !== 'pineapple' || !isDiscardPhase) return null;
+    const hole = humanPlayer?.cards ?? [];
+    if (hole.length !== 3) return null;
+    return hole.map((_, discardIdx) => {
+      const [a, b] = hole.filter((_, i) => i !== discardIdx);
+      return pineappleKeepFeatures(a, b);
+    });
+  }, [variant, isDiscardPhase, humanPlayer]);
 
   const actionBindings = useMemo(
     () => [
@@ -287,6 +344,51 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   useActionKeyboardNav({
     bindings: actionBindings,
     enabled: canAct && !loading,
+  });
+
+  // Discard phase control shared by mouse and keyboard: toggle a hole card into
+  // the discard selection. Guarded so nothing changes once the two-stage confirm
+  // has started (the player must commit or cancel), keeping both input methods
+  // consistent. Keyboard: number keys toggle, Enter steps select -> confirm ->
+  // commit, Escape backs out.
+  const discardCardCount = humanPlayer?.cards?.length ?? 0;
+  const toggleDiscard = useCallback(
+    (idx: number) => {
+      if (!canDiscard || discardConfirming) return;
+      const current = selectedDiscardsRef.current;
+      const isSelected = current.includes(idx);
+      // Selecting a new card while already at the cap is ignored — but tell the
+      // user why (live region + shake) instead of silently swallowing the click.
+      if (!isSelected && current.length >= discardCount) {
+        setLimitAnnounce(t('discard.limitReached', { count: discardCount }));
+        setLimitNonce((n) => n + 1);
+        return;
+      }
+      setLimitAnnounce('');
+      setSelectedDiscards((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
+    },
+    [canDiscard, discardConfirming, discardCount, t],
+  );
+  const discardConfirm = useCallback(() => {
+    if (selectedDiscards.length !== discardCount) return;
+    if (discardConfirming) {
+      void apiExec('discard', undefined, { cardIdxs: [...selectedDiscards] });
+      setSelectedDiscards([]);
+      setDiscardConfirming(false);
+    } else {
+      setDiscardConfirming(true);
+    }
+  }, [selectedDiscards, discardCount, discardConfirming, apiExec]);
+  const discardClear = useCallback(() => {
+    if (discardConfirming) setDiscardConfirming(false);
+    else setSelectedDiscards([]);
+  }, [discardConfirming]);
+  useCardKeyboardNav({
+    cardCount: discardCardCount,
+    onToggle: toggleDiscard,
+    onConfirm: discardConfirm,
+    onClear: discardClear,
+    enabled: canDiscard && !loading,
   });
 
   if (!state)
@@ -420,9 +522,10 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
 
           {/* Sticky footer: player hand + buttons */}
           <GameFooter className={`${gameTheme[variant].footer} px-5 py-3`}>
-            {/* Crazy Pineapple discards after the flop betting round (unlike plain
-                Pineapple's immediate discard) — forewarn the player during the flop bet. */}
-            {variant === 'crazypineapple' && phase === PineapplePhase.FLOP && (
+            {/* Crazy Pineapple and Irish Poker discard after the flop betting round
+                (unlike plain Pineapple's immediate discard) — forewarn the player during
+                the flop bet so they can factor the upcoming discard into their decision. */}
+            {(variant === 'crazypineapple' || variant === 'irishpoker') && phase === PineapplePhase.FLOP && (
               <div
                 data-testid="cp-discard-upcoming-banner"
                 className="mb-2 rounded border border-ds-info bg-ds-surface px-3 py-1.5 text-center text-ds-info text-sm"
@@ -460,20 +563,33 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                     </span>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-1.5 mb-2">
+                {/* Screen-reader description of the discard cap, associated with the
+                    hand group so AT conveys the limit up front. */}
+                {canDiscard && (
+                  <span id="pn-discard-limit-desc" className="sr-only">
+                    {t('discard.limitDescription', { count: discardCount })}
+                  </span>
+                )}
+                <div
+                  className="flex flex-wrap gap-1.5 mb-2"
+                  aria-describedby={canDiscard ? 'pn-discard-limit-desc' : undefined}
+                >
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
                         const isSelected = selectedDiscards.includes(idx);
                         const inBest = showdownBest5.holeSet.has(idx);
                         const dim = showdownBest5.holeSet.size > 0 && !inBest;
-                        const candKey = candidatePreviews?.[idx] ?? null;
+                        const candKey = candidatePreviews?.[idx]?.handKey ?? null;
+                        const isRecommendedDiscard = recommendedDiscards.has(idx);
+                        const irishCandKey = irishCandidatePreviews?.[idx] ?? null;
+                        const keepFeatures = keepFeaturePreviews?.[idx] ?? null;
                         return (
                           <div key={`${card.design}-${card.value}`} className="flex flex-col items-center">
                             <button
                               type="button"
                               onClick={() => toggleDiscard(idx)}
                               aria-pressed={canDiscard ? isSelected : undefined}
-                              className={`${canDiscard ? 'cursor-pointer' : 'cursor-default'} ${inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${dim ? 'opacity-50' : ''}`}
+                              className={`${canDiscard ? 'cursor-pointer' : 'cursor-default'} ${inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${isRecommendedDiscard ? 'rounded-lg ring-2 ring-ds-info' : ''} ${dim ? 'opacity-50' : ''}`}
                               disabled={!canDiscard}
                               style={selectedCardStyle(canDiscard && isSelected)}
                               data-testid={inBest ? 'pn-best5-card' : undefined}
@@ -488,6 +604,32 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                                 {`${t('discard.candidateHand')}: ${t(`hand.${candKey}`)}`}
                               </span>
                             )}
+                            {isRecommendedDiscard && (
+                              <span
+                                className="mt-0.5 rounded-full bg-ds-info/20 px-1.5 text-[10px] font-semibold text-ds-info"
+                                data-testid="cp-discard-recommended"
+                              >
+                                {t('discard.recommended')}
+                              </span>
+                            )}
+                            {irishCandKey && (
+                              <span
+                                className="mt-0.5 text-[10px] text-ds-text-muted"
+                                data-testid="irishpoker-discard-candidate"
+                              >
+                                {`${t('discard.candidateHand')}: ${t(`hand.${irishCandKey}`)}`}
+                              </span>
+                            )}
+                            {keepFeatures && (
+                              <span
+                                className="mt-0.5 text-[10px] text-ds-text-muted"
+                                data-testid="pn-discard-keep-feature"
+                              >
+                                {`${t('discard.keepLabel')}: ${keepFeatures
+                                  .map((f) => t(`discard.feature${f.charAt(0).toUpperCase()}${f.slice(1)}`))
+                                  .join('・')}`}
+                              </span>
+                            )}
                           </div>
                         );
                       })
@@ -496,6 +638,20 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                         <AnimatedCardBack key={i} width={cardWidth} />
                       ))}
                 </div>
+                {/* Over-limit feedback: visible (color-blind-safe) + announced to AT.
+                    Keyed on the nonce so a repeated over-limit click re-fires the
+                    announcement and restarts the shake even with identical text. */}
+                {limitAnnounce && (
+                  <div
+                    key={limitNonce}
+                    role="status"
+                    aria-live="polite"
+                    data-testid="pn-discard-limit-announce"
+                    className="text-center text-ds-warning text-xs mb-2 motion-safe:animate-shake"
+                  >
+                    {limitAnnounce}
+                  </div>
+                )}
               </div>
             )}
 

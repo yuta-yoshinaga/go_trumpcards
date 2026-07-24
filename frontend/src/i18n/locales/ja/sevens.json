@@ -8,6 +8,7 @@
   "passUnlimited": "∞",
   "clickPlayable": "出せるカードをクリック",
   "mustPass": "出せるカードがありません — パスしてください",
+  "passRemaining": "パス (残り{{count}}回)",
   "playTitle": "出す: {{design}} {{value}}",
   "rankLabel": "{{rank}}位",
   "placeAriaLabel": "{{suit}} {{value}} に配置",
@@ -68,5 +69,6 @@
     "playExtend": "出せるカードがあります — 範囲を広げましょう",
     "passAvailable": "出せるカードなし — パス",
     "passLimitWarning": "パス残り回数わずか — 慎重に"
-  }
+  },
+  "keyHints": "数字キー: 対応する手札をプレイ"
 }

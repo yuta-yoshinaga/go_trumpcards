@@ -19,6 +19,7 @@ func (pr *AcesUpWebPresenter) Output(g interfaces.AcesUpGame, lastErr error) str
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, g, int(g.GetPhase()))
 	resObj.StockCount = g.GetStockCount()
 	resObj.DiscardCount = g.GetDiscardCount()
+	resObj.DiscardTop = cardToOutput(g.GetDiscardTop())
 	resObj.Columns = acesUpColumns(g)
 
 	if lastErr != nil {

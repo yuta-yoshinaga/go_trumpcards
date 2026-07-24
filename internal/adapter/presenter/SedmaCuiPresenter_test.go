@@ -62,12 +62,22 @@ func TestSedmaCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
-	t.Run("trick end prompt", func(t *testing.T) {
+	t.Run("trick end shows winner and captured points", func(t *testing.T) {
 		m, _ := setupSedmaCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
 		m.On("GetPhase").Return(domain.SedmaPhaseTrickEnd)
+		m.On("GetLeadPlayerIdx").Return(2)
+		// One ace and one ten (10 pts each) plus a plain card (0 pts) → 20 pts,
+		// exercising all three branches of the point-counting loop.
+		m.On("GetCurrentTrick").Return([]*domain.SedmaTrickCard{
+			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
+			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
+			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 8, false)},
+		})
 		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		assert.Contains(t, result, "20")
 	})
 
 	t.Run("round end prompt", func(t *testing.T) {

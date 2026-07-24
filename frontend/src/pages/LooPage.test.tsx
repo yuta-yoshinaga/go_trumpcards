@@ -62,6 +62,18 @@ describe('LooPage', () => {
     });
   });
 
+  it('marks each player Play/Pass with an icon and a status aria-label', async () => {
+    renderWithProviders(<LooPage />); // player 0 playing, player 3 passing
+    const playing = await screen.findByTestId('loo-status-0');
+    expect(playing).toHaveAttribute('role', 'status');
+    expect(playing).toHaveTextContent('●');
+    expect(playing).toHaveAttribute('aria-label', expect.stringContaining('参加'));
+    expect(playing).toHaveAttribute('title'); // risk tooltip
+    const passing = screen.getByTestId('loo-status-3');
+    expect(passing).toHaveTextContent('○');
+    expect(passing).toHaveAttribute('aria-label', expect.stringContaining('降り'));
+  });
+
   it('renders the decide phase with play and pass buttons', async () => {
     mockExec.mockResolvedValue(decidePhaseState);
     renderWithProviders(<LooPage />);
@@ -88,6 +100,23 @@ describe('LooPage', () => {
     mockExec.mockResolvedValue(decidePhaseState);
     fireEvent.click(passBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('decide', { play: false }));
+  });
+
+  it('shows the pot reward and loo risk at the decide phase', async () => {
+    // Default deal pot/potStart = 12 → win up to +12 (+2 per trick), loo penalty -12.
+    mockExec.mockResolvedValue(decidePhaseState);
+    renderWithProviders(<LooPage />);
+    const potRisk = await screen.findByTestId('loo-pot-risk');
+    expect(potRisk).toHaveTextContent('+12');
+    expect(potRisk).toHaveTextContent('+2');
+    expect(potRisk).toHaveTextContent('-12');
+  });
+
+  it('does not show the pot-risk block outside the human decide turn', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<LooPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByTestId('loo-pot-risk')).not.toBeInTheDocument();
   });
 
   it('shows a CPU decide notice on a CPU decide turn', async () => {

@@ -15,6 +15,15 @@ func newDeuceToSevenMockInteractor() *mockUsecase.MockDeuceToSevenInteractor {
 	return new(mockUsecase.MockDeuceToSevenInteractor)
 }
 
+func TestDeuceToSevenCuiController_Hint(t *testing.T) {
+	mi := newDeuceToSevenMockInteractor()
+	mi.On("Hint").Return("hint ok")
+	c := NewDeuceToSevenCuiController(mi)
+	assert.Equal(t, "hint ok", c.Exec("h"))
+	assert.Equal(t, "hint ok", c.Exec("hint"))
+	mi.AssertCalled(t, "Hint")
+}
+
 func TestDeuceToSevenCuiController_Quit(t *testing.T) {
 	c := NewDeuceToSevenCuiController(newDeuceToSevenMockInteractor())
 	assert.Equal(t, "bye.", c.Exec("q"))

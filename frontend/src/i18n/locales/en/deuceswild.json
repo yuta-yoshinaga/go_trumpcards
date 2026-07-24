@@ -24,6 +24,10 @@
     "win": "{{handName}}! You win {{payout}} coins!",
     "lose": "No winning hand."
   },
+  "resultAnnounce": {
+    "win": "Hand: {{handName}}, payout {{payout}} coins",
+    "lose": "No winning hand, bet forfeited"
+  },
   "payoutTable": {
     "title": "Payout Table",
     "hand": "Hand",
@@ -58,5 +62,10 @@
     "drawAll": "No strong holds — draw all"
   },
   "card": "Card {{index}}",
-  "dealGuide": "Select coins and deal to start"
+  "dealGuide": "Select coins and deal to start",
+  "a11y": {
+    "holdOn": "Hold card {{index}}",
+    "holdOff": "Release card {{index}}",
+    "kbdHint": "Press number keys 1-5 to toggle holding each card"
+  }
 }

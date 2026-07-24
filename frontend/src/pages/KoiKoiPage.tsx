@@ -20,12 +20,13 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useKoiKoiGame } from '../hooks/useKoiKoiGame';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { KoiKoiResponse, KoiKoiYaku } from '../types/card';
+import type { Card, KoiKoiResponse, KoiKoiYaku } from '../types/card';
 import { KoiKoiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { KOIKOI_HELP, parseKoiKoiCommand } from '../utils/cli/commands/koikoiCommands';
 import { formatKoiKoiState } from '../utils/cli/formatters/koikoiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { groupCapturedByCategory, KOIKOI_CATEGORY_ORDER, type KoiKoiCategory } from '../utils/koikoiCategory';
 
 /** Koi-Koi (こいこい) tutorial step definitions. */
 const KOIKOI_TUTORIAL_STEPS: TutorialStep[] = [
@@ -39,6 +40,48 @@ const KOIKOI_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
+
+/** Props for {@link CapturedCategories}. */
+interface CapturedCategoriesProps {
+  /** The player's captured hanafuda cards. */
+  captured: Card[];
+  /** Rendered width of each captured card, in pixels. */
+  cardWidth: number;
+  /** Localizes a category key (e.g. `bright`) to its display label. */
+  categoryLabel: (cat: KoiKoiCategory) => string;
+  /** Text shown when the pile is empty. */
+  emptyText: string;
+  /** Prefix for each group's `data-testid` (e.g. `koikoi-cpu`). */
+  testidPrefix: string;
+}
+
+/**
+ * Renders a player's captured cards grouped by yaku category (光 / 種 / 短冊 / カス),
+ * each group headed by its localized label and count. Empty categories are hidden.
+ * The row scrolls horizontally so it stays within narrow mobile widths.
+ */
+function CapturedCategories({ captured, cardWidth, categoryLabel, emptyText, testidPrefix }: CapturedCategoriesProps) {
+  if (captured.length === 0) {
+    return <div className="text-xs text-ds-text-muted min-h-[24px]">{emptyText}</div>;
+  }
+  const groups = groupCapturedByCategory(captured);
+  return (
+    <div className="flex gap-4 overflow-x-auto justify-center px-2 min-h-[24px]">
+      {KOIKOI_CATEGORY_ORDER.filter((cat) => groups[cat].length > 0).map((cat) => (
+        <div key={cat} className="flex flex-col items-center shrink-0" data-testid={`${testidPrefix}-group-${cat}`}>
+          <div className="text-[10px] text-ds-text-muted mb-0.5 whitespace-nowrap">
+            {categoryLabel(cat)} · {groups[cat].length}
+          </div>
+          <div className="flex gap-0.5">
+            {groups[cat].map((c, i) => (
+              <CardImage key={i} card={c} width={cardWidth * 0.42} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 /** Renders the Koi-Koi (こいこい) game page: a 2-player hanafuda capture game with yaku scoring. */
 export const KoiKoiPage = withTutorial(KoiKoiPageContent, 'koikoi', KOIKOI_TUTORIAL_STEPS);
@@ -121,6 +164,9 @@ function KoiKoiPageContent() {
   /** Localizes a yaku key, falling back to the raw key. */
   const yakuName = (key: string): string => t(`yaku.${key}`, { defaultValue: key });
 
+  /** Localizes a captured-card category key (光 / 種 / 短冊 / カス). */
+  const categoryLabel = (cat: KoiKoiCategory): string => t(`category.${cat}`);
+
   /** Renders a compact "name (points)" list of yaku. */
   const yakuList = (yaku: KoiKoiYaku[]): string => yaku.map((y) => `${yakuName(y.key)} (${y.points})`).join('  ·  ');
 
@@ -181,11 +227,13 @@ function KoiKoiPageContent() {
             {cpu && (
               <div className="text-center" data-testid="koikoi-cpu">
                 <div className="text-xs text-ds-text-muted mb-1">{playerLine(t('cpu'), cpu)}</div>
-                <div className="flex gap-0.5 justify-center flex-wrap min-h-[24px]">
-                  {cpu.captured.map((c, i) => (
-                    <CardImage key={i} card={c} width={cardWidth * 0.42} />
-                  ))}
-                </div>
+                <CapturedCategories
+                  captured={cpu.captured}
+                  cardWidth={cardWidth}
+                  categoryLabel={categoryLabel}
+                  emptyText={t('capturedEmpty')}
+                  testidPrefix="koikoi-cpu"
+                />
               </div>
             )}
 
@@ -222,6 +270,19 @@ function KoiKoiPageContent() {
                 </div>
               )}
             </div>
+
+            {/* Human captured, grouped by yaku category */}
+            {human && (
+              <div className="text-center" data-testid="koikoi-human-captured">
+                <CapturedCategories
+                  captured={human.captured}
+                  cardWidth={cardWidth}
+                  categoryLabel={categoryLabel}
+                  emptyText={t('capturedEmpty')}
+                  testidPrefix="koikoi-human"
+                />
+              </div>
+            )}
 
             {/* Human hand */}
             <div className="text-center" data-tutorial="koikoi-hand">

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { type AgnesMoveZone, agnesApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -11,10 +11,12 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -28,9 +30,14 @@ import { gameTheme } from '../styles/gameTheme';
 import type { AgnesResponse } from '../types/card';
 import { AgnesPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { agnesHasLegalMove, agnesNextFoundationMove } from '../utils/agnesMoves';
 import { AGNES_HELP, parseAgnesCommand } from '../utils/cli/commands/agnesCommands';
 import { formatAgnesState } from '../utils/cli/formatters/agnesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isTableauAllFaceUp } from '../utils/solitaireUtils';
+
+/** Upper bound on auto-complete sweep iterations (one per card) to guard against loops. */
+const AGNES_AUTO_MAX_STEPS = 52;
 
 /** Tutorial steps for the Agnes Sorel solitaire game. */
 const AG_TUTORIAL_STEPS: TutorialStep[] = [
@@ -75,7 +82,7 @@ function AgnesPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('agnes');
-  const { state, loading, error, exec: execApi, retry } = useGameApi(agnesApi.exec);
+  const { state, setState, loading, error, exec: execApi, retry } = useGameApi(agnesApi.exec);
   const { cardWidth, cardHeight, isMobile } = useCardDimensions();
   const {
     hint: frontendHint,
@@ -114,6 +121,39 @@ function AgnesPageContent() {
   const handleHint = useCallback(() => execApi('hint'), [execApi]);
   const handleUndo = useCallback(() => execApi('undo'), [execApi]);
 
+  // Auto-complete sweep: drives the existing `move` command to send every
+  // face-up tableau end card to its foundation, re-reading the fresh board after
+  // each move (a move can expose a new foundation-eligible card). Mirrors the
+  // Aces Up / Spiderette sequential-driver pattern (#4193). The ref guard blocks
+  // a second concurrent loop and `isAutoCompleting` gates the page controls.
+  const [isAutoCompleting, setIsAutoCompleting] = useState(false);
+  const autoCompletingRef = useRef(false);
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const handleAutoComplete = useCallback(async () => {
+    if (autoCompletingRef.current) return;
+    autoCompletingRef.current = true;
+    setIsAutoCompleting(true);
+    let col = -1;
+    try {
+      let cur = stateRef.current;
+      for (let step = 0; step < AGNES_AUTO_MAX_STEPS && cur; step++) {
+        col = agnesNextFoundationMove(cur.tableau, cur.foundation, cur.baseRank);
+        if (col < 0) break;
+        const res = await agnesApi.exec('move', { zone: 'tableau', col }, { zone: 'foundation' });
+        setState(res);
+        cur = res;
+      }
+    } catch {
+      // Re-issue the failing move through the shared exec so the network failure
+      // surfaces via the standard error/retry channel.
+      if (col >= 0) await execApi('move', { zone: 'tableau', col }, { zone: 'foundation' });
+    } finally {
+      autoCompletingRef.current = false;
+      setIsAutoCompleting(false);
+    }
+  }, [execApi, setState]);
+
   const handleMoveTableauToFoundation = useCallback(
     (col: number) => execApi('move', { zone: 'tableau', col }, { zone: 'foundation' }),
     [execApi],
@@ -150,7 +190,43 @@ function AgnesPageContent() {
       ? t('phase.gameOver')
       : t('phase.playing');
 
-  if (error) return <ErrorAlert message={error} onRetry={retry} />;
+  // Auto-complete is offered once the stock is exhausted and every tableau card
+  // is face-up — the endgame sweep, mirroring Spiderette's `autoCompleteReady`.
+  const autoCompleteReady = isPlaying && (state?.stockCount ?? 1) === 0 && isTableauAllFaceUp(state?.tableau ?? []);
+  // Stalemate: no deal, no foundation move, and no tableau move remain. Detected
+  // on the frontend from the deterministic move rules (the backend exposes no
+  // stalemate flag), so the UI can prompt an undo / give-up escape.
+  const hasLegalMove = state
+    ? agnesHasLegalMove(state.tableau, state.foundation, state.baseRank, state.stockCount)
+    : true;
+  const isStalemate = isPlaying && !loading && !isAutoCompleting && !hasLegalMove;
+
+  // Keyboard shortcuts for the primary actions, matching other solitaire pages.
+  // Give-up (g) is routed through its confirm dialog since it is irreversible.
+  const canPlayForKbd = isPlaying && !loading;
+  const agnesBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDeal, enabled: canPlayForKbd && (state?.stockCount ?? 0) > 0 },
+      { key: 'h', action: handleHint, enabled: canPlayForKbd },
+      { key: 'a', action: handleAutoComplete, enabled: canPlayForKbd && autoCompleteReady && !isAutoCompleting },
+      { key: 'z', action: handleUndo, enabled: canPlayForKbd && (state?.canUndo ?? false) },
+      { key: 'g', action: confirmGiveUpAction, enabled: canPlayForKbd },
+    ],
+    [
+      handleDeal,
+      handleHint,
+      handleAutoComplete,
+      handleUndo,
+      confirmGiveUpAction,
+      canPlayForKbd,
+      autoCompleteReady,
+      isAutoCompleting,
+      state?.stockCount,
+      state?.canUndo,
+    ],
+  );
+  useActionKeyboardNav({ bindings: agnesBindings, enabled: canPlayForKbd });
+
   if (!state) return null;
 
   return (
@@ -348,6 +424,27 @@ function AgnesPageContent() {
               })}
             </div>
 
+            {isStalemate && (
+              <div
+                className="mt-1 flex flex-wrap items-center gap-2 text-ds-danger text-sm font-medium"
+                role="status"
+                data-testid="ag-stalemate-banner"
+              >
+                <span>{t('stalemate')}</span>
+                {state.canUndo && (
+                  <button
+                    type="button"
+                    className={`${btnOutline} ${focusRingWhite} text-xs motion-safe:animate-pulse`}
+                    onClick={handleUndo}
+                    disabled={loading}
+                    data-testid="ag-stalemate-undo"
+                  >
+                    {t('stalemateUndo')}
+                  </button>
+                )}
+              </div>
+            )}
+
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
@@ -366,6 +463,8 @@ function AgnesPageContent() {
           </div>
 
           <GameFooter className={`${theme.footer} px-4 py-2.5`}>
+            {/* Show transient API errors inline so the board stays visible (issue #3290). */}
+            <ErrorAlert message={error} onRetry={retry} />
             <div className="flex flex-wrap items-center gap-2" data-tutorial="ag-action-buttons">
               {isPlaying && (
                 <>
@@ -373,33 +472,53 @@ function AgnesPageContent() {
                     type="button"
                     className={`${btnPrimary} ${focusRingWhite}`}
                     onClick={handleDeal}
-                    disabled={loading || state.stockCount === 0}
+                    disabled={loading || isAutoCompleting || state.stockCount === 0}
+                    aria-keyshortcuts="d"
                   >
                     {t('deal')}
+                    <KbdBadge label={t('kbd.deal')} />
                   </button>
                   <button
                     type="button"
                     className={`${btnSuccess} ${focusRingWhite}`}
                     onClick={handleHint}
-                    disabled={loading}
+                    disabled={loading || isAutoCompleting}
+                    aria-keyshortcuts="h"
                   >
                     {t('hint')}
+                    <KbdBadge label={t('kbd.hint')} />
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSuccess} ${focusRingWhite}${autoCompleteReady && !loading && !isAutoCompleting ? ' motion-safe:animate-pulse ring-2 ring-ds-success' : ''}`}
+                    onClick={handleAutoComplete}
+                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    aria-keyshortcuts="a"
+                    data-testid="ag-autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+                  >
+                    {t('autoComplete')}
+                    <KbdBadge label={t('kbd.autoComplete')} />
                   </button>
                   <button
                     type="button"
                     className={`${btnOutline} ${focusRingWhite}`}
                     onClick={handleUndo}
-                    disabled={!state.canUndo || loading}
+                    disabled={!state.canUndo || loading || isAutoCompleting}
+                    aria-keyshortcuts="z"
                   >
                     {t('undo')}
+                    <KbdBadge label={t('kbd.undo')} />
                   </button>
                   <button
                     type="button"
                     className={`${btnDanger} ${focusRingWhite}`}
                     onClick={confirmGiveUpAction}
-                    disabled={loading}
+                    disabled={loading || isAutoCompleting}
+                    aria-keyshortcuts="g"
                   >
                     {t('giveup')}
+                    <KbdBadge label={t('kbd.giveup')} />
                   </button>
                 </>
               )}

@@ -115,6 +115,16 @@ func TestWaspInteractorHint(t *testing.T) {
 	assert.Equal(t, "hint_output", si.Hint())
 }
 
+func TestWaspInteractorLegalMoves(t *testing.T) {
+	sg := newMockWaspGame()
+	sp := newMockWaspPresenter()
+	si := NewWaspInteractor(sg, sp)
+
+	sp.On("LegalMovesOutput", sg, 2).Return("legal_output")
+
+	assert.Equal(t, "legal_output", si.LegalMoves(2))
+}
+
 func TestWaspInteractorAutoComplete(t *testing.T) {
 	sg := newMockWaspGame()
 	sp := newMockWaspPresenter()

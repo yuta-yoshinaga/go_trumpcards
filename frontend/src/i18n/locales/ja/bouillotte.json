@@ -20,6 +20,10 @@
   "currentBet": "現在のベット: {{amount}}",
   "roundBet": "賭け: {{amount}}",
   "retourneLabel": "ルトゥルヌ（共有カード）",
+  "retourneNote": {
+    "favori": "ルトゥルヌと合わせてブルラン・ファヴォリ成立！（手札のペア＋共有カードで3枚）",
+    "carre": "手札がブルラン、ルトゥルヌも同ランク（カレ）で最強クラス！"
+  },
   "handLabel": "あなたの手札",
   "playersTitle": "プレイヤー",
   "bettingNotice": "あなたの番です — コール・レイズ（ヴィ）・フォールドを選んでください。",
@@ -34,8 +38,14 @@
     "highcard": "ハイカード"
   },
   "callButton": "コール",
+  "callButtonAmount": "コール（{{amount}}）",
   "raiseButton": "レイズ（ヴィ）",
+  "raiseButtonAmount": "レイズ／ヴィ（{{amount}}）",
   "foldButton": "フォールド（降りる）",
+  "potOdds": {
+    "value": "ポットオッズ: ポット {{pot}} にコール {{call}} — {{percentage}}%（{{ratioPot}}:{{ratioCall}}）",
+    "free": "コール不要 — 追加投資なしで参加できます（チェック）。"
+  },
   "nextRound": "次のラウンド",
   "roundResult": {
     "title": "ラウンド結果",

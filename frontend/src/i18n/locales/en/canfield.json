@@ -23,6 +23,7 @@
   "playing": "Playing",
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
+  "hintAnnouncement": "Hint: move {{card}} to {{dest}}",
   "moveReserveToFoundation": "Reserve → Foundation",
   "moveReserveToTableau": "Reserve → Tableau",
   "moveWasteToFoundation": "Waste → Foundation",
@@ -44,5 +45,6 @@
     "actionButtons": "Action buttons: hint, auto-complete, undo, give up.",
     "resetButton": "Start a new game."
   },
-  "columnActions": "Actions"
+  "columnActionsFor": "Column {{n}} actions",
+  "collapseColumnActions": "Collapse column action buttons"
 }

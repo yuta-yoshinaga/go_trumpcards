@@ -10,6 +10,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KeyboardShortcutsPanel } from '../components/KeyboardShortcutsPanel';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
@@ -31,6 +32,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { WhistResponse } from '../types/card';
 import { WhistPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseWhistCommand, WHIST_HELP } from '../utils/cli/commands/whistCommands';
 import { formatWhistState } from '../utils/cli/formatters/whistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -437,6 +439,7 @@ function WhistPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="wh"
+                highlightIndices={isHumanTurn && hint?.cardIndex !== undefined ? [hint.cardIndex] : undefined}
               />
             )}
 
@@ -444,7 +447,16 @@ function WhistPageContent() {
 
             {hint && (
               <div className="text-ds-warning text-sm mb-2">
-                {`${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                {/* hint.reason is a raw backend identifier; when a new reason is
+                    added, add its key under hintReason in whist.json (ja/en).
+                    Unknown reasons fall back to hintReason.fallback instead of
+                    showing the raw key. */}
+                {(() => {
+                  const reason = t(`hintReason.${hint.reason}`, { defaultValue: t('hintReason.fallback') });
+                  const card = hint.cardIndex !== undefined ? humanPlayer?.cards[hint.cardIndex] : undefined;
+                  const name = card ? cardAlt(card) : '-';
+                  return `${t('hintPlay')}: ${name} [${hint.cardIndex ?? '-'}] (${reason})`;
+                })()}
               </div>
             )}
 
@@ -460,17 +472,30 @@ function WhistPageContent() {
                   className={btnPrimary}
                   onClick={handlePlay}
                   disabled={loading || selectedCardIndices.length !== 1}
+                  aria-keyshortcuts="Enter"
                 >
                   {t('playButton')}
                 </button>
               )}
               {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={handleNextTrick}
+                  disabled={loading}
+                  aria-keyshortcuts="n"
+                >
                   {t('nextTrick')}
                 </button>
               )}
               {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={handleNextRound}
+                  disabled={loading}
+                  aria-keyshortcuts="n"
+                >
                   {t('nextRound')}
                 </button>
               )}
@@ -482,6 +507,18 @@ function WhistPageContent() {
                 dataTutorial="wh-reset-button"
               />
             </div>
+            <KeyboardShortcutsPanel
+              title={t('kbd.title')}
+              data-testid="wh-kbd-shortcuts"
+              shortcuts={[
+                // 1–9 select the first nine cards; 0 selects the tenth (see useCardKeyboardNav).
+                { keys: ['1', '0'], description: t('kbd.selectCard') },
+                { keys: ['Enter'], description: t('kbd.confirm') },
+                { keys: ['Esc'], description: t('kbd.clear') },
+                // Binding is a case-sensitive match on lowercase 'n'.
+                { keys: ['n'], description: t('kbd.advance') },
+              ]}
+            />
           </GameFooter>
         </>
       )}

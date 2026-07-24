@@ -24,5 +24,10 @@
   "dealerWins": "Dealer wins!",
   "playerFolded": "Player folded.",
   "push": "Push!",
-  "totalPayoutLine": "total payout: {{payout}}"
+  "totalPayoutLine": "total payout: {{payout}}",
+  "hintNone": "No hint available.",
+  "hintExchange": "Exchange suggestion: {{cards}} (e <idx...> to swap)",
+  "hintStand": "No exchange needed; stand with s.",
+  "hintPlay": "Recommended: Play (p) — a pair or better, or an Ace/King",
+  "hintFold": "Recommended: Fold (f) — no qualifying hand"
 }

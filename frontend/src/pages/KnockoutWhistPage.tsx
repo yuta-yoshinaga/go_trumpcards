@@ -21,6 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useKnockoutWhistGame } from '../hooks/useKnockoutWhistGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeInfoColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -146,7 +147,12 @@ function KnockoutWhistPageContent() {
   const isTrumpSelect = state.phase === KnockoutWhistPhase.TRUMP_SELECT;
   const isGameEnd = state.phase === KnockoutWhistPhase.GAME_END || state.gameEndFlag;
 
-  const canPlay = isPlayPhase && isHumanTurn && !(state.players[humanIdx]?.eliminated ?? false);
+  // Knockout Whist deals one fewer card each round, bottoming out at 1 (see KnockoutWhist.startRound in the Go domain).
+  const nextHandSize = Math.max(state.handSize - 1, 1);
+  const isHumanEliminated = state.players[humanIdx]?.eliminated ?? false;
+  const canPlay = isPlayPhase && isHumanTurn && !isHumanEliminated;
+  // Show a spectator banner while the human is knocked out but the match continues among the CPUs.
+  const showSpectatorBanner = isHumanEliminated && !isGameEnd;
   const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
 
   const handleManualReset = () => {
@@ -161,7 +167,7 @@ function KnockoutWhistPageContent() {
     return (
       <div
         key={p.id}
-        className={`py-0.5 flex items-center gap-2 ${p.eliminated ? 'opacity-40 line-through' : ''}`}
+        className={`py-0.5 flex items-center gap-2 ${p.eliminated ? 'opacity-70 line-through' : ''}`}
         data-eliminated={p.eliminated ? 'true' : 'false'}
       >
         <span className={p.eliminated ? '' : 'text-ds-text-muted'}>
@@ -170,11 +176,9 @@ function KnockoutWhistPageContent() {
             ? ` — ${t('eliminated')}`
             : ` — ${t('roundTricks', { count: p.roundTricks })} · ${t('dogbones', { count: p.dogbones })}`}
         </span>
-        {isLeader && (
-          <span className="px-1.5 py-0.5 rounded bg-white/20 text-ds-text-primary text-xs">{t('leader')}</span>
-        )}
+        {isLeader && <span className={`px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`}>{t('leader')}</span>}
         {isRoundWinner && (
-          <span className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs">{t('roundWinner')}</span>
+          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('roundWinner')}</span>
         )}
       </div>
     );
@@ -228,6 +232,16 @@ function KnockoutWhistPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {showSpectatorBanner && (
+              <div
+                role="status"
+                data-testid="kw-spectator-banner"
+                className="mb-3 p-2 rounded border border-ds-warning/50 bg-black/30 text-ds-warning text-center text-sm font-medium"
+              >
+                {t('spectatorBanner', { n: state.activeCount })}
+              </div>
+            )}
+
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('handSize', { n: state.handSize })}</span>
@@ -268,6 +282,15 @@ function KnockoutWhistPageContent() {
                         name: playerName(state.roundWinnerIdx, state.players[state.roundWinnerIdx]?.isHuman ?? false),
                       })}
                     </div>
+                    {/* Preview the upcoming round: hand size drops by 1 (min 1) and the round winner chooses trump. */}
+                    {isRoundEnd && !isGameEnd && (
+                      <div data-testid="kw-next-round-preview" className="mt-1 text-ds-text-primary">
+                        {t(nextHandSize === 1 ? 'roundResult.finalRoundPreview' : 'roundResult.nextRoundPreview', {
+                          count: nextHandSize,
+                          name: playerName(state.roundWinnerIdx, state.players[state.roundWinnerIdx]?.isHuman ?? false),
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

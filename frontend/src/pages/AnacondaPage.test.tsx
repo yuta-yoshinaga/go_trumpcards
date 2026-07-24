@@ -1,8 +1,9 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { anacondaApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeAnacondaState } from '../test/stateFactories';
+import type { AnacondaResponse, Card } from '../types/card';
 import { AnacondaPage } from './AnacondaPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -133,5 +134,117 @@ describe('AnacondaPage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<AnacondaPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝利です！')).toBeInTheDocument());
+  });
+
+  it('shows an under-count hint and keeps Pass disabled before enough cards are selected', async () => {
+    renderWithProviders(<AnacondaPage />);
+    await screen.findByRole('button', { name: 'パスする' });
+    const feedback = screen.getByTestId('anaconda-selection-feedback');
+    expect(feedback).toHaveTextContent('あと 3 枚選択してください（0/3）');
+    fireEvent.click(cardButtons()[0]);
+    expect(feedback).toHaveTextContent('あと 2 枚選択してください（1/3）');
+    expect(screen.getByRole('button', { name: 'パスする' })).toBeDisabled();
+  });
+
+  it('shows an exact-count confirmation and enables Pass at the required count', async () => {
+    renderWithProviders(<AnacondaPage />);
+    await screen.findByRole('button', { name: 'パスする' });
+    const cards = cardButtons();
+    for (let i = 0; i < 3; i++) fireEvent.click(cards[i]);
+    expect(screen.getByTestId('anaconda-selection-feedback')).toHaveTextContent('選択完了（3/3）');
+    expect(screen.getByRole('button', { name: 'パスする' })).toBeEnabled();
+  });
+
+  it('shows an over-count hint and keeps Pass disabled when too many cards are selected', async () => {
+    renderWithProviders(<AnacondaPage />);
+    await screen.findByRole('button', { name: 'パスする' });
+    const cards = cardButtons();
+    for (let i = 0; i < 4; i++) fireEvent.click(cards[i]);
+    expect(screen.getByTestId('anaconda-selection-feedback')).toHaveTextContent('1 枚外してください（4/3）');
+    expect(screen.getByRole('button', { name: 'パスする' })).toBeDisabled();
+  });
+
+  it('shows the over/exact feedback against KEEP_SIZE on the set phase', async () => {
+    mockExec.mockResolvedValue(setState);
+    renderWithProviders(<AnacondaPage />);
+    await screen.findByRole('button', { name: 'キープ' });
+    const cards = cardButtons();
+    for (let i = 0; i < 5; i++) fireEvent.click(cards[i]);
+    expect(screen.getByTestId('anaconda-selection-feedback')).toHaveTextContent('選択完了（5/5）');
+    expect(screen.getByRole('button', { name: 'キープ' })).toBeEnabled();
+    fireEvent.click(cards[5]);
+    expect(screen.getByTestId('anaconda-selection-feedback')).toHaveTextContent('1 枚外してください（6/5）');
+    expect(screen.getByRole('button', { name: 'キープ' })).toBeDisabled();
+  });
+
+  const card = (design: Card['design'], value: number): Card => ({ design, value });
+
+  /** A roll-phase state where CPU seat 1 has `revealed` exposed cards. */
+  function rollRevealState(revealed: number): AnacondaResponse {
+    const cpuCards = [
+      card('SPADE', 14),
+      card('HEART', 13),
+      card('CLOVER', 5),
+      card('DIAMOND', 9),
+      card('SPADE', 2),
+    ].slice(0, revealed);
+    const base = makeAnacondaState({
+      phase: 2,
+      rollIndex: revealed,
+      isHumanTurn: true,
+      canRaise: true,
+      currentBet: 10,
+    });
+    return {
+      ...base,
+      players: base.players.map((p) => (p.id === 1 ? { ...p, cards: cpuCards } : p)),
+    };
+  }
+
+  it('renders exposed cards for revealed slots and face-down placeholders for unrevealed ones by rollIndex', async () => {
+    mockExec.mockResolvedValue(rollRevealState(3));
+    renderWithProviders(<AnacondaPage />);
+    await waitFor(() => expect(screen.getByTestId('anaconda-roll-1')).toBeInTheDocument());
+    // 3 revealed slots present, remaining 2 (of KEEP_SIZE=5) are placeholders.
+    expect(screen.getByTestId('anaconda-reveal-1-0')).toBeInTheDocument();
+    expect(screen.getByTestId('anaconda-reveal-1-2')).toBeInTheDocument();
+    expect(screen.queryByTestId('anaconda-reveal-1-3')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('anaconda-reveal-1-4')).not.toBeInTheDocument();
+    expect(screen.getByTestId('anaconda-roll-1').children).toHaveLength(5);
+  });
+
+  it('advances the roll-reveal emphasis one card at a time through the exposed cards', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      mockExec.mockResolvedValue(rollRevealState(3));
+      renderWithProviders(<AnacondaPage />);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      await waitFor(() => expect(screen.getByTestId('anaconda-reveal-1-0')).toBeInTheDocument());
+
+      // Step 1: the first exposed card is emphasized.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(450);
+      });
+      expect(screen.getByTestId('anaconda-reveal-1-0')).toHaveAttribute('data-emphasized', 'true');
+      expect(screen.getByTestId('anaconda-reveal-1-1')).not.toHaveAttribute('data-emphasized');
+
+      // Step 2: the emphasis advances to the second card.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(450);
+      });
+      expect(screen.getByTestId('anaconda-reveal-1-1')).toHaveAttribute('data-emphasized', 'true');
+      expect(screen.getByTestId('anaconda-reveal-1-0')).not.toHaveAttribute('data-emphasized');
+
+      // Step 3: the emphasis lands on the most recently revealed card.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(450);
+      });
+      expect(screen.getByTestId('anaconda-reveal-1-2')).toHaveAttribute('data-emphasized', 'true');
+      expect(screen.getByTestId('anaconda-reveal-1-1')).not.toHaveAttribute('data-emphasized');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

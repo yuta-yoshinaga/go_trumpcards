@@ -3,12 +3,12 @@
     "init": "初期化中",
     "deal": "ディール",
     "bet": "ベット",
-    "draw": "ドロー {{n}}/3",
+    "draw": "ドロー {{n}}/{{max}}",
     "showdown": "ショーダウン",
     "end": "結果"
   },
   "yourHand": "あなたの手札",
-  "drawBadge": "ドロー {{n}}/3",
+  "drawBadge": "ドロー {{n}}/{{max}}",
   "preDrawLabel": "プリドロー",
   "exchangeInstruction": "交換したいカードをクリックして選択し、「交換」または「スタンド」を押してください。",
   "exchangeLabel": "交換",
@@ -42,5 +42,17 @@
     "lose": "あなたの負けです。",
     "folded": "あなたはフォールドしました。",
     "gameOver": "ゲーム終了"
+  },
+  "hand": {
+    "highCard": "ハイカード",
+    "onePair": "ワンペア",
+    "twoPair": "ツーペア",
+    "threeOfAKind": "スリーカード",
+    "straight": "ストレート",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "fourOfAKind": "フォーカード",
+    "straightFlush": "ストレートフラッシュ",
+    "royalFlush": "ロイヤルフラッシュ"
   }
 }

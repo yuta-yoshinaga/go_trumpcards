@@ -3,6 +3,8 @@
 package presenter
 
 import (
+	"sort"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -52,6 +54,7 @@ func (p *MemoryWebPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 			ID:        i,
 			IsHuman:   player.GetIsHuman(),
 			PairCount: player.GetPairCount(),
+			Pairs:     memoryCapturedPairs(player),
 		}
 		resObj.Players = append(resObj.Players, pObj)
 	}
@@ -87,4 +90,24 @@ func (p *MemoryWebPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 // ActionLogOutput 棋譜をJSON出力
 func (p *MemoryWebPresenter) ActionLogOutput(m interfaces.MemoryGame) string {
 	return actionLogOutputJSON(m)
+}
+
+// memoryCapturedPairs はプレイヤーが獲得した各ペアの代表カード（各ペアの1枚目）を
+// ランク昇順で返す。取得ペアのミニカード表示（issue #3028）のためのデータ。
+func memoryCapturedPairs(player *domain.MemoryPlayer) []*controller.WebOutputCard {
+	if player == nil {
+		return make([]*controller.WebOutputCard, 0)
+	}
+	pairs := player.GetPairs()
+	out := make([]*controller.WebOutputCard, 0, len(pairs))
+	for _, pair := range pairs {
+		if pair[0] == nil {
+			continue
+		}
+		out = append(out, cardToOutput(pair[0]))
+	}
+	sort.SliceStable(out, func(a, b int) bool {
+		return out[a].Value < out[b].Value
+	})
+	return out
 }

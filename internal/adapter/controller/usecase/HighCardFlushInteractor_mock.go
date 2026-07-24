@@ -34,6 +34,12 @@ func (m *MockHighCardFlushInteractor) ActionLog() string {
 	return args.String(0)
 }
 
+// Hint モック
+func (m *MockHighCardFlushInteractor) Hint() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 // Snapshot モック
 func (m *MockHighCardFlushInteractor) Snapshot() ([]byte, error) {
 	ret := m.Called()

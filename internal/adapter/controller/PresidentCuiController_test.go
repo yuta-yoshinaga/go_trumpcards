@@ -18,6 +18,7 @@ func TestPresidentCuiController_Exec(t *testing.T) {
 		m := new(mockUsecases.MockPresidentInteractor)
 		m.On("Reset").Return(mockOutput)
 		m.On("Play", mock.Anything).Return(mockOutput)
+		m.On("Hint").Return(mockOutput)
 		m.On("GetConfig").Return(domain.DefaultPresidentConfig())
 		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 		return m
@@ -35,6 +36,14 @@ func TestPresidentCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, c.Exec("r"))
 		m.AssertCalled(t, "GetConfig")
 		m.AssertCalled(t, "ResetWithConfig", mock.Anything)
+	})
+
+	t.Run("hint command", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewPresidentCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("h"))
+		assert.Equal(t, mockOutput, c.Exec("hint"))
+		m.AssertCalled(t, "Hint")
 	})
 
 	t.Run("play command variants", func(t *testing.T) {

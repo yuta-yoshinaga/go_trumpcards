@@ -214,6 +214,24 @@ describe('CegoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('contract', { contract: 'handspiel' }));
   });
 
+  it('shows the contract explainer describing Cego vs Handspiel during contract selection', async () => {
+    mockExec.mockResolvedValue(contractPhaseState);
+    renderWithProviders(<CegoPage />);
+    const panel = await screen.findByTestId('cego-contract-explainer');
+    // Cego side: mentions the blind (盲札) and its count (10 by default).
+    expect(panel).toHaveTextContent(/盲札/);
+    expect(panel).toHaveTextContent(/10枚の場札/);
+    // Handspiel side: plays the dealt hand without the blind.
+    expect(panel).toHaveTextContent(/配られた手札のまま/);
+  });
+
+  it('does not show the contract explainer outside contract selection', async () => {
+    mockExec.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<CegoPage />);
+    await screen.findByRole('button', { name: '2 ♥' });
+    expect(screen.queryByTestId('cego-contract-explainer')).not.toBeInTheDocument();
+  });
+
   it('renders the exchange phase and keeps the keep button disabled until 1 card is chosen', async () => {
     mockExec.mockResolvedValue(exchangePhaseState);
     renderWithProviders(<CegoPage />);
@@ -232,6 +250,35 @@ describe('CegoPage', () => {
     mockExec.mockResolvedValue(exchangePhaseState);
     fireEvent.click(keepBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndices: [1] }));
+  });
+
+  it('shows the exchange guide with step 1 active while no keep card is selected', async () => {
+    mockExec.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<CegoPage />);
+    await screen.findByRole('button', { name: '2 ♥' });
+    const guide = screen.getByTestId('cego-exchange-guide');
+    expect(guide).toBeInTheDocument();
+    // Blind count (10) and lay-down count (10) are surfaced in the steps.
+    expect(guide).toHaveTextContent(/10/);
+    expect(screen.getByTestId('cego-exchange-step-1')).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByTestId('cego-exchange-step-2')).not.toHaveAttribute('aria-current');
+    expect(screen.getByTestId('cego-exchange-status')).toHaveTextContent('あと 1 枚選ぶと交換できます。');
+  });
+
+  it('advances the exchange guide to step 2 once the keep card is selected', async () => {
+    mockExec.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<CegoPage />);
+    const card = await screen.findByRole('button', { name: '3 ♥' });
+    fireEvent.click(card);
+    expect(screen.getByTestId('cego-exchange-step-2')).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByTestId('cego-exchange-step-1')).not.toHaveAttribute('aria-current');
+    expect(screen.getByTestId('cego-exchange-status')).toHaveTextContent('準備完了');
+  });
+
+  it('does not show the exchange guide outside the exchange phase', async () => {
+    renderWithProviders(<CegoPage />);
+    await screen.findByRole('button', { name: 'K ♥' });
+    expect(screen.queryByTestId('cego-exchange-guide')).not.toBeInTheDocument();
   });
 
   it('selecting a card then playing dispatches play', async () => {

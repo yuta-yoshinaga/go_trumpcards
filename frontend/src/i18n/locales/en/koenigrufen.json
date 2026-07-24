@@ -38,6 +38,10 @@
   "partnerBadge": "Partner",
   "calledKing": "Called King: {{suit}}",
   "partnerRevealed": "Partner: {{name}}",
+  "partnerClue": {
+    "unknown": "Whoever holds the {{suit}} King is the declarer's secret partner (still unknown)",
+    "youArePartner": "You hold that King — you are the declarer's secret partner"
+  },
   "bidPass": "Pass",
   "bidRufer": "Rufer",
   "bidPhase": "Auction — declare the Rufer (King-calling) contract, or pass.",
@@ -79,5 +83,6 @@
     "playButton": "Once a card is selected, play it with this button. In the auction you pass or declare the Rufer; in the call phase you pick the King's suit to call; in the talon phase you bury 6 cards.",
     "info": "Königrufen is a 4-player trick-taker on the 54-card tarock deck. Once the auction settles the declarer, calling a King makes whoever holds it the declarer's secret partner (their identity stays hidden until that King is first played). The declarer merges the 6-card talon into hand, buries 6 cards, and partners up against the other two. The declaring team wins the deal by capturing enough card-points. The player with the highest cumulative score after the set number of deals wins.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "callKingHeldReason": "You already hold this suit's King, so it can't be called"
 }

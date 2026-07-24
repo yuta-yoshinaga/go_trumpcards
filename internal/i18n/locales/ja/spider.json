@@ -9,5 +9,7 @@
   "header": "完成スーツ: {{completed}}/{{total}} | 山札: {{stock}}枚 | スコア: {{score}}",
   "columnLabel": "列{{col}}:",
   "gameClearLine": "ゲームクリア！ 手数: {{moves}} スコア: {{score}}",
-  "hintLine": "ヒント: タブロー列{{fromCol}}[{{idx}}] → タブロー列{{toCol}}"
+  "hintLine": "ヒント: タブロー列{{fromCol}}[{{idx}}] → タブロー列{{toCol}}",
+  "difficultyLine": "難易度: {{suits}}スート / 残りディール: {{deals}}回",
+  "dealBlockedEmpty": "空の列があるためディール不可（全列にカードを置いてください）"
 }

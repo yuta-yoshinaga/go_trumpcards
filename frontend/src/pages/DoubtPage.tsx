@@ -135,6 +135,13 @@ function DoubtPageContent() {
   const showClaimInput = selectedCardIndices.length > 0 && isHumanTurn && state?.phase === 0;
 
   const isHumanPlayTurn = isHumanTurn && state?.phase === 0;
+  // The "honest" next value is the last claim + 1, wrapping 13 → 1 (or 1 at the start).
+  const honestValue = state?.lastAction != null ? (state.lastAction.claimedValue % 13) + 1 : 1;
+  // Preset the claim selection to the honest value when the human's play turn begins,
+  // so honest plays don't require hunting for the right button each turn.
+  useEffect(() => {
+    if (isHumanPlayTurn) setClaimedValue(honestValue);
+  }, [isHumanPlayTurn, honestValue, setClaimedValue]);
   const humanPlayer = state?.players.find((p) => p.isHuman);
 
   useCardKeyboardNav({
@@ -314,6 +321,26 @@ function DoubtPageContent() {
                   <div className="bg-black/40 rounded-[10px] py-3 px-4 my-2" data-tutorial="dt-doubt-window">
                     {cpuPlayed ? (
                       <>
+                        {/* Assertive one-shot alert so a screen-reader user is told a
+                            time-limited decision has begun (it auto-skips otherwise).
+                            Uses the fixed window length, not the live countdown, so the
+                            alert text is stable and fires once per window rather than
+                            re-announcing every second. */}
+                        {state.lastAction && (
+                          // Key on the running table count so two consecutive CPU turns
+                          // with an identical claim still remount → re-announce the alert.
+                          <div
+                            key={state.tableCardCount}
+                            className="sr-only"
+                            role="alert"
+                            data-testid="doubt-window-alert"
+                          >
+                            {t('doubtWindowAlert', {
+                              action: actionDesc(state.lastAction, state.players, t),
+                              sec: state.doubtWindowSec,
+                            })}
+                          </div>
+                        )}
                         <div className="text-ds-text-primary font-bold mb-2">{t('doubtQuestion')}</div>
                         {state.lastAction && (
                           <div
@@ -506,9 +533,12 @@ function DoubtPageContent() {
                           className={
                             claimedValue === v
                               ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning ${focusRingAccent}`
-                              : `${btnSecondary} min-w-[44px] ${focusRingAccent}`
+                              : v === honestValue
+                                ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-success ${focusRingAccent}`
+                                : `${btnSecondary} min-w-[44px] ${focusRingAccent}`
                           }
                           aria-pressed={claimedValue === v}
+                          data-testid={v === honestValue ? 'doubt-honest-value' : undefined}
                           onClick={() => setClaimedValue(v)}
                           disabled={loading}
                         >

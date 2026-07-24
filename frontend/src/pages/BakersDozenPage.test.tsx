@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bakersDozenApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -9,6 +10,15 @@ import { BakersDozenPage } from './BakersDozenPage';
 vi.mock('../api/gameApi', () => ({
   bakersDozenApi: { exec: vi.fn() },
   actionLogApi: { bakersdozen: vi.fn() },
+}));
+
+const mockPlaySound = vi.fn();
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: ReactNode }) => children,
+  useSound: () => ({ playSound: mockPlaySound, muted: false, toggleMute: vi.fn() }),
+  // AnimatedCard consumes useOptionalSound; return null so cards stay silent
+  // and only the page's explicit playSound calls are asserted.
+  useOptionalSound: () => null,
 }));
 
 vi.mock('../hooks/useGameHint', () => ({
@@ -72,6 +82,7 @@ const gameOverState: BakersDozenResponse = {
 describe('BakersDozenPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPlaySound.mockReset();
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
 
@@ -142,6 +153,17 @@ describe('BakersDozenPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
+  });
+
+  it('advertises the keyboard shortcuts on the control buttons', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    const giveUp = await screen.findByRole('button', { name: 'ギブアップ' });
+    expect(giveUp).toHaveAttribute('aria-keyshortcuts', 'g');
+    expect(giveUp.querySelector('kbd')?.textContent).toBe('G');
+    // The KbdBadge text is aria-hidden, so the hint button's accessible name stays clean.
+    const hint = screen.getByRole('button', { name: 'ヒント' });
+    expect(hint).toHaveAttribute('aria-keyshortcuts', 'h');
   });
 
   it('hides giveup button when game cleared', async () => {
@@ -260,5 +282,38 @@ describe('BakersDozenPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);
     await waitFor(() => expect(mockExec.mock.calls.some((c) => c[0] === 'reset')).toBe(true));
+  });
+
+  it('plays the cardPlace sound when a move succeeds (moveCount advances)', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    const source = await screen.findByRole('button', { name: '♠ 5' });
+    fireEvent.click(source);
+    mockPlaySound.mockClear();
+    // The move resolves with an advanced moveCount, signalling a server-confirmed move.
+    mockExec.mockResolvedValue({ ...playingState, moveCount: 4 });
+    fireEvent.click(screen.getByRole('button', { name: '♥ 6' }));
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('cardPlace'));
+  });
+
+  it('stays silent (no cardPlace) and buzzes when a move fails', async () => {
+    mockExec.mockResolvedValueOnce(playingState); // initial reset succeeds
+    renderWithProviders(<BakersDozenPage />);
+    const source = await screen.findByRole('button', { name: '♠ 5' });
+    fireEvent.click(source);
+    mockPlaySound.mockClear();
+    mockExec.mockRejectedValue(new Error('illegal move')); // move rejects → moveCount unchanged
+    fireEvent.click(screen.getByRole('button', { name: '♥ 6' }));
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('errorBuzz'));
+    expect(mockPlaySound).not.toHaveBeenCalledWith('cardPlace');
+  });
+
+  it('plays the shuffle sound when starting a new game via reset', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<BakersDozenPage />);
+    const nextBtn = await screen.findByRole('button', { name: '次のゲーム' });
+    mockPlaySound.mockClear();
+    fireEvent.click(nextBtn);
+    expect(mockPlaySound).toHaveBeenCalledWith('shuffle');
   });
 });

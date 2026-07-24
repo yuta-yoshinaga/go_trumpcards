@@ -53,6 +53,10 @@ func (_m *MockBurracoInteractor) GetConfig() domain.BurracoConfig {
 	return _m.Called().Get(0).(domain.BurracoConfig)
 }
 
+func (_m *MockBurracoInteractor) Hint() string {
+	return _m.Called().String(0)
+}
+
 func (_m *MockBurracoInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }

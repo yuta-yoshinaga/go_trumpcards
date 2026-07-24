@@ -39,6 +39,17 @@ func omahaTitleKey(holeCards int, hiLo bool) string {
 func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string {
 	titleKey := omahaTitleKey(o.GetHoleCardCount(), o.GetIsHiLo())
 	return buildCuiOutput(i18n.T(titleKey), func(b *strings.Builder) {
+		// Omaha's defining pitfall: exactly two hole cards must be used. Surface
+		// it every render (the count adapts for Big O's five hole cards).
+		b.WriteString(i18n.Tf("omaha.mandatoryRuleLine",
+			"hole", strconv.Itoa(o.GetHoleCardCount())) + "\n")
+
+		// In Hi-Lo the split's low qualifier (eight-or-better) is easy to miss from
+		// the title alone, so spell it out during play — not just in the result.
+		if o.GetIsHiLo() {
+			b.WriteString(i18n.T("omaha.hiLoRuleLine") + "\n")
+		}
+
 		cfg := o.GetConfig()
 		if cfg.TournamentMode {
 			b.WriteString(i18n.Tf("omaha.tournamentLine",
@@ -110,7 +121,7 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 			b.WriteString("----------\n")
 			b.WriteString(color.Bold(i18n.T("omaha.cpuActionsHeader")) + "\n")
 			for _, action := range cpuActions {
-				b.WriteString(i18n.Tf("omaha.cpuActionLine", "idx", strconv.Itoa(action.PlayerIdx), "action", cuiBettingActionName(action.Action)))
+				b.WriteString(i18n.Tf("omaha.cpuActionLine", "name", cuiPlayerName(o.GetPlayer(action.PlayerIdx), action.PlayerIdx), "action", cuiBettingActionName(action.Action)))
 				if action.Amount > 0 {
 					b.WriteString(i18n.Tf("omaha.cpuActionAmount", "amount", strconv.Itoa(action.Amount)))
 				}

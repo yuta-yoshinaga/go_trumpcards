@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ultiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -70,14 +70,28 @@ const ULTI_PHASE_KEYS: Readonly<Record<number, string>> = {
   [UltiPhase.GAME_END]: 'gameEnd',
 };
 
-/** Contract i18n keys indexed by contract value (0=none, 1=Party, 2=Betli, 3=Durchmarsch). */
-const CONTRACT_KEYS = ['contractNone', 'contractParty', 'contractBetli', 'contractDurchmarsch'] as const;
+/** Contract i18n keys indexed by contract value (0=none, 1=Party, 2=Betli, 3=Durchmarsch, 4=Ulti). */
+const CONTRACT_KEYS = [
+  'contractNone',
+  'contractParty',
+  'contractBetli',
+  'contractDurchmarsch',
+  'contractUlti',
+] as const;
 
 /** Trump-suit i18n keys indexed by suit code (1=♠ 2=♣ 3=♥ 4=♦); index 0 = none. */
 const SUIT_KEYS = ['suitNone', 'suitSpade', 'suitClub', 'suitHeart', 'suitDiamond'] as const;
 
 /** Outcome i18n keys indexed by outcome value (0=none, 1=Win/made, 2=Loss/failed). */
 const OUTCOME_KEYS = ['outcomeNone', 'outcomeWin', 'outcomeLoss'] as const;
+
+/** Format a coin delta with an explicit sign so it reads without relying on color alone (e.g. "+2", "-1"). */
+function signedCoins(delta: number): string {
+  return delta > 0 ? `+${delta}` : `${delta}`;
+}
+
+/** Number of talon cards the declarer must discard in the Discard phase (matches `UltiDiscardSize` in `internal/domain/Ulti.go`). */
+const DISCARD_COUNT = 2;
 
 /** Selectable trump suits with their playing-card symbols (1=♠ 2=♣ 3=♥ 4=♦). */
 const TRUMP_CHOICES = [
@@ -120,6 +134,29 @@ function UltiPageContent() {
   useEffect(() => {
     reset();
   }, []);
+
+  // Per-player coin change at settlement. We remember the pre-settlement balances
+  // (the last snapshot taken outside ROUND_END) so that when the round settles we
+  // can show each player's signed delta — the settlement is otherwise invisible.
+  const prevCoinsRef = useRef<number[] | null>(null);
+  const [coinDeltas, setCoinDeltas] = useState<number[] | null>(null);
+  useEffect(() => {
+    if (!state) return;
+    const coins = state.players.map((p) => p.coins);
+    // The backend skips ROUND_END on the match-deciding round (it settles then
+    // jumps straight to GAME_END), so treat GAME_END as a settlement too or the
+    // final round's deltas would never appear.
+    const isSettlement = state.phase === UltiPhase.ROUND_END || state.phase === UltiPhase.GAME_END || state.gameEndFlag;
+    if (isSettlement) {
+      if (prevCoinsRef.current) {
+        const prev = prevCoinsRef.current;
+        setCoinDeltas(coins.map((c, i) => c - (prev[i] ?? c)));
+      }
+    } else {
+      prevCoinsRef.current = coins;
+      setCoinDeltas(null);
+    }
+  }, [state]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('ulti');
@@ -171,6 +208,12 @@ function UltiPageContent() {
   const declareParty = () => {
     if (selectedTrump === null) return;
     handleBid('party', selectedTrump);
+    setSelectedTrump(null);
+  };
+
+  const declareUlti = () => {
+    if (selectedTrump === null) return;
+    handleBid('ulti', selectedTrump);
     setSelectedTrump(null);
   };
 
@@ -253,11 +296,19 @@ function UltiPageContent() {
               <div data-tutorial="ulti-info">
                 {/* Per-player coin balances with a declarer badge */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  {state.players.map((p) => (
+                  {state.players.map((p, i) => (
                     <div key={p.id} className="py-0.5 flex items-center gap-2">
                       <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>
                         {playerName(p.id, p.isHuman)}: {t('coins', { coins: p.coins })}
                       </span>
+                      {(isRoundEnd || isGameEnd) && coinDeltas && coinDeltas[i] !== 0 && (
+                        <span
+                          className={`text-xs font-semibold ${coinDeltas[i] > 0 ? 'text-ds-success' : 'text-ds-error'}`}
+                          data-testid={`ulti-coin-delta-${p.id}`}
+                        >
+                          {t('coinDelta', { delta: signedCoins(coinDeltas[i]) })}
+                        </span>
+                      )}
                       {p.isDeclarer && (
                         <span className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs">
                           {t('declarerBadge')}
@@ -293,7 +344,12 @@ function UltiPageContent() {
 
                 {/* Round result: the deal outcome (contract made / failed) */}
                 {(isRoundEnd || isGameEnd) && state.outcome > 0 && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    role="status"
+                    aria-live="polite"
+                    data-testid="ulti-round-result"
+                  >
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
                     <div>{t('roundResult.outcome', { outcome: t(OUTCOME_KEYS[state.outcome] ?? 'outcomeNone') })}</div>
                     {state.declarerIdx >= 0 && (
@@ -301,6 +357,15 @@ function UltiPageContent() {
                         {t('roundResult.declarer', {
                           name: playerName(state.declarerIdx, state.declarerIdx === humanIdx),
                         })}
+                      </div>
+                    )}
+                    {(isRoundEnd || isGameEnd) && coinDeltas && humanIdx >= 0 && (
+                      <div
+                        className={
+                          coinDeltas[humanIdx] > 0 ? 'text-ds-success' : coinDeltas[humanIdx] < 0 ? 'text-ds-error' : ''
+                        }
+                      >
+                        {t('roundResult.yourCoins', { delta: signedCoins(coinDeltas[humanIdx] ?? 0) })}
                       </div>
                     )}
                   </div>
@@ -332,7 +397,10 @@ function UltiPageContent() {
             )}
             {canDiscard && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="ulti-discard-prompt">
-                {t('discardPhase')}
+                <div>{t('discardPhase')}</div>
+                <div className="text-ds-text-muted" data-testid="ulti-discard-progress">
+                  {t('discardProgress', { selected: selectedCardIndices.length, required: DISCARD_COUNT })}
+                </div>
               </div>
             )}
             {humanPlayer && (
@@ -386,6 +454,14 @@ function UltiPageContent() {
                     disabled={loading || selectedTrump === null}
                   >
                     {t('bidParty')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={declareUlti}
+                    disabled={loading || selectedTrump === null}
+                  >
+                    {t('bidUlti')}
                   </button>
                   <button type="button" className={btnPrimary} onClick={() => handleBid('betli')} disabled={loading}>
                     {t('bidBetli')}

@@ -19,7 +19,7 @@ import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/but
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, CariocaContractSlot, CariocaResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
-import { evaluateCariocaContractSlot } from '../utils/cariocaUtils';
+import { canLayoffCariocaMeld, describeCariocaSlotShortfall, evaluateCariocaContractSlot } from '../utils/cariocaUtils';
 
 /** Phase identifiers for Carioca. */
 const CA_PHASE = {
@@ -100,6 +100,18 @@ function CariocaPageContent() {
       ? tc('player.you')
       : tc('player.cpu', { id: layoffTargetPlayer.id })
     : null;
+
+  // The single card the human has staged for a layoff (only meaningful once their own
+  // contract is met and exactly one card is selected). Drives the acceptance preview.
+  const layoffCard =
+    humanPlayer?.contractMet === true && selectedCards.length === 1 ? humanPlayer.cards[selectedCards[0]] : undefined;
+
+  // Whether the staged card can actually be laid off onto the currently targeted meld.
+  // `null` = no preview (no card staged); true/false = accepted/rejected.
+  const layoffTargetMeld =
+    layoffTargetPlayer && layoffTarget ? layoffTargetPlayer.melds[layoffTarget.meldIdx] : undefined;
+  const layoffTargetAccepts =
+    layoffTargetMeld && layoffCard ? canLayoffCariocaMeld(layoffTargetMeld.cards, layoffCard) : null;
 
   const toggleCard = useCallback((idx: number) => {
     setSelectedCards((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
@@ -182,7 +194,8 @@ function CariocaPageContent() {
     return state.contractSlots.map((slot, slotIdx) => {
       const cardIdxs = contractSlots[slotIdx] ?? [];
       const cards = cardIdxs.map((i) => humanPlayer.cards[i]).filter(Boolean);
-      return evaluateCariocaContractSlot(slot, cards);
+      // `shortfall` annotates the badge with what the slot still needs (or null when done).
+      return { ev: evaluateCariocaContractSlot(slot, cards), shortfall: describeCariocaSlotShortfall(slot, cards) };
     });
   }, [state, humanPlayer, contractSlots]);
 
@@ -190,7 +203,7 @@ function CariocaPageContent() {
   // intent obvious; the length>0 guard prevents `[].every(...)` from vacuously
   // enabling submit on a contract with zero slots.
   const allSlotsSatisfied =
-    humanPlayer != null && slotEvaluations.length > 0 && slotEvaluations.every((ev) => ev.satisfied);
+    humanPlayer != null && slotEvaluations.length > 0 && slotEvaluations.every((e) => e.ev.satisfied);
 
   if (!state) {
     return (
@@ -233,7 +246,9 @@ function CariocaPageContent() {
       {isPlayPhase && humanPlayer && !humanPlayer.contractMet && state.contractSlots.length > 0 && (
         <section className="px-4 py-2 flex flex-wrap gap-2 text-sm" data-testid="ca-slot-progress">
           {state.contractSlots.map((slot, slotIdx) => {
-            const ev = slotEvaluations[slotIdx] ?? { placed: 0, required: slot.size, satisfied: false, invalid: false };
+            const detail = slotEvaluations[slotIdx];
+            const ev = detail?.ev ?? { placed: 0, required: slot.size, satisfied: false, invalid: false };
+            const shortfall = detail?.shortfall ?? null;
             const color = ev.satisfied
               ? badgeSuccessColors
               : ev.invalid
@@ -242,13 +257,21 @@ function CariocaPageContent() {
                   ? 'bg-black/20 border border-white/30 text-ds-text-muted'
                   : badgeWarningColors;
             return (
-              <span
-                key={`slot-${slotIdx}`}
-                className={`px-2 py-1 rounded ${color}`}
-                data-testid={`ca-slot-progress-${slotIdx}`}
-                data-state={ev.satisfied ? 'satisfied' : ev.invalid ? 'invalid' : ev.placed === 0 ? 'empty' : 'partial'}
-              >
-                {formatSlot(slot, t)} ({ev.placed}/{ev.required}){ev.satisfied ? ' ✓' : ''}
+              <span key={`slot-${slotIdx}`} className="flex flex-col items-start gap-0.5">
+                <span
+                  className={`px-2 py-1 rounded ${color}`}
+                  data-testid={`ca-slot-progress-${slotIdx}`}
+                  data-state={
+                    ev.satisfied ? 'satisfied' : ev.invalid ? 'invalid' : ev.placed === 0 ? 'empty' : 'partial'
+                  }
+                >
+                  {formatSlot(slot, t)} ({ev.placed}/{ev.required}){ev.satisfied ? ' ✓' : ''}
+                </span>
+                {shortfall && (
+                  <span className="text-xs text-ds-text-muted" data-testid={`ca-slot-shortfall-${slotIdx}`}>
+                    {t(`shortfall.${shortfall.code}`, shortfall.count != null ? { n: shortfall.count } : undefined)}
+                  </span>
+                )}
               </span>
             );
           })}
@@ -282,6 +305,17 @@ function CariocaPageContent() {
                   const playerLabel = p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id });
                   // The meld is only a selectable layoff target once both contracts are met.
                   const canLayoff = humanPlayer?.contractMet === true && p.contractMet;
+                  // Preview: does the staged card fit this meld? `null` when no preview applies.
+                  const accepts = canLayoff && layoffCard ? canLayoffCariocaMeld(m.cards, layoffCard) : null;
+                  // The selection highlight (warning) wins; otherwise the acceptance preview
+                  // marks the meld green (accepts) or dims + reds it (rejects).
+                  const previewRing = isLayoffTarget
+                    ? 'ring-2 ring-ds-warning bg-ds-warning/20'
+                    : accepts === true
+                      ? 'ring-2 ring-ds-success'
+                      : accepts === false
+                        ? 'ring-2 ring-ds-error opacity-50'
+                        : '';
                   return (
                     <button
                       type="button"
@@ -294,9 +328,9 @@ function CariocaPageContent() {
                       aria-label={t('meldAria', { player: playerLabel, meld: mi + 1 })}
                       // Only expose the toggle semantics when the meld is actually actionable.
                       aria-pressed={canLayoff ? isLayoffTarget : undefined}
-                      className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${
-                        isLayoffTarget ? 'ring-2 ring-ds-warning bg-ds-warning/20' : ''
-                      }`}
+                      data-testid={`ca-meld-${p.id}-${mi}`}
+                      data-layoff-accepts={accepts === null ? undefined : String(accepts)}
+                      className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${previewRing}`}
                     >
                       {m.cards.map((c, ci) => (
                         <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
@@ -426,6 +460,15 @@ function CariocaPageContent() {
           {layoffTarget && layoffTargetLabel && (
             <span data-testid="ca-layoff-target" className="text-xs text-ds-warning font-medium">
               {t('layoffTargetSummary', { player: layoffTargetLabel, meld: layoffTarget.meldIdx + 1 })}
+              {layoffTargetAccepts !== null && (
+                <span
+                  data-testid="ca-layoff-acceptance"
+                  data-accepts={String(layoffTargetAccepts)}
+                  className={`ml-1 ${layoffTargetAccepts ? 'text-ds-success' : 'text-ds-error'}`}
+                >
+                  {layoffTargetAccepts ? t('layoffAcceptable') : t('layoffNotAcceptable')}
+                </span>
+              )}
             </span>
           )}
         </div>

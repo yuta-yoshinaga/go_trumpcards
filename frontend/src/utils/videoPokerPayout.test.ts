@@ -4,6 +4,7 @@ import {
   videoPokerHandNameToRowKey,
   videoPokerPayoutCell,
   videoPokerPayoutRows,
+  videoPokerRowKey,
 } from './videoPokerPayout';
 
 describe('videoPokerPayoutRows', () => {
@@ -66,5 +67,21 @@ describe('videoPokerHandNameToRowKey', () => {
   it('returns null for non-paying / unknown hands', () => {
     expect(videoPokerHandNameToRowKey('High Card')).toBeNull();
     expect(videoPokerHandNameToRowKey('')).toBeNull();
+  });
+});
+
+describe('videoPokerRowKey', () => {
+  it('prefers the stable handKey over the English handName', () => {
+    // handKey wins even when handName would map elsewhere.
+    expect(videoPokerRowKey('wildRoyalFlush', 'Four of a Kind')).toBe('wildRoyalFlush');
+    expect(videoPokerRowKey('fiveOfAKind', '')).toBe('fiveOfAKind');
+  });
+  it('falls back to the handName reverse-lookup when handKey is absent', () => {
+    expect(videoPokerRowKey(undefined, 'Wild Royal Flush')).toBe('wildRoyalFlush');
+    expect(videoPokerRowKey('', 'Four Deuces')).toBe('fourDeuces');
+  });
+  it('returns null when neither a key nor a known name is present', () => {
+    expect(videoPokerRowKey(undefined, '')).toBeNull();
+    expect(videoPokerRowKey('', 'High Card')).toBeNull();
   });
 });

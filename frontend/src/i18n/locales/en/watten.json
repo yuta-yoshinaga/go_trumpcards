@@ -40,9 +40,31 @@
   "chooseSchlag": "Schlag rank",
   "chooseCritical": "Trump suit",
   "declareButton": "Declare",
+  "trumpRing": "Top trump",
+  "trumpPanel": {
+    "title": "Top-trump preview",
+    "rule": "Once declared, the ranking runs Max (♥K) > Belli (♦K) > Spitz (♦7), then the cards of the Schlag rank, then the remaining critical-suit cards. Below are your hand's top trumps for the current choice.",
+    "summary": "Your top trumps: {{count}}",
+    "none": "Pick a Schlag rank and critical suit to see which of your cards become top trumps. (The permanent trumps always count.)"
+  },
+  "trumpCat": {
+    "max": "Max (♥K)",
+    "belli": "Belli (♦K)",
+    "spitz": "Spitz (♦7)",
+    "schlag": "Schlag",
+    "critical": "Critical suit"
+  },
   "playButton": "Play",
   "raiseButton": "Raise (Watten)",
   "respondPhase": "Stake raised to {{stake}} — hold or fold.",
+  "respondLoss": "Folding concedes {{stake}} points to the opponent team.",
+  "stakeHistory": {
+    "title": "Stake history",
+    "start": "Start {{stake}}",
+    "raise": "{{player}} raise →{{stake}}",
+    "hold": "{{player}} hold ({{stake}})",
+    "fold": "{{player}} fold ({{stake}})"
+  },
   "holdButton": "Hold",
   "foldButton": "Fold",
   "nextRound": "Next deal",

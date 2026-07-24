@@ -31,6 +31,12 @@
   "contract": "Contract: {{contract}}",
   "contractUndecided": "Contract: undecided",
   "declarerLine": "Declarer: {{name}} — {{contract}}",
+  "progress": {
+    "line": "Declarer progress: {{won}} / {{needed}} tricks",
+    "misere": "Declarer progress: {{won}} tricks (Misère, target 0)",
+    "made": "Contract made",
+    "failed": "Contract failed"
+  },
   "bidLabel": "Bid",
   "playButton": "Play",
   "nextTrick": "Next Trick",

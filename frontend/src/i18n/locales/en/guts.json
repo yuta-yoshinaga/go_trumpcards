@@ -37,12 +37,23 @@
   "nextRound": "Next Round",
   "roundResult": {
     "title": "Round Result",
-    "winner": "{{name}} won the pot of {{pot}}."
+    "winner": "{{name}} won the pot of {{pot}}.",
+    "matchPayment": "Match payment: {{name}} pays -{{amount}}"
   },
   "matchWinner": "{{name}} won the match!",
   "hint": {
     "strong_hand": "Strong hand — worth staying in",
     "weak_hand": "Weak hand — better to fold"
+  },
+  "guide": {
+    "handLabel": "Hand",
+    "tierLabel": "Win chance",
+    "tier": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "matchRisk": "If you stay and lose: pay ~pot ({{pot}})"
   },
   "tutorial": {
     "info": "This shows the round number, pot, ante, and each player's chips and status. Guts is a fast pot-vying gambling game where everyone holds 2 cards and simultaneously declares In (stay) or Out (fold).",

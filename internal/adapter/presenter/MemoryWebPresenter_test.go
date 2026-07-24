@@ -269,6 +269,49 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 		assert.Equal(t, "2", result.MessageParams["cpuId"])
 	})
 
+	t.Run("captured pairs are output in rank order", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		mg.ExpectedCalls = nil
+		mg.On("GetPlayerCnt").Return(4)
+		mg.On("GetGameEndFlag").Return(false)
+		mg.On("GetPhase").Return(domain.MemoryPhaseFlip1)
+		mg.On("GetCurrentPlayerIdx").Return(0)
+		mg.On("GetFirstFlipPos").Return(-1)
+		mg.On("GetSecondFlipPos").Return(-1)
+		mg.On("GetLastMatchResult").Return(false)
+		mg.On("GetWinnerIdx").Return(-1)
+		mg.On("GetTurnNumber").Return(0)
+		mg.On("GetConfig").Return(domain.DefaultMemoryConfig())
+
+		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		for i := 0; i < domain.MemoryBoardSize; i++ {
+			board[i] = &domain.MemoryBoardCard{
+				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
+				FaceUp: false,
+				Taken:  false,
+			}
+		}
+		mg.On("GetBoard").Return(board)
+
+		human := domain.NewMemoryPlayer(true)
+		// Add pairs out of rank order to verify presenter sorts them.
+		human.AddPair(domain.NewCard(domain.CardDesignSpade, 7, false), domain.NewCard(domain.CardDesignHeart, 7, false))
+		human.AddPair(domain.NewCard(domain.CardDesignClover, 3, false), domain.NewCard(domain.CardDesignDiamond, 3, false))
+		mg.On("GetPlayer", 0).Return(human)
+		for i := 1; i < 4; i++ {
+			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(false))
+		}
+
+		p := new(MemoryWebPresenter)
+		result := parseMemoryOutput(t, p.Output(mg, nil))
+		assert.Len(t, result.Players[0].Pairs, 2)
+		// Rank-ascending: 3 before 7.
+		assert.Equal(t, 3, result.Players[0].Pairs[0].Value)
+		assert.Equal(t, 7, result.Players[0].Pairs[1].Value)
+		// Players with no captures expose an empty (non-nil) slice.
+		assert.Empty(t, result.Players[1].Pairs)
+	})
+
 	t.Run("error message", func(t *testing.T) {
 		mg := newMockMemoryGame()
 		setupMemoryWebMockDefaults(mg)

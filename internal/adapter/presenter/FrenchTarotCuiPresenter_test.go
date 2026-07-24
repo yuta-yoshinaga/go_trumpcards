@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func frenchTarotCuiGame() *domain.FrenchTarot {
@@ -31,6 +32,8 @@ func TestFrenchTarotCuiPresenter_Output(t *testing.T) {
 		result := p.Output(g, nil)
 		assert.Contains(t, result, "フレンチタロット") // helpTitle
 		assert.NotEmpty(t, result)
+		// The contract-multiplier legend guides the CLI bidder.
+		assert.Contains(t, result, i18n.T("frenchtarot.promptBidLegend"))
 	})
 
 	t.Run("chien phase", func(t *testing.T) {

@@ -26,6 +26,8 @@
   "playButton": "Play",
   "captureButton": "Capture",
   "trailButton": "Trail",
+  "tablaButton": "Tabla Capture!",
+  "tablaReady": "Tabla!",
   "newGame": "New Game",
   "result": {
     "title": "Final Scores",
@@ -45,5 +47,8 @@
     "playButton": "Play the selected card. If you selected table cards, they are captured; otherwise the card trails.",
     "info": "Tablanet (Tablić) is a 4-player (you + 3 CPU) fishing game on a 52-card deck. You are dealt four cards with four on the table; fresh hands are dealt until the stock is exhausted. Score the most cards, the 10♦, the 2♣, each Ace, each Jack, and every Tabla sweep. Highest total wins.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "captureAnnounce": "{{player}} captured cards",
+  "tablaAnnounce": "{{player}} scored a tabla (cleared the table)",
+  "listSeparator": ", "
 }

@@ -14,8 +14,10 @@
   "selectToPlay": "Click cards to select",
   "tableCards": "Table",
   "tableEmpty": "(empty)",
+  "lastPlayedBy": "(played by {{name}})",
   "playButton": "Play Selected",
   "passButton": "Pass",
+  "clearSelectionButton": "Clear selection",
   "discardButton": "Discard",
   "sevenPassBanner": "[7-Pass] Give 1 card to {{target}}",
   "tenDiscardBanner": "[10-Discard] Select 1 card to discard",
@@ -48,7 +50,8 @@
   "sort": {
     "strength": "By Strength",
     "suit": "By Suit",
-    "number": "By Number"
+    "number": "By Number",
+    "label": "Sort hand"
   },
   "phase": {
     "play": "Play",

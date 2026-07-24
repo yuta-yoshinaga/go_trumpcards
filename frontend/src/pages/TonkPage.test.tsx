@@ -87,6 +87,12 @@ describe('TonkPage', () => {
     expect(knock.className).toContain('ring-ds-warning');
     expect(knock.className).toContain('motion-safe:animate-pulse');
     expect(knock.textContent).toContain('⚠️');
+    // A visible, screen-reader-announced warning accompanies the button (not just the hover title).
+    const warning = screen.getByTestId('tonk-undercut-warning');
+    expect(warning).toHaveAttribute('role', 'status');
+    const title = knock.getAttribute('title');
+    expect(title).toBeTruthy();
+    expect(warning.textContent).toContain(title as string);
   });
 
   const meldHandState = () =>
@@ -164,6 +170,30 @@ describe('TonkPage', () => {
     expect(screen.getByTestId('tonk-hand-2')).not.toHaveAttribute('data-meld');
   });
 
+  const drawPhaseState = () => makeState({ phase: TonkPhase.DRAW });
+
+  it('draws from the discard pile when its top card is clicked on the human draw turn', async () => {
+    mockExec.mockResolvedValue(drawPhaseState());
+    renderWithProviders(<TonkPage />);
+    const pile = await screen.findByTestId('tonk-discard-pile');
+    expect(pile).not.toBeDisabled();
+    expect(pile.className).toContain('ring-ds-info');
+    mockExec.mockClear();
+    fireEvent.click(pile);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard'));
+  });
+
+  it('does not draw from the discard pile when it is not the draw phase', async () => {
+    // Default makeState() is the DISCARD phase → the pile is inert/disabled.
+    renderWithProviders(<TonkPage />);
+    const pile = await screen.findByTestId('tonk-discard-pile');
+    expect(pile).toBeDisabled();
+    expect(pile.className).not.toContain('ring-ds-info');
+    mockExec.mockClear();
+    fireEvent.click(pile);
+    expect(mockExec).not.toHaveBeenCalledWith('drawdiscard');
+  });
+
   it('clears the warning when opponents drop back above the threshold', async () => {
     // First render: opponent at 2 → warning on.
     mockExec.mockResolvedValueOnce(
@@ -193,5 +223,6 @@ describe('TonkPage', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /ノック/ })).not.toHaveAttribute('data-undercut-risk'),
     );
+    expect(screen.queryByTestId('tonk-undercut-warning')).not.toBeInTheDocument();
   });
 });

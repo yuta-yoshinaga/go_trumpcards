@@ -21,5 +21,7 @@
   "hintReasonLeadHigh": "Lead with a strong card to take control",
   "hintReasonFollowWin": "Play a winning card to take the trick",
   "hintReasonDiscardLow": "Can't win — discard a low card",
-  "result.chips": "Deal over! Chips: {{chips}}"
+  "result.chips": "Deal over! Chips: {{chips}}",
+  "looedList": "Looed (penalised): {{names}}",
+  "chipDeltaLine": "  {{name}}: {{delta}}"
 }

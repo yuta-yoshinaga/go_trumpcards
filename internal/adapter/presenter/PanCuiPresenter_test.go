@@ -62,12 +62,16 @@ func TestPanCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "捨て札")
 	})
 
-	t.Run("play phase prompts", func(t *testing.T) {
+	t.Run("play phase prompts include command examples and a meld note", func(t *testing.T) {
 		m, _ := setupPanCuiMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.PanPhasePlay)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "プレイフェーズ")
+		assert.Contains(t, result, "例: m 0 1 2")  // meld command format example
+		assert.Contains(t, result, "例: lo 1 0 3") // layoff command format example
+		assert.Contains(t, result, "valle")       // legal-meld / chip note
+		assert.Contains(t, result, "最低3枚")        // min meld size note
 	})
 
 	t.Run("round end shows prompt", func(t *testing.T) {

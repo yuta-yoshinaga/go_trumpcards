@@ -16,6 +16,7 @@
   "promptElderDecide": "propose... propose exchange / stand... play it out",
   "promptDealerRespond": "accept... accept the proposal / refuse... refuse the proposal",
   "promptDiscard": "discard <idx...>... choose cards to exchange",
+  "promptDiscardLimit": "You may discard up to {{max}} card(s) (stock: {{stock}})",
   "promptPlay": "play <idx>... play a card",
   "promptRoundEnd": "Deal complete",
   "promptRoundEndHelp": "next... go to the next deal",

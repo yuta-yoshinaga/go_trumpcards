@@ -34,6 +34,8 @@ import { playerName } from '../utils/playerUtils';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
+/** Suit id → `suitName.*` i18n key (1=♠ .. 4=♦). */
+const SUIT_KEYS = ['', 'spade', 'club', 'heart', 'diamond'] as const;
 
 /** Tute tutorial step definitions. */
 const TUTE_TUTORIAL_STEPS: TutorialStep[] = [
@@ -229,6 +231,27 @@ function TutePageContent() {
                   </div>
                 </div>
 
+                {/* Declared marriage suits (persistent readout of state.declaredSuits) */}
+                <div
+                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                  data-testid="tute-declared-marriages"
+                >
+                  <div className="mb-1 text-ds-text-primary">{t('declaredMarriages.title')}</div>
+                  {([1, 2, 3, 4] as const).map((suit) => {
+                    const declared = state.declaredSuits[suit] ?? false;
+                    return (
+                      <div key={suit} className="py-0.5">
+                        <span className="mr-1">{SUIT_SYMBOLS[suit]}</span>
+                        {suit === state.trumpSuit && <span className="mr-1 text-ds-warning">★</span>}
+                        <span className={declared ? 'text-ds-text-primary' : ''}>
+                          {declared ? t('declaredMarriages.declared') : t('declaredMarriages.undeclared')}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div className="mt-1 text-xs">{t('declaredMarriages.trumpNote')}</div>
+                </div>
+
                 {/* Players: cards / tricks */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
@@ -343,6 +366,10 @@ function TutePageContent() {
                           className={btnSecondary}
                           onClick={() => handleDeclareMarriage(suit)}
                           disabled={loading}
+                          aria-label={t('marriageAria', {
+                            suit: t(`suitName.${SUIT_KEYS[suit]}`),
+                            points: suit === state.trumpSuit ? 40 : 20,
+                          })}
                         >
                           {t('declareMarriage', { suit: SUIT_SYMBOLS[suit] })}
                         </button>

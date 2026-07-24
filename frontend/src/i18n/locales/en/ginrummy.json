@@ -29,6 +29,8 @@
   "discardButton": "Discard",
   "knockButton": "Knock",
   "deadwoodLabel": "Deadwood: {{score}} pts (knock ≤ {{threshold}})",
+  "meldLegend": "Meld",
+  "deadwoodLegend": "Deadwood",
   "layoffButton": "Lay Off",
   "skipLayoffButton": "Skip",
   "nextRound": "Next Round",
@@ -39,6 +41,20 @@
   "knockerMelds": "Knocker's Melds",
   "knockerDeadwood": "Knocker's Deadwood",
   "gin": "Gin!",
+  "breakdown": {
+    "title": "Score breakdown",
+    "outcome": {
+      "gin": "Gin",
+      "knock": "Knock",
+      "undercut": "Undercut"
+    },
+    "winner": "{{name}} scores {{total}}",
+    "deadwood": "Deadwood — knocker {{knocker}} / opponent {{opponent}}",
+    "opponentDeadwoodPart": "opponent deadwood {{value}}",
+    "differencePart": "deadwood difference {{value}}",
+    "ginBonusPart": "gin bonus {{value}}",
+    "undercutBonusPart": "undercut bonus {{value}}"
+  },
   "result": {
     "humanWin": "You win!",
     "cpuWin": "CPU {{cpuId}} wins!"

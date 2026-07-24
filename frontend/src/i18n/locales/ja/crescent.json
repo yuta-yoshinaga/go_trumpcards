@@ -24,6 +24,7 @@
   "autoCompleteNotReady": "すべての山がファンデーションに移動可能になると有効になります",
   "undo": "戻す",
   "stalemate": "手詰まり",
+  "stalemateAlert": "手詰まりです。アンドゥ {{count}} 回で脱出できます",
   "playing": "8 つのファンデーション (A から昇順 4 + K から降順 4) を同じスートで完成させましょう",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",

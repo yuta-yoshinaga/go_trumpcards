@@ -11,6 +11,8 @@
     "hard": "Hard"
   },
   "drawPile": "山札: {{count}}枚",
+  "stock": "山札",
+  "stockAria": "山札から1枚ドロー（残り{{count}}枚）",
   "discardTop": "捨て札",
   "penalty": "ペナルティ: {{count}}枚 — 7を重ねるか引く",
   "cards": "{{count}}枚",

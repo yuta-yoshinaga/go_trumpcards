@@ -149,7 +149,38 @@ function FortyFivesPageContent() {
   const highestBidder = highestBid > 0 ? state.players[state.bids.indexOf(highestBid)] : undefined;
   const highestBidderName = highestBidder ? playerName(highestBidder.id, highestBidder.isHuman) : '';
 
-  const contractLabel = state.contract === 0 ? t('contractUndecided') : String(state.contract);
+  // Map a bid value to its localized name (e.g. 25 -> "25 (Jink)"), matching the
+  // CUI's fortyFivesBidName; fall back to the raw number for any unknown value.
+  const bidName = (value: number): string => {
+    const bid = BIDS.find((b) => b.value === value);
+    return bid ? t(bid.key) : String(value);
+  };
+  const contractLabel = state.contract === 0 ? t('contractUndecided') : bidName(state.contract);
+
+  // Live round-points readout. Each trick awards 5 points to the winning team and a
+  // round has 5 tricks, so points accrue up to 25. Tricks resolved so far is the total
+  // points awarded divided by 5, and the points still up for grabs follow from that.
+  const POINTS_PER_TRICK = 5;
+  const TOTAL_TRICKS = 5;
+  const roundPointsA = state.roundTeamPoints[0] ?? 0;
+  const roundPointsB = state.roundTeamPoints[1] ?? 0;
+  const tricksResolved = (roundPointsA + roundPointsB) / POINTS_PER_TRICK;
+  const remainingPoints = Math.max(0, (TOTAL_TRICKS - tricksResolved) * POINTS_PER_TRICK);
+
+  // Contract progress for the declaring team (known once bidding resolves). The team makes
+  // the bid when its accrued points reach the contract; it can no longer make it once even
+  // every remaining trick would not close the gap.
+  const declarerTeam = state.declarerIdx >= 0 ? state.declarerIdx % 2 : -1;
+  const declarerPoints = declarerTeam >= 0 ? (state.roundTeamPoints[declarerTeam] ?? 0) : 0;
+  const contractStatus: 'made' | 'failed' | 'needMore' =
+    declarerPoints >= state.contract
+      ? 'made'
+      : declarerPoints + remainingPoints < state.contract
+        ? 'failed'
+        : 'needMore';
+  const contractRemaining = Math.max(0, state.contract - declarerPoints);
+  const contractStatusColor =
+    contractStatus === 'made' ? 'text-ds-success' : contractStatus === 'failed' ? 'text-ds-danger' : 'text-ds-warning';
 
   const handleManualReset = () => {
     hideActionLog();
@@ -269,6 +300,29 @@ function FortyFivesPageContent() {
                   </div>
                 ))}
 
+                {/* Live round points during bidding/play (matches the CUI readout); the
+                    round-result block below takes over once the round ends. */}
+                {!(isRoundEnd || isGameEnd) && (
+                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="ff-live-points">
+                    <div className="mb-1 text-ds-text-primary">{t('livePoints.title')}</div>
+                    <div>{t('roundResult.teamA', { points: roundPointsA })}</div>
+                    <div>{t('roundResult.teamB', { points: roundPointsB })}</div>
+                    {declarerTeam >= 0 && state.contract > 0 && (
+                      <div className="mt-1 text-ds-text-primary" data-testid="ff-contract-progress">
+                        {t('livePoints.contract', {
+                          team: declarerTeam === 0 ? t('team.a') : t('team.b'),
+                          got: declarerPoints,
+                          contract: state.contract,
+                        })}
+                        {' — '}
+                        <span className={contractStatusColor}>
+                          {t(`livePoints.status.${contractStatus}`, { remaining: contractRemaining })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Round result: points per team */}
                 {(isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
@@ -329,7 +383,9 @@ function FortyFivesPageContent() {
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
                   <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="ff-highest-bid">
-                    {highestBid > 0 ? t('bidHighest', { bid: highestBid, player: highestBidderName }) : t('bidNone')}
+                    {highestBid > 0
+                      ? t('bidHighest', { bid: bidName(highestBid), player: highestBidderName })
+                      : t('bidNone')}
                   </span>
                   {BIDS.map((b) => {
                     // Pass (0) is always allowed; a non-pass bid must beat the current highest.

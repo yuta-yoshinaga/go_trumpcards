@@ -37,6 +37,7 @@ const gameEndState = makeHachiHachiState({
 });
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(playState);
 });
@@ -58,6 +59,13 @@ describe('HachiHachiPage', () => {
     await screen.findByTestId('hand-card-0');
     expect(screen.getByTestId('hachihachi-cpu-1')).toBeInTheDocument();
     expect(screen.getByTestId('hachihachi-cpu-2')).toBeInTheDocument();
+  });
+
+  it('explains the three-player 88-baseline settlement in the scoring note', async () => {
+    renderWithProviders(<HachiHachiPage />);
+    await screen.findByTestId('hand-card-0');
+    // The note ties the raw-score terms to the 3-player settlement rule.
+    expect(screen.getByText(/3人で基準88点との差を精算/)).toBeInTheDocument();
   });
 
   it('plays a hand card with a single match immediately', async () => {
@@ -97,6 +105,21 @@ describe('HachiHachiPage', () => {
     expect(screen.getByTestId('hachihachi-score-row-2')).toBeInTheDocument();
   });
 
+  it('conveys the best row and delta signs without relying on colour', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<HachiHachiPage />);
+    await waitFor(() => expect(screen.getByTestId('hachihachi-round-result')).toBeInTheDocument());
+    // The best row carries a crown glyph and an sr-only "top score" label.
+    const bestRow = screen.getByTestId('hachihachi-score-row-0');
+    expect(bestRow).toHaveTextContent('👑');
+    expect(bestRow).toHaveTextContent('最高得点');
+    // Delta signs read meaningfully: +52 → gained, -8 → lost.
+    expect(bestRow).toHaveTextContent('52点獲得');
+    expect(screen.getByTestId('hachihachi-score-row-1')).toHaveTextContent('8点失点');
+    // The table names itself via a caption.
+    expect(screen.getByText('ラウンド精算表（プレイヤー別の素点・役点・差分）')).toBeInTheDocument();
+  });
+
   it('renders the game-end result with a winner banner', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<HachiHachiPage />);
@@ -119,6 +142,21 @@ describe('HachiHachiPage', () => {
     mockExec.mockClear();
     fireEvent.click(card);
     expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('offers the frontend hint toggle, off by default with no tooltip', async () => {
+    renderWithProviders(<HachiHachiPage />);
+    const toggle = await screen.findByLabelText('ヒント表示');
+    expect(toggle).not.toBeChecked();
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  it('shows the hint tooltip when the toggle is enabled and state.hint is set', async () => {
+    localStorage.setItem('hint_enabled_hachihachi', 'true');
+    mockExec.mockResolvedValue(makeHachiHachiState({ hint: { cardIndex: 0, fieldIndex: 0, reason: 'capture' } }));
+    renderWithProviders(<HachiHachiPage />);
+    const tooltip = await screen.findByTestId('hint-tooltip');
+    expect(tooltip).toHaveTextContent('価値の高い場札を捕獲する');
   });
 
   it('ignores a field click that is not a capture candidate', async () => {

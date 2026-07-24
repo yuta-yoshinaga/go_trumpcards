@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fiftyoneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -20,19 +20,21 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
+import { useSound } from '../providers/SoundProvider';
 import { gameTheme } from '../styles/gameTheme';
 import type { FiftyOneResponse } from '../types/card';
 import { FiftyOnePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { fiftyOneBestSuit, fiftyOneSuitScores } from '../utils/fiftyOneSuitScores';
 
 type FiftyOneArgs = Parameters<typeof fiftyoneApi.exec>;
 
 const DIFFICULTY_OPTIONS = [
-  { value: '0', label: 'Easy' },
-  { value: '1', label: 'Normal' },
-  { value: '2', label: 'Hard' },
+  { value: '0', labelKey: 'settings.difficultyEasy' },
+  { value: '1', labelKey: 'settings.difficultyNormal' },
+  { value: '2', labelKey: 'settings.difficultyHard' },
 ];
 
 /** Tutorial steps for the Fifty-one game. */
@@ -71,6 +73,7 @@ function FiftyOnePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('fiftyone');
   const { state, loading, error, exec: execApi, retry } = useGameApi(fiftyoneApi.exec);
+  const { playSound } = useSound();
   const { cardWidth } = useCardDimensions();
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
   const [selectedHandIdx, setSelectedHandIdx] = useState<number | null>(null);
@@ -85,21 +88,33 @@ function FiftyOnePageContent() {
 
   const handleExchange = useCallback(() => {
     if (selectedHandIdx !== null && selectedTableIdx !== null) {
+      playSound('cardPlace');
       execApi('play', { handIdx: selectedHandIdx, tableIdx: selectedTableIdx });
       setSelectedHandIdx(null);
       setSelectedTableIdx(null);
     }
-  }, [execApi, selectedHandIdx, selectedTableIdx]);
+  }, [execApi, playSound, selectedHandIdx, selectedTableIdx]);
 
   const handleExchangeAll = useCallback(() => {
+    playSound('cardPlace');
     execApi('exchangeall');
     setSelectedHandIdx(null);
     setSelectedTableIdx(null);
-  }, [execApi]);
+  }, [execApi, playSound]);
 
-  const handleStop = useCallback(() => execApi('stop'), [execApi]);
+  const handleStop = useCallback(() => {
+    playSound('chipClick');
+    return execApi('stop');
+  }, [execApi, playSound]);
 
   useMountReset(execApi);
+
+  // Buzz once on the error appearance edge so a fast follow-up doesn't swallow it.
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && !prevErrorRef.current) playSound('errorBuzz');
+    prevErrorRef.current = error;
+  }, [error, playSound]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fiftyone');
@@ -174,6 +189,7 @@ function FiftyOnePageContent() {
       gamePath="/fiftyone"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
+      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -215,19 +231,24 @@ function FiftyOnePageContent() {
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="fo-table-cards">
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>
               <div className="flex justify-center gap-2">
-                {state.tableCards.map((c, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => isHumanTurn && setSelectedTableIdx(i === selectedTableIdx ? null : i)}
-                    disabled={!isHumanTurn}
-                    className={`rounded transition-all ${
-                      selectedTableIdx === i ? 'ring-2 ring-ds-warning -translate-y-1' : ''
-                    } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
-                  >
-                    <AnimatedCard card={c} width={cardWidth * 0.9} />
-                  </button>
-                ))}
+                {state.tableCards.map((c, i) => {
+                  const isSelected = selectedTableIdx === i;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => isHumanTurn && setSelectedTableIdx(isSelected ? null : i)}
+                      disabled={!isHumanTurn}
+                      aria-label={cardAlt(c)}
+                      aria-pressed={isHumanTurn ? isSelected : undefined}
+                      className={`rounded transition-all ${
+                        isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
+                      } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
+                    >
+                      <AnimatedCard card={c} width={cardWidth * 0.9} />
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -266,19 +287,24 @@ function FiftyOnePageContent() {
                 })}
               </ul>
               <div className="flex justify-center gap-2">
-                {human.cards.map((c, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => isHumanTurn && setSelectedHandIdx(i === selectedHandIdx ? null : i)}
-                    disabled={!isHumanTurn}
-                    className={`rounded transition-all ${
-                      selectedHandIdx === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
-                    } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
-                  >
-                    <AnimatedCard card={c} width={cardWidth} />
-                  </button>
-                ))}
+                {human.cards.map((c, i) => {
+                  const isSelected = selectedHandIdx === i;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => isHumanTurn && setSelectedHandIdx(isSelected ? null : i)}
+                      disabled={!isHumanTurn}
+                      aria-label={cardAlt(c)}
+                      aria-pressed={isHumanTurn ? isSelected : undefined}
+                      className={`rounded transition-all ${
+                        isSelected ? 'ring-2 ring-ds-info -translate-y-2' : ''
+                      } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
+                    >
+                      <AnimatedCard card={c} width={cardWidth} />
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -302,7 +328,7 @@ function FiftyOnePageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: String(cpuDifficulty),
-                    options: DIFFICULTY_OPTIONS,
+                    options: DIFFICULTY_OPTIONS.map((opt) => ({ value: opt.value, label: t(opt.labelKey) })),
                     onSelect: (v: string) => setCpuDifficulty(Number.parseInt(v, 10)),
                   },
                   {

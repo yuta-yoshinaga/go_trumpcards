@@ -119,6 +119,17 @@ describe('DaifugoPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('marks the active sort button with aria-pressed under an sr-only legend', async () => {
+    // humanTurnState has sortMode 0 (strength).
+    renderWithProviders(<DaifugoPage />);
+    const strength = await screen.findByTestId('df-sort-0');
+    expect(strength).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('df-sort-1')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('df-sort-2')).toHaveAttribute('aria-pressed', 'false');
+    // The three buttons are grouped with an accessible legend.
+    expect(screen.getByRole('group', { name: '手札の並べ替え' })).toBeInTheDocument();
+  });
+
   it('shows phase indicator with プレイ during gameplay', async () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => {
@@ -684,6 +695,20 @@ describe('DaifugoPage', () => {
     // (the card toggle state resets on the second click)
     // We verify no error is thrown and the button is still present
     expect(screen.getByRole('button', { name: '選択して出す' })).toBeInTheDocument();
+  });
+
+  it('clears the whole selection with the deselect button', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+    const clearBtn = screen.getByTestId('daifugo-clear-selection');
+    // Disabled with nothing selected.
+    expect(clearBtn).toBeDisabled();
+    // Select a card → the deselect button activates.
+    fireEvent.click(screen.getByAltText('♠ 3'));
+    expect(clearBtn).not.toBeDisabled();
+    // Clicking it empties the selection (the play button goes back to disabled).
+    fireEvent.click(clearBtn);
+    expect(screen.getByRole('button', { name: '選択して出す' })).toBeDisabled();
   });
 
   it('settings panel renders checkbox labels', async () => {
@@ -1329,5 +1354,21 @@ describe('DaifugoPage', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('shows who played the current table cards', async () => {
+    // cpuTurnState: table has cards, lastPlayPlayerIdx 0 (you).
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByTestId('daifugo-last-player')).toBeInTheDocument());
+    expect(screen.getByTestId('daifugo-last-player')).toHaveTextContent('あなた');
+  });
+
+  it('hides the played-by badge when the table has been flushed', async () => {
+    // humanTurnState: empty table, lastPlayPlayerIdx -1.
+    mockExec.mockResolvedValue(humanTurnState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('（なし）')).toBeInTheDocument());
+    expect(screen.queryByTestId('daifugo-last-player')).not.toBeInTheDocument();
   });
 });

@@ -8,7 +8,16 @@
   "stepCount": "ステップ数",
   "step": "ステップ",
   "autoplay": "オートプレイ",
+  "stopAutoplay": "停止",
+  "undo": "元に戻す",
   "currentCard": "手持ちカード",
+  "settings": {
+    "speed": "演出速度",
+    "speedHelp": "オートプレイ中に1手ごとの着地演出をどれくらいの速さで再生するかを選びます。速いほど一気に配置が進みます。",
+    "speedSlow": "ゆっくり",
+    "speedNormal": "普通",
+    "speedFast": "高速"
+  },
   "center": "中央(K)",
   "playing": "プレイ中",
   "gameClear": "ゲームクリア！ ステップ数: {{stepCount}}",

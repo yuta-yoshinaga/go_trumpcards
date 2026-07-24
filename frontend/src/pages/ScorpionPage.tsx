@@ -464,7 +464,9 @@ function ScorpionPageContent() {
                                     }
                                   }}
                                   disabled={!isPlaying}
-                                  aria-label={tc.card ? cardAlt(tc.card) : ''}
+                                  aria-label={
+                                    tc.card ? `${cardAlt(tc.card)}${isSelected ? ` ${t('cardSelected')}` : ''}` : ''
+                                  }
                                 >
                                   {tc.card && <AnimatedCard card={tc.card} width={sc.cw} />}
                                 </button>
@@ -502,6 +504,19 @@ function ScorpionPageContent() {
             )}
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
+
+            {/* Deal-blocked reason as visible, screen-reader-announced text — the
+                native `title` tooltip alone is invisible on touch devices (#3186). */}
+            {isPlaying && dealBlockedByEmpty && (
+              <div
+                className="text-sm text-ds-warning bg-ds-surface/90 border border-ds-warning rounded px-3 py-1.5 mt-1"
+                role="status"
+                aria-live="polite"
+                data-testid="sc-deal-blocked-reason"
+              >
+                {t('cannotDealEmptyColExists')}
+              </div>
             )}
 
             <ActionLogSection

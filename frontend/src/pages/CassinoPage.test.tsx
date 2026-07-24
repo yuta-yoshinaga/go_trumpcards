@@ -87,6 +87,21 @@ describe('CassinoPage', () => {
     expect(screen.getByTestId('table-card-1')).toBeInTheDocument();
   });
 
+  it('labels table cards with content, take-candidate, and selected state', async () => {
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('table-card-0')).toBeInTheDocument());
+    // Base label = card content only.
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-label', '♠ 2');
+    // Selecting the ♥5 hand card makes the matching ♥5 table card a take candidate.
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    await waitFor(() => expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-label', '♥ 5 テイク候補'));
+    // The non-matching ♠2 keeps its plain label.
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-label', '♠ 2');
+    // Selecting the candidate flips its label to "selected".
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    await waitFor(() => expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-label', '♥ 5 選択中'));
+  });
+
   it('take button is disabled until both hand and table are selected', async () => {
     renderWithProviders(<CassinoPage />);
     await waitFor(() => expect(screen.getByTestId('take-button')).toBeInTheDocument());
@@ -367,6 +382,51 @@ describe('CassinoPage', () => {
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('hand-card-0'));
     expect(screen.queryByTestId('cs-suggest-button')).not.toBeInTheDocument();
+  });
+
+  it('shows the advisory hint tooltip when hints are enabled and no selection-based suggestion is active', async () => {
+    localStorage.setItem('hint_enabled_cassino', 'true');
+    renderWithProviders(<CassinoPage />);
+    // No hand card selected → no concrete suggestion → the single advisory hint shows.
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+    expect(screen.queryByTestId('cs-suggest-button')).not.toBeInTheDocument();
+    localStorage.removeItem('hint_enabled_cassino');
+  });
+
+  it('consolidates guidance to a single source: the suggestion supersedes the advisory hint tooltip', async () => {
+    localStorage.setItem('hint_enabled_cassino', 'true');
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 2,
+            cards: [card('SPADE', 9), card('CLOVER', 2)],
+            capturedCount: 0,
+            sweepCount: 0,
+            totalScore: 0,
+          },
+          { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+        ],
+        tableCards: [card('SPADE', 4), card('HEART', 5)],
+      }),
+    );
+    renderWithProviders(<CassinoPage />);
+    // With hints enabled and nothing selected, the advisory tooltip is the sole hint.
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+
+    // Selecting cards that sum to the played card produces a concrete take suggestion.
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-1'));
+
+    // The actionable suggestion now supersedes the advisory tooltip: exactly one hint shows.
+    await waitFor(() => expect(screen.getByTestId('cs-suggest-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+    localStorage.removeItem('hint_enabled_cassino');
   });
 
   it('renders CLI terminal when CLI mode is enabled via localStorage', async () => {

@@ -159,6 +159,45 @@ func TestThreeCardCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	assert.Contains(t, result, "DEALER")
 	assert.Contains(t, result, "(Qualified)")
 	assert.Contains(t, result, "合計払戻し: 400")
+	// Zero side-bet/bonus payouts omit their breakdown lines (backward compatible).
+	assert.NotContains(t, result, "ペアプラス配当")
+	assert.NotContains(t, result, "アンテボーナス配当")
+}
+
+func TestThreeCardCuiPresenter_Output_EndPhase_PayoutBreakdown(t *testing.T) {
+	p := new(ThreeCardCuiPresenter)
+	m := new(interfaces.MockThreeCardGame)
+	m.On("GetChips").Return(1500).Maybe()
+	m.On("GetPhase").Return(domain.ThreeCardPhaseEnd).Maybe()
+	m.On("GetPlayerHand").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignSpade, 11, false),
+		domain.NewCard(domain.CardDesignSpade, 12, false),
+	}).Maybe()
+	m.On("GetDealerHand").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignDiamond, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 3, false),
+		domain.NewCard(domain.CardDesignClover, 2, false),
+	}).Maybe()
+	m.On("GetGameEndFlag").Return(true).Maybe()
+	m.On("GetAnteBet").Return(100).Maybe()
+	m.On("GetPairPlusBet").Return(100).Maybe()
+	m.On("GetPlayBet").Return(100).Maybe()
+	m.On("GetResult").Return(domain.GameResultWin).Maybe()
+	m.On("GetAntePayout").Return(200).Maybe()
+	m.On("GetPlayPayout").Return(200).Maybe()
+	m.On("GetAnteBonusPayout").Return(500).Maybe()
+	m.On("GetPairPlusPayout").Return(4000).Maybe()
+	m.On("GetTotalPayout").Return(4900).Maybe()
+	m.On("GetDealerQualified").Return(false).Maybe()
+	m.On("GetPlayerHandRank").Return(domain.ThreeCardHandStraightFlush).Maybe()
+	m.On("GetDealerHandRank").Return(domain.ThreeCardHandHighCard).Maybe()
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "アンテボーナス配当: 500")
+	assert.Contains(t, result, "ペアプラス配当: 4000")
+	assert.Contains(t, result, "合計払戻し: 4900")
 }
 
 func TestThreeCardCuiPresenter_Output_EndPhase_Fold(t *testing.T) {

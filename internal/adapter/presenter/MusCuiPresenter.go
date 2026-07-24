@@ -46,6 +46,23 @@ func musActionLabel(action int) string {
 	}
 }
 
+// musResultKindLabel returns the i18n display label for a mus result kind int,
+// so the round-result line shows a name rather than a raw MusResult* constant.
+func musResultKindLabel(kind int) string {
+	switch kind {
+	case domain.MusResultDeferred:
+		return i18n.T("mus.resultDeferred")
+	case domain.MusResultAccepted:
+		return i18n.T("mus.resultAccepted")
+	case domain.MusResultAwarded:
+		return i18n.T("mus.resultAwarded")
+	case domain.MusResultOrdago:
+		return i18n.T("mus.resultOrdago")
+	default:
+		return "?"
+	}
+}
+
 // musPlayerStr returns the display string for a single Mus player.
 func musPlayerStr(g interfaces.MusGame, i int) string {
 	player := g.GetPlayer(i)
@@ -95,7 +112,7 @@ func (p *MusCuiPresenter) Output(g interfaces.MusGame, lastErr error) string {
 				if r.Kind != domain.MusResultPending {
 					b.WriteString(i18n.Tf("mus.resultLine",
 						"round", musPhaseLabel(ri),
-						"kind", strconv.Itoa(r.Kind),
+						"kind", musResultKindLabel(r.Kind),
 						"stake", strconv.Itoa(r.Stake),
 					) + "\n")
 				}

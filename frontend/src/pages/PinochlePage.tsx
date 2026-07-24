@@ -3,6 +3,7 @@ import type { pinochleApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -114,6 +115,10 @@ function PinochlePageContent() {
     handlePlay,
     handleNextTrick,
     handleNextRound,
+    hint,
+    hintError,
+    hintLoading,
+    handleHint,
   } = usePinochleGame();
 
   const { cardWidth } = useCardDimensions();
@@ -148,7 +153,9 @@ function PinochlePageContent() {
 
   useEffect(() => {
     if (state?.highestBid && state.highestBid > 0) {
-      setBidAmount(state.highestBid + 1);
+      // Pinochle bids move in 5s; start at the next multiple of 5 above the
+      // current high (e.g. high 25 → 30) so the steppers land on clean values.
+      setBidAmount(Math.ceil((state.highestBid + 1) / 5) * 5);
     } else {
       setBidAmount(20);
     }
@@ -217,6 +224,10 @@ function PinochlePageContent() {
   const isBidTurn = phase === PinochlePhase.BID && state.players?.[state.bidPlayerIdx]?.isHuman;
   const isTrumpTurn = phase === PinochlePhase.TRUMP && state.players?.[state.currentPlayerIdx]?.isHuman;
   const isPlayTurn = phase === PinochlePhase.PLAY && state.players?.[state.currentPlayerIdx]?.isHuman;
+  // Bids must strictly beat the current highest (or start at 20). Validate on the
+  // client so an empty (NaN) or too-low value can't be submitted for a server error.
+  const minBid = state.highestBid > 0 ? state.highestBid + 1 : 20;
+  const bidInvalid = Number.isNaN(bidAmount) || bidAmount < minBid;
   const isGameEnd = phase === PinochlePhase.GAME_END || state.gameEndFlag;
 
   return (
@@ -311,12 +322,19 @@ function PinochlePageContent() {
               <div className="mb-3 p-2 rounded bg-black/40" data-tutorial="pn-trick-display">
                 <div className="text-ds-text-muted text-sm mb-1">{t('table')}:</div>
                 <div className="flex gap-2 justify-center">
-                  {state.currentTrick.map((tc, i) => (
-                    <div key={i} className="text-center">
-                      <AnimatedCard card={tc.card} width={cardWidth * 0.8} />
-                      <div className="text-xs text-ds-text-muted mt-1">P{tc.playerIdx}</div>
-                    </div>
-                  ))}
+                  {state.currentTrick.map((tc, i) => {
+                    const isHuman = state.players[tc.playerIdx]?.isHuman === true;
+                    return (
+                      <div key={i} className="text-center">
+                        <AnimatedCard card={tc.card} width={cardWidth * 0.8} />
+                        <div
+                          className={`text-xs mt-1 ${isHuman ? 'text-ds-accent font-semibold' : 'text-ds-text-muted'}`}
+                        >
+                          {playerName(tc.playerIdx, isHuman)}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -434,25 +452,96 @@ function PinochlePageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} onRetry={retry} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {/* Server hint result (bid amount / pass / trump suit / play card) */}
+            {hint?.reason && (
+              <div
+                className="text-ds-warning text-sm mb-2 flex items-center gap-2 flex-wrap"
+                data-testid="pn-server-hint"
+              >
+                <span>
+                  {hint.pass
+                    ? t('serverHintPass')
+                    : hint.bidAmount !== undefined
+                      ? t('serverHintBid', { n: hint.bidAmount })
+                      : hint.suit !== undefined
+                        ? t('serverHintTrump', { suit: SUIT_LABELS[hint.suit] ?? '-' })
+                        : hint.cardIndex !== undefined
+                          ? t('serverHintPlay', {
+                              card: humanPlayer?.cards[hint.cardIndex]
+                                ? cardAlt(humanPlayer.cards[hint.cardIndex])
+                                : '-',
+                              idx: hint.cardIndex,
+                            })
+                          : ''}{' '}
+                  ({t(`hintReason.${hint.reason}`)})
+                </span>
+                {isBidTurn && hint.bidAmount !== undefined && (
+                  <button
+                    type="button"
+                    className={btnOutline}
+                    data-testid="pn-hint-apply-bid"
+                    onClick={() => hint.bidAmount !== undefined && setBidAmount(hint.bidAmount)}
+                    disabled={loading}
+                  >
+                    {t('applyBid')}
+                  </button>
+                )}
+              </div>
+            )}
 
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="pn-action-buttons">
+              {/* Server hint */}
+              {(isBidTurn || isTrumpTurn || isPlayTurn) && (
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  data-testid="pn-hint-button"
+                  onClick={handleHint}
+                  disabled={loading || hintLoading}
+                >
+                  {tc('button.hint')}
+                </button>
+              )}
+
               {/* Bid */}
               {isBidTurn && (
                 <>
-                  <input
-                    type="number"
-                    min={state.highestBid > 0 ? state.highestBid + 1 : 20}
+                  <ChipBetInput
+                    id="pinochle-bid"
+                    label={t('bidAmountLabel', { min: minBid })}
                     value={bidAmount}
-                    onChange={(e) => setBidAmount(Number(e.target.value))}
-                    className="border rounded px-2 py-1 w-20 text-sm"
+                    onChange={setBidAmount}
+                    min={minBid}
+                    step={5}
+                    showSteppers
+                    autoClamp={false}
+                    disabled={loading}
+                    invalid={bidInvalid}
+                    describedBy={bidInvalid ? 'pinochle-bid-error' : undefined}
                   />
-                  <button type="button" className={btnPrimary} onClick={() => handleBid(bidAmount)} disabled={loading}>
+                  <button
+                    type="button"
+                    // aria-disabled (not HTML disabled) while invalid so the button stays
+                    // focusable and its state is announced; the click is guarded.
+                    className={`${btnPrimary}${bidInvalid ? ' opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={() => {
+                      if (!bidInvalid) handleBid(bidAmount);
+                    }}
+                    disabled={loading}
+                    aria-disabled={bidInvalid || undefined}
+                  >
                     {t('bid')}
                   </button>
                   <button type="button" className={btnOutline} onClick={handlePass} disabled={loading}>
                     {t('pass')}
                   </button>
+                  {bidInvalid && (
+                    <p id="pinochle-bid-error" role="alert" className="text-ds-error text-xs w-full text-center">
+                      {t('bidTooLow', { min: minBid })}
+                    </p>
+                  )}
                 </>
               )}
 

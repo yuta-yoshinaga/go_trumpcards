@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || solo
 
 package controller
 
@@ -42,6 +42,7 @@ func ultiParseSuit(s string) int {
 //	bid party <s|c|h|d>            → Party 宣言 (切り札スート指定)
 //	bid betli                      → Betli 宣言
 //	bid durchmarsch                → Durchmarsch 宣言
+//	bid ulti <s|c|h|d>             → Ulti 宣言 (切り札の 7 で最終トリック勝ち)
 //	discard <i> <j>                → タロン受け取り後に 2 枚を捨てる
 //	<n> / play <n>                 → カードをプレイ (プレイフェーズ)
 //	n / next                       → 次のトリックへ
@@ -93,18 +94,20 @@ func (c *UltiCuiController) execBid(args []string) (string, bool) {
 	}
 	switch args[0] {
 	case "party", "p":
-		return c.bidParty(args), true
+		return c.bidWithTrump(domain.UltiContractParty, args), true
 	case "betli", "b":
 		return c.di.Bid(domain.UltiContractBetli, -1), true
 	case "durchmarsch", "d":
 		return c.di.Bid(domain.UltiContractDurchmarsch, -1), true
+	case "ulti", "u":
+		return c.bidWithTrump(domain.UltiContractUlti, args), true
 	default:
-		return "Invalid bid action: " + args[0] + ". Please enter party <suit>, betli, or durchmarsch.", true
+		return "Invalid bid action: " + args[0] + ". Please enter party <suit>, betli, durchmarsch, or ulti <suit>.", true
 	}
 }
 
-// bidParty party の切り札スート引数を解釈して宣言する。
-func (c *UltiCuiController) bidParty(args []string) string {
+// bidWithTrump 切り札スート引数を解釈して切り札コントラクト (Party / Ulti) を宣言する。
+func (c *UltiCuiController) bidWithTrump(contract domain.UltiContract, args []string) string {
 	if len(args) < 2 {
 		return "Trump suit is required (s=spade, c=club, h=heart, d=diamond)."
 	}
@@ -112,7 +115,7 @@ func (c *UltiCuiController) bidParty(args []string) string {
 	if suit < 0 {
 		return "Invalid trump suit: " + args[1] + ". Please enter s, c, h, or d."
 	}
-	return c.di.Bid(domain.UltiContractParty, suit)
+	return c.di.Bid(contract, suit)
 }
 
 // execDiscard discard サブコマンドを解釈する (2 枚のインデックス)。

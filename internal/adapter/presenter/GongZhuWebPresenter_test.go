@@ -71,6 +71,40 @@ func TestGongZhuWebPresenter_Output(t *testing.T) {
 		assert.Len(t, resObj.Players[1].Cards, 0)
 	})
 
+	t.Run("captured point cards populated and filtered", func(t *testing.T) {
+		m, players := setupGongZhuWebMockWithPlayers()
+		// Player 0 captures a trick with the pig (♠Q), two hearts, and a non-point card.
+		players[0].AddTrick([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 12, false), // ♠Q pig -> point
+			domain.NewCard(domain.CardDesignHeart, 5, false),  // heart -> point
+			domain.NewCard(domain.CardDesignHeart, 13, false), // heart -> point
+			domain.NewCard(domain.CardDesignClover, 3, false), // non-point -> filtered out
+		})
+		// Player 1 captures the sheep (♦J) and the doubler (♣10).
+		players[1].AddTrick([]*domain.Card{
+			domain.NewCard(domain.CardDesignDiamond, 11, false), // ♦J sheep -> point
+			domain.NewCard(domain.CardDesignClover, 10, false),  // ♣10 doubler -> point
+			domain.NewCard(domain.CardDesignSpade, 3, false),    // non-point -> filtered out
+		})
+
+		result := p.Output(m, nil)
+		var resObj controller.GongZhuWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+
+		assert.Len(t, resObj.Players[0].CapturedPointCards, 3)
+		assert.Len(t, resObj.Players[1].CapturedPointCards, 2)
+		// Players who have taken no tricks report an empty (non-nil) slice.
+		assert.NotNil(t, resObj.Players[2].CapturedPointCards)
+		assert.Len(t, resObj.Players[2].CapturedPointCards, 0)
+
+		// Player 0's point cards are exactly the pig and two hearts (clover 3 dropped).
+		got := resObj.Players[0].CapturedPointCards
+		assert.Equal(t, "SPADE", got[0].Design)
+		assert.Equal(t, 12, got[0].Value)
+		assert.Equal(t, "HEART", got[1].Design)
+		assert.Equal(t, "HEART", got[2].Design)
+	})
+
 	t.Run("exposure flags & exposable indices", func(t *testing.T) {
 		m, _ := setupGongZhuWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetExposure")

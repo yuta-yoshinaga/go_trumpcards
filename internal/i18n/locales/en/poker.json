@@ -35,5 +35,13 @@
   "wonAmount": " → won {{total}} chips",
   "gameEnd": "Game over",
   "drawOddsHeader": "[Draw odds]",
-  "drawOddsLine": "  {{name}}: {{prob}}% ({{count}}/{{total}})"
+  "drawOddsLine": "  {{name}}: {{prob}}% ({{count}}/{{total}})",
+  "phaseLine": "Phase: {{phase}}",
+  "phaseInit": "Init",
+  "phaseDeal": "First bet",
+  "phaseExchange": "Card exchange",
+  "phaseSecondBet": "Second bet",
+  "phaseEnd": "End",
+  "promptBet": "Commands: bet <amount> / call / raise <amount> / fold",
+  "promptExchange": "Commands: exchange <card indices> (exchange alone to keep all)"
 }

@@ -29,6 +29,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import i18n from '../i18n';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -41,14 +42,18 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
 /**
- * Render a Call Break int×10 score (e.g. 41) as "X.Y" / "-X.Y" for the UI.
- * Mirrors `FormatCallBreakScore` in the Go backend so the wire integer round-trips
- * to the same display string on both sides.
+ * Render a Call Break int×10 score (e.g. 41) as "X.Y" for the UI, using the
+ * active locale's decimal separator. Mirrors `FormatCallBreakScore` in the Go
+ * backend for ja/en (both use "."), while a locale that formats decimals with a
+ * comma (e.g. "de-DE") renders "X,Y" instead of a hardcoded period. The `locale`
+ * parameter defaults to the active i18n language and is injectable for testing.
  */
-function fmtScore(internal: number): string {
-  const sign = internal < 0 ? '-' : '';
-  const n = Math.abs(internal);
-  return `${sign}${Math.trunc(n / 10)}.${n % 10}`;
+export function fmtScore(internal: number, locale: string = i18n.language): string {
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+    useGrouping: false,
+  }).format(internal / 10);
 }
 
 /** Call Break tutorial step definitions. */
@@ -398,6 +403,22 @@ function CallBreakPageContent() {
             </div>
 
             <div data-tutorial="cb-bags-info">
+              <div
+                className="my-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                role="status"
+                aria-label={t('bagsAria')}
+                data-testid="cb-bags-counter"
+              >
+                <span className="mr-2">{t('bags')}:</span>
+                {state.players.map((p) => {
+                  const bags = p.bid >= 0 ? Math.max(0, p.trickCount - p.bid) : 0;
+                  return (
+                    <span key={p.id} className="mr-3" data-testid={`cb-bags-${p.id.toString()}`}>
+                      {t('bagsValue', { name: playerName(p.id, p.isHuman), n: bags })}
+                    </span>
+                  );
+                })}
+              </div>
               <GameMessageBox
                 message={state.message}
                 messageCode={state.messageCode}
@@ -416,6 +437,9 @@ function CallBreakPageContent() {
           <GameFooter className={`${gameTheme.callbreak.footer} px-4 py-2.5`}>
             {humanPlayer && (
               <>
+                <div className="mb-1 text-ds-text-muted text-xs" role="status" data-testid="cb-spades-break-footer">
+                  {state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}
+                </div>
                 {humanPlayer.bid >= 0 && (
                   <div className="mb-1 text-ds-text-muted text-xs">
                     <div>

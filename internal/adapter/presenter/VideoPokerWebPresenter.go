@@ -26,6 +26,7 @@ func (vpp *VideoPokerWebPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 	resObj.Payout = vp.GetPayout()
 	resObj.HandRank = vp.GetHandRank()
 	resObj.HandName = vp.GetHandName()
+	resObj.HandKey = vp.GetHandKey()
 	resObj.HeldIndices = vp.GetHeldIndices()
 	resObj.VariantName = vp.GetVariantName()
 
@@ -52,4 +53,10 @@ func (vpp *VideoPokerWebPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 // ActionLogOutput 棋譜をJSON出力
 func (vpp *VideoPokerWebPresenter) ActionLogOutput(vp interfaces.VideoPokerGame) string {
 	return actionLogOutputJSON(vp)
+}
+
+// HintOutput はヒントを返す。Web ではクライアント側でヒントを算出するため、
+// 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
+func (vpp *VideoPokerWebPresenter) HintOutput(vp interfaces.VideoPokerGame) string {
+	return vpp.Output(vp, nil)
 }

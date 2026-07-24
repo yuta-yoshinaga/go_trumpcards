@@ -69,6 +69,9 @@ const PRIMERO_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PrimeroPhase.RESULT]: 'result',
 };
 
+/** Primero hand categories ordered strongest-first (mirrors the Go domain ranking). */
+const PRIMERO_HAND_RANKING = ['fluxus', 'supremus', 'primero', 'numerus'] as const;
+
 /** Renders the Primero game page: a Renaissance 4-card pot-vying game. */
 export const PrimeroPage = withTutorial(PrimeroPageContent, 'primero', PRIMERO_TUTORIAL_STEPS);
 
@@ -135,6 +138,10 @@ function PrimeroPageContent() {
 
   const playerBadge = (p: PrimeroResponse['players'][number]): string =>
     p.out ? t('badge.out') : p.isWinner ? t('badge.winner') : p.folded ? t('badge.folded') : t('badge.active');
+
+  /** A colour-independent glyph for each player state (WCAG 1.4.1). */
+  const playerBadgeIcon = (p: PrimeroResponse['players'][number]): string =>
+    p.out ? '—' : p.isWinner ? '👑' : p.folded ? '×' : '●';
 
   const handleManualReset = () => {
     hideActionLog();
@@ -229,16 +236,25 @@ function PrimeroPageContent() {
             {/* Players */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="primero-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className={`text-sm py-0.5 ${p.isWinner ? 'text-ds-success' : 'text-ds-text-muted'} ${p.isHuman ? 'font-semibold' : ''}`}
-                >
-                  {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
-                  {t('roundBet', { amount: p.roundBet })} · [{playerBadge(p)}]
-                  {p.handName ? ` · ${handName(p.handName)}` : ''}
-                </div>
-              ))}
+              <ul className="list-none">
+                {state.players.map((p) => {
+                  const isCurrentTurn = !isGameEnd && state.currentPlayerIdx === p.id;
+                  return (
+                    <li
+                      key={p.id}
+                      data-testid={`primero-player-${p.id}`}
+                      aria-label={t('playerRowLabel', { name: playerLabel(p.id, p.isHuman), status: playerBadge(p) })}
+                      className={`text-sm py-0.5 ${p.isWinner ? 'text-ds-success' : 'text-ds-text-muted'} ${p.isHuman ? 'font-semibold' : ''} ${
+                        isCurrentTurn ? 'border-l-2 border-ds-accent pl-1' : ''
+                      }`}
+                    >
+                      {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
+                      {t('roundBet', { amount: p.roundBet })} · <span aria-hidden="true">{playerBadgeIcon(p)} </span>[
+                      {playerBadge(p)}]{p.handName ? ` · ${handName(p.handName)}` : ''}
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
 
             {/* Revealed hands at result */}
@@ -308,6 +324,51 @@ function PrimeroPageContent() {
                 {t('handLabel')}
               </div>
             )}
+
+            {/* Hand-ranking legend (static reference), highlighting the current hand */}
+            <details className="mb-2 p-2 rounded bg-black/30" data-testid="primero-hand-legend">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                {t('handLegend.title')}
+              </summary>
+              <div className="mt-1 text-ds-text-muted text-xs">
+                <table className="w-full">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="text-left font-normal w-6">
+                        {t('handLegend.rankCol')}
+                      </th>
+                      <th scope="col" className="text-left font-normal">
+                        {t('handLegend.handCol')}
+                      </th>
+                      <th scope="col" className="text-left font-normal">
+                        {t('handLegend.descCol')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {PRIMERO_HAND_RANKING.map((key, i) => {
+                      const isCurrent = humanPlayer?.handName?.toLowerCase() === key;
+                      return (
+                        <tr
+                          key={key}
+                          data-testid={`primero-hand-legend-row-${key}`}
+                          aria-current={isCurrent ? 'true' : undefined}
+                          className={isCurrent ? 'text-ds-accent font-semibold' : ''}
+                        >
+                          <td className="align-top">{i + 1}</td>
+                          <td className="align-top pr-2 whitespace-nowrap">
+                            {t(`hand.${key}`)}
+                            {isCurrent ? <span className="ml-1">{`← ${t('handLegend.current')}`}</span> : null}
+                          </td>
+                          <td className="align-top">{t(`handLegend.${key}`)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <div className="mt-1">{t('handLegend.pointsNote')}</div>
+              </div>
+            </details>
 
             <ErrorAlert message={error} onRetry={retry} />
 

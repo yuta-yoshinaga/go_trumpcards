@@ -12,6 +12,20 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// pineappleTitleKey selects the CUI title for the shared presenter's variant:
+// Irish Poker deals 4 hole cards, Crazy Pineapple discards after flop betting,
+// and plain Pineapple discards before the flop.
+func pineappleTitleKey(dealCount int, discardAfterFlop bool) string {
+	switch {
+	case dealCount >= 4:
+		return "irishpoker.helpTitle"
+	case discardAfterFlop:
+		return "crazypineapple.helpTitle"
+	default:
+		return "pineapple.helpTitle"
+	}
+}
+
 // PineappleCuiPresenter renders the Pineapple Poker CUI view.
 type PineappleCuiPresenter struct{}
 
@@ -22,7 +36,8 @@ func (pp *PineappleCuiPresenter) ActionLogOutput(p interfaces.PineappleGame) str
 
 // Output renders the current game state for the active locale (#1699).
 func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr error) string {
-	return buildCuiOutput(i18n.T("pineapple.helpTitle"), func(b *strings.Builder) {
+	titleKey := pineappleTitleKey(p.GetInitialDealCount(), p.IsDiscardAfterFlopBetting())
+	return buildCuiOutput(i18n.T(titleKey), func(b *strings.Builder) {
 		cfg := p.GetConfig()
 		if cfg.TournamentMode {
 			b.WriteString(i18n.Tf("pineapple.tournamentLine",
@@ -85,7 +100,16 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 			b.WriteString("\n")
 
 			if player.GetIsHuman() && !player.GetFolded() {
-				b.WriteString(i18n.Tf("pineapple.humanHand", "cards", cuiCardListStrEmoji(player)) + "\n")
+				cards := cuiCardListStrEmoji(player)
+				// The discard prompt asks for a card number, so show an indexed
+				// hand until the human has discarded.
+				if p.GetPhase() == domain.PineapplePhaseDiscard {
+					discardDone := p.GetDiscardDone()
+					if i >= len(discardDone) || !discardDone[i] {
+						cards = cuiIndexedCardListStrEmoji(player)
+					}
+				}
+				b.WriteString(i18n.Tf("pineapple.humanHand", "cards", cards) + "\n")
 			}
 		}
 
@@ -107,7 +131,10 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 		if p.GetPhase() == domain.PineapplePhaseDiscard {
 			b.WriteString("----------\n")
 			b.WriteString(i18n.T("pineapple.discardHeader") + "\n")
-			b.WriteString(i18n.T("pineapple.discardPrompt") + "\n")
+			// The number of cards to discard is variant-dependent (Pineapple keeps
+			// 2 of 3, Irish Poker keeps 2 of 4), so derive it from the deal count.
+			discardCount := p.GetInitialDealCount() - 2
+			b.WriteString(i18n.Tf("pineapple.discardPrompt", "count", strconv.Itoa(discardCount)) + "\n")
 		}
 
 		results := p.GetRoundResults()

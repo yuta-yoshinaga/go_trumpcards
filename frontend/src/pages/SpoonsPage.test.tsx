@@ -91,31 +91,134 @@ describe('SpoonsPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('shows round, spoons remaining and draw pile info', async () => {
+  it('shows round and draw pile info', async () => {
     renderWithProviders(<SpoonsPage />);
     await waitFor(() => expect(screen.getByText(/ラウンド 1/)).toBeInTheDocument());
-    expect(screen.getByText(/残りスプーン: 3/)).toBeInTheDocument();
     expect(screen.getByText(/山札: 36/)).toBeInTheDocument();
   });
 
-  it('renders the human hand as pass buttons on the human pass turn', async () => {
+  it('renders one spoon icon per remaining spoon with an accessible count label', async () => {
     renderWithProviders(<SpoonsPage />);
-    await waitFor(() => expect(screen.getAllByRole('button', { name: '渡す' }).length).toBe(4));
+    // 3 spoons remaining → 3 available icons, none grabbed yet.
+    await waitFor(() => expect(screen.getAllByTestId('spoons-icon-available')).toHaveLength(3));
+    expect(screen.queryAllByTestId('spoons-icon-grabbed')).toHaveLength(0);
+    // Screen readers still get the number via the row's aria-label.
+    expect(screen.getByTestId('spoons-icon-row')).toHaveAttribute('aria-label', '残りスプーン: 3');
+  });
+
+  it('shows grabbed spoons grayed out with the grabber name', async () => {
+    // One CPU grabbed a spoon: 2 remaining + 1 grabbed = 3 spoons in play.
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        grabWindowOpen: true,
+        spoonsRemaining: 2,
+        firstGrabberIdx: 1,
+        players: [
+          makePlayer({ name: 'You', isHuman: true }),
+          makePlayer({ hasSpoon: true }),
+          makePlayer(),
+          makePlayer(),
+        ],
+      }),
+    );
+    renderWithProviders(<SpoonsPage />);
+    await waitFor(() => expect(screen.getAllByTestId('spoons-icon-available')).toHaveLength(2));
+    const grabbed = screen.getAllByTestId('spoons-icon-grabbed');
+    expect(grabbed).toHaveLength(1);
+    expect(grabbed[0]).toHaveTextContent('CPU 1 が取得');
+  });
+
+  it('renders the human hand as pass buttons naming each card', async () => {
+    renderWithProviders(<SpoonsPage />);
+    // Each pass button names the card it would hand over (e.g. ♠A → "♠ A を渡す").
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /を渡す$/ }).length).toBe(4));
+    expect(screen.getByRole('button', { name: '♠ A を渡す' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 3 を渡す' })).toBeInTheDocument();
   });
 
   it('dispatches pass with the clicked card index', async () => {
     renderWithProviders(<SpoonsPage />);
-    const buttons = await screen.findAllByRole('button', { name: '渡す' });
+    const clover = await screen.findByRole('button', { name: '♣ 3 を渡す' }); // hand index 2
     mockExec.mockClear();
-    fireEvent.click(buttons[2]);
+    fireEvent.click(clover);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass', { cardIndex: 2 }));
+  });
+
+  it('color-codes same-rank hand cards into groups and leaves singletons neutral', async () => {
+    // Hand: 7♠ 7♥ 3♣ K♦ — the two 7s share a group color; 3 and K are neutral.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({
+            name: 'You',
+            isHuman: true,
+            hand: [
+              { design: 'SPADE', value: 7 },
+              { design: 'HEART', value: 7 },
+              { design: 'CLOVER', value: 3 },
+              { design: 'DIAMOND', value: 13 },
+            ],
+          }),
+          makePlayer(),
+          makePlayer(),
+          makePlayer(),
+        ],
+      }),
+    );
+    renderWithProviders(<SpoonsPage />);
+    const c0 = await screen.findByTestId('spoons-pass-0');
+    const c1 = screen.getByTestId('spoons-pass-1');
+    const c2 = screen.getByTestId('spoons-pass-2');
+    const c3 = screen.getByTestId('spoons-pass-3');
+    // The pair shares a non-"none" group color.
+    expect(c0).toHaveAttribute('data-rank-group', c1.getAttribute('data-rank-group') ?? '');
+    expect(c0.getAttribute('data-rank-group')).not.toBe('none');
+    // Singletons carry no group color and are not reach.
+    expect(c2).toHaveAttribute('data-rank-group', 'none');
+    expect(c3).toHaveAttribute('data-rank-group', 'none');
+    expect(c0).toHaveAttribute('data-rank-reach', 'false');
+  });
+
+  it('flags a three-of-a-kind hand as a reach', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({
+            name: 'You',
+            isHuman: true,
+            hand: [
+              { design: 'SPADE', value: 8 },
+              { design: 'HEART', value: 8 },
+              { design: 'CLOVER', value: 8 },
+              { design: 'DIAMOND', value: 2 },
+            ],
+          }),
+          makePlayer(),
+          makePlayer(),
+          makePlayer(),
+        ],
+      }),
+    );
+    renderWithProviders(<SpoonsPage />);
+    const c0 = await screen.findByTestId('spoons-pass-0');
+    expect(c0).toHaveAttribute('data-rank-reach', 'true');
+    expect(c0.getAttribute('data-rank-group')).not.toBe('none');
+    expect(screen.getByTestId('spoons-pass-3')).toHaveAttribute('data-rank-reach', 'false');
   });
 
   it('does not render pass buttons when it is not the human turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1, isHumanTurn: false }));
     renderWithProviders(<SpoonsPage />);
     await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: '渡す' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /を渡す$/ })).not.toBeInTheDocument();
+  });
+
+  it('announces the grab window opening via role=alert', async () => {
+    mockExec.mockResolvedValue(grabState);
+    renderWithProviders(<SpoonsPage />);
+    const notice = await screen.findByTestId('spoons-grab-notice');
+    expect(notice).toHaveAttribute('role', 'alert');
   });
 
   it('shows the grab button when the grab window is open and dispatches grab', async () => {
@@ -137,7 +240,7 @@ describe('SpoonsPage', () => {
   it('chimes once when the grab window opens (false→true)', async () => {
     // Mount in the pass phase (window closed) → no chime yet.
     renderWithProviders(<SpoonsPage />);
-    const buttons = await screen.findAllByRole('button', { name: '渡す' });
+    const buttons = await screen.findAllByRole('button', { name: /を渡す$/ });
     expect(mockPlaySound).not.toHaveBeenCalled();
     // Passing a card opens the grab window in the response → chime fires once.
     mockExec.mockResolvedValueOnce(grabState);
@@ -154,7 +257,7 @@ describe('SpoonsPage', () => {
 
   it('does not re-chime while the grab window stays open across updates', async () => {
     renderWithProviders(<SpoonsPage />);
-    const buttons = await screen.findAllByRole('button', { name: '渡す' });
+    const buttons = await screen.findAllByRole('button', { name: /を渡す$/ });
     mockExec.mockResolvedValueOnce(grabState);
     fireEvent.click(buttons[0]);
     await waitFor(() => expect(mockPlaySound).toHaveBeenCalledTimes(1));

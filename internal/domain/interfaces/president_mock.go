@@ -36,6 +36,15 @@ func (_m *MockPresidentGame) PlayerPlay(indices []int) error {
 	return ret.Error(0)
 }
 
+// SuggestWeakestPlay モック
+func (_m *MockPresidentGame) SuggestWeakestPlay(playerIdx int) []int {
+	ret := _m.Called(playerIdx)
+	if v := ret.Get(0); v != nil {
+		return v.([]int)
+	}
+	return nil
+}
+
 // CpuPlay モック
 func (_m *MockPresidentGame) CpuPlay() {
 	_m.Called()

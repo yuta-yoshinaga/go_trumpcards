@@ -18,6 +18,8 @@ type TrashInteractorIF interface {
 	PlaceWild(pos int) string
 	// CpuStep CPUのターンを1ステップ進める
 	CpuStep() string
+	// Hint ヒント取得
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -52,6 +54,11 @@ func (ti *TrashInteractor) PlaceWild(pos int) string {
 // CpuStep CPUターンを1ステップ進める
 func (ti *TrashInteractor) CpuStep() string {
 	return execAndPresent(ti.Game, ti.tp, ti.Game.CpuStep)
+}
+
+// Hint ヒント取得
+func (ti *TrashInteractor) Hint() string {
+	return ti.tp.HintOutput(ti.Game)
 }
 
 // ActionLog 棋譜を出力する

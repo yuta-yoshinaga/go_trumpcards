@@ -8,6 +8,8 @@
   "pistiCelebration": "PİŞTİ +10!",
   "pistiCelebrationJack": "PİŞTİ +20! (J)",
   "finalScore": "{{score}}点",
+  "provisional": "暫定 {{score}}点",
+  "provisionalNote": "暫定スコアは確定済みの Pişti ボーナスと最多獲得の +3 のみを含みます。A・J・♣2・♦10 のカード点は集計前のため、最終得点はこれより高くなります。",
   "pile": "場",
   "pileTop": "場の一番上",
   "pileCount": "{{count}}枚",
@@ -38,5 +40,7 @@
     "pile": "場の中央です。一番上のカードと場札の枚数が表示されます。",
     "hand": "あなたの手札です。カードをクリックすると場に出せます。同ランクまたはジャックで場札を捕獲できます。",
     "resetButton": "このボタンでいつでもゲームをリセットできます。"
-  }
+  },
+  "playCardAria": "{{card}} を出す",
+  "captureHint": "この山を獲得できます"
 }

@@ -16,10 +16,12 @@ import (
 
 func mustJassOutputJSON(msg string) string {
 	out := &controller.JassWebOutput{
-		Players:       []*controller.JassWebOutputPlayer{},
-		CurrentTrick:  []*controller.JassWebOutputTrickCard{},
-		WinnerTeam:    -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:         []*controller.JassWebOutputPlayer{},
+		CurrentTrick:    []*controller.JassWebOutputTrickCard{},
+		LastTrick:       []*controller.JassWebOutputTrickCard{},
+		LastTrickWinner: -1,
+		WinnerTeam:      -1,
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

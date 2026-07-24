@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { holdemApi } from '../api/gameApi';
+import { type HoldemConfigInput, holdemApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
 import { CpuAccordion } from '../components/CpuAccordion';
@@ -130,6 +130,9 @@ function HoldemPageContent() {
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
+  const [tournamentMode, setTournamentMode] = useState(false);
+  const [rebuyEnabled, setRebuyEnabled] = useState(false);
+  const [addonEnabled, setAddonEnabled] = useState(false);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('holdem', state);
   const turnStartRef = useRef(0);
 
@@ -137,8 +140,14 @@ function HoldemPageContent() {
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
-    void exec('reset', undefined, { cpuMetaAI });
-  }, [exec, hideActionLog, cpuMetaAI]);
+    const config: HoldemConfigInput = { cpuMetaAI };
+    if (tournamentMode) {
+      config.tournamentMode = true;
+      config.rebuyEnabled = rebuyEnabled;
+      config.addonEnabled = addonEnabled;
+    }
+    void exec('reset', undefined, config);
+  }, [exec, hideActionLog, cpuMetaAI, tournamentMode, rebuyEnabled, addonEnabled]);
 
   useEffect(() => {
     if (state?.minRaise && state.minRaise > 0) {
@@ -554,6 +563,40 @@ function HoldemPageContent() {
                     <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
                     {t('settings.cpuMetaAI')}
                   </label>
+                </div>
+                <div className="flex flex-col gap-2 border-t border-ds-border pt-2" data-testid="tournament-settings">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1">
+                    <input
+                      type="checkbox"
+                      data-testid="tournament-mode-toggle"
+                      checked={tournamentMode}
+                      onChange={(e) => setTournamentMode(e.target.checked)}
+                    />
+                    {t('settings.tournamentMode')}
+                  </label>
+                  {tournamentMode && (
+                    <div className="flex flex-col gap-2 pl-5">
+                      <label className="text-ds-text-primary text-sm flex items-center gap-1">
+                        <input
+                          type="checkbox"
+                          data-testid="tournament-rebuy-toggle"
+                          checked={rebuyEnabled}
+                          onChange={(e) => setRebuyEnabled(e.target.checked)}
+                        />
+                        {t('settings.rebuyEnabled')}
+                      </label>
+                      <label className="text-ds-text-primary text-sm flex items-center gap-1">
+                        <input
+                          type="checkbox"
+                          data-testid="tournament-addon-toggle"
+                          checked={addonEnabled}
+                          onChange={(e) => setAddonEnabled(e.target.checked)}
+                        />
+                        {t('settings.addonEnabled')}
+                      </label>
+                    </div>
+                  )}
+                  <p className="text-ds-text-secondary text-xs">{t('settings.tournamentNote')}</p>
                 </div>
               </div>
             </details>

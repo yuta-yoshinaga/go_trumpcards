@@ -20,7 +20,14 @@
   "trick": "トリック {{n}}",
   "trump": "トランプ",
   "trumpUndeclared": "未宣言",
+  "suitName": {
+    "spade": "スペード",
+    "club": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
+  },
   "highestBid": "現在の最高ビッド",
+  "redeal": "リディール {{count}}回",
   "cards": "{{count}}枚",
   "bid": "ビッド {{n}}",
   "bidNone": "未ビッド",
@@ -31,6 +38,8 @@
   "scoresTotal": "累計",
   "yourTeam": "あなたのチーム",
   "opponentTeam": "相手チーム",
+  "breakdownTitle": "プレイヤー別トリック内訳",
+  "breakdownTricks": "{{count}}トリック",
   "bidButton": "ビッド",
   "passButton": "パス",
   "bidSelectLabel": "ビッド数を選択",

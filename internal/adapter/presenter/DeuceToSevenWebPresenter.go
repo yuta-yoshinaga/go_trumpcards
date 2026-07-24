@@ -21,6 +21,12 @@ func (dwp *DeuceToSevenWebPresenter) ActionLogOutput(g interfaces.DeuceToSevenGa
 	return actionLogOutputJSON(g)
 }
 
+// HintOutput ヒントを出力する。Web ではヒントはクライアント側 (useGameHint) で
+// 算出するため、通常の状態出力を返す。DeuceToSevenPresenter インタフェースを満たすための実装。
+func (dwp *DeuceToSevenWebPresenter) HintOutput(g interfaces.DeuceToSevenGame) string {
+	return dwp.Output(g, nil)
+}
+
 func (dwp *DeuceToSevenWebPresenter) buildOutput(g interfaces.DeuceToSevenGame, lastErr error) *controller.DeuceToSevenWebOutput {
 	out := new(controller.DeuceToSevenWebOutput)
 	out.Phase = g.GetPhase()

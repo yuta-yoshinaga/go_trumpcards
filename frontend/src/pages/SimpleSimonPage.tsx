@@ -18,6 +18,9 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { SimpleSimonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
+import { simpleSimonAutoMoveTarget } from '../utils/simpleSimonAutoMoveTarget';
+import { isGrabbable, movableFromIndex } from '../utils/simpleSimonRun';
 
 /** Simple Simon tutorial step definitions. */
 const SS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -58,16 +61,20 @@ function SimpleSimonPageContent() {
     useGamePageSetup('simplesimon');
   const { state, loading, error, exec, retry } = useGameApi(simplesimonApi.exec);
   const [selected, setSelected] = useState<Selection | null>(null);
+  // Transient notice shown when a double-click auto-move finds no destination.
+  const [autoMoveNotice, setAutoMoveNotice] = useState<string | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useEffect(() => {
     exec('reset');
   }, []);
 
-  // Clear a stale selection whenever the board changes (move, undo).
+  // Clear a stale selection and any auto-move notice whenever the board changes
+  // (move, undo).
   // biome-ignore lint/correctness/useExhaustiveDependencies: deps are the change-trigger, not read in the body.
   useEffect(() => {
     setSelected(null);
+    setAutoMoveNotice(null);
   }, [state?.moveCount]);
 
   const phaseNames = usePhaseNames('simplesimon', SS_PHASE_KEYS);
@@ -87,6 +94,23 @@ function SimpleSimonPageContent() {
     exec('reset');
   };
 
+  // Double-click a grabbable run: auto-move it to the best legal destination
+  // (same-suit link > rank-only link > empty column). If none exists, deselect
+  // and show a notice. Single-click selection is preserved via the e.detail
+  // guard in the card's onClick.
+  const autoMoveCard = (col: number, idx: number) => {
+    if (!canAct || !isGrabbable(state.columns[col], idx)) return;
+    const toCol = simpleSimonAutoMoveTarget(state.columns, col, idx);
+    if (toCol === null) {
+      setSelected(null);
+      setAutoMoveNotice(t('noAutoMove'));
+      return;
+    }
+    setAutoMoveNotice(null);
+    exec('m', { fromCol: col, cardIndex: idx, toCol });
+    setSelected(null);
+  };
+
   // Click a card: select it as the source, or — if a source in another column is
   // already selected — move that run onto this column.
   const clickCard = (col: number, idx: number) => {
@@ -96,6 +120,9 @@ function SimpleSimonPageContent() {
       setSelected(null);
       return;
     }
+    // Only a valid movable run (same-suit descending to the tail) can be grabbed
+    // as a source; ignore clicks on cards above the run boundary.
+    if (!isGrabbable(state.columns[col], idx)) return;
     setSelected({ col, idx });
   };
 
@@ -106,40 +133,70 @@ function SimpleSimonPageContent() {
     setSelected(null);
   };
 
-  const renderColumn = (column: Card[], col: number) => (
-    <div
-      key={`col-${col}`}
-      className={`flex flex-col items-center rounded p-0.5 ${selected && selected.col !== col ? 'ring-1 ring-ds-success' : ''}`}
-      style={{ minHeight: Math.round(w * 1.4) }}
-      data-testid={`column-${col}`}
-    >
-      {column.length === 0 ? (
-        <button
-          type="button"
-          className="rounded border border-dashed border-white/25 bg-black/20"
-          style={{ width: w, height: Math.round(w * 1.4) }}
-          onClick={canAct ? () => clickColumn(col) : undefined}
-          disabled={!canAct}
-          title={t('empty')}
-          data-testid={`column-${col}-drop`}
-        />
-      ) : (
-        column.map((c, i) => (
+  const renderColumn = (column: Card[], col: number) => {
+    const isDestination = Boolean(selected && selected.col !== col);
+    const runStart = movableFromIndex(column);
+    return (
+      <div
+        key={`col-${col}`}
+        className={`flex flex-col items-center rounded p-0.5 ${isDestination ? 'ring-1 ring-ds-success' : ''}`}
+        style={{ minHeight: Math.round(w * 1.4) }}
+        data-testid={`column-${col}`}
+      >
+        {column.length === 0 ? (
           <button
             type="button"
-            key={`col-${col}-${i}`}
-            className={`rounded ${selected && selected.col === col && i >= selected.idx ? 'ring-2 ring-ds-warning' : ''}`}
-            style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
-            onClick={canAct ? () => clickCard(col, i) : undefined}
+            className="rounded border border-dashed border-white/25 bg-black/20"
+            style={{ width: w, height: Math.round(w * 1.4) }}
+            onClick={canAct ? () => clickColumn(col) : undefined}
             disabled={!canAct}
-            data-testid={`card-${col}-${i}`}
-          >
-            <CardImage card={c} width={w} />
-          </button>
-        ))
-      )}
-    </div>
-  );
+            title={t('empty')}
+            aria-label={t('emptyColAria', { col: col + 1 })}
+            data-testid={`column-${col}-drop`}
+          />
+        ) : (
+          column.map((c, i) => {
+            const inSelectedRun = Boolean(selected && selected.col === col && i >= selected.idx);
+            // Grabbable = head of a valid movable run in this column. In a
+            // destination column every card just forwards to the move.
+            const grabbable = i >= runStart;
+            const clickable = isDestination || grabbable;
+            // Highlight the movable-run boundary only while this column can be a
+            // source (no selection, or the selection is here).
+            const showRunHint = !isDestination && grabbable && !inSelectedRun;
+            const ring = inSelectedRun ? 'ring-2 ring-ds-warning' : showRunHint ? 'ring-1 ring-ds-success/70' : '';
+            return (
+              <button
+                type="button"
+                key={`col-${col}-${i}`}
+                className={`rounded ${ring} ${clickable ? '' : 'cursor-not-allowed'}`}
+                style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
+                onClick={
+                  canAct
+                    ? (e) => {
+                        // The 2nd click of a double-click also fires onClick
+                        // (detail === 2); ignore it so onDoubleClick owns the
+                        // auto-move and single-click selection is preserved.
+                        if (e.detail >= 2) return;
+                        clickCard(col, i);
+                      }
+                    : undefined
+                }
+                onDoubleClick={canAct && grabbable ? () => autoMoveCard(col, i) : undefined}
+                disabled={!canAct || !clickable}
+                data-testid={`card-${col}-${i}`}
+                data-grabbable={grabbable}
+                aria-label={t('cardPosAria', { card: cardAlt(c), col: col + 1, pos: i + 1 })}
+                aria-pressed={inSelectedRun}
+              >
+                <CardImage card={c} width={w} />
+              </button>
+            );
+          })
+        )}
+      </div>
+    );
+  };
 
   return (
     <GamePageShell
@@ -162,8 +219,13 @@ function SimpleSimonPageContent() {
           {state.columns.map((column, i) => renderColumn(column, i))}
         </div>
         {canAct && (
-          <div className="mt-2 text-ds-text-primary text-xs">
+          <div className="mt-2 text-ds-text-primary text-xs" role="status" data-testid="ss-guidance">
             {selected === null ? t('selectSource') : t('selectDestination')}
+          </div>
+        )}
+        {canAct && autoMoveNotice && (
+          <div className="mt-1 text-ds-text-muted text-xs" role="status" data-testid="ss-automove-notice">
+            {autoMoveNotice}
           </div>
         )}
 

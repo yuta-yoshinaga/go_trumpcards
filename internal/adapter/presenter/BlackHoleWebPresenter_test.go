@@ -35,10 +35,27 @@ func TestBlackHoleWebPresenter_Output(t *testing.T) {
 		assert.Contains(t, p.Output(bhState(t, `{"ph":2}`), nil), "blackhole.gameOver")
 	})
 
-	t.Run("hint output", func(t *testing.T) {
+	t.Run("hint output carries recommended fan and full board", func(t *testing.T) {
+		// Hole top 5, fan0 top 6 (±1) -> the domain recommends fan 0.
 		js := `{"bh":[{"d":1,"v":5,"w":true}],"fn":[[{"d":2,"v":6,"w":true}]],"ph":0}`
-		assert.Contains(t, p.HintOutput(bhState(t, js)), "blackhole.hintAvailable")
-		assert.Contains(t, p.HintOutput(bhState(t, `{"ph":2}`)), "blackhole.noHint")
+		out := p.HintOutput(bhState(t, js))
+		for _, frag := range []string{
+			"blackhole.hintAvailable",
+			`"hint":{"fan":0}`,
+			`"fans":[[`, // the board is preserved so the tableau does not blank out
+			`"blackHole":[`,
+		} {
+			assert.Contains(t, out, frag)
+		}
+	})
+
+	t.Run("hint output without a playable move still keeps the board", func(t *testing.T) {
+		// Hole top 5, fan0 top 10 (not ±1) -> no recommendation.
+		js := `{"bh":[{"d":1,"v":5,"w":true}],"fn":[[{"d":2,"v":10,"w":true}]],"ph":0}`
+		out := p.HintOutput(bhState(t, js))
+		assert.Contains(t, out, "blackhole.noHint")
+		assert.NotContains(t, out, `"hint":`)
+		assert.Contains(t, out, `"fans":[[`)
 	})
 
 	t.Run("action log is valid JSON", func(t *testing.T) {

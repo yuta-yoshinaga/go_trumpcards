@@ -29,6 +29,8 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 import { rummy500HandPenalty } from '../utils/rummy500HandPenalty';
+import { classifyRummy500Meld } from '../utils/rummy500MeldValidator';
+import { rummy500PickupCount } from '../utils/rummy500PickupCount';
 
 const RUMMY500_PHASE_KEYS: Readonly<Record<number, string>> = {
   [Rummy500Phase.DRAW]: 'draw',
@@ -95,6 +97,10 @@ function Rummy500PageContent() {
   // means nothing is selected yet, so the Lay off button stays disabled. The owner's
   // display name is captured here (where isHuman is in scope) for the footer label.
   const [layoffTarget, setLayoffTarget] = useState<{ owner: number; meldIdx: number; ownerName: string } | null>(null);
+  // Index of the discard card currently hovered/focused during the Draw phase. Drawing from a
+  // chosen index takes that card plus every card above it, so we preview the whole take-range
+  // (from this index to the top) before the player commits. null means nothing is previewed.
+  const [hoveredDiscardIdx, setHoveredDiscardIdx] = useState<number | null>(null);
 
   const phaseNames = usePhaseNames('rummy500', RUMMY500_PHASE_KEYS);
 
@@ -120,6 +126,15 @@ function Rummy500PageContent() {
   const isRoundEnd = state.phase === Rummy500Phase.ROUND_END;
   const isGameEnd = state.phase === Rummy500Phase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isDrawPhase || isPlayPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  // Front-side meld pre-validation: mirror the backend set/run rules so the Meld
+  // button stays disabled (and a warning shows) for an invalid 3+ card selection,
+  // instead of only learning it is invalid from a server error. See issue #3320.
+  const selectedMeldCards = selectedCardIndices
+    .map((i) => humanPlayer?.cards[i])
+    .filter((c): c is NonNullable<typeof c> => c !== undefined);
+  const meldValid = classifyRummy500Meld(selectedMeldCards).valid;
+  const showInvalidMeld = selectedCardIndices.length >= 3 && !meldValid;
 
   return (
     <GamePageShell
@@ -186,19 +201,40 @@ function Rummy500PageContent() {
                 <div className="text-ds-text-muted text-xs">{t('discardEmpty')}</div>
               ) : (
                 <div className="flex flex-wrap gap-1">
-                  {state.discardPile.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`disc-${card.design}-${card.value}-${idx}`}
-                      onClick={() => isDrawPhase && isHumanTurn && !loading && handleDrawDiscard(idx)}
-                      disabled={!isDrawPhase || !isHumanTurn || loading}
-                      aria-label={`${cardAlt(card)} (${idx})`}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{ background: 'none', padding: 0, borderRadius: 8 }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth * 0.7} />
-                    </button>
-                  ))}
+                  {state.discardPile.map((card, idx) => {
+                    const takeCount = rummy500PickupCount(state.discardPile.length, idx);
+                    const inPickupRange = hoveredDiscardIdx !== null && idx >= hoveredDiscardIdx;
+                    const isPickupAnchor = hoveredDiscardIdx === idx;
+                    return (
+                      <button
+                        type="button"
+                        key={`disc-${card.design}-${card.value}-${idx}`}
+                        onClick={() => isDrawPhase && isHumanTurn && !loading && handleDrawDiscard(idx)}
+                        onMouseEnter={() => setHoveredDiscardIdx(idx)}
+                        onMouseLeave={() => setHoveredDiscardIdx(null)}
+                        onFocus={() => setHoveredDiscardIdx(idx)}
+                        onBlur={() => setHoveredDiscardIdx(null)}
+                        disabled={!isDrawPhase || !isHumanTurn || loading}
+                        aria-label={t('drawDiscardRangeLabel', { card: cardAlt(card), count: takeCount })}
+                        data-testid={`disc-card-${idx}`}
+                        data-in-pickup-range={inPickupRange ? 'true' : undefined}
+                        className={`relative transition-transform ${focusRingCard} ${
+                          inPickupRange ? 'ring-2 ring-ds-warning -translate-y-1' : ''
+                        }`}
+                        style={{ background: 'none', padding: 0, borderRadius: 8 }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth * 0.7} />
+                        {isPickupAnchor && (
+                          <span
+                            data-testid="pickup-range-badge"
+                            className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ds-warning px-1.5 py-0.5 text-[10px] font-bold text-ds-text-on-accent shadow"
+                          >
+                            {t('pickupBadge', { count: takeCount })}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -314,11 +350,20 @@ function Rummy500PageContent() {
           )}
           {isPlayPhase && isHumanTurn && (
             <>
+              {showInvalidMeld && (
+                <p
+                  role="status"
+                  data-testid="r5-invalid-meld"
+                  className="w-full text-center font-medium text-ds-warning text-xs"
+                >
+                  {t('invalidMeld')}
+                </p>
+              )}
               <button
                 type="button"
                 className={btnPrimary}
                 onClick={handleMeld}
-                disabled={loading || selectedCardIndices.length < 3}
+                disabled={loading || selectedCardIndices.length < 3 || !meldValid}
                 data-tutorial="r5-meld-button"
               >
                 {t('meldButton')}

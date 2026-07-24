@@ -12,6 +12,7 @@
   },
   "communityCards": "Community Cards",
   "yourHand": "Your Hand",
+  "discardUpcoming": "You will discard two cards after the flop betting round",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "discard": {
     "prompt": "Discard a card.",
@@ -21,7 +22,10 @@
     "confirmNo": "Cancel",
     "selectedCount": "{{n}}/{{total}} selected",
     "keepLabel": "Keep",
-    "previewHand": "Tentative hand"
+    "previewHand": "Tentative hand",
+    "candidateHand": "If also discarded",
+    "limitReached": "You can select up to {{count}} card(s). Deselect one first.",
+    "limitDescription": "You can select at most {{count}} card(s) to discard."
   },
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

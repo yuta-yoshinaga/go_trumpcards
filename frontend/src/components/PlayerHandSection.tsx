@@ -1,6 +1,7 @@
-import { focusRingCard, highlightCardStyle, selectedCardStyle } from '../styles/cardStyles';
+import { focusRingCard, highlightCardStyle, selectedCardStyle, trumpRingStyle } from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
+import { CardRoleBadge } from './CardRoleBadge';
 import { MobileHandGrid } from './MobileHandGrid';
 import { AnimatedCard } from './motion/AnimatedCard';
 
@@ -33,11 +34,42 @@ export interface PlayerHandSectionProps {
   /** Tooltip surfaced on cards that are present but disabled by `validIndices`. */
   restrictedTooltip?: string;
   /**
+   * Optional per-card tooltip override. When it returns a string for an index,
+   * that text becomes the card's `title`, taking precedence over
+   * `restrictedTooltip` / `trumpTitle`. Lets a page explain a card-specific
+   * reason (e.g. why a King vs the Excuse cannot be buried) without blocking
+   * interaction. Returns `undefined` to fall back to the default tooltip.
+   */
+  cardTitleFor?: (idx: number) => string | undefined;
+  /**
    * Optional indices to visually highlight as actionable (e.g. exposable cards).
    * Highlighted cards get a warning border; when this list is provided, the
    * remaining (non-highlighted, non-selected) cards are dimmed to draw the eye.
    */
   highlightIndices?: number[];
+  /**
+   * Optional indices to mark with a subtle additive ring (e.g. trump cards).
+   * Unlike `highlightIndices`, this neither dims the other cards nor overrides
+   * the selection/restriction borders — it stacks on top via `outline`.
+   */
+  trumpIndices?: number[];
+  /** Accessible label / tooltip describing why the ringed cards are marked (e.g. "trump"). */
+  trumpTitle?: string;
+  /**
+   * Optional indices of cards that are legal to play this turn. When provided,
+   * these cards get an additive success ring (`ring-ds-success`) so the player
+   * can see at a glance which cards may be played. Unlike `validIndices`, this
+   * only adds the ring; use it together with `validIndices` to also dim the
+   * illegal cards.
+   */
+  legalIndices?: number[];
+  /**
+   * Optional per-card corner badge (e.g. a game-specific role marker such as
+   * Ombre's matador rank). Returns the badge glyph + tooltip for a card index,
+   * or `null` to render no badge. Applied to both the desktop and mobile
+   * layouts.
+   */
+  cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
 }
 
 /**
@@ -54,11 +86,18 @@ export function PlayerHandSection({
   dataTutorialPrefix,
   validIndices,
   restrictedTooltip,
+  cardTitleFor,
   highlightIndices,
+  trumpIndices,
+  trumpTitle,
+  legalIndices,
+  cardBadgeFor,
 }: PlayerHandSectionProps) {
   const dataTutorial = `${dataTutorialPrefix}-player-hand`;
   const isRestricted = (idx: number): boolean => validIndices != null && !validIndices.includes(idx);
   const isHighlighted = (idx: number): boolean => highlightIndices?.includes(idx) ?? false;
+  const isTrump = (idx: number): boolean => trumpIndices?.includes(idx) ?? false;
+  const isLegal = (idx: number): boolean => legalIndices?.includes(idx) ?? false;
 
   if (isMobile) {
     return (
@@ -70,7 +109,12 @@ export function PlayerHandSection({
         dataTutorial={dataTutorial}
         validIndices={validIndices}
         restrictedTooltip={restrictedTooltip}
+        cardTitleFor={cardTitleFor}
         highlightIndices={highlightIndices}
+        trumpIndices={trumpIndices}
+        trumpTitle={trumpTitle}
+        legalIndices={legalIndices}
+        cardBadgeFor={cardBadgeFor}
       />
     );
   }
@@ -81,9 +125,12 @@ export function PlayerHandSection({
         const isSelected = selectedCardIndices.includes(idx);
         const restricted = isRestricted(idx);
         const highlighted = isHighlighted(idx);
+        const trump = isTrump(idx);
+        const legal = isLegal(idx);
         // When a highlight list is active, dim the non-highlighted (and unselected) cards.
         // Skip already-restricted cards so the two opacity classes never collide.
         const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
+        const badge = cardBadgeFor?.(idx);
         return (
           <button
             type="button"
@@ -97,18 +144,24 @@ export function PlayerHandSection({
             // cards remain focusable for keyboard / screen-reader users — they
             // need to reach the tooltip that explains why the card is illegal.
             aria-disabled={restricted || undefined}
-            title={restricted ? restrictedTooltip : undefined}
-            className={`transition-transform ${focusRingCard} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
+            title={cardTitleFor?.(idx) ?? (restricted ? restrictedTooltip : trump ? trumpTitle : undefined)}
+            data-trump={trump || undefined}
+            data-legal={legal || undefined}
+            className={`transition-transform ${focusRingCard} ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
             style={{
               background: 'none',
               padding: 0,
               borderRadius: 8,
+              position: 'relative',
               // Selection takes visual priority; otherwise show the highlight border.
               ...(isSelected ? selectedCardStyle(true) : highlighted ? highlightCardStyle() : selectedCardStyle(false)),
+              // Trump ring stacks additively (outline) on top of the border above.
+              ...(trump ? trumpRingStyle() : {}),
               boxSizing: 'border-box',
             }}
           >
             <AnimatedCard card={card} width={cardWidth} />
+            {badge && <CardRoleBadge idx={idx} glyph={badge.glyph} title={badge.title} />}
           </button>
         );
       })}

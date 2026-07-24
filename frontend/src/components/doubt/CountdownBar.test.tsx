@@ -57,28 +57,35 @@ describe('CountdownBar', () => {
     vi.mocked(useReducedMotion).mockReturnValue(false);
   });
 
-  it('renders label as a role=timer region, assertive in the final seconds', () => {
-    render(<CountdownBar remaining={3} total={10} label="残り 3 秒" />);
-    const liveRegion = screen.getByText('残り 3 秒');
-    expect(liveRegion).toHaveAttribute('role', 'timer');
-    expect(liveRegion).toHaveAttribute('aria-live', 'assertive'); // ≤3s → urgent
-    expect(liveRegion).toHaveAttribute('aria-atomic', 'true');
+  it('exposes a role=timer sr-only region that announces only at 5s marks and the final 3s', () => {
+    const { rerender } = render(<CountdownBar remaining={5} total={10} label="残り 5 秒" />);
+    const timer = screen.getByTestId('countdown-sr-timer');
+    expect(timer).toHaveAttribute('role', 'timer');
+    expect(timer).toHaveAttribute('aria-live', 'polite');
+    expect(timer).toHaveAttribute('aria-atomic', 'true');
+    expect(timer).toHaveTextContent('残り 5 秒'); // 5 % 5 === 0
+
+    rerender(<CountdownBar remaining={2} total={10} label="残り 2 秒" />);
+    expect(screen.getByTestId('countdown-sr-timer')).toHaveTextContent('残り 2 秒'); // ≤3s
   });
 
-  it('announces politely while time remains (above 3s)', () => {
+  it('keeps the timer region empty on non-throttled ticks (no per-second readout)', () => {
     render(<CountdownBar remaining={7} total={10} label="残り 7 秒" />);
-    expect(screen.getByText('残り 7 秒')).toHaveAttribute('aria-live', 'polite');
+    // 7 is neither ≤3 nor a multiple of 5 → nothing spoken this tick.
+    expect(screen.getByTestId('countdown-sr-timer')).toHaveTextContent('');
   });
 
-  it('applies ds-warning color to label text', () => {
-    render(<CountdownBar remaining={3} total={10} label="残り 3 秒" />);
-    const liveRegion = screen.getByText('残り 3 秒');
-    expect(liveRegion.className).toContain('text-ds-warning');
+  it('renders the visible countdown text as aria-hidden with ds-warning color', () => {
+    render(<CountdownBar remaining={7} total={10} label="残り 7 秒" />);
+    // At 7 the sr timer is empty, so this matches only the visible text node.
+    const visible = screen.getByText('残り 7 秒');
+    expect(visible).toHaveAttribute('aria-hidden', 'true');
+    expect(visible.className).toContain('text-ds-warning');
   });
 
-  it('does not render label region when label is omitted', () => {
-    const { container } = render(<CountdownBar remaining={7} total={10} />);
-    expect(container.querySelector('[aria-live="assertive"]')).toBeNull();
+  it('does not render the timer region when label is omitted', () => {
+    render(<CountdownBar remaining={7} total={10} />);
+    expect(screen.queryByTestId('countdown-sr-timer')).toBeNull();
   });
 
   it('sets aria-label on progressbar from label prop', () => {

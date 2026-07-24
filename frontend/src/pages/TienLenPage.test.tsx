@@ -87,6 +87,77 @@ describe('TienLenPage', () => {
     fireEvent.click(screen.getByTestId('hand-card-1'));
     expect(screen.getByTestId('play-button')).toBeDisabled();
     expect(screen.getByTestId('tl-invalid-combo')).toBeInTheDocument();
+    // The combo-type badge is only shown for valid selections.
+    expect(screen.queryByTestId('tl-combo-type')).not.toBeInTheDocument();
+  });
+
+  it('shows the combo type name for a single-card selection', async () => {
+    renderWithProviders(<TienLenPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    const badge = screen.getByTestId('tl-combo-type');
+    expect(badge).toHaveTextContent('シングル'); // playType.single (ja locale)
+    expect(badge).toHaveTextContent('1枚');
+  });
+
+  it('shows the combo type name for a pair selection', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [card('SPADE', 7), card('HEART', 7)]),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<TienLenPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    const badge = screen.getByTestId('tl-combo-type');
+    expect(badge).toHaveTextContent('ペア'); // playType.pair
+    expect(badge).toHaveTextContent('2枚');
+  });
+
+  it('highlights a four-of-a-kind bomb', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [card('SPADE', 7), card('HEART', 7), card('CLOVER', 7), card('DIAMOND', 7)]),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<TienLenPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    fireEvent.click(screen.getByTestId('hand-card-2'));
+    fireEvent.click(screen.getByTestId('hand-card-3'));
+    const badge = screen.getByTestId('tl-combo-type');
+    expect(badge).toHaveTextContent('フォーカード'); // playType.fourOfAKind
+    expect(badge).toHaveTextContent('爆弾'); // bombLabel emphasis
+    expect(badge).toHaveClass('text-ds-warning');
+  });
+
+  it('labels the table combo with the CPU player who played it', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        tableCards: [card('SPADE', 3)],
+        lastPlayPlayerIdx: 2,
+        currentTurn: 0,
+      }),
+    );
+    renderWithProviders(<TienLenPage />);
+    const owner = await screen.findByTestId('tl-table-owner');
+    expect(owner).toHaveTextContent('CPU 2'); // findPlayerName for a non-human player
+  });
+
+  it('does not show the table owner label when the table is empty (new round lead)', async () => {
+    mockExec.mockResolvedValue(makeState({ tableCards: [], lastPlayPlayerIdx: -1 }));
+    renderWithProviders(<TienLenPage />);
+    await screen.findByTestId('pass-button');
+    expect(screen.queryByTestId('tl-table-owner')).not.toBeInTheDocument();
   });
 
   it('passes when the pass button is clicked', async () => {

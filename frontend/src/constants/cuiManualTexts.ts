@@ -221,6 +221,7 @@ import whist from '../../../docs/manual/cui/whist.md?raw';
 import wizard from '../../../docs/manual/cui/wizard.md?raw';
 import yaniv from '../../../docs/manual/cui/yaniv.md?raw';
 import yukon from '../../../docs/manual/cui/yukon.md?raw';
+import zheng from '../../../docs/manual/cui/zheng.md?raw';
 
 /** Map from game route path to raw CUI Markdown manual text. */
 export const cuiManualTexts: Readonly<Record<string, string>> = {
@@ -442,6 +443,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/truco': truco,
   '/beggarmyneighbour': beggarmyneighbour,
   '/allfours': allfours,
+  '/zheng': zheng,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

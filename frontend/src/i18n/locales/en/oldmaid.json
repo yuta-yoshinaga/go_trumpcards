@@ -67,5 +67,6 @@
   "bubble": {
     "drewFrom": "← from {{from}}",
     "drewAndPaired": "← from {{from}} (paired)"
-  }
+  },
+  "keyHints": "D: Draw / S: Shuffle"
 }

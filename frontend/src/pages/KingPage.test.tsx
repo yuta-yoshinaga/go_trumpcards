@@ -77,6 +77,19 @@ describe('KingPage', () => {
     expect(screen.getByRole('button', { name: 'ノートリック' })).toBeInTheDocument();
   });
 
+  it('shows achieve/avoid badges on the contract buttons', async () => {
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+    await waitFor(() => expect(screen.getByTestId('king-select-prompt')).toBeInTheDocument());
+    // No Hearts (contract 1) is an avoid contract targeting hearts.
+    const avoidBadge = screen.getByTestId('king-contract-badge-1');
+    expect(avoidBadge).toHaveTextContent('回避');
+    expect(avoidBadge).toHaveTextContent('♥');
+    // King (Trump) (contract 6) is the only achieve contract.
+    const achieveBadge = screen.getByTestId('king-contract-badge-6');
+    expect(achieveBadge).toHaveTextContent('獲得');
+  });
+
   it('choosing a non-trump contract dispatches contract with trumpSuit -1', async () => {
     mockExec.mockResolvedValue(selectPhaseState);
     renderWithProviders(<KingPage />);
@@ -122,6 +135,33 @@ describe('KingPage', () => {
     renderWithProviders(<KingPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のディール' })).toBeInTheDocument());
     expect(screen.getByTestId('king-deal-result')).toBeInTheDocument();
+  });
+
+  it('shows the contract breakdown with the contract name, loss basis, and per-player points', async () => {
+    mockExec.mockResolvedValue(dealEndState);
+    renderWithProviders(<KingPage />);
+    await waitFor(() => expect(screen.getByTestId('king-deal-breakdown')).toBeInTheDocument());
+    // Contract 0 = No Tricks; its label and loss basis are rendered.
+    const breakdown = screen.getByTestId('king-deal-breakdown');
+    expect(breakdown).toHaveTextContent('契約: ノートリック');
+    expect(breakdown).toHaveTextContent('失点根拠: トリックを取るごとに失点。');
+    // Per-player point rows match the gained map from lastDealDetail.
+    expect(screen.getByTestId('king-deal-breakdown-row-0')).toHaveTextContent('-20点');
+    expect(screen.getByTestId('king-deal-breakdown-row-1')).toHaveTextContent('-30点');
+    expect(screen.getByTestId('king-deal-breakdown-row-2')).toHaveTextContent('-10点');
+  });
+
+  it('shows the trump suit in the breakdown for the King (Trump) contract', async () => {
+    mockExec.mockResolvedValue(
+      makeKingState({
+        phase: 'dealEnd',
+        lastDealDetail: { contract: 6, trumpSuit: 3, dealerIdx: 0, gained: { 0: -8, 1: 0, 2: 0, 3: 0 } },
+      }),
+    );
+    renderWithProviders(<KingPage />);
+    await waitFor(() => expect(screen.getByTestId('king-deal-breakdown')).toBeInTheDocument());
+    const breakdown = screen.getByTestId('king-deal-breakdown');
+    expect(breakdown).toHaveTextContent('契約: キング（切り札）（切り札: ♥）');
   });
 
   it('renders the game end message', async () => {

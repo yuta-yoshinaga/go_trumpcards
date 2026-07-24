@@ -48,12 +48,7 @@ func (p *BigTwoCuiPresenter) Output(bg interfaces.BigTwoGame, lastErr error) str
 			for i := 0; i < bg.GetPlayerCnt(); i++ {
 				player := bg.GetPlayer(i)
 				if player.GetRank() >= 1 {
-					var name string
-					if player.GetIsHuman() {
-						name = i18n.T("bigtwo.playerYou")
-					} else {
-						name = fmt.Sprintf("CPU %d", i)
-					}
+					name := cuiPlayerName(player, i)
 					fmt.Fprintf(b, "  %s: %s\n", name, i18n.Tf("bigtwo.rankN", "rank", strconv.Itoa(player.GetRank())))
 				}
 			}
@@ -65,7 +60,7 @@ func (p *BigTwoCuiPresenter) Output(bg interfaces.BigTwoGame, lastErr error) str
 				} else {
 					actionStr = cuiCardSliceStr(action.PlayedCards)
 				}
-				fmt.Fprintf(b, "CPU %d: %s\n", action.PlayerIdx, actionStr)
+				fmt.Fprintf(b, "%s: %s\n", cuiPlayerName(bg.GetPlayer(action.PlayerIdx), action.PlayerIdx), actionStr)
 			}
 			if bg.IsHumanTurn() {
 				b.WriteString(i18n.T("bigtwo.yourTurn") + "\n")

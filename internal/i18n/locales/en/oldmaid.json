@@ -15,6 +15,7 @@
   "drawActionDiscard": ". Discarded {{count}} pair(s)",
   "cpuActionsHeader": "[CPU actions]",
   "drawHistoryHeader": "[Draw history]",
+  "drawHistoryOmitted": "…and {{count}} more (use the log command for the full record)",
   "drawHistoryEntry": "{{idx}}. {{drawer}} drew from {{from}}",
   "drawHistoryDiscard": " ({{count}} pair(s) discarded)",
   "drawHistoryFinished": " [{{name}} finished]",

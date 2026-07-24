@@ -15,5 +15,6 @@
   "hintReasonJack": "ジャックで場を一掃する",
   "hintReasonCapture": "価値の高い場札を捕獲する",
   "hintReasonTrail": "捕獲できないので低い札を捨てる",
-  "result.scores": "ゲーム終了！ 得点: {{scores}}"
+  "result.scores": "ゲーム終了！ 得点: {{scores}}",
+  "captureHint": "{{hand}} → 場{{table}}"
 }

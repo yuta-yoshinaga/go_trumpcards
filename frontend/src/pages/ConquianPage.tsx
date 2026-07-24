@@ -9,9 +9,11 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -24,7 +26,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { ConquianResponse } from '../types/card';
+import type { ConquianPlayerData, ConquianResponse } from '../types/card';
 import { ConquianPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -32,6 +34,9 @@ import { CONQUIAN_HELP, parseConquianCommand } from '../utils/cli/commands/conqu
 import { formatConquianState } from '../utils/cli/formatters/conquianFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+
+/** Total cards a player must lay in table melds to win a Conquian round. */
+const CONQUIAN_MELD_TARGET = 11;
 
 const CONQUIAN_PHASE_KEYS: Readonly<Record<number, string>> = {
   [ConquianPhase.DRAW]: 'draw',
@@ -105,6 +110,37 @@ function ConquianPageContent() {
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
   const humanCardCount = humanPlayer?.cards?.length ?? 0;
+
+  // Meld-progress indicator: count the cards laid across a player's table melds
+  // toward the 11-card win condition, highlighting the final stretch (<=2 left).
+  const renderMeldProgress = (p: ConquianPlayerData, testId: string) => {
+    const melded = p.melds.reduce((sum, m) => sum + m.cards.length, 0);
+    const remaining = CONQUIAN_MELD_TARGET - melded;
+    const isClose = remaining > 0 && remaining <= 2;
+    const pct = Math.min(100, (melded / CONQUIAN_MELD_TARGET) * 100);
+    const label = t('meldProgress', { count: melded, total: CONQUIAN_MELD_TARGET });
+    return (
+      <div data-testid={testId} className="mt-1">
+        <div className="flex items-center justify-between text-xs mb-0.5">
+          <span className="text-ds-text-muted">{label}</span>
+          {isClose && <span className="text-ds-warning font-bold">{t('meldRemaining', { count: remaining })}</span>}
+        </div>
+        <div
+          role="progressbar"
+          aria-label={label}
+          aria-valuemin={0}
+          aria-valuemax={CONQUIAN_MELD_TARGET}
+          aria-valuenow={melded}
+          className="h-1.5 w-full rounded-sm bg-white/15 overflow-hidden"
+        >
+          <div
+            className={`h-full rounded-sm ${isClose ? 'bg-ds-warning' : 'bg-ds-accent'}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </div>
+    );
+  };
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('conquian');
   const cliConfig: CliGameConfig<ConquianResponse, Parameters<typeof conquianApi.exec>> = useMemo(
@@ -143,6 +179,19 @@ function ConquianPageContent() {
     onClear: clearSelection,
     enabled: !!isHumanTurn && !loading,
   });
+
+  // DRAW phase: s draws from the stock, d takes the discard top. Number keys
+  // and Enter/Escape are handled by useCardKeyboardNav; these letter keys don't
+  // collide with it.
+  const canDrawForKbd = isDrawPhase && !!isHumanTurn && !loading;
+  const drawBindings = useMemo(
+    () => [
+      { key: 's', action: handleDrawStock, enabled: canDrawForKbd },
+      { key: 'd', action: handleDrawDiscard, enabled: canDrawForKbd && !!state?.discardTop },
+    ],
+    [handleDrawStock, handleDrawDiscard, canDrawForKbd, state?.discardTop],
+  );
+  useActionKeyboardNav({ bindings: drawBindings, enabled: canDrawForKbd });
 
   if (!state) {
     return (
@@ -252,6 +301,7 @@ function ConquianPageContent() {
                         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                         {t('wins', { count: p.wins })}
                       </div>
+                      {renderMeldProgress(p, `conquian-meld-progress-cpu-${p.id}`)}
                       {/* Reveal CPU cards at round/game end */}
                       {(isRoundEnd || isGameEnd) && p.cards.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
@@ -313,6 +363,9 @@ function ConquianPageContent() {
               </div>
             )}
             {humanPlayer && (
+              <div className="mb-2 max-w-xs">{renderMeldProgress(humanPlayer, 'conquian-meld-progress')}</div>
+            )}
+            {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="cq-player-hand">
                 {humanPlayer.cards.map((card, idx) => (
                   <button
@@ -341,16 +394,25 @@ function ConquianPageContent() {
             <div className="flex gap-2 items-center flex-wrap">
               {isDrawPhase && isHumanTurn && (
                 <div className="flex gap-2">
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleDrawStock}
+                    disabled={loading}
+                    aria-keyshortcuts="s"
+                  >
                     {t('drawStockButton')}
+                    <KbdBadge label={t('kbd.stock')} />
                   </button>
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={handleDrawDiscard}
                     disabled={loading || !state.discardTop}
+                    aria-keyshortcuts="d"
                   >
                     {t('drawDiscardButton')}
+                    <KbdBadge label={t('kbd.discard')} />
                   </button>
                 </div>
               )}
@@ -360,10 +422,20 @@ function ConquianPageContent() {
                     type="button"
                     className={btnPrimary}
                     onClick={handleMeldSelected}
-                    disabled={loading || (selectedCardIndices.length !== 1 && selectedCardIndices.length < 3)}
+                    disabled={loading || selectedCardIndices.length < 3}
                     data-tutorial="cq-meld-button"
+                    data-testid="conquian-meld-button"
                   >
                     {t('meldButton')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleMeldSelected}
+                    disabled={loading || selectedCardIndices.length !== 1}
+                    data-testid="conquian-layoff-button"
+                  >
+                    {t('layoffButton')}
                   </button>
                   <button
                     type="button"

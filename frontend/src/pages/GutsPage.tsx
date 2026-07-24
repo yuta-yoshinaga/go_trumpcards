@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { GUTS_HELP, parseGutsCommand } from '../utils/cli/commands/gutsCommands';
 import { formatGutsState } from '../utils/cli/formatters/gutsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { evaluateGutsGuide } from '../utils/gutsGuideUtils';
 
 /** Guts tutorial step definitions. */
 const GUTS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -125,6 +126,12 @@ function GutsPageContent() {
   const isDeclarePhase = state.phase === GutsPhase.DECLARE;
   const isResultPhase = state.phase === GutsPhase.RESULT;
   const isGameEnd = state.gameEndFlag;
+
+  // Rough hand-name + win-chance readout shown while the human must call In/Out.
+  const declareGuide =
+    isDeclarePhase && !isGameEnd && humanPlayer && humanPlayer.cards.length > 0
+      ? evaluateGutsGuide(humanPlayer.cards)
+      : null;
   const humanWonMatch = state.matchWinnerIdx >= 0 && (state.players[state.matchWinnerIdx]?.isHuman ?? false);
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
@@ -277,6 +284,23 @@ function GutsPageContent() {
                     pot: state.pot,
                   })}
                 </div>
+                {state.matchers.map((idx) => {
+                  const matcher = state.players[idx];
+                  if (!matcher) return null;
+                  const amount = Math.max(0, matcher.roundBet - state.ante);
+                  return (
+                    <div
+                      key={`matcher-${idx}`}
+                      className="text-ds-error font-semibold"
+                      data-testid="guts-matcher-payment"
+                    >
+                      {t('roundResult.matchPayment', {
+                        name: playerLabel(idx, idx === humanIdx),
+                        amount,
+                      })}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -315,6 +339,21 @@ function GutsPageContent() {
             )}
 
             <ErrorAlert message={error} onRetry={retry} />
+
+            {declareGuide && (
+              <div className="mb-2 p-2 rounded bg-black/30 text-sm" data-testid="guts-declare-guide">
+                <div className="text-ds-text-primary font-semibold">
+                  {t('guide.handLabel')}: <span className="text-base">{handName(declareGuide.handKey)}</span>
+                </div>
+                <div className="text-ds-text-muted">
+                  {t('guide.tierLabel')}:{' '}
+                  <span data-testid="guts-guide-tier">{t(`guide.tier.${declareGuide.tier}`)}</span>
+                </div>
+                <div className="text-ds-error text-xs" data-testid="guts-guide-risk">
+                  {t('guide.matchRisk', { pot: state.pot })}
+                </div>
+              </div>
+            )}
 
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />

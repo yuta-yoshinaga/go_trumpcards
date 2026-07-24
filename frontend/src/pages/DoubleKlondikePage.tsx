@@ -68,8 +68,11 @@ function DoubleKlondikePageContent() {
   }, [state?.moveCount, state?.stockCount]);
 
   const phaseNames = usePhaseNames('doubleklondike', DK_PHASE_KEYS);
-  const { cardWidth } = useCardDimensions();
-  const w = Math.round(cardWidth * 0.5);
+  const { cardWidth, isMobile } = useCardDimensions();
+  // On mobile keep every card at least 44px wide so suits stay legible and tap
+  // targets meet the DESIGN.md 44px minimum; the 9-column tableau and 8
+  // foundations then scroll horizontally. Desktop keeps the compact half-width.
+  const w = isMobile ? 44 : Math.round(cardWidth * 0.5);
 
   if (!state) return <GameSkeleton gameKey="doubleklondike" layout={{ kind: 'tableau', topRow: 4, tableau: 9 }} />;
 
@@ -132,11 +135,13 @@ function DoubleKlondikePageContent() {
   };
 
   const cardH = Math.round(w * 1.4);
+  // Fan the most-recent up to 3 waste cards so a 3-card draw stays visible.
+  const wasteFan = Math.round(w * 0.4);
 
   const renderTableau = (column: (typeof state.tableau)[number], col: number) => (
     <div
       key={`col-${col}`}
-      className="flex flex-col items-center rounded p-0.5"
+      className="flex flex-col items-center rounded p-0.5 shrink-0"
       style={{ minHeight: cardH }}
       data-testid={`column-${col}`}
     >
@@ -168,7 +173,8 @@ function DoubleKlondikePageContent() {
     </div>
   );
 
-  const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
+  // The most-recent up to 3 waste cards, oldest-first; only the last is playable.
+  const wasteDisplay = state.waste.slice(-3);
 
   return (
     <GamePageShell
@@ -188,45 +194,74 @@ function DoubleKlondikePageContent() {
           {t('stockCount', { count: state.stockCount })} · {t('moveCount', { count: state.moveCount })}
         </div>
 
-        {/* Stock / waste / foundations row */}
-        <div className="flex gap-2 items-start mb-3" data-tutorial="dk-stock">
-          <button
-            type="button"
-            className="rounded border border-white/30 bg-black/30 flex items-center justify-center text-ds-text-muted text-xs"
-            style={{ width: w, height: cardH }}
-            onClick={canAct ? clickStock : undefined}
-            disabled={!canAct}
-            title={t('stock')}
-            data-testid="stock"
-          >
-            {state.stockCount}
-          </button>
-          <button
-            type="button"
-            className={`rounded ${selected?.zone === 'waste' ? 'ring-2 ring-ds-warning' : ''}`}
-            style={{ width: w, height: cardH }}
-            onClick={canAct ? clickWaste : undefined}
-            disabled={!canAct || !wasteTop}
-            title={t('waste')}
-            data-testid="waste"
-          >
-            {wasteTop ? (
-              <CardImage card={wasteTop} width={w} />
+        {/* Stock / waste / foundations row. On mobile it stacks so the 8
+            foundations scroll on their own row instead of crushing the waste. */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-start mb-3" data-tutorial="dk-stock">
+          <div className="flex gap-2 items-start">
+            <button
+              type="button"
+              className="rounded border border-white/30 bg-black/30 flex items-center justify-center text-ds-text-muted text-xs"
+              style={{ width: w, height: cardH }}
+              onClick={canAct ? clickStock : undefined}
+              disabled={!canAct}
+              title={t('stock')}
+              data-testid="stock"
+            >
+              {state.stockCount}
+            </button>
+            {wasteDisplay.length > 0 ? (
+              <div
+                className="relative"
+                style={{ width: w + (wasteDisplay.length - 1) * wasteFan, height: cardH }}
+                data-testid="waste-fan"
+              >
+                {wasteDisplay.map((c, i) => {
+                  const isTop = i === wasteDisplay.length - 1;
+                  return isTop ? (
+                    <button
+                      key={`waste-${i.toString()}`}
+                      type="button"
+                      className={`absolute top-0 rounded ${selected?.zone === 'waste' ? 'ring-2 ring-ds-warning' : ''}`}
+                      style={{ left: i * wasteFan }}
+                      onClick={canAct ? clickWaste : undefined}
+                      disabled={!canAct}
+                      title={t('waste')}
+                      data-testid="waste"
+                    >
+                      <CardImage card={c} width={w} />
+                    </button>
+                  ) : (
+                    <div
+                      key={`waste-${i.toString()}`}
+                      className="absolute top-0 rounded opacity-60"
+                      style={{ left: i * wasteFan }}
+                      aria-hidden="true"
+                      data-testid={`waste-under-${i.toString()}`}
+                    >
+                      <CardImage card={c} width={w} />
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <div
                 className="rounded border border-dashed border-white/25 bg-black/20"
                 style={{ width: w, height: cardH }}
+                data-testid="waste-empty"
               />
             )}
-          </button>
-          <div className="ml-auto grid grid-cols-4 gap-1">
+          </div>
+          <div
+            className={`gap-1 ${isMobile ? 'flex overflow-x-auto pb-1 max-w-full' : 'ml-auto grid grid-cols-4'}`}
+            data-testid="foundation-row"
+          >
             {state.foundation.map((f, i) => {
               const top = f.length > 0 ? f[f.length - 1] : null;
               return (
                 <button
                   type="button"
                   key={`foundation-${i}`}
-                  className="rounded"
+                  className="rounded shrink-0"
                   onClick={canAct ? clickFoundation : undefined}
                   disabled={!canAct}
                   title={t('foundation')}
@@ -246,7 +281,10 @@ function DoubleKlondikePageContent() {
           </div>
         </div>
 
-        <div className="grid grid-cols-9 gap-1 items-start" data-tutorial="dk-board">
+        <div
+          className={`gap-1 items-start ${isMobile ? 'flex overflow-x-auto pb-1' : 'grid grid-cols-9'}`}
+          data-tutorial="dk-board"
+        >
           {state.tableau.map((column, i) => renderTableau(column, i))}
         </div>
         {canAct && (

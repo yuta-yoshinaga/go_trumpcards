@@ -40,9 +40,31 @@
   "chooseSchlag": "Schlag ランク",
   "chooseCritical": "切り札スート",
   "declareButton": "宣言",
+  "trumpRing": "強札（トランプ）",
+  "trumpPanel": {
+    "title": "強札プレビュー",
+    "rule": "宣言すると、永久最強札 Max（♥K）＞ Belli（♦K）＞ Spitz（♦7）に続き、Schlag ランクの札、切り札スートの残り札の順で強くなります。下はいまの選択での手札の強札です。",
+    "summary": "あなたの強札: {{count}}枚",
+    "none": "Schlag ランクと切り札スートを選ぶと、強くなる手札がここに表示されます。（永久最強札は常に有効です）"
+  },
+  "trumpCat": {
+    "max": "Max（♥K）",
+    "belli": "Belli（♦K）",
+    "spitz": "Spitz（♦7）",
+    "schlag": "Schlag",
+    "critical": "切り札スート"
+  },
   "playButton": "出す",
   "raiseButton": "レイズ（Watten）",
   "respondPhase": "ステーク {{stake}}点にレイズされました — hold か fold を選びます。",
+  "respondLoss": "fold すると相手チームに {{stake}}点を献上します。",
+  "stakeHistory": {
+    "title": "ステーク推移",
+    "start": "開始 {{stake}}",
+    "raise": "{{player}} レイズ→{{stake}}",
+    "hold": "{{player}} hold（{{stake}}）",
+    "fold": "{{player}} fold（{{stake}}）"
+  },
   "holdButton": "hold（受ける）",
   "foldButton": "fold（降りる）",
   "nextRound": "次のディール",

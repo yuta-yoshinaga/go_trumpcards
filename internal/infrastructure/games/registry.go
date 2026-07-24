@@ -5,7 +5,7 @@
 // binaries (TinyGo / WASM) stay under the 1 MB gzipped free-tier limit:
 //
 //   - registry.go (this file, no tag)  — types and bare metadata (Name +
-//     Category) for all 218 games. Cheap; no references to game code.
+//     Category) for all 219 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
 //   - casino/, classic/, solo/ (js && wasm) — per-category worker bindings.
@@ -289,7 +289,7 @@ var registry = []*Game{
 	// proposed the classic worker, but that worker is at the 1 MB gzip free-tier
 	// limit, so Yaniv is bucketed into the casino worker. Category here is purely
 	// a binary-size bucket (see package doc).
-	{Name: "yaniv", Category: CategoryCasino},
+	{Name: "yaniv", Category: CategorySolo},
 	// Gong Zhu (拱猪 / Chinese Hearts) is a trick-taking game with positive and
 	// negative point cards, a doubling card, and an exposure phase. The issue
 	// proposed the classic worker, but that worker is at the 1 MB gzip free-tier
@@ -557,8 +557,9 @@ var registry = []*Game{
 	// non-competitively declares one of three contracts — Party (name trump, take >half
 	// the 126 card points), Betli (no trump, lose every trick), or Durchmarsch (no trump,
 	// win every trick) — takes the talon, discards 2, then leads 10 tricks. Coin
-	// settlement ±2/±5/±6 per defender. Extra worker bucket.
-	{Name: "ulti", Category: CategoryExtra},
+	// settlement ±2/±5/±6 per defender. Solo worker bucket (rebucketed off the
+	// full extra worker for size headroom).
+	{Name: "ulti", Category: CategorySolo},
 	// King (Greek/Brazilian compendium): a 4-player 52-card trick-avoidance game.
 	// Each deal the dealer picks one of 7 not-yet-played contracts (No Tricks /
 	// No Hearts / No Queens / No King♥ / No Last Two / No Men / King-Trump); the
@@ -738,6 +739,11 @@ var registry = []*Game{
 	// into solo (not extra, which hit the 1 MB gzip limit); Category is a size
 	// bucket, not a user-facing taxonomy.
 	{Name: "cego", Category: CategorySolo},
+	// Zheng Shangyou is a Chinese climbing/shedding game (ancestor of Big Two /
+	// Daifugo) on a 54-card deck (52 + 2 jokers); suits are irrelevant to rank
+	// strength. Bucketed into solo (extra hit the 1 MB gzip limit); Category is
+	// a size bucket, not a user-facing taxonomy.
+	{Name: "zheng", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

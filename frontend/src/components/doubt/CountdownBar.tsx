@@ -45,16 +45,21 @@ export function CountdownBar({ remaining, total, label }: CountdownBarProps) {
         />
       </div>
       {label && (
-        <div
-          className="text-ds-warning text-lg font-bold mt-1"
-          role="timer"
-          // Announce politely most of the time; escalate to assertive in the final
-          // few seconds so the urgency interrupts rather than queues.
-          aria-live={remaining <= 3 ? 'assertive' : 'polite'}
-          aria-atomic="true"
-        >
-          {label}
-        </div>
+        <>
+          {/* Visible countdown text — updates every second visually but is hidden
+              from AT so it doesn't produce a per-second spoken readout. */}
+          <div className="text-ds-warning text-lg font-bold mt-1" aria-hidden="true">
+            {label}
+          </div>
+          {/* Throttled screen-reader timer: announces only at 5-second marks and
+              each of the final 3 seconds, so the readout conveys urgency without
+              flooding. Empty on other ticks so no announcement fires. */}
+          {/* No aria-label: it would carry the unthrottled per-second `label` and
+              defeat the throttling. The child text (throttled) is the accessible name. */}
+          <div className="sr-only" role="timer" aria-live="polite" aria-atomic="true" data-testid="countdown-sr-timer">
+            {remaining <= 3 || remaining % 5 === 0 ? label : ''}
+          </div>
+        </>
       )}
     </div>
   );

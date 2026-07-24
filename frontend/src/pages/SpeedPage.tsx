@@ -21,15 +21,18 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { AUTO_FLIP_DELAY_MS, CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
+import { useSpeedTimer } from '../hooks/useSpeedTimer';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline } from '../styles/buttonStyles';
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { focusRingCard, playableRingStyle, selectedCardStyle } from '../styles/cardStyles';
 import type { SpeedResponse } from '../types/card';
 import { SpeedPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseSpeedCommand, SPEED_HELP } from '../utils/cli/commands/speedCommands';
 import { formatSpeedState } from '../utils/cli/formatters/speedFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isSpeedPlayable } from '../utils/hints/speedHint';
 
 const SPEED_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -74,6 +77,17 @@ function SpeedPageContent() {
   } = useGameHint('speed', state);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
+  // Elapsed / best-time tracking. Signals are derived here (before the skeleton
+  // early-return) so the timer hook is always called in a stable order. The
+  // timer runs during the PLAY and STUCK phases and freezes when the game ends.
+  const timerRunning = (state?.phase === SpeedPhase.PLAY || state?.phase === SpeedPhase.STUCK) && !state?.gameEndFlag;
+  const timerEnded = state?.phase === SpeedPhase.GAME_END || !!state?.gameEndFlag;
+  const { elapsedMs, bestMs, isNewBest } = useSpeedTimer(
+    timerRunning,
+    timerEnded,
+    state?.winnerIdx === 0,
+    speedConfig.cpuDifficulty,
+  );
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('speed');
   const cliConfig: CliGameConfig<SpeedResponse, Parameters<typeof speedApi.exec>> = useMemo(
@@ -145,6 +159,14 @@ function SpeedPageContent() {
   const cpuPlayer = state.players[1];
   const humanWon = state.winnerIdx === 0;
 
+  // Format milliseconds as mm:ss for the timer / best-time readouts.
+  const formatTime = (ms: number) => {
+    const total = Math.floor(ms / 1000);
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
   const phaseName = state.gameEndFlag
     ? t('phase.gameEnd')
     : state.phase === SpeedPhase.STUCK
@@ -166,6 +188,18 @@ function SpeedPageContent() {
       confirmReset={confirmReset}
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+      headerEnd={
+        <>
+          <span data-testid="speed-timer">
+            {t('timer')}: {formatTime(elapsedMs)}
+          </span>
+          {bestMs !== null && (
+            <span className="ml-3" data-testid="speed-best-time">
+              {t('bestTime')}: {formatTime(bestMs)}
+            </span>
+          )}
+        </>
+      }
     >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
@@ -173,6 +207,17 @@ function SpeedPageContent() {
         <>
           {error && <ErrorAlert message={error} onRetry={retry} />}
           <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+          {isGameEnd && humanWon && (
+            <p
+              className={`text-center text-sm font-bold ${isNewBest ? 'text-ds-success' : 'text-ds-text-muted'}`}
+              data-testid="speed-clear-time"
+              role="status"
+            >
+              {isNewBest
+                ? t('newBest', { time: formatTime(elapsedMs) })
+                : t('clearTime', { time: formatTime(elapsedMs) })}
+            </p>
+          )}
           <div className="flex-1 flex flex-col gap-3 min-h-0">
             {/* CPU area */}
             <div className="flex items-center justify-center gap-2">
@@ -198,7 +243,11 @@ function SpeedPageContent() {
                   onClick={isStuck ? handleFlip : () => handlePlay(pi)}
                   disabled={isStuck ? loading : !isPlayPhase || selectedCardIndices.length !== 1 || loading}
                   className={`transition-transform hover:scale-105 disabled:opacity-50 ${focusRingCard}${isStuck && !loading ? ' animate-pulse cursor-pointer' : ''}`}
-                  aria-label={isStuck ? t('flipCenterPile', { n: pi + 1 }) : `${t('centerPile')} ${pi}`}
+                  aria-label={
+                    isStuck
+                      ? t('flipCenterPile', { n: pi + 1 })
+                      : t('centerPileCard', { n: pi + 1, card: cardAlt(card) })
+                  }
                 >
                   {card && <AnimatedCard card={card} width={cardWidth * 1.2} />}
                 </button>
@@ -232,20 +281,30 @@ function SpeedPageContent() {
                 </span>
               </div>
               <div className="flex gap-1 flex-wrap justify-center">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => handleSmartClick(idx, humanPlayer.cards, state.centerPiles)}
-                    disabled={!isPlayPhase || loading}
-                    aria-label={`${card.design} ${card.value}`}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={selectedCardStyle(selectedCardIndices.includes(idx))}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
+                {humanPlayer.cards.map((card, idx) => {
+                  // Highlight cards playable right now (rank ±1 of either center
+                  // pile, K↔A wrap). Ring-only: the button stays clickable so the
+                  // backend still validates the play.
+                  const playable = isPlayPhase && isSpeedPlayable(card.value, state.centerPiles);
+                  return (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}-${idx}`}
+                      onClick={() => handleSmartClick(idx, humanPlayer.cards, state.centerPiles)}
+                      disabled={!isPlayPhase || loading}
+                      aria-label={playable ? `${cardAlt(card)} (${t('playable')})` : cardAlt(card)}
+                      aria-pressed={selectedCardIndices.includes(idx)}
+                      data-playable={playable ? 'true' : undefined}
+                      className={`transition-transform ${focusRingCard}`}
+                      style={{
+                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                        ...(playable ? playableRingStyle() : {}),
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

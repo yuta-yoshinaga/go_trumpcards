@@ -27,6 +27,7 @@
   "hintFromReserve": "リザーブ{{col}}列",
   "hintFromWaste": "ウェイスト",
   "hintToFoundation": "組札{{idx}}段",
+  "allowedRanks": "[置ける: {{ranks}}]",
   "anyRank": "任意ランク",
   "hintLine": "ヒント: {{from}} → {{to}} (配置可能: {{allowed}})"
 }

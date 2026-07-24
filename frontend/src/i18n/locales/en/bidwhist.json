@@ -23,16 +23,23 @@
   "dirUptown": "Uptown",
   "dirDowntown": "Downtown",
   "dirNoTrump": "No Trump",
+  "bidTooLow": "Must exceed the current highest bid ({{tricks}} {{dir}})",
   "passButton": "Pass",
   "declareTrumpPrompt": "Choose a trump suit:",
   "exchangeButton": "Exchange ({{count}}/6)",
   "kittyProgress": "Selected: {{count}} / 6",
+  "kittyBadge": "K",
+  "kittyCardLabel": "Card from the kitty",
+  "kittyLegend": "Ringed = the 6 cards from the kitty",
   "playButton": "Play",
   "nextTrickButton": "Next trick",
   "nextRoundButton": "Next round",
   "settings": {
     "cpuDifficulty": "CPU difficulty",
-    "targetScore": "Target score"
+    "targetScore": "Target score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
   },
   "tutorial": {
     "info": "Round, contract, and team scores appear here. The first team to 7 points wins.",

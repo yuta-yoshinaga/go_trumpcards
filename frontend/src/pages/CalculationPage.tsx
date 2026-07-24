@@ -29,6 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CalculationResponse } from '../types/card';
 import { CalculationPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 
@@ -166,7 +167,9 @@ function formatCalculationState(state: CalculationResponse): string {
     `Foundations: ${state.foundations
       .map((pile, i) => {
         const top = pile[pile.length - 1];
-        return top ? `F${i}(${STEP_LABELS[i]}):${top.design[0]}${top.value}(${pile.length}/13)` : `F${i}:-`;
+        return top
+          ? `F${i}(${STEP_LABELS[i]}):${top.design[0]}${top.value}(${pile.length}/${FOUNDATION_PILE_FULL})`
+          : `F${i}:-`;
       })
       .join(' ')}`,
   );
@@ -403,54 +406,75 @@ function CalculationPageContent() {
                 const upcomingRanks = calculationUpcomingRanks(idx, top?.value, pile.length);
                 const upcomingLabel = upcomingRanks.map(valueName).join(' → ');
                 return (
-                  <button
-                    key={`f-${idx.toString()}`}
-                    type="button"
-                    className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${isHint ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
-                    onClick={() => playToFoundation(idx)}
-                    disabled={!isPlaying || loading || source === null}
-                    title={upcomingLabel ? t('upcomingRanksTooltip', { sequence: upcomingLabel }) : undefined}
-                    aria-label={
-                      nextRankLabel
-                        ? `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('nextRankAria', { rank: nextRankLabel })}`
-                        : `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('foundationCompleteAria')}`
-                    }
-                  >
-                    <span className="text-[11px] mb-0.5 text-ds-text-muted">
-                      F{idx} {STEP_LABELS[idx]}
-                    </span>
-                    <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
-                      {top ? (
-                        <AnimatedCard card={top} width={cardWidth} />
-                      ) : (
-                        <div
-                          style={{ width: cardWidth, height: cardHeight }}
-                          className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
-                        >
-                          {t('empty')}
-                        </div>
-                      )}
-                      {nextRankLabel && (
+                  <div key={`f-${idx.toString()}`} className="flex flex-col items-center">
+                    <button
+                      type="button"
+                      className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${isHint ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
+                      onClick={() => playToFoundation(idx)}
+                      disabled={!isPlaying || loading || source === null}
+                      title={upcomingLabel ? t('upcomingRanksTooltip', { sequence: upcomingLabel }) : undefined}
+                      aria-label={
+                        nextRankLabel
+                          ? `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('nextRankAria', { rank: nextRankLabel })}`
+                          : `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('foundationCompleteAria')}`
+                      }
+                    >
+                      <span className="text-[11px] mb-0.5 text-ds-text-muted">
+                        F{idx} {STEP_LABELS[idx]}
+                      </span>
+                      <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
+                        {top ? (
+                          <AnimatedCard card={top} width={cardWidth} />
+                        ) : (
+                          <div
+                            style={{ width: cardWidth, height: cardHeight }}
+                            className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+                          >
+                            {t('empty')}
+                          </div>
+                        )}
+                        {nextRankLabel && (
+                          <span
+                            data-testid={`calc-foundation-next-${idx}`}
+                            aria-hidden="true"
+                            className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30"
+                          >
+                            {t('nextRankBadge', { rank: nextRankLabel })}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-ds-text-muted mt-0.5">
+                        {pile.length}/{FOUNDATION_PILE_FULL}
+                      </span>
+                      {upcomingRanks.length > 1 && (
                         <span
-                          data-testid={`calc-foundation-next-${idx}`}
+                          data-testid={`calc-foundation-upcoming-${idx}`}
                           aria-hidden="true"
-                          className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30"
+                          className="mt-0.5 text-[10px] leading-none text-ds-text-muted opacity-60"
                         >
-                          {t('nextRankBadge', { rank: nextRankLabel })}
+                          {upcomingRanks.slice(1, 5).map(valueName).join('·')}
                         </span>
                       )}
-                    </div>
-                    <span className="text-[11px] text-ds-text-muted mt-0.5">{pile.length}/13</span>
+                    </button>
                     {upcomingRanks.length > 1 && (
-                      <span
-                        data-testid={`calc-foundation-upcoming-${idx}`}
-                        aria-hidden="true"
-                        className="mt-0.5 text-[10px] leading-none text-ds-text-muted opacity-60"
-                      >
-                        {upcomingRanks.slice(1, 5).map(valueName).join('·')}
-                      </span>
+                      <details className="mt-0.5" data-testid={`calc-foundation-upcoming-details-${idx}`}>
+                        <summary className="cursor-pointer list-none text-[10px] text-ds-text-muted underline decoration-dotted">
+                          {t('upcomingRanksToggle')}
+                        </summary>
+                        <span
+                          role="note"
+                          data-testid={`calc-foundation-upcoming-full-${idx}`}
+                          className="mt-0.5 block max-w-[6rem] break-words text-center text-[10px] leading-tight text-ds-text-muted"
+                          aria-label={t('upcomingRanksDetailAria', {
+                            idx,
+                            sequence: upcomingLabel,
+                          })}
+                        >
+                          {upcomingLabel}
+                        </span>
+                      </details>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -466,6 +490,7 @@ function CalculationPageContent() {
                     onClick={handleSelectStock}
                     disabled={!isPlaying || loading}
                     aria-pressed={sourceIsStock}
+                    aria-label={t('stockTopAria', { card: cardAlt(state.stockTop) })}
                     data-testid="calc-stock-button"
                     className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${sourceIsStock ? 'ring-2 ring-ds-warning' : ''} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                   >
@@ -499,7 +524,12 @@ function CalculationPageContent() {
                   .slice(-3)
                   .map((c) => valueName(c.value))
                   .join('・');
-                const wasteLabel = pile.length > 0 ? t('wasteRanksTooltip', { idx, ranks: wasteRanks }) : undefined;
+                // Non-empty piles get the top-ranks tooltip; empty piles still
+                // need a spoken name so SR users can tell them apart (they were
+                // previously unlabeled, unlike the always-labeled foundations).
+                const wasteRanksLabel =
+                  pile.length > 0 ? t('wasteRanksTooltip', { idx, ranks: wasteRanks }) : undefined;
+                const wasteAriaLabel = wasteRanksLabel ?? t('wasteEmptyAria', { idx });
                 return (
                   <div key={`w-${idx.toString()}`} className="flex flex-col items-center">
                     <div className="text-[11px] mb-0.5 text-ds-text-muted">
@@ -516,8 +546,8 @@ function CalculationPageContent() {
                       }}
                       disabled={!isPlaying || loading || (!top && !canAcceptStock)}
                       aria-pressed={selected}
-                      title={wasteLabel}
-                      aria-label={wasteLabel}
+                      title={wasteRanksLabel}
+                      aria-label={wasteAriaLabel}
                       data-testid={`calc-waste-button-${idx.toString()}`}
                       className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${selected ? 'ring-2 ring-ds-warning' : ''} ${isHintSource ? 'ring-2 ring-ds-success animate-pulse' : ''} ${canAcceptStock ? 'ring-2 ring-ds-info/70' : ''}`}
                     >

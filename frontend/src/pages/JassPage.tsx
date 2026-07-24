@@ -230,6 +230,30 @@ function JassPageContent() {
           dataTutorial="ja-trick-display"
         />
 
+        {/* Previous trick reviewer: lets the player recount the just-completed trick + winner */}
+        <details className="mb-2 p-2 rounded bg-black/30" data-testid="ja-previous-trick">
+          <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('previousTrick')}</summary>
+          <div className="mt-1">
+            {state.lastTrick.length > 0 ? (
+              <TrickDisplay
+                currentTrick={state.lastTrick}
+                players={state.players}
+                cardWidth={Math.round(cardWidth * 0.7)}
+                label={
+                  state.lastTrickWinner >= 0
+                    ? t('previousTrickWinner', {
+                        name: playerName(state.lastTrickWinner, state.players[state.lastTrickWinner]?.isHuman === true),
+                      })
+                    : t('previousTrick')
+                }
+                winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+              />
+            ) : (
+              <div className="text-ds-text-muted text-sm">{t('previousTrickEmpty')}</div>
+            )}
+          </div>
+        </details>
+
         {/* Team scores */}
         <div className="my-3 p-2 rounded bg-black/30" data-tutorial="ja-score-table">
           <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
@@ -270,6 +294,39 @@ function JassPageContent() {
             </tbody>
           </table>
         </div>
+
+        {/* Weis (meld) declaration panel — surfaces where the Weis bonus came from.
+            Only per-team totals are exposed by the API, so we visualize those faithfully:
+            each team's declared Weis total, a "counted" marker for the scoring team, and a
+            note explaining the meld mechanic. */}
+        {state.config.enableWeis && (state.roundWeisPoints[0] > 0 || state.roundWeisPoints[1] > 0) && (
+          <section
+            className="my-3 p-3 rounded bg-black/30 border border-ds-warning/40"
+            aria-label={t('weisPanel.title')}
+            data-testid="jass-weis-panel"
+          >
+            <h3 className="text-ds-warning text-sm font-semibold mb-2">{t('weisPanel.title')}</h3>
+            <ul className="flex flex-col gap-1">
+              {[0, 1].map((team) => (
+                <li key={team} className="flex items-center gap-2 text-sm text-ds-text-muted">
+                  <span>
+                    {t('team', { n: team })}
+                    {humanPlayer?.team === team ? t('weisPanel.you') : ''}
+                  </span>
+                  <span className="text-ds-warning font-medium">
+                    {t('weisPanel.teamPoints', { points: state.roundWeisPoints[team] })}
+                  </span>
+                  {state.roundWeisPoints[team] > 0 && (
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-ds-warning/20 text-ds-warning">
+                      {t('weisPanel.scored')}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs text-ds-text-muted">{t('weisPanel.note')}</p>
+          </section>
+        )}
 
         <RoundScoreAnnouncement
           active={isRoundEnd || isGameEnd}
@@ -317,7 +374,11 @@ function JassPageContent() {
 
         {hint && (
           <div className="text-ds-warning text-sm mb-2">
-            {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${hint.reason})`}
+            {/* hint.reason is a raw backend identifier; translate via hintReason.*,
+                falling back to a generic label for any unknown reason. */}
+            {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, {
+              defaultValue: t('hintReason.fallback'),
+            })})`}
           </div>
         )}
 

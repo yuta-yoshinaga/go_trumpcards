@@ -13,5 +13,7 @@
   "kittyCards": "Kitty Cards",
   "tableCards": "Table",
   "playerFinished": " (finished)",
-  "playerCardCount": " ({{count}} cards)"
+  "playerCardCount": " ({{count}} cards)",
+  "currentBidder": "Current bidder: {{name}}",
+  "promptBid": "Place your bid (b 0-3, 0 = pass)"
 }

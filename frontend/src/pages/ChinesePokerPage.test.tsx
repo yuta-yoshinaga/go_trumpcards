@@ -97,12 +97,24 @@ describe('ChinesePokerPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100));
   });
 
-  it('renders set hands phase with 13 cards', async () => {
+  it('renders set hands phase with 13 cards labeled by card name', async () => {
     mockExec.mockResolvedValue(setHandsState);
     renderWithProviders(<ChinesePokerPage />);
     await waitFor(() => expect(screen.getByTestId('set-hands-button')).toBeInTheDocument());
-    const cardButtons = screen.getAllByRole('button', { name: /Card \d+/ });
+    // Hand cards are now named by suit+rank (cardAlt), not the hardcoded "Card N".
+    const cardButtons = screen.getAllByRole('button', { name: /^[♠♥♣♦]/ });
     expect(cardButtons.length).toBe(13);
+    expect(screen.queryByRole('button', { name: /Card \d+/ })).not.toBeInTheDocument();
+  });
+
+  it('includes the assigned row in a hand card aria-label once assigned', async () => {
+    mockExec.mockResolvedValue(setHandsState);
+    renderWithProviders(<ChinesePokerPage />);
+    // First card is ♥ A (design idx 1, value 1).
+    const firstCard = await screen.findByRole('button', { name: '♥ A' });
+    // First tap assigns it to the front row.
+    fireEvent.click(firstCard);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♥ A（フロント）' })).toBeInTheDocument());
   });
 
   it('shows the front/middle/back row preview and updates it on assignment', async () => {
@@ -116,11 +128,11 @@ describe('ChinesePokerPage', () => {
     expect(front()).toHaveLength(0);
     const middle = () => within(screen.getByTestId('cp-row-middle')).queryAllByTestId('animated-card');
     // First click assigns the card to the front row.
-    fireEvent.click(screen.getByRole('button', { name: 'Card 0' }));
+    fireEvent.click(screen.getByTestId('cp-hand-card-0'));
     expect(front()).toHaveLength(1);
     expect(back()).toHaveLength(12);
     // Second click cycles front → middle.
-    fireEvent.click(screen.getByRole('button', { name: 'Card 0' }));
+    fireEvent.click(screen.getByTestId('cp-hand-card-0'));
     expect(front()).toHaveLength(0);
     expect(middle()).toHaveLength(1);
     expect(back()).toHaveLength(12);
@@ -156,11 +168,33 @@ describe('ChinesePokerPage', () => {
     expect(mockExec).toHaveBeenCalledWith('bet', 100);
   });
 
+  it('submits the edited bet amount via the ChipBetInput', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('ベット'), { target: { value: '200' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 200));
+  });
+
+  it('disables the bet button, blocks the b key, and shows an error for an out-of-range bet', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    // 15 is not a multiple of 10 → invalid.
+    fireEvent.change(screen.getByLabelText('ベット'), { target: { value: '15' } });
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'b' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   // Assign the cards at the given indices in order: the first 3 become the front
   // row, the next 5 the middle row, and the remaining 5 stay in the back row.
   const assignFrontMiddle = (frontMid: number[]) => {
     for (const i of frontMid) {
-      fireEvent.click(screen.getByRole('button', { name: `Card ${i}` }));
+      fireEvent.click(screen.getByTestId(`cp-hand-card-${i}`));
     }
   };
 

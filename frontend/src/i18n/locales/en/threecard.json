@@ -13,7 +13,8 @@
     "bet": "Bet",
     "play": "Play",
     "fold": "Fold",
-    "reset": "Reset"
+    "reset": "Reset",
+    "rebet": "Rebet ({{amount}})"
   },
   "phase": {
     "bet": "Betting",
@@ -33,6 +34,11 @@
     "anteBonus": "Ante Bonus",
     "pairPlus": "Pair Plus",
     "total": "Total"
+  },
+  "betSlip": {
+    "ante": "Ante",
+    "pairPlus": "Pair Plus",
+    "playRequired": "To Play"
   },
   "handRank": {
     "1": "High Card",

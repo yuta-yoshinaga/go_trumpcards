@@ -127,11 +127,74 @@ describe('LetItRidePage', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
   });
 
+  it('applies min=10 and step=10 guardrails to the bet input', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    const input = screen.getByLabelText('ベット') as HTMLInputElement;
+    expect(input).toHaveAttribute('min', '10');
+    expect(input).toHaveAttribute('step', '10');
+    // max is capped at 1/3 of the chip balance (1000 → 333).
+    expect(input).toHaveAttribute('max', '333');
+  });
+
+  it('clamps a below-min bet up to the minimum of 10', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    const input = screen.getByLabelText('ベット') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: '5' } });
+    expect(input.value).toBe('10');
+  });
+
+  it('clamps an over-max bet down to the chip-capped maximum', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    const input = screen.getByLabelText('ベット') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: '99999' } });
+    // 1000 / 3 floored = 333.
+    expect(input.value).toBe('333');
+  });
+
+  it('submits a valid clamped bet amount', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    const input = screen.getByLabelText('ベット') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: '200' } });
+    expect(input.value).toBe('200');
+    mockApi.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200));
+  });
+
   it('shows payout reference panel in bet phase', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<LetItRidePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
     expect(screen.getByText('配当表')).toBeInTheDocument();
+  });
+
+  it('explains the 3-bet split and pull-back rule in bet phase', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    const panel = screen.getByTestId('bet-structure');
+    expect(panel).toBeInTheDocument();
+    expect(panel).toHaveTextContent('なぜ3口に分かれるの？');
+    // Accurate to the domain: 3x deduction caps a single bet at 1/3 of chips.
+    expect(panel).toHaveTextContent('1/3');
+    expect(panel).toHaveTextContent('ベット3を引き戻せます');
+    expect(panel).toHaveTextContent('ベット2を引き戻せます');
+    expect(panel).toHaveTextContent('ベット1は必ず残ります');
+  });
+
+  it('hides the bet-structure explanation outside the bet phase', async () => {
+    mockApi.mockResolvedValue(firstDecisionState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByTestId('bet-status')).toBeInTheDocument());
+    expect(screen.queryByTestId('bet-structure')).not.toBeInTheDocument();
   });
 
   it('shows FIRST_DECISION phase with pull and letitride buttons', async () => {
@@ -185,6 +248,15 @@ describe('LetItRidePage', () => {
     expect(screen.getByTestId('current-risk')).toHaveTextContent('200');
   });
 
+  it('exposes the current risk total as a polite live region so pulls are announced', async () => {
+    mockApi.mockResolvedValue(firstDecisionState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByTestId('bet-status')).toBeInTheDocument());
+    const risk = screen.getByTestId('current-risk');
+    expect(risk).toHaveAttribute('role', 'status');
+    expect(risk).toHaveAttribute('aria-live', 'polite');
+  });
+
   it('shows END phase with reset button and payout breakdown on win', async () => {
     mockApi.mockResolvedValue(endPhaseWin);
     renderWithProviders(<LetItRidePage />);
@@ -197,6 +269,14 @@ describe('LetItRidePage', () => {
     renderWithProviders(<LetItRidePage />);
     // handRank=9 → 'handRank.9' → 'ロイヤルフラッシュ'
     await waitFor(() => expect(screen.getByText(/ロイヤルフラッシュ/)).toBeInTheDocument());
+  });
+
+  it('does not label an unevaluated hand rank as High Card', async () => {
+    mockApi.mockResolvedValue({ ...endPhaseWin, handRank: -1 });
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    // handRank of -1 (unevaluated) must not fall back to the "High Card" label.
+    expect(screen.queryByText(/ハイカード/)).not.toBeInTheDocument();
   });
 
   it('shows individual bet payouts when non-zero', async () => {

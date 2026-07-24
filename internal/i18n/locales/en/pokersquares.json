@@ -8,5 +8,8 @@
   "currentCardNone": "Current card: (none)",
   "placedLine": "Placed: {{placed}}/{{total}}  Total score: {{score}}",
   "cuiPlaceHint": "Place a card: p <row> <col> or place <row> <col> (0-based, e.g. p 2 3)",
+  "hintLine": "Hint: place {{card}} at ({{r}},{{c}}) - {{reason}}",
+  "hintSynergy": "it pairs, flushes, or extends a straight with cards already in that row/column",
+  "hintAny": "no synergy yet; any empty cell keeps your options open",
   "gameComplete": "Game complete! Total score: {{score}}"
 }

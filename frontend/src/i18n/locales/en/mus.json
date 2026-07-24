@@ -36,6 +36,8 @@
   "corteButton": "Corte (play)",
   "discardButton": "Exchange",
   "discardSelected": "Selected {{count}}",
+  "discardGuide": "Choose 1–4 cards to exchange",
+  "discardCount": "{{count}} selected",
   "keepAll": "Keep all",
   "bet": {
     "paso": "Paso (pass)",
@@ -76,5 +78,17 @@
   },
   "envidoStepperLabel": "Envido bet amount",
   "envidoIncrease": "Increase envido by 1",
-  "envidoDecrease": "Decrease envido by 1"
+  "envidoDecrease": "Decrease envido by 1",
+  "handSummary": {
+    "title": "Hand summary",
+    "pares": "Pares",
+    "juego": "Juego",
+    "paresNone": "None",
+    "paresPar": "Par (one pair)",
+    "paresMedias": "Medias (three)",
+    "paresDuples": "Duples (two pairs)",
+    "juegoBest": "31 ★ (best)",
+    "juegoYes": "{{points}} (has Juego)",
+    "juegoPunto": "Punto {{points}} (no Juego)"
+  }
 }

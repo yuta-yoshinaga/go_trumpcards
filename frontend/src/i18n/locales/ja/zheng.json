@@ -1,0 +1,65 @@
+{
+  "rank": {
+    "1": "1位",
+    "2": "2位",
+    "3": "3位",
+    "4": "4位"
+  },
+  "cardCount": "{{count}}枚",
+  "rankTable": {
+    "title": "順位表"
+  },
+  "selectToPlay": "カードを選択して出す",
+  "tableCards": "場のカード",
+  "tableEmpty": "(なし)",
+  "playButton": "選択したカードを出す",
+  "passButton": "パス",
+  "invalidReason": {
+    "invalidType": "有効な役ではありません（シングル・ペア・スリーカード・ストレート・連続ペア・爆弾・ジョーカーボム）",
+    "wrongType": "場と同じ役にしてください（場と違う役は出せません）",
+    "wrongCount": "場と同じ枚数にしてください",
+    "tooWeak": "場より高いランクが必要です",
+    "needBomb": "場の爆弾には爆弾かジョーカーボムでしか勝てません",
+    "unbeatable": "場のジョーカーボムには勝てません"
+  },
+  "phase": {
+    "play": "プレイ",
+    "end": "終了"
+  },
+  "settings": {
+    "title": "ゲーム設定",
+    "cpuDifficulty": "CPU難易度:",
+    "difficultyNormal": "ノーマル",
+    "difficultyEasy": "イージー",
+    "difficultyHard": "ハード"
+  },
+  "tutorial": {
+    "tableCards": "場に出されたカードです。同じ役・同じ枚数で、より高いランクを出します。スートは強さに関係ありません。",
+    "playerHand": "あなたの手札です。カードをクリックして選択します。",
+    "playPass": "選択したカードを出すか、パスします（リード時はパスできません）。",
+    "cpuArea": "CPUプレイヤーの残り枚数です。",
+    "resetButton": "ゲームをリセットします。"
+  },
+  "hint": {
+    "canPlay": "場を上回れる組み合わせがあります",
+    "shouldPass": "場を上回れません。パスを検討しましょう",
+    "playLow": "リードです。弱いカードから出しましょう"
+  },
+  "result": {
+    "rankings": "ゲーム終了！ {{rankings}}"
+  },
+  "playType": {
+    "single": "シングル",
+    "pair": "ペア",
+    "triple": "スリーカード",
+    "straight": "ストレート",
+    "pairRun": "連続ペア",
+    "bomb": "爆弾",
+    "jokerBomb": "ジョーカーボム"
+  },
+  "announce": {
+    "yourTurn": "あなたの手番です",
+    "yourTurnLead": "あなたの手番です。リードなのでパスできません。",
+    "finished": "あがりました（{{rank}}）"
+  }
+}

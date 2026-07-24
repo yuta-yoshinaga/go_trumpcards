@@ -24,5 +24,16 @@
   "cuiSolitaireGameClear": "ゲームクリア！",
   "cuiSolitaireGameOver": "ゲームオーバー",
   "cuiSolitaireMoves": "手数: {{count}}",
-  "cuiEmptyCol": "[空]"
+  "cuiEmptyCol": "[空]",
+  "pokerHandRank0": "ハイカード",
+  "pokerHandRank1": "ワンペア",
+  "pokerHandRank2": "ツーペア",
+  "pokerHandRank3": "スリーカード",
+  "pokerHandRank4": "ストレート",
+  "pokerHandRank5": "フラッシュ",
+  "pokerHandRank6": "フルハウス",
+  "pokerHandRank7": "フォーカード",
+  "pokerHandRank8": "ストレートフラッシュ",
+  "pokerHandRank9": "ロイヤルフラッシュ",
+  "pokerHandRank10": "ファイブカード"
 }

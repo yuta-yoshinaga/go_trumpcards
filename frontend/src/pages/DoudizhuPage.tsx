@@ -26,6 +26,7 @@ import type { DoudizhuResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { classifyDoudizhuCombo, doudizhuInvalidReason } from '../utils/doudizhuComboValidator';
 
 type ApiArgs = {
   command: string;
@@ -187,6 +188,20 @@ function DoudizhuPageContent() {
     return t(`phase.${phase}`, { defaultValue: phase });
   }, [state, phase, isGameEnd, t]);
 
+  // Classify the current selection and pre-validate it against the table so the
+  // player sees why a play is illegal before submitting (backend still validates).
+  const selectionHint = useMemo(() => {
+    const cards = humanPlayer?.cards ?? [];
+    const selected = Array.from(selectedCards)
+      .sort((a, b) => a - b)
+      .map((i) => cards[i])
+      .filter((card): card is NonNullable<typeof card> => card != null);
+    if (phase !== 'play' || !isHumanTurn || selected.length === 0) return null;
+    const combo = classifyDoudizhuCombo(selected);
+    const reason = doudizhuInvalidReason(selected, state?.tableCards ?? []);
+    return { combo, reason, count: selected.length };
+  }, [humanPlayer, selectedCards, phase, isHumanTurn, state?.tableCards]);
+
   if (!state) return <GameSkeleton gameKey="doudizhu" layout={{ kind: 'card-grid', count: 17, cols: 'grid-cols-6' }} />;
 
   return (
@@ -277,28 +292,55 @@ function DoudizhuPageContent() {
             </div>
           )}
 
-          {/* Human hand */}
-          {humanPlayer && phase === 'play' && (
+          {/* Human hand — shown during both bid and play phases (display-only while bidding) */}
+          {humanPlayer && (phase === 'play' || phase === 'bid') && (
             <div data-tutorial="ddz-hand">
               <div className="flex flex-wrap justify-center gap-1">
-                {humanPlayer.cards.map((c, i) => (
-                  <button
-                    key={`hand-${c.design}-${c.value}`}
-                    type="button"
-                    className={
-                      selectedCards.has(i)
-                        ? 'transition-transform -translate-y-2 ring-2 ring-ds-warning rounded'
-                        : 'transition-transform'
-                    }
-                    onClick={() => toggleCard(i)}
-                    aria-label={cardAlt(c)}
-                    aria-pressed={selectedCards.has(i)}
-                  >
-                    <AnimatedCard card={c} width={cardWidth * 0.9} />
-                  </button>
-                ))}
+                {humanPlayer.cards.map((c, i) => {
+                  const interactive = phase === 'play';
+                  const selected = interactive && selectedCards.has(i);
+                  return (
+                    <button
+                      key={`hand-${c.design}-${c.value}`}
+                      type="button"
+                      disabled={!interactive}
+                      className={
+                        selected
+                          ? 'transition-transform -translate-y-2 ring-2 ring-ds-warning rounded'
+                          : 'transition-transform'
+                      }
+                      onClick={interactive ? () => toggleCard(i) : undefined}
+                      aria-label={cardAlt(c)}
+                      aria-pressed={interactive ? selectedCards.has(i) : undefined}
+                    >
+                      <AnimatedCard card={c} width={cardWidth * 0.9} />
+                    </button>
+                  );
+                })}
               </div>
-              {isHumanTurn && (
+              {selectionHint && (
+                <div className="mt-2 text-center text-xs" data-testid="ddz-combo-hint">
+                  {selectionHint.reason === 'notCombo' ? (
+                    <p role="status" data-testid="ddz-invalid-combo" className="font-medium text-ds-warning">
+                      {t('combo.notCombo')}
+                    </p>
+                  ) : selectionHint.reason === 'noBeat' ? (
+                    <p role="status" data-testid="ddz-no-beat" className="font-medium text-ds-warning">
+                      {t('combo.noBeat')}
+                    </p>
+                  ) : (
+                    selectionHint.combo && (
+                      <p role="status" data-testid="ddz-combo-type" className="font-semibold text-ds-info">
+                        {`${t('combo.selectedLabel')}: ${t('combo.badge', {
+                          type: t(`combo.type.${selectionHint.combo.type}`),
+                          count: selectionHint.count,
+                        })}`}
+                      </p>
+                    )
+                  )}
+                </div>
+              )}
+              {phase === 'play' && isHumanTurn && (
                 <div className="flex justify-center gap-2 mt-2">
                   <button type="button" className={btnPrimary} onClick={handlePlay} disabled={selectedCards.size === 0}>
                     {t('button.play')}

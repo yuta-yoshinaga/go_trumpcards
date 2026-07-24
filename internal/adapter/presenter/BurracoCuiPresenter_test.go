@@ -242,3 +242,70 @@ func TestBurracoCuiPresenter_ActionLogOutput(t *testing.T) {
 		m.AssertExpectations(t)
 	})
 }
+
+// newBurracoHintGame builds a real 2-player Burraco game for hint tests.
+func newBurracoHintGame() *domain.Burraco {
+	players := []*domain.BurracoPlayer{
+		domain.NewCanastaPlayer(true),
+		domain.NewCanastaPlayer(false),
+	}
+	return domain.NewCanasta(domain.NewTrumpCardsWithDecks(2, 4), players, domain.DefaultCanastaConfig())
+}
+
+func TestBurracoCuiPresenter_HintOutput(t *testing.T) {
+	p := &presenter.BurracoCuiPresenter{}
+
+	t.Run("no hint on CPU turn", func(t *testing.T) {
+		g := newBurracoHintGame()
+		g.SetPhase(domain.BurracoPhaseDraw)
+		g.SetCurrentPlayerIdx(1) // CPU
+		out := p.HintOutput(g)
+		assert.NotEmpty(t, out)
+	})
+
+	t.Run("draw stock", func(t *testing.T) {
+		g := newBurracoHintGame()
+		g.SetPhase(domain.BurracoPhaseDraw)
+		g.SetCurrentPlayerIdx(0)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 9, false)})
+		assert.NotEmpty(t, p.HintOutput(g))
+	})
+
+	t.Run("draw discard", func(t *testing.T) {
+		g := newBurracoHintGame()
+		g.SetPhase(domain.BurracoPhaseDraw)
+		g.SetCurrentPlayerIdx(0)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
+		assert.NotEmpty(t, p.HintOutput(g))
+	})
+
+	t.Run("meld", func(t *testing.T) {
+		g := newBurracoHintGame()
+		g.SetPhase(domain.BurracoPhaseMeld)
+		g.SetCurrentPlayerIdx(0)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		assert.NotEmpty(t, p.HintOutput(g))
+	})
+
+	t.Run("skip meld", func(t *testing.T) {
+		g := newBurracoHintGame()
+		g.SetPhase(domain.BurracoPhaseMeld)
+		g.SetCurrentPlayerIdx(0)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		assert.NotEmpty(t, p.HintOutput(g))
+	})
+
+	t.Run("discard", func(t *testing.T) {
+		g := newBurracoHintGame()
+		g.SetPhase(domain.BurracoPhaseDiscard)
+		g.SetCurrentPlayerIdx(0)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		out := p.HintOutput(g)
+		assert.NotEmpty(t, out)
+	})
+}

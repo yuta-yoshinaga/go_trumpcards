@@ -24,6 +24,10 @@
     "win": "{{handName}}! {{payout}}コイン獲得!",
     "lose": "役なし。次のハンドで頑張りましょう!"
   },
+  "resultAnnounce": {
+    "win": "役: {{handName}}、配当 {{payout}} 枚",
+    "lose": "役なし、ベット没収"
+  },
   "payoutTable": {
     "title": "配当表",
     "hand": "役",
@@ -58,5 +62,10 @@
     "drawAll": "ホールドなし — 全て交換"
   },
   "card": "カード {{index}}",
-  "dealGuide": "コイン数を選んでディールしてゲーム開始"
+  "dealGuide": "コイン数を選んでディールしてゲーム開始",
+  "a11y": {
+    "holdOn": "カード{{index}}をホールド",
+    "holdOff": "カード{{index}}のホールドを解除",
+    "kbdHint": "数字キー 1〜5 で各カードのホールドを切り替えられます"
+  }
 }

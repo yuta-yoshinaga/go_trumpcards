@@ -26,6 +26,8 @@
   "playButton": "出す",
   "captureButton": "捕獲",
   "trailButton": "トレイル",
+  "tablaButton": "タブラ捕獲！",
+  "tablaReady": "タブラ！",
   "newGame": "新しいゲーム",
   "result": {
     "title": "最終得点",
@@ -45,5 +47,8 @@
     "playButton": "選んだ札を出します。場札を選んでいれば捕獲、選んでいなければトレイルになります。",
     "info": "タブラネット（Tablić）は52枚デッキを使う4人用（あなた＋CPU3人）の漁系カードゲームです。各自4枚＋場4枚で始め、山札が尽きるまで配り直します。最多枚数・10♦・2♣・各A・各J・各タブラを得点し、最高点が勝ちです。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
-  }
+  },
+  "captureAnnounce": "{{player}} が場札を捕獲しました",
+  "tablaAnnounce": "{{player}} がタブラ（場を一掃）を達成しました",
+  "listSeparator": "、"
 }

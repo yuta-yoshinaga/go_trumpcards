@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { goFishApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -15,6 +15,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -36,6 +37,7 @@ import { valueName } from '../utils/cardUtils';
 import { GOFISH_HELP, parseGofishCommand } from '../utils/cli/commands/gofishCommands';
 import { formatGofishState } from '../utils/cli/formatters/gofishFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
 
 /** CPU difficulty options for Go Fish. */
 const CPU_DIFFICULTY_OPTIONS = [
@@ -127,6 +129,54 @@ function GoFishPageContent() {
 
   const knownRanks = useGoFishKnownRanks(state);
 
+  // Keyboard: number keys pick the opponent, arrows cycle the rank, Enter/a asks.
+  // Selection changes are announced via an aria-live region (below), on top of
+  // the per-button aria-pressed state.
+  const [kbdAnnounce, setKbdAnnounce] = useState('');
+  const kbdCpuPlayers = useMemo(() => state?.players.filter((p) => !p.isHuman) ?? [], [state?.players]);
+  const kbdHumanRanks = useMemo(() => {
+    const human = state?.players.find((p) => p.isHuman);
+    return human ? [...new Set(human.cards.map((c) => c.value))].sort((a, b) => a - b) : [];
+  }, [state?.players]);
+  const kbdIsHumanTurn =
+    state?.phase === GoFishPhase.PLAY && state.players[state.currentTurn]?.isHuman === true && !loading;
+  const kbdCanAsk = kbdIsHumanTurn && selectedTarget !== null && selectedRank !== null;
+  const cycleRank = useCallback(
+    (dir: 1 | -1) => {
+      if (kbdHumanRanks.length === 0) return;
+      const cur = selectedRank === null ? -1 : kbdHumanRanks.indexOf(selectedRank);
+      const next =
+        cur === -1
+          ? dir === 1
+            ? 0
+            : kbdHumanRanks.length - 1
+          : (cur + dir + kbdHumanRanks.length) % kbdHumanRanks.length;
+      const rank = kbdHumanRanks[next];
+      handleSelectRank(rank);
+      setKbdAnnounce(t('a11y.rankSelected', { rank: valueName(rank) }));
+    },
+    [kbdHumanRanks, selectedRank, handleSelectRank, t],
+  );
+  const askBindings = useMemo(() => {
+    const bindings = kbdCpuPlayers.map((p, i) => ({
+      key: String(i + 1),
+      action: () => {
+        handleSelectTarget(p.id);
+        setKbdAnnounce(t('a11y.targetSelected', { name: playerName(p.id, false) }));
+      },
+      enabled: kbdIsHumanTurn,
+    }));
+    bindings.push({ key: 'ArrowRight', action: () => cycleRank(1), enabled: kbdIsHumanTurn });
+    bindings.push({ key: 'ArrowLeft', action: () => cycleRank(-1), enabled: kbdIsHumanTurn });
+    // Ask key is the letter "a" only. Enter is deliberately not bound: the hook
+    // listens at the document level and does not exclude BUTTON, so an Enter
+    // binding would double-fire (native button activation + this handler) and
+    // send a duplicate ask when a button is focused.
+    bindings.push({ key: 'a', action: handleAsk, enabled: kbdCanAsk });
+    return bindings;
+  }, [kbdCpuPlayers, handleSelectTarget, cycleRank, handleAsk, kbdIsHumanTurn, kbdCanAsk, t]);
+  useActionKeyboardNav({ bindings: askBindings, enabled: !!kbdIsHumanTurn });
+
   if (!state) return <GameSkeleton gameKey="gofish" layout={{ kind: 'trick-taking', footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
@@ -194,6 +244,10 @@ function GoFishPageContent() {
             {/* Turn & deck info */}
             <div className="text-ds-text-primary text-center mb-2 flex items-center justify-center gap-4">
               <span>{t('deck', { count: state.deckRemaining })}</span>
+            </div>
+
+            <div className="sr-only" role="status" aria-live="polite" data-testid="gf-kbd-announce">
+              {kbdAnnounce}
             </div>
 
             {/* CPU player areas */}
@@ -313,9 +367,12 @@ function GoFishPageContent() {
 
             <div className="flex gap-2 items-center" data-tutorial="gf-ask-button">
               {isHumanTurn && (
-                <button type="button" className={btnPrimary} onClick={handleAsk} disabled={!canAsk}>
-                  {t('button.ask')}
-                </button>
+                <>
+                  <button type="button" className={btnPrimary} onClick={handleAsk} disabled={!canAsk}>
+                    {t('button.ask')}
+                  </button>
+                  <span className="text-ds-text-muted text-xs hidden sm:inline">{t('a11y.kbdHint')}</span>
+                </>
               )}
               <GameResetButton
                 isGameEnd={!!isGameEnd}

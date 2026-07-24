@@ -10,8 +10,41 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// crazyEightsPlayerStr returns the display string for a single CrazyEights player.
-func crazyEightsPlayerStr(player *domain.CrazyEightsPlayer, i int) string {
+// crazyEightsIsLegal reports whether a card may be played onto the current
+// discard top (mirrors the domain's unexported isValidPlay): eights are always
+// legal; once a suit is chosen only that suit matches; otherwise suit or rank.
+func crazyEightsIsLegal(card, top *domain.Card, chosenSuit int) bool {
+	if card.GetValue() == domain.CrazyEightsWildValue {
+		return true
+	}
+	if top == nil {
+		return true
+	}
+	if chosenSuit > 0 {
+		return card.GetDesign() == chosenSuit
+	}
+	return card.GetDesign() == top.GetDesign() || card.GetValue() == top.GetValue()
+}
+
+// crazyEightsHandStr renders the human hand as an indexed list, appending "*"
+// to each card that is legal to play right now.
+func crazyEightsHandStr(player *domain.CrazyEightsPlayer, top *domain.Card, chosenSuit int) string {
+	parts := make([]string, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		c := player.GetCard(i)
+		s := "[" + strconv.Itoa(i) + "]" + cuiCardStr(c)
+		if crazyEightsIsLegal(c, top, chosenSuit) {
+			s += "*"
+		}
+		parts[i] = s
+	}
+	return strings.Join(parts, "  ")
+}
+
+// crazyEightsPlayerStr returns the display string for a single CrazyEights
+// player. When markLegal is set (the human's play turn), legal cards are
+// starred to spare the player from matching suit/rank by hand.
+func crazyEightsPlayerStr(player *domain.CrazyEightsPlayer, i int, markLegal bool, top *domain.Card, chosenSuit int) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("crazyeights.playerLine",
 		"name", cuiPlayerName(player, i),
@@ -19,7 +52,11 @@ func crazyEightsPlayerStr(player *domain.CrazyEightsPlayer, i int) string {
 		"round", strconv.Itoa(player.GetRoundScore()),
 		"cards", strconv.Itoa(player.GetCardsSize())) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		if markLegal {
+			b.WriteString(crazyEightsHandStr(player, top, chosenSuit) + "\n")
+		} else {
+			b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		}
 	}
 	return b.String()
 }
@@ -44,8 +81,13 @@ func (p *CrazyEightsCuiPresenter) Output(g interfaces.CrazyEightsGame, lastErr e
 			b.WriteString("\n")
 		}
 
+		phase := g.GetPhase()
+		currentIdx := g.GetCurrentPlayerIdx()
+		top := g.GetDiscardTop()
+		chosenSuit := g.GetChosenSuit()
 		for i := 0; i < g.GetPlayerCnt(); i++ {
-			b.WriteString(crazyEightsPlayerStr(g.GetPlayer(i), i))
+			markLegal := phase == domain.CrazyEightsPhasePlay && i == currentIdx
+			b.WriteString(crazyEightsPlayerStr(g.GetPlayer(i), i, markLegal, top, chosenSuit))
 		}
 
 		b.WriteString("----------\n")
@@ -59,9 +101,8 @@ func (p *CrazyEightsCuiPresenter) Output(g interfaces.CrazyEightsGame, lastErr e
 			b.WriteString(color.Green(banner) + "\n")
 			return
 		}
-		switch g.GetPhase() {
+		switch phase {
 		case domain.CrazyEightsPhasePlay:
-			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("crazyeights.promptCurrentPlayer",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("crazyeights.promptPlayHelp") + "\n")

@@ -248,6 +248,128 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] }));
   });
 
+  it('warns via a live region when clicking past the discard cap', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+
+    // Cap is 1 (3 dealt → discard 1). Selecting card 0 reaches the cap; no warning yet.
+    fireEvent.click(cardButtons[0]);
+    expect(screen.queryByTestId('pn-discard-limit-announce')).not.toBeInTheDocument();
+
+    // Clicking a second, unselected card is over the cap → the warning appears.
+    fireEvent.click(cardButtons[1]);
+    const announce = await screen.findByTestId('pn-discard-limit-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    expect(announce).toHaveTextContent('選択できるのは1枚まで');
+  });
+
+  it('describes the discard cap on the hand group and does not warn on normal deselect', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+
+    const group = cardButtons[0].closest('[aria-describedby]');
+    expect(group).toHaveAttribute('aria-describedby', 'pn-discard-limit-desc');
+    expect(document.getElementById('pn-discard-limit-desc')).toHaveTextContent('最大1枚');
+
+    // Selecting then deselecting the same card is normal — no warning.
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[0]);
+    expect(screen.queryByTestId('pn-discard-limit-announce')).not.toBeInTheDocument();
+  });
+
+  it('a card click is inert once the confirm step has started', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    // Select the first card and open the confirm step.
+    fireEvent.click(cardButtons[0]);
+    const discardBtn = screen.getByRole('button', { name: '1枚捨ててください。' });
+    await waitFor(() => expect(discardBtn).not.toBeDisabled());
+    fireEvent.click(discardBtn);
+    expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
+    // Clicking another card during confirm must not change the selection or
+    // dismiss the dialog (consistent with the keyboard behavior).
+    fireEvent.click(cardButtons[1]);
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
+  });
+
+  it('keyboard: a number key selects a card and Enter steps through confirm to commit', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    mockExec.mockClear();
+    // "1" selects the first hole card.
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
+    // First Enter opens the confirm step without committing.
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] });
+    // Second Enter commits the discard.
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] }));
+  });
+
+  it('keyboard: Escape deselects a discard candidate', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false'));
+  });
+
+  it('keyboard: re-pressing deselects, the 1-card cap blocks a second pick, and empty Enter is a no-op', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    mockExec.mockClear();
+    // Select card 0.
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
+    // Crazy Pineapple discards exactly 1, so pressing "2" must not also select card 1.
+    fireEvent.keyDown(document.body, { key: '2' });
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'false');
+    // Re-pressing "1" deselects card 0.
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false'));
+    // With nothing selected, Enter neither opens the confirm step nor commits.
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    expect(screen.queryByTestId('discard-confirm')).not.toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, expect.anything());
+  });
+
+  it('keyboard: Escape from the confirm step returns to selection without committing', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
+    // Number keys are inert while confirming — the selection can't be changed.
+    fireEvent.keyDown(document.body, { key: '2' });
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'false');
+    // Escape backs out of the confirm step; the selection is kept.
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByTestId('discard-confirm')).not.toBeInTheDocument());
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, expect.anything());
+  });
+
   it('previews the kept cards and tentative hand for Irish Poker discard', async () => {
     const irishDiscardState: PineappleResponse = {
       ...discardState,
@@ -283,6 +405,119 @@ describe('PineapplePage', () => {
     const preview = await screen.findByTestId('irishpoker-discard-preview');
     // Kept ♠A ♥A + board makes one pair.
     expect(preview).toHaveTextContent('ワンペア');
+  });
+
+  it('annotates each remaining Irish Poker card once the first discard is chosen', async () => {
+    const irishDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishDiscardState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    // Choose only the FIRST discard (♦5): a staged preview should appear for each
+    // of the three still-selectable cards (the candidate second discards).
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+
+    const labels = await screen.findAllByTestId('irishpoker-discard-candidate');
+    expect(labels).toHaveLength(3); // one per remaining card, excluding the chosen one
+    // Every kept pair (Aces or eights) makes at least one pair with the board.
+    for (const label of labels) expect(label).toHaveTextContent('ワンペア');
+    // The full two-card kept preview is not shown yet (only one card selected).
+    expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
+  });
+
+  it('switches from staged candidates to the kept preview at the second Irish Poker discard', async () => {
+    const irishDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishDiscardState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    expect(await screen.findAllByTestId('irishpoker-discard-candidate')).toHaveLength(3);
+
+    // Selecting the second discard hands off to the full kept-cards preview.
+    fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
+    expect(await screen.findByTestId('irishpoker-discard-preview')).toBeInTheDocument();
+    expect(screen.queryAllByTestId('irishpoker-discard-candidate')).toHaveLength(0);
+
+    // Deselecting one card returns to the staged, per-candidate previews.
+    fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
+    expect(await screen.findAllByTestId('irishpoker-discard-candidate')).toHaveLength(3);
+    expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
+  });
+
+  it('does not stage Irish Poker candidate previews before any card is chosen', async () => {
+    const irishDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishDiscardState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    // No discard chosen yet → no staged candidate annotations.
+    expect(screen.queryByTestId('irishpoker-discard-candidate')).not.toBeInTheDocument();
   });
 
   it('evaluates the best five when the board has more than three cards', async () => {
@@ -359,6 +594,32 @@ describe('PineapplePage', () => {
     expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
   });
 
+  it('shows the Irish Poker discard-upcoming banner during the flop bet phase', async () => {
+    // phase 2 = FLOP betting round; Irish Poker discards two cards afterwards.
+    mockIrishExec.mockResolvedValue({ ...preFlopState, phase: 2, initialDealCount: 4 });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('cp-discard-upcoming-banner')).toBeInTheDocument());
+    expect(screen.getByTestId('cp-discard-upcoming-banner')).toHaveTextContent(
+      'フロップベット終了後にカードを2枚捨てます',
+    );
+  });
+
+  it('does not show the Irish Poker discard-upcoming banner outside the flop bet phase', async () => {
+    // preFlopState is phase 1 (PRE_FLOP), before the flop betting round.
+    mockIrishExec.mockResolvedValue({ ...preFlopState, initialDealCount: 4 });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-discard-upcoming-banner')).not.toBeInTheDocument();
+  });
+
+  it('does not show the discard-upcoming banner for the plain Pineapple variant during the flop', async () => {
+    // Plain Pineapple discards before the flop, so no forewarning banner applies.
+    mockExec.mockResolvedValue({ ...preFlopState, phase: 2 });
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-discard-upcoming-banner')).not.toBeInTheDocument();
+  });
+
   it('annotates each Crazy Pineapple hole card with the keep-hand if discarded', async () => {
     const crazyDiscardState: PineappleResponse = {
       ...discardState,
@@ -389,6 +650,106 @@ describe('PineapplePage', () => {
     expect(labels).toHaveLength(3); // one per hole card
     // Each keep makes at least a pair (Aces or fives), so a hand name is shown.
     expect(labels[0]).toHaveTextContent('ワンペア');
+  });
+
+  it('flags the single optimal Crazy Pineapple discard with a recommended badge', async () => {
+    // hole 10♠ 10♥ 2♦, board 10♣ 5♥ 8♦.
+    // Discard 2♦ → keep 10♠ 10♥ → three tens (best). The two 10-discards only
+    // leave a pair of tens, so only the 2♦ discard is recommended.
+    const crazyDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 3,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 10 },
+            { design: 'HEART', value: 10 },
+            { design: 'DIAMOND', value: 2 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'CLOVER', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockCrazyExec.mockResolvedValue(crazyDiscardState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const badges = screen.getAllByTestId('cp-discard-recommended');
+    expect(badges).toHaveLength(1); // only the strongest keep is recommended
+    expect(badges[0]).toHaveTextContent('おすすめ');
+    // The recommended card (3rd, discarding 2♦) keeps three of a kind.
+    const labels = screen.getAllByTestId('cp-discard-candidate');
+    expect(labels[2]).toHaveTextContent('スリーカード');
+  });
+
+  it('flags every tied-best Crazy Pineapple discard as recommended', async () => {
+    // hole A♠ A♥ 5♦, board 10♠ 5♥ 8♦. Every discard leaves exactly one pair,
+    // so all three tie for the best rank and all get the badge.
+    const crazyDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 3,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockCrazyExec.mockResolvedValue(crazyDiscardState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    expect(screen.getAllByTestId('cp-discard-recommended')).toHaveLength(3);
+  });
+
+  it('shows no Crazy Pineapple recommended badge when the board is too small', async () => {
+    const crazyNoBoardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 3,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [],
+      discardDone: [false, true, true, true],
+    };
+    mockCrazyExec.mockResolvedValue(crazyNoBoardState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-discard-recommended')).not.toBeInTheDocument();
+  });
+
+  it('does not show a recommended badge for the plain Pineapple variant', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-discard-recommended')).not.toBeInTheDocument();
   });
 
   it('omits Crazy Pineapple candidate labels when the board is too small to evaluate', async () => {
@@ -430,6 +791,49 @@ describe('PineapplePage', () => {
     const cardButtons = screen.getAllByRole('button').filter((btn) => btn.getAttribute('aria-pressed') !== null);
     fireEvent.click(cardButtons[0]);
     expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
+  });
+
+  it('annotates each Pineapple hole card with the keep-2 feature during discard', async () => {
+    const pineappleDiscardState: PineappleResponse = {
+      ...discardState,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 9 },
+            { design: 'HEART', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+    };
+    mockExec.mockResolvedValue(pineappleDiscardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const notes = screen.getAllByTestId('pn-discard-keep-feature');
+    expect(notes).toHaveLength(3); // one per hole card
+    // Discard S5 → keep S9,H5: no pair/suited/connector → high card.
+    expect(notes[0]).toHaveTextContent('残り2枚: ハイカード');
+    // Discard S9 → keep S5,H5: a pair.
+    expect(notes[1]).toHaveTextContent('残り2枚: ペア');
+    // Discard H5 → keep S5,S9: same suit but not adjacent → suited.
+    expect(notes[2]).toHaveTextContent('残り2枚: スーテッド');
+  });
+
+  it('does not show Pineapple keep-feature notes outside the discard phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
+    expect(screen.queryByTestId('pn-discard-keep-feature')).not.toBeInTheDocument();
+  });
+
+  it('does not show Pineapple keep-feature notes for the Crazy Pineapple variant', async () => {
+    mockCrazyExec.mockResolvedValue({ ...discardState, initialDealCount: 3 });
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    expect(screen.queryByTestId('pn-discard-keep-feature')).not.toBeInTheDocument();
   });
 
   it('cancels the discard confirm step and returns to selection', async () => {

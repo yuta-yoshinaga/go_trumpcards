@@ -43,12 +43,13 @@ func (bwp *BarbuWebPresenter) Output(bg interfaces.BarbuGame, lastErr error) str
 	}
 
 	if det := bg.GetLastDealDetail(); det != nil {
-		resObj.LastDealDetail = &controller.BarbuWebOutputDealDetail{
-			Contract:  det.Contract,
-			TrumpSuit: det.TrumpSuit,
-			DealerIdx: det.DealerIdx,
-			Gained:    det.Gained,
+		resObj.LastDealDetail = barbuDealDetailToOutput(det)
+	}
+	for _, det := range bg.GetDealHistory() {
+		if det == nil {
+			continue
 		}
+		resObj.DealHistory = append(resObj.DealHistory, barbuDealDetailToOutput(det))
 	}
 
 	if lastErr != nil {
@@ -74,6 +75,7 @@ func newBarbuOutput(bg interfaces.BarbuGame) *controller.BarbuWebOutput {
 	resObj.DominoPlayable = make([]int, 0)
 	resObj.UsedContracts = make([]bool, 0)
 	resObj.RoundWinners = make([]int, 0)
+	resObj.DealHistory = make([]*controller.BarbuWebOutputDealDetail, 0)
 
 	resObj.Phase = bg.GetPhase()
 	resObj.DealNumber = bg.GetDealNumber()
@@ -114,6 +116,16 @@ func barbuTableToOutput(table [5]uint16) []int {
 		out[i] = int(v)
 	}
 	return out
+}
+
+// barbuDealDetailToOutput は 1 ディールの得点内訳を WebOutput 表現に変換する。
+func barbuDealDetailToOutput(det *domain.BarbuDealDetail) *controller.BarbuWebOutputDealDetail {
+	return &controller.BarbuWebOutputDealDetail{
+		Contract:  det.Contract,
+		TrumpSuit: det.TrumpSuit,
+		DealerIdx: det.DealerIdx,
+		Gained:    det.Gained,
+	}
 }
 
 // barbuUsedToOutput は使用済みコントラクト配列を []bool に変換する。

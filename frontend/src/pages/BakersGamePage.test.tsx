@@ -87,17 +87,24 @@ describe('BakersGamePage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
   });
 
-  it('renders empty tableau columns with K placeholder', async () => {
+  it('renders empty tableau columns with a neutral any-card placeholder, not a King-only "K"', async () => {
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
-    const kElements = screen.getAllByText('K');
-    expect(kElements.length).toBeGreaterThanOrEqual(1);
+    // Baker's Game empty columns accept ANY card, so the placeholder must not
+    // suggest a King-only rule (the old "K" label borrowed from Klondike).
+    const anyElements = screen.getAllByText('任意');
+    expect(anyElements.length).toBeGreaterThanOrEqual(1);
+    const placeholderButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
+    expect(placeholderButtons).toHaveLength(0);
   });
 
   it('labels empty tableau columns for screen readers', async () => {
     renderWithProviders(<BakersGamePage />);
-    // playingState columns 2-7 are empty → each empty-column button is labelled.
-    await waitFor(() => expect(screen.getByLabelText('空のタブロー列 2（カードの移動先）')).toBeInTheDocument());
+    // playingState columns 2-7 are empty → each empty-column button is labelled
+    // to convey that any card may be placed.
+    await waitFor(() =>
+      expect(screen.getByLabelText('空のタブロー列 2（任意のカードを置けます）')).toBeInTheDocument(),
+    );
   });
 
   // --- Foundation ---
@@ -300,10 +307,10 @@ describe('BakersGamePage', () => {
     fireEvent.click(cardButton);
     await waitFor(() => expect(cardButton.className).toContain('ring-2'));
 
-    // Click empty tableau column (K placeholder)
+    // Click empty tableau column (any-card placeholder)
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
-    const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
+    const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '任意');
     if (kButtons.length > 0) {
       fireEvent.click(kButtons[0]);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
@@ -344,6 +351,8 @@ describe('BakersGamePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     await waitFor(() => expect(screen.getAllByText(/ヒント/).length).toBeGreaterThanOrEqual(1));
+    // Zone identifiers are localized (ja), not shown as raw English.
+    await waitFor(() => expect(screen.getByText(/フリーセル.*→.*タブロー 3/)).toBeInTheDocument());
   });
 
   it('hint display shows fromCol when fromCol is non-negative', async () => {
@@ -353,7 +362,7 @@ describe('BakersGamePage', () => {
     mockExec.mockResolvedValue(withHintFromColState);
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
-    await waitFor(() => expect(screen.getByText(/tableau 2/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/タブロー 2/)).toBeInTheDocument());
   });
 
   // --- Keyboard shortcuts ---
@@ -587,7 +596,7 @@ describe('BakersGamePage', () => {
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
+    const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '任意');
     for (const btn of kButtons) {
       expect(btn).toBeDisabled();
     }
@@ -833,8 +842,8 @@ describe('BakersGamePage', () => {
       const dataTransfer = buildDataTransfer();
       fireEvent.dragStart(sourceButton, { dataTransfer });
 
-      // Find an empty tableau column (K placeholder)
-      const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
+      // Find an empty tableau column (any-card placeholder)
+      const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '任意');
       expect(kButtons.length).toBeGreaterThan(0);
       const dropZone = kButtons[0].closest('div');
       mockExec.mockClear();
@@ -849,6 +858,100 @@ describe('BakersGamePage', () => {
           expect.objectContaining({ zone: 'tableau' }),
         ),
       );
+    });
+  });
+
+  // --- Double-click / double-tap auto-move ---
+
+  describe('double-click auto-move', () => {
+    it('double-clicking a tableau top card that can reach a foundation issues the foundation move', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        tableau: [[card('SPADE', 2)], [], [], [], [], [], [], []],
+        foundation: [[card('SPADE', 1)], [], [], []],
+      });
+      renderWithProviders(<BakersGamePage />);
+      const cardButton = (await screen.findByAltText('♠ 2')).closest('button') as HTMLButtonElement;
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      fireEvent.doubleClick(cardButton);
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', expect.objectContaining({ zone: 'tableau', col: 0 }), {
+          zone: 'foundation',
+          col: 0,
+        }),
+      );
+    });
+
+    it('double-clicking a free-cell card that can reach a foundation issues the foundation move', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        freeCells: [card('SPADE', 1), null, null, null],
+        foundation: [[], [], [], []],
+      });
+      renderWithProviders(<BakersGamePage />);
+      const cardButton = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      fireEvent.doubleClick(cardButton);
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', { zone: 'freecell', cell: 0 }, { zone: 'foundation', col: 0 }),
+      );
+    });
+
+    it('double-clicking a card with no foundation move falls back to an empty free cell', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        tableau: [[card('SPADE', 13)], [], [], [], [], [], [], []],
+        freeCells: [null, null, null, null],
+        foundation: [[], [], [], []],
+      });
+      renderWithProviders(<BakersGamePage />);
+      const cardButton = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      fireEvent.doubleClick(cardButton);
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('move', expect.objectContaining({ zone: 'tableau', col: 0 }), {
+          zone: 'freecell',
+          cell: 0,
+        }),
+      );
+    });
+
+    it('double-clicking a card with no legal auto-move issues no move', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        tableau: [[card('SPADE', 13)], [], [], [], [], [], [], []],
+        freeCells: [card('HEART', 5), card('CLOVER', 6), card('DIAMOND', 7), card('SPADE', 8)],
+        foundation: [[], [], [], []],
+      });
+      renderWithProviders(<BakersGamePage />);
+      const cardButton = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+
+      mockExec.mockClear();
+      fireEvent.doubleClick(cardButton);
+      await Promise.resolve();
+      expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+    });
+
+    it('single-clicking a card still selects it without issuing a move (no regression)', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        tableau: [[card('SPADE', 2)], [], [], [], [], [], [], []],
+        foundation: [[card('SPADE', 1)], [], [], []],
+      });
+      renderWithProviders(<BakersGamePage />);
+      const cardButton = (await screen.findByAltText('♠ 2')).closest('button') as HTMLButtonElement;
+
+      mockExec.mockClear();
+      fireEvent.click(cardButton);
+      await Promise.resolve();
+      expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+      expect(cardButton).toHaveAttribute('aria-pressed', 'true');
     });
   });
 });

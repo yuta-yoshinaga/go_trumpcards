@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,7 +13,14 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
+
+// napBidHolderPrefix returns the localized high-bidder line's text up to the
+// name placeholder, so assertions match regardless of the substituted name.
+func napBidHolderPrefix() string {
+	return strings.Split(i18n.T("nap.promptBidHolder"), "{{")[0]
+}
 
 func makeNapPlayers() []*domain.NapPlayer {
 	return []*domain.NapPlayer{
@@ -72,6 +80,17 @@ func TestNapCuiPresenter_Output(t *testing.T) {
 		m.On("GetDeclarerIdx").Return(-1)
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
+		// No one has bid yet → the high-bidder line is omitted.
+		assert.NotContains(t, result, napBidHolderPrefix())
+	})
+
+	t.Run("bid phase names the current high bidder", func(t *testing.T) {
+		m, _ := setupNapCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.NapPhaseBid)
+		// GetDeclarerIdx defaults to 0 (a bidder exists) → holder line is shown.
+		result := p.Output(m, nil)
+		assert.Contains(t, result, napBidHolderPrefix())
 	})
 
 	t.Run("no trump during bid", func(t *testing.T) {

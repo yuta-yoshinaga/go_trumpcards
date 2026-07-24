@@ -23,6 +23,7 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "yourTeam": "あなたのチーム",
+  "trickWinner": "{{name}}（{{team}}）がトリック獲得",
   "team": {
     "a": "チームA",
     "b": "チームB"
@@ -35,6 +36,15 @@
     "title": "ラウンド結果",
     "teamA": "チームAのカード点: {{points}}",
     "teamB": "チームBのカード点: {{points}}"
+  },
+  "strengthLegend": {
+    "title": "カード強さ順・得点",
+    "rankCol": "順位",
+    "cardCol": "カード",
+    "pointCol": "得点",
+    "manille": "マニーユ",
+    "manillon": "マニヨン",
+    "note": "10 > A > K > Q > J > 9 > 8 > 7（切り札・非切り札で共通）。得点合計60点。"
   },
   "hintAvailable": "ヒント",
   "hint": {

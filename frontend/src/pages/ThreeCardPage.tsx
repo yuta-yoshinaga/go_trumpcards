@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { threecardApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -74,6 +74,8 @@ function ThreeCardPageContent() {
 
   const [anteAmount, setAnteAmount] = useState(100);
   const [pairPlusAmount, setPairPlusAmount] = useState(0);
+  // Snapshot of the last submitted bet, used to power the one-click rebet.
+  const [lastBet, setLastBet] = useState<{ ante: number; pairPlus: number } | null>(null);
 
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
@@ -98,18 +100,34 @@ function ThreeCardPageContent() {
   const isActionPhase = state?.phase === ThreeCardPhase.ACTION;
   const isEndPhase = state?.phase === ThreeCardPhase.END;
 
+  const handleBet = useCallback(() => {
+    setLastBet({ ante: anteAmount, pairPlus: pairPlusAmount });
+    execApi('bet', anteAmount, pairPlusAmount);
+  }, [execApi, anteAmount, pairPlusAmount]);
+  const handlePlay = useCallback(() => execApi('play'), [execApi]);
+  const handleFold = useCallback(() => execApi('fold'), [execApi]);
+  const handleReset = useCallback(() => execApi('reset'), [execApi]);
+
+  // The initial outlay to start a new round is the ante plus any Pair Plus side
+  // bet; the matching play bet is charged later during the action phase.
+  const rebetTotal = lastBet ? lastBet.ante + lastBet.pairPlus : 0;
+  const canRebet = lastBet !== null && lastBet.ante > 0 && state !== null && rebetTotal <= state.chips;
+  const handleRebet = useCallback(async () => {
+    if (lastBet === null) return;
+    await execApi('reset');
+    await execApi('bet', lastBet.ante, lastBet.pairPlus);
+  }, [execApi, lastBet]);
+
   const actionBindings = useMemo(
     () => [
-      {
-        key: 'b',
-        action: () => execApi('bet', anteAmount, pairPlusAmount),
-        enabled: isBetPhase,
-      },
-      { key: 'p', action: () => execApi('play'), enabled: isActionPhase },
-      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      { key: 'b', action: handleBet, enabled: isBetPhase },
+      { key: 'p', action: handlePlay, enabled: isActionPhase },
+      { key: 'f', action: handleFold, enabled: isActionPhase },
+      { key: 'r', action: handleReset, enabled: isEndPhase },
+      // Power-user shortcut: 'n' replays the previous bet as a fresh round.
+      { key: 'n', action: handleRebet, enabled: isEndPhase && canRebet },
     ],
-    [execApi, anteAmount, pairPlusAmount, isBetPhase, isActionPhase, isEndPhase],
+    [handleBet, handlePlay, handleFold, handleReset, handleRebet, isBetPhase, isActionPhase, isEndPhase, canRebet],
   );
 
   useActionKeyboardNav({
@@ -118,22 +136,6 @@ function ThreeCardPageContent() {
   });
 
   if (!state) return <GameSkeleton gameKey="threecard" layout={{ kind: 'casino-table', sections: [3, 3] }} />;
-
-  const handleBet = () => {
-    execApi('bet', anteAmount, pairPlusAmount);
-  };
-
-  const handlePlay = () => {
-    execApi('play');
-  };
-
-  const handleFold = () => {
-    execApi('fold');
-  };
-
-  const handleReset = () => {
-    execApi('reset');
-  };
 
   const phaseName = isBetPhase ? t('phase.bet') : isActionPhase ? t('phase.action') : t('phase.end');
 
@@ -212,6 +214,23 @@ function ThreeCardPageContent() {
                     </div>
                   </div>
                 </details>
+              </div>
+            )}
+
+            {/* Bet slip during action phase — mirrors the end-phase payout breakdown */}
+            {isActionPhase && (
+              <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="action-bet-slip">
+                <div>
+                  {t('betSlip.ante')}: {state.anteBet}
+                </div>
+                {state.pairPlusBet > 0 && (
+                  <div>
+                    {t('betSlip.pairPlus')}: {state.pairPlusBet}
+                  </div>
+                )}
+                <div className="font-bold mt-1">
+                  {t('betSlip.playRequired')}: {state.anteBet}
+                </div>
               </div>
             )}
 
@@ -347,7 +366,19 @@ function ThreeCardPageContent() {
               </div>
             )}
             {isEndPhase && (
-              <div className="flex justify-center gap-2 pb-2">
+              <div className="flex justify-center gap-2 pb-2 flex-wrap">
+                {canRebet && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleRebet}
+                    disabled={loading}
+                    data-testid="tc-rebet-button"
+                    aria-keyshortcuts="n"
+                  >
+                    {t('button.rebet', { amount: rebetTotal })}
+                  </button>
+                )}
                 <GameResetButton
                   isGameEnd={isEndPhase}
                   onReset={handleReset}

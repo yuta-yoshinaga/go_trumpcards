@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fiveHundredApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -79,6 +79,34 @@ describe('FiveHundredPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', expect.objectContaining({ config: expect.any(Object) })),
     );
+  });
+
+  it('labels hand cards with cardAlt and reflects selection via aria-pressed during play', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, currentPlayerIdx: 0 })); // PLAY, human turn
+    renderWithProviders(<FiveHundredPage />);
+    const card0 = await screen.findByTestId('hand-card-0');
+    expect(card0).toHaveAttribute('aria-label', '♠ 5');
+    expect(card0).toHaveAttribute('aria-pressed', 'false');
+    expect(card0).not.toBeDisabled();
+    fireEvent.click(card0);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-pressed', 'true'));
+  });
+
+  it('keeps hand cards labeled but disabled in a non-selectable phase (bid)', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0 })); // BID
+    renderWithProviders(<FiveHundredPage />);
+    const card0 = await screen.findByTestId('hand-card-0');
+    expect(card0).toHaveAttribute('aria-label', '♠ 5');
+    expect(card0).toBeDisabled();
+  });
+
+  it('renders CPU difficulty options with localized labels', async () => {
+    renderWithProviders(<FiveHundredPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    // Difficulty options are localized (ja), not the hardcoded Easy/Normal/Hard.
+    expect(screen.getByRole('option', { name: 'かんたん' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'ふつう' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'むずかしい' })).toBeInTheDocument();
   });
 
   it('shows bid controls on the human bid turn', async () => {
@@ -178,6 +206,34 @@ describe('FiveHundredPage', () => {
     expect(playBtn).toBeEnabled();
     fireEvent.click(playBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, jokerSuit: undefined }));
+  });
+
+  it('labels each current-trick card with its player name and marks the lead card', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        currentPlayerIdx: 3,
+        // Player 2 (CPU) led the trick, then the human (player 0) followed.
+        currentTrick: [
+          { playerIdx: 2, card: card('SPADE', 10) },
+          { playerIdx: 0, card: card('HEART', 9) },
+        ],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+
+    // Both cards carry a player-name label (scoped to the trick, not the CPU roster).
+    const trickCards = await screen.findAllByTestId('fh-trick-card');
+    expect(trickCards).toHaveLength(2);
+    expect(within(trickCards[0]).getByText(/CPU 2/)).toBeInTheDocument();
+    expect(within(trickCards[1]).getByText(/あなた/)).toBeInTheDocument();
+
+    // Exactly the lead (first) card shows the lead marker.
+    const leadBadges = screen.getAllByTestId('fh-trick-lead');
+    expect(leadBadges).toHaveLength(1);
+    expect(leadBadges[0]).toHaveTextContent('リード');
+    expect(trickCards[0]).toHaveAttribute('data-trick-lead', 'true');
+    expect(trickCards[1]).not.toHaveAttribute('data-trick-lead');
   });
 
   it('advances to the next trick', async () => {

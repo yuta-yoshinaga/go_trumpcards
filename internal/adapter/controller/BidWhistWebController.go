@@ -80,6 +80,7 @@ type BidWhistWebOutput struct {
 	HighestBid        *BidWhistWebOutputBid         `json:"highestBid,omitempty"`
 	HighestBidder     int                           `json:"highestBidder"`
 	KittyCount        int                           `json:"kittyCount"`
+	KittyIndices      []int                         `json:"kittyIndices"`
 	CurrentTrick      []*BidWhistWebOutputTrickCard `json:"currentTrick"`
 	TeamScores        [2]int                        `json:"teamScores"`
 	GameEndFlag       bool                          `json:"gameEndFlag"`
@@ -125,6 +126,7 @@ func newBidWhistDefaultOutput(msg string) *BidWhistWebOutput {
 	return &BidWhistWebOutput{
 		Players:       make([]*BidWhistWebOutputPlayer, 0),
 		CurrentTrick:  make([]*BidWhistWebOutputTrickCard, 0),
+		KittyIndices:  make([]int, 0),
 		WinnerTeam:    -1,
 		DeclarerIdx:   -1,
 		HighestBidder: -1,

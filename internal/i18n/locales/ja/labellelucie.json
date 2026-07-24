@@ -10,5 +10,7 @@
   "redealsLine": "残りシャッフル: {{count}}",
   "hintToFan": "扇{{idx}}",
   "hintToFoundation": "ファウンデーション",
-  "hintLine": "[HINT: 扇{{from}} を {{to}} へ]"
+  "hintLine": "[HINT: 扇{{from}} を {{to}} へ]",
+  "foundationCount": "(計{{count}}枚)",
+  "redealRecommended": "合法手がありません。nr でリディールを推奨します。"
 }

@@ -87,5 +87,13 @@
     "exchangeControls": "Tap cards to mark them for exchange, then press Exchange or Stand. Each exchanged card costs 1x ante.",
     "actionButtons": "Choose Call (2x ante) to face the dealer, or Fold to forfeit your ante.",
     "results": "Review your result and payouts."
+  },
+  "hiddenCard": "Hidden card",
+  "hint": {
+    "pairOrBetter": "Pair or better — recommend Play",
+    "aceKingHigh": "Ace-King high — recommend Play",
+    "weakHand": "Weak hand — recommend Fold",
+    "exchangeKeep": "Pair or better — stand pat (no exchange)",
+    "exchangeImprove": "Weak hand — exchange to try to improve"
   }
 }

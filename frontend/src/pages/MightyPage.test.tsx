@@ -292,13 +292,49 @@ describe('MightyPage', () => {
     expect(screen.queryByTestId('card-role-badge-2')).not.toBeInTheDocument();
   });
 
-  it('renders bid phase with bid button and input', async () => {
+  it('renders bid phase with bid button and a discrete bid grid', async () => {
     mockCall.mockResolvedValue(bidPhaseState);
     renderWithProviders(<MightyPage />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
-      expect(screen.getByLabelText('bid-input')).toBeInTheDocument();
+      expect(screen.getByTestId('mighty-bid-grid')).toBeInTheDocument();
     });
+    // minBid (13) through MightyMaxPoints (20) are rendered as buttons.
+    for (let n = 13; n <= 20; n++) {
+      expect(screen.getByTestId(`bid-option-${n}`)).toBeInTheDocument();
+    }
+    expect(screen.queryByTestId('bid-option-12')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('bid-option-21')).not.toBeInTheDocument();
+  });
+
+  it('marks the selected bid button with aria-pressed', async () => {
+    mockCall.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<MightyPage />);
+    await waitFor(() => expect(screen.getByTestId('bid-option-15')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('bid-option-15'));
+    expect(screen.getByTestId('bid-option-15')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('bid-option-16')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('disables bids at or below the current highest bid', async () => {
+    mockCall.mockResolvedValue({ ...bidPhaseState, highestBid: 15 });
+    renderWithProviders(<MightyPage />);
+    await waitFor(() => expect(screen.getByTestId('bid-option-16')).toBeInTheDocument());
+
+    expect(screen.getByTestId('bid-option-15')).toBeDisabled();
+    expect(screen.getByTestId('bid-option-16')).toBeEnabled();
+  });
+
+  it('disables bids below the raised minimum when no-trump is toggled on', async () => {
+    // minBid 13 + noTrumpExtra 2 = 15 effective minimum under no-trump.
+    mockCall.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<MightyPage />);
+    await waitFor(() => expect(screen.getByLabelText('bid-no-trump')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByLabelText('bid-no-trump'));
+    expect(screen.getByTestId('bid-option-14')).toBeDisabled();
+    expect(screen.getByTestId('bid-option-15')).toBeEnabled();
   });
 
   it('shows bid instruction during human bid turn', async () => {
@@ -339,13 +375,12 @@ describe('MightyPage', () => {
     });
   });
 
-  it('calls bid command when bid button clicked', async () => {
+  it('calls bid command with the selected grid value when bid button clicked', async () => {
     mockCall.mockResolvedValue(bidPhaseState);
     renderWithProviders(<MightyPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('bid-option-15')).toBeInTheDocument());
 
-    const input = screen.getByLabelText('bid-input');
-    fireEvent.change(input, { target: { value: '15' } });
+    fireEvent.click(screen.getByTestId('bid-option-15'));
 
     mockCall.mockClear();
     mockCall.mockResolvedValue(playPhaseState);
@@ -360,9 +395,7 @@ describe('MightyPage', () => {
     await waitFor(() => expect(screen.getByLabelText('bid-no-trump')).toBeInTheDocument());
 
     fireEvent.click(screen.getByLabelText('bid-no-trump'));
-
-    const input = screen.getByLabelText('bid-input');
-    fireEvent.change(input, { target: { value: '15' } });
+    fireEvent.click(screen.getByTestId('bid-option-15'));
 
     mockCall.mockClear();
     mockCall.mockResolvedValue(playPhaseState);

@@ -83,12 +83,27 @@ describe('UltiPage', () => {
     expect(screen.getAllByText('デクレアラー').length).toBeGreaterThan(0);
   });
 
-  it('renders the bid phase with Party, Betli and Durchmarsch buttons', async () => {
+  it('renders the bid phase with Party, Ulti, Betli and Durchmarsch buttons', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<UltiPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パルティ' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'ウルティ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'ベトリ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'ドゥルマルス' })).toBeInTheDocument();
+  });
+
+  it('Ulti is disabled until a trump suit is picked, then dispatches bid with the suit', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<UltiPage />);
+    const ultiBtn = await screen.findByRole('button', { name: 'ウルティ' });
+    expect(ultiBtn).toBeDisabled();
+    // Pick hearts (♥) as trump.
+    fireEvent.click(screen.getByRole('button', { name: 'ハート' }));
+    expect(screen.getByRole('button', { name: 'ウルティ' })).toBeEnabled();
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(bidPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ウルティ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { contract: 'ulti', trumpSuit: 3 }));
   });
 
   it('Party is disabled until a trump suit is picked, then dispatches bid with the suit', async () => {
@@ -134,6 +149,18 @@ describe('UltiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndices: [0, 1] }));
   });
 
+  it('shows the discard selection count that updates as cards are picked', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<UltiPage />);
+    const progress = await screen.findByTestId('ulti-discard-progress');
+    // Starts at 0 of the required 2.
+    expect(progress).toHaveTextContent('0/2');
+    fireEvent.click(screen.getByAltText('♥ Q'));
+    expect(screen.getByTestId('ulti-discard-progress')).toHaveTextContent('1/2');
+    fireEvent.click(screen.getByAltText('♥ K'));
+    expect(screen.getByTestId('ulti-discard-progress')).toHaveTextContent('2/2');
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<UltiPage />);
     const card = await screen.findByAltText('♥ Q');
@@ -156,6 +183,67 @@ describe('UltiPage', () => {
     renderWithProviders(<UltiPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のディール' })).toBeInTheDocument());
     expect(screen.getByText('ディール結果')).toBeInTheDocument();
+  });
+
+  it('shows signed coin deltas and announces the round result on settlement', async () => {
+    // Start at trick-end (coins all 0) so the pre-settlement snapshot is captured,
+    // then settle into round-end with new balances.
+    const settledState = makeUltiState({
+      phase: 4,
+      isHumanTurn: false,
+      outcome: 1,
+      players: [
+        { id: 0, isHuman: true, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: 2, isDeclarer: true },
+        { id: 1, isHuman: false, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: -1, isDeclarer: false },
+        { id: 2, isHuman: false, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: -1, isDeclarer: false },
+      ],
+    });
+    mockExec.mockResolvedValueOnce(trickEndState); // mount → trick end
+    renderWithProviders(<UltiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce(settledState);
+    fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
+
+    await waitFor(() => expect(screen.getByTestId('ulti-coin-delta-0')).toHaveTextContent('+2'));
+    expect(screen.getByTestId('ulti-coin-delta-1')).toHaveTextContent('-1');
+
+    const panel = screen.getByTestId('ulti-round-result');
+    expect(panel).toHaveAttribute('role', 'status');
+    expect(panel).toHaveAttribute('aria-live', 'polite');
+    expect(panel).toHaveTextContent('あなた: +2コイン');
+  });
+
+  it('shows coin deltas on the final round even though the backend jumps to GAME_END', async () => {
+    // The match-deciding round settles straight into GAME_END (no ROUND_END).
+    const finalSettle = makeUltiState({
+      phase: 5,
+      isHumanTurn: false,
+      gameEndFlag: true,
+      outcome: 1,
+      winnerPlayer: 0,
+      players: [
+        { id: 0, isHuman: true, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: 3, isDeclarer: true },
+        { id: 1, isHuman: false, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: -3, isDeclarer: false },
+        { id: 2, isHuman: false, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: 0, isDeclarer: false },
+      ],
+    });
+    mockExec.mockResolvedValueOnce(trickEndState); // mount → trick end (coins 0)
+    renderWithProviders(<UltiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce(finalSettle);
+    fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
+
+    await waitFor(() => expect(screen.getByTestId('ulti-coin-delta-0')).toHaveTextContent('+3'));
+    expect(screen.getByTestId('ulti-coin-delta-1')).toHaveTextContent('-3');
+  });
+
+  it('does not show coin deltas outside the settlement phase', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<UltiPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByTestId('ulti-coin-delta-0')).not.toBeInTheDocument();
   });
 
   it('renders the game end message', async () => {

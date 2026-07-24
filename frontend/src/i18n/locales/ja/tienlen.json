@@ -9,9 +9,13 @@
   "selectToPlay": "カードを選択して出す",
   "tableCards": "場のカード",
   "tableEmpty": "(なし)",
+  "tablePlayedBy": "{{name}} の出したカード",
   "playButton": "選択したカードを出す",
   "passButton": "パス",
   "invalidCombo": "有効な組み合わせではありません（シングル・ペア・トリオ・ストレート・連続ペア・フォーカード）",
+  "selectedPlayLabel": "選択中",
+  "comboBadge": "{{type}}（{{count}}枚）",
+  "bombLabel": "爆弾",
   "phase": {
     "play": "プレイ",
     "end": "終了"

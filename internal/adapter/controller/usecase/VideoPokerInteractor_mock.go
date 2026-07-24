@@ -29,6 +29,12 @@ func (m *MockVideoPokerInteractor) ActionLog() string {
 	return args.String(0)
 }
 
+// Hint モック
+func (m *MockVideoPokerInteractor) Hint() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 // Snapshot モック
 func (m *MockVideoPokerInteractor) Snapshot() ([]byte, error) {
 	ret := m.Called()

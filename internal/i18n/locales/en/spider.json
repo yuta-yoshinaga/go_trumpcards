@@ -9,5 +9,7 @@
   "header": "Completed: {{completed}}/{{total}} | Stock: {{stock}} | Score: {{score}}",
   "columnLabel": "Column {{col}}:",
   "gameClearLine": "Game clear! Moves: {{moves}} Score: {{score}}",
-  "hintLine": "Hint: tableau column {{fromCol}}[{{idx}}] → tableau column {{toCol}}"
+  "hintLine": "Hint: tableau column {{fromCol}}[{{idx}}] → tableau column {{toCol}}",
+  "difficultyLine": "Difficulty: {{suits}}-suit / Deals left: {{deals}}",
+  "dealBlockedEmpty": "Cannot deal while a column is empty (fill every column first)"
 }

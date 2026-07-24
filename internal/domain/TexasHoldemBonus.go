@@ -644,11 +644,3 @@ func (t *TexasHoldemBonus) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
-
-// sliceOrEmpty replaces nil with an empty slice for JSON round-trip stability.
-func sliceOrEmpty[T any](s []T) []T {
-	if s == nil {
-		return make([]T, 0)
-	}
-	return s
-}

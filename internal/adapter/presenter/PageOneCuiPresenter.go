@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -18,6 +19,12 @@ func pageOnePlayerStr(player *domain.PageOnePlayer, i int) string {
 	if player.GetHasDeclared() {
 		declared = " " + i18n.T("pageone.declaredBadge")
 	}
+	// Warn when a player sits on their last card without declaring "Page One",
+	// mirroring the web cpuAtOne badge (mutually exclusive with declaredBadge).
+	warning := ""
+	if !player.GetHasDeclared() && player.GetCardsSize() == 1 {
+		warning = " " + color.Red(i18n.T("pageone.lastCardWarning"))
+	}
 	fmt.Fprintf(&b, "%s\n",
 		i18n.Tf("pageone.playerLine",
 			"name", name,
@@ -25,6 +32,7 @@ func pageOnePlayerStr(player *domain.PageOnePlayer, i int) string {
 			"round", fmt.Sprintf("%d", player.GetRoundScore()),
 			"cards", fmt.Sprintf("%d", player.GetCardsSize()),
 			"declared", declared,
+			"warning", warning,
 		),
 	)
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
@@ -92,4 +100,27 @@ func (p *PageOneCuiPresenter) Output(g interfaces.PageOneGame, lastErr error) st
 // ActionLogOutput 棋譜をテキスト出力
 func (p *PageOneCuiPresenter) ActionLogOutput(g interfaces.PageOneGame) string {
 	return actionLogOutputText(g)
+}
+
+// HintOutput lists the human's playable card indices during the play phase, or
+// advises drawing when nothing is playable. Other phases and non-human turns
+// get no hint.
+func (p *PageOneCuiPresenter) HintOutput(g interfaces.PageOneGame) string {
+	if g.GetPhase() != domain.PageOnePhasePlay || !g.IsHumanTurn() {
+		return i18n.T("pageone.hintNone") + "\n"
+	}
+	player := g.GetPlayer(g.GetCurrentPlayerIdx())
+	if player == nil {
+		return i18n.T("pageone.hintNone") + "\n"
+	}
+	var parts []string
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if g.IsValidPlay(player.GetCard(i)) {
+			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(player.GetCard(i)))
+		}
+	}
+	if len(parts) == 0 {
+		return color.Yellow(i18n.T("pageone.hintDraw")) + "\n"
+	}
+	return color.Yellow(i18n.Tf("pageone.hintPlayable", "cards", strings.Join(parts, " "))) + "\n"
 }

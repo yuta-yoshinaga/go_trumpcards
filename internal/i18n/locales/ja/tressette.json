@@ -22,5 +22,6 @@
   "hintReasonFollowWin": "得点があるので勝てる札で取りに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダックする",
   "hintReasonGivePartner": "味方が勝っているので得点札を渡す",
-  "hintReasonDiscardLow": "フォローできないので低い札を捨てる"
+  "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
+  "roundBreakdown": "ラウンド内訳: チーム{{a}} thirds{{athird}} / チーム{{b}} thirds{{bthird}}（ラストトリック: チーム{{lastteam}}）"
 }

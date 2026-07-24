@@ -38,6 +38,7 @@ import { parseTarneebCommand, TARNEEB_HELP } from '../utils/cli/commands/tarneeb
 import { formatTarneebState } from '../utils/cli/formatters/tarneebFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { groupTarneebPlayersByTeam } from '../utils/tarneebTeams';
 
 /** Tutorial step definitions for the Tarneeb page. */
 const TARNEEB_TUTORIAL_STEPS: TutorialStep[] = [
@@ -102,6 +103,9 @@ const TRUMP_LABELS: Record<number, string> = {
   3: '♥',
   4: '♦',
 };
+
+/** Maps a trump suit value to its `suitName.*` i18n key (mirrors MightyPage). */
+const SUIT_KEYS: Record<number, string> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
 
 /** Render the Tarneeb game page (partnership trick-taking with chosen trump). */
 export const TarneebPage = withTutorial(TarneebPageContent, 'tarneeb', TARNEEB_TUTORIAL_STEPS);
@@ -191,6 +195,7 @@ function TarneebPageContent() {
     return <GameSkeleton gameKey="tarneeb" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const teamBreakdown = groupTarneebPlayersByTeam(state.players, state.teamScores.length);
   const isBidPhase = state.phase === TarneebPhase.BID;
   const isTrumpPhase = state.phase === TarneebPhase.TRUMP_DECLARATION;
   const isPlayPhase = state.phase === TarneebPhase.PLAY;
@@ -272,9 +277,12 @@ function TarneebPageContent() {
                 {t('trump')}: {TRUMP_LABELS[state.trumpSuit] ?? t('trumpUndeclared')}
               </span>
               {state.highestBid > 0 && (
-                <span>
+                <span className="mr-4">
                   {t('highestBid')}: {state.highestBid}
                 </span>
+              )}
+              {state.redealCount > 0 && (
+                <span data-testid="tarneeb-redeal-count">{t('redeal', { count: state.redealCount })}</span>
               )}
             </div>
 
@@ -346,9 +354,7 @@ function TarneebPageContent() {
                       <tbody>
                         {state.teamScores.map((score, i) => {
                           const isYourTeam = humanPlayer != null && humanPlayer.team === i;
-                          const roundTricks = state.players
-                            .filter((p) => p.team === i)
-                            .reduce((sum, p) => sum + p.trickCount, 0);
+                          const roundTricks = teamBreakdown[i]?.roundTricks ?? 0;
                           return (
                             <tr key={i} className={isYourTeam ? 'text-ds-accent' : ''}>
                               <td>{isYourTeam ? t('yourTeam') : t('opponentTeam')}</td>
@@ -361,6 +367,47 @@ function TarneebPageContent() {
                     </table>
                   </div>
                   <ScrollFadeHint />
+
+                  {/*
+                    Per-player trick breakdown (#3306). The aggregate table above only shows
+                    each team's combined tricks; this collapsible section reveals how many
+                    tricks each teammate (partner + CPUs) contributed. Kept in a <details> so
+                    it never crowds the mobile layout unless the player opens it.
+                  */}
+                  <details className="mt-2" data-testid="tn-player-breakdown">
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                      {t('breakdownTitle')}
+                    </summary>
+                    <div className="mt-1 space-y-2">
+                      {teamBreakdown.map((tb) => {
+                        const isYourTeam = humanPlayer != null && humanPlayer.team === tb.team;
+                        return (
+                          <div key={tb.team} data-testid={`tn-breakdown-team-${tb.team}`}>
+                            <div
+                              className={`text-sm font-medium ${isYourTeam ? 'text-ds-accent' : 'text-ds-text-muted'}`}
+                            >
+                              {isYourTeam ? t('yourTeam') : t('opponentTeam')}
+                            </div>
+                            <ul className="pl-3">
+                              {tb.members.map((p) => (
+                                <li
+                                  key={p.id}
+                                  className={`text-sm flex justify-between gap-2 py-0.5 ${
+                                    isYourTeam ? 'text-ds-accent' : 'text-ds-text-muted'
+                                  }`}
+                                >
+                                  <span>{playerName(p.id, p.isHuman)}</span>
+                                  <span data-testid={`tn-breakdown-tricks-${p.id}`}>
+                                    {t('breakdownTricks', { count: p.trickCount })}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </details>
                 </div>
               </div>
             </div>
@@ -467,7 +514,7 @@ function TarneebPageContent() {
                       className={btnPrimary}
                       onClick={() => handleDeclareTrump(suit)}
                       disabled={loading}
-                      aria-label={`trump-${suit}`}
+                      aria-label={t(`suitName.${SUIT_KEYS[suit]}`)}
                     >
                       {TRUMP_LABELS[suit]}
                     </button>

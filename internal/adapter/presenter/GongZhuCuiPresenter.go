@@ -10,6 +10,37 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// gongZhuIsPointCard reports whether a card scores in Gong Zhu: any heart, the
+// pig (♠Q), the sheep (♦J), or the doubler (♣10).
+func gongZhuIsPointCard(c *domain.Card) bool {
+	switch {
+	case c.GetDesign() == domain.CardDesignHeart:
+		return true
+	case c.GetDesign() == domain.CardDesignSpade && c.GetValue() == 12: // pig
+		return true
+	case c.GetDesign() == domain.CardDesignDiamond && c.GetValue() == 11: // sheep
+		return true
+	case c.GetDesign() == domain.CardDesignClover && c.GetValue() == 10: // doubler
+		return true
+	default:
+		return false
+	}
+}
+
+// gongZhuCapturedPoints returns the scoring cards a player has captured in
+// their tricks, in capture order.
+func gongZhuCapturedPoints(player *domain.GongZhuPlayer) []*domain.Card {
+	var pts []*domain.Card
+	for _, trick := range player.GetTricksTaken() {
+		for _, c := range trick {
+			if gongZhuIsPointCard(c) {
+				pts = append(pts, c)
+			}
+		}
+	}
+	return pts
+}
+
 // gongZhuPlayerStr returns the display string for a single Gong Zhu player.
 func gongZhuPlayerStr(player *domain.GongZhuPlayer, i int) string {
 	var b strings.Builder
@@ -21,6 +52,12 @@ func gongZhuPlayerStr(player *domain.GongZhuPlayer, i int) string {
 		"tricks", strconv.Itoa(player.GetTrickCount()),
 	))
 	b.WriteString("\n")
+	// Show which scoring cards this player has taken (who holds the pig etc.);
+	// players with none get no line, keeping the output compact.
+	if pts := gongZhuCapturedPoints(player); len(pts) > 0 {
+		b.WriteString(i18n.Tf("gongzhu.capturedLine",
+			"cards", formatCardSlice(pts, cuiCardStr, " ")) + "\n")
+	}
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}

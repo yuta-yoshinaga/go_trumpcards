@@ -49,4 +49,6 @@ type PageOneGame interface {
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.PageOnePlayer
+	// IsValidPlay カードが現在の場状態でプレイ可能かを返す
+	IsValidPlay(card *domain.Card) bool
 }

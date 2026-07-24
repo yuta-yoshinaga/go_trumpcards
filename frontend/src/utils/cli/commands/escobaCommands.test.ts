@@ -55,10 +55,10 @@ describe('parseEscobaCommand', () => {
 describe('formatEscobaState', () => {
   const base: EscobaResponse = makeEscobaState({
     players: [
-      { id: 0, isHuman: true, handCount: 3, cards: [], capturedCount: 2, escobaCount: 1, score: 4 },
-      { id: 1, isHuman: false, handCount: 3, cards: [], capturedCount: 0, escobaCount: 0, score: 2 },
-      { id: 2, isHuman: false, handCount: 3, cards: [], capturedCount: 0, escobaCount: 0, score: 0 },
-      { id: 3, isHuman: false, handCount: 3, cards: [], capturedCount: 0, escobaCount: 0, score: 0 },
+      { id: 0, isHuman: true, handCount: 3, cards: [], capturedCount: 2, capturedCards: [], escobaCount: 1, score: 4 },
+      { id: 1, isHuman: false, handCount: 3, cards: [], capturedCount: 0, capturedCards: [], escobaCount: 0, score: 2 },
+      { id: 2, isHuman: false, handCount: 3, cards: [], capturedCount: 0, capturedCards: [], escobaCount: 0, score: 0 },
+      { id: 3, isHuman: false, handCount: 3, cards: [], capturedCount: 0, capturedCards: [], escobaCount: 0, score: 0 },
     ],
     tableCards: [{ design: 'SPADE', value: 7 }],
     stockRemaining: 16,

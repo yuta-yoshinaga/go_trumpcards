@@ -137,6 +137,17 @@ func TestWaspWebPresenter_HintOutput(t *testing.T) {
 	})
 }
 
+func TestWaspWebPresenter_LegalMovesOutput(t *testing.T) {
+	sg := new(interfaces.MockWaspGame)
+	setupWaspWebMockDefaults(sg)
+	p := new(WaspWebPresenter)
+
+	// Web delegates legal-move previews to the normal state JSON (targets are
+	// computed client-side), so the output mirrors Output.
+	result := parseWaspOutput(t, p.LegalMovesOutput(sg, 0))
+	assert.Equal(t, "wasp.playing", result.MessageCode)
+}
+
 func TestWaspWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("playing", func(t *testing.T) {
 		sg := new(interfaces.MockWaspGame)

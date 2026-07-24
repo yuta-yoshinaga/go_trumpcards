@@ -17,6 +17,15 @@
     "rebuy": "Rebuy/Addon"
   },
   "communityCards": "Community Cards",
+  "boardLow": {
+    "label": "Low",
+    "live": "Live",
+    "possible": "Possible",
+    "impossible": "No low",
+    "ariaLive": "The board shows 3 distinct low ranks (8 or lower); a low is live",
+    "ariaPossible": "{{needed}} more distinct low rank(s) of 8 or lower are needed for a low",
+    "ariaImpossible": "Fewer than 3 distinct low ranks on the board; no low is possible"
+  },
   "yourHand": "Your Hand",
   "mandatoryRule": "Rule: 2 hole + 3 board (Hi/Lo separately)",
   "mandatoryRuleAria": "Hi-Lo rule: each of high and low uses exactly 2 hole cards and 3 board cards",
@@ -76,5 +85,7 @@
     "weakHandRank": "Weak hand — fold recommended",
     "scoopChance": "Scoop range (hi + lo) — raise recommended",
     "lowDraw": "Low likely to qualify — call to chase the half"
-  }
+  },
+  "loCardAria": "Low hand card",
+  "loBadge": "LO"
 }

@@ -49,6 +49,15 @@ type TeenPattiHint struct {
 	Reason string // ヒント理由キー
 }
 
+// teenPattiSideShow は直近で成立した (承諾された) サイドショーの結果を保持する (表示用)。
+// カード自体は保持せず参加者インデックスと敗者のみを持つ (WASM バイナリを軽く保つため)。
+// プレゼンター側が保持中のカードを敗者・勝者インデックスから引いて役名と手札を組み立てる。
+type teenPattiSideShow struct {
+	Requester int `json:"rq"` // 申請者インデックス
+	Target    int `json:"tg"` // 対象インデックス
+	Loser     int `json:"ls"` // 敗者インデックス (Requester または Target)
+}
+
 // TeenPatti ティーンパッティ ゲームクラス
 type TeenPatti struct {
 	trumpCards        *TrumpCards
@@ -67,7 +76,8 @@ type TeenPatti struct {
 	sideShowRequester int // サイドショー申請者 (-1: なし)
 	sideShowTarget    int // サイドショー対象 (-1: なし)
 	gameEndFlag       bool
-	matchWinnerIdx    int // 試合の勝者 (-1: 未確定)
+	matchWinnerIdx    int                // 試合の勝者 (-1: 未確定)
+	lastSideShow      *teenPattiSideShow // 直近で成立したサイドショー結果 (nil: なし)
 	actionLog         []*ActionLogEntry
 }
 
@@ -126,6 +136,7 @@ func (g *TeenPatti) startDeal() {
 	g.actionCount = 0
 	g.sideShowRequester = -1
 	g.sideShowTarget = -1
+	g.lastSideShow = nil
 	g.stake = g.config.Ante
 
 	for _, p := range g.players {
@@ -289,6 +300,8 @@ func (g *TeenPatti) applyRespondSideShow(accept bool) {
 		if cmp > 0 {
 			loser = tgt
 		}
+		// 表示用に成立したサイドショーの結果を保持する (参加者のカードは deal 更新まで保持される)。
+		g.lastSideShow = &teenPattiSideShow{Requester: req, Target: tgt, Loser: loser}
 		g.appendLog(tgt, "sideshow_accept",
 			fmt.Sprintf("%s accepts; %s loses the side show", g.playerName(tgt), g.playerName(loser)), nil)
 		g.players[loser].SetFolded(true)
@@ -755,6 +768,15 @@ func (g *TeenPatti) GetSideShowRequester() int { return g.sideShowRequester }
 // GetSideShowTarget サイドショー対象インデックス取得 (-1: なし)
 func (g *TeenPatti) GetSideShowTarget() int { return g.sideShowTarget }
 
+// GetLastSideShow は直近で成立 (承諾) したサイドショーの申請者・対象・敗者を返す。
+// 成立したサイドショーがまだ無い (またはディール更新で消去済み) のとき ok=false。
+func (g *TeenPatti) GetLastSideShow() (requester, target, loser int, ok bool) {
+	if g.lastSideShow == nil {
+		return -1, -1, -1, false
+	}
+	return g.lastSideShow.Requester, g.lastSideShow.Target, g.lastSideShow.Loser, true
+}
+
 // GetHint 人間プレイヤーへのヒントを取得する
 func (g *TeenPatti) GetHint() *TeenPattiHint {
 	if g.phase != TeenPattiPhaseBetting || g.currentPlayerIdx != 0 {
@@ -798,6 +820,7 @@ type teenPattiJSON struct {
 	SideShowTarget    int                `json:"st"`
 	GameEndFlag       bool               `json:"ge"`
 	MatchWinnerIdx    int                `json:"mw"`
+	LastSideShow      *teenPattiSideShow `json:"ls,omitempty"`
 	ActionLog         []*ActionLogEntry  `json:"al"`
 }
 
@@ -821,6 +844,7 @@ func (g *TeenPatti) MarshalJSON() ([]byte, error) {
 		SideShowTarget:    g.sideShowTarget,
 		GameEndFlag:       g.gameEndFlag,
 		MatchWinnerIdx:    g.matchWinnerIdx,
+		LastSideShow:      g.lastSideShow,
 		ActionLog:         g.actionLog,
 	})
 }
@@ -848,6 +872,13 @@ func (g *TeenPatti) UnmarshalJSON(data []byte) error {
 		j.SideShowTarget < -1 || j.SideShowTarget >= TeenPattiPlayerCnt ||
 		j.Phase < TeenPattiPhaseBetting || j.Phase > TeenPattiPhaseGameEnd {
 		return errTeenPattiSnapshot
+	}
+	if j.LastSideShow != nil {
+		ss := j.LastSideShow
+		if !teenPattiIdxInRange(ss.Requester) || !teenPattiIdxInRange(ss.Target) ||
+			!teenPattiIdxInRange(ss.Loser) || (ss.Loser != ss.Requester && ss.Loser != ss.Target) {
+			return errTeenPattiSnapshot
+		}
 	}
 	for _, p := range j.Players {
 		if p == nil {
@@ -879,6 +910,7 @@ func (g *TeenPatti) UnmarshalJSON(data []byte) error {
 	g.sideShowTarget = j.SideShowTarget
 	g.gameEndFlag = j.GameEndFlag
 	g.matchWinnerIdx = j.MatchWinnerIdx
+	g.lastSideShow = j.LastSideShow
 	g.actionLog = j.ActionLog
 	if g.actionLog == nil {
 		g.actionLog = make([]*ActionLogEntry, 0)

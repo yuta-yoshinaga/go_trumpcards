@@ -51,5 +51,25 @@
     "playLowest": "Play your lowest card to conserve strong cards",
     "bomb": "Use a bomb to take control",
     "pass": "Pass — save your strong cards"
+  },
+  "combo": {
+    "selectedLabel": "Selected",
+    "badge": "{{type}} ({{count}} cards)",
+    "notCombo": "Not a valid combination — check your selection",
+    "noBeat": "This combo cannot beat the current table play",
+    "type": {
+      "single": "Single",
+      "pair": "Pair",
+      "trio": "Trio",
+      "trioSingle": "Trio + single",
+      "trioPair": "Trio + pair",
+      "straight": "Straight",
+      "consecutivePair": "Consecutive pairs",
+      "airplane": "Airplane",
+      "airplaneSingle": "Airplane + singles",
+      "airplanePair": "Airplane + pairs",
+      "bomb": "Bomb",
+      "rocket": "Rocket"
+    }
   }
 }

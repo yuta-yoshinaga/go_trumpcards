@@ -266,6 +266,54 @@ describe('TrashPage', () => {
     }
   });
 
+  it('announces a normal pending card and its target slot in a polite live region', async () => {
+    mockExec.mockResolvedValue({ ...playerTurnState, pending: card('HEART', 4) });
+    renderWithProviders(<TrashPage />);
+    const region = await screen.findByTestId('tr-pending-announce');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    await waitFor(() => expect(region).toHaveTextContent('引いたカード: ♥ 4。スロット 4 に置けます'));
+  });
+
+  it('announces a wild pending card as a free-choice placement', async () => {
+    mockExec.mockResolvedValue(awaitWildState); // ♦ K, AWAIT_WILD
+    renderWithProviders(<TrashPage />);
+    const region = await screen.findByTestId('tr-pending-announce');
+    await waitFor(() =>
+      expect(region).toHaveTextContent('引いたカード: ♦ K。ワイルドカードです。空いているスロットを選んでください'),
+    );
+  });
+
+  it('announces a dead (J/Q) pending card as discarded', async () => {
+    mockExec.mockResolvedValue({ ...playerTurnState, pending: card('SPADE', 11) });
+    renderWithProviders(<TrashPage />);
+    const region = await screen.findByTestId('tr-pending-announce');
+    await waitFor(() => expect(region).toHaveTextContent('引いたカード: ♠ J。置けるスロットがなく捨て札になります'));
+  });
+
+  it('announces a normal pending card as discarded when its target slot is already face-up', async () => {
+    // Slot 4 (index 3) already filled → a pending 4 cannot be placed and is dead.
+    const filledSlot4 = faceDownSlots();
+    filledSlot4[3] = { faceUp: true, card: card('HEART', 4) };
+    mockExec.mockResolvedValue({
+      ...playerTurnState,
+      players: [
+        { slots: filledSlot4, isCpu: false },
+        { slots: faceDownSlots(), isCpu: true },
+      ],
+      pending: card('SPADE', 4),
+    });
+    renderWithProviders(<TrashPage />);
+    const region = await screen.findByTestId('tr-pending-announce');
+    await waitFor(() => expect(region).toHaveTextContent('引いたカード: ♠ 4。置けるスロットがなく捨て札になります'));
+  });
+
+  it('keeps the pending live region empty when no card is pending', async () => {
+    renderWithProviders(<TrashPage />);
+    const region = await screen.findByTestId('tr-pending-announce');
+    expect(region).toHaveTextContent('');
+  });
+
   it('surfaces an error alert when the API fails on mount', async () => {
     mockExec.mockRejectedValue(new Error('network error'));
     renderWithProviders(<TrashPage />);
@@ -281,5 +329,53 @@ describe('TrashPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
+  });
+
+  it('defaults the CPU speed select to normal when unset', async () => {
+    renderWithProviders(<TrashPage />);
+    const select = (await screen.findByTestId('trash-cpu-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('normal');
+  });
+
+  it('loads the persisted CPU speed from localStorage on mount', async () => {
+    localStorage.setItem('trash:cpuSpeed', 'fast');
+    renderWithProviders(<TrashPage />);
+    const select = (await screen.findByTestId('trash-cpu-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('fast');
+  });
+
+  it('persists the chosen CPU speed to localStorage', async () => {
+    renderWithProviders(<TrashPage />);
+    const select = (await screen.findByTestId('trash-cpu-speed-select')) as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: 'slow' } });
+    expect(select.value).toBe('slow');
+    expect(localStorage.getItem('trash:cpuSpeed')).toBe('slow');
+  });
+
+  it('uses the selected speed as the CPU turn delay', async () => {
+    vi.useFakeTimers();
+    try {
+      // 'fast' → 200ms delay. Verify the boundary at 200ms.
+      localStorage.setItem('trash:cpuSpeed', 'fast');
+      mockExec.mockImplementation(async () => cpuTurnState);
+      renderWithProviders(<TrashPage />);
+      // Flush the mount reset + initial render so the CPU-turn effect subscribes.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      mockExec.mockClear();
+      // Just before the 200ms fast delay no cpu step has fired yet.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(199);
+      });
+      expect(mockExec).not.toHaveBeenCalledWith('cpu');
+      // Crossing 200ms fires the fast cpu step.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1);
+      });
+      expect(mockExec).toHaveBeenCalledWith('cpu');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

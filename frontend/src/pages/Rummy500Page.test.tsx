@@ -68,6 +68,23 @@ const playPhaseState: Rummy500Response = {
   ],
 };
 
+const playPhaseInvalidHandState: Rummy500Response = {
+  ...drawPhaseState,
+  phase: 1,
+  players: [
+    {
+      ...drawPhaseState.players[0],
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE', value: 3 },
+        { design: 'HEART', value: 8 },
+        { design: 'CLOVER', value: 11 },
+      ],
+    },
+    drawPhaseState.players[1],
+  ],
+};
+
 const roundEndState: Rummy500Response = {
   ...drawPhaseState,
   phase: 2,
@@ -102,14 +119,48 @@ describe('Rummy500Page', () => {
 
   it('clicking discard card in Draw phase calls drawdiscard', async () => {
     renderWithProviders(<Rummy500Page />);
-    await waitFor(() => {
-      expect(screen.getAllByLabelText(/\(0\)$/).length).toBeGreaterThan(0);
-    });
-    const card = screen.getAllByLabelText(/\(0\)$/)[0];
+    const card = await screen.findByTestId('disc-card-0');
     fireEvent.click(card);
     await waitFor(() => {
       expect(mockExec).toHaveBeenCalledWith('drawdiscard', undefined, undefined, undefined, 0);
     });
+  });
+
+  it('previews the whole take-range when hovering a mid-pile discard card', async () => {
+    renderWithProviders(<Rummy500Page />);
+    // drawPhaseState.discardPile has 2 cards: [♥3 (idx 0), ♣5 (idx 1, top)].
+    const bottom = await screen.findByTestId('disc-card-0');
+    const top = screen.getByTestId('disc-card-1');
+    // Nothing highlighted before hover.
+    expect(bottom).not.toHaveAttribute('data-in-pickup-range');
+    expect(top).not.toHaveAttribute('data-in-pickup-range');
+
+    fireEvent.mouseEnter(bottom);
+    // Hovering the bottom card highlights it AND every card above it (the whole pile).
+    expect(bottom).toHaveAttribute('data-in-pickup-range', 'true');
+    expect(top).toHaveAttribute('data-in-pickup-range', 'true');
+    // The badge announces the number of cards that would be taken (2).
+    const badge = screen.getByTestId('pickup-range-badge');
+    expect(badge).toHaveTextContent('2');
+    // The aria-label of the hovered card also carries the count.
+    expect(bottom).toHaveAttribute('aria-label', expect.stringContaining('2枚引き取る'));
+
+    fireEvent.mouseLeave(bottom);
+    expect(bottom).not.toHaveAttribute('data-in-pickup-range');
+    expect(top).not.toHaveAttribute('data-in-pickup-range');
+  });
+
+  it('previews only the top card when hovering the top of the discard pile', async () => {
+    renderWithProviders(<Rummy500Page />);
+    const bottom = await screen.findByTestId('disc-card-0');
+    const top = screen.getByTestId('disc-card-1');
+
+    fireEvent.focus(top);
+    // Hovering/focusing the top card previews just that one card.
+    expect(top).toHaveAttribute('data-in-pickup-range', 'true');
+    expect(bottom).not.toHaveAttribute('data-in-pickup-range');
+    expect(screen.getByTestId('pickup-range-badge')).toHaveTextContent('1');
+    expect(top).toHaveAttribute('aria-label', expect.stringContaining('1枚引き取る'));
   });
 
   it('shows meld + discard buttons in Play phase', async () => {
@@ -203,6 +254,36 @@ describe('Rummy500Page', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /メルドする/ })).toBeDisabled();
     });
+  });
+
+  it('enables the meld button and shows no warning for a valid set selection', async () => {
+    // playPhaseState hand is ♠7 ♥7 ♣7 — a valid same-rank set.
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<Rummy500Page />);
+    const meldBtn = await screen.findByRole('button', { name: /メルドする/ });
+    // No cards selected yet → disabled and no warning.
+    expect(meldBtn).toBeDisabled();
+    expect(screen.queryByTestId('r5-invalid-meld')).not.toBeInTheDocument();
+
+    const handCards = document.querySelectorAll('[data-tutorial="r5-player-hand"] button');
+    for (const c of handCards) fireEvent.click(c);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: /メルドする/ })).toBeEnabled());
+    expect(screen.queryByTestId('r5-invalid-meld')).not.toBeInTheDocument();
+  });
+
+  it('warns and disables the meld button for an invalid 3-card selection', async () => {
+    // playPhaseInvalidHandState hand is ♠3 ♥8 ♣11 — neither a set nor a run.
+    mockExec.mockResolvedValue(playPhaseInvalidHandState);
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /メルドする/ });
+
+    const handCards = document.querySelectorAll('[data-tutorial="r5-player-hand"] button');
+    for (const c of handCards) fireEvent.click(c);
+
+    await waitFor(() => expect(screen.getByTestId('r5-invalid-meld')).toBeInTheDocument());
+    expect(screen.getByTestId('r5-invalid-meld')).toHaveTextContent('セットまたはランになっていません');
+    expect(screen.getByRole('button', { name: /メルドする/ })).toBeDisabled();
   });
 
   it('drawstock button triggers exec', async () => {

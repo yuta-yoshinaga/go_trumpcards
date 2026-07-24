@@ -1045,13 +1045,14 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('split'));
   });
 
-  it('sends config params when reset button is clicked in end phase', async () => {
+  it('sends config params when reset button is confirmed in end phase', async () => {
     mockExec.mockResolvedValue(endPhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(betPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         dealerHitsSoft17: false,
@@ -1461,16 +1462,40 @@ describe('BlackJackPage', () => {
     expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 
-  // --- Next Game button tests ---
+  // --- Next Game button / reset confirmation tests ---
 
-  it('executes reset when next game button is clicked in end phase', async () => {
+  it('shows the reset confirmation dialog when the next game button is clicked', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    // Confirmation dialog appears and no reset fires until it is confirmed.
+    expect(screen.getByText('本当にゲームをリセットしますか？')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('executes reset after confirming the dialog in end phase', async () => {
     mockExec.mockResolvedValue(endPhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(betPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
+  });
+
+  it('does not reset when the confirmation dialog is cancelled', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    // Dialog closes and no reset command is sent.
+    await waitFor(() => expect(screen.queryByText('本当にゲームをリセットしますか？')).not.toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   // --- Keyboard navigation tests ---
@@ -1535,6 +1560,66 @@ describe('BlackJackPage', () => {
     fireEvent.keyDown(document, { key: 'h' });
     fireEvent.keyDown(document, { key: 's' });
     expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('pressing i triggers insurance in INSURANCE phase', async () => {
+    mockExec.mockResolvedValue(insurancePhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'インシュランス' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(insurancePhaseState);
+    fireEvent.keyDown(document, { key: 'i' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('insurance'));
+  });
+
+  it('pressing n triggers declineinsurance in INSURANCE phase', async () => {
+    mockExec.mockResolvedValue(insurancePhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '辞退' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(insurancePhaseState);
+    fireEvent.keyDown(document, { key: 'n' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declineinsurance'));
+  });
+
+  it('insurance keyboard shortcuts are disabled outside INSURANCE phase', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'i' });
+    expect(mockExec).not.toHaveBeenCalledWith('insurance');
+  });
+
+  it('pressing u triggers earlysurrender in EARLY_SURRENDER phase', async () => {
+    const earlySurrenderState: BlackJackResponse = { ...actionPhaseState, phase: 6 };
+    mockExec.mockResolvedValue(earlySurrenderState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'アーリーサレンダー' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(earlySurrenderState);
+    fireEvent.keyDown(document, { key: 'u' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('earlysurrender'));
+  });
+
+  it('pressing n triggers declineearlysurrender in EARLY_SURRENDER phase', async () => {
+    const earlySurrenderState: BlackJackResponse = { ...actionPhaseState, phase: 6 };
+    mockExec.mockResolvedValue(earlySurrenderState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '続行' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(earlySurrenderState);
+    fireEvent.keyDown(document, { key: 'n' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declineearlysurrender'));
+  });
+
+  it('early surrender keyboard shortcuts are disabled outside EARLY_SURRENDER phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'u' });
+    expect(mockExec).not.toHaveBeenCalledWith('earlysurrender');
   });
 
   // --- PhaseIndicator coverage ---

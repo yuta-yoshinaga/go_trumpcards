@@ -49,5 +49,32 @@
     "newMeldButton": "Select 3 or more hand cards to lay a new meld on the table.",
     "scoreTable": "Player scores are shown here. Lowest cumulative total wins.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "a11y": {
+    "meldLabel": "{{kind}}, {{count}} cards, {{rank}}",
+    "layoffTo": "Lay off onto {{meld}}"
+  },
+  "rearrange": {
+    "toggle": "Rearrange",
+    "title": "Rearrange table",
+    "help": "Break up table melds and recombine them with your hand. Assign each card to a target group. You can submit only when every group is a valid meld.",
+    "selectPrompt": "Select one or more hand cards to start rearranging",
+    "poolTitle": "Assign cards to groups",
+    "previewTitle": "Rearrange preview",
+    "sourceTable": "Table",
+    "sourceHand": "Hand",
+    "unassigned": "Unassigned",
+    "group": "Group {{n}}",
+    "newGroup": "New group",
+    "assignLabel": "Target group for {{card}}",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "previewEmpty": "No groups yet",
+    "statusOk": "Valid rearrangement. Ready to submit",
+    "statusMelds": "Make every group a valid meld (a set or run of 3+ cards)",
+    "statusConserve": "Assign every card to a group (some are still unassigned)",
+    "statusPlay": "You must play at least one card from your hand",
+    "submit": "Submit rearrangement",
+    "cancel": "Cancel"
   }
 }

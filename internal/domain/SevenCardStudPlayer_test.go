@@ -393,6 +393,45 @@ func TestEvalBestHandRazz_LessThan5Cards(t *testing.T) {
 	assert.Nil(t, p.GetBestHand())
 }
 
+func TestSevenCardStudRazzBestLow_CompleteFive(t *testing.T) {
+	// 7 cards; best low is the five lowest distinct ranks: 2-3-4-5-7.
+	cards := []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+		NewCard(CardDesignHeart, 11, false),
+		NewCard(CardDesignClover, 13, false),
+	}
+	best, complete := SevenCardStudRazzBestLow(cards)
+	assert.True(t, complete)
+	assert.Len(t, best, 5)
+	vals := map[int]bool{}
+	for _, c := range best {
+		vals[c.GetValue()] = true
+	}
+	for _, v := range []int{2, 3, 4, 5, 7} {
+		assert.True(t, vals[v], "expected %d in best low", v)
+	}
+	assert.False(t, vals[11] || vals[13], "high cards must be excluded")
+}
+
+func TestSevenCardStudRazzBestLow_IncompleteSortedAsc(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignSpade, 7, false),
+		NewCard(CardDesignHeart, 1, false), // Ace low
+		NewCard(CardDesignClover, 4, false),
+	}
+	best, complete := SevenCardStudRazzBestLow(cards)
+	assert.False(t, complete)
+	assert.Len(t, best, 3)
+	// Sorted ascending with Ace (1) first.
+	assert.Equal(t, 1, best[0].GetValue())
+	assert.Equal(t, 4, best[1].GetValue())
+	assert.Equal(t, 7, best[2].GetValue())
+}
+
 func TestCompareVisibleHandsLow_LowerRankWins(t *testing.T) {
 	a := NewSevenCardStudPlayer(true, 0)
 	a.AddDoorCard(NewCard(CardDesignSpade, 2, false)) // HighCard

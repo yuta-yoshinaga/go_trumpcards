@@ -72,15 +72,15 @@ describe('SchnapsenPage', () => {
 
   it('shows the human hand as play buttons', async () => {
     renderWithProviders(<SchnapsenPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Play SPADE 1' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'Play HEART 10' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A を出す' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♥ 10 を出す' })).toBeInTheDocument();
   });
 
   it('fires play with the selected card index when a card is clicked', async () => {
     renderWithProviders(<SchnapsenPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Play HEART 10' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '♥ 10 を出す' })).toBeInTheDocument());
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'Play HEART 10' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 10 を出す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
   });
 
@@ -103,12 +103,34 @@ describe('SchnapsenPage', () => {
     expect(m3.getAttribute('aria-label')).toContain('40');
   });
 
-  it('disables non-legal cards in the endgame (phase 2)', async () => {
+  it('rings legal cards but keeps illegal cards clickable in the endgame (phase 2)', async () => {
     mockExec.mockResolvedValue(makeState({ isEndgame: true, validPlays: [0] }));
     renderWithProviders(<SchnapsenPage />);
     await waitFor(() => expect(screen.getByTestId('schnapsen-phase')).toHaveTextContent(/第2フェーズ/));
-    expect(screen.getByRole('button', { name: 'Play SPADE 1' })).not.toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Play HEART 10' })).toBeDisabled();
+    const legal = screen.getByRole('button', { name: '♠ A を出す' });
+    const illegal = screen.getByRole('button', { name: '♥ 10 を出す' });
+    // Legal card gets an additive success ring; illegal card does not.
+    expect(legal.className).toContain('ring-ds-success');
+    expect(illegal.className).not.toContain('ring-ds-success');
+    // Illegal card stays clickable (no hard block) — backend still validates.
+    expect(illegal).not.toBeDisabled();
+    mockExec.mockClear();
+    fireEvent.click(illegal);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
+  });
+
+  it('shows the must-follow guide banner in phase 2 on the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ isEndgame: true, validPlays: [0] }));
+    renderWithProviders(<SchnapsenPage />);
+    const banner = await screen.findByTestId('schnapsen-endgame-guide');
+    expect(banner).toHaveTextContent(/第2フェーズ/);
+  });
+
+  it('shows no guide banner or legal ring in phase 1 (no visual regression)', async () => {
+    renderWithProviders(<SchnapsenPage />);
+    const btn = await screen.findByRole('button', { name: '♠ A を出す' });
+    expect(btn.className).not.toContain('ring-ds-success');
+    expect(screen.queryByTestId('schnapsen-endgame-guide')).not.toBeInTheDocument();
   });
 
   it('shows "Next trick" button on trick-end and dispatches next', async () => {
@@ -162,7 +184,7 @@ describe('SchnapsenPage', () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<SchnapsenPage />);
     await waitFor(() => {
-      const btn = screen.getByRole('button', { name: 'Play SPADE 1' });
+      const btn = screen.getByRole('button', { name: '♠ A を出す' });
       expect(btn).toBeDisabled();
     });
   });

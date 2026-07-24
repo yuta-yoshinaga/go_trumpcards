@@ -77,6 +77,32 @@ describe('StreetsAndAlleysPage', () => {
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
   });
 
+  it('highlights column tops as drop targets once a source card is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    // No source selected yet → no target-candidate highlight.
+    const heart6 = await screen.findByRole('button', { name: '♥ 6' });
+    expect(heart6).not.toHaveAttribute('data-target-candidate');
+    // Select the top of column 0 (♠5) as the move source.
+    fireEvent.click(screen.getByRole('button', { name: '♠ 5' }));
+    // Column 1's top (♥6) is now a drop target with the info ring.
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '♥ 6' })).toHaveAttribute('data-target-candidate', 'true'),
+    );
+    expect(screen.getByRole('button', { name: '♥ 6' }).className).toContain('ring-ds-info');
+    // The selected source card itself is not a target candidate.
+    expect(screen.getByRole('button', { name: '♠ 5' })).not.toHaveAttribute('data-target-candidate');
+  });
+
+  it('dims a tableau card while it is being dragged', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const top = await screen.findByRole('button', { name: '♠ 5' });
+    // jsdom doesn't attach a DataTransfer to synthetic drag events, so provide one.
+    fireEvent.dragStart(top, { dataTransfer: { setData: () => {}, effectAllowed: '' } });
+    await waitFor(() => expect(top.className).toContain('opacity-50'));
+  });
+
   it('renders heading and move count', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<StreetsAndAlleysPage />);
@@ -90,10 +116,60 @@ describe('StreetsAndAlleysPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
   });
 
+  it('renders per-foundation progress counters (n/13) for partially-built piles', async () => {
+    const progressState: StreetsAndAlleysResponse = {
+      ...playingState,
+      foundation: [
+        [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3), card('SPADE', 4), card('SPADE', 5)],
+        [card('CLOVER', 1)],
+        [card('HEART', 1), card('HEART', 2)],
+        [card('DIAMOND', 1)],
+      ],
+    };
+    mockExec.mockResolvedValue(progressState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    expect(await screen.findByTestId('sa-foundation-progress-0')).toHaveTextContent('5/13');
+    expect(screen.getByTestId('sa-foundation-progress-1')).toHaveTextContent('1/13');
+    expect(screen.getByTestId('sa-foundation-progress-2')).toHaveTextContent('2/13');
+    expect(screen.getByTestId('sa-foundation-progress-3')).toHaveTextContent('1/13');
+  });
+
+  it('marks a completed foundation (13/13) with a success color and checkmark', async () => {
+    const fullSpades = Array.from({ length: 13 }, (_, i) => card('SPADE', i + 1));
+    const completeState: StreetsAndAlleysResponse = {
+      ...playingState,
+      foundation: [fullSpades, [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+    };
+    mockExec.mockResolvedValue(completeState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const done = await screen.findByTestId('sa-foundation-progress-0');
+    expect(done).toHaveTextContent('13/13');
+    expect(done.textContent).toContain('✓');
+    expect(done.className).toContain('text-ds-success');
+  });
+
   it('renders giveup button when playing', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<StreetsAndAlleysPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
+  });
+
+  it('advertises the keyboard shortcuts on the control buttons', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const undo = await screen.findByRole('button', { name: '元に戻す' });
+    expect(undo).toHaveAttribute('aria-keyshortcuts', 'z');
+    expect(undo.querySelector('kbd')?.textContent).toBe('Z');
+    const hint = screen.getByRole('button', { name: 'ヒント' });
+    expect(hint).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(hint.querySelector('kbd')?.textContent).toBe('H');
+    const autoComplete = screen.getByRole('button', { name: '自動完成' });
+    expect(autoComplete).toHaveAttribute('aria-keyshortcuts', 'a');
+    expect(autoComplete.querySelector('kbd')?.textContent).toBe('A');
+    // KbdBadge text is aria-hidden, so the giveup button's accessible name stays clean.
+    const giveUp = screen.getByRole('button', { name: 'ギブアップ' });
+    expect(giveUp).toHaveAttribute('aria-keyshortcuts', 'g');
+    expect(giveUp.querySelector('kbd')?.textContent).toBe('G');
   });
 
   it('hides giveup button when game cleared', async () => {

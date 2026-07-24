@@ -59,12 +59,15 @@
     "title": "設定"
   },
   "betGuide": "アンテを設定してベット",
+  "betError": "アンテは10以上、10単位で、残高以内で指定してください",
   "actionGuide": "フォールド、コール、カード交換、または6枚目購入を選択",
   "exchangeGuide": "交換したいカードをタップで選択し、「交換」を押してください",
+  "exchangeKbdHint": "キーボード: 数字キー(1〜9,0)で選択、Enterで交換、Escで選択解除",
   "exchangeFeeInfo": "手数料: 1枚あたりアンテ × {{ante}} = {{fee}}",
   "exchangeFeeHighRisk": "高コスト警告",
   "exchangeSelected": "選択中: {{count}}枚",
   "selectGuide": "6枚のカードから1枚を選んで捨ててください",
+  "selectKbdHint": "キーボード: 数字キー(1〜9,0)で捨てるカードを選べます",
   "forceQualifyGuide": "ディーラーが未クオリファイです。アンテ同額を払って最高カードを交換させますか？",
   "forceQualifyCost": "コスト: {{cost}}",
   "payoutRef": {

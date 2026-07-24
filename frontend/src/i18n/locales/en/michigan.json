@@ -39,6 +39,8 @@
   "betMinusAria": "Remove a chip from boodle {{index}}",
   "betPlusAria": "Add a chip to boodle {{index}}",
   "placeBets": "Place bets",
+  "betCollectible": "Collectible",
+  "betClaimedWarning": "Already won",
   "playPrompt": "Play a card in an ascending same-suit run.",
   "playCardAria": "Play hand card {{index}}",
   "nextRound": "Next Round",
@@ -56,5 +58,11 @@
     "hand": "Your hand. During the play phase, cards you may legally play are highlighted; click one to play it in an ascending same-suit run.",
     "actions": "On your bet turn, distribute your chips across the four boodles and place your bets. During play, click a playable card. At the result phase, deal the next round.",
     "resetButton": "Reset the game and start over."
+  },
+  "nextHint": {
+    "next": "Play next: {{suit}} {{value}}",
+    "new": "You can start a new sequence",
+    "nextBadge": "Next",
+    "leadBadge": "Lead"
   }
 }

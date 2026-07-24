@@ -32,6 +32,9 @@ type BurracoPhase = CanastaPhase
 // BurracoCpuDifficulty はブラーコの CPU 難易度型。
 type BurracoCpuDifficulty = CanastaCpuDifficulty
 
+// BurracoHint はブラーコのヒント情報。
+type BurracoHint = CanastaHint
+
 // ブラーコのフェーズ定数（Canasta と同一値）。
 const (
 	BurracoPhaseDraw     = CanastaPhaseDraw

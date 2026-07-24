@@ -12,6 +12,15 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// cribbagePegValue is a card's pegging value: face cards count as 10, aces as
+// 1, all others their pip value (mirrors the domain's cribbageCardValue).
+func cribbagePegValue(card *domain.Card) int {
+	if v := card.GetValue(); v <= 10 {
+		return v
+	}
+	return 10
+}
+
 // cribbagePlayerStr returns the display string for a single Cribbage player.
 func cribbagePlayerStr(player *domain.CribbagePlayer, i int, dealerIdx int) string {
 	var b strings.Builder
@@ -88,10 +97,31 @@ func (p *CribbageCuiPresenter) Output(g interfaces.CribbageGame, lastErr error) 
 			b.WriteString(i18n.Tf("cribbage.promptDiscard",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("cribbage.promptDiscardHelp") + "\n")
+		case domain.CribbagePhaseCut:
+			currentIdx := g.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("cribbage.promptCut",
+				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("cribbage.promptCutHelp") + "\n")
 		case domain.CribbagePhasePegging:
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("cribbage.promptPegging",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			// List the hand indices playable under the 31 limit so the human
+			// need not add pip values by hand; warn to declare go if none fit.
+			if cur := g.GetPlayer(currentIdx); cur != nil && cur.GetIsHuman() {
+				pegCount := g.GetPegCount()
+				var legal []string
+				for i := 0; i < cur.GetCardsSize(); i++ {
+					if pegCount+cribbagePegValue(cur.GetCard(i)) <= domain.CribbagePegLimit {
+						legal = append(legal, "["+strconv.Itoa(i)+"]")
+					}
+				}
+				if len(legal) > 0 {
+					b.WriteString(i18n.Tf("cribbage.legalPegLegend", "indices", strings.Join(legal, " ")) + "\n")
+				} else {
+					b.WriteString(color.Yellow(i18n.T("cribbage.mustGo")) + "\n")
+				}
+			}
 			b.WriteString(i18n.T("cribbage.promptPeggingHelp") + "\n")
 			b.WriteString(i18n.T("cribbage.promptPeggingGo") + "\n")
 		case domain.CribbagePhaseShow:

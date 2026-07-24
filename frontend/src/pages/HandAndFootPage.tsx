@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { HandAndFootResponse } from '../types/card';
 import { HandAndFootPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { canastaMinMeld, canastaSelectionPoints } from '../utils/canastaScore';
 import { cardAlt } from '../utils/cardAlt';
 import { HANDANDFOOT_HELP, parseHandAndFootCommand } from '../utils/cli/commands/handandfootCommands';
 import { formatHandAndFootState } from '../utils/cli/formatters/handandfootFormatter';
@@ -114,6 +115,40 @@ function HandAndFootPageContent() {
     if (n === 1) return t('drawDiscardReason.selectOneMore');
     return t('drawDiscardReason.selectTwo');
   }, [isDrawPhase, selectedCardIndices.length, state?.isFrozen, t]);
+
+  // Whether the human may currently "go out", plus the first unmet requirement.
+  // The web build always uses the default go-out rule (>=1 red/natural and >=1
+  // black/mixed team canasta, plus the player having entered their foot); see
+  // DefaultHandAndFootConfig — the web config never exposes the rc/bc thresholds.
+  const goOutGuidance = useMemo(() => {
+    if (!isDiscardPhase || !humanPlayer) return null;
+    const team = state?.teams.find((tm) => tm.team === humanPlayer.team);
+    const canastas = team?.melds.filter((m) => m.isCanasta) ?? [];
+    const redCanastas = canastas.filter((m) => m.isNatural).length;
+    const blackCanastas = canastas.filter((m) => !m.isNatural).length;
+    if (!humanPlayer.inFoot) return { canGoOut: false, reasonKey: 'goOutReason.needFoot' };
+    if (redCanastas < 1) return { canGoOut: false, reasonKey: 'goOutReason.needRedCanasta' };
+    if (blackCanastas < 1) return { canGoOut: false, reasonKey: 'goOutReason.needBlackCanasta' };
+    return { canGoOut: true, reasonKey: 'goOutReason.ready' };
+  }, [isDiscardPhase, humanPlayer, state?.teams]);
+
+  // Meld phase: show the selected cards' running point total and, until the
+  // team has opened (no melds yet), the initial-meld minimum so the player can
+  // tell if the selection qualifies. Point values + minimum bands mirror the
+  // shared Canasta-family scoring (the backend uses CanastaCardValue); the web
+  // build does not enforce the minimum, so this is a display-only readout.
+  const meldPointInfo = useMemo(() => {
+    if (!isMeldPhase || !humanPlayer) return null;
+    const selectedCards = selectedCardIndices
+      .map((i) => humanPlayer.cards[i])
+      .filter((c): c is NonNullable<typeof c> => !!c);
+    const selectedPoints = canastaSelectionPoints(selectedCards);
+    const team = state?.teams.find((tm) => tm.team === humanPlayer.team);
+    const needInitial = (team?.melds.length ?? 0) === 0;
+    const minMeld = canastaMinMeld(humanPlayer.cumulativeScore);
+    const met = selectedPoints >= minMeld;
+    return { selectedPoints, needInitial, minMeld, met, below: needInitial && !met };
+  }, [isMeldPhase, humanPlayer, selectedCardIndices, state?.teams]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -402,11 +437,32 @@ function HandAndFootPageContent() {
               )}
               {isMeldPhase && isHumanTurn && (
                 <>
+                  {meldPointInfo && (
+                    <div
+                      id="hf-meld-points"
+                      data-testid="hf-meld-points"
+                      className={`w-full text-xs ${
+                        meldPointInfo.below
+                          ? 'text-ds-warning'
+                          : meldPointInfo.needInitial
+                            ? 'text-ds-success'
+                            : 'text-ds-text-muted'
+                      }`}
+                    >
+                      {meldPointInfo.needInitial
+                        ? t('meldPoints.initial', {
+                            min: meldPointInfo.minMeld,
+                            points: meldPointInfo.selectedPoints,
+                          })
+                        : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
+                    </div>
+                  )}
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={handleMeldSelected}
                     disabled={loading || selectedCardIndices.length < 3}
+                    aria-describedby={meldPointInfo?.below ? 'hf-meld-points' : undefined}
                   >
                     {t('meldButton')}
                   </button>
@@ -416,19 +472,37 @@ function HandAndFootPageContent() {
                 </>
               )}
               {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button type="button" className={btnSuccess} onClick={handleGoOut} disabled={loading}>
-                    {t('goOutButton')}
-                  </button>
-                </>
+                <div className="flex gap-2 flex-col">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('discardButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handleGoOut}
+                      disabled={loading || goOutGuidance?.canGoOut !== true}
+                      title={goOutGuidance && !goOutGuidance.canGoOut ? t(goOutGuidance.reasonKey) : undefined}
+                      aria-describedby={goOutGuidance ? 'hf-go-out-guidance' : undefined}
+                    >
+                      {t('goOutButton')}
+                    </button>
+                  </div>
+                  {goOutGuidance && (
+                    <div
+                      id="hf-go-out-guidance"
+                      data-testid="hf-go-out-guidance"
+                      className={`text-xs ${goOutGuidance.canGoOut ? 'text-ds-success' : 'text-ds-text-muted'}`}
+                    >
+                      {t(goOutGuidance.reasonKey)}
+                    </div>
+                  )}
+                </div>
               )}
               {isRoundEnd && (
                 <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>

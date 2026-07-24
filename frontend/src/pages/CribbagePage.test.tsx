@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, cribbageApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -67,6 +67,26 @@ const peggingPhaseState: CribbageResponse = {
   starter: { design: 'SPADE', value: 10 },
   pegCount: 0,
   pegPlayedCards: [],
+};
+
+// Cut phase with the human as the non-dealer cutter (dealer=1 → cutter=0).
+const cutPhaseState: CribbageResponse = {
+  ...discardPhaseState,
+  phase: 1,
+  dealerIdx: 1,
+  currentPlayerIdx: 0,
+  starter: null,
+  players: [
+    { ...discardPhaseState.players[0], cardCount: 4, cards: discardPhaseState.players[0].cards.slice(0, 4) },
+    discardPhaseState.players[1],
+  ],
+};
+
+// Cut phase where the CPU is the cutter (dealer=0 → cutter=1) — no human affordance.
+const cutPhaseCpuState: CribbageResponse = {
+  ...cutPhaseState,
+  dealerIdx: 0,
+  currentPlayerIdx: 1,
 };
 
 const showPhaseState: CribbageResponse = {
@@ -191,6 +211,51 @@ describe('CribbagePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, [0, 1]));
   });
 
+  it('renders cut deck and cut button when human is the cutter', async () => {
+    mockExec.mockResolvedValue(cutPhaseState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('cb-cut-deck')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'デッキをカットする' })).toBeInTheDocument();
+    });
+  });
+
+  it('calls cut command when the cut button is clicked', async () => {
+    mockExec.mockResolvedValue(cutPhaseState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByTestId('cb-cut-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(peggingPhaseState);
+    fireEvent.click(screen.getByTestId('cb-cut-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('cut'));
+  });
+
+  it('calls cut command when the deck is clicked', async () => {
+    mockExec.mockResolvedValue(cutPhaseState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByTestId('cb-cut-deck')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(peggingPhaseState);
+    fireEvent.click(screen.getByTestId('cb-cut-deck'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('cut'));
+  });
+
+  it('does not show cut affordance when the CPU is the cutter', async () => {
+    mockExec.mockResolvedValue(cutPhaseCpuState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('cb-cut-button')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('cb-cut-deck')).not.toBeInTheDocument();
+  });
+
+  it('shows the His Heels note when the starter is a Jack', async () => {
+    mockExec.mockResolvedValue({ ...peggingPhaseState, starter: { design: 'HEART', value: 11 } });
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByTestId('cb-his-heels')).toBeInTheDocument());
+  });
+
   it('renders peg and go buttons when human pegging turn', async () => {
     mockExec.mockResolvedValue(peggingPhaseState);
     renderWithProviders(<CribbagePage />);
@@ -298,6 +363,17 @@ describe('CribbagePage', () => {
     mockExec.mockResolvedValue(showPhaseState);
     renderWithProviders(<CribbagePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次を表示' })).toBeInTheDocument());
+  });
+
+  it('gives the score-breakdown table a caption and a labeled first column header', async () => {
+    mockExec.mockResolvedValue(showPhaseState);
+    renderWithProviders(<CribbagePage />);
+    // The breakdown table is captioned...
+    const table = await screen.findByRole('table', { name: 'ショー得点の内訳' });
+    expect(table).toBeInTheDocument();
+    // ...and its previously-empty first column header now has an accessible name.
+    const headers = within(table).getAllByRole('columnheader');
+    expect(headers[0]).toHaveTextContent('対象');
   });
 
   it('calls shownext when show next button is clicked', async () => {

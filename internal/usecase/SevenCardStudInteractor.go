@@ -23,6 +23,8 @@ type SevenCardStudInteractorIF interface {
 	GetConfig() domain.SevenCardStudConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 }
 
 // SevenCardStudInteractor セブンカードスタッドインタラクタークラス
@@ -76,6 +78,11 @@ func (si *SevenCardStudInteractor) GetConfig() domain.SevenCardStudConfig {
 // ActionLog 棋譜を出力する
 func (si *SevenCardStudInteractor) ActionLog() string {
 	return si.sp.ActionLogOutput(si.Game)
+}
+
+// Hint ヒントを出力する
+func (si *SevenCardStudInteractor) Hint() string {
+	return si.sp.HintOutput(si.Game)
 }
 
 // RestoreSevenCardStudInteractor deserialises JSON into a SevenCardStudInteractor.

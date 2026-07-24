@@ -617,3 +617,30 @@ func TestOasisPoker_SetSettersExposeFields(t *testing.T) {
 	assert.Equal(t, 20, op.GetJackpotBet())
 	assert.Equal(t, 200, op.GetPlayBet())
 }
+
+func TestOasisPoker_RecommendPlay(t *testing.T) {
+	t.Run("play with a pair", func(t *testing.T) {
+		op := domain.NewDefaultOasisPoker()
+		op.SetPlayerHand(makeHand(
+			cd{domain.CardDesignSpade, 8}, cd{domain.CardDesignHeart, 8},
+			cd{domain.CardDesignClover, 3}, cd{domain.CardDesignDiamond, 5}, cd{domain.CardDesignSpade, 9},
+		))
+		assert.True(t, op.RecommendPlay())
+	})
+	t.Run("play with an ace high", func(t *testing.T) {
+		op := domain.NewDefaultOasisPoker()
+		op.SetPlayerHand(makeHand(
+			cd{domain.CardDesignSpade, 1}, cd{domain.CardDesignHeart, 7},
+			cd{domain.CardDesignClover, 3}, cd{domain.CardDesignDiamond, 5}, cd{domain.CardDesignSpade, 9},
+		))
+		assert.True(t, op.RecommendPlay())
+	})
+	t.Run("fold with junk", func(t *testing.T) {
+		op := domain.NewDefaultOasisPoker()
+		op.SetPlayerHand(makeHand(
+			cd{domain.CardDesignSpade, 3}, cd{domain.CardDesignHeart, 7},
+			cd{domain.CardDesignClover, 9}, cd{domain.CardDesignDiamond, 11}, cd{domain.CardDesignSpade, 5},
+		))
+		assert.False(t, op.RecommendPlay())
+	})
+}

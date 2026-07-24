@@ -78,6 +78,13 @@ describe('BriscolaPage', () => {
     expect(screen.getByRole('button', { name: '♦ J を出す' })).toBeInTheDocument();
   });
 
+  it('renders hand and trump cards with the AnimatedCard component', async () => {
+    renderWithProviders(<BriscolaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A を出す' })).toBeInTheDocument());
+    // 3 hand cards + 1 face-up trump card are rendered as animated cards.
+    expect(screen.getAllByTestId('animated-card')).toHaveLength(4);
+  });
+
   it('fires play with the selected card index when a card is clicked', async () => {
     renderWithProviders(<BriscolaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '♥ 5 を出す' })).toBeInTheDocument());
@@ -85,6 +92,42 @@ describe('BriscolaPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '♥ 5 を出す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
+  });
+
+  it('keyboard: a number key highlights a card and Enter plays it', async () => {
+    renderWithProviders(<BriscolaPage />);
+    const secondCard = await screen.findByRole('button', { name: '♥ 5 を出す' });
+    mockExec.mockClear();
+    // "2" highlights the second hand card (index 1) without playing it.
+    fireEvent.keyDown(document.body, { key: '2' });
+    await waitFor(() => expect(secondCard).toHaveAttribute('aria-pressed', 'true'));
+    expect(mockExec).not.toHaveBeenCalled();
+    // Enter plays the highlighted card.
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
+  });
+
+  it('keyboard: Escape clears the highlight and Enter then plays nothing', async () => {
+    renderWithProviders(<BriscolaPage />);
+    const firstCard = await screen.findByRole('button', { name: '♠ A を出す' });
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(firstCard).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    await waitFor(() => expect(firstCard).toHaveAttribute('aria-pressed', 'false'));
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
+  });
+
+  it('keyboard: number keys do nothing on a CPU turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+    renderWithProviders(<BriscolaPage />);
+    const firstCard = await screen.findByRole('button', { name: '♠ A を出す' });
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: '1' });
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
   });
 
   it('shows "Next trick" button on trick-end and dispatches next', async () => {
@@ -170,5 +213,21 @@ describe('BriscolaPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows the hint button on the human turn and requests a hint', async () => {
+    renderWithProviders(<BriscolaPage />);
+    const hintBtn = await screen.findByRole('button', { name: 'ヒント' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.click(hintBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('renders the server hint text with the translated reason when present', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { cardIndex: 2, reason: 'lead_trump' } }));
+    renderWithProviders(<BriscolaPage />);
+    const hint = await screen.findByTestId('briscola-hint');
+    expect(hint).toHaveTextContent('切り札でリードして主導権を握りましょう');
   });
 });

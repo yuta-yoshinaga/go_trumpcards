@@ -311,7 +311,14 @@ function DaifugoPageContent() {
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDrop}
             >
-              <div className="text-ds-text-primary font-bold mb-1.5">{t('tableCards')}</div>
+              <div className="text-ds-text-primary font-bold mb-1.5">
+                {t('tableCards')}
+                {tableCount > 0 && state.lastPlayPlayerIdx >= 0 && (
+                  <span className="ml-2 text-xs font-normal text-ds-text-muted" data-testid="daifugo-last-player">
+                    {t('lastPlayedBy', { name: findPlayerName(state.players, state.lastPlayPlayerIdx) })}
+                  </span>
+                )}
+              </div>
               <div className="flex flex-wrap gap-1">
                 {!state.tableCards || state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted">{t('tableEmpty')}</span>
@@ -393,19 +400,22 @@ function DaifugoPageContent() {
           </div>
 
           <GameFooter className={`${footerClass} px-4 py-2.5 motion-safe:transition-colors motion-safe:duration-500`}>
-            <div className="text-center mb-1" data-tutorial="df-sort-buttons">
+            <fieldset className="text-center mb-1 border-0 p-0 m-0" data-tutorial="df-sort-buttons">
+              <legend className="sr-only">{t('sort.label')}</legend>
               {sortModes.map(({ mode, label }) => (
                 <button
                   key={mode}
                   type="button"
                   className={state.sortMode === mode ? `${btnPrimary} min-w-[70px]` : `${btnSecondary} min-w-[70px]`}
                   disabled={loading}
+                  aria-pressed={state.sortMode === mode}
+                  data-testid={`df-sort-${mode}`}
                   onClick={() => exec('sort', undefined, undefined, mode)}
                 >
                   {label}
                 </button>
               ))}
-            </div>
+            </fieldset>
 
             {humanPlayer && (
               <div className="mb-2" data-tutorial="df-player-hand">
@@ -467,6 +477,15 @@ function DaifugoPageContent() {
                 }
               >
                 {playButtonLabel}
+              </button>
+              <button
+                type="button"
+                className={`${btnSecondary} min-w-[90px]`}
+                disabled={loading || selectedIndices.length === 0}
+                onClick={clearSelection}
+                data-testid="daifugo-clear-selection"
+              >
+                {t('clearSelectionButton')}
               </button>
             </div>
           </GameFooter>

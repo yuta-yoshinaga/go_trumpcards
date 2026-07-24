@@ -38,6 +38,10 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 			wasteTop = waste[len(waste)-1]
 		}
 
+		// Count exposed tableau cards playable onto the current waste top so the
+		// summary line below can spare the player from scanning all four rows.
+		playableCount := 0
+
 		// Tableau (with row indent)
 		for row := range domain.TriPeaksRowCnt {
 			indent := strings.Repeat("  ", domain.TriPeaksRowCnt-1-row)
@@ -60,6 +64,7 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 					b.WriteString(i18n.Tf("tripeaks.blockedCard", "card", cuiCardStr(tc.Card)))
 				case wasteTop != nil && triPeaksAdjacentRank(tc.Card.GetValue(), wasteTop.GetValue()):
 					// Exposed and ±1 from the waste top: playable now (trailing *).
+					playableCount++
 					b.WriteString(i18n.Tf("tripeaks.playableCard",
 						"row", strconv.Itoa(row),
 						"col", strconv.Itoa(col),
@@ -87,6 +92,16 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 			b.WriteString(i18n.T("tripeaks.wasteEmpty"))
 		}
 		b.WriteString("\n")
+
+		// Playable-now summary: how many cards can be taken onto the waste top,
+		// plus a pre-emptive draw hint when none can (and the stock isn't empty).
+		if t.GetPhase() == domain.TriPeaksPhasePlaying {
+			b.WriteString(i18n.Tf("tripeaks.playableSummary",
+				"count", strconv.Itoa(playableCount)) + "\n")
+			if playableCount == 0 && t.GetStockCount() > 0 {
+				b.WriteString(color.Yellow(i18n.T("tripeaks.drawRecommended")) + "\n")
+			}
+		}
 
 		b.WriteString("----------\n")
 

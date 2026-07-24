@@ -125,6 +125,14 @@ func (p *CegoCuiPresenter) Output(g interfaces.CegoGame, lastErr error) string {
 			"trick", strconv.Itoa(g.GetTrickNumber()),
 			"contract", cegoContractLabel(g.GetContractType())) + "\n")
 
+		// Once the declarer is set, surface who it is and the contract at a glance
+		// (the declarer fights the whole field); before that, it isn't shown.
+		if declarer := g.GetDeclarerIdx(); declarer >= 0 {
+			b.WriteString(i18n.Tf("cego.declarerLine",
+				"name", cuiPlayerName(g.GetPlayer(declarer), declarer),
+				"contract", cegoContractLabel(g.GetContractType())) + "\n")
+		}
+
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(cegoPlayerStr(g, i))
 		}

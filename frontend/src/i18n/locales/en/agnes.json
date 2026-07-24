@@ -14,6 +14,10 @@
   "giveup": "Give up",
   "hint": "Hint",
   "undo": "Undo",
+  "autoComplete": "Auto-complete",
+  "autoCompleteNotReady": "Available once the stock is empty and all cards are face up",
+  "stalemate": "No moves left. Undo a move or give up.",
+  "stalemateUndo": "Undo to escape",
   "empty": "empty",
   "gameClear": "Game cleared! Moves: {{moveCount}}",
   "gameOver": "Game over",
@@ -34,5 +38,12 @@
     "actionButtons": "Action buttons: deal, hint, undo, give up.",
     "resetButton": "Start a new game."
   },
-  "columnActions": "Actions"
+  "columnActions": "Actions",
+  "kbd": {
+    "deal": "D",
+    "hint": "H",
+    "autoComplete": "A",
+    "undo": "Z",
+    "giveup": "G"
+  }
 }

@@ -64,6 +64,8 @@ type PineappleGame interface {
 	GetDiscardDone() []bool
 	// GetInitialDealCount 初期配布枚数を取得する
 	GetInitialDealCount() int
+	// IsDiscardAfterFlopBetting Crazy Pineapple / Irish Poker モード（フロップベッティング後にディスカード）かを返す
+	IsDiscardAfterFlopBetting() bool
 	TournamentActionGame
 	// GetHumanProfile メタAIプロファイルを取得する
 	GetHumanProfile() *domain.BettingHumanProfile

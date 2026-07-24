@@ -9,5 +9,8 @@
   "stockLine": "ストック: {{stock}}  ウェイスト: {{waste}}",
   "foundationLabel": "組札{{idx}}:",
   "tableauLabel": "列{{idx}}:",
-  "hintLine": "[HINT: {{from}}{{fromCol}} → {{to}}{{toCol}}]"
+  "hintLine": "[HINT: {{from}}{{fromCol}} → {{to}}{{toCol}}]",
+  "zoneWaste": "ウェイスト",
+  "zoneTableau": "タブロー",
+  "zoneFoundation": "ファウンデーション"
 }

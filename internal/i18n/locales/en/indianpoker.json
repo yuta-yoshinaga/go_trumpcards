@@ -27,6 +27,8 @@
   "cardLine": "  card: {{card}}",
   "cardHidden": "  card: ??",
   "equityLine": "  est. win: {{pct}}%",
+  "betInfoLine": "  To call: {{call}} / min raise: {{minraise}} / max: {{max}}",
+  "checkAvailableLine": "  Check available / max: {{max}}",
   "cpuActionsHeader": "[CPU actions]",
   "cpuActionLine": "  Player {{idx}}: {{action}}",
   "cpuActionAmount": " ({{amount}})",

@@ -34,6 +34,10 @@
   "drawStockButton": "Draw from stock",
   "drawDiscardButton": "Pick up discard",
   "meldButton": "Meld",
+  "meldPoints": {
+    "initial": "Min initial meld: {{min}} / selected: {{points}}",
+    "selected": "Selected: {{points}}"
+  },
   "skipMeldButton": "Skip",
   "discardButton": "Discard",
   "goOutButton": "Go out",
@@ -44,6 +48,12 @@
     "frozen": "Frozen: wild cards cannot substitute for naturals",
     "selectOneMore": "Select one more card",
     "tooMany": "Select at most 2 cards"
+  },
+  "goOutReason": {
+    "ready": "You can go out (foot cleared, red & black canastas complete)",
+    "needFoot": "Cannot go out until you enter your foot",
+    "needRedCanasta": "A red (natural) canasta is still required",
+    "needBlackCanasta": "A black (mixed) canasta is still required"
   },
   "frozenIndicator": "❄️ Frozen",
   "selectMeld": "Select cards to meld",

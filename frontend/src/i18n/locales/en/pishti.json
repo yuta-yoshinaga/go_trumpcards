@@ -8,6 +8,8 @@
   "pistiCelebration": "PİŞTİ +10!",
   "pistiCelebrationJack": "PİŞTİ +20! (J)",
   "finalScore": "{{score}} pts",
+  "provisional": "Provisional {{score}}",
+  "provisionalNote": "The provisional score includes only locked-in Pişti bonuses and the most-cards +3. Card points (A, J, 2♣, 10♦) are not yet counted, so final scores will be higher.",
   "pile": "Pile",
   "pileTop": "Pile top",
   "pileCount": "{{count}} cards",
@@ -38,5 +40,7 @@
     "pile": "The centre pile. The top card and pile size are shown here.",
     "hand": "Your hand. Click a card to play it onto the pile. Capture the pile by matching the top rank or with a Jack.",
     "resetButton": "Use this button to reset the game at any time."
-  }
+  },
+  "playCardAria": "Play {{card}}",
+  "captureHint": "can capture the pile"
 }

@@ -70,6 +70,24 @@ describe('ScopaPage', () => {
     expect(screen.getByTestId('table-card-1')).toBeInTheDocument();
   });
 
+  it('exposes capture candidates, selection state, and a candidate-count live region', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('table-card-0')).toBeInTheDocument());
+    // Base state: no hand card selected → plain labels, not pressed, empty live region.
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-label', '♠ 2');
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('sc-take-candidate-live')).toHaveTextContent('');
+    // Selecting the ♥5 hand card makes the matching ♥5 table card a capture candidate.
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    await waitFor(() => expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-label', '♥ 5 取り札候補'));
+    expect(screen.getByTestId('sc-take-candidate-live')).toHaveTextContent('取り札候補があります');
+    // Selecting that candidate flips its aria-pressed to true and updates the label.
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    await waitFor(() => expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-label', '♥ 5 選択中');
+  });
+
   it('renders human stats via i18n (no hardcoded Japanese under en locale)', async () => {
     await i18n.changeLanguage('en');
     renderWithProviders(<ScopaPage />);
@@ -179,6 +197,81 @@ describe('ScopaPage', () => {
         expect.objectContaining({ config: expect.objectContaining({ targetScore: 21 }) }),
       ),
     );
+  });
+
+  it('hides the next-round button and round-end banner during normal play', async () => {
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('next-round-button')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sc-round-end-banner')).not.toBeInTheDocument();
+  });
+
+  it('shows the round-end banner and a working next-round button when the round ends', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 'roundEnd', currentTurn: 1 }));
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('sc-round-end-banner')).toBeInTheDocument());
+    const nextRound = screen.getByTestId('next-round-button');
+    expect(nextRound).toBeInTheDocument();
+    expect(nextRound).not.toBeDisabled();
+
+    mockExec.mockClear();
+    fireEvent.click(nextRound);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('n'));
+  });
+
+  it('hides the score breakdown during normal play', async () => {
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('sc-score-breakdown')).not.toBeInTheDocument();
+  });
+
+  it('renders the per-category score breakdown at round end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'roundEnd',
+        currentTurn: 1,
+        lastRoundDetail: {
+          cards: { 0: 20, 1: 16 },
+          diamonds: { 0: 4, 1: 6 },
+          sevens: { 0: 3, 1: 1 },
+          hasSetteBello: 0,
+          scopas: { 0: 2, 1: 0 },
+          gained: { 0: 5, 1: 1 },
+        },
+      }),
+    );
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('sc-score-breakdown')).toBeInTheDocument());
+    // Carte (most cards) and settebello go to the human; denari goes to CPU 1.
+    expect(screen.getByTestId('sc-breakdown-cards')).toHaveTextContent('あなた +1');
+    expect(screen.getByTestId('sc-breakdown-denari')).toHaveTextContent('CPU 1 +1');
+    expect(screen.getByTestId('sc-breakdown-primiera')).toHaveTextContent('あなた +1');
+    expect(screen.getByTestId('sc-breakdown-settebello')).toHaveTextContent('あなた +1');
+    // Scopa sweeps and per-player round totals are listed too.
+    expect(screen.getByTestId('sc-breakdown-scopa')).toHaveTextContent('あなた ×2');
+    expect(screen.getByTestId('sc-breakdown-gained')).toHaveTextContent('あなた +5');
+    expect(screen.getByTestId('sc-breakdown-gained')).toHaveTextContent('CPU 1 +1');
+  });
+
+  it('marks a tied category as no-points in the breakdown', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'roundEnd',
+        currentTurn: 1,
+        lastRoundDetail: {
+          cards: { 0: 18, 1: 18 },
+          diamonds: { 0: 0, 1: 0 },
+          sevens: { 0: 0, 1: 0 },
+          hasSetteBello: -1,
+          scopas: { 0: 0, 1: 0 },
+          gained: { 0: 0, 1: 0 },
+        },
+      }),
+    );
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('sc-breakdown-cards')).toBeInTheDocument());
+    expect(screen.getByTestId('sc-breakdown-cards')).toHaveTextContent('引き分け（点なし）');
+    expect(screen.getByTestId('sc-breakdown-settebello')).toHaveTextContent('引き分け（点なし）');
   });
 
   it('shows loading state when state has fewer than 2 players', async () => {

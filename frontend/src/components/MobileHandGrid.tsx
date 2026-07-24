@@ -1,6 +1,12 @@
 import { useWindowWidth } from '../hooks/useCardDimensions';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import { expansionMargin, focusRingCard, highlightCardStyle, selectedCardStyle } from '../styles/cardStyles';
+import {
+  expansionMargin,
+  focusRingCard,
+  highlightCardStyle,
+  selectedCardStyle,
+  trumpRingStyle,
+} from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 import { CardImage } from './CardImage';
@@ -40,6 +46,13 @@ interface MobileHandGridProps {
   validIndices?: number[];
   /** Tooltip surfaced on cards that are present but disabled by `validIndices`. */
   restrictedTooltip?: string;
+  /**
+   * Optional per-card tooltip override. When it returns a string for an index,
+   * that text becomes the card's `title`, taking precedence over
+   * `restrictedTooltip` / `trumpTitle`. Returns `undefined` to fall back to the
+   * default tooltip.
+   */
+  cardTitleFor?: (idx: number) => string | undefined;
   /** Optional badge to render in the top-left corner of a card (e.g. game-specific role marker). */
   cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
   /**
@@ -47,6 +60,19 @@ interface MobileHandGridProps {
    * cards get a warning border; the rest are dimmed when this list is provided.
    */
   highlightIndices?: number[];
+  /**
+   * Optional indices to mark with a subtle additive ring (e.g. trump cards).
+   * Stacks on top of selection/restriction borders via `outline`; does not dim
+   * the other cards.
+   */
+  trumpIndices?: number[];
+  /** Accessible tooltip describing why the ringed cards are marked (e.g. "trump"). */
+  trumpTitle?: string;
+  /**
+   * Optional indices of cards legal to play this turn. When provided, these
+   * cards get an additive success ring so the player can see the legal plays.
+   */
+  legalIndices?: number[];
 }
 
 /**
@@ -62,14 +88,20 @@ export function MobileHandGrid({
   dataTutorial,
   validIndices,
   restrictedTooltip,
+  cardTitleFor,
   cardBadgeFor,
   highlightIndices,
+  trumpIndices,
+  trumpTitle,
+  legalIndices,
 }: MobileHandGridProps) {
   const viewportWidth = useWindowWidth();
   const reduced = useReducedMotion();
   const buttonWidth = cardWidth + BUTTON_EXTRA;
   const isRestricted = (idx: number): boolean => validIndices != null && !validIndices.includes(idx);
   const isHighlighted = (idx: number): boolean => highlightIndices?.includes(idx) ?? false;
+  const isTrump = (idx: number): boolean => trumpIndices?.includes(idx) ?? false;
+  const isLegal = (idx: number): boolean => legalIndices?.includes(idx) ?? false;
 
   const useTwoRows = cards.length >= TWO_ROW_THRESHOLD;
   const splitAt = useTwoRows ? Math.ceil(cards.length / 2) : cards.length;
@@ -96,6 +128,8 @@ export function MobileHandGrid({
               const ml = i === 0 ? 0 : isExpanded ? expansionMargin(true, overlap) : overlap;
               const restricted = isRestricted(globalIdx);
               const highlighted = isHighlighted(globalIdx);
+              const trump = isTrump(globalIdx);
+              const legal = isLegal(globalIdx);
               const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
               return (
                 <button
@@ -110,8 +144,10 @@ export function MobileHandGrid({
                   // cards remain focusable for keyboard / screen-reader users — they
                   // need to reach the tooltip that explains why the card is illegal.
                   aria-disabled={restricted || undefined}
-                  title={restricted ? restrictedTooltip : undefined}
-                  className={`${focusRingCard} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
+                  title={cardTitleFor?.(globalIdx) ?? (restricted ? restrictedTooltip : trump ? trumpTitle : undefined)}
+                  data-trump={trump || undefined}
+                  data-legal={legal || undefined}
+                  className={`${focusRingCard} ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
                   style={{
                     background: 'none',
                     padding: 0,
@@ -123,6 +159,8 @@ export function MobileHandGrid({
                       : highlighted
                         ? highlightCardStyle()
                         : selectedCardStyle(false)),
+                    // Trump ring stacks additively (outline) on top of the border above.
+                    ...(trump ? trumpRingStyle() : {}),
                     transition: 'transform 0.15s, border 0.15s, box-shadow 0.15s, margin-left 0.15s',
                     boxSizing: 'border-box',
                     marginLeft: ml,

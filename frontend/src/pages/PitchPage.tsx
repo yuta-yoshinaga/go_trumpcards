@@ -12,8 +12,12 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
+import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -92,6 +96,14 @@ const SUIT_DESIGNS: Readonly<Record<string, string>> = {
   CLOVER: '♣',
   HEART: '♥',
   DIAMOND: '♦',
+};
+
+/** Maps the numeric `trumpSuit` (1–4) to the matching card `design` string. */
+const SUIT_NUM_TO_DESIGN: Readonly<Record<number, string>> = {
+  1: 'SPADE',
+  2: 'CLOVER',
+  3: 'HEART',
+  4: 'DIAMOND',
 };
 
 const VALUE_LABELS: Readonly<Record<number, string>> = {
@@ -198,6 +210,43 @@ function PitchPageContent() {
     [execApi, cpuDifficulty, pointLimit],
   );
 
+  // Keyboard: number keys select a hand card, Enter plays it (play phase only,
+  // and only cards in validPlayIndices are selectable).
+  const selectValidCard = useCallback(
+    (idx: number) => {
+      if (state?.validPlayIndices.includes(idx)) setSelectedCardIdx(idx);
+    },
+    [state?.validPlayIndices],
+  );
+  const clearSelection = useCallback(() => setSelectedCardIdx(null), []);
+  useCardKeyboardNav({
+    cardCount: human?.cards.length ?? 0,
+    onToggle: selectValidCard,
+    onConfirm: handlePlay,
+    onClear: clearSelection,
+    enabled: isHumanPlayTurn && !loading,
+  });
+
+  // Keyboard: bid keys (p / 2 / 3 / 4) in the bid phase, n to advance a
+  // finished trick or round.
+  const handleNext = useCallback(() => {
+    if (isTrickEnd) handleNextTrick();
+    else if (isRoundEnd && !isGameEnd) handleNextRound();
+  }, [isTrickEnd, isRoundEnd, isGameEnd, handleNextTrick, handleNextRound]);
+  const currentBid = state?.currentBid ?? 0;
+  const canBid = isHumanBidTurn && !loading;
+  const actionBindings = useMemo(
+    () => [
+      { key: 'p', action: () => handleBid(0), enabled: canBid },
+      { key: '2', action: () => handleBid(2), enabled: canBid && 2 > currentBid },
+      { key: '3', action: () => handleBid(3), enabled: canBid && 3 > currentBid },
+      { key: '4', action: () => handleBid(4), enabled: canBid && 4 > currentBid },
+      { key: 'n', action: handleNext, enabled: (isTrickEnd || (isRoundEnd && !isGameEnd)) && !loading },
+    ],
+    [handleBid, handleNext, canBid, currentBid, isTrickEnd, isRoundEnd, isGameEnd, loading],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!state });
+
   if (!state) {
     return (
       <div className={`flex-1 flex items-center justify-center ${gameTheme.pitch.bg}`}>
@@ -239,7 +288,14 @@ function PitchPageContent() {
               <span>{t('round', { n: state.roundNumber })}</span>
               <span>{t('trick', { n: state.trickNumber })}</span>
               <span>{t('dealer', { name: findPlayerName(state.players, state.dealerIdx) })}</span>
-              <span>
+              <span
+                data-testid="pt-trump-indicator"
+                className={
+                  state.trumpSuit === 0
+                    ? 'opacity-60'
+                    : 'rounded px-1.5 py-0.5 font-semibold ring-1 ring-ds-warning text-ds-warning'
+                }
+              >
                 {t('trumpSuit', {
                   suit: state.trumpSuit === 0 ? t('trumpUnset') : (SUIT_LABELS[state.trumpSuit] ?? '?'),
                 })}
@@ -294,19 +350,87 @@ function PitchPageContent() {
               {state.currentTrick.length === 0 ? (
                 <div className="opacity-50">—</div>
               ) : (
-                <div className="flex flex-wrap gap-2">
-                  {state.currentTrick.map((tc) => (
-                    <div
-                      key={`${tc.playerIdx}-${tc.card.design}-${tc.card.value}`}
-                      className="flex flex-col items-center"
-                    >
-                      <span className="text-[10px] opacity-60">{findPlayerName(state.players, tc.playerIdx)}</span>
-                      <CardImage card={tc.card} width={cardWidth} />
-                    </div>
-                  ))}
-                </div>
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    {state.currentTrick.map((tc, idx) => {
+                      const leadDesign = state.currentTrick[0]?.card.design;
+                      const trumpDesign = SUIT_NUM_TO_DESIGN[state.trumpSuit];
+                      const isLead = idx === 0;
+                      const isTrump = trumpDesign !== undefined && tc.card.design === trumpDesign;
+                      const isLeadSuit = !isTrump && tc.card.design === leadDesign;
+                      const ringClass = isTrump ? 'ring-2 ring-ds-warning' : isLeadSuit ? 'ring-2 ring-ds-info' : '';
+                      return (
+                        <div
+                          key={`${tc.playerIdx}-${tc.card.design}-${tc.card.value}`}
+                          className="flex flex-col items-center gap-0.5"
+                        >
+                          <span className="text-[10px] opacity-60">{findPlayerName(state.players, tc.playerIdx)}</span>
+                          <div className={`relative inline-block rounded ${ringClass}`}>
+                            <CardImage card={tc.card} width={cardWidth} />
+                            {isLead && (
+                              <span
+                                data-testid="pt-trick-lead-badge"
+                                className="absolute -top-1 -left-1 rounded bg-ds-info px-1 py-0.5 text-[9px] font-bold leading-none text-white shadow"
+                              >
+                                {t('leadBadge')}
+                              </span>
+                            )}
+                            {isTrump && (
+                              <span
+                                data-testid="pt-trick-trump-badge"
+                                title={t('trickLegend.trump')}
+                                className="absolute -top-1 -right-1 rounded-full bg-ds-warning px-1 py-0.5 text-[10px] font-bold leading-none text-white shadow"
+                              >
+                                {SUIT_LABELS[state.trumpSuit] ?? '?'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div data-testid="pt-trick-legend" className="mt-2 flex flex-wrap gap-3 text-[10px] opacity-70">
+                    <span className="inline-flex items-center gap-1">
+                      <span className="inline-block h-3 w-3 rounded-sm ring-2 ring-ds-info" />
+                      {t('trickLegend.lead')}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="inline-block h-3 w-3 rounded-sm ring-2 ring-ds-warning" />
+                      {t('trickLegend.trump')}
+                    </span>
+                  </div>
+                </>
               )}
             </div>
+
+            {/* Previous trick reviewer: lets the player recount the just-completed trick */}
+            <details className="mb-3 p-2 rounded border border-ds-border-subtle" data-testid="pt-previous-trick">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('previousTrick')}</summary>
+              <div className="mt-2">
+                {state.lastTrick.length > 0 ? (
+                  <TrickDisplay
+                    currentTrick={state.lastTrick}
+                    players={state.players}
+                    cardWidth={Math.round(cardWidth * 0.7)}
+                    label={
+                      state.lastTrickWinner >= 0
+                        ? t('previousTrickWinner', {
+                            name: playerName(
+                              state.lastTrickWinner,
+                              state.players[state.lastTrickWinner]?.isHuman === true,
+                            ),
+                          })
+                        : t('previousTrick')
+                    }
+                    winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                  />
+                ) : (
+                  <div className="text-ds-text-muted text-sm" data-testid="pt-previous-trick-empty">
+                    {t('previousTrickEmpty')}
+                  </div>
+                )}
+              </div>
+            </details>
 
             {/* Player hand (always visible) */}
             {human && human.cards.length > 0 && (
@@ -420,8 +544,10 @@ function PitchPageContent() {
                   className={btnSecondary}
                   disabled={!isHumanBidTurn || loading}
                   onClick={() => handleBid(0)}
+                  aria-keyshortcuts="p"
                 >
                   {t('passButton')}
+                  <KbdBadge label={t('kbd.pass')} />
                 </button>
                 {[2, 3, 4].map((n) => (
                   <button
@@ -430,8 +556,10 @@ function PitchPageContent() {
                     className={btnPrimary}
                     disabled={!isHumanBidTurn || loading || n <= state.currentBid}
                     onClick={() => handleBid(n)}
+                    aria-keyshortcuts={String(n)}
                   >
                     {t('bid', { n })}
+                    <KbdBadge label={t(`kbd.bid${n}`)} />
                   </button>
                 ))}
               </div>
@@ -445,24 +573,40 @@ function PitchPageContent() {
                   className={btnSuccess}
                   onClick={handlePlay}
                   disabled={selectedCardIdx === null || loading}
+                  aria-keyshortcuts="Enter"
                 >
                   {t('playButton')}
+                  <KbdBadge label={t('kbd.play')} />
                 </button>
               </div>
             )}
 
             {isTrickEnd && (
               <div className="flex justify-center pb-2">
-                <button type="button" className={btnPrimary} onClick={handleNextTrick} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleNextTrick}
+                  disabled={loading}
+                  aria-keyshortcuts="n"
+                >
                   {t('nextTrick')}
+                  <KbdBadge label={t('kbd.next')} />
                 </button>
               </div>
             )}
 
             {isRoundEnd && !isGameEnd && (
               <div className="flex justify-center pb-2">
-                <button type="button" className={btnPrimary} onClick={handleNextRound} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleNextRound}
+                  disabled={loading}
+                  aria-keyshortcuts="n"
+                >
                   {t('nextRound')}
+                  <KbdBadge label={t('kbd.next')} />
                 </button>
               </div>
             )}

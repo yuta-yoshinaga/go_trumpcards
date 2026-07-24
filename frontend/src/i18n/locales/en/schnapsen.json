@@ -1,5 +1,6 @@
 {
   "currentTrick": "Current trick",
+  "endgameRuleGuide": "Phase 2: must follow suit (win the trick if you can), else trump. Cards with a green ring are legal to play.",
   "title": "Schnapsen / Sixty-Six",
   "subtitle": "Austrian 2-player trick-taking — 20-card deck, marriages, first to 66",
   "header": {
@@ -24,7 +25,8 @@
     "reset": "Reset",
     "marriage": "Marriage",
     "hint": "Hint",
-    "marriageAria": "Declare marriage: K + Q of {{suit}} for {{points}} points"
+    "marriageAria": "Declare marriage: K + Q of {{suit}} for {{points}} points",
+    "playAria": "Play {{card}}"
   },
   "tutorial": {
     "trump": "The trump upcard and stock. The trump suit beats all others in a trick. When the stock runs out, phase 2 begins.",

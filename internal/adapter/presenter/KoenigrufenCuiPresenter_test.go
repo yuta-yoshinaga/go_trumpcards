@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func koenigrufenCuiGame() *domain.Koenigrufen {
@@ -49,6 +50,8 @@ func TestKoenigrufenCuiPresenter_Output(t *testing.T) {
 		g.SetPhase(domain.KoenigrufenPhaseTalon)
 		result := p.Output(g, nil)
 		assert.Contains(t, result, "場札交換")
+		// The bury-constraint legend guides the CLI player.
+		assert.Contains(t, result, i18n.T("koenigrufen.promptTalonLegend"))
 	})
 
 	t.Run("play phase renders trump and skus", func(t *testing.T) {

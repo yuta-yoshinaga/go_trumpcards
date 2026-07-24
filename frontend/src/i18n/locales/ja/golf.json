@@ -36,5 +36,15 @@
     "canRemove": "除去できるカードがあります — 捨て札と隣接しています",
     "multipleRemovable": "複数のカードが除去可能です — 連鎖を狙いましょう",
     "drawFromStock": "除去できるカードがありません — 山札から引いてみましょう"
+  },
+  "nineHole": {
+    "label": "9ホールモード",
+    "progress": "ホール {{current}} / {{total}}",
+    "hole": "ホール",
+    "score": "スコア",
+    "total": "合計",
+    "complete": "9ホール終了！ 合計スコア: {{total}}（少ないほど好成績）",
+    "restart": "新しいスコアカード",
+    "pending": "-"
   }
 }

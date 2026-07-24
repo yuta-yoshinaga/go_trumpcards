@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { sambaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -35,6 +35,12 @@ import { formatSambaState } from '../utils/cli/formatters/sambaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { sambaMinMeld, sambaSelectionPoints } from '../utils/sambaScore';
+
+/**
+ * Cards required to complete a canasta (7-card set) or samba (7-card sequence).
+ * Matches the Go domain rule (`SambaMeld.IsCanasta`/`IsSamba`: `len(Cards) >= 7`).
+ */
+const SAMBA_CANASTA_SIZE = 7;
 
 const SAMBA_PHASE_KEYS: Readonly<Record<number, string>> = {
   [SambaPhase.DRAW]: 'draw',
@@ -159,6 +165,23 @@ function SambaPageContent() {
     enabled: !!isHumanTurn && !loading,
   });
 
+  // Announce freeze/thaw transitions: freezing changes the draw rules (you now
+  // need two matching cards to take the discard pile), so it must reach SR users
+  // beyond the colour/badge cue.
+  const [frozenMsg, setFrozenMsg] = useState('');
+  const prevFrozenRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    const frozen = state?.isFrozen;
+    if (frozen == null) return;
+    const prev = prevFrozenRef.current;
+    prevFrozenRef.current = frozen;
+    if (prev != null && prev !== frozen) {
+      setFrozenMsg(frozen ? t('frozenAnnounceOn') : t('frozenAnnounceOff'));
+      const id = setTimeout(() => setFrozenMsg(''), 3000);
+      return () => clearTimeout(id);
+    }
+  }, [state?.isFrozen, t]);
+
   if (!state) {
     return (
       <GameSkeleton
@@ -230,6 +253,10 @@ function SambaPageContent() {
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
               </span>
               {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
+              {/* Self-contained live region announcing freeze/thaw transitions. */}
+              <span className="sr-only" role="status" aria-live="polite" data-testid="sa-frozen-announce">
+                {frozenMsg}
+              </span>
             </div>
             <div className="text-ds-text-muted text-center mb-2 text-sm" data-testid="sa-team-scores">
               {t('teamScores', { a: state.teamScores[0] ?? 0, b: state.teamScores[1] ?? 0 })}
@@ -276,24 +303,41 @@ function SambaPageContent() {
                         {p.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
                         {p.hasSamba && <span className="ml-1 text-ds-accent">▲</span>}
                       </div>
-                      {p.melds.map((m, mi) => (
-                        <div key={mi} className="flex flex-wrap gap-1 mb-1">
-                          <span className="text-xs text-ds-text-muted self-center mr-1">
-                            {m.kind === 1
-                              ? m.isSamba
-                                ? t('samba')
-                                : t('sequence')
-                              : m.isCanasta
-                                ? m.isNatural
-                                  ? t('naturalCanasta')
-                                  : t('mixedCanasta')
-                                : `(${m.cards.length})`}
-                          </span>
-                          {m.cards.map((card, ci) => (
-                            <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
-                          ))}
-                        </div>
-                      ))}
+                      {p.melds.map((m, mi) => {
+                        // Progress toward the 7-card canasta (set) / samba (sequence)
+                        // milestone, derived purely from `cards.length` and `kind`.
+                        const remaining = SAMBA_CANASTA_SIZE - m.cards.length;
+                        const toSamba = m.kind === 1;
+                        const complete = remaining <= 0;
+                        return (
+                          <div key={mi} className="flex flex-wrap gap-1 mb-1">
+                            <span className="text-xs text-ds-text-muted self-center mr-1">
+                              {m.kind === 1
+                                ? m.isSamba
+                                  ? t('samba')
+                                  : t('sequence')
+                                : m.isCanasta
+                                  ? m.isNatural
+                                    ? t('naturalCanasta')
+                                    : t('mixedCanasta')
+                                  : `(${m.cards.length})`}
+                            </span>
+                            <span
+                              data-testid={`sa-meld-progress-${pi}-${mi}`}
+                              className={`text-xs self-center mr-1 ${
+                                complete ? 'text-ds-success font-bold motion-safe:animate-pulse' : 'text-ds-info'
+                              }`}
+                            >
+                              {complete
+                                ? t(toSamba ? 'meldProgress.sambaComplete' : 'meldProgress.canastaComplete')
+                                : t(toSamba ? 'meldProgress.toSamba' : 'meldProgress.toCanasta', { n: remaining })}
+                            </span>
+                            {m.cards.map((card, ci) => (
+                              <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
+                            ))}
+                          </div>
+                        );
+                      })}
                       {p.red3s.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           <span className="text-xs text-ds-error self-center mr-1">{t('red3s')}</span>

@@ -88,6 +88,20 @@ describe('SpiteAndMalicePage', () => {
     await waitFor(() => expect(screen.getByText(/手数|Moves/)).toBeInTheDocument());
   });
 
+  it('explains why discard is disabled until a hand card is selected', async () => {
+    mockExec.mockResolvedValue(baseState);
+    renderWithProviders(<SpiteAndMalicePage />);
+    const discardBtns = await screen.findAllByRole('button', { name: 'ディスカード' });
+    expect(discardBtns[0]).toHaveAttribute('aria-describedby', 'sam-discard-hint');
+    // Nothing selected → the shared hint states the requirement and discard is disabled.
+    expect(discardBtns[0]).toBeDisabled();
+    expect(screen.getByTestId('sam-discard-hint')).toHaveTextContent('先に手札');
+    // Selecting a hand card (♠5) flips the hint to "ready" and enables discard.
+    fireEvent.click(screen.getByRole('button', { name: /♠ 5/ }));
+    await waitFor(() => expect(screen.getByTestId('sam-discard-hint')).toHaveTextContent('ディスカードできます'));
+    expect(screen.getAllByRole('button', { name: 'ディスカード' })[0]).not.toBeDisabled();
+  });
+
   it('localizes the hand heading, card aria-labels, and CPU goal (no raw English)', async () => {
     renderWithProviders(<SpiteAndMalicePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -233,5 +247,59 @@ describe('SpiteAndMalicePage', () => {
     renderWithProviders(<SpiteAndMalicePage />);
     await waitFor(() => expect(screen.getAllByText(/ゲームオーバー|Game Over/).length).toBeGreaterThan(0));
     expect(screen.queryByTestId('sam-autocomplete-btn')).not.toBeInTheDocument();
+  });
+
+  it('shows the HintTooltip reason when hints are enabled and a hint is available', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      hint: { source: 'goal', index: 0, foundationIdx: 0, discard: false },
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    if (!(toggle as HTMLInputElement).checked) fireEvent.click(toggle);
+    const tooltip = await screen.findByTestId('hint-tooltip');
+    expect(tooltip).toHaveTextContent('ゴールパイルのトップをファウンデーションに出せます');
+  });
+
+  it('defaults the CPU speed select to normal when unset', async () => {
+    renderWithProviders(<SpiteAndMalicePage />);
+    const select = (await screen.findByTestId('sam-cpu-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('normal');
+  });
+
+  it('loads the persisted CPU speed from localStorage on mount', async () => {
+    localStorage.setItem('spiteandmalice:cpuSpeed', 'fast');
+    renderWithProviders(<SpiteAndMalicePage />);
+    const select = (await screen.findByTestId('sam-cpu-speed-select')) as HTMLSelectElement;
+    expect(select.value).toBe('fast');
+  });
+
+  it('persists the chosen CPU speed to localStorage', async () => {
+    renderWithProviders(<SpiteAndMalicePage />);
+    const select = (await screen.findByTestId('sam-cpu-speed-select')) as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: 'slow' } });
+    expect(select.value).toBe('slow');
+    expect(localStorage.getItem('spiteandmalice:cpuSpeed')).toBe('slow');
+  });
+
+  it('uses the selected speed as the CPU turn wait', async () => {
+    vi.useFakeTimers();
+    try {
+      // 'fast' → 200ms delay. Verify the CPU turn fires only after the boundary.
+      localStorage.setItem('spiteandmalice:cpuSpeed', 'fast');
+      mockExec.mockResolvedValue(cpuTurnState);
+      renderWithProviders(<SpiteAndMalicePage />);
+      // Flush the mount reset + initial render so the CPU-turn effect subscribes.
+      await vi.advanceTimersByTimeAsync(0);
+      mockExec.mockClear();
+      // Just before the 200ms fast delay no CPU turn has fired yet.
+      await vi.advanceTimersByTimeAsync(199);
+      expect(mockExec).not.toHaveBeenCalledWith('cpu');
+      // Crossing 200ms fires the fast CPU turn.
+      await vi.advanceTimersByTimeAsync(1);
+      expect(mockExec).toHaveBeenCalledWith('cpu');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

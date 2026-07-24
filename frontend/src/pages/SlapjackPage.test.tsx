@@ -26,6 +26,16 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { slapjack: vi.fn() },
 }));
 
+const mockPlaySound = vi.fn();
+const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSound: () => mockSoundValue,
+  // AnimatedCard consumes useOptionalSound; return null so cards stay silent
+  // and only the page's explicit playSound calls are asserted.
+  useOptionalSound: () => null,
+}));
+
 const mockExec = vi.mocked(slapjackApi.exec);
 
 const baseState: SlapjackResponse = {
@@ -68,6 +78,7 @@ const gameEndState: SlapjackResponse = {
 };
 
 beforeEach(() => {
+  mockPlaySound.mockClear();
   mockExec.mockResolvedValue(baseState);
   mockUseCliMode.mockReturnValue({
     cliEnabled: false,
@@ -84,6 +95,26 @@ describe('SlapjackPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<SlapjackPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('renders the GameSkeleton while state is null', () => {
+    // Keep exec pending so `state` stays null and the loading guard renders.
+    mockExec.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<SlapjackPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.queryByTestId('step-button')).not.toBeInTheDocument();
+  });
+
+  it('renders an ErrorAlert with a retry button when an action fails', async () => {
+    // Mount reset resolves so state loads; a subsequent action rejects.
+    mockExec.mockResolvedValueOnce(baseState);
+    renderWithProviders(<SlapjackPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    mockExec.mockRejectedValue(new Error('boom'));
+    fireEvent.click(screen.getByTestId('step-button'));
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('通信エラー');
+    expect(screen.getByRole('button', { name: /再試行/i })).toBeInTheDocument();
   });
 
   it('renders stock counts after state loads', async () => {
@@ -231,5 +262,45 @@ describe('SlapjackPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(window, { key: 'Enter' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('step'));
+  });
+
+  it('plays a card sound when the human flips via the step button', async () => {
+    renderWithProviders(<SlapjackPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    mockPlaySound.mockClear();
+    fireEvent.click(screen.getByTestId('step-button'));
+    expect(mockPlaySound).toHaveBeenCalledWith('cardPlace');
+  });
+
+  it('plays a fanfare on the human’s correct slap', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      lastEventKind: SlapjackEventKind.SLAP_CORRECT,
+      lastEventPlayerIdx: 0,
+    });
+    renderWithProviders(<SlapjackPage />);
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('winFanfare'));
+  });
+
+  it('plays an error buzz on the human’s false slap', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      lastEventKind: SlapjackEventKind.SLAP_WRONG,
+      lastEventPlayerIdx: 0,
+    });
+    renderWithProviders(<SlapjackPage />);
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('errorBuzz'));
+  });
+
+  it('stays silent for a CPU slap event (only the human’s slaps make sound)', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      lastEventKind: SlapjackEventKind.SLAP_CORRECT,
+      lastEventPlayerIdx: 1,
+    });
+    renderWithProviders(<SlapjackPage />);
+    await waitFor(() => expect(screen.getByTestId('slap-button')).toBeInTheDocument());
+    expect(mockPlaySound).not.toHaveBeenCalledWith('winFanfare');
+    expect(mockPlaySound).not.toHaveBeenCalledWith('errorBuzz');
   });
 });

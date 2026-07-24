@@ -26,6 +26,7 @@ type ClockSolitaireWebOutput struct {
 	Phase       int                              `json:"phase"`
 	StepCount   int                              `json:"stepCount"`
 	CurrentCard *WebOutputCard                   `json:"currentCard,omitempty"`
+	CanUndo     bool                             `json:"canUndo"`
 	WebOutputBase
 }
 
@@ -47,8 +48,12 @@ func newClockSolitaireDefaultOutput(msg string) *ClockSolitaireWebOutput {
 }
 
 func clockSolitaireDispatch(bc *baseController, w http.ResponseWriter, ci usecase.ClockSolitaireInteractorIF, param ClockSolitaireWebInput, _ func(string) *ClockSolitaireWebOutput) bool {
-	if param.Command == "a" || param.Command == "autoplay" {
+	switch param.Command {
+	case "a", "autoplay":
 		bc.writePresenterResponse(w, ci.AutoPlay())
+		return true
+	case "u", "undo":
+		bc.writePresenterResponse(w, ci.Undo())
 		return true
 	}
 	return dispatchResetStepLog(param.Command, bc, w, ci)

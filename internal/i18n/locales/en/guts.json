@@ -19,7 +19,7 @@
   "promptDeclare": "Declare: i (in / stay) or o (out / fold)",
   "promptResult": "Round over. Use n for the next round.",
   "promptHelp": "i / o to declare, n for the next round",
-  "result.carry": "Nobody stayed — the pot carries over.",
+  "result.carry": "Everyone out — pot {{pot}} carries over to the next round ({{count}} in a row).",
   "result.win": "You win the pot!",
   "result.lose": "You lost — you must match the pot.",
   "result.cpuWin": "CPU {{player}} wins the pot.",

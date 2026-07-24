@@ -4,6 +4,7 @@
   "helpBuild": "  b <h> <value> <t...>     手札hと場札でビルドを作成",
   "helpTrail": "  tr <h>                   手札hを場に置く (捕獲しない)",
   "helpNext": "  n                        次のラウンドを開始する",
+  "helpHint": "  h | hint                 推奨手 (テイク/ビルド/トレイル) を表示",
   "helpLog": "  log | l                  棋譜を表示",
   "helpSetDifficulty": "  sd [0-2]                 CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetRule": "  sr <rule> <0|1>          ルール切替 (sr list で一覧表示)",
@@ -22,5 +23,10 @@
   "actionTake": "捕獲 played={{played}} captured={{count}}枚{{suffix}}",
   "actionTakeSweepSuffix": " (スイープ!)",
   "actionBuild": "ビルド値{{value}} (played={{played}})",
-  "actionTrail": "場に置く {{played}}"
+  "actionTrail": "場に置く {{played}}",
+  "hintTake": "推奨: 手札 {{card}} で場札 [{{idxs}}] を捕獲 (take)",
+  "hintBuild": "推奨: 手札 {{card}} でビルド値 {{value}} を作成 (build)",
+  "hintTrail": "推奨: 手札 {{card}} を場に置く (trail)",
+  "hintNotYourTurn": "今はあなたの番ではありません。",
+  "hintNoMove": "推奨できる手がありません。"
 }

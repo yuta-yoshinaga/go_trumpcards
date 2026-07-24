@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { fourcardpokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -9,10 +11,13 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
@@ -20,8 +25,12 @@ import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { FourCardPokerResponse } from '../types/card';
 import { FourCardPokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { FOURCARDPOKER_HELP, parseFourCardPokerCommand } from '../utils/cli/commands/fourcardpokerCommands';
+import { formatFourCardPokerState } from '../utils/cli/formatters/fourcardpokerFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Four Card Poker tutorial step definitions. */
 const FCP_TUTORIAL_STEPS: TutorialStep[] = [
@@ -44,6 +53,10 @@ const FCP_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
+
+/** Total cards the dealer is dealt; during the action phase only the upcard
+ * is revealed and the remaining cards are shown as concealed backs. */
+const DEALER_HAND_SIZE = 6;
 
 /** 4-card hand rank → i18n key (1=High Card, 8=Four of a Kind). */
 const HAND_RANK_KEYS: Record<number, string> = {
@@ -71,6 +84,18 @@ function FourCardPokerPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(fourcardpokerApi.exec);
+
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fourcardpoker');
+  const cliConfig: CliGameConfig<FourCardPokerResponse, Parameters<typeof execApi>> = useMemo(
+    () => ({
+      gameName: 'fourcardpoker',
+      parseCommand: parseFourCardPokerCommand,
+      formatResponse: formatFourCardPokerState,
+      helpText: FOURCARDPOKER_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useMountReset(execApi);
 
@@ -139,204 +164,227 @@ function FourCardPokerPageContent() {
       confirmReset={confirmReset}
       cancelReset={cancelReset}
       headerExtra={
-        <span>
-          {t('label.chips')}: {state.chips}
-        </span>
+        <div className="flex items-center gap-3">
+          <span>
+            {t('label.chips')}: {state.chips}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </div>
       }
     >
-      <div
-        data-testid="card-area"
-        className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
-          .filter(Boolean)
-          .join(' ')}
-      >
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div
+            data-testid="card-area"
+            className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
+              .filter(Boolean)
+              .join(' ')}
+          >
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
 
-        {/* Payout table during bet phase */}
-        {isBetPhase && (
-          <div className="flex flex-col items-center justify-center py-4 gap-4">
-            <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
-            <details className="bg-black/30 rounded-lg w-full max-w-sm">
-              <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
-                {t('payoutRef.title')}
-              </summary>
-              <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
-                <div>
-                  <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.anteBonusHeader')}</div>
-                  <ul className="space-y-0.5">
-                    {(['anteBonusThreeOfAKind', 'anteBonusStraightFlush', 'anteBonusFourOfAKind'] as const).map(
-                      (key) => (
-                        <li key={key}>{t(`payoutRef.${key}`)}</li>
-                      ),
-                    )}
-                  </ul>
+            {/* Payout table during bet phase */}
+            {isBetPhase && (
+              <div className="flex flex-col items-center justify-center py-4 gap-4">
+                <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
+                <details className="bg-black/30 rounded-lg w-full max-w-sm">
+                  <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
+                    {t('payoutRef.title')}
+                  </summary>
+                  <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
+                    <div>
+                      <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.anteBonusHeader')}</div>
+                      <ul className="space-y-0.5">
+                        {(['anteBonusThreeOfAKind', 'anteBonusStraightFlush', 'anteBonusFourOfAKind'] as const).map(
+                          (key) => (
+                            <li key={key}>{t(`payoutRef.${key}`)}</li>
+                          ),
+                        )}
+                      </ul>
+                    </div>
+                    <div>
+                      <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.acesUpHeader')}</div>
+                      <ul className="space-y-0.5">
+                        {(
+                          [
+                            'acesUpPairOfAces',
+                            'acesUpTwoPair',
+                            'acesUpStraight',
+                            'acesUpFlush',
+                            'acesUpThreeOfAKind',
+                            'acesUpStraightFlush',
+                            'acesUpFourOfAKind',
+                          ] as const
+                        ).map((key) => (
+                          <li key={key}>{t(`payoutRef.${key}`)}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </details>
+              </div>
+            )}
+
+            {/* Player Hand */}
+            {state.playerHand.length > 0 && (
+              <div className="mb-4" data-tutorial="fcp-results">
+                <div className="text-ds-warning font-bold text-center mb-1">
+                  <span aria-hidden="true">🟡</span> {t('player')}
+                  {isEndPhase && state.playerHandRank > 0 && (
+                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank])})</span>
+                  )}
                 </div>
-                <div>
-                  <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.acesUpHeader')}</div>
-                  <ul className="space-y-0.5">
-                    {(
-                      [
-                        'acesUpPairOfAces',
-                        'acesUpTwoPair',
-                        'acesUpStraight',
-                        'acesUpFlush',
-                        'acesUpThreeOfAKind',
-                        'acesUpStraightFlush',
-                        'acesUpFourOfAKind',
-                      ] as const
-                    ).map((key) => (
-                      <li key={key}>{t(`payoutRef.${key}`)}</li>
+                <div className="flex justify-center gap-2">
+                  {state.playerHand.map((card, i) => (
+                    <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Dealer Hand */}
+            {state.dealerHand.length > 0 && (
+              <div className="mb-4">
+                <div className="text-ds-error font-bold text-center mb-1">
+                  <span aria-hidden="true">🔴</span> {t('dealer')}
+                  {isActionPhase && <span className="ml-2 text-xs">({t('dealerUpcard')})</span>}
+                  {isEndPhase && state.dealerHandRank > 0 && (
+                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>
+                  )}
+                </div>
+                <div className="flex justify-center gap-2 flex-wrap">
+                  {state.dealerHand.map((card, i) => (
+                    <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                  ))}
+                  {/* During the action phase the dealer holds 6 cards but only the
+                      upcard is revealed; render the remaining concealed cards as backs. */}
+                  {isActionPhase &&
+                    Array.from({ length: DEALER_HAND_SIZE - state.dealerHand.length }, (_, i) => (
+                      // role="img" + aria-label makes AT announce "hidden card"
+                      // instead of the generic card-back alt on the inner image.
+                      <span key={`d-back-${i}`} role="img" aria-label={t('hiddenCard')} className="inline-flex">
+                        <AnimatedCardBack width={cardWidth} />
+                      </span>
                     ))}
-                  </ul>
                 </div>
               </div>
-            </details>
-          </div>
-        )}
+            )}
 
-        {/* Player Hand */}
-        {state.playerHand.length > 0 && (
-          <div className="mb-4" data-tutorial="fcp-results">
-            <div className="text-ds-warning font-bold text-center mb-1">
-              <span aria-hidden="true">🟡</span> {t('player')}
-              {isEndPhase && state.playerHandRank > 0 && (
-                <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank])})</span>
-              )}
-            </div>
-            <div className="flex justify-center gap-2">
-              {state.playerHand.map((card, i) => (
-                <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Dealer Hand */}
-        {state.dealerHand.length > 0 && (
-          <div className="mb-4">
-            <div className="text-ds-error font-bold text-center mb-1">
-              <span aria-hidden="true">🔴</span> {t('dealer')}
-              {isActionPhase && <span className="ml-2 text-xs">({t('dealerUpcard')})</span>}
-              {isEndPhase && state.dealerHandRank > 0 && (
-                <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>
-              )}
-            </div>
-            <div className="flex justify-center gap-2">
-              {state.dealerHand.map((card, i) => (
-                <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Payout breakdown */}
-        {isEndPhase && (
-          <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
-            {state.antePayout !== 0 && (
-              <div>
-                {t('payout.ante')}: {state.antePayout}
+            {/* Payout breakdown */}
+            {isEndPhase && (
+              <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
+                {state.antePayout !== 0 && (
+                  <div>
+                    {t('payout.ante')}: {state.antePayout}
+                  </div>
+                )}
+                {state.playPayout !== 0 && (
+                  <div>
+                    {t('payout.play')}: {state.playPayout}
+                  </div>
+                )}
+                {state.anteBonusPayout !== 0 && (
+                  <div>
+                    {t('payout.anteBonus')}: {state.anteBonusPayout}
+                  </div>
+                )}
+                {state.acesUpPayout !== 0 && (
+                  <div>
+                    {t('payout.acesUp')}: {state.acesUpPayout}
+                  </div>
+                )}
+                <div className="font-bold mt-1">
+                  {t('payout.total')}: {state.totalPayout}
+                </div>
               </div>
             )}
-            {state.playPayout !== 0 && (
-              <div>
-                {t('payout.play')}: {state.playPayout}
-              </div>
-            )}
-            {state.anteBonusPayout !== 0 && (
-              <div>
-                {t('payout.anteBonus')}: {state.anteBonusPayout}
-              </div>
-            )}
-            {state.acesUpPayout !== 0 && (
-              <div>
-                {t('payout.acesUp')}: {state.acesUpPayout}
-              </div>
-            )}
-            <div className="font-bold mt-1">
-              {t('payout.total')}: {state.totalPayout}
-            </div>
-          </div>
-        )}
 
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
-      </div>
-
-      <GameFooter className={`${gameTheme.fourcardpoker.footer} px-4 pt-3`}>
-        <ErrorAlert message={error} onRetry={retry} />
-        <SettingsPanel title={t('settings.title')} groups={[]} />
-        {isBetPhase && (
-          <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="fcp-bet-controls">
-            <ChipBetInput
-              id="fcp-ante-amount"
-              label={t('label.ante')}
-              value={anteAmount}
-              onChange={setAnteAmount}
-              min={10}
-              max={state.chips}
-              step={10}
-              disabled={loading}
-              showSteppers
-              invalid={anteInvalid || betInvalid}
-              describedBy={betInvalid ? 'fcp-bet-error' : undefined}
-            />
-            <ChipBetInput
-              id="fcp-acesup-amount"
-              label={t('label.acesUp')}
-              value={acesUpAmount}
-              onChange={setAcesUpAmount}
-              min={0}
-              max={state.chips}
-              step={10}
-              disabled={loading}
-              showSteppers
-              invalid={acesUpInvalid || betInvalid}
-              describedBy={betInvalid ? 'fcp-bet-error' : undefined}
-            />
-            {betInvalid && (
-              <p id="fcp-bet-error" role="alert" className="text-ds-error text-xs">
-                {t('betError')}
-              </p>
-            )}
-            <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || betInvalid}>
-              {t('button.bet')}
-            </button>
+            {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
-        )}
-        {isActionPhase && (
-          <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="fcp-action-buttons">
-            <div className="flex flex-wrap justify-center gap-2">
-              {[1, 2, 3].map((mult) => (
-                <button
-                  key={mult}
-                  type="button"
-                  className={btnSuccess}
-                  onClick={() => handlePlay(mult)}
+
+          <GameFooter className={`${gameTheme.fourcardpoker.footer} px-4 pt-3`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            <SettingsPanel title={t('settings.title')} groups={[]} />
+            {isBetPhase && (
+              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="fcp-bet-controls">
+                <ChipBetInput
+                  id="fcp-ante-amount"
+                  label={t('label.ante')}
+                  value={anteAmount}
+                  onChange={setAnteAmount}
+                  min={10}
+                  max={state.chips}
+                  step={10}
                   disabled={loading}
-                  data-testid={`play-${mult}x`}
-                >
-                  {t('button.playMult', { mult })}
+                  showSteppers
+                  invalid={anteInvalid || betInvalid}
+                  describedBy={betInvalid ? 'fcp-bet-error' : undefined}
+                />
+                <ChipBetInput
+                  id="fcp-acesup-amount"
+                  label={t('label.acesUp')}
+                  value={acesUpAmount}
+                  onChange={setAcesUpAmount}
+                  min={0}
+                  max={state.chips}
+                  step={10}
+                  disabled={loading}
+                  showSteppers
+                  invalid={acesUpInvalid || betInvalid}
+                  describedBy={betInvalid ? 'fcp-bet-error' : undefined}
+                />
+                {betInvalid && (
+                  <p id="fcp-bet-error" role="alert" className="text-ds-error text-xs">
+                    {t('betError')}
+                  </p>
+                )}
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || betInvalid}>
+                  {t('button.bet')}
                 </button>
-              ))}
-              <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
-                {t('button.fold')}
-              </button>
-            </div>
-          </div>
-        )}
-        {isEndPhase && (
-          <div className="flex justify-center gap-2 pb-2">
-            <GameResetButton
-              isGameEnd={isEndPhase}
-              onReset={handleReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-            />
-            <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-      </GameFooter>
+              </div>
+            )}
+            {isActionPhase && (
+              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="fcp-action-buttons">
+                <div className="flex flex-wrap justify-center gap-2">
+                  {[1, 2, 3].map((mult) => (
+                    <button
+                      key={mult}
+                      type="button"
+                      className={btnSuccess}
+                      onClick={() => handlePlay(mult)}
+                      disabled={loading}
+                      data-testid={`play-${mult}x`}
+                    >
+                      {t('button.playMult', { mult })}
+                    </button>
+                  ))}
+                  <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
+                    {t('button.fold')}
+                  </button>
+                </div>
+              </div>
+            )}
+            {isEndPhase && (
+              <div className="flex justify-center gap-2 pb-2">
+                <GameResetButton
+                  isGameEnd={isEndPhase}
+                  onReset={handleReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                />
+                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                  {tc('actionLog.view')}
+                </button>
+              </div>
+            )}
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }

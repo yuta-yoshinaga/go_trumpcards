@@ -57,6 +57,8 @@ const bidState: PitchResponse = {
   bidWinnerIdx: -1,
   trumpSuit: 0,
   currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
   gameEndFlag: false,
   winnerIdx: -1,
   leadPlayerIdx: -1,
@@ -77,6 +79,18 @@ const playState: PitchResponse = {
   validPlayIndices: [0, 1],
   leadPlayerIdx: 0,
   players: bidState.players.map((p, i) => (i === 0 ? { ...p, bid: 3 } : { ...p, bid: 0 })),
+};
+
+// A play-phase trick with trump = SPADE (1); lead card is a HEART, so HEART is
+// the lead suit, and the SPADE card is a trump cut.
+const trickState: PitchResponse = {
+  ...playState,
+  trumpSuit: 1,
+  currentTrick: [
+    { playerIdx: 3, card: makeCard('HEART', 9) },
+    { playerIdx: 0, card: makeCard('HEART', 4) },
+    { playerIdx: 1, card: makeCard('SPADE', 12) },
+  ],
 };
 
 const gameEndState: PitchResponse = {
@@ -110,6 +124,49 @@ describe('PitchPage', () => {
     mockApi.mockResolvedValue(playState);
     renderWithProviders(<PitchPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /出す/ })).toBeInTheDocument());
+  });
+
+  it('bid phase: pressing "p" passes and "2" bids two', async () => {
+    mockApi.mockResolvedValue(bidState);
+    renderWithProviders(<PitchPage />);
+    await screen.findByRole('button', { name: /パス/ });
+    mockApi.mockClear();
+    fireEvent.keyDown(document.body, { key: 'p' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bid', 0));
+    mockApi.mockClear();
+    fireEvent.keyDown(document.body, { key: '2' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bid', 2));
+  });
+
+  it('play phase: a number key selects a valid card and Enter plays it', async () => {
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<PitchPage />);
+    await screen.findByRole('button', { name: /出す/ });
+    mockApi.mockClear();
+    // "1" → hand index 0 (a valid play index); Enter confirms.
+    fireEvent.keyDown(document.body, { key: '1' });
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', undefined, 0));
+  });
+
+  it('play phase: an invalid card cannot be selected or played', async () => {
+    // Only index 0 is a legal play; pressing "2" (index 1) must not select.
+    mockApi.mockResolvedValue({ ...playState, validPlayIndices: [0] });
+    renderWithProviders(<PitchPage />);
+    await screen.findByRole('button', { name: /出す/ });
+    mockApi.mockClear();
+    fireEvent.keyDown(document.body, { key: '2' });
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    // No selection means handlePlay early-returns; no play command is sent.
+    await waitFor(() => expect(mockApi).not.toHaveBeenCalled());
+  });
+
+  it('advertises the bid keyboard shortcut on the pass button', async () => {
+    mockApi.mockResolvedValue(bidState);
+    renderWithProviders(<PitchPage />);
+    const pass = await screen.findByRole('button', { name: /パス/ });
+    expect(pass).toHaveAttribute('aria-keyshortcuts', 'p');
+    expect(pass.querySelector('kbd')?.textContent).toBe('P');
   });
 
   it('shows score table with players', async () => {
@@ -189,6 +246,27 @@ describe('PitchPage', () => {
     expect(badge.className).toContain('min-w-[44px]');
   });
 
+  it('emphasizes the lead card and trump cards in the current trick', async () => {
+    mockApi.mockResolvedValue(trickState);
+    renderWithProviders(<PitchPage />);
+
+    // Lead badge is on the first card of the trick, whose wrapper is ringed as
+    // the lead suit (HEART here, distinct from the trump ring color).
+    const leadBadge = await screen.findByTestId('pt-trick-lead-badge');
+    expect(leadBadge).toHaveTextContent('リード');
+    expect(leadBadge.parentElement?.className).toContain('ring-ds-info');
+
+    // Trump card carries a suit-symbol badge (non-color cue) and an orange ring.
+    const trumpBadge = screen.getByTestId('pt-trick-trump-badge');
+    expect(trumpBadge).toHaveTextContent('♠');
+    expect(trumpBadge.parentElement?.className).toContain('ring-ds-warning');
+
+    // The header trump indicator is emphasized once trump is set.
+    expect(screen.getByTestId('pt-trump-indicator').className).toContain('ring-ds-warning');
+    // Legend explains both rings.
+    expect(screen.getByTestId('pt-trick-legend')).toBeInTheDocument();
+  });
+
   it('closes the pips popover on Escape and on an outside click', async () => {
     const pipHand: PitchResponse = {
       ...bidState,
@@ -210,5 +288,31 @@ describe('PitchPage', () => {
     expect(screen.getByTestId('pitch-game-pips-popover')).toBeInTheDocument();
     fireEvent.mouseDown(document.body);
     expect(screen.queryByTestId('pitch-game-pips-popover')).not.toBeInTheDocument();
+  });
+
+  it('previous-trick panel shows the just-completed trick and its winner', async () => {
+    const lastTrickState: PitchResponse = {
+      ...playState,
+      trickNumber: 2,
+      lastTrick: [
+        { playerIdx: 0, card: makeCard('HEART', 9) },
+        { playerIdx: 1, card: makeCard('HEART', 4) },
+        { playerIdx: 2, card: makeCard('SPADE', 12) },
+        { playerIdx: 3, card: makeCard('HEART', 2) },
+      ],
+      lastTrickWinner: 2,
+    };
+    mockApi.mockResolvedValue(lastTrickState);
+    renderWithProviders(<PitchPage />);
+    await waitFor(() => expect(screen.getByTestId('pt-previous-trick')).toBeInTheDocument());
+    // The winner label is rendered (CPU 2 won the trick) and the empty placeholder is not.
+    expect(screen.getByTestId('pt-previous-trick')).toHaveTextContent(/獲得/);
+    expect(screen.queryByTestId('pt-previous-trick-empty')).not.toBeInTheDocument();
+  });
+
+  it('previous-trick panel is empty on the round first trick', async () => {
+    mockApi.mockResolvedValue(playState); // trickNumber 1, lastTrick []
+    renderWithProviders(<PitchPage />);
+    await waitFor(() => expect(screen.getByTestId('pt-previous-trick-empty')).toBeInTheDocument());
   });
 });

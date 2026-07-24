@@ -49,6 +49,32 @@ type TeenPattiWebOutputHint struct {
 	Reason string `json:"reason"`
 }
 
+// TeenPattiWebOutputSideShowHand サイドショー参加者 1 人分の公開手札
+type TeenPattiWebOutputSideShowHand struct {
+	// PlayerIdx 参加者の席インデックス
+	PlayerIdx int `json:"playerIdx"`
+	// HandName 役名 i18n キー
+	HandName string `json:"handName"`
+	// Cards 公開された 3 枚のカード
+	Cards []*WebOutputCard `json:"cards"`
+}
+
+// TeenPattiWebOutputSideShow 直近で成立したサイドショーの比較結果 (人間が当事者のときのみ設定)
+type TeenPattiWebOutputSideShow struct {
+	// RequesterIdx サイドショー申請者の席インデックス
+	RequesterIdx int `json:"requesterIdx"`
+	// TargetIdx サイドショー対象者の席インデックス
+	TargetIdx int `json:"targetIdx"`
+	// WinnerIdx 手比べの勝者インデックス
+	WinnerIdx int `json:"winnerIdx"`
+	// LoserIdx 手比べの敗者 (フォールドした) インデックス
+	LoserIdx int `json:"loserIdx"`
+	// Requester 申請者の公開手札
+	Requester *TeenPattiWebOutputSideShowHand `json:"requester"`
+	// Target 対象者の公開手札
+	Target *TeenPattiWebOutputSideShowHand `json:"target"`
+}
+
 // TeenPattiWebOutputConfig ティーン・パティの設定アウトプット
 type TeenPattiWebOutputConfig struct {
 	CpuDifficulty int `json:"cpuDifficulty"`
@@ -75,6 +101,7 @@ type TeenPattiWebOutput struct {
 	GameEndFlag        bool                        `json:"gameEndFlag"`
 	IsHumanTurn        bool                        `json:"isHumanTurn"`
 	Hint               *TeenPattiWebOutputHint     `json:"hint,omitempty"`
+	LastSideShow       *TeenPattiWebOutputSideShow `json:"lastSideShow,omitempty"`
 	Config             TeenPattiWebOutputConfig    `json:"config"`
 	WebOutputBase
 }

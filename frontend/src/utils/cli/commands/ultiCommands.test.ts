@@ -16,9 +16,16 @@ describe('parseUltiCommand', () => {
     expect(parseUltiCommand('b d')).toEqual({ args: ['bid', { contract: 'durchmarsch' }] });
   });
 
-  it('returns error for party without a valid suit', () => {
+  it('parses bid ulti with a trump-suit letter', () => {
+    expect(parseUltiCommand('bid ulti s')).toEqual({ args: ['bid', { contract: 'ulti', trumpSuit: 1 }] });
+    expect(parseUltiCommand('b u h')).toEqual({ args: ['bid', { contract: 'ulti', trumpSuit: 3 }] });
+  });
+
+  it('returns error for party or ulti without a valid suit', () => {
     expect('error' in parseUltiCommand('bid party')).toBe(true);
     expect('error' in parseUltiCommand('bid party x')).toBe(true);
+    expect('error' in parseUltiCommand('bid ulti')).toBe(true);
+    expect('error' in parseUltiCommand('bid ulti x')).toBe(true);
   });
 
   it('returns error for bid without a valid argument', () => {

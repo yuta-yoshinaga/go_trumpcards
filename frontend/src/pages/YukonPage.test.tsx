@@ -220,4 +220,69 @@ describe('YukonPage', () => {
     expect(screen.getByText('♥')).toBeInTheDocument();
     expect(screen.getByText('♦')).toBeInTheDocument();
   });
+
+  it('announces foundations with localized suit names, not bare glyphs', async () => {
+    // Fill the spade foundation so the filled-foundation label path is exercised too.
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1)], [], [], []],
+    });
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Filled spade foundation reads "スペード 組札 1枚"; empty ones read "空の組札 (<name>)".
+    expect(screen.getByRole('button', { name: 'スペード 組札 1枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (クラブ)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (ハート)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (ダイヤ)' })).toBeInTheDocument();
+  });
+
+  describe('block move preview', () => {
+    // Column 0 has three face-up cards stacked (♠K on top, then ♥Q, then ♣J).
+    // Selecting a mid-column card should preview the whole block that lifts with it.
+    const blockState: YukonResponse = {
+      ...playingState,
+      tableau: [
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('HEART', 12), faceUp: true },
+          { card: card('CLOVER', 11), faceUp: true },
+        ],
+        [{ card: card('DIAMOND', 9), faceUp: true }],
+        [],
+        [],
+        [],
+        [],
+        [],
+      ],
+    };
+
+    it('highlights the selected card and every card below it as a block', async () => {
+      mockExec.mockResolvedValue(blockState);
+      renderWithProviders(<YukonPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      const middle = screen.getByRole('button', { name: '♥ Q' });
+      fireEvent.click(middle);
+
+      // Selected card carries the selection ring; the card below is a block member.
+      expect(middle).toHaveAttribute('data-selected-block');
+      expect(screen.getByRole('button', { name: '♣ J' })).toHaveAttribute('data-selected-block');
+      // The card above the selection is NOT part of the block.
+      expect(screen.getByRole('button', { name: '♠ K' })).not.toHaveAttribute('data-selected-block');
+    });
+
+    it('clears the block highlight when the selection is toggled off', async () => {
+      mockExec.mockResolvedValue(blockState);
+      renderWithProviders(<YukonPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      const middle = screen.getByRole('button', { name: '♥ Q' });
+      fireEvent.click(middle); // select
+      expect(screen.getByRole('button', { name: '♣ J' })).toHaveAttribute('data-selected-block');
+
+      fireEvent.click(middle); // deselect (same card toggles off)
+      expect(screen.getByRole('button', { name: '♣ J' })).not.toHaveAttribute('data-selected-block');
+      expect(screen.getByRole('button', { name: '♥ Q' })).not.toHaveAttribute('data-selected-block');
+    });
+  });
 });

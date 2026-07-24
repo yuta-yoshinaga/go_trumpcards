@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -57,6 +58,38 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		assert.Contains(t, result, "CPU 1: 0ペア")
 		assert.Contains(t, result, "1枚目を選んでください")
 		assert.Contains(t, result, "f <pos>")
+		// Progress shows all 26 pairs remaining; the seen-cell count starts at 0.
+		assert.Contains(t, result, "残り 26 ペア / 全 26 ペア")
+		assert.Contains(t, result, "既出セル数: 0")
+	})
+
+	t.Run("highlights a face-up cell", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		setupMemoryMockDefaults(mg)
+		mg.ExpectedCalls = nil
+		mg.On("GetPlayerCnt").Return(4)
+		mg.On("GetGameEndFlag").Return(false)
+		mg.On("GetPhase").Return(domain.MemoryPhaseFlip2)
+		mg.On("GetCurrentPlayerIdx").Return(0)
+		mg.On("GetLastMatchResult").Return(false)
+		mg.On("GetWinnerIdx").Return(-1)
+		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		for i := 0; i < domain.MemoryBoardSize; i++ {
+			board[i] = &domain.MemoryBoardCard{Card: domain.NewCard(domain.CardDesignSpade, (i%13)+1, false)}
+		}
+		board[0].FaceUp = true // the flipped card
+		mg.On("GetBoard").Return(board)
+		for i := 0; i < 4; i++ {
+			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
+		}
+
+		// Render with colour enabled so the highlight (yellow) is present.
+		color.SetNoColor(false)
+		defer color.SetNoColor(true)
+		p := new(MemoryCuiPresenter)
+		result := p.Output(mg, nil)
+		expected := color.Yellow(fmt.Sprintf("%-10s", cuiCardStr(domain.NewCard(domain.CardDesignSpade, 1, false))))
+		assert.Contains(t, result, expected)
 	})
 
 	t.Run("marks visited face-down cells distinctly with a legend", func(t *testing.T) {
@@ -189,6 +222,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		mg.ExpectedCalls = nil
 		mg.On("GetPlayerCnt").Return(4)
 		mg.On("GetGameEndFlag").Return(true)
+		mg.On("GetPhase").Return(domain.MemoryPhaseFlip1)
 		mg.On("GetWinnerIdx").Return(0)
 
 		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
@@ -215,6 +249,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		mg.ExpectedCalls = nil
 		mg.On("GetPlayerCnt").Return(4)
 		mg.On("GetGameEndFlag").Return(true)
+		mg.On("GetPhase").Return(domain.MemoryPhaseFlip1)
 		mg.On("GetWinnerIdx").Return(2)
 
 		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard

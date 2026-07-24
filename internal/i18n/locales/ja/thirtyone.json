@@ -15,6 +15,7 @@
   "promptDrawHelpStock": "ds: 山札から引く",
   "promptDrawHelpDiscard": "dd: 捨て札から引く",
   "promptKnockHelp": "k: ノック (引かずに勝負)",
+  "suitBreakdown": "スート別: ♠{{spade}} ♣{{clover}} ♥{{heart}} ♦{{diamond}}（ベスト: {{best}}）",
   "yourBestSuit": "あなたのベストスート合計: {{score}} (31で勝利)",
   "knockNotice": "{{name}} がノック — これが最終ターンです",
   "promptDiscard": "{{name}} の番です (ディスカードフェーズ)",

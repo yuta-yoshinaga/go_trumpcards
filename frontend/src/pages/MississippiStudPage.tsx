@@ -20,12 +20,15 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
+import { badgeSuccessColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { Card } from '../types/card';
 import { isMaskedCard } from '../types/card';
 import { MississippiStudPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { evaluateMississippiStudMadeHand } from '../utils/mississippiStudMadeHand';
 
 const TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -110,6 +113,12 @@ function MississippiStudPageContent() {
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
+  const madeHand = useMemo(() => {
+    if (!isStreetPhase || !state) return null;
+    const revealed = state.communityCards.filter((c): c is Card => !isMaskedCard(c));
+    return evaluateMississippiStudMadeHand([...state.playerHand, ...revealed]);
+  }, [isStreetPhase, state]);
+
   if (!state) return <GameSkeleton gameKey="mississippistud" layout={{ kind: 'casino-table', sections: [3, 2] }} />;
 
   const handleBet = () => execApi('bet', anteAmount);
@@ -118,6 +127,36 @@ function MississippiStudPageContent() {
   const handleReset = () => execApi('reset');
 
   const phaseName = t(PHASE_KEY[state.phase] ?? 'phase.ante');
+
+  // Paytable reference: collapsible and available in every phase so players can
+  // check it while deciding 1x/2x/3x/fold on the betting streets, not just at ante.
+  const paytable = (
+    <details data-testid="ms-paytable" className="bg-black/30 rounded-lg w-full max-w-sm">
+      <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
+        {t('payoutRef.title')}
+      </summary>
+      <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
+        <ul className="space-y-0.5">
+          {(
+            [
+              'payRoyalFlush',
+              'payStraightFlush',
+              'payFourOfAKind',
+              'payFullHouse',
+              'payFlush',
+              'payStraight',
+              'payThreeOfAKind',
+              'payTwoPair',
+              'payHighPair',
+              'payMidPair',
+            ] as const
+          ).map((key) => (
+            <li key={key}>{t(`payoutRef.${key}`)}</li>
+          ))}
+        </ul>
+      </div>
+    </details>
+  );
 
   return (
     <GamePageShell
@@ -162,31 +201,7 @@ function MississippiStudPageContent() {
         {isAntePhase && (
           <div className="flex flex-col items-center justify-center py-4 gap-4">
             <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
-            <details className="bg-black/30 rounded-lg w-full max-w-sm">
-              <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
-                {t('payoutRef.title')}
-              </summary>
-              <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
-                <ul className="space-y-0.5">
-                  {(
-                    [
-                      'payRoyalFlush',
-                      'payStraightFlush',
-                      'payFourOfAKind',
-                      'payFullHouse',
-                      'payFlush',
-                      'payStraight',
-                      'payThreeOfAKind',
-                      'payTwoPair',
-                      'payHighPair',
-                      'payMidPair',
-                    ] as const
-                  ).map((key) => (
-                    <li key={key}>{t(`payoutRef.${key}`)}</li>
-                  ))}
-                </ul>
-              </div>
-            </details>
+            {paytable}
           </div>
         )}
 
@@ -203,6 +218,18 @@ function MississippiStudPageContent() {
                 <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
               ))}
             </div>
+            {isStreetPhase && madeHand && (
+              <div className="text-center mt-2" data-testid="ms-made-hand" aria-live="polite" aria-atomic="true">
+                <span className="text-ds-text-muted text-xs mr-1">{t('madeHand.label')}:</span>
+                {madeHand.paytableEligible ? (
+                  <span className={`${badgeSuccessColors} rounded px-2 py-0.5 text-sm font-bold`}>
+                    {t(HAND_RANK_KEYS[madeHand.rank] ?? 'handRank.0')} ({t('madeHand.eligible')})
+                  </span>
+                ) : (
+                  <span className="text-ds-text-muted text-sm">{t(HAND_RANK_KEYS[madeHand.rank] ?? 'handRank.0')}</span>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -250,6 +277,8 @@ function MississippiStudPageContent() {
             </span>
           </div>
         )}
+
+        {!isAntePhase && <div className="flex justify-center mb-2">{paytable}</div>}
 
         {isEndPhase && (
           <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">

@@ -21,6 +21,11 @@
   "promptDiscardHelp": "d <idx>: discard a card",
   "promptKnockHelp": "k <idx>: knock (deadwood <= 5)",
   "promptDealtTonk": "Dealt-hand Tonk!",
+  "knockerMeldsHeader": "[Knocker melds]",
+  "knockerMeldLine": "Meld {{idx}} ({{type}}): {{cards}}",
+  "meldSet": "set",
+  "meldRun": "run",
+  "revealedHand": "{{name}} hand: {{cards}}",
   "promptRoundEnd": "Round complete",
   "promptRoundEndHelp": "nr / nextround: advance to next round"
 }

@@ -27,11 +27,21 @@
   "dealer": "Dealer",
   "maker": "Maker: Team {{team}}",
   "currentTrick": "Current Trick",
+  "previousTrick": "Previous Trick",
+  "previousTrickEmpty": "No previous trick yet this round",
+  "previousTrickWinner": "Won by {{name}}",
   "partnership": "Partner: {{partner}}",
   "trickCount": "Tricks: {{count}}",
   "roundPoints": "Round: {{points}} pts",
   "weisPoints": "Weis: {{points}} pts",
   "stockPoints": "Stöck: {{points}} pts",
+  "weisPanel": {
+    "title": "Weis (meld) declarations",
+    "note": "Weis are melds declared during the round (3-card sequence 20 pts, 4-card sequence 50 pts, four-of-a-kind 100/150/200 pts, etc.). Only the team that declared the strongest Weis scores all of its Weis points for the round.",
+    "teamPoints": "{{points}} pts",
+    "scored": "Counted",
+    "you": " (You)"
+  },
   "schiebenButton": "Schieben",
   "playButton": "Play",
   "nextTrick": "Next Trick",
@@ -71,7 +81,8 @@
     "lead_strong": "Lead with a strong card",
     "follow_suit": "Follow the led suit",
     "trump_cut": "Cut with trump",
-    "discard_weak": "Discard the lowest-value card"
+    "discard_weak": "Discard the lowest-value card",
+    "fallback": "Best play"
   },
   "tutorial": {
     "bidControls": "In the trump-bid phase, choose a trump suit or pass the bid (Schieben) to your partner.",

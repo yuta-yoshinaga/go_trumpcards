@@ -58,6 +58,13 @@ func (pr *PokerSquaresWebPresenter) Output(p interfaces.PokerSquaresGame, lastEr
 	return marshalOrError(resObj)
 }
 
+// HintOutput はヒントを JSON で出力する。Web GUI はクライアント側の
+// ヒューリスティックヒントを使うため、ここでは JSON 化した状態を返して
+// PokerSquaresPresenter インタフェースを満たす (CUI のみが利用する)。
+func (pr *PokerSquaresWebPresenter) HintOutput(p interfaces.PokerSquaresGame) string {
+	return pr.Output(p, nil)
+}
+
 // ActionLogOutput は棋譜を JSON で出力する。
 func (pr *PokerSquaresWebPresenter) ActionLogOutput(p interfaces.PokerSquaresGame) string {
 	return actionLogOutputJSON(p)

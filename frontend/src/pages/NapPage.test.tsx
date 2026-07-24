@@ -115,9 +115,15 @@ describe('NapPage', () => {
     const info = await screen.findByTestId('nap-highest-bid');
     // A real highest bid is shown (not the "no bids yet" placeholder).
     expect(info).not.toHaveTextContent('まだ入札なし');
-    // Too-low bids carry a tooltip; valid bids do not.
-    expect(screen.getByTestId('bid-2')).toHaveAttribute('title');
-    expect(screen.getByTestId('bid-4')).not.toHaveAttribute('title');
+    // Too-low bids carry a tooltip on the wrapping span (browsers suppress tooltips on
+    // disabled buttons); valid bids do not.
+    const tooLowWrap = screen.getByTestId('bid-wrap-2');
+    expect(tooLowWrap).toHaveAttribute('title');
+    expect(tooLowWrap.getAttribute('title')).not.toBe('');
+    expect(screen.getByTestId('bid-wrap-4')).not.toHaveAttribute('title');
+    // The reason is also exposed to screen readers via aria-label on the disabled button.
+    expect(screen.getByTestId('bid-2')).toHaveAttribute('aria-label', expect.stringContaining(tooLowWrap.title));
+    expect(screen.getByTestId('bid-4')).not.toHaveAttribute('aria-label');
   });
 
   it('shows "no bids yet" before anyone has bid', async () => {
@@ -142,6 +148,39 @@ describe('NapPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
     expect(screen.queryByTestId('bid-0')).not.toBeInTheDocument();
+  });
+
+  it('shows the declarer trick progress toward the contract during play', async () => {
+    // contract 3, declarer won 0, all 5 tricks still to play.
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<NapPage />);
+    const progress = await screen.findByTestId('nap-declarer-progress');
+    expect(progress).toHaveTextContent('宣言者: 0 / 3 トリック（残り5トリック）');
+    expect(progress).toHaveAttribute('role', 'status');
+    expect(progress).not.toHaveTextContent('達成不可');
+    expect(progress.className).not.toContain('text-ds-error');
+  });
+
+  it('marks the contract as unreachable once too few tricks remain', async () => {
+    // contract 4, declarer has 0 tricks, opponents have taken 2 → only 3 remain, so 4 is impossible.
+    const unreachableState = makeNapState({
+      phase: 1,
+      declarerIdx: 0,
+      contract: 4,
+      isHumanBidTurn: false,
+      isHumanTurn: true,
+      players: [
+        { id: 0, isHuman: true, cardCount: 3, cards: [], trickCount: 0, score: 0, isDeclarer: true },
+        { id: 1, isHuman: false, cardCount: 3, cards: [], trickCount: 1, score: 0, isDeclarer: false },
+        { id: 2, isHuman: false, cardCount: 3, cards: [], trickCount: 1, score: 0, isDeclarer: false },
+        { id: 3, isHuman: false, cardCount: 3, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+      ],
+    });
+    mockExec.mockResolvedValue(unreachableState);
+    renderWithProviders(<NapPage />);
+    const progress = await screen.findByTestId('nap-declarer-progress');
+    expect(progress).toHaveTextContent('達成不可');
+    expect(progress.className).toContain('text-ds-error');
   });
 
   it('renders trick end with the next trick button', async () => {

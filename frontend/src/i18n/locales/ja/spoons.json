@@ -3,6 +3,8 @@
   "cpu": "CPU {{id}}",
   "round": "ラウンド {{n}}",
   "spoonsRemaining": "残りスプーン: {{count}}",
+  "spoonsLabel": "スプーン",
+  "spoonGrabbedBy": "{{name}} が取得",
   "drawPile": "山札: {{count}}",
   "playersTitle": "プレイヤー",
   "handLabel": "あなたの手札",
@@ -42,5 +44,6 @@
     "hand": "あなたの4枚の手札です。パスフェーズでは渡すカードを1枚選びます。",
     "grab": "フォーオブアカインドが成立するとここからスプーンを奪い合います。乗り遅れた人が文字を獲得します。",
     "resetButton": "このボタンでいつでもゲームをリセットできます。"
-  }
+  },
+  "passCardAria": "{{card}} を渡す"
 }

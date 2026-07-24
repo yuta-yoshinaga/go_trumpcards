@@ -17,7 +17,15 @@ func (hp *HighCardFlushWebPresenter) Output(hcf interfaces.HighCardFlushGame, la
 	resObj := new(controller.HighCardFlushWebOutput)
 
 	resObj.PlayerHand = cardsToOutputOrEmpty(hcf.GetPlayerHand())
-	resObj.DealerHand = cardsToOutputOrEmpty(hcf.GetDealerHand())
+	// The dealer's 7 cards are dealt at the same time as the player's but stay
+	// hidden until showdown. Only expose them at the END phase — otherwise the
+	// web API would leak the dealer's hand (a cheat, and, via the UI, an
+	// accessibility over-share) during betting/action. Mirrors the CUI gate.
+	if hcf.GetPhase() == domain.HighCardFlushPhaseEnd {
+		resObj.DealerHand = cardsToOutputOrEmpty(hcf.GetDealerHand())
+	} else {
+		resObj.DealerHand = cardsToOutputOrEmpty(nil)
+	}
 	resObj.Phase = hcf.GetPhase()
 	resObj.Chips = hcf.GetChips()
 	resObj.AnteBet = hcf.GetAnteBet()
@@ -68,4 +76,10 @@ func (hp *HighCardFlushWebPresenter) Output(hcf interfaces.HighCardFlushGame, la
 // ActionLogOutput 棋譜をJSON出力
 func (hp *HighCardFlushWebPresenter) ActionLogOutput(hcf interfaces.HighCardFlushGame) string {
 	return actionLogOutputJSON(hcf)
+}
+
+// HintOutput はヒントを返す。Web ではクライアント側でヒントを算出するため、
+// 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
+func (hp *HighCardFlushWebPresenter) HintOutput(hcf interfaces.HighCardFlushGame) string {
+	return hp.Output(hcf, nil)
 }

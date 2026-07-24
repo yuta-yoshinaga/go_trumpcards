@@ -1,5 +1,9 @@
 {
-  "phase": { "playing": "プレイ中", "gameClear": "ゲームクリア", "gameOver": "ゲームオーバー" },
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
   "title": "ブラックホール",
   "blackHole": "ブラックホール",
   "fan": "扇",
@@ -19,5 +23,16 @@
     "rules": "扇の最上位が、ブラックホール最上位と±1ランク（スート不問・K-Aのつながりなし）なら吸い込めます。全52枚を吸い込むとクリアです。",
     "actionButtons": "ヒント・元に戻す・ギブアップなどの操作ボタンです。",
     "resetButton": "新しいゲームを始めるボタンです。"
-  }
+  },
+  "fanCardAria": "{{card}}（ファン{{fan}}）",
+  "holeAria": "ブラックホール: {{card}}",
+  "holeEmptyAria": "ブラックホール: 空",
+  "hintPlayable": "置けます",
+  "hintRecommended": "おすすめ",
+  "hintRecommendedAnnounce": "おすすめ: {{card}}（ファン{{fan}}）",
+  "hintLegalFans": "置けるカード: {{list}}",
+  "hintNoLegal": "置けるカードがありません",
+  "acceptableRanks": "受け入れ可能: {{ranks}}",
+  "acceptableRanksNone": "受け入れ可能: なし",
+  "legalMoveCount": "合法手: {{count}}"
 }

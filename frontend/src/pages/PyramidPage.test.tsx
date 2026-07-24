@@ -1,7 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, pyramidApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { PYRAMID_STATS_KEY } from '../hooks/usePyramidStats';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, PyramidCard, PyramidResponse } from '../types/card';
 import { PyramidPage } from './PyramidPage';
@@ -83,6 +84,17 @@ beforeEach(() => {
 });
 
 describe('PyramidPage', () => {
+  it('conveys blocked / selected / pair-candidate state in the card aria-labels', async () => {
+    renderWithProviders(<PyramidPage />);
+    await screen.findByLabelText('♠ 10');
+    // Top-row cards are covered by the row below → blocked.
+    expect(screen.getByRole('button', { name: '♠ K （ブロック中）' })).toBeInTheDocument();
+    // Selecting ♠10 marks it selected and makes ♦3 (sum 13) a pair candidate.
+    fireEvent.click(screen.getByLabelText('♠ 10'));
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 10 （選択中）' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♦ 3 （合計13の相手）' })).toBeInTheDocument();
+  });
+
   it('rings both cards of a pair hint on the board', async () => {
     renderWithProviders(<PyramidPage />);
     await waitFor(() => expect(screen.getByLabelText('♦ 3')).toBeInTheDocument());
@@ -91,7 +103,7 @@ describe('PyramidPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(screen.getByLabelText('♦ 3')).toHaveClass('ring-ds-warning'));
     expect(screen.getByLabelText('♠ 10')).toHaveClass('ring-ds-warning');
-    expect(screen.getByLabelText('♥ K')).not.toHaveClass('ring-ds-warning');
+    expect(screen.getByLabelText(/♥ K/)).not.toHaveClass('ring-ds-warning');
   });
 
   it('shows only the hint ring when a card is both hinted and a pair candidate', async () => {
@@ -99,27 +111,28 @@ describe('PyramidPage', () => {
     await waitFor(() => expect(screen.getByLabelText('♠ 10')).toBeInTheDocument());
 
     // Select ♠10 (partner value 3) so ♦3 becomes a pair candidate…
+    // (its aria-label now gains the "（合計13の相手）" suffix, so match by regex).
     fireEvent.click(screen.getByLabelText('♠ 10'));
-    await waitFor(() => expect(screen.getByLabelText('♦ 3')).toHaveClass('ring-ds-success'));
+    await waitFor(() => expect(screen.getByLabelText(/♦ 3/)).toHaveClass('ring-ds-success'));
 
     // …then request a hint that also targets ♦3: the hint ring must win alone.
     mockExec.mockResolvedValueOnce({ ...playingState, hint: { type: 'pair', row1: 2, col1: 0, row2: 2, col2: 1 } });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
-    await waitFor(() => expect(screen.getByLabelText('♦ 3')).toHaveClass('ring-ds-warning'));
-    expect(screen.getByLabelText('♦ 3')).not.toHaveClass('ring-ds-success');
+    await waitFor(() => expect(screen.getByLabelText(/♦ 3/)).toHaveClass('ring-ds-warning'));
+    expect(screen.getByLabelText(/♦ 3/)).not.toHaveClass('ring-ds-success');
   });
 
   it('rings the king cell for a king hint and clears it on the next card click', async () => {
     renderWithProviders(<PyramidPage />);
-    await waitFor(() => expect(screen.getByLabelText('♥ K')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText(/♥ K/)).toBeInTheDocument());
 
     mockExec.mockResolvedValueOnce({ ...playingState, hint: { type: 'king', row1: 2, col1: 2, row2: -1, col2: -1 } });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
-    await waitFor(() => expect(screen.getByLabelText('♥ K')).toHaveClass('ring-ds-warning'));
+    await waitFor(() => expect(screen.getByLabelText(/♥ K/)).toHaveClass('ring-ds-warning'));
 
     // Any card interaction clears the hint highlight.
     fireEvent.click(screen.getByLabelText('♦ 3'));
-    await waitFor(() => expect(screen.getByLabelText('♥ K')).not.toHaveClass('ring-ds-warning'));
+    await waitFor(() => expect(screen.getByLabelText(/♥ K/)).not.toHaveClass('ring-ds-warning'));
   });
 
   it('renders skeleton when no state', () => {
@@ -309,6 +322,38 @@ describe('PyramidPage', () => {
     );
     // No pair-candidate attribute should appear anywhere because partnerValue stays null for Kings.
     expect(document.querySelectorAll('[data-pair-candidate="true"]')).toHaveLength(0);
+  });
+
+  it('marks an exposed King as removable-alone with a success ring and aria hint', async () => {
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    // ♥ K is exposed in row 2 → flagged as removable alone.
+    const kingButton = screen.getByAltText('♥ K').closest('button') as HTMLButtonElement;
+    expect(kingButton).toHaveAttribute('data-king-removable', 'true');
+    expect(kingButton.className).toContain('ring-ds-success');
+    // The always-on King ring must not reuse the pulsing pair-candidate style.
+    expect(kingButton.className).not.toContain('animate-pulse');
+    expect(kingButton).toHaveAttribute('aria-label', '♥ K （単独除去可能なK）');
+  });
+
+  it('does not mark a covered King or a non-King exposed card as removable-alone', async () => {
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    // ♠ K in row 0 is covered (exposed:false) → no marker.
+    const coveredKing = screen.getByAltText('♠ K').closest('button') as HTMLButtonElement;
+    expect(coveredKing).not.toHaveAttribute('data-king-removable');
+    // ♦ 3 is exposed but not a King → no marker.
+    const nonKing = screen.getByAltText('♦ 3').closest('button') as HTMLButtonElement;
+    expect(nonKing).not.toHaveAttribute('data-king-removable');
+  });
+
+  it('marks a King on top of the waste as removable-alone', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('SPADE', 13)] });
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    const wasteButton = screen.getByRole('button', { name: '♠ K （単独除去可能なK）' });
+    expect(wasteButton).toHaveAttribute('data-king-removable', 'true');
+    expect(wasteButton.className).toContain('ring-ds-success');
   });
 
   it('clicking same card twice deselects it', async () => {
@@ -588,5 +633,52 @@ describe('PyramidPage', () => {
     mockExec.mockResolvedValue(playingState);
     fireEvent.click(screen.getByTestId('stalemate-escape-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 4));
+  });
+});
+
+// --- Best-record persistence (#3083) ---
+
+describe('PyramidPage best-record', () => {
+  // Clear only the stats key so we don't disturb tutorial-suggest state used by other tests.
+  beforeEach(() => localStorage.removeItem(PYRAMID_STATS_KEY));
+  afterEach(() => localStorage.removeItem(PYRAMID_STATS_KEY));
+
+  it('records the fewest-moves clear and shows the badge, panel, and header chip', async () => {
+    // gameClearState.moveCount is 5.
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<PyramidPage />);
+
+    await waitFor(() => expect(screen.getByTestId('py-best-badge')).toBeInTheDocument());
+    expect(screen.getByTestId('py-best-badge')).toHaveTextContent('新記録');
+    expect(screen.getByTestId('py-best-badge')).toHaveTextContent('5');
+    expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('5 手');
+    expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('クリア 1/1');
+    expect(screen.getByTestId('py-best-moves')).toHaveTextContent('5 手');
+    // Persisted for next time.
+    expect(JSON.parse(localStorage.getItem(PYRAMID_STATS_KEY) ?? '{}')).toEqual({
+      plays: 1,
+      wins: 1,
+      fewestMoves: 5,
+    });
+  });
+
+  it('keeps a better existing record and shows no new-best badge for a slower clear', async () => {
+    localStorage.setItem(PYRAMID_STATS_KEY, JSON.stringify({ plays: 1, wins: 1, fewestMoves: 3 }));
+    mockExec.mockResolvedValue(gameClearState); // 5 moves > existing best 3
+    renderWithProviders(<PyramidPage />);
+
+    await waitFor(() => expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('3 手'));
+    expect(screen.queryByTestId('py-best-badge')).not.toBeInTheDocument();
+    expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('クリア 2/2');
+  });
+
+  it('counts a loss without recording a fewest-moves value', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<PyramidPage />);
+
+    await waitFor(() => expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('クリア 0/1'));
+    expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('—');
+    expect(screen.queryByTestId('py-best-moves')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('py-best-badge')).not.toBeInTheDocument();
   });
 });

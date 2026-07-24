@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import type { sheepsheadApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -10,11 +10,13 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -96,6 +98,7 @@ function SheepsheadPageContent() {
     handleConfigChange,
     selectedCardIndices,
     toggleCard,
+    clearSelection,
     reset,
     handlePick,
     handlePass,
@@ -132,6 +135,26 @@ function SheepsheadPageContent() {
   } = useGameHint('sheepshead', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('sheepshead', SHEEPSHEAD_PHASE_KEYS);
+
+  // Keyboard hand navigation: number keys toggle a card, Enter confirms,
+  // Escape clears. BURY needs two cards and PLAY needs one; both handlers
+  // self-guard on the selected count, so confirmAction just routes to the
+  // active phase's handler.
+  const humanIdxForKbd = state?.players.findIndex((p) => p.isHuman) ?? -1;
+  const canBuryForKbd = state?.phase === SheepsheadPhase.BURY && state.pickerIdx === humanIdxForKbd;
+  const canPlayForKbd = state?.phase === SheepsheadPhase.PLAY && state.currentPlayerIdx === humanIdxForKbd;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  const confirmAction = useCallback(() => {
+    if (canBuryForKbd) handleBury();
+    else if (canPlayForKbd) handlePlay();
+  }, [canBuryForKbd, canPlayForKbd, handleBury, handlePlay]);
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleCard,
+    onConfirm: confirmAction,
+    onClear: clearSelection,
+    enabled: (canBuryForKbd || canPlayForKbd) && !loading,
+  });
 
   if (!state)
     return <GameSkeleton gameKey="sheepshead" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 6 }} />;
@@ -232,6 +255,19 @@ function SheepsheadPageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
               <div>
+                {/* Blind: face-down cards, shown only during the Pick phase before a picker takes them. */}
+                {isPickPhase && state.blindCount > 0 && (
+                  <div className="mb-3" data-testid="sh-blind-display">
+                    <div className="text-ds-text-muted text-sm mb-1 text-center">
+                      {t('blind')} ({state.blindCount})
+                    </div>
+                    <div className="flex justify-center gap-2">
+                      {Array.from({ length: state.blindCount }).map((_, i) => (
+                        <AnimatedCardBack key={i} width={cardWidth} dealDelay={i * 0.08} />
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <TrickDisplay
                   currentTrick={state.currentTrick}
                   players={state.players}

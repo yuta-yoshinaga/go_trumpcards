@@ -54,4 +54,6 @@ type CasinoHoldemGame interface {
 	GetDealerBest() []*domain.Card
 	// GetChips チップを取得する
 	GetChips() int
+	// RecommendCall はフロップ後にコールを推奨するかを返す
+	RecommendCall() bool
 }

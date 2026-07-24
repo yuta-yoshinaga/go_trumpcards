@@ -379,6 +379,23 @@ describe('ChinchonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ...RESET_CONFIG, playerCount: 4 }));
   });
 
+  it('settings panel changes knockThreshold sent on reset', async () => {
+    renderWithProviders(<ChinchonPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.change(screen.getByTestId('chinchon-knock-threshold-select'), { target: { value: '10' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(drawPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ...RESET_CONFIG, knockThreshold: 10 }),
+    );
+  });
+
   it('does not show draw buttons when not human turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<ChinchonPage />);
@@ -409,5 +426,59 @@ describe('ChinchonPage', () => {
 
     await waitFor(() => expect(actionLogApi.chinchon).toHaveBeenCalledTimes(1));
     expect(screen.getByText('棋譜')).toBeInTheDocument();
+  });
+
+  // Hand with a ♠5-6-7 run (idx 0-2) plus ♥5, ♥6 deadwood (idx 3-4).
+  const meldHandState: ChinchonResponse = {
+    ...discardPhaseState,
+    players: [
+      {
+        ...discardPhaseState.players[0],
+        cards: [
+          { design: 'SPADE', value: 5 },
+          { design: 'SPADE', value: 6 },
+          { design: 'SPADE', value: 7 },
+          { design: 'HEART', value: 5 },
+          { design: 'HEART', value: 6 },
+        ],
+      },
+      ...discardPhaseState.players.slice(1),
+    ],
+  };
+
+  it('color-codes meld vs deadwood hand cards during the discard phase', async () => {
+    mockExec.mockResolvedValue(meldHandState);
+    renderWithProviders(<ChinchonPage />);
+    await waitFor(() => expect(screen.getByTestId('chinchon-hand-card-0')).toBeInTheDocument());
+
+    // Run members are melds; the two loose hearts are deadwood.
+    expect(screen.getByTestId('chinchon-hand-card-0')).toHaveAttribute('data-meld', 'meld');
+    expect(screen.getByTestId('chinchon-hand-card-1')).toHaveAttribute('data-meld', 'meld');
+    expect(screen.getByTestId('chinchon-hand-card-2')).toHaveAttribute('data-meld', 'meld');
+    expect(screen.getByTestId('chinchon-hand-card-3')).toHaveAttribute('data-meld', 'deadwood');
+    expect(screen.getByTestId('chinchon-hand-card-4')).toHaveAttribute('data-meld', 'deadwood');
+
+    // Legend distinguishes the two categories with a non-color cue (label text).
+    expect(screen.getByTestId('chinchon-meld-legend')).toHaveTextContent('メルド');
+    expect(screen.getByTestId('chinchon-meld-legend')).toHaveTextContent('デッドウッド');
+  });
+
+  it('re-splits the meld coloring when a discard candidate is selected', async () => {
+    mockExec.mockResolvedValue(meldHandState);
+    renderWithProviders(<ChinchonPage />);
+    await waitFor(() => expect(screen.getByTestId('chinchon-hand-card-1')).toBeInTheDocument());
+
+    // Projecting the discard of ♠5 breaks the run, so ♠6 is no longer a meld.
+    fireEvent.click(screen.getByTestId('chinchon-hand-card-0'));
+    expect(screen.getByTestId('chinchon-hand-card-1')).toHaveAttribute('data-meld', 'deadwood');
+    expect(screen.getByTestId('chinchon-hand-card-2')).toHaveAttribute('data-meld', 'deadwood');
+  });
+
+  it('does not color-code hand cards outside the discard phase', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<ChinchonPage />);
+    await waitFor(() => expect(screen.getByTestId('chinchon-hand-card-0')).toBeInTheDocument());
+    expect(screen.getByTestId('chinchon-hand-card-0')).not.toHaveAttribute('data-meld');
+    expect(screen.queryByTestId('chinchon-meld-legend')).not.toBeInTheDocument();
   });
 });

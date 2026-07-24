@@ -16,6 +16,7 @@
   "currentLow": "現在のロー: {{low}}",
   "currentLowIncomplete": "ロー未完成（5枚揃わず）",
   "anteBringIn": "アンティ/ブリングイン",
+  "bringIn": "ブリングイン",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
@@ -43,7 +44,11 @@
     "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
   },
   "settings": {
-    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）",
+    "ante": "アンティ額",
+    "anteHelp": "各ハンドの開始時に全員が支払う強制ベット額です。変更はリセット後（次のゲーム）から反映されます。",
+    "tournamentMode": "トーナメントモード",
+    "tournamentModeHelp": "一定ハンドごとにアンティが上がるトーナメント方式です。変更はリセット後（次のゲーム）から反映されます。"
   },
   "tutorial": {
     "playerHand": "あなたのホールカードとドアカードです。7枚のカードから最も低い5枚の組み合わせが勝ちます。",

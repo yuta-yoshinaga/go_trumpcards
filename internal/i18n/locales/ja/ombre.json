@@ -40,5 +40,9 @@
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
   "hintReasonBidEntrar": "手堅い手なのでエントラールを宣言",
   "hintReasonBidSolo": "非常に強い手なのでソロを宣言",
-  "hintReasonBidPass": "弱い手なのでパスする"
+  "hintReasonBidPass": "弱い手なのでパスする",
+  "hintDecision": "[HINT: {{action}} を推奨 ({{reason}})]",
+  "hintActionEntrar": "エントラール",
+  "hintActionSolo": "ソロ",
+  "hintActionPass": "パス"
 }

@@ -29,6 +29,8 @@
   "discardButton": "捨てる",
   "knockButton": "ノック",
   "deadwoodLabel": "デッドウッド: {{score}}点（ノック上限 {{threshold}}）",
+  "meldLegend": "メルド",
+  "deadwoodLegend": "デッドウッド",
   "layoffButton": "レイオフ",
   "skipLayoffButton": "スキップ",
   "nextRound": "次のラウンド",
@@ -39,6 +41,20 @@
   "knockerMelds": "ノッカーのメルド",
   "knockerDeadwood": "ノッカーのデッドウッド",
   "gin": "ジン！",
+  "breakdown": {
+    "title": "得点内訳",
+    "outcome": {
+      "gin": "ジン",
+      "knock": "ノック",
+      "undercut": "アンダーカット"
+    },
+    "winner": "{{name}} が {{total}} 点獲得",
+    "deadwood": "デッドウッド — ノッカー {{knocker}} / 相手 {{opponent}}",
+    "opponentDeadwoodPart": "相手デッドウッド {{value}}",
+    "differencePart": "デッドウッド差 {{value}}",
+    "ginBonusPart": "ジンボーナス {{value}}",
+    "undercutBonusPart": "アンダーカットボーナス {{value}}"
+  },
   "result": {
     "humanWin": "あなたの勝利！",
     "cpuWin": "CPU {{cpuId}} の勝利！"

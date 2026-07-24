@@ -31,5 +31,6 @@
   "dealEnd": "deal finished",
   "result.scores": "Game over! Scores: {{scores}}",
   "result.humanWin": "Game over! You win!",
-  "result.cpuWin": "Game over! Player {{player}} wins!"
+  "result.cpuWin": "Game over! Player {{player}} wins!",
+  "remainingContracts": "Remaining contracts: {{contracts}}"
 }

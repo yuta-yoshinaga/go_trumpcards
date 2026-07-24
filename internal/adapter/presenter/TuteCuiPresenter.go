@@ -85,6 +85,21 @@ func (p *TuteCuiPresenter) Output(g interfaces.TuteGame, lastErr error) string {
 			b.WriteString(i18n.T("tute.promptPlayHelp") + "\n")
 			if g.CanHumanDeclareMarriage() {
 				b.WriteString(i18n.T("tute.promptMarriage") + "\n")
+				// List which suits' K+Q can be declared (trump marked), so the
+				// human need not scan the hand and recall what is already claimed.
+				if suits := g.GetHumanDeclarableMarriageSuits(); len(suits) > 0 {
+					trump := g.GetTrumpSuit()
+					labels := make([]string, len(suits))
+					for i, suit := range suits {
+						label := tuteSuitSymbol(suit)
+						if suit == trump {
+							label += i18n.T("tute.marriageTrumpMark")
+						}
+						labels[i] = label
+					}
+					b.WriteString(i18n.Tf("tute.promptMarriageSuits",
+						"suits", strings.Join(labels, ", ")) + "\n")
+				}
 			}
 			if g.CanHumanDeclareTute() {
 				b.WriteString(i18n.T("tute.promptTute") + "\n")

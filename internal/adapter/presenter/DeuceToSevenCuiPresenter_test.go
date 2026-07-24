@@ -110,6 +110,57 @@ func TestDeuceToSevenCuiPresenter_Output_ErrorSurfaces(t *testing.T) {
 	assert.Contains(t, out, "oops")
 }
 
+func TestDeuceToSevenCuiPresenter_HintOutput(t *testing.T) {
+	pres := new(presenter.DeuceToSevenCuiPresenter)
+
+	t.Run("recommends exchanging weak cards", func(t *testing.T) {
+		dt, players := makeDeuceToSevenForPresenter()
+		dt.SetPhase(domain.DeuceToSevenPhaseDraw)
+		dt.SetCurrentTurn(0)
+		for _, c := range []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 2, false),   // idx 0 — kept
+			domain.NewCard(domain.CardDesignHeart, 3, false),   // idx 1 — kept
+			domain.NewCard(domain.CardDesignDiamond, 4, false), // idx 2 — kept
+			domain.NewCard(domain.CardDesignClover, 13, false), // idx 3 — discard (K)
+			domain.NewCard(domain.CardDesignSpade, 12, false),  // idx 4 — discard (Q)
+		} {
+			players[0].AddCard(c)
+		}
+		out := pres.HintOutput(dt)
+		assert.Contains(t, out, "交換")
+		// The copy-paste command must be space-separated so `e` parses every index
+		// (discards are ordered highest-value first: K=idx3, Q=idx4).
+		assert.Contains(t, out, "e 3 4")
+	})
+
+	t.Run("recommends standing pat on a made low", func(t *testing.T) {
+		dt, players := makeDeuceToSevenForPresenter()
+		dt.SetPhase(domain.DeuceToSevenPhaseDraw)
+		dt.SetCurrentTurn(0)
+		designs := []int{domain.CardDesignSpade, domain.CardDesignHeart, domain.CardDesignDiamond, domain.CardDesignClover, domain.CardDesignSpade}
+		for i, v := range []int{7, 5, 4, 3, 2} {
+			players[0].AddCard(domain.NewCard(designs[i], v, false))
+		}
+		assert.Contains(t, pres.HintOutput(dt), "スタンドパット")
+	})
+
+	t.Run("declines outside the draw phase", func(t *testing.T) {
+		dt, _ := makeDeuceToSevenForPresenter()
+		dt.SetPhase(domain.DeuceToSevenPhaseBet)
+		assert.Contains(t, pres.HintOutput(dt), "ドローフェーズではありません")
+	})
+
+	t.Run("declines when it is not the human's turn", func(t *testing.T) {
+		dt, players := makeDeuceToSevenForPresenter()
+		dt.SetPhase(domain.DeuceToSevenPhaseDraw)
+		dt.SetCurrentTurn(1)
+		for _, v := range []int{7, 5, 4, 3, 2} {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		assert.Contains(t, pres.HintOutput(dt), "ドローフェーズではありません")
+	})
+}
+
 func TestDeuceToSevenCuiPresenter_ActionLogOutput(t *testing.T) {
 	pres := new(presenter.DeuceToSevenCuiPresenter)
 	dt, _ := makeDeuceToSevenForPresenter()

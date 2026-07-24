@@ -109,6 +109,86 @@ func TestAllFoursWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestAllFoursWebPresenter_RoundBreakdown(t *testing.T) {
+	p := new(presenter.AllFoursWebPresenter)
+
+	// setupRoundEnd returns a mock at ROUND_END with the given trump suit and
+	// captured tricks assigned per player. tricks[i] is the list of card sets
+	// captured by player i.
+	setupRoundEnd := func(trump int, tricks [][][]*domain.Card) *interfaces.MockAllFoursGame {
+		m := setupAllFoursWebMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpSuit")
+		m.On("GetPhase").Return(domain.AllFoursPhaseRoundEnd)
+		m.On("GetTrumpSuit").Return(trump)
+		m.On("GetPlayerCnt").Return(2)
+		players := makeAllFoursPlayers()
+		for i, pt := range tricks {
+			for _, trick := range pt {
+				players[i].AddTrick(trick)
+			}
+		}
+		m.On("GetPlayer", 0).Return(players[0])
+		m.On("GetPlayer", 1).Return(players[1])
+		return m
+	}
+
+	decode := func(m *interfaces.MockAllFoursGame) *controller.AllFoursWebOutputRoundBreakdown {
+		var resObj controller.AllFoursWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
+		return resObj.RoundBreakdown
+	}
+
+	t.Run("nil breakdown while playing", func(t *testing.T) {
+		m, _ := setupAllFoursWebMockWithPlayers()
+		var resObj controller.AllFoursWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
+		assert.Nil(t, resObj.RoundBreakdown)
+	})
+
+	t.Run("high/low/jack/game winners", func(t *testing.T) {
+		// Trump = Spade. Player 0 captures the trump Jack (11) and Ace (1, high).
+		// Player 1 captures the trump 2 (low). Pips: p0 = J(1)+A(4)=5, p1 = 2(0)=0.
+		m := setupRoundEnd(domain.CardDesignSpade, [][][]*domain.Card{
+			{{domain.NewCard(domain.CardDesignSpade, 11, false), domain.NewCard(domain.CardDesignSpade, 1, false)}},
+			{{domain.NewCard(domain.CardDesignSpade, 2, false)}},
+		})
+		bd := decode(m)
+		assert.NotNil(t, bd)
+		assert.Equal(t, 0, bd.High.WinnerIdx)
+		assert.Equal(t, 1, bd.High.Card.Value) // Ace
+		assert.Equal(t, 1, bd.Low.WinnerIdx)
+		assert.Equal(t, 2, bd.Low.Card.Value)
+		assert.Equal(t, 0, bd.Jack.WinnerIdx)
+		assert.Equal(t, 0, bd.Game.WinnerIdx)
+		assert.Equal(t, []int{5, 0}, bd.Game.Points)
+	})
+
+	t.Run("jack absent yields -1", func(t *testing.T) {
+		// Trump = Heart, no Jack captured. Game tie (both 0) yields no game award.
+		m := setupRoundEnd(domain.CardDesignHeart, [][][]*domain.Card{
+			{{domain.NewCard(domain.CardDesignHeart, 5, false)}},
+			{{domain.NewCard(domain.CardDesignHeart, 3, false)}},
+		})
+		bd := decode(m)
+		assert.Equal(t, -1, bd.Jack.WinnerIdx)
+		assert.Equal(t, 0, bd.High.WinnerIdx) // Heart 5 is the highest captured trump
+		assert.Equal(t, 1, bd.Low.WinnerIdx)  // Heart 3 is the lowest
+		assert.Equal(t, -1, bd.Game.WinnerIdx)
+	})
+
+	t.Run("trump unset produces empty award slots", func(t *testing.T) {
+		m := setupRoundEnd(domain.AllFoursTrumpUnset, [][][]*domain.Card{{}, {}})
+		bd := decode(m)
+		assert.NotNil(t, bd)
+		assert.Equal(t, -1, bd.High.WinnerIdx)
+		assert.Nil(t, bd.High.Card)
+		assert.Equal(t, -1, bd.Low.WinnerIdx)
+		assert.Equal(t, -1, bd.Jack.WinnerIdx)
+		assert.Equal(t, -1, bd.Game.WinnerIdx)
+	})
+}
+
 func TestAllFoursWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.AllFoursWebPresenter)
 

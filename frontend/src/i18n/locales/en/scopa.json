@@ -15,9 +15,27 @@
   "label": {
     "tableCards": "Table",
     "tableEmpty": "No table cards",
+    "selected": "selected",
+    "takeCandidate": "capture candidate",
+    "takeCandidateAnnounce": "{{count}} capture candidate(s) available",
+    "noTakeCandidate": "No capture candidates",
     "yourCaptures": "Captures",
     "cpuStats": "{{cards}} cards / {{score}} pt",
-    "humanStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}} / Total {{score}} pt"
+    "humanStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}} / Total {{score}} pt",
+    "roundEnd": "Round over — review the score, then continue to the next round"
+  },
+  "breakdown": {
+    "title": "Score breakdown",
+    "cards": "Carte (most cards)",
+    "denari": "Denari (most ♦)",
+    "primiera": "Primiera (most 7s)",
+    "settebello": "Settebello (7♦)",
+    "scopa": "Scopa",
+    "gained": "Points this round",
+    "winner": "{{name}} +{{points}}",
+    "tie": "Tie (no points)",
+    "scopaCount": "{{name}} ×{{count}} (+{{points}})",
+    "gainedValue": "{{name}} +{{points}}"
   },
   "button": {
     "take": "Take",

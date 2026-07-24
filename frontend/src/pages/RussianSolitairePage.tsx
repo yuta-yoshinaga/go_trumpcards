@@ -24,6 +24,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useLocalStorageToggle } from '../hooks/useLocalStorageToggle';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
@@ -33,6 +34,7 @@ import type { RussianSolitaireResponse } from '../types/card';
 import { RussianSolitairePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { parseRussianSolitaireCommand, RS_HELP } from '../utils/cli/commands/russiansolitaireCommands';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
@@ -66,56 +68,6 @@ const RS_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
-
-/** CLI help text for Russian Solitaire. */
-const RS_HELP = [
-  'm <from> <to>  Move between tableau columns (top card)',
-  'm t <col> f    Move tableau to foundation',
-  'g              Give up',
-  'h              Hint',
-  'ac             Auto-complete',
-  'u              Undo',
-  'r              Reset',
-];
-
-/** Parse a Russian Solitaire CLI command into API call arguments. */
-function parseRussianSolitaireCommand(
-  input: string,
-): { args: Parameters<typeof russianSolitaireApi.exec> } | { error: string } {
-  const parts = input.trim().split(/\s+/);
-  const cmd = parts[0]?.toLowerCase();
-  switch (cmd) {
-    case 'r':
-    case 'reset':
-      return { args: ['reset'] };
-    case 'g':
-    case 'giveup':
-      return { args: ['giveup'] };
-    case 'h':
-    case 'hint':
-      return { args: ['hint'] };
-    case 'ac':
-    case 'autocomplete':
-      return { args: ['autocomplete'] };
-    case 'u':
-    case 'undo':
-      return { args: ['undo'] };
-    case 'm':
-    case 'move': {
-      if (parts.length === 3) {
-        const from = Number.parseInt(parts[1], 10);
-        const to = Number.parseInt(parts[2], 10);
-        if (Number.isNaN(from) || Number.isNaN(to)) return { error: 'Invalid column' };
-        return {
-          args: ['move', { zone: 'tableau', col: from, cardIndex: -1 }, { zone: 'tableau', col: to }],
-        };
-      }
-      return { error: 'Usage: m <fromCol> <toCol>' };
-    }
-    default:
-      return { error: `Unknown command: ${cmd}` };
-  }
-}
 
 /** Format Russian Solitaire state for CLI display. */
 function formatRussianSolitaireState(state: RussianSolitaireResponse): string {
@@ -180,6 +132,11 @@ function RussianSolitairePageContent() {
    * tail to make the moving block visually unambiguous.
    */
   const [hoveredBlock, setHoveredBlock] = useState<{ col: number; cardIdx: number } | null>(null);
+
+  // The face-down rule is a one-time onboarding note: show it until the player
+  // dismisses it, then keep it hidden across resets and future visits so it no
+  // longer permanently occupies the space above the tableau (issue #3155).
+  const [rulesDismissed, setRulesDismissed] = useLocalStorageToggle('russiansolitaire-rules-dismissed', false);
 
   const {
     hint: frontendHint,
@@ -436,9 +393,19 @@ function RussianSolitairePageContent() {
             </div>
 
             {/* Tableau */}
-            <p className="text-game-text-muted text-xs text-center mb-1" data-testid="rs-facedown-rule">
-              {t('faceDownRule')}
-            </p>
+            {!rulesDismissed && (
+              <div className="flex items-center justify-center gap-1 mb-1" data-testid="rs-facedown-rule" role="note">
+                <p className="text-game-text-muted text-xs text-center">{t('faceDownRule')}</p>
+                <button
+                  type="button"
+                  onClick={() => setRulesDismissed(true)}
+                  aria-label={t('dismissRule')}
+                  className={`shrink-0 px-2 py-1 text-game-text-muted hover:text-game-text text-sm leading-none ${focusRingWhite} rounded`}
+                >
+                  ×
+                </button>
+              </div>
+            )}
             <div className="flex gap-1 sm:gap-2 justify-center" data-tutorial="rs-tableau">
               {state.tableau.map((col, colIdx) => (
                 <div key={colIdx} className="flex flex-col items-center" style={{ width: rs.cw }}>
@@ -530,7 +497,11 @@ function RussianSolitairePageContent() {
                                   );
                                 })()
                               ) : (
-                                <div role="img" aria-label={t('faceDownRule')} title={t('faceDownRule')}>
+                                <div
+                                  role="img"
+                                  aria-label={t('faceDownCardLabel', { col: colIdx, pos: cardIdx + 1 })}
+                                  title={t('faceDownRule')}
+                                >
                                   <AnimatedCardBack width={rs.cw} />
                                 </div>
                               )}

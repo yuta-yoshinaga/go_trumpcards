@@ -21,6 +21,7 @@ func setupVideoPokerWebMockDefaults(m *interfaces.MockVideoPokerGame) {
 	m.On("GetPayout").Return(0).Maybe()
 	m.On("GetHandRank").Return(0).Maybe()
 	m.On("GetHandName").Return("").Maybe()
+	m.On("GetHandKey").Return("").Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetVariantName").Return("jacksorbetter").Maybe()
@@ -64,6 +65,7 @@ func TestVideoPokerWebPresenter_Output_Win(t *testing.T) {
 	m.On("GetPayout").Return(25).Maybe()
 	m.On("GetHandRank").Return(domain.PokerHandFourOfAKind).Maybe()
 	m.On("GetHandName").Return("Four of a Kind").Maybe()
+	m.On("GetHandKey").Return("fourOfAKind").Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{true, true, true, true, false}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetVariantName").Return("jacksorbetter").Maybe()
@@ -74,6 +76,7 @@ func TestVideoPokerWebPresenter_Output_Win(t *testing.T) {
 	assert.Equal(t, "Four of a Kind", result.MessageParams["handName"])
 	assert.Equal(t, "25", result.MessageParams["payout"])
 	assert.Equal(t, 25, result.Payout)
+	assert.Equal(t, "fourOfAKind", result.HandKey)
 	assert.Len(t, result.Hand, 5)
 }
 
@@ -95,6 +98,7 @@ func TestVideoPokerWebPresenter_Output_Lose(t *testing.T) {
 	m.On("GetPayout").Return(0).Maybe()
 	m.On("GetHandRank").Return(domain.PokerHandHighCard).Maybe()
 	m.On("GetHandName").Return("").Maybe()
+	m.On("GetHandKey").Return("").Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetVariantName").Return("jacksorbetter").Maybe()
@@ -138,4 +142,12 @@ func TestVideoPokerWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, out.Entries, 1)
 	})
+}
+
+func TestVideoPokerWebPresenter_HintOutput(t *testing.T) {
+	m := new(interfaces.MockVideoPokerGame)
+	setupVideoPokerWebMockDefaults(m)
+	p := new(VideoPokerWebPresenter)
+	// The web presenter computes hints client-side, so HintOutput mirrors Output.
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
 }

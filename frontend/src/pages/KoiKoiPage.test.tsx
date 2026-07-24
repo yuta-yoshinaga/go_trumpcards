@@ -140,6 +140,23 @@ describe('KoiKoiPage', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
+  it('offers the frontend hint toggle, off by default with no tooltip', async () => {
+    renderWithProviders(<KoiKoiPage />);
+    const toggle = await screen.findByLabelText('ヒント表示');
+    expect(toggle).not.toBeChecked();
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  it('shows the hint tooltip when the toggle is enabled and state.hint is set', async () => {
+    localStorage.setItem('hint_enabled_koikoi', 'true');
+    mockExec.mockResolvedValue(
+      makeKoiKoiState({ hint: { cardIndex: 0, fieldIndex: 0, koikoi: -1, reason: 'capture' } }),
+    );
+    renderWithProviders(<KoiKoiPage />);
+    const tooltip = await screen.findByTestId('hint-tooltip');
+    expect(tooltip).toHaveTextContent('価値の高い場札を捕獲する');
+  });
+
   it('ignores a field click that is not a capture candidate', async () => {
     mockExec.mockResolvedValue(makeKoiKoiState({ captureOptions: { 0: [0, 1] } }));
     renderWithProviders(<KoiKoiPage />);
@@ -151,5 +168,46 @@ describe('KoiKoiPage', () => {
     // candidate still dispatches, confirming the guard path is exercised.
     fireEvent.click(screen.getByTestId('field-card-0'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 0 }));
+  });
+
+  it('groups captured cards under their yaku-category headers', async () => {
+    const hana = (color: string) => ({
+      design: 'SPADE' as const,
+      value: 0,
+      glyph: '🎴',
+      label: 'x',
+      color,
+      deck: 'hanafuda',
+    });
+    // Clone players (makeKoiKoiState shallow-spreads a shared array) so this
+    // fixture never mutates the module-level base state used by other tests.
+    const base = makeKoiKoiState();
+    const state = makeKoiKoiState({
+      players: [
+        { ...base.players[0] },
+        // CPU captured spans three categories; kasu is absent, so its group must not render.
+        {
+          ...base.players[1],
+          captured: [hana('gold'), hana('purple'), hana('purple'), hana('red')],
+          capturedCount: 4,
+        },
+      ],
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<KoiKoiPage />);
+
+    const bright = await screen.findByTestId('koikoi-cpu-group-bright');
+    expect(bright).toHaveTextContent('光 · 1');
+    expect(screen.getByTestId('koikoi-cpu-group-animal')).toHaveTextContent('種 · 2');
+    expect(screen.getByTestId('koikoi-cpu-group-ribbon')).toHaveTextContent('短冊 · 1');
+    expect(screen.queryByTestId('koikoi-cpu-group-kasu')).not.toBeInTheDocument();
+  });
+
+  it('shows the empty-pile label when a player has captured nothing', async () => {
+    renderWithProviders(<KoiKoiPage />);
+    // Default state captures nothing for either player.
+    await waitFor(() => expect(screen.getByTestId('koikoi-human-captured')).toBeInTheDocument());
+    expect(screen.getAllByText('獲得札なし').length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByTestId('koikoi-human-group-bright')).not.toBeInTheDocument();
   });
 });

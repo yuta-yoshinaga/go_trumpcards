@@ -34,6 +34,8 @@ import { cardAlt } from '../utils/cardAlt';
 import { EUCHRE_HELP, parseEuchreCommand } from '../utils/cli/commands/euchreCommands';
 import { formatEuchreState } from '../utils/cli/formatters/euchreFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { bowerRole } from '../utils/euchreBower';
+import { euchreLegalPlayIndices } from '../utils/euchreLegalPlay';
 import { euchreSittingOutIdx } from '../utils/euchreSittingOut';
 import { playerName } from '../utils/playerUtils';
 
@@ -201,6 +203,16 @@ function EuchrePageContent() {
   const isGameEnd = state.phase === EuchrePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = (isPickUpPhase || isCallTrumpPhase) && state.players[state.bidPlayerIdx]?.isHuman === true;
+
+  // On the human's play turn, mirror the server's follow-suit rule
+  // (internal/domain/Euchre.go validatePlay) so legal cards get an additive
+  // success ring. Highlight only — clicks are never blocked; the backend still
+  // validates the actual play. The effective-suit check counts the left bower
+  // as trump, matching the domain so the ring is intuitive.
+  const legalPlayIndices =
+    isHumanTurn && humanPlayer
+      ? euchreLegalPlayIndices(humanPlayer.cards, state.currentTrick[0]?.card, state.trumpSuit)
+      : undefined;
   const isHumanDiscard = isDiscardPhase && state.players[state.dealerIdx]?.isHuman === true;
 
   const suitName = (suit: number) => (SUIT_NAMES[suit] ? t(SUIT_NAMES[suit]) : '');
@@ -453,26 +465,48 @@ function EuchrePageContent() {
                 className={isMobile ? 'flex gap-1 overflow-x-auto mb-2' : 'flex flex-wrap gap-1 mb-2'}
                 data-tutorial="eu-player-hand"
               >
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                      ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
+                {humanPlayer.cards.map((card, idx) => {
+                  // Once trump is set, flag the two bowers so the player can read
+                  // the left bower (a same-color Jack that plays as trump despite
+                  // its printed suit). Badge only — never blocks card selection.
+                  const role = bowerRole(card, state.trumpSuit);
+                  // Additive success ring on legal-to-play cards (never blocks
+                  // clicks). Uses `outline` so it stacks on top of the inline
+                  // selection border/shadow instead of being clobbered by them.
+                  const isLegal = legalPlayIndices?.includes(idx) ?? false;
+                  return (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}-${idx}`}
+                      onClick={() => toggleCard(idx)}
+                      aria-label={cardAlt(card)}
+                      aria-pressed={selectedCardIndices.includes(idx)}
+                      data-legal={isLegal ? 'true' : undefined}
+                      className={`relative transition-transform ${focusRingCard}`}
+                      style={{
+                        background: 'none',
+                        padding: 0,
+                        borderRadius: 8,
+                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                        ...(isLegal ? { outline: '2px solid var(--color-ds-success)', outlineOffset: '1px' } : {}),
+                        boxSizing: 'border-box',
+                        ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                      {role && (
+                        <span
+                          className="absolute top-0.5 right-0.5 px-1 rounded-full bg-ds-accent text-ds-text-on-accent text-[10px] font-bold shadow-sm pointer-events-none"
+                          data-testid={`eu-bower-badge-${idx}`}
+                          data-bower={role}
+                          title={t(role === 'right' ? 'rightBowerTitle' : 'leftBowerTitle')}
+                        >
+                          {t(role === 'right' ? 'rightBowerBadge' : 'leftBowerBadge')}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
 

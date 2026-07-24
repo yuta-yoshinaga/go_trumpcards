@@ -365,6 +365,8 @@ function OhHellPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="oh-trick-display"
+                  winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+                  winnerLabel={t('trickWinnerBadge')}
                 />
               </div>
 
@@ -562,11 +564,23 @@ function OhHellPageContent() {
                       <button
                         key={i}
                         type="button"
-                        className={btnPrimary}
-                        onClick={() => handleBid(i)}
-                        disabled={loading || isRestricted}
+                        // Restricted bids use aria-disabled (not the HTML disabled
+                        // attribute) so they stay focusable and a screen reader can
+                        // read why they can't be chosen; the click is guarded instead.
+                        // Mirrors the Cribbage pegRestricted / Call Break pattern.
+                        // Neutralize btnPrimary's interactive feedback (press-scale,
+                        // hover shadow) when restricted so it doesn't feel clickable.
+                        className={`${btnPrimary}${
+                          isRestricted ? ' opacity-50 cursor-not-allowed active:scale-100 hover:shadow-none' : ''
+                        }`}
+                        onClick={() => {
+                          if (!isRestricted) handleBid(i);
+                        }}
+                        disabled={loading}
+                        aria-disabled={isRestricted || undefined}
                         title={isRestricted ? t('restrictedBidTooltip') : undefined}
-                        aria-label={t('bid', { n: i })}
+                        aria-label={isRestricted ? t('restrictedBidAria', { n: i }) : t('bid', { n: i })}
+                        data-testid={isRestricted ? 'ohhell-restricted-bid' : undefined}
                       >
                         {i}
                       </button>

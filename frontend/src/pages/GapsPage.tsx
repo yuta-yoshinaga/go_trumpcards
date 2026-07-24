@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { type GapsMoveZone, gapsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -8,10 +8,12 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -137,6 +139,26 @@ function GapsPageContent() {
     disabled: loading,
   });
 
+  // Keyboard shortcuts mirror the sibling solitaire pages (EightOff / Baker's
+  // Dozen). Bind letter keys only — Enter/Space would double-fire on a focused
+  // button. Undo/redeal expose per-binding `enabled` so a disabled action's key
+  // is inert, matching the button's own disabled state.
+  const canUndo = !!state?.canUndo;
+  const canRedeal = (state?.redealsRemaining ?? 0) > 0;
+  const actionBindings = useMemo(
+    () => [
+      { key: 'z', action: handleUndo, enabled: canUndo },
+      { key: 'd', action: handleRedeal, enabled: canRedeal },
+      { key: 'h', action: handleHint },
+      { key: 'g', action: confirmGiveUpAction },
+    ],
+    [handleUndo, handleRedeal, handleHint, confirmGiveUpAction, canUndo, canRedeal],
+  );
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!isPlaying && !loading,
+  });
+
   if (!state) return <GameSkeleton gameKey="gaps" layout={{ kind: 'tiered-rows', rows: [13, 13, 13, 13] }} />;
 
   const isGameClear = state.phase === GapsPhase.GAME_CLEAR;
@@ -186,6 +208,16 @@ function GapsPageContent() {
                   const isHintTo = state.hint && state.hint.toRow === rIdx && state.hint.toCol === cIdx;
                   if (cell === null) {
                     const ghost = computeGapsGhostHint(row, cIdx);
+                    // Mirror the (aria-hidden) ghost hint into the cell's label so
+                    // SR users learn which card each gap accepts, or that it's blocked.
+                    const gapAria =
+                      ghost?.kind === 'needed'
+                        ? t('gapAriaNeeded', { card: cardAlt({ design: ghost.design, value: ghost.value }) })
+                        : ghost?.kind === 'anySuit'
+                          ? t('gapAriaAnySuit', { value: valueName(ghost.value) })
+                          : ghost?.kind === 'blocked'
+                            ? t('gapAriaBlocked')
+                            : t('gap');
                     return (
                       <button
                         type="button"
@@ -193,7 +225,7 @@ function GapsPageContent() {
                         onDragOver={dnd.handleDragOver(zone)}
                         onDragLeave={dnd.handleDragLeave}
                         onDrop={dnd.handleDrop(zone)}
-                        aria-label={t('gap')}
+                        aria-label={gapAria}
                         data-testid={`gaps-cell-${rIdx.toString()}-${cIdx.toString()}`}
                         className={`relative flex items-center justify-center rounded border-2 ${
                           dnd.isDropTarget(zone)
@@ -311,8 +343,15 @@ function GapsPageContent() {
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (
             <div data-tutorial="gaps-controls" className="flex gap-2 flex-wrap">
-              <button type="button" className={btnPrimary} onClick={handleUndo} disabled={loading || !state.canUndo}>
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={handleUndo}
+                disabled={loading || !state.canUndo}
+                aria-keyshortcuts="z"
+              >
                 {t('undo')}
+                <KbdBadge label={t('kbd.undo')} />
               </button>
               <button
                 type="button"
@@ -320,18 +359,34 @@ function GapsPageContent() {
                 onClick={handleRedeal}
                 disabled={loading || state.redealsRemaining <= 0}
                 data-testid="gaps-redeal-button"
+                aria-keyshortcuts="d"
               >
                 {t('redealKeepLabel', {
                   used: state.redealsUsed,
                   total: state.redealsUsed + state.redealsRemaining,
                   locked: lockedTotal,
                 })}
+                <KbdBadge label={t('kbd.redeal')} />
               </button>
-              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+              <button
+                type="button"
+                className={btnSuccess}
+                onClick={handleHint}
+                disabled={loading}
+                aria-keyshortcuts="h"
+              >
                 {t('hint')}
+                <KbdBadge label={t('kbd.hint')} />
               </button>
-              <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
+              <button
+                type="button"
+                className={btnDanger}
+                onClick={confirmGiveUpAction}
+                disabled={loading}
+                aria-keyshortcuts="g"
+              >
                 {t('giveup')}
+                <KbdBadge label={t('kbd.giveUp')} />
               </button>
             </div>
           )}

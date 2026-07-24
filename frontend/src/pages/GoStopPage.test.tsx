@@ -110,6 +110,61 @@ describe('GoStopPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stop'));
   });
 
+  it('previews a near-complete yaku with the remaining count on the decision panel', async () => {
+    // brightCount 2 -> one card from samgwang (三光).
+    mockExec.mockResolvedValue(
+      makeGoStopState({
+        phase: 1,
+        pendingPoints: 3,
+        pendingBreakdown: {
+          gwang: 0,
+          godori: 0,
+          tti: 0,
+          yeol: 0,
+          pi: 0,
+          base: 0,
+          goCount: 0,
+          goMult: 1,
+          goScore: 0,
+          brightCount: 2,
+          ribbonCount: 0,
+          animalCount: 0,
+          piCount: 0,
+        },
+      }),
+    );
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('gostop-yaku-preview')).toBeInTheDocument());
+    expect(screen.getByTestId('gostop-yaku-preview-gwang')).toHaveTextContent('三光 あと1枚');
+  });
+
+  it('hides the yaku preview when the hand is far from every threshold', async () => {
+    mockExec.mockResolvedValue(
+      makeGoStopState({
+        phase: 1,
+        pendingPoints: 0,
+        pendingBreakdown: {
+          gwang: 0,
+          godori: 0,
+          tti: 0,
+          yeol: 0,
+          pi: 0,
+          base: 0,
+          goCount: 0,
+          goMult: 1,
+          goScore: 0,
+          brightCount: 0,
+          ribbonCount: 0,
+          animalCount: 0,
+          piCount: 0,
+        },
+      }),
+    );
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('gostop-decision')).toBeInTheDocument());
+    expect(screen.queryByTestId('gostop-yaku-preview')).not.toBeInTheDocument();
+  });
+
   it('shows the next-round button at round end with a bak badge and dispatches nextround', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<GoStopPage />);
@@ -175,5 +230,23 @@ describe('GoStopPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('field-card-0'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 0 }));
+  });
+
+  it('renders the backend hint tooltip when the hint toggle is enabled (#3519)', async () => {
+    // #3519: the toggle was dead because state.hint was always undefined; Output() now populates it.
+    localStorage.setItem('hint_enabled_gostop', 'true');
+    mockExec.mockResolvedValue(makeGoStopState({ hint: { cardIndex: 0, fieldIndex: -1, go: -1, reason: 'capture' } }));
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+    localStorage.removeItem('hint_enabled_gostop');
+  });
+
+  it('hides the hint tooltip when no hint is present even with the toggle enabled', async () => {
+    localStorage.setItem('hint_enabled_gostop', 'true');
+    mockExec.mockResolvedValue(makeGoStopState({ hint: null }));
+    renderWithProviders(<GoStopPage />);
+    await screen.findByTestId('hand-card-0');
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+    localStorage.removeItem('hint_enabled_gostop');
   });
 });

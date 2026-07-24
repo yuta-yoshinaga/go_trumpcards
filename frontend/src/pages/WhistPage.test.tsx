@@ -64,6 +64,44 @@ describe('WhistPage', () => {
     );
   });
 
+  it('lists the keyboard shortcuts in a collapsible panel', async () => {
+    renderWithProviders(<WhistPage />);
+    const panel = await screen.findByTestId('wh-kbd-shortcuts');
+    // Closed by default so it stays discreet.
+    expect(panel).not.toHaveAttribute('open');
+    expect(screen.getByText('キーボードショートカット')).toBeInTheDocument();
+    // The 'n' advance shortcut and card-selection keys are advertised.
+    expect(screen.getByText('次のトリック / ラウンドへ進む')).toBeInTheDocument();
+    expect(screen.getByText('数字キーで手札のカードを選択')).toBeInTheDocument();
+  });
+
+  it('shows a known hint reason translated', async () => {
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValueOnce(makeState({ hint: { cardIndex: 0, reason: 'trump_cut' } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/トランプでカット/)).toBeInTheDocument());
+  });
+
+  it('names the recommended card (suit + rank) in the hint text, not just its index', async () => {
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    // cardIndex 0 in the human hand is ♠ A.
+    mockExec.mockResolvedValueOnce(makeState({ hint: { cardIndex: 0, reason: 'trump_cut' } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/♠ A/)).toBeInTheDocument());
+  });
+
+  it('falls back to generic text for an unknown hint reason', async () => {
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValueOnce(makeState({ hint: { cardIndex: 1, reason: 'brand_new_reason' } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    // Unknown reason -> hintReason.fallback, not the raw "brand_new_reason" key.
+    await waitFor(() => expect(screen.getByText(/最善手/)).toBeInTheDocument());
+    expect(screen.queryByText(/brand_new_reason/)).not.toBeInTheDocument();
+  });
+
   it('advances to the next trick when pressing n at trick end', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1 }));
     renderWithProviders(<WhistPage />);

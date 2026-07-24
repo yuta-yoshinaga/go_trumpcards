@@ -22,6 +22,10 @@
   "pegRestrictedTooltip": "このカードを出すと31を超えてしまいます",
   "pegRestrictedAria": "ペグカウント超過のため出せません",
   "discardButton": "クリブに捨てる",
+  "cutButton": "デッキをカットする",
+  "cutPrompt": "デッキをカットしてスターターをめくりましょう",
+  "cutDeckAria": "デッキをカットしてスターターをめくる",
+  "hisHeels": "His Heels! スターターがJのためディーラーに2点",
   "pegButton": "カードを出す",
   "goButton": "Go",
   "autoGoNotice": "出せるカードがないため Go を自動宣言しました",
@@ -49,7 +53,9 @@
     "runs": "ラン",
     "flush": "フラッシュ",
     "nobs": "ノブ",
-    "total": "合計"
+    "total": "合計",
+    "caption": "ショー得点の内訳",
+    "subject": "対象"
   },
   "handScoreLabels": {
     "you": "あなたのハンド",
@@ -79,5 +85,6 @@
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
   "pegBoardAria": "ペグボード（得点）",
-  "scoreSummary": "{{name}}: {{score}} / {{limit}} 点"
+  "scoreSummary": "{{name}}: {{score}} / {{limit}} 点",
+  "scoresCaption": "プレイヤー別スコア"
 }

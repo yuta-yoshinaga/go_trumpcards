@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupSambaCuiMock() *interfaces.MockSambaGame {
@@ -59,14 +60,18 @@ func TestSambaCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "あなた (チーム0)")
 		assert.Contains(t, result, "[0]SPADE 5")
 		assert.Contains(t, result, "手番: あなた")
+		// Not frozen → no frozen draw-help note.
+		assert.NotContains(t, result, i18n.T("samba.promptDrawHelpFrozen"))
 	})
 
-	t.Run("frozen tag", func(t *testing.T) {
+	t.Run("frozen tag and frozen draw help", func(t *testing.T) {
 		m, _ := setupSambaCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetIsFrozen")
 		m.On("GetIsFrozen").Return(true)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "[フリーズ]")
+		// Frozen draw phase spells out the take-condition.
+		assert.Contains(t, result, i18n.T("samba.promptDrawHelpFrozen"))
 	})
 
 	t.Run("discard top shown", func(t *testing.T) {

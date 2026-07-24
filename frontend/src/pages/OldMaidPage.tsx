@@ -172,6 +172,16 @@ function OldMaidPageContent() {
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const humanPlayer = state.players.find((p) => p.isHuman);
 
+  // When the human just drew a card into their own hand, locate where it landed
+  // so the footer hand can briefly ring-highlight that position (issue #2984).
+  // Returns -1 when the card was immediately discarded as a pair (not in hand),
+  // when the drawer was not the human, or at game end.
+  const drawnCard = state.lastDrawCard;
+  const humanDrawnCardIdx =
+    humanPlayer && drawnCard && !state.gameEndFlag && state.hasDrawn && state.lastDrawPlayerIdx === humanPlayer.id
+      ? (humanPlayer.cards ?? []).findIndex((c) => c.design === drawnCard.design && c.value === drawnCard.value)
+      : -1;
+
   const statusLines: string[] = [];
   if (!state.gameEndFlag && state.hasDrawn) {
     const from = findPlayerName(state.players, state.lastDrawPlayerIdx);
@@ -366,6 +376,7 @@ function OldMaidPageContent() {
                   gameEndFlag={state.gameEndFlag}
                   loading={loading}
                   highlightedCardIdx={-1}
+                  drawnCardIdx={humanDrawnCardIdx}
                   onDraw={(drawIdx) => gameExec('draw', drawIdx)}
                   onReorder={handleReorder}
                 />
@@ -405,6 +416,9 @@ function OldMaidPageContent() {
                   className={`${btnPrimary} min-w-[110px]`}
                   disabled={loading || !isHumanTurn || state.gameEndFlag}
                   onClick={() => gameExec('draw')}
+                  // Lowercase to mean the unmodified key; only advertised while the
+                  // keyboard bindings are actually active (the human's turn).
+                  aria-keyshortcuts={isHumanTurn ? 'd' : undefined}
                 >
                   {t('button.drawRandom')}
                 </button>
@@ -414,10 +428,19 @@ function OldMaidPageContent() {
                 className={`${btnSecondary} min-w-[110px]`}
                 disabled={loading || state.gameEndFlag}
                 onClick={() => gameExec('shuffle')}
+                aria-keyshortcuts={isHumanTurn ? 's' : undefined}
               >
                 {t('button.shuffle')}
               </button>
             </div>
+
+            {/* Keyboard shortcut hints, shown on the human's turn (matches the d/s
+                bindings in useActionKeyboardNav above). */}
+            {isHumanTurn && (
+              <p className="text-center text-game-text-muted text-xs mt-2" data-testid="oldmaid-key-hints">
+                {t('keyHints')}
+              </p>
+            )}
           </GameFooter>
         </>
       )}

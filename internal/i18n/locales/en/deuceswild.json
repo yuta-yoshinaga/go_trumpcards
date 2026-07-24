@@ -1,3 +1,13 @@
 {
-  "helpTitle": "Deuces Wild"
+  "helpTitle": "Deuces Wild",
+  "hand.naturalRoyalFlush": "Natural Royal Flush",
+  "hand.fourDeuces": "Four Deuces",
+  "hand.wildRoyalFlush": "Wild Royal Flush",
+  "hand.fiveOfAKind": "Five of a Kind",
+  "hand.straightFlush": "Straight Flush",
+  "hand.fourOfAKind": "Four of a Kind",
+  "hand.fullHouse": "Full House",
+  "hand.flush": "Flush",
+  "hand.straight": "Straight",
+  "hand.threeOfAKind": "Three of a Kind"
 }

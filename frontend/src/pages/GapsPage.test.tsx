@@ -61,6 +61,7 @@ const withHintState: GapsResponse = {
 };
 
 beforeEach(() => {
+  localStorage.clear();
   mockedRun.mockResolvedValue(playingState);
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
 });
@@ -75,6 +76,21 @@ describe('GapsPage', () => {
   it('renders move count in playing state', async () => {
     renderWithProviders(<GapsPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
+  });
+
+  it('reflects the gap ghost hint (needed / anySuit / blocked) in each cell aria-label', async () => {
+    const grid: (Card | null)[][] = [
+      Array(13).fill(null), // row 0: col 0 gap → any suit 2
+      [card('SPADE', 3), ...Array(12).fill(null)], // row 1: col 1 gap → needs ♠4
+      [card('HEART', 13), ...Array(12).fill(null)], // row 2: col 1 gap → blocked (follows K)
+      Array(13).fill(null),
+    ];
+    mockedRun.mockResolvedValue({ ...playingState, grid });
+    renderWithProviders(<GapsPage />);
+    await waitFor(() => expect(screen.getByTestId('gaps-cell-0-0')).toBeInTheDocument());
+    expect(screen.getByTestId('gaps-cell-0-0')).toHaveAttribute('aria-label', '空き（任意のスートの 2 を置けます）');
+    expect(screen.getByTestId('gaps-cell-1-1')).toHaveAttribute('aria-label', '空き（♠ 4 を置けます）');
+    expect(screen.getByTestId('gaps-cell-2-1')).toHaveAttribute('aria-label', '空き（K の後ろのため使用不可）');
   });
 
   it('renders redeals remaining', async () => {
@@ -166,6 +182,79 @@ describe('GapsPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.getByTestId('gaps-locked-0-0')).toBeInTheDocument();
     expect(screen.getByTestId('gaps-locked-0-11')).toBeInTheDocument();
+  });
+
+  it('advertises keyboard shortcuts on the action buttons via aria-keyshortcuts and a kbd chip', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<GapsPage />);
+    const undoBtn = await screen.findByRole('button', { name: '元に戻す' });
+    expect(undoBtn).toHaveAttribute('aria-keyshortcuts', 'z');
+    expect(undoBtn.querySelector('kbd')).toHaveTextContent('Z');
+    expect(screen.getByTestId('gaps-redeal-button')).toHaveAttribute('aria-keyshortcuts', 'd');
+    expect(screen.getByRole('button', { name: 'ヒント' })).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(screen.getByRole('button', { name: 'ギブアップ' })).toHaveAttribute('aria-keyshortcuts', 'g');
+  });
+
+  it('fires undo when the z key is pressed (only while canUndo)', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<GapsPage />);
+    await screen.findByRole('button', { name: '元に戻す' });
+    mockedRun.mockClear();
+    fireEvent.keyDown(document.body, { key: 'z' });
+    await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('undo'));
+  });
+
+  it('does not fire undo via the z key when canUndo is false', async () => {
+    renderWithProviders(<GapsPage />);
+    await screen.findByRole('button', { name: '元に戻す' });
+    mockedRun.mockClear();
+    fireEvent.keyDown(document.body, { key: 'z' });
+    expect(mockedRun).not.toHaveBeenCalledWith('undo');
+  });
+
+  it('fires redeal when the d key is pressed', async () => {
+    renderWithProviders(<GapsPage />);
+    await screen.findByTestId('gaps-redeal-button');
+    mockedRun.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('redeal'));
+  });
+
+  it('does not fire redeal via the d key when no redeals remain', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, redealsRemaining: 0, redealsUsed: 3 });
+    renderWithProviders(<GapsPage />);
+    await screen.findByTestId('gaps-redeal-button');
+    mockedRun.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    expect(mockedRun).not.toHaveBeenCalledWith('redeal');
+  });
+
+  it('fires hint when the h key is pressed', async () => {
+    renderWithProviders(<GapsPage />);
+    await screen.findByRole('button', { name: 'ヒント' });
+    mockedRun.mockClear();
+    fireEvent.keyDown(document.body, { key: 'h' });
+    await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('hint'));
+  });
+
+  it('routes the g key through the give-up confirm dialog', async () => {
+    renderWithProviders(<GapsPage />);
+    await screen.findByRole('button', { name: 'ギブアップ' });
+    mockedRun.mockClear();
+    fireEvent.keyDown(document.body, { key: 'g' });
+    expect(mockedRun).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('does not fire shortcuts once the game has ended', async () => {
+    mockedRun.mockResolvedValue(gameClearState);
+    renderWithProviders(<GapsPage />);
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument());
+    mockedRun.mockClear();
+    fireEvent.keyDown(document.body, { key: 'h' });
+    expect(mockedRun).not.toHaveBeenCalledWith('hint');
   });
 
   it('does not lock a row whose leftmost card is not a 2', async () => {

@@ -85,6 +85,10 @@ func (p *ManilleCuiPresenter) Output(g interfaces.ManilleGame, lastErr error) st
 			b.WriteString(i18n.Tf("manille.promptPlay",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("manille.promptPlayHelp") + "\n")
+			// Manille's rank order is inverted from a normal deck (10 is highest),
+			// which is easy to misread since the hand lists cards by strength, not
+			// face value — spell out the order and each card's point worth.
+			b.WriteString(i18n.T("manille.rankHelp") + "\n")
 		case domain.ManillePhaseTrickEnd:
 			b.WriteString(i18n.T("manille.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("manille.promptTrickEndHelp") + "\n")

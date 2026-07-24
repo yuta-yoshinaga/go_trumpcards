@@ -45,7 +45,12 @@
     "cpuDifficulty": "CPU difficulty",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "cpuSpeed": "CPU speed",
+    "cpuSpeedHelp": "Adjust how often the CPUs play a card. Faster ticks make the race harder (Slow = 1200ms / Normal = 700ms / Fast = 400ms).",
+    "speedSlow": "Slow",
+    "speedNormal": "Normal",
+    "speedFast": "Fast"
   },
   "tutorial": {
     "intro": "Nertz is a real-time competitive solitaire where several players race in parallel.",
@@ -54,5 +59,10 @@
     "foundations": "The central foundations are shared. Start with an Ace and build up by suit.",
     "stock": "Draw from the stock to pull more cards through your waste.",
     "resetButton": "Reset to start a new game."
+  },
+  "foundationAnnounce": {
+    "human": "You placed on foundation {{foundation}}",
+    "cpu": "CPU placed on foundation {{foundation}}",
+    "collision": "Move to foundation {{foundation}} rejected"
   }
 }

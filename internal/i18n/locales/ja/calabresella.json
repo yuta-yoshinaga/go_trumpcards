@@ -34,5 +34,6 @@
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
   "hintReasonBidChiamo": "手堅い手なのでキアーモを宣言",
   "hintReasonBidSolo": "非常に強い手なのでソロを宣言",
-  "hintReasonBidPass": "弱い手なのでパスする"
+  "hintReasonBidPass": "弱い手なのでパスする",
+  "thirdsLine": "  {{name}}（{{role}}）: {{thirds}}/3"
 }

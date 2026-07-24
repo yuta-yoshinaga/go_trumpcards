@@ -65,6 +65,8 @@ type TuteGame interface {
 	GetPlayer(i int) *domain.TutePlayer
 	// CanHumanDeclareMarriage 人間が結婚宣言できるかを返す
 	CanHumanDeclareMarriage() bool
+	// GetHumanDeclarableMarriageSuits 人間が結婚宣言できる未宣言スート一覧を返す
+	GetHumanDeclarableMarriageSuits() []int
 	// CanHumanDeclareTute 人間が Tute を宣言できるかを返す
 	CanHumanDeclareTute() bool
 	// GetPlayableIndices プレイ可能なカードのインデックスを取得する

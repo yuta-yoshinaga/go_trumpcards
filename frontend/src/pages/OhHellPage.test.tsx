@@ -276,20 +276,30 @@ describe('OhHellPage', () => {
     expect(await screen.findByTestId('bid-total-chip')).toHaveTextContent('(ぴったり)');
   });
 
-  it('disables the restricted bid button and exposes the tooltip', async () => {
+  it('makes the restricted bid focusable via aria-disabled and ignores its click', async () => {
     mockExec.mockResolvedValue(bidPhaseDealerState);
     renderWithProviders(<OhHellPage />);
-    await waitFor(() => {
-      const restricted = screen.getByRole('button', { name: '\u30d3\u30c3\u30c9 3' });
-      expect(restricted).toBeDisabled();
-      expect(restricted).toHaveAttribute(
-        'title',
-        '\u30c7\u30a3\u30fc\u30e9\u30fc\u5236\u7d04\u306e\u305f\u3081\u9078\u629e\u3067\u304d\u307e\u305b\u3093',
-      );
-      // Other choices remain enabled
-      expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9 0' })).not.toBeDisabled();
-      expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9 5' })).not.toBeDisabled();
-    });
+    const restricted = await screen.findByTestId('ohhell-restricted-bid');
+    // aria-disabled (stays focusable), NOT HTML-disabled; reason in the label.
+    expect(restricted).toHaveAttribute('aria-disabled', 'true');
+    expect(restricted).not.toBeDisabled();
+    expect(restricted).toHaveAttribute(
+      'aria-label',
+      '3 \u3092\u30d3\u30c3\u30c9\uff08\u30c7\u30a3\u30fc\u30e9\u30fc\u5236\u7d04\u306b\u3088\u308a\u9078\u629e\u3067\u304d\u307e\u305b\u3093\uff09',
+    );
+    expect(restricted).toHaveAttribute(
+      'title',
+      '\u30c7\u30a3\u30fc\u30e9\u30fc\u5236\u7d04\u306e\u305f\u3081\u9078\u629e\u3067\u304d\u307e\u305b\u3093',
+    );
+
+    // Clicking the restricted bid dispatches nothing.
+    mockExec.mockClear();
+    fireEvent.click(restricted);
+    expect(mockExec).not.toHaveBeenCalled();
+
+    // Other choices remain enabled and normal.
+    expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9 0' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9 5' })).not.toBeDisabled();
   });
 
   it('shows bid phase instruction when human bid turn', async () => {
@@ -357,6 +367,23 @@ describe('OhHellPage', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: '\u6b21\u306e\u30c8\u30ea\u30c3\u30af' })).toBeInTheDocument(),
     );
+  });
+
+  it('highlights the trick winner card at trick end', async () => {
+    // trickEndState.leadPlayerIdx is 0, so the trick winner badge appears.
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<OhHellPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-winner-badge')).toBeInTheDocument());
+  });
+
+  it('does not highlight a trick winner during active play', async () => {
+    mockExec.mockResolvedValue({
+      ...trickEndState,
+      phase: 1, // PLAY
+    });
+    renderWithProviders(<OhHellPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('shows next round button on round end', async () => {

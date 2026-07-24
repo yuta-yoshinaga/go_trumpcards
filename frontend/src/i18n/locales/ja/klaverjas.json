@@ -23,7 +23,9 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "yourTeam": "あなたのチーム",
-  "roem": { "title": "Roem(ボーナス)" },
+  "roem": {
+    "title": "Roem(ボーナス)"
+  },
   "team": {
     "a": "チームA",
     "b": "チームB"
@@ -31,6 +33,7 @@
   "teamScore": "{{team}}: {{score}}点",
   "playButton": "出す",
   "nextTrick": "次のトリック",
+  "trickWinner": "{{team}} がトリック獲得",
   "nextRound": "次のラウンド",
   "roundResult": {
     "title": "ラウンド結果",

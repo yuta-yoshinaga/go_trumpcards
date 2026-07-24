@@ -5,13 +5,20 @@ import { btnPrimary } from '../../styles/buttonStyles';
 /** Props for BlackJack end phase controls. */
 export interface BjEndPhaseControlsProps {
   loading: boolean;
+  /** Raw reset callback. Fired directly by the auto-advance countdown (no confirmation). */
   onReset: () => void;
+  /**
+   * Handler for a manual button click. Typically opens a reset confirmation dialog before
+   * invoking the reset. Falls back to {@link BjEndPhaseControlsProps.onReset} when omitted.
+   */
+  onRequestReset?: () => void;
   autoAdvanceSeconds?: number;
 }
 
 /**
  * Renders the "Next Game" button with optional auto-advance countdown for BlackJack end phase.
- * No confirmation dialog — the hand is already resolved, so clicking just deals the next one.
+ * A manual click routes through `onRequestReset` (reset confirmation dialog) so a stray tap does
+ * not discard the session; the auto-advance countdown still fires `onReset` directly.
  */
 export function BjEndPhaseControls(props: BjEndPhaseControlsProps) {
   const { t } = useTranslation('common');
@@ -45,7 +52,7 @@ export function BjEndPhaseControls(props: BjEndPhaseControlsProps) {
       type="button"
       className={`${btnPrimary} animate-pulse ring-2 ring-white ring-offset-2 ring-offset-green-800`}
       disabled={props.loading}
-      onClick={props.onReset}
+      onClick={props.onRequestReset ?? props.onReset}
     >
       {t('button.nextGame')}
       {countdown !== null ? ` (${countdown}s)` : ''}

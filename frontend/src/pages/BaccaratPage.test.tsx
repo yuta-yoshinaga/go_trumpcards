@@ -341,6 +341,29 @@ describe('BaccaratPage', () => {
     await waitFor(() => expect(screen.getByTestId('big-road')).toBeInTheDocument());
   });
 
+  it('wraps the Big Road in a bounded, horizontally scrollable container', async () => {
+    mockExec.mockResolvedValue(endPhaseWithHistory);
+    renderWithProviders(<BaccaratPage />);
+    const scroller = await screen.findByTestId('big-road-scroll');
+    expect(scroller).toHaveClass('overflow-x-auto');
+  });
+
+  it('auto-scrolls the Big Road to the latest (right-most) results', async () => {
+    // jsdom does no layout, so fake a wide scroll width and assert the effect
+    // pins scrollLeft to the right edge.
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
+      configurable: true,
+      get() {
+        return 500;
+      },
+    });
+    mockExec.mockResolvedValue(endPhaseWithHistory);
+    renderWithProviders(<BaccaratPage />);
+    const scroller = await screen.findByTestId('big-road-scroll');
+    await waitFor(() => expect(scroller.scrollLeft).toBe(500));
+    delete (HTMLElement.prototype as unknown as { scrollWidth?: number }).scrollWidth;
+  });
+
   it('does not render Big Road when history is only ties', async () => {
     mockExec.mockResolvedValue(endPhaseWithOnlyTies);
     renderWithProviders(<BaccaratPage />);
@@ -357,6 +380,34 @@ describe('BaccaratPage', () => {
 
     fireEvent.click(screen.getByText('履歴クリア'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('clearhistory'));
+  });
+
+  // --- Shoe stats panel tests ---
+
+  it('renders shoe stats counts, rates, and streak from history', async () => {
+    // history [0,1,0,0,1,2,1] -> P3 B3 T1 of 7; streak trailing banker (tie ignored) = 2
+    mockExec.mockResolvedValue(endPhaseWithHistory);
+    renderWithProviders(<BaccaratPage />);
+    const panel = await screen.findByTestId('baccarat-shoe-stats');
+    expect(within(panel).getByText('P 3回 (43%)')).toBeInTheDocument();
+    expect(within(panel).getByText('B 3回 (43%)')).toBeInTheDocument();
+    expect(within(panel).getByText('T 1回 (14%)')).toBeInTheDocument();
+    expect(within(panel).getByText('現在 バンカー 2連勝')).toBeInTheDocument();
+  });
+
+  it('does not render shoe stats when history is empty', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    expect(screen.queryByTestId('baccarat-shoe-stats')).not.toBeInTheDocument();
+  });
+
+  it('omits the streak label for a tie-only history', async () => {
+    mockExec.mockResolvedValue(endPhaseWithOnlyTies);
+    renderWithProviders(<BaccaratPage />);
+    const panel = await screen.findByTestId('baccarat-shoe-stats');
+    expect(within(panel).getByText('T 3回 (100%)')).toBeInTheDocument();
+    expect(within(panel).queryByText(/連勝/)).not.toBeInTheDocument();
   });
 
   // --- Side bet tests ---

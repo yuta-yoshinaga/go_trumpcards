@@ -92,6 +92,30 @@ func endStateMock(t *testing.T, result domain.GameResult, raise int, qualified b
 	return m
 }
 
+// The dealer's 7 cards are dealt with the player's but must stay hidden until
+// showdown; the web output must not leak them during bet/action (cheat + a11y
+// over-share). Only the END phase reveals them.
+func TestHighCardFlushWebPresenter_Output_HidesDealerHandUntilShowdown(t *testing.T) {
+	dealer := []*domain.Card{domain.NewCard(1, 5, false), domain.NewCard(2, 9, false)}
+	build := func(phase int) *interfaces.MockHighCardFlushGame {
+		m := new(interfaces.MockHighCardFlushGame)
+		// Registered first so these win over the defaults' Bet/nil values.
+		m.On("GetPhase").Return(phase).Maybe()
+		m.On("GetDealerHand").Return(dealer).Maybe()
+		setupHighCardFlushWebMockDefaults(m)
+		return m
+	}
+	p := new(HighCardFlushWebPresenter)
+
+	for _, phase := range []int{domain.HighCardFlushPhaseBet, domain.HighCardFlushPhaseAction} {
+		out := parseHighCardFlushOutput(t, p.Output(build(phase), nil))
+		assert.Empty(t, out.DealerHand, "dealer hand must not leak before showdown (phase %d)", phase)
+	}
+
+	endOut := parseHighCardFlushOutput(t, p.Output(build(domain.HighCardFlushPhaseEnd), nil))
+	assert.Len(t, endOut.DealerHand, 2, "dealer hand is revealed at showdown")
+}
+
 func TestHighCardFlushWebPresenter_Output_PlayerWins(t *testing.T) {
 	p := new(HighCardFlushWebPresenter)
 	m := endStateMock(t, domain.GameResultWin, 100, true)

@@ -33,5 +33,16 @@
   "promptDiscardHelp": "d <idx>・・・カードを捨てる",
   "promptGoOutHelp": "go・・・上がる (ポゼット獲得＋ブラーコが必要)",
   "promptRoundEnd": "ラウンド終了",
-  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ"
+  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
+  "hintNone": "ヒントはありません",
+  "hintDrawStock": "推奨: 山札から引く ({{reason}})",
+  "hintDrawDiscard": "推奨: 捨て札の山を取る [{{indices}}] ({{reason}})",
+  "hintMeld": "推奨メルド: [{{indices}}] ({{reason}})",
+  "hintSkipMeld": "推奨: メルドをスキップ ({{reason}})",
+  "hintDiscard": "推奨ディスカード: [{{idx}}] {{card}} ({{reason}})",
+  "hintReasonDrawStock": "捨て札に有効なペアがないため山札から引く",
+  "hintReasonDrawDiscard": "捨て札トップとナチュラルペアが揃うため山を取る",
+  "hintReasonMeld": "メルド可能な組み合わせがある",
+  "hintReasonNoMeld": "有効なメルドがないためスキップ",
+  "hintReasonDiscard": "最も不要なカードを捨てる"
 }

@@ -86,6 +86,7 @@ func (p *PanCuiPresenter) Output(g interfaces.PanGame, lastErr error) string {
 			b.WriteString(i18n.T("pan.promptPlayHelpMeld") + "\n")
 			b.WriteString(i18n.T("pan.promptPlayHelpLayoff") + "\n")
 			b.WriteString(i18n.T("pan.promptPlayHelpDiscard") + "\n")
+			b.WriteString(i18n.T("pan.promptPlayHelpNote") + "\n")
 		case domain.PanPhaseRoundEnd:
 			b.WriteString(i18n.T("pan.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("pan.promptRoundEndHelp") + "\n")

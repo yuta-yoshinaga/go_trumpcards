@@ -19,10 +19,17 @@
   "pointsSuffix": "点",
   "currentTrick": "現在のトリック",
   "trickEmpty": "(まだカードがありません)",
+  "bidStatus": {
+    "highest": "現在最高: {{value}}点",
+    "highestNone": "現在最高: 未決定",
+    "remaining": "残り入札者: {{n}}人",
+    "passed": "パス済み: {{names}}"
+  },
   "selectBid": "ビッドを選択 (70-120):",
   "bidButton": "ビッド",
   "passButton": "パス",
   "nestExchangeHint": "ネストを含む18枚から5枚を捨て、切り札色を宣言してください。",
+  "recommendedDiscardHint": "淡い枠の付いた札は推奨の捨て札です（従わなくても構いません）。",
   "selectTrump": "切り札色:",
   "exchangeButton": "交換 ({{count}}/5)",
   "playButton": "出す",

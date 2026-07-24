@@ -10,5 +10,6 @@
   "hintFrom": "tableau column {{col}}[{{idx}}]",
   "hintToFoundation": "foundation",
   "hintToTableau": "tableau column {{col}}",
-  "hintLine": "Hint: {{from}} → {{to}}"
+  "hintLine": "Hint: {{from}} → {{to}}",
+  "undoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)"
 }

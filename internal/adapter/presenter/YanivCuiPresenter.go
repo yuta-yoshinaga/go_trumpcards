@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || solo
 
 package presenter
 
@@ -29,6 +29,9 @@ func yanivPlayerStr(g interfaces.YanivGame, player *domain.YanivPlayer, i int) s
 	status := strconv.Itoa(player.GetScore())
 	if player.IsEliminated() {
 		status = "OUT"
+	} else if limit := g.GetConfig().ScoreLimit; limit > 0 && player.GetScore()*100 > limit*80 {
+		// Within 20% of the elimination threshold → flag the impending OUT.
+		status = color.Yellow(status + i18n.T("yaniv.nearOut"))
 	}
 	b.WriteString(i18n.Tf("yaniv.playerLine",
 		"name", cuiPlayerName(player, i),
@@ -50,6 +53,8 @@ func (p *YanivCuiPresenter) Output(g interfaces.YanivGame, lastErr error) string
 		b.WriteString(i18n.Tf("yaniv.header",
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"stock", strconv.Itoa(g.GetDrawPileCount())) + "\n")
+		b.WriteString(i18n.Tf("yaniv.limitLine",
+			"limit", strconv.Itoa(g.GetConfig().ScoreLimit)) + "\n")
 
 		if pickup := g.GetPickupCards(); len(pickup) > 0 {
 			cards := make([]string, 0, len(pickup))

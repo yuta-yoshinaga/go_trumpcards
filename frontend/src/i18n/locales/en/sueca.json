@@ -16,6 +16,12 @@
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
   "trump": "Trump: {{suit}}",
+  "suitName": {
+    "spade": "Spade",
+    "club": "Club",
+    "heart": "Heart",
+    "diamond": "Diamond"
+  },
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
@@ -32,6 +38,10 @@
   "playButton": "Play",
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
+  "livePoints": {
+    "title": "Captured Card Points",
+    "team": "{{team}}: {{points}} / {{target}}"
+  },
   "roundResult": {
     "title": "Round Result",
     "teamA": "Team A card points: {{points}}",

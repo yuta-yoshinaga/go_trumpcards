@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { montecarloApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -24,6 +24,7 @@ import type { MonteCarloResponse } from '../types/card';
 import { MonteCarloPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { countRemovablePairs } from '../utils/montecarloRemovablePairs';
 
 const SIZE = 5;
 
@@ -166,6 +167,11 @@ function MonteCarloPageContent() {
 
   const dealHintActive = frontendHintEnabled && frontendHint?.targetAction === 'deal';
 
+  // How many removable (adjacent, same-rank) pairs currently sit on the board.
+  // Derived client-side from the board grid — 0 means it's time to Deal.
+  const removablePairs = useMemo(() => (state ? countRemovablePairs(state.board) : 0), [state]);
+  const noRemovablePairs = isPlaying && removablePairs === 0;
+
   return (
     <GamePageShell
       title={tc('nav.montecarlo')}
@@ -269,6 +275,7 @@ function MonteCarloPageContent() {
                           }
                           onClick={() => handleCellClick(rowIdx, colIdx)}
                           disabled={!isPlaying || loading || !filled}
+                          aria-pressed={filled ? isSelected : undefined}
                           data-pair-match={isMatchingPair ? 'true' : undefined}
                           data-dimmed={dimmed ? 'true' : undefined}
                           className={`p-0 border-0 bg-transparent rounded transition ${focusRingWhite} ${
@@ -294,8 +301,25 @@ function MonteCarloPageContent() {
               </div>
             </div>
 
-            <div className="text-center text-ds-text-muted text-sm mb-2" data-testid="mc-prompt">
+            <div
+              className="text-center text-ds-text-muted text-sm mb-2"
+              data-testid="mc-prompt"
+              role="status"
+              aria-live="polite"
+            >
               {selected === null ? t('label.selectFirst') : t('label.selectSecond')}
+            </div>
+
+            <div
+              className={`text-center text-sm font-mono mb-2 ${
+                noRemovablePairs ? 'text-ds-warning font-semibold' : 'text-ds-text-muted'
+              }`}
+              data-testid="mc-removable-count"
+              data-removable-zero={noRemovablePairs ? 'true' : undefined}
+              role="status"
+              aria-live="polite"
+            >
+              {t('label.removablePairs', { n: removablePairs })}
             </div>
 
             {pairRemoved && (
@@ -335,7 +359,7 @@ function MonteCarloPageContent() {
                     type="button"
                     data-testid="mc-deal-button"
                     data-tutorial="mc-deal"
-                    className={`${btnPrimary} ${dealHintActive ? 'ring-2 ring-ds-warning' : ''}`}
+                    className={`${btnPrimary} ${dealHintActive || noRemovablePairs ? 'ring-2 ring-ds-warning' : ''}`}
                     onClick={handleDeal}
                     disabled={loading}
                   >

@@ -16,11 +16,13 @@ import (
 
 func mustPitchOutputJSON(msg string) string {
 	out := &controller.PitchWebOutput{
-		Players:       []*controller.PitchWebOutputPlayer{},
-		CurrentTrick:  []*controller.PitchWebOutputTrickCard{},
-		WinnerIdx:     -1,
-		BidWinnerIdx:  -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:         []*controller.PitchWebOutputPlayer{},
+		CurrentTrick:    []*controller.PitchWebOutputTrickCard{},
+		LastTrick:       []*controller.PitchWebOutputTrickCard{},
+		LastTrickWinner: -1,
+		WinnerIdx:       -1,
+		BidWinnerIdx:    -1,
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

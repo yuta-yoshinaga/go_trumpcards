@@ -17,6 +17,13 @@
   "drawPile": "山札: {{count}}枚",
   "discardTop": "捨て札",
   "chosenSuit": "指定スート",
+  "suitChanged": "スートが {{suit}} に変更されました",
+  "suitName": {
+    "spade": "スペード",
+    "clover": "クローバー",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
+  },
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",
   "roundScore": "ラウンド: {{score}}",
@@ -54,5 +61,11 @@
     "drawCard": "出せるカードなし — 山札から引く",
     "chooseMostSuit": "手札に最も多いスートを選択推奨"
   },
-  "illegalHint": "このカードは出せません（スート・数字・8 のいずれも不一致）"
+  "illegalHint": "このカードは出せません（スート・数字・8 のいずれも不一致）",
+  "sort": {
+    "label": "手札の並べ替え",
+    "original": "元の順",
+    "rank": "ランク順",
+    "suit": "スート順"
+  }
 }

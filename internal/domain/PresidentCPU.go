@@ -21,6 +21,16 @@ func (p *President) findBestPlay(player *PresidentPlayer) []int {
 	}
 }
 
+// SuggestWeakestPlay は playerIdx の最弱の合法手 (手札インデックス) を返す。
+// 合法手が無い (=パスすべき) 場合は nil を返す。CUI ヒント用に findWeakestLegalPlay
+// を公開する薄いラッパー。
+func (p *President) SuggestWeakestPlay(playerIdx int) []int {
+	if playerIdx < 0 || playerIdx >= len(p.players) {
+		return nil
+	}
+	return p.findWeakestLegalPlay(p.players[playerIdx])
+}
+
 // findWeakestLegalPlay 最弱の合法手を返す (Easy)
 func (p *President) findWeakestLegalPlay(player *PresidentPlayer) []int {
 	candidates := p.enumeratePlays(player)

@@ -35,6 +35,23 @@ import { playerName } from '../utils/playerUtils';
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
+/**
+ * Static card-strength legend rows, strongest first, mirroring the Go domain
+ * (`manilleStrength`/`manilleCardPoints` in `internal/domain/Manille.go`):
+ * 10 (Manille) > A (Manillon) > K > Q > J > 9 > 8 > 7, with points 10=5, A=4,
+ * K=3, Q=2, J=1 and 9/8/7 worth zero. `nameKey` labels the two special cards.
+ */
+const MANILLE_STRENGTH_ROWS: ReadonlyArray<{ face: string; points: number; nameKey?: string }> = [
+  { face: '10', points: 5, nameKey: 'strengthLegend.manille' },
+  { face: 'A', points: 4, nameKey: 'strengthLegend.manillon' },
+  { face: 'K', points: 3 },
+  { face: 'Q', points: 2 },
+  { face: 'J', points: 1 },
+  { face: '9', points: 0 },
+  { face: '8', points: 0 },
+  { face: '7', points: 0 },
+];
+
 /** Manille tutorial step definitions. */
 const MANILLE_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -232,6 +249,27 @@ function ManillePageContent() {
                   label={t('currentTrick')}
                   dataTutorial="manille-trick-display"
                 />
+                {/* At TrickEnd leadPlayerIdx is the trick winner (they lead next), so show who took it. */}
+                {isTrickEnd &&
+                  (() => {
+                    const winnerIdx = state.leadPlayerIdx;
+                    const isMyTeam = winnerIdx % 2 === humanTeam;
+                    return (
+                      <div
+                        className={`my-2 p-2 rounded text-center text-sm font-semibold ${
+                          isMyTeam ? 'bg-ds-accent/15 text-ds-accent' : 'bg-black/30 text-ds-text-muted'
+                        }`}
+                        role="status"
+                        aria-live="polite"
+                        data-testid="manille-trick-winner"
+                      >
+                        {t('trickWinner', {
+                          name: playerName(winnerIdx, state.players[winnerIdx]?.isHuman ?? false),
+                          team: winnerIdx % 2 === 0 ? t('team.a') : t('team.b'),
+                        })}
+                      </div>
+                    );
+                  })()}
               </div>
 
               {/* Right: info sidebar */}
@@ -255,6 +293,41 @@ function ManillePageContent() {
                 ) : (
                   <div className="mb-2 p-2 rounded bg-black/30">{state.players.map(renderPlayerRow)}</div>
                 )}
+
+                {/* Card-strength legend (static reference): the Manille (10) tops the
+                    reversed rank order, so a first-time player can see why 10 beats A. */}
+                <details className="mb-2 p-2 rounded bg-black/30" data-testid="manille-strength-legend">
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('strengthLegend.title')}
+                  </summary>
+                  <div className="mt-1 text-ds-text-muted text-xs">
+                    <table className="w-full">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left font-normal">
+                            {t('strengthLegend.rankCol')}
+                          </th>
+                          <th scope="col" className="text-left font-normal">
+                            {t('strengthLegend.cardCol')}
+                          </th>
+                          <th scope="col" className="text-right font-normal">
+                            {t('strengthLegend.pointCol')}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {MANILLE_STRENGTH_ROWS.map((row, i) => (
+                          <tr key={row.face}>
+                            <td>{i + 1}</td>
+                            <td>{row.nameKey ? `${row.face} (${t(row.nameKey)})` : row.face}</td>
+                            <td className="text-right">{row.points}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className="mt-1">{t('strengthLegend.note')}</div>
+                  </div>
+                </details>
 
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (

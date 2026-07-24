@@ -9,9 +9,13 @@
   "selectToPlay": "Click cards to select",
   "tableCards": "Table",
   "tableEmpty": "(empty)",
+  "tablePlayedBy": "Played by {{name}}",
   "playButton": "Play Selected",
   "passButton": "Pass",
   "invalidCombo": "Not a valid combination (single, pair, triple, straight, double-sequence, or four of a kind)",
+  "selectedPlayLabel": "Selected",
+  "comboBadge": "{{type}} ({{count}} cards)",
+  "bombLabel": "Bomb",
   "phase": {
     "play": "Play",
     "end": "End"

@@ -23,6 +23,13 @@
   "you": "あなた",
   "cpu": "CPU",
   "captured": "捕獲: {{count}}",
+  "capturedEmpty": "獲得札なし",
+  "category": {
+    "bright": "光",
+    "animal": "種",
+    "ribbon": "短冊",
+    "kasu": "カス"
+  },
   "score": "得点: {{score}}",
   "turnYours": "あなたの手番です — 手札を1枚選んで場札を捕獲します。",
   "turnCpu": "CPU がプレイ中です…",
@@ -60,10 +67,10 @@
     "tsukimi": "月見酒"
   },
   "hint": {
-    "koikoi_capture": "価値の高い場札を捕獲する",
-    "koikoi_play": "手札から札を出す",
-    "koikoi_continue": "こいこいして役を伸ばす",
-    "koikoi_stop": "勝負して得点を確定する"
+    "capture": "価値の高い場札を捕獲する",
+    "discard_low": "価値の低い札を場に出す",
+    "koikoi_lowyaku": "こいこいして役を伸ばす",
+    "stop_secure": "勝負して得点を確定する"
   },
   "tutorial": {
     "field": "場の札です。出した手札と同じ月（花）の場札を捕獲します。2枚が一致する場合はどちらを取るか選びます。",

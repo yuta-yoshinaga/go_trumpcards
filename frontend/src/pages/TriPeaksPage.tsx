@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { tripeaksApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -24,6 +24,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useTriPeaksGame } from '../hooks/useTriPeaksGame';
+import { useTriPeaksScore } from '../hooks/useTriPeaksScore';
+import { useTriPeaksStats } from '../hooks/useTriPeaksStats';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -43,6 +45,38 @@ const VALID_COLS: readonly number[][] = [
   [0, 1, 2, 3, 4, 5, 6, 7, 8],
   [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
 ];
+
+/** Number of peaks in a TriPeaks tableau. */
+const PEAK_COUNT = 3;
+
+/**
+ * Maps a tableau column index to its peak index (0-2). Columns are partitioned
+ * into three contiguous groups — 0-2 (left peak), 3-5 (middle peak), 6-9 (right
+ * peak) — so every card in the layout is attributed to exactly one peak.
+ */
+function peakOfColumn(col: number): number {
+  if (col < 3) return 0;
+  if (col < 6) return 1;
+  return 2;
+}
+
+/**
+ * Derives the number of remaining (present and not-yet-removed) cards in each of
+ * the three peaks from the TriPeaks layout. Returns a fixed-length `[left,
+ * middle, right]` tuple; a missing layout yields `[0, 0, 0]`.
+ */
+export function computePeakRemaining(layout: TriPeaksResponse['layout'] | undefined): number[] {
+  const remaining = [0, 0, 0];
+  if (!layout) return remaining;
+  for (const row of layout) {
+    row.forEach((cell, col) => {
+      if (cell?.card && !cell.removed) {
+        remaining[peakOfColumn(col)] += 1;
+      }
+    });
+  }
+  return remaining;
+}
 
 /** TriPeaks tutorial step definitions. */
 const TP_TUTORIAL_STEPS: TutorialStep[] = [
@@ -165,6 +199,46 @@ function TriPeaksPageContent() {
 
   const combo = useChainCombo(state?.moveCount, state?.stockCount);
 
+  // Remaining-card count per peak, derived from the board layout (issue #3085).
+  const peakRemaining = useMemo(() => computePeakRemaining(state?.layout), [state?.layout]);
+  const isPlayingForPeaks = state?.phase === TriPeaksPhase.PLAYING;
+  // Fire a subtle sound once when a peak's remaining count first reaches zero.
+  // The ref always tracks the latest counts, so reset/undo (which refill a peak)
+  // naturally re-arms the celebration without any explicit teardown.
+  const prevPeakRemaining = useRef<number[]>([0, 0, 0]);
+  useEffect(() => {
+    const prev = prevPeakRemaining.current;
+    if (isPlayingForPeaks) {
+      for (let i = 0; i < PEAK_COUNT; i++) {
+        if (prev[i] > 0 && peakRemaining[i] === 0) {
+          playSound('cardPlace');
+        }
+      }
+    }
+    prevPeakRemaining.current = peakRemaining;
+  }, [peakRemaining, isPlayingForPeaks, playSound]);
+
+  // Chain-bonus score, derived on the frontend from board transitions (issue #3087).
+  const peaksCleared = useMemo(() => peakRemaining.filter((n) => n === 0).length, [peakRemaining]);
+  const { score } = useTriPeaksScore(state?.moveCount, state?.stockCount, peaksCleared);
+
+  // Best-record persistence in localStorage (issue #3087).
+  const { stats, recordResult } = useTriPeaksStats();
+  const [newBest, setNewBest] = useState(false);
+  // Guard so each finished game is recorded exactly once (phase stays ended across re-renders).
+  const recordedRef = useRef(false);
+  const endPhase = state?.phase;
+  useEffect(() => {
+    const ended = endPhase === TriPeaksPhase.GAME_CLEAR || endPhase === TriPeaksPhase.GAME_OVER;
+    if (!ended) {
+      recordedRef.current = false;
+      return;
+    }
+    if (recordedRef.current) return;
+    recordedRef.current = true;
+    setNewBest(recordResult({ won: endPhase === TriPeaksPhase.GAME_CLEAR, score }));
+  }, [endPhase, score, recordResult]);
+
   if (!state)
     return <GameSkeleton gameKey="tripeaks" layout={{ kind: 'tiered-rows', rows: [3, 6, 9, 10], stockWaste: true }} />;
 
@@ -207,6 +281,26 @@ function TriPeaksPageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
+          <span data-testid="tp-score">
+            {t('score')}: <span className="font-bold tabular-nums">{score}</span>
+          </span>
+          {isPlaying && (
+            <span data-testid="peak-remaining" className="flex items-center gap-1 text-xs">
+              <span className="sr-only">{t('peakRemaining')}</span>
+              <span aria-hidden="true">⛰</span>
+              {peakRemaining.map((n, i) => (
+                <span key={`peak-${i.toString()}`} className="flex items-center">
+                  {i > 0 && <span className="text-game-text-muted mx-0.5">/</span>}
+                  <span
+                    title={n === 0 ? t('peakCleared') : undefined}
+                    className={`font-bold ${n === 0 ? 'text-ds-success' : ''}`}
+                  >
+                    {n === 0 ? '✓' : n}
+                  </span>
+                </span>
+              ))}
+            </span>
+          )}
           {combo >= 2 && (
             <span
               data-testid="combo-badge"
@@ -345,6 +439,28 @@ function TriPeaksPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {/* New personal-best badge on the end screen (#3087). */}
+            {isEnded && newBest && (
+              <div
+                data-testid="tp-best-badge"
+                role="status"
+                className="text-center text-ds-success font-semibold text-sm mb-2"
+              >
+                {t('newBest', { score })}
+              </div>
+            )}
+
+            {/* Best-record panel: highest score + clear rate (#3087). */}
+            <div data-testid="tp-stats-panel" className="text-game-text-muted text-xs text-center mb-2">
+              {t('bestScore')}: {stats.bestScore ?? '—'}
+              {stats.plays > 0 && (
+                <>
+                  {' · '}
+                  {t('clears', { wins: stats.wins, plays: stats.plays })}
+                </>
+              )}
+            </div>
 
             <ActionLogSection
               isEndPhase={isEnded}

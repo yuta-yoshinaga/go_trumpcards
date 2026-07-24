@@ -13,7 +13,8 @@ import (
 )
 
 // euchrePlayerStr returns the display string for a single Euchre player.
-func euchrePlayerStr(player *domain.EuchrePlayer, i int) string {
+// sittingOut appends a marker when this seat sits out a go-alone hand.
+func euchrePlayerStr(player *domain.EuchrePlayer, i int, sittingOut bool) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("euchre.playerLine",
 		"name", cuiPlayerName(player, i),
@@ -21,11 +22,37 @@ func euchrePlayerStr(player *domain.EuchrePlayer, i int) string {
 		"tricks", strconv.Itoa(player.GetTrickCount()),
 		"cards", strconv.Itoa(player.GetCardsSize()),
 	))
+	if sittingOut {
+		b.WriteString(i18n.T("euchre.sittingOut"))
+	}
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
+}
+
+// euchreSittingOutIdx returns the seat that sits out during a go-alone hand —
+// the lone player's same-team partner — or -1 when nobody sits out. Mirrors the
+// web euchreSittingOutIdx helper so the CUI matches the graphical UI.
+func euchreSittingOutIdx(e interfaces.EuchreGame) int {
+	if !e.GetGoingAlone() {
+		return -1
+	}
+	goer := e.GetGoingAlonePlayerIdx()
+	gp := e.GetPlayer(goer)
+	if gp == nil {
+		return -1
+	}
+	for i := 0; i < e.GetPlayerCnt(); i++ {
+		if i == goer {
+			continue
+		}
+		if p := e.GetPlayer(i); p != nil && p.GetTeam() == gp.GetTeam() {
+			return i
+		}
+	}
+	return -1
 }
 
 // EuchreCuiPresenter renders the Euchre CUI view.
@@ -63,8 +90,9 @@ func (p *EuchreCuiPresenter) Output(e interfaces.EuchreGame, lastErr error) stri
 			"t0", strconv.Itoa(e.GetTeamScore(0)),
 			"t1", strconv.Itoa(e.GetTeamScore(1))) + "\n")
 
+		sittingOutIdx := euchreSittingOutIdx(e)
 		for i := 0; i < e.GetPlayerCnt(); i++ {
-			b.WriteString(euchrePlayerStr(e.GetPlayer(i), i))
+			b.WriteString(euchrePlayerStr(e.GetPlayer(i), i, i == sittingOutIdx))
 		}
 
 		b.WriteString("----------\n")

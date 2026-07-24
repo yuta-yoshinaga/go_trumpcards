@@ -3,12 +3,12 @@
     "init": "Init",
     "deal": "Deal",
     "bet": "Bet",
-    "draw": "Draw {{n}}/3",
+    "draw": "Draw {{n}}/{{max}}",
     "showdown": "Showdown",
     "end": "Result"
   },
   "yourHand": "Your hand",
-  "drawBadge": "Draw {{n}}/3",
+  "drawBadge": "Draw {{n}}/{{max}}",
   "preDrawLabel": "Pre-draw",
   "exchangeInstruction": "Click the cards you want to exchange, then press Exchange or Stand.",
   "exchangeLabel": "Exchange",
@@ -42,5 +42,17 @@
     "lose": "You lose.",
     "folded": "You folded.",
     "gameOver": "Game over."
+  },
+  "hand": {
+    "highCard": "High Card",
+    "onePair": "One Pair",
+    "twoPair": "Two Pair",
+    "threeOfAKind": "Three of a Kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full House",
+    "fourOfAKind": "Four of a Kind",
+    "straightFlush": "Straight Flush",
+    "royalFlush": "Royal Flush"
   }
 }

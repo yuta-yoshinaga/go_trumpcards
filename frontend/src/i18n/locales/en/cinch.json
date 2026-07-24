@@ -19,11 +19,17 @@
   "deal": "Deal {{n}}",
   "trick": "Trick {{n}}/{{total}}",
   "highBid": "High Bid: {{bid}}",
-  "trump": "Trump: {{suit}}",
   "target": "Target: {{points}} pts",
   "bidPrompt": "Your turn to bid — pass or declare 1-14.",
   "bidCpu": "CPU {{id}} is bidding…",
   "bidPass": "Pass",
+  "bidStrength": {
+    "range": "Estimated points held: {{min}}-{{max}} pts (rough guide, depends on trump)",
+    "best": "Strongest trump: {{symbol}} {{suit}} (holding {{points}} pts)",
+    "legendTitle": "The 14 points",
+    "legend": "High(A)=1 / King(K)=1 / Ten(10)=1 / Jack(J)=1 / Right Pedro(5 of trump)=5 / Left Pedro(off-color 5)=5",
+    "note": "A rough guide only — your actual take depends on play after trump is named."
+  },
   "trumpPrompt": "You won the bid — name the trump suit.",
   "bidderBadge": "Bidder",
   "cards": "{{count}} cards",
@@ -39,6 +45,8 @@
   "dealResult": {
     "title": "Deal Result",
     "setBack": "The bidding side was set back (bid not made).",
+    "bidderMade": "Bidder {{name}}: bid {{bid}} → captured {{captured}} ({{delta}} pts)",
+    "bidderSet": "Bidder {{name}}: bid {{bid}} → captured {{captured}} → set back {{delta}} pts",
     "gained": "{{name}} gained: {{points}} pts"
   },
   "hintAvailable": "Hint",
@@ -57,5 +65,12 @@
     "playButton": "Once a card is selected, play it with this button. In the Bid phase pass or bid 1-14; when you win the bid you name trump and lead.",
     "info": "Cinch (Double Pedro) is a 4-player (you + 3 CPU, individual scoring) All-Fours/Pitch-family bidding trick-taker on a 52-card deck. Nine cards are dealt to each player; players bid 0 (pass) to 14, and the high bidder names trump and leads. Fourteen points per deal are exchanged, and the bidding side is set back (loses its bid) if it fails to make its bid. The first player to reach the target score (default 21) wins.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "suit": {
+    "spade": "Spade",
+    "club": "Club",
+    "heart": "Heart",
+    "diamond": "Diamond"
+  },
+  "trumpLabel": "Trump"
 }

@@ -165,6 +165,9 @@ function RazzPageContent() {
 
   const [betAmount, setBetAmount] = useState(20);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
+  // Tournament / ante config applied on the next reset (mirrors the CUI's tournament + ante options).
+  const [ante, setAnte] = useState(1);
+  const [tournamentMode, setTournamentMode] = useState(false);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('razz', state);
   const turnStartRef = useRef(0);
 
@@ -172,8 +175,8 @@ function RazzPageContent() {
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
-    void execApi('reset', undefined, { cpuMetaAI });
-  }, [execApi, hideActionLog, cpuMetaAI]);
+    void execApi('reset', undefined, { ante, tournamentMode, cpuMetaAI });
+  }, [execApi, hideActionLog, ante, tournamentMode, cpuMetaAI]);
 
   useEffect(() => {
     if (state?.minRaise && state.minRaise > 0) {
@@ -218,6 +221,14 @@ function RazzPageContent() {
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
   const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
+  // Bring-in player (highest door card, posts the forced bet). Shown only during 3rd street,
+  // the single round where the bring-in is relevant. `bringInPlayerIdx` indexes into state.players.
+  const bringInIdx = state?.bringInPlayerIdx ?? -1;
+  const bringInPlayerId =
+    phase === SevenCardStudPhase.THIRD_STREET && bringInIdx >= 0 ? state?.players?.[bringInIdx]?.id : undefined;
+  const bringInCardClass = 'ring-2 ring-game-status-active rounded p-0.5';
+  const bringInBadgeClass =
+    'inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 bg-game-status-active text-game-text-strong';
 
   const actionBindings = useMemo(
     () => [
@@ -306,6 +317,11 @@ function RazzPageContent() {
                     )}
                     {p.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
                     {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                    {p.id === bringInPlayerId && (
+                      <span data-testid={`razz-bringin-badge-${p.id}`} className={bringInBadgeClass}>
+                        {t('bringIn')}
+                      </span>
+                    )}
                     {isShowdown && !p.folded && p.handName && (
                       <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                         {p.handName}
@@ -314,7 +330,7 @@ function RazzPageContent() {
                   </div>
                   {/* Door cards (always visible) */}
                   <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                  <div className="flex flex-wrap gap-1 mb-1">
+                  <div className={`flex flex-wrap gap-1 mb-1 ${p.id === bringInPlayerId ? bringInCardClass : ''}`}>
                     {p.doorCards?.length
                       ? p.doorCards.map((card) => (
                           <AnimatedCard
@@ -370,6 +386,29 @@ function RazzPageContent() {
               {
                 items: [
                   {
+                    type: 'select' as const,
+                    id: 'razzAnte',
+                    label: t('settings.ante'),
+                    tooltip: t('settings.anteHelp'),
+                    value: ante,
+                    options: [
+                      { value: 1, label: '1' },
+                      { value: 2, label: '2' },
+                      { value: 5, label: '5' },
+                      { value: 10, label: '10' },
+                    ],
+                    onSelect: (v) => setAnte(Number(v)),
+                    testId: 'razz-ante-select',
+                  },
+                  {
+                    type: 'checkbox' as const,
+                    id: 'razzTournamentMode',
+                    label: t('settings.tournamentMode'),
+                    tooltip: t('settings.tournamentModeHelp'),
+                    checked: tournamentMode,
+                    onToggle: setTournamentMode,
+                  },
+                  {
                     type: 'checkbox' as const,
                     id: 'frontendHint',
                     label: tc('hint.toggle', { ns: 'tutorial' }),
@@ -405,6 +444,11 @@ function RazzPageContent() {
                   )}
                   {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                  {humanPlayer.id === bringInPlayerId && (
+                    <span data-testid={`razz-bringin-badge-${humanPlayer.id}`} className={bringInBadgeClass}>
+                      {t('bringIn')}
+                    </span>
+                  )}
                   {razzLow && (
                     <span
                       data-testid="razz-best-low"
@@ -421,7 +465,9 @@ function RazzPageContent() {
                 </div>
                 {/* Door cards */}
                 <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                <div className="flex flex-wrap gap-1.5 mb-1">
+                <div
+                  className={`flex flex-wrap gap-1.5 mb-1 ${humanPlayer.id === bringInPlayerId ? bringInCardClass : ''}`}
+                >
                   {humanPlayer.doorCards?.length
                     ? humanPlayer.doorCards.map((card) => (
                         <AnimatedCard

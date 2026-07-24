@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bourreApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -80,11 +80,80 @@ describe('BourrePage', () => {
     });
   });
 
+  it('header renders the trump suit as a symbol, not the raw design string', async () => {
+    renderWithProviders(<BourrePage />); // default trumpSuit: SPADE
+    const trump = await screen.findByTestId('bourre-trump');
+    expect(trump).toHaveTextContent('♠');
+    expect(trump).not.toHaveTextContent('SPADE');
+  });
+
+  it('header colors a red trump suit (hearts) with the error token', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 'HEART' }));
+    renderWithProviders(<BourrePage />);
+    const trump = await screen.findByTestId('bourre-trump');
+    expect(within(trump).getByText('♥')).toHaveClass('text-ds-error');
+  });
+
+  it('header colors a red trump suit (diamonds) with the error token', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 'DIAMOND' }));
+    renderWithProviders(<BourrePage />);
+    const trump = await screen.findByTestId('bourre-trump');
+    expect(within(trump).getByText('♦')).toHaveClass('text-ds-error');
+  });
+
+  it('header does not color a black trump suit (clubs) with the error token', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 'CLOVER' }));
+    renderWithProviders(<BourrePage />);
+    const trump = await screen.findByTestId('bourre-trump');
+    expect(within(trump).getByText('♣')).not.toHaveClass('text-ds-error');
+  });
+
+  it('header shows a dash when the trump suit is unset', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 'JOKER' }));
+    renderWithProviders(<BourrePage />);
+    const trump = await screen.findByTestId('bourre-trump');
+    expect(trump).toHaveTextContent('-');
+    expect(trump).not.toHaveTextContent('JOKER');
+  });
+
   it('renders CPU player areas after load', async () => {
     renderWithProviders(<BourrePage />);
     await waitFor(() => {
       expect(screen.getByText(/CPU 1/)).toBeInTheDocument();
     });
+  });
+
+  it('shows localized CPU status for finished, folded, and bourréd players', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player({ id: 0, isHuman: true }),
+          player({ id: 1, isFinished: true }),
+          player({ id: 2, folded: true }),
+          player({ id: 3, bourreed: true }),
+        ],
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+    // playerStatus resolves each state through i18n (ja).
+    await waitFor(() => expect(screen.getByText('脱落')).toBeInTheDocument());
+    expect(screen.getAllByText('フォールド').length).toBeGreaterThanOrEqual(1);
+    // "ブーレ" is also the sr-only page title, so the bourréd status adds a second.
+    expect(screen.getAllByText('ブーレ').length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('names the winner via playerName when a CPU wins at game end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'roundEnd',
+        gameEndFlag: true,
+        winnerIdx: 2,
+        results: [{ playerIdx: 2, tricks: 3, wonAmount: 0, bourreed: false, folded: false }],
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+    // result.youLose interpolates the localized CPU winner name.
+    await waitFor(() => expect(screen.getByText(/CPU 2 の勝ち/)).toBeInTheDocument());
   });
 
   it('decide phase: shows the pot/penalty summary, flagged in warning color when the pot is high', async () => {
@@ -292,6 +361,42 @@ describe('BourrePage', () => {
     });
   });
 
+  it('settings: changing CPU difficulty resets the game with the config', async () => {
+    renderWithProviders(<BourrePage />);
+    const select = (await screen.findByTestId('bourre-difficulty')) as HTMLSelectElement;
+    expect(select.value).toBe('0');
+    fireEvent.change(select, { target: { value: '2' } });
+    await waitFor(() => {
+      expect(mockExec).toHaveBeenCalledWith(
+        expect.objectContaining({ command: 'reset', config: { cpuDifficulty: 2 } }),
+      );
+    });
+    expect(select.value).toBe('2');
+  });
+
+  it('settings: the next-game button reuses the selected CPU difficulty', async () => {
+    // At game end the footer button fires reset directly (no confirm dialog).
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'gameEnd',
+        gameEndFlag: true,
+        winnerIdx: 0,
+        results: [{ playerIdx: 0, tricks: 5, wonAmount: 50, bourreed: false, folded: false }],
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+    const select = (await screen.findByTestId('bourre-difficulty')) as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: '1' } });
+    await waitFor(() => expect(select.value).toBe('1'));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => {
+      expect(mockExec).toHaveBeenCalledWith(
+        expect.objectContaining({ command: 'reset', config: { cpuDifficulty: 1 } }),
+      );
+    });
+  });
+
   it('toggles CLI mode', async () => {
     renderWithProviders(<BourrePage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
@@ -337,5 +442,19 @@ describe('BourrePage', () => {
       expect(screen.getAllByText(/Unknown command/).length).toBeGreaterThan(0);
     });
     expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('CLI formatter renders the trump suit as a symbol, not the raw design string', async () => {
+    localStorage.setItem('cli-mode-bourre', 'true');
+    // Distinct objects so useCliGame's [state] effect fires after the command re-renders.
+    mockExec.mockResolvedValueOnce(makeState({ phase: 'decide', trumpSuit: 'HEART' })); // mount reset
+    mockExec.mockResolvedValue(makeState({ phase: 'play', trumpSuit: 'HEART' })); // after command
+    renderWithProviders(<BourrePage />);
+    const input = await screen.findByRole('textbox');
+    fireEvent.change(input, { target: { value: 'n' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    const output = await screen.findByText(/Trump: ♥/);
+    expect(output).toBeInTheDocument();
+    expect(output).not.toHaveTextContent('HEART');
   });
 });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { russianbankApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -18,6 +18,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, RussianBankPlayer } from '../types/card';
 import { RussianBankPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 
 /** Source-zone codes matching the Go `RussianBankZone` enum. */
 const ZONE_RESERVE = 0;
@@ -59,12 +60,30 @@ function RussianBankPageContent() {
     useGamePageSetup('russianbank');
   const { state, loading, error, exec, retry } = useGameApi(russianbankApi.exec);
   const [selected, setSelected] = useState<SelectedSource | null>(null);
+  // Whether the last hint's suggested move is currently highlighted on the board.
+  // The move coordinates come from `state.hint` (set by the server on a `hint`
+  // command); this flag just gates the rings so they only show after the player
+  // asks for a hint, then auto-dismiss.
+  const [showHint, setShowHint] = useState(false);
+  const hintTimerRef = useRef<number | null>(null);
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useEffect(() => {
     exec('reset');
   }, []);
+
+  // Clear any hint highlight (and stale source selection) whenever the board
+  // changes (move, discard, undo, CPU turn) so the rings can't point at a
+  // different card than the current hint.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: deps are the change-trigger, not read in the body.
+  useEffect(() => {
+    setSelected(null);
+    setShowHint(false);
+  }, [state?.moveCount]);
+
+  // Cancel a pending hint auto-dismiss timer on unmount.
+  useEffect(() => () => window.clearTimeout(hintTimerRef.current ?? undefined), []);
 
   const phaseNames = usePhaseNames('russianbank', RB_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
@@ -82,8 +101,27 @@ function RussianBankPageContent() {
   const handleReset = () => {
     hideActionLog();
     setSelected(null);
+    // A reset keeps moveCount at 0, so the board-change effect may not fire —
+    // clear any stale hint highlight here.
+    setShowHint(false);
+    window.clearTimeout(hintTimerRef.current ?? undefined);
     exec('reset');
   };
+
+  // Ask the server for a hint, then highlight the suggested move's source and
+  // destination for a few seconds. Does not execute the move.
+  const handleHint = () => {
+    exec('hint');
+    setShowHint(true);
+    window.clearTimeout(hintTimerRef.current ?? undefined);
+    hintTimerRef.current = window.setTimeout(() => setShowHint(false), 4000);
+  };
+
+  // The move to highlight, only while the highlight is active.
+  const hint = showHint ? state.hint : undefined;
+  const hintFoundation = hint?.toFoundation === true;
+  // A hint was requested but the server found no legal move to suggest.
+  const hintEmpty = showHint && state.hint === undefined;
 
   /** Pick (or toggle off) a move source. */
   const pickSource = (zone: number, fromOpp: boolean, col: number, label: string) => {
@@ -112,11 +150,48 @@ function RussianBankPageContent() {
   };
 
   /** Renders a single card (or a dashed empty slot). */
-  const slot = (card: Card | undefined, key: string, onClick?: () => void, highlighted = false) => {
-    const cls = `rounded ${highlighted ? 'ring-2 ring-ds-warning' : ''} ${onClick ? 'cursor-pointer' : ''}`;
+  const slot = (
+    card: Card | undefined,
+    key: string,
+    onClick?: () => void,
+    highlighted = false,
+    zoneName?: string,
+    // `source` slots (reserve/waste) are selectable move-origins → expose aria-pressed.
+    source = false,
+    // Hint rings: `hintSource` marks the suggested move's origin, `hintDest` its target.
+    hintSource = false,
+    hintDest = false,
+  ) => {
+    // Source ring (info) and destination ring (success) are additive hint cues that
+    // sit on top of the selection ring (warning).
+    const hintRing = hintSource
+      ? ' ring-2 ring-ds-info motion-safe:animate-pulse'
+      : hintDest
+        ? ' ring-2 ring-ds-success motion-safe:animate-pulse'
+        : '';
+    const cls = `rounded ${highlighted ? 'ring-2 ring-ds-warning' : ''}${hintRing} ${onClick ? 'cursor-pointer' : ''}`;
+    const label = card
+      ? zoneName
+        ? t('slotCardZone', { card: cardAlt(card), zone: zoneName })
+        : cardAlt(card)
+      : zoneName
+        ? t('slotEmptyZone', { zone: zoneName })
+        : t('empty');
+    const ariaPressed = source ? highlighted : undefined;
     if (card) {
       return (
-        <button type="button" key={key} className={cls} onClick={onClick} disabled={!onClick} data-testid={key}>
+        <button
+          type="button"
+          key={key}
+          className={cls}
+          onClick={onClick}
+          disabled={!onClick}
+          data-testid={key}
+          data-hint-source={hintSource ? 'true' : undefined}
+          data-hint-dest={hintDest ? 'true' : undefined}
+          aria-label={label}
+          aria-pressed={ariaPressed}
+        >
           <CardImage card={card} width={w} />
         </button>
       );
@@ -130,7 +205,10 @@ function RussianBankPageContent() {
         onClick={onClick}
         disabled={!onClick}
         data-testid={key}
-        aria-label={t('empty')}
+        data-hint-source={hintSource ? 'true' : undefined}
+        data-hint-dest={hintDest ? 'true' : undefined}
+        aria-label={label}
+        aria-pressed={ariaPressed}
       />
     );
   };
@@ -157,6 +235,9 @@ function RussianBankPageContent() {
               ? () => pickSource(ZONE_RESERVE, opponent, 0, t(opponent ? 'srcOppReserve' : 'srcReserve'))
               : undefined,
             selected?.zone === ZONE_RESERVE && selected.fromOpp === opponent,
+            t(opponent ? 'srcOppReserve' : 'srcReserve'),
+            true,
+            hint?.zone === ZONE_RESERVE && hint.fromOpponent === opponent,
           )}
         </div>
         <div className="flex flex-col items-center gap-0.5">
@@ -166,6 +247,9 @@ function RussianBankPageContent() {
             `waste-${p.id}`,
             canAct ? () => pickSource(ZONE_WASTE, opponent, 0, t(opponent ? 'srcOppWaste' : 'srcWaste')) : undefined,
             selected?.zone === ZONE_WASTE && selected.fromOpp === opponent,
+            t(opponent ? 'srcOppWaste' : 'srcWaste'),
+            true,
+            hint?.zone === ZONE_WASTE && hint.fromOpponent === opponent,
           )}
         </div>
         <div className="flex flex-col items-center gap-0.5">
@@ -197,9 +281,18 @@ function RussianBankPageContent() {
         {/* Foundations */}
         <div className="mb-2">
           <span className="text-ds-text-muted text-[11px]">{t('foundationsLabel')}</span>
-          <div className="flex gap-1 flex-wrap mt-0.5">
+          <div
+            className={`flex gap-1 flex-wrap mt-0.5 rounded${hintFoundation ? ' ring-2 ring-ds-success motion-safe:animate-pulse p-1' : ''}`}
+            data-hint-foundation={hintFoundation ? 'true' : undefined}
+          >
             {state.foundations.map((f, i) =>
-              slot(f[f.length - 1], `foundation-${i}`, selected ? sendToFoundation : undefined),
+              slot(
+                f[f.length - 1],
+                `foundation-${i}`,
+                selected ? sendToFoundation : undefined,
+                false,
+                t('foundationZone', { n: i + 1 }),
+              ),
             )}
           </div>
         </div>
@@ -207,26 +300,60 @@ function RussianBankPageContent() {
         {/* Shared tableau */}
         <div className="mb-3">
           <span className="text-ds-text-muted text-[11px]">{t('tableauLabel')}</span>
-          <div className="flex gap-2 flex-wrap mt-0.5">
-            {state.tableau.map((col, i) => (
-              <button
-                type="button"
-                key={`tab-${i}`}
-                className={`rounded ${selected ? 'ring-1 ring-ds-success' : ''} ${canAct ? 'cursor-pointer' : ''}`}
-                onClick={canAct ? () => sendToTableau(i) : undefined}
-                disabled={!canAct}
-                data-testid={`tableau-${i}`}
-              >
-                {col.length > 0 ? (
-                  <CardImage card={col[col.length - 1]} width={w} />
-                ) : (
-                  <div
-                    className="rounded border border-dashed border-white/25 bg-black/20"
-                    style={{ width: w, height: Math.round(w * 1.4) }}
-                  />
-                )}
-              </button>
-            ))}
+          <div className="flex gap-2 flex-wrap mt-0.5 items-start">
+            {state.tableau.map((col, i) => {
+              const n = col.length;
+              const cardH = Math.round(w * 1.4);
+              const isHintSource = hint?.zone === ZONE_TABLEAU && hint.col === i;
+              const isHintDest = hint !== undefined && !hintFoundation && hint.toCol === i;
+              // Source ring (info) / destination ring (success) are additive hint cues,
+              // layered on top of the shared move-target ring.
+              const hintRing = isHintSource
+                ? ' ring-2 ring-ds-info motion-safe:animate-pulse'
+                : isHintDest
+                  ? ' ring-2 ring-ds-success motion-safe:animate-pulse'
+                  : '';
+              // Reveal every buried card's rank+suit corner via a vertical cascade
+              // instead of showing only the top card. The visible strip auto-compresses
+              // for tall columns so the pile never overruns the board / footer (#3574).
+              const baseStrip = Math.round(w * 0.34);
+              const maxColH = Math.round(cardH * 2.8);
+              const strip = n > 1 ? Math.min(baseStrip, Math.max(1, Math.round((maxColH - cardH) / (n - 1)))) : 0;
+              return (
+                <button
+                  type="button"
+                  key={`tab-${i}`}
+                  className={`relative flex flex-col items-center rounded ${selected ? 'ring-1 ring-ds-success' : ''}${hintRing} ${canAct ? 'cursor-pointer' : ''}`}
+                  onClick={canAct ? () => sendToTableau(i) : undefined}
+                  disabled={!canAct}
+                  data-testid={`tableau-${i}`}
+                  data-hint-source={isHintSource ? 'true' : undefined}
+                  data-hint-dest={isHintDest ? 'true' : undefined}
+                  aria-label={
+                    n > 0
+                      ? t('slotCardZone', { card: cardAlt(col[n - 1]), zone: t('srcTableau', { col: i + 1 }) })
+                      : t('slotEmptyZone', { zone: t('srcTableau', { col: i + 1 }) })
+                  }
+                >
+                  {n === 0 ? (
+                    <div
+                      className="rounded border border-dashed border-white/25 bg-black/20"
+                      style={{ width: w, height: cardH }}
+                    />
+                  ) : (
+                    col.map((c, ci) => (
+                      <div
+                        key={`tab-${i}-card-${ci}`}
+                        data-testid={`tableau-${i}-card-${ci}`}
+                        style={{ marginTop: ci === 0 ? 0 : -(cardH - strip) }}
+                      >
+                        <CardImage card={c} width={w} />
+                      </div>
+                    ))
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -254,7 +381,9 @@ function RussianBankPageContent() {
 
           {!isGameEnd && selected && (
             <>
-              <span className="text-ds-text-primary text-xs">{t('selectedSource', { src: selected.label })}</span>
+              <span className="text-ds-text-primary text-xs" role="status" data-testid="rb-selected-source">
+                {t('selectedSource', { src: selected.label })}
+              </span>
               <button
                 type="button"
                 className={btnSuccess}
@@ -288,6 +417,22 @@ function RussianBankPageContent() {
             >
               {t('discard')}
             </button>
+          )}
+          {canAct && (
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={handleHint}
+              disabled={loading}
+              data-testid="hint-button"
+            >
+              {t('hint')}
+            </button>
+          )}
+          {hintEmpty && (
+            <span className="text-ds-text-muted text-xs" role="status" data-testid="rb-hint-none">
+              {t('hintNone')}
+            </span>
           )}
           {canAct && state.canCallStop && (
             <button

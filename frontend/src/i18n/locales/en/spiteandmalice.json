@@ -23,6 +23,8 @@
   "moveCount": "Moves",
   "endTurn": "End turn",
   "discard": "Discard",
+  "discardNeedHand": "Select a hand card first",
+  "discardReady": "Hand card selected — ready to discard",
   "autoComplete": "Auto Complete",
   "selectSource": "Select a card to play",
   "selectFoundation": "Select a foundation",
@@ -34,6 +36,13 @@
   "playing": "Playing",
   "noHint": "No hint",
   "hintAvailable": "Hint available",
+  "settings": {
+    "cpuSpeed": "CPU speed",
+    "cpuSpeedHelp": "Adjust how quickly the CPU takes its turn (Slow = 900ms / Normal = 500ms / Fast = 200ms).",
+    "speedSlow": "Slow",
+    "speedNormal": "Normal",
+    "speedFast": "Fast"
+  },
   "frontendHint": {
     "goalToFoundation": "You can play the top of your goal pile to a foundation",
     "handToFoundation": "You can play a card from your hand to a foundation",

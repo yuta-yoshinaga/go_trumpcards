@@ -81,7 +81,47 @@ func (p *TeenPattiWebPresenter) buildBase(g interfaces.TeenPattiGame) *controlle
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
+	resObj.LastSideShow = p.buildSideShowOutput(g)
 	return resObj
+}
+
+// buildSideShowOutput 直近で成立したサイドショーの比較結果を構築する。
+// 人間が申請者または対象のときのみ両者の手札と役名を公開する (CPU 同士は秘匿)。
+func (p *TeenPattiWebPresenter) buildSideShowOutput(g interfaces.TeenPattiGame) *controller.TeenPattiWebOutputSideShow {
+	req, tgt, loser, ok := g.GetLastSideShow()
+	if !ok {
+		return nil
+	}
+	reqP := g.GetPlayer(req)
+	tgtP := g.GetPlayer(tgt)
+	if reqP == nil || tgtP == nil {
+		return nil
+	}
+	// 秘匿: 人間が当事者でないサイドショー (CPU 同士) はカードを漏らさない。
+	if !reqP.GetIsHuman() && !tgtP.GetIsHuman() {
+		return nil
+	}
+	winner := req
+	if loser == req {
+		winner = tgt
+	}
+	return &controller.TeenPattiWebOutputSideShow{
+		RequesterIdx: req,
+		TargetIdx:    tgt,
+		WinnerIdx:    winner,
+		LoserIdx:     loser,
+		Requester:    teenPattiSideShowHand(req, reqP),
+		Target:       teenPattiSideShowHand(tgt, tgtP),
+	}
+}
+
+// teenPattiSideShowHand はサイドショー参加者 1 人分の公開手札を構築する。
+func teenPattiSideShowHand(idx int, player *domain.TeenPattiPlayer) *controller.TeenPattiWebOutputSideShowHand {
+	return &controller.TeenPattiWebOutputSideShowHand{
+		PlayerIdx: idx,
+		HandName:  teenPattiHandName(player),
+		Cards:     playerCardsToOutput(player, true),
+	}
 }
 
 // buildPlayersOutput プレイヤー情報を構築

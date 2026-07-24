@@ -21,10 +21,10 @@ function createWrapper() {
 
 const defaultState: MemoryResponse = {
   players: [
-    { id: 0, isHuman: true, pairCount: 0 },
-    { id: 1, isHuman: false, pairCount: 0 },
-    { id: 2, isHuman: false, pairCount: 0 },
-    { id: 3, isHuman: false, pairCount: 0 },
+    { id: 0, isHuman: true, pairCount: 0, pairs: [] },
+    { id: 1, isHuman: false, pairCount: 0, pairs: [] },
+    { id: 2, isHuman: false, pairCount: 0, pairs: [] },
+    { id: 3, isHuman: false, pairCount: 0, pairs: [] },
   ],
   board: Array.from({ length: 52 }, () => ({ card: null, faceUp: false, taken: false })),
   phase: 0,

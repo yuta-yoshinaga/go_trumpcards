@@ -31,5 +31,9 @@
   "promptPlayHelpLayoff": "lo <pIdx> <mIdx> <cIdx>・・・既存メルドにカード追加",
   "promptPlayHelpDiscard": "d <idx>・・・カードを捨てる",
   "promptRoundEnd": "ラウンド終了",
-  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ"
+  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
+  "slotDetailSet": "同ランク{{n}}枚",
+  "slotDetailRun": "同スート{{n}}枚の連番",
+  "slotLine": "  スロット[{{idx}}]: {{detail}}",
+  "meldSyntaxHint": "  meld <スロット番号> <カード番号...>（例: meld 0 1 2 3）"
 }

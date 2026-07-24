@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { warApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -20,6 +20,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
+import { useSound } from '../providers/SoundProvider';
 import { gameTheme } from '../styles/gameTheme';
 import type { WarResponse } from '../types/card';
 import { WarPhase } from '../types/phases';
@@ -29,6 +30,33 @@ import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 type WarArgs = Parameters<typeof warApi.exec>;
 
 const DEFAULT_MAX_ROUNDS = 500;
+
+/** Autoplay animation speed presets. */
+type AutoPlaySpeed = 'slow' | 'normal' | 'fast';
+
+/**
+ * Delay (ms) between auto-advanced `step` calls per speed preset. A larger delay
+ * gives each round's reveal/war animation more time to play out; a smaller delay
+ * races to the finish.
+ */
+const AUTOPLAY_DELAY_MS: Record<AutoPlaySpeed, number> = {
+  slow: 900,
+  normal: 450,
+  fast: 150,
+};
+
+const AUTOPLAY_SPEED_STORAGE_KEY = 'war:autoPlaySpeed';
+
+/** Read the persisted autoplay speed, falling back to `normal` when unset/invalid. */
+function loadAutoPlaySpeed(): AutoPlaySpeed {
+  try {
+    const v = localStorage.getItem(AUTOPLAY_SPEED_STORAGE_KEY);
+    if (v === 'slow' || v === 'normal' || v === 'fast') return v;
+  } catch {
+    // localStorage may be unavailable (private mode / SSR); fall through to default.
+  }
+  return 'normal';
+}
 
 /** Tutorial steps for the War game. */
 const WR_TUTORIAL_STEPS: TutorialStep[] = [
@@ -83,6 +111,7 @@ function WarPageContent() {
     useGamePageSetup('war');
   const { state, loading, error, exec: execApi, retry } = useGameApi(warApi.exec);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const [maxRounds, setMaxRounds] = useState(DEFAULT_MAX_ROUNDS);
   const {
     hint: frontendHint,
@@ -90,9 +119,78 @@ function WarPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('war', state);
 
+  const [autoPlaySpeed, setAutoPlaySpeed] = useState<AutoPlaySpeed>(loadAutoPlaySpeed);
+  const [autoPlaying, setAutoPlaying] = useState(false);
+
   const handleStep = useCallback(() => execApi('step'), [execApi]);
-  const handleAutoPlay = useCallback(() => execApi('autoplay'), [execApi]);
-  const handleReset = useCallback(() => execApi('reset', { maxRounds }), [execApi, maxRounds]);
+  // Autoplay is driven client-side as a timed sequence of `step` calls (see the
+  // effect below) so each round's reveal/war animation plays out; the button toggles it.
+  const handleAutoPlay = useCallback(() => setAutoPlaying((prev) => !prev), []);
+  const handleSelectSpeed = useCallback((v: string) => {
+    const speed: AutoPlaySpeed = v === 'slow' || v === 'fast' ? v : 'normal';
+    setAutoPlaySpeed(speed);
+    try {
+      localStorage.setItem(AUTOPLAY_SPEED_STORAGE_KEY, speed);
+    } catch {
+      // Persistence is best-effort; ignore storage failures.
+    }
+  }, []);
+  const handleReset = useCallback(() => {
+    setAutoPlaying(false);
+    playSound('shuffle');
+    return execApi('reset', { maxRounds });
+  }, [execApi, maxRounds, playSound]);
+
+  // Play a card-resolution SFX each time a battle settles (RESOLVED) and a
+  // tension cue when a tie triggers a war (WAR_BURY). Tracks the previous phase
+  // so the sound fires on the transition, not on every re-render, and skips the
+  // initial mount. Muting is honored inside `playSound`.
+  const prevPhaseRef = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    const phase = state?.phase;
+    const prev = prevPhaseRef.current;
+    prevPhaseRef.current = phase;
+    if (phase === undefined || prev === undefined || prev === phase) return;
+    if (phase === WarPhase.RESOLVED) playSound('cardPlace');
+    else if (phase === WarPhase.WAR_BURY) playSound('chipClick');
+  }, [state?.phase, playSound]);
+
+  // Buzz once when a new error surfaces (e.g. a failed step/reset request).
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current) playSound('errorBuzz');
+    prevErrorRef.current = error;
+  }, [error, playSound]);
+
+  // Latest state/speed read from a self-scheduling autoplay loop without
+  // re-subscribing the effect on every render.
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const speedRef = useRef(autoPlaySpeed);
+  speedRef.current = autoPlaySpeed;
+
+  // Drive autoplay client-side: recursively `step` on a speed-scaled timer so each
+  // round's reveal/war animation plays out, stopping as soon as the game ends.
+  useEffect(() => {
+    if (!autoPlaying) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const tick = async () => {
+      const s = stateRef.current;
+      if (!s || s.gameEndFlag || s.phase === WarPhase.GAME_END) {
+        setAutoPlaying(false);
+        return;
+      }
+      await execApi('step');
+      if (cancelled) return;
+      timer = setTimeout(() => void tick(), AUTOPLAY_DELAY_MS[speedRef.current]);
+    };
+    timer = setTimeout(() => void tick(), AUTOPLAY_DELAY_MS[speedRef.current]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [autoPlaying, execApi]);
 
   useMountReset(execApi);
 
@@ -156,6 +254,7 @@ function WarPageContent() {
       gamePath="/war"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
+      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -217,6 +316,9 @@ function WarPageContent() {
                 </div>
                 {state.warPotSize > 2 && (
                   <div
+                    // Purely decorative stacked card backs; the count is already
+                    // conveyed by the adjacent label.potCount text, so hide from AT.
+                    aria-hidden="true"
                     className="relative mx-auto mt-1"
                     data-testid="war-pot-stack"
                     data-pot-size={state.warPotSize}
@@ -306,6 +408,20 @@ function WarPageContent() {
                     onSelect: (v: string) => setMaxRounds(Number.parseInt(v, 10)),
                   },
                   {
+                    type: 'select' as const,
+                    id: 'autoPlaySpeed',
+                    testId: 'autoplay-speed-select',
+                    label: t('settings.speed'),
+                    tooltip: t('settings.speedHelp'),
+                    value: autoPlaySpeed,
+                    options: [
+                      { value: 'slow', label: t('settings.speedSlow') },
+                      { value: 'normal', label: t('settings.speedNormal') },
+                      { value: 'fast', label: t('settings.speedFast') },
+                    ],
+                    onSelect: handleSelectSpeed,
+                  },
+                  {
                     type: 'checkbox' as const,
                     id: 'frontendHint',
                     label: tc('hint.toggle', { ns: 'tutorial' }),
@@ -322,7 +438,7 @@ function WarPageContent() {
               <button
                 type="button"
                 onClick={handleStep}
-                disabled={loading || isGameEnd}
+                disabled={loading || isGameEnd || autoPlaying}
                 className="px-6 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="step-button"
                 data-tutorial="wr-step-button"
@@ -332,12 +448,13 @@ function WarPageContent() {
               <button
                 type="button"
                 onClick={handleAutoPlay}
-                disabled={loading || isGameEnd}
+                disabled={isGameEnd}
+                aria-pressed={autoPlaying}
                 className="px-6 py-2 rounded-lg bg-ds-success hover:bg-ds-success-hover text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="autoplay-button"
                 data-tutorial="wr-autoplay-button"
               >
-                {t('button.autoplay')}
+                {autoPlaying ? t('button.stopAutoplay') : t('button.autoplay')}
               </button>
               <GameResetButton
                 isGameEnd={isGameEnd}

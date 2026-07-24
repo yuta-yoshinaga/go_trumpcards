@@ -62,6 +62,41 @@ describe('TrucoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('plays a card with number keys and declares truco with t during the play turn', async () => {
+    mockExec.mockResolvedValue(makeState()); // PLAY phase, human turn, canDeclareTruco
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    fireEvent.keyDown(document, { key: 't' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('truco'));
+  });
+
+  it('accepts and declines with a/d during the respond phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, responderIdx: 0, trucoCallerIdx: 1 }));
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('accept'));
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('decline'));
+  });
+
+  it('ignores play/respond shortcuts outside their phases', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 4, gameEndFlag: true })); // GAME_END
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: 'a' });
+    fireEvent.keyDown(document, { key: 't' });
+    expect(mockExec).not.toHaveBeenCalledWith('play', 0);
+    expect(mockExec).not.toHaveBeenCalledWith('accept');
+    expect(mockExec).not.toHaveBeenCalledWith('truco');
+  });
+
   it('renders match score and stake header', async () => {
     renderWithProviders(<TrucoPage />);
     await waitFor(() => expect(screen.getByText(/マッチ得点/)).toBeInTheDocument());
@@ -74,9 +109,19 @@ describe('TrucoPage', () => {
     mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 1, card: card('CLOVER', 4) }] }));
     const { container } = renderWithProviders(<TrucoPage />);
     await waitFor(() => expect(screen.getByText(/マッチ得点/)).toBeInTheDocument());
-    for (const target of ['truco-score', 'truco-trick', 'truco-hand', 'truco-call']) {
+    for (const target of ['truco-score', 'truco-rankref', 'truco-trick', 'truco-hand', 'truco-call']) {
       expect(container.querySelector(`[data-tutorial="${target}"]`)).not.toBeNull();
     }
+  });
+
+  it('renders the collapsible card-strength reference panel', async () => {
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() => expect(screen.getByTestId('truco-rank-ref')).toBeInTheDocument());
+    // Panel content mirrors the Go domain strength order (matadores first).
+    expect(screen.getByText('カードの強さ（強い順）')).toBeInTheDocument();
+    expect(screen.getByText('マタドール（特殊札・最強）')).toBeInTheDocument();
+    expect(screen.getByText('1♠ ＞ 1♣ ＞ 7♠ ＞ 7♦')).toBeInTheDocument();
+    expect(screen.getByText('3 ＞ 2 ＞ 1 ＞ K ＞ Q ＞ J ＞ 7 ＞ 6 ＞ 5 ＞ 4')).toBeInTheDocument();
   });
 
   it('shows human hand as 3 play buttons', async () => {
@@ -153,5 +198,37 @@ describe('TrucoPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('hides the hint tooltip by default and reveals a reasoned recommendation when the toggle is enabled', async () => {
+    localStorage.removeItem('hint_enabled_truco');
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() => expect(screen.getByTestId('truco-hint-toggle')).toBeInTheDocument());
+    expect(screen.queryByTestId('hint-tooltip')).toBeNull();
+
+    fireEvent.click(screen.getByRole('checkbox'));
+    // Default hand leads with 1♠ (top matador) and canDeclareTruco → declare-Truco advice.
+    await waitFor(() =>
+      expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('強い手です。Truco を宣言しましょう'),
+    );
+  });
+
+  it('shows the follow-to-win hint when a stronger card can beat the lead', async () => {
+    localStorage.setItem('hint_enabled_truco', 'true');
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTrick: [{ playerIdx: 1, card: card('DIAMOND', 5) }],
+        canDeclareTruco: false,
+        players: [
+          { id: 0, isHuman: true, cardCount: 2, cards: [card('HEART', 4), card('HEART', 3)], trickCount: 0 },
+          { id: 1, isHuman: false, cardCount: 2, cards: [], trickCount: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('強い札を出してこのバサを取りましょう'),
+    );
+    localStorage.removeItem('hint_enabled_truco');
   });
 });

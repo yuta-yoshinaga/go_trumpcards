@@ -203,7 +203,52 @@ func TestRussianPokerCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	assert.Contains(t, result, "フェーズ: END")
 	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "(Qualified)")
+	assert.Contains(t, result, "アンテ払戻し: 200")
+	assert.Contains(t, result, "プレイ払戻し: 800")
 	assert.Contains(t, result, "合計払戻し: 1000")
+}
+
+func TestRussianPokerCuiPresenter_Output_SelectPhase_ShowsGuide(t *testing.T) {
+	p := new(RussianPokerCuiPresenter)
+	m := new(interfaces.MockRussianPokerGame)
+	setupRussianPokerCuiMockDefaults(m)
+	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.RussianPokerPhaseSelect).Maybe()
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "捨てるカードの番号を選んでください")
+}
+
+func TestRussianPokerCuiPresenter_Output_EndPhase_ZeroBreakdownOmitted(t *testing.T) {
+	p := new(RussianPokerCuiPresenter)
+	m := new(interfaces.MockRussianPokerGame)
+	m.On("GetChips").Return(900).Maybe()
+	m.On("GetPhase").Return(domain.RussianPokerPhaseEnd).Maybe()
+	m.On("GetPlayerHand").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetDealerHand").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetGameEndFlag").Return(true).Maybe()
+	m.On("GetAnteBet").Return(100).Maybe()
+	m.On("GetExchangeCount").Return(0).Maybe()
+	m.On("GetExchangeFee").Return(0).Maybe()
+	m.On("GetBought6th").Return(false).Maybe()
+	m.On("GetBuy6thFee").Return(0).Maybe()
+	m.On("GetForceExchanged").Return(false).Maybe()
+	m.On("GetForceExchangeFee").Return(0).Maybe()
+	m.On("GetPlayBet").Return(0).Maybe()
+	m.On("GetResult").Return(domain.GameResultLose).Maybe()
+	m.On("GetAntePayout").Return(0).Maybe()
+	m.On("GetPlayPayout").Return(0).Maybe()
+	m.On("GetTotalPayout").Return(0).Maybe()
+	m.On("GetDealerQualified").Return(false).Maybe()
+	m.On("GetPlayerHandRank").Return(domain.PokerHandHighCard).Maybe()
+	m.On("GetDealerHandRank").Return(domain.PokerHandHighCard).Maybe()
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+
+	result := p.Output(m, nil)
+	// Zero ante/play payouts omit their breakdown lines.
+	assert.NotContains(t, result, "アンテ払戻し")
+	assert.NotContains(t, result, "プレイ払戻し")
+	assert.Contains(t, result, "合計払戻し: 0")
 }
 
 func TestRussianPokerCuiPresenter_Output_EndPhase_Fold(t *testing.T) {

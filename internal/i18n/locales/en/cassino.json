@@ -4,6 +4,7 @@
   "helpBuild": "  b <h> <value> <t...>     build declared value from hand h + table cards",
   "helpTrail": "  tr <h>                   trail hand card h (no capture)",
   "helpNext": "  n                        start next round",
+  "helpHint": "  h | hint                 show a recommended move (take/build/trail)",
   "helpLog": "  log | l                  show action log",
   "helpSetDifficulty": "  sd [0-2]                 CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetRule": "  sr <rule> <0|1>          toggle local rule (sr list to show all)",
@@ -22,5 +23,10 @@
   "actionTake": "take played={{played}} captured={{count}}{{suffix}}",
   "actionTakeSweepSuffix": " (sweep!)",
   "actionBuild": "build value {{value}} (played={{played}})",
-  "actionTrail": "trail {{played}}"
+  "actionTrail": "trail {{played}}",
+  "hintTake": "Suggestion: play {{card}} to capture table cards [{{idxs}}] (take)",
+  "hintBuild": "Suggestion: play {{card}} to make a build of {{value}} (build)",
+  "hintTrail": "Suggestion: trail {{card}} (trail)",
+  "hintNotYourTurn": "It is not your turn right now.",
+  "hintNoMove": "No move can be recommended."
 }

@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 
@@ -92,6 +93,17 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 			if player.GetIsHuman() && !player.GetFolded() {
 				if holeCards := player.GetHoleCards(); len(holeCards) > 0 {
 					b.WriteString(i18n.Tf("sevencardstud.holeCards", "cards", cuiCardSliceStrEmoji(holeCards)) + "\n")
+				}
+				// In Razz (lowball) the goal is the lowest hand; surface the human's
+				// current best low, since the shared high-hand view never shows it.
+				if s.GetIsLowball() {
+					if low, complete := domain.SevenCardStudRazzBestLow(player.GetAllCards()); len(low) > 0 {
+						key := "sevencardstud.razzLowIncomplete"
+						if complete {
+							key = "sevencardstud.razzLowComplete"
+						}
+						b.WriteString(i18n.Tf(key, "cards", cuiCardSliceStrEmoji(low)) + "\n")
+					}
 				}
 			}
 		}
@@ -195,4 +207,83 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 			b.WriteString(i18n.T("sevencardstud.gameEnd") + "\n")
 		}
 	})
+}
+
+// sevenCardStudThreeStraight reports whether the three distinct card values form
+// a run (including the Q-K-A wheel where the Ace is high).
+func sevenCardStudThreeStraight(cards []*domain.Card) bool {
+	vs := make([]int, 0, len(cards))
+	seen := map[int]bool{}
+	for _, c := range cards {
+		v := c.GetValue()
+		if seen[v] {
+			return false
+		}
+		seen[v] = true
+		vs = append(vs, v)
+	}
+	if len(vs) != 3 {
+		return false
+	}
+	sort.Ints(vs)
+	if vs[2]-vs[0] == 2 {
+		return true
+	}
+	return vs[0] == 1 && vs[1] == 12 && vs[2] == 13 // Q-K-A
+}
+
+// sevenCardStudThirdStreetAdvice returns whether to continue on third street and
+// the i18n reason key, using classic starting-hand rules (any pair, three to a
+// flush, three to a straight, or three high cards).
+func sevenCardStudThirdStreetAdvice(cards []*domain.Card) (cont bool, reasonKey string) {
+	if len(cards) < 3 {
+		return false, "sevencardstud.hintReasonFold"
+	}
+	vals := map[int]int{}
+	suits := map[int]int{}
+	high := 0
+	for _, c := range cards {
+		vals[c.GetValue()]++
+		suits[c.GetDesign()]++
+		if v := c.GetValue(); v == 1 || v >= 10 {
+			high++
+		}
+	}
+	for _, n := range vals {
+		if n >= 2 {
+			return true, "sevencardstud.hintReasonPair"
+		}
+	}
+	for _, n := range suits {
+		if n >= 3 {
+			return true, "sevencardstud.hintReasonFlush"
+		}
+	}
+	if sevenCardStudThreeStraight(cards) {
+		return true, "sevencardstud.hintReasonStraight"
+	}
+	if high >= 3 {
+		return true, "sevencardstud.hintReasonHigh"
+	}
+	return false, "sevencardstud.hintReasonFold"
+}
+
+// HintOutput advises continue/fold on third street using basic starting-hand
+// strategy. It applies to the high game only (Razz inverts hand strength, and
+// already surfaces the best low), and to the human's turn on third street.
+func (p *SevenCardStudCuiPresenter) HintOutput(s interfaces.SevenCardStudGame) string {
+	if s.GetIsLowball() || !s.IsHumanTurn() || s.GetPhase() != domain.SevenCardStudPhaseThirdStreet {
+		return i18n.T("sevencardstud.hintNone") + "\n"
+	}
+	player := s.GetPlayer(s.GetCurrentTurn())
+	if player == nil {
+		return i18n.T("sevencardstud.hintNone") + "\n"
+	}
+	cont, reasonKey := sevenCardStudThirdStreetAdvice(player.GetAllCards())
+	action := i18n.T("sevencardstud.hintFold")
+	if cont {
+		action = i18n.T("sevencardstud.hintContinue")
+	}
+	return color.Yellow(i18n.Tf("sevencardstud.hint",
+		"action", action, "reason", i18n.T(reasonKey))) + "\n"
 }

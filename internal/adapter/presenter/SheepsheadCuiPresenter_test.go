@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeSheepsheadPlayers() []*domain.SheepsheadPlayer {
@@ -42,6 +43,7 @@ func setupSheepsheadCuiMock() *interfaces.MockSheepsheadGame {
 	m.On("IsPartnerRevealed").Return(false)
 	m.On("GetRoundPickerPoints").Return(0)
 	m.On("GetRoundMultiplier").Return(1)
+	m.On("GetRoundPickerWon").Return(false)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
 }
@@ -108,12 +110,22 @@ func TestSheepsheadCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
-	t.Run("round end prompt", func(t *testing.T) {
+	t.Run("round end shows picker won result", func(t *testing.T) {
+		m, _ := setupSheepsheadCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundPickerWon")
+		m.On("GetPhase").Return(domain.SheepsheadPhaseRoundEnd)
+		m.On("GetRoundPickerWon").Return(true)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, i18n.T("sheepshead.roundPickerWon"))
+	})
+
+	t.Run("round end shows picker lost result", func(t *testing.T) {
 		m, _ := setupSheepsheadCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.SheepsheadPhaseRoundEnd)
-		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		result := p.Output(m, nil) // default GetRoundPickerWon = false
+		assert.Contains(t, result, i18n.T("sheepshead.roundPickerLost"))
 	})
 
 	t.Run("game end banner", func(t *testing.T) {

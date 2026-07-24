@@ -65,6 +65,9 @@
     "opponentTeamWin": "相手チームの勝ち"
   },
   "hintPlay": "おすすめの一手",
+  "hintOrderUpTake": "おすすめ: 取る",
+  "hintOrderUpPass": "おすすめ: パス",
+  "hintCallSuit": "おすすめ: {{suit}}を宣言",
   "hintReason": {
     "strategic_pickup": "手札が強いので取る",
     "pass_recommended": "手札が弱いのでパス",
@@ -73,7 +76,8 @@
     "lead_strong": "強いカードでリード",
     "follow_suit": "リードスートに従う",
     "trump_cut": "切り札でカット",
-    "discard_weak": "最低点のカードを捨てる"
+    "discard_weak": "最低点のカードを捨てる",
+    "fallback": "最善手"
   },
   "tutorial": {
     "bidControls": "ピックアップ: 表向きカードのスートを切り札にするか決めます。",

@@ -16,6 +16,7 @@
   "currentLow": "Current low: {{low}}",
   "currentLowIncomplete": "Low incomplete (fewer than 5 ranks)",
   "anteBringIn": "Ante/Bring-in",
+  "bringIn": "Bring-in",
   "handNumber": "Hand {{count}} / Lv.{{level}}",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} times)",
@@ -43,7 +44,11 @@
     "afTooltip": "Aggression factor"
   },
   "settings": {
-    "cpuMetaAI": "CPU Adaptive AI"
+    "cpuMetaAI": "CPU Adaptive AI",
+    "ante": "Ante",
+    "anteHelp": "The forced bet every player posts at the start of each hand. Changes take effect after a reset (from the next game).",
+    "tournamentMode": "Tournament Mode",
+    "tournamentModeHelp": "Tournament format where the ante rises every few hands. Changes take effect after a reset (from the next game)."
   },
   "tutorial": {
     "playerHand": "Your hand. Hole cards and door cards are shown. In Razz, the lowest hand wins.",

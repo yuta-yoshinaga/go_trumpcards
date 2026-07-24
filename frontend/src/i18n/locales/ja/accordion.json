@@ -10,6 +10,7 @@
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "undo": "元に戻す",
+  "autoComplete": "自動完成",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "result": {
@@ -38,5 +39,15 @@
   },
   "nav": {
     "accordion": "アコーディオン"
+  },
+  "kbd": {
+    "title": "キーボードショートカット",
+    "move": "パイルの選択を移動",
+    "merge": "選択中のパイルを1つ左／3つ左へ重ねる",
+    "autoComplete": "推奨手を自動で連続実行",
+    "hint": "ヒントを表示",
+    "undo": "1手戻す",
+    "giveup": "ギブアップ",
+    "clear": "選択を解除"
   }
 }

@@ -91,15 +91,17 @@ func TestKingAlbertCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ゲームオーバー")
 	})
 
-	t.Run("stalemate", func(t *testing.T) {
+	t.Run("stalemate shows the undo-to-escape guidance", func(t *testing.T) {
 		bg := new(interfaces.MockKingAlbertGame)
 		setupKingAlbertCuiMockDefaults(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
 		bg.On("IsStalemate").Return(true)
+		bg.On("UndoToEscape").Return(3)
 
 		p := new(KingAlbertCuiPresenter)
 		result := p.Output(bg, nil)
 		assert.Contains(t, result, "手詰まり")
+		assert.Contains(t, result, "脱出には undo を 3 回")
 	})
 
 	t.Run("empty column and depleted reserve", func(t *testing.T) {

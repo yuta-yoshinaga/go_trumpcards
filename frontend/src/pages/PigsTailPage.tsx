@@ -4,11 +4,13 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CircularDeck } from '../components/CircularDeck';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCliGame } from '../hooks/useCliGame';
@@ -18,12 +20,15 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import i18n from '../i18n';
 import { badgeErrorColors } from '../styles/badgeStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, PigsTailResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
-import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { parsePigtailCommand, pigtailHelp } from '../utils/cli/commands/pigtailCommands';
+import { formatPigtailState } from '../utils/cli/formatters/pigtailFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 const SUIT_SYMBOLS: Record<string, string> = {
   SPADE: '♠',
@@ -39,6 +44,12 @@ function centerCardLabel(card: Card): string {
 
 /** Max number of recent center-pile tops kept in the client-side tail strip. */
 const CENTER_HISTORY_MAX = 6;
+
+/** Default participant count (1 human + 3 CPU). Mirrors the domain default. */
+const PIGTAIL_DEFAULT_PLAYER_COUNT = 4;
+
+/** Selectable participant counts (1 human + CPUs). Mirrors the domain 2..6 range. */
+const PIGTAIL_PLAYER_COUNT_OPTIONS = [2, 3, 4, 5, 6] as const;
 
 const PT_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -82,8 +93,9 @@ function PigsTailPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pigtail');
   const { state, loading, exec: execApi } = useGameApi(pigtailApi.exec);
+  const [playerCount, setPlayerCount] = useState<number>(PIGTAIL_DEFAULT_PLAYER_COUNT);
   const handleDraw = useCallback(() => execApi('draw'), [execApi]);
-  const handleReset = useCallback(() => execApi('reset'), [execApi]);
+  const handleReset = useCallback(() => execApi('reset', undefined, playerCount), [execApi, playerCount]);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('pigtail', state);
 
   useMountReset(execApi);
@@ -93,33 +105,17 @@ function PigsTailPageContent() {
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pigtail');
   type PtArgs = Parameters<typeof pigtailApi.exec>;
+  // pigtailHelp() reads i18n internally, so depend on i18n.language to
+  // re-localize the CLI help after a runtime language switch.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: i18n.language drives help re-localization
   const cliConfig: CliGameConfig<PigsTailResponse, PtArgs> = useMemo(
     () => ({
       gameName: 'pigtail',
-      parseCommand: (input: string): CliParseResult<PtArgs> => {
-        const cmd = input.trim().toLowerCase();
-        if (cmd === 'reset' || cmd === 'r') return { args: ['reset'] };
-        if (cmd === 'draw' || cmd === 'd') return { args: ['draw'] };
-        return { error: `Unknown command: ${cmd}` };
-      },
-      formatResponse: (s: PigsTailResponse) => {
-        const lines: string[] = [];
-        const phase = s.gameEndFlag ? 'End' : 'Play';
-        lines.push(`Phase: ${phase} | Circle: ${s.circleCount} | Center: ${s.centerCount}`);
-        for (const p of s.players) {
-          const tag = p.isHuman ? 'You' : `CPU ${p.id}`;
-          lines.push(`${tag}: ${p.cardCount} cards`);
-        }
-        if (s.lastDrawCard) {
-          const card = `${s.lastDrawCard.design[0]}${s.lastDrawCard.value}`;
-          lines.push(`Last: ${card} ${s.lastPenalty ? '(PENALTY)' : '(safe)'}`);
-        }
-        if (s.message) lines.push(s.message);
-        return lines.join('\n');
-      },
-      helpText: ['d/draw  - Draw a card', 'r/reset - Reset game'],
+      parseCommand: parsePigtailCommand,
+      formatResponse: formatPigtailState,
+      helpText: pigtailHelp(),
     }),
-    [],
+    [i18n.language],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -162,6 +158,9 @@ function PigsTailPageContent() {
   const isHumanTurn = !isGameEnd && state.players[state.currentTurn]?.isHuman === true;
   const currentPhaseName = isGameEnd ? phaseNames[PIGTAIL_PHASE_END] : phaseNames[PIGTAIL_PHASE_PLAY];
   const loserIsHuman = isGameEnd && state.loserIdx >= 0 && state.players[state.loserIdx]?.isHuman === true;
+  // Signature of the current draw; changing it remounts the reveal card so the
+  // flip animation re-fires on every new draw (each draw changes circleCount).
+  const drawSig = `${state.circleCount}-${state.centerCount}-${state.lastDrawCard ? `${state.lastDrawCard.design}${state.lastDrawCard.value}` : 'none'}`;
 
   return (
     <GamePageShell
@@ -181,6 +180,27 @@ function PigsTailPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <SettingsPanel
+            title={t('setup.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'select' as const,
+                    id: 'playerCount',
+                    label: t('setup.playerCount'),
+                    value: playerCount,
+                    options: PIGTAIL_PLAYER_COUNT_OPTIONS.map((n) => ({
+                      value: n,
+                      label: t('setup.playerCountUnit', { count: n }),
+                    })),
+                    onSelect: (v) => setPlayerCount(Number(v)),
+                    testId: 'pigtail-player-count',
+                  },
+                ],
+              },
+            ]}
+          />
           {penaltyFlash > 0 && (
             <div
               aria-hidden="true"
@@ -234,12 +254,22 @@ function PigsTailPageContent() {
               </div>
             </div>
 
-            {/* Last action indicator */}
+            {/* Drawn-card reveal: flips the just-drawn card face-up onto the board
+                so the player can see what was drawn, with a red highlight on penalty. */}
             {state.lastDrawCard && (
-              <div
-                className={`text-center text-sm font-medium ${state.lastPenalty ? 'text-ds-error' : 'text-ds-success'}`}
-              >
-                {state.lastPenalty ? t('label.penalty') : t('label.safe')}
+              <div className="flex flex-col items-center gap-1" data-testid="pt-draw-reveal">
+                <div key={drawSig} className="motion-safe:animate-flipIn">
+                  <div
+                    className={
+                      state.lastPenalty ? 'rounded-lg ring-2 ring-ds-error shadow-lg shadow-ds-error/50' : undefined
+                    }
+                  >
+                    <AnimatedCard card={state.lastDrawCard} width={48} silent />
+                  </div>
+                </div>
+                <div className={`text-sm font-medium ${state.lastPenalty ? 'text-ds-error' : 'text-ds-success'}`}>
+                  {state.lastPenalty ? t('label.penalty') : t('label.safe')}
+                </div>
               </div>
             )}
 

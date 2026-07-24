@@ -74,6 +74,17 @@ func TestWattenCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ステーク: 2")
 	})
 
+	t.Run("declared schlag rank shows a card-face label", func(t *testing.T) {
+		m, _ := setupWattenCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSchlagRank")
+		m.On("GetSchlagRank").Return(11)
+
+		result := p.Output(m, nil)
+		// Rank 11 is shown as "J", not the raw number.
+		assert.Contains(t, result, "Schlag=J")
+		assert.NotContains(t, result, "Schlag=11")
+	})
+
 	t.Run("undeclared", func(t *testing.T) {
 		m, _ := setupWattenCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCriticalSuit")

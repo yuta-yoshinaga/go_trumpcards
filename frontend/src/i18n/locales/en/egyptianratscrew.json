@@ -38,6 +38,10 @@
       "pair": "PAIR!",
       "sandwich": "SANDWICH!",
       "miss": "MISS!"
+    },
+    "slapAnnounce": {
+      "correct": "{{player}} slapped correctly ({{reason}})",
+      "wrong": "{{player}} slapped incorrectly"
     }
   },
   "hint": {

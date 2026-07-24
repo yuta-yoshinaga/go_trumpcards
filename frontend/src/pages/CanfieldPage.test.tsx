@@ -49,6 +49,7 @@ const gameOverState: CanfieldResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.clear();
   mockExec.mockResolvedValue(playingState);
 });
 
@@ -129,6 +130,53 @@ describe('CanfieldPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('shows the hint source → destination text after clicking hint (tableau → foundation)', async () => {
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // The hint response carries the suggested move: tableau col 0 top card → foundation.
+    mockExec.mockResolvedValueOnce({
+      ...playingState,
+      hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 2 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    const display = await screen.findByTestId('cf-hint-display');
+    // Visible line names both source (場札 0) and destination (組札).
+    await waitFor(() => expect(display).toHaveTextContent('場札 0'));
+    expect(display).toHaveTextContent('組札');
+    // Screen-reader announcement resolves the hinted card face + destination.
+    expect(screen.getByTestId('cf-hint-announcement')).toHaveTextContent('♠ 7');
+  });
+
+  it('announces a reserve → tableau hint using the reserve top card', async () => {
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValueOnce({
+      ...playingState,
+      hint: { fromZone: 'reserve', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 1 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    const display = await screen.findByTestId('cf-hint-display');
+    await waitFor(() => expect(display).toHaveTextContent('リザーブ'));
+    expect(display).toHaveTextContent('場札 1');
+    // Reserve top card is ♠ 3 in playingState.
+    expect(screen.getByTestId('cf-hint-announcement')).toHaveTextContent('♠ 3');
+  });
+
+  it('clears the hint display after the next move (response without a hint field)', async () => {
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValueOnce({
+      ...playingState,
+      hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'foundation', toCol: 0 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByTestId('cf-hint-display')).toHaveTextContent('ヒントがあります'));
+    // A subsequent move returns the plain state (no hint) → the display empties.
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(screen.getByRole('button', { name: /ウェイスト→組札/ }));
+    await waitFor(() => expect(screen.getByTestId('cf-hint-display')).not.toHaveTextContent('ヒントがあります'));
+  });
+
   it('autocomplete button triggers autocomplete command', async () => {
     renderWithProviders(<CanfieldPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -166,6 +214,10 @@ describe('CanfieldPage', () => {
       expect(details.tagName.toLowerCase()).toBe('details');
       // Collapsed by default (no open attribute).
       expect(details).not.toHaveAttribute('open');
+      // The <summary> itself carries the (0-based, matching the UI) column number
+      // so the accordion labels are distinguishable to a screen reader.
+      expect(details.querySelector('summary')).toHaveTextContent('列 0 の操作');
+      expect(screen.getByTestId('cf-col-actions-1').querySelector('summary')).toHaveTextContent('列 1 の操作');
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: orig });
       window.dispatchEvent(new Event('resize'));
@@ -176,6 +228,32 @@ describe('CanfieldPage', () => {
     renderWithProviders(<CanfieldPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByTestId('cf-col-actions-0')).not.toBeInTheDocument();
+  });
+
+  it('collapses per-column actions on desktop when the setting is toggled on', async () => {
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Initially expanded (no disclosure) on desktop.
+    expect(screen.queryByTestId('cf-col-actions-0')).not.toBeInTheDocument();
+    // Toggle the "collapse column actions" setting.
+    const toggle = screen.getByRole('checkbox', { name: '列の操作ボタンを折りたたむ' });
+    fireEvent.click(toggle);
+    // Now each column's actions live behind a <details> disclosure, collapsed by default.
+    const details = await screen.findByTestId('cf-col-actions-0');
+    expect(details.tagName.toLowerCase()).toBe('details');
+    expect(details).not.toHaveAttribute('open');
+    expect(details.querySelector('summary')).toHaveTextContent('列 0 の操作');
+    // The move buttons remain reachable inside the disclosure (functionality preserved).
+    expect(screen.getAllByRole('button', { name: '→組' }).length).toBeGreaterThan(0);
+  });
+
+  it('persists the collapse setting across remounts via localStorage', async () => {
+    localStorage.setItem('canfield-collapse-col-actions', 'true');
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Restored as collapsed on desktop without re-toggling.
+    expect(await screen.findByTestId('cf-col-actions-0')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: '列の操作ボタンを折りたたむ' })).toBeChecked();
   });
 
   it('per-column action buttons dispatch the matching move', async () => {

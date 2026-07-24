@@ -23,6 +23,11 @@ func (p *ShortDeckCuiPresenter) ActionLogOutput(o interfaces.ShortDeckGame) stri
 // Output renders the current game state for the active locale (#1699).
 func (p *ShortDeckCuiPresenter) Output(o interfaces.ShortDeckGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("shortdeck.outputTitle"), func(b *strings.Builder) {
+		// Short Deck reshuffles the hand ranking (flush beats full house) and
+		// counts A-6-7-8-9 as a straight; surface it every render so the CUI
+		// player is not caught out by the 36-card deck's rules.
+		b.WriteString(i18n.T("shortdeck.ruleReminderLine") + "\n")
+
 		cfg := o.GetConfig()
 		if cfg.TournamentMode {
 			b.WriteString(i18n.Tf("shortdeck.tournamentLine",

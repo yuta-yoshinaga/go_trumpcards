@@ -197,3 +197,4 @@ Visual size of a checkbox or radio dot may stay at ~16-20px so the element still
 | 2026-04-04 | Initial design system created | Created by /design-consultation. Luxury/Refined direction to differentiate from generic casino aesthetic. Gold + dark neutrals, Fraunces serif headings, DM Sans body. |
 | 2026-04-04 | Keep existing game felt colors | Green felt backgrounds are table stakes for card games — players expect them. No change needed. |
 | 2026-04-04 | Warm ivory over pure white | Reduces eye strain for long game sessions while maintaining AAA contrast ratio (12.8:1). |
+| 2026-07-15 | Knockout Whist leader/round-winner badges use `badge*Colors` opaque tokens; eliminated rows use `opacity-70` (not `opacity-40`) | The old `bg-white/20` / `bg-ds-warning/30` badges and `opacity-40` strike-through failed WCAG AA on the dark panel; opaque badge helpers and a lighter dim keep state readable for low-vision users. |

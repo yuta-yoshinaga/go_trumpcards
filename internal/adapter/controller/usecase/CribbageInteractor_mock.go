@@ -25,6 +25,10 @@ func (_m *MockCribbageInteractor) Discard(cardIndices []int) string {
 	return _m.Called(cardIndices).String(0)
 }
 
+func (_m *MockCribbageInteractor) Cut() string {
+	return _m.Called().String(0)
+}
+
 func (_m *MockCribbageInteractor) Peg(cardIndex int) string {
 	return _m.Called(cardIndex).String(0)
 }

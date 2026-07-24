@@ -14,6 +14,7 @@ import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -27,10 +28,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { WattenResponse } from '../types/card';
 import { WattenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseWattenCommand, WATTEN_HELP } from '../utils/cli/commands/wattenCommands';
 import { formatWattenState } from '../utils/cli/formatters/wattenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
+import { buildWattenStakeHistory, WATTEN_BASE_STAKE } from '../utils/wattenStakeHistory';
+import { wattenTrumpCards } from '../utils/wattenTrumps';
 
 /** Watten tutorial step definitions. */
 const WATTEN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -155,6 +159,19 @@ function WattenPageContent() {
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('watten', WATTEN_PHASE_KEYS);
 
+  // Dedicated action-log fetch used only to reconstruct the stake-escalation
+  // mini-history. Kept separate from the page's shared action-log panel so the
+  // history stays fresh during play (the shared log is opened manually at end).
+  const { actionLog: stakeLog, showActionLog: refreshStakeLog } = useActionLog('watten');
+  // Re-fetch the log whenever a stake-relevant field changes so the mini-history
+  // tracks the latest raise/respond exchange; these fields are triggers, not
+  // values read inside the effect body.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: stake fields are re-fetch triggers, not deps read in the callback.
+  useEffect(() => {
+    void refreshStakeLog();
+  }, [refreshStakeLog, state?.stake, state?.pendingStake, state?.raiseCount, state?.roundNumber]);
+  const stakeHistory = useMemo(() => buildWattenStakeHistory(stakeLog), [stakeLog]);
+
   if (!state)
     return <GameSkeleton gameKey="watten" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
@@ -174,6 +191,15 @@ function WattenPageContent() {
 
   const schlagText = state.schlagRank > 0 ? schlagLabel(state.schlagRank) : t('schlagNone');
   const criticalText = state.criticalSuit >= 1 ? t(SUIT_KEYS[state.criticalSuit] ?? 'suitNone') : t('suitNone');
+
+  // Effective Schlag/critical for the top-trump preview: the dealer's pending
+  // pick during the Declare phase, otherwise whatever the server has recorded.
+  // This drives both the in-hand ring and the explanatory panel, so the
+  // highlight stays consistent from declaration through the play phase.
+  const effectiveRank = selectedRank ?? state.schlagRank;
+  const effectiveSuit = selectedSuit ?? state.criticalSuit;
+  const humanTrumps = humanPlayer ? wattenTrumpCards(humanPlayer.cards, effectiveRank, effectiveSuit) : [];
+  const trumpIndices = humanTrumps.map((tc) => tc.index);
 
   const handleManualReset = () => {
     hideActionLog();
@@ -297,6 +323,32 @@ function WattenPageContent() {
                   </table>
                 </div>
 
+                {/* Stake-escalation mini-history (raise/hold/fold sequence) */}
+                {stakeHistory.length > 0 && (
+                  <div
+                    className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="watten-stake-history"
+                  >
+                    <div className="text-ds-text-primary mb-1">{t('stakeHistory.title')}</div>
+                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                      <span>{t('stakeHistory.start', { stake: WATTEN_BASE_STAKE })}</span>
+                      {stakeHistory.map((ev) => (
+                        <span key={ev.key} className="flex items-center gap-x-1.5">
+                          <span aria-hidden="true" className="text-ds-text-muted">
+                            →
+                          </span>
+                          <span className={ev.type === 'fold' ? 'text-ds-warning' : 'text-ds-accent'}>
+                            {t(`stakeHistory.${ev.type}`, {
+                              player: findPlayerName(state.players, ev.playerIdx),
+                              stake: ev.stake,
+                            })}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Players: cards / tricks */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
@@ -355,6 +407,31 @@ function WattenPageContent() {
                 {t('declarePhase')}
               </div>
             )}
+            {canDeclare && (
+              <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="watten-trump-panel">
+                <div className="text-ds-text-primary mb-1">{t('trumpPanel.title')}</div>
+                <p className="mb-2 text-xs leading-relaxed">{t('trumpPanel.rule')}</p>
+                {humanTrumps.length > 0 ? (
+                  <>
+                    <div className="text-ds-accent font-semibold mb-1" data-testid="watten-trump-count">
+                      {t('trumpPanel.summary', { count: humanTrumps.length })}
+                    </div>
+                    <ul className="flex flex-wrap gap-x-3 gap-y-0.5">
+                      {humanTrumps.map((tc) => (
+                        <li key={`${tc.card.design}-${tc.card.value}`} className="whitespace-nowrap">
+                          <span className="text-ds-text-primary">{cardAlt(tc.card)}</span>{' '}
+                          <span className="text-ds-text-muted">— {t(`trumpCat.${tc.category}`)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <div className="text-xs" data-testid="watten-trump-count">
+                    {t('trumpPanel.none')}
+                  </div>
+                )}
+              </div>
+            )}
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -363,6 +440,8 @@ function WattenPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="watten"
+                trumpIndices={trumpIndices.length > 0 ? trumpIndices : undefined}
+                trumpTitle={t('trumpRing')}
               />
             )}
 
@@ -441,6 +520,9 @@ function WattenPageContent() {
               {canRespond && (
                 <>
                   <span className="text-ds-text-muted text-sm">{t('respondPhase', { stake: state.pendingStake })}</span>
+                  <span className="text-ds-warning text-sm" data-testid="watten-respond-loss">
+                    {t('respondLoss', { stake: state.stake })}
+                  </span>
                   <button type="button" className={btnPrimary} onClick={() => handleRespond(true)} disabled={loading}>
                     {t('holdButton')}
                   </button>

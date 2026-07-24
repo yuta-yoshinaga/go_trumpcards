@@ -34,6 +34,10 @@
   "drawStockButton": "山札から引く",
   "drawDiscardButton": "捨て札を取る",
   "meldButton": "メルドする",
+  "meldPoints": {
+    "initial": "初回メルド最低点: {{min}} / 選択合計: {{points}}",
+    "selected": "選択合計: {{points}}"
+  },
   "skipMeldButton": "スキップ",
   "discardButton": "捨てる",
   "goOutButton": "上がる",
@@ -44,6 +48,12 @@
     "frozen": "フリーズ中はワイルドカードでの代用ができません",
     "selectOneMore": "もう1枚選択してください",
     "tooMany": "選択は2枚までです"
+  },
+  "goOutReason": {
+    "ready": "上がれます（フット消化・赤/黒カナスタ達成済み）",
+    "needFoot": "まだフットに入っていないため上がれません",
+    "needRedCanasta": "赤（ナチュラル）カナスタが不足しています",
+    "needBlackCanasta": "黒（ミックス）カナスタが不足しています"
   },
   "frozenIndicator": "❄️ フリーズ",
   "selectMeld": "メルドするカードを選択してください",

@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -32,6 +33,28 @@ func TestDragonTigerCuiPresenter_Output_BetPhase(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
 	assert.Contains(t, result, "フェーズ: BET")
+	// No history yet, so the history line is omitted.
+	assert.NotContains(t, result, "履歴:")
+}
+
+func TestDragonTigerCuiPresenter_Output_History(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(DragonTigerCuiPresenter)
+	m := new(interfaces.MockDragonTigerGame)
+	setupDragonTigerCuiMockDefaults(m)
+	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetHistory")
+	m.On("GetHistory").Return([]int{
+		domain.DragonTigerResultDragon,
+		domain.DragonTigerResultTiger,
+		domain.DragonTigerResultTie,
+		domain.DragonTigerResultDragon,
+	}).Maybe()
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "履歴: D T = D")
+	assert.Contains(t, result, "集計: D:2 T:1 =:1")
 }
 
 func TestDragonTigerCuiPresenter_Output_DragonWins(t *testing.T) {

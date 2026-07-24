@@ -19,6 +19,7 @@
   "openingHint": "最初のメルドは合計 {{n}} 点以上が必要です",
   "stockLabel": "山札",
   "discardLabel": "捨て札",
+  "revealedHand": "公開手札",
   "yourHand": "あなたの手札",
   "cards": "枚数",
   "scoreLabel": "累計",
@@ -27,7 +28,9 @@
   "drawStock": "山札から引く",
   "drawDiscard": "捨て札を取る",
   "addGroup": "グループに追加",
-  "removeLastGroup": "最後のグループを取り消す",
+  "stagedGroupsTitle": "組成中のメルド",
+  "groupLabel": "グループ{{n}}",
+  "removeGroupAria": "グループ{{n}}を取り消す",
   "meld": "メルドを場に出す",
   "layoff": "レイオフ",
   "meldAria": "{{player}}のメルド{{meld}}",
@@ -39,5 +42,6 @@
     "table": "各プレイヤーは場にメルド(セット/ラン)を並べます。最初のメルドは画面上部のオープニング点数を満たす必要があります。",
     "hand": "手札からカードを選び、メルドのグループに割り当てます。ジョーカーはワイルドカードとして使えます。",
     "actions": "ドロー → メルド/レイオフ → カード1枚を捨てる、の流れで進行します。"
-  }
+  },
+  "cardInGroup": "{{card}}（グループ{{group}}に追加済み）"
 }

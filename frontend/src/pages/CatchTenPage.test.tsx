@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { catchtenApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -64,6 +64,22 @@ describe('CatchTenPage', () => {
     );
   });
 
+  it('renders CPU stats as a structured definition list with labeled fields', async () => {
+    renderWithProviders(<CatchTenPage />);
+    // Each CPU stat block is a <dl>; every field is a term/definition pair so
+    // screen readers announce hand, team and scores independently instead of
+    // one pipe-joined string.
+    await waitFor(() => expect(screen.getAllByRole('term').length).toBeGreaterThan(0));
+    // The sr-only labels give each value its own accessible name.
+    expect(screen.getAllByText('手札').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('definition').length).toBeGreaterThan(0);
+    // The decorative pipe separators are hidden from assistive tech.
+    const pipes = screen.getAllByText('|');
+    for (const pipe of pipes) {
+      expect(pipe).toHaveAttribute('aria-hidden', 'true');
+    }
+  });
+
   it('advances to the next trick when pressing n at trick end', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1 }));
     renderWithProviders(<CatchTenPage />);
@@ -127,5 +143,37 @@ describe('CatchTenPage', () => {
     const team1Chips = screen.getAllByText('チーム 1').filter((el) => el.className.includes('text-ds-error'));
     expect(team0Chips.length).toBeGreaterThan(0);
     expect(team1Chips.length).toBeGreaterThan(0);
+  });
+
+  it('plays the win celebration when the human team wins', async () => {
+    mockExec.mockResolvedValue(gameEndState); // winnerTeam: 0 = human team
+    renderWithProviders(<CatchTenPage />);
+    expect(await screen.findByTestId('win-celebration')).toBeInTheDocument();
+  });
+
+  it('does not celebrate when the CPU team wins', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 3, gameEndFlag: true, winnerTeam: 1 }));
+    renderWithProviders(<CatchTenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    // Outwait the celebration's 400ms delay so a wrongly-fired overlay would be visible.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 600)));
+    expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
+  });
+
+  it('does not celebrate on a draw (winnerTeam -1)', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 3, gameEndFlag: true, winnerTeam: -1 }));
+    renderWithProviders(<CatchTenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    await act(() => new Promise((resolve) => setTimeout(resolve, 600)));
+    expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
+  });
+
+  it('names the recommended card (suit + rank) in the hint text', async () => {
+    renderWithProviders(<CatchTenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    // cardIndex 0 in the human hand is ♠ A.
+    mockExec.mockResolvedValueOnce(makeState({ hint: { cardIndex: 0, reason: 'lead_strong' } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/♠ A/)).toBeInTheDocument());
   });
 });

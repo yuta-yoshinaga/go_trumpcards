@@ -72,6 +72,9 @@ const gameEndState = makeState({
 });
 
 beforeEach(() => {
+  // Clear persisted CLI-mode state so an earlier CLI-toggle test does not leave the
+  // terminal enabled and hide the hand in later tests.
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(playState);
 });
@@ -103,6 +106,15 @@ describe('PishtiPage', () => {
     renderWithProviders(<PishtiPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
     expect(screen.getByTestId('hand-card-3')).toBeInTheDocument();
+  });
+
+  it('names each hand card in its aria-label and announces the turn', async () => {
+    renderWithProviders(<PishtiPage />);
+    // hand[0] is ♠5 → "♠ 5 を出す".
+    expect(await screen.findByRole('button', { name: '♠ 5 を出す' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ A を出す' })).toBeInTheDocument();
+    // The turn notice is a live region so turn arrival is announced.
+    expect(screen.getByTestId('pishti-turn-notice')).toHaveAttribute('role', 'status');
   });
 
   it('plays a hand card on the human turn', async () => {
@@ -232,5 +244,82 @@ describe('PishtiPage', () => {
     const toggle = screen.getByRole('button', { name: /CLI/i });
     fireEvent.click(toggle);
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+  });
+
+  it('highlights capturing hand cards: Jack in accent, pile-top match in success', async () => {
+    // Pile top is rank 5, so the SPADE 5 (index 0) captures (success); HEART J (index 1)
+    // always captures (accent); DIAMOND A (2) and CLOVER 9 (3) do not.
+    mockExec.mockResolvedValue(makeState({ pile: [card('CLOVER', 5)], pileTop: card('CLOVER', 5) }));
+    renderWithProviders(<PishtiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.getByTestId('hand-card-0').className).toContain('ring-ds-success');
+    expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-accent');
+    expect(screen.getByTestId('hand-card-2').className).not.toContain('ring-ds-');
+    expect(screen.getByTestId('hand-card-3').className).not.toContain('ring-ds-');
+  });
+
+  it('highlights only the Jack when the pile is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ pile: [], pileTop: null, pileCount: 0 }));
+    renderWithProviders(<PishtiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-1')).toBeInTheDocument());
+    expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-accent');
+    expect(screen.getByTestId('hand-card-0').className).not.toContain('ring-ds-');
+  });
+
+  it('does not highlight capturing cards on a CPU turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentTurn: 1, pile: [card('CLOVER', 5)], pileTop: card('CLOVER', 5) }));
+    renderWithProviders(<PishtiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-1')).toBeInTheDocument());
+    expect(screen.getByTestId('hand-card-1').className).not.toContain('ring-ds-');
+    expect(screen.getByTestId('hand-card-0').className).not.toContain('ring-ds-');
+  });
+
+  it('shows a provisional score during play: Pişti bonus plus the sole most-cards +3', async () => {
+    // Human leads on captured cards (10 vs 4/0/0) → gets the provisional most-cards +3;
+    // combined with a locked-in Pişti bonus of 10 the provisional total is 13.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ id: 0, isHuman: true, capturedCount: 10, pistiBonus: 10 }),
+          makePlayer({ id: 1, capturedCount: 4 }),
+          makePlayer({ id: 2, capturedCount: 0 }),
+          makePlayer({ id: 3, capturedCount: 0 }),
+        ],
+      }),
+    );
+    renderWithProviders(<PishtiPage />);
+    const humanReadout = await screen.findByTestId('pishti-provisional-0');
+    expect(humanReadout).toHaveTextContent('暫定 13点');
+    // A non-leader with no bonus reads 0.
+    expect(screen.getByTestId('pishti-provisional-1')).toHaveTextContent('暫定 0点');
+    // The partial-score disclosure note is shown during play.
+    expect(screen.getByTestId('pishti-provisional-note')).toBeInTheDocument();
+  });
+
+  it('awards nobody the most-cards +3 when the captured-count leader is tied', async () => {
+    // Two players tie for the most captured cards → neither gets the +3 (mirrors the
+    // domain rule), so each provisional score reflects only its Pişti bonus.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ id: 0, isHuman: true, capturedCount: 8, pistiBonus: 10 }),
+          makePlayer({ id: 1, capturedCount: 8, pistiBonus: 0 }),
+          makePlayer({ id: 2, capturedCount: 2 }),
+          makePlayer({ id: 3, capturedCount: 0 }),
+        ],
+      }),
+    );
+    renderWithProviders(<PishtiPage />);
+    const humanReadout = await screen.findByTestId('pishti-provisional-0');
+    expect(humanReadout).toHaveTextContent('暫定 10点');
+    expect(screen.getByTestId('pishti-provisional-1')).toHaveTextContent('暫定 0点');
+  });
+
+  it('hides the provisional readout and shows the final score on game end', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<PishtiPage />);
+    await waitFor(() => expect(screen.getByText(/11点/)).toBeInTheDocument());
+    expect(screen.queryByTestId('pishti-provisional-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('pishti-provisional-note')).not.toBeInTheDocument();
   });
 });

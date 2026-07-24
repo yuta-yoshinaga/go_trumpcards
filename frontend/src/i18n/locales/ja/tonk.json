@@ -25,6 +25,7 @@
   "scoresTotal": "累計",
   "drawStockButton": "山札から引く",
   "drawDiscardButton": "捨て札から引く",
+  "drawDiscardCardLabel": "捨て札から引く: {{card}}",
   "discardButton": "捨てる",
   "knockButton": "ノック",
   "knockUndercutWarning": "相手の手札が少ないため、アンダーカットのリスクがあります",

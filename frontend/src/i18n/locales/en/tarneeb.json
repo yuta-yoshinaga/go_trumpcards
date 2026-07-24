@@ -20,7 +20,14 @@
   "trick": "Trick {{n}}",
   "trump": "Trump",
   "trumpUndeclared": "not yet declared",
+  "suitName": {
+    "spade": "Spade",
+    "club": "Club",
+    "heart": "Heart",
+    "diamond": "Diamond"
+  },
   "highestBid": "Current high bid",
+  "redeal": "Redeals: {{count}}",
   "cards": "{{count}} cards",
   "bid": "bid {{n}}",
   "bidNone": "no bid",
@@ -31,6 +38,8 @@
   "scoresTotal": "Total",
   "yourTeam": "Your team",
   "opponentTeam": "Opponents",
+  "breakdownTitle": "Per-player trick breakdown",
+  "breakdownTricks": "{{count}} tricks",
   "bidButton": "Bid",
   "passButton": "Pass",
   "bidSelectLabel": "Select your bid",

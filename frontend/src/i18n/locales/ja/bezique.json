@@ -19,6 +19,7 @@
   "trumpCard": "切り札カード: {{card}}",
   "stock": "山札: {{count}}枚",
   "noTrump": "未宣言",
+  "stockLowWarning": "まもなくエンドゲーム（山札残り{{count}}枚）— メルドはお早めに宣言を。",
   "endgameNotice": "フェーズ2（終盤）— マストフォロー。メルドは宣言できません。最終トリックは+10点。",
   "currentTrick": "現在のトリック",
   "you": "あなた",
@@ -31,6 +32,14 @@
   "nextRound": "次のディール",
   "target": "目標: {{points}}点",
   "meldPrompt": "宣言するメルドを選んでください:",
+  "meldMarriageName": "{{suit}}の{{name}}",
+  "meldDeclareLabel": "{{name}}を宣言 +{{points}}点",
+  "suitName": {
+    "spade": "スペード",
+    "club": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
+  },
   "meldShort": "メルド",
   "meldName": {
     "marriage": "結婚 (K+Q)",

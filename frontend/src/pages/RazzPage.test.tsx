@@ -431,7 +431,9 @@ describe('RazzPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ante: 1, tournamentMode: false, cpuMetaAI: false }),
+    );
   });
 
   it('uses outline style for reset button', async () => {
@@ -736,7 +738,32 @@ describe('RazzPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ante: 1, tournamentMode: false, cpuMetaAI: true }),
+    );
+  });
+
+  // ---- settings ante + tournament mode ----
+  it('changes ante and tournament mode, then passes them to reset', async () => {
+    renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const anteSelect = screen.getByTestId('razz-ante-select') as HTMLSelectElement;
+    fireEvent.change(anteSelect, { target: { value: '5' } });
+    expect(anteSelect.value).toBe('5');
+
+    const tournamentCheckbox = screen.getByRole('checkbox', { name: 'トーナメントモード' });
+    expect(tournamentCheckbox).not.toBeChecked();
+    fireEvent.click(tournamentCheckbox);
+    expect(tournamentCheckbox).toBeChecked();
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ante: 5, tournamentMode: true, cpuMetaAI: false }),
+    );
   });
 
   // ---- end phase + win celebration ----
@@ -915,6 +942,31 @@ describe('RazzPage', () => {
   });
 
   // ---- Seventh street: 3 hole card placeholders ----
+  // ---- bring-in indicator ----
+  it('shows the bring-in badge on the human when they post the bring-in during 3rd street', async () => {
+    // thirdStreetState has bringInPlayerIdx 0 → the human (id 0).
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<RazzPage />);
+    const badge = await screen.findByTestId('razz-bringin-badge-0');
+    expect(badge).toHaveTextContent('ブリングイン');
+  });
+
+  it('shows the bring-in badge on the CPU indicated by bringInPlayerIdx during 3rd street', async () => {
+    mockExec.mockResolvedValue({ ...thirdStreetState, bringInPlayerIdx: 1 });
+    renderWithProviders(<RazzPage />);
+    // bringInPlayerIdx 1 → CPU with id 1; the human (id 0) must not carry the badge.
+    expect(await screen.findByTestId('razz-bringin-badge-1')).toHaveTextContent('ブリングイン');
+    expect(screen.queryByTestId('razz-bringin-badge-0')).not.toBeInTheDocument();
+  });
+
+  it('hides the bring-in badge outside of 3rd street', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByText('ショーダウン')).toBeInTheDocument());
+    expect(screen.queryByTestId('razz-bringin-badge-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('razz-bringin-badge-1')).not.toBeInTheDocument();
+  });
+
   it('shows 3 face-down placeholders for human hole cards on seventh street', async () => {
     mockExec.mockResolvedValue({
       ...thirdStreetState,

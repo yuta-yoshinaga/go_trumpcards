@@ -26,14 +26,18 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
+import i18n from '../i18n';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { EasthavenResponse } from '../types/card';
+import type { Card, EasthavenResponse } from '../types/card';
 import { EasthavenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { easthavenHelp, parseEasthavenCommand } from '../utils/cli/commands/easthavenCommands';
+import { formatEasthavenState } from '../utils/cli/formatters/easthavenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { easthavenFoundationTarget } from '../utils/easthavenFoundationTarget';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -72,99 +76,6 @@ const EH_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
-
-/** CLI help text for Easthaven. */
-const EH_HELP = [
-  'm <from> <to>  Move top card between tableau columns',
-  'm t <col> f    Move tableau to foundation',
-  'm t <col> <idx> t <col>  Move a run by index',
-  'd              Deal one card to every column',
-  'g              Give up',
-  'h              Hint',
-  'ac             Auto-complete',
-  'u              Undo',
-  'r              Reset',
-];
-
-/** Parse an Easthaven CLI command into API call arguments. */
-function parseEasthavenCommand(input: string): { args: Parameters<typeof easthavenApi.exec> } | { error: string } {
-  const parts = input.trim().split(/\s+/);
-  const cmd = parts[0]?.toLowerCase();
-  switch (cmd) {
-    case 'r':
-    case 'reset':
-      return { args: ['reset'] };
-    case 'd':
-    case 'deal':
-      return { args: ['deal'] };
-    case 'g':
-    case 'giveup':
-      return { args: ['giveup'] };
-    case 'h':
-    case 'hint':
-      return { args: ['hint'] };
-    case 'ac':
-    case 'autocomplete':
-      return { args: ['autocomplete'] };
-    case 'u':
-    case 'undo':
-      return { args: ['undo'] };
-    case 'm':
-    case 'move': {
-      // m t <col> f  → tableau to foundation
-      if (parts.length === 4 && parts[1] === 't' && parts[3] === 'f') {
-        const col = Number.parseInt(parts[2], 10);
-        if (Number.isNaN(col)) return { error: 'Invalid column' };
-        return { args: ['move', { zone: 'tableau', col, cardIndex: -1 }, { zone: 'foundation' }] };
-      }
-      // m t <col> <idx> t <col>  → move a run by card index
-      if (parts.length === 6 && parts[1] === 't' && parts[4] === 't') {
-        const from = Number.parseInt(parts[2], 10);
-        const idx = Number.parseInt(parts[3], 10);
-        const to = Number.parseInt(parts[5], 10);
-        if (Number.isNaN(from) || Number.isNaN(idx) || Number.isNaN(to)) return { error: 'Invalid arg' };
-        return {
-          args: ['move', { zone: 'tableau', col: from, cardIndex: idx }, { zone: 'tableau', col: to }],
-        };
-      }
-      // m <from> <to>  → tableau top card
-      if (parts.length === 3) {
-        const from = Number.parseInt(parts[1], 10);
-        const to = Number.parseInt(parts[2], 10);
-        if (Number.isNaN(from) || Number.isNaN(to)) return { error: 'Invalid column' };
-        return {
-          args: ['move', { zone: 'tableau', col: from, cardIndex: -1 }, { zone: 'tableau', col: to }],
-        };
-      }
-      return { error: 'Usage: m <fromCol> <toCol> | m t <col> f | m t <col> <idx> t <col>' };
-    }
-    default:
-      return { error: `Unknown command: ${cmd}` };
-  }
-}
-
-/** Format Easthaven state for CLI display. */
-function formatEasthavenState(state: EasthavenResponse): string {
-  const lines: string[] = [];
-  lines.push(`Stock: ${state.stockCount}`);
-  lines.push('Foundation:');
-  for (let i = 0; i < state.foundation.length; i++) {
-    const pile = state.foundation[i];
-    const top = pile.length > 0 ? `${pile[pile.length - 1].design}-${pile[pile.length - 1].value}` : 'empty';
-    lines.push(`  ${FOUNDATION_SUITS[i]}: ${top} (${pile.length})`);
-  }
-  lines.push('');
-  lines.push('Tableau:');
-  for (let col = 0; col < state.tableau.length; col++) {
-    const cards = state.tableau[col]
-      .map((tc, i) => (tc.faceUp && tc.card ? `[${i}]${tc.card.design}-${tc.card.value}` : `[${i}]??`))
-      .join(' ');
-    lines.push(`  ${col}: ${cards || '(empty)'}`);
-  }
-  lines.push('');
-  lines.push(`Moves: ${state.moveCount}  Phase: ${state.phase}`);
-  return lines.join('\n');
-}
 
 /** Renders the Easthaven game page. */
 export const EasthavenPage = withTutorial(EasthavenPageContent, 'easthaven', EH_TUTORIAL_STEPS);
@@ -213,14 +124,17 @@ function EasthavenPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('easthaven');
+  // easthavenHelp() reads i18n internally, so depend on i18n.language to
+  // re-localize the CLI help after a runtime language switch.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: i18n.language drives help re-localization
   const easthavenCliConfig: CliGameConfig<EasthavenResponse, Parameters<typeof easthavenApi.exec>> = useMemo(
     () => ({
       gameName: 'easthaven',
       parseCommand: parseEasthavenCommand,
       formatResponse: formatEasthavenState,
-      helpText: EH_HELP,
+      helpText: easthavenHelp(),
     }),
-    [],
+    [i18n.language],
   );
   const { handleCommand } = useCliGame(apiExec, easthavenCliConfig, state, {
     addInput,
@@ -338,6 +252,21 @@ function EasthavenPageContent() {
     [apiExec, selectedSource, playSound],
   );
 
+  // Double-click / double-tap shortcut: auto-send a column's exposed top card
+  // to its foundation when a legal target exists; otherwise do nothing (no
+  // error, selection untouched). Mirrors the FreeCell foundation shortcut.
+  const handleFoundationShortcut = useCallback(
+    (col: number, card: Card) => {
+      if (!state) return;
+      const target = easthavenFoundationTarget(card, state.foundation);
+      if (!target) return;
+      void apiExec('move', { zone: 'tableau', col }, target);
+      setSelectedSource(null);
+      playSound('cardPlace');
+    },
+    [state, apiExec, playSound],
+  );
+
   const isPlayingForKbd = state?.phase === EasthavenPhase.PLAYING;
 
   const actionBindings = useMemo(
@@ -365,6 +294,17 @@ function EasthavenPageContent() {
   const isGameOver = state.phase === EasthavenPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
   const autoCompleteReady = isTableauAllFaceUp(state.tableau) && state.stockCount === 0;
+
+  // Compose the hint into a full "move <card> in column N → <dest>" sentence so
+  // the aria-live announcement and visible box read completely, even when the
+  // ring-flash source card is scrolled out of view (issue #3388).
+  const hintDest = state.hint
+    ? state.hint.toZone === 'foundation'
+      ? t('foundation')
+      : `${t('tableau')} ${state.hint.toCol}`
+    : '';
+  const hintCard = state.hint ? state.tableau[state.hint.fromCol]?.[state.hint.cardIndex]?.card : null;
+  const hintCardName = hintCard ? cardAlt(hintCard) : '';
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -554,7 +494,12 @@ function EasthavenPageContent() {
                                       } ${hintTo ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${
                                         inHoverBlock && !isSelected ? 'ring-2 ring-ds-accent/70' : ''
                                       }`}
-                                      onClick={() => {
+                                      onClick={(e) => {
+                                        // The second click of a double-click also
+                                        // fires onClick (detail === 2); ignore it so
+                                        // onDoubleClick owns the foundation shortcut
+                                        // without issuing a stray select/target move.
+                                        if (e.detail >= 2) return;
                                         if (selectedSource) {
                                           if (isSelected) {
                                             setSelectedSource(null);
@@ -567,8 +512,16 @@ function EasthavenPageContent() {
                                           handleSelectSource('tableau', colIdx, cardIdx);
                                         }
                                       }}
+                                      onDoubleClick={
+                                        // Only a column's exposed top card can move
+                                        // straight to a foundation.
+                                        isLast && tcard.card
+                                          ? () => handleFoundationShortcut(colIdx, tcard.card as Card)
+                                          : undefined
+                                      }
                                       disabled={!isPlaying}
                                       aria-label={tcard.card ? cardAlt(tcard.card) : ''}
+                                      data-testid={isLast ? `eh-tableau-top-${colIdx.toString()}` : undefined}
                                     >
                                       {tcard.card && <AnimatedCard card={tcard.card} width={eh.cw} />}
                                     </button>
@@ -603,8 +556,9 @@ function EasthavenPageContent() {
                 className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
                 role="status"
                 aria-live="polite"
+                data-testid="eh-hint"
               >
-                {state.hint.toZone === 'foundation' ? t('foundation') : `${t('tableau')} ${state.hint.toCol}`}
+                {t('hintSentence', { fromCol: state.hint.fromCol, card: hintCardName, dest: hintDest })}
               </div>
             )}
             {frontendHintEnabled && frontendHint && (

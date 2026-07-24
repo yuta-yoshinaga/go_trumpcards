@@ -29,6 +29,13 @@ interface PlayerAreaProps {
   onToggleSuspect?: () => void;
   onDraw: (drawIdx: number) => void;
   onReorder?: (indices: number[]) => void;
+  /**
+   * Index of the card the human just drew into this hand. When >= 0, that card
+   * is briefly ring-highlighted so the player can track where it landed
+   * (issue #2984). Animation is gated behind `motion-safe` for reduced-motion
+   * users. Ignored for non-human areas.
+   */
+  drawnCardIdx?: number;
   /** When true, non-target CPU players hide card back images to save space. */
   compactNonTarget?: boolean;
   /**
@@ -50,6 +57,7 @@ export function OldMaidPlayerArea({
   onToggleSuspect,
   onDraw,
   onReorder,
+  drawnCardIdx = -1,
   compactNonTarget,
   bubble,
 }: PlayerAreaProps) {
@@ -187,22 +195,31 @@ export function OldMaidPlayerArea({
       >
         {player.isFinished ? null : player.isHuman ? (
           player.cards?.map((card, i) => {
+            const isDrawnHere = i === drawnCardIdx;
             if (!onReorder) {
               return (
                 <CardImage
                   key={`${card.design}-${card.value}`}
                   card={card}
                   width={cardWidth}
-                  className={focusedCardIdx === i ? 'ring-2 ring-ds-info' : undefined}
+                  className={
+                    isDrawnHere
+                      ? 'ring-2 ring-ds-accent motion-safe:animate-pulse'
+                      : focusedCardIdx === i
+                        ? 'ring-2 ring-ds-info'
+                        : undefined
+                  }
                 />
               );
             }
             const isSelectedForMove = selectedForMove === i;
             const ringClass = isSelectedForMove
               ? 'ring-2 ring-ds-warning -translate-y-2'
-              : focusedCardIdx === i
-                ? 'ring-2 ring-ds-info'
-                : '';
+              : isDrawnHere
+                ? 'ring-2 ring-ds-accent motion-safe:animate-pulse'
+                : focusedCardIdx === i
+                  ? 'ring-2 ring-ds-info'
+                  : '';
             const tapAriaLabel = (() => {
               if (selectedForMove === null) {
                 return t('reorder.selectCardToMove', { card: cardAlt(card) });
@@ -222,6 +239,7 @@ export function OldMaidPlayerArea({
                 onClick={() => handleCardTap(i)}
                 aria-pressed={isSelectedForMove}
                 aria-label={tapAriaLabel}
+                data-drawn-highlight={isDrawnHere ? 'true' : undefined}
                 className={`bg-transparent p-0 border-0 cursor-pointer leading-none transition-transform ${ringClass}`}
                 draggable={!gameEndFlag}
                 onDragStart={(e: React.DragEvent) => {

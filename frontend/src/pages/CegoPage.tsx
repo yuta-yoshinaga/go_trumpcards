@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CegoResponse } from '../types/card';
 import { CegoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cegoExchangeGuide } from '../utils/cegoExchangeGuide';
 import { CEGO_HELP, parseCegoCommand } from '../utils/cli/commands/cegoCommands';
 import { formatCegoState } from '../utils/cli/formatters/cegoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -156,6 +157,10 @@ function CegoPageContent() {
   // During play the hand is restricted to the legal indices; during the Cego
   // exchange any single card may be kept, so no restriction is applied.
   const handValidIndices = canPlay ? state.playableIndices : undefined;
+
+  // Stepper guidance for the Cego exchange: pick 1 card to keep, then take the
+  // blind. Derived purely from the current selection count — no backend state.
+  const exchangeGuide = cegoExchangeGuide(selectedCardIndices.length, CEGO_KEEP_COUNT, humanPlayer?.cardCount ?? 0);
 
   const handleManualReset = () => {
     hideActionLog();
@@ -336,9 +341,50 @@ function CegoPageContent() {
                 {t('contractPhase')}
               </div>
             )}
+            {canContract && (
+              <div
+                className="mb-2 mx-auto max-w-xl p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                data-testid="cego-contract-explainer"
+              >
+                <div className="mb-1 text-ds-text-primary font-semibold">{t('contractExplainTitle')}</div>
+                <div className="py-0.5">{t('contractCegoDesc', { count: state.blindCount })}</div>
+                <div className="py-0.5">{t('contractHandspielDesc')}</div>
+              </div>
+            )}
             {canExchange && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="cego-exchange-prompt">
                 {t('exchangePhase', { count: selectedCardIndices.length })}
+              </div>
+            )}
+            {canExchange && (
+              <div
+                className="mb-2 mx-auto max-w-xl p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                data-testid="cego-exchange-guide"
+              >
+                <div className="mb-1 text-ds-text-primary font-semibold">
+                  {t('exchangeGuide.title', { step: exchangeGuide.currentStep, total: exchangeGuide.totalSteps })}
+                </div>
+                <ol className="space-y-0.5">
+                  <li
+                    className={exchangeGuide.currentStep === 1 ? 'text-ds-accent font-semibold' : ''}
+                    data-testid="cego-exchange-step-1"
+                    aria-current={exchangeGuide.currentStep === 1 ? 'step' : undefined}
+                  >
+                    {t('exchangeGuide.step1', { keep: CEGO_KEEP_COUNT, remaining: exchangeGuide.remaining })}
+                  </li>
+                  <li
+                    className={exchangeGuide.currentStep === 2 ? 'text-ds-accent font-semibold' : ''}
+                    data-testid="cego-exchange-step-2"
+                    aria-current={exchangeGuide.currentStep === 2 ? 'step' : undefined}
+                  >
+                    {t('exchangeGuide.step2', { layDown: exchangeGuide.layDownCount, count: state.blindCount })}
+                  </li>
+                </ol>
+                <div className="mt-1" data-testid="cego-exchange-status">
+                  {exchangeGuide.ready
+                    ? t('exchangeGuide.ready')
+                    : t('exchangeGuide.remaining', { remaining: exchangeGuide.remaining })}
+                </div>
               </div>
             )}
             {humanPlayer && (

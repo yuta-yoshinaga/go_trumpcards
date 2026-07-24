@@ -382,6 +382,23 @@ func (op *OasisPoker) appendLog(playerIdx int, actionType, detail string, cards 
 // GetPlayerHand プレイヤーハンド取得
 func (op *OasisPoker) GetPlayerHand() []*Card { return op.playerHand }
 
+// RecommendPlay はアクションフェーズでプレイ (続行) を推奨するかを返す。基本戦略として
+// ワンペア以上、または A/K を含むときプレイ、それ以外はフォールドを推奨する。
+func (op *OasisPoker) RecommendPlay() bool {
+	if len(op.playerHand) < 5 {
+		return true
+	}
+	if evalFiveCardHand(op.playerHand) >= PokerHandOnePair {
+		return true
+	}
+	for _, c := range op.playerHand {
+		if v := c.GetValue(); v == 1 || v == 13 { // Ace or King
+			return true
+		}
+	}
+	return false
+}
+
 // GetDealerHand ディーラーハンド取得
 func (op *OasisPoker) GetDealerHand() []*Card { return op.dealerHand }
 

@@ -14,6 +14,10 @@
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "undo": "元に戻す",
+  "autoComplete": "オートコンプリート",
+  "autoCompleteNotReady": "山札を配り切り、全カードが表向きになると使えます",
+  "stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+  "stalemateUndo": "元に戻して脱出",
   "empty": "空",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
@@ -34,5 +38,12 @@
     "actionButtons": "配る・ヒント・元に戻す・ギブアップなどの操作ボタンです。",
     "resetButton": "新しいゲームを始めるボタンです。"
   },
-  "columnActions": "操作"
+  "columnActions": "操作",
+  "kbd": {
+    "deal": "D",
+    "hint": "H",
+    "autoComplete": "A",
+    "undo": "Z",
+    "giveup": "G"
+  }
 }

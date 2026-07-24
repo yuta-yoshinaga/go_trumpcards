@@ -17,6 +17,7 @@
   "button": {
     "bet": "Bet",
     "set": "Set",
+    "auto": "Auto Set",
     "reset": "Reset"
   },
   "phase": {
@@ -59,9 +60,10 @@
   "foulWarning": "Foul: the low hand outranks the high hand",
   "foulRuleHelpTitle": "How do I split high/low?",
   "foulRuleHelp": "Split the 7 cards into a 5-card high hand and a 2-card low hand. The 2-card low hand must rank lower than the 5-card high hand — if the low hand is stronger, it is a foul.",
+  "betError": "Bet must be at least 10, in steps of 10, and within your balance",
   "tutorial": {
     "betControls": "Set your bet amount and press Bet.",
-    "setHands": "Select 2 cards from your 7 to form the low hand, then press Set.",
+    "setHands": "Select 2 cards from your 7 to form the low hand, then press Set. Press Auto Set to arrange a reasonable, foul-free split automatically using the house way.",
     "results": "Check your high hand and low hand results here."
   }
 }

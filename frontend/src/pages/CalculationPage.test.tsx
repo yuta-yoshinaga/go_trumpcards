@@ -60,6 +60,23 @@ describe('CalculationPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('labels the stock button with its top card and empty waste piles explicitly', async () => {
+    renderWithProviders(<CalculationPage />);
+    const stock = await screen.findByTestId('calc-stock-button');
+    expect(stock).toHaveAttribute('aria-label', '山札のトップ: ♠ 7');
+    // Empty waste piles now carry an explicit name (previously undefined).
+    expect(screen.getByTestId('calc-waste-button-0')).toHaveAttribute('aria-label', 'ウェイスト0: 空');
+    expect(screen.getByTestId('calc-waste-button-3')).toHaveAttribute('aria-label', 'ウェイスト3: 空');
+  });
+
+  it('labels a non-empty waste pile with its top ranks, not the empty text', async () => {
+    mockExec.mockResolvedValue({ ...playingState, wastes: [[card('HEART', 9)], [], [], []] });
+    renderWithProviders(<CalculationPage />);
+    const waste0 = await screen.findByTestId('calc-waste-button-0');
+    await waitFor(() => expect(waste0.getAttribute('aria-label')).toContain('ウェイスト0'));
+    expect(waste0).not.toHaveAttribute('aria-label', 'ウェイスト0: 空');
+  });
+
   it('shows move count', async () => {
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());
@@ -150,12 +167,14 @@ describe('CalculationPage', () => {
     expect(btn).toHaveAttribute('aria-label', 'ウェイスト0（上3枚）: 5・K・A');
   });
 
-  it('omits the rank tooltip on an empty waste pile', async () => {
+  it('omits the rank tooltip on an empty waste pile but still names it for SR users', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<CalculationPage />);
     const btn = await screen.findByTestId('calc-waste-button-0');
+    // No hover tooltip when empty…
     expect(btn).not.toHaveAttribute('title');
-    expect(btn).not.toHaveAttribute('aria-label');
+    // …but an explicit spoken name so the empty pile isn't anonymous.
+    expect(btn).toHaveAttribute('aria-label', 'ウェイスト0: 空');
   });
 
   it('clicking foundation without a source has no effect', async () => {
@@ -326,6 +345,28 @@ describe('CalculationPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByTestId('calc-foundation-next-0')).not.toBeInTheDocument();
     expect(screen.getByTestId('calc-foundation-next-1')).toHaveTextContent('次:4');
+    // The count readout reflects the foundation-cap constant (13/13) for a full pile.
+    expect(screen.getByText('13/13')).toBeInTheDocument();
+  });
+
+  it('exposes the full upcoming-rank sequence as visible, tappable text (not only a title attr)', async () => {
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // F0 seeded with A, step +1 ⇒ upcoming full sequence starts at 2.
+    const details = screen.getByTestId('calc-foundation-upcoming-details-0');
+    expect(details).toBeInTheDocument();
+    // The full sequence is rendered as real DOM text, reachable on touch devices
+    // by tapping the <summary> (native <details> disclosure — no hover needed).
+    const summary = details.querySelector('summary');
+    expect(summary).not.toBeNull();
+    if (summary) {
+      fireEvent.click(summary);
+    }
+    const full = screen.getByTestId('calc-foundation-upcoming-full-0');
+    expect(full).toBeVisible();
+    // Sequence must be the complete run to K (13), joined with arrows.
+    expect(full.textContent).toContain('→');
+    expect(full).toHaveAccessibleName(/2/);
   });
 
   it('shows the seed rank on an empty foundation (no top card yet)', async () => {

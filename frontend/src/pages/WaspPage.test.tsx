@@ -80,6 +80,31 @@ describe('WaspPage', () => {
     expect(screen.getByText(/Stock|ストック/)).toBeInTheDocument();
   });
 
+  it('renders a face-up slot without a card as an empty-labelled button (defensive guard)', async () => {
+    // A face-up card with no card object should not crash; the aria-label guard
+    // falls back to an empty string.
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[{ card: null, faceUp: true }], [], [], [], [], [], []],
+    });
+    const { container } = renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(container.querySelector('button[aria-label=""]')).toBeInTheDocument();
+  });
+
+  it("adds a 'selected' hint to the aria-label of the picked card and removes it on deselect", async () => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByRole('button', { name: /選択中/ })).not.toBeInTheDocument();
+    // Select the top card of a column.
+    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K 選択中' })).toBeInTheDocument());
+    // Re-clicking deselects and restores the plain label.
+    fireEvent.click(screen.getByRole('button', { name: '♠ K 選択中' }));
+    await waitFor(() => expect(screen.queryByRole('button', { name: /選択中/ })).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♠ K' })).toBeInTheDocument();
+  });
+
   it('shows game clear phase', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<WaspPage />);
@@ -160,6 +185,32 @@ describe('WaspPage', () => {
     const emptyCol = await screen.findByTestId('sc-empty-col-1');
     expect(emptyCol).toHaveTextContent('任意カード可');
     expect(emptyCol).toHaveAttribute('aria-label', expect.stringContaining('任意カード可'));
+  });
+
+  it('shows a persistent success ring on empty columns while a source is selected (touch-friendly)', async () => {
+    const state = {
+      ...playingState,
+      tableau: [
+        [{ card: card('SPADE', 13), faceUp: true }],
+        [], // empty column
+        [],
+        [],
+        [],
+        [],
+        [],
+      ],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const emptyCol = screen.getByTestId('sc-empty-col-1');
+    // No source selected yet → no persistent ring.
+    expect(emptyCol.className).not.toContain('ring-ds-success');
+    // Select ♠K as the move source (no hover event fired).
+    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    await waitFor(() => expect(screen.getByTestId('sc-empty-col-1').className).toContain('ring-ds-success'));
+    // The highlight is persistent, not hover-gated.
+    expect(screen.getByTestId('sc-empty-col-1').className).not.toContain('hover:ring');
   });
 
   it('deal button exposes empty-column reason via title when blocked', async () => {

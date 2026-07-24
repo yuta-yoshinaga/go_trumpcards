@@ -37,6 +37,29 @@ describe('BettingControls', () => {
     expect(screen.queryByRole('button', { name: 'チェック' })).not.toBeInTheDocument();
   });
 
+  it('renders the call/raise key-hint line and per-button aria-keyshortcuts (outstanding bet)', () => {
+    render(<BettingControls {...makeProps({ hasOutstandingBet: true })} />);
+    const hints = screen.getByTestId('betting-key-hints');
+    expect(hints).toHaveTextContent('C: コール');
+    expect(hints).not.toHaveTextContent('K: チェック'); // check isn't available now
+    expect(screen.getByRole('button', { name: 'コール' })).toHaveAttribute('aria-keyshortcuts', 'c');
+    expect(screen.getByRole('button', { name: 'レイズ' })).toHaveAttribute('aria-keyshortcuts', 'r');
+    expect(screen.getByRole('button', { name: 'フォールド' })).toHaveAttribute('aria-keyshortcuts', 'f');
+    expect(screen.getByRole('button', { name: 'オールイン' })).toHaveAttribute('aria-keyshortcuts', 'a');
+    // Desktop: each button also carries a visible <kbd> key chip (aria-hidden, so the name is unchanged).
+    expect(screen.getByRole('button', { name: 'コール' }).querySelector('kbd')).toHaveTextContent('C');
+    expect(screen.getByRole('button', { name: 'フォールド' }).querySelector('kbd')).toHaveTextContent('F');
+  });
+
+  it('renders the check/bet key-hint line and aria-keyshortcuts when there is no outstanding bet', () => {
+    render(<BettingControls {...makeProps()} />);
+    const hints = screen.getByTestId('betting-key-hints');
+    expect(hints).toHaveTextContent('K: チェック');
+    expect(hints).not.toHaveTextContent('C: コール'); // call isn't available now
+    expect(screen.getByRole('button', { name: 'ベット' })).toHaveAttribute('aria-keyshortcuts', 'r');
+    expect(screen.getByRole('button', { name: 'チェック' })).toHaveAttribute('aria-keyshortcuts', 'k');
+  });
+
   it('always renders fold and all-in buttons', () => {
     render(<BettingControls {...makeProps()} />);
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();

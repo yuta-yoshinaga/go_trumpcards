@@ -29,5 +29,6 @@
   "hintReasonFollowCut": "切り札でトリックを取る",
   "hintReasonFollowWin": "トリックを取る",
   "hintReasonFollowDump": "低いカードを捨てる",
-  "hintReasonMarriage": "マリアージュを宣言してボーナス点を得る"
+  "hintReasonMarriage": "マリアージュを宣言してボーナス点を得る",
+  "promptMarriageCards": "宣言可能: {{cards}}"
 }

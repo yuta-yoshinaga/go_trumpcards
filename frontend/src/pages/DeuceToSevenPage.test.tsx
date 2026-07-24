@@ -99,10 +99,17 @@ describe('DeuceToSevenPage', () => {
     await waitFor(() => expect(screen.getByText('プリドロー')).toBeInTheDocument());
   });
 
-  it('renders the draw counter badge during draw phases', async () => {
+  it('renders the draw counter badge with the current draw and the max cap', async () => {
     mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 2 }));
     renderWithProviders(<DeuceToSevenPage />);
+    // The badge shows current/max (2/3), so the player sees the 3-draw limit.
     await waitFor(() => expect(screen.getAllByText('ドロー 2/3').length).toBeGreaterThan(0));
+  });
+
+  it('shows the max cap in the badge on the first draw', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 1 }));
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getAllByText('ドロー 1/3').length).toBeGreaterThan(0));
   });
 
   it('shows the end message at showdown', async () => {
@@ -117,6 +124,42 @@ describe('DeuceToSevenPage', () => {
     );
     renderWithProviders(<DeuceToSevenPage />);
     await waitFor(() => expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument());
+  });
+
+  it('renders the human hand name translated for the current locale', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.END,
+        gameEndFlag: true,
+        // Backend sends the English category; the badge should show the ja label.
+        players: [
+          humanPlayer({ handRank: 1, handName: 'One Pair', folded: false }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByText('ワンペア')).toBeInTheDocument());
+    expect(screen.queryByText('One Pair')).not.toBeInTheDocument();
+  });
+
+  it('falls back to the server hand name when the rank is out of range', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.END,
+        gameEndFlag: true,
+        players: [
+          humanPlayer({ handRank: 99, handName: 'Mystery Hand', folded: false }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByText('Mystery Hand')).toBeInTheDocument());
   });
 
   it('wires betting buttons during the human turn', async () => {

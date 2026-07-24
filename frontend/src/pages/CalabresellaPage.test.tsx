@@ -19,7 +19,44 @@ const bidPhaseState = makeCalabresellaState({
   isHumanTurn: true,
   winningBid: 0,
 });
-const discardPhaseState = makeCalabresellaState({ phase: 1, soloistIdx: 0 });
+// A realistic discard phase: the soloist holds 16 cards (took the 4-card monte) and must
+// discard down to the regulation 12, so 4 discards remain. Keeps ♥Q for selection tests.
+const soloist16CardHand = [
+  { design: 'HEART' as const, value: 12 },
+  { design: 'HEART' as const, value: 13 },
+  { design: 'SPADE' as const, value: 1 },
+  { design: 'SPADE' as const, value: 2 },
+  { design: 'SPADE' as const, value: 3 },
+  { design: 'SPADE' as const, value: 4 },
+  { design: 'SPADE' as const, value: 5 },
+  { design: 'SPADE' as const, value: 6 },
+  { design: 'SPADE' as const, value: 7 },
+  { design: 'CLOVER' as const, value: 1 },
+  { design: 'CLOVER' as const, value: 2 },
+  { design: 'CLOVER' as const, value: 3 },
+  { design: 'CLOVER' as const, value: 4 },
+  { design: 'CLOVER' as const, value: 5 },
+  { design: 'CLOVER' as const, value: 6 },
+  { design: 'CLOVER' as const, value: 7 },
+];
+const discardPhaseState = makeCalabresellaState({
+  phase: 1,
+  soloistIdx: 0,
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 16,
+      cards: soloist16CardHand,
+      trickCount: 0,
+      score: 0,
+      isSoloist: true,
+      roundThirds: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 12, cards: [], trickCount: 0, score: 0, isSoloist: false, roundThirds: 0 },
+    { id: 2, isHuman: false, cardCount: 12, cards: [], trickCount: 0, score: 0, isSoloist: false, roundThirds: 0 },
+  ],
+});
 const trickEndState = makeCalabresellaState({
   phase: 3,
   currentTrick: [
@@ -92,7 +129,66 @@ describe('CalabresellaPage', () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<CalabresellaPage />);
     await waitFor(() => expect(screen.getByTestId('calabresella-discard-prompt')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'カードを捨てる' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /カードを捨てる/ })).toBeInTheDocument();
+  });
+
+  it('reveals the monte (widow) cards once the Soloist has taken them', async () => {
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      monte: [
+        { design: 'DIAMOND', value: 3 },
+        { design: 'SPADE', value: 11 },
+        { design: 'CLOVER', value: 7 },
+        { design: 'HEART', value: 2 },
+      ],
+    });
+    renderWithProviders(<CalabresellaPage />);
+    const monte = await screen.findByTestId('calabresella-monte');
+    expect(monte).toBeInTheDocument();
+    expect(monte).toHaveTextContent('モンテ');
+    // All four widow cards are rendered as face-up images inside the monte row.
+    expect(monte.querySelectorAll('img')).toHaveLength(4);
+  });
+
+  it('does not render the monte row during the bid phase (widow not yet taken)', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CalabresellaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'キアーモ' })).toBeInTheDocument());
+    expect(screen.queryByTestId('calabresella-monte')).not.toBeInTheDocument();
+  });
+
+  it('shows the remaining discard count in the prompt and on the button', async () => {
+    // 16-card soloist hand → 4 discards remain before reaching the regulation 12.
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<CalabresellaPage />);
+    const prompt = await screen.findByTestId('calabresella-discard-prompt');
+    expect(prompt).toHaveTextContent('残り 4 枚');
+    expect(screen.getByTestId('calabresella-discard-button')).toHaveTextContent('(4)');
+  });
+
+  it('hides the discard prompt once the hand is down to the regulation 12', async () => {
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 12,
+          cards: soloist16CardHand.slice(0, 12),
+          trickCount: 0,
+          score: 0,
+          isSoloist: true,
+          roundThirds: 0,
+        },
+        ...discardPhaseState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<CalabresellaPage />);
+    await waitFor(() => expect(screen.getByTestId('calabresella-discard-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('calabresella-discard-prompt')).not.toBeInTheDocument();
+    // With nothing left to discard the button no longer carries a count suffix.
+    expect(screen.getByTestId('calabresella-discard-button')).toHaveTextContent('カードを捨てる');
+    expect(screen.getByTestId('calabresella-discard-button').textContent).not.toContain('(');
   });
 
   it('selecting a card then discarding dispatches discard', async () => {
@@ -100,7 +196,7 @@ describe('CalabresellaPage', () => {
     renderWithProviders(<CalabresellaPage />);
     const card = await screen.findByAltText('♥ Q');
     fireEvent.click(card);
-    const discardBtn = await screen.findByRole('button', { name: 'カードを捨てる' });
+    const discardBtn = await screen.findByRole('button', { name: /カードを捨てる/ });
     mockExec.mockClear();
     mockExec.mockResolvedValue(discardPhaseState);
     fireEvent.click(discardBtn);

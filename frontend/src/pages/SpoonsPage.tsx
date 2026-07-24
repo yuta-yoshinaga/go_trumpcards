@@ -25,9 +25,23 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SpoonsResponse } from '../types/card';
 import { SpoonsPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseSpoonsCommand, SPOONS_HELP } from '../utils/cli/commands/spoonsCommands';
 import { formatSpoonsState } from '../utils/cli/formatters/spoonsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { computeSpoonsRankGroups } from '../utils/spoonsRankGroups';
+
+/**
+ * Ring color classes for same-rank hand groups, indexed by group color index.
+ * Purely a visual aid; assignment is deterministic (by ascending rank) so the
+ * same pair always keeps the same color across passes.
+ */
+const SPOONS_GROUP_RING_CLASSES = [
+  'ring-2 ring-ds-info',
+  'ring-2 ring-ds-warning',
+  'ring-2 ring-ds-success',
+  'ring-2 ring-ds-accent',
+] as const;
 
 /** CPU difficulty options for the Spoons settings panel. */
 const CPU_DIFFICULTY_OPTIONS = [
@@ -151,6 +165,17 @@ function SpoonsPageContent() {
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
 
+  // Build the spoon-icon row: one available icon per remaining spoon, plus one
+  // grayed-out icon per player who already grabbed (labeled with the grabber).
+  // The full-row total = remaining + grabbed = the number of spoons in play.
+  const grabbers = state.players
+    .map((p, idx) => ({ idx, isHuman: p.isHuman, hasSpoon: p.hasSpoon }))
+    .filter((g) => g.hasSpoon);
+  const spoonsInPlay = state.spoonsRemaining + grabbers.length;
+  // motion-safe pulse only while spoons can still be grabbed, echoing the grab
+  // button's urgency cue; respects prefers-reduced-motion via motion-safe:.
+  const spoonPulse = state.grabWindowOpen && !isGameEnd ? ' motion-safe:animate-pulse' : '';
+
   const handleManualReset = () => {
     hideActionLog();
     exec('reset', { config: { cpuDifficulty } });
@@ -199,8 +224,47 @@ function SpoonsPageContent() {
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             <div className="text-ds-text-primary text-center mb-2" data-tutorial="spoons-info">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('spoonsRemaining', { count: state.spoonsRemaining })}</span>
               <span>{t('drawPile', { count: state.drawPileSize })}</span>
+            </div>
+
+            {/* Spoons on the table, visualized as icons (grabbed ones grayed out). */}
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mb-3">
+              <span className="text-ds-text-muted text-sm">{t('spoonsLabel')}</span>
+              {spoonsInPlay > 0 ? (
+                <div
+                  className="flex flex-wrap items-center gap-1.5"
+                  data-testid="spoons-icon-row"
+                  role="img"
+                  aria-label={t('spoonsRemaining', { count: state.spoonsRemaining })}
+                >
+                  {Array.from({ length: state.spoonsRemaining }, (_, i) => (
+                    <span
+                      key={`spoon-avail-${i}`}
+                      data-testid="spoons-icon-available"
+                      aria-hidden="true"
+                      className={`text-lg leading-none${spoonPulse}`}
+                    >
+                      🥄
+                    </span>
+                  ))}
+                  {grabbers.map((g) => (
+                    <span
+                      key={`spoon-grabbed-${g.idx}`}
+                      data-testid="spoons-icon-grabbed"
+                      className="inline-flex items-center gap-0.5 text-ds-text-muted text-xs"
+                    >
+                      <span aria-hidden="true" className="text-lg leading-none opacity-40 grayscale">
+                        🥄
+                      </span>
+                      {t('spoonGrabbedBy', { name: playerLabel(g.idx, g.isHuman) })}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-ds-text-muted text-sm" data-testid="spoons-icon-row">
+                  {t('spoonsRemaining', { count: state.spoonsRemaining })}
+                </span>
+              )}
             </div>
 
             {/* Players */}
@@ -258,23 +322,53 @@ function SpoonsPageContent() {
                   {canPass ? ` — ${t('passNotice')}` : ''}
                 </div>
                 <div className="flex gap-1 flex-wrap">
-                  {humanPlayer.hand.map((c, i) => {
-                    const card = <CardImage key={`hand-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />;
-                    return canPass ? (
-                      <button
-                        type="button"
-                        key={`pass-${c.design}-${c.value}-${i}`}
-                        onClick={() => exec('pass', { cardIndex: i })}
-                        disabled={loading}
-                        className="p-0 bg-transparent border-0 cursor-pointer disabled:cursor-not-allowed"
-                        aria-label={t('passButton')}
-                      >
-                        {card}
-                      </button>
-                    ) : (
-                      card
-                    );
-                  })}
+                  {(() => {
+                    const rankGroups = computeSpoonsRankGroups(humanPlayer.hand);
+                    return humanPlayer.hand.map((c, i) => {
+                      const group = rankGroups[i];
+                      const { colorIndex } = group;
+                      const isGrouped = colorIndex !== null;
+                      const isReach = isGrouped && group.count >= 3;
+                      // Ring only for cards in a same-rank group of 2+; singletons stay neutral.
+                      const ringClass = isGrouped
+                        ? `${SPOONS_GROUP_RING_CLASSES[colorIndex % SPOONS_GROUP_RING_CLASSES.length]}${isReach ? ' motion-safe:animate-pulse' : ''}`
+                        : '';
+                      const card = (
+                        <CardImage
+                          key={`hand-${c.design}-${c.value}-${i}`}
+                          card={c}
+                          width={cardWidth}
+                          className={ringClass}
+                        />
+                      );
+                      const groupProps = {
+                        'data-rank-group': isGrouped ? String(group.colorIndex) : 'none',
+                        'data-rank-reach': isReach ? 'true' : 'false',
+                      };
+                      return canPass ? (
+                        <button
+                          type="button"
+                          key={`pass-${c.design}-${c.value}-${i}`}
+                          onClick={() => exec('pass', { cardIndex: i })}
+                          disabled={loading}
+                          className="p-0 bg-transparent border-0 cursor-pointer disabled:cursor-not-allowed"
+                          aria-label={t('passCardAria', { card: cardAlt(c) })}
+                          data-testid={`spoons-pass-${i}`}
+                          {...groupProps}
+                        >
+                          {card}
+                        </button>
+                      ) : (
+                        <span
+                          key={`hand-wrap-${c.design}-${c.value}-${i}`}
+                          data-testid={`spoons-hand-${i}`}
+                          {...groupProps}
+                        >
+                          {card}
+                        </span>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             ) : (
@@ -288,7 +382,13 @@ function SpoonsPageContent() {
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="spoons-grab">
               {state.grabWindowOpen && !isGameEnd && (
                 <>
-                  <span className="text-ds-warning text-sm font-semibold mr-1">{t('grabNotice')}</span>
+                  <span
+                    className="text-ds-warning text-sm font-semibold mr-1"
+                    role="alert"
+                    data-testid="spoons-grab-notice"
+                  >
+                    {t('grabNotice')}
+                  </span>
                   <button
                     type="button"
                     className={`${btnWarning} motion-safe:animate-pulse`}

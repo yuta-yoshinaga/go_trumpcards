@@ -241,3 +241,10 @@ func TestRestorePageOneInteractor(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, ci)
 }
+
+func TestPageOneInteractor_Hint(t *testing.T) {
+	gm, pm := newPageOneMocks()
+	pm.On("HintOutput", mock.Anything).Return("hint")
+	ci := usecase.NewPageOneInteractor(gm, pm)
+	assert.Equal(t, "hint", ci.Hint())
+}

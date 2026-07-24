@@ -23,6 +23,10 @@ func (s *stubOasisPokerPresenter) ActionLogOutput(_ interfaces.OasisPokerGame) s
 	return `{"log":[]}`
 }
 
+func (s *stubOasisPokerPresenter) HintOutput(_ interfaces.OasisPokerGame) string {
+	return `{"ok":true}`
+}
+
 func TestOasisPokerInteractor_SnapshotRestore(t *testing.T) {
 	op := domain.NewDefaultOasisPoker()
 	oi := NewOasisPokerInteractor(op, new(stubOasisPokerPresenter))

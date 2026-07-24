@@ -18,6 +18,7 @@ func (pr *ClockSolitaireWebPresenter) Output(g interfaces.ClockSolitaireGame, la
 	resObj := new(controller.ClockSolitaireWebOutput)
 	resObj.Phase = int(g.GetPhase())
 	resObj.StepCount = g.GetStepCount()
+	resObj.CanUndo = g.CanUndo()
 
 	// パイル
 	piles := g.GetPiles()

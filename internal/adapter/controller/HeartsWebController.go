@@ -32,6 +32,10 @@ type HeartsWebOutputPlayer struct {
 	RoundScore      int              `json:"roundScore"`
 	CumulativeScore int              `json:"cumulativeScore"`
 	TrickCount      int              `json:"trickCount"`
+	// PenaltyCards はこのプレイヤーがこれまでに獲得したペナルティカード
+	// (全ハート + Q♠。J♦は含まない) の一覧。フロントエンドが「♥×n / Q♠」の
+	// 内訳表示に用いる。トリックテイキングでは公開情報のため秘匿ゲートは不要。
+	PenaltyCards []*WebOutputCard `json:"penaltyCards"`
 }
 
 // HeartsWebOutputTrickCard トリック中の1枚

@@ -130,3 +130,48 @@ func (op *OasisPokerCuiPresenter) phaseStr(phase int) string {
 		return i18n.T("oasispoker.phaseUnknown")
 	}
 }
+
+// oasisPokerExchangeIndices returns the hand indices worth exchanging: cards
+// that are neither part of a pair nor a high card (J/Q/K/A). Holding pairs and
+// high cards is the standard draw heuristic.
+func oasisPokerExchangeIndices(hand []*domain.Card) []int {
+	rankCount := map[int]int{}
+	for _, c := range hand {
+		rankCount[c.GetValue()]++
+	}
+	var ex []int
+	for i, c := range hand {
+		v := c.GetValue()
+		isPair := rankCount[v] >= 2
+		isHigh := v == 1 || v >= 11 // Ace or J/Q/K
+		if !isPair && !isHigh {
+			ex = append(ex, i)
+		}
+	}
+	return ex
+}
+
+// HintOutput advises the exchange (which cards to swap, or stand) and the action
+// (play/fold via basic strategy) decisions. Other phases get no hint.
+func (p *OasisPokerCuiPresenter) HintOutput(g interfaces.OasisPokerGame) string {
+	switch g.GetPhase() {
+	case domain.OasisPokerPhaseExchange:
+		ex := oasisPokerExchangeIndices(g.GetPlayerHand())
+		if len(ex) == 0 {
+			return color.Yellow(i18n.T("oasispoker.hintStand")) + "\n"
+		}
+		hand := g.GetPlayerHand()
+		parts := make([]string, len(ex))
+		for i, idx := range ex {
+			parts[i] = "[" + strconv.Itoa(idx) + "]" + cuiCardStr(hand[idx])
+		}
+		return color.Yellow(i18n.Tf("oasispoker.hintExchange", "cards", strings.Join(parts, " "))) + "\n"
+	case domain.OasisPokerPhaseAction:
+		if g.RecommendPlay() {
+			return color.Yellow(i18n.T("oasispoker.hintPlay")) + "\n"
+		}
+		return color.Yellow(i18n.T("oasispoker.hintFold")) + "\n"
+	default:
+		return i18n.T("oasispoker.hintNone") + "\n"
+	}
+}

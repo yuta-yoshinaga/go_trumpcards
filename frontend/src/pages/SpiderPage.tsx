@@ -26,6 +26,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSpiderGame } from '../hooks/useSpiderGame';
+import { spiderWinRate, useSpiderStats } from '../hooks/useSpiderStats';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -36,7 +37,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSpiderCommand, SPIDER_HELP } from '../utils/cli/commands/spiderCommands';
 import { formatSpiderState } from '../utils/cli/formatters/spiderFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { isTableauAllFaceUp } from '../utils/solitaireUtils';
+import { isTableauAllFaceUp, spiderMovableRun } from '../utils/solitaireUtils';
 
 /** Spider Solitaire tutorial step definitions. */
 const SPD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -150,6 +151,10 @@ function SpiderPageContent() {
 
   const isPlayingForKbd = state?.phase === SpiderPhase.PLAYING;
 
+  // Movable-run hover preview: highlights the same-suit descending run that would move as a
+  // unit when a tableau card is grabbed (#3061). Purely additive — never gates clicks/drags.
+  const [hoveredRun, setHoveredRun] = useState<{ col: number; indices: number[] } | null>(null);
+
   // Empty-column deal guard: surfaces a shake animation + tooltip instead of failing silently.
   const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
   const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
@@ -189,6 +194,34 @@ function SpiderPageContent() {
   );
 
   const currentDifficulty = state?.difficulty ?? 1;
+
+  // Per-difficulty play statistics persisted in localStorage (#3062).
+  const { getStat, recordResult } = useSpiderStats();
+  const currentStat = getStat(currentDifficulty);
+  // Badge shown on the clear screen when a game beats a stored personal best.
+  const [bestUpdate, setBestUpdate] = useState<{ newBestScore: boolean; newFewestMoves: boolean } | null>(null);
+  // Guard so a completed game is recorded exactly once (phase stays ended across re-renders).
+  const recordedRef = useRef(false);
+  const currentPhase = state?.phase;
+  const currentScore = state?.score;
+  const currentMoves = state?.moveCount;
+  useEffect(() => {
+    const ended = currentPhase === SpiderPhase.GAME_CLEAR || currentPhase === SpiderPhase.GAME_OVER;
+    if (!ended) {
+      recordedRef.current = false;
+      return;
+    }
+    if (recordedRef.current) return;
+    recordedRef.current = true;
+    const won = currentPhase === SpiderPhase.GAME_CLEAR;
+    const update = recordResult({
+      difficulty: currentDifficulty,
+      won,
+      score: currentScore ?? 0,
+      moves: currentMoves ?? 0,
+    });
+    setBestUpdate(won ? update : null);
+  }, [currentPhase, currentDifficulty, currentScore, currentMoves, recordResult]);
 
   const actionBindings = useMemo(
     () => [
@@ -350,6 +383,12 @@ function SpiderPageContent() {
                                 col: colIdx,
                                 cardIndex: cardIdx,
                               };
+                              const inMovableRun = hoveredRun?.col === colIdx && hoveredRun.indices.includes(cardIdx);
+                              const ringClass = isSourceSelected(colIdx, cardIdx)
+                                ? 'ring-2 ring-ds-warning'
+                                : inMovableRun
+                                  ? 'ring-2 ring-ds-success'
+                                  : '';
                               return (
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -359,6 +398,15 @@ function SpiderPageContent() {
                                   {tc.faceUp && tc.card ? (
                                     <button
                                       type="button"
+                                      onMouseEnter={() =>
+                                        setHoveredRun({ col: colIdx, indices: spiderMovableRun(col, cardIdx) })
+                                      }
+                                      onMouseLeave={() => setHoveredRun(null)}
+                                      onFocus={() =>
+                                        setHoveredRun({ col: colIdx, indices: spiderMovableRun(col, cardIdx) })
+                                      }
+                                      onBlur={() => setHoveredRun(null)}
+                                      data-movable-run={inMovableRun ? 'true' : undefined}
                                       onClick={() => {
                                         if (selectedSource) {
                                           // If clicking a different column, treat as move target
@@ -378,7 +426,7 @@ function SpiderPageContent() {
                                       draggable={isPlaying && !loading}
                                       onDragStart={dnd.handleDragStart(cardZone)}
                                       onDragEnd={dnd.handleDragEnd}
-                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${ringClass} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                     >
                                       <AnimatedCard
                                         card={tc.card}
@@ -421,6 +469,17 @@ function SpiderPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {/* Personal-best badge on the clear screen (#3062). */}
+            {isGameClear && bestUpdate && (bestUpdate.newBestScore || bestUpdate.newFewestMoves) && (
+              <div
+                data-testid="spd-best-badge"
+                role="status"
+                className="text-center text-ds-success font-semibold text-sm mb-2"
+              >
+                {t('stats.newBest')}
+              </div>
+            )}
 
             {/* Action log */}
             <ActionLogSection
@@ -529,6 +588,14 @@ function SpiderPageContent() {
                   <option value={2}>{t('difficulty2')}</option>
                   <option value={4}>{t('difficulty4')}</option>
                 </select>
+                {/* Per-difficulty stats: win rate + best score/fewest moves (#3062). */}
+                <div data-testid="spd-stats-panel" className="text-game-text-muted text-xs mt-1">
+                  {t('stats.winRate', { rate: spiderWinRate(currentStat) })} ({currentStat.wins}/{currentStat.plays})
+                  {currentStat.bestScore !== null && <> · {t('stats.best', { score: currentStat.bestScore })}</>}
+                  {currentStat.fewestMoves !== null && (
+                    <> · {t('stats.fewestMoves', { moves: currentStat.fewestMoves })}</>
+                  )}
+                </div>
               </div>
               <GameResetButton
                 isGameEnd={isEnded}

@@ -134,6 +134,32 @@ describe('BlackJackSwitchPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', expect.any(Number)));
   });
 
+  it('bet phase: pressing "b" dispatches a bet', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    await screen.findByRole('button', { name: /Place Bet|ベットする/ });
+    mockApi.mockClear();
+    fireEvent.keyDown(document.body, { key: 'b' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', expect.any(Number)));
+  });
+
+  it('action phase: pressing "h" dispatches hit', async () => {
+    mockApi.mockResolvedValue(actionState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    await screen.findByRole('button', { name: /Hit|ヒット/ });
+    mockApi.mockClear();
+    fireEvent.keyDown(document.body, { key: 'h' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('hit'));
+  });
+
+  it('advertises the bet keyboard shortcut on the button', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const betBtn = await screen.findByRole('button', { name: /Place Bet|ベットする/ });
+    expect(betBtn).toHaveAttribute('aria-keyshortcuts', 'b');
+    expect(betBtn.querySelector('kbd')?.textContent).toBe('B');
+  });
+
   it('shows Switch and Keep buttons in SWITCH phase', async () => {
     mockApi.mockResolvedValue(switchState);
     renderWithProviders(<BlackJackSwitchPage />);
@@ -350,6 +376,47 @@ describe('BlackJackSwitchPage', () => {
     });
     renderWithProviders(<BlackJackSwitchPage />);
     expect(await screen.findByTestId('payout-breakdown')).toBeInTheDocument();
+  });
+
+  it('numbers the hands starting from 1', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    expect(await screen.findByTestId('hand-0')).toHaveTextContent('ハンド 1');
+    expect(screen.getByTestId('hand-1')).toHaveTextContent('ハンド 2');
+  });
+
+  it('shows a BUST badge on a busted hand', async () => {
+    mockApi.mockResolvedValue({
+      ...actionState,
+      hands: [{ ...actionState.hands[0], busted: true, score: 25 }, actionState.hands[1]],
+    });
+    renderWithProviders(<BlackJackSwitchPage />);
+    expect(await screen.findByTestId('hand-0-bust-badge')).toHaveTextContent('バースト');
+    expect(screen.queryByTestId('hand-1-bust-badge')).not.toBeInTheDocument();
+  });
+
+  it('shows a BJ badge on a blackjack hand', async () => {
+    mockApi.mockResolvedValue({
+      ...actionState,
+      hands: [{ ...actionState.hands[0], isBJ: true, score: 21 }, actionState.hands[1]],
+    });
+    renderWithProviders(<BlackJackSwitchPage />);
+    expect(await screen.findByTestId('hand-0-bj-badge')).toHaveTextContent('BJ');
+    expect(screen.queryByTestId('hand-1-bj-badge')).not.toBeInTheDocument();
+  });
+
+  it('marks the acting hand with a badge in ACTION phase', async () => {
+    mockApi.mockResolvedValue({ ...actionState, currentHandIdx: 0 });
+    renderWithProviders(<BlackJackSwitchPage />);
+    expect(await screen.findByTestId('hand-0-acting-badge')).toHaveTextContent('操作中');
+    expect(screen.queryByTestId('hand-1-acting-badge')).not.toBeInTheDocument();
+  });
+
+  it('shows no acting badge outside the ACTION phase', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    await screen.findByTestId('hand-0');
+    expect(screen.queryByTestId('hand-0-acting-badge')).not.toBeInTheDocument();
   });
 
   it('renders the CLI terminal when CLI mode is enabled', async () => {

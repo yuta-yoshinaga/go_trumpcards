@@ -15,10 +15,10 @@
   },
   "button": {
     "bet": "Bet",
-    "play": "Play (2×)",
+    "play": "Play (2× = {{cost}})",
     "fold": "Fold",
     "check": "Check",
-    "raise": "Raise (1×)",
+    "raise": "Raise (1× = {{cost}})",
     "reset": "Reset"
   },
   "phase": {
@@ -87,5 +87,6 @@
     "broadwayCards": "Broadway cards — play recommended",
     "pairOrBetter": "Pair or better — raise recommended",
     "weakHand": "Weak hand"
-  }
+  },
+  "hiddenCard": "Hidden card"
 }

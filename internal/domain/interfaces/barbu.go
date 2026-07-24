@@ -54,6 +54,8 @@ type BarbuGame interface {
 	GetDominoPlayableIndices(playerIdx int) []int
 	// GetLastDealDetail 直前ディールの得点内訳を取得する
 	GetLastDealDetail() *domain.BarbuDealDetail
+	// GetDealHistory 完了した各ディールの得点内訳を古い順に取得する
+	GetDealHistory() []*domain.BarbuDealDetail
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.BarbuConfig
 	// GetPhase 現在のフェーズを取得する

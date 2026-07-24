@@ -35,5 +35,8 @@
   "resultHand": "  {{name}}: {{hand}}",
   "resultName": "  {{name}}",
   "wonAmount": " → won {{total}} chips",
-  "gameEnd": "Game over"
+  "gameEnd": "Game over",
+  "betLimitsMax": "Min raise: {{min}} / Max bet: {{max}}",
+  "betLimitsNoCap": "Min raise: {{min}} / Max bet: unlimited",
+  "betLimitsMin": "Min raise: {{min}}"
 }

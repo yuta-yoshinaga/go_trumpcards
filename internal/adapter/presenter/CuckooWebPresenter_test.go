@@ -61,6 +61,7 @@ func TestCuckooWebPresenter_Output(t *testing.T) {
 		assert.Nil(t, out.Players[1].Card)    // opponent hidden
 		assert.True(t, out.Players[0].IsCurrentTurn)
 		assert.Equal(t, "cuckoo.turnPhase", out.MessageCode)
+		assert.Equal(t, -1, out.RoundLowest) // undecided outside round end
 	})
 
 	t.Run("error message", func(t *testing.T) {
@@ -69,13 +70,19 @@ func TestCuckooWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "boom", out.Message)
 	})
 
-	t.Run("round end reveals all", func(t *testing.T) {
+	t.Run("round end reveals all and lowest value", func(t *testing.T) {
 		m, _ := setupCuckooWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.CuckooPhaseRoundEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundLowest")
+		m.On("GetRoundLowest").Return(5)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundLosers")
+		m.On("GetRoundLosers").Return([]int{0})
 		out := parseCuckooOutput(t, p.Output(m, nil))
 		assert.NotNil(t, out.Players[1].Card)
 		assert.Equal(t, "cuckoo.roundEnd", out.MessageCode)
+		assert.Equal(t, 5, out.RoundLowest) // populated at round end
+		assert.Equal(t, []int{0}, out.RoundLosers)
 	})
 
 	t.Run("game end human win", func(t *testing.T) {

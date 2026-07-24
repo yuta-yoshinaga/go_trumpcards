@@ -195,6 +195,9 @@ function BeleagueredCastlePageContent() {
     const tableauColZone: BeleagueredCastleMoveZone = { zone: 'tableau', col: colIdx };
     return (
       <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+        <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
+          #{colIdx}
+        </div>
         <DropZone
           isDropTarget={dnd.isDropTarget(tableauColZone)}
           onDragOver={dnd.handleDragOver(tableauColZone)}
@@ -208,6 +211,7 @@ function BeleagueredCastlePageContent() {
                 type="button"
                 onClick={() => game.handleSelectTarget(tableauColZone)}
                 disabled={!isPlaying || loading || !selectedSource}
+                aria-label={t('emptyColumnAriaLabel', { col: colIdx + 1 })}
                 style={{ height: dims.ch }}
                 className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
               >

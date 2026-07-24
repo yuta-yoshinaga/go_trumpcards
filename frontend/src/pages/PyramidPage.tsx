@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { pyramidApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -23,6 +23,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePyramidGame } from '../hooks/usePyramidGame';
+import { usePyramidStats } from '../hooks/usePyramidStats';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -154,6 +155,24 @@ function PyramidPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
+  // Best-record persistence in localStorage (issue #3083).
+  const { stats, recordResult } = usePyramidStats();
+  const [newBestMoves, setNewBestMoves] = useState(false);
+  // Guard so each finished game is recorded exactly once (phase stays ended across re-renders).
+  const recordedRef = useRef(false);
+  const endPhase = state?.phase;
+  const endMoveCount = state?.moveCount ?? 0;
+  useEffect(() => {
+    const ended = endPhase === PyramidPhase.GAME_CLEAR || endPhase === PyramidPhase.GAME_OVER;
+    if (!ended) {
+      recordedRef.current = false;
+      return;
+    }
+    if (recordedRef.current) return;
+    recordedRef.current = true;
+    setNewBestMoves(recordResult({ won: endPhase === PyramidPhase.GAME_CLEAR, moves: endMoveCount }));
+  }, [endPhase, endMoveCount, recordResult]);
+
   if (!state)
     return <GameSkeleton gameKey="pyramid" layout={{ kind: 'tiered-rows', rows: [1, 2, 3, 4], stockWaste: true }} />;
 
@@ -180,6 +199,8 @@ function PyramidPageContent() {
   const wasteTopCard = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const isWastePairCandidate =
     partnerValue !== null && !isSelected('waste') && wasteTopCard !== null && wasteTopCard.value === partnerValue;
+  // The waste top is always exposed; a King there is removable alone (issue #3082).
+  const isWasteExposedKing = wasteTopCard !== null && wasteTopCard.value === 13 && !isSelected('waste');
 
   // Calculate pyramid layout dimensions
   const maxCols = 7; // bottom row has 7 cards
@@ -215,6 +236,11 @@ function PyramidPageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
+          {stats.fewestMoves !== null && (
+            <span data-testid="py-best-moves">
+              {t('bestMoves')}: {t('bestMovesValue', { moves: stats.fewestMoves })}
+            </span>
+          )}
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
@@ -260,11 +286,27 @@ function PyramidPageContent() {
                         exposed &&
                         pc.card.value === partnerValue &&
                         !isSelected('pyramid', rowIdx, colIdx);
+                      // A King (13) is removable alone once exposed — surface that
+                      // affordance so players don't hunt for a nonexistent partner
+                      // (issue #3082). Selected/hint states take visual precedence.
+                      const isExposedKing = exposed && pc.card.value === 13 && !isSelected('pyramid', rowIdx, colIdx);
                       // Server hint targets (-1 sentinels for king/waste never match a cell).
                       const isHintTarget =
                         !!hint &&
                         ((hint.row1 === rowIdx && hint.col1 === colIdx) ||
                           (hint.row2 === rowIdx && hint.col2 === colIdx));
+                      // Convey the card's actionability (blocked / selected / pair
+                      // candidate) to assistive tech, not just via disabled/color.
+                      const cellSelected = isSelected('pyramid', rowIdx, colIdx);
+                      const statusSuffix = !exposed
+                        ? ` ${t('a11y.blocked')}`
+                        : cellSelected
+                          ? ` ${t('a11y.selected')}`
+                          : isPairCandidate
+                            ? ` ${t('a11y.pairCandidate')}`
+                            : isExposedKing
+                              ? ` ${t('a11y.kingRemovable')}`
+                              : '';
                       return (
                         <div key={`pc-${rowIdx.toString()}-${colIdx.toString()}`} className="absolute" style={{ left }}>
                           <button
@@ -274,9 +316,10 @@ function PyramidPageContent() {
                               handleSelectCard({ zone: 'pyramid', row: rowIdx, col: colIdx }, pc.card.value);
                             }}
                             disabled={!isPlaying || loading || !exposed}
-                            aria-label={cardAlt(pc.card)}
-                            aria-pressed={isSelected('pyramid', rowIdx, colIdx)}
+                            aria-label={`${cardAlt(pc.card)}${statusSuffix}`}
+                            aria-pressed={cellSelected}
                             data-pair-candidate={isPairCandidate ? 'true' : undefined}
+                            data-king-removable={isExposedKing ? 'true' : undefined}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                               isSelected('pyramid', rowIdx, colIdx)
                                 ? 'ring-2 ring-ds-warning'
@@ -284,7 +327,9 @@ function PyramidPageContent() {
                                   ? 'ring-2 ring-ds-warning animate-pulse'
                                   : isPairCandidate
                                     ? 'ring-2 ring-ds-success animate-pulse'
-                                    : ''
+                                    : isExposedKing
+                                      ? 'ring-2 ring-ds-success'
+                                      : ''
                             } ${!exposed ? 'opacity-60' : ''}`}
                           >
                             <AnimatedCard card={pc.card} width={effectiveCardWidth} />
@@ -328,12 +373,13 @@ function PyramidPageContent() {
                     type="button"
                     onClick={() => handleSelectCard({ zone: 'waste' }, wasteTopCard.value)}
                     disabled={!isPlaying || loading}
-                    aria-label={cardAlt(wasteTopCard)}
+                    aria-label={`${cardAlt(wasteTopCard)}${isWasteExposedKing ? ` ${t('a11y.kingRemovable')}` : ''}`}
                     aria-pressed={isSelected('waste')}
                     data-pair-candidate={isWastePairCandidate ? 'true' : undefined}
+                    data-king-removable={isWasteExposedKing ? 'true' : undefined}
                     className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                       isSelected('waste') ? 'ring-2 ring-ds-warning' : ''
-                    } ${isWastePairCandidate ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
+                    } ${isWastePairCandidate ? 'ring-2 ring-ds-success animate-pulse' : isWasteExposedKing ? 'ring-2 ring-ds-success' : ''}`}
                   >
                     <AnimatedCard card={wasteTopCard} width={effectiveCardWidth} />
                   </button>
@@ -368,6 +414,28 @@ function PyramidPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {/* New fewest-moves record badge on the clear screen (#3083). */}
+            {isGameClear && newBestMoves && (
+              <div
+                data-testid="py-best-badge"
+                role="status"
+                className="text-center text-ds-success font-semibold text-sm mb-2"
+              >
+                {t('newBestMoves', { moves: state.moveCount })}
+              </div>
+            )}
+
+            {/* Best-record panel: fewest moves + clear tally (#3083). */}
+            <div data-testid="py-stats-panel" className="text-game-text-muted text-xs text-center mb-2">
+              {t('bestMoves')}: {stats.fewestMoves !== null ? t('bestMovesValue', { moves: stats.fewestMoves }) : '—'}
+              {stats.plays > 0 && (
+                <>
+                  {' · '}
+                  {t('clears', { wins: stats.wins, plays: stats.plays })}
+                </>
+              )}
+            </div>
 
             {/* Action log */}
             <ActionLogSection

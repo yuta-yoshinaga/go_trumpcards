@@ -14,8 +14,10 @@
   "selectToPlay": "カードをクリックして選択",
   "tableCards": "場札",
   "tableEmpty": "（なし）",
+  "lastPlayedBy": "（{{name}} が出した）",
   "playButton": "選択して出す",
   "passButton": "渡す",
+  "clearSelectionButton": "選択解除",
   "discardButton": "捨てる",
   "sevenPassBanner": "【7渡し】{{target}}にカードを1枚渡してください",
   "tenDiscardBanner": "【10捨て】捨てるカードを1枚選択してください",
@@ -48,7 +50,8 @@
   "sort": {
     "strength": "強さ順",
     "suit": "スート順",
-    "number": "数字順"
+    "number": "数字順",
+    "label": "手札の並べ替え"
   },
   "phase": {
     "play": "プレイ",

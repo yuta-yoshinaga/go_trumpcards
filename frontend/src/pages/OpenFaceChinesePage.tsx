@@ -22,6 +22,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, OpenFaceChinesePlayer, OpenFaceChineseResponse } from '../types/card';
 import { OpenFaceChinesePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { OPENFACECHINESE_HELP, parseOpenfacechineseCommand } from '../utils/cli/commands/openfacechineseCommands';
 import { formatOpenfacechineseState } from '../utils/cli/formatters/openfacechineseFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -30,6 +31,17 @@ import type { CliGameConfig } from '../utils/cli/types';
 const ROW_FRONT = 0;
 const ROW_MIDDLE = 1;
 const ROW_BACK = 2;
+
+/** Maximum number of cards each board row holds (front=3, middle=5, back=5). Mirrors the domain. */
+const ROW_CAPACITIES = [3, 5, 5] as const;
+
+/** Returns true when the given row of a player's board is already full and cannot accept a card. */
+export function isOfcRowFull(player: OpenFaceChinesePlayer | null, row: number): boolean {
+  if (!player) return false;
+  const rows = [player.front, player.middle, player.back];
+  const cards = rows[row];
+  return cards !== undefined && cards.length >= ROW_CAPACITIES[row];
+}
 
 /** Open Face Chinese Poker (OFC) tutorial step definitions. */
 const OFC_TUTORIAL_STEPS: TutorialStep[] = [
@@ -108,6 +120,9 @@ function OpenFaceChinesePageContent() {
   const human = state.players.find((p) => p.isHuman) ?? null;
   const humanWon = isGameEnd && human !== null && state.winnerIdx === human.id;
   const canPlace = isPlacing && state.isHumanTurn && Boolean(state.currentCard);
+  const frontFull = isOfcRowFull(human, ROW_FRONT);
+  const middleFull = isOfcRowFull(human, ROW_MIDDLE);
+  const backFull = isOfcRowFull(human, ROW_BACK);
 
   const handleReset = () => {
     hideActionLog();
@@ -116,13 +131,31 @@ function OpenFaceChinesePageContent() {
 
   const handlePlace = (row: number) => exec('place', { row });
   const handleNext = () => exec('nextround');
+  const handleHint = () => exec('hint');
+  const rowNames = ['front', 'middle', 'back'] as const;
 
   const playerName = (player: OpenFaceChinesePlayer) => (player.isHuman ? t('you') : t('cpu', { n: player.id }));
 
-  /** Renders a single row of a player's board, padding empty slots up to `capacity`. */
-  const renderRow = (label: string, cards: Card[], capacity: number, keyPrefix: string) => (
-    <div className="flex flex-col gap-1">
-      <span className="text-ds-text-muted text-[11px]">{label}</span>
+  /**
+   * Renders a single row of a player's board, padding empty slots up to `capacity`.
+   * When `place` is supplied (the human's own rows during placing), the slot area
+   * becomes a tap target that places the pending card into that row via the same
+   * `place` action the dedicated buttons use; a full row is rendered inactive.
+   */
+  const renderRow = (
+    label: string,
+    cards: Card[],
+    capacity: number,
+    keyPrefix: string,
+    place?: { row: number; full: boolean },
+  ) => {
+    // A fieldset+legend names the whole row for SR (count + card contents), since
+    // the empty slots are decorative and biome forbids role="group" on a div.
+    const cardNames = cards.map(cardAlt).join(', ');
+    const rowAria = cardNames
+      ? t('rowAriaFilled', { label, count: cards.length, cards: cardNames })
+      : t('rowAriaEmpty', { label, count: cards.length });
+    const slots = (
       <div className="flex gap-1 flex-wrap">
         {cards.map((c, i) => (
           <CardImage key={`${keyPrefix}-${i}`} card={c} width={Math.round(cardWidth * 0.62)} />
@@ -136,8 +169,31 @@ function OpenFaceChinesePageContent() {
           />
         ))}
       </div>
-    </div>
-  );
+    );
+    return (
+      <fieldset className="flex flex-col gap-1 border-0 p-0 m-0" data-testid={`ofc-row-${keyPrefix}`}>
+        <legend className="sr-only">{rowAria}</legend>
+        <span className="text-ds-text-muted text-[11px]" aria-hidden="true">
+          {label}
+        </span>
+        {place ? (
+          <button
+            type="button"
+            className="rounded p-1 text-left enabled:cursor-pointer enabled:hover:ring-1 enabled:hover:ring-ds-warning enabled:focus-visible:ring-1 enabled:focus-visible:ring-ds-warning disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => handlePlace(place.row)}
+            disabled={loading || place.full}
+            aria-disabled={place.full}
+            aria-label={t('placeRowAria', { label })}
+            data-testid={`ofc-place-row-${keyPrefix}`}
+          >
+            {slots}
+          </button>
+        ) : (
+          slots
+        )}
+      </fieldset>
+    );
+  };
 
   return (
     <GamePageShell
@@ -167,6 +223,11 @@ function OpenFaceChinesePageContent() {
               {human && <span className="text-ds-text-muted">{t('totalScore', { score: human.totalScore })}</span>}
             </div>
 
+            {/* Announce the pending card by name whenever it changes (persistent region). */}
+            <span className="sr-only" role="status" aria-live="polite" data-testid="ofc-pending-announce">
+              {canPlace && state.currentCard ? t('pendingAnnounce', { card: cardAlt(state.currentCard) }) : ''}
+            </span>
+
             {/* Pending card to place */}
             {canPlace && state.currentCard && (
               <div
@@ -181,7 +242,8 @@ function OpenFaceChinesePageContent() {
                     type="button"
                     className={btnSuccess}
                     onClick={() => handlePlace(ROW_FRONT)}
-                    disabled={loading}
+                    disabled={loading || frontFull}
+                    aria-disabled={frontFull}
                     data-testid="place-front"
                   >
                     {t('place.front')}
@@ -190,7 +252,8 @@ function OpenFaceChinesePageContent() {
                     type="button"
                     className={btnSuccess}
                     onClick={() => handlePlace(ROW_MIDDLE)}
-                    disabled={loading}
+                    disabled={loading || middleFull}
+                    aria-disabled={middleFull}
                     data-testid="place-middle"
                   >
                     {t('place.middle')}
@@ -199,12 +262,24 @@ function OpenFaceChinesePageContent() {
                     type="button"
                     className={btnSuccess}
                     onClick={() => handlePlace(ROW_BACK)}
-                    disabled={loading}
+                    disabled={loading || backFull}
+                    aria-disabled={backFull}
                     data-testid="place-back"
                   >
                     {t('place.back')}
                   </button>
+                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+                    {t('hint.button')}
+                  </button>
                 </div>
+                {state.hint && (
+                  <p className="text-center text-sm text-ds-accent mt-1" data-testid="ofc-hint">
+                    {t('hint.text', {
+                      row: t(`rows.${rowNames[state.hint.row] ?? 'back'}`),
+                      reason: t(`hint.${state.hint.reason}`),
+                    })}
+                  </p>
+                )}
               </div>
             )}
 
@@ -219,14 +294,40 @@ function OpenFaceChinesePageContent() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-ds-text-primary text-sm font-semibold">{playerName(p)}</span>
                     <div className="flex items-center gap-2 text-xs">
-                      {p.fouled && <span className="text-ds-error font-semibold">{t('fouled')}</span>}
-                      {p.fantasyland && <span className="text-ds-accent font-semibold">{t('fantasyland')}</span>}
+                      {p.fouled && (
+                        <span className="text-ds-error font-semibold" role="status">
+                          {t('fouled')}
+                        </span>
+                      )}
+                      {p.fantasyland && (
+                        <span className="text-ds-accent font-semibold" role="status">
+                          {t('fantasyland')}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-col gap-2">
-                    {renderRow(t('rows.front'), p.front, 3, `front-${p.id}`)}
-                    {renderRow(t('rows.middle'), p.middle, 5, `middle-${p.id}`)}
-                    {renderRow(t('rows.back'), p.back, 5, `back-${p.id}`)}
+                    {renderRow(
+                      t('rows.front'),
+                      p.front,
+                      3,
+                      `front-${p.id}`,
+                      canPlace && p.isHuman ? { row: ROW_FRONT, full: frontFull } : undefined,
+                    )}
+                    {renderRow(
+                      t('rows.middle'),
+                      p.middle,
+                      5,
+                      `middle-${p.id}`,
+                      canPlace && p.isHuman ? { row: ROW_MIDDLE, full: middleFull } : undefined,
+                    )}
+                    {renderRow(
+                      t('rows.back'),
+                      p.back,
+                      5,
+                      `back-${p.id}`,
+                      canPlace && p.isHuman ? { row: ROW_BACK, full: backFull } : undefined,
+                    )}
                   </div>
                   {isRoundEnd && (
                     <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">

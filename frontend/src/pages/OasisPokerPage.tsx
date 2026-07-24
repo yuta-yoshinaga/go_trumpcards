@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -19,6 +20,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
@@ -89,6 +91,7 @@ function OasisPokerPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(oasispokerApi.exec);
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('oasispoker', state);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('oasispoker');
   const cliConfig: CliGameConfig<OasisPokerResponse, Parameters<typeof oasispokerApi.exec>> = useMemo(
@@ -325,7 +328,11 @@ function OasisPokerPageContent() {
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.dealerHand.map((card, i) =>
                     isMaskedCard(card) ? (
-                      <AnimatedCardBack key={`d-back-${i}`} width={cardWidth} />
+                      // role="img" + aria-label makes AT announce "hidden card"
+                      // instead of the generic card-back alt on the inner image.
+                      <span key={`d-back-${i}`} role="img" aria-label={t('hiddenCard')} className="inline-flex">
+                        <AnimatedCardBack width={cardWidth} />
+                      </span>
                     ) : (
                       <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                     ),
@@ -372,7 +379,23 @@ function OasisPokerPageContent() {
 
           <GameFooter className={`${gameTheme.oasispoker.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel title={t('settings.title')} groups={[]} />
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+            <SettingsPanel
+              title={t('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'checkbox',
+                      id: 'oasispoker-hint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: hintEnabled,
+                      onToggle: setHintEnabled,
+                    },
+                  ],
+                },
+              ]}
+            />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="oasis-bet-controls">
                 <ChipBetInput

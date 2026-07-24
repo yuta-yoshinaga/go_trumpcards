@@ -81,6 +81,29 @@ export function chinchonDeadwoodBreakdown(hand: readonly Card[]): ChinchonDeadwo
   return { cards, values: cards.map(chinchonCardValue), total: best.value };
 }
 
+/** The best meld split of a hand: which card indices are absorbed by melds. */
+export interface ChinchonMeldSplit {
+  /** Indices (into `hand`) of cards that belong to a meld in the minimum-deadwood split. */
+  meldedIndices: ReadonlySet<number>;
+  /** Deadwood total of the split. */
+  deadwoodValue: number;
+}
+
+/**
+ * Find the minimum-deadwood split and report which hand indices are melded, so
+ * the UI can color-code melded vs. deadwood cards (mirrors Gin Rummy's
+ * `bestMeldSplit`). Shares the same search as the deadwood breakdown, so the
+ * coloring and the score always agree. Empty hand yields an empty set.
+ */
+export function bestChinchonMeldSplit(hand: readonly Card[]): ChinchonMeldSplit {
+  if (hand.length === 0) return { meldedIndices: new Set(), deadwoodValue: 0 };
+  const best = search(hand.map((card, idx) => ({ idx, card })));
+  const deadwoodIdx = new Set(best.deadwood.map((d) => d.idx));
+  const melded = new Set<number>();
+  for (let i = 0; i < hand.length; i++) if (!deadwoodIdx.has(i)) melded.add(i);
+  return { meldedIndices: melded, deadwoodValue: best.value };
+}
+
 function search(remaining: IndexedCard[]): { value: number; deadwood: IndexedCard[] } {
   const candidates = enumerateMelds(remaining);
   let best = { value: calcChinchonDeadwoodValue(remaining.map((r) => r.card)), deadwood: remaining };

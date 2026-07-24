@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BeziqueMeld, BeziqueResponse } from '../types/card';
 import { BeziquePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { beziqueEndgameLegalIndices, beziqueSuitDesign } from '../utils/beziqueLegal';
 import { cardLabel } from '../utils/cardUtils';
 import { BEZIQUE_HELP, parseBeziqueCommand } from '../utils/cli/commands/beziqueCommands';
 import { formatBeziqueState } from '../utils/cli/formatters/beziqueFormatter';
@@ -35,8 +36,18 @@ import type { CliGameConfig } from '../utils/cli/types';
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = undeclared). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
+/** Suit-name i18n key suffixes indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
+const SUIT_KEYS = ['', 'spade', 'club', 'heart', 'diamond'] as const;
+
 /** Meld-name i18n key suffixes indexed by meld type (0=marriage … 5=four jacks). */
 const MELD_NAME_KEYS = ['marriage', 'bezique', 'fourAces', 'fourKings', 'fourQueens', 'fourJacks'] as const;
+
+/**
+ * Stock (talon) count at or below which the pre-endgame warning is shown. When the
+ * stock empties the game jumps to phase 2 (strict must-follow, no melds), so this
+ * gives the player a few turns' notice to finish declaring melds.
+ */
+const STOCK_LOW_THRESHOLD = 4;
 
 /** Bezique tutorial step definitions. */
 const BEZIQUE_TUTORIAL_STEPS: TutorialStep[] = [
@@ -134,11 +145,35 @@ function BeziquePageContent() {
 
   const trumpSymbol = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? SUIT_SYMBOLS[state.trumpSuit] : t('noTrump');
 
+  // Warn as the stock nears empty (but before the endgame actually begins): once it
+  // hits 0 the game switches to phase 2 and the existing endgameNotice takes over.
+  const stockLow = !state.isEndgame && state.stockRemaining > 0 && state.stockRemaining <= STOCK_LOW_THRESHOLD;
+
+  // During the endgame (phase 2) the follower must follow suit and win if able.
+  // Ring the legal-to-play cards so the human sees the constraint before playing.
+  // Only meaningful when following a lead: while leading (or before the endgame)
+  // every card is legal, so no highlight is shown. The backend still validates.
+  const leadCard = state.currentTrick[0]?.card ?? null;
+  const legalIndices =
+    isHumanPlayTurn && state.isEndgame && leadCard != null && humanPlayer != null
+      ? beziqueEndgameLegalIndices(humanPlayer.cards, leadCard, beziqueSuitDesign(state.trumpSuit))
+      : undefined;
+
   /** Builds a localized label for one declarable meld. */
   const meldLabel = (m: BeziqueMeld): string => {
     const name = t(`meldName.${MELD_NAME_KEYS[m.type] ?? 'marriage'}`);
     const suit = m.type === 0 && m.suit >= 1 && m.suit <= 4 ? ` ${SUIT_SYMBOLS[m.suit]}` : '';
     return `${name}${suit} (+${m.points})`;
+  };
+
+  /** Builds a screen-reader label naming the suit (a marriage is suit-specific) and points. */
+  const meldAriaLabel = (m: BeziqueMeld): string => {
+    const name = t(`meldName.${MELD_NAME_KEYS[m.type] ?? 'marriage'}`);
+    const fullName =
+      m.type === 0 && m.suit >= 1 && m.suit <= 4
+        ? t('meldMarriageName', { suit: t(`suitName.${SUIT_KEYS[m.suit]}`), name })
+        : name;
+    return t('meldDeclareLabel', { name: fullName, points: m.points });
   };
 
   const handleManualReset = () => {
@@ -206,9 +241,22 @@ function BeziquePageContent() {
               <span className="mr-4">{t('deal', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
               <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
-              <span className="mr-4">{t('stock', { count: state.stockRemaining })}</span>
+              <span className={`mr-4 ${stockLow ? 'text-ds-warning font-semibold motion-safe:animate-pulse' : ''}`}>
+                {t('stock', { count: state.stockRemaining })}
+              </span>
               <span>{t('target', { points: state.config.targetScore })}</span>
             </div>
+
+            {stockLow && (
+              <div
+                role="status"
+                aria-live="polite"
+                data-testid="bezique-stock-warning"
+                className="text-ds-warning text-center mb-2 text-sm font-semibold motion-safe:animate-pulse"
+              >
+                {t('stockLowWarning', { count: state.stockRemaining })}
+              </div>
+            )}
 
             {state.isEndgame && (
               <div className="text-ds-warning text-center mb-2 text-sm font-semibold">{t('endgameNotice')}</div>
@@ -298,6 +346,7 @@ function BeziquePageContent() {
                 isMobile={isMobile}
                 dataTutorialPrefix="bezique"
                 restrictedTooltip={t('playButton')}
+                legalIndices={legalIndices}
               />
             )}
 
@@ -329,19 +378,27 @@ function BeziquePageContent() {
               )}
               {isHumanMeldTurn && (
                 <>
-                  <span className="text-xs text-ds-text-muted self-center mr-1">{t('meldPrompt')}</span>
-                  {state.availableMelds.map((m, i) => (
-                    <button
-                      key={`${m.type}-${m.suit}`}
-                      type="button"
-                      className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
-                      onClick={() => handleMeld(i)}
-                      disabled={loading}
-                      data-testid={`meld-${i}`}
-                    >
-                      {meldLabel(m)}
-                    </button>
-                  ))}
+                  {/* Fieldset groups the meld buttons; the sr-only legend names the group
+                      (the visible prompt is aria-hidden to avoid a duplicate announcement). */}
+                  <fieldset className="contents">
+                    <legend className="sr-only">{t('meldPrompt')}</legend>
+                    <span aria-hidden="true" className="text-xs text-ds-text-muted self-center mr-1">
+                      {t('meldPrompt')}
+                    </span>
+                    {state.availableMelds.map((m, i) => (
+                      <button
+                        key={`${m.type}-${m.suit}`}
+                        type="button"
+                        className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                        onClick={() => handleMeld(i)}
+                        disabled={loading}
+                        data-testid={`meld-${i}`}
+                        aria-label={meldAriaLabel(m)}
+                      >
+                        {meldLabel(m)}
+                      </button>
+                    ))}
+                  </fieldset>
                   <button
                     type="button"
                     className={btnSuccess}

@@ -96,9 +96,19 @@ func (p *MariasCuiPresenter) Output(g interfaces.MariasGame, lastErr error) stri
 		case domain.MariasPhaseRoundEnd:
 			pts := g.GetRoundCardPoints()
 			soloist := g.GetSoloistIdx()
+			// Sum the two defenders' card points so the outcome (soloist won or
+			// lost the round) is readable from this line alone.
+			defenderPts := 0
+			for i := 0; i < g.GetPlayerCnt(); i++ {
+				if i != soloist {
+					defenderPts += pts[i]
+				}
+			}
 			b.WriteString(i18n.Tf("marias.promptRoundEnd",
 				"soloist", cuiPlayerName(g.GetPlayer(soloist), soloist),
 				"pts", strconv.Itoa(pts[soloist])) + "\n")
+			b.WriteString(i18n.Tf("marias.promptRoundEndDefenders",
+				"pts", strconv.Itoa(defenderPts)) + "\n")
 			b.WriteString(i18n.T("marias.promptRoundEndHelp") + "\n")
 		}
 	})

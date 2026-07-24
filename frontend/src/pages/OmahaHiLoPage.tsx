@@ -37,14 +37,15 @@ import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { OmahaResponse } from '../types/card';
+import type { Card, OmahaResponse } from '../types/card';
 import { OmahaPhase, OmahaRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { lowCardIndexSets } from '../utils/omahaLowCards';
+import { omahaBestFive } from '../utils/omahaBestFive';
+import { type BoardLowStatus, boardLowPossibility, lowCardIndexSets } from '../utils/omahaLowCards';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** Omaha Hi-Lo (8 or Better) tutorial step definitions. */
@@ -102,6 +103,96 @@ const OMAHA_PHASE_KEYS: Readonly<Record<number, string>> = {
   [OmahaPhase.END]: 'end',
   [OmahaPhase.REBUY]: 'rebuy',
 };
+
+/** A community or hole card at showdown. When part of the qualifying low hand
+ * (`isLo`) it gets the blue ring plus color-independent markers: sr-only text (a
+ * plain div can't carry aria-label) and a visible, aria-hidden "LO" badge. When
+ * part of the winning Hi best-5 (`isBest5`) it gets an additive green ring;
+ * cards in neither set are dimmed (`dim`) once a best-5 exists. Lo takes visual
+ * precedence over Hi so a card serving both keeps the blue low marker. */
+function OmahaLoCard({
+  card,
+  isLo,
+  isBest5,
+  dim,
+  best5Position,
+  cardWidth,
+  t,
+}: {
+  card: Card;
+  isLo: boolean;
+  isBest5: boolean;
+  dim: boolean;
+  best5Position: 'hole' | 'board';
+  cardWidth: number;
+  t: (key: string) => string;
+}) {
+  const ring = isLo
+    ? 'ring-2 ring-ds-info motion-safe:animate-pulse'
+    : isBest5
+      ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse'
+      : '';
+  return (
+    <div
+      className={`relative rounded-lg transition-all ${ring} ${dim ? 'opacity-50' : ''}`}
+      data-testid={isLo ? 'omahahilo-lo-card' : undefined}
+      data-best5-hole={isBest5 && best5Position === 'hole' ? true : undefined}
+      data-best5-board={isBest5 && best5Position === 'board' ? true : undefined}
+    >
+      <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+      {isLo && (
+        <>
+          <span className="sr-only">{t('loCardAria')}</span>
+          <span
+            aria-hidden="true"
+            className="absolute top-0.5 left-0.5 px-1 rounded bg-ds-info text-ds-text-on-accent text-[11px] font-extrabold leading-tight shadow"
+            data-testid="omahahilo-lo-card-badge"
+          >
+            {t('loBadge')}
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Design-system token classes per board-low status (live=success, possible=info, impossible=muted). */
+const BOARD_LOW_STATUS_CLASS: Readonly<Record<BoardLowStatus, string>> = {
+  live: 'border-ds-success bg-ds-success/20 text-ds-success',
+  possible: 'border-ds-info bg-ds-info/20 text-ds-info',
+  impossible: 'border-ds-border bg-ds-surface text-ds-text-muted',
+};
+
+/** Additive badge showing whether the community board can still make a qualifying
+ * Omaha Hi-Lo low (8-or-better): 3+ distinct low ranks on board = live, still
+ * reachable = possible, mathematically out = impossible. Inspects the board only. */
+function BoardLowBadge({
+  communityCards,
+  t,
+}: {
+  communityCards: Card[];
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}) {
+  const { status, needed } = boardLowPossibility(communityCards);
+  const aria =
+    status === 'live'
+      ? t('boardLow.ariaLive')
+      : status === 'possible'
+        ? t('boardLow.ariaPossible', { needed })
+        : t('boardLow.ariaImpossible');
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${BOARD_LOW_STATUS_CLASS[status]}`}
+      data-testid="omahahilo-board-low-badge"
+      data-status={status}
+      title={aria}
+    >
+      <span aria-hidden="true">{t('boardLow.label')}:</span>
+      <span aria-hidden="true">{t(`boardLow.${status}`)}</span>
+      <span className="sr-only">{aria}</span>
+    </span>
+  );
+}
 
 /** Renders the Omaha Hi-Lo (8 or Better) game page with community cards,
  * betting, and split-pot showdown. */
@@ -169,6 +260,14 @@ function OmahaHiLoPageContent() {
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  // At showdown, highlight the human's winning Hi 5 cards under the must-use-2 rule.
+  const showdownBest5 = useMemo(() => {
+    const empty = { holeSet: new Set<number>(), boardSet: new Set<number>() };
+    if (!isShowdown || !humanPlayer || humanPlayer.folded) return empty;
+    const best = omahaBestFive(humanPlayer.cards ?? [], state?.communityCards ?? []);
+    if (!best) return empty;
+    return { holeSet: new Set(best.holeIdx), boardSet: new Set(best.boardIdx) };
+  }, [isShowdown, humanPlayer, state?.communityCards]);
   // At showdown, highlight the human's qualifying low cards (hole + board), if any.
   const humanLowBestHand = isShowdown
     ? state?.roundResults?.find((r) => r.playerIdx === humanPlayer?.id)?.lowBestHand
@@ -257,22 +356,30 @@ function OmahaHiLoPageContent() {
             {(() => {
               const communityCardsContent = (
                 <>
-                  <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
+                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                    <span className="text-ds-text-primary text-lg">{t('communityCards')}</span>
+                    {phase >= OmahaPhase.FLOP && phase <= OmahaPhase.RIVER && (
+                      <BoardLowBadge communityCards={state?.communityCards ?? []} t={t} />
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
-                      ? state.communityCards.map((card, idx) => (
-                          <div
-                            key={`${card.design}-${card.value}`}
-                            className={
-                              lowSets.loBoardSet.has(idx)
-                                ? 'rounded-lg ring-2 ring-ds-info motion-safe:animate-pulse'
-                                : ''
-                            }
-                            data-testid={lowSets.loBoardSet.has(idx) ? 'omahahilo-lo-card' : undefined}
-                          >
-                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
-                          </div>
-                        ))
+                      ? state.communityCards.map((card, idx) => {
+                          const inBest = showdownBest5.boardSet.has(idx);
+                          const inLo = lowSets.loBoardSet.has(idx);
+                          return (
+                            <OmahaLoCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              isLo={inLo}
+                              isBest5={inBest}
+                              dim={showdownBest5.boardSet.size > 0 && !inBest && !inLo}
+                              best5Position="board"
+                              cardWidth={cardWidth}
+                              t={t}
+                            />
+                          );
+                        })
                       : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
@@ -434,17 +541,22 @@ function OmahaHiLoPageContent() {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="ohl-combination-rule">
                   {humanPlayer.cards?.length
-                    ? humanPlayer.cards.map((card, idx) => (
-                        <div
-                          key={`${card.design}-${card.value}`}
-                          className={
-                            lowSets.loHoleSet.has(idx) ? 'rounded-lg ring-2 ring-ds-info motion-safe:animate-pulse' : ''
-                          }
-                          data-testid={lowSets.loHoleSet.has(idx) ? 'omahahilo-lo-card' : undefined}
-                        >
-                          <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
-                        </div>
-                      ))
+                    ? humanPlayer.cards.map((card, idx) => {
+                        const inBest = showdownBest5.holeSet.has(idx);
+                        const inLo = lowSets.loHoleSet.has(idx);
+                        return (
+                          <OmahaLoCard
+                            key={`${card.design}-${card.value}`}
+                            card={card}
+                            isLo={inLo}
+                            isBest5={inBest}
+                            dim={showdownBest5.holeSet.size > 0 && !inBest && !inLo}
+                            best5Position="hole"
+                            cardWidth={cardWidth}
+                            t={t}
+                          />
+                        );
+                      })
                     : !humanPlayer.folded &&
                       Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>

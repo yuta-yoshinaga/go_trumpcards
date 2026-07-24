@@ -64,5 +64,11 @@
     "followSuit": "Follow the lead suit",
     "trumpCut": "Opportunity to cut with trump",
     "discardLowest": "Discard your lowest card"
+  },
+  "stats": {
+    "hand": "Hand",
+    "team": "Team",
+    "total": "Total score",
+    "round": "Round score"
   }
 }

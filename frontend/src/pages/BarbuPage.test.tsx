@@ -48,6 +48,7 @@ function makeState(overrides: Partial<BarbuResponse> = {}): BarbuResponse {
     config: { cpuDifficulty: 1 },
     roundWinners: [],
     lastDealDetail: null,
+    dealHistory: [],
     message: '',
     ...overrides,
   };
@@ -62,6 +63,15 @@ describe('BarbuPage', () => {
   it('calls reset on mount with the short "r" command', async () => {
     renderWithProviders(<BarbuPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('r'));
+  });
+
+  it('renders CPU difficulty options with localized labels', async () => {
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('r'));
+    // Difficulty options are localized (ja), not the hardcoded Easy/Normal/Hard.
+    expect(screen.getByRole('option', { name: 'かんたん' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'ふつう' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'むずかしい' })).toBeInTheDocument();
   });
 
   it('renders contract buttons in the select phase', async () => {
@@ -122,6 +132,29 @@ describe('BarbuPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 0 }));
   });
 
+  it('labels each trick card with the player who played it and marks the lead', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'play',
+        currentContract: 0,
+        currentTurn: 2,
+        currentTrick: [
+          { playerIdx: 1, card: card('HEART', 10) },
+          { playerIdx: 0, card: card('HEART', 12) },
+        ],
+      }),
+    );
+    renderWithProviders(<BarbuPage />);
+    const trickCards = await screen.findAllByTestId('bb-trick-card');
+    expect(trickCards).toHaveLength(2);
+    // Lead card (index 0) was played by CPU 1 and carries the lead marker (▸).
+    expect(trickCards[0]).toHaveTextContent('CPU 1');
+    expect(trickCards[0]).toHaveTextContent('▸');
+    // Follow card was played by the human; no lead marker on it.
+    expect(trickCards[1]).toHaveTextContent('あなた');
+    expect(trickCards[1]).not.toHaveTextContent('▸');
+  });
+
   it('shows a pass button in Dominoes and passes when no card is playable', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 'play', currentContract: 6, currentTurn: 0, dominoPlayable: [] }));
     renderWithProviders(<BarbuPage />);
@@ -130,6 +163,41 @@ describe('BarbuPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('pass-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: -1 }));
+  });
+
+  it('shows the deal × player score matrix at deal end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'dealEnd',
+        currentContract: 0,
+        dealHistory: [
+          { contract: 0, trumpSuit: -1, dealerIdx: 0, gained: { 0: -4, 1: 0, 2: -2, 3: 0 } },
+          { contract: 5, trumpSuit: 1, dealerIdx: 1, gained: { 0: 5, 1: 10, 2: 0, 3: 5 } },
+        ],
+      }),
+    );
+    renderWithProviders(<BarbuPage />);
+    const matrix = await screen.findByTestId('bb-score-matrix');
+    // Two recorded deals => two body rows.
+    expect(matrix.querySelectorAll('tbody tr')).toHaveLength(2);
+    // Positive gains are rendered with a leading plus sign.
+    expect(matrix).toHaveTextContent('+10');
+    // The Trumps row shows its suit symbol.
+    expect(matrix).toHaveTextContent('♠');
+  });
+
+  it('hides the score matrix while a deal is in progress', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'play',
+        currentContract: 0,
+        currentTurn: 0,
+        dealHistory: [{ contract: 0, trumpSuit: -1, dealerIdx: 0, gained: { 0: -4, 1: 0, 2: -2, 3: 0 } }],
+      }),
+    );
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(screen.getByTestId('play-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('bb-score-matrix')).not.toBeInTheDocument();
   });
 
   it('shows the next-deal button at deal end', async () => {

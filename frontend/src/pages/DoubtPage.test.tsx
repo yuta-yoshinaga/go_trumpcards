@@ -517,29 +517,39 @@ describe('DoubtPage', () => {
     it('starts countdown display when CPU played in doubt phase', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
       renderWithProviders(<DoubtPage />);
-      // Wait directly for countdown text (appears after 2nd render: state→doubt phase, effect→countdown)
-      await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
+      // The countdown text appears in both the visible (aria-hidden) node and the
+      // throttled sr timer at the 10s mark, so assert at least one is present.
+      await waitFor(() => expect(screen.getAllByText(/残り 10 秒/).length).toBeGreaterThan(0));
     });
 
-    it('countdown is a polite role=timer region early on (escalates to assertive ≤3s)', async () => {
+    it('exposes the countdown as a throttled polite role=timer region', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
-      const countdownEl = screen.getByText(/残り 10 秒/);
-      expect(countdownEl).toHaveAttribute('role', 'timer');
-      expect(countdownEl).toHaveAttribute('aria-live', 'polite'); // 10s remaining → not yet urgent
-      expect(countdownEl).toHaveAttribute('aria-atomic', 'true');
+      await waitFor(() => expect(screen.getByTestId('countdown-sr-timer')).toBeInTheDocument());
+      const timer = screen.getByTestId('countdown-sr-timer');
+      expect(timer).toHaveAttribute('role', 'timer');
+      expect(timer).toHaveAttribute('aria-live', 'polite');
+      expect(timer).toHaveAttribute('aria-atomic', 'true');
+    });
+
+    it('announces the doubt-window opening via an assertive role=alert region', async () => {
+      mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
+      renderWithProviders(<DoubtPage />);
+      const alert = await screen.findByTestId('doubt-window-alert');
+      expect(alert).toHaveAttribute('role', 'alert');
+      // Stable prompt text (uses the fixed window length, not the live countdown).
+      expect(alert.textContent).toMatch(/ダウトしますか|自動スキップ/);
     });
 
     it('decrements countdown each second', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText(/残り 10 秒/)[0]).toBeInTheDocument());
 
       act(() => {
         vi.advanceTimersByTime(1000);
       });
-      expect(screen.getByText(/残り 9 秒/)).toBeInTheDocument();
+      expect(screen.getAllByText(/残り 9 秒/)[0]).toBeInTheDocument();
     });
 
     it('auto-skips and clears countdown when timer expires', async () => {
@@ -547,7 +557,7 @@ describe('DoubtPage', () => {
         .mockResolvedValueOnce(doubtPhaseCpuPlayedState) // initial reset
         .mockResolvedValueOnce(humanTurnState); // skip response → leave doubt phase
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText(/残り 10 秒/)[0]).toBeInTheDocument());
 
       act(() => {
         vi.advanceTimersByTime(10000);
@@ -564,7 +574,7 @@ describe('DoubtPage', () => {
     it('stops countdown when ダウト！ is clicked', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText(/残り 10 秒/)[0]).toBeInTheDocument());
 
       mockExec.mockResolvedValue(humanTurnState);
       act(() => {
@@ -576,7 +586,7 @@ describe('DoubtPage', () => {
     it('stops countdown when スルー is clicked', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText(/残り 10 秒/)[0]).toBeInTheDocument());
 
       mockExec.mockResolvedValue(humanTurnState);
       act(() => {
@@ -600,7 +610,7 @@ describe('DoubtPage', () => {
     // Countdown should NOT appear immediately (hesitation delay of 500ms pending)
     expect(screen.queryByText(/残り/)).not.toBeInTheDocument();
     // After hesitation delay passes, countdown starts
-    await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText(/残り 10 秒/)[0]).toBeInTheDocument());
   });
 
   // ── No countdown in other phases ─────────────────────────────────────────
@@ -1128,7 +1138,7 @@ describe('DoubtPage', () => {
       };
       mockExec.mockResolvedValue(shortState);
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getByText(/残り 3 秒/)).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText(/残り 3 秒/)[0]).toBeInTheDocument());
     });
 
     it('uses state.doubtWindowSec for countdown (5s)', async () => {
@@ -1138,7 +1148,7 @@ describe('DoubtPage', () => {
       };
       mockExec.mockResolvedValue(midState);
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getByText(/残り 5 秒/)).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText(/残り 5 秒/)[0]).toBeInTheDocument());
     });
   });
 
@@ -1323,5 +1333,30 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  it('highlights and pre-selects the honest next value (last claim + 1)', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      lastAction: { playerIdx: 1, claimedValue: 5, cardCount: 1, isBluff: false },
+    });
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    const honest = screen.getByTestId('doubt-honest-value');
+    expect(honest).toHaveTextContent('6');
+    // The honest value is pre-selected so an honest play needs no extra tap.
+    expect(honest).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('wraps the honest next value from 13 back to A', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      lastAction: { playerIdx: 1, claimedValue: 13, cardCount: 1, isBluff: false },
+    });
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('doubt-honest-value')).toHaveTextContent('A');
   });
 });

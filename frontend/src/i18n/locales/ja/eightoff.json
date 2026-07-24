@@ -17,6 +17,7 @@
   "foundationAriaLabel": "{{suit}} ファンデーション ({{cardCount}}枚)",
   "emptyFoundationAriaLabel": "{{suit}} ファンデーション (空)",
   "emptyFreecellAriaLabel": "フリーセル {{idx}} (空)",
+  "emptyColumnAriaLabel": "空き列（{{rank}} のみ置けます）",
   "supermoveLimitTooltip": "一度に動かせるのは{{limit}}枚まで（空きフリーセル{{cells}}・空き列{{cols}}）",
   "tutorial": {
     "freeCells": "8つのフリーセルです。一時的にカードを置けるスペースで、4つには既に初期カードが配られています。空きセルが多いほど多くのカードを一度に移動できます。",
@@ -32,5 +33,7 @@
     "freeCellsFilling": "フリーセルがほぼ満杯です — 空けることを検討しましょう",
     "useEmptyColumnKing": "空の列があります — Kを移動して整理に活用しましょう",
     "useFreeCells": "フリーセルにカードを移動して手を広げましょう"
-  }
+  },
+  "hintAnnouncement": "ヒント: {{card}} を {{from}} から {{to}} へ移動",
+  "hintNoMoves": "移動可能な手がありません"
 }

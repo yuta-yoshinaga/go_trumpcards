@@ -197,35 +197,59 @@ describe('SevensPage', () => {
     });
   });
 
+  it('shows the number-key hint and per-card aria-keyshortcuts on the human turn', async () => {
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByTestId('sevens-key-hints')).toBeInTheDocument());
+    expect(screen.getByTestId('sevens-key-hints')).toHaveTextContent('数字キー: 対応する手札をプレイ');
+    // ♠6 is hand index 0 → key "1"; ♣8 is index 2 → key "3" (♥5 at index 1 is not playable).
+    expect(screen.getByAltText('♠ 6').closest('button')).toHaveAttribute('aria-keyshortcuts', '1');
+    expect(screen.getByAltText('♣ 8').closest('button')).toHaveAttribute('aria-keyshortcuts', '3');
+    expect(screen.getByAltText('♥ 5').closest('button')).not.toHaveAttribute('aria-keyshortcuts');
+  });
+
+  it('hides the number-key hint when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
+    expect(screen.queryByTestId('sevens-key-hints')).not.toBeInTheDocument();
+  });
+
+  it('hides the number-key hint at game end', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
+    expect(screen.queryByTestId('sevens-key-hints')).not.toBeInTheDocument();
+  });
+
   it('pass button is enabled on human turn with passes remaining', async () => {
     renderWithProviders(<SevensPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).not.toBeDisabled());
   });
 
   it('pass button is disabled on CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<SevensPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).toBeDisabled());
   });
 
   it('pass button is disabled when game has ended', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<SevensPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).toBeDisabled());
   });
 
   it('pass button is disabled when passes are exhausted', async () => {
     mockExec.mockResolvedValue(passesExhaustedState);
     renderWithProviders(<SevensPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).toBeDisabled());
   });
 
   it('calls play with -1 when pass button is clicked', async () => {
     renderWithProviders(<SevensPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).not.toBeDisabled());
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
-    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+    fireEvent.click(screen.getByRole('button', { name: /パス/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', -1));
   });
 
@@ -341,16 +365,16 @@ describe('SevensPage', () => {
     // reset → humanTurnState, play → stateWithCpuActions
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(stateWithCpuActions);
     renderWithProviders(<SevensPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).not.toBeDisabled());
 
-    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+    fireEvent.click(screen.getByRole('button', { name: /パス/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', -1));
 
     // Buttons stay disabled during animation
-    expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /パス/ })).toBeDisabled();
 
     // After replay delay, human turn is restored and buttons re-enable
-    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).not.toBeDisabled(), { timeout: 4000 });
   }, 10000);
 
   it('shows game result message when game ends', async () => {
@@ -562,20 +586,20 @@ describe('SevensPage', () => {
 
   it('disables action buttons while loading', async () => {
     renderWithProviders(<SevensPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).not.toBeDisabled());
 
     let resolve!: (value: SevensResponse) => void;
     const slowPromise = new Promise<SevensResponse>((res) => {
       resolve = res;
     });
     mockExec.mockReturnValueOnce(slowPromise);
-    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+    fireEvent.click(screen.getByRole('button', { name: /パス/ }));
 
-    expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /パス/ })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
 
     resolve(humanTurnState);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).not.toBeDisabled());
   });
 
   it('shows error message when API call fails', async () => {
@@ -872,7 +896,7 @@ describe('SevensPage', () => {
     };
     mockExec.mockResolvedValue(unlimitedPassState);
     renderWithProviders(<SevensPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).not.toBeDisabled());
   });
 
   it('forced pass human action has forced-pass testid', async () => {
@@ -919,9 +943,9 @@ describe('SevensPage', () => {
 
   it('sets aria-busy while loading', async () => {
     renderWithProviders(<SevensPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).not.toBeDisabled());
 
-    const container = screen.getByRole('button', { name: 'パス' }).closest('[aria-busy]') as HTMLElement;
+    const container = screen.getByRole('button', { name: /パス/ }).closest('[aria-busy]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
 
     let resolve!: (value: SevensResponse) => void;
@@ -929,7 +953,7 @@ describe('SevensPage', () => {
       resolve = res;
     });
     mockExec.mockReturnValueOnce(slowPromise);
-    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+    fireEvent.click(screen.getByRole('button', { name: /パス/ }));
 
     expect(container).toHaveAttribute('aria-busy', 'true');
 
@@ -1689,5 +1713,34 @@ describe('SevensPage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('終了'));
+  });
+
+  it('shows the remaining pass count on the pass button', async () => {
+    // humanTurnState: passesUsed 0 / maxPasses 5 → 5 remaining.
+    mockExec.mockResolvedValue(humanTurnState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /残り5回/ })).toBeInTheDocument());
+  });
+
+  it('warns when only one pass remains', async () => {
+    const oneLeft: SevensResponse = {
+      ...humanTurnState,
+      players: [{ ...humanTurnState.players[0], passesUsed: 4, maxPasses: 5 }, ...humanTurnState.players.slice(1)],
+    };
+    mockExec.mockResolvedValue(oneLeft);
+    renderWithProviders(<SevensPage />);
+    const btn = await screen.findByRole('button', { name: /残り1回/ });
+    expect(btn.className).toContain('text-ds-warning');
+  });
+
+  it('omits the count on the pass button when passes are unlimited', async () => {
+    const unlimited: SevensResponse = {
+      ...humanTurnState,
+      players: [{ ...humanTurnState.players[0], maxPasses: 0 }, ...humanTurnState.players.slice(1)],
+    };
+    mockExec.mockResolvedValue(unlimited);
+    renderWithProviders(<SevensPage />);
+    const btn = await screen.findByRole('button', { name: 'パス' });
+    expect(btn.textContent).toBe('パス');
   });
 });

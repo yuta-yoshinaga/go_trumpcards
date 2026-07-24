@@ -35,6 +35,9 @@ import { playerName } from '../utils/playerUtils';
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
+/** Suit-name i18n keys indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
+const SUIT_KEYS = ['', 'spade', 'club', 'heart', 'diamond'] as const;
+
 /** Card design string → suit number (1=♠ 2=♣ 3=♥ 4=♦), to align with SUIT_SYMBOLS / trumpSuit. */
 const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
 
@@ -150,7 +153,11 @@ function MariasPageContent() {
           const hasQ = cards.some((c) => DESIGN_TO_SUIT[c.design] === suit && c.value === 12);
           return hasK && hasQ;
         })
-        .map((suit) => ({ symbol: SUIT_SYMBOLS[suit] ?? '?', points: suit === state.trumpSuit ? 40 : 20 }))
+        .map((suit) => ({
+          symbol: SUIT_SYMBOLS[suit] ?? '?',
+          suitKey: SUIT_KEYS[suit],
+          points: suit === state.trumpSuit ? 40 : 20,
+        }))
     : [];
 
   const handleManualReset = () => {
@@ -297,6 +304,34 @@ function MariasPageContent() {
                         )}
                       </div>
                     ))}
+                    {/* Soloist-vs-Defenders total comparison. Each side total is
+                        cardPoints + marriage; the Soloist wins the round only when
+                        their total strictly exceeds the two Defenders' combined total
+                        (matching the domain's ScoreRound). The winning side is emphasised. */}
+                    {(() => {
+                      const sideTotal = (soloist: boolean) =>
+                        state.players.reduce(
+                          (sum, p) =>
+                            p.isSoloist === soloist
+                              ? sum + (state.roundCardPoints[p.id] ?? 0) + (state.roundMarriage[p.id] ?? 0)
+                              : sum,
+                          0,
+                        );
+                      const soloistTotal = sideTotal(true);
+                      const defenderTotal = sideTotal(false);
+                      const soloistWon = soloistTotal > defenderTotal;
+                      return (
+                        <div className="mt-1 pt-1 border-t border-ds-border-subtle" data-testid="marias-side-totals">
+                          <span className={soloistWon ? 'text-ds-warning font-semibold' : ''}>
+                            {t('roundResult.soloistTotal', { points: soloistTotal })}
+                          </span>
+                          <span className="mx-1">/</span>
+                          <span className={soloistWon ? '' : 'text-ds-warning font-semibold'}>
+                            {t('roundResult.defenderTotal', { points: defenderTotal })}
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
@@ -320,10 +355,20 @@ function MariasPageContent() {
           {/* Footer */}
           <GameFooter className={`${gameTheme.marias.footer} px-4 py-2.5`}>
             {marriages.length > 0 && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="marias-marriage">
-                {t('marriageAvailable', {
-                  list: marriages.map((m) => `${m.symbol} K-Q (+${m.points})`).join('  '),
+              <div
+                className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                data-testid="marias-marriage"
+                role="status"
+                aria-live="polite"
+                aria-label={t('marriageAvailable', {
+                  list: marriages.map((m) => `${t(`suitName.${m.suitKey}`)} K-Q +${m.points}`).join('、'),
                 })}
+              >
+                <span aria-hidden="true">
+                  {t('marriageAvailable', {
+                    list: marriages.map((m) => `${m.symbol} K-Q (+${m.points})`).join('  '),
+                  })}
+                </span>
               </div>
             )}
             {humanPlayer && (

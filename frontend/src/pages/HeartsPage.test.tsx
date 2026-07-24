@@ -79,10 +79,46 @@ describe('HeartsPage', () => {
   it('shows shoot-the-moon alert when one CPU monopolises ≥13 round points', async () => {
     const moonState = makeHeartsState({
       players: [
-        { id: 0, isHuman: true, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
-        { id: 1, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
-        { id: 2, isHuman: false, cardCount: 13, cards: [], roundScore: 14, cumulativeScore: 14, trickCount: 5 },
-        { id: 3, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 13,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 13,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+        {
+          id: 2,
+          isHuman: false,
+          cardCount: 13,
+          cards: [],
+          roundScore: 14,
+          cumulativeScore: 14,
+          trickCount: 5,
+          penaltyCards: [],
+        },
+        {
+          id: 3,
+          isHuman: false,
+          cardCount: 13,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
       ],
     });
     mockExec.mockResolvedValue(moonState);
@@ -104,16 +140,111 @@ describe('HeartsPage', () => {
           roundScore: 0,
           cumulativeScore: 0,
           trickCount: 0,
+          penaltyCards: [],
         },
-        { id: 1, isHuman: false, cardCount: 13, cards: [], roundScore: 8, cumulativeScore: 8, trickCount: 3 },
-        { id: 2, isHuman: false, cardCount: 13, cards: [], roundScore: 8, cumulativeScore: 8, trickCount: 3 },
-        { id: 3, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 13,
+          cards: [],
+          roundScore: 8,
+          cumulativeScore: 8,
+          trickCount: 3,
+          penaltyCards: [],
+        },
+        {
+          id: 2,
+          isHuman: false,
+          cardCount: 13,
+          cards: [],
+          roundScore: 8,
+          cumulativeScore: 8,
+          trickCount: 3,
+          penaltyCards: [],
+        },
+        {
+          id: 3,
+          isHuman: false,
+          cardCount: 13,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
       ],
     });
     mockExec.mockResolvedValue(splitState);
     renderWithProviders(<HeartsPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     expect(screen.queryByTestId('hearts-shoot-the-moon-badge')).not.toBeInTheDocument();
+  });
+
+  it('renders each player captured penalty-card breakdown (hearts count and Q♠)', async () => {
+    const penaltyState = makeHeartsState({
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 10,
+          cards: [{ design: 'SPADE', value: 1 }],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 10,
+          cards: [],
+          roundScore: 15,
+          cumulativeScore: 15,
+          trickCount: 3,
+          penaltyCards: [
+            { design: 'HEART', value: 2 },
+            { design: 'HEART', value: 10 },
+            { design: 'SPADE', value: 12 },
+          ],
+        },
+        {
+          id: 2,
+          isHuman: false,
+          cardCount: 10,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+        {
+          id: 3,
+          isHuman: false,
+          cardCount: 10,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+      ],
+    });
+    mockExec.mockResolvedValue(penaltyState);
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getAllByTestId('hearts-penalty-breakdown').length).toBeGreaterThan(0));
+
+    // CPU 1 took two hearts + the Q♠: its breakdown announces the full summary
+    // to screen readers and shows the "♥×2" and "♠Q" glyphs.
+    const breakdowns = screen.getAllByTestId('hearts-penalty-breakdown');
+    const withPenalties = breakdowns.filter((el) => el.getAttribute('aria-label')?.includes('ハート2枚'));
+    expect(withPenalties.length).toBeGreaterThan(0);
+    expect(withPenalties[0].getAttribute('aria-label')).toContain('スペードのクイーン獲得');
+    expect(screen.getAllByText('♥×2').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('♠Q').length).toBeGreaterThan(0);
+
+    // Players with no penalty cards announce "no penalties".
+    const emptyBreakdowns = breakdowns.filter((el) => el.getAttribute('aria-label')?.includes('ペナルティなし'));
+    expect(emptyBreakdowns.length).toBeGreaterThan(0);
   });
 
   it('renders pass phase with pass button and the recipient name', async () => {
@@ -917,5 +1048,154 @@ describe('HeartsPage', () => {
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
+  });
+
+  describe('legal-move highlight', () => {
+    const followSuitState = makeHeartsState({
+      trickNumber: 3,
+      heartsBroken: true,
+      currentPlayerIdx: 0,
+      currentTrick: [{ playerIdx: 1, card: { design: 'DIAMOND', value: 3 } }],
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 2,
+          cards: [
+            { design: 'DIAMOND', value: 8 },
+            { design: 'SPADE', value: 9 },
+          ],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 2,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+        {
+          id: 2,
+          isHuman: false,
+          cardCount: 2,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+        {
+          id: 3,
+          isHuman: false,
+          cardCount: 2,
+          cards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+          penaltyCards: [],
+        },
+      ],
+    });
+
+    it('rings only follow-suit cards and leaves the off-suit card clickable (no hard block)', async () => {
+      mockExec.mockResolvedValue(followSuitState);
+      renderWithProviders(<HeartsPage />);
+      await waitFor(() => expect(screen.getByAltText('♦ 8')).toBeInTheDocument());
+
+      const diamond = screen.getByAltText('♦ 8').closest('button') as HTMLButtonElement;
+      const spade = screen.getByAltText('♠ 9').closest('button') as HTMLButtonElement;
+
+      // Legal follow-suit card is ringed (data-legal).
+      expect(diamond).toHaveAttribute('data-legal', 'true');
+      expect(diamond.className).toContain('ring-ds-success');
+
+      // Illegal off-suit card gets no ring, but stays clickable — the server remains
+      // authoritative (the highlight is a visual aid, not a hard block).
+      expect(spade).not.toHaveAttribute('data-legal');
+      expect(spade.className).not.toContain('ring-ds-success');
+      expect(spade).not.toHaveAttribute('aria-disabled');
+      expect(spade.className).not.toContain('cursor-not-allowed');
+    });
+
+    it('rings only non-heart leads before hearts are broken (heart lead left un-ringed)', async () => {
+      const leadState = makeHeartsState({
+        trickNumber: 3,
+        heartsBroken: false,
+        currentPlayerIdx: 0,
+        currentTrick: [],
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 2,
+            cards: [
+              { design: 'HEART', value: 5 },
+              { design: 'SPADE', value: 9 },
+            ],
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 0,
+            penaltyCards: [],
+          },
+          {
+            id: 1,
+            isHuman: false,
+            cardCount: 2,
+            cards: [],
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 0,
+            penaltyCards: [],
+          },
+          {
+            id: 2,
+            isHuman: false,
+            cardCount: 2,
+            cards: [],
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 0,
+            penaltyCards: [],
+          },
+          {
+            id: 3,
+            isHuman: false,
+            cardCount: 2,
+            cards: [],
+            roundScore: 0,
+            cumulativeScore: 0,
+            trickCount: 0,
+            penaltyCards: [],
+          },
+        ],
+      });
+      mockExec.mockResolvedValue(leadState);
+      renderWithProviders(<HeartsPage />);
+      await waitFor(() => expect(screen.getByAltText('♥ 5')).toBeInTheDocument());
+
+      const heart = screen.getByAltText('♥ 5').closest('button') as HTMLButtonElement;
+      const spade = screen.getByAltText('♠ 9').closest('button') as HTMLButtonElement;
+
+      expect(spade).toHaveAttribute('data-legal', 'true');
+      expect(spade.className).toContain('ring-ds-success');
+      expect(heart).not.toHaveAttribute('data-legal');
+      expect(heart.className).not.toContain('ring-ds-success');
+    });
+
+    it('does not ring or dim cards when it is not the human turn', async () => {
+      mockExec.mockResolvedValue(cpuTurnState);
+      renderWithProviders(<HeartsPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+      const spadeA = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+      expect(spadeA).not.toHaveAttribute('data-legal');
+      expect(spadeA.className).not.toContain('opacity-50');
+    });
   });
 });

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { teenPattiApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -97,18 +97,84 @@ describe('TeenPattiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('sideshow'));
   });
 
-  it('shows Accept/Decline when the human is the Side Show target and dispatches respond', async () => {
+  it('shows the unified Side Show panel with Accept/Decline when the human is the target and dispatches respond', async () => {
     mockExec.mockResolvedValue(
       makeTeenPattiState({ phase: 1, isHumanTurn: false, sideShowRequester: 1, sideShowTarget: 0 }),
     );
     renderWithProviders(<TeenPattiPage />);
-    const accept = await screen.findByRole('button', { name: '承諾' });
-    const decline = screen.getByRole('button', { name: '拒否' });
+    const panel = await screen.findByTestId('teenpatti-sideshow-panel');
+    // The accept/decline buttons live inside the emphasized panel, not the footer.
+    const accept = within(panel).getByRole('button', { name: '承諾' });
+    const decline = within(panel).getByRole('button', { name: '拒否' });
     mockExec.mockClear();
     fireEvent.click(accept);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('respond', { accept: true }));
     fireEvent.click(decline);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('respond', { accept: false }));
+  });
+
+  it('shows the Side Show panel (without response buttons) when the human is not the target', async () => {
+    mockExec.mockResolvedValue(
+      makeTeenPattiState({ phase: 1, isHumanTurn: false, sideShowRequester: 1, sideShowTarget: 2 }),
+    );
+    renderWithProviders(<TeenPattiPage />);
+    const panel = await screen.findByTestId('teenpatti-sideshow-panel');
+    expect(within(panel).queryByRole('button', { name: '承諾' })).not.toBeInTheDocument();
+    expect(within(panel).queryByRole('button', { name: '拒否' })).not.toBeInTheDocument();
+  });
+
+  it('shows the resolved Side Show comparison panel with both hands and the outcome', async () => {
+    mockExec.mockResolvedValue(
+      makeTeenPattiState({
+        phase: 0,
+        currentPlayerIdx: 0,
+        isHumanTurn: true,
+        lastSideShow: {
+          requesterIdx: 0,
+          targetIdx: 2,
+          winnerIdx: 0,
+          loserIdx: 2,
+          requester: {
+            playerIdx: 0,
+            handName: 'trail',
+            cards: [
+              { design: 'SPADE', value: 5 },
+              { design: 'HEART', value: 5 },
+              { design: 'CLOVER', value: 5 },
+            ],
+          },
+          target: {
+            playerIdx: 2,
+            handName: 'highcard',
+            cards: [
+              { design: 'DIAMOND', value: 2 },
+              { design: 'CLOVER', value: 7 },
+              { design: 'SPADE', value: 9 },
+            ],
+          },
+        },
+      }),
+    );
+    renderWithProviders(<TeenPattiPage />);
+    const panel = await screen.findByTestId('teenpatti-sideshow-result');
+    // The result title and outcome sentence naming winner/loser and their hand ranks.
+    expect(within(panel).getByText('サイドショー結果')).toBeInTheDocument();
+    expect(within(panel).getAllByText(/あなた/).length).toBeGreaterThanOrEqual(1);
+    expect(within(panel).getAllByText(/トレイル/).length).toBeGreaterThanOrEqual(1);
+    // Both participants' cards are rendered (3 + 3).
+    expect(within(panel).getAllByRole('img').length).toBeGreaterThanOrEqual(6);
+  });
+
+  it('hides the resolved Side Show panel when there is no last side show', async () => {
+    renderWithProviders(<TeenPattiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('teenpatti-sideshow-result')).not.toBeInTheDocument();
+  });
+
+  it('hides the Side Show panel outside the Side Show phase', async () => {
+    renderWithProviders(<TeenPattiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('teenpatti-sideshow-panel')).not.toBeInTheDocument();
   });
 
   it('hides action buttons on a CPU turn', async () => {

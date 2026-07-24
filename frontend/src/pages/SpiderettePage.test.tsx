@@ -92,6 +92,44 @@ describe('SpiderettePage', () => {
     expect(screen.getByTestId('spdt-col-0').className).toContain('ring-ds-success');
     // A non-target column is not highlighted.
     expect(screen.getByTestId('spdt-col-2').className).not.toContain('ring-ds-success');
+    // The hint text is exposed to screen readers via an aria-live status region.
+    const status = screen.getByRole('status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status.textContent).toContain('場札');
+  });
+
+  it('hides the frontend hint tooltip when hints are disabled', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'move', reason: 'frontendHint.buildSameSuit', confidence: 'strong' },
+      hintEnabled: false,
+      setHintEnabled: vi.fn(),
+    });
+    renderWithProviders(<SpiderettePage />);
+    await screen.findByTestId('spdt-card-1-1');
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  it('shows the frontend hint tooltip when hints are enabled', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'move', reason: 'frontendHint.buildSameSuit', confidence: 'strong' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    renderWithProviders(<SpiderettePage />);
+    const tooltip = await screen.findByTestId('hint-tooltip');
+    expect(tooltip).toHaveTextContent('同スートで積み重ねられるカードがあります');
+  });
+
+  it('announces the empty-column deal guard to screen readers', async () => {
+    renderWithProviders(<SpiderettePage />);
+    // playingState has empty columns and stock remaining, so a deal is guarded.
+    const dealBtn = (await screen.findAllByRole('button', { name: '配る' }))[0];
+    fireEvent.click(dealBtn);
+    await waitFor(() => {
+      const warn = screen.getByText('空の列をすべて埋めないと配れません');
+      expect(warn).toHaveAttribute('role', 'status');
+      expect(warn).toHaveAttribute('aria-live', 'assertive');
+    });
   });
 
   it('renders stock count', async () => {

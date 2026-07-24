@@ -32,6 +32,11 @@
   "payout": {
     "total": "合計配当"
   },
+  "dealerPolicy": {
+    "label": "親のドロー方針",
+    "drew": "親は目が規定値（{{threshold}}）以下だったため3枚目を引いた",
+    "stood": "親は目{{rank}}で規定値（{{threshold}}）を超えていたため引かなかった"
+  },
   "tutorial": {
     "betControls": "賭け金を入力してベットします",
     "actionButtons": "3枚目を引くか、このまま勝負するかを選びます",
@@ -40,5 +45,11 @@
   "hint": {
     "drawLow": "カブが低い（0〜3）— 3枚目を引くのが有利",
     "standHigh": "カブが十分高い — このまま勝負するのが基本"
-  }
+  },
+  "rankName": {
+    "0": "ブタ、最弱",
+    "9": "カブ、最強"
+  },
+  "rankAriaLabelNamed": "{{hand}}の目{{rank}}（{{name}}）",
+  "rankAriaLabelPlain": "{{hand}}の目{{rank}}"
 }

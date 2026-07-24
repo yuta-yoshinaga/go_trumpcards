@@ -27,6 +27,7 @@
   "red3s": "Red 3s",
   "naturalCanasta": "Natural Canasta",
   "mixedCanasta": "Mixed Canasta",
+  "meldExpand": "Tap to expand all cards",
   "drawStockButton": "Draw from stock",
   "drawDiscardButton": "Pick up discard",
   "meldButton": "Meld",
@@ -37,6 +38,7 @@
   "skipMeldButton": "Skip",
   "discardButton": "Discard",
   "goOutButton": "Go out",
+  "goOutReason": "Going out requires at least one completed canasta (7-card meld)",
   "nextRound": "Next round",
   "selectPair": "Select a pair (2 natural cards matching the top discard)",
   "drawDiscardReason": {
