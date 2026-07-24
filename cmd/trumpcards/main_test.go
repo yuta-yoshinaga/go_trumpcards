@@ -246,6 +246,59 @@ func TestRunWebRejectsInvalidHost(t *testing.T) {
 	}
 }
 
+// TestRunWebAcceptsTrailingQuiet verifies that `web -q` is accepted after the
+// web subcommand (issue #4306): applyTrailingGlobalFlags strips -q before the
+// web FlagSet parses, so web no longer needs its own -q sink. Uses an invalid
+// host so the run fails fast (exit 2) without binding a server — the point is
+// that the failure is the host error, NOT "flag provided but not defined: -q".
+func TestRunWebAcceptsTrailingQuiet(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	origHostEnv, hostEnvWasSet := os.LookupEnv("HOST")
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		if hostEnvWasSet {
+			_ = os.Setenv("HOST", origHostEnv)
+		} else {
+			_ = os.Unsetenv("HOST")
+		}
+	}()
+	_ = os.Unsetenv("HOST")
+
+	flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+	os.Args = []string{"trumpcards", "web", "-q", "--host", "bad host"}
+
+	rOut, wOut, _ := os.Pipe()
+	rErr, wErr, _ := os.Pipe()
+	os.Stdout = wOut
+	os.Stderr = wErr
+
+	exitCh := make(chan int, 1)
+	go func() { exitCh <- run() }()
+	exit := <-exitCh
+
+	_ = wOut.Close()
+	_ = wErr.Close()
+	var errBuf bytes.Buffer
+	_, _ = errBuf.ReadFrom(rErr)
+	_, _ = io.Copy(io.Discard, rOut)
+
+	if exit != 2 {
+		t.Errorf("exit = %d, want 2 (invalid host; stderr=%q)", exit, errBuf.String())
+	}
+	if strings.Contains(errBuf.String(), "flag provided but not defined") {
+		t.Errorf("web must accept trailing -q; got stderr=%q", errBuf.String())
+	}
+	if !strings.Contains(errBuf.String(), "bad host") {
+		t.Errorf("expected the invalid-host error (proves -q was consumed, not rejected); got %q", errBuf.String())
+	}
+}
+
 func TestFlagSetVisitedDistinguishesExplicitFromDefault(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -675,6 +728,68 @@ func TestRunGlobalQuietFlagAcceptedAfterSubcommand(t *testing.T) {
 			}
 			if strings.Contains(errBuf.String(), "flag provided but not defined") {
 				t.Errorf("subcommand FlagSet must accept -q/--quiet; got stderr=%q", errBuf.String())
+			}
+			if outBuf.Len() == 0 {
+				t.Error("expected `games --short` stdout output")
+			}
+		})
+	}
+}
+
+// TestRunGlobalFlagsAcceptedAfterSubcommand verifies issue #4306: global flags
+// (--lang / --color / --no-color) placed after a subcommand name are applied and
+// stripped before the subcommand FlagSet parses, instead of being rejected with
+// "flag provided but not defined" (exit 2). This makes trailing global flags
+// uniform across all subcommands, matching the -q handling and the mental model
+// the top-level --help advertises (`trumpcards poker --lang en`).
+func TestRunGlobalFlagsAcceptedAfterSubcommand(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		i18n.SetLang("ja")
+	}()
+
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"games --lang en --short", []string{"trumpcards", "games", "--lang", "en", "--short"}},
+		{"games --short --lang en (trailing)", []string{"trumpcards", "games", "--short", "--lang", "en"}},
+		{"games --lang=en --short (inline)", []string{"trumpcards", "games", "--lang=en", "--short"}},
+		{"games --color never --short", []string{"trumpcards", "games", "--color", "never", "--short"}},
+		{"games --no-color --short", []string{"trumpcards", "games", "--no-color", "--short"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+			os.Args = tc.args
+
+			rOut, wOut, _ := os.Pipe()
+			rErr, wErr, _ := os.Pipe()
+			os.Stdout = wOut
+			os.Stderr = wErr
+
+			exitCh := make(chan int, 1)
+			go func() { exitCh <- run() }()
+			exit := <-exitCh
+
+			_ = wOut.Close()
+			_ = wErr.Close()
+			var outBuf, errBuf bytes.Buffer
+			_, _ = outBuf.ReadFrom(rOut)
+			_, _ = errBuf.ReadFrom(rErr)
+
+			if exit != 0 {
+				t.Errorf("exit = %d, want 0 (stderr=%q)", exit, errBuf.String())
+			}
+			if strings.Contains(errBuf.String(), "flag provided but not defined") {
+				t.Errorf("subcommand must accept trailing global flags; got stderr=%q", errBuf.String())
 			}
 			if outBuf.Len() == 0 {
 				t.Error("expected `games --short` stdout output")
