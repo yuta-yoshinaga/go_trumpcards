@@ -56,7 +56,7 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 	if vp.GetGameEndFlag() {
 		sb.WriteString(i18n.Tf("videopoker.betLine", "bet", strconv.Itoa(vp.GetBetAmount())) + "\n")
 		if vp.GetResult() == domain.GameResultWin {
-			sb.WriteString(color.Green(i18n.Tf("videopoker.winLine", "handName", vp.GetHandName())) + "\n")
+			sb.WriteString(color.Green(i18n.Tf("videopoker.winLine", "handName", vpp.handNameForWin(vp))) + "\n")
 		} else {
 			sb.WriteString(color.Red(i18n.T("videopoker.noWin")) + "\n")
 		}
@@ -100,6 +100,19 @@ func (vpp *VideoPokerCuiPresenter) paytableStr(variantName string) string {
 		sb.WriteString(line + "\n")
 	}
 	return sb.String()
+}
+
+// handNameForWin は勝利行に表示する役名を返す。Deuces Wild は安定キー
+// (GetHandKey) 経由で "deuceswild.hand.<key>" を翻訳し、ja/en それぞれの
+// ロケールで役名を表示する。他バリアント (videopoker / jokerpoker) は従来通り
+// 英語の GetHandName をそのまま返し、後方互換を保つ。
+func (vpp *VideoPokerCuiPresenter) handNameForWin(vp interfaces.VideoPokerGame) string {
+	if vp.GetVariantName() == "deuceswild" {
+		if key := vp.GetHandKey(); key != "" {
+			return i18n.T("deuceswild.hand." + key)
+		}
+	}
+	return vp.GetHandName()
 }
 
 // phaseStr フェーズ文字列

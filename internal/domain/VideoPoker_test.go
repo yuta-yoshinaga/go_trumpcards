@@ -192,6 +192,85 @@ func TestVideoPoker_Payout_RoyalFlush_MaxBet(t *testing.T) {
 	assert.Equal(t, 4000, vp.GetPayout()) // 5 * 800
 	assert.Equal(t, 4000, vp.GetChips())
 	assert.Equal(t, "Royal Flush", vp.GetHandName())
+	assert.Equal(t, "royalFlush", vp.GetHandKey())
+}
+
+// --- Stable hand key ---
+
+func TestVideoPokerHandKey(t *testing.T) {
+	tests := []struct {
+		handName string
+		want     string
+	}{
+		{"Royal Flush", "royalFlush"},
+		{"Natural Royal Flush", "naturalRoyalFlush"},
+		{"Wild Royal Flush", "wildRoyalFlush"},
+		{"Four Deuces", "fourDeuces"},
+		{"Five of a Kind", "fiveOfAKind"},
+		{"Straight Flush", "straightFlush"},
+		{"Four of a Kind", "fourOfAKind"},
+		{"Full House", "fullHouse"},
+		{"Flush", "flush"},
+		{"Straight", "straight"},
+		{"Three of a Kind", "threeOfAKind"},
+		{"Two Pair", "twoPair"},
+		{"Jacks or Better", "jacksOrBetter"},
+		{"Kings or Better", "kingsOrBetter"},
+		{"", ""},
+		{"Unknown Hand", ""},
+	}
+	for _, tc := range tests {
+		assert.Equal(t, tc.want, videoPokerHandKey(tc.handName), "handName=%q", tc.handName)
+	}
+}
+
+func TestVideoPoker_HandKey_PopulatedForDeucesWild(t *testing.T) {
+	tests := []struct {
+		name    string
+		hand    [][2]int
+		wantKey string
+	}{
+		{
+			name:    "WildRoyalFlush",
+			hand:    [][2]int{{CardDesignSpade, 2}, {CardDesignSpade, 10}, {CardDesignSpade, 11}, {CardDesignSpade, 12}, {CardDesignSpade, 13}},
+			wantKey: "wildRoyalFlush",
+		},
+		{
+			name:    "FiveOfAKind",
+			hand:    [][2]int{{CardDesignSpade, 7}, {CardDesignHeart, 7}, {CardDesignClover, 7}, {CardDesignDiamond, 7}, {CardDesignSpade, 2}},
+			wantKey: "fiveOfAKind",
+		},
+		{
+			name:    "FourDeuces",
+			hand:    [][2]int{{CardDesignSpade, 2}, {CardDesignHeart, 2}, {CardDesignClover, 2}, {CardDesignDiamond, 2}, {CardDesignSpade, 7}},
+			wantKey: "fourDeuces",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			vp := NewDeucesWildVideoPoker()
+			vp.SetPhase(VideoPokerPhaseDraw)
+			vp.SetBetAmount(1)
+			vp.SetHand(makeHand(tc.hand))
+			assert.NoError(t, vp.Hold([]int{0, 1, 2, 3, 4}))
+			assert.Equal(t, GameResultWin, vp.GetResult())
+			assert.Equal(t, tc.wantKey, vp.GetHandKey())
+		})
+	}
+}
+
+func TestVideoPoker_HandKey_EmptyOnLoss(t *testing.T) {
+	vp := NewDeucesWildVideoPoker()
+	vp.SetPhase(VideoPokerPhaseDraw)
+	vp.SetBetAmount(1)
+	// No deuce, no pair, no flush/straight — a losing high-card hand.
+	vp.SetHand(makeHand([][2]int{
+		{CardDesignSpade, 3}, {CardDesignHeart, 5}, {CardDesignClover, 7},
+		{CardDesignDiamond, 9}, {CardDesignSpade, 11},
+	}))
+	assert.NoError(t, vp.Hold([]int{0, 1, 2, 3, 4}))
+	assert.Equal(t, GameResultLose, vp.GetResult())
+	assert.Equal(t, "", vp.GetHandKey())
 }
 
 func TestVideoPoker_Payout_RoyalFlush_NonMaxBet(t *testing.T) {
