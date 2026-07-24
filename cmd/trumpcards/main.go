@@ -1349,16 +1349,21 @@ func detectBootstrapLang(args []string, langEnv string) string {
 // games.Category matches; the caller is expected to have validated category
 // via validCategory before invoking. See issue #1535.
 func printGames(short, aliases bool, category string, w io.Writer) {
+	if short {
+		printGamesShort(aliases, category, w)
+		return
+	}
+	printGamesLong(category, w)
+}
+
+// printGamesShort prints one game name per line (and, with aliases=true, each
+// alias on its own line), flat and unadorned so scripts can consume it. Honors
+// the --category filter.
+func printGamesShort(aliases bool, category string, w io.Writer) {
 	var reverseAliases map[string][]string
-	if !short || aliases {
+	if aliases {
 		reverseAliases = buildReverseAliases()
 	}
-
-	var descs map[string]string
-	if !short {
-		descs = ui.GameDescriptions()
-	}
-
 	// Only build the category index when a filter is active — otherwise the
 	// allocation is wasted because the gating predicate below is a no-op.
 	var categoryByName map[string]string
@@ -1369,15 +1374,50 @@ func printGames(short, aliases bool, category string, w io.Writer) {
 		if category != "" && categoryByName[name] != category {
 			continue
 		}
-		if short {
-			_, _ = fmt.Fprintln(w, name)
-			if aliases {
-				for _, alias := range reverseAliases[name] {
-					_, _ = fmt.Fprintln(w, alias)
-				}
+		_, _ = fmt.Fprintln(w, name)
+		if aliases {
+			for _, alias := range reverseAliases[name] {
+				_, _ = fmt.Fprintln(w, alias)
 			}
-		} else {
-			line := fmt.Sprintf("  %-16s %s", name, descs[name])
+		}
+	}
+}
+
+// printGamesLong prints the human-facing game list grouped by Cloudflare Worker
+// category, with an uppercase "CATEGORY (N):" heading before each group. The
+// name column is sized to the longest displayed name so long names (e.g.
+// ultimatetexasholdem, 19 chars) no longer push the description column out of
+// alignment on their row. Honors the --category filter (then only the matching
+// group prints). See issue #4311.
+func printGamesLong(category string, w io.Writer) {
+	reverseAliases := buildReverseAliases()
+	descs := ui.GameDescriptions()
+	categoryByName := gameCategoryByName()
+
+	// Bucket names by category, preserving GameNames() order within each group,
+	// and track the widest displayed name for a single shared column width
+	// (keeps the description column aligned across every group).
+	namesByCategory := make(map[string][]string)
+	width := 0
+	for _, name := range ui.GameNames() {
+		cat := categoryByName[name]
+		if category != "" && cat != category {
+			continue
+		}
+		namesByCategory[cat] = append(namesByCategory[cat], name)
+		if len(name) > width {
+			width = len(name)
+		}
+	}
+
+	for _, cat := range games.AllCategories() {
+		names := namesByCategory[cat.String()]
+		if len(names) == 0 {
+			continue
+		}
+		_, _ = fmt.Fprintf(w, "%s (%d):\n", strings.ToUpper(cat.String()), len(names))
+		for _, name := range names {
+			line := fmt.Sprintf("  %-*s %s", width, name, descs[name])
 			if aliasList := reverseAliases[name]; len(aliasList) > 0 {
 				line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliasList, ", "))
 			}

@@ -14,6 +14,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/games"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/update"
 )
@@ -964,6 +965,95 @@ func TestPrintGamesShortModeRespectsAliasesFlag(t *testing.T) {
 	// With --aliases, alias lines must appear.
 	if !strings.Contains(with.String(), aliasSample) {
 		t.Errorf("short mode with --aliases should list alias %q; got:\n%s", aliasSample, with.String())
+	}
+}
+
+// TestGameNamesAllHaveCategory guards the invariant that the category-grouped
+// printGamesLong depends on: every ui.GameNames() entry must map to a non-empty
+// games-registry category. printGamesLong iterates games.AllCategories() and
+// prints each category's bucket, so a name whose category is "" (two-registry
+// drift between ui.gameRegistry and games.registry) would land in the never-
+// printed "" bucket and silently vanish from even the unfiltered `games`
+// listing. This test makes such drift fail loudly instead. See PR #4320 review.
+func TestGameNamesAllHaveCategory(t *testing.T) {
+	byName := gameCategoryByName()
+	for _, name := range ui.GameNames() {
+		if byName[name] == "" {
+			t.Errorf("game %q has no games-registry category — it would be dropped from `games` output (registry drift)", name)
+		}
+	}
+}
+
+// TestPrintGamesLongListsEveryGame is the direct backstop for the same drift:
+// the unfiltered long listing must emit exactly one row per registered game, so
+// a silently-dropped game shrinks the count and fails here.
+func TestPrintGamesLongListsEveryGame(t *testing.T) {
+	var buf bytes.Buffer
+	printGames(false, false, "", &buf)
+	rows := 0
+	for _, line := range strings.Split(buf.String(), "\n") {
+		if strings.HasPrefix(line, "  ") { // game rows are indented; headings are not
+			rows++
+		}
+	}
+	if want := len(ui.GameNames()); rows != want {
+		t.Errorf("long listing emitted %d game rows, want %d", rows, want)
+	}
+}
+
+// TestPrintGamesLongGroupsByCategory verifies issue #4311: the long-form list
+// prints an uppercase "CATEGORY (N):" heading (derived from games.AllCategories,
+// the SSoT) before each group.
+func TestPrintGamesLongGroupsByCategory(t *testing.T) {
+	var buf bytes.Buffer
+	printGames(false, false, "", &buf)
+	out := buf.String()
+	for _, cat := range games.AllCategories() {
+		heading := strings.ToUpper(cat.String()) + " ("
+		if !strings.Contains(out, heading) {
+			t.Errorf("expected category heading starting %q in long output; got:\n%s", heading, out)
+		}
+	}
+}
+
+// TestPrintGamesLongDynamicWidthAlignsDescriptions verifies issue #4311: the
+// name column is sized to the longest displayed name so every description
+// starts at the same byte offset — including the row for the longest name
+// (ultimatetexasholdem), which the old fixed %-16s clipped out of alignment.
+func TestPrintGamesLongDynamicWidthAlignsDescriptions(t *testing.T) {
+	var buf bytes.Buffer
+	printGames(false, false, "", &buf)
+	descs := ui.GameDescriptions()
+
+	width := 0
+	for _, n := range ui.GameNames() {
+		if len(n) > width {
+			width = len(n)
+		}
+	}
+	descStart := 2 + width + 1 // "  " + padded name + single separating space
+
+	checked := 0
+	for _, line := range strings.Split(buf.String(), "\n") {
+		if !strings.HasPrefix(line, "  ") { // skip headings (no indent) and blanks
+			continue
+		}
+		if len(line) < descStart {
+			t.Errorf("line shorter than aligned description column %d: %q", descStart, line)
+			continue
+		}
+		name := strings.TrimSpace(line[2 : descStart-1])
+		desc := descs[name]
+		if desc == "" {
+			continue
+		}
+		if !strings.HasPrefix(line[descStart:], desc) {
+			t.Errorf("description column misaligned for %q: expected desc at offset %d; line=%q", name, descStart, line)
+		}
+		checked++
+	}
+	if checked < 10 {
+		t.Fatalf("expected to verify many game lines; only checked %d", checked)
 	}
 }
 
