@@ -126,10 +126,18 @@ func isValidHostname(s string) bool {
 // #1554), the legacy `--no-color` deprecated alias, and the NO_COLOR env var
 // (https://no-color.org/) into per-stream color settings. Precedence:
 //
-//  1. NO_COLOR=<any non-empty value>     => never (POSIX-spec forces off)
-//  2. --color=never  OR  --no-color      => never
-//  3. --color=always                     => always
+//  1. --color=never  OR  --no-color      => never (explicit opt-out wins)
+//  2. --color=always                     => always (explicit opt-in; beats NO_COLOR)
+//  3. NO_COLOR=<any non-empty value>     => never (user default, unless an
+//     explicit --color=always overrode it above)
 //  4. --color=auto (default) or unset    => per-stream TTY detect
+//
+// An explicit `--color=always` intentionally overrides NO_COLOR: NO_COLOR is a
+// user "disable by default" preference, and the no-color.org FAQ (plus ripgrep /
+// git / grep) hold that an explicit command-line color request takes precedence.
+// NO_COLOR still disables color for every other invocation, so environments that
+// export it and never pass --color=always are unaffected. This reverses the
+// original issue-#1554 order (see issue #4310).
 //
 // Returns (exitCode, ok). Returns (2, false) on an unrecognized --color value;
 // the caller should propagate the exit code. The value comparison is
@@ -138,10 +146,11 @@ func isValidHostname(s string) bool {
 // message is rendered via i18n on stderr.
 func applyColorMode(mode string, noColorFlag bool, noColorEnv string, stdoutFd, stderrFd uintptr, stderr io.Writer) (int, bool) {
 	resolved := strings.ToLower(strings.TrimSpace(mode))
+	explicitAlways := resolved == "always" // user asked for color on the command line
 	switch {
-	case noColorEnv != "":
-		resolved = "never"
 	case noColorFlag:
+		resolved = "never"
+	case noColorEnv != "" && !explicitAlways:
 		resolved = "never"
 	case resolved == "":
 		resolved = "auto"
@@ -284,10 +293,10 @@ func run() int {
 
 	// Color control: tristate --color=auto|always|never (issue #1554) plus the
 	// legacy --no-color flag (kept as a deprecated alias for --color=never)
-	// and the NO_COLOR env var (https://no-color.org/, which the spec defines
-	// as "presence => disable" and therefore overrides --color=always).
-	// Precedence: NO_COLOR > --color=never (or --no-color) > --color=always >
-	// --color=auto (per-stream TTY detect, the historical default).
+	// and the NO_COLOR env var (https://no-color.org/).
+	// Precedence: --color=never (or --no-color) > --color=always > NO_COLOR >
+	// --color=auto (per-stream TTY detect, the historical default). An explicit
+	// --color=always overrides NO_COLOR per the no-color.org FAQ (issue #4310).
 	if code, ok := applyColorMode(*colorMode, *noColorFlag, os.Getenv("NO_COLOR"), os.Stdout.Fd(), os.Stderr.Fd(), os.Stderr); !ok {
 		return code
 	}
@@ -1028,11 +1037,11 @@ func trailingFlagAny(arg string, names ...string) (inlineVal string, hasInline, 
 //
 // Color resolution is deferred to the end of the scan and dispatched
 // through `applyColorMode` (the SSoT) so the precedence rule matches the
-// top-level flag exactly: --no-color (or --color=never) beats
-// --color=always regardless of token order, and NO_COLOR env beats
-// everything (PR #1583 review). An invalid trailing --color value emits
-// the localized warning but does NOT abort the launched session — the
-// ambient state is already valid and a late typo shouldn't kill a game
+// top-level flag exactly: --no-color (or --color=never) beats --color=always
+// regardless of token order, an explicit --color=always beats NO_COLOR, and
+// NO_COLOR beats everything else (issues #1583, #4310). An invalid trailing
+// --color value emits the localized warning but does NOT abort the session —
+// the ambient state is already valid and a late typo shouldn't kill a game
 // that's about to run; applyColorMode's exit code is therefore
 // intentionally discarded here.
 //
@@ -1255,8 +1264,9 @@ OPTIONS:
                     always:  force-enable even when piped (e.g. for tee or less -R)
                     never:   force-disable
                     Matches git/ls/grep convention. Use instead of --no-color.
-                    Precedence: NO_COLOR env > --color=never (or --no-color)
-                    > --color=always > --color=auto (https://no-color.org/).
+                    Precedence: --color=never (or --no-color) > --color=always
+                    > NO_COLOR env > --color=auto. An explicit --color=always
+                    overrides NO_COLOR (https://no-color.org/ FAQ).
   --no-color        DEPRECATED alias for --color=never. Will be removed in a
                     future release; prefer --color=never.
   -q, --quiet       Suppress non-essential output (banners, locale fallback warnings,
@@ -1295,7 +1305,8 @@ EXAMPLES:
 
 ENVIRONMENT VARIABLES:
   NO_COLOR          Disable color output on both stdout and stderr when set
-                    (see https://no-color.org/)
+                    (see https://no-color.org/). An explicit --color=always
+                    overrides it for that one invocation.
                     Example: NO_COLOR=1 trumpcards blackjack
   TRUMPCARDS_QUIET  Suppress non-essential output when set to a non-empty value
                     (equivalent to --quiet/-q). Errors still go to stderr.
