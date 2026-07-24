@@ -1039,9 +1039,9 @@ func trailingFlagAny(arg string, names ...string) (inlineVal string, hasInline, 
 // through `applyColorMode` (the SSoT) so the precedence rule matches the
 // top-level flag exactly: --no-color (or --color=never) beats --color=always
 // regardless of token order, an explicit --color=always beats NO_COLOR, and
-// NO_COLOR beats everything else (issues #1583, #4310). An invalid trailing --color value emits
-// the localized warning but does NOT abort the launched session — the
-// ambient state is already valid and a late typo shouldn't kill a game
+// NO_COLOR beats everything else (issues #1583, #4310). An invalid trailing
+// --color value emits the localized warning but does NOT abort the session —
+// the ambient state is already valid and a late typo shouldn't kill a game
 // that's about to run; applyColorMode's exit code is therefore
 // intentionally discarded here.
 //
