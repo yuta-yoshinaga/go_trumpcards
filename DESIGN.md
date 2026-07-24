@@ -185,6 +185,7 @@ Visual size of a checkbox or radio dot may stay at ~16-20px so the element still
   | long | 400-700ms | Shake, complex multi-card animations |
 - **Existing animations to keep:** flipIn (card reveal), shake (error feedback), pulse-once (attention), sweat-drop (CPU thinking), memory-card flip
 - **New animations to add:** Subtle fade-in for panels on mount, micro scale(1.02) on button hover
+- **Toast / transient-notice durations (SSoT):** auto-dismiss timings for "notice me, then disappear" notifications come from `TOAST_DURATION` in [`frontend/src/styles/toastDurations.ts`](frontend/src/styles/toastDurations.ts) — `short` 2500ms, `medium` 4000ms, `long` 6000ms — not ad-hoc per-component values. Banner toasts share the [`Toast`](frontend/src/components/Toast.tsx) primitive (opaque surface, 44×44 close button) + the `useTransientToast` lifecycle hook.
 - **Reduced motion (SSoT):** `prefers-reduced-motion: reduce` is enforced by a single universal block in [`frontend/src/index.css`](frontend/src/index.css) that near-zeroes (`0.01ms`) every animation and transition — it covers arbitrary `animate-[…]` utilities and any future animation automatically. Components must **not** add `motion-safe:` / `useReducedMotion` merely to disable a CSS animation (redundant); keep `useReducedMotion` only for JS that branches on motion (e.g. skipping an animation-completion wait). `0.01ms` (not `animation: none`) is used so `animationend`/`transitionend` handlers still fire.
 
 ## Design Risks (deliberate departures)

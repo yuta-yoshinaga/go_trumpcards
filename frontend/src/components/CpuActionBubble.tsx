@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import { TOAST_DURATION } from '../styles/toastDurations';
 
 interface CpuActionBubbleProps {
   /** Text shown in the bubble. Pass an empty string or undefined to hide. */
@@ -10,7 +11,7 @@ interface CpuActionBubbleProps {
    * identical — e.g. CPU A asks for 5, CPU B asks for 5.
    */
   triggerKey: string | number | undefined;
-  /** Milliseconds before auto-dismissing. Defaults to 2500. */
+  /** Milliseconds before auto-dismissing. Defaults to the short toast duration. */
   durationMs?: number;
   /** Extra Tailwind classes for positioning. */
   className?: string;
@@ -24,7 +25,12 @@ interface CpuActionBubbleProps {
  *
  * Honors `prefers-reduced-motion`: animation is suppressed when set.
  */
-export function CpuActionBubble({ message, triggerKey, durationMs = 2500, className = '' }: CpuActionBubbleProps) {
+export function CpuActionBubble({
+  message,
+  triggerKey,
+  durationMs = TOAST_DURATION.short,
+  className = '',
+}: CpuActionBubbleProps) {
   const [visible, setVisible] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const reduced = useReducedMotion();
@@ -62,7 +68,7 @@ export function CpuActionBubble({ message, triggerKey, durationMs = 2500, classN
       aria-live="polite"
       aria-atomic="true"
       data-testid="cpu-action-bubble"
-      className={`pointer-events-none ${animation}inline-block rounded-full bg-ds-accent/90 px-3 py-1 text-white text-xs font-bold shadow-lg ${className}`}
+      className={`pointer-events-none ${animation}inline-block rounded-full bg-ds-accent px-3 py-1 text-ds-surface text-xs font-bold shadow-lg ${className}`}
     >
       {message}
     </div>
