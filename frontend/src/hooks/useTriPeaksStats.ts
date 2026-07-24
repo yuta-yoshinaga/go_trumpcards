@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { createFlatStatsReader, createLocalStorageStats } from './createLocalStorageStats';
 
 /** localStorage key for TriPeaks Solitaire best-record statistics. */
 export const TRIPEAKS_STATS_KEY = 'trumpcards-tripeaks-stats';
@@ -34,19 +34,6 @@ function isValidStats(value: unknown): value is TriPeaksStats {
   );
 }
 
-/** Reads and validates the stats from localStorage; returns a zeroed record on any error. */
-export function readTriPeaksStats(): TriPeaksStats {
-  try {
-    const raw = localStorage.getItem(TRIPEAKS_STATS_KEY);
-    if (!raw) return emptyTriPeaksStats();
-    const parsed: unknown = JSON.parse(raw);
-    if (!isValidStats(parsed)) return emptyTriPeaksStats();
-    return parsed;
-  } catch {
-    return emptyTriPeaksStats();
-  }
-}
-
 /**
  * Pure reducer: folds a finished-game result into the stats and reports whether it
  * set a new best score. Best score only advances on a positive score.
@@ -68,24 +55,21 @@ export function applyTriPeaksResult(
   return { stats: next, newBest };
 }
 
+/** Reads and validates the stats from localStorage; returns a zeroed record on any error. */
+export const readTriPeaksStats = createFlatStatsReader(TRIPEAKS_STATS_KEY, emptyTriPeaksStats, isValidStats);
+
+const store = createLocalStorageStats<TriPeaksStats, TriPeaksResult, boolean>({
+  key: TRIPEAKS_STATS_KEY,
+  read: readTriPeaksStats,
+  reduce: (prev, result) => {
+    const { stats, newBest } = applyTriPeaksResult(prev, result);
+    return { stats, update: newBest };
+  },
+});
+
 /**
  * Hook that persists TriPeaks best-record statistics in localStorage and records
  * finished games. `recordResult` returns whether the game set a new best score so
- * the page can surface a badge. Modeled on `useSpiderStats`.
+ * the page can surface a badge.
  */
-export function useTriPeaksStats() {
-  const [stats, setStats] = useState<TriPeaksStats>(readTriPeaksStats);
-
-  const recordResult = useCallback((result: TriPeaksResult): boolean => {
-    const { stats: next, newBest } = applyTriPeaksResult(readTriPeaksStats(), result);
-    setStats(next);
-    try {
-      localStorage.setItem(TRIPEAKS_STATS_KEY, JSON.stringify(next));
-    } catch {
-      /* storage unavailable / quota exceeded */
-    }
-    return newBest;
-  }, []);
-
-  return { stats, recordResult };
-}
+export const useTriPeaksStats = store.useStats;

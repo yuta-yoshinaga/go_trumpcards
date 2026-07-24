@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
+import { createLocalStorageStats } from './createLocalStorageStats';
 
 /** localStorage key for per-difficulty Spider Solitaire play statistics. */
 export const SPIDER_STATS_KEY = 'trumpcards-spider-stats';
@@ -104,19 +105,14 @@ export function spiderWinRate(stat: SpiderDifficultyStat): number {
  * finished games. `recordResult` returns which personal bests were beaten so the
  * page can surface a badge.
  */
-export function useSpiderStats() {
-  const [stats, setStats] = useState<SpiderStats>(readSpiderStats);
+const store = createLocalStorageStats<SpiderStats, SpiderResult, SpiderBestUpdate>({
+  key: SPIDER_STATS_KEY,
+  read: readSpiderStats,
+  reduce: applySpiderResult,
+});
 
-  const recordResult = useCallback((result: SpiderResult): SpiderBestUpdate => {
-    const { stats: next, update } = applySpiderResult(readSpiderStats(), result);
-    setStats(next);
-    try {
-      localStorage.setItem(SPIDER_STATS_KEY, JSON.stringify(next));
-    } catch {
-      /* storage unavailable / quota exceeded */
-    }
-    return update;
-  }, []);
+export function useSpiderStats() {
+  const { stats, recordResult } = store.useStats();
 
   const getStat = useCallback(
     (difficulty: number): SpiderDifficultyStat => stats[String(difficulty)] ?? emptySpiderStat(),
