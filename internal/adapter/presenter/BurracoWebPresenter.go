@@ -123,6 +123,13 @@ func (p *BurracoWebPresenter) buildMessage(g interfaces.BurracoGame, lastErr err
 	return "", "", nil
 }
 
+// HintOutput ヒント情報をJSON出力する。Web GUI はフロントエンドのヒント推定を
+// 使うためバックエンドヒントは持たず、標準の状態出力をそのまま返す
+// (BurracoPresenter インタフェースを満たすための実装)。
+func (p *BurracoWebPresenter) HintOutput(g interfaces.BurracoGame) string {
+	return p.Output(g, nil)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (p *BurracoWebPresenter) ActionLogOutput(g interfaces.BurracoGame) string {
 	return actionLogOutputJSON(g)

@@ -27,6 +27,7 @@ func TestBurracoCuiController_Exec(t *testing.T) {
 		m.On("Discard", mock.Anything).Return(mockOutput)
 		m.On("GoOut").Return(mockOutput)
 		m.On("NextRound").Return(mockOutput)
+		m.On("Hint").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
 		return m
 	}
@@ -301,6 +302,22 @@ func TestBurracoCuiController_Exec(t *testing.T) {
 		result := c.Exec("l")
 		assert.Equal(t, mockOutput, result)
 		m.AssertCalled(t, "ActionLog")
+	})
+
+	t.Run("hint command h", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewBurracoCuiController(m)
+		result := c.Exec("h")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Hint")
+	})
+
+	t.Run("hint command hint", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewBurracoCuiController(m)
+		result := c.Exec("hint")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Hint")
 	})
 
 	// unknown

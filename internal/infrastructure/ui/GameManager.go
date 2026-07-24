@@ -2088,6 +2088,7 @@ var gameRegistry = []GameRegistryEntry{
 				"  d <idx>              discard a card",
 				"  go                   go out (requires the pozzetto + a burraco)",
 				"  nr                   next round",
+				"  h                    hint (recommended action)",
 				"  l                    action log",
 				"",
 				"Settings:",

@@ -32,6 +32,8 @@ type BurracoInteractorIF interface {
 	NextRound() string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.BurracoConfig
+	// Hint 現在手番に対する推奨アクションを出力する
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -151,6 +153,11 @@ func (ci *BurracoInteractor) NextRound() string {
 // GetConfig 現在の設定を取得
 func (ci *BurracoInteractor) GetConfig() domain.BurracoConfig {
 	return ci.Game.GetConfig()
+}
+
+// Hint 現在手番に対する推奨アクションを出力する
+func (ci *BurracoInteractor) Hint() string {
+	return ci.gp.HintOutput(ci.Game)
 }
 
 // ActionLog 棋譜を出力する
