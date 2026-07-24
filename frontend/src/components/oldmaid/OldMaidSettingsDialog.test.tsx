@@ -164,8 +164,9 @@ describe('OldMaidSettingsDialog', () => {
   it('every radio/checkbox label meets the 44px minimum touch target (WCAG 2.5.5)', () => {
     // Issue #1510: setup dialog stacks 6 small toggles; below 44px tap area
     // mobile users mis-toggle adjacent options.
-    const { container } = render(<OldMaidSettingsDialog {...defaultProps} />);
-    const labels = container.querySelectorAll('label.flex.items-center');
+    render(<OldMaidSettingsDialog {...defaultProps} />);
+    // The dialog portals to document.body via the shared Modal, so query the document.
+    const labels = document.querySelectorAll('label.flex.items-center');
     expect(labels.length).toBeGreaterThanOrEqual(6);
     for (const label of labels) {
       expect(label.className).toContain('min-h-[44px]');

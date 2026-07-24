@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import type { Components } from 'react-markdown';
@@ -7,8 +7,8 @@ import remarkGfm from 'remark-gfm';
 import { cuiManualTexts, isCliModeEnabled } from '../constants/cuiManualTexts';
 import { manualTexts } from '../constants/manualTexts';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import { btnSecondary } from '../styles/buttonStyles';
-import { getFocusableElements } from '../utils/dom';
 import { MermaidBlock } from './MermaidBlock';
 
 /** Props for the ManualModal component. */
@@ -43,53 +43,9 @@ const markdownComponents: Components = {
 export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
   const { t } = useTranslation('common');
   const dialogRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<Element | null>(null);
 
   useBodyScrollLock(open);
-
-  useEffect(() => {
-    if (!open) return;
-    triggerRef.current = document.activeElement;
-
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    const focusable = getFocusableElements(dialog);
-    if (focusable.length > 0) {
-      focusable[0].focus();
-    }
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-        return;
-      }
-      if (e.key !== 'Tab') return;
-      const elems = getFocusableElements(dialog);
-      if (elems.length === 0) return;
-      const first = elems[0];
-      const last = elems[elems.length - 1];
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      if (triggerRef.current instanceof HTMLElement) {
-        triggerRef.current.focus();
-      }
-    };
-  }, [open, onClose]);
+  useFocusTrap(dialogRef, open, onClose);
 
   if (!open) return null;
 

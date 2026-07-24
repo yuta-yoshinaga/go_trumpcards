@@ -571,7 +571,9 @@ describe('MightyPage', () => {
 
     fireEvent.click(screen.getByAltText('ジョーカー').closest('button') as HTMLButtonElement);
     fireEvent.click(screen.getByLabelText('joker-lead-button'));
-    expect(screen.getByRole('dialog', { name: 'joker-suit-picker' })).toBeInTheDocument();
+    // The picker is now the shared Modal (portaled, labelled by the translated
+    // demand-suit string); a single dialog is present.
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
 
     mockCall.mockClear();
     mockCall.mockResolvedValue(playPhaseState);
