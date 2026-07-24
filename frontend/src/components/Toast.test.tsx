@@ -45,4 +45,13 @@ describe('Toast', () => {
     fireEvent.click(btn);
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
+
+  it('keeps the banner at least 44px tall so the close button never overflows', () => {
+    render(
+      <Toast testId="t" onDismiss={() => {}}>
+        x
+      </Toast>,
+    );
+    expect(screen.getByTestId('t').className).toContain('min-h-[44px]');
+  });
 });

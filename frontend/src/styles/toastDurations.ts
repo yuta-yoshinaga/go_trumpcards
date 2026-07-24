@@ -14,6 +14,3 @@ export const TOAST_DURATION = {
   medium: 4000,
   long: 6000,
 } as const;
-
-/** Valid duration token names. */
-export type ToastDuration = keyof typeof TOAST_DURATION;

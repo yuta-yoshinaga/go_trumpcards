@@ -33,7 +33,7 @@ export function Toast({ children, onDismiss, live = 'polite', testId }: ToastPro
       role="status"
       aria-live={live}
       data-testid={testId}
-      className={`absolute top-0 left-0 right-0 z-20 mx-4 mt-1 animate-[slideDown_0.3s_ease-out] rounded bg-ds-surface-elevated px-3 py-1.5 text-ds-text-primary text-xs shadow-lg${
+      className={`absolute top-0 left-0 right-0 z-20 mx-4 mt-1 flex min-h-[44px] flex-col justify-center animate-[slideDown_0.3s_ease-out] rounded bg-ds-surface-elevated px-3 py-1.5 text-ds-text-primary text-xs shadow-lg${
         onDismiss ? ' pr-11' : ''
       }`}
     >
