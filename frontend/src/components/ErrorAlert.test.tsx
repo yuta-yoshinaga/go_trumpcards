@@ -45,4 +45,13 @@ describe('ErrorAlert', () => {
     expect(alert.className).toContain('bg-ds-error');
     expect(alert.className).not.toContain('bg-ds-error/90');
   });
+
+  it('renders the retry button on an opaque surface (no alpha) per DESIGN.md Opacity rule', () => {
+    render(<ErrorAlert message="error" onRetry={() => {}} />);
+    const btn = screen.getByRole('button', { name: retryLabel });
+    expect(btn.className).toContain('bg-white');
+    expect(btn.className).toContain('text-ds-error');
+    expect(btn.className).not.toContain('bg-white/20');
+    expect(btn.className).not.toContain('bg-white/30');
+  });
 });
