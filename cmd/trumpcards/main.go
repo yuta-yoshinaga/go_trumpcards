@@ -452,13 +452,16 @@ func run() int {
 		var port int
 		var host string
 		var openBrowser bool
-		webQuiet := quiet // inherit TRUMPCARDS_QUIET env var (and trailing -q) as default
+		// webQuiet inherits TRUMPCARDS_QUIET and any trailing -q/--quiet: the
+		// dispatch loop already folded a trailing -q into `quiet` (and stripped
+		// it from subArgs) via applyTrailingGlobalFlags, so web needs no -q flag
+		// of its own — it just reads the resolved value. The web help text still
+		// documents -q (builtinSubcommandHelp["web"]).
+		webQuiet := quiet
 		fs, code, ok := parseSubFlags("web", subArgs, func(f *flag.FlagSet) {
 			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080; 0 for OS-assigned ephemeral)")
 			f.IntVar(&port, "p", 0, "Port number for the web server (shorthand)")
 			f.StringVar(&host, "host", "", "Bind address for the web server (default: 127.0.0.1; use 0.0.0.0 to expose)")
-			f.BoolVar(&webQuiet, "quiet", webQuiet, "Suppress human-friendly startup/shutdown messages (structured slog still emitted)")
-			f.BoolVar(&webQuiet, "q", webQuiet, "Suppress human-friendly startup/shutdown messages (shorthand)")
 			f.BoolVar(&openBrowser, "open", false, "Open the resolved URL in the default browser after the server is ready (silently skipped when stderr is not a TTY)")
 			f.BoolVar(&openBrowser, "o", false, "Open the resolved URL in the default browser (shorthand)")
 		})
