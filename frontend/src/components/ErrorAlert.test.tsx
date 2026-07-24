@@ -45,4 +45,15 @@ describe('ErrorAlert', () => {
     expect(alert.className).toContain('bg-ds-error');
     expect(alert.className).not.toContain('bg-ds-error/90');
   });
+
+  it('renders the retry button on an opaque surface (no alpha) per DESIGN.md Opacity rule', () => {
+    render(<ErrorAlert message="error" onRetry={() => {}} />);
+    const btn = screen.getByRole('button', { name: retryLabel });
+    expect(btn.className).toContain('bg-white');
+    expect(btn.className).toContain('text-ds-error');
+    expect(btn.className).not.toContain('bg-white/20');
+    expect(btn.className).not.toContain('bg-white/30');
+    // Hover deepens the red text so the cream hover surface stays WCAG AA (~5.4:1).
+    expect(btn.className).toContain('hover:text-ds-error-hover');
+  });
 });
