@@ -347,25 +347,22 @@ func run() int {
 		fmt.Fprintln(os.Stderr, i18n.Tf("cliUnsupportedLang", "lang", langFlagWarn))
 		fmt.Fprintln(os.Stderr, i18n.T("cliSupportedLangs"))
 	}
+	// subArgs holds the subcommand's own arguments after the dispatch loop has
+	// stripped any trailing global flags (--lang/--color/--no-color/-q) via
+	// applyTrailingGlobalFlags. The subcommand handler closures below capture it
+	// by reference; it is assigned just before the handler runs (issue #4306).
+	var subArgs []string
+
 	// Build game commands from the registry (single source of truth).
 	commands := buildGameCommands()
 	commands["games"] = func() int {
 		var short, aliases, asJSON bool
 		var category string
-		// quietSink absorbs `-q`/`--quiet` when placed after the subcommand
-		// name so Go's FlagSet does not reject it as an unknown flag. The
-		// outer `quiet` was already resolved before subcommand dispatch
-		// and is the source of truth for behavior; this binding only
-		// exists so subcommand parsing does not exit 2 on a recognized
-		// global flag (PR #1582 review).
-		var quietSink bool
-		fs, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
+		fs, code, ok := parseSubFlags("games", subArgs, func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print game names only")
 			f.BoolVar(&aliases, "aliases", false, "With --short, also print each alias on its own line (long output always includes aliases inline)")
 			f.BoolVar(&asJSON, "json", false, "Emit machine-readable JSON (array of {name, category, description, aliases})")
 			f.StringVar(&category, "category", "", "Filter by category: "+categoryFilterPipe)
-			f.BoolVar(&quietSink, "quiet", quiet, "Accepted for consistency with the global flag; the global -q already applied")
-			f.BoolVar(&quietSink, "q", quiet, "Accepted for consistency with the global flag; the global -q already applied (shorthand)")
 		})
 		if !ok {
 			return code
@@ -394,11 +391,8 @@ func run() int {
 	}
 	commands["completion"] = func() int {
 		var noHint bool
-		var quietSink bool // see comment on the games subcommand
-		fs, code, ok := parseSubFlags("completion", func(f *flag.FlagSet) {
+		fs, code, ok := parseSubFlags("completion", subArgs, func(f *flag.FlagSet) {
 			f.BoolVar(&noHint, "no-hint", false, "Suppress installation hint comments (also implied when stdout is not a TTY)")
-			f.BoolVar(&quietSink, "quiet", quiet, "Accepted for consistency with the global flag; the global -q already applied")
-			f.BoolVar(&quietSink, "q", quiet, "Accepted for consistency with the global flag; the global -q already applied (shorthand)")
 		})
 		if !ok {
 			return code
@@ -407,11 +401,11 @@ func run() int {
 		return runCompletion(fs.Args(), stdoutIsTTY, noHint)
 	}
 	commands["help"] = func() int {
-		return runHelpCommand(flag.Args()[1:], helpText, os.Stdout, os.Stderr)
+		return runHelpCommand(subArgs, helpText, os.Stdout, os.Stderr)
 	}
 	commands["version"] = func() int {
 		var short bool
-		_, code, ok := parseSubFlags("version", func(f *flag.FlagSet) {
+		_, code, ok := parseSubFlags("version", subArgs, func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print version number only (machine-readable)")
 		})
 		if !ok {
@@ -426,14 +420,11 @@ func run() int {
 	}
 	commands["update"] = func() int {
 		var yes, check bool
-		var quietSink bool // see comment on the games subcommand
-		_, code, ok := parseSubFlags("update", func(f *flag.FlagSet) {
+		_, code, ok := parseSubFlags("update", subArgs, func(f *flag.FlagSet) {
 			f.BoolVar(&yes, "yes", false, "Skip confirmation prompt")
 			f.BoolVar(&yes, "y", false, "Skip confirmation prompt (shorthand)")
 			f.BoolVar(&check, "check", false, "Check for an update without installing (prints latest tag, status, current to stdout)")
 			f.BoolVar(&check, "dry-run", false, "Alias for --check")
-			f.BoolVar(&quietSink, "quiet", quiet, "Accepted for consistency with the global flag; the global -q already applied")
-			f.BoolVar(&quietSink, "q", quiet, "Accepted for consistency with the global flag; the global -q already applied (shorthand)")
 		})
 		if !ok {
 			return code
@@ -461,8 +452,8 @@ func run() int {
 		var port int
 		var host string
 		var openBrowser bool
-		webQuiet := quiet // inherit TRUMPCARDS_QUIET env var as default
-		fs, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
+		webQuiet := quiet // inherit TRUMPCARDS_QUIET env var (and trailing -q) as default
+		fs, code, ok := parseSubFlags("web", subArgs, func(f *flag.FlagSet) {
 			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080; 0 for OS-assigned ephemeral)")
 			f.IntVar(&port, "p", 0, "Port number for the web server (shorthand)")
 			f.StringVar(&host, "host", "", "Bind address for the web server (default: 127.0.0.1; use 0.0.0.0 to expose)")
@@ -565,26 +556,28 @@ func run() int {
 		arg = canonical
 	}
 	if handler, ok := commands[arg]; ok {
+		// Apply --lang / --color / --no-color / -q when they land after the
+		// command name so `trumpcards <game|subcmd> --lang en` matches the
+		// prepositional form. quiet is passed by pointer because a trailing -q
+		// must update the caller's value. See issues #1509, #4306.
+		trailing := applyTrailingGlobalFlags(flag.Args()[1:], &quiet, os.Stderr)
 		if !subFlagCommands[arg] {
-			// Apply --lang / --no-color / -q when they land after the game name
-			// so `trumpcards <game> --lang en` and `trumpcards <game> -q`
-			// match the prepositional form. Done before the help short-circuit
-			// so `<game> --lang en --help` renders help in the requested locale.
-			// quiet is passed by pointer because a trailing -q must update the
-			// caller's value (otherwise the extras warning below would still
-			// fire after the user asked for silence).
-			extras := applyTrailingGlobalFlags(flag.Args()[1:], &quiet, os.Stderr)
 			// `<game> --help` / `<game> -h`: Go's flag package stops parsing at
 			// the first non-flag argument, so these trailing flags land in Args().
 			// Intercept them and print that game's help instead of launching the
 			// game. Subcommands in subFlagCommands are handled by parseSubFlags
 			// (which catches flag.ErrHelp).
-			if hasHelpFlag(extras) {
+			if hasHelpFlag(trailing) {
 				return runHelpCommand([]string{arg}, helpText, os.Stdout, os.Stderr)
 			}
-			if len(extras) > 0 && !quiet {
-				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(extras, " ")))
+			if len(trailing) > 0 && !quiet {
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(trailing, " ")))
 			}
+		} else {
+			// Subcommands parse their own flags from the stripped remainder, so
+			// --lang/--color/-q now work uniformly after any subcommand (#4306),
+			// not just the -q that used to be absorbed by per-command sinks.
+			subArgs = trailing
 		}
 		return handler()
 	}
@@ -905,11 +898,12 @@ func suggestionCandidates(commands map[string]func() int) []string {
 	return out
 }
 
-// parseSubFlags creates a FlagSet, applies setup, parses subcommand args, and
+// parseSubFlags creates a FlagSet, applies setup, parses the given subcommand
+// args (already stripped of trailing global flags by the dispatch loop), and
 // warns about extra positional arguments. Returns (fs, exitCode, ok). If ok is
 // false, the caller should return exitCode immediately.
-func parseSubFlags(name string, setup func(*flag.FlagSet)) (*flag.FlagSet, int, bool) {
-	return parseSubFlagsTo(name, flag.Args()[1:], setup, os.Stdout, os.Stderr)
+func parseSubFlags(name string, args []string, setup func(*flag.FlagSet)) (*flag.FlagSet, int, bool) {
+	return parseSubFlagsTo(name, args, setup, os.Stdout, os.Stderr)
 }
 
 // parseSubFlagsTo is the testable core of parseSubFlags: it parses args with a
