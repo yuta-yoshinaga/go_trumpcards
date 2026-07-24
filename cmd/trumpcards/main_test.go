@@ -968,6 +968,39 @@ func TestPrintGamesShortModeRespectsAliasesFlag(t *testing.T) {
 	}
 }
 
+// TestGameNamesAllHaveCategory guards the invariant that the category-grouped
+// printGamesLong depends on: every ui.GameNames() entry must map to a non-empty
+// games-registry category. printGamesLong iterates games.AllCategories() and
+// prints each category's bucket, so a name whose category is "" (two-registry
+// drift between ui.gameRegistry and games.registry) would land in the never-
+// printed "" bucket and silently vanish from even the unfiltered `games`
+// listing. This test makes such drift fail loudly instead. See PR #4320 review.
+func TestGameNamesAllHaveCategory(t *testing.T) {
+	byName := gameCategoryByName()
+	for _, name := range ui.GameNames() {
+		if byName[name] == "" {
+			t.Errorf("game %q has no games-registry category — it would be dropped from `games` output (registry drift)", name)
+		}
+	}
+}
+
+// TestPrintGamesLongListsEveryGame is the direct backstop for the same drift:
+// the unfiltered long listing must emit exactly one row per registered game, so
+// a silently-dropped game shrinks the count and fails here.
+func TestPrintGamesLongListsEveryGame(t *testing.T) {
+	var buf bytes.Buffer
+	printGames(false, false, "", &buf)
+	rows := 0
+	for _, line := range strings.Split(buf.String(), "\n") {
+		if strings.HasPrefix(line, "  ") { // game rows are indented; headings are not
+			rows++
+		}
+	}
+	if want := len(ui.GameNames()); rows != want {
+		t.Errorf("long listing emitted %d game rows, want %d", rows, want)
+	}
+}
+
 // TestPrintGamesLongGroupsByCategory verifies issue #4311: the long-form list
 // prints an uppercase "CATEGORY (N):" heading (derived from games.AllCategories,
 // the SSoT) before each group.
