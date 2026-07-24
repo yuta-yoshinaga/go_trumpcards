@@ -50,7 +50,31 @@ func (p *CalabresellaWebPresenter) buildBase(g interfaces.CalabresellaGame) *con
 
 	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
+	resObj.Monte = p.buildMonteOutput(g)
 	return resObj
+}
+
+// buildMonteOutput 公開済みモンテ (widow) 4 枚を構築する。
+// モンテはソリスト確定後の discard フェーズで取得された時点で全員へ公開されるため、
+// bid フェーズ (取得前・次ラウンド開始直後) では表示しない。取得記録は棋譜の
+// "monte_take" エントリに残っているので、その最新エントリのカードを返す。
+func (p *CalabresellaWebPresenter) buildMonteOutput(g interfaces.CalabresellaGame) []*controller.WebOutputCard {
+	if g.GetPhase() == domain.CalabresellaPhaseBid {
+		return nil
+	}
+	log := g.GetActionLog()
+	for i := len(log) - 1; i >= 0; i-- {
+		entry := log[i]
+		if entry == nil || entry.ActionType != "monte_take" {
+			continue
+		}
+		out := make([]*controller.WebOutputCard, 0, len(entry.Cards))
+		for _, c := range entry.Cards {
+			out = append(out, cardToOutput(c))
+		}
+		return out
+	}
+	return nil
 }
 
 // playableIndices 人間プレイヤーがプレイできるカードのインデックスを返す

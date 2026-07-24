@@ -30,6 +30,7 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
+  "monteLabel": "Monte (widow)",
   "players": "Players",
   "you": "You",
   "cpu": "CPU {{id}}",

@@ -130,6 +130,38 @@ func TestCalabresella_Bidding_EveryonePasses_ForehandTakesChiamo(t *testing.T) {
 		g.GetPhase())
 }
 
+func TestCalabresella_MonteTakeLogRevealsCards(t *testing.T) {
+	g := newTestCalabresella()
+	cfg := g.GetConfig()
+	cfg.CpuDifficulty = domain.CalabresellaCpuDifficultyEasy // CPUs always pass
+	g.SetConfig(cfg)
+	g.SetPhase(domain.CalabresellaPhaseBid)
+
+	guard := 0
+	for g.GetPhase() == domain.CalabresellaPhaseBid && guard < 50 {
+		guard++
+		if g.GetPlayer(g.GetCurrentBidderIdx()).GetIsHuman() {
+			require.NoError(t, g.PlayerBid(domain.CalabresellaBidNone)) // human passes
+		} else {
+			g.CpuBid()
+		}
+	}
+
+	// A soloist took the monte; the action log must expose the 4 monte cards
+	// so presenters can reveal the widow to every player.
+	var monteEntry *domain.ActionLogEntry
+	for _, e := range g.GetActionLog() {
+		if e.ActionType == "monte_take" {
+			monteEntry = e
+		}
+	}
+	require.NotNil(t, monteEntry, "monte_take entry must be logged")
+	assert.Len(t, monteEntry.Cards, domain.CalabresellaMonteSize)
+	for _, c := range monteEntry.Cards {
+		assert.NotNil(t, c)
+	}
+}
+
 func TestCalabresella_Bidding_SoloBeatsChiamo(t *testing.T) {
 	g := newTestCalabresella()
 	g.SetPhase(domain.CalabresellaPhaseBid)

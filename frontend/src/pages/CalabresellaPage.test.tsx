@@ -132,6 +132,31 @@ describe('CalabresellaPage', () => {
     expect(screen.getByRole('button', { name: /カードを捨てる/ })).toBeInTheDocument();
   });
 
+  it('reveals the monte (widow) cards once the Soloist has taken them', async () => {
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      monte: [
+        { design: 'DIAMOND', value: 3 },
+        { design: 'SPADE', value: 11 },
+        { design: 'CLOVER', value: 7 },
+        { design: 'HEART', value: 2 },
+      ],
+    });
+    renderWithProviders(<CalabresellaPage />);
+    const monte = await screen.findByTestId('calabresella-monte');
+    expect(monte).toBeInTheDocument();
+    expect(monte).toHaveTextContent('モンテ');
+    // All four widow cards are rendered as face-up images inside the monte row.
+    expect(monte.querySelectorAll('img')).toHaveLength(4);
+  });
+
+  it('does not render the monte row during the bid phase (widow not yet taken)', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CalabresellaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'キアーモ' })).toBeInTheDocument());
+    expect(screen.queryByTestId('calabresella-monte')).not.toBeInTheDocument();
+  });
+
   it('shows the remaining discard count in the prompt and on the button', async () => {
     // 16-card soloist hand → 4 discards remain before reaching the regulation 12.
     mockExec.mockResolvedValue(discardPhaseState);

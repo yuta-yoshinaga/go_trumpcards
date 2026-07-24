@@ -2180,6 +2180,11 @@ export interface CalabresellaResponse extends BaseGameResponse {
   /** The winning bid (0=none, 1=chiamo, 2=solo). */
   winningBid: number;
   currentTrick: CalabresellaTrickCard[];
+  /**
+   * The four monte (widow) cards, revealed to every player once the Soloist has
+   * taken them (present from the Discard phase onward; omitted during Bidding).
+   */
+  monte?: Card[];
   /** Cumulative match scores per player — [p0, p1, p2]. */
   playerScores: number[];
   /** Thirds of a point captured per player this round — [p0, p1, p2]. */
