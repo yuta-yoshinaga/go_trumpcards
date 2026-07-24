@@ -489,6 +489,56 @@ func TestRunUnknownGameExitsUsageError(t *testing.T) {
 	}
 }
 
+// TestParseSubFlagsToNoHelpDumpOnFlagError verifies issue #4307: an unknown
+// subcommand flag must not dump the full help text to stdout before the
+// localized error goes to stderr. The FlagSet's Usage callback fires inside
+// fs.Parse on a parse error, so it must be a no-op (help is printed explicitly
+// only on the flag.ErrHelp path).
+func TestParseSubFlagsToNoHelpDumpOnFlagError(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	fs, code, ok := parseSubFlagsTo("version", []string{"--bogus"}, func(fs *flag.FlagSet) {
+		var short bool
+		fs.BoolVar(&short, "short", false, "")
+	}, &stdout, &stderr)
+
+	if ok || fs != nil {
+		t.Fatalf("expected (nil, code, false) on flag error; got ok=%v fs=%v", ok, fs)
+	}
+	if code != 2 {
+		t.Errorf("exit = %d, want 2 (usage error)", code)
+	}
+	if stdout.Len() != 0 {
+		t.Errorf("expected NO help dump on stdout for a flag error; got %q", stdout.String())
+	}
+	if !strings.Contains(stderr.String(), "help version") {
+		t.Errorf("stderr should carry the cliTryHelp hint; got %q", stderr.String())
+	}
+}
+
+// TestParseSubFlagsToPrintsHelpOnceOnHelpFlag verifies that `-h` prints the
+// subcommand help to stdout exactly once (not twice, as it did when Usage
+// duplicated the explicit ErrHelp-branch print). See issue #4307.
+func TestParseSubFlagsToPrintsHelpOnceOnHelpFlag(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	fs, code, ok := parseSubFlagsTo("version", []string{"-h"}, func(fs *flag.FlagSet) {
+		var short bool
+		fs.BoolVar(&short, "short", false, "")
+	}, &stdout, &stderr)
+
+	if ok || fs != nil {
+		t.Fatalf("expected (nil, 0, false) on -h; got ok=%v fs=%v", ok, fs)
+	}
+	if code != 0 {
+		t.Errorf("exit = %d, want 0 for -h", code)
+	}
+	if n := strings.Count(stdout.String(), "USAGE:"); n != 1 {
+		t.Errorf("expected help printed exactly once on stdout; USAGE: appeared %d times in %q", n, stdout.String())
+	}
+	if stderr.Len() != 0 {
+		t.Errorf("expected no stderr on -h; got %q", stderr.String())
+	}
+}
+
 // TestRunGlobalQuietFlagSuppressesWarnings verifies issue #1553: the global
 // --quiet/-q flag is OR-combined with TRUMPCARDS_QUIET, so users can suppress
 // the locale-fallback warning without exporting an env var first. Both the
