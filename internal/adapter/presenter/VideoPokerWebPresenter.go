@@ -26,6 +26,7 @@ func (vpp *VideoPokerWebPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 	resObj.Payout = vp.GetPayout()
 	resObj.HandRank = vp.GetHandRank()
 	resObj.HandName = vp.GetHandName()
+	resObj.HandKey = vp.GetHandKey()
 	resObj.HeldIndices = vp.GetHeldIndices()
 	resObj.VariantName = vp.GetVariantName()
 

@@ -35,6 +35,7 @@ type VideoPoker struct {
 	payout      int
 	handRank    int
 	handName    string
+	handKey     string
 	actionLog   []*ActionLogEntry
 	config      *VideoPokerVariantConfig
 }
@@ -81,6 +82,7 @@ func (vp *VideoPoker) Reset() {
 	vp.payout = 0
 	vp.handRank = 0
 	vp.handName = ""
+	vp.handKey = ""
 	vp.actionLog = nil
 	if vp.chips.GetChips() < VideoPokerMinBet {
 		vp.chips.SetChips(VideoPokerDefaultChips)
@@ -164,9 +166,11 @@ func (vp *VideoPoker) evaluate() {
 	if vp.payout > 0 {
 		vp.result = GameResultWin
 		vp.handName = handName
+		vp.handKey = videoPokerHandKey(handName)
 	} else {
 		vp.result = GameResultLose
 		vp.handName = ""
+		vp.handKey = ""
 	}
 	displayName := handName
 	if displayName == "" {
@@ -175,6 +179,47 @@ func (vp *VideoPoker) evaluate() {
 		}
 	}
 	vp.appendLog(0, "result", fmt.Sprintf("%s payout=%d", displayName, vp.payout), vp.hand)
+}
+
+// videoPokerHandKey maps a variant hand name (the English string returned by a
+// VideoPokerVariantConfig.GetResult) to a stable, locale-independent key. The
+// key matches the frontend payout-table row keys
+// (frontend/src/utils/videoPokerPayout.ts) and the "<variant>.hand.<key>" CUI
+// translation keys, so both clients can localize the hand without reverse-looking
+// up the English string. It returns "" for an unknown or empty (losing) name.
+func videoPokerHandKey(handName string) string {
+	switch handName {
+	case "Royal Flush":
+		return "royalFlush"
+	case "Natural Royal Flush":
+		return "naturalRoyalFlush"
+	case "Wild Royal Flush":
+		return "wildRoyalFlush"
+	case "Four Deuces":
+		return "fourDeuces"
+	case "Five of a Kind":
+		return "fiveOfAKind"
+	case "Straight Flush":
+		return "straightFlush"
+	case "Four of a Kind":
+		return "fourOfAKind"
+	case "Full House":
+		return "fullHouse"
+	case "Flush":
+		return "flush"
+	case "Straight":
+		return "straight"
+	case "Three of a Kind":
+		return "threeOfAKind"
+	case "Two Pair":
+		return "twoPair"
+	case "Jacks or Better":
+		return "jacksOrBetter"
+	case "Kings or Better":
+		return "kingsOrBetter"
+	default:
+		return ""
+	}
 }
 
 // appendLog 棋譜にエントリを追加する
@@ -217,6 +262,9 @@ func (vp *VideoPoker) GetHandRank() int { return vp.handRank }
 // GetHandName ハンド名
 func (vp *VideoPoker) GetHandName() string { return vp.handName }
 
+// GetHandKey は役の安定キー（ロケール非依存）を返す。役なし時は空文字。
+func (vp *VideoPoker) GetHandKey() string { return vp.handKey }
+
 // GetHeldIndices ホールドインデックス
 func (vp *VideoPoker) GetHeldIndices() [VideoPokerHandSize]bool { return vp.heldIndices }
 
@@ -258,6 +306,9 @@ func (vp *VideoPoker) SetHandRank(rank int) { vp.handRank = rank }
 // SetHandName ハンド名設定（テスト用）
 func (vp *VideoPoker) SetHandName(name string) { vp.handName = name }
 
+// SetHandKey 役キー設定（テスト用）
+func (vp *VideoPoker) SetHandKey(key string) { vp.handKey = key }
+
 // videoPokerJSON is the JSON wire format for VideoPoker.
 type videoPokerJSON struct {
 	TrumpCards  *TrumpCards              `json:"tc"`
@@ -271,6 +322,7 @@ type videoPokerJSON struct {
 	Payout      int                      `json:"po"`
 	HandRank    int                      `json:"hr"`
 	HandName    string                   `json:"hn"`
+	HandKey     string                   `json:"hk"`
 	ActionLog   []*ActionLogEntry        `json:"al"`
 	ConfigName  string                   `json:"cn"`
 	JokerCount  int                      `json:"jc"`
@@ -290,6 +342,7 @@ func (vp *VideoPoker) MarshalJSON() ([]byte, error) {
 		Payout:      vp.payout,
 		HandRank:    vp.handRank,
 		HandName:    vp.handName,
+		HandKey:     vp.handKey,
 		ActionLog:   vp.actionLog,
 	}
 	if vp.config != nil {
@@ -332,6 +385,7 @@ func (vp *VideoPoker) UnmarshalJSON(data []byte) error {
 	vp.payout = j.Payout
 	vp.handRank = j.HandRank
 	vp.handName = j.HandName
+	vp.handKey = j.HandKey
 	vp.actionLog = j.ActionLog
 	if vp.actionLog == nil {
 		vp.actionLog = make([]*ActionLogEntry, 0)

@@ -22,6 +22,7 @@ func setupVideoPokerCuiMockDefaults(m *interfaces.MockVideoPokerGame) {
 	m.On("GetPayout").Return(0).Maybe()
 	m.On("GetHandRank").Return(0).Maybe()
 	m.On("GetHandName").Return("").Maybe()
+	m.On("GetHandKey").Return("").Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetVariantName").Return("videopoker").Maybe()
@@ -125,13 +126,61 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Win(t *testing.T) {
 	m.On("GetPayout").Return(25).Maybe()
 	m.On("GetHandRank").Return(domain.PokerHandFourOfAKind).Maybe()
 	m.On("GetHandName").Return("Four of a Kind").Maybe()
+	m.On("GetHandKey").Return("fourOfAKind").Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{true, true, true, true, false}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetVariantName").Return("videopoker").Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "フェーズ: リザルト")
+	// videopoker keeps the English hand name (backward compatible).
 	assert.Contains(t, result, "Four of a Kind! あなたの勝利です！")
 	assert.Contains(t, result, "払戻し: 25")
+}
+
+func TestVideoPokerCuiPresenter_Output_ResultPhase_Win_DeucesWildTranslated(t *testing.T) {
+	winMock := func(variant, handName, handKey string) *interfaces.MockVideoPokerGame {
+		m := new(interfaces.MockVideoPokerGame)
+		m.On("GetChips").Return(1025).Maybe()
+		m.On("GetPhase").Return(domain.VideoPokerPhaseResult).Maybe()
+		m.On("GetHand").Return([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+			domain.NewCard(domain.CardDesignSpade, 10, false),
+			domain.NewCard(domain.CardDesignSpade, 11, false),
+			domain.NewCard(domain.CardDesignSpade, 12, false),
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+		}).Maybe()
+		m.On("GetGameEndFlag").Return(true).Maybe()
+		m.On("GetBetAmount").Return(1).Maybe()
+		m.On("GetResult").Return(domain.GameResultWin).Maybe()
+		m.On("GetPayout").Return(25).Maybe()
+		m.On("GetHandRank").Return(domain.PokerHandRoyalFlush).Maybe()
+		m.On("GetHandName").Return(handName).Maybe()
+		m.On("GetHandKey").Return(handKey).Maybe()
+		m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
+		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+		m.On("GetVariantName").Return(variant).Maybe()
+		return m
+	}
+	p := new(VideoPokerCuiPresenter)
+
+	t.Run("ja shows the translated hand name", func(t *testing.T) {
+		result := p.Output(winMock("deuceswild", "Wild Royal Flush", "wildRoyalFlush"), nil)
+		assert.Contains(t, result, "ワイルドロイヤルフラッシュ! あなたの勝利です！")
+		assert.NotContains(t, result, "Wild Royal Flush!")
+	})
+
+	t.Run("en shows the translated hand name", func(t *testing.T) {
+		i18n.SetLang("en")
+		t.Cleanup(func() { i18n.SetLang("ja") })
+		result := p.Output(winMock("deuceswild", "Wild Royal Flush", "wildRoyalFlush"), nil)
+		assert.Contains(t, result, "Wild Royal Flush! You win!")
+	})
+
+	t.Run("empty key falls back to the raw hand name", func(t *testing.T) {
+		result := p.Output(winMock("deuceswild", "Wild Royal Flush", ""), nil)
+		assert.Contains(t, result, "Wild Royal Flush! あなたの勝利です！")
+	})
 }
 
 func TestVideoPokerCuiPresenter_Output_ResultPhase_Lose(t *testing.T) {

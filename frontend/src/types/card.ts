@@ -6677,6 +6677,13 @@ export interface VideoPokerResponse extends BaseGameResponse {
   payout: number;
   handRank: number;
   handName: string;
+  /**
+   * Stable, locale-independent hand key (e.g. `"wildRoyalFlush"`) matching the
+   * `payoutTable.name.*` / `videoPokerPayoutRows` row keys. Empty on a losing
+   * hand, and absent on responses that predate this field. Preferred over
+   * reverse-looking up the English `handName`.
+   */
+  handKey?: string;
   heldIndices: boolean[];
   variantName: string;
 }

@@ -32,6 +32,8 @@ type VideoPokerGame interface {
 	GetHandRank() int
 	// GetHandName ハンド名を取得する
 	GetHandName() string
+	// GetHandKey 役の安定キー（ロケール非依存）を取得する
+	GetHandKey() string
 	// GetHeldIndices ホールドインデックスを取得する
 	GetHeldIndices() [domain.VideoPokerHandSize]bool
 	// GetVariantName バリアント名を取得する

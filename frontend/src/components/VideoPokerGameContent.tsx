@@ -20,9 +20,9 @@ import { getVideoPokerBaseHint } from '../utils/hints/videoPokerBaseHint';
 import { evaluateJokerPokerMadeHand } from '../utils/jokerPokerMadeHand';
 import {
   VIDEO_POKER_MAX_BET,
-  videoPokerHandNameToRowKey,
   videoPokerPayoutCell,
   videoPokerPayoutRows,
+  videoPokerRowKey,
 } from '../utils/videoPokerPayout';
 import { videoPokerNet, videoPokerWinRate } from '../utils/videoPokerStats';
 import { ActionLogPanel } from './ActionLogPanel';
@@ -205,7 +205,7 @@ export function VideoPokerGameContent({
     if (!isResultPhase || !state) {
       return;
     }
-    const rowKey = videoPokerHandNameToRowKey(state.handName);
+    const rowKey = videoPokerRowKey(state.handKey, state.handName);
     const msg =
       state.payout > 0
         ? tNs('resultAnnounce.win', {
@@ -473,7 +473,7 @@ export function VideoPokerGameContent({
               t={tNs}
               gameName={gameName}
               betAmount={betAmount}
-              winningRowKey={isResultPhase ? videoPokerHandNameToRowKey(state.handName) : null}
+              winningRowKey={isResultPhase ? videoPokerRowKey(state.handKey, state.handName) : null}
               handCounts={statsEnabled ? stats.handCounts : null}
             />
 

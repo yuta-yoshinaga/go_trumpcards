@@ -261,6 +261,21 @@ describe('VideoPokerGameContent', () => {
     expect(screen.getByTestId('vp-payout-row-royalFlush')).not.toHaveAttribute('aria-current');
   });
 
+  it('highlights the winning row by handKey, not the English handName', async () => {
+    // handKey points at wildRoyalFlush while handName is a mismatching English
+    // string; the row highlight must follow the stable key.
+    mockExec.mockResolvedValue({
+      ...resultPhaseWin,
+      variantName: 'deuceswild',
+      handKey: 'wildRoyalFlush',
+      handName: 'SOME UNTRANSLATED STRING',
+    });
+    renderContent('deuceswild');
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
+    expect(screen.getByTestId('vp-payout-row-wildRoyalFlush')).toHaveAttribute('aria-current', 'true');
+    expect(screen.getByTestId('vp-payout-row-fourDeuces')).not.toHaveAttribute('aria-current');
+  });
+
   it('clicking card in result phase does not toggle hold', async () => {
     mockExec.mockResolvedValue(resultPhaseWin);
     renderContent();

@@ -89,10 +89,23 @@ export function videoPokerPayoutCell(row: VideoPokerPayoutRow, bet: number): num
 /**
  * Maps a server-produced hand name (e.g. "Natural Royal Flush", "Jacks or Better")
  * to its paytable row key, or `null` when the hand pays nothing / is not on the
- * table. Used to highlight the winning row in the result phase.
+ * table. Used as a fallback for states that predate the `handKey` field.
  */
 export function videoPokerHandNameToRowKey(handName: string): string | null {
   return HAND_NAME_TO_ROW_KEY[handName] ?? null;
+}
+
+/**
+ * Resolves the winning paytable row key for a result. Prefers the stable
+ * server-supplied `handKey`; falls back to reverse-looking up the English
+ * `handName` for older responses that omit the key. Returns `null` for a losing
+ * hand (empty key and unmatched name).
+ */
+export function videoPokerRowKey(handKey: string | undefined, handName: string): string | null {
+  if (handKey) {
+    return handKey;
+  }
+  return videoPokerHandNameToRowKey(handName);
 }
 
 const HAND_NAME_TO_ROW_KEY: Record<string, string> = {

@@ -267,6 +267,8 @@ func TestIndianPoker_JSONRoundTrip(t *testing.T) {
 
 func TestVideoPoker_JSONRoundTrip(t *testing.T) {
 	vp := NewDefaultVideoPoker()
+	vp.SetHandName("Wild Royal Flush")
+	vp.SetHandKey("wildRoyalFlush")
 
 	data, err := json.Marshal(vp)
 	require.NoError(t, err)
@@ -276,6 +278,8 @@ func TestVideoPoker_JSONRoundTrip(t *testing.T) {
 
 	assert.Equal(t, vp.GetPhase(), got.GetPhase())
 	assert.Equal(t, vp.GetGameEndFlag(), got.GetGameEndFlag())
+	assert.Equal(t, vp.GetHandName(), got.GetHandName())
+	assert.Equal(t, vp.GetHandKey(), got.GetHandKey())
 }
 
 func TestHearts_JSONRoundTrip(t *testing.T) {
