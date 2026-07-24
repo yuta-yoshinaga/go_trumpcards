@@ -30,6 +30,7 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
+  "monteLabel": "モンテ（伏せ札）",
   "players": "プレイヤー",
   "you": "あなた",
   "cpu": "CPU {{id}}",

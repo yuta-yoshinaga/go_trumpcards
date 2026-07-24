@@ -140,6 +140,49 @@ func TestCalabresellaWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "calabresella.roundEnd", resObj.MessageCode)
 	})
 
+	t.Run("monte revealed from action log after discard", func(t *testing.T) {
+		m, _ := setupCalabresellaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+		m.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{PlayerIdx: 0, ActionType: "monte_take", Cards: []*domain.Card{
+				domain.NewCard(domain.CardDesignDiamond, 3, false),
+				domain.NewCard(domain.CardDesignSpade, 11, false),
+				domain.NewCard(domain.CardDesignClover, 7, false),
+				domain.NewCard(domain.CardDesignHeart, 2, false),
+			}},
+		})
+		result := p.Output(m, nil)
+		var resObj controller.CalabresellaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Len(t, resObj.Monte, 4)
+		assert.Equal(t, 3, resObj.Monte[0].Value)
+		assert.Equal(t, 2, resObj.Monte[3].Value)
+	})
+
+	t.Run("monte hidden during bid phase even if log has entry", func(t *testing.T) {
+		m, _ := setupCalabresellaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+		m.On("GetPhase").Return(domain.CalabresellaPhaseBid)
+		m.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{PlayerIdx: 0, ActionType: "monte_take", Cards: []*domain.Card{
+				domain.NewCard(domain.CardDesignDiamond, 3, false),
+			}},
+		})
+		result := p.Output(m, nil)
+		var resObj controller.CalabresellaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Monte)
+	})
+
+	t.Run("monte empty when no take logged", func(t *testing.T) {
+		m, _ := setupCalabresellaWebMockWithPlayers()
+		result := p.Output(m, nil)
+		var resObj controller.CalabresellaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Monte)
+	})
+
 	t.Run("error message takes priority", func(t *testing.T) {
 		m, _ := setupCalabresellaWebMockWithPlayers()
 		result := p.Output(m, errors.New("boom"))

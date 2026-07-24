@@ -384,13 +384,16 @@ func (g *Calabresella) handBidStrength(playerIdx int) int {
 func (g *Calabresella) startDiscard() {
 	g.phase = CalabresellaPhaseDiscard
 	g.monteTaken = true
+	// monte の内容は取得時点で全員へ公開される情報なので、棋譜に残して
+	// Web/CUI プレゼンターが伏せ札の中身を明示できるようにする。
+	revealed := append([]*Card(nil), g.monte...)
 	for _, c := range g.monte {
 		g.players[g.soloistIdx].AddCard(c)
 	}
 	g.monte = nil
 	calabresellaSortHand(g.players[g.soloistIdx])
 	g.appendLog(g.soloistIdx, "monte_take",
-		fmt.Sprintf("%s takes the monte", g.playerName(g.soloistIdx)), nil)
+		fmt.Sprintf("%s takes the monte", g.playerName(g.soloistIdx)), revealed)
 	g.discardCount = 0
 	g.currentPlayerIdx = g.soloistIdx
 

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { calabresellaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -220,6 +221,26 @@ function CalabresellaPageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
               <div>
+                {/* Monte (widow): the 4 cards the Soloist took, revealed to all players. */}
+                {state.monte && state.monte.length > 0 && (
+                  <div
+                    className="mb-3 p-2 rounded bg-black/30"
+                    data-testid="calabresella-monte"
+                    data-tutorial="calabresella-monte"
+                  >
+                    <div className="text-ds-text-muted text-sm mb-1">{t('monteLabel')}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {state.monte.map((c, i) => (
+                        <CardImage
+                          key={`monte-${c.design}-${c.value}-${i}`}
+                          card={c}
+                          width={Math.round(cardWidth * 0.75)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <TrickDisplay
                   currentTrick={state.currentTrick}
                   players={state.players}
