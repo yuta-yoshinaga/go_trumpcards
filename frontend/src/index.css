@@ -557,18 +557,23 @@ input:not([type]):focus-visible {
   animation: card-deal-in 0.15s ease-out both;
 }
 
-/* Respect reduced motion preferences */
+/* Respect reduced motion preferences.
+ * Universal enforcement (issue #4315): rather than an allowlist of animation
+ * class names — which silently missed arbitrary `animate-[…]` utilities and
+ * every future animation — near-zero every animation/transition here. This is
+ * the single source of truth for motion suppression; components no longer need
+ * `motion-safe:` / useReducedMotion just to disable CSS animation. Using
+ * 0.01ms (not `animation: none`) keeps `animationend`/`transitionend` handlers
+ * firing, so completion logic (card-flip, deal-in) still resolves. */
 @media (prefers-reduced-motion: reduce) {
-  .animate-pulse,
-  .animate-pulse-once,
-  .animate-shake,
-  .animate-flipIn,
-  .animate-sweat-drop,
-  .animate-eye-dart,
-  .animate-card-deal-in {
-    animation: none;
-  }
-  .memory-card-inner {
-    transition: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
   }
 }

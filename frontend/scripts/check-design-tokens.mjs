@@ -69,4 +69,20 @@ if (violations.length > 0) {
   process.exit(1);
 }
 
+// Reduced-motion SSoT guard (issue #4315): prefers-reduced-motion must be
+// enforced by a single universal block, not a class-name allowlist that
+// silently misses arbitrary animate-[…] utilities and future animations.
+const indexCss = await readFile(join(SRC_DIR, 'index.css'), 'utf8');
+const rmIdx = indexCss.indexOf('@media (prefers-reduced-motion: reduce)');
+const rmBlock = rmIdx === -1 ? '' : indexCss.slice(rmIdx, rmIdx + 400);
+if (!rmBlock.includes('*,') || !rmBlock.includes('animation-duration: 0.01ms')) {
+  console.error(
+    '\nreduced-motion: index.css must enforce prefers-reduced-motion with a universal\n' +
+      '(`*, *::before, *::after`) block that near-zeroes animation/transition durations,\n' +
+      'not a per-class allowlist. See DESIGN.md Motion section and issue #4315.',
+  );
+  process.exit(1);
+}
+
 console.log(`design-tokens: OK (${files.length} source files scanned, test files skipped).`);
+console.log('reduced-motion: OK (index.css uses the universal prefers-reduced-motion block).');
