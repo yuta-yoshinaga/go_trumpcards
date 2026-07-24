@@ -437,7 +437,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全218ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全219ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -868,7 +868,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全218ゲーム()
+        ...全219ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -930,7 +930,7 @@ classDiagram
 
     RedDogApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全218ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo, bigtwo, sevens, doubt, holdem,\nomaha, omahahilo, bigo, bigohilo, shortdeck, pineapple, crazypineapple, irishpoker,\nhearts, memory, klondike, freecell, seahaventowers, cruel, baccarat, spades,\ncrazyeights, ginrummy, canasta, spider, napoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, ohhell, bridge,\nspeed, gofish, pinochle, golf, pigtail, sevencardstud, clocksolitaire, durak,\nfortythieves, paigow, twotenjack, caribbeanstud, texasholdembonus, war, canfield, fiftyone,\nyukon, russiansolitaire, whist, letitride, pokersquares, pageone, reddog, badugi,\ndeucetoseven, razz, scorpion, wasp, accordion, trash, sevenbridge, president,\ncassino, spanish21, calculation, spiteandmalice, skat, shithead, nertz, slapjack,\negyptianratscrew, bakersdozen, tonk, casinowar, pitch, dragontiger, blackjackswitch, montecarlo,\ncontractrummy, ultimatetexasholdem, crescent, mississippistud, belote, spiderette, mighty, oasispoker,\nbeleagueredcastle, piquet, casinoholdem, callbreak, tarneeb, highcardflush, briscola, gaps,\nfourcardpoker, rummy500, eightoff, russianpoker, penguin, chinesepoker, sixcardgolf, doudizhu,\ntruco, scopa, acesup, barbu, macau, thirtyone, tienlen, osmosis,\nfivehundred, schnapsen, burraco, yaniv, gongzhu, bristol, bidwhist, tressette,\neasthaven, tichu, bakersgame, bourre, sheepshead, doppelkopf, mus, tute,\nsueca, fortyfives, twentynine, klaverjas, manille, marias, sedma, solowhist,\nknockoutwhist, nap, preference, spoilfive, courtpiece, bezique, ecarte, threecardbrag,\nteenpatti, scopone, escoba, handandfoot, conquian, chinchon, kalooki, threethirteen,\nmao, spoons, kemps, cuckoo, pishti, cuarenta, fivecardstud, faro,\nopenfacechinese, russianbank, labellelucie, simplesimon, doubleklondike, blackhole)"
+    note for BlackJackApi "全219ゲーム分のAPI Objectが存在\n(ゲーム一覧の SSoT は internal/infrastructure/games/registry.go。\nfrontend/src/api/gameApi.ts の games 配列と1:1対応)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1309,7 +1309,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "主要ゲームに固有Hookが存在 (現在130ファイル)\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "主要ゲームに固有Hookが存在 (現在131ファイル)\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1908,7 +1908,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/BigO/ShortDeck/Pineapple/SevenCardStud/Razz)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全218ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全219ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1931,7 +1931,7 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (218ゲーム)
+        +Routes (219ゲーム)
     }
 
     class gameCategories {
@@ -1942,7 +1942,7 @@ classDiagram
         +solitaire
         +rummy
     }
-    note for gameCategories "6カテゴリの各メンバー構成 (全218ゲーム) は\nfrontend/src/constants/gameRoutes.ts が SSoT。\n個別の所属はそこで定義される"
+    note for gameCategories "6カテゴリの各メンバー構成 (全219ゲーム) は\nfrontend/src/constants/gameRoutes.ts が SSoT。\n個別の所属はそこで定義される"
 
     class TutorialProvider {
         +TutorialConfig config
@@ -1959,7 +1959,7 @@ classDiagram
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "221名前空間: common + 218ゲーム固有 + tutorial + discover\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "222名前空間: common + 219ゲーム固有 + tutorial + discover\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ### 1.8 AI Game Concierge (/discover)
