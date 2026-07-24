@@ -1921,6 +1921,10 @@ func TestResolveStartGame_UnknownEmitsDidYouMean(t *testing.T) {
 	if !strings.Contains(stderr.String(), "blackjack") {
 		t.Errorf("expected Did-you-mean to mention blackjack; stderr=%q", stderr.String())
 	}
+	// The --start path prints the same recovery hint as the positional path.
+	if !strings.Contains(stderr.String(), "games") || !strings.Contains(stderr.String(), "--help") {
+		t.Errorf("expected recovery hint mentioning 'games' and '--help'; stderr=%q", stderr.String())
+	}
 }
 
 // TestBuildHelpTextDocumentsStartFlag verifies the --start flag is advertised

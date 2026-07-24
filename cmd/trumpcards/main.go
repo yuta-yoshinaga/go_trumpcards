@@ -612,6 +612,10 @@ func resolveStartGame(flagValue string, stderr io.Writer) (string, int, bool) {
 	if suggestion := cuiutil.SuggestCommand(v, helpSuggestionCandidates(), 2); suggestion != "" {
 		_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
 	}
+	// Same one-line recovery hint as the top-level positional-arg path, so a
+	// far-off `--start` typo with no Did-you-mean suggestion still has a way
+	// forward. Keeps the two unknown-game entry points consistent.
+	_, _ = fmt.Fprintln(stderr, i18n.T("cliUnknownGameHint"))
 	return "", 2, false
 }
 
