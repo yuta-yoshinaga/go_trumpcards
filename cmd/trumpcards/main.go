@@ -558,9 +558,13 @@ func run() int {
 		if suggestion := cuiutil.SuggestCommand(arg, suggestionCandidates(commands), 2); suggestion != "" {
 			fmt.Fprintf(os.Stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
 		}
-		fmt.Fprintln(os.Stderr)
-		flag.Usage()
-		return 1
+		// A one-line recovery hint instead of re-dumping the full help (which
+		// buries the error). Note flag.Usage is a no-op here (SetOutput was
+		// pointed at io.Discard above), so the old flag.Usage() call rendered
+		// nothing but a stray blank line. Exit 2 (usage error) to match the
+		// `--start <unknown>` path (resolveStartGame) and the EXIT CODES table.
+		fmt.Fprintln(os.Stderr, i18n.T("cliUnknownGameHint"))
+		return 2
 	}
 
 	// No argument: start interactive multi-game mode (defaults to blackjack).
@@ -608,6 +612,10 @@ func resolveStartGame(flagValue string, stderr io.Writer) (string, int, bool) {
 	if suggestion := cuiutil.SuggestCommand(v, helpSuggestionCandidates(), 2); suggestion != "" {
 		_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
 	}
+	// Same one-line recovery hint as the top-level positional-arg path, so a
+	// far-off `--start` typo with no Did-you-mean suggestion still has a way
+	// forward. Keeps the two unknown-game entry points consistent.
+	_, _ = fmt.Fprintln(stderr, i18n.T("cliUnknownGameHint"))
 	return "", 2, false
 }
 
@@ -1262,7 +1270,7 @@ ENVIRONMENT VARIABLES:
 EXIT CODES:
    0  Success (normal exit, EOF, or 'exit' command)
    1  General error (e.g., web server failed to start, interactive input read error)
-   2  Usage error (invalid flags, unknown category, missing required argument)
+   2  Usage error (invalid flags, unknown game/command, unknown category, missing required argument)
   10  'update --check': a newer version is available (non-error signal for scripts)
   75  'update': user declined the confirmation prompt
  130  Terminated by SIGINT (Ctrl+C; POSIX 128 + 2)

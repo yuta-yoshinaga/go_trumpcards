@@ -438,6 +438,57 @@ func TestRunUnsupportedLangFlagFallsBackAndWarns(t *testing.T) {
 	}
 }
 
+// TestRunUnknownGameExitsUsageError verifies issue #4305: an unknown top-level
+// game name exits 2 (usage error) — matching the `--start <unknown>` path — and
+// prints a Did-you-mean suggestion plus a one-line recovery hint on stderr,
+// instead of the old exit-1-with-dead-flag.Usage()-blank-line behavior.
+func TestRunUnknownGameExitsUsageError(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		i18n.SetLang("ja")
+	}()
+
+	flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+	os.Args = []string{"trumpcards", "blackjak"} // typo for blackjack
+
+	rOut, wOut, _ := os.Pipe()
+	rErr, wErr, _ := os.Pipe()
+	os.Stdout = wOut
+	os.Stderr = wErr
+
+	exitCh := make(chan int, 1)
+	go func() { exitCh <- run() }()
+	exit := <-exitCh
+
+	_ = wOut.Close()
+	_ = wErr.Close()
+	var outBuf, errBuf bytes.Buffer
+	_, _ = outBuf.ReadFrom(rOut)
+	_, _ = errBuf.ReadFrom(rErr)
+
+	if exit != 2 {
+		t.Errorf("exit = %d, want 2 (usage error); stderr=%q", exit, errBuf.String())
+	}
+	if !strings.Contains(errBuf.String(), "blackjack") {
+		t.Errorf("expected Did-you-mean to mention blackjack; stderr=%q", errBuf.String())
+	}
+	// The recovery hint must point at `games` and `--help`.
+	if !strings.Contains(errBuf.String(), "games") || !strings.Contains(errBuf.String(), "--help") {
+		t.Errorf("expected recovery hint mentioning 'games' and '--help'; stderr=%q", errBuf.String())
+	}
+	// Unknown game is an error path: nothing goes to stdout.
+	if outBuf.Len() != 0 {
+		t.Errorf("expected no stdout on unknown game; got %q", outBuf.String())
+	}
+}
+
 // TestRunGlobalQuietFlagSuppressesWarnings verifies issue #1553: the global
 // --quiet/-q flag is OR-combined with TRUMPCARDS_QUIET, so users can suppress
 // the locale-fallback warning without exporting an env var first. Both the
@@ -1869,6 +1920,10 @@ func TestResolveStartGame_UnknownEmitsDidYouMean(t *testing.T) {
 	}
 	if !strings.Contains(stderr.String(), "blackjack") {
 		t.Errorf("expected Did-you-mean to mention blackjack; stderr=%q", stderr.String())
+	}
+	// The --start path prints the same recovery hint as the positional path.
+	if !strings.Contains(stderr.String(), "games") || !strings.Contains(stderr.String(), "--help") {
+		t.Errorf("expected recovery hint mentioning 'games' and '--help'; stderr=%q", stderr.String())
 	}
 }
 
