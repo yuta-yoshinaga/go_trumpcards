@@ -836,3 +836,83 @@ func TestCanastaConfig_Validate(t *testing.T) {
 		})
 	}
 }
+
+// --- Hint ---
+
+func TestCanasta_GetHint(t *testing.T) {
+	t.Run("nil when CPU turn", func(t *testing.T) {
+		g := newTestCanasta()
+		setupCanastaDrawPhase(g, 1) // player 1 is CPU
+		assert.Nil(t, g.GetHint())
+	})
+
+	t.Run("draw phase takes discard when natural pair matches top", func(t *testing.T) {
+		g := newTestCanasta()
+		setupCanastaDrawPhase(g, 0)
+		p := g.GetPlayer(0)
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		p.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
+		h := g.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, "draw_discard", h.Action)
+		assert.Len(t, h.Indices, 2)
+		assert.Equal(t, "draw_discard_pair", h.Reason)
+	})
+
+	t.Run("draw phase recommends stock when no pair", func(t *testing.T) {
+		g := newTestCanasta()
+		setupCanastaDrawPhase(g, 0)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 9, false)})
+		h := g.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, "draw_stock", h.Action)
+		assert.Empty(t, h.Indices)
+	})
+
+	t.Run("meld phase recommends a meld when available", func(t *testing.T) {
+		g := newTestCanasta()
+		setupCanastaMeldPhase(g, 0)
+		p := g.GetPlayer(0)
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		p.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		h := g.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, "meld", h.Action)
+		assert.NotEmpty(t, h.Indices)
+	})
+
+	t.Run("meld phase skips when no meld", func(t *testing.T) {
+		g := newTestCanasta()
+		setupCanastaMeldPhase(g, 0)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		h := g.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, "skip_meld", h.Action)
+	})
+
+	t.Run("discard phase recommends a discard", func(t *testing.T) {
+		g := newTestCanasta()
+		setupCanastaDiscardPhase(g, 0)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		h := g.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, "discard", h.Action)
+		assert.Len(t, h.Indices, 1)
+	})
+
+	t.Run("discard phase nil with empty hand", func(t *testing.T) {
+		g := newTestCanasta()
+		setupCanastaDiscardPhase(g, 0)
+		assert.Nil(t, g.GetHint())
+	})
+
+	t.Run("nil for round-end phase", func(t *testing.T) {
+		g := newTestCanasta()
+		g.SetPhase(domain.CanastaPhaseRoundEnd)
+		g.SetCurrentPlayerIdx(0)
+		assert.Nil(t, g.GetHint())
+	})
+}

@@ -16,6 +16,7 @@ var burracoNoArgCommands = cuiutil.NewCommandMap[usecase.BurracoInteractorIF]().
 	Add(usecase.BurracoInteractorIF.SkipMeld, "sm", "skipmeld").
 	Add(usecase.BurracoInteractorIF.GoOut, "go", "goout").
 	Add(usecase.BurracoInteractorIF.NextRound, "nr", "nextround").
+	Add(usecase.BurracoInteractorIF.Hint, "h", "hint").
 	Add(usecase.BurracoInteractorIF.ActionLog, "log", "l")
 
 // burracoArgfulCommands lists alias names for argful commands handled in the
