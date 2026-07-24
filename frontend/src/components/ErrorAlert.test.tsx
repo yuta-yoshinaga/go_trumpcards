@@ -53,5 +53,7 @@ describe('ErrorAlert', () => {
     expect(btn.className).toContain('text-ds-error');
     expect(btn.className).not.toContain('bg-white/20');
     expect(btn.className).not.toContain('bg-white/30');
+    // Hover deepens the red text so the cream hover surface stays WCAG AA (~5.4:1).
+    expect(btn.className).toContain('hover:text-ds-error-hover');
   });
 });
