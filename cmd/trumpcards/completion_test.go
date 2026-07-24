@@ -33,6 +33,10 @@ func TestWriteBashCompletion(t *testing.T) {
 	assert.Contains(t, script, "--open", "bash completion missing web --open flag")
 	assert.Contains(t, script, "--check", "bash completion missing update --check flag")
 	assert.Contains(t, script, "--dry-run", "bash completion missing update --dry-run flag")
+	// Issue #4308: --category value completion must list every registered
+	// category (including the `extra` bucket the old hardcoded list omitted).
+	assert.Contains(t, script, `compgen -W "`+strings.Join(categoryDisplayNames(), " ")+`"`,
+		"bash --category completion must list all registry categories")
 }
 
 func TestWriteZshCompletion(t *testing.T) {
@@ -53,6 +57,9 @@ func TestWriteZshCompletion(t *testing.T) {
 	assert.Contains(t, script, "--open", "zsh completion missing web --open flag")
 	assert.Contains(t, script, "--check", "zsh completion missing update --check flag")
 	assert.Contains(t, script, "--dry-run", "zsh completion missing update --dry-run flag")
+	// Issue #4308: --category value completion must list every registered category.
+	assert.Contains(t, script, `:category:(`+strings.Join(categoryDisplayNames(), " ")+`)`,
+		"zsh --category completion must list all registry categories")
 }
 
 func TestWriteFishCompletion(t *testing.T) {
@@ -74,6 +81,9 @@ func TestWriteFishCompletion(t *testing.T) {
 	assert.Contains(t, script, "-l open", "fish completion missing web --open flag")
 	assert.Contains(t, script, "-l check", "fish completion missing update --check flag")
 	assert.Contains(t, script, "-l dry-run", "fish completion missing update --dry-run flag")
+	// Issue #4308: --category value completion must list every registered category.
+	assert.Contains(t, script, `-l category -x -a '`+strings.Join(categoryDisplayNames(), " ")+`'`,
+		"fish --category completion must list all registry categories")
 }
 
 // TestCompletionGameTargets_ExcludesSubcommands guards the contract that

@@ -1057,6 +1057,54 @@ func TestPrintGamesLongDynamicWidthAlignsDescriptions(t *testing.T) {
 	}
 }
 
+// TestJoinOr covers the English list renderer used for the --category prose.
+func TestJoinOr(t *testing.T) {
+	cases := []struct {
+		in   []string
+		want string
+	}{
+		{nil, ""},
+		{[]string{"a"}, "a"},
+		{[]string{"a", "b"}, "a or b"},
+		{[]string{"a", "b", "c"}, "a, b, or c"},
+		{[]string{"casino", "classic", "solo", "extra"}, "casino, classic, solo, or extra"},
+	}
+	for _, tc := range cases {
+		if got := joinOr(tc.in); got != tc.want {
+			t.Errorf("joinOr(%v) = %q, want %q", tc.in, got, tc.want)
+		}
+	}
+}
+
+// TestGamesHelpListsAllCategories verifies issue #4308: the --category values
+// advertised in the games subcommand help and the top-level help are derived
+// from games.AllCategories() (the SSoT), so every registered category —
+// including the `extra` bucket the old hardcoded strings omitted — is listed.
+func TestGamesHelpListsAllCategories(t *testing.T) {
+	for _, c := range games.AllCategories() {
+		if !strings.Contains(categoryFilterPipe, c.String()) {
+			t.Errorf("categoryFilterPipe %q missing category %q", categoryFilterPipe, c.String())
+		}
+		if !strings.Contains(categoryFilterProse, c.String()) {
+			t.Errorf("categoryFilterProse %q missing category %q", categoryFilterProse, c.String())
+		}
+	}
+	if !strings.Contains(categoryFilterPipe, "extra") {
+		t.Errorf("expected 'extra' in categoryFilterPipe; got %q", categoryFilterPipe)
+	}
+
+	gamesHelp := strings.Join(builtinSubcommandHelp["games"], "\n")
+	if !strings.Contains(gamesHelp, categoryFilterPipe) {
+		t.Errorf("games help USAGE should list %q; got:\n%s", categoryFilterPipe, gamesHelp)
+	}
+	if !strings.Contains(gamesHelp, categoryFilterProse) {
+		t.Errorf("games help --category desc should list %q; got:\n%s", categoryFilterProse, gamesHelp)
+	}
+	if help := buildHelpText(); !strings.Contains(help, categoryFilterPipe) {
+		t.Errorf("top-level help should list the dynamic category list %q", categoryFilterPipe)
+	}
+}
+
 // TestValidCategory pins down the predicate used to gate `--category`. The
 // canonical strings must match games.Category.String() (casino / classic /
 // solo) — drift between the CLI list and the games-pkg enum would silently

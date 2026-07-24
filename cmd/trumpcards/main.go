@@ -182,6 +182,42 @@ func validCategory(s string) bool {
 	return validCategoryNames[s]
 }
 
+// categoryDisplayNames returns the canonical category names in display order
+// (casino, classic, solo, extra), sourced from games.AllCategories() so the
+// help/usage text listing the `--category` values cannot drift from the
+// registry when a category is added. See issue #4308.
+func categoryDisplayNames() []string {
+	cats := games.AllCategories()
+	names := make([]string, len(cats))
+	for i, c := range cats {
+		names[i] = c.String()
+	}
+	return names
+}
+
+// categoryFilterPipe is the accepted `--category` values joined by "|"
+// (e.g. "casino|classic|solo|extra"), for compact usage strings.
+var categoryFilterPipe = strings.Join(categoryDisplayNames(), "|")
+
+// categoryFilterProse is the same list as an English clause with an Oxford
+// "or" (e.g. "casino, classic, solo, or extra"), for prose descriptions.
+var categoryFilterProse = joinOr(categoryDisplayNames())
+
+// joinOr renders items as an English list with an Oxford "or": one item as-is,
+// two joined by " or ", three+ comma-separated with a trailing ", or ".
+func joinOr(items []string) string {
+	switch len(items) {
+	case 0:
+		return ""
+	case 1:
+		return items[0]
+	case 2:
+		return items[0] + " or " + items[1]
+	default:
+		return strings.Join(items[:len(items)-1], ", ") + ", or " + items[len(items)-1]
+	}
+}
+
 // flagSetVisited reports whether any of the named flags was explicitly set
 // on fs. This lets the caller distinguish "user did not pass --port" from
 // "user passed --port 0" without needing a sentinel value in the integer
@@ -327,7 +363,7 @@ func run() int {
 			f.BoolVar(&short, "short", false, "Print game names only")
 			f.BoolVar(&aliases, "aliases", false, "With --short, also print each alias on its own line (long output always includes aliases inline)")
 			f.BoolVar(&asJSON, "json", false, "Emit machine-readable JSON (array of {name, category, description, aliases})")
-			f.StringVar(&category, "category", "", "Filter by category: casino|classic|solo")
+			f.StringVar(&category, "category", "", "Filter by category: "+categoryFilterPipe)
 			f.BoolVar(&quietSink, "quiet", quiet, "Accepted for consistency with the global flag; the global -q already applied")
 			f.BoolVar(&quietSink, "q", quiet, "Accepted for consistency with the global flag; the global -q already applied (shorthand)")
 		})
@@ -713,7 +749,7 @@ var builtinSubcommandHelp = map[string][]string{
 	},
 	"games": {
 		"USAGE:",
-		"  trumpcards games [--short] [--aliases] [--json] [--category casino|classic|solo]",
+		"  trumpcards games [--short] [--aliases] [--json] [--category " + categoryFilterPipe + "]",
 		"",
 		"FLAGS:",
 		"      --short              Print game names only (for scripting)",
@@ -726,7 +762,7 @@ var builtinSubcommandHelp = map[string][]string{
 		"                           effect in JSON mode (the schema is fixed) and emit a",
 		"                           one-line warning to stderr if used together.",
 		"      --category CAT       Restrict output to one Cloudflare Worker category:",
-		"                           casino, classic, or solo. Combinable with --short / --json.",
+		"                           " + categoryFilterProse + ". Combinable with --short / --json.",
 		"                           Invalid value exits 2.",
 		"",
 		"EXIT CODES:",
@@ -1199,7 +1235,7 @@ GAMES:
 		}
 		fmt.Fprintf(&sb, "  %-8s (%2d)  %s%s\n", cat.String(), len(entries), strings.Join(preview, ", "), more)
 	}
-	sb.WriteString(`
+	fmt.Fprintf(&sb, `
 COMMANDS:
   games        List all available games (--short for names only; with --short, --aliases adds alias lines)
   help [game]  Show this help, or a specific game's help text
@@ -1248,7 +1284,7 @@ EXAMPLES:
   trumpcards games --short       List game names only (for scripting)
   trumpcards games --short --aliases  List game names including aliases
   trumpcards games --json        Machine-readable list (name, category, description, aliases)
-  trumpcards games --category solo  Filter by Cloudflare Worker category (casino|classic|solo)
+  trumpcards games --category solo  Filter by Cloudflare Worker category (%s)
   trumpcards update              Self-update to the latest version
   trumpcards update --yes        Update without confirmation prompt
   trumpcards update --check      Report whether an update is available (exit 10 if yes)
@@ -1282,7 +1318,7 @@ EXIT CODES:
  143  Terminated by SIGTERM (POSIX 128 + 15)
 
   See 'trumpcards help update' for update-specific exit codes (3, 4, 5, 6).
-`)
+`, categoryFilterPipe)
 	return sb.String()
 }
 

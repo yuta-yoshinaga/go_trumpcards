@@ -770,7 +770,7 @@ func ByCategory(cat Category) []Game {
 }
 
 // AllCategories returns every Category value in canonical display order
-// (casino, classic, solo). The returned slice is fresh per call so callers
+// (casino, classic, solo, extra). The returned slice is fresh per call so callers
 // cannot mutate package state. Adding a new Category value to the iota above
 // requires extending this slice — that intentional coupling is the SSoT
 // guarantee that consumers (e.g. the CLI --help summary) cannot drift out
