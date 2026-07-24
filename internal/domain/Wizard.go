@@ -804,14 +804,9 @@ func (o *Wizard) appendLog(playerIdx int, actionType, detail string, cards []*Ca
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (o *Wizard) getValidPlayIndices(playerIdx int) []int {
 	player := o.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if o.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return o.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // GetHint ヒントを取得する

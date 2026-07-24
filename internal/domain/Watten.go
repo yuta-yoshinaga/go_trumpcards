@@ -760,13 +760,9 @@ func (g *Watten) getValidPlayIndices(playerIdx int) []int {
 		return nil
 	}
 	player := g.players[playerIdx]
-	var valid []int
-	for i := range player.GetCardsSize() {
-		if g.validatePlay(playerIdx, player.GetCard(i)) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- Sorting / bookkeeping ---

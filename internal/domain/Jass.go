@@ -1043,14 +1043,9 @@ func (g *Jass) GetValidPlayIndices(playerIdx int) []int {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *Jass) getValidPlayIndices(playerIdx int) []int {
 	player := g.players[playerIdx]
-	var valid []int
-	for i := range player.GetCardsSize() {
-		card := player.GetCard(i)
-		if g.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- Game end + bookkeeping ---

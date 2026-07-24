@@ -835,14 +835,10 @@ func (g *Cinch) appendLog(playerIdx int, actionType, detail string, cards []*Car
 }
 
 func (g *Cinch) getValidPlayIndices(playerIdx int) []int {
-	p := g.players[playerIdx]
-	var valid []int
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if g.validatePlay(playerIdx, p.GetCard(i)) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	player := g.players[playerIdx]
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- 状態アクセサ ---

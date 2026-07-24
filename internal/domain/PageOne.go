@@ -650,13 +650,9 @@ func (g *PageOne) countSuits(playerIdx int) map[int]int {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *PageOne) getValidPlayIndices(playerIdx int) []int {
 	player := g.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if g.isValidPlay(player.GetCard(i)) {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.isValidPlay(player.GetCard(i))
+	})
 }
 
 // pageOneCardScore カードのスコアを計算する

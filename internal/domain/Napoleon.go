@@ -1106,14 +1106,9 @@ func (n *Napoleon) playHintReason(chosenIdx int) string {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (n *Napoleon) getValidPlayIndices(playerIdx int) []int {
 	player := n.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if n.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return n.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- CPU AI ---
