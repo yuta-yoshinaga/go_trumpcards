@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全218ゲーム)](#12-ゲームドメイン-全218ゲーム)
+  - [1.2 ゲームドメイン (全219ゲーム)](#12-ゲームドメイン-全219ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -154,7 +154,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全218ゲーム)
+### 1.2 ゲームドメイン (全219ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1354,7 +1354,7 @@ classDiagram
 
     class ClockSolitaire {
         -trumpCards *TrumpCards
-        -piles [13][]*ClockCard
+        -piles [13][]*ClockSolitaireCard
         -currentPileIdx int
         -stepCount int
         -phase ClockSolitairePhase
@@ -1420,7 +1420,7 @@ classDiagram
         +bool Matched
     }
 
-    class ClockCard {
+    class ClockSolitaireCard {
         +*Card Card
         +bool FaceUp
     }
@@ -1434,7 +1434,7 @@ classDiagram
     Memory --> "*" MemoryBoardCard
     Memory --> "*" MemoryPlayer
     MemoryPlayer --|> GamePlayer
-    ClockSolitaire --> "*" ClockCard
+    ClockSolitaire --> "*" ClockSolitaireCard
     Durak --> "*" DurakPlayer
     Durak --> "1" DurakConfig
     DurakPlayer --|> GamePlayer
@@ -1715,7 +1715,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全218ゲーム共通)**
+**Interactor パターン (全219ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1787,8 +1787,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "218ゲーム × CUI/Web = 436 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "218ゲーム × CUI/Web = 436 Presenter 実装"
+    note for GameCuiController "219ゲーム × CUI/Web = 438 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "219ゲーム × CUI/Web = 438 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1828,8 +1828,8 @@ classDiagram
     }
 
     TrumpCardsWeb --> "*" gameEntry : registerAll() over games.All()
-    gameEntry --> GameWebController : holds 218 controllers
-    GameManager --> "*" CuiExecer : holds 218 games
+    gameEntry --> GameWebController : holds 219 controllers
+    GameManager --> "*" CuiExecer : holds 219 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```

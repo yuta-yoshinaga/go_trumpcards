@@ -449,6 +449,8 @@ tags:
     description: Watten (ヴァッテン) game
   - name: wizard
     description: Wizard (ウィザード) game
+  - name: zheng
+    description: Zheng Shangyou (争上游) game
 
 paths:
   /blackjack/exec:
@@ -19068,6 +19070,65 @@ paths:
         the session. Consult the in-app manual for the full command set and
         phase progression specific to this game.
       operationId: wizardExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /zheng/exec:
+    post:
+      tags:
+        - zheng
+      summary: Execute a Zheng Shangyou (争上游) game command
+      description: |
+        Send a command to advance the Zheng Shangyou (争上游) game session identified by
+        `sessionId`. Zheng Shangyou, a Chinese 4-player climbing/shedding game on a 54-card deck (52 cards plus two jokers), an ancestor of Big Two and Daifugo in which suits are irrelevant and bombs beat any normal play.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: zhengExec
       requestBody:
         required: true
         content:
