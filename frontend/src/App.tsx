@@ -4,6 +4,7 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { DesktopSidebar } from './components/DesktopSidebar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
+import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import { SkipNavLink } from './components/SkipNavLink';
 import { SkeletonBar } from './components/skeleton/SkeletonBar';
 import { gameRoutes } from './constants/gameRoutes';
@@ -54,31 +55,36 @@ export default function App() {
           <div className="flex flex-col flex-1 min-w-0">
             <NavBar />
             <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col min-h-0">
-              <Routes>
-                {gameRoutes.map(({ path }) => {
-                  const LazyPage = lazyPages.get(path);
-                  if (!LazyPage) return null;
-                  return (
-                    <Route
-                      key={path}
-                      path={path}
-                      element={
-                        <Suspense fallback={<RouteSuspenseFallback />}>
-                          <LazyPage />
-                        </Suspense>
-                      }
-                    />
-                  );
-                })}
-                {/* AI Game Concierge — survey + recommendation result. */}
-                <Route path="/discover" element={<DiscoverPage />} />
-                <Route path="/discover/result" element={<DiscoverResultPage />} />
-                {/* BlackJack lives at "/", but external links may use "/blackjack". */}
-                <Route path="/blackjack" element={<Navigate to="/" replace />} />
-                {/* Unknown hash routes (e.g., "#/notagame") render the 404
+              {/* Route-scoped boundary: a crash in one page is contained here so
+                  the nav/sidebar stay usable; it resets on navigation. The outer
+                  ErrorBoundary remains the last resort for chrome crashes (#4314). */}
+              <RouteErrorBoundary>
+                <Routes>
+                  {gameRoutes.map(({ path }) => {
+                    const LazyPage = lazyPages.get(path);
+                    if (!LazyPage) return null;
+                    return (
+                      <Route
+                        key={path}
+                        path={path}
+                        element={
+                          <Suspense fallback={<RouteSuspenseFallback />}>
+                            <LazyPage />
+                          </Suspense>
+                        }
+                      />
+                    );
+                  })}
+                  {/* AI Game Concierge — survey + recommendation result. */}
+                  <Route path="/discover" element={<DiscoverPage />} />
+                  <Route path="/discover/result" element={<DiscoverResultPage />} />
+                  {/* BlackJack lives at "/", but external links may use "/blackjack". */}
+                  <Route path="/blackjack" element={<Navigate to="/" replace />} />
+                  {/* Unknown hash routes (e.g., "#/notagame") render the 404
                     surface instead of silently redirecting home — #1902. */}
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </RouteErrorBoundary>
             </main>
           </div>
         </div>
