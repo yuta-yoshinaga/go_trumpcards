@@ -83,7 +83,17 @@ const (
 	UltiContractBetli UltiContract = 2
 	// UltiContractDurchmarsch ドゥルマルス (切り札なし、全トリックを取る)
 	UltiContractDurchmarsch UltiContract = 3
+	// UltiContractUlti ウルティ (切り札あり、切り札の 7 で最終トリックを取る)。
+	// ゲーム名の由来となるコントラクト。デクレアラーは切り札を指名し、切り札の 7 を
+	// 最後まで温存して第 10 (最終) トリックをその 7 で勝たねばならない。失敗時は倍払い。
+	UltiContractUlti UltiContract = 4
 )
+
+// UltiUltiStake ウルティ契約の 1 相手あたりのコイン額。
+const UltiUltiStake = 4
+
+// UltiUltiLossMultiplier ウルティ契約失敗時のコイン倍率 (倍払いルール)。
+const UltiUltiLossMultiplier = 2
 
 // UltiPhase ゲームフェーズ
 type UltiPhase int
@@ -288,10 +298,10 @@ func (g *Ulti) PlayerBid(contract UltiContract, trumpSuit int) error {
 		return ErrNotHumanTurn
 	}
 	if !ultiValidContract(contract) {
-		return NewDomainError(ErrInvalidPlay, "コントラクトを選んでください (party/betli/durchmarsch)")
+		return NewDomainError(ErrInvalidPlay, "コントラクトを選んでください (party/betli/durchmarsch/ulti)")
 	}
-	if contract == UltiContractParty && !ultiValidSuit(trumpSuit) {
-		return NewDomainError(ErrInvalidPlay, "Party では切り札スートを選んでください (1..4)")
+	if ultiContractNeedsTrump(contract) && !ultiValidSuit(trumpSuit) {
+		return NewDomainError(ErrInvalidPlay, "Party / Ulti では切り札スートを選んでください (1..4)")
 	}
 	g.applyBid(contract, trumpSuit)
 	return nil
@@ -303,7 +313,7 @@ func (g *Ulti) CpuBid() {}
 // applyBid コントラクトを適用し、タロンを拾って捨札フェーズへ進む。
 func (g *Ulti) applyBid(contract UltiContract, trumpSuit int) {
 	g.contract = contract
-	if contract == UltiContractParty {
+	if ultiContractNeedsTrump(contract) {
 		g.trumpSuit = trumpSuit
 	} else {
 		g.trumpSuit = -1
@@ -480,6 +490,8 @@ func (g *Ulti) evalOutcome() UltiOutcome {
 		won = declTricks == 0
 	case UltiContractDurchmarsch:
 		won = declTricks == UltiTrickCount
+	case UltiContractUlti:
+		won = g.declarerWonLastTrickWithTrumpSeven()
 	default: // Party
 		won = g.declarerCardPoints() >= UltiPartyThreshold
 	}
@@ -487,6 +499,22 @@ func (g *Ulti) evalOutcome() UltiOutcome {
 		return UltiOutcomeWin
 	}
 	return UltiOutcomeLoss
+}
+
+// declarerWonLastTrickWithTrumpSeven Ulti の成否判定: デクレアラーが最終トリックを
+// 切り札の 7 で勝ったか。最終トリックの勝者がデクレアラーで、かつ当該トリックで
+// デクレアラーが出した札が切り札の 7 のときにのみ真。
+// (最終トリックの札は ResolveTrick が currentTrick を消さずに RoundEnd へ入るため参照可能。)
+func (g *Ulti) declarerWonLastTrickWithTrumpSeven() bool {
+	if g.lastTrickWinner != g.declarerIdx || !ultiValidSuit(g.trumpSuit) {
+		return false
+	}
+	for _, tc := range g.currentTrick {
+		if tc.PlayerIdx == g.declarerIdx {
+			return tc.Card != nil && tc.Card.GetDesign() == g.trumpSuit && tc.Card.GetValue() == 7
+		}
+	}
+	return false
 }
 
 // declarerCardPoints デクレアラーが獲得したカードポイント (+最終トリックボーナス) を返す。
@@ -519,6 +547,10 @@ func (g *Ulti) applyScores(outcome UltiOutcome) {
 	}
 	stake := ultiContractStake(g.contract)
 	declWon := outcome == UltiOutcomeWin
+	// ウルティは失敗時に倍払い。
+	if g.contract == UltiContractUlti && !declWon {
+		stake *= UltiUltiLossMultiplier
+	}
 	for i := 0; i < UltiPlayerCnt; i++ {
 		if i == g.declarerIdx {
 			if declWon {
@@ -614,11 +646,11 @@ func (g *Ulti) getValidPlayIndices(playerIdx int) []int {
 	if len(follows) > 0 {
 		return follows
 	}
-	// ボイド。Party 以外は任意。
-	if g.contract != UltiContractParty || !ultiValidSuit(g.trumpSuit) {
+	// ボイド。切り札コントラクト以外は任意。
+	if !ultiHasTrump(g.contract, g.trumpSuit) {
 		return all
 	}
-	// Party: オーバートランプ義務。場に切り札があり、それを上回れるなら上回る切り札を出す。
+	// Party / Ulti: オーバートランプ義務。場に切り札があり、それを上回れるなら上回る切り札を出す。
 	highestTrumpRank, hasTrumpInTrick := g.highestTrumpInTrick()
 	if !hasTrumpInTrick {
 		return all
@@ -667,9 +699,9 @@ func (g *Ulti) trickWinner() int {
 // ultiBeats cand が cur (現在の勝ち札) を上回るか。led はリードスート。
 func (g *Ulti) ultiBeats(cand, cur *Card, led int) bool {
 	trump := g.trumpSuit
-	isParty := g.contract == UltiContractParty && ultiValidSuit(trump)
-	candTrump := isParty && cand.GetDesign() == trump
-	curTrump := isParty && cur.GetDesign() == trump
+	trumpActive := ultiHasTrump(g.contract, trump)
+	candTrump := trumpActive && cand.GetDesign() == trump
+	curTrump := trumpActive && cur.GetDesign() == trump
 	if candTrump != curTrump {
 		return candTrump // 切り札は非切り札に勝つ
 	}
@@ -733,6 +765,8 @@ func ultiContractStake(contract UltiContract) int {
 		return 5
 	case UltiContractDurchmarsch:
 		return 6
+	case UltiContractUlti:
+		return UltiUltiStake
 	default: // Party
 		return 2
 	}
@@ -741,7 +775,7 @@ func ultiContractStake(contract UltiContract) int {
 // ultiPlayStrength カード選択用の実効強さ。Party では切り札に大きな下駄を履かせる。
 func ultiPlayStrength(c *Card, trump int, contract UltiContract) int {
 	r := ultiTrickRank(c.GetValue())
-	if contract == UltiContractParty && ultiValidSuit(trump) && c.GetDesign() == trump {
+	if ultiHasTrump(contract, trump) && c.GetDesign() == trump {
 		r += 100
 	}
 	return r
@@ -762,10 +796,10 @@ func ultiSortHand(p *UltiPlayer, trump int, contract UltiContract) {
 	for i := 0; i < p.GetCardsSize(); i++ {
 		cards[i] = p.GetCard(i)
 	}
-	isParty := contract == UltiContractParty && ultiValidSuit(trump)
+	trumpActive := ultiHasTrump(contract, trump)
 	sort.SliceStable(cards, func(i, j int) bool {
-		ti := isParty && cards[i].GetDesign() == trump
-		tj := isParty && cards[j].GetDesign() == trump
+		ti := trumpActive && cards[i].GetDesign() == trump
+		tj := trumpActive && cards[j].GetDesign() == trump
 		if ti != tj {
 			return ti // 切り札を先頭へ
 		}
@@ -800,6 +834,8 @@ func ultiContractName(contract UltiContract) string {
 		return "betli"
 	case UltiContractDurchmarsch:
 		return "durchmarsch"
+	case UltiContractUlti:
+		return "ulti"
 	default:
 		return "-"
 	}
@@ -838,9 +874,19 @@ func ultiValidSuit(suit int) bool {
 	return suit >= CardDesignSpade && suit <= CardDesignDiamond
 }
 
-// ultiValidContract contract が有効な宣言 (Party/Betli/Durchmarsch) か。
+// ultiValidContract contract が有効な宣言 (Party/Betli/Durchmarsch/Ulti) か。
 func ultiValidContract(contract UltiContract) bool {
-	return contract >= UltiContractParty && contract <= UltiContractDurchmarsch
+	return contract >= UltiContractParty && contract <= UltiContractUlti
+}
+
+// ultiContractNeedsTrump 切り札スートの指名を要するコントラクト (Party / Ulti) か。
+func ultiContractNeedsTrump(contract UltiContract) bool {
+	return contract == UltiContractParty || contract == UltiContractUlti
+}
+
+// ultiHasTrump 切り札が有効に機能する状況 (切り札コントラクト かつ 有効スート) か。
+func ultiHasTrump(contract UltiContract, trump int) bool {
+	return ultiContractNeedsTrump(contract) && ultiValidSuit(trump)
 }
 
 // ultiFilter 述語を満たすインデックスを抽出する。
@@ -1040,7 +1086,31 @@ func (g *Ulti) recommendContract(playerIdx int) UltiContract {
 	if low >= 8 {
 		return UltiContractBetli
 	}
+	if g.hasProtectedTrumpSeven(playerIdx) {
+		return UltiContractUlti
+	}
 	return UltiContractParty
+}
+
+// hasProtectedTrumpSeven ある 1 スートに 7 を含む長い保有 (5 枚以上) があるか。
+// 高位の切り札で 7 を守り、最終トリックまで温存できる見込みがある手を Ulti 候補とする。
+func (g *Ulti) hasProtectedTrumpSeven(playerIdx int) bool {
+	p := g.players[playerIdx]
+	counts := map[int]int{}
+	hasSeven := map[int]bool{}
+	for i := 0; i < p.GetCardsSize(); i++ {
+		c := p.GetCard(i)
+		counts[c.GetDesign()]++
+		if c.GetValue() == 7 {
+			hasSeven[c.GetDesign()] = true
+		}
+	}
+	for suit, n := range counts {
+		if hasSeven[suit] && n >= 5 {
+			return true
+		}
+	}
+	return false
 }
 
 // recommendDiscards 捨てるべき 2 枚 (最も弱い札) のインデックスを返す。
@@ -1067,6 +1137,8 @@ func ultiBidHintReason(contract UltiContract) string {
 		return "bid_durchmarsch"
 	case UltiContractBetli:
 		return "bid_betli"
+	case UltiContractUlti:
+		return "bid_ulti"
 	default:
 		return "bid_party"
 	}
@@ -1337,7 +1409,7 @@ func ultiInRangeOrUnset(v int) bool { return v == -1 || ultiInRange(v) }
 
 // ultiValidContractVal reports whether c is a defined contract value (incl. None).
 func ultiValidContractVal(c UltiContract) bool {
-	return c >= UltiContractNone && c <= UltiContractDurchmarsch
+	return c >= UltiContractNone && c <= UltiContractUlti
 }
 
 // ultiTrumpInRangeOrUnset reports whether s is -1 (unset) or a valid suit (1..4).
@@ -1405,7 +1477,7 @@ func (g *Ulti) UnmarshalJSON(data []byte) error {
 		if !ultiValidContract(j.Contract) {
 			return errUltiInvalidContract
 		}
-		if j.Contract == UltiContractParty && !ultiValidSuit(j.TrumpSuit) {
+		if ultiContractNeedsTrump(j.Contract) && !ultiValidSuit(j.TrumpSuit) {
 			return errUltiInvalidTrump
 		}
 	}

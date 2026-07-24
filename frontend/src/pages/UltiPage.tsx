@@ -70,8 +70,14 @@ const ULTI_PHASE_KEYS: Readonly<Record<number, string>> = {
   [UltiPhase.GAME_END]: 'gameEnd',
 };
 
-/** Contract i18n keys indexed by contract value (0=none, 1=Party, 2=Betli, 3=Durchmarsch). */
-const CONTRACT_KEYS = ['contractNone', 'contractParty', 'contractBetli', 'contractDurchmarsch'] as const;
+/** Contract i18n keys indexed by contract value (0=none, 1=Party, 2=Betli, 3=Durchmarsch, 4=Ulti). */
+const CONTRACT_KEYS = [
+  'contractNone',
+  'contractParty',
+  'contractBetli',
+  'contractDurchmarsch',
+  'contractUlti',
+] as const;
 
 /** Trump-suit i18n keys indexed by suit code (1=♠ 2=♣ 3=♥ 4=♦); index 0 = none. */
 const SUIT_KEYS = ['suitNone', 'suitSpade', 'suitClub', 'suitHeart', 'suitDiamond'] as const;
@@ -202,6 +208,12 @@ function UltiPageContent() {
   const declareParty = () => {
     if (selectedTrump === null) return;
     handleBid('party', selectedTrump);
+    setSelectedTrump(null);
+  };
+
+  const declareUlti = () => {
+    if (selectedTrump === null) return;
+    handleBid('ulti', selectedTrump);
     setSelectedTrump(null);
   };
 
@@ -442,6 +454,14 @@ function UltiPageContent() {
                     disabled={loading || selectedTrump === null}
                   >
                     {t('bidParty')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={declareUlti}
+                    disabled={loading || selectedTrump === null}
+                  >
+                    {t('bidUlti')}
                   </button>
                   <button type="button" className={btnPrimary} onClick={() => handleBid('betli')} disabled={loading}>
                     {t('bidBetli')}

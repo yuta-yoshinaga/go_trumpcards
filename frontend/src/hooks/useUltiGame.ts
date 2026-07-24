@@ -21,7 +21,7 @@ export const CPU_DIFFICULTY_OPTIONS = [
 export const TARGET_ROUNDS_OPTIONS = [3, 5, 7] as const;
 
 /** Contract identifiers accepted by the backend bid command. */
-export type UltiContractName = 'party' | 'betli' | 'durchmarsch';
+export type UltiContractName = 'party' | 'betli' | 'durchmarsch' | 'ulti';
 
 /**
  * Hook that manages Ulti (Ultimo) game state and its player actions: declare a
@@ -48,8 +48,8 @@ export function useUltiGame() {
   }, [exec, config]);
 
   /**
-   * Declares a contract in the Bid phase. A Party contract carries the chosen
-   * trump suit (1=♠ 2=♣ 3=♥ 4=♦); Betli/Durchmarsch ignore the trump suit.
+   * Declares a contract in the Bid phase. A Party or Ulti contract carries the
+   * chosen trump suit (1=♠ 2=♣ 3=♥ 4=♦); Betli/Durchmarsch ignore the trump suit.
    */
   const handleBid = useCallback(
     (contract: UltiContractName, trumpSuit?: number) => {

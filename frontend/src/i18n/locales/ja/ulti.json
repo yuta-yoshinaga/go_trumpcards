@@ -24,6 +24,7 @@
   "contractParty": "パルティ",
   "contractBetli": "ベトリ",
   "contractDurchmarsch": "ドゥルマルス",
+  "contractUlti": "ウルティ",
   "chooseTrump": "切り札",
   "suitNone": "-",
   "suitSpade": "スペード",
@@ -44,7 +45,8 @@
   "bidParty": "パルティ",
   "bidBetli": "ベトリ",
   "bidDurchmarsch": "ドゥルマルス",
-  "bidPhase": "契約宣言 — 切り札を選んでパルティ、またはベトリ／ドゥルマルスを宣言します。",
+  "bidUlti": "ウルティ",
+  "bidPhase": "契約宣言 — 切り札を選んでパルティ／ウルティ、またはベトリ／ドゥルマルスを宣言します。",
   "discardPhase": "タロン交換 — 手札から不要な2枚を選んで伏せて捨てます。",
   "discardProgress": "捨て札を {{selected}}/{{required}} 枚選択中",
   "discardButton": "捨てる",
@@ -74,7 +76,8 @@
     "discard_weak": "最も弱い2枚を捨てる",
     "bid_party": "点札の多い手なのでパルティを宣言",
     "bid_betli": "低い札ばかりなのでベトリを宣言",
-    "bid_durchmarsch": "高い札ばかりなのでドゥルマルスを宣言"
+    "bid_durchmarsch": "高い札ばかりなのでドゥルマルスを宣言",
+    "bid_ulti": "切り札の7を含む長いスートがあるのでウルティを宣言"
   },
   "tutorial": {
     "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー。トリックの強さは A＞10＞K＞Q＞J＞9＞8＞7。パルティでは切り札が最強です。",

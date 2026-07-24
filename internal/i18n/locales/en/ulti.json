@@ -1,6 +1,6 @@
 {
   "helpTitle": "Ulti (Ultimo)",
-  "helpBid": "  bid party <s>|betli|durchmarsch  declare a contract (Party takes trump s/c/h/d)",
+  "helpBid": "  bid party <s>|betli|durchmarsch|ulti <s>  declare a contract (Party/Ulti take trump s/c/h/d)",
   "helpDiscard": "  discard <i> <j>           discard 2 cards after taking the talon",
   "helpPlay": "  play <idx>                play a card",
   "helpNext": "  n                         go to next trick",
@@ -14,6 +14,7 @@
   "contractParty": "Party",
   "contractBetli": "Betli",
   "contractDurchmarsch": "Durchmarsch",
+  "contractUlti": "Ulti",
   "suitNone": "-",
   "suitSpade": "Spades",
   "suitClub": "Clubs",
@@ -24,7 +25,7 @@
   "outcomeLoss": "Failed (coalition wins)",
   "gameEnd": "Game over! {{name}} wins the match!",
   "promptBid": "Declare a contract — Turn: {{name}}",
-  "promptBidHelp": "bid party <s/c/h/d> ... Party  |  bid betli ... Betli  |  bid durchmarsch ... Durchmarsch",
+  "promptBidHelp": "bid party <s/c/h/d> ... Party  |  bid betli ... Betli  |  bid durchmarsch ... Durchmarsch  |  bid ulti <s/c/h/d> ... Ulti (win the last trick with the trump 7)",
   "promptDiscard": "Talon taken — Turn: {{name}}",
   "promptDiscardHelp": "discard <i> <j> ... discard 2 unwanted cards face down",
   "promptPlay": "Turn: {{name}}  Trump: {{trump}}",
@@ -43,5 +44,6 @@
   "hintReasonDiscardWeak": "Discard your two weakest cards",
   "hintReasonBidParty": "Point-rich hand — declare Party",
   "hintReasonBidBetli": "Mostly low cards — declare Betli",
-  "hintReasonBidDurchmarsch": "Mostly high cards — declare Durchmarsch"
+  "hintReasonBidDurchmarsch": "Mostly high cards — declare Durchmarsch",
+  "hintReasonBidUlti": "A long suit holding the trump 7 — declare Ulti"
 }

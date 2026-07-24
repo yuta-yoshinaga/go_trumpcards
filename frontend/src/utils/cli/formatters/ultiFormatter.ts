@@ -2,7 +2,7 @@ import type { UltiResponse } from '../../../types/card';
 import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES = ['Bid', 'Discard', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
-const CONTRACT_NAMES = ['-', 'Party', 'Betli', 'Durchmarsch'];
+const CONTRACT_NAMES = ['-', 'Party', 'Betli', 'Durchmarsch', 'Ulti'];
 const SUIT_NAMES = ['-', 'spade', 'club', 'heart', 'diamond'];
 const OUTCOME_NAMES = ['-', 'Made (declarer wins)', 'Failed (coalition wins)'];
 

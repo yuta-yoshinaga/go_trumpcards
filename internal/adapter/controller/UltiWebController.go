@@ -113,6 +113,8 @@ func ultiParseContract(s string) domain.UltiContract {
 		return domain.UltiContractBetli
 	case "durchmarsch", "d":
 		return domain.UltiContractDurchmarsch
+	case "ulti", "u":
+		return domain.UltiContractUlti
 	default:
 		return domain.UltiContractNone
 	}

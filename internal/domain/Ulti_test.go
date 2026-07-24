@@ -425,7 +425,7 @@ func TestUlti_GetHint_AllPhases(t *testing.T) {
 	g := newTestUlti()
 	h := g.GetHint()
 	require.NotNil(t, h)
-	assert.Contains(t, []string{"bid_party", "bid_betli", "bid_durchmarsch"}, h.Reason)
+	assert.Contains(t, []string{"bid_party", "bid_betli", "bid_durchmarsch", "bid_ulti"}, h.Reason)
 
 	// Discard phase recommends 2 cards.
 	require.NoError(t, g.PlayerBid(domain.UltiContractParty, domain.CardDesignHeart))
@@ -688,6 +688,81 @@ func TestUltiPlayer_JSON_And_ResetRound(t *testing.T) {
 	var p3 domain.UltiPlayer
 	require.NoError(t, json.Unmarshal([]byte(`{}`), &p3))
 	assert.False(t, p3.GetIsHuman())
+}
+
+func TestUlti_UltiContract(t *testing.T) {
+	// driveFinalTrick sets up the 10th (final) trick and resolves it, which sets
+	// lastTrickWinner and runs the Ulti round-end scoring.
+	driveFinalTrick := func(trump int, trick []*domain.UltiTrickCard) *domain.Ulti {
+		g := newTestUlti()
+		g.SetDeclarerIdx(0)
+		g.SetContract(domain.UltiContractUlti)
+		g.SetTrumpSuit(trump)
+		g.SetTrickNumber(domain.UltiTrickCount)
+		g.SetPhase(domain.UltiPhaseTrickEnd)
+		g.SetCurrentTrick(trick)
+		g.ResolveTrick()
+		return g
+	}
+
+	t.Run("win: declarer takes the final trick with the trump 7", func(t *testing.T) {
+		g := driveFinalTrick(domain.CardDesignHeart, []*domain.UltiTrickCard{
+			{PlayerIdx: 0, Card: ultiCard(domain.CardDesignHeart, 7)},  // trump 7 leads and wins (only trump)
+			{PlayerIdx: 1, Card: ultiCard(domain.CardDesignSpade, 1)},  // off-suit A cannot win
+			{PlayerIdx: 2, Card: ultiCard(domain.CardDesignSpade, 10)}, // off-suit 10 cannot win
+		})
+		assert.Equal(t, domain.UltiPhaseRoundEnd, g.GetPhase())
+		assert.Equal(t, domain.UltiOutcomeWin, g.GetOutcome())
+		// stake 4 -> declarer +8, each opponent -4.
+		assert.Equal(t, [domain.UltiPlayerCnt]int{8, -4, -4}, g.GetPlayerCoins())
+	})
+
+	t.Run("loss: final trick won with a trump other than the 7", func(t *testing.T) {
+		g := driveFinalTrick(domain.CardDesignHeart, []*domain.UltiTrickCard{
+			{PlayerIdx: 0, Card: ultiCard(domain.CardDesignHeart, 1)}, // trump A wins, but it is not the 7
+			{PlayerIdx: 1, Card: ultiCard(domain.CardDesignSpade, 1)},
+			{PlayerIdx: 2, Card: ultiCard(domain.CardDesignSpade, 10)},
+		})
+		assert.Equal(t, domain.UltiOutcomeLoss, g.GetOutcome())
+		// Double payment on failure: stake 4*2=8 -> declarer -16, each opponent +8.
+		assert.Equal(t, [domain.UltiPlayerCnt]int{-16, 8, 8}, g.GetPlayerCoins())
+	})
+
+	t.Run("loss: declarer plays the trump 7 but a coalition trump overtakes it", func(t *testing.T) {
+		g := driveFinalTrick(domain.CardDesignHeart, []*domain.UltiTrickCard{
+			{PlayerIdx: 0, Card: ultiCard(domain.CardDesignHeart, 7)},  // trump 7
+			{PlayerIdx: 1, Card: ultiCard(domain.CardDesignHeart, 1)},  // trump A overtakes
+			{PlayerIdx: 2, Card: ultiCard(domain.CardDesignSpade, 10)}, // off-suit
+		})
+		assert.Equal(t, domain.UltiOutcomeLoss, g.GetOutcome())
+		assert.Equal(t, [domain.UltiPlayerCnt]int{-16, 8, 8}, g.GetPlayerCoins())
+	})
+
+	t.Run("bid requires a trump suit and takes the talon", func(t *testing.T) {
+		g := newTestUlti()
+		assert.Error(t, g.PlayerBid(domain.UltiContractUlti, -1)) // ulti requires a trump suit
+		require.NoError(t, g.PlayerBid(domain.UltiContractUlti, domain.CardDesignSpade))
+		assert.Equal(t, domain.UltiContractUlti, g.GetContract())
+		assert.Equal(t, domain.CardDesignSpade, g.GetTrumpSuit())
+		assert.Equal(t, domain.UltiPhaseDiscard, g.GetPhase())
+		assert.True(t, g.GetTalonTaken())
+	})
+
+	t.Run("hint recommends ulti with a long trump suit holding the 7", func(t *testing.T) {
+		g := newTestUlti()
+		setUltiHand(g, 0,
+			ultiCard(domain.CardDesignSpade, 7),
+			ultiCard(domain.CardDesignSpade, 1),
+			ultiCard(domain.CardDesignSpade, 13),
+			ultiCard(domain.CardDesignSpade, 12),
+			ultiCard(domain.CardDesignSpade, 11),
+			ultiCard(domain.CardDesignHeart, 9),
+			ultiCard(domain.CardDesignClover, 8),
+		)
+		hint := g.GetHint()
+		require.NotNil(t, hint)
+		assert.Equal(t, "bid_ulti", hint.Reason)
+	})
 }
 
 func TestUltiConfig_Validate(t *testing.T) {
