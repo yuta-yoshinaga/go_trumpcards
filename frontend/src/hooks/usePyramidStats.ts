@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { createFlatStatsReader, createLocalStorageStats } from './createLocalStorageStats';
 
 /** localStorage key for Pyramid Solitaire best-record statistics. */
 export const PYRAMID_STATS_KEY = 'trumpcards-pyramid-stats';
@@ -34,19 +34,6 @@ function isValidStats(value: unknown): value is PyramidStats {
   );
 }
 
-/** Reads and validates the stats from localStorage; returns a zeroed record on any error. */
-export function readPyramidStats(): PyramidStats {
-  try {
-    const raw = localStorage.getItem(PYRAMID_STATS_KEY);
-    if (!raw) return emptyPyramidStats();
-    const parsed: unknown = JSON.parse(raw);
-    if (!isValidStats(parsed)) return emptyPyramidStats();
-    return parsed;
-  } catch {
-    return emptyPyramidStats();
-  }
-}
-
 /**
  * Pure reducer: folds a finished-game result into the stats and reports whether it
  * set a new fewest-moves record. Fewest moves only advances on a positive-move clear.
@@ -68,24 +55,21 @@ export function applyPyramidResult(
   return { stats: next, newBest };
 }
 
+/** Reads and validates the stats from localStorage; returns a zeroed record on any error. */
+export const readPyramidStats = createFlatStatsReader(PYRAMID_STATS_KEY, emptyPyramidStats, isValidStats);
+
+const store = createLocalStorageStats<PyramidStats, PyramidResult, boolean>({
+  key: PYRAMID_STATS_KEY,
+  read: readPyramidStats,
+  reduce: (prev, result) => {
+    const { stats, newBest } = applyPyramidResult(prev, result);
+    return { stats, update: newBest };
+  },
+});
+
 /**
  * Hook that persists Pyramid best-record statistics in localStorage and records
  * finished games. `recordResult` returns whether the game set a new fewest-moves
- * record so the page can surface a badge. Modeled on `useTriPeaksStats`.
+ * record so the page can surface a badge.
  */
-export function usePyramidStats() {
-  const [stats, setStats] = useState<PyramidStats>(readPyramidStats);
-
-  const recordResult = useCallback((result: PyramidResult): boolean => {
-    const { stats: next, newBest } = applyPyramidResult(readPyramidStats(), result);
-    setStats(next);
-    try {
-      localStorage.setItem(PYRAMID_STATS_KEY, JSON.stringify(next));
-    } catch {
-      /* storage unavailable / quota exceeded */
-    }
-    return newBest;
-  }, []);
-
-  return { stats, recordResult };
-}
+export const usePyramidStats = store.useStats;
