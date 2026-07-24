@@ -788,14 +788,9 @@ func (t *Tarneeb) playHintReason(playerIdx, chosenIdx int) string {
 // getValidPlayIndices プレイ可能なカードのインデックスリスト
 func (t *Tarneeb) getValidPlayIndices(playerIdx int) []int {
 	player := t.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if t.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return t.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- CPU AI ---

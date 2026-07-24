@@ -1023,14 +1023,9 @@ func (e *Euchre) GetValidPlayIndices(playerIdx int) []int {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (e *Euchre) getValidPlayIndices(playerIdx int) []int {
 	player := e.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if e.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return e.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- CPU AI ---

@@ -909,14 +909,9 @@ func (t *TwoTenJack) teamOf(playerIdx int) int {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (t *TwoTenJack) getValidPlayIndices(playerIdx int) []int {
 	player := t.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if t.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return t.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)

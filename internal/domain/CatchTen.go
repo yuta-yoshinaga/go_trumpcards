@@ -819,14 +819,9 @@ func (g *CatchTen) isPartnerWinning(playerIdx int) bool {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *CatchTen) getValidPlayIndices(playerIdx int) []int {
 	player := g.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if g.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // catchTenJSON is the JSON wire format for CatchTen.

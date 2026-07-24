@@ -604,14 +604,10 @@ func (g *Loo) playerHasSuit(playerIdx, suit int) bool {
 
 // getValidPlayIndices はプレイ可能なカードのインデックスリストを返す。
 func (g *Loo) getValidPlayIndices(playerIdx int) []int {
-	p := g.players[playerIdx]
-	var valid []int
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if g.validatePlay(playerIdx, p.GetCard(i)) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	player := g.players[playerIdx]
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- ヘルパー ---

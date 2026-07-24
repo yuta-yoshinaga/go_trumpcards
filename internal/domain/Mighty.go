@@ -1465,18 +1465,14 @@ func (m *Mighty) playHintReason(chosenIdx int) string {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (m *Mighty) getValidPlayIndices(playerIdx int) []int {
 	player := m.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
 		card := player.GetCard(i)
 		// リード時にジョーカー単独は禁止 (PlayerPlayJokerLead 経由が必要)
 		if len(m.round.currentTrick) == 0 && card.GetDesign() == CardDesignJoker {
-			continue
+			return false
 		}
-		if m.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+		return m.validatePlay(playerIdx, card) == nil
+	})
 }
 
 // --- CPU AI ---

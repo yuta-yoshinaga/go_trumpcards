@@ -801,15 +801,10 @@ func (p *Pitch) appendLog(playerIdx int, actionType, detail string, cards []*Car
 }
 
 func (p *Pitch) getValidPlayIndices(playerIdx int) []int {
-	pl := p.players[playerIdx]
-	var valid []int
-	for i := 0; i < pl.GetCardsSize(); i++ {
-		card := pl.GetCard(i)
-		if p.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	player := p.players[playerIdx]
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return p.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- CPU AI ---

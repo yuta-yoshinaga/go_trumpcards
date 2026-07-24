@@ -1100,14 +1100,9 @@ func (b *Bridge) playerHasSuit(playerIdx int, suit int) bool {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (b *Bridge) getValidPlayIndices(playerIdx int) []int {
 	player := b.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if b.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return b.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // trickWinner トリックの勝者を決定する

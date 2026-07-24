@@ -1013,14 +1013,10 @@ func (g *FiveHundred) GetValidPlayIndices(playerIdx int) []int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *FiveHundred) getValidPlayIndices(playerIdx int) []int {
-	p := g.players[playerIdx]
-	var valid []int
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if g.validatePlay(playerIdx, p.GetCard(i)) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	player := g.players[playerIdx]
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- Hint ---

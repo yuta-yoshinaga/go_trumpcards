@@ -960,14 +960,9 @@ func filterAbove(player *CallBreakPlayer, validIndices []int, threshold int) []i
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (cb *CallBreak) getValidPlayIndices(playerIdx int) []int {
 	player := cb.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if cb.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return cb.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web 用)

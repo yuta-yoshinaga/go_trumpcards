@@ -576,13 +576,9 @@ func (g *Prsi) countSuits(playerIdx int) map[int]int {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *Prsi) getValidPlayIndices(playerIdx int) []int {
 	player := g.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if g.isValidPlay(player.GetCard(i)) {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.isValidPlay(player.GetCard(i))
+	})
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)

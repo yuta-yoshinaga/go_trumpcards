@@ -1167,14 +1167,9 @@ func (h *Hearts) cpuPlayHard(playerIdx int, validIndices []int) int {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (h *Hearts) getValidPlayIndices(playerIdx int) []int {
 	player := h.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if h.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return h.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // playerName プレイヤー名を返す
