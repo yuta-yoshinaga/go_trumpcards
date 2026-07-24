@@ -1,6 +1,6 @@
 {
   "helpTitle": "ウルティ（ウルティモ）",
-  "helpBid": "  bid party <s>|betli|durchmarsch  契約を宣言（Party は切り札 s/c/h/d 指定）",
+  "helpBid": "  bid party <s>|betli|durchmarsch|ulti <s>  契約を宣言（Party/Ulti は切り札 s/c/h/d 指定）",
   "helpDiscard": "  discard <i> <j>           タロン受け取り後に2枚を捨てる",
   "helpPlay": "  play <idx>                カードを出す",
   "helpNext": "  n                         次のトリックへ",
@@ -14,6 +14,7 @@
   "contractParty": "パルティ",
   "contractBetli": "ベトリ",
   "contractDurchmarsch": "ドゥルマルス",
+  "contractUlti": "ウルティ",
   "suitNone": "-",
   "suitSpade": "スペード",
   "suitClub": "クラブ",
@@ -24,7 +25,7 @@
   "outcomeLoss": "失敗（連合勝ち）",
   "gameEnd": "ゲーム終了！{{name}}がマッチ勝利！",
   "promptBid": "契約宣言 — 手番: {{name}}",
-  "promptBidHelp": "bid party <s/c/h/d>・・・パルティ ｜ bid betli・・・ベトリ ｜ bid durchmarsch・・・ドゥルマルス",
+  "promptBidHelp": "bid party <s/c/h/d>・・・パルティ ｜ bid betli・・・ベトリ ｜ bid durchmarsch・・・ドゥルマルス ｜ bid ulti <s/c/h/d>・・・ウルティ（切り札の7で最終トリック勝ち）",
   "promptDiscard": "タロンを拾いました — 手番: {{name}}",
   "promptDiscardHelp": "discard <i> <j>・・・不要な2枚を伏せて捨てる",
   "promptPlay": "手番: {{name}}  切り札: {{trump}}",
@@ -43,5 +44,6 @@
   "hintReasonDiscardWeak": "最も弱い2枚を捨てる",
   "hintReasonBidParty": "点札の多い手なのでパルティを宣言",
   "hintReasonBidBetli": "低い札ばかりなのでベトリを宣言",
-  "hintReasonBidDurchmarsch": "高い札ばかりなのでドゥルマルスを宣言"
+  "hintReasonBidDurchmarsch": "高い札ばかりなのでドゥルマルスを宣言",
+  "hintReasonBidUlti": "切り札の7を含む長いスートがあるのでウルティを宣言"
 }

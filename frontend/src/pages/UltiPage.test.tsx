@@ -83,12 +83,27 @@ describe('UltiPage', () => {
     expect(screen.getAllByText('デクレアラー').length).toBeGreaterThan(0);
   });
 
-  it('renders the bid phase with Party, Betli and Durchmarsch buttons', async () => {
+  it('renders the bid phase with Party, Ulti, Betli and Durchmarsch buttons', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<UltiPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パルティ' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'ウルティ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'ベトリ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'ドゥルマルス' })).toBeInTheDocument();
+  });
+
+  it('Ulti is disabled until a trump suit is picked, then dispatches bid with the suit', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<UltiPage />);
+    const ultiBtn = await screen.findByRole('button', { name: 'ウルティ' });
+    expect(ultiBtn).toBeDisabled();
+    // Pick hearts (♥) as trump.
+    fireEvent.click(screen.getByRole('button', { name: 'ハート' }));
+    expect(screen.getByRole('button', { name: 'ウルティ' })).toBeEnabled();
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(bidPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ウルティ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { contract: 'ulti', trumpSuit: 3 }));
   });
 
   it('Party is disabled until a trump suit is picked, then dispatches bid with the suit', async () => {

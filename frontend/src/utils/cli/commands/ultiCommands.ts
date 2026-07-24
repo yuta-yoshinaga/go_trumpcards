@@ -41,7 +41,12 @@ export function parseUltiCommand(input: string): CliParseResult<UltiArgs> {
       }
       if (arg === 'betli' || arg === 'b') return { args: ['bid', { contract: 'betli' }] };
       if (arg === 'durchmarsch' || arg === 'd') return { args: ['bid', { contract: 'durchmarsch' }] };
-      return { error: 'Usage: bid party <s|c|h|d> | bid betli | bid durchmarsch' };
+      if (arg === 'ulti' || arg === 'u') {
+        const suit = SUIT_CODES[args[1]?.toLowerCase() ?? ''];
+        if (!suit) return { error: 'Usage: bid ulti <s|c|h|d>' };
+        return { args: ['bid', { contract: 'ulti', trumpSuit: suit }] };
+      }
+      return { error: 'Usage: bid party <s|c|h|d> | bid betli | bid durchmarsch | bid ulti <s|c|h|d>' };
     }
     case 'd':
     case 'discard': {
@@ -81,6 +86,7 @@ export const ULTI_HELP: string[] = [
   'bid party <s|c|h|d>          - Declare Party with the chosen trump suit',
   'bid betli                    - Declare Betli (win no trick, no trump)',
   'bid durchmarsch              - Declare Durchmarsch (win every trick)',
+  'bid ulti <s|c|h|d>           - Declare Ulti (win the last trick with the trump 7)',
   'discard <i> <j>              - Discard 2 talon cards (Discard phase)',
   'p <idx>                      - Play a card (Play phase, must follow the led suit)',
   'n/next                       - Next trick',
