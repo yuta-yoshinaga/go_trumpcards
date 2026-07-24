@@ -88,7 +88,7 @@ func TestRunHelpCommandResolvesAlias(t *testing.T) {
 
 func TestRunHelpCommandForBuiltinSubcommand(t *testing.T) {
 	// "web" is a builtin subcommand (not a game). runHelpCommand should fall
-	// through the game-registry lookup and emit the entry from builtinSubcommandHelp.
+	// through the game-registry lookup and emit the entry from subcommandHelp.
 	var stdout, stderr bytes.Buffer
 	helpText := buildHelpText()
 	code := runHelpCommand([]string{"web"}, helpText, &stdout, &stderr)
@@ -336,7 +336,7 @@ func TestFlagSetVisitedDistinguishesExplicitFromDefault(t *testing.T) {
 // flagged: under the previous portUnset=-1 sentinel, `--port -1` silently
 // fell through to the default 8080. With the fs.Visit approach the explicit
 // -1 must be rejected with cliInvalidPort and exit 2 (usage error, per the
-// documented EXIT CODES in builtinSubcommandHelp["web"]) before any bind.
+// documented EXIT CODES in the web subcommand help) before any bind.
 func TestRunWebRejectsExplicitInvalidPort(t *testing.T) {
 	origArgs := os.Args
 	origCmdLine := flag.CommandLine
@@ -585,8 +585,10 @@ func TestParseSubFlagsToPrintsHelpOnceOnHelpFlag(t *testing.T) {
 	if code != 0 {
 		t.Errorf("exit = %d, want 0 for -h", code)
 	}
-	if n := strings.Count(stdout.String(), "USAGE:"); n != 1 {
-		t.Errorf("expected help printed exactly once on stdout; USAGE: appeared %d times in %q", n, stdout.String())
+	// Count a locale-independent USAGE line (the command syntax) rather than the
+	// now-localized "USAGE:" heading.
+	if n := strings.Count(stdout.String(), "trumpcards version [--short]"); n != 1 {
+		t.Errorf("expected help printed exactly once on stdout; usage line appeared %d times in %q", n, stdout.String())
 	}
 	if stderr.Len() != 0 {
 		t.Errorf("expected no stderr on -h; got %q", stderr.String())
@@ -982,8 +984,10 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 			if !strings.Contains(errStr, tc.wantInclude) {
 				t.Errorf("stderr should include offending flag %q; got: %q", tc.wantInclude, firstLine(errStr))
 			}
-			if n := strings.Count(errStr, "USAGE:"); n != 1 {
-				t.Errorf("help text should be printed exactly once; got %d USAGE: markers", n)
+			// Count a locale-independent USAGE command line rather than the
+			// now-localized "USAGE:" heading.
+			if n := strings.Count(errStr, "trumpcards [--lang ja|en] [game]"); n != 1 {
+				t.Errorf("help text should be printed exactly once; got %d usage-line markers", n)
 			}
 		})
 	}
@@ -1208,7 +1212,8 @@ func TestGamesHelpListsAllCategories(t *testing.T) {
 		t.Errorf("expected 'extra' in categoryFilterPipe; got %q", categoryFilterPipe)
 	}
 
-	gamesHelp := strings.Join(builtinSubcommandHelp["games"], "\n")
+	gamesHelpLines, _ := subcommandHelp("games")
+	gamesHelp := strings.Join(gamesHelpLines, "\n")
 	if !strings.Contains(gamesHelp, categoryFilterPipe) {
 		t.Errorf("games help USAGE should list %q; got:\n%s", categoryFilterPipe, gamesHelp)
 	}
@@ -2167,10 +2172,70 @@ func TestHelpSuggestionCandidatesIncludesAliases(t *testing.T) {
 	}
 }
 
+// TestBuildHelpTextLocalized verifies issue #4309: the top-level --help is
+// localized — section headings are translated in ja while the command syntax
+// (copy-paste lines) stays English in both locales.
+func TestBuildHelpTextLocalized(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	i18n.SetLang("en")
+	en := buildHelpText()
+	i18n.SetLang("ja")
+	ja := buildHelpText()
+
+	if !strings.Contains(en, "COMMANDS:") {
+		t.Error("en help should keep the English COMMANDS: heading")
+	}
+	if !strings.Contains(ja, "コマンド:") {
+		t.Error("ja help should localize the COMMANDS heading to コマンド:")
+	}
+	if strings.Contains(ja, "\nCOMMANDS:") {
+		t.Error("ja help should not contain the untranslated COMMANDS: heading")
+	}
+	// Copy-paste command lines must stay identical (English) in both locales.
+	for _, s := range []string{en, ja} {
+		for _, cmd := range []string{"trumpcards [--lang ja|en] [game]", "trumpcards holdem --color=always | tee g.log"} {
+			if !strings.Contains(s, cmd) {
+				t.Errorf("help must keep the command line %q verbatim", cmd)
+			}
+		}
+	}
+}
+
+// TestCliHelpLocaleParity guards that the ja and en cli_help locale files have
+// exactly the same keys — there is no automated Go i18n parity check, so a
+// missing ja key (which would silently fall back to the key string) is caught
+// here. See issue #4309.
+func TestCliHelpLocaleParity(t *testing.T) {
+	load := func(lang string) map[string]json.RawMessage {
+		b, err := os.ReadFile("../../internal/i18n/locales/" + lang + "/cli_help.json")
+		if err != nil {
+			t.Fatalf("read %s cli_help.json: %v", lang, err)
+		}
+		var m map[string]json.RawMessage
+		if err := json.Unmarshal(b, &m); err != nil {
+			t.Fatalf("parse %s cli_help.json: %v", lang, err)
+		}
+		return m
+	}
+	en, ja := load("en"), load("ja")
+	for k := range en {
+		if _, ok := ja[k]; !ok {
+			t.Errorf("ja/cli_help.json is missing key %q present in en", k)
+		}
+	}
+	for k := range ja {
+		if _, ok := en[k]; !ok {
+			t.Errorf("en/cli_help.json is missing key %q present in ja", k)
+		}
+	}
+}
+
 // TestBuildHelpTextHasExitCodes verifies issue #1556: the top-level --help
 // must document the exit-code policy so CI / cron / scripts can branch on
 // it without reading the source.
 func TestBuildHelpTextHasExitCodes(t *testing.T) {
+	i18n.SetLang("en")
+	t.Cleanup(func() { i18n.SetLang("ja") })
 	helpText := buildHelpText()
 	for _, want := range []string{"EXIT CODES:", " 130 ", " 143 ", " 10 ", " 75 "} {
 		if !strings.Contains(helpText, want) {
@@ -2193,6 +2258,8 @@ func TestBuildHelpTextMentionsVersionSubcommand(t *testing.T) {
 // top-level --help advertises --color=auto|always|never so the new option
 // is discoverable without reading the source.
 func TestBuildHelpTextDocumentsColorTristate(t *testing.T) {
+	i18n.SetLang("en")
+	t.Cleanup(func() { i18n.SetLang("ja") })
 	helpText := buildHelpText()
 	for _, want := range []string{"--color", "auto", "always", "never", "DEPRECATED"} {
 		if !strings.Contains(helpText, want) {
@@ -2256,6 +2323,8 @@ func TestResolveStartGame_UnknownEmitsDidYouMean(t *testing.T) {
 // in the top-level help so users discover it without reading the source.
 // See issue #1604.
 func TestBuildHelpTextDocumentsStartFlag(t *testing.T) {
+	i18n.SetLang("en")
+	t.Cleanup(func() { i18n.SetLang("ja") })
 	helpText := buildHelpText()
 	for _, want := range []string{"--start", "Initial game", "--start poker"} {
 		if !strings.Contains(helpText, want) {
@@ -2270,6 +2339,8 @@ func TestBuildHelpTextDocumentsStartFlag(t *testing.T) {
 // Instead it shows a category-grouped summary and points at
 // `trumpcards games` for the full list.
 func TestBuildHelpTextGamesSummaryStaysCompact(t *testing.T) {
+	i18n.SetLang("en")
+	t.Cleanup(func() { i18n.SetLang("ja") })
 	helpText := buildHelpText()
 
 	// The category summary must appear, with a pointer to `games`.
