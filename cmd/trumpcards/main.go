@@ -890,7 +890,12 @@ func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdo
 			}
 		}
 	}
-	fs.Usage = printHelp
+	// Suppress the FlagSet's internal Usage callback: flag.Parse invokes it on
+	// *any* parse error, which would dump the full help to stdout before our
+	// localized error reaches stderr (and would double-print it on -h/--help,
+	// where the ErrHelp branch below already calls printHelp). Mirrors the
+	// top-level flag.CommandLine.Usage = func(){} in run(). See issue #4307.
+	fs.Usage = func() {}
 	if err := fs.Parse(args); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			printHelp()
