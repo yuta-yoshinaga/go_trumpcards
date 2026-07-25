@@ -28,6 +28,7 @@ import type { ClockSolitaireResponse } from '../types/card';
 import { ClockSolitairePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Clock Solitaire tutorial step definitions. */
 const TUTORIAL_STEPS: TutorialStep[] = [
@@ -421,13 +422,7 @@ function ClockSolitairePageContent() {
                     ],
                     onSelect: handleSelectSpeed,
                   },
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: hintEnabled,
-                    onToggle: setHintEnabled,
-                  },
+                  hintCheckboxItem(tc, hintEnabled, setHintEnabled),
                 ],
               },
             ]}

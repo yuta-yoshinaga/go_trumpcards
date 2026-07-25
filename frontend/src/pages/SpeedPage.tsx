@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { SpeedSkeleton } from '../components/skeleton/SpeedSkeleton';
@@ -33,6 +33,7 @@ import { parseSpeedCommand, SPEED_HELP } from '../utils/cli/commands/speedComman
 import { formatSpeedState } from '../utils/cli/formatters/speedFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isSpeedPlayable } from '../utils/hints/speedHint';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SPEED_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -354,11 +355,9 @@ function SpeedPageContent() {
                 {t('hint.play', { cardIndex: state.hint.cardIndex, pileIndex: state.hint.pileIndex })}
               </p>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <div className="flex justify-center">
-                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-              </div>
-            )}
+            <div className="flex justify-center">
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            </div>
           </div>
 
           {/* Settings */}
@@ -385,13 +384,7 @@ function SpeedPageContent() {
                     checked: speedConfig.autoFlip,
                     onToggle: (v: boolean) => handleToggle('autoFlip', v),
                   },
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}

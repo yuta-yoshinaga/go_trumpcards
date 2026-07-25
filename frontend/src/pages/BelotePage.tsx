@@ -6,7 +6,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
@@ -26,6 +26,7 @@ import { BelotePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { beloteLegalPlayIndices } from '../utils/beloteLegal';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Belote tutorial step definitions. */
 const BELOTE_TUTORIAL_STEPS: TutorialStep[] = [
@@ -230,13 +231,7 @@ function BelotePageContent() {
                 checked: beloteConfig.enableBeloteRebelote,
                 onToggle: (v) => handleToggle('enableBeloteRebelote', v),
               },
-              {
-                type: 'checkbox',
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: frontendHintEnabled,
-                onToggle: setFrontendHintEnabled,
-              },
+              hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
             ],
           },
         ]}
@@ -383,9 +378,7 @@ function BelotePageContent() {
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
-        {frontendHintEnabled && frontendHint && (
-          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-        )}
+        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
         <ActionLogSection
           isEndPhase={isGameEnd}

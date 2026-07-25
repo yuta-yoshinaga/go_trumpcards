@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -35,6 +35,7 @@ import { CASINOHOLDEM_HELP, parseCasinoholdemCommand } from '../utils/cli/comman
 import { formatCasinoholdemState } from '../utils/cli/formatters/casinoholdemFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { evaluateFiveCardHand } from '../utils/pokerSquaresUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Casino Hold'em tutorial step definitions. */
 const CH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -186,9 +187,7 @@ function CasinoHoldemPageContent() {
               messageParams={state.messageParams}
             />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {isBetPhase && (
               <div className="flex flex-col items-center justify-center py-4 gap-4">
@@ -331,15 +330,7 @@ function CasinoHoldemPageContent() {
               title={t('settings.title')}
               groups={[
                 {
-                  items: [
-                    {
-                      type: 'checkbox',
-                      id: 'frontendHint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: frontendHintEnabled,
-                      onToggle: setFrontendHintEnabled,
-                    },
-                  ],
+                  items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
                 },
               ]}
             />

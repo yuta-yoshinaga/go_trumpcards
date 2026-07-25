@@ -31,6 +31,7 @@ import { ALLFOURS_HELP, parseAllFoursCommand } from '../utils/cli/commands/allfo
 import { formatAllFoursState } from '../utils/cli/formatters/allfoursFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName, playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const AF_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -415,13 +416,7 @@ function AllFoursPageContent() {
                       options: [5, 7, 9, 11, 15, 21].map((v) => ({ value: v, label: String(v) })),
                       onSelect: (v) => handleConfigChange('pointLimit', Number(v)),
                     },
-                    {
-                      type: 'checkbox',
-                      id: 'frontendHint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: hintEnabled,
-                      onToggle: setHintEnabled,
-                    },
+                    hintCheckboxItem(tc, hintEnabled, setHintEnabled),
                   ],
                 },
               ]}

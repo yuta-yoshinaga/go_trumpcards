@@ -11,7 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
@@ -34,6 +34,7 @@ import { parseSevensCommand, SEVENS_HELP } from '../utils/cli/commands/sevensCom
 import { formatSevensState } from '../utils/cli/formatters/sevensFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { actionDesc, listJokerPlacements } from '../utils/sevensUtils';
 
 /** Sevens tutorial step definitions. */
@@ -288,13 +289,7 @@ function SevensPageContent() {
           ],
           onSelect: (v) => handleConfigChange('maxPasses', String(v)),
         },
-        {
-          type: 'checkbox',
-          id: 'frontendHint',
-          label: tc('hint.toggle', { ns: 'tutorial' }),
-          checked: frontendHintEnabled,
-          onToggle: setFrontendHintEnabled,
-        },
+        hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
       ],
     },
   ];
@@ -445,9 +440,7 @@ function SevensPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="text-center">
               <GameResetButton

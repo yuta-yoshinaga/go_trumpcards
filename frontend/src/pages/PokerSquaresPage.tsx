@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CARD_DIMENSIONS, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
@@ -37,6 +37,7 @@ import {
   pokerHandKey,
   pokerSquaresRankToScore,
 } from '../utils/pokerSquaresUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const POKER_SQUARES_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PokerSquaresPhase.PLAYING]: 'playing',
@@ -272,15 +273,7 @@ function PokerSquaresPageContent() {
             title={t('settings.title')}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -476,9 +469,7 @@ function PokerSquaresPageContent() {
 
           <GameFooter className={`${gameTheme.pokersquares.footer} px-4 py-2.5`}>
             <ErrorAlert message={error} onRetry={retry} />
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="ps-controls">
               {isPlaying && (
                 <>

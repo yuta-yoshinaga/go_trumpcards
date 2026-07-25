@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { CARIBBEANSTUD_HELP, parseCaribbeanstudCommand } from '../utils/cli/commands/caribbeanstudCommands';
 import { formatCaribbeanstudState } from '../utils/cli/formatters/caribbeanstudFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Caribbean Stud Poker tutorial step definitions. */
 const CSP_TUTORIAL_STEPS: TutorialStep[] = [
@@ -251,9 +252,7 @@ function CaribbeanStudPageContent() {
               </div>
             )}
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {isBetPhase && (
               <div className="flex flex-col items-center justify-center py-4 gap-4">
@@ -381,15 +380,7 @@ function CaribbeanStudPageContent() {
               title={t('settings.title')}
               groups={[
                 {
-                  items: [
-                    {
-                      type: 'checkbox',
-                      id: 'frontendHint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: frontendHintEnabled,
-                      onToggle: setFrontendHintEnabled,
-                    },
-                  ],
+                  items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
                 },
               ]}
             />

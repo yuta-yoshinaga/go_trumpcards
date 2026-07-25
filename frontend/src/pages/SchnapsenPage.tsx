@@ -29,6 +29,7 @@ import { parseSchnapsenCommand, SCHNAPSEN_HELP } from '../utils/cli/commands/sch
 import { formatSchnapsenState } from '../utils/cli/formatters/schnapsenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { computeSchnapsenLegalRing } from '../utils/schnapsenLegal';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Card design → Schnapsen trump-suit id (1=♠ 2=♣ 3=♥ 4=♦). */
 const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
@@ -323,15 +324,7 @@ function SchnapsenPageContent() {
               title={tc('settings.title')}
               groups={[
                 {
-                  items: [
-                    {
-                      type: 'checkbox' as const,
-                      id: 'frontendHint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: hintEnabled,
-                      onToggle: setHintEnabled,
-                    },
-                  ],
+                  items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)],
                 },
               ]}
             />
