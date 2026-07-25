@@ -36,6 +36,15 @@ interface GamePageShellBaseProps {
   winShow?: boolean;
   /** Optional callback invoked when WinCelebration plays — typically used to trigger sound effects. */
   onCelebrate?: () => void;
+  /**
+   * Whether this game end is an actual loss, which plays the loss sound.
+   * Opt-in and deliberately NOT derived from `!winShow`: many casino pages
+   * pass `winShow={result > 0}`, where a push (`result === 0`) is not a win
+   * but is also not a loss — deriving it would thud at break-even. Pages that
+   * can distinguish a real loss pass `lossShow={...}`; pages that cannot stay
+   * silent on game end.
+   */
+  lossShow?: boolean;
   /** Whether an async operation is in progress; forwarded to aria-busy on the outer container. */
   loading: boolean;
   /** Whether the reset confirmation dialog is open. */
@@ -102,6 +111,7 @@ export function GamePageShell({
   gameEndFlag,
   winShow,
   onCelebrate,
+  lossShow,
   loading,
   confirmOpen,
   confirmReset,
@@ -120,7 +130,8 @@ export function GamePageShell({
   // Central sound taps (sound-centralization design):
   //
   //   winFanfare ── rides WinCelebration's own trigger (show = winShow ?? gameEndFlag)
-  //   lossThud ──── gameEndFlag && winShow === false, once per game end
+  //   lossThud ──── explicit lossShow === true, once per game end (never
+  //                 derived from !winShow: a casino push is neither)
   //   turnTick ──── isHumanTurn false→true edge, never when the prop is omitted
   //
   // The sound context is read through a ref so callbacks stay identity-stable
@@ -142,11 +153,11 @@ export function GamePageShell({
       lossPlayedRef.current = false;
       return;
     }
-    if (winShow === false && !lossPlayedRef.current) {
+    if (lossShow === true && !lossPlayedRef.current) {
       lossPlayedRef.current = true;
       soundRef.current?.playSound('lossThud');
     }
-  }, [gameEndFlag, winShow]);
+  }, [gameEndFlag, lossShow]);
 
   const prevTurnRef = useRef(isHumanTurn);
   useEffect(() => {

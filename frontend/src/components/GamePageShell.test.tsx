@@ -329,6 +329,7 @@ describe('GamePageShell', () => {
     type TapProps = Omit<typeof baseProps, 'isHumanTurn'> & {
       isHumanTurn?: boolean;
       winShow?: boolean;
+      lossShow?: boolean;
       onCelebrate?: () => void;
     };
 
@@ -357,10 +358,18 @@ describe('GamePageShell', () => {
       expect(playCalls).toContain('/sounds/win-fanfare.ogg');
     });
 
-    it('plays lossThud when the game ends without a win (winShow === false)', () => {
-      renderWithSound({ ...baseProps, gameEndFlag: true, winShow: false });
+    it('plays lossThud when the page explicitly reports a loss', () => {
+      renderWithSound({ ...baseProps, gameEndFlag: true, winShow: false, lossShow: true });
       expect(playCalls).toContain('/sounds/loss-thud.ogg');
       expect(playCalls).not.toContain('/sounds/win-fanfare.ogg');
+    });
+
+    it('stays silent on a casino push: not a win, but not a loss either (winShow false, no lossShow)', () => {
+      // Regression: 22 pages pass winShow={result > 0}, so result === 0 (push,
+      // bet returned) yields winShow=false. Deriving the thud from !winShow
+      // would sound a loss at break-even.
+      renderWithSound({ ...baseProps, gameEndFlag: true, winShow: false });
+      expect(playCalls).not.toContain('/sounds/loss-thud.ogg');
     });
 
     it('never plays lossThud when winShow is undefined (celebration-mirror pages)', () => {
@@ -369,21 +378,21 @@ describe('GamePageShell', () => {
     });
 
     it('resets the loss latch on a new game (gameEndFlag falls, then rises)', () => {
-      const { rerender } = renderWithSound({ ...baseProps, gameEndFlag: true, winShow: false });
+      const { rerender } = renderWithSound({ ...baseProps, gameEndFlag: true, lossShow: true });
       expect(playCalls.filter((p) => p === '/sounds/loss-thud.ogg')).toHaveLength(1);
 
       // Clear the provider's 3s dedupe window, then start a new round.
       vi.advanceTimersByTime(3100);
       rerender(
         <SoundProvider>
-          <GamePageShell {...baseProps} gameEndFlag={false} winShow={false}>
+          <GamePageShell {...baseProps} gameEndFlag={false} lossShow={true}>
             <div />
           </GamePageShell>
         </SoundProvider>,
       );
       rerender(
         <SoundProvider>
-          <GamePageShell {...baseProps} gameEndFlag={true} winShow={false}>
+          <GamePageShell {...baseProps} gameEndFlag={true} lossShow={true}>
             <div />
           </GamePageShell>
         </SoundProvider>,
