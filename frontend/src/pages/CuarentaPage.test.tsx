@@ -12,6 +12,13 @@ vi.mock('../api/gameApi', () => ({
 
 const mockPlaySound = vi.fn();
 const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+/**
+ * Counts calls for one sound name. The central taps (useGameApi / GamePageShell)
+ * play through this same mocked context, so aggregate assertions on
+ * mockPlaySound would also count deal/card sounds this page does not own.
+ */
+const soundCalls = (name: string) => mockPlaySound.mock.calls.filter((c) => c[0] === name).length;
+
 vi.mock('../providers/SoundProvider', () => ({
   SoundProvider: ({ children }: { children: React.ReactNode }) => children,
   useSound: () => mockSoundValue,
@@ -269,7 +276,7 @@ describe('CuarentaPage', () => {
     );
     fireEvent.click(cardBtn);
     await waitFor(() => expect(screen.getByText('直前のプレイ')).toBeInTheDocument());
-    expect(mockPlaySound).not.toHaveBeenCalled();
+    expect(soundCalls('chipClick')).toBe(0);
 
     // A subsequent bonus play chimes exactly once.
     const nextCard = await screen.findByTestId('hand-card-0');
@@ -287,7 +294,7 @@ describe('CuarentaPage', () => {
     );
     fireEvent.click(nextCard);
     await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('chipClick', { pitchVariation: 0.1 }));
-    expect(mockPlaySound).toHaveBeenCalledTimes(1);
+    expect(soundCalls('chipClick')).toBe(1);
   });
 
   it('shows the win message when the human team wins', async () => {
