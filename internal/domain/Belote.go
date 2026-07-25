@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // BelotePlayerCnt ベロートプレイヤー数
@@ -1067,25 +1066,17 @@ func (b *Belote) sortAllHands() {
 }
 
 func beloteSortHand(p *BelotePlayer, b *Belote) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := range p.GetCardsSize() {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		si := cards[i].GetDesign()
-		sj := cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		si := ci.GetDesign()
+		sj := cj.GetDesign()
 		if si != sj {
 			return si < sj
 		}
 		// Strongest card first within each suit — matches the manual's display
 		// example and lets the CPU's "play valid[0]" easy-lead actually pick a
 		// strong card instead of the weakest.
-		return b.cardRank(cards[i]) > b.cardRank(cards[j])
+		return b.cardRank(ci) > b.cardRank(cj)
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 func (b *Belote) findHumanIdx() int {

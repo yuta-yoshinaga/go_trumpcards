@@ -13,7 +13,6 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
-	"sort"
 )
 
 // BriscolaPlayerCnt ブリスコラのプレイヤー数 (v1は2人固定)
@@ -549,26 +548,18 @@ func (b *Briscola) sortAllHands() {
 
 // sortHand プレイヤーの手札をスート (トランプ最後) → ブリスコラ順位 でソートする
 func (b *Briscola) sortHand(p *BriscolaPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
 	trumpSuit := b.trumpSuit
-	sort.Slice(cards, func(i, j int) bool {
-		iTrump := cards[i].GetDesign() == trumpSuit
-		jTrump := cards[j].GetDesign() == trumpSuit
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		iTrump := ci.GetDesign() == trumpSuit
+		jTrump := cj.GetDesign() == trumpSuit
 		if iTrump != jTrump {
 			return !iTrump // 非トランプを先に
 		}
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return BriscolaRankOrder(cards[i]) < BriscolaRankOrder(cards[j])
+		return BriscolaRankOrder(ci) < BriscolaRankOrder(cj)
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す (ログ用)

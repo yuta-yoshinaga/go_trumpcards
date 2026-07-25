@@ -804,26 +804,18 @@ func (e *Ecarte) sortAllHands() {
 }
 
 func (e *Ecarte) sortHand(p *EcartePlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
 	trumpSuit := e.trumpSuit
-	sort.Slice(cards, func(i, j int) bool {
-		iTrump := cards[i].GetDesign() == trumpSuit
-		jTrump := cards[j].GetDesign() == trumpSuit
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		iTrump := ci.GetDesign() == trumpSuit
+		jTrump := cj.GetDesign() == trumpSuit
 		if iTrump != jTrump {
 			return !iTrump
 		}
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return EcarteRankOrder(cards[i]) < EcarteRankOrder(cards[j])
+		return EcarteRankOrder(ci) < EcarteRankOrder(cj)
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 func (e *Ecarte) playerName(idx int) string {

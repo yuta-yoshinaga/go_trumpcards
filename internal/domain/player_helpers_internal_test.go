@@ -142,3 +142,35 @@ func TestCountPlayers_SomeMatch(t *testing.T) {
 	got := countPlayers(players, func(p *OldMaidPlayer) bool { return !p.GetIsFinished() })
 	assert.Equal(t, 2, got)
 }
+
+// --- sortPlayerHand tests ---
+
+// sortTestHand is a minimal handHolder for exercising sortPlayerHand
+// independently of any concrete game player type.
+type sortTestHand struct{ cards []*Card }
+
+func (h *sortTestHand) GetCardsSize() int   { return len(h.cards) }
+func (h *sortTestHand) GetCard(i int) *Card { return h.cards[i] }
+func (h *sortTestHand) Reset()              { h.cards = nil }
+func (h *sortTestHand) AddCard(c *Card)     { h.cards = append(h.cards, c) }
+
+func TestSortPlayerHand(t *testing.T) {
+	h := &sortTestHand{cards: []*Card{
+		NewCard(1, 5, false),
+		NewCard(1, 2, false),
+		NewCard(1, 9, false),
+	}}
+	sortPlayerHand(h, func(ci, cj *Card) bool { return ci.GetValue() < cj.GetValue() })
+
+	// No cards lost in the Reset/re-add round-trip.
+	assert.Equal(t, 3, h.GetCardsSize())
+	assert.Equal(t, 2, h.GetCard(0).GetValue())
+	assert.Equal(t, 5, h.GetCard(1).GetValue())
+	assert.Equal(t, 9, h.GetCard(2).GetValue())
+}
+
+func TestSortPlayerHand_Empty(t *testing.T) {
+	h := &sortTestHand{}
+	sortPlayerHand(h, func(ci, cj *Card) bool { return ci.GetValue() < cj.GetValue() })
+	assert.Equal(t, 0, h.GetCardsSize())
+}

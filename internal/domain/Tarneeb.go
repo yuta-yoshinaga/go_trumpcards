@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // TarneebHandSize 各プレイヤーの手札枚数
@@ -723,22 +722,14 @@ func (t *Tarneeb) sortAllHands() {
 
 // tarneebSortHand プレイヤーの手札をスート→値の順にソートする
 func tarneebSortHand(p *TarneebPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
 		// Aces sort to the right (largest) so the hand display matches Tarneeb's
 		// A > K > … ranking.
-		return tarneebRank(cards[i].GetValue()) < tarneebRank(cards[j].GetValue())
+		return tarneebRank(ci.GetValue()) < tarneebRank(cj.GetValue())
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す

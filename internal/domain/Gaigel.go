@@ -26,7 +26,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // GaigelPlayerCnt ガイゲルのプレイヤー数 (4人固定)
@@ -1023,26 +1022,18 @@ func (g *Gaigel) sortAllHands() {
 
 // sortHand プレイヤーの手札をスート (トランプ最後) → ランク でソートする
 func (g *Gaigel) sortHand(p *GaigelPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
 	trumpSuit := g.trumpSuit
-	sort.Slice(cards, func(i, j int) bool {
-		iTrump := cards[i].GetDesign() == trumpSuit
-		jTrump := cards[j].GetDesign() == trumpSuit
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		iTrump := ci.GetDesign() == trumpSuit
+		jTrump := cj.GetDesign() == trumpSuit
 		if iTrump != jTrump {
 			return !iTrump
 		}
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return GaigelRankOrder(cards[i]) < GaigelRankOrder(cards[j])
+		return GaigelRankOrder(ci) < GaigelRankOrder(cj)
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 func (g *Gaigel) playerName(idx int) string {

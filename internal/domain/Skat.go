@@ -1301,21 +1301,13 @@ func (s *Skat) sortAllHands() {
 
 // sortHand sorts the player's hand by suit then value.
 func (s *Skat) sortHand(p *SkatPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		di, dj := cards[i].GetDesign(), cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		di, dj := ci.GetDesign(), cj.GetDesign()
 		if di != dj {
 			return di < dj
 		}
-		return cards[i].GetValue() < cards[j].GetValue()
+		return ci.GetValue() < cj.GetValue()
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // --- Getters / setters ---

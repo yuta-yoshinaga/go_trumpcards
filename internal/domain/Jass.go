@@ -1075,22 +1075,14 @@ func (g *Jass) sortAllHands() {
 }
 
 func jassSortHand(p *JassPlayer, g *Jass) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := range p.GetCardsSize() {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		si := cards[i].GetDesign()
-		sj := cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		si := ci.GetDesign()
+		sj := cj.GetDesign()
 		if si != sj {
 			return si < sj
 		}
-		return g.cardRank(cards[i]) > g.cardRank(cards[j])
+		return g.cardRank(ci) > g.cardRank(cj)
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 func (g *Jass) findHumanIdx() int {

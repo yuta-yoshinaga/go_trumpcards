@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"sort"
 )
 
 // AllFoursPlayerCnt All Fours プレイヤー数 (1 human vs 1 CPU)
@@ -724,20 +723,12 @@ func (a *AllFours) sortAllHands() {
 }
 
 func allFoursSortHand(pl *AllFoursPlayer) {
-	cards := make([]*Card, pl.GetCardsSize())
-	for i := 0; i < pl.GetCardsSize(); i++ {
-		cards[i] = pl.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(pl, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return allFoursRankValue(cards[i].GetValue()) < allFoursRankValue(cards[j].GetValue())
+		return allFoursRankValue(ci.GetValue()) < allFoursRankValue(cj.GetValue())
 	})
-	pl.Reset()
-	for _, c := range cards {
-		pl.AddCard(c)
-	}
 }
 
 func (a *AllFours) playerName(idx int) string {
