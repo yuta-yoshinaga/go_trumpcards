@@ -970,98 +970,37 @@ func (s *Spades) cpuPlayHard(playerIdx int, validIndices []int) int {
 		}
 	}
 
-	hasLeadSuit := false
-	for _, idx := range validIndices {
-		if player.GetCard(idx).GetDesign() == leadSuit {
-			hasLeadSuit = true
-			break
+	// フォロー可能なら勝ち札/受け札を選ぶ (フォロー時 validIndices は全てリードスート)。
+	leadSuitIndices := filterByDesign(player, validIndices, leadSuit)
+	if len(leadSuitIndices) > 0 {
+		// 勝ちに行く (トランプが出ていなければリードスートで勝てる)。
+		if tricks < bid && (!hasSpadeInTrick || leadSuit == CardDesignSpade) {
+			threshold := highestInTrick
+			if leadSuit == CardDesignSpade {
+				threshold = highestSpadeInTrick
+			}
+			if over := filterAbove(player, leadSuitIndices, threshold, nil); len(over) > 0 {
+				return pickLowest(player, over, nil)
+			}
 		}
+		// アンダーカードのうち最も高い札で場に付き合う。
+		if under := filterBelow(player, leadSuitIndices, highestInTrick, nil); len(under) > 0 {
+			return pickHighest(player, under, nil)
+		}
+		// 勝てないなら最も低いリードスート札を出す。
+		return pickLowest(player, leadSuitIndices, nil)
 	}
 
-	if hasLeadSuit {
-		if tricks < bid {
-			// 勝ちに行く (トランプが出ていなければリードスートで勝てる)
-			if !hasSpadeInTrick || leadSuit == CardDesignSpade {
-				threshold := highestInTrick
-				if leadSuit == CardDesignSpade {
-					threshold = highestSpadeInTrick
-				}
-				overCards := []int{}
-				for _, idx := range validIndices {
-					card := player.GetCard(idx)
-					if card.GetDesign() == leadSuit && card.GetValue() > threshold {
-						overCards = append(overCards, idx)
-					}
-				}
-				if len(overCards) > 0 {
-					bestIdx := overCards[0]
-					for _, idx := range overCards[1:] {
-						if player.GetCard(idx).GetValue() < player.GetCard(bestIdx).GetValue() {
-							bestIdx = idx
-						}
-					}
-					return bestIdx
-				}
+	// ボイド: スペードでカット or 低いカードを捨てる。
+	spadeIndices := filterByDesign(player, validIndices, CardDesignSpade)
+	if tricks < bid && len(spadeIndices) > 0 {
+		if hasSpadeInTrick {
+			// すでにスペードが出ている場合、勝てる最小のスペードのみ。
+			if over := filterAbove(player, spadeIndices, highestSpadeInTrick, nil); len(over) > 0 {
+				return pickLowest(player, over, nil)
 			}
-		}
-		// アンダーカードを出す
-		underCards := []int{}
-		for _, idx := range validIndices {
-			card := player.GetCard(idx)
-			if card.GetDesign() == leadSuit && card.GetValue() < highestInTrick {
-				underCards = append(underCards, idx)
-			}
-		}
-		if len(underCards) > 0 {
-			bestIdx := underCards[0]
-			for _, idx := range underCards[1:] {
-				if player.GetCard(idx).GetValue() > player.GetCard(bestIdx).GetValue() {
-					bestIdx = idx
-				}
-			}
-			return bestIdx
-		}
-		// 最も低いオーバーカード
-		overCards := []int{}
-		for _, idx := range validIndices {
-			card := player.GetCard(idx)
-			if card.GetDesign() == leadSuit {
-				overCards = append(overCards, idx)
-			}
-		}
-		if len(overCards) > 0 {
-			bestIdx := overCards[0]
-			for _, idx := range overCards[1:] {
-				if player.GetCard(idx).GetValue() < player.GetCard(bestIdx).GetValue() {
-					bestIdx = idx
-				}
-			}
-			return bestIdx
-		}
-	}
-
-	// ボイド: スペードでカット or 低いカードを捨てる
-	if tricks < bid {
-		// 最小のスペードでカット
-		bestSpadeIdx := -1
-		bestSpadeVal := 100
-		for _, idx := range validIndices {
-			card := player.GetCard(idx)
-			if card.GetDesign() == CardDesignSpade {
-				if hasSpadeInTrick {
-					// すでにスペードが出ている場合、勝てるスペードのみ
-					if card.GetValue() > highestSpadeInTrick && card.GetValue() < bestSpadeVal {
-						bestSpadeIdx = idx
-						bestSpadeVal = card.GetValue()
-					}
-				} else if card.GetValue() < bestSpadeVal {
-					bestSpadeIdx = idx
-					bestSpadeVal = card.GetValue()
-				}
-			}
-		}
-		if bestSpadeIdx >= 0 {
-			return bestSpadeIdx
+		} else {
+			return pickLowest(player, spadeIndices, nil)
 		}
 	}
 

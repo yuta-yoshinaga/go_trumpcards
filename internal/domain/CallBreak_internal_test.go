@@ -463,7 +463,7 @@ func TestCallBreak_filterAbove(t *testing.T) {
 	cb.players[0].AddCard(NewCard(CardDesignHeart, 3, false))
 	cb.players[0].AddCard(NewCard(CardDesignHeart, 9, false))
 	cb.players[0].AddCard(NewCard(CardDesignHeart, 11, false))
-	out := filterAbove(cb.players[0], []int{0, 1, 2}, 5)
+	out := filterAbove(cb.players[0], []int{0, 1, 2}, 5, nil)
 	assert.Equal(t, []int{1, 2}, out)
 }
 

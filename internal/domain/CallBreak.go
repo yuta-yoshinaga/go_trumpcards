@@ -727,9 +727,9 @@ func (cb *CallBreak) cpuPlayNormal(playerIdx int, validIndices []int) int {
 
 	if len(cb.currentTrick) == 0 {
 		if tricks < bid {
-			return cb.pickHighest(player, validIndices)
+			return pickHighest(player, validIndices, nil)
 		}
-		return cb.pickLowest(player, validIndices)
+		return pickLowest(player, validIndices, nil)
 	}
 
 	leadSuit := cb.currentTrick[0].Card.GetDesign()
@@ -743,20 +743,20 @@ func (cb *CallBreak) cpuPlayNormal(playerIdx int, validIndices []int) int {
 	leadSuitIndices := filterByDesign(player, validIndices, leadSuit)
 	if len(leadSuitIndices) > 0 {
 		if tricks < bid {
-			over := filterAbove(player, leadSuitIndices, highestInTrick)
+			over := filterAbove(player, leadSuitIndices, highestInTrick, nil)
 			if len(over) > 0 {
-				return cb.pickLowest(player, over)
+				return pickLowest(player, over, nil)
 			}
 		}
-		return cb.pickLowest(player, leadSuitIndices)
+		return pickLowest(player, leadSuitIndices, nil)
 	}
 
 	// ボイド: validatePlay により残ったカードはルール上有効なものだけ。
 	// スペードを必ず切るルールがある場合、validIndices はスペードのみのはず。
 	if tricks < bid {
-		return cb.pickLowest(player, validIndices)
+		return pickLowest(player, validIndices, nil)
 	}
-	return cb.pickLowest(player, validIndices)
+	return pickLowest(player, validIndices, nil)
 }
 
 // cpuPlayHard 高度な戦略プレイ
@@ -811,12 +811,12 @@ func (cb *CallBreak) cpuPlayHard(playerIdx int, validIndices []int) int {
 			if leadSuit == CardDesignSpade {
 				threshold = highestSpadeInTrick
 			}
-			over := filterAbove(player, leadSuitIndices, threshold)
+			over := filterAbove(player, leadSuitIndices, threshold, nil)
 			if len(over) > 0 {
-				return cb.pickLowest(player, over)
+				return pickLowest(player, over, nil)
 			}
 		}
-		return cb.pickLowest(player, leadSuitIndices)
+		return pickLowest(player, leadSuitIndices, nil)
 	}
 
 	// ボイドかつ validIndices にスペードが含まれている場合は最小のスペードでカットを試みる。
@@ -824,15 +824,15 @@ func (cb *CallBreak) cpuPlayHard(playerIdx int, validIndices []int) int {
 	if len(spadeIndices) > 0 {
 		if tricks < bid {
 			if hasSpadeInTrick {
-				if over := filterAbove(player, spadeIndices, highestSpadeInTrick); len(over) > 0 {
-					return cb.pickLowest(player, over)
+				if over := filterAbove(player, spadeIndices, highestSpadeInTrick, nil); len(over) > 0 {
+					return pickLowest(player, over, nil)
 				}
 			} else {
-				return cb.pickLowest(player, spadeIndices)
+				return pickLowest(player, spadeIndices, nil)
 			}
 		}
 		// 余裕がある場合は最小スペードを温存気味に出す
-		return cb.pickLowest(player, spadeIndices)
+		return pickLowest(player, spadeIndices, nil)
 	}
 
 	// スペードを持たないボイド: 最も高い不要カードを捨てる
@@ -866,55 +866,9 @@ func (cb *CallBreak) summariseTrick(leadSuit int) (highestSpade int, hasSpade bo
 }
 
 // pickHighest validIndices の中で値が最大のインデックスを返す
-func (cb *CallBreak) pickHighest(player *CallBreakPlayer, validIndices []int) int {
-	bestIdx := validIndices[0]
-	bestVal := player.GetCard(bestIdx).GetValue()
-	for _, idx := range validIndices[1:] {
-		v := player.GetCard(idx).GetValue()
-		if v > bestVal {
-			bestVal = v
-			bestIdx = idx
-		}
-	}
-	return bestIdx
-}
-
 // pickLowest validIndices の中で値が最小のインデックスを返す
-func (cb *CallBreak) pickLowest(player *CallBreakPlayer, validIndices []int) int {
-	bestIdx := validIndices[0]
-	bestVal := player.GetCard(bestIdx).GetValue()
-	for _, idx := range validIndices[1:] {
-		v := player.GetCard(idx).GetValue()
-		if v < bestVal {
-			bestVal = v
-			bestIdx = idx
-		}
-	}
-	return bestIdx
-}
-
 // filterByDesign 指定スートを持つカードのインデックスのみを返す
-func filterByDesign(player *CallBreakPlayer, validIndices []int, design int) []int {
-	out := make([]int, 0, len(validIndices))
-	for _, idx := range validIndices {
-		if player.GetCard(idx).GetDesign() == design {
-			out = append(out, idx)
-		}
-	}
-	return out
-}
-
 // filterAbove threshold より大きい値のカードのインデックスのみを返す
-func filterAbove(player *CallBreakPlayer, validIndices []int, threshold int) []int {
-	out := make([]int, 0, len(validIndices))
-	for _, idx := range validIndices {
-		if player.GetCard(idx).GetValue() > threshold {
-			out = append(out, idx)
-		}
-	}
-	return out
-}
-
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (cb *CallBreak) getValidPlayIndices(playerIdx int) []int {
 	player := cb.players[playerIdx]
