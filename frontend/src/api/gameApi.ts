@@ -782,6 +782,9 @@ function createHoldemLikeApi<T, C = HoldemConfigInput>(game: string) {
   };
 }
 
+/** The exec signature shared by every `createHoldemLikeApi` client (issue #4301). */
+export type HoldemLikeExec<T> = ReturnType<typeof createHoldemLikeApi<T>>['exec'];
+
 /** API client for the Texas Hold'em /holdem/exec endpoint. */
 export const holdemApi = createHoldemLikeApi<HoldemResponse>('holdem');
 
