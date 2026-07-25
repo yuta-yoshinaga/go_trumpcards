@@ -108,7 +108,6 @@ function OmahaPageContent() {
     cancelReset,
     phaseNames,
     cardWidth,
-    playSound,
     isMobile,
     isLargeDesktop,
     state,
@@ -191,7 +190,6 @@ function OmahaPageContent() {
       isHumanTurn={canAct}
       gamePath="/omaha"
       gameEndFlag={phase === OmahaPhase.END}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

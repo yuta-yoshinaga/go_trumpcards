@@ -27,7 +27,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
-import { useSound } from '../providers/SoundProvider';
 import { badgeError } from '../styles/badgeStyles';
 import { btnSuccess, btnWarning, focusRingAccent } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
@@ -93,7 +92,6 @@ function PokerPageContent() {
     useGamePageSetup('poker');
   const phaseNames = usePhaseNames('poker', POKER_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const isMobile = useIsMobile();
   const {
     state,
@@ -197,7 +195,6 @@ function PokerPageContent() {
         phase === PokerPhase.END &&
         state.roundResults.some((r) => state.players[r.playerIdx]?.isHuman && r.wonAmount > 0)
       }
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

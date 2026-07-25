@@ -32,7 +32,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle, selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -134,7 +133,6 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     useGamePageSetup(variant);
   const phaseNames = usePhaseNames(variant, PINEAPPLE_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const isMobile = useIsMobile();
   const { state, loading, error, exec: apiExec, retry } = useGameApi(apiClient.exec);
   const [betAmount, setBetAmount] = useState(20);
@@ -408,7 +406,6 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       gamePath={`/${variant}`}
       gameEndFlag={!!state?.gameEndFlag}
       winShow={phase === PineapplePhase.END}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

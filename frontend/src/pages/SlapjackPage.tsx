@@ -82,9 +82,8 @@ function SlapjackPageContent() {
   // Flipping the next card onto the arena is the human's tap — give it a card
   // sound (respects the global mute via SoundProvider).
   const handleStep = useCallback(() => {
-    playSound('cardPlace');
     return execApi('step');
-  }, [execApi, playSound]);
+  }, [execApi]);
   const handleSlap = useCallback(() => execApi('slap'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
 
@@ -190,7 +189,6 @@ function SlapjackPageContent() {
       gamePath="/slapjack"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

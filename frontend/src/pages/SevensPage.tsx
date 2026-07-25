@@ -23,7 +23,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
-import { useSound } from '../providers/SoundProvider';
 import { badgeSuccess, badgeWarning } from '../styles/badgeStyles';
 import { btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -62,7 +61,6 @@ export const SevensPage = withTutorial(SevensPageContent, 'sevens', SV_TUTORIAL_
 function SevensPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('sevens');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -302,7 +300,6 @@ function SevensPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/sevens"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

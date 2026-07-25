@@ -25,7 +25,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { AccordionResponse } from '../types/card';
@@ -131,7 +130,6 @@ function AccordionPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('accordion');
-  const { playSound } = useSound();
   const {
     state,
     setState,
@@ -186,9 +184,8 @@ function AccordionPageContent() {
 
   const handleManualReset = useCallback(() => {
     void apiCall('reset');
-    playSound('shuffle');
     setSelectedIdx(null);
-  }, [apiCall, playSound]);
+  }, [apiCall]);
 
   const handleGiveUp = useCallback(() => {
     void apiCall('giveup');
@@ -241,7 +238,6 @@ function AccordionPageContent() {
         if (res.phase !== AccordionPhase.PLAYING) break;
         move = accordionNextAutoMove(res.piles);
       }
-      playSound('cardPlace');
     } catch {
       // Surface the failure through the shared exec so the standard
       // error/retry channel handles it.
@@ -252,17 +248,16 @@ function AccordionPageContent() {
       autoCompletingRef.current = false;
       setIsAutoCompleting(false);
     }
-  }, [apiCall, setState, playSound]);
+  }, [apiCall, setState]);
 
   const dispatchMove = useCallback(
     (fromIdx: number, toIdx: number) => {
       const from: AccordionMoveZone = { zone: 'pile', index: fromIdx };
       const to: AccordionMoveZone = { zone: 'pile', index: toIdx };
       void apiCall('move', from, to);
-      playSound('cardPlace');
       setSelectedIdx(null);
     },
-    [apiCall, playSound],
+    [apiCall],
   );
 
   const handlePileClick = useCallback(

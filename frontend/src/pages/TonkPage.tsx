@@ -22,7 +22,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useTonkGame } from '../hooks/useTonkGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, playableCardStyle, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -109,7 +108,6 @@ function TonkPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('tonk', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('tonk');
   const cliConfig: CliGameConfig<TonkResponse, Parameters<typeof tonkApi.exec>> = useMemo(
     () => ({
@@ -196,7 +194,6 @@ function TonkPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/tonk"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

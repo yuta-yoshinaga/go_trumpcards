@@ -21,7 +21,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -55,7 +54,6 @@ function DragonTigerPageContent() {
   // replay the same wager at end phase with a single action (#3242).
   const [lastBet, setLastBet] = useState<{ amount: number; type: number } | null>(null);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(dragontigerApi.exec);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('dragontiger');
@@ -149,7 +147,7 @@ function DragonTigerPageContent() {
       gamePath="/dragontiger"
       gameEndFlag={isEndPhase}
       winShow={isEndPhase && state.payout > state.betAmount}
-      onCelebrate={() => playSound('winFanfare')}
+      lossShow={isEndPhase && state.payout < state.betAmount}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

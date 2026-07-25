@@ -124,13 +124,11 @@ function DurakPageContent() {
   // Play a card-place sound when the human commits an attack or defense card, and
   // an error buzz for the disadvantageous "take" action (defender scoops the table).
   const handleAttackWithSound = useCallback(() => {
-    playSound('cardPlace');
     handleAttack();
-  }, [playSound, handleAttack]);
+  }, [handleAttack]);
   const handleDefendWithSound = useCallback(() => {
-    playSound('cardPlace');
     handleDefend();
-  }, [playSound, handleDefend]);
+  }, [handleDefend]);
   const handleTakeWithSound = useCallback(() => {
     playSound('errorBuzz');
     handleTake();
@@ -201,7 +199,6 @@ function DurakPageContent() {
       gamePath="/durak"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

@@ -19,7 +19,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { badgeSuccessColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -82,7 +81,6 @@ function MississippiStudPageContent() {
   const [anteAmount, setAnteAmount] = useState(100);
 
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(mississippiStudApi.exec);
   const {
     hint: frontendHint,
@@ -166,7 +164,6 @@ function MississippiStudPageContent() {
       gamePath="/mississippistud"
       gameEndFlag={isEndPhase}
       winShow={isEndPhase && state.totalPayout > state.totalBet}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

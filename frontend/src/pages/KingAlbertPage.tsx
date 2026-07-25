@@ -24,7 +24,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKingAlbertGame } from '../hooks/useKingAlbertGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { KingAlbertResponse } from '../types/card';
@@ -96,7 +95,6 @@ function KingAlbertPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('kingalbert');
-  const { playSound } = useSound();
   const game = useKingAlbertGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
 
@@ -326,7 +324,6 @@ function KingAlbertPageContent() {
       gamePath="/kingalbert"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

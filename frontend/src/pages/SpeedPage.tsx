@@ -22,7 +22,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { AUTO_FLIP_DELAY_MS, CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
 import { useSpeedTimer } from '../hooks/useSpeedTimer';
-import { useSound } from '../providers/SoundProvider';
 import { btnOutline } from '../styles/buttonStyles';
 import { focusRingCard, playableRingStyle, selectedCardStyle } from '../styles/cardStyles';
 import type { SpeedResponse } from '../types/card';
@@ -77,7 +76,6 @@ function SpeedPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('speed', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   // Elapsed / best-time tracking. Signals are derived here (before the skeleton
   // early-return) so the timer hook is always called in a stable order. The
   // timer runs during the PLAY and STUCK phases and freezes when the game ends.
@@ -183,7 +181,6 @@ function SpeedPageContent() {
       gamePath="/speed"
       gameEndFlag={isGameEnd}
       winShow={!!isGameEnd && humanWon}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

@@ -190,8 +190,7 @@ function CruelPageContent() {
   // Action handlers
   const handleManualReset = useCallback(() => {
     void apiExec('reset');
-    playSound('shuffle');
-  }, [apiExec, playSound]);
+  }, [apiExec]);
 
   const handleShift = useCallback(() => {
     void apiExec('shift');
@@ -248,9 +247,8 @@ function CruelPageContent() {
       const target: CruelMoveZone = col === undefined ? { zone } : { zone, col };
       void apiExec('move', selectedSource, target);
       setSelectedSource(null);
-      playSound('cardPlace');
     },
-    [apiExec, selectedSource, playSound],
+    [apiExec, selectedSource],
   );
 
   const isPlayingForKbd = state?.phase === CruelPhase.PLAYING;

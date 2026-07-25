@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { HoldemLikeExec } from '../api/gameApi';
-import { useSound } from '../providers/SoundProvider';
 import type { OmahaResponse } from '../types/card';
 import { OmahaPhase, OmahaRebuyPhaseType } from '../types/phases';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -51,7 +50,6 @@ export function useCommunityPokerGame(config: CommunityPokerGameConfig) {
     useGamePageSetup(game);
   const phaseNames = usePhaseNames(game, phaseKeys);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const isMobile = useIsMobile();
   const isLargeDesktop = useIsLargeDesktop();
   const { state, loading, error, exec: execApi, retry } = useGameApi(exec);
@@ -149,7 +147,6 @@ export function useCommunityPokerGame(config: CommunityPokerGameConfig) {
     cancelReset,
     phaseNames,
     cardWidth,
-    playSound,
     isMobile,
     isLargeDesktop,
     state,

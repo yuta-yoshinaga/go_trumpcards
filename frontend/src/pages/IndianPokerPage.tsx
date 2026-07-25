@@ -225,7 +225,6 @@ function IndianPokerPageContent() {
       gamePath="/indianpoker"
       gameEndFlag={!!state.gameEndFlag}
       winShow={phase === IndianPokerPhase.END}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

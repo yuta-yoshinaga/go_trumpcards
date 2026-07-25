@@ -24,7 +24,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useTwoTenJackGame } from '../hooks/useTwoTenJackGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -157,13 +156,6 @@ function TwoTenJackPageContent() {
   });
 
   const phaseNames = usePhaseNames('twotenjack', TWOTENJACK_PHASE_KEYS);
-  const { playSound } = useSound();
-  // Memoized so WinCelebration's effect (which depends on onCelebrate) does not
-  // re-arm its timer — and replay the fanfare — on every post-win re-render.
-  const handleCelebrate = useCallback(() => {
-    playSound('winFanfare');
-  }, [playSound]);
-
   const handleManualReset = useCallback(() => {
     hideActionLog();
     void dispatch('reset', undefined, undefined, {
@@ -202,7 +194,6 @@ function TwoTenJackPageContent() {
       gamePath="/twotenjack"
       gameEndFlag={!!state?.gameEndFlag}
       winShow={humanWon}
-      onCelebrate={handleCelebrate}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

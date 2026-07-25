@@ -19,7 +19,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHandAndFootGame } from '../hooks/useHandAndFootGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -82,7 +81,6 @@ function HandAndFootPageContent() {
   } = useHandAndFootGame();
 
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const phaseNames = usePhaseNames('handandfoot', HANDANDFOOT_PHASE_KEYS);
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
@@ -190,7 +188,6 @@ function HandAndFootPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/handandfoot"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

@@ -28,7 +28,6 @@ import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useLocalStorageToggle } from '../hooks/useLocalStorageToggle';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { RussianSolitaireResponse } from '../types/card';
@@ -112,7 +111,6 @@ function RussianSolitairePageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('russiansolitaire');
-  const { playSound } = useSound();
   const {
     state,
     setState,
@@ -199,8 +197,7 @@ function RussianSolitairePageContent() {
   // Action handlers
   const handleManualReset = useCallback(() => {
     void apiExec('reset');
-    playSound('shuffle');
-  }, [apiExec, playSound]);
+  }, [apiExec]);
 
   const handleGiveUp = useCallback(() => {
     void apiExec('giveup');
@@ -251,9 +248,8 @@ function RussianSolitairePageContent() {
       if (!selectedSource) return;
       void apiExec('move', selectedSource, { zone, col });
       setSelectedSource(null);
-      playSound('cardPlace');
     },
-    [apiExec, selectedSource, playSound],
+    [apiExec, selectedSource],
   );
 
   const isPlayingForKbd = state?.phase === RussianSolitairePhase.PLAYING;

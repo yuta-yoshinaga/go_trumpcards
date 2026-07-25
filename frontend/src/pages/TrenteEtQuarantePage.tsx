@@ -20,7 +20,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useTrenteEtQuaranteGame } from '../hooks/useTrenteEtQuaranteGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -63,7 +62,6 @@ function TrenteEtQuarantePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, confirmReset, cancelReset } =
     useGamePageSetup('trenteetquarante');
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
 
   const {
     state,
@@ -132,7 +130,7 @@ function TrenteEtQuarantePageContent() {
       gamePath="/trenteetquarante"
       gameEndFlag={isResultPhase}
       winShow={isResultPhase && state.result > 0}
-      onCelebrate={() => playSound('winFanfare')}
+      lossShow={isResultPhase && state.result < 0}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

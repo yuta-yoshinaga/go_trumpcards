@@ -112,7 +112,6 @@ function BigOHiLoPageContent() {
     cancelReset,
     phaseNames,
     cardWidth,
-    playSound,
     isMobile,
     isLargeDesktop,
     state,
@@ -184,7 +183,6 @@ function BigOHiLoPageContent() {
       isHumanTurn={canAct}
       gamePath="/bigohilo"
       gameEndFlag={phase === OmahaPhase.END}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

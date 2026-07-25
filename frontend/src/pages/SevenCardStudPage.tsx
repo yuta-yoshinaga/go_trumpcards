@@ -28,7 +28,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -95,7 +94,6 @@ function SevenCardStudPageContent() {
     useGamePageSetup('sevencardstud');
   const phaseNames = usePhaseNames('sevencardstud', SCS_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const isMobile = useIsMobile();
   const { state, loading, error, exec: execApi, retry } = useGameApi(sevenCardStudApi.exec);
 
@@ -265,7 +263,6 @@ function SevenCardStudPageContent() {
       gamePath="/sevencardstud"
       gameEndFlag={phase === SevenCardStudPhase.SHOWDOWN || phase === SevenCardStudPhase.END}
       winShow={phase === SevenCardStudPhase.END}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

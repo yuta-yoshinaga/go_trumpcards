@@ -138,14 +138,22 @@ function WarPageContent() {
   }, []);
   const handleReset = useCallback(() => {
     setAutoPlaying(false);
-    playSound('shuffle');
     return execApi('reset', { maxRounds });
-  }, [execApi, maxRounds, playSound]);
+  }, [execApi, maxRounds]);
 
   // Play a card-resolution SFX each time a battle settles (RESOLVED) and a
   // tension cue when a tie triggers a war (WAR_BURY). Tracks the previous phase
   // so the sound fires on the transition, not on every re-render, and skips the
   // initial mount. Muting is honored inside `playSound`.
+  // This page shows errors with its own inline retry link rather than the
+  // shared ErrorAlert, so the central errorBuzz tap never fires here — keep
+  // a page-level buzz on the error appearance edge.
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current) playSound('errorBuzz');
+    prevErrorRef.current = error;
+  }, [error, playSound]);
+
   const prevPhaseRef = useRef<number | undefined>(undefined);
   useEffect(() => {
     const phase = state?.phase;
@@ -155,13 +163,6 @@ function WarPageContent() {
     if (phase === WarPhase.RESOLVED) playSound('cardPlace');
     else if (phase === WarPhase.WAR_BURY) playSound('chipClick');
   }, [state?.phase, playSound]);
-
-  // Buzz once when a new error surfaces (e.g. a failed step/reset request).
-  const prevErrorRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (error && error !== prevErrorRef.current) playSound('errorBuzz');
-    prevErrorRef.current = error;
-  }, [error, playSound]);
 
   // Latest state/speed read from a self-scheduling autoplay loop without
   // re-subscribing the effect on every render.
@@ -255,7 +256,6 @@ function WarPageContent() {
       gamePath="/war"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

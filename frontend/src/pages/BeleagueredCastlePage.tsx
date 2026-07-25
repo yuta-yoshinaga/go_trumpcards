@@ -24,7 +24,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BeleagueredCastleResponse } from '../types/card';
@@ -89,7 +88,6 @@ function BeleagueredCastlePageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('beleagueredcastle');
-  const { playSound } = useSound();
   const game = useBeleagueredCastleGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
 
@@ -278,7 +276,6 @@ function BeleagueredCastlePageContent() {
       gamePath="/beleagueredcastle"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

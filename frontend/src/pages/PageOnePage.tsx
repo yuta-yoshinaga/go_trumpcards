@@ -21,7 +21,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, usePageOneGame } from '../hooks/usePageOneGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -98,7 +97,6 @@ function PageOnePageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('pageone', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pageone');
   const cliConfig: CliGameConfig<PageOneResponse, Parameters<typeof pageoneApi.exec>> = useMemo(
     () => ({
@@ -166,7 +164,6 @@ function PageOnePageContent() {
       isHumanTurn={isHumanTurn || isHumanMustDeclare}
       gamePath="/pageone"
       gameEndFlag={!!isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

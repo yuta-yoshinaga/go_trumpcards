@@ -108,7 +108,6 @@ function BigOPageContent() {
     cancelReset,
     phaseNames,
     cardWidth,
-    playSound,
     isMobile,
     isLargeDesktop,
     state,
@@ -175,7 +174,6 @@ function BigOPageContent() {
       isHumanTurn={canAct}
       gamePath="/bigo"
       gameEndFlag={phase === OmahaPhase.END}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

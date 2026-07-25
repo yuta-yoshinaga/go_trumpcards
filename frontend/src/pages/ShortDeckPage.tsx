@@ -31,7 +31,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { badgeWarning } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
@@ -110,7 +109,6 @@ function ShortDeckPageContent() {
     useGamePageSetup('shortdeck');
   const phaseNames = usePhaseNames('shortdeck', SHORTDECK_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const isMobile = useIsMobile();
   const { state, loading, error, exec: execApi, retry } = useGameApi(shortdeckApi.exec);
   const [betAmount, setBetAmount] = useState(20);
@@ -216,7 +214,6 @@ function ShortDeckPageContent() {
       gamePath="/shortdeck"
       gameEndFlag={phase === HoldemPhase.SHOWDOWN || phase === HoldemPhase.END}
       winShow={phase === HoldemPhase.END}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

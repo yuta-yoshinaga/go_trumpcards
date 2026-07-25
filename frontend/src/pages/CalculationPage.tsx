@@ -24,7 +24,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CalculationResponse } from '../types/card';
@@ -205,7 +204,6 @@ function CalculationPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('calculation');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -250,9 +248,8 @@ function CalculationPageContent() {
 
   const handleManualReset = useCallback(() => {
     void runApi('reset');
-    playSound('shuffle');
     setSource(null);
-  }, [runApi, playSound]);
+  }, [runApi]);
 
   const handleGiveUp = useCallback(() => {
     void runApi('giveup');
@@ -293,20 +290,18 @@ function CalculationPageContent() {
       } else {
         void runApi('move', { zone: 'waste', idx: source.idx }, { zone: 'foundation', idx: foundationIdx });
       }
-      playSound('cardPlace');
       setSource(null);
     },
-    [runApi, source, playSound],
+    [runApi, source],
   );
 
   const playToWaste = useCallback(
     (wasteIdx: number) => {
       if (source?.kind !== 'stock') return;
       void runApi('move', { zone: 'stock' }, { zone: 'waste', idx: wasteIdx });
-      playSound('cardPlace');
       setSource(null);
     },
-    [runApi, source, playSound],
+    [runApi, source],
   );
 
   const handleSelectStock = useCallback(() => {
@@ -354,7 +349,6 @@ function CalculationPageContent() {
       gamePath="/calculation"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

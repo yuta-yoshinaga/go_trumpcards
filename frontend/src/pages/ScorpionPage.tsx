@@ -28,7 +28,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ScorpionResponse } from '../types/card';
@@ -166,7 +165,6 @@ function ScorpionPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('scorpion');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -227,13 +225,11 @@ function ScorpionPageContent() {
 
   const handleManualReset = useCallback(() => {
     void apiCall('reset');
-    playSound('shuffle');
-  }, [apiCall, playSound]);
+  }, [apiCall]);
 
   const handleDeal = useCallback(() => {
     void apiCall('deal');
-    playSound('cardPlace');
-  }, [apiCall, playSound]);
+  }, [apiCall]);
 
   // Empty-column deal guard: surfaces a shake animation + tooltip instead of failing silently.
   const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
@@ -302,9 +298,8 @@ function ScorpionPageContent() {
       if (!selectedSource) return;
       void apiCall('move', selectedSource, { zone, col });
       setSelectedSource(null);
-      playSound('cardPlace');
     },
-    [apiCall, selectedSource, playSound],
+    [apiCall, selectedSource],
   );
 
   const isPlayingForKbd = state?.phase === ScorpionPhase.PLAYING;

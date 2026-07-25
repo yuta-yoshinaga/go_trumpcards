@@ -21,7 +21,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, PLAYER_COUNT_OPTIONS, TARGET_ROUNDS_OPTIONS, usePanGame } from '../hooks/usePanGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -105,7 +104,6 @@ function PanPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('pan', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pan');
   const cliConfig: CliGameConfig<PanResponse, Parameters<typeof panApi.exec>> = useMemo(
@@ -230,7 +228,6 @@ function PanPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/pan"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

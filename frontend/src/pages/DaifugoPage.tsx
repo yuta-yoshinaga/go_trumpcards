@@ -28,7 +28,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useSound } from '../providers/SoundProvider';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -130,7 +129,6 @@ function DaifugoPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const isMobile = useIsMobile();
-  const { playSound } = useSound();
 
   // Transient toast announcing a newly-triggered rank inversion (revolution /
   // eleven-back), on top of the background-color change which can be missed.
@@ -251,7 +249,6 @@ function DaifugoPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/daifugo"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

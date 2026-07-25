@@ -25,7 +25,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, useWizardGame } from '../hooks/useWizardGame';
-import { useSound } from '../providers/SoundProvider';
 import { badgeErrorColors, badgeInfoColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -114,7 +113,6 @@ export const WizardPage = withTutorial(WizardPageContent, 'wizard', WIZARD_TUTOR
 function WizardPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('wizard');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -242,7 +240,6 @@ function WizardPageContent() {
       isHumanTurn={isHumanBidTurn || isHumanTurn}
       gamePath="/wizard"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

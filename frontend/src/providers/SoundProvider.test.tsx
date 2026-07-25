@@ -170,17 +170,6 @@ describe('SoundProvider', () => {
       expect(mockPlay).toHaveBeenCalledTimes(2);
     });
 
-    it('throttles winFanfare with the temporary 3s dedupe guard', () => {
-      const { result } = renderHook(() => useSound(), { wrapper });
-      act(() => result.current.playSound('winFanfare'));
-      act(() => vi.advanceTimersByTime(1000));
-      act(() => result.current.playSound('winFanfare'));
-      expect(mockPlay).toHaveBeenCalledTimes(1);
-      act(() => vi.advanceTimersByTime(2100));
-      act(() => result.current.playSound('winFanfare'));
-      expect(mockPlay).toHaveBeenCalledTimes(2);
-    });
-
     it('does not cross-throttle different sounds', () => {
       const { result } = renderHook(() => useSound(), { wrapper });
       act(() => result.current.playSound('cardPlace'));

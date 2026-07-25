@@ -18,7 +18,6 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BourreResponse } from '../types/card';
@@ -139,7 +138,6 @@ function BourrePageContent() {
     clearLog,
   });
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
 
   const [selectedCards, setSelectedCards] = useState<Set<number>>(new Set());
   const [cpuDifficulty, setCpuDifficulty] = useState(0);
@@ -156,10 +154,6 @@ function BourrePageContent() {
   const isHumanTurn = state ? state.currentPlayerIdx === humanIdx : false;
   const humanWon = isGameEnd && !!state && state.winnerIdx === humanIdx;
   const validPlays = useMemo(() => new Set(state?.validPlays ?? []), [state]);
-
-  useEffect(() => {
-    if (humanWon) playSound('winFanfare');
-  }, [humanWon, playSound]);
 
   const handleDecide = useCallback(
     (play: boolean) => {
@@ -245,7 +239,6 @@ function BourrePageContent() {
       cancelReset={cancelReset}
       gameEndFlag={isGameEnd}
       winShow={humanWon}
-      onCelebrate={() => playSound('winFanfare')}
       headerExtra={
         <div className="flex items-center gap-2">
           <span className="text-xs opacity-75">

@@ -26,7 +26,6 @@ import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSpideretteGame } from '../hooks/useSpideretteGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SpideretteResponse } from '../types/card';
@@ -84,7 +83,6 @@ function SpiderettePageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('spiderette');
-  const { playSound } = useSound();
   const game = useSpideretteGame();
   const {
     state,
@@ -206,7 +204,6 @@ function SpiderettePageContent() {
       gamePath="/spiderette"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

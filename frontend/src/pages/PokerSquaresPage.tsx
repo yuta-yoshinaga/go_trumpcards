@@ -21,7 +21,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, PokerSquaresResponse } from '../types/card';
@@ -90,7 +89,6 @@ function PokerSquaresPageContent() {
         Math.min(CARD_DIMENSIONS.desktop.cardWidth, Math.floor((windowWidth - PS_BOARD_CHROME_PX) / 5)),
       )
     : baseCardWidth;
-  const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(pokersquaresApi.exec);
   const {
     hint: frontendHint,
@@ -243,7 +241,6 @@ function PokerSquaresPageContent() {
       gamePath="/pokersquares"
       gameEndFlag={!state || isComplete}
       winShow={isComplete}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

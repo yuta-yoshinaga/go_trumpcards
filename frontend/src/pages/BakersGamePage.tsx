@@ -25,7 +25,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, FreeCellResponse } from '../types/card';
@@ -93,7 +92,6 @@ function BakersGamePageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('bakersgame');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -157,9 +155,8 @@ function BakersGamePageContent() {
       const target = bakersGameAutoMoveTarget(card, state.foundation, state.freeCells);
       if (!target) return;
       handleAutoMove(source, target);
-      playSound('cardPlace');
     },
-    [state, isAutoCompleting, handleAutoMove, playSound],
+    [state, isAutoCompleting, handleAutoMove],
   );
 
   const handleManualReset = useCallback(() => {
@@ -219,7 +216,6 @@ function BakersGamePageContent() {
       gamePath="/bakersgame"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

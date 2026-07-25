@@ -19,7 +19,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useSound } from '../providers/SoundProvider';
 import { focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SixCardGolfResponse, SixCardGolfSlot } from '../types/card';
@@ -98,7 +97,6 @@ function SixCardGolfPageContent() {
   const { hint, hintEnabled, setHintEnabled } = useGameHint('sixcardgolf', state);
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('sixcardgolf');
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
 
   // Mount-time reset: useMountReset expects (...args: ['reset']) => unknown
   // but our API takes an object param, so use a direct useEffect instead.
@@ -114,10 +112,6 @@ function SixCardGolfPageContent() {
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const isHumanTurn = state ? state.currentPlayerIdx === humanIdx : false;
   const humanWon = isGameEnd && state?.winnerIdx === humanIdx;
-
-  useEffect(() => {
-    if (humanWon) playSound('winFanfare');
-  }, [humanWon, playSound]);
 
   const handleFlipInitial = useCallback((pos: number) => apiCall({ command: 'flipinitial', position: pos }), [apiCall]);
   const handleDrawStock = useCallback(() => apiCall({ command: 'drawstock' }), [apiCall]);

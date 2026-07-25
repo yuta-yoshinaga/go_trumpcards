@@ -25,7 +25,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -112,7 +111,6 @@ export const NinetyNinePage = withTutorial(NinetyNinePageContent, 'ninetynine', 
 function NinetyNinePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('ninetynine');
-  const { playSound } = useSound();
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection, setSelected } = useCardSelection();
   const [config, setConfig] = useState<{ cpuDifficulty: number; targetScore: number }>({ ...DEFAULT_CONFIG });
 
@@ -241,7 +239,6 @@ function NinetyNinePageContent() {
       gamePath="/ninetynine"
       gameEndFlag={isGameEnd}
       winShow={isGameEnd && state.winnerIdx === 0}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

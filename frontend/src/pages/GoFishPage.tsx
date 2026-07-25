@@ -24,7 +24,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGoFishGame } from '../hooks/useGoFishGame';
 import { useGoFishKnownRanks } from '../hooks/useGoFishKnownRanks';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -101,7 +100,6 @@ function GoFishPageContent() {
     handleAsk,
   } = useGoFishGame();
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -201,7 +199,6 @@ function GoFishPageContent() {
       gamePath="/gofish"
       gameEndFlag={!!isGameEnd}
       winShow={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

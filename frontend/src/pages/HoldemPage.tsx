@@ -31,7 +31,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { badgeSuccessColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
@@ -110,7 +109,6 @@ function HoldemPageContent() {
     useGamePageSetup('holdem');
   const phaseNames = usePhaseNames('holdem', HOLDEM_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const isMobile = useIsMobile();
   const { state, loading, error, exec, retry } = useGameApi(holdemApi.exec);
 
@@ -246,7 +244,6 @@ function HoldemPageContent() {
       isHumanTurn={canAct}
       gamePath="/holdem"
       gameEndFlag={phase === HoldemPhase.END}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

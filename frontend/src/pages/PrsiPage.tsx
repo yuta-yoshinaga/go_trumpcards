@@ -99,20 +99,18 @@ function PrsiPageContent() {
   const prevErrorRef = useRef<string | null>(null);
   useEffect(() => {
     if (error && error !== prevErrorRef.current) {
-      playSound('errorBuzz');
     }
     prevErrorRef.current = error;
-  }, [error, playSound]);
+  }, [error]);
 
   // Card-operation SFX: place a card on play, shuffle on draw. Fired on the
   // human's own action only (the play/draw controls render solely on the
   // human turn), mirroring SpiteAndMalicePage's fire-and-forget approach.
   const handlePlayWithSound = useCallback(() => {
     if (selectedCardIndices.length === 1) {
-      playSound('cardPlace');
     }
     handlePlay();
-  }, [handlePlay, playSound, selectedCardIndices]);
+  }, [handlePlay, selectedCardIndices]);
 
   const handleDrawWithSound = useCallback(() => {
     playSound('shuffle');
@@ -177,7 +175,6 @@ function PrsiPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/prsi"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

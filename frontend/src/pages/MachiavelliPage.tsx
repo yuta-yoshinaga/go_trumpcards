@@ -26,7 +26,6 @@ import {
   useMachiavelliGame,
 } from '../hooks/useMachiavelliGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -125,7 +124,6 @@ function MachiavelliPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('machiavelli', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('machiavelli');
   const cliConfig: CliGameConfig<MachiavelliResponse, Parameters<typeof machiavelliApi.exec>> = useMemo(
@@ -253,7 +251,6 @@ function MachiavelliPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/machiavelli"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
