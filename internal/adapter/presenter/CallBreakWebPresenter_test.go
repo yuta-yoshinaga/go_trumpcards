@@ -18,7 +18,7 @@ func setupCallBreakWebMock() *interfaces.MockCallBreakGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetSpadesBroken").Return(false)
-	m.On("GetCurrentTrick").Return([]*domain.CallBreakTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.CallBreakPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -83,7 +83,7 @@ func TestCallBreakWebPresenter_Output(t *testing.T) {
 	t.Run("follow phase shows follow code", func(t *testing.T) {
 		m, _ := setupCallBreakWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		m.On("GetCurrentTrick").Return([]*domain.CallBreakTrickCard{
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 9, false)},
 		})
 		var resObj controller.CallBreakWebOutput

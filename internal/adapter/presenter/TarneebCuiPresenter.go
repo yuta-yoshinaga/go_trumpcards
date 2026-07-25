@@ -84,8 +84,8 @@ func (p *TarneebCuiPresenter) Output(t interfaces.TarneebGame, lastErr error) st
 
 		trick := t.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
-			func(tc *domain.TarneebTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.TarneebTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(t.GetPlayer(idx), idx) },
 		)
 

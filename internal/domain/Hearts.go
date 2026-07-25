@@ -57,12 +57,6 @@ type HeartsHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// HeartsTrickCard トリック中の1枚
-type HeartsTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Hearts ハーツゲームクラス
 type Hearts struct {
 	trumpCards       *TrumpCards
@@ -72,7 +66,7 @@ type Hearts struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*HeartsTrickCard
+	currentTrick     []*TrickCard
 	heartsBroken     bool
 	passedCards      [HeartsPlayerCnt][]*Card
 	passReady        [HeartsPlayerCnt]bool
@@ -431,10 +425,10 @@ func (h *Hearts) GetCurrentPlayerIdx() int { return h.currentPlayerIdx }
 func (h *Hearts) SetCurrentPlayerIdx(idx int) { h.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (h *Hearts) GetCurrentTrick() []*HeartsTrickCard { return h.currentTrick }
+func (h *Hearts) GetCurrentTrick() []*TrickCard { return h.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (h *Hearts) SetCurrentTrick(trick []*HeartsTrickCard) { h.currentTrick = trick }
+func (h *Hearts) SetCurrentTrick(trick []*TrickCard) { h.currentTrick = trick }
 
 // GetHeartsBroken ハーツブレイク状態取得
 func (h *Hearts) GetHeartsBroken() bool { return h.heartsBroken }
@@ -545,7 +539,7 @@ func (h *Hearts) findTwoOfClubs() int {
 
 // playCard カードをプレイする共通処理
 func (h *Hearts) playCard(playerIdx int, card *Card) {
-	h.currentTrick = append(h.currentTrick, &HeartsTrickCard{
+	h.currentTrick = append(h.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -696,20 +690,7 @@ func isPenaltyCard(card *Card) bool {
 
 // trickWinner トリックの勝者を決定する
 func (h *Hearts) trickWinner() int {
-	if len(h.currentTrick) == 0 {
-		return 0
-	}
-	leadSuit := h.currentTrick[0].Card.GetDesign()
-	winnerIdx := h.currentTrick[0].PlayerIdx
-	winnerValue := h.currentTrick[0].Card.GetValue()
-
-	for _, tc := range h.currentTrick[1:] {
-		if tc.Card.GetDesign() == leadSuit && tc.Card.GetValue() > winnerValue {
-			winnerIdx = tc.PlayerIdx
-			winnerValue = tc.Card.GetValue()
-		}
-	}
-	return winnerIdx
+	return ResolveTrickWinner(h.currentTrick, -1, nil)
 }
 
 // passTarget パス先のプレイヤーインデックスを計算する
@@ -1195,7 +1176,7 @@ type heartsJSON struct {
 	RoundNumber      int                      `json:"rn"`
 	TrickNumber      int                      `json:"tn"`
 	CurrentPlayerIdx int                      `json:"ci"`
-	CurrentTrick     []*HeartsTrickCard       `json:"ct"`
+	CurrentTrick     []*TrickCard             `json:"ct"`
 	HeartsBroken     bool                     `json:"hb"`
 	PassedCards      [HeartsPlayerCnt][]*Card `json:"pc"`
 	PassReady        [HeartsPlayerCnt]bool    `json:"pr"`
@@ -1260,7 +1241,7 @@ func (h *Hearts) UnmarshalJSON(data []byte) error {
 	h.currentPlayerIdx = j.CurrentPlayerIdx
 	h.currentTrick = j.CurrentTrick
 	if h.currentTrick == nil {
-		h.currentTrick = make([]*HeartsTrickCard, 0)
+		h.currentTrick = make([]*TrickCard, 0)
 	}
 	h.heartsBroken = j.HeartsBroken
 	h.passedCards = j.PassedCards

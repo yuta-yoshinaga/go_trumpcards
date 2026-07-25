@@ -58,8 +58,8 @@ func (p *CallBreakCuiPresenter) Output(cb interfaces.CallBreakGame, lastErr erro
 		// Current trick
 		trick := cb.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
-			func(tc *domain.CallBreakTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.CallBreakTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(cb.GetPlayer(idx), idx) },
 		)
 

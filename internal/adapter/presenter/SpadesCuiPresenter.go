@@ -83,8 +83,8 @@ func (p *SpadesCuiPresenter) Output(s interfaces.SpadesGame, lastErr error) stri
 		// Current trick
 		trick := s.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
-			func(tc *domain.SpadesTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.SpadesTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) },
 		)
 

@@ -52,7 +52,7 @@ type TarneebGame interface {
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
-	GetCurrentTrick() []*domain.TarneebTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetTrumpSuit トランプスートを取得する (0 = 未宣言)
 	GetTrumpSuit() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する

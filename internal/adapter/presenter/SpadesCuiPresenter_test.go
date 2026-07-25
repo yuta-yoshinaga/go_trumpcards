@@ -18,7 +18,7 @@ func setupSpadesCuiMock() *interfaces.MockSpadesGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetSpadesBroken").Return(false)
-	m.On("GetCurrentTrick").Return([]*domain.SpadesTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.SpadesPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -134,7 +134,7 @@ func TestSpadesCuiPresenter_Output(t *testing.T) {
 	t.Run("current trick shown", func(t *testing.T) {
 		m, _ := setupSpadesCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		trick := []*domain.SpadesTrickCard{
+		trick := []*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 		}

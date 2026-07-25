@@ -44,7 +44,7 @@ type TwoTenJackGame interface {
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
-	GetCurrentTrick() []*domain.TwoTenJackTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
 	// GetDeclarerIdx 宣言者インデックスを取得する

@@ -33,12 +33,6 @@ type WhistHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// WhistTrickCard トリック中の1枚
-type WhistTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Whist ホイストゲームクラス
 type Whist struct {
 	trumpCards       *TrumpCards
@@ -48,7 +42,7 @@ type Whist struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*WhistTrickCard
+	currentTrick     []*TrickCard
 	trumpSuit        int // トランプ（切り札）スート
 	leadPlayerIdx    int
 	dealerIdx        int
@@ -266,10 +260,10 @@ func (w *Whist) GetCurrentPlayerIdx() int { return w.currentPlayerIdx }
 func (w *Whist) SetCurrentPlayerIdx(idx int) { w.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (w *Whist) GetCurrentTrick() []*WhistTrickCard { return w.currentTrick }
+func (w *Whist) GetCurrentTrick() []*TrickCard { return w.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (w *Whist) SetCurrentTrick(trick []*WhistTrickCard) { w.currentTrick = trick }
+func (w *Whist) SetCurrentTrick(trick []*TrickCard) { w.currentTrick = trick }
 
 // GetTrumpSuit トランプスート取得
 func (w *Whist) GetTrumpSuit() int { return w.trumpSuit }
@@ -398,7 +392,7 @@ func (w *Whist) startPlayPhase() {
 
 // playCard カードをプレイする共通処理
 func (w *Whist) playCard(playerIdx int, card *Card) {
-	w.currentTrick = append(w.currentTrick, &WhistTrickCard{
+	w.currentTrick = append(w.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -443,35 +437,7 @@ func (w *Whist) playerHasSuit(playerIdx int, design int) bool {
 
 // trickWinner トリックの勝者を決定する
 func (w *Whist) trickWinner() int {
-	if len(w.currentTrick) == 0 {
-		return 0
-	}
-	leadSuit := w.currentTrick[0].Card.GetDesign()
-	winnerIdx := w.currentTrick[0].PlayerIdx
-	winnerValue := w.currentTrick[0].Card.GetValue()
-	winnerIsTrump := w.currentTrick[0].Card.GetDesign() == w.trumpSuit
-
-	for _, tc := range w.currentTrick[1:] {
-		isTrump := tc.Card.GetDesign() == w.trumpSuit
-
-		if isTrump && !winnerIsTrump {
-			// トランプがリードスートに勝つ
-			winnerIdx = tc.PlayerIdx
-			winnerValue = tc.Card.GetValue()
-			winnerIsTrump = true
-		} else if isTrump && winnerIsTrump {
-			// トランプ同士: 高い方が勝つ
-			if tc.Card.GetValue() > winnerValue {
-				winnerIdx = tc.PlayerIdx
-				winnerValue = tc.Card.GetValue()
-			}
-		} else if !isTrump && !winnerIsTrump && tc.Card.GetDesign() == leadSuit && tc.Card.GetValue() > winnerValue {
-			// 非トランプ同士: リードスートの高い方が勝つ
-			winnerIdx = tc.PlayerIdx
-			winnerValue = tc.Card.GetValue()
-		}
-	}
-	return winnerIdx
+	return ResolveTrickWinner(w.currentTrick, w.trumpSuit, nil)
 }
 
 // checkGameEnd ゲーム終了判定
@@ -879,7 +845,7 @@ type whistJSON struct {
 	RoundNumber      int               `json:"rn"`
 	TrickNumber      int               `json:"tn"`
 	CurrentPlayerIdx int               `json:"ci"`
-	CurrentTrick     []*WhistTrickCard `json:"ct"`
+	CurrentTrick     []*TrickCard      `json:"ct"`
 	TrumpSuit        int               `json:"ts"`
 	LeadPlayerIdx    int               `json:"li"`
 	DealerIdx        int               `json:"di"`
@@ -939,7 +905,7 @@ func (w *Whist) UnmarshalJSON(data []byte) error {
 	w.currentPlayerIdx = j.CurrentPlayerIdx
 	w.currentTrick = j.CurrentTrick
 	if w.currentTrick == nil {
-		w.currentTrick = make([]*WhistTrickCard, 0)
+		w.currentTrick = make([]*TrickCard, 0)
 	}
 	w.trumpSuit = j.TrumpSuit
 	w.leadPlayerIdx = j.LeadPlayerIdx

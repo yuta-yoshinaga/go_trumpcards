@@ -394,7 +394,7 @@ func TestSpades_ValidatePlay_FollowSuit(t *testing.T) {
 
 	setupSpadesPlayPhase(s, 0, 1, 2)
 	s.SetSpadesBroken(true)
-	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
 
@@ -417,7 +417,7 @@ func TestSpades_ValidatePlay_NoSuitToFollow(t *testing.T) {
 
 	setupSpadesPlayPhase(s, 0, 1, 2)
 	s.SetSpadesBroken(true)
-	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
 
@@ -467,7 +467,7 @@ func TestSpades_TrickWinner_NoTrump(t *testing.T) {
 
 	s.SetPhase(domain.SpadesPhaseTrickEnd)
 	s.SetTrickNumber(2)
-	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 3, false)},
@@ -485,7 +485,7 @@ func TestSpades_TrickWinner_WithTrump(t *testing.T) {
 	s.SetSpadesBroken(true)
 
 	s.SetPhase(domain.SpadesPhaseTrickEnd)
-	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},   // K♥
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},   // 10♥
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 2, false)},    // 2♠ (trump)
@@ -502,7 +502,7 @@ func TestSpades_TrickWinner_MultipleTrumps(t *testing.T) {
 
 	s.SetPhase(domain.SpadesPhaseTrickEnd)
 	s.SetTrickNumber(2)
-	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 10, false)},
@@ -524,7 +524,7 @@ func TestSpades_ResolveTrick_IncompleteCards(t *testing.T) {
 	s := newTestSpades()
 	s.Reset()
 	s.SetPhase(domain.SpadesPhaseTrickEnd)
-	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 	})
 	s.ResolveTrick() // should be no-op (not 4 cards)
@@ -817,7 +817,7 @@ func TestSpades_SpadesBrokenOnPlay(t *testing.T) {
 	s.SetSpadesBroken(false)
 
 	// Leading with only spades should break spades
-	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 7, false)},
 	})
 
@@ -837,7 +837,7 @@ func TestSpades_TrickEndToRoundEnd(t *testing.T) {
 		s.GetPlayer(i).SetBid(3)
 	}
 
-	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 3, false)},
@@ -1019,7 +1019,7 @@ func TestSpades_GetHint_PlayPhase_FollowSuit(t *testing.T) {
 	s := newTestSpades()
 	s.Reset()
 	setupSpadesPlayPhase(s, 0, 1, 1)
-	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
 	p := s.GetPlayer(0)
@@ -1038,7 +1038,7 @@ func TestSpades_GetHint_PlayPhase_TrumpCut(t *testing.T) {
 	s.Reset()
 	setupSpadesPlayPhase(s, 0, 1, 2)
 	s.SetSpadesBroken(true)
-	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 7, false)},
 	})
 	p := s.GetPlayer(0)
@@ -1058,7 +1058,7 @@ func TestSpades_GetHint_PlayPhase_DiscardHigh(t *testing.T) {
 	s.Reset()
 	setupSpadesPlayPhase(s, 0, 1, 2)
 	s.SetSpadesBroken(true)
-	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 7, false)},
 	})
 	p := s.GetPlayer(0)

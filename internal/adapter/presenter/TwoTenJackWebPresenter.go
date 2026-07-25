@@ -41,8 +41,8 @@ func (p *TwoTenJackWebPresenter) buildBase(s interfaces.TwoTenJackGame) *control
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *TwoTenJackWebPresenter) buildTrickOutput(trick []*domain.TwoTenJackTrickCard) []*controller.TwoTenJackWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TwoTenJackTrickCard) *controller.TwoTenJackWebOutputTrickCard {
+func (p *TwoTenJackWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.TwoTenJackWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.TwoTenJackWebOutputTrickCard {
 		return &controller.TwoTenJackWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

@@ -173,7 +173,7 @@ func TestTwoTenJack_ValidatePlay_FollowSuit(t *testing.T) {
 	p.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
 
 	setupTTJPlayPhase(ttj, 0, 1, 2, domain.CardDesignSpade)
-	ttj.SetCurrentTrick([]*domain.TwoTenJackTrickCard{
+	ttj.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
 
@@ -193,7 +193,7 @@ func TestTwoTenJack_ValidatePlay_NoLeadSuit(t *testing.T) {
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
 
 	setupTTJPlayPhase(ttj, 0, 1, 2, domain.CardDesignSpade)
-	ttj.SetCurrentTrick([]*domain.TwoTenJackTrickCard{
+	ttj.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
 
@@ -235,7 +235,7 @@ func TestTwoTenJack_TrickWinner(t *testing.T) {
 		ttj.Reset()
 		setupTTJPlayPhase(ttj, 0, 0, 2, domain.CardDesignSpade)
 		ttj.SetPhase(domain.TwoTenJackPhaseTrickEnd)
-		ttj.SetCurrentTrick([]*domain.TwoTenJackTrickCard{
+		ttj.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
 			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 1, false)}, // A=14
@@ -250,7 +250,7 @@ func TestTwoTenJack_TrickWinner(t *testing.T) {
 		ttj.Reset()
 		setupTTJPlayPhase(ttj, 0, 0, 2, domain.CardDesignSpade)
 		ttj.SetPhase(domain.TwoTenJackPhaseTrickEnd)
-		ttj.SetCurrentTrick([]*domain.TwoTenJackTrickCard{
+		ttj.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},
 			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 2, false)}, // trump
@@ -265,7 +265,7 @@ func TestTwoTenJack_TrickWinner(t *testing.T) {
 		ttj.Reset()
 		setupTTJPlayPhase(ttj, 0, 0, 2, domain.CardDesignSpade)
 		ttj.SetPhase(domain.TwoTenJackPhaseTrickEnd)
-		ttj.SetCurrentTrick([]*domain.TwoTenJackTrickCard{
+		ttj.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},
 			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 1, false)}, // A=14
@@ -283,7 +283,7 @@ func TestTwoTenJack_ResolveTrick_WrongPhaseOrIncomplete(t *testing.T) {
 	ttj.ResolveTrick() // no-op
 
 	ttj.SetPhase(domain.TwoTenJackPhaseTrickEnd)
-	ttj.SetCurrentTrick([]*domain.TwoTenJackTrickCard{
+	ttj.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 	})
 	ttj.ResolveTrick() // no-op
@@ -488,7 +488,7 @@ func TestTwoTenJack_GetValidPlayIndices(t *testing.T) {
 	p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 	p.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
 	setupTTJPlayPhase(ttj, 0, 1, 2, domain.CardDesignSpade)
-	ttj.SetCurrentTrick([]*domain.TwoTenJackTrickCard{
+	ttj.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
 	valid := ttj.GetValidPlayIndices(0)

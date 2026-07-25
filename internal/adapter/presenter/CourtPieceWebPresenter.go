@@ -49,8 +49,8 @@ func (p *CourtPieceWebPresenter) buildBase(t interfaces.CourtPieceGame) *control
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *CourtPieceWebPresenter) buildTrickOutput(trick []*domain.CourtPieceTrickCard) []*controller.CourtPieceWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.CourtPieceTrickCard) *controller.CourtPieceWebOutputTrickCard {
+func (p *CourtPieceWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.CourtPieceWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.CourtPieceWebOutputTrickCard {
 		return &controller.CourtPieceWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

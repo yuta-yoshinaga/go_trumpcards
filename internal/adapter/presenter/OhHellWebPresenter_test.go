@@ -30,7 +30,7 @@ func setupOhHellWebMock() *interfaces.MockOhHellGame {
 	m.On("GetTotalRounds").Return(19)
 	m.On("GetHandSize").Return(10)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.OhHellTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.OhHellPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -114,7 +114,7 @@ func TestOhHellWebPresenter_Output(t *testing.T) {
 	t.Run("play phase follow message", func(t *testing.T) {
 		m, _ := setupOhHellWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		m.On("GetCurrentTrick").Return([]*domain.OhHellTrickCard{
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 3, false)},
 		})
 

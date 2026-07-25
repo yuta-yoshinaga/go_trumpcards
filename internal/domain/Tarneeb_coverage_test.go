@@ -35,7 +35,7 @@ func TestTarneeb_Setters(t *testing.T) {
 	tn.SetRoundNumber(7)
 	tn.SetTrickNumber(3)
 	tn.SetCurrentPlayerIdx(2)
-	tn.SetCurrentTrick([]*TarneebTrickCard{{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 4, false)}})
+	tn.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 4, false)}})
 	tn.SetTrumpSuit(CardDesignDiamond)
 	tn.SetBidPlayerIdx(3)
 	tn.SetBidWinnerIdx(2)
@@ -213,7 +213,7 @@ func TestTarneeb_PlayerPlay_BadValidate(t *testing.T) {
 	tn.SetTrumpSuit(CardDesignSpade)
 	tn.SetCurrentPlayerIdx(0)
 	leadCard := NewCard(CardDesignHeart, 6, false)
-	tn.SetCurrentTrick([]*TarneebTrickCard{{PlayerIdx: 3, Card: leadCard}})
+	tn.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: leadCard}})
 	fillHand(tn.GetPlayer(0), []*Card{
 		NewCard(CardDesignHeart, 4, false),
 		NewCard(CardDesignClover, 2, false),
@@ -234,7 +234,7 @@ func TestTarneeb_JSON_RoundTrip_WithTrick(t *testing.T) {
 	tn.SetTeamScore(0, 4)
 	tn.SetTeamScore(1, -1)
 	tn.SetLeadPlayerIdx(2)
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 13, false)},
 		{PlayerIdx: 3, Card: NewCard(CardDesignSpade, 1, false)},
 	})
@@ -278,7 +278,7 @@ func TestTarneeb_TrickWinner_AllTrumps(t *testing.T) {
 	tn := newCov(TarneebCpuDifficultyNormal)
 	tn.Reset()
 	tn.SetTrumpSuit(CardDesignSpade)
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 7, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 13, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 2, false)},
@@ -297,7 +297,7 @@ func TestTarneeb_TrickWinner_NoCards(t *testing.T) {
 func TestTarneeb_SummariseTrick_NoTrump(t *testing.T) {
 	tn := newCov(TarneebCpuDifficultyNormal)
 	tn.SetTrumpSuit(CardDesignSpade)
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 5, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 9, false)},
 	})
@@ -318,19 +318,19 @@ func TestTarneeb_IsPartnerCurrentlyWinning(t *testing.T) {
 	assert.False(t, tn.isPartnerCurrentlyWinning(0))
 
 	// Idx 2 is partner of 0; idx 2 leads the trick → from idx 0's POV partner is winning.
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 12, false)},
 	})
 	assert.True(t, tn.isPartnerCurrentlyWinning(0))
 
 	// Idx 1 winning is not partner of idx 0.
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 5, false)},
 	})
 	assert.False(t, tn.isPartnerCurrentlyWinning(0))
 
 	// Self-winning is not "partner winning".
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 5, false)},
 	})
 	assert.False(t, tn.isPartnerCurrentlyWinning(0))
@@ -375,7 +375,7 @@ func TestTarneeb_CpuPlayNormal_Lead_Overcards(t *testing.T) {
 	tn.SetPhase(TarneebPhasePlay)
 	tn.SetTrumpSuit(CardDesignSpade)
 	// Existing trick led with H-9. Player 1 has H-10 and H-K — should play the lowest over (10).
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 9, false)},
 	})
 	fillHand(tn.GetPlayer(1), []*Card{
@@ -391,7 +391,7 @@ func TestTarneeb_CpuPlayNormal_Void_TrumpAvailable(t *testing.T) {
 	tn.Reset()
 	tn.SetPhase(TarneebPhasePlay)
 	tn.SetTrumpSuit(CardDesignSpade)
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 9, false)},
 	})
 	fillHand(tn.GetPlayer(1), []*Card{
@@ -408,7 +408,7 @@ func TestTarneeb_CpuPlayNormal_Void_TrumpInTrick(t *testing.T) {
 	tn.Reset()
 	tn.SetPhase(TarneebPhasePlay)
 	tn.SetTrumpSuit(CardDesignSpade)
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 9, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 5, false)},
 	})
@@ -442,7 +442,7 @@ func TestTarneeb_CpuPlayHard_Void_NoTrump(t *testing.T) {
 	tn.Reset()
 	tn.SetPhase(TarneebPhasePlay)
 	tn.SetTrumpSuit(CardDesignSpade)
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 13, false)},
 	})
 	fillHand(tn.GetPlayer(1), []*Card{
@@ -460,7 +460,7 @@ func TestTarneeb_CpuPlayHard_PartnerWinning_Void(t *testing.T) {
 	tn.SetPhase(TarneebPhasePlay)
 	tn.SetTrumpSuit(CardDesignSpade)
 	// Idx 1's partner is idx 3; idx 3 leads with H-A → partner winning. Idx 1 is void.
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 1, false)},
 	})
 	fillHand(tn.GetPlayer(1), []*Card{
@@ -478,7 +478,7 @@ func TestTarneeb_CpuPlayHard_LeadSuit_PartnerWinning(t *testing.T) {
 	tn.SetPhase(TarneebPhasePlay)
 	tn.SetTrumpSuit(CardDesignSpade)
 	// Partner (idx 3) of idx 1 winning with H-A. Idx 1 has H-5 and H-K → must play low.
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 1, false)},
 	})
 	fillHand(tn.GetPlayer(1), []*Card{
@@ -494,7 +494,7 @@ func TestTarneeb_CpuSelectPlayCard_Single(t *testing.T) {
 	tn.Reset()
 	tn.SetPhase(TarneebPhasePlay)
 	tn.SetTrumpSuit(CardDesignSpade)
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 5, false)},
 	})
 	fillHand(tn.GetPlayer(1), []*Card{NewCard(CardDesignHeart, 3, false)})
@@ -507,7 +507,7 @@ func TestTarneeb_CpuSelectPlayCard_Empty(t *testing.T) {
 	tn.Reset()
 	tn.SetPhase(TarneebPhasePlay)
 	tn.SetTrumpSuit(CardDesignSpade)
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 5, false)},
 	})
 	// Empty hand → fallback 0.
@@ -601,7 +601,7 @@ func TestTarneeb_GetValidPlayIndices_Public(t *testing.T) {
 	tn.SetPhase(TarneebPhasePlay)
 	tn.SetCurrentPlayerIdx(0)
 	leadCard := NewCard(CardDesignHeart, 5, false)
-	tn.SetCurrentTrick([]*TarneebTrickCard{{PlayerIdx: 3, Card: leadCard}})
+	tn.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: leadCard}})
 	fillHand(tn.GetPlayer(0), []*Card{
 		NewCard(CardDesignHeart, 9, false),
 		NewCard(CardDesignSpade, 4, false),

@@ -270,7 +270,7 @@ func TestTarneeb_FollowSuit_Violation(t *testing.T) {
 	tn.SetCurrentPlayerIdx(0)
 	// リードカードがハートになるよう、currentTrick をセット
 	leadCard := domain.NewCard(domain.CardDesignHeart, 6, false)
-	tn.SetCurrentTrick([]*domain.TarneebTrickCard{{PlayerIdx: 3, Card: leadCard}})
+	tn.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: leadCard}})
 	clearAndDeal(tn.GetPlayer(0), []*domain.Card{
 		domain.NewCard(domain.CardDesignHeart, 4, false),
 		domain.NewCard(domain.CardDesignDiamond, 2, false),
@@ -289,7 +289,7 @@ func TestTarneeb_Void_AllowsAnyCard(t *testing.T) {
 	tn.SetTrumpSuit(domain.CardDesignSpade)
 	tn.SetCurrentPlayerIdx(0)
 	leadCard := domain.NewCard(domain.CardDesignHeart, 6, false)
-	tn.SetCurrentTrick([]*domain.TarneebTrickCard{{PlayerIdx: 3, Card: leadCard}})
+	tn.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: leadCard}})
 	clearAndDeal(tn.GetPlayer(0), []*domain.Card{
 		domain.NewCard(domain.CardDesignDiamond, 2, false),
 		domain.NewCard(domain.CardDesignSpade, 5, false),
@@ -304,7 +304,7 @@ func TestTarneeb_TrickWinner_TrumpBeatsLead(t *testing.T) {
 	tn.SetPhase(domain.TarneebPhasePlay)
 	tn.SetTrumpSuit(domain.CardDesignSpade)
 	tn.SetTrickNumber(1)
-	tn.SetCurrentTrick([]*domain.TarneebTrickCard{
+	tn.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 2, false)},
@@ -323,7 +323,7 @@ func TestTarneeb_TrickWinner_NoTrump_HighLeadWins(t *testing.T) {
 	tn.SetPhase(domain.TarneebPhaseTrickEnd)
 	tn.SetTrumpSuit(domain.CardDesignSpade)
 	tn.SetTrickNumber(1)
-	tn.SetCurrentTrick([]*domain.TarneebTrickCard{
+	tn.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignDiamond, 2, false)},
@@ -460,7 +460,7 @@ func TestTarneeb_GetValidPlayIndices(t *testing.T) {
 	tn.SetTrumpSuit(domain.CardDesignSpade)
 	tn.SetCurrentPlayerIdx(0)
 	leadCard := domain.NewCard(domain.CardDesignHeart, 3, false)
-	tn.SetCurrentTrick([]*domain.TarneebTrickCard{{PlayerIdx: 3, Card: leadCard}})
+	tn.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: leadCard}})
 	clearAndDeal(tn.GetPlayer(0), []*domain.Card{
 		domain.NewCard(domain.CardDesignHeart, 4, false),
 		domain.NewCard(domain.CardDesignDiamond, 2, false),

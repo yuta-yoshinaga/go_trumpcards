@@ -340,7 +340,7 @@ func TestCallBreak_ResolveTrick(t *testing.T) {
 	cb := newTestCallBreak()
 	cb.SetPhase(domain.CallBreakPhaseTrickEnd)
 	cb.SetTrickNumber(1)
-	trick := []*domain.CallBreakTrickCard{
+	trick := []*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 11, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 4, false)},
@@ -356,7 +356,7 @@ func TestCallBreak_ResolveTrick_TrumpWins(t *testing.T) {
 	cb := newTestCallBreak()
 	cb.SetPhase(domain.CallBreakPhaseTrickEnd)
 	cb.SetTrickNumber(1)
-	trick := []*domain.CallBreakTrickCard{
+	trick := []*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 2, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 4, false)},
@@ -371,7 +371,7 @@ func TestCallBreak_ResolveTrick_AdvancesToRoundEnd(t *testing.T) {
 	cb := newTestCallBreak()
 	cb.SetPhase(domain.CallBreakPhaseTrickEnd)
 	cb.SetTrickNumber(domain.CallBreakHandSize)
-	cb.SetCurrentTrick([]*domain.CallBreakTrickCard{
+	cb.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 11, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 4, false)},

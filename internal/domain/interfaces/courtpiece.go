@@ -46,7 +46,7 @@ type CourtPieceGame interface {
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
-	GetCurrentTrick() []*domain.CourtPieceTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetTrumpSuit トランプスートを取得する (0 = 未宣言)
 	GetTrumpSuit() int
 	// GetCallerIdx 呼び手 (Hakim) インデックスを取得する

@@ -143,7 +143,7 @@ func TestCpuPlayHard_PartnerWinning_PlaysLow(t *testing.T) {
 	// idx 2 (team 0) leads with A♥; idx 1 (team 1) is current player; idx 3 (team 1) is partner of idx 1.
 	// idx 3 hasn't played yet, but trick winner consult is for idx 1's choice with idx 0 (team 0) being current trick.
 	// パートナーが勝っている状況を模擬: idx 3 がパートナーで A♥ をリード。
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 1, false)}, // partner of idx1
 	})
 	fillHand(tn.GetPlayer(1), []*Card{
@@ -174,7 +174,7 @@ func TestIsValidSuit(t *testing.T) {
 func TestSummariseTrick(t *testing.T) {
 	tn := newInternalTarneeb(TarneebCpuDifficultyNormal)
 	tn.SetTrumpSuit(CardDesignSpade)
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 5, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 2, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 13, false)},
@@ -202,7 +202,7 @@ func TestPlayHintReason(t *testing.T) {
 	tn.SetCurrentTrick(nil)
 	assert.Equal(t, "lead_strong", tn.playHintReason(0, 0))
 
-	tn.SetCurrentTrick([]*TarneebTrickCard{
+	tn.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 8, false)},
 	})
 	assert.Equal(t, "follow_suit", tn.playHintReason(0, 0))

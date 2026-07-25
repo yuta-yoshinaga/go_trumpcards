@@ -113,7 +113,7 @@ func TestCourtPiece_MustFollowSuit(t *testing.T) {
 	c.SetCurrentPlayerIdx(0)
 	c.SetTrickNumber(1)
 	// Lead a heart; seat 0 holds a heart and a club -> must follow heart.
-	c.SetCurrentTrick([]*domain.CourtPieceTrickCard{
+	c.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: cpCard(domain.CardDesignHeart, 7)},
 	})
 	p := c.GetPlayer(0)
@@ -130,7 +130,7 @@ func TestCourtPiece_TrickWinnerTrumpBeatsFailLead(t *testing.T) {
 	c.SetPhase(domain.CourtPiecePhaseTrickEnd)
 	c.SetTrickNumber(1)
 	// Lead a high heart, but a low trump spade should win.
-	c.SetCurrentTrick([]*domain.CourtPieceTrickCard{
+	c.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: cpCard(domain.CardDesignHeart, 1)},   // A♥ lead
 		{PlayerIdx: 1, Card: cpCard(domain.CardDesignHeart, 13)},  // K♥
 		{PlayerIdx: 2, Card: cpCard(domain.CardDesignSpade, 2)},   // 2♠ trump
@@ -145,7 +145,7 @@ func TestCourtPiece_TrickWinnerAceHigh(t *testing.T) {
 	c.SetTrumpSuit(domain.CardDesignSpade) // no trump in trick
 	c.SetPhase(domain.CourtPiecePhaseTrickEnd)
 	c.SetTrickNumber(1)
-	c.SetCurrentTrick([]*domain.CourtPieceTrickCard{
+	c.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: cpCard(domain.CardDesignHeart, 13)}, // K♥
 		{PlayerIdx: 1, Card: cpCard(domain.CardDesignHeart, 1)},  // A♥ wins (ace-high)
 		{PlayerIdx: 2, Card: cpCard(domain.CardDesignHeart, 10)},

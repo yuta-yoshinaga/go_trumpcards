@@ -85,8 +85,8 @@ func (p *CourtPieceCuiPresenter) Output(t interfaces.CourtPieceGame, lastErr err
 
 		trick := t.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
-			func(tc *domain.CourtPieceTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.CourtPieceTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(t.GetPlayer(idx), idx) },
 		)
 

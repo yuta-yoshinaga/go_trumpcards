@@ -46,7 +46,7 @@ type NinetyNineGame interface {
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
-	GetCurrentTrick() []*domain.NinetyNineTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetTrumpSuit 切り札スートを取得する
 	GetTrumpSuit() int
 	// GetDealerIdx ディーラーインデックスを取得する

@@ -19,7 +19,7 @@ func setupNinetyNineCuiMock() *interfaces.MockNinetyNineGame {
 	m.On("GetTargetScore").Return(100)
 	m.On("GetHandSize").Return(9)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.NinetyNineTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.NinetyNinePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

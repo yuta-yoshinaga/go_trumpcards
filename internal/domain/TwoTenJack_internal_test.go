@@ -125,7 +125,7 @@ func TestTTJInternal_CpuSelectPlayCard_SingleOption(t *testing.T) {
 	ttj.phase = TwoTenJackPhasePlay
 	ttj.trickNumber = 1
 	// lead clover, so only clover card is valid
-	ttj.currentTrick = []*TwoTenJackTrickCard{
+	ttj.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignClover, 10, false)},
 	}
 	idx := ttj.cpuSelectPlayCard(1)
@@ -152,7 +152,7 @@ func TestTTJInternal_PickLowestWinning_NoWinners(t *testing.T) {
 	p.Reset()
 	p.AddCard(NewCard(CardDesignClover, 2, false))
 	ttj.trumpSuit = CardDesignSpade
-	ttj.currentTrick = []*TwoTenJackTrickCard{
+	ttj.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignClover, 13, false)},
 	}
 	_, ok := pickLowestWinning(ttj, p, []int{0})
@@ -165,7 +165,7 @@ func TestTTJInternal_PickLowestWinning_TrumpWins(t *testing.T) {
 	p.Reset()
 	p.AddCard(NewCard(CardDesignSpade, 2, false))
 	ttj.trumpSuit = CardDesignSpade
-	ttj.currentTrick = []*TwoTenJackTrickCard{
+	ttj.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignClover, 13, false)},
 	}
 	idx, ok := pickLowestWinning(ttj, p, []int{0})
