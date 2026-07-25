@@ -12,6 +12,8 @@ import { useOptionalSound } from '../providers/SoundProvider';
  *        │              (errorBuzz is ErrorAlert's job)
  *        └─ success ──► claim pending? ──yes──► skip (chipClick already played)
  *                            │no
+ *                            ├─ rejected action? ─yes─► silent (no card moved)
+ *                            │      │no
  *                            ├─ command === 'reset' ──► shuffle (deal/redeal)
  *                            └─ otherwise ────────────► cardPlace
  *
@@ -20,6 +22,23 @@ import { useOptionalSound } from '../providers/SoundProvider';
  * pages key mount/reset effects on `[exec]` — folding the context into the
  * callback deps would re-deal games when the user mutes.
  */
+
+/**
+ * True when a 200 response actually reports a rejected action (illegal move,
+ * out-of-turn play) rather than a state change.
+ *
+ * Every web presenter surfaces a rule rejection as `message = err.Error()`
+ * with an EMPTY `messageCode`, while every success-path message is paired with
+ * a `messageCode` (verified across all 210 `*WebPresenter.go`). So the pair is
+ * a safe discriminator: no legitimate state change is ever misread as a
+ * rejection. The ~11 presenters that do set a code on rejection simply fall
+ * through and still sound, i.e. failures degrade to the old behavior.
+ */
+function isRejectedAction(res: unknown): boolean {
+  if (typeof res !== 'object' || res === null) return false;
+  const r = res as { message?: unknown; messageCode?: unknown };
+  return typeof r.message === 'string' && r.message.length > 0 && !r.messageCode;
+}
 
 /** Hook that wraps a game API function with loading, error, and state management. */
 export function useGameApi<TState, TArgs extends unknown[]>(
@@ -63,7 +82,7 @@ export function useGameApi<TState, TArgs extends unknown[]>(
       // swallow anything the audio layer throws.
       try {
         const snd = soundRef.current;
-        if (snd && !snd.consumeExecClaim?.()) {
+        if (snd && !snd.consumeExecClaim?.() && !isRejectedAction(res)) {
           snd.playSound?.(args[0] === 'reset' ? 'shuffle' : 'cardPlace');
         }
       } catch {

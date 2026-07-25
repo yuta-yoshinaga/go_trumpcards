@@ -289,6 +289,26 @@ describe('useGameApi', () => {
       expect(playCalls).not.toContain('/sounds/shuffle.ogg');
     });
 
+    it('stays silent when the response reports a rejected action (illegal move)', async () => {
+      // Rule rejections come back 200 with `message` set and NO `messageCode`
+      // (every WebPresenter's lastErr branch). No card moved, so no card sound.
+      const apiFn = vi.fn().mockResolvedValue({ message: 'そのカードは置けません' });
+      const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createSoundWrapper() });
+      await act(async () => {
+        await result.current.exec('move', 0, 1);
+      });
+      expect(playCalls).toEqual([]);
+    });
+
+    it('still plays when a message carries a messageCode (real state change)', async () => {
+      const apiFn = vi.fn().mockResolvedValue({ message: 'ゲームクリア！', messageCode: 'bakersdozen.gameClear' });
+      const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createSoundWrapper() });
+      await act(async () => {
+        await result.current.exec('move', 0, 1);
+      });
+      expect(playCalls).toContain('/sounds/card-place.ogg');
+    });
+
     it('plays no sound on exec failure (errorBuzz belongs to ErrorAlert)', async () => {
       const apiFn = vi.fn().mockRejectedValue(new Error('network'));
       const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createSoundWrapper() });
