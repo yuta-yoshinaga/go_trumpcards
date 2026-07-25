@@ -113,27 +113,6 @@ function BakersDozenPageContent() {
   } = useBakersDozenGame();
 
   // Card-move SFX: play `cardPlace` whenever the server confirms a successful
-  // move by advancing moveCount. Keying off moveCount (rather than firing in the
-  // click handler) means illegal moves — which leave moveCount unchanged — stay
-  // silent, and each auto-complete batch that lands a card is also covered.
-  // Respects the global mute via SoundProvider.
-  const prevMoveCountRef = useRef<number | null>(null);
-  useEffect(() => {
-    const moveCount = state?.moveCount;
-    if (moveCount == null) return;
-    if (prevMoveCountRef.current !== null && moveCount > prevMoveCountRef.current) {
-    }
-    prevMoveCountRef.current = moveCount;
-  }, [state?.moveCount]);
-
-  // Play a distinct buzz the moment an illegal move / network error surfaces,
-  // so the failure is audible (mirrors PrsiPage; respects the global mute).
-  const prevErrorRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (error && error !== prevErrorRef.current) {
-    }
-    prevErrorRef.current = error;
-  }, [error]);
 
   const {
     hint: frontendHint,
