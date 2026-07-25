@@ -20,7 +20,9 @@ export default defineConfig({
     // queued behind it while still reporting the run as green, which has
     // already let real failures reach CI. Machine RAM is not the constraint
     // (the cap is per process); this only raises the ceiling, it allocates
-    // nothing up front. CI sets the same value via NODE_OPTIONS.
+    // nothing up front. Keep CI's NODE_OPTIONS too: execArgv reaches only the
+    // forked workers, while the coverage run also needs headroom in the PARENT
+    // process that aggregates it.
     execArgv: ['--max-old-space-size=8192'],
     coverage: {
       provider: 'v8',
