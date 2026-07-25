@@ -4,6 +4,7 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CardRoleBadge } from '../components/CardRoleBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { Modal } from '../components/common/Modal';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -627,30 +628,28 @@ function MightyPageContent() {
             )}
 
             {/* Joker suit picker dialog */}
-            {jokerSuitPickerOpen && (
-              <div
-                role="dialog"
-                aria-modal="true"
-                aria-label="joker-suit-picker"
-                className="my-2 p-2 rounded bg-black/60 flex gap-2 items-center flex-wrap"
-              >
-                <span className="text-ds-text-primary text-sm mr-2">{t('demandSuit')}:</span>
-                {[1, 2, 3, 4].map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => {
-                      handleJokerLead(s);
-                      setJokerSuitPickerOpen(false);
-                    }}
-                    disabled={loading}
-                  >
-                    {t(`suitName.${SUIT_KEYS[s]}`)}
-                  </button>
-                ))}
-              </div>
-            )}
+            <Modal
+              open={jokerSuitPickerOpen}
+              onClose={() => setJokerSuitPickerOpen(false)}
+              ariaLabel={t('demandSuit')}
+              panelClassName="glass-panel rounded-lg shadow-xl p-4 flex gap-2 items-center flex-wrap max-w-sm mx-4"
+            >
+              <span className="text-ds-text-primary text-sm mr-2">{t('demandSuit')}:</span>
+              {[1, 2, 3, 4].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => {
+                    handleJokerLead(s);
+                    setJokerSuitPickerOpen(false);
+                  }}
+                  disabled={loading}
+                >
+                  {t(`suitName.${SUIT_KEYS[s]}`)}
+                </button>
+              ))}
+            </Modal>
 
             <div className="flex gap-2 items-center flex-wrap">
               {(isHumanBidTurn || isHumanTurn || isHumanDeclarer || isHumanExchange) && (
