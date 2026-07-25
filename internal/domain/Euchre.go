@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // EuchrePlayerCnt ユーカープレイヤー数
@@ -904,22 +903,14 @@ func (e *Euchre) sortAllHands() {
 
 // euchreSortHand プレイヤーの手札を実効スート→ランクの順にソートする
 func euchreSortHand(p *EuchrePlayer, e *Euchre) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		si := e.effectiveSuit(cards[i])
-		sj := e.effectiveSuit(cards[j])
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		si := e.effectiveSuit(ci)
+		sj := e.effectiveSuit(cj)
 		if si != sj {
 			return si < sj
 		}
-		return e.cardRank(cards[i]) < e.cardRank(cards[j])
+		return e.cardRank(ci) < e.cardRank(cj)
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す

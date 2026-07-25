@@ -1373,21 +1373,13 @@ func (m *Mighty) sortAllHands() {
 
 // sortHand プレイヤーの手札をスート→値の順にソートする
 func (m *Mighty) sortHand(p *MightyPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		di, dj := cards[i].GetDesign(), cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		di, dj := ci.GetDesign(), cj.GetDesign()
 		if di != dj {
 			return di < dj
 		}
-		return cards[i].GetValue() < cards[j].GetValue()
+		return ci.GetValue() < cj.GetValue()
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す

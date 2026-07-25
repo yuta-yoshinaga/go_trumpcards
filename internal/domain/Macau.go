@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // MacauPlayerCnt マカオプレイヤー数
@@ -700,20 +699,12 @@ func (g *Macau) sortAllHands() {
 // sortHand プレイヤーの手札をスート→値の順にソートする
 func (g *Macau) sortHand(playerIdx int) {
 	p := g.players[playerIdx]
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return cards[i].GetValue() < cards[j].GetValue()
+		return ci.GetValue() < cj.GetValue()
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す

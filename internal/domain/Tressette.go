@@ -18,7 +18,6 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // TressettePlayerCnt トレセッテのプレイヤー数
@@ -435,20 +434,12 @@ func (g *Tressette) sortAllHands() {
 
 // tressetteSortHand プレイヤーの手札をスート→強さの順にソートする
 func tressetteSortHand(p *TressettePlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return tressetteStrength(cards[i].GetValue()) < tressetteStrength(cards[j].GetValue())
+		return tressetteStrength(ci.GetValue()) < tressetteStrength(cj.GetValue())
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す

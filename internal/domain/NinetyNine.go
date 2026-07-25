@@ -682,20 +682,12 @@ func (o *NinetyNine) sortAllHands() {
 
 // ninetyNineSortHand プレイヤーの手札をスート→値の順にソートする
 func ninetyNineSortHand(p *NinetyNinePlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return ninetyNineRankValue(cards[i]) < ninetyNineRankValue(cards[j])
+		return ninetyNineRankValue(ci) < ninetyNineRankValue(cj)
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す

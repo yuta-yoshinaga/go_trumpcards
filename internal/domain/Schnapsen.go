@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sort"
 )
 
 // SchnapsenPlayerCnt シュナプセンのプレイヤー数 (2人固定)
@@ -766,26 +765,18 @@ func (s *Schnapsen) sortAllHands() {
 
 // sortHand プレイヤーの手札をスート (トランプ最後) → ランク でソートする
 func (s *Schnapsen) sortHand(p *SchnapsenPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
 	trumpSuit := s.trumpSuit
-	sort.Slice(cards, func(i, j int) bool {
-		iTrump := cards[i].GetDesign() == trumpSuit
-		jTrump := cards[j].GetDesign() == trumpSuit
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		iTrump := ci.GetDesign() == trumpSuit
+		jTrump := cj.GetDesign() == trumpSuit
 		if iTrump != jTrump {
 			return !iTrump
 		}
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return SchnapsenRankOrder(cards[i]) < SchnapsenRankOrder(cards[j])
+		return SchnapsenRankOrder(ci) < SchnapsenRankOrder(cj)
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す (ログ用)
