@@ -50,13 +50,12 @@ describe('deriveStrategyStyle', () => {
       { bluffRate: 0.15, foldRate: 0.5, expected: 'balanced' },
     ];
 
-    it.each(cases)('returns "$expected" when bluffRate=$bluffRate, foldRate=$foldRate', ({
-      bluffRate,
-      foldRate,
-      expected,
-    }) => {
-      expect(deriveStrategyStyle({ bluffRate, foldRate })).toBe(expected);
-    });
+    it.each(cases)(
+      'returns "$expected" when bluffRate=$bluffRate, foldRate=$foldRate',
+      ({ bluffRate, foldRate, expected }) => {
+        expect(deriveStrategyStyle({ bluffRate, foldRate })).toBe(expected);
+      },
+    );
   });
 
   describe('edge cases', () => {

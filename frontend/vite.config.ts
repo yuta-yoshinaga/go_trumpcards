@@ -9,6 +9,17 @@ export default defineConfig({
     outDir: '../public',
     emptyOutDir: false,
   },
+  server: {
+    fs: {
+      // `src/constants/cuiManualTexts.ts` imports the CUI manuals from the
+      // repo-root `docs/` tree via `?raw`. Vite 7.3.2+ denies serving files
+      // outside the project root by default, which made every test that
+      // reaches a game page fail to collect ("Denied ID .../docs/manual/...").
+      // Allow the repo root explicitly; production builds inline these at
+      // build time and are unaffected.
+      allow: ['..'],
+    },
+  },
   test: {
     environment: 'happy-dom',
     setupFiles: './src/test/setup.ts',
