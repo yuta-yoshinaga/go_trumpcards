@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import { bigOHiLoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
@@ -22,28 +22,17 @@ import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useIsLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameApi } from '../hooks/useGameApi';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useMountReset } from '../hooks/useMountReset';
-import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
+import { useCommunityPokerGame } from '../hooks/useCommunityPokerGame';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { OmahaResponse } from '../types/card';
-import { OmahaPhase, OmahaRebuyPhaseType } from '../types/phases';
+import { OmahaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { omahaBestFive } from '../utils/omahaBestFive';
 import { hiLoRingStyle } from '../utils/omahaHiLoRing';
 import { lowCardIndexSets } from '../utils/omahaLowCards';
@@ -111,63 +100,59 @@ const OMAHA_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const BigOHiLoPage = withTutorial(BigOHiLoPageContent, 'bigohilo', BIGOHL_TUTORIAL_STEPS);
 /** Inner content of the Big O Hi-Lo page, wrapped by TutorialProvider. */
 function BigOHiLoPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('bigohilo');
-  const phaseNames = usePhaseNames('bigohilo', OMAHA_PHASE_KEYS);
-  const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
-  const isMobile = useIsMobile();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(bigOHiLoApi.exec);
-  const [betAmount, setBetAmount] = useState(20);
-  const [learningMode, setLearningMode] = useState(false);
-  const [cpuMetaAI, setCpuMetaAI] = useState(false);
-  const { hint, hintEnabled, setHintEnabled } = useGameHint('bigohilo', state);
-  const turnStartRef = useRef(0);
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('bigohilo');
-  const cliConfig: CliGameConfig<OmahaResponse, Parameters<typeof bigOHiLoApi.exec>> = useMemo(
-    () => ({
-      gameName: 'bigohilo',
-      parseCommand: parseOmahaCommand,
-      formatResponse: formatOmahaState,
-      helpText: OMAHA_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    phaseNames,
+    cardWidth,
+    playSound,
+    isMobile,
+    isLargeDesktop,
+    state,
+    loading,
+    error,
+    execApi,
+    retry,
+    betAmount,
+    setBetAmount,
+    learningMode,
+    setLearningMode,
+    cpuMetaAI,
+    setCpuMetaAI,
+    hint,
+    hintEnabled,
+    setHintEnabled,
+    getElapsed,
+    cliEnabled,
+    toggleCli,
+    logEntries,
+    handleCommand,
+    handleManualReset,
+    phase,
+    isShowdown,
+    humanPlayer,
+    canAct,
+    hasOutstandingBet,
+    minRaise,
+    isMuckPhase,
+    isRebuyPhase,
+    isAddonPhase,
+    humanRebuyCount,
+    cpuPlayers,
+  } = useCommunityPokerGame({
+    game: 'bigohilo',
+    exec: bigOHiLoApi.exec,
+    phaseKeys: OMAHA_PHASE_KEYS,
+    cli: { parseCommand: parseOmahaCommand, formatResponse: formatOmahaState, helpText: OMAHA_HELP },
+  });
 
-  useMountReset(execApi);
-
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    void execApi('reset', undefined, { cpuMetaAI });
-  }, [execApi, hideActionLog, cpuMetaAI]);
-
-  useEffect(() => {
-    if (state?.minRaise && state.minRaise > 0) {
-      setBetAmount(state.minRaise);
-    } else if (state) {
-      setBetAmount(20);
-    }
-  }, [state]);
-
-  useEffect(() => {
-    if (state && state.currentTurn === state.players?.find((p) => p.isHuman)?.id) {
-      turnStartRef.current = Date.now();
-    }
-  }, [state]);
-
-  const getElapsed = useCallback(() => {
-    if (!cpuMetaAI || turnStartRef.current === 0) return 0;
-    const elapsed = Date.now() - turnStartRef.current;
-    turnStartRef.current = 0;
-    return elapsed;
-  }, [cpuMetaAI]);
-
-  const phase = state?.phase ?? OmahaPhase.INIT;
-  const isActive = phase >= OmahaPhase.PRE_FLOP && phase <= OmahaPhase.RIVER;
-  const isShowdown = phase === OmahaPhase.SHOWDOWN || phase === OmahaPhase.END;
-  const humanPlayer = state?.players?.find((p) => p.isHuman);
   // At showdown, highlight the human's winning 5 cards under the must-use-2 rule.
   const showdownBest5 = useMemo(() => {
     const empty = { holeSet: new Set<number>(), boardSet: new Set<number>() };
@@ -182,40 +167,6 @@ function BigOHiLoPageContent() {
     ? state?.roundResults?.find((r) => r.playerIdx === humanPlayer?.id)?.lowBestHand
     : undefined;
   const lowSets = lowCardIndexSets(humanLowBestHand, humanPlayer?.cards ?? [], state?.communityCards ?? []);
-  const humanFolded = humanPlayer?.folded ?? false;
-  const humanAllIn = humanPlayer?.allIn ?? false;
-  const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
-  const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
-  const minRaise = state?.minRaise ?? 0;
-  const isMuckPhase = phase === OmahaPhase.SHOWDOWN && state?.muckAvailable === true;
-  const isRebuyPhase = phase === OmahaPhase.REBUY && state?.rebuyPhaseType === OmahaRebuyPhaseType.REBUY;
-  const isAddonPhase = phase === OmahaPhase.REBUY && state?.rebuyPhaseType === OmahaRebuyPhaseType.ADDON;
-  const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
-  const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
-  const isLargeDesktop = useIsLargeDesktop();
-  const cpuPlayers = useMemo(() => state?.players?.filter((player) => !player.isHuman) ?? [], [state?.players]);
-
-  const actionBindings = useMemo(
-    () => [
-      { key: 'c', action: () => execApi('call', undefined, undefined, getElapsed()), enabled: hasOutstandingBet },
-      {
-        key: 'r',
-        action: () =>
-          hasOutstandingBet
-            ? execApi('raise', betAmount, undefined, getElapsed())
-            : execApi('bet', betAmount, undefined, getElapsed()),
-      },
-      { key: 'k', action: () => execApi('check', undefined, undefined, getElapsed()), enabled: !hasOutstandingBet },
-      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()) },
-      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()) },
-    ],
-    [execApi, hasOutstandingBet, betAmount, getElapsed],
-  );
-
-  useActionKeyboardNav({
-    bindings: actionBindings,
-    enabled: canAct && !loading,
-  });
 
   if (!state)
     return (
