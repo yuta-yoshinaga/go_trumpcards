@@ -865,10 +865,6 @@ func (cb *CallBreak) summariseTrick(leadSuit int) (highestSpade int, hasSpade bo
 	return
 }
 
-// pickHighest validIndices の中で値が最大のインデックスを返す
-// pickLowest validIndices の中で値が最小のインデックスを返す
-// filterByDesign 指定スートを持つカードのインデックスのみを返す
-// filterAbove threshold より大きい値のカードのインデックスのみを返す
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (cb *CallBreak) getValidPlayIndices(playerIdx int) []int {
 	player := cb.players[playerIdx]
