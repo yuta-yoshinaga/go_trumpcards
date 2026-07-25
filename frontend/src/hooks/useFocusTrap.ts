@@ -25,8 +25,11 @@ export function useFocusTrap(containerRef: RefObject<HTMLElement | null>, open: 
     triggerRef.current = document.activeElement;
     const container = containerRef.current;
 
+    // Focus the first focusable child, or the container itself (if it is
+    // programmatically focusable, e.g. has tabIndex={-1}) when it has none — so
+    // a content-less modal still traps focus rather than leaving it in the page.
     const focusable = getFocusableElements(container);
-    focusable[0]?.focus();
+    (focusable[0] ?? container).focus();
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {

@@ -63,6 +63,7 @@ export function Modal({
       {/* biome-ignore lint/a11y/useAriaPropsSupportedByRole: role is constrained to dialog|alertdialog, both of which support aria-modal (biome can't narrow the dynamic prop) */}
       <div
         ref={dialogRef}
+        tabIndex={-1}
         role={role}
         aria-modal="true"
         aria-label={ariaLabel}
