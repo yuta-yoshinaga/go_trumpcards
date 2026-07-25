@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { HintResult } from '../../types/hint';
 import { FrontendHintTooltip } from './FrontendHintTooltip';
 
-const hint: HintResult = { reason: 'hint.reason.key', confidence: 'strong' };
+const hint: HintResult = { targetAction: 'play', reason: 'hint.reason.key', confidence: 'strong' };
 const t = (key: string) => (key === 'hint.reason.key' ? '最善手です' : key);
 
 describe('FrontendHintTooltip', () => {
