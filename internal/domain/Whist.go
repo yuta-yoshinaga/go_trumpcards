@@ -681,123 +681,46 @@ func (w *Whist) cpuPlayHard(playerIdx int, validIndices []int) int {
 	// パートナーが現在勝っているかチェック
 	partnerWinning := w.isPartnerWinning(playerIdx)
 
-	hasLeadSuit := false
-	for _, idx := range validIndices {
-		if player.GetCard(idx).GetDesign() == leadSuit {
-			hasLeadSuit = true
-			break
-		}
-	}
-
-	if hasLeadSuit {
+	// フォロー可能なら勝ち札/受け札を選ぶ (フォロー時 validIndices は全てリードスート)。
+	leadSuitIndices := filterByDesign(player, validIndices, leadSuit)
+	if len(leadSuitIndices) > 0 {
 		if partnerWinning {
-			// パートナーが勝っている場合は低いカードを出す
-			bestIdx := validIndices[0]
-			bestVal := player.GetCard(validIndices[0]).GetValue()
-			for _, idx := range validIndices {
-				card := player.GetCard(idx)
-				if card.GetDesign() == leadSuit && card.GetValue() < bestVal {
-					bestVal = card.GetValue()
-					bestIdx = idx
-				}
-			}
-			return bestIdx
+			// パートナーが勝っているなら最も低いリードスート札を出す。
+			return pickLowest(player, leadSuitIndices, nil)
 		}
-
-		// 勝ちに行く (トランプが出ていなければリードスートで勝てる)
+		// 勝ちに行く (トランプが出ていなければリードスートで勝てる)。
 		if !hasTrumpInTrick || leadSuit == w.trumpSuit {
 			threshold := highestInTrick
 			if leadSuit == w.trumpSuit {
 				threshold = highestTrumpInTrick
 			}
-			overCards := []int{}
-			for _, idx := range validIndices {
-				card := player.GetCard(idx)
-				if card.GetDesign() == leadSuit && card.GetValue() > threshold {
-					overCards = append(overCards, idx)
-				}
-			}
-			if len(overCards) > 0 {
-				bestIdx := overCards[0]
-				for _, idx := range overCards[1:] {
-					if player.GetCard(idx).GetValue() < player.GetCard(bestIdx).GetValue() {
-						bestIdx = idx
-					}
-				}
-				return bestIdx
+			if over := filterAbove(player, leadSuitIndices, threshold, nil); len(over) > 0 {
+				return pickLowest(player, over, nil)
 			}
 		}
-
-		// アンダーカードを出す
-		underCards := []int{}
-		for _, idx := range validIndices {
-			card := player.GetCard(idx)
-			if card.GetDesign() == leadSuit && card.GetValue() < highestInTrick {
-				underCards = append(underCards, idx)
-			}
+		// アンダーカードのうち最も高い札で場に付き合う。
+		if under := filterBelow(player, leadSuitIndices, highestInTrick, nil); len(under) > 0 {
+			return pickHighest(player, under, nil)
 		}
-		if len(underCards) > 0 {
-			bestIdx := underCards[0]
-			for _, idx := range underCards[1:] {
-				if player.GetCard(idx).GetValue() > player.GetCard(bestIdx).GetValue() {
-					bestIdx = idx
-				}
-			}
-			return bestIdx
-		}
-		// 最も低いオーバーカード
-		overCards := []int{}
-		for _, idx := range validIndices {
-			card := player.GetCard(idx)
-			if card.GetDesign() == leadSuit {
-				overCards = append(overCards, idx)
-			}
-		}
-		if len(overCards) > 0 {
-			bestIdx := overCards[0]
-			for _, idx := range overCards[1:] {
-				if player.GetCard(idx).GetValue() < player.GetCard(bestIdx).GetValue() {
-					bestIdx = idx
-				}
-			}
-			return bestIdx
-		}
+		// 勝てないなら最も低いリードスート札を出す。
+		return pickLowest(player, leadSuitIndices, nil)
 	}
 
-	// ボイド: パートナーが勝っている場合は捨て札
+	// ボイド: パートナーが勝っているなら最も低い札を捨てる。
 	if partnerWinning {
-		bestIdx := validIndices[0]
-		bestVal := player.GetCard(validIndices[0]).GetValue()
-		for _, idx := range validIndices[1:] {
-			card := player.GetCard(idx)
-			if card.GetValue() < bestVal {
-				bestVal = card.GetValue()
-				bestIdx = idx
-			}
-		}
-		return bestIdx
+		return pickLowest(player, validIndices, nil)
 	}
 
-	// トランプでカット
-	bestTrumpIdx := -1
-	bestTrumpVal := 100
-	for _, idx := range validIndices {
-		card := player.GetCard(idx)
-		if card.GetDesign() == w.trumpSuit {
-			if hasTrumpInTrick {
-				// すでにトランプが出ている場合、勝てるトランプのみ
-				if card.GetValue() > highestTrumpInTrick && card.GetValue() < bestTrumpVal {
-					bestTrumpIdx = idx
-					bestTrumpVal = card.GetValue()
-				}
-			} else if card.GetValue() < bestTrumpVal {
-				bestTrumpIdx = idx
-				bestTrumpVal = card.GetValue()
+	// トランプでカット (出ていれば勝てる最小のトランプ、なければ最小のトランプ)。
+	trumpIndices := filterByDesign(player, validIndices, w.trumpSuit)
+	if len(trumpIndices) > 0 {
+		if hasTrumpInTrick {
+			if over := filterAbove(player, trumpIndices, highestTrumpInTrick, nil); len(over) > 0 {
+				return pickLowest(player, over, nil)
 			}
+		} else {
+			return pickLowest(player, trumpIndices, nil)
 		}
-	}
-	if bestTrumpIdx >= 0 {
-		return bestTrumpIdx
 	}
 
 	// 最も高い不要カードを捨てる
