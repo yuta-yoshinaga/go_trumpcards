@@ -16,7 +16,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -40,6 +40,7 @@ import { DAIFUGO_HELP, parseDaifugoCommand } from '../utils/cli/commands/daifugo
 import { formatDaifugoState } from '../utils/cli/formatters/daifugoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName, playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Daifugo tutorial step definitions. */
 const DF_TUTORIAL_STEPS: TutorialStep[] = [
@@ -278,15 +279,7 @@ function DaifugoPageContent() {
               title=""
               groups={[
                 {
-                  items: [
-                    {
-                      type: 'checkbox',
-                      id: 'frontendHint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: frontendHintEnabled,
-                      onToggle: setFrontendHintEnabled,
-                    },
-                  ],
+                  items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
                 },
               ]}
             />
@@ -432,9 +425,7 @@ function DaifugoPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="text-center" data-tutorial="df-play-pass">
               {countMismatch && (

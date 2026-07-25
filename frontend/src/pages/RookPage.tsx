@@ -8,7 +8,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -26,6 +26,7 @@ import { formatRookState, parseRookCommand, ROOK_HELP, type RookCliArgs } from '
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { rookBidStatus } from '../utils/rookBidStatus';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const CPU_DIFFICULTY_SELECT = [
   { value: '0', label: 'Easy' },
@@ -356,9 +357,7 @@ function RookPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
           <SettingsPanel
@@ -382,13 +381,7 @@ function RookPageContent() {
                     options: TARGET_SCORE_SELECT,
                     onSelect: (v: string) => handleConfigChange('targetScore', v),
                   },
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}

@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
@@ -31,6 +31,7 @@ import { parseTysiacCommand, TYSIAC_HELP } from '../utils/cli/commands/tysiacCom
 import { formatTysiacState } from '../utils/cli/formatters/tysiacFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit symbols indexed by suit number (0=unset, 1=♠ 2=♣ 3=♥ 4=♦). */
 const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'] as const;
@@ -215,13 +216,7 @@ function TysiacPageContent() {
                     options: TARGET_POINTS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('targetPoints', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -414,9 +409,7 @@ function TysiacPageContent() {
                   ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="tysiac-action-buttons">
               {canBid && (

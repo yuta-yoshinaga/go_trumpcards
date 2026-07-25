@@ -29,6 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseSkatCommand, SKAT_HELP } from '../utils/cli/commands/skatCommands';
 import { formatSkatState } from '../utils/cli/formatters/skatFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { skatBestBidEstimate } from '../utils/skatBidEstimate';
 
 /** Suit identifiers matching internal/domain/Card.go (1=Spade, 2=Clover, 3=Heart, 4=Diamond). */
@@ -189,13 +190,7 @@ function SkatPageContent() {
                     options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('targetScore', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: hintEnabled,
-                    onToggle: setHintEnabled,
-                  },
+                  hintCheckboxItem(tc, hintEnabled, setHintEnabled),
                 ],
               },
             ]}

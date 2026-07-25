@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -36,6 +36,7 @@ import { formatPrsiState } from '../utils/cli/formatters/prsiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { isPrsiLegalPlay } from '../utils/prsiLegal';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const PRSI_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PrsiPhase.PLAY]: 'play',
@@ -203,13 +204,7 @@ function PrsiPageContent() {
                     })),
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -342,9 +337,7 @@ function PrsiPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex gap-2 items-center flex-wrap">
               {isHumanTurn && (

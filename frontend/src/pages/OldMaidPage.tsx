@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { OldMaidDiscardedArea } from '../components/oldmaid/OldMaidDiscardedArea';
@@ -37,6 +37,7 @@ import { OLDMAID_HELP, parseOldmaidCommand } from '../utils/cli/commands/oldmaid
 import { formatOldmaidState } from '../utils/cli/formatters/oldmaidFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Old Maid tutorial step definitions. */
 const OM_TUTORIAL_STEPS: TutorialStep[] = [
@@ -220,15 +221,7 @@ function OldMaidPageContent() {
             title={t('button.settings')}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -385,9 +378,7 @@ function OldMaidPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {/* Buttons */}
             <div className="text-center">

@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -35,6 +35,7 @@ import { agnesHasLegalMove, agnesNextFoundationMove } from '../utils/agnesMoves'
 import { AGNES_HELP, parseAgnesCommand } from '../utils/cli/commands/agnesCommands';
 import { formatAgnesState } from '../utils/cli/formatters/agnesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 /** Upper bound on auto-complete sweep iterations (one per card) to guard against loops. */
@@ -262,15 +263,7 @@ function AgnesPageContent() {
             title={tc('settings.title', { ns: 'common' })}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -448,9 +441,7 @@ function AgnesPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
               isEndPhase={isEnded}

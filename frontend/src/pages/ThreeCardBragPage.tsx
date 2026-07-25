@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseThreeCardBragCommand, THREE_CARD_BRAG_HELP } from '../utils/cli/commands/threeCardBragCommands';
 import { formatThreeCardBragState } from '../utils/cli/formatters/threeCardBragFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import {
   clampThreeCardBragRaise,
   threeCardBragActualCost,
@@ -240,13 +241,7 @@ function ThreeCardBragPageContent() {
                     options: STARTING_CHIPS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('startingChips', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -358,9 +353,7 @@ function ThreeCardBragPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="threecardbrag-action-buttons">
               {isHumanBetTurn && (

@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_CNT = 4;
 const WASTE_CNT = 4;
@@ -378,15 +379,7 @@ function CalculationPageContent() {
             title={tc('settings.title', { ns: 'common' })}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -584,9 +577,7 @@ function CalculationPageContent() {
                     : `${t('waste')} ${state.hint.wasteIdx.toString()} → ${t('foundation')} ${state.hint.foundationIdx.toString()}`}
                 </div>
               )}
-              {frontendHintEnabled && frontendHint && (
-                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-              )}
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
               {source && (
                 <div className="mt-2 text-xs text-ds-text-muted">

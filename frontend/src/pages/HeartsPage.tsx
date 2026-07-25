@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -37,6 +37,7 @@ import { heartsLegalPlayIndices } from '../utils/heartsLegal';
 import { heartsPassTarget } from '../utils/heartsPass';
 import { shootTheMoonAlertIdx } from '../utils/heartsShootMoonAlert';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Hearts tutorial step definitions. */
 const HT_TUTORIAL_STEPS: TutorialStep[] = [
@@ -252,13 +253,7 @@ function HeartsPageContent() {
                     checked: heartsConfig.omnibusJD,
                     onToggle: (v) => handleToggle('omnibusJD', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -467,9 +462,7 @@ function HeartsPageContent() {
                 {t(`hintReason.${hint.reason}`)})
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex gap-2 items-center" data-tutorial="ht-play-button">
               {(isPassPhase || isHumanTurn) && (

@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -30,6 +30,7 @@ import {
   parsePresidentCommand,
 } from '../utils/cli/commands/presidentCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Tutorial steps for President. */
 const PR_TUTORIAL_STEPS: TutorialStep[] = [
@@ -312,9 +313,7 @@ function PresidentPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
           <SettingsPanel
@@ -355,13 +354,7 @@ function PresidentPageContent() {
                     checked: configInput.passFieldFlushEnabled ?? true,
                     onToggle: (v: boolean) => handleConfigChange('passFieldFlushEnabled', v),
                   },
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}

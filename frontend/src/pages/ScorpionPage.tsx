@@ -11,7 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -37,6 +37,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
 import { scorpionLegalTargets } from '../utils/scorpionUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const noop = () => {};
 
@@ -375,15 +376,7 @@ function ScorpionPageContent() {
             title={tc('settings.title', { ns: 'common' })}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -500,9 +493,7 @@ function ScorpionPageContent() {
                 {state.hint.fromCol < 0 ? t('deal') : `${t('tableau')} ${state.hint.toCol}`}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {/* Deal-blocked reason as visible, screen-reader-announced text — the
                 native `title` tooltip alone is invisible on touch devices (#3186). */}

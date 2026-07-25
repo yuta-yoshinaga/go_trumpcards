@@ -7,7 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -30,6 +30,7 @@ import {
 import type { CliGameConfig } from '../utils/cli/types';
 import { scopaScoreBreakdown } from '../utils/scopaScoreBreakdown';
 import { scopaTakeCandidates } from '../utils/scopaTakeCandidates';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const DIFFICULTY_OPTIONS = [
   { value: '0', label: 'Easy' },
@@ -334,9 +335,7 @@ function ScopaPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
           <SettingsPanel
@@ -360,13 +359,7 @@ function ScopaPageContent() {
                     options: TARGET_SCORE_OPTIONS,
                     onSelect: (v: string) => handleConfigChange('targetScore', Number.parseInt(v, 10)),
                   },
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}

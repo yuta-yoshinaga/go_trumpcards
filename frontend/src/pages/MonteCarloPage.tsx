@@ -7,7 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -26,6 +26,7 @@ import { MonteCarloPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { countRemovablePairs } from '../utils/montecarloRemovablePairs';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SIZE = 5;
 
@@ -213,15 +214,7 @@ function MonteCarloPageContent() {
             title={tc('settings.title', { ns: 'common' })}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -347,9 +340,7 @@ function MonteCarloPageContent() {
 
           <GameFooter className={`${gameTheme.montecarlo.footer} px-4 py-2.5`}>
             <ErrorAlert message={error} onRetry={retry} />
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="mc-controls">
               {isPlaying && (
                 <>

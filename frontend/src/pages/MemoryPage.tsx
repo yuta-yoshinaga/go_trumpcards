@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -34,6 +34,7 @@ import { formatMemoryState } from '../utils/cli/formatters/memoryFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { type GridDir, moveFocus } from '../utils/gridNav';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Memory tutorial step definitions. */
 const MEM_TUTORIAL_STEPS: TutorialStep[] = [
@@ -300,13 +301,7 @@ function MemoryPageContent() {
                     })),
                     onSelect: (v) => setAutoNextDelayMs(Number(v)),
                   },
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -437,11 +432,9 @@ function MemoryPageContent() {
               {flipAnnounce}
             </span>
 
-            {frontendHintEnabled && frontendHint && (
-              <div className="flex justify-center">
-                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-              </div>
-            )}
+            <div className="flex justify-center">
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            </div>
 
             {/* Message */}
             <GameMessageBox

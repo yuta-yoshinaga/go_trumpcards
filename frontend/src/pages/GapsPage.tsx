@@ -7,7 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -28,6 +28,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { computeGapsGhostHint } from '../utils/gapsGhostHint';
 import { gapsLockedPrefixLengths } from '../utils/gapsUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SUIT_SYMBOLS: Record<string, string> = {
   SPADE: '♠',
@@ -303,11 +304,9 @@ function GapsPageContent() {
           })}
         </div>
 
-        {frontendHintEnabled && frontendHint && (
-          <div className="flex justify-center">
-            <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-          </div>
-        )}
+        <div className="flex justify-center">
+          <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+        </div>
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
@@ -323,15 +322,7 @@ function GapsPageContent() {
         title={tc('settings.title')}
         groups={[
           {
-            items: [
-              {
-                type: 'checkbox' as const,
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: frontendHintEnabled,
-                onToggle: setFrontendHintEnabled,
-              },
-            ],
+            items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
           },
         ]}
       />

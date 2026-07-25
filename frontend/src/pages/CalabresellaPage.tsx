@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
@@ -32,6 +32,7 @@ import { CALABRESELLA_HELP, parseCalabresellaCommand } from '../utils/cli/comman
 import { formatCalabresellaState } from '../utils/cli/formatters/calabresellaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Calabresella tutorial step definitions. */
 const CALABRESELLA_TUTORIAL_STEPS: TutorialStep[] = [
@@ -198,13 +199,7 @@ function CalabresellaPageContent() {
                     options: TARGET_POINTS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('targetPoints', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -365,9 +360,7 @@ function CalabresellaPageContent() {
                   ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="calabresella-action-buttons">
               {canBid && (

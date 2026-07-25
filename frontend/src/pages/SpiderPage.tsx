@@ -11,7 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -38,6 +38,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSpiderCommand, SPIDER_HELP } from '../utils/cli/commands/spiderCommands';
 import { formatSpiderState } from '../utils/cli/formatters/spiderFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp, spiderMovableRun } from '../utils/solitaireUtils';
 
 /** Spider Solitaire tutorial step definitions. */
@@ -455,11 +456,9 @@ function SpiderPageContent() {
                 {t('hintAvailable')}: {t('tableau')} {hint.fromCol} [{hint.cardIndex}] → {t('tableau')} {hint.toCol}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <div className="flex justify-center">
-                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-              </div>
-            )}
+            <div className="flex justify-center">
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            </div>
 
             {/* Message */}
             <GameMessageBox
@@ -493,15 +492,7 @@ function SpiderPageContent() {
             title={tc('settings.title')}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />

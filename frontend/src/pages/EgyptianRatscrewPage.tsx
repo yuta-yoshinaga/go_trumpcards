@@ -8,7 +8,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -33,6 +33,7 @@ import {
 import type { TutorialStep } from '../types/tutorial';
 import { formatEgyptianRatscrewState } from '../utils/cli/formatters/egyptianratscrewFormatter';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 type EgyptianRatscrewArgs = Parameters<typeof egyptianRatscrewApi.exec>;
 
@@ -341,9 +342,7 @@ function EgyptianRatscrewPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
           <SettingsPanel
@@ -363,13 +362,7 @@ function EgyptianRatscrewPageContent() {
                     ],
                     onSelect: (v: string) => execApi('reset', { config: { cpuDifficulty: Number.parseInt(v, 10) } }),
                   },
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}

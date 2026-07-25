@@ -7,7 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -30,6 +30,7 @@ import {
   parseCassinoCommand,
 } from '../utils/cli/commands/cassinoCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const DIFFICULTY_OPTIONS = [
   { value: '0', label: 'Easy' },
@@ -357,9 +358,7 @@ function CassinoPageContent() {
              * the generic advisory so only ONE piece of guidance is ever shown and the
              * two can never contradict each other.
              */}
-            {frontendHintEnabled && frontendHint && !suggestion && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            {!suggestion && <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />}
           </div>
 
           <SettingsPanel
@@ -389,13 +388,7 @@ function CassinoPageContent() {
                     checked: configInput.sweepBonusEnabled ?? true,
                     onToggle: (v: boolean) => handleConfigChange('sweepBonusEnabled', v),
                   },
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}

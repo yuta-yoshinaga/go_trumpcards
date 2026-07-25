@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
@@ -37,6 +37,7 @@ import { CATCHTEN_HELP, parseCatchTenCommand } from '../utils/cli/commands/catch
 import { formatCatchTenState } from '../utils/cli/formatters/catchtenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Catch the Ten tutorial step definitions. */
 const CT_TUTORIAL_STEPS: TutorialStep[] = [
@@ -299,13 +300,7 @@ function CatchTenPageContent() {
                     options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('pointLimit', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -460,9 +455,7 @@ function CatchTenPageContent() {
               messageParams={state.messageParams}
             />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {/* Action log */}
             <ActionLogSection

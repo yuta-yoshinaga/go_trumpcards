@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -37,6 +37,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseRussianSolitaireCommand, RS_HELP } from '../utils/cli/commands/russiansolitaireCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -327,15 +328,7 @@ function RussianSolitairePageContent() {
             title={tc('settings.title', { ns: 'common' })}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -530,9 +523,7 @@ function RussianSolitairePageContent() {
                 {t('hintAnnouncement', { card: hintCardName, dest: hintDest })}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
               isEndPhase={isEnded}

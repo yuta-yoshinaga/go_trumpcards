@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
@@ -36,6 +36,7 @@ import { KOENIGRUFEN_HELP, parseKoenigrufenCommand } from '../utils/cli/commands
 import { formatKoenigrufenState } from '../utils/cli/formatters/koenigrufenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Königrufen tutorial step definitions. */
 const KOENIGRUFEN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -288,13 +289,7 @@ function KoenigrufenPageContent() {
                     options: TARGET_DEALS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('targetDeals', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -487,9 +482,7 @@ function KoenigrufenPageContent() {
                   ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="koenigrufen-action-buttons">
               {canBid && (

@@ -40,6 +40,7 @@ import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { evaluateBestHand, pokerHandKey } from '../utils/pokerSquaresUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Seven Card Stud tutorial step definitions. */
 const SCS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -376,13 +377,7 @@ function SevenCardStudPageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: hintEnabled,
-                    onToggle: setHintEnabled,
-                  },
+                  hintCheckboxItem(tc, hintEnabled, setHintEnabled),
                   {
                     type: 'checkbox' as const,
                     id: 'cpuMetaAI',

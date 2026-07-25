@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -37,6 +37,7 @@ import { formatMichiganState } from '../utils/cli/formatters/michiganFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { michiganBoodleGuides } from '../utils/michiganBoodleGuide';
 import { michiganNextPlayable } from '../utils/michiganPlayable';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Number of center boodle cards (always 4: A♥, K♣, Q♦, J♠). */
 const MICHIGAN_BOODLE_COUNT = 4;
@@ -246,13 +247,7 @@ function MichiganPageContent() {
                     options: TARGET_ROUNDS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('targetRounds', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -399,9 +394,7 @@ function MichiganPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-col gap-2" data-tutorial="michigan-action-buttons">
               {showBetControls && (

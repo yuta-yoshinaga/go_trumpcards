@@ -28,6 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { tichuBombIndices } from '../utils/tichuBomb';
 import { classifyTichuCombo } from '../utils/tichuCombo';
 
@@ -417,13 +418,7 @@ function TichuPageContent() {
                 options: DIFFICULTY_OPTIONS,
                 onSelect: (v: string) => handleDifficultyChange(Number.parseInt(v, 10)),
               },
-              {
-                type: 'checkbox' as const,
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: hintEnabled,
-                onToggle: setHintEnabled,
-              },
+              hintCheckboxItem(tc, hintEnabled, setHintEnabled),
             ],
           },
         ]}

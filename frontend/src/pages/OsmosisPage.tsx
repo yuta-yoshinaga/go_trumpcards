@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -35,6 +35,7 @@ import { OSMOSIS_HELP, parseOsmosisCommand } from '../utils/cli/commands/osmosis
 import { formatOsmosisState } from '../utils/cli/formatters/osmosisFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { osmosisAllowedRanks, osmosisCanPlace } from '../utils/osmosisRules';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Card rank value (1–13) → short display label. */
 const RANK_LABELS = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -241,15 +242,7 @@ function OsmosisPageContent() {
             title={tc('settings.title', { ns: 'common' })}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -416,9 +409,7 @@ function OsmosisPageContent() {
               messageCode={selected ? undefined : state.messageCode}
               messageParams={state.messageParams}
             />
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
               isEndPhase={isEnded}

@@ -29,6 +29,7 @@ import { SpiteAndMalicePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { isGoalTopPlayableToFoundation } from '../utils/spiteAndMaliceUtils';
 
 const samRunner = spiteAndMaliceApi;
@@ -311,13 +312,7 @@ function SpiteAndMalicePageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: hintEnabled,
-                    onToggle: setHintEnabled,
-                  },
+                  hintCheckboxItem(tc, hintEnabled, setHintEnabled),
                   {
                     type: 'select' as const,
                     id: 'samCpuSpeed',

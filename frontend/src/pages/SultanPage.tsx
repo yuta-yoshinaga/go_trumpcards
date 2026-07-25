@@ -8,7 +8,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseSultanCommand, SULTAN_HELP } from '../utils/cli/commands/sultanCommands';
 import { formatSultanState } from '../utils/cli/formatters/sultanFormatter';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { sultanFoundationInfo } from '../utils/sultanFoundation';
 
 /**
@@ -339,11 +340,9 @@ function SultanPageContent() {
                 </div>
               )}
             </div>
-            {frontendHintEnabled && frontendHint && (
-              <div className="flex justify-center">
-                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-              </div>
-            )}
+            <div className="flex justify-center">
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            </div>
 
             {/* Message */}
             <GameMessageBox
@@ -366,15 +365,7 @@ function SultanPageContent() {
             title={tc('settings.title')}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
