@@ -1,6 +1,26 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SoundProvider } from '../providers/SoundProvider';
 import { GamePageShell } from './GamePageShell';
+
+// Track plays per sound file so the central-tap tests can assert WHICH
+// sound fired (the global setup.ts mock can't distinguish Howl instances).
+const { playCalls } = vi.hoisted(() => ({ playCalls: [] as string[] }));
+vi.mock('howler', () => ({
+  Howl: class MockHowl {
+    private src: string;
+    constructor(opts: { src: string[] }) {
+      this.src = opts.src[0];
+    }
+    play() {
+      playCalls.push(this.src);
+      return 1;
+    }
+    volume() {}
+    rate() {}
+  },
+  Howler: { ctx: { state: 'running' } },
+}));
 
 vi.mock('./tutorial/TutorialButton', () => ({
   TutorialButton: () => <button type="button">チュートリアル</button>,
@@ -294,5 +314,117 @@ describe('GamePageShell', () => {
     );
     const outer = container.firstElementChild as HTMLElement;
     expect(outer.className).toContain('relative');
+  });
+
+  describe('central sound taps', () => {
+    beforeEach(() => {
+      playCalls.length = 0;
+      vi.useFakeTimers();
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+      localStorage.clear();
+    });
+
+    type TapProps = Omit<typeof baseProps, 'isHumanTurn'> & {
+      isHumanTurn?: boolean;
+      winShow?: boolean;
+      onCelebrate?: () => void;
+    };
+
+    function renderWithSound(props: TapProps) {
+      return render(
+        <SoundProvider>
+          <GamePageShell {...props}>
+            <div />
+          </GamePageShell>
+        </SoundProvider>,
+      );
+    }
+
+    it('plays winFanfare when the celebration fires', () => {
+      renderWithSound({ ...baseProps, gameEndFlag: true });
+      fireEvent.click(screen.getByTestId('win-celebration'));
+      expect(playCalls).toContain('/sounds/win-fanfare.ogg');
+      expect(playCalls).not.toContain('/sounds/loss-thud.ogg');
+    });
+
+    it('still invokes the page onCelebrate callback after the central fanfare', () => {
+      const onCelebrate = vi.fn();
+      renderWithSound({ ...baseProps, gameEndFlag: true, onCelebrate });
+      fireEvent.click(screen.getByTestId('win-celebration'));
+      expect(onCelebrate).toHaveBeenCalledTimes(1);
+      expect(playCalls).toContain('/sounds/win-fanfare.ogg');
+    });
+
+    it('plays lossThud when the game ends without a win (winShow === false)', () => {
+      renderWithSound({ ...baseProps, gameEndFlag: true, winShow: false });
+      expect(playCalls).toContain('/sounds/loss-thud.ogg');
+      expect(playCalls).not.toContain('/sounds/win-fanfare.ogg');
+    });
+
+    it('never plays lossThud when winShow is undefined (celebration-mirror pages)', () => {
+      renderWithSound({ ...baseProps, gameEndFlag: true });
+      expect(playCalls).not.toContain('/sounds/loss-thud.ogg');
+    });
+
+    it('resets the loss latch on a new game (gameEndFlag falls, then rises)', () => {
+      const { rerender } = renderWithSound({ ...baseProps, gameEndFlag: true, winShow: false });
+      expect(playCalls.filter((p) => p === '/sounds/loss-thud.ogg')).toHaveLength(1);
+
+      // Clear the provider's 3s dedupe window, then start a new round.
+      vi.advanceTimersByTime(3100);
+      rerender(
+        <SoundProvider>
+          <GamePageShell {...baseProps} gameEndFlag={false} winShow={false}>
+            <div />
+          </GamePageShell>
+        </SoundProvider>,
+      );
+      rerender(
+        <SoundProvider>
+          <GamePageShell {...baseProps} gameEndFlag={true} winShow={false}>
+            <div />
+          </GamePageShell>
+        </SoundProvider>,
+      );
+      expect(playCalls.filter((p) => p === '/sounds/loss-thud.ogg')).toHaveLength(2);
+    });
+
+    it('plays turnTick exactly once on the false→true edge of isHumanTurn', () => {
+      const { rerender } = renderWithSound({ ...baseProps, isHumanTurn: false });
+      expect(playCalls).not.toContain('/sounds/turn-tick.ogg');
+
+      rerender(
+        <SoundProvider>
+          <GamePageShell {...baseProps} isHumanTurn={true}>
+            <div />
+          </GamePageShell>
+        </SoundProvider>,
+      );
+      expect(playCalls.filter((p) => p === '/sounds/turn-tick.ogg')).toHaveLength(1);
+
+      // Staying on the human's turn must not re-tick.
+      rerender(
+        <SoundProvider>
+          <GamePageShell {...baseProps} isHumanTurn={true} phaseName="Other">
+            <div />
+          </GamePageShell>
+        </SoundProvider>,
+      );
+      expect(playCalls.filter((p) => p === '/sounds/turn-tick.ogg')).toHaveLength(1);
+    });
+
+    it('never ticks when isHumanTurn is omitted (solitaire pages)', () => {
+      const { rerender } = renderWithSound({ ...propsWithoutTurn });
+      rerender(
+        <SoundProvider>
+          <GamePageShell {...propsWithoutTurn} phaseName="Other">
+            <div />
+          </GamePageShell>
+        </SoundProvider>,
+      );
+      expect(playCalls).not.toContain('/sounds/turn-tick.ogg');
+    });
   });
 });

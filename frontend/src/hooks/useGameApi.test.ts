@@ -2,14 +2,41 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createElement } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { SoundProvider, useSound } from '../providers/SoundProvider';
 import { useGameApi } from './useGameApi';
+
+// Track plays per sound file so central-tap tests can assert WHICH sound
+// fired (the shared setup.ts mock can't distinguish Howl instances).
+const { playCalls } = vi.hoisted(() => ({ playCalls: [] as string[] }));
+vi.mock('howler', () => ({
+  Howl: class MockHowl {
+    private src: string;
+    constructor(opts: { src: string[] }) {
+      this.src = opts.src[0];
+    }
+    play() {
+      playCalls.push(this.src);
+      return 1;
+    }
+    volume() {}
+    rate() {}
+  },
+  Howler: { ctx: { state: 'running' } },
+}));
 
 function createWrapper() {
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return ({ children }: { children: ReactNode }) =>
     createElement(QueryClientProvider, { client: queryClient }, children);
+}
+
+/** QueryClient + SoundProvider wrapper for central-tap tests. */
+function createSoundWrapper() {
+  const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+  return ({ children }: { children: ReactNode }) =>
+    createElement(QueryClientProvider, { client: queryClient }, createElement(SoundProvider, null, children));
 }
 
 describe('useGameApi', () => {
@@ -235,6 +262,94 @@ describe('useGameApi', () => {
       await result.current.retry();
     });
     expect(apiFn).not.toHaveBeenCalled();
+  });
+
+  describe('central sound tap', () => {
+    beforeEach(() => {
+      playCalls.length = 0;
+    });
+
+    it("plays shuffle when the command is 'reset'", async () => {
+      const apiFn = vi.fn().mockResolvedValue({ ok: true });
+      const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createSoundWrapper() });
+      await act(async () => {
+        await result.current.exec('reset');
+      });
+      expect(playCalls).toContain('/sounds/shuffle.ogg');
+      expect(playCalls).not.toContain('/sounds/card-place.ogg');
+    });
+
+    it('plays cardPlace for non-reset commands', async () => {
+      const apiFn = vi.fn().mockResolvedValue({ ok: true });
+      const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createSoundWrapper() });
+      await act(async () => {
+        await result.current.exec('hit', [0]);
+      });
+      expect(playCalls).toContain('/sounds/card-place.ogg');
+      expect(playCalls).not.toContain('/sounds/shuffle.ogg');
+    });
+
+    it('plays no sound on exec failure (errorBuzz belongs to ErrorAlert)', async () => {
+      const apiFn = vi.fn().mockRejectedValue(new Error('network'));
+      const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createSoundWrapper() });
+      await act(async () => {
+        await result.current.exec('hit');
+      });
+      expect(playCalls).toEqual([]);
+    });
+
+    it('skips the generic sound when an exec claim is pending, and consumes it', async () => {
+      const apiFn = vi.fn().mockResolvedValue({ ok: true });
+      const { result } = renderHook(() => ({ api: useGameApi(apiFn), sound: useSound() }), {
+        wrapper: createSoundWrapper(),
+      });
+      act(() => result.current.sound.claimExecSound());
+      await act(async () => {
+        await result.current.api.exec('bet', 10);
+      });
+      expect(playCalls).toEqual([]);
+
+      await act(async () => {
+        await result.current.api.exec('deal');
+      });
+      expect(playCalls).toContain('/sounds/card-place.ogg');
+    });
+
+    it('consumes a pending claim on exec failure too', async () => {
+      const apiFn = vi.fn().mockRejectedValueOnce(new Error('fail')).mockResolvedValueOnce({ ok: true });
+      const { result } = renderHook(() => ({ api: useGameApi(apiFn), sound: useSound() }), {
+        wrapper: createSoundWrapper(),
+      });
+      act(() => result.current.sound.claimExecSound());
+      await act(async () => {
+        await result.current.api.exec('bet');
+      });
+      await act(async () => {
+        await result.current.api.exec('deal');
+      });
+      // The failed bet consumed the claim, so the deal's sound plays.
+      expect(playCalls).toContain('/sounds/card-place.ogg');
+    });
+
+    it('renders without SoundProvider (QueryClient only) — no crash, no sounds', async () => {
+      const apiFn = vi.fn().mockResolvedValue({ ok: true });
+      const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
+      await act(async () => {
+        await result.current.exec('reset');
+      });
+      expect(result.current.state).toEqual({ ok: true });
+      expect(playCalls).toEqual([]);
+    });
+
+    it('CRITICAL REGRESSION: exec identity survives a mute toggle', async () => {
+      const apiFn = vi.fn().mockResolvedValue({ ok: true });
+      const { result } = renderHook(() => ({ api: useGameApi(apiFn), sound: useSound() }), {
+        wrapper: createSoundWrapper(),
+      });
+      const execBefore = result.current.api.exec;
+      act(() => result.current.sound.toggleMute());
+      expect(result.current.api.exec).toBe(execBefore);
+    });
   });
 
   it('uses latest onSuccess via ref', async () => {

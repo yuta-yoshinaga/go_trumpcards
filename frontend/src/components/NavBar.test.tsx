@@ -10,6 +10,8 @@ vi.mock('../providers/SoundProvider', () => ({
     muted: false,
     toggleMute: vi.fn(),
     playSound: vi.fn(),
+    claimExecSound: vi.fn(),
+    consumeExecClaim: vi.fn(() => false),
   })),
 }));
 

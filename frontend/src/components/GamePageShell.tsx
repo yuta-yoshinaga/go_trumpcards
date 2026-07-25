@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useOptionalSound } from '../providers/SoundProvider';
 import { GameGiveUpDialog } from './GameGiveUpDialog';
 import { GamePageHeading } from './GamePageHeading';
 import { GameResetDialog } from './GameResetDialog';
@@ -114,6 +116,46 @@ export function GamePageShell({
 }: GamePageShellProps) {
   // long-form games (Hearts, Spades, Skat, …) don't silently lose state.
   useGameRoundGuard(!gameEndFlag);
+
+  // Central sound taps (sound-centralization design):
+  //
+  //   winFanfare ── rides WinCelebration's own trigger (show = winShow ?? gameEndFlag)
+  //   lossThud ──── gameEndFlag && winShow === false, once per game end
+  //   turnTick ──── isHumanTurn false→true edge, never when the prop is omitted
+  //
+  // The sound context is read through a ref so callbacks stay identity-stable
+  // (playSound changes identity on every mute toggle).
+  const sound = useOptionalSound();
+  const soundRef = useRef(sound);
+  soundRef.current = sound;
+  const onCelebrateRef = useRef(onCelebrate);
+  onCelebrateRef.current = onCelebrate;
+
+  const handleCelebrate = useCallback(() => {
+    soundRef.current?.playSound('winFanfare');
+    onCelebrateRef.current?.();
+  }, []);
+
+  const lossPlayedRef = useRef(false);
+  useEffect(() => {
+    if (!gameEndFlag) {
+      lossPlayedRef.current = false;
+      return;
+    }
+    if (winShow === false && !lossPlayedRef.current) {
+      lossPlayedRef.current = true;
+      soundRef.current?.playSound('lossThud');
+    }
+  }, [gameEndFlag, winShow]);
+
+  const prevTurnRef = useRef(isHumanTurn);
+  useEffect(() => {
+    if (isHumanTurn === true && prevTurnRef.current === false) {
+      soundRef.current?.playSound('turnTick');
+    }
+    prevTurnRef.current = isHumanTurn;
+  }, [isHumanTurn]);
+
   return (
     <div key={outerKey} className={`relative flex-1 flex flex-col min-h-0 ${gameThemeBg}`} aria-busy={loading}>
       <GamePageHeading title={title} />
@@ -124,7 +166,7 @@ export function GamePageShell({
         {headerEnd}
       </PhaseIndicator>
       {children}
-      <WinCelebration show={winShow ?? gameEndFlag} onCelebrate={onCelebrate} />
+      <WinCelebration show={winShow ?? gameEndFlag} onCelebrate={handleCelebrate} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
       {giveUpConfirmOpen !== undefined && confirmGiveUp && cancelGiveUp && (
         <GameGiveUpDialog
