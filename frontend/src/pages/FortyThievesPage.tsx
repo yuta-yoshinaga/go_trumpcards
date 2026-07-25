@@ -26,7 +26,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
@@ -94,7 +93,6 @@ function FortyThievesPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('fortythieves');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -231,7 +229,6 @@ function FortyThievesPageContent() {
       gamePath="/fortythieves"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

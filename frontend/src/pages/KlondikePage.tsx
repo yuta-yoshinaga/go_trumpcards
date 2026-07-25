@@ -29,7 +29,6 @@ import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { klondikeWinRate, useKlondikeStats } from '../hooks/useKlondikeStats';
 import { useKlondikeTimer } from '../hooks/useKlondikeTimer';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { KlondikeResponse } from '../types/card';
@@ -103,7 +102,6 @@ function KlondikePageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('klondike');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -284,7 +282,6 @@ function KlondikePageContent() {
       gamePath="/klondike"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

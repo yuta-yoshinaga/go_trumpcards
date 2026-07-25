@@ -31,7 +31,6 @@ import {
   useOhHellGame,
 } from '../hooks/useOhHellGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { badgeErrorColors, badgeInfoColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -109,7 +108,6 @@ export const OhHellPage = withTutorial(OhHellPageContent, 'ohhell', OH_TUTORIAL_
 function OhHellPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('ohhell');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -223,7 +221,6 @@ function OhHellPageContent() {
       isHumanTurn={isHumanBidTurn || isHumanTurn}
       gamePath="/ohhell"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

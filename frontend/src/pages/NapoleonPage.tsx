@@ -31,7 +31,6 @@ import {
   useNapoleonGame,
 } from '../hooks/useNapoleonGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { badgeInfo, badgeSuccess } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -118,7 +117,6 @@ export const NapoleonPage = withTutorial(NapoleonPageContent, 'napoleon', NP_TUT
 function NapoleonPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('napoleon');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -245,7 +243,6 @@ function NapoleonPageContent() {
       isHumanTurn={isHumanBidTurn || isHumanTurn || isHumanNapoleon || isHumanExchange}
       gamePath="/napoleon"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

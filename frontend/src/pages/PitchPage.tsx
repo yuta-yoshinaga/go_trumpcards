@@ -24,7 +24,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PitchResponse } from '../types/card';
@@ -129,7 +128,6 @@ function PitchPageContent() {
   const { t } = useTranslation('pitch');
   const { tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pitch');
-  const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(pitchApi.exec);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('pitch', state);
   const [selectedCardIdx, setSelectedCardIdx] = useState<number | null>(null);
@@ -266,7 +264,6 @@ function PitchPageContent() {
       gamePath="/pitch"
       gameEndFlag={isGameEnd}
       winShow={isGameEnd && state.winnerIdx === humanIdx}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

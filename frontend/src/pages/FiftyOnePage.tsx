@@ -89,19 +89,17 @@ function FiftyOnePageContent() {
 
   const handleExchange = useCallback(() => {
     if (selectedHandIdx !== null && selectedTableIdx !== null) {
-      playSound('cardPlace');
       execApi('play', { handIdx: selectedHandIdx, tableIdx: selectedTableIdx });
       setSelectedHandIdx(null);
       setSelectedTableIdx(null);
     }
-  }, [execApi, playSound, selectedHandIdx, selectedTableIdx]);
+  }, [execApi, selectedHandIdx, selectedTableIdx]);
 
   const handleExchangeAll = useCallback(() => {
-    playSound('cardPlace');
     execApi('exchangeall');
     setSelectedHandIdx(null);
     setSelectedTableIdx(null);
-  }, [execApi, playSound]);
+  }, [execApi]);
 
   const handleStop = useCallback(() => {
     playSound('chipClick');
@@ -110,7 +108,9 @@ function FiftyOnePageContent() {
 
   useMountReset(execApi);
 
-  // Buzz once on the error appearance edge so a fast follow-up doesn't swallow it.
+  // This page shows errors with its own inline retry link rather than the
+  // shared ErrorAlert, so the central errorBuzz tap never fires here — keep
+  // a page-level buzz on the error appearance edge.
   const prevErrorRef = useRef<string | null>(null);
   useEffect(() => {
     if (error && !prevErrorRef.current) playSound('errorBuzz');
@@ -190,7 +190,6 @@ function FiftyOnePageContent() {
       gamePath="/fiftyone"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

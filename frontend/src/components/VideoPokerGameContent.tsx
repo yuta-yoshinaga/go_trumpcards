@@ -9,7 +9,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useLocalStorageToggle } from '../hooks/useLocalStorageToggle';
 import { useVideoPokerStats } from '../hooks/useVideoPokerStats';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -148,7 +147,6 @@ export function VideoPokerGameContent({
   const { t: tNs } = useTranslation(i18nNamespace);
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup(gameName);
-  const { playSound } = useSound();
 
   const [betAmount, setBetAmount] = useState(1);
   const [heldCards, setHeldCards] = useState<boolean[]>([false, false, false, false, false]);
@@ -329,7 +327,6 @@ export function VideoPokerGameContent({
       gamePath={gamePath}
       gameEndFlag={isResultPhase}
       winShow={isResultPhase && state.result === 1}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

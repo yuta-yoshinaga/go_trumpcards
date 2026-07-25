@@ -25,7 +25,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useStreetsAndAlleysGame } from '../hooks/useStreetsAndAlleysGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { StreetsAndAlleysResponse } from '../types/card';
@@ -90,7 +89,6 @@ function StreetsAndAlleysPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('streetsandalleys');
-  const { playSound } = useSound();
   const game = useStreetsAndAlleysGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
 
@@ -281,7 +279,6 @@ function StreetsAndAlleysPageContent() {
       gamePath="/streetsandalleys"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

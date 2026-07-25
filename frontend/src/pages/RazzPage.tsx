@@ -28,7 +28,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -95,7 +94,6 @@ function RazzPageContent() {
     useGamePageSetup('razz');
   const phaseNames = usePhaseNames('razz', RAZZ_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const isMobile = useIsMobile();
   const { state, loading, error, exec: execApi, retry } = useGameApi(razzApi.exec);
 
@@ -269,7 +267,6 @@ function RazzPageContent() {
       isHumanTurn={canAct}
       gamePath="/razz"
       gameEndFlag={phase === SevenCardStudPhase.END}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

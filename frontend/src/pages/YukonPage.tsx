@@ -27,7 +27,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { YukonResponse } from '../types/card';
@@ -115,7 +114,6 @@ function YukonPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('yukon');
-  const { playSound } = useSound();
   const {
     state,
     setState,
@@ -186,8 +184,7 @@ function YukonPageContent() {
   // Action handlers
   const handleManualReset = useCallback(() => {
     void apiExec('reset');
-    playSound('shuffle');
-  }, [apiExec, playSound]);
+  }, [apiExec]);
 
   const handleGiveUp = useCallback(() => {
     void apiExec('giveup');
@@ -238,9 +235,8 @@ function YukonPageContent() {
       if (!selectedSource) return;
       void apiExec('move', selectedSource, { zone, col });
       setSelectedSource(null);
-      playSound('cardPlace');
     },
-    [apiExec, selectedSource, playSound],
+    [apiExec, selectedSource],
   );
 
   const isPlayingForKbd = state?.phase === YukonPhase.PLAYING;

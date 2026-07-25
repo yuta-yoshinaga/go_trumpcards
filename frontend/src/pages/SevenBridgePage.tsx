@@ -19,7 +19,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSevenBridgeGame } from '../hooks/useSevenBridgeGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -98,7 +97,6 @@ function SevenBridgePageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('sevenbridge', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('sevenbridge');
   const cliConfig: CliGameConfig<SevenBridgeResponse, Parameters<typeof sevenBridgeApi.exec>> = useMemo(
     () => ({
@@ -143,7 +141,6 @@ function SevenBridgePageContent() {
       gamePath="/sevenbridge"
       gameEndFlag={!state || isGameEnd}
       winShow={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

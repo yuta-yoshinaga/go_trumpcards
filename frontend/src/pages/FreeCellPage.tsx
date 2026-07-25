@@ -26,7 +26,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, FreeCellResponse } from '../types/card';
@@ -95,7 +94,6 @@ function FreeCellPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('freecell');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -219,7 +217,6 @@ function FreeCellPageContent() {
       gamePath="/freecell"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

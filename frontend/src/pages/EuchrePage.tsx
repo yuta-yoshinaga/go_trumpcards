@@ -22,7 +22,6 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useEuchreGame } from '../h
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -112,7 +111,6 @@ export const EuchrePage = withTutorial(EuchrePageContent, 'euchre', EU_TUTORIAL_
 function EuchrePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('euchre');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -226,7 +224,6 @@ function EuchrePageContent() {
       isHumanTurn={isHumanBidTurn || isHumanTurn || isHumanDiscard}
       gamePath="/euchre"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

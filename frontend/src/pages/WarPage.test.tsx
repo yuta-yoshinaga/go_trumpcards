@@ -9,14 +9,22 @@ import { WarPhase } from '../types/phases';
 import { WarPage } from './WarPage';
 
 const mockPlaySound = vi.fn();
-const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+const mockSoundValue = {
+  playSound: mockPlaySound,
+  muted: false,
+  toggleMute: vi.fn(),
+  claimExecSound: vi.fn(),
+  consumeExecClaim: () => false,
+};
 // Replace SoundProvider so the page's `useSound()` calls are captured. Leaf card
 // components read `useOptionalSound`; return null there so their incidental deal
 // SFX don't pollute the sound assertions below.
 vi.mock('../providers/SoundProvider', () => ({
   SoundProvider: ({ children }: { children: ReactNode }) => children,
   useSound: () => mockSoundValue,
-  useOptionalSound: () => null,
+  // The central taps (useGameApi / GamePageShell) consume useOptionalSound,
+  // so route it to the same spy to observe the sounds they own.
+  useOptionalSound: () => mockSoundValue,
 }));
 
 vi.mock('../hooks/useCliMode', () => ({

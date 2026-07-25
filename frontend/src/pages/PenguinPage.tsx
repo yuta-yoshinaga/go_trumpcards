@@ -25,7 +25,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { usePenguinGame } from '../hooks/usePenguinGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, PenguinResponse } from '../types/card';
@@ -114,7 +113,6 @@ function PenguinPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('penguin');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -226,7 +224,6 @@ function PenguinPageContent() {
       gamePath="/penguin"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

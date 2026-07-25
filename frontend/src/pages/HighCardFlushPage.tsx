@@ -22,7 +22,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -70,7 +69,6 @@ function HighCardFlushPageContent() {
   const [straightFlushAmount, setStraightFlushAmount] = useState(0);
 
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(highcardflushApi.exec);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('highcardflush', state);
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('highcardflush');
@@ -152,7 +150,7 @@ function HighCardFlushPageContent() {
       gamePath="/highcardflush"
       gameEndFlag={isEndPhase}
       winShow={isEndPhase && state.result > 0}
-      onCelebrate={() => playSound('winFanfare')}
+      lossShow={isEndPhase && state.result < 0}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

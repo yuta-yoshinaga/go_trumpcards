@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { prsiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -94,26 +94,9 @@ function PrsiPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
 
-  // Play a distinct buzz the moment an illegal move / network error surfaces,
-  // so the failure is audible (respects the global mute via SoundProvider).
-  const prevErrorRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (error && error !== prevErrorRef.current) {
-      playSound('errorBuzz');
-    }
-    prevErrorRef.current = error;
-  }, [error, playSound]);
-
-  // Card-operation SFX: place a card on play, shuffle on draw. Fired on the
-  // human's own action only (the play/draw controls render solely on the
-  // human turn), mirroring SpiteAndMalicePage's fire-and-forget approach.
-  const handlePlayWithSound = useCallback(() => {
-    if (selectedCardIndices.length === 1) {
-      playSound('cardPlace');
-    }
-    handlePlay();
-  }, [handlePlay, playSound, selectedCardIndices]);
-
+  // Drawing from the stock keeps its own shuffle sound: the central tap maps
+  // only the `reset` command to shuffle, so this action would otherwise get
+  // the generic card sound.
   const handleDrawWithSound = useCallback(() => {
     playSound('shuffle');
     handleDraw();
@@ -137,8 +120,8 @@ function PrsiPageContent() {
   const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
 
   const confirmAction = useCallback(() => {
-    handlePlayWithSound();
-  }, [handlePlayWithSound]);
+    handlePlay();
+  }, [handlePlay]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -177,7 +160,6 @@ function PrsiPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/prsi"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -345,7 +327,7 @@ function PrsiPageContent() {
                   <button
                     type="button"
                     className={btnPrimary}
-                    onClick={handlePlayWithSound}
+                    onClick={handlePlay}
                     disabled={loading || selectedCardIndices.length !== 1}
                   >
                     {t('playButton')}

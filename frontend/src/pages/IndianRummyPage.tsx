@@ -26,7 +26,6 @@ import {
   useIndianRummyGame,
 } from '../hooks/useIndianRummyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -119,7 +118,6 @@ function IndianRummyPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('indianrummy', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('indianrummy');
   const cliConfig: CliGameConfig<IndianRummyResponse, Parameters<typeof indianRummyApi.exec>> = useMemo(
@@ -220,7 +218,6 @@ function IndianRummyPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/indianrummy"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

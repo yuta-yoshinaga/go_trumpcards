@@ -26,7 +26,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { FortyAndEightPhase } from '../types/phases';
@@ -94,7 +93,6 @@ function FortyAndEightPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('fortyandeight');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -227,7 +225,6 @@ function FortyAndEightPageContent() {
       gamePath="/fortyandeight"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

@@ -26,7 +26,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BakersDozenResponse } from '../types/card';
@@ -93,7 +92,6 @@ function BakersDozenPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('bakersdozen');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -115,29 +113,6 @@ function BakersDozenPageContent() {
   } = useBakersDozenGame();
 
   // Card-move SFX: play `cardPlace` whenever the server confirms a successful
-  // move by advancing moveCount. Keying off moveCount (rather than firing in the
-  // click handler) means illegal moves — which leave moveCount unchanged — stay
-  // silent, and each auto-complete batch that lands a card is also covered.
-  // Respects the global mute via SoundProvider.
-  const prevMoveCountRef = useRef<number | null>(null);
-  useEffect(() => {
-    const moveCount = state?.moveCount;
-    if (moveCount == null) return;
-    if (prevMoveCountRef.current !== null && moveCount > prevMoveCountRef.current) {
-      playSound('cardPlace');
-    }
-    prevMoveCountRef.current = moveCount;
-  }, [state?.moveCount, playSound]);
-
-  // Play a distinct buzz the moment an illegal move / network error surfaces,
-  // so the failure is audible (mirrors PrsiPage; respects the global mute).
-  const prevErrorRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (error && error !== prevErrorRef.current) {
-      playSound('errorBuzz');
-    }
-    prevErrorRef.current = error;
-  }, [error, playSound]);
 
   const {
     hint: frontendHint,
@@ -206,8 +181,7 @@ function BakersDozenPageContent() {
   const handleManualReset = useCallback(() => {
     hideActionLog();
     handleReset();
-    playSound('shuffle');
-  }, [handleReset, hideActionLog, playSound]);
+  }, [handleReset, hideActionLog]);
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
@@ -249,7 +223,6 @@ function BakersDozenPageContent() {
       gamePath="/bakersdozen"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

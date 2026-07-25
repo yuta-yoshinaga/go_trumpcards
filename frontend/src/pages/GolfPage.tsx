@@ -33,7 +33,6 @@ import {
   golfNineHoleTotal,
   useGolfNineHole,
 } from '../hooks/useGolfNineHole';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { GolfResponse } from '../types/card';
@@ -99,7 +98,6 @@ function GolfPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('golf');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -216,7 +214,6 @@ function GolfPageContent() {
       gamePath="/golf"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

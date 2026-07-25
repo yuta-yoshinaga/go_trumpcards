@@ -19,7 +19,6 @@ import {
   RUMMY500_POINT_LIMIT_OPTIONS,
   useRummy500Game,
 } from '../hooks/useRummy500Game';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -93,7 +92,6 @@ function Rummy500PageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('rummy500', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   // The lay-off destination is chosen solely by clicking a meld on the board above; null
   // means nothing is selected yet, so the Lay off button stays disabled. The owner's
   // display name is captured here (where isHuman is in scope) for the footer label.
@@ -145,7 +143,6 @@ function Rummy500PageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/rummy500"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

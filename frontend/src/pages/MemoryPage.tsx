@@ -22,7 +22,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { AUTO_NEXT_DELAY_OPTIONS, CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { MemoryResponse } from '../types/card';
@@ -99,7 +98,6 @@ function MemoryPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('memory');
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -260,7 +258,6 @@ function MemoryPageContent() {
       gamePath="/memory"
       gameEndFlag={!!isGameEnd}
       winShow={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

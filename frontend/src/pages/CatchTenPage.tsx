@@ -25,7 +25,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -129,13 +128,6 @@ function CatchTenPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('catchten', state);
   const { cardWidth, isMobile } = useCardDimensions();
-  const { playSound } = useSound();
-  // Memoized so WinCelebration's effect (which depends on onCelebrate) does not
-  // re-arm its timer — and replay the fanfare — on every post-win re-render.
-  const handleCelebrate = useCallback(() => {
-    playSound('winFanfare');
-  }, [playSound]);
-
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('catchten');
   const cliConfig: CliGameConfig<CatchTenResponse, Parameters<typeof catchtenApi.exec>> = useMemo(
@@ -264,7 +256,6 @@ function CatchTenPageContent() {
       gamePath="/catchten"
       gameEndFlag={!!state?.gameEndFlag}
       winShow={humanWon}
-      onCelebrate={handleCelebrate}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

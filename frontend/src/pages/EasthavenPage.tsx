@@ -28,7 +28,6 @@ import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import i18n from '../i18n';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, EasthavenResponse } from '../types/card';
@@ -98,7 +97,6 @@ function EasthavenPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('easthaven');
-  const { playSound } = useSound();
   const {
     state,
     setState,
@@ -176,13 +174,11 @@ function EasthavenPageContent() {
   // Action handlers
   const handleManualReset = useCallback(() => {
     void apiExec('reset');
-    playSound('shuffle');
-  }, [apiExec, playSound]);
+  }, [apiExec]);
 
   const handleDeal = useCallback(() => {
     void apiExec('deal');
-    playSound('cardPlace');
-  }, [apiExec, playSound]);
+  }, [apiExec]);
 
   // Empty-column deal guard: surfaces a shake animation + tooltip instead of failing silently.
   const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
@@ -246,9 +242,8 @@ function EasthavenPageContent() {
       if (!selectedSource) return;
       void apiExec('move', selectedSource, { zone, col });
       setSelectedSource(null);
-      playSound('cardPlace');
     },
-    [apiExec, selectedSource, playSound],
+    [apiExec, selectedSource],
   );
 
   // Double-click / double-tap shortcut: auto-send a column's exposed top card
@@ -261,9 +256,8 @@ function EasthavenPageContent() {
       if (!target) return;
       void apiExec('move', { zone: 'tableau', col }, target);
       setSelectedSource(null);
-      playSound('cardPlace');
     },
-    [state, apiExec, playSound],
+    [state, apiExec],
   );
 
   const isPlayingForKbd = state?.phase === EasthavenPhase.PLAYING;

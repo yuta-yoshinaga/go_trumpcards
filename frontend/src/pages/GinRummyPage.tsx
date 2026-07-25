@@ -21,7 +21,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useGinRummyGame } from '../hooks/useGinRummyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, meldCardStyle, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -117,7 +116,6 @@ function GinRummyPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('ginrummy', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('ginrummy');
   const cliConfig: CliGameConfig<GinRummyResponse, Parameters<typeof ginrummyApi.exec>> = useMemo(
@@ -234,7 +232,6 @@ function GinRummyPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/ginrummy"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

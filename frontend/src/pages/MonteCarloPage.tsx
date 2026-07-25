@@ -130,11 +130,10 @@ function MonteCarloPageContent() {
       const isValidPair =
         firstCard != null && firstCard.value === cell.card.value && isAdjacent(selected, { row, col });
       void execApi('remove', selected.row, selected.col, row, col);
-      playSound('cardPlace');
       if (isValidPair) flashPairRemoved();
       setSelected(null);
     },
-    [execApi, flashPairRemoved, isPlaying, playSound, selected, state],
+    [execApi, flashPairRemoved, isPlaying, selected, state],
   );
 
   const handleDeal = useCallback(() => {
@@ -161,8 +160,7 @@ function MonteCarloPageContent() {
     hideActionLog();
     void execApi('reset');
     setSelected(null);
-    playSound('shuffle');
-  }, [execApi, hideActionLog, playSound]);
+  }, [execApi, hideActionLog]);
 
   const dealHintActive = frontendHintEnabled && frontendHint?.targetAction === 'deal';
 
@@ -179,7 +177,6 @@ function MonteCarloPageContent() {
       gamePath="/montecarlo"
       gameEndFlag={!state || gameEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

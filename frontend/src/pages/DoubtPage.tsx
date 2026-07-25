@@ -30,7 +30,6 @@ import {
 } from '../hooks/useDoubtGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, focusRingAccent } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -117,7 +116,6 @@ function DoubtPageContent() {
   } = useGameHint('doubt', state);
 
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('doubt');
@@ -233,7 +231,6 @@ function DoubtPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/doubt"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

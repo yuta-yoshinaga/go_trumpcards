@@ -24,7 +24,6 @@ import { useFlowerGardenGame } from '../hooks/useFlowerGardenGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { FlowerGardenResponse } from '../types/card';
@@ -96,7 +95,6 @@ function FlowerGardenPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('flowergarden');
-  const { playSound } = useSound();
   const game = useFlowerGardenGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
 
@@ -311,7 +309,6 @@ function FlowerGardenPageContent() {
       gamePath="/flowergarden"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

@@ -21,7 +21,6 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCrazyEightsGame } from 
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -139,7 +138,6 @@ function CrazyEightsPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('crazyeights', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('crazyeights');
   const cliConfig: CliGameConfig<CrazyEightsResponse, Parameters<typeof crazyeightsApi.exec>> = useMemo(
@@ -231,7 +229,6 @@ function CrazyEightsPageContent() {
       isHumanTurn={isHumanTurn || isChooseSuit}
       gamePath="/crazyeights"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

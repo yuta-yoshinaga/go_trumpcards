@@ -25,7 +25,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { AcesUpResponse } from '../types/card';
@@ -88,7 +87,6 @@ function AcesUpPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('acesup');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -180,7 +178,6 @@ function AcesUpPageContent() {
       gamePath="/acesup"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

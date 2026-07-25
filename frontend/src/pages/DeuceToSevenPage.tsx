@@ -25,7 +25,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useDeuceToSevenGame } from '../hooks/useDeuceToSevenGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useSound } from '../providers/SoundProvider';
 import { btnSuccess, btnWarning, focusRingAccent } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -83,7 +82,6 @@ function DeuceToSevenPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('deucetoseven');
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const isMobile = useIsMobile();
   // Translate the poker category via its stable rank so the badge follows the
   // UI locale; fall back to the server's string if the rank is out of range.
@@ -204,7 +202,6 @@ function DeuceToSevenPageContent() {
       isHumanTurn={canAct || canExchange}
       gamePath="/deucetoseven"
       gameEndFlag={isEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

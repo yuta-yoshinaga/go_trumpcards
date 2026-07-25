@@ -21,7 +21,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -82,7 +81,6 @@ function FourCardPokerPageContent() {
   const [acesUpAmount, setAcesUpAmount] = useState(0);
 
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(fourcardpokerApi.exec);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fourcardpoker');
@@ -158,7 +156,7 @@ function FourCardPokerPageContent() {
       gamePath="/fourcardpoker"
       gameEndFlag={isEndPhase}
       winShow={isEndPhase && state.result > 0}
-      onCelebrate={() => playSound('winFanfare')}
+      lossShow={isEndPhase && state.result < 0}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

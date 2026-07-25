@@ -23,7 +23,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSultanGame } from '../hooks/useSultanGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { SultanPhase } from '../types/phases';
@@ -94,7 +93,6 @@ function SultanPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('sultan');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -183,7 +181,6 @@ function SultanPageContent() {
       gamePath="/sultan"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

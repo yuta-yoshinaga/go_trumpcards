@@ -88,9 +88,6 @@ export const SOUND_ENABLED: Record<SoundName, boolean> = {
 /**
  * Minimum interval between plays of the same sound, in ms. Absorbs rapid
  * exec bursts (step/polling games) and per-card AnimatedCard deal bursts.
- * winFanfare/lossThud entries are a TEMPORARY dedupe guard while the 100+
- * page-level onCelebrate sound handlers still exist alongside the central
- * GamePageShell tap — remove those two entries in the sweep PR.
  */
 const MIN_INTERVAL_MS: Partial<Record<SoundName, number>> = {
   cardPlace: 90,
@@ -98,8 +95,6 @@ const MIN_INTERVAL_MS: Partial<Record<SoundName, number>> = {
   cardFlip: 70,
   chipClick: 60,
   turnTick: 400,
-  winFanfare: 3000,
-  lossThud: 3000,
 };
 
 /** How long an unconsumed exec-sound claim stays valid, in ms. */

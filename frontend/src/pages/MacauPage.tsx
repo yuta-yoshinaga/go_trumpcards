@@ -21,7 +21,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useMacauGame } from '../hooks/useMacauGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -117,7 +116,6 @@ function MacauPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('macau', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('macau');
   const cliConfig: CliGameConfig<MacauResponse, Parameters<typeof macauApi.exec>> = useMemo(
@@ -183,7 +181,6 @@ function MacauPageContent() {
       isHumanTurn={isHumanTurn || isChooseSuit || (isMustDeclare && state.players[state.currentPlayerIdx]?.isHuman)}
       gamePath="/macau"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

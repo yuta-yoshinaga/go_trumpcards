@@ -25,7 +25,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { usePyramidGame } from '../hooks/usePyramidGame';
 import { usePyramidStats } from '../hooks/usePyramidStats';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PyramidResponse } from '../types/card';
@@ -90,7 +89,6 @@ function PyramidPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('pyramid');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -222,7 +220,6 @@ function PyramidPageContent() {
       gamePath="/pyramid"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

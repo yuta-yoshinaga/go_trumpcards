@@ -201,7 +201,6 @@ function OmahaHiLoPageContent() {
     cancelReset,
     phaseNames,
     cardWidth,
-    playSound,
     isMobile,
     isLargeDesktop,
     state,
@@ -272,7 +271,6 @@ function OmahaHiLoPageContent() {
       isHumanTurn={canAct}
       gamePath="/omahahilo"
       gameEndFlag={phase === OmahaPhase.END}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

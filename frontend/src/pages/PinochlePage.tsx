@@ -21,7 +21,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, usePinochleGame } from '../hooks/usePinochleGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PinochleMeldData, PinochleResponse } from '../types/card';
@@ -123,7 +122,6 @@ function PinochlePageContent() {
   } = usePinochleGame();
 
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const phaseNames = usePhaseNames('pinochle', PINOCHLE_PHASE_KEYS);
 
   const [bidAmount, setBidAmount] = useState(20);
@@ -240,7 +238,6 @@ function PinochlePageContent() {
       gamePath="/pinochle"
       gameEndFlag={!!isGameEnd}
       winShow={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

@@ -25,7 +25,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -90,7 +89,6 @@ function LetItRidePageContent() {
   const [betAmount, setBetAmount] = useState(100);
 
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(letitrideApi.exec);
   const {
     hint: frontendHint,
@@ -177,7 +175,7 @@ function LetItRidePageContent() {
       gamePath="/letitride"
       gameEndFlag={isEndPhase}
       winShow={isEndPhase && state.result > 0}
-      onCelebrate={() => playSound('winFanfare')}
+      lossShow={isEndPhase && state.result < 0}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

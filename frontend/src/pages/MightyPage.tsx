@@ -28,7 +28,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, MIN_BID_OPTIONS, POINT_LIMIT_OPTIONS, useMightyGame } from '../hooks/useMightyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -127,7 +126,6 @@ export const MightyPage = withTutorial(MightyPageContent, 'mighty', MIGHTY_TUTOR
 function MightyPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('mighty');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -275,7 +273,6 @@ function MightyPageContent() {
       isHumanTurn={isHumanBidTurn || isHumanTurn || isHumanDeclarer || isHumanExchange}
       gamePath="/mighty"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

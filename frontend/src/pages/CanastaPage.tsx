@@ -21,7 +21,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -85,7 +84,6 @@ function CanastaPageContent() {
   } = useCanastaGame();
 
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const phaseNames = usePhaseNames('canasta', CANASTA_PHASE_KEYS);
   const {
     hint: frontendHint,
@@ -180,7 +178,6 @@ function CanastaPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/canasta"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

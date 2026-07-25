@@ -13,12 +13,20 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockPlaySound = vi.fn();
+const mockSoundValue = {
+  playSound: mockPlaySound,
+  muted: false,
+  toggleMute: vi.fn(),
+  claimExecSound: vi.fn(),
+  consumeExecClaim: () => false,
+};
 vi.mock('../providers/SoundProvider', () => ({
   SoundProvider: ({ children }: { children: ReactNode }) => children,
-  useSound: () => ({ playSound: mockPlaySound, muted: false, toggleMute: vi.fn() }),
-  // AnimatedCard consumes useOptionalSound; return null so cards stay silent
-  // and only the page's explicit playSound calls are asserted.
-  useOptionalSound: () => null,
+  useSound: () => mockSoundValue,
+  // AnimatedCard AND the central taps (useGameApi / GamePageShell / ErrorAlert)
+  // consume useOptionalSound; route it to the same spy and assert on specific
+  // sound names so per-card deal sounds don't interfere.
+  useOptionalSound: () => mockSoundValue,
 }));
 
 vi.mock('../hooks/useGameHint', () => ({
@@ -314,6 +322,7 @@ describe('BakersDozenPage', () => {
     const nextBtn = await screen.findByRole('button', { name: '次のゲーム' });
     mockPlaySound.mockClear();
     fireEvent.click(nextBtn);
-    expect(mockPlaySound).toHaveBeenCalledWith('shuffle');
+    // The central tap plays after the reset exec resolves, so await it.
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('shuffle'));
   });
 });

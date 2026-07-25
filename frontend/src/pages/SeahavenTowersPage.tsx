@@ -26,7 +26,6 @@ import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSeahavenTowersGame } from '../hooks/useSeahavenTowersGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, SeahavenTowersResponse } from '../types/card';
@@ -95,7 +94,6 @@ function SeahavenTowersPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('seahaventowers');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -225,7 +223,6 @@ function SeahavenTowersPageContent() {
       gamePath="/seahaventowers"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

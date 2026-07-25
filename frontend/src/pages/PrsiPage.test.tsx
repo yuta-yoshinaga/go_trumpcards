@@ -12,13 +12,20 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockPlaySound = vi.fn();
-const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+const mockSoundValue = {
+  playSound: mockPlaySound,
+  muted: false,
+  toggleMute: vi.fn(),
+  claimExecSound: vi.fn(),
+  consumeExecClaim: () => false,
+};
 vi.mock('../providers/SoundProvider', () => ({
   SoundProvider: ({ children }: { children: React.ReactNode }) => children,
   useSound: () => mockSoundValue,
-  // AnimatedCard consumes useOptionalSound; return null so cards stay silent
-  // and only the page's explicit playSound calls are asserted.
-  useOptionalSound: () => null,
+  // AnimatedCard AND the central taps (useGameApi / GamePageShell / ErrorAlert)
+  // consume useOptionalSound; route it to the same spy and assert on specific
+  // sound names so per-card deal sounds don't interfere.
+  useOptionalSound: () => mockSoundValue,
 }));
 
 const mockExec = vi.mocked(prsiApi.exec);
@@ -386,7 +393,8 @@ describe('PrsiPage', () => {
     mockPlaySound.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
 
-    expect(mockPlaySound).toHaveBeenCalledWith('cardPlace');
+    // The central tap plays after the exec resolves, so await it.
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('cardPlace'));
   });
 
   it('plays the shuffle sound when a card is drawn', async () => {

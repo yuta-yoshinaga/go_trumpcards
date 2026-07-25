@@ -21,7 +21,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_WINS_OPTIONS, useConquianGame } from '../hooks/useConquianGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -105,7 +104,6 @@ function ConquianPageContent() {
   } = useConquianGame();
 
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const phaseNames = usePhaseNames('conquian', CONQUIAN_PHASE_KEYS);
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
@@ -210,7 +208,6 @@ function ConquianPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/conquian"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

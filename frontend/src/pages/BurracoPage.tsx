@@ -228,7 +228,6 @@ function BurracoPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/burraco"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

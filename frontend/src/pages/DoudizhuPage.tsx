@@ -19,7 +19,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DoudizhuResponse } from '../types/card';
@@ -125,7 +124,6 @@ function DoudizhuPageContent() {
     clearLog,
   });
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
 
   const [selectedCards, setSelectedCards] = useState<Set<number>>(new Set());
 
@@ -142,10 +140,6 @@ function DoudizhuPageContent() {
 
   const landlordWon = isGameEnd && !!state && state.scores[state.landlordIdx] > 0;
   const humanWon = isGameEnd && !!state && state.scores[humanIdx] > 0;
-
-  useEffect(() => {
-    if (humanWon) playSound('winFanfare');
-  }, [humanWon, playSound]);
 
   const handleBid = useCallback(
     (value: number) => {
@@ -217,7 +211,6 @@ function DoudizhuPageContent() {
       cancelReset={cancelReset}
       gameEndFlag={isGameEnd}
       winShow={humanWon}
-      onCelebrate={() => playSound('winFanfare')}
       headerExtra={
         <div className="flex items-center gap-2">
           {state.landlordIdx >= 0 && (

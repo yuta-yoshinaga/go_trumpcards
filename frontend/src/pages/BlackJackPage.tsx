@@ -40,7 +40,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -186,7 +185,6 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
     useGamePageSetup(variant);
   const phaseNames = usePhaseNames(variant, BJ_PHASE_KEYS);
   const suggestionLabels = useSuggestionLabels(t);
-  const { playSound } = useSound();
 
   const { cardWidth, isMobile } = useCardDimensions();
   const [message, setMessage] = useState('');
@@ -350,7 +348,6 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
       gamePath={gamePath}
       gameEndFlag={!isRoundInProgress}
       winShow={phase === BjPhase.END}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
