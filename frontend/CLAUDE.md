@@ -30,7 +30,7 @@ Shared building blocks:
 | `useGameApi(apiFn, opts)` | Server-state management with loading / error / retry |
 | `GamePageShell` | Background + heading + phase indicator + reset dialog wrapper (most pages use this) |
 | `TutorialWrapper` | Tutorial provider + i18n init (always wraps the exported `XPage`) |
-| `useCliMode` + `useCliGame` + `<CliTerminal>` + `<CliToggle>` | CLI fallback mode, available on most pages (~191). Per-game parsing/formatting lives in `src/utils/cli/commands/<game>Commands.ts` + `src/utils/cli/formatters/<game>Formatter.ts` |
+| `useCliMode` + `useCliGame` + `<CliTerminal>` + `<CliToggle>` | CLI fallback mode, available on most pages. Per-game parsing/formatting lives in `src/utils/cli/commands/<game>Commands.ts` + `src/utils/cli/formatters/<game>Formatter.ts` |
 
 ## Package Manager Rule
 
@@ -130,7 +130,7 @@ bun run build && bun run check && bun run test
 | `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; renders overlay (used internally by TutorialWrapper) |
 | `TutorialOverlay` | `src/components/tutorial/TutorialOverlay.tsx` | Full-screen overlay with SVG mask spotlight |
 | `useTutorial` | `src/hooks/useTutorial.ts` | State management (step progression, localStorage, resume/restart) |
-| `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hints; registry-driven via `hintFactories` (covers ~all games, currently 193). The supported set is the `HintGameName` union (`keyof typeof hintFactories`) — add a game by registering its factory there |
+| `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hints; registry-driven via `hintFactories` (covers nearly all games). The supported set is the `HintGameName` union (`keyof typeof hintFactories`) — add a game by registering its factory there |
 | `TutorialSuggestDialog` | `src/components/tutorial/TutorialSuggestDialog.tsx` | First-visit dialog; controlled by `useFirstVisit` hook |
 | `TutorialProgressPanel` | `src/components/tutorial/TutorialProgressPanel.tsx` | Progress overview in NavBar |
 

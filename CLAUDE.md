@@ -9,6 +9,7 @@ Go implementations of 219 trump card game algorithms (blackjack, poker, hearts, 
 | [Go](https://go.dev/) | 1.26.x |
 | [Node.js](https://nodejs.org/) | 24.x |
 | [Bun](https://bun.sh/) | 1.3.10 |
+| [jq](https://jqlang.github.io/jq/) | any (required by the `.claude/settings.json` commit-gate hooks — they silently no-op without it) |
 
 ## Package Manager Rule
 
@@ -98,7 +99,7 @@ When making code changes, update the relevant documentation **in the same commit
 
 ## Cloudflare Workers (WASM)
 
-Games ship to three Cloudflare Workers (`casino`, `classic`, `solo`) as TinyGo WASM binaries, split by category purely to keep each binary under the 1 MB gzipped free-tier limit. The `Category` in the registry is a binary-size bucket, **not** a user-facing taxonomy. Adding/modifying a game touches 4 registration points (registry, `games_server.go`, the category sub-package, and `gameApi.ts`). Full per-worker game list, the build-tag split rationale, and build commands: [`docs/cloudflare-workers.md`](docs/cloudflare-workers.md).
+Games ship to four Cloudflare Workers (`casino`, `classic`, `solo`, `extra`) as TinyGo WASM binaries, split by category purely to keep each binary under the 1 MB gzipped free-tier limit (`extra` is the overflow bucket added by [ADR-0032](docs/adr/0032-fourth-worker-capacity.md)). The `Category` in the registry is a binary-size bucket, **not** a user-facing taxonomy. Adding/modifying a game touches 5 registration points (registry, `games_server.go`, the category sub-package, the `gameRegistry` CLI wiring in `internal/infrastructure/ui/GameManager.go`, and `gameApi.ts`) plus the per-category count assertions in `registry_test.go`. Full per-worker game list, the build-tag split rationale, and build commands: [`docs/cloudflare-workers.md`](docs/cloudflare-workers.md).
 
 ## New Game Addition Checklist
 
