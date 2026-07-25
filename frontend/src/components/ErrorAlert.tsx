@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useOptionalSound } from '../providers/SoundProvider';
 
 interface ErrorAlertProps {
   message: string | null;
@@ -8,6 +10,22 @@ interface ErrorAlertProps {
 /** Renders an error alert banner with optional retry button, hidden when message is null. */
 export function ErrorAlert({ message, onRetry }: ErrorAlertProps) {
   const { t } = useTranslation('common');
+
+  // Central errorBuzz tap (sound-centralization design): ErrorAlert is
+  // rendered by ~200 pages, so buzzing here covers every DISPLAYED error
+  // with zero page wiring. Keyed on the message so a persistent error
+  // doesn't re-buzz on every parent re-render.
+  const sound = useOptionalSound();
+  const soundRef = useRef(sound);
+  soundRef.current = sound;
+  const prevMessageRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (message && message !== prevMessageRef.current) {
+      soundRef.current?.playSound('errorBuzz');
+    }
+    prevMessageRef.current = message;
+  }, [message]);
+
   if (!message) return null;
   return (
     <div

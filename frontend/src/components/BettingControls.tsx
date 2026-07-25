@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '../hooks/useCardDimensions';
+import { useOptionalSound } from '../providers/SoundProvider';
 import { btnPokerAccent, btnPokerAllIn, btnPokerMuted, btnPokerPrimary } from '../styles/buttonStyles';
 import { ChipBetInput } from './common/ChipBetInput';
 import { KbdBadge } from './KbdBadge';
@@ -42,6 +43,15 @@ export function BettingControls({
   const { t } = useTranslation('common');
   // Per-button key hints are a desktop affordance; on touch there's no keyboard.
   const isMobile = useIsMobile();
+  const sound = useOptionalSound();
+  // Chip actions (money moves) play chipClick and claim the following exec's
+  // generic sound so useGameApi's central cardPlace doesn't double-fire.
+  // Check/fold move no chips and keep the generic exec sound.
+  const withChipSound = (fn: () => void) => () => {
+    sound?.playSound('chipClick');
+    sound?.claimExecSound();
+    fn();
+  };
   const kbd = (label: string) => (isMobile ? null : <KbdBadge label={label} />);
   const max = maxBetAmount ?? 0;
   const hasMax = max > 0;
@@ -114,7 +124,7 @@ export function BettingControls({
             type="button"
             className={`${btnPokerPrimary} min-w-[80px]`}
             disabled={loading}
-            onClick={onCall}
+            onClick={withChipSound(onCall)}
             aria-keyshortcuts="c"
           >
             {t('action.call')}
@@ -124,7 +134,7 @@ export function BettingControls({
             type="button"
             className={`${btnPokerAccent} min-w-[80px]`}
             disabled={!canBet}
-            onClick={onRaise}
+            onClick={withChipSound(onRaise)}
             aria-keyshortcuts="r"
           >
             {t('action.raise')}
@@ -137,7 +147,7 @@ export function BettingControls({
             type="button"
             className={`${btnPokerAccent} min-w-[80px]`}
             disabled={!canBet}
-            onClick={onBet}
+            onClick={withChipSound(onBet)}
             aria-keyshortcuts="r"
           >
             {t('action.bet')}
@@ -169,7 +179,7 @@ export function BettingControls({
         type="button"
         className={`${btnPokerAllIn} min-w-[80px]`}
         disabled={loading}
-        onClick={onAllIn}
+        onClick={withChipSound(onAllIn)}
         aria-keyshortcuts="a"
       >
         {t('action.allIn')}

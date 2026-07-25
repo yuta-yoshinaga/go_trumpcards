@@ -13,6 +13,13 @@ vi.mock('../api/gameApi', () => ({
 
 const mockPlaySound = vi.fn();
 const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+/**
+ * Counts calls for one sound name. The central taps (useGameApi / GamePageShell)
+ * play through this same mocked context, so aggregate assertions on
+ * mockPlaySound would also count deal/card sounds this page does not own.
+ */
+const soundCalls = (name: string) => mockPlaySound.mock.calls.filter((c) => c[0] === name).length;
+
 vi.mock('../providers/SoundProvider', () => ({
   SoundProvider: ({ children }: { children: React.ReactNode }) => children,
   useSound: () => mockSoundValue,
@@ -261,7 +268,7 @@ describe('BelotePage', () => {
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
     await waitFor(() => expect(screen.queryByTestId('belote-bonus-confirmed')).not.toBeInTheDocument());
-    expect(mockPlaySound).not.toHaveBeenCalled();
+    expect(soundCalls('winFanfare')).toBe(0);
   });
 
   it('does not chime when loaded into a round that already has the bonus', async () => {
@@ -270,7 +277,7 @@ describe('BelotePage', () => {
     );
     renderWithProviders(<BelotePage />);
     await waitFor(() => expect(screen.getByTestId('belote-rebelote-badge')).toHaveAttribute('data-active', 'true'));
-    expect(mockPlaySound).not.toHaveBeenCalled();
+    expect(soundCalls('winFanfare')).toBe(0);
     expect(screen.queryByTestId('belote-bonus-confirmed')).not.toBeInTheDocument();
   });
 

@@ -1,11 +1,12 @@
 import { act, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SoundProvider, useSound } from './SoundProvider';
+import { SOUND_ENABLED, SoundProvider, useSound } from './SoundProvider';
 
-const { mockPlay, mockRate, mockVolume } = vi.hoisted(() => ({
+const { mockPlay, mockRate, mockVolume, mockHowlerCtx } = vi.hoisted(() => ({
   mockPlay: vi.fn().mockReturnValue(1),
   mockRate: vi.fn(),
   mockVolume: vi.fn(),
+  mockHowlerCtx: { state: 'running' },
 }));
 
 vi.mock('howler', () => ({
@@ -14,6 +15,7 @@ vi.mock('howler', () => ({
     rate = mockRate;
     volume = mockVolume;
   },
+  Howler: { ctx: mockHowlerCtx },
 }));
 
 function wrapper({ children }: { children: React.ReactNode }) {
@@ -146,6 +148,147 @@ describe('SoundProvider', () => {
       act(() => result.current.playSound('winFanfare'));
       // Event tier: 1.4x base (0.3) = 0.42
       expect(mockVolume).toHaveBeenCalledWith(expect.closeTo(0.42, 1), 42);
+    });
+  });
+
+  describe('policy layer: throttle', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    it('suppresses a second same-sound play within its min interval', () => {
+      const { result } = renderHook(() => useSound(), { wrapper });
+      act(() => result.current.playSound('cardPlace'));
+      act(() => result.current.playSound('cardPlace'));
+      expect(mockPlay).toHaveBeenCalledTimes(1);
+    });
+
+    it('plays again after the min interval elapses', () => {
+      const { result } = renderHook(() => useSound(), { wrapper });
+      act(() => result.current.playSound('cardPlace'));
+      act(() => vi.advanceTimersByTime(100));
+      act(() => result.current.playSound('cardPlace'));
+      expect(mockPlay).toHaveBeenCalledTimes(2);
+    });
+
+    it('throttles winFanfare with the temporary 3s dedupe guard', () => {
+      const { result } = renderHook(() => useSound(), { wrapper });
+      act(() => result.current.playSound('winFanfare'));
+      act(() => vi.advanceTimersByTime(1000));
+      act(() => result.current.playSound('winFanfare'));
+      expect(mockPlay).toHaveBeenCalledTimes(1);
+      act(() => vi.advanceTimersByTime(2100));
+      act(() => result.current.playSound('winFanfare'));
+      expect(mockPlay).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not cross-throttle different sounds', () => {
+      const { result } = renderHook(() => useSound(), { wrapper });
+      act(() => result.current.playSound('cardPlace'));
+      act(() => result.current.playSound('cardFlip'));
+      expect(mockPlay).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('policy layer: exec sound claim', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    it('consumeExecClaim returns true once after claimExecSound, then false', () => {
+      const { result } = renderHook(() => useSound(), { wrapper });
+      act(() => result.current.claimExecSound());
+      expect(result.current.consumeExecClaim()).toBe(true);
+      expect(result.current.consumeExecClaim()).toBe(false);
+    });
+
+    it('returns false when nothing was claimed', () => {
+      const { result } = renderHook(() => useSound(), { wrapper });
+      expect(result.current.consumeExecClaim()).toBe(false);
+    });
+
+    it('expires an unconsumed claim after ~3s', () => {
+      const { result } = renderHook(() => useSound(), { wrapper });
+      act(() => result.current.claimExecSound());
+      act(() => vi.advanceTimersByTime(3100));
+      expect(result.current.consumeExecClaim()).toBe(false);
+    });
+  });
+
+  describe('policy layer: cardPlace arpeggio', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    it('ramps rate upward for consecutive cardPlace plays within 1.5s', () => {
+      mockPlay.mockReturnValue(42);
+      const { result } = renderHook(() => useSound(), { wrapper });
+      act(() => result.current.playSound('cardPlace'));
+      act(() => vi.advanceTimersByTime(200));
+      act(() => result.current.playSound('cardPlace'));
+      act(() => vi.advanceTimersByTime(200));
+      act(() => result.current.playSound('cardPlace'));
+      const rates = mockRate.mock.calls.map((c) => c[0] as number);
+      expect(rates[0]).toBeCloseTo(1.0, 5);
+      expect(rates[1]).toBeCloseTo(1.035, 5);
+      expect(rates[2]).toBeCloseTo(1.07, 5);
+    });
+
+    it('caps the ramp at 1.25', () => {
+      const { result } = renderHook(() => useSound(), { wrapper });
+      for (let i = 0; i < 12; i++) {
+        act(() => result.current.playSound('cardPlace'));
+        act(() => vi.advanceTimersByTime(200));
+      }
+      const rates = mockRate.mock.calls.map((c) => c[0] as number);
+      expect(Math.max(...rates)).toBeLessThanOrEqual(1.25);
+    });
+
+    it('resets to 1.0 after 1.5s of idle', () => {
+      const { result } = renderHook(() => useSound(), { wrapper });
+      act(() => result.current.playSound('cardPlace'));
+      act(() => vi.advanceTimersByTime(200));
+      act(() => result.current.playSound('cardPlace'));
+      act(() => vi.advanceTimersByTime(1600));
+      act(() => result.current.playSound('cardPlace'));
+      const rates = mockRate.mock.calls.map((c) => c[0] as number);
+      expect(rates[2]).toBeCloseTo(1.0, 5);
+    });
+
+    it('explicit pitchVariation overrides the arpeggio rate', () => {
+      const { result } = renderHook(() => useSound(), { wrapper });
+      act(() => result.current.playSound('cardPlace'));
+      act(() => vi.advanceTimersByTime(200));
+      act(() => result.current.playSound('cardPlace', { pitchVariation: 0.05 }));
+      const secondRate = mockRate.mock.calls[1][0] as number;
+      expect(secondRate).toBeGreaterThanOrEqual(0.95);
+      expect(secondRate).toBeLessThanOrEqual(1.05);
+    });
+  });
+
+  describe('policy layer: per-sound enable map', () => {
+    it('skips a sound whose SOUND_ENABLED entry is false', () => {
+      const original = SOUND_ENABLED.turnTick;
+      SOUND_ENABLED.turnTick = false;
+      try {
+        const { result } = renderHook(() => useSound(), { wrapper });
+        act(() => result.current.playSound('turnTick'));
+        expect(mockPlay).not.toHaveBeenCalled();
+        act(() => result.current.playSound('cardFlip'));
+        expect(mockPlay).toHaveBeenCalledTimes(1);
+      } finally {
+        SOUND_ENABLED.turnTick = original;
+      }
+    });
+  });
+
+  describe('policy layer: suspended AudioContext gate', () => {
+    it('skips plays while the context is suspended (autoUnlock would replay them stale)', () => {
+      mockHowlerCtx.state = 'suspended';
+      try {
+        const { result } = renderHook(() => useSound(), { wrapper });
+        act(() => result.current.playSound('shuffle'));
+        expect(mockPlay).not.toHaveBeenCalled();
+      } finally {
+        mockHowlerCtx.state = 'running';
+      }
     });
   });
 
