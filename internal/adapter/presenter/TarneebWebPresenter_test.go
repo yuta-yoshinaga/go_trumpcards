@@ -64,7 +64,7 @@ func TestTarneebWebPresenter_Output(t *testing.T) {
 	t.Run("play phase follow when trick has cards", func(t *testing.T) {
 		tn := newTarneebForWebTest()
 		tn.SetPhase(domain.TarneebPhasePlay)
-		tn.SetCurrentTrick([]*domain.TarneebTrickCard{
+		tn.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 7, false)},
 		})
 		var got webOutPartial

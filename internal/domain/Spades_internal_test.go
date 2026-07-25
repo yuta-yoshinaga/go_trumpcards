@@ -99,7 +99,7 @@ func TestSpades_trickWinner_EmptyTrick(t *testing.T) {
 
 func TestSpades_trickWinner_LeadSuitWins(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 5, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 10, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 3, false)},
@@ -110,7 +110,7 @@ func TestSpades_trickWinner_LeadSuitWins(t *testing.T) {
 
 func TestSpades_trickWinner_SpadeBeatsLead(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 13, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 2, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 10, false)},
@@ -121,7 +121,7 @@ func TestSpades_trickWinner_SpadeBeatsLead(t *testing.T) {
 
 func TestSpades_trickWinner_HighestSpadeWins(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 13, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 5, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 10, false)},
@@ -132,7 +132,7 @@ func TestSpades_trickWinner_HighestSpadeWins(t *testing.T) {
 
 func TestSpades_trickWinner_OffSuitDoesNotWin(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignClover, 5, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 13, false)}, // off-suit K
 		{PlayerIdx: 2, Card: NewCard(CardDesignClover, 3, false)},
@@ -150,7 +150,7 @@ func TestSpades_validatePlay_FollowSuit(t *testing.T) {
 	s.players[0].AddCard(NewCard(CardDesignHeart, 5, false))
 	s.players[0].AddCard(NewCard(CardDesignClover, 3, false))
 
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignClover, 7, false)},
 	}
 
@@ -170,7 +170,7 @@ func TestSpades_validatePlay_NoSuitAllowed(t *testing.T) {
 	s.players[0].Reset()
 	s.players[0].AddCard(NewCard(CardDesignHeart, 5, false))
 
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignClover, 7, false)},
 	}
 
@@ -261,7 +261,7 @@ func TestSpades_getValidPlayIndices_FollowSuit(t *testing.T) {
 	s := newInternalTestSpades()
 	s.trickNumber = 2
 	s.spadesBroken = true
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 7, false)},
 	}
 
@@ -349,7 +349,7 @@ func TestSpades_cpuPlayNormal_Lead(t *testing.T) {
 
 func TestSpades_cpuPlayNormal_Follow_TryToWin(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 7, false)},
 	}
 
@@ -365,7 +365,7 @@ func TestSpades_cpuPlayNormal_Follow_TryToWin(t *testing.T) {
 
 func TestSpades_cpuPlayNormal_Follow_UnderOnly(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 13, false)}, // K♥
 	}
 
@@ -381,7 +381,7 @@ func TestSpades_cpuPlayNormal_Follow_UnderOnly(t *testing.T) {
 
 func TestSpades_cpuPlayNormal_Follow_NoLeadSuit(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignClover, 7, false)},
 	}
 
@@ -397,7 +397,7 @@ func TestSpades_cpuPlayNormal_Follow_NoLeadSuit(t *testing.T) {
 
 func TestSpades_cpuPlayNormal_Follow_NoLeadSuit_EnoughTricks(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignClover, 7, false)},
 	}
 
@@ -416,7 +416,7 @@ func TestSpades_cpuPlayNormal_Follow_NoLeadSuit_EnoughTricks(t *testing.T) {
 
 func TestSpades_cpuPlayNormal_Follow_MustFollowSuit_LowestLeadSuit(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 13, false)},
 	}
 
@@ -462,7 +462,7 @@ func TestSpades_cpuPlayHard_Lead_EnoughTricks(t *testing.T) {
 
 func TestSpades_cpuPlayHard_Follow_TryToWin(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 7, false)},
 	}
 
@@ -478,7 +478,7 @@ func TestSpades_cpuPlayHard_Follow_TryToWin(t *testing.T) {
 
 func TestSpades_cpuPlayHard_Follow_UnderCards(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 13, false)},
 	}
 
@@ -494,7 +494,7 @@ func TestSpades_cpuPlayHard_Follow_UnderCards(t *testing.T) {
 
 func TestSpades_cpuPlayHard_Follow_OverCardsOnly(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 2, false)},
 	}
 
@@ -510,7 +510,7 @@ func TestSpades_cpuPlayHard_Follow_OverCardsOnly(t *testing.T) {
 
 func TestSpades_cpuPlayHard_Void_SpadesCut(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignClover, 7, false)},
 	}
 
@@ -526,7 +526,7 @@ func TestSpades_cpuPlayHard_Void_SpadesCut(t *testing.T) {
 
 func TestSpades_cpuPlayHard_Void_SpadesCut_WithExistingSpade(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignClover, 7, false)},
 		{PlayerIdx: 3, Card: NewCard(CardDesignSpade, 5, false)},
 	}
@@ -544,7 +544,7 @@ func TestSpades_cpuPlayHard_Void_SpadesCut_WithExistingSpade(t *testing.T) {
 
 func TestSpades_cpuPlayHard_Void_NoSpade(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignClover, 7, false)},
 	}
 
@@ -561,7 +561,7 @@ func TestSpades_cpuPlayHard_Void_NoSpade(t *testing.T) {
 
 func TestSpades_cpuPlayHard_Follow_SpadeInTrick(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 7, false)},
 		{PlayerIdx: 3, Card: NewCard(CardDesignSpade, 10, false)},
 	}
@@ -579,7 +579,7 @@ func TestSpades_cpuPlayHard_Follow_SpadeInTrick(t *testing.T) {
 
 func TestSpades_cpuPlayHard_Follow_SpadeLeadSuit(t *testing.T) {
 	s := newInternalTestSpades()
-	s.currentTrick = []*SpadesTrickCard{
+	s.currentTrick = []*TrickCard{
 		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 7, false)},
 	}
 

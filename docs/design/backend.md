@@ -447,7 +447,7 @@ classDiagram
         -players []*HeartsPlayer
         -config HeartsConfig
         -phase HeartsPhase
-        -trickCards []*HeartsTrickCard
+        -currentTrick []*TrickCard
         +Reset()
         +PassCards(indices []int) error
         +PlayCard(index int) error
@@ -462,7 +462,7 @@ classDiagram
         -players []*SpadesPlayer
         -config SpadesConfig
         -phase SpadesPhase
-        -trickCards []*SpadesTrickCard
+        -currentTrick []*TrickCard
         +Reset()
         +Bid(amount int) error
         +PlayCard(index int) error
@@ -472,12 +472,10 @@ classDiagram
         +Phase() SpadesPhase
     }
 
-    class HeartsTrickCard {
-        +int PlayerIdx
-        +*Card Card
-    }
-
-    class SpadesTrickCard {
+    %% Shared trick-card type (internal/domain/trick_helpers.go, issue #4297) —
+    %% reused by the migrated trick-taking games (Hearts, Spades, OhHell,
+    %% TwoTenJack, Whist, …) in place of a per-game struct.
+    class TrickCard {
         +int PlayerIdx
         +*Card Card
     }
@@ -593,7 +591,7 @@ classDiagram
         -players []*OhHellPlayer
         -config OhHellConfig
         -phase OhHellPhase
-        -trickCards []*OhHellTrickCard
+        -currentTrick []*TrickCard
         -trumpCard *Card
         -trumpSuit int
         -handSize int
@@ -605,11 +603,6 @@ classDiagram
         +ScoreRound()
         +GetHint() *OhHellHint
         +GetPhase() OhHellPhase
-    }
-
-    class OhHellTrickCard {
-        +int PlayerIdx
-        +*Card Card
     }
 
     class Bridge {
@@ -643,7 +636,7 @@ classDiagram
         -players []*TwoTenJackPlayer
         -config TwoTenJackConfig
         -phase TwoTenJackPhase
-        -currentTrick []*TwoTenJackTrickCard
+        -currentTrick []*TrickCard
         -declarerIdx int
         -trumpSuit int
         +Reset()
@@ -657,15 +650,10 @@ classDiagram
         +GetPhase() TwoTenJackPhase
     }
 
-    class TwoTenJackTrickCard {
-        +int PlayerIdx
-        +*Card Card
-    }
-
     Hearts --> "4" HeartsPlayer
-    Hearts --> "*" HeartsTrickCard
+    Hearts --> "*" TrickCard
     Spades --> "4" SpadesPlayer
-    Spades --> "*" SpadesTrickCard
+    Spades --> "*" TrickCard
     Napoleon --> "4" NapoleonPlayer
     Napoleon --> "*" NapoleonTrickCard
     Mighty *-- "5" MightyPlayer
@@ -675,11 +663,11 @@ classDiagram
     Euchre --> "4" EuchrePlayer
     Euchre --> "*" EuchreTrickCard
     OhHell --> "4" OhHellPlayer
-    OhHell --> "*" OhHellTrickCard
+    OhHell --> "*" TrickCard
     Bridge --> "4" BridgePlayer
     Bridge --> "*" BridgeTrickCard
     TwoTenJack --> "4" TwoTenJackPlayer
-    TwoTenJack --> "*" TwoTenJackTrickCard
+    TwoTenJack --> "*" TrickCard
     HeartsPlayer --|> GamePlayer
     SpadesPlayer --|> GamePlayer
     NapoleonPlayer --|> GamePlayer
@@ -1592,7 +1580,7 @@ classDiagram
         -roundNumber int
         -trickNumber int
         -currentPlayerIdx int
-        -currentTrick []*WhistTrickCard
+        -currentTrick []*TrickCard
         -trumpSuit int
         -leadPlayerIdx int
         -dealerIdx int

@@ -29,7 +29,7 @@ func setupNinetyNineWebMock() *interfaces.MockNinetyNineGame {
 	m.On("GetTargetScore").Return(100)
 	m.On("GetHandSize").Return(9)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.NinetyNineTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.NinetyNinePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -102,7 +102,7 @@ func TestNinetyNineWebPresenter_Output(t *testing.T) {
 	t.Run("play phase follow message", func(t *testing.T) {
 		m, _ := setupNinetyNineWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		m.On("GetCurrentTrick").Return([]*domain.NinetyNineTrickCard{
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 7, false)},
 		})
 		result := p.Output(m, nil)

@@ -95,9 +95,9 @@ func (m *MockSpadesGame) GetCurrentPlayerIdx() int {
 	return args.Int(0)
 }
 
-func (m *MockSpadesGame) GetCurrentTrick() []*domain.SpadesTrickCard {
+func (m *MockSpadesGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
-	return args.Get(0).([]*domain.SpadesTrickCard)
+	return args.Get(0).([]*domain.TrickCard)
 }
 
 func (m *MockSpadesGame) GetSpadesBroken() bool {

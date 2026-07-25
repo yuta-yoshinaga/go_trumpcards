@@ -22,7 +22,7 @@ func TestWhist_trickWinner_LeadSuitWins(t *testing.T) {
 	w := newInternalTestWhist()
 	w.trumpSuit = CardDesignSpade
 
-	w.currentTrick = []*WhistTrickCard{
+	w.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 5, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 10, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 3, false)},
@@ -36,7 +36,7 @@ func TestWhist_trickWinner_TrumpBeatsLead(t *testing.T) {
 	w := newInternalTestWhist()
 	w.trumpSuit = CardDesignSpade
 
-	w.currentTrick = []*WhistTrickCard{
+	w.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 13, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 2, false)}, // lowest trump beats K of hearts
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 10, false)},
@@ -50,7 +50,7 @@ func TestWhist_trickWinner_HighestTrumpWins(t *testing.T) {
 	w := newInternalTestWhist()
 	w.trumpSuit = CardDesignSpade
 
-	w.currentTrick = []*WhistTrickCard{
+	w.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 13, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 2, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 10, false)}, // higher trump
@@ -62,7 +62,7 @@ func TestWhist_trickWinner_HighestTrumpWins(t *testing.T) {
 
 func TestWhist_trickWinner_EmptyTrick(t *testing.T) {
 	w := newInternalTestWhist()
-	w.currentTrick = []*WhistTrickCard{}
+	w.currentTrick = []*TrickCard{}
 
 	assert.Equal(t, 0, w.trickWinner())
 }
@@ -78,7 +78,7 @@ func TestWhist_validatePlay_LeadAnyCard(t *testing.T) {
 
 func TestWhist_validatePlay_MustFollowSuit(t *testing.T) {
 	w := newInternalTestWhist()
-	w.currentTrick = []*WhistTrickCard{
+	w.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 5, false)},
 	}
 
@@ -98,7 +98,7 @@ func TestWhist_validatePlay_MustFollowSuit(t *testing.T) {
 
 func TestWhist_validatePlay_CanPlayAnythingWhenVoid(t *testing.T) {
 	w := newInternalTestWhist()
-	w.currentTrick = []*WhistTrickCard{
+	w.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 5, false)},
 	}
 
@@ -159,7 +159,7 @@ func TestWhist_isPartnerWinning(t *testing.T) {
 	w.trumpSuit = CardDesignSpade
 
 	// Player 0 (team 0), partner is player 2 (team 0)
-	w.currentTrick = []*WhistTrickCard{
+	w.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 5, false)},  // team 1
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 13, false)}, // team 0 - winning
 	}

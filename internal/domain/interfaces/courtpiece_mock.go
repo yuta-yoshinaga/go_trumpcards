@@ -79,9 +79,9 @@ func (m *MockCourtPieceGame) GetCurrentPlayerIdx() int {
 	return args.Int(0)
 }
 
-func (m *MockCourtPieceGame) GetCurrentTrick() []*domain.CourtPieceTrickCard {
+func (m *MockCourtPieceGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
-	return args.Get(0).([]*domain.CourtPieceTrickCard)
+	return args.Get(0).([]*domain.TrickCard)
 }
 
 func (m *MockCourtPieceGame) GetTrumpSuit() int {

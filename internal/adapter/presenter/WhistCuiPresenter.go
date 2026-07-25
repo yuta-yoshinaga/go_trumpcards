@@ -52,8 +52,8 @@ func (p *WhistCuiPresenter) Output(w interfaces.WhistGame, lastErr error) string
 		// Current trick
 		trick := w.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
-			func(tc *domain.WhistTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.WhistTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(w.GetPlayer(idx), idx) },
 		)
 

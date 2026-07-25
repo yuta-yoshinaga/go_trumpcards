@@ -45,8 +45,8 @@ func (p *WhistWebPresenter) buildBase(w interfaces.WhistGame) *controller.WhistW
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *WhistWebPresenter) buildTrickOutput(trick []*domain.WhistTrickCard) []*controller.WhistWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.WhistTrickCard) *controller.WhistWebOutputTrickCard {
+func (p *WhistWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.WhistWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.WhistWebOutputTrickCard {
 		return &controller.WhistWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
@@ -72,7 +72,7 @@ func (p *WhistWebPresenter) buildPlayersOutput(w interfaces.WhistGame) []*contro
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *WhistWebPresenter) buildMessage(w interfaces.WhistGame, trick []*domain.WhistTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *WhistWebPresenter) buildMessage(w interfaces.WhistGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

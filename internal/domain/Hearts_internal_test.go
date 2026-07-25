@@ -125,7 +125,7 @@ func TestHearts_cpuPlayHard_FollowWithNonLeadSuitCards(t *testing.T) {
 	h.config.CpuDifficulty = HeartsCpuDifficultyHard
 
 	// Set up trick with clover lead
-	h.currentTrick = []*HeartsTrickCard{
+	h.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignClover, 10, false)},
 	}
 

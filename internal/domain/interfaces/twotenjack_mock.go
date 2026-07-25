@@ -75,9 +75,9 @@ func (m *MockTwoTenJackGame) GetCurrentPlayerIdx() int {
 	return args.Int(0)
 }
 
-func (m *MockTwoTenJackGame) GetCurrentTrick() []*domain.TwoTenJackTrickCard {
+func (m *MockTwoTenJackGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
-	return args.Get(0).([]*domain.TwoTenJackTrickCard)
+	return args.Get(0).([]*domain.TrickCard)
 }
 
 func (m *MockTwoTenJackGame) GetLeadPlayerIdx() int {

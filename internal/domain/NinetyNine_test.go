@@ -263,7 +263,7 @@ func TestNinetyNine_PlayerPlay_MustFollow(t *testing.T) {
 	// human has hearts and a club; lead heart trick already in progress
 	o.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 	o.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
-	o.SetCurrentTrick([]*domain.NinetyNineTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
 	})
 	// playing club (idx1) while holding heart must fail
@@ -308,7 +308,7 @@ func TestNinetyNine_ResolveTrick_HighestLeadWins(t *testing.T) {
 	setupPlay(o)
 	o.SetTrumpSuit(domain.CardDesignClover) // no trump in trick
 	o.SetTrickNumber(1)
-	o.SetCurrentTrick([]*domain.NinetyNineTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 7, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 9, false)},
@@ -324,7 +324,7 @@ func TestNinetyNine_ResolveTrick_AceHighWins(t *testing.T) {
 	setupPlay(o)
 	o.SetTrumpSuit(domain.CardDesignClover)
 	o.SetTrickNumber(1)
-	o.SetCurrentTrick([]*domain.NinetyNineTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 1, false)}, // Ace
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 12, false)},
@@ -339,7 +339,7 @@ func TestNinetyNine_ResolveTrick_TrumpWins(t *testing.T) {
 	setupPlay(o)
 	o.SetTrumpSuit(domain.CardDesignSpade)
 	o.SetTrickNumber(1)
-	o.SetCurrentTrick([]*domain.NinetyNineTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 1, false)}, // Ace heart lead
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 6, false)}, // low trump
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
@@ -353,7 +353,7 @@ func TestNinetyNine_ResolveTrick_LastTrickSetsRoundEnd(t *testing.T) {
 	o := newTestNinetyNine()
 	setupPlay(o)
 	o.SetTrickNumber(domain.NinetyNineTricksPerDeal)
-	o.SetCurrentTrick([]*domain.NinetyNineTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 7, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 8, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 9, false)},
@@ -543,7 +543,7 @@ func TestNinetyNine_Accessors(t *testing.T) {
 	o.SetBidPlayerIdx(1)
 	o.CpuBid() // generate at least one action-log entry
 	assert.NotEmpty(t, o.GetActionLog())
-	o.SetCurrentTrick([]*domain.NinetyNineTrickCard{})
+	o.SetCurrentTrick([]*domain.TrickCard{})
 	assert.NotNil(t, o.GetCurrentTrick())
 
 	// IsHumanTurn both branches
@@ -566,7 +566,7 @@ func TestNinetyNine_Accessors(t *testing.T) {
 func TestNinetyNine_GetValidPlayIndices(t *testing.T) {
 	o := newTestNinetyNine()
 	setupPlay(o)
-	o.SetCurrentTrick([]*domain.NinetyNineTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
 	})
 	o.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))

@@ -44,7 +44,7 @@ type SpadesGame interface {
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
-	GetCurrentTrick() []*domain.SpadesTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetSpadesBroken スペードブレイク済みかを返す
 	GetSpadesBroken() bool
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する

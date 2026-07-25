@@ -45,8 +45,8 @@ func (p *HeartsWebPresenter) buildBase(h interfaces.HeartsGame) *controller.Hear
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *HeartsWebPresenter) buildTrickOutput(trick []*domain.HeartsTrickCard) []*controller.HeartsWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.HeartsTrickCard) *controller.HeartsWebOutputTrickCard {
+func (p *HeartsWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.HeartsWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.HeartsWebOutputTrickCard {
 		return &controller.HeartsWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
@@ -109,7 +109,7 @@ func isHeartsPenaltyCard(card *domain.Card) bool {
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *HeartsWebPresenter) buildMessage(h interfaces.HeartsGame, trick []*domain.HeartsTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *HeartsWebPresenter) buildMessage(h interfaces.HeartsGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

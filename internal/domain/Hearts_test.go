@@ -460,7 +460,7 @@ func TestHearts_PlayerPlay_MustFollowSuit(t *testing.T) {
 	h.SetHeartsBroken(true)
 
 	// Set lead card as clover
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 	})
 
@@ -484,7 +484,7 @@ func TestHearts_PlayerPlay_CanPlayOffSuitWhenVoid(t *testing.T) {
 	setupPlayPhase(h, 0, 1, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 	})
 
@@ -551,7 +551,7 @@ func TestHearts_PlayerPlay_FirstTrickNoPointCards(t *testing.T) {
 	h := newTestHearts()
 	setupPlayPhase(h, 0, 1, 1) // first trick, following
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 2, false)},
 	})
 
@@ -575,7 +575,7 @@ func TestHearts_PlayerPlay_FirstTrickNoPointCards_QueenOfSpades(t *testing.T) {
 	h := newTestHearts()
 	setupPlayPhase(h, 0, 1, 1)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 2, false)},
 	})
 
@@ -594,7 +594,7 @@ func TestHearts_PlayerPlay_FirstTrickOnlyPointCards(t *testing.T) {
 	h := newTestHearts()
 	setupPlayPhase(h, 0, 1, 1)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 2, false)},
 	})
 
@@ -614,7 +614,7 @@ func TestHearts_PlayerPlay_BreaksHearts(t *testing.T) {
 	h.SetHeartsBroken(false)
 
 	// Lead is diamond, player has no diamond
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 5, false)},
 	})
 
@@ -633,7 +633,7 @@ func TestHearts_PlayerPlay_TrickComplete(t *testing.T) {
 	h.SetHeartsBroken(true)
 
 	// 3 cards already in trick
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignClover, 9, false)},
@@ -715,7 +715,7 @@ func TestHearts_ResolveTrick_Winner(t *testing.T) {
 	h.SetPhase(domain.HeartsPhaseTrickEnd)
 	h.SetTrickNumber(2)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 10, false)}, // highest clover = winner
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
@@ -735,7 +735,7 @@ func TestHearts_ResolveTrick_QueenOfSpades(t *testing.T) {
 	h.SetPhase(domain.HeartsPhaseTrickEnd)
 	h.SetTrickNumber(2)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 12, false)}, // Q♠ = 13 pts, also highest
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 3, false)},
@@ -757,7 +757,7 @@ func TestHearts_ResolveTrick_WrongPhase(t *testing.T) {
 func TestHearts_ResolveTrick_IncompleteTrick(t *testing.T) {
 	h := newTestHearts()
 	h.SetPhase(domain.HeartsPhaseTrickEnd)
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 	})
 	h.ResolveTrick() // should do nothing (not 4 cards)
@@ -768,7 +768,7 @@ func TestHearts_ResolveTrick_LastTrick(t *testing.T) {
 	h.SetPhase(domain.HeartsPhaseTrickEnd)
 	h.SetTrickNumber(13) // last trick
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
@@ -784,7 +784,7 @@ func TestHearts_ResolveTrick_NotLastTrick(t *testing.T) {
 	h.SetPhase(domain.HeartsPhaseTrickEnd)
 	h.SetTrickNumber(5)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
@@ -802,7 +802,7 @@ func TestHearts_ResolveTrick_HeartsBroken(t *testing.T) {
 	h.SetHeartsBroken(false)
 
 	// Hearts card in trick -> should already be broken from playCard, but points still count
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 3, false)},
@@ -818,7 +818,7 @@ func TestHearts_ResolveTrick_ZeroPoints(t *testing.T) {
 	h.SetPhase(domain.HeartsPhaseTrickEnd)
 	h.SetTrickNumber(3)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignDiamond, 3, false)},
@@ -855,7 +855,7 @@ func TestHearts_NextTrick_IncrementsThroughMultipleTricks(t *testing.T) {
 	for trick := 1; trick <= 3; trick++ {
 		// Set up a complete trick
 		h.SetPhase(domain.HeartsPhaseTrickEnd)
-		h.SetCurrentTrick([]*domain.HeartsTrickCard{
+		h.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
 			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
@@ -1225,7 +1225,7 @@ func TestHearts_CpuPlay_Normal_Follow_AvoidWinning(t *testing.T) {
 	h.SetHeartsBroken(true)
 
 	// Lead is clover 5
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 	})
 
@@ -1249,7 +1249,7 @@ func TestHearts_CpuPlay_Normal_Follow_CannotAvoid(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 	})
 
@@ -1272,7 +1272,7 @@ func TestHearts_CpuPlay_Normal_Void_DumpsPointCard(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 	})
 
@@ -1298,7 +1298,7 @@ func TestHearts_CpuPlay_Normal_Void_HighCard(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 	})
 
@@ -1368,7 +1368,7 @@ func TestHearts_CpuPlay_Hard_Follow_UnderTrick(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
 	})
 
@@ -1395,7 +1395,7 @@ func TestHearts_CpuPlay_Hard_Follow_AllAboveTrick(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
 	})
 
@@ -1420,7 +1420,7 @@ func TestHearts_CpuPlay_Hard_Discard_QueenOfSpades(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 	})
 
@@ -1447,7 +1447,7 @@ func TestHearts_CpuPlay_Hard_Discard_Heart(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 	})
 
@@ -1473,7 +1473,7 @@ func TestHearts_CpuPlay_Hard_Discard_HighNonPointCard(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 	})
 
@@ -1555,7 +1555,7 @@ func TestHearts_CpuPlay_Normal_Follow_BestUnderTrick(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
 	})
 
@@ -1581,7 +1581,7 @@ func TestHearts_CpuPlay_Normal_Follow_FallbackToLowest(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
 	})
 
@@ -1784,7 +1784,7 @@ func TestHearts_PointCards_InTrick(t *testing.T) {
 	h.SetTrickNumber(3)
 
 	// Heart = 1 point, Q♠ = 13 points, others = 0
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},  // lead
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 12, false)}, // Q♠ = 13 pts
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 3, false)},  // 1 pt
@@ -1860,7 +1860,7 @@ func TestHearts_TrickWinner_FirstPlayer(t *testing.T) {
 	h.SetTrickNumber(3)
 
 	// Lead player has the highest card
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 13, false)}, // highest
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
@@ -1877,7 +1877,7 @@ func TestHearts_PlayerPlay_NotFirstTrick_CanPlayPointOffSuit(t *testing.T) {
 	h := newTestHearts()
 	setupPlayPhase(h, 0, 1, 3) // trick 3, not first trick
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 	})
 
@@ -1902,7 +1902,7 @@ func TestHearts_CpuPlay_Hard_Follow_MixedSuits(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
 
@@ -1948,7 +1948,7 @@ func TestHearts_CpuPlay_Normal_Follow_FirstCardOffSuit(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 	})
 
@@ -1977,7 +1977,7 @@ func TestHearts_CpuPlay_Hard_Follow_BestIdxStartsAboveTrick(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
 
@@ -2005,7 +2005,7 @@ func TestHearts_CpuPlay_Hard_Follow_AllAbove_PicksLowest(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 2, false)},
 	})
 
@@ -2034,7 +2034,7 @@ func TestHearts_CpuPlay_Hard_Follow_WithTrickPoints(t *testing.T) {
 	h.SetHeartsBroken(true)
 
 	// Trick has points in it
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)}, // 1 point
 		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignHeart, 8, false)}, // 1 point
 	})
@@ -2097,7 +2097,7 @@ func TestHearts_PlayerPlay_FollowSuit_Success(t *testing.T) {
 	h := newTestHearts()
 	setupPlayPhase(h, 0, 1, 3)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},
 	})
 
@@ -2137,7 +2137,7 @@ func TestHearts_ResolveTrick_ActionLog(t *testing.T) {
 	h.SetPhase(domain.HeartsPhaseTrickEnd)
 	h.SetTrickNumber(2)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
@@ -2166,7 +2166,7 @@ func TestHearts_PlayerPlay_FirstTrick_FollowSuit(t *testing.T) {
 	h := newTestHearts()
 	setupPlayPhase(h, 0, 1, 1) // first trick
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 2, false)},
 	})
 
@@ -2220,7 +2220,7 @@ func TestHearts_CpuPlay_Normal_Void_BothNonPoint_HigherWins(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 	})
 
@@ -2244,7 +2244,7 @@ func TestHearts_PlayCard_WrapsAround(t *testing.T) {
 	setupPlayPhase(h, 3, 0, 2) // player 3's turn
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
@@ -2460,7 +2460,7 @@ func TestHearts_CpuPlayHard_Follow_SkipNonLeadSuit(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
 
@@ -2487,7 +2487,7 @@ func TestHearts_CpuPlay_Normal_Follow_BothAbove_PicksLower(t *testing.T) {
 	setupPlayPhase(h, 1, 0, 2)
 	h.SetHeartsBroken(true)
 
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
 	})
 
@@ -2528,7 +2528,7 @@ func TestHearts_Omnibus_ResolveTrick_JDiamondGivesNegativePoints(t *testing.T) {
 	h.SetHeartsBroken(true)
 
 	// Build a trick where player 0 wins and J♦ is in the trick
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignDiamond, 13, false)}, // K♦ leads
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 11, false)}, // J♦ (-10 pts)
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignDiamond, 5, false)},
@@ -2550,7 +2550,7 @@ func TestHearts_Omnibus_ResolveTrick_JDiamondPlusHearts(t *testing.T) {
 	h.SetHeartsBroken(true)
 
 	// Trick with J♦ and a heart: -10 + 1 = -9
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignDiamond, 13, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 11, false)}, // J♦
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},    // ♥5
@@ -2645,7 +2645,7 @@ func TestHearts_Omnibus_ValidatePlay_FirstTrick_JDiamondBlocked(t *testing.T) {
 
 	// First trick, player follows with void in lead suit
 	setupPlayPhase(h, 0, 0, 1)
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignClover, 2, false)}, // lead: ♣2
 	})
 
@@ -2666,7 +2666,7 @@ func TestHearts_Omnibus_ValidatePlay_FirstTrick_JDiamondAllowed_OnlyPointCards(t
 
 	// First trick, player is void in lead suit and has only point cards
 	setupPlayPhase(h, 0, 0, 1)
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignClover, 2, false)},
 	})
 
@@ -2743,7 +2743,7 @@ func TestHearts_Omnibus_CpuPlayHard_DiscardKeepsJDiamond(t *testing.T) {
 	h.SetHeartsBroken(true)
 
 	// Lead is clover, CPU1 has no clover (void)
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
 	})
 
@@ -2773,7 +2773,7 @@ func TestHearts_Omnibus_CpuPlayNormal_DiscardKeepsJDiamond(t *testing.T) {
 	h.SetHeartsBroken(true)
 
 	// Lead is clover, CPU1 is void in clover
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
 	})
 
@@ -2806,7 +2806,7 @@ func TestHearts_Omnibus_CpuPlayNormal_DiscardKeepsJDiamond_NoQSpade(t *testing.T
 	h.SetHeartsBroken(true)
 
 	// Lead is clover, CPU1 is void in clover
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
 	})
 
@@ -2861,7 +2861,7 @@ func TestHearts_GetHint_PlayPhase_FollowSuit(t *testing.T) {
 	h := newTestHearts()
 	h.Reset()
 	setupPlayPhase(h, 0, 1, 1)
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
 	p := h.GetPlayer(0)
@@ -2880,7 +2880,7 @@ func TestHearts_GetHint_PlayPhase_DiscardQueenSpades(t *testing.T) {
 	h.Reset()
 	setupPlayPhase(h, 0, 1, 2)
 	h.SetHeartsBroken(true)
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 7, false)},
 	})
 	p := h.GetPlayer(0)
@@ -2898,7 +2898,7 @@ func TestHearts_GetHint_PlayPhase_DiscardHearts(t *testing.T) {
 	h.Reset()
 	setupPlayPhase(h, 0, 1, 2)
 	h.SetHeartsBroken(true)
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 7, false)},
 	})
 	p := h.GetPlayer(0)
@@ -2916,7 +2916,7 @@ func TestHearts_GetHint_PlayPhase_DiscardHigh(t *testing.T) {
 	h.Reset()
 	setupPlayPhase(h, 0, 1, 2)
 	h.SetHeartsBroken(true)
-	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+	h.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 7, false)},
 	})
 	p := h.GetPlayer(0)

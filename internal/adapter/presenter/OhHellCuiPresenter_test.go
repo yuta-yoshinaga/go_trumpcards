@@ -19,7 +19,7 @@ func setupOhHellCuiMock() *interfaces.MockOhHellGame {
 	m.On("GetTotalRounds").Return(19)
 	m.On("GetHandSize").Return(10)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.OhHellTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.OhHellPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

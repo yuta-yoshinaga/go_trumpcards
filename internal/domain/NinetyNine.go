@@ -43,12 +43,6 @@ type NinetyNineHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// NinetyNineTrickCard トリック中の1枚
-type NinetyNineTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // ninetyNineTrumpRotation はディール番号で巡回する切り札スート。
 // 各ディールで切り札を固定し、ディールごとに ♠→♥→♣→♦ と巡回させる
 // (David Parlett のバリエーションのうち「ディールごとに切り札が決まる」方式を採用)。
@@ -85,7 +79,7 @@ type NinetyNine struct {
 	dealNumber       int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*NinetyNineTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	bidPlayerIdx     int
 	dealerIdx        int
@@ -392,10 +386,10 @@ func (o *NinetyNine) GetCurrentPlayerIdx() int { return o.currentPlayerIdx }
 func (o *NinetyNine) SetCurrentPlayerIdx(idx int) { o.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (o *NinetyNine) GetCurrentTrick() []*NinetyNineTrickCard { return o.currentTrick }
+func (o *NinetyNine) GetCurrentTrick() []*TrickCard { return o.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (o *NinetyNine) SetCurrentTrick(trick []*NinetyNineTrickCard) { o.currentTrick = trick }
+func (o *NinetyNine) SetCurrentTrick(trick []*TrickCard) { o.currentTrick = trick }
 
 // GetTrumpSuit 切り札スート取得
 func (o *NinetyNine) GetTrumpSuit() int { return o.trumpSuit }
@@ -570,7 +564,7 @@ func (o *NinetyNine) startPlayPhase() {
 
 // playCard カードをプレイする共通処理
 func (o *NinetyNine) playCard(playerIdx int, card *Card) {
-	o.currentTrick = append(o.currentTrick, &NinetyNineTrickCard{
+	o.currentTrick = append(o.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -609,32 +603,7 @@ func (o *NinetyNine) playerHasSuit(playerIdx int, design int) bool {
 
 // trickWinner トリックの勝者を決定する
 func (o *NinetyNine) trickWinner() int {
-	if len(o.currentTrick) == 0 {
-		return 0
-	}
-	leadSuit := o.currentTrick[0].Card.GetDesign()
-	winnerIdx := o.currentTrick[0].PlayerIdx
-	winnerValue := ninetyNineRankValue(o.currentTrick[0].Card)
-	winnerIsTrump := o.currentTrick[0].Card.GetDesign() == o.trumpSuit
-
-	for _, tc := range o.currentTrick[1:] {
-		isTrump := tc.Card.GetDesign() == o.trumpSuit
-		val := ninetyNineRankValue(tc.Card)
-		if isTrump && !winnerIsTrump {
-			winnerIdx = tc.PlayerIdx
-			winnerValue = val
-			winnerIsTrump = true
-		} else if isTrump && winnerIsTrump {
-			if val > winnerValue {
-				winnerIdx = tc.PlayerIdx
-				winnerValue = val
-			}
-		} else if !isTrump && !winnerIsTrump && tc.Card.GetDesign() == leadSuit && val > winnerValue {
-			winnerIdx = tc.PlayerIdx
-			winnerValue = val
-		}
-	}
-	return winnerIdx
+	return ResolveTrickWinner(o.currentTrick, o.trumpSuit, ninetyNineRankValue)
 }
 
 // ninetyNineRankValue はトリックの強さ比較に使う値を返す。
@@ -1046,21 +1015,21 @@ func (o *NinetyNine) tryLoseTrick(player *NinetyNinePlayer, validIndices []int, 
 
 // ninetyNineJSON is the JSON wire format for NinetyNine.
 type ninetyNineJSON struct {
-	TrumpCards       *TrumpCards            `json:"tc"`
-	Players          []*NinetyNinePlayer    `json:"ps"`
-	Config           NinetyNineConfig       `json:"cf"`
-	Phase            NinetyNinePhase        `json:"ph"`
-	DealNumber       int                    `json:"dn"`
-	TrickNumber      int                    `json:"tn"`
-	CurrentPlayerIdx int                    `json:"ci"`
-	CurrentTrick     []*NinetyNineTrickCard `json:"ct"`
-	LeadPlayerIdx    int                    `json:"li"`
-	BidPlayerIdx     int                    `json:"bi"`
-	DealerIdx        int                    `json:"di"`
-	TrumpSuit        int                    `json:"ts"`
-	GameEndFlag      bool                   `json:"ge"`
-	WinnerIdx        int                    `json:"wi"`
-	ActionLog        []*ActionLogEntry      `json:"al"`
+	TrumpCards       *TrumpCards         `json:"tc"`
+	Players          []*NinetyNinePlayer `json:"ps"`
+	Config           NinetyNineConfig    `json:"cf"`
+	Phase            NinetyNinePhase     `json:"ph"`
+	DealNumber       int                 `json:"dn"`
+	TrickNumber      int                 `json:"tn"`
+	CurrentPlayerIdx int                 `json:"ci"`
+	CurrentTrick     []*TrickCard        `json:"ct"`
+	LeadPlayerIdx    int                 `json:"li"`
+	BidPlayerIdx     int                 `json:"bi"`
+	DealerIdx        int                 `json:"di"`
+	TrumpSuit        int                 `json:"ts"`
+	GameEndFlag      bool                `json:"ge"`
+	WinnerIdx        int                 `json:"wi"`
+	ActionLog        []*ActionLogEntry   `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1164,7 +1133,7 @@ func (o *NinetyNine) UnmarshalJSON(data []byte) error {
 	o.currentPlayerIdx = j.CurrentPlayerIdx
 	o.currentTrick = j.CurrentTrick
 	if o.currentTrick == nil {
-		o.currentTrick = make([]*NinetyNineTrickCard, 0)
+		o.currentTrick = make([]*TrickCard, 0)
 	}
 	o.leadPlayerIdx = j.LeadPlayerIdx
 	o.bidPlayerIdx = j.BidPlayerIdx

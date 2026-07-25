@@ -128,7 +128,7 @@ func TestWhist_PlayerPlay(t *testing.T) {
 
 		// リードカードを設定
 		leadCard := domain.NewCard(domain.CardDesignHeart, 10, false)
-		w.SetCurrentTrick([]*domain.WhistTrickCard{
+		w.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 1, Card: leadCard},
 		})
 
@@ -177,7 +177,7 @@ func TestWhist_ResolveTrick(t *testing.T) {
 	w.SetTrickNumber(1)
 	w.SetPhase(domain.WhistPhaseTrickEnd)
 
-	trick := []*domain.WhistTrickCard{
+	trick := []*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
@@ -199,7 +199,7 @@ func TestWhist_ResolveTrick_TrumpWins(t *testing.T) {
 	w.SetTrickNumber(1)
 	w.SetPhase(domain.WhistPhaseTrickEnd)
 
-	trick := []*domain.WhistTrickCard{
+	trick := []*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 2, false)}, // trump
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
@@ -221,7 +221,7 @@ func TestWhist_ResolveTrick_LastTrick(t *testing.T) {
 	w.SetTrickNumber(13) // last trick
 	w.SetPhase(domain.WhistPhaseTrickEnd)
 
-	trick := []*domain.WhistTrickCard{
+	trick := []*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
@@ -599,7 +599,7 @@ func TestWhist_CpuPlayHard_FollowWithPartnerWinning(t *testing.T) {
 
 	// Player 1 leads heart 5, player 2 (team 0, partner of 0) has hearts
 	// Player 2's partner (player 0) is not in the trick yet
-	w.SetCurrentTrick([]*domain.WhistTrickCard{
+	w.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 	})
 
@@ -624,7 +624,7 @@ func TestWhist_CpuPlayHard_VoidTrumpCut(t *testing.T) {
 	setupWhistPlayPhase(w, 1, 0, 2)
 
 	// Player 0 leads heart, player 1 has no hearts but has trump
-	w.SetCurrentTrick([]*domain.WhistTrickCard{
+	w.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
 	})
 
@@ -648,7 +648,7 @@ func TestWhist_CpuPlayHard_PartnerWinningDiscard(t *testing.T) {
 
 	// Player 1 (team 1) leads heart 5, player 2 (team 0) plays heart K (winning)
 	// Player 3 (team 1) should see partner is NOT winning (team 0 is winning)
-	w.SetCurrentTrick([]*domain.WhistTrickCard{
+	w.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
 	})

@@ -64,8 +64,8 @@ func (p *NinetyNineWebPresenter) buildBase(o interfaces.NinetyNineGame) *control
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *NinetyNineWebPresenter) buildTrickOutput(trick []*domain.NinetyNineTrickCard) []*controller.NinetyNineWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.NinetyNineTrickCard) *controller.NinetyNineWebOutputTrickCard {
+func (p *NinetyNineWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.NinetyNineWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.NinetyNineWebOutputTrickCard {
 		return &controller.NinetyNineWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

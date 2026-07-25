@@ -407,7 +407,7 @@ func TestOhHell_PlayerPlay_FollowSuit(t *testing.T) {
 
 	setupOhHellPlayPhase(o, 0, 1, 1)
 	// Lead card is a heart
-	o.SetCurrentTrick([]*domain.OhHellTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 8, false)},
 	})
 
@@ -429,7 +429,7 @@ func TestOhHell_PlayerPlay_NoFollowSuitWhenVoid(t *testing.T) {
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
 
 	setupOhHellPlayPhase(o, 0, 1, 1)
-	o.SetCurrentTrick([]*domain.OhHellTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 8, false)},
 	})
 
@@ -490,7 +490,7 @@ func TestOhHell_ResolveTrick_HighestLeadWins(t *testing.T) {
 	o.SetTrickNumber(1)
 	o.SetHandSize(3)
 	// All hearts — trump irrelevant, highest lead suit wins
-	o.SetCurrentTrick([]*domain.OhHellTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
@@ -514,7 +514,7 @@ func TestOhHell_ResolveTrick_TrumpWins(t *testing.T) {
 	o.SetPhase(domain.OhHellPhaseTrickEnd)
 	o.SetTrickNumber(1)
 	o.SetHandSize(3)
-	o.SetCurrentTrick([]*domain.OhHellTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 2, false)},
@@ -544,7 +544,7 @@ func TestOhHell_ResolveTrick_NoTrump(t *testing.T) {
 	o.SetPhase(domain.OhHellPhaseTrickEnd)
 	o.SetTrickNumber(1)
 	o.SetHandSize(13)
-	o.SetCurrentTrick([]*domain.OhHellTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
@@ -562,7 +562,7 @@ func TestOhHell_ResolveTrick_SetsRoundEnd(t *testing.T) {
 	o.SetPhase(domain.OhHellPhaseTrickEnd)
 	o.SetTrickNumber(10) // last trick (handSize=10)
 	o.SetHandSize(10)
-	o.SetCurrentTrick([]*domain.OhHellTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 3, false)},
@@ -940,7 +940,7 @@ func TestOhHell_GetValidPlayIndices(t *testing.T) {
 	p.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
 
 	setupOhHellPlayPhase(o, 0, 1, 1)
-	o.SetCurrentTrick([]*domain.OhHellTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 3, false)},
 	})
 
@@ -980,7 +980,7 @@ func TestOhHell_ResolveTrick_IncompleteTrick(t *testing.T) {
 	o := newTestOhHell()
 	o.Reset()
 	o.SetPhase(domain.OhHellPhaseTrickEnd)
-	o.SetCurrentTrick([]*domain.OhHellTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 	})
 
@@ -1000,7 +1000,7 @@ func TestOhHell_CpuPlay_FollowSuit(t *testing.T) {
 	p.SetBid(1)
 
 	setupOhHellPlayPhase(o, 1, 0, 1)
-	o.SetCurrentTrick([]*domain.OhHellTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 8, false)},
 	})
 

@@ -36,12 +36,6 @@ type SpadesHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// SpadesTrickCard トリック中の1枚
-type SpadesTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // SpadesLoseThreshold 負け閾値 (-200点以下で負け)
 const SpadesLoseThreshold = -200
 
@@ -54,7 +48,7 @@ type Spades struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*SpadesTrickCard
+	currentTrick     []*TrickCard
 	spadesBroken     bool
 	leadPlayerIdx    int
 	bidPlayerIdx     int
@@ -361,10 +355,10 @@ func (s *Spades) GetCurrentPlayerIdx() int { return s.currentPlayerIdx }
 func (s *Spades) SetCurrentPlayerIdx(idx int) { s.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (s *Spades) GetCurrentTrick() []*SpadesTrickCard { return s.currentTrick }
+func (s *Spades) GetCurrentTrick() []*TrickCard { return s.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (s *Spades) SetCurrentTrick(trick []*SpadesTrickCard) { s.currentTrick = trick }
+func (s *Spades) SetCurrentTrick(trick []*TrickCard) { s.currentTrick = trick }
 
 // GetSpadesBroken スペードブレイク状態取得
 func (s *Spades) GetSpadesBroken() bool { return s.spadesBroken }
@@ -479,7 +473,7 @@ func (s *Spades) findTwoOfClubs() int {
 
 // playCard カードをプレイする共通処理
 func (s *Spades) playCard(playerIdx int, card *Card) {
-	s.currentTrick = append(s.currentTrick, &SpadesTrickCard{
+	s.currentTrick = append(s.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -566,35 +560,7 @@ func (s *Spades) playerHasNonSpade(playerIdx int) bool {
 
 // trickWinner トリックの勝者を決定する (スペードがトランプ)
 func (s *Spades) trickWinner() int {
-	if len(s.currentTrick) == 0 {
-		return 0
-	}
-	leadSuit := s.currentTrick[0].Card.GetDesign()
-	winnerIdx := s.currentTrick[0].PlayerIdx
-	winnerValue := s.currentTrick[0].Card.GetValue()
-	winnerIsSpade := s.currentTrick[0].Card.GetDesign() == CardDesignSpade
-
-	for _, tc := range s.currentTrick[1:] {
-		isSpade := tc.Card.GetDesign() == CardDesignSpade
-
-		if isSpade && !winnerIsSpade {
-			// スペード（トランプ）がリードスートに勝つ
-			winnerIdx = tc.PlayerIdx
-			winnerValue = tc.Card.GetValue()
-			winnerIsSpade = true
-		} else if isSpade && winnerIsSpade {
-			// スペード同士: 高い方が勝つ
-			if tc.Card.GetValue() > winnerValue {
-				winnerIdx = tc.PlayerIdx
-				winnerValue = tc.Card.GetValue()
-			}
-		} else if !isSpade && !winnerIsSpade && tc.Card.GetDesign() == leadSuit && tc.Card.GetValue() > winnerValue {
-			// 非スペード同士: リードスートの高い方が勝つ
-			winnerIdx = tc.PlayerIdx
-			winnerValue = tc.Card.GetValue()
-		}
-	}
-	return winnerIdx
+	return ResolveTrickWinner(s.currentTrick, CardDesignSpade, nil)
 }
 
 // checkGameEnd ゲーム終了判定
@@ -1132,20 +1098,20 @@ func (s *Spades) GetValidPlayIndices(playerIdx int) []int {
 
 // spadesJSON is the JSON wire format for Spades.
 type spadesJSON struct {
-	TrumpCards       *TrumpCards        `json:"tc"`
-	Players          []*SpadesPlayer    `json:"ps"`
-	Config           SpadesConfig       `json:"cf"`
-	Phase            SpadesPhase        `json:"ph"`
-	RoundNumber      int                `json:"rn"`
-	TrickNumber      int                `json:"tn"`
-	CurrentPlayerIdx int                `json:"ci"`
-	CurrentTrick     []*SpadesTrickCard `json:"ct"`
-	SpadesBroken     bool               `json:"sb"`
-	LeadPlayerIdx    int                `json:"li"`
-	BidPlayerIdx     int                `json:"bi"`
-	GameEndFlag      bool               `json:"ge"`
-	WinnerIdx        int                `json:"wi"`
-	ActionLog        []*ActionLogEntry  `json:"al"`
+	TrumpCards       *TrumpCards       `json:"tc"`
+	Players          []*SpadesPlayer   `json:"ps"`
+	Config           SpadesConfig      `json:"cf"`
+	Phase            SpadesPhase       `json:"ph"`
+	RoundNumber      int               `json:"rn"`
+	TrickNumber      int               `json:"tn"`
+	CurrentPlayerIdx int               `json:"ci"`
+	CurrentTrick     []*TrickCard      `json:"ct"`
+	SpadesBroken     bool              `json:"sb"`
+	LeadPlayerIdx    int               `json:"li"`
+	BidPlayerIdx     int               `json:"bi"`
+	GameEndFlag      bool              `json:"ge"`
+	WinnerIdx        int               `json:"wi"`
+	ActionLog        []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1197,7 +1163,7 @@ func (s *Spades) UnmarshalJSON(data []byte) error {
 	s.currentPlayerIdx = j.CurrentPlayerIdx
 	s.currentTrick = j.CurrentTrick
 	if s.currentTrick == nil {
-		s.currentTrick = make([]*SpadesTrickCard, 0)
+		s.currentTrick = make([]*TrickCard, 0)
 	}
 	s.spadesBroken = j.SpadesBroken
 	s.leadPlayerIdx = j.LeadPlayerIdx
