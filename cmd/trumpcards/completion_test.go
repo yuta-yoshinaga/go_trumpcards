@@ -324,10 +324,14 @@ func TestRunHelpCommand_CaseInsensitive(t *testing.T) {
 	assert.NotEmpty(t, stdout.String())
 }
 
+// An unknown name is a usage error, so it exits 2 like every other
+// unknown-name path in the CLI (`<unknown>`, `--start`, `--category`,
+// `completion`) and like the top-level EXIT CODES table documents.
+// See issue #4372.
 func TestRunHelpCommand_UnknownGame(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	code := runHelpCommand([]string{"nosuchgame"}, "", &stdout, &stderr)
-	assert.Equal(t, 1, code)
+	assert.Equal(t, 2, code)
 	assert.Empty(t, stdout.String())
 	assert.Contains(t, stderr.String(), "nosuchgame")
 }
@@ -427,8 +431,30 @@ func TestRunHelpCommand_UnknownGame_DidYouMean(t *testing.T) {
 	// "blackjac" → distance 1 from "blackjack"
 	var stdout, stderr bytes.Buffer
 	code := runHelpCommand([]string{"blackjac"}, "", &stdout, &stderr)
-	assert.Equal(t, 1, code)
+	assert.Equal(t, 2, code)
 	assert.Contains(t, stderr.String(), "blackjack")
+}
+
+// TestUnknownNameExitCodesAreUniform pins the scriptability contract: "you
+// named something that does not exist" is one user error and must produce one
+// exit code, whichever entry point it arrives through. `help <unknown>` used to
+// be the lone outlier at 1, which also made the two EXIT CODES tables in the
+// help text contradict each other. See issue #4372.
+func TestUnknownNameExitCodesAreUniform(t *testing.T) {
+	for _, argv := range [][]string{
+		{"bogusgame"},
+		{"--start", "bogusgame"},
+		{"games", "--category", "bogus"},
+		{"completion", "bogusshell"},
+		{"help", "bogusgame"},
+		{"help", "bogussubcommand"},
+	} {
+		t.Run(strings.Join(argv, " "), func(t *testing.T) {
+			_, stderr, exit := runCLI(t, argv...)
+			assert.Equal(t, 2, exit, "unknown-name usage errors must all exit 2")
+			assert.NotEmpty(t, stderr, "the offending name must be reported on stderr")
+		})
+	}
 }
 
 func TestCompletionSubcommands_ContainsAllGames(t *testing.T) {
