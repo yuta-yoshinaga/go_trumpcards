@@ -375,7 +375,7 @@ function FiveHundredPageContent() {
                     id="fh-bid-tricks"
                     value={bidTricks}
                     onChange={(e) => setBidTricks(Number.parseInt(e.target.value, 10))}
-                    className="rounded px-2 py-2 text-sm text-ds-text bg-ds-surface"
+                    className="rounded px-2 py-2 text-sm text-ds-text bg-ds-surface min-h-[44px]"
                   >
                     {[6, 7, 8, 9, 10].map((n) => (
                       <option key={n} value={n}>

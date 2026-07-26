@@ -445,7 +445,7 @@ function MaoPageContent() {
                   }}
                   placeholder={t('sayWordPlaceholder')}
                   aria-label={t('sayWordPlaceholder')}
-                  className="flex-1 min-w-0 rounded bg-black/40 px-2 py-1 text-ds-text-primary border border-white/20"
+                  className="flex-1 min-w-0 rounded bg-black/40 px-2 py-1 text-ds-text-primary border border-white/20 min-h-[44px]"
                   disabled={loading}
                 />
                 <button

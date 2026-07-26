@@ -163,7 +163,7 @@ function OichoKabuPageContent() {
               messageParams={state.messageParams}
             />
 
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer">
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer min-h-[44px]">
               <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
               {tc('hint.toggle', { ns: 'tutorial' })}
             </label>

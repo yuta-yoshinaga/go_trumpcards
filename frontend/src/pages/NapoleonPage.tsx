@@ -658,7 +658,7 @@ function NapoleonPageContent() {
                     max={17}
                     value={bidValue}
                     onChange={(e) => setBidValue(Number(e.target.value))}
-                    className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
+                    className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center min-h-[44px]"
                     aria-label={t('bidInputLabel')}
                   />
                   <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
@@ -676,7 +676,7 @@ function NapoleonPageContent() {
                   <select
                     value={trumpSuitValue}
                     onChange={(e) => setTrumpSuitValue(Number(e.target.value))}
-                    className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
+                    className="px-2 py-1 rounded bg-white/20 text-ds-text-primary min-h-[44px]"
                     aria-label={t('trumpSuitLabel')}
                   >
                     {[1, 2, 3, 4].map((s) => (

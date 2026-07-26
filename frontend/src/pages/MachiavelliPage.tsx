@@ -426,7 +426,7 @@ function MachiavelliPageContent() {
                         {item.source === 'table' ? t('rearrange.sourceTable') : t('rearrange.sourceHand')}
                       </span>
                       <select
-                        className="text-xs rounded bg-ds-surface-elevated text-ds-text-primary px-1 py-0.5"
+                        className="text-xs rounded bg-ds-surface-elevated text-ds-text-primary px-1 py-0.5 min-h-[44px]"
                         data-testid={`machiavelli-assign-${item.id}`}
                         aria-label={t('rearrange.assignLabel', { card: cardAlt(item.card) })}
                         value={groupOf(item)}

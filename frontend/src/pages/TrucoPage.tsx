@@ -277,7 +277,10 @@ function TrucoPageContent() {
           <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
             {t('actions.reset')}
           </button>
-          <label className="flex items-center gap-1 text-ds-text-primary text-sm" data-testid="truco-hint-toggle">
+          <label
+            className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]"
+            data-testid="truco-hint-toggle"
+          >
             <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
             {tc('hint')}
           </label>

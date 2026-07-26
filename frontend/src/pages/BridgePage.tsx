@@ -598,7 +598,7 @@ function BridgePageContent() {
               {isHumanBidTurn && (
                 <span data-tutorial="br-bid-controls" className="flex gap-1 items-center flex-wrap">
                   <select
-                    className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5"
+                    className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5 min-h-[44px]"
                     value={bidLevel}
                     onChange={(e) => setBidLevel(Number(e.target.value))}
                     aria-label={t('bidLevel')}
@@ -610,7 +610,7 @@ function BridgePageContent() {
                     ))}
                   </select>
                   <select
-                    className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5"
+                    className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5 min-h-[44px]"
                     value={bidSuit}
                     onChange={(e) => setBidSuit(Number(e.target.value))}
                     aria-label={t('bidSuit')}

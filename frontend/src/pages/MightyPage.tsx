@@ -677,7 +677,7 @@ function MightyPageContent() {
                       </button>
                     ))}
                   </fieldset>
-                  <label className="flex items-center gap-1 text-ds-text-primary text-sm">
+                  <label className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]">
                     <input
                       type="checkbox"
                       checked={bidNoTrumpToggle}
@@ -763,7 +763,7 @@ function MightyPageContent() {
                     <select
                       value={partnerValueValue}
                       onChange={(e) => setPartnerValueValue(Number(e.target.value))}
-                      className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
+                      className="px-2 py-1 rounded bg-white/20 text-ds-text-primary min-h-[44px]"
                       aria-label="partner-value"
                     >
                       {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (

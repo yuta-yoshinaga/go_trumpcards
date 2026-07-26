@@ -642,7 +642,7 @@ function NertzPageContent() {
 
           <GameFooter className={`${gameTheme.nertz.footer} px-4 py-2.5`}>
             <div className="flex flex-wrap gap-2 items-center">
-              <label className="flex items-center gap-1 text-ds-text-primary text-xs">
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs min-h-[44px]">
                 <input
                   type="checkbox"
                   checked={hintEnabled}

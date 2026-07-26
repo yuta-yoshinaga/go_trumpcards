@@ -415,7 +415,7 @@ function RookPageContent() {
                     id="rook-bid"
                     value={effectiveBid}
                     onChange={(e) => setBidValue(Number.parseInt(e.target.value, 10))}
-                    className="rounded px-2 py-2 text-sm text-ds-text bg-ds-surface"
+                    className="rounded px-2 py-2 text-sm text-ds-text bg-ds-surface min-h-[44px]"
                   >
                     {bidOptions.map((v) => (
                       <option key={v} value={v}>

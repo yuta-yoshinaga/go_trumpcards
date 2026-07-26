@@ -323,7 +323,7 @@ function SixCardGolfPageContent() {
           loading={loading}
           dataTutorial="scg-reset"
         />
-        <label className="flex items-center gap-1 text-ds-text-primary text-xs">
+        <label className="flex items-center gap-1 text-ds-text-primary text-xs min-h-[44px]">
           <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
           {tc('hint')}
         </label>
