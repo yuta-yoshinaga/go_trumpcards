@@ -54,7 +54,7 @@
   "cliHelpUnknownGame": "Unknown game: \"{{name}}\". Run 'trumpcards games' to see available games.",
   "updateNonInteractive": "Non-interactive stdin: re-run with --yes to auto-confirm.",
   "cliLangEnvFallback": "Note: LANG=\"{{lang}}\" is not a supported language, defaulting to ja (pass --quiet/-q or set TRUMPCARDS_QUIET=1 to silence)",
-  "cliInvalidCategory": "Error: invalid category \"{{category}}\" (supported: casino, classic, solo)",
+  "cliInvalidCategory": "Error: invalid category \"{{category}}\" (supported: {{categories}})",
   "cliGamesJSONError": "Error: failed to encode games as JSON: {{err}}",
   "cliGamesJSONIgnoredFlags": "Warning: --short / --aliases are ignored in --json mode (the JSON schema is fixed)",
   "cliSubcommandFlagError": "Error: trumpcards {{cmd}}: {{err}}",

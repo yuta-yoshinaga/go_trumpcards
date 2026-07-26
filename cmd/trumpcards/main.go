@@ -212,6 +212,11 @@ var categoryFilterPipe = strings.Join(categoryDisplayNames(), "|")
 // "or" (e.g. "casino, classic, solo, or extra"), for prose descriptions.
 var categoryFilterProse = joinOr(categoryDisplayNames())
 
+// categoryFilterList is the same list comma-separated without a conjunction
+// (e.g. "casino, classic, solo, extra"), for interpolation into localized
+// messages where the surrounding grammar is supplied by the locale file.
+var categoryFilterList = strings.Join(categoryDisplayNames(), ", ")
+
 // joinOr renders items as an English list with an Oxford "or": one item as-is,
 // two joined by " or ", three+ comma-separated with a trailing ", or ".
 func joinOr(items []string) string {
@@ -380,7 +385,7 @@ func run() int {
 			return code
 		}
 		if category != "" && !validCategory(category) {
-			fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidCategory", "category", category))
+			fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidCategory", "category", category, "categories", categoryFilterList))
 			return 2
 		}
 		if asJSON {

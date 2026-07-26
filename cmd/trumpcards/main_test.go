@@ -1407,6 +1407,15 @@ func TestRunGamesInvalidCategoryExits2(t *testing.T) {
 	if !strings.Contains(errBuf.String(), "bogus") {
 		t.Errorf("stderr must name the offending category 'bogus'; got: %q", errBuf.String())
 	}
+	// The list of accepted values must come from the registry, not a literal
+	// baked into the locale file: `extra` was added by ADR-0032 and the help
+	// text picked it up in #4308, but this error message kept advertising only
+	// three categories while `--category extra` worked fine. See issue #4371.
+	for _, want := range categoryDisplayNames() {
+		if !strings.Contains(errBuf.String(), want) {
+			t.Errorf("stderr must list the accepted category %q; got: %q", want, errBuf.String())
+		}
+	}
 }
 
 func TestCliAliasesWithoutShortKeyRemoved(t *testing.T) {
