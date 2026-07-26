@@ -8,7 +8,7 @@ export function useKlondikeGame() {
   const [selectedSource, setSelectedSource] = useState<KlondikeMoveZone | null>(null);
   const onClearSelection = useCallback(() => setSelectedSource(null), []);
 
-  const base = useSolitaireGameBase<
+  const { apiCall, runAction, setHint, ...rest } = useSolitaireGameBase<
     Awaited<ReturnType<typeof klondikeApi.exec>>,
     Parameters<typeof klondikeApi.exec>,
     KlondikeHint
@@ -17,14 +17,14 @@ export function useKlondikeGame() {
     hintApi: () => klondikeApi.exec('hint'),
   });
 
-  const handleDraw = useCallback(() => base.runAction('draw'), [base.runAction]);
+  const handleDraw = useCallback(() => runAction('draw'), [runAction]);
   const handleResetWithConfig = useCallback(
-    (config: KlondikeConfigInput) => base.runAction('reset', undefined, undefined, config),
-    [base.runAction],
+    (config: KlondikeConfigInput) => runAction('reset', undefined, undefined, config),
+    [runAction],
   );
   const handleUndoEscape = useCallback(
-    (n: number) => base.runAction('undo_n', undefined, undefined, undefined, n),
-    [base.runAction],
+    (n: number) => runAction('undo_n', undefined, undefined, undefined, n),
+    [runAction],
   );
 
   const handleSelectSource = useCallback((zone: KlondikeMoveZone) => {
@@ -39,32 +39,23 @@ export function useKlondikeGame() {
   const handleSelectTarget = useCallback(
     (zone: KlondikeMoveZone) => {
       if (!selectedSource) return;
-      base.setHint(null);
-      void base.apiCall('move', selectedSource, zone);
+      setHint(null);
+      void apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, base],
+    [selectedSource, apiCall, setHint],
   );
 
   return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hintError: base.hintError,
-    exec: base.apiCall,
+    ...rest,
+    runAction,
+    setHint,
+    exec: apiCall,
     selectedSource,
-    hint: base.hint,
     handleDraw,
-    handleReset: base.handleReset,
     handleResetWithConfig,
-    handleGiveUp: base.handleGiveUp,
-    handleHint: base.handleHint,
-    handleAutoComplete: base.handleAutoComplete,
-    handleUndo: base.handleUndo,
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
-    isAutoCompleting: base.isAutoCompleting,
-    retry: base.retry,
   };
 }

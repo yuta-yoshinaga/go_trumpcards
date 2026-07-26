@@ -22,37 +22,15 @@ export const POINT_LIMIT_OPTIONS = [50, 100, 150, 200] as const;
 
 /** Hook that manages Hearts game state and player actions. */
 export function useHeartsGame() {
-  const base = useTrickGameBase({
+  const { exec, selectedCardIndices, config, ...rest } = useTrickGameBase({
     apiFn: heartsApi.exec,
     defaultConfig: DEFAULT_HEARTS_CONFIG,
     getHint: (state) => state.hint ?? null,
   });
 
-  const { exec, selectedCardIndices } = base;
-
   const handlePass = useCallback(() => {
     exec('pass', selectedCardIndices);
   }, [exec, selectedCardIndices]);
 
-  return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hint: base.hint,
-    hintError: base.hintError,
-    hintLoading: base.hintLoading,
-    exec: base.exec,
-    heartsConfig: base.config,
-    selectedCardIndices: base.selectedCardIndices,
-    toggleCard: base.toggleCard,
-    clearSelection: base.clearSelection,
-    handleConfigChange: base.handleConfigChange,
-    handleToggle: base.handleToggle,
-    handlePass,
-    handlePlay: base.handlePlay,
-    handleNextTrick: base.handleNextTrick,
-    handleNextRound: base.handleNextRound,
-    handleHint: base.handleHint,
-    retry: base.retry,
-  };
+  return { ...rest, exec, heartsConfig: config, selectedCardIndices, handlePass };
 }

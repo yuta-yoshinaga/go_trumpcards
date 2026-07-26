@@ -8,7 +8,13 @@ export function useEightOffGame() {
   const [selectedSource, setSelectedSource] = useState<EightOffMoveZone | null>(null);
   const onClearSelection = useCallback(() => setSelectedSource(null), []);
 
-  const base = useSolitaireGameBase<
+  const {
+    handleHint: baseHandleHint,
+    apiCall,
+    runAction,
+    setHint,
+    ...rest
+  } = useSolitaireGameBase<
     Awaited<ReturnType<typeof eightoffApi.exec>>,
     Parameters<typeof eightoffApi.exec>,
     EightOffHint
@@ -17,19 +23,15 @@ export function useEightOffGame() {
     hintApi: () => eightoffApi.exec('hint'),
   });
 
-  const handleUndoEscape = useCallback(
-    (n: number) => base.runAction('undo_n', undefined, undefined, n),
-    [base.runAction],
-  );
+  const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
 
   // Bumped every time a hint is requested so the page can announce the result
   // (a move, or "no moves available") even when two requests yield the same
   // hint value — a null hint after a request is indistinguishable from the
   // initial null without this signal.
   const [hintNonce, setHintNonce] = useState(0);
-  // Depend on the stable base.handleHint reference, not the whole `base` object
+  // Depend on the stable baseHandleHint reference, not the base result object
   // (which is re-created whenever state/loading change), so this callback stays stable.
-  const baseHandleHint = base.handleHint;
   const handleHint = useCallback(async () => {
     await baseHandleHint();
     setHintNonce((n) => n + 1);
@@ -53,31 +55,23 @@ export function useEightOffGame() {
   const handleSelectTarget = useCallback(
     (zone: EightOffMoveZone) => {
       if (!selectedSource) return;
-      base.setHint(null);
-      void base.apiCall('move', selectedSource, zone);
+      setHint(null);
+      void apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, base],
+    [selectedSource, apiCall, setHint],
   );
 
   return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hintError: base.hintError,
-    exec: base.apiCall,
+    ...rest,
+    runAction,
+    setHint,
+    exec: apiCall,
     selectedSource,
-    hint: base.hint,
     hintNonce,
-    handleReset: base.handleReset,
-    handleGiveUp: base.handleGiveUp,
     handleHint,
-    handleAutoComplete: base.handleAutoComplete,
-    handleUndo: base.handleUndo,
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
-    isAutoCompleting: base.isAutoCompleting,
-    retry: base.retry,
   };
 }

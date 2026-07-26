@@ -8,7 +8,7 @@ export function usePenguinGame() {
   const [selectedSource, setSelectedSource] = useState<PenguinMoveZone | null>(null);
   const onClearSelection = useCallback(() => setSelectedSource(null), []);
 
-  const base = useSolitaireGameBase<
+  const { apiCall, runAction, setHint, ...rest } = useSolitaireGameBase<
     Awaited<ReturnType<typeof penguinApi.exec>>,
     Parameters<typeof penguinApi.exec>,
     PenguinHint
@@ -17,10 +17,7 @@ export function usePenguinGame() {
     hintApi: () => penguinApi.exec('hint'),
   });
 
-  const handleUndoEscape = useCallback(
-    (n: number) => base.runAction('undo_n', undefined, undefined, n),
-    [base.runAction],
-  );
+  const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
 
   const handleSelectSource = useCallback((zone: PenguinMoveZone) => {
     setSelectedSource((prev) => {
@@ -40,30 +37,21 @@ export function usePenguinGame() {
   const handleSelectTarget = useCallback(
     (zone: PenguinMoveZone) => {
       if (!selectedSource) return;
-      base.setHint(null);
-      void base.apiCall('move', selectedSource, zone);
+      setHint(null);
+      void apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, base],
+    [selectedSource, apiCall, setHint],
   );
 
   return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hintError: base.hintError,
-    exec: base.apiCall,
+    ...rest,
+    runAction,
+    setHint,
+    exec: apiCall,
     selectedSource,
-    hint: base.hint,
-    handleReset: base.handleReset,
-    handleGiveUp: base.handleGiveUp,
-    handleHint: base.handleHint,
-    handleAutoComplete: base.handleAutoComplete,
-    handleUndo: base.handleUndo,
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
-    isAutoCompleting: base.isAutoCompleting,
-    retry: base.retry,
   };
 }

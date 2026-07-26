@@ -8,7 +8,7 @@ export function useSpiderGame() {
   const [selectedSource, setSelectedSource] = useState<SpiderMoveZone | null>(null);
   const onClearSelection = useCallback(() => setSelectedSource(null), []);
 
-  const base = useSolitaireGameBase<
+  const { apiCall, runAction, setHint, ...rest } = useSolitaireGameBase<
     Awaited<ReturnType<typeof spiderApi.exec>>,
     Parameters<typeof spiderApi.exec>,
     SpiderHint
@@ -17,14 +17,14 @@ export function useSpiderGame() {
     hintApi: () => spiderApi.exec('hint'),
   });
 
-  const handleDeal = useCallback(() => base.runAction('deal'), [base.runAction]);
+  const handleDeal = useCallback(() => runAction('deal'), [runAction]);
   const handleResetWithConfig = useCallback(
-    (config: SpiderConfigInput) => base.runAction('reset', undefined, undefined, config),
-    [base.runAction],
+    (config: SpiderConfigInput) => runAction('reset', undefined, undefined, config),
+    [runAction],
   );
   const handleUndoEscape = useCallback(
-    (n: number) => base.runAction('undo_n', undefined, undefined, undefined, n),
-    [base.runAction],
+    (n: number) => runAction('undo_n', undefined, undefined, undefined, n),
+    [runAction],
   );
 
   const handleSelectSource = useCallback((zone: SpiderMoveZone) => {
@@ -39,32 +39,23 @@ export function useSpiderGame() {
   const handleSelectTarget = useCallback(
     (zone: SpiderMoveZone) => {
       if (!selectedSource) return;
-      base.setHint(null);
-      void base.apiCall('move', selectedSource, zone);
+      setHint(null);
+      void apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, base],
+    [selectedSource, apiCall, setHint],
   );
 
   return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    exec: base.apiCall,
-    hintError: base.hintError,
+    ...rest,
+    runAction,
+    setHint,
+    exec: apiCall,
     selectedSource,
-    hint: base.hint,
     handleDeal,
-    handleReset: base.handleReset,
     handleResetWithConfig,
-    handleGiveUp: base.handleGiveUp,
-    handleHint: base.handleHint,
-    handleAutoComplete: base.handleAutoComplete,
-    handleUndo: base.handleUndo,
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
-    isAutoCompleting: base.isAutoCompleting,
-    retry: base.retry,
   };
 }
