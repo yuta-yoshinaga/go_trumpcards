@@ -9,7 +9,7 @@ import { getFocusableElements } from '../utils/dom';
  * calls `onClose`; unmount/close returns focus to whatever had it when the
  * dialog opened.
  *
- * Body scroll-locking is handled separately (by {@link useBodyScrollLock},
+ * Body scroll-locking is handled separately (by {@link hooks/useBodyScrollLock.useBodyScrollLock | useBodyScrollLock},
  * wired in the shared `Modal` component) so this hook stays focus-only and
  * reusable by dialogs that manage their own overlay.
  */

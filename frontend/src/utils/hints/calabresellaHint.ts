@@ -9,7 +9,7 @@ import type { HintResult } from '../../types/hint';
  * surfaced on the response's `hint` field (with a `reason` i18n suffix such as
  * `lead_low`, `follow_win`, `follow_duck`, `give_partner`, `discard_low`,
  * `bid_chiamo`, `bid_solo`, or `bid_pass`). This adapter re-maps that server
- * hint into the frontend HintResult shape so the shared {@link useGameHint}
+ * hint into the frontend HintResult shape so the shared {@link hooks/useGameHint.useGameHint | useGameHint}
  * tooltip can render it. The `targetAction` is fixed to `play` because every
  * hint ultimately points the player at a card.
  */

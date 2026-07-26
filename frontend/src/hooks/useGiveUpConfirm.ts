@@ -8,7 +8,7 @@ import { useCallback } from 'react';
  *
  * `giveUp` is the page's give-up action (however it sources it — an inline
  * `apiCall('giveup')` callback or one returned from a per-game hook);
- * `requestGiveUpConfirm` comes from {@link useGamePageSetup}. Give-up abandons an
+ * `requestGiveUpConfirm` comes from {@link hooks/useGamePageSetup.useGamePageSetup | useGamePageSetup}. Give-up abandons an
  * in-progress game and is irreversible, so it is always confirmed before firing
  * (issue #2099).
  */

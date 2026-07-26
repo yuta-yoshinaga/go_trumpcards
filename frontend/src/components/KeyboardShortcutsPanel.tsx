@@ -19,7 +19,7 @@ export interface KeyboardShortcutsPanelProps extends ComponentPropsWithoutRef<'d
 /**
  * Collapsible, keyboard-discoverable list of the shortcuts available on a game
  * page. Rendered as a native `<details>`/`<summary>` so it is closed by
- * default, focusable, and operable without JavaScript. Unlike {@link KbdBadge}
+ * default, focusable, and operable without JavaScript. Unlike {@link components/KbdBadge.KbdBadge | KbdBadge}
  * (a silent affordance on a button whose name already conveys the action), the
  * key chips here are read by assistive tech because advertising the keys *is*
  * the panel's purpose.

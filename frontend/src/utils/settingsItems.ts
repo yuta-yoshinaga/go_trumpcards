@@ -2,7 +2,7 @@ import type { SettingsItem } from '../components/common/SettingsPanel';
 
 /**
  * Builds the standard "frontend hint" checkbox item for a game's
- * {@link SettingsPanel}.
+ * {@link components/common/SettingsPanel.SettingsPanel | SettingsPanel}.
  *
  * Consolidates the identical `{ type: 'checkbox', id: 'frontendHint', … }`
  * object literal that was duplicated across ~147 game pages (issue #4302).

@@ -8,7 +8,7 @@ import type { HintResult } from '../../types/hint';
  * Like Tute and Tressette, Sueca's hint is computed entirely by the Go backend
  * and surfaced on the response's `hint` field (with a `reason` i18n suffix).
  * This adapter re-maps that server hint into the frontend HintResult shape so
- * the shared {@link useGameHint} tooltip can render it. The `targetAction` is
+ * the shared {@link hooks/useGameHint.useGameHint | useGameHint} tooltip can render it. The `targetAction` is
  * fixed to `play` because the only action is playing a card.
  */
 export function getSuecaHint(state: SuecaResponse): HintResult | null {

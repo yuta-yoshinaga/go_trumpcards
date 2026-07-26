@@ -10,7 +10,7 @@ import type { HintResult } from '../../types/hint';
  * `bid_take`, `bid_pass`, `contract_cego`, `contract_handspiel`, `keep_best`,
  * `lead_high`, `lead_low`, `follow_win`, or `follow_duck`). This adapter re-maps
  * that server hint into the frontend HintResult shape so the shared
- * {@link useGameHint} tooltip can render it. The `targetAction` is fixed to
+ * {@link hooks/useGameHint.useGameHint | useGameHint} tooltip can render it. The `targetAction` is fixed to
  * `play` because every hint ultimately points the player at a decision.
  */
 export function getCegoHint(state: CegoResponse): HintResult | null {

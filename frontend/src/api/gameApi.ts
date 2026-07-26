@@ -1075,7 +1075,7 @@ export interface TwoTenJackConfigInput {
 /** API client for the Two Ten Jack /twotenjack/exec endpoint.
  *
  * Argument order mirrors {@link spadesApi}: command, trumpSuit, cardIndex, config.
- * This keeps compatibility with {@link useTrickGameBase} which invokes play as
+ * This keeps compatibility with {@link hooks/useTrickGameBase.useTrickGameBase | useTrickGameBase} which invokes play as
  * `(command, undefined, cardIndex)`.
  */
 export const twoTenJackApi = {

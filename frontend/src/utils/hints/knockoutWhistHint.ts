@@ -9,7 +9,7 @@ import type { HintResult } from '../../types/hint';
  * backend and surfaced on the response's `hint` field (with a `reason` i18n
  * suffix such as `lead_high`, `follow_win`, `follow_duck`, or `discard_low`).
  * This adapter re-maps that server hint into the frontend HintResult shape so
- * the shared {@link useGameHint} tooltip can render it. The `targetAction` is
+ * the shared {@link hooks/useGameHint.useGameHint | useGameHint} tooltip can render it. The `targetAction` is
  * fixed to `play` because the only action is playing a card.
  */
 export function getKnockoutWhistHint(state: KnockoutWhistResponse): HintResult | null {

@@ -10,7 +10,7 @@ import type { HintResult } from '../../types/hint';
  * `hold`, or `fold` and whose `reason` is an i18n suffix such as
  * `declare_strong`, `raise_strong`, `lead_trump`, `lead_plain`, `follow_win`,
  * `follow_dump`, `hold_ok`, or `fold_weak`. This adapter re-maps the server hint
- * into the frontend HintResult shape so the shared {@link useGameHint} tooltip
+ * into the frontend HintResult shape so the shared {@link hooks/useGameHint.useGameHint | useGameHint} tooltip
  * can render it; `targetAction` mirrors the server's action.
  */
 export function getWattenHint(state: WattenResponse): HintResult | null {
