@@ -240,7 +240,7 @@ const BADGE_TOKEN = /\bbg-ds-(warning|info|success|error)\/\d+\b/g;
 function classNameValues(text) {
   const out = [];
   for (const m of text.matchAll(/className=/g)) {
-    let i = m.index + m[0].length;
+    const i = m.index + m[0].length;
     if (text[i] === '"' || text[i] === "'") {
       const end = text.indexOf(text[i], i + 1);
       if (end !== -1) out.push({ start: i, end: end + 1 });
