@@ -185,8 +185,9 @@ jobs:
         working-directory: frontend
         run: bun install --frozen-lockfile
 
-      # Bundle only — `bun run build` also runs `tsc -b` (~48s), which the
-      # dedicated typecheck job now covers once instead of once per shard.
+      # Bundle only — `bun run build` also runs `bun run typecheck` (~5s since
+      # the TypeScript 7 switch, ~48s before it), which the dedicated typecheck
+      # job now covers once instead of once per shard.
       - name: Build frontend
         working-directory: frontend
         run: bunx vite build

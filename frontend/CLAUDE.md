@@ -149,9 +149,16 @@ aliased binary explicitly. Both versions tolerate each other's
 `.tsbuildinfo` (they rebuild on a version mismatch rather than failing), so
 running one after the other is safe.
 
-Verified equivalent, not assumed: with five deliberate type errors injected
-(assignment, return type, `satisfies`, readonly violation, possibly-undefined)
-both versions reported the same five diagnostics with the same TS codes.
+Verified equivalent, not assumed: with deliberate errors injected, both versions
+reported the same diagnostics — five core `strict` cases (assignment, return
+type, `satisfies`, readonly violation, possibly-undefined) plus this project's
+less common flags, `verbatimModuleSyntax` (TS1484) and `erasableSyntaxOnly`
+(TS1294).
+
+The one behavioural difference found: an unresolvable **side-effect** import
+(`noUncheckedSideEffectImports`) is `TS2307` on 5.9 but `TS2882` on 7 — the code
+dedicated to that flag. Both error, so nothing is silently skipped, but do not
+match on the code if you ever script against tsc output.
 
 ## Tutorial System
 
