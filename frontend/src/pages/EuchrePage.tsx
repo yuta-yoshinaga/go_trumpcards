@@ -560,7 +560,7 @@ function EuchrePageContent() {
                       </button>
                     );
                   })}
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                     <input type="checkbox" checked={goAlone} onChange={(e) => setGoAlone(e.target.checked)} />
                     {t('goAloneCheck')}
                   </label>

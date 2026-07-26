@@ -369,7 +369,7 @@ function TrashPageContent() {
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
             <GameFooter>
-              <label className="flex items-center gap-1 text-ds-text-primary text-xs">
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs min-h-[44px]">
                 <input
                   type="checkbox"
                   checked={hintEnabled}

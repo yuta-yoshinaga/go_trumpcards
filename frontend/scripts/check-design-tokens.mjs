@@ -92,3 +92,118 @@ if (!rmBlock.includes('*,') || !rmBlock.includes('animation-duration: 0.01ms')) 
 
 console.log(`design-tokens: OK (${files.length} source files scanned, test files skipped).`);
 console.log('reduced-motion: OK (index.css uses the universal prefers-reduced-motion block).');
+
+// Tap-target guard (issue #4368): DESIGN.md's "Interactive Element Minimum
+// Size" rule requires every interactive control to hit a 44x44 CSS px target
+// (WCAG 2.5.5 AAA).
+//
+// This guard covers checkbox and radio inputs ONLY, and that narrow scope is
+// the point. index.css already floors `select`, `input[type=number|text|search]`
+// and bare `<input>` at min-height:44px globally, so those controls cannot be
+// undersized no matter what a page writes -- and that CSS says in as many words
+// that per-component min-h-[44px] classes are therefore unnecessary. Checking
+// them here would demand redundant classes and contradict it.
+//
+// Checkbox and radio are genuinely different: index.css only gives them an
+// accent-color, and a 16-20px box must *stay* that size to still read as a
+// checkbox. The 44px target has to come from the wrapping <label>, so that the
+// whole row is tappable. A sibling <label htmlFor> does not count -- it leaves
+// the small box as its own undersized target with no row to hit. Nothing but a
+// source check can catch that: it is invisible to the type checker, to the
+// global CSS, and to a DOM test that only asserts behaviour.
+const TAP_TARGET = 'min-h-[44px]';
+
+/**
+ * Opening tag of the element starting at `<` index `start`.
+ *
+ * Scans for the `>` that actually closes the tag rather than the first one:
+ * JSX attributes routinely embed `>` inside braces (`onChange={(e) => ...}`),
+ * and stopping at that arrow truncates the tag before its className, which made
+ * an earlier version of this guard report compliant controls as violations.
+ */
+function openingTag(text, start) {
+  let depth = 0;
+  for (let i = start; i < text.length; i += 1) {
+    const ch = text[i];
+    if (ch === '{') depth += 1;
+    else if (ch === '}') depth -= 1;
+    else if (ch === '>' && depth === 0) return text.slice(start, i + 1);
+  }
+  return text.slice(start);
+}
+
+/** Opening tag of the nearest <label> still open at `index`, or null. */
+function enclosingLabelTag(text, index) {
+  let depth = 0;
+  let i = index;
+  while (i > 0) {
+    const close = text.lastIndexOf('</label>', i);
+    const open = text.lastIndexOf('<label', i);
+    if (open === -1) return null;
+    if (close > open) {
+      depth += 1;
+      i = close - 1;
+      continue;
+    }
+    if (depth === 0) return openingTag(text, open);
+    depth -= 1;
+    i = open - 1;
+  }
+  return null;
+}
+
+const LABEL_SIZED = new Set(['checkbox', 'radio']);
+
+/**
+ * Blank out comment bodies, preserving length and newlines so byte offsets and
+ * reported line numbers still line up. Several doc comments mention `<select>`
+ * in prose, and matching those reported violations in files with no JSX at all.
+ */
+function stripComments(text) {
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+    .replace(/\/\/[^\n]*/g, (m) => ' '.repeat(m.length));
+}
+
+const tapViolations = [];
+for (const file of files) {
+  const raw = await readFile(file, 'utf8');
+  const text = stripComments(raw);
+  const lineOf = (idx) => text.slice(0, idx).split('\n').length;
+
+  // Find every <input> tag first, then read its type out of the resolved tag.
+  // Matching `/<input\b[^>]*type="checkbox"/` instead would stop at the first
+  // `>` in the attribute list, so an input whose earlier attribute embeds one
+  // (`min={a > b ? a : b}`, an inline handler) would not match at all and would
+  // skip the guard silently -- a false negative in the very mechanism meant to
+  // stop drift. Nothing in the tree does that today; the point is that it
+  // cannot start.
+  for (const m of text.matchAll(/<input\b/g)) {
+    const tag = openingTag(text, m.index);
+    const type = /type="(\w+)"/.exec(tag)?.[1];
+    if (!type || !LABEL_SIZED.has(type)) continue;
+    if (tag.includes(TAP_TARGET)) continue;
+    const label = enclosingLabelTag(text, m.index);
+    if (!label?.includes(TAP_TARGET)) {
+      tapViolations.push({
+        file: relative(ROOT, file),
+        line: lineOf(m.index),
+        what: `<input type="${type}">`,
+        why: label
+          ? `wrapping <label> must carry ${TAP_TARGET}`
+          : `must be wrapped in a <label> carrying ${TAP_TARGET} (a sibling <label htmlFor> leaves the box itself undersized)`,
+      });
+    }
+  }
+}
+
+if (tapViolations.length > 0) {
+  console.error('\nTap-target policy violations (DESIGN.md Interactive Element Minimum Size):\n');
+  for (const v of tapViolations) {
+    console.error(`  ${v.file}:${v.line}  ${v.what}  ${v.why}`);
+  }
+  console.error(`\n${tapViolations.length} violation(s). See DESIGN.md and issue #4368.`);
+  process.exit(1);
+}
+
+console.log('tap-targets: OK (every checkbox/radio sits in a 44px label row; index.css floors the rest).');

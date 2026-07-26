@@ -677,7 +677,7 @@ function MightyPageContent() {
                       </button>
                     ))}
                   </fieldset>
-                  <label className="flex items-center gap-1 text-ds-text-primary text-sm">
+                  <label className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]">
                     <input
                       type="checkbox"
                       checked={bidNoTrumpToggle}

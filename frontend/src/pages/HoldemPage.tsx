@@ -538,31 +538,34 @@ function HoldemPageContent() {
               </summary>
               <div className="flex flex-col gap-2 py-1">
                 <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
-                  <label htmlFor="learningModeCheckbox" className="text-ds-text-primary text-sm cursor-pointer">
+                  <label
+                    htmlFor="learningModeCheckbox"
+                    className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
+                  >
                     {t('learning.toggle')}
+                    <input
+                      id="learningModeCheckbox"
+                      type="checkbox"
+                      checked={learningMode}
+                      onChange={(e) => setLearningMode(e.target.checked)}
+                    />
                   </label>
-                  <input
-                    id="learningModeCheckbox"
-                    type="checkbox"
-                    checked={learningMode}
-                    onChange={(e) => setLearningMode(e.target.checked)}
-                  />
                 </div>
                 {learningMode && state?.equity && state.potOdds != null && (
                   <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
                 )}
                 <div className="flex items-center gap-3">
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                     <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
                     {tc('hint.toggle', { ns: 'tutorial' })}
                   </label>
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                     <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
                     {t('settings.cpuMetaAI')}
                   </label>
                 </div>
                 <div className="flex flex-col gap-2 border-t border-ds-border pt-2" data-testid="tournament-settings">
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                     <input
                       type="checkbox"
                       data-testid="tournament-mode-toggle"
@@ -573,7 +576,7 @@ function HoldemPageContent() {
                   </label>
                   {tournamentMode && (
                     <div className="flex flex-col gap-2 pl-5">
-                      <label className="text-ds-text-primary text-sm flex items-center gap-1">
+                      <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                         <input
                           type="checkbox"
                           data-testid="tournament-rebuy-toggle"
@@ -582,7 +585,7 @@ function HoldemPageContent() {
                         />
                         {t('settings.rebuyEnabled')}
                       </label>
-                      <label className="text-ds-text-primary text-sm flex items-center gap-1">
+                      <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                         <input
                           type="checkbox"
                           data-testid="tournament-addon-toggle"
