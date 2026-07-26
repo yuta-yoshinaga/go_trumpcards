@@ -79,17 +79,17 @@ jobs:
     # lever that moves it. Each shard uploads its own coverage; Codecov merges
     # them server-side.
     #
-    # Six rather than four: --shard splits by file COUNT, but file runtimes
+    # Eight rather than four: --shard splits by file COUNT, but file runtimes
     # vary widely, so at 4 the slowest shard ran 435s against a 280s mean (the
     # whole pipeline waits on that one). Per-shard fixed overhead is only ~16s,
     # so extra shards are nearly free and each one dilutes the effect of a
-    # single heavy file.
-    name: Frontend Tests (${{ matrix.shard }}/6)
+    # single heavy file. At 6 the spread was 199-287s over 1320s of work.
+    name: Frontend Tests (${{ matrix.shard }}/8)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
       - uses: actions/checkout@v6
 
@@ -110,7 +110,7 @@ jobs:
         # forked test workers via NODE_OPTIONS.
         env:
           NODE_OPTIONS: --max-old-space-size=8192
-        run: bun run test:coverage -- --shard=${{ matrix.shard }}/6
+        run: bun run test:coverage -- --shard=${{ matrix.shard }}/8
 
       - name: Upload frontend coverage to Codecov
         uses: codecov/codecov-action@v6
@@ -126,12 +126,17 @@ jobs:
     # Sharded on top of the in-job parallelism (playwright.config.ts runs 4
     # workers in CI). Each shard boots its own server binary, so shards cannot
     # interfere with each other.
-    name: E2E Tests (${{ matrix.shard }}/3)
+    #
+    # Five shards, not more: ~105s of every shard is setup (frontend build,
+    # browsers, server binary) and does not shrink with the split, so the job
+    # asymptotes there. 3 -> 5 moves the slowest shard ~261s -> ~190s; 8 would
+    # buy another ~20s for three more runners.
+    name: E2E Tests (${{ matrix.shard }}/5)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v6
 
@@ -190,7 +195,7 @@ jobs:
         working-directory: frontend
         env:
           E2E_SERVER_BIN: /tmp/trumpcards-server
-        run: bunx playwright test --shard=${{ matrix.shard }}/3
+        run: bunx playwright test --shard=${{ matrix.shard }}/5
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v7
