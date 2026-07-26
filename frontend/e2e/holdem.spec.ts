@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
+import { navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe("Texas Hold'em E2E", () => {
   test('plays a full round: reset → check/call through rounds → showdown → reset', async ({ page }) => {
@@ -19,6 +19,16 @@ test.describe("Texas Hold'em E2E", () => {
       const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
       const callButton = page.getByRole('button', { name: 'コール', exact: true });
 
+      // Wait for whichever control appears FIRST rather than probing each one
+      // in turn: two sequential 3s probes cost 6s per lap even once the hand
+      // has ended, so a re-raising CPU could push 20 laps past the 90s test
+      // timeout — Playwright then tears the context down and the in-flight
+      // waitForSelector reports "Target page, context or browser has been
+      // closed", which reads like a browser crash but is really this timeout
+      // (#2443). Racing them returns as soon as any control is actionable.
+      const anyControl = endResetButton.or(checkButton).or(callButton).first();
+      await expect(anyControl).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
+
       // End state reached — break immediately.
       if (await endResetButton.isVisible()) {
         roundEnded = true;
@@ -26,7 +36,7 @@ test.describe("Texas Hold'em E2E", () => {
       }
 
       // Try check first, then call
-      if (await isVisibleWithin(checkButton, TIMEOUT_ACTION)) {
+      if (await checkButton.isVisible()) {
         if (await checkButton.isEnabled()) {
           await checkButton.click();
           await waitForLoaded(page);
@@ -34,7 +44,7 @@ test.describe("Texas Hold'em E2E", () => {
         }
       }
 
-      if (await isVisibleWithin(callButton, TIMEOUT_ACTION)) {
+      if (await callButton.isVisible()) {
         if (await callButton.isEnabled()) {
           await callButton.click();
           await waitForLoaded(page);
