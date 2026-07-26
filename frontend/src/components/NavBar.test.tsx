@@ -54,12 +54,12 @@ describe('NavBar', () => {
 
     it(`marks ${labelKey} link as active when on ${path}`, () => {
       renderNavBar(path);
-      expect(screen.getByText(labelFor(labelKey))).toHaveAttribute('aria-current', 'page');
-      for (const other of gameRoutes) {
-        if (other.path !== path) {
-          expect(screen.getByText(labelFor(other.labelKey))).not.toHaveAttribute('aria-current');
-        }
-      }
+      // Exactly one link may carry aria-current, which also proves no other
+      // route's link has it.
+      const current = screen.getAllByRole('link').filter((link) => link.hasAttribute('aria-current'));
+      expect(current).toHaveLength(1);
+      expect(current[0]).toHaveAttribute('aria-current', 'page');
+      expect(current[0]).toHaveTextContent(labelFor(labelKey));
     });
   }
 
