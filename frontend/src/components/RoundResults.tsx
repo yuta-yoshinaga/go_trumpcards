@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
-interface RoundResultEntry {
+/** One player's line in a round-result table. */
+export interface RoundResultEntry {
   playerIdx: number;
   handName: string;
   kickers?: string;
@@ -8,7 +9,8 @@ interface RoundResultEntry {
   mucked?: boolean;
 }
 
-interface RoundResultsProps {
+/** Props for {@link RoundResults}. */
+export interface RoundResultsProps {
   results: RoundResultEntry[] | undefined;
   players: { isHuman: boolean }[];
 }

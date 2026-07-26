@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -23,7 +23,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -35,6 +34,7 @@ import { CASINOHOLDEM_HELP, parseCasinoholdemCommand } from '../utils/cli/comman
 import { formatCasinoholdemState } from '../utils/cli/formatters/casinoholdemFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { evaluateFiveCardHand } from '../utils/pokerSquaresUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Casino Hold'em tutorial step definitions. */
 const CH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -83,7 +83,6 @@ function CasinoHoldemPageContent() {
   const [bonusAmount, setBonusAmount] = useState(0);
 
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(casinoholdemApi.exec);
   const {
     hint: frontendHint,
@@ -156,7 +155,7 @@ function CasinoHoldemPageContent() {
       gamePath="/casinoholdem"
       gameEndFlag={isEndPhase}
       winShow={isEndPhase && state.result > 0}
-      onCelebrate={() => playSound('winFanfare')}
+      lossShow={isEndPhase && state.result < 0}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -186,9 +185,7 @@ function CasinoHoldemPageContent() {
               messageParams={state.messageParams}
             />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {isBetPhase && (
               <div className="flex flex-col items-center justify-center py-4 gap-4">
@@ -331,15 +328,7 @@ function CasinoHoldemPageContent() {
               title={t('settings.title')}
               groups={[
                 {
-                  items: [
-                    {
-                      type: 'checkbox',
-                      id: 'frontendHint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: frontendHintEnabled,
-                      onToggle: setFrontendHintEnabled,
-                    },
-                  ],
+                  items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
                 },
               ]}
             />

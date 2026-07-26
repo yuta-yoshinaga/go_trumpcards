@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, baccaratApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -608,15 +608,21 @@ describe('BaccaratPage', () => {
       expect(screen.getByTestId('bac-banker-cards').childElementCount).toBe(2);
       expect(screen.queryByTestId('bac-payout')).not.toBeInTheDocument();
       // Step 2: player's third card lands.
-      await vi.advanceTimersByTimeAsync(600);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(600);
+      });
       expect(screen.getByTestId('bac-player-cards').childElementCount).toBe(3);
       expect(screen.getByTestId('bac-banker-cards').childElementCount).toBe(2);
       // Step 3: banker's third card lands.
-      await vi.advanceTimersByTimeAsync(600);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(600);
+      });
       expect(screen.getByTestId('bac-banker-cards').childElementCount).toBe(3);
       expect(screen.queryByTestId('bac-payout')).not.toBeInTheDocument();
       // Step 4: payout appears.
-      await vi.advanceTimersByTimeAsync(600);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(600);
+      });
       expect(screen.getByTestId('bac-payout')).toBeInTheDocument();
     } finally {
       vi.useRealTimers();
@@ -648,11 +654,15 @@ describe('BaccaratPage', () => {
       expect(playerHeader.textContent).toContain('値: 2');
       expect(bankerHeader.textContent).toContain('値: 6');
       // Step 2: player's third card lands → 9+3+2 = 14 % 10 = 4. Banker still at 6.
-      await vi.advanceTimersByTimeAsync(600);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(600);
+      });
       expect(playerHeader.textContent).toContain('値: 4');
       expect(bankerHeader.textContent).toContain('値: 6');
       // Step 3: banker's third card lands → 4+2+6 = 12 % 10 = 2. Player stays at 4.
-      await vi.advanceTimersByTimeAsync(600);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(600);
+      });
       expect(playerHeader.textContent).toContain('値: 4');
       expect(bankerHeader.textContent).toContain('値: 2');
     } finally {
@@ -669,7 +679,9 @@ describe('BaccaratPage', () => {
         expect(screen.getByTestId('bac-player-cards').childElementCount).toBe(2);
       });
       // No third-card delays; only the final payout reveal at +600ms.
-      await vi.advanceTimersByTimeAsync(600);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(600);
+      });
       expect(screen.getByTestId('bac-payout')).toBeInTheDocument();
     } finally {
       vi.useRealTimers();

@@ -58,7 +58,7 @@ func TestCallBreak_trickWinner_EmptyTrick(t *testing.T) {
 
 func TestCallBreak_trickWinner_LeadSuitWins(t *testing.T) {
 	cb := newInternalCallBreak()
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 5, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 11, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 4, false)},
@@ -69,7 +69,7 @@ func TestCallBreak_trickWinner_LeadSuitWins(t *testing.T) {
 
 func TestCallBreak_trickWinner_SpadeBeatsLeadSuit(t *testing.T) {
 	cb := newInternalCallBreak()
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 13, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 2, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 12, false)},
@@ -80,7 +80,7 @@ func TestCallBreak_trickWinner_SpadeBeatsLeadSuit(t *testing.T) {
 
 func TestCallBreak_trickWinner_HigherSpadeWins(t *testing.T) {
 	cb := newInternalCallBreak()
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 13, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 2, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 7, false)},
@@ -91,7 +91,7 @@ func TestCallBreak_trickWinner_HigherSpadeWins(t *testing.T) {
 
 func TestCallBreak_trickWinner_AllSpades(t *testing.T) {
 	cb := newInternalCallBreak()
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 3, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 11, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 7, false)},
@@ -138,7 +138,7 @@ func TestCallBreak_validatePlay_MustFollowSuit(t *testing.T) {
 	cb.players[0].Reset()
 	cb.players[0].AddCard(NewCard(CardDesignHeart, 5, false))
 	cb.players[0].AddCard(NewCard(CardDesignClover, 3, false))
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 9, false)},
 	}
 
@@ -155,7 +155,7 @@ func TestCallBreak_validatePlay_MustTrumpWhenVoid(t *testing.T) {
 	// Heart リードに対してプレイヤー 0 はハート無し、スペードあり、クラブあり
 	cb.players[0].AddCard(NewCard(CardDesignSpade, 5, false))
 	cb.players[0].AddCard(NewCard(CardDesignClover, 3, false))
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 9, false)},
 	}
 
@@ -174,7 +174,7 @@ func TestCallBreak_validatePlay_DiscardWhenVoidAndNoTrump(t *testing.T) {
 	// Heart リードに対してハート無し・スペード無し
 	cb.players[0].AddCard(NewCard(CardDesignClover, 3, false))
 	cb.players[0].AddCard(NewCard(CardDesignDiamond, 7, false))
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 9, false)},
 	}
 
@@ -189,7 +189,7 @@ func TestCallBreak_validatePlay_SpadeLeadFollowSuit(t *testing.T) {
 	cb.players[0].Reset()
 	cb.players[0].AddCard(NewCard(CardDesignSpade, 5, false))
 	cb.players[0].AddCard(NewCard(CardDesignHeart, 3, false))
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 9, false)},
 	}
 	// スペードリードに対して非スペードを出せない (スペードを持っている)
@@ -210,7 +210,7 @@ func TestCallBreak_playCard_AdvancesToTrickEnd(t *testing.T) {
 	cb := newInternalCallBreak()
 	cb.SetPhase(CallBreakPhasePlay)
 	cb.SetCurrentPlayerIdx(3)
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 2, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 3, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 4, false)},
@@ -323,7 +323,7 @@ func TestCallBreak_cpuPlayHard_PicksWinningOver(t *testing.T) {
 	cb.players[1].AddCard(NewCard(CardDesignHeart, 4, false))
 	cb.players[1].AddCard(NewCard(CardDesignHeart, 12, false))
 	cb.players[1].SetBid(3)
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 10, false)},
 	}
 	idx := cb.cpuPlayHard(1, []int{0, 1})
@@ -336,7 +336,7 @@ func TestCallBreak_cpuPlayHard_DiscardHighWhenNoTrump(t *testing.T) {
 	cb.players[1].AddCard(NewCard(CardDesignClover, 4, false))
 	cb.players[1].AddCard(NewCard(CardDesignClover, 13, false))
 	cb.players[1].SetBid(0) // bid 達成済みのつもり (ahead)
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 10, false)},
 	}
 	idx := cb.cpuPlayHard(1, []int{0, 1})
@@ -390,21 +390,21 @@ func TestCallBreak_playHintReason_Variants(t *testing.T) {
 
 	cb.players[0].Reset()
 	cb.players[0].AddCard(NewCard(CardDesignHeart, 5, false))
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 11, false)},
 	}
 	assert.Equal(t, "follow_suit", cb.playHintReason(0))
 
 	cb.players[0].Reset()
 	cb.players[0].AddCard(NewCard(CardDesignSpade, 5, false))
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 11, false)},
 	}
 	assert.Equal(t, "trump_cut", cb.playHintReason(0))
 
 	cb.players[0].Reset()
 	cb.players[0].AddCard(NewCard(CardDesignClover, 5, false))
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 11, false)},
 	}
 	assert.Equal(t, "discard_high", cb.playHintReason(0))
@@ -463,13 +463,13 @@ func TestCallBreak_filterAbove(t *testing.T) {
 	cb.players[0].AddCard(NewCard(CardDesignHeart, 3, false))
 	cb.players[0].AddCard(NewCard(CardDesignHeart, 9, false))
 	cb.players[0].AddCard(NewCard(CardDesignHeart, 11, false))
-	out := filterAbove(cb.players[0], []int{0, 1, 2}, 5)
+	out := filterAbove(cb.players[0], []int{0, 1, 2}, 5, nil)
 	assert.Equal(t, []int{1, 2}, out)
 }
 
 func TestCallBreak_summariseTrick(t *testing.T) {
 	cb := newInternalCallBreak()
-	cb.currentTrick = []*CallBreakTrickCard{
+	cb.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 10, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 5, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 11, false)},

@@ -58,6 +58,27 @@ vi.mock('framer-motion', async () => {
   return { motion: createMotionProxy(), AnimatePresence };
 });
 
+// Global howler mock: keep the 200+ page/hook tests that render inside
+// SoundProvider (via renderWithProviders) from hitting real Web Audio in
+// jsdom/happy-dom once the central sound taps fire on every exec.
+// Files that need to assert on Howl behavior re-mock 'howler' locally,
+// which overrides this global mock.
+vi.mock('howler', () => {
+  class MockHowl {
+    play = vi.fn(() => 1);
+    volume = vi.fn();
+    rate = vi.fn();
+    stop = vi.fn();
+    on = vi.fn();
+    once = vi.fn();
+    unload = vi.fn();
+  }
+  return {
+    Howl: MockHowl,
+    Howler: { ctx: { state: 'running' }, autoUnlock: true },
+  };
+});
+
 import { buildResources } from '../i18n/buildResources';
 
 // Eagerly import all locale JSON files via Vite glob

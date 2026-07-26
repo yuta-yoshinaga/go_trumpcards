@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -21,7 +21,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, usePinochleGame } from '../hooks/usePinochleGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PinochleMeldData, PinochleResponse } from '../types/card';
@@ -32,6 +31,7 @@ import { PINOCHLE_HELP, parsePinochleCommand } from '../utils/cli/commands/pinoc
 import { formatPinochleState } from '../utils/cli/formatters/pinochleFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Phase name keys for Pinochle. */
 const PINOCHLE_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -122,7 +122,6 @@ function PinochlePageContent() {
   } = usePinochleGame();
 
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const phaseNames = usePhaseNames('pinochle', PINOCHLE_PHASE_KEYS);
 
   const [bidAmount, setBidAmount] = useState(20);
@@ -239,7 +238,6 @@ function PinochlePageContent() {
       gamePath="/pinochle"
       gameEndFlag={!!isGameEnd}
       winShow={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -271,13 +269,7 @@ function PinochlePageContent() {
                     options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v: string) => handleConfigChange('pointLimit', v),
                   },
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -394,9 +386,7 @@ function PinochlePageContent() {
               messageParams={state.messageParams}
             />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
               isEndPhase={isGameEnd}

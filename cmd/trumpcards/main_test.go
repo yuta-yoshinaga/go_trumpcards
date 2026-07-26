@@ -14,6 +14,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/games"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/update"
 )
@@ -87,7 +88,7 @@ func TestRunHelpCommandResolvesAlias(t *testing.T) {
 
 func TestRunHelpCommandForBuiltinSubcommand(t *testing.T) {
 	// "web" is a builtin subcommand (not a game). runHelpCommand should fall
-	// through the game-registry lookup and emit the entry from builtinSubcommandHelp.
+	// through the game-registry lookup and emit the entry from subcommandHelp.
 	var stdout, stderr bytes.Buffer
 	helpText := buildHelpText()
 	code := runHelpCommand([]string{"web"}, helpText, &stdout, &stderr)
@@ -245,6 +246,59 @@ func TestRunWebRejectsInvalidHost(t *testing.T) {
 	}
 }
 
+// TestRunWebAcceptsTrailingQuiet verifies that `web -q` is accepted after the
+// web subcommand (issue #4306): applyTrailingGlobalFlags strips -q before the
+// web FlagSet parses, so web no longer needs its own -q sink. Uses an invalid
+// host so the run fails fast (exit 2) without binding a server — the point is
+// that the failure is the host error, NOT "flag provided but not defined: -q".
+func TestRunWebAcceptsTrailingQuiet(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	origHostEnv, hostEnvWasSet := os.LookupEnv("HOST")
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		if hostEnvWasSet {
+			_ = os.Setenv("HOST", origHostEnv)
+		} else {
+			_ = os.Unsetenv("HOST")
+		}
+	}()
+	_ = os.Unsetenv("HOST")
+
+	flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+	os.Args = []string{"trumpcards", "web", "-q", "--host", "bad host"}
+
+	rOut, wOut, _ := os.Pipe()
+	rErr, wErr, _ := os.Pipe()
+	os.Stdout = wOut
+	os.Stderr = wErr
+
+	exitCh := make(chan int, 1)
+	go func() { exitCh <- run() }()
+	exit := <-exitCh
+
+	_ = wOut.Close()
+	_ = wErr.Close()
+	var errBuf bytes.Buffer
+	_, _ = errBuf.ReadFrom(rErr)
+	_, _ = io.Copy(io.Discard, rOut)
+
+	if exit != 2 {
+		t.Errorf("exit = %d, want 2 (invalid host; stderr=%q)", exit, errBuf.String())
+	}
+	if strings.Contains(errBuf.String(), "flag provided but not defined") {
+		t.Errorf("web must accept trailing -q; got stderr=%q", errBuf.String())
+	}
+	if !strings.Contains(errBuf.String(), "bad host") {
+		t.Errorf("expected the invalid-host error (proves -q was consumed, not rejected); got %q", errBuf.String())
+	}
+}
+
 func TestFlagSetVisitedDistinguishesExplicitFromDefault(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -282,7 +336,7 @@ func TestFlagSetVisitedDistinguishesExplicitFromDefault(t *testing.T) {
 // flagged: under the previous portUnset=-1 sentinel, `--port -1` silently
 // fell through to the default 8080. With the fs.Visit approach the explicit
 // -1 must be rejected with cliInvalidPort and exit 2 (usage error, per the
-// documented EXIT CODES in builtinSubcommandHelp["web"]) before any bind.
+// documented EXIT CODES in the web subcommand help) before any bind.
 func TestRunWebRejectsExplicitInvalidPort(t *testing.T) {
 	origArgs := os.Args
 	origCmdLine := flag.CommandLine
@@ -438,6 +492,109 @@ func TestRunUnsupportedLangFlagFallsBackAndWarns(t *testing.T) {
 	}
 }
 
+// TestRunUnknownGameExitsUsageError verifies issue #4305: an unknown top-level
+// game name exits 2 (usage error) — matching the `--start <unknown>` path — and
+// prints a Did-you-mean suggestion plus a one-line recovery hint on stderr,
+// instead of the old exit-1-with-dead-flag.Usage()-blank-line behavior.
+func TestRunUnknownGameExitsUsageError(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		i18n.SetLang("ja")
+	}()
+
+	flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+	os.Args = []string{"trumpcards", "blackjak"} // typo for blackjack
+
+	rOut, wOut, _ := os.Pipe()
+	rErr, wErr, _ := os.Pipe()
+	os.Stdout = wOut
+	os.Stderr = wErr
+
+	exitCh := make(chan int, 1)
+	go func() { exitCh <- run() }()
+	exit := <-exitCh
+
+	_ = wOut.Close()
+	_ = wErr.Close()
+	var outBuf, errBuf bytes.Buffer
+	_, _ = outBuf.ReadFrom(rOut)
+	_, _ = errBuf.ReadFrom(rErr)
+
+	if exit != 2 {
+		t.Errorf("exit = %d, want 2 (usage error); stderr=%q", exit, errBuf.String())
+	}
+	if !strings.Contains(errBuf.String(), "blackjack") {
+		t.Errorf("expected Did-you-mean to mention blackjack; stderr=%q", errBuf.String())
+	}
+	// The recovery hint must point at `games` and `--help`.
+	if !strings.Contains(errBuf.String(), "games") || !strings.Contains(errBuf.String(), "--help") {
+		t.Errorf("expected recovery hint mentioning 'games' and '--help'; stderr=%q", errBuf.String())
+	}
+	// Unknown game is an error path: nothing goes to stdout.
+	if outBuf.Len() != 0 {
+		t.Errorf("expected no stdout on unknown game; got %q", outBuf.String())
+	}
+}
+
+// TestParseSubFlagsToNoHelpDumpOnFlagError verifies issue #4307: an unknown
+// subcommand flag must not dump the full help text to stdout before the
+// localized error goes to stderr. The FlagSet's Usage callback fires inside
+// fs.Parse on a parse error, so it must be a no-op (help is printed explicitly
+// only on the flag.ErrHelp path).
+func TestParseSubFlagsToNoHelpDumpOnFlagError(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	fs, code, ok := parseSubFlagsTo("version", []string{"--bogus"}, func(fs *flag.FlagSet) {
+		var short bool
+		fs.BoolVar(&short, "short", false, "")
+	}, &stdout, &stderr)
+
+	if ok || fs != nil {
+		t.Fatalf("expected (nil, code, false) on flag error; got ok=%v fs=%v", ok, fs)
+	}
+	if code != 2 {
+		t.Errorf("exit = %d, want 2 (usage error)", code)
+	}
+	if stdout.Len() != 0 {
+		t.Errorf("expected NO help dump on stdout for a flag error; got %q", stdout.String())
+	}
+	if !strings.Contains(stderr.String(), "help version") {
+		t.Errorf("stderr should carry the cliTryHelp hint; got %q", stderr.String())
+	}
+}
+
+// TestParseSubFlagsToPrintsHelpOnceOnHelpFlag verifies that `-h` prints the
+// subcommand help to stdout exactly once (not twice, as it did when Usage
+// duplicated the explicit ErrHelp-branch print). See issue #4307.
+func TestParseSubFlagsToPrintsHelpOnceOnHelpFlag(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	fs, code, ok := parseSubFlagsTo("version", []string{"-h"}, func(fs *flag.FlagSet) {
+		var short bool
+		fs.BoolVar(&short, "short", false, "")
+	}, &stdout, &stderr)
+
+	if ok || fs != nil {
+		t.Fatalf("expected (nil, 0, false) on -h; got ok=%v fs=%v", ok, fs)
+	}
+	if code != 0 {
+		t.Errorf("exit = %d, want 0 for -h", code)
+	}
+	// Count a locale-independent USAGE line (the command syntax) rather than the
+	// now-localized "USAGE:" heading.
+	if n := strings.Count(stdout.String(), "trumpcards version [--short]"); n != 1 {
+		t.Errorf("expected help printed exactly once on stdout; usage line appeared %d times in %q", n, stdout.String())
+	}
+	if stderr.Len() != 0 {
+		t.Errorf("expected no stderr on -h; got %q", stderr.String())
+	}
+}
+
 // TestRunGlobalQuietFlagSuppressesWarnings verifies issue #1553: the global
 // --quiet/-q flag is OR-combined with TRUMPCARDS_QUIET, so users can suppress
 // the locale-fallback warning without exporting an env var first. Both the
@@ -573,6 +730,68 @@ func TestRunGlobalQuietFlagAcceptedAfterSubcommand(t *testing.T) {
 			}
 			if strings.Contains(errBuf.String(), "flag provided but not defined") {
 				t.Errorf("subcommand FlagSet must accept -q/--quiet; got stderr=%q", errBuf.String())
+			}
+			if outBuf.Len() == 0 {
+				t.Error("expected `games --short` stdout output")
+			}
+		})
+	}
+}
+
+// TestRunGlobalFlagsAcceptedAfterSubcommand verifies issue #4306: global flags
+// (--lang / --color / --no-color) placed after a subcommand name are applied and
+// stripped before the subcommand FlagSet parses, instead of being rejected with
+// "flag provided but not defined" (exit 2). This makes trailing global flags
+// uniform across all subcommands, matching the -q handling and the mental model
+// the top-level --help advertises (`trumpcards poker --lang en`).
+func TestRunGlobalFlagsAcceptedAfterSubcommand(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		i18n.SetLang("ja")
+	}()
+
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"games --lang en --short", []string{"trumpcards", "games", "--lang", "en", "--short"}},
+		{"games --short --lang en (trailing)", []string{"trumpcards", "games", "--short", "--lang", "en"}},
+		{"games --lang=en --short (inline)", []string{"trumpcards", "games", "--lang=en", "--short"}},
+		{"games --color never --short", []string{"trumpcards", "games", "--color", "never", "--short"}},
+		{"games --no-color --short", []string{"trumpcards", "games", "--no-color", "--short"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+			os.Args = tc.args
+
+			rOut, wOut, _ := os.Pipe()
+			rErr, wErr, _ := os.Pipe()
+			os.Stdout = wOut
+			os.Stderr = wErr
+
+			exitCh := make(chan int, 1)
+			go func() { exitCh <- run() }()
+			exit := <-exitCh
+
+			_ = wOut.Close()
+			_ = wErr.Close()
+			var outBuf, errBuf bytes.Buffer
+			_, _ = outBuf.ReadFrom(rOut)
+			_, _ = errBuf.ReadFrom(rErr)
+
+			if exit != 0 {
+				t.Errorf("exit = %d, want 0 (stderr=%q)", exit, errBuf.String())
+			}
+			if strings.Contains(errBuf.String(), "flag provided but not defined") {
+				t.Errorf("subcommand must accept trailing global flags; got stderr=%q", errBuf.String())
 			}
 			if outBuf.Len() == 0 {
 				t.Error("expected `games --short` stdout output")
@@ -765,8 +984,10 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 			if !strings.Contains(errStr, tc.wantInclude) {
 				t.Errorf("stderr should include offending flag %q; got: %q", tc.wantInclude, firstLine(errStr))
 			}
-			if n := strings.Count(errStr, "USAGE:"); n != 1 {
-				t.Errorf("help text should be printed exactly once; got %d USAGE: markers", n)
+			// Count a locale-independent USAGE command line rather than the
+			// now-localized "USAGE:" heading.
+			if n := strings.Count(errStr, "trumpcards [--lang ja|en] [game]"); n != 1 {
+				t.Errorf("help text should be printed exactly once; got %d usage-line markers", n)
 			}
 		})
 	}
@@ -863,6 +1084,144 @@ func TestPrintGamesShortModeRespectsAliasesFlag(t *testing.T) {
 	// With --aliases, alias lines must appear.
 	if !strings.Contains(with.String(), aliasSample) {
 		t.Errorf("short mode with --aliases should list alias %q; got:\n%s", aliasSample, with.String())
+	}
+}
+
+// TestGameNamesAllHaveCategory guards the invariant that the category-grouped
+// printGamesLong depends on: every ui.GameNames() entry must map to a non-empty
+// games-registry category. printGamesLong iterates games.AllCategories() and
+// prints each category's bucket, so a name whose category is "" (two-registry
+// drift between ui.gameRegistry and games.registry) would land in the never-
+// printed "" bucket and silently vanish from even the unfiltered `games`
+// listing. This test makes such drift fail loudly instead. See PR #4320 review.
+func TestGameNamesAllHaveCategory(t *testing.T) {
+	byName := gameCategoryByName()
+	for _, name := range ui.GameNames() {
+		if byName[name] == "" {
+			t.Errorf("game %q has no games-registry category — it would be dropped from `games` output (registry drift)", name)
+		}
+	}
+}
+
+// TestPrintGamesLongListsEveryGame is the direct backstop for the same drift:
+// the unfiltered long listing must emit exactly one row per registered game, so
+// a silently-dropped game shrinks the count and fails here.
+func TestPrintGamesLongListsEveryGame(t *testing.T) {
+	var buf bytes.Buffer
+	printGames(false, false, "", &buf)
+	rows := 0
+	for _, line := range strings.Split(buf.String(), "\n") {
+		if strings.HasPrefix(line, "  ") { // game rows are indented; headings are not
+			rows++
+		}
+	}
+	if want := len(ui.GameNames()); rows != want {
+		t.Errorf("long listing emitted %d game rows, want %d", rows, want)
+	}
+}
+
+// TestPrintGamesLongGroupsByCategory verifies issue #4311: the long-form list
+// prints an uppercase "CATEGORY (N):" heading (derived from games.AllCategories,
+// the SSoT) before each group.
+func TestPrintGamesLongGroupsByCategory(t *testing.T) {
+	var buf bytes.Buffer
+	printGames(false, false, "", &buf)
+	out := buf.String()
+	for _, cat := range games.AllCategories() {
+		heading := strings.ToUpper(cat.String()) + " ("
+		if !strings.Contains(out, heading) {
+			t.Errorf("expected category heading starting %q in long output; got:\n%s", heading, out)
+		}
+	}
+}
+
+// TestPrintGamesLongDynamicWidthAlignsDescriptions verifies issue #4311: the
+// name column is sized to the longest displayed name so every description
+// starts at the same byte offset — including the row for the longest name
+// (ultimatetexasholdem), which the old fixed %-16s clipped out of alignment.
+func TestPrintGamesLongDynamicWidthAlignsDescriptions(t *testing.T) {
+	var buf bytes.Buffer
+	printGames(false, false, "", &buf)
+	descs := ui.GameDescriptions()
+
+	width := 0
+	for _, n := range ui.GameNames() {
+		if len(n) > width {
+			width = len(n)
+		}
+	}
+	descStart := 2 + width + 1 // "  " + padded name + single separating space
+
+	checked := 0
+	for _, line := range strings.Split(buf.String(), "\n") {
+		if !strings.HasPrefix(line, "  ") { // skip headings (no indent) and blanks
+			continue
+		}
+		if len(line) < descStart {
+			t.Errorf("line shorter than aligned description column %d: %q", descStart, line)
+			continue
+		}
+		name := strings.TrimSpace(line[2 : descStart-1])
+		desc := descs[name]
+		if desc == "" {
+			continue
+		}
+		if !strings.HasPrefix(line[descStart:], desc) {
+			t.Errorf("description column misaligned for %q: expected desc at offset %d; line=%q", name, descStart, line)
+		}
+		checked++
+	}
+	if checked < 10 {
+		t.Fatalf("expected to verify many game lines; only checked %d", checked)
+	}
+}
+
+// TestJoinOr covers the English list renderer used for the --category prose.
+func TestJoinOr(t *testing.T) {
+	cases := []struct {
+		in   []string
+		want string
+	}{
+		{nil, ""},
+		{[]string{"a"}, "a"},
+		{[]string{"a", "b"}, "a or b"},
+		{[]string{"a", "b", "c"}, "a, b, or c"},
+		{[]string{"casino", "classic", "solo", "extra"}, "casino, classic, solo, or extra"},
+	}
+	for _, tc := range cases {
+		if got := joinOr(tc.in); got != tc.want {
+			t.Errorf("joinOr(%v) = %q, want %q", tc.in, got, tc.want)
+		}
+	}
+}
+
+// TestGamesHelpListsAllCategories verifies issue #4308: the --category values
+// advertised in the games subcommand help and the top-level help are derived
+// from games.AllCategories() (the SSoT), so every registered category —
+// including the `extra` bucket the old hardcoded strings omitted — is listed.
+func TestGamesHelpListsAllCategories(t *testing.T) {
+	for _, c := range games.AllCategories() {
+		if !strings.Contains(categoryFilterPipe, c.String()) {
+			t.Errorf("categoryFilterPipe %q missing category %q", categoryFilterPipe, c.String())
+		}
+		if !strings.Contains(categoryFilterProse, c.String()) {
+			t.Errorf("categoryFilterProse %q missing category %q", categoryFilterProse, c.String())
+		}
+	}
+	if !strings.Contains(categoryFilterPipe, "extra") {
+		t.Errorf("expected 'extra' in categoryFilterPipe; got %q", categoryFilterPipe)
+	}
+
+	gamesHelpLines, _ := subcommandHelp("games")
+	gamesHelp := strings.Join(gamesHelpLines, "\n")
+	if !strings.Contains(gamesHelp, categoryFilterPipe) {
+		t.Errorf("games help USAGE should list %q; got:\n%s", categoryFilterPipe, gamesHelp)
+	}
+	if !strings.Contains(gamesHelp, categoryFilterProse) {
+		t.Errorf("games help --category desc should list %q; got:\n%s", categoryFilterProse, gamesHelp)
+	}
+	if help := buildHelpText(); !strings.Contains(help, categoryFilterPipe) {
+		t.Errorf("top-level help should list the dynamic category list %q", categoryFilterPipe)
 	}
 }
 
@@ -1443,12 +1802,12 @@ func TestApplyTrailingGlobalFlags_TrailingQuietPropagates(t *testing.T) {
 	}
 }
 
-// TestApplyColorMode verifies issue #1554: the new tristate --color flag
-// resolves to per-stream color settings with the documented precedence
-// (NO_COLOR > --color=never / --no-color > --color=always > auto). The
-// helper is the SSoT for color resolution; the run() integration relies
-// on it for the explicit-flag path, so any drift here would silently
-// change CLI behavior.
+// TestApplyColorMode verifies issue #1554 + the #4310 precedence flip: the
+// tristate --color flag resolves to per-stream color settings with the
+// documented precedence --color=never / --no-color > --color=always > NO_COLOR
+// > auto (an explicit --color=always now overrides NO_COLOR). The helper is the
+// SSoT for color resolution; the run() integration relies on it for the
+// explicit-flag path, so any drift here would silently change CLI behavior.
 func TestApplyColorMode(t *testing.T) {
 	// stdout-non-TTY/stderr-non-TTY: under `go test` both are pipes.
 	const nonTTY = uintptr(0xDEADBEEF) // any value that IsTerminal returns false for
@@ -1495,8 +1854,30 @@ func TestApplyColorMode(t *testing.T) {
 			wantStdout:  false, wantStderr: false, wantOK: true,
 		},
 		{
-			name:       "NO_COLOR env beats --color=always (POSIX spec)",
+			// #4310: explicit --color=always now beats NO_COLOR (was: never).
+			name:       "--color=always overrides NO_COLOR env",
 			mode:       "always",
+			noColorEnv: "1",
+			wantStdout: true, wantStderr: true, wantOK: true,
+		},
+		{
+			// --no-color still beats --color=always even under NO_COLOR.
+			name:        "--no-color beats --color=always under NO_COLOR",
+			mode:        "always",
+			noColorFlag: true,
+			noColorEnv:  "1",
+			wantStdout:  false, wantStderr: false, wantOK: true,
+		},
+		{
+			// NO_COLOR still disables the default/auto path (only explicit always overrides).
+			name:       "NO_COLOR env disables auto",
+			mode:       "auto",
+			noColorEnv: "1",
+			wantStdout: false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:       "NO_COLOR env disables empty/unset mode",
+			mode:       "",
 			noColorEnv: "1",
 			wantStdout: false, wantStderr: false, wantOK: true,
 		},
@@ -1609,13 +1990,13 @@ func TestApplyTrailingColorFlag(t *testing.T) {
 			wantStdout: false, wantStderr: false,
 		},
 		{
-			// NO_COLOR env beats --color=always even in trailing position
-			// (matches the top-level applyColorMode precedence; PR #1583
-			// review #2 — single SSoT for resolution).
-			name:       "--color=always with NO_COLOR set forces off",
+			// #4310: an explicit --color=always now overrides NO_COLOR even in
+			// trailing position (matches the top-level applyColorMode precedence;
+			// single SSoT for resolution).
+			name:       "--color=always overrides NO_COLOR (trailing)",
 			args:       []string{"--color=always"},
 			noColorEnv: "1",
-			wantStdout: false, wantStderr: false,
+			wantStdout: true, wantStderr: true,
 		},
 		{
 			// Within trailing args, --no-color must beat --color=always
@@ -1791,10 +2172,70 @@ func TestHelpSuggestionCandidatesIncludesAliases(t *testing.T) {
 	}
 }
 
+// TestBuildHelpTextLocalized verifies issue #4309: the top-level --help is
+// localized — section headings are translated in ja while the command syntax
+// (copy-paste lines) stays English in both locales.
+func TestBuildHelpTextLocalized(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	i18n.SetLang("en")
+	en := buildHelpText()
+	i18n.SetLang("ja")
+	ja := buildHelpText()
+
+	if !strings.Contains(en, "COMMANDS:") {
+		t.Error("en help should keep the English COMMANDS: heading")
+	}
+	if !strings.Contains(ja, "コマンド:") {
+		t.Error("ja help should localize the COMMANDS heading to コマンド:")
+	}
+	if strings.Contains(ja, "\nCOMMANDS:") {
+		t.Error("ja help should not contain the untranslated COMMANDS: heading")
+	}
+	// Copy-paste command lines must stay identical (English) in both locales.
+	for _, s := range []string{en, ja} {
+		for _, cmd := range []string{"trumpcards [--lang ja|en] [game]", "trumpcards holdem --color=always | tee g.log"} {
+			if !strings.Contains(s, cmd) {
+				t.Errorf("help must keep the command line %q verbatim", cmd)
+			}
+		}
+	}
+}
+
+// TestCliHelpLocaleParity guards that the ja and en cli_help locale files have
+// exactly the same keys — there is no automated Go i18n parity check, so a
+// missing ja key (which would silently fall back to the key string) is caught
+// here. See issue #4309.
+func TestCliHelpLocaleParity(t *testing.T) {
+	load := func(lang string) map[string]json.RawMessage {
+		b, err := os.ReadFile("../../internal/i18n/locales/" + lang + "/cli_help.json")
+		if err != nil {
+			t.Fatalf("read %s cli_help.json: %v", lang, err)
+		}
+		var m map[string]json.RawMessage
+		if err := json.Unmarshal(b, &m); err != nil {
+			t.Fatalf("parse %s cli_help.json: %v", lang, err)
+		}
+		return m
+	}
+	en, ja := load("en"), load("ja")
+	for k := range en {
+		if _, ok := ja[k]; !ok {
+			t.Errorf("ja/cli_help.json is missing key %q present in en", k)
+		}
+	}
+	for k := range ja {
+		if _, ok := en[k]; !ok {
+			t.Errorf("en/cli_help.json is missing key %q present in ja", k)
+		}
+	}
+}
+
 // TestBuildHelpTextHasExitCodes verifies issue #1556: the top-level --help
 // must document the exit-code policy so CI / cron / scripts can branch on
 // it without reading the source.
 func TestBuildHelpTextHasExitCodes(t *testing.T) {
+	i18n.SetLang("en")
+	t.Cleanup(func() { i18n.SetLang("ja") })
 	helpText := buildHelpText()
 	for _, want := range []string{"EXIT CODES:", " 130 ", " 143 ", " 10 ", " 75 "} {
 		if !strings.Contains(helpText, want) {
@@ -1817,6 +2258,8 @@ func TestBuildHelpTextMentionsVersionSubcommand(t *testing.T) {
 // top-level --help advertises --color=auto|always|never so the new option
 // is discoverable without reading the source.
 func TestBuildHelpTextDocumentsColorTristate(t *testing.T) {
+	i18n.SetLang("en")
+	t.Cleanup(func() { i18n.SetLang("ja") })
 	helpText := buildHelpText()
 	for _, want := range []string{"--color", "auto", "always", "never", "DEPRECATED"} {
 		if !strings.Contains(helpText, want) {
@@ -1870,12 +2313,18 @@ func TestResolveStartGame_UnknownEmitsDidYouMean(t *testing.T) {
 	if !strings.Contains(stderr.String(), "blackjack") {
 		t.Errorf("expected Did-you-mean to mention blackjack; stderr=%q", stderr.String())
 	}
+	// The --start path prints the same recovery hint as the positional path.
+	if !strings.Contains(stderr.String(), "games") || !strings.Contains(stderr.String(), "--help") {
+		t.Errorf("expected recovery hint mentioning 'games' and '--help'; stderr=%q", stderr.String())
+	}
 }
 
 // TestBuildHelpTextDocumentsStartFlag verifies the --start flag is advertised
 // in the top-level help so users discover it without reading the source.
 // See issue #1604.
 func TestBuildHelpTextDocumentsStartFlag(t *testing.T) {
+	i18n.SetLang("en")
+	t.Cleanup(func() { i18n.SetLang("ja") })
 	helpText := buildHelpText()
 	for _, want := range []string{"--start", "Initial game", "--start poker"} {
 		if !strings.Contains(helpText, want) {
@@ -1890,6 +2339,8 @@ func TestBuildHelpTextDocumentsStartFlag(t *testing.T) {
 // Instead it shows a category-grouped summary and points at
 // `trumpcards games` for the full list.
 func TestBuildHelpTextGamesSummaryStaysCompact(t *testing.T) {
+	i18n.SetLang("en")
+	t.Cleanup(func() { i18n.SetLang("ja") })
 	helpText := buildHelpText()
 
 	// The category summary must appear, with a pointer to `games`.

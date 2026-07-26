@@ -11,7 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -24,11 +24,11 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { klondikeWinRate, useKlondikeStats } from '../hooks/useKlondikeStats';
 import { useKlondikeTimer } from '../hooks/useKlondikeTimer';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { KlondikeResponse } from '../types/card';
@@ -38,6 +38,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { KLONDIKE_HELP, parseKlondikeCommand } from '../utils/cli/commands/klondikeCommands';
 import { formatKlondikeState } from '../utils/cli/formatters/klondikeFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -101,7 +102,6 @@ function KlondikePageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('klondike');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -217,10 +217,7 @@ function KlondikePageContent() {
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(handleGiveUp),
-    [requestGiveUpConfirm, handleGiveUp],
-  );
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const actionBindings = useMemo(
     () => [
@@ -285,7 +282,6 @@ function KlondikePageContent() {
       gamePath="/klondike"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -563,11 +559,9 @@ function KlondikePageContent() {
                   );
                 })()}
             </div>
-            {frontendHintEnabled && frontendHint && (
-              <div className="flex justify-center">
-                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-              </div>
-            )}
+            <div className="flex justify-center">
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            </div>
 
             {/* Score display on game clear */}
             {isGameClear && isVegas && (
@@ -608,15 +602,7 @@ function KlondikePageContent() {
             title={tc('settings.title')}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />

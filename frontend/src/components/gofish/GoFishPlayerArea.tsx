@@ -14,7 +14,8 @@ export interface GoFishAskAnnotation {
   triggerKey: string | number;
 }
 
-interface GoFishPlayerAreaProps {
+/** Props for {@link GoFishPlayerArea}. */
+export interface GoFishPlayerAreaProps {
   player: GoFishPlayerData;
   isSelected: boolean;
   onSelect: (idx: number) => void;

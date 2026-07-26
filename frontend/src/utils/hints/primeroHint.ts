@@ -10,11 +10,11 @@ import type { HintResult } from '../../types/hint';
  * `action` (`"call"` / `"raise"` / `"fold"`) mapped to the `targetAction`
  * string, and a `reason` i18n suffix (`strong_hand` / `medium_hand` /
  * `weak_hand`) re-mapped into the frontend HintResult shape so the shared
- * {@link useGameHint} tooltip can render it.
+ * {@link hooks/useGameHint.useGameHint | useGameHint} tooltip can render it.
  */
 export function getPrimeroHint(state: PrimeroResponse): HintResult | null {
   const hint = state.hint;
-  if (!hint || !hint.reason) return null;
+  if (!hint?.reason) return null;
   return {
     targetAction: hint.action,
     reason: `hint.${hint.reason}`,

@@ -8,16 +8,10 @@ vi.mock('react-i18next', async () => ({
   useTranslation: () => ({ t: mockT }),
 }));
 
-const mockReduced = vi.fn(() => false);
-vi.mock('../hooks/useReducedMotion', () => ({
-  useReducedMotion: () => mockReduced(),
-}));
-
 describe('CpuActionToast', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     mockT.mockClear();
-    mockReduced.mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -41,13 +35,13 @@ describe('CpuActionToast', () => {
     expect(mockT).toHaveBeenCalledWith('player.player', { idx: 1 });
   });
 
-  it('auto-dismisses after 5 seconds', () => {
+  it('auto-dismisses after the long duration (6s)', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     render(<CpuActionToast actions={actions} />);
     expect(screen.getByRole('status')).toBeInTheDocument();
 
     act(() => {
-      vi.advanceTimersByTime(4999);
+      vi.advanceTimersByTime(5999);
     });
     expect(screen.getByRole('status')).toBeInTheDocument();
 
@@ -72,13 +66,13 @@ describe('CpuActionToast', () => {
     ];
     rerender(<CpuActionToast actions={actions2} />);
 
-    // 4 more seconds (7s total) — still visible because timer reset
+    // 5s more (8s total) — still visible because the 6s timer reset on the update
     act(() => {
-      vi.advanceTimersByTime(4000);
+      vi.advanceTimersByTime(5000);
     });
     expect(screen.getByRole('status')).toBeInTheDocument();
 
-    // Past the 5s window since last update
+    // Past the 6s window since the last update
     act(() => {
       vi.advanceTimersByTime(1001);
     });
@@ -104,6 +98,14 @@ describe('CpuActionToast', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 
+  it('has a 44x44px close button (WCAG 2.5.5)', () => {
+    const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
+    render(<CpuActionToast actions={actions} />);
+    const btn = screen.getByRole('button', { name: 'button.dismiss' });
+    expect(btn.className).toContain('min-h-[44px]');
+    expect(btn.className).toContain('min-w-[44px]');
+  });
+
   it('dismisses when Escape is pressed', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     render(<CpuActionToast actions={actions} />);
@@ -113,11 +115,12 @@ describe('CpuActionToast', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 
-  it('omits the slide-down animation when prefers-reduced-motion is set', () => {
-    mockReduced.mockReturnValue(true);
+  it('uses an opaque surface background (DESIGN.md Opacity rule)', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     render(<CpuActionToast actions={actions} />);
-    expect(screen.getByRole('status').className).not.toContain('slideDown');
+    const cls = screen.getByRole('status').className;
+    expect(cls).toContain('bg-ds-surface-elevated');
+    expect(cls).not.toContain('bg-black/');
   });
 
   it('does not dismiss on Escape while an aria-modal dialog is open', () => {
@@ -212,8 +215,7 @@ describe('CpuActionToast', () => {
     document.body.removeChild(trigger);
   });
 
-  it('applies the slide-down animation when reduced motion is off', () => {
-    mockReduced.mockReturnValue(false);
+  it('always applies the slide-down animation (reduced motion is handled by CSS)', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     render(<CpuActionToast actions={actions} />);
     expect(screen.getByRole('status').className).toContain('slideDown');

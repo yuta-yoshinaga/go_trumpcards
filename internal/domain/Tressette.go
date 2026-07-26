@@ -18,7 +18,6 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // TressettePlayerCnt トレセッテのプレイヤー数
@@ -421,13 +420,9 @@ func (g *Tressette) trickWinner() int {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *Tressette) getValidPlayIndices(playerIdx int) []int {
 	player := g.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if g.validatePlay(playerIdx, player.GetCard(i)) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -439,20 +434,12 @@ func (g *Tressette) sortAllHands() {
 
 // tressetteSortHand プレイヤーの手札をスート→強さの順にソートする
 func tressetteSortHand(p *TressettePlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return tressetteStrength(cards[i].GetValue()) < tressetteStrength(cards[j].GetValue())
+		return tressetteStrength(ci.GetValue()) < tressetteStrength(cj.GetValue())
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す

@@ -663,13 +663,9 @@ func (g *Calabresella) trickWinner() int {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Calabresella) getValidPlayIndices(playerIdx int) []int {
 	player := g.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if g.validatePlay(playerIdx, player.GetCard(i)) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // isCoalition playerIdx が連合 (非ソリスト) 側か。

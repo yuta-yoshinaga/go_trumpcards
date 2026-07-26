@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -24,8 +24,8 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BakersDozenResponse } from '../types/card';
@@ -35,6 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { BAKERSDOZEN_HELP, parseBakersDozenCommand } from '../utils/cli/commands/bakersdozenCommands';
 import { formatBakersDozenState } from '../utils/cli/formatters/bakersdozenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -91,7 +92,6 @@ function BakersDozenPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('bakersdozen');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -113,29 +113,6 @@ function BakersDozenPageContent() {
   } = useBakersDozenGame();
 
   // Card-move SFX: play `cardPlace` whenever the server confirms a successful
-  // move by advancing moveCount. Keying off moveCount (rather than firing in the
-  // click handler) means illegal moves — which leave moveCount unchanged — stay
-  // silent, and each auto-complete batch that lands a card is also covered.
-  // Respects the global mute via SoundProvider.
-  const prevMoveCountRef = useRef<number | null>(null);
-  useEffect(() => {
-    const moveCount = state?.moveCount;
-    if (moveCount == null) return;
-    if (prevMoveCountRef.current !== null && moveCount > prevMoveCountRef.current) {
-      playSound('cardPlace');
-    }
-    prevMoveCountRef.current = moveCount;
-  }, [state?.moveCount, playSound]);
-
-  // Play a distinct buzz the moment an illegal move / network error surfaces,
-  // so the failure is audible (mirrors PrsiPage; respects the global mute).
-  const prevErrorRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (error && error !== prevErrorRef.current) {
-      playSound('errorBuzz');
-    }
-    prevErrorRef.current = error;
-  }, [error, playSound]);
 
   const {
     hint: frontendHint,
@@ -204,15 +181,11 @@ function BakersDozenPageContent() {
   const handleManualReset = useCallback(() => {
     hideActionLog();
     handleReset();
-    playSound('shuffle');
-  }, [handleReset, hideActionLog, playSound]);
+  }, [handleReset, hideActionLog]);
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(handleGiveUp),
-    [requestGiveUpConfirm, handleGiveUp],
-  );
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const actionBindings = useMemo(
     () => [
@@ -250,7 +223,6 @@ function BakersDozenPageContent() {
       gamePath="/bakersdozen"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -443,11 +415,9 @@ function BakersDozenPageContent() {
                 </div>
               )}
             </div>
-            {frontendHintEnabled && frontendHint && (
-              <div className="flex justify-center">
-                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-              </div>
-            )}
+            <div className="flex justify-center">
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            </div>
 
             {/* Message */}
             <GameMessageBox
@@ -470,15 +440,7 @@ function BakersDozenPageContent() {
             title={tc('settings.title')}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />

@@ -759,7 +759,7 @@ export interface HoldemConfigInput {
 }
 
 /** Command set shared by Hold'em-family games. */
-type HoldemLikeCommand =
+export type HoldemLikeCommand =
   | 'reset'
   | 'fold'
   | 'check'
@@ -775,12 +775,15 @@ type HoldemLikeCommand =
   | 'show';
 
 /** Factory for Hold'em-family APIs that share the same exec pattern. */
-function createHoldemLikeApi<T, C = HoldemConfigInput>(game: string) {
+export function createHoldemLikeApi<T, C = HoldemConfigInput>(game: string) {
   return {
     exec: (command: HoldemLikeCommand, amount?: number, config?: C, humanPlayMs?: number, profile?: unknown) =>
       gameExec<T>(game, { command, amount, humanPlayMs, profile, ...(config as Record<string, unknown>) }),
   };
 }
+
+/** The exec signature shared by every `createHoldemLikeApi` client (issue #4301). */
+export type HoldemLikeExec<T> = ReturnType<typeof createHoldemLikeApi<T>>['exec'];
 
 /** API client for the Texas Hold'em /holdem/exec endpoint. */
 export const holdemApi = createHoldemLikeApi<HoldemResponse>('holdem');
@@ -1072,7 +1075,7 @@ export interface TwoTenJackConfigInput {
 /** API client for the Two Ten Jack /twotenjack/exec endpoint.
  *
  * Argument order mirrors {@link spadesApi}: command, trumpSuit, cardIndex, config.
- * This keeps compatibility with {@link useTrickGameBase} which invokes play as
+ * This keeps compatibility with {@link hooks/useTrickGameBase.useTrickGameBase | useTrickGameBase} which invokes play as
  * `(command, undefined, cardIndex)`.
  */
 export const twoTenJackApi = {
@@ -5171,7 +5174,8 @@ export const kalookiApi = {
   ) => gameExec<KalookiResponse>('kalooki', { command, ...(params ?? {}) }),
 };
 
-const games = [
+/** Every registered game name — the SSoT the {@link Game} union is derived from. */
+export const games = [
   'blackjack',
   'poker',
   'oldmaid',
@@ -5392,7 +5396,8 @@ const games = [
   'koenigrufen',
   'zheng',
 ] as const;
-type Game = (typeof games)[number];
+/** Union of every registered game name — the keys of the `games` list. */
+export type Game = (typeof games)[number];
 
 /** API clients for fetching action logs from each game's /log endpoint. */
 export const actionLogApi: { [K in Game]: () => Promise<ActionLogResponse> } = games.reduce(

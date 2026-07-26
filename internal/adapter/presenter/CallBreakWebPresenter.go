@@ -53,8 +53,8 @@ func (p *CallBreakWebPresenter) buildBase(cb interfaces.CallBreakGame) *controll
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *CallBreakWebPresenter) buildTrickOutput(trick []*domain.CallBreakTrickCard) []*controller.CallBreakWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.CallBreakTrickCard) *controller.CallBreakWebOutputTrickCard {
+func (p *CallBreakWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.CallBreakWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.CallBreakWebOutputTrickCard {
 		return &controller.CallBreakWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
@@ -80,7 +80,7 @@ func (p *CallBreakWebPresenter) buildPlayersOutput(cb interfaces.CallBreakGame) 
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *CallBreakWebPresenter) buildMessage(cb interfaces.CallBreakGame, trick []*domain.CallBreakTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *CallBreakWebPresenter) buildMessage(cb interfaces.CallBreakGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

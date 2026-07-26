@@ -11,7 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -25,7 +25,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -90,7 +89,6 @@ function LetItRidePageContent() {
   const [betAmount, setBetAmount] = useState(100);
 
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(letitrideApi.exec);
   const {
     hint: frontendHint,
@@ -177,7 +175,7 @@ function LetItRidePageContent() {
       gamePath="/letitride"
       gameEndFlag={isEndPhase}
       winShow={isEndPhase && state.result > 0}
-      onCelebrate={() => playSound('winFanfare')}
+      lossShow={isEndPhase && state.result < 0}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -216,9 +214,7 @@ function LetItRidePageContent() {
               {tc('hint.toggle', { ns: 'tutorial' })}
             </label>
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {isBetPhase && (
               <div className="flex flex-col items-center justify-center py-4 gap-4">

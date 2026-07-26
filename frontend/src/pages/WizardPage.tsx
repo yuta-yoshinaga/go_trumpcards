@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
@@ -25,7 +25,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, useWizardGame } from '../hooks/useWizardGame';
-import { useSound } from '../providers/SoundProvider';
 import { badgeErrorColors, badgeInfoColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -40,6 +39,7 @@ import { formatWizardState } from '../utils/cli/formatters/wizardFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { ohHellBidSummary } from '../utils/ohHellBid';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { type WizardBidOutcome, wizardBidAccuracy } from '../utils/wizardBidAccuracy';
 import { isWizardLegalPlay } from '../utils/wizardLegal';
 
@@ -113,7 +113,6 @@ export const WizardPage = withTutorial(WizardPageContent, 'wizard', WIZARD_TUTOR
 function WizardPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('wizard');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -241,7 +240,6 @@ function WizardPageContent() {
       isHumanTurn={isHumanBidTurn || isHumanTurn}
       gamePath="/wizard"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -300,13 +298,7 @@ function WizardPageContent() {
                     })),
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -579,9 +571,7 @@ function WizardPageContent() {
                   : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             <div className="flex gap-2 items-center" data-tutorial="wiz-play-button">
               {(isHumanBidTurn || isHumanTurn) && (
                 <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>

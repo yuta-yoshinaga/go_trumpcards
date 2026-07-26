@@ -23,7 +23,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -270,7 +269,6 @@ function BaccaratPageContent() {
   const { state, loading, error, exec: execApi, retry } = useGameApi(baccaratApi.exec);
   const hintState = useMemo(() => (state ? { ...state, betType } : null), [state, betType]);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('baccarat', hintState);
-  const { playSound } = useSound();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('baccarat');
   const cliConfig: CliGameConfig<BaccaratResponse, Parameters<typeof baccaratApi.exec>> = useMemo(
@@ -379,7 +377,6 @@ function BaccaratPageContent() {
       phaseName={isBetPhase ? t('phase.bet') : t('phase.end')}
       gamePath="/baccarat"
       gameEndFlag={isEndPhase}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

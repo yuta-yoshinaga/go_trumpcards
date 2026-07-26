@@ -28,7 +28,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -40,6 +39,7 @@ import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { evaluateBestHand, pokerHandKey } from '../utils/pokerSquaresUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Seven Card Stud tutorial step definitions. */
 const SCS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -94,7 +94,6 @@ function SevenCardStudPageContent() {
     useGamePageSetup('sevencardstud');
   const phaseNames = usePhaseNames('sevencardstud', SCS_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const isMobile = useIsMobile();
   const { state, loading, error, exec: execApi, retry } = useGameApi(sevenCardStudApi.exec);
 
@@ -264,7 +263,6 @@ function SevenCardStudPageContent() {
       gamePath="/sevencardstud"
       gameEndFlag={phase === SevenCardStudPhase.SHOWDOWN || phase === SevenCardStudPhase.END}
       winShow={phase === SevenCardStudPhase.END}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -376,13 +374,7 @@ function SevenCardStudPageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: hintEnabled,
-                    onToggle: setHintEnabled,
-                  },
+                  hintCheckboxItem(tc, hintEnabled, setHintEnabled),
                   {
                     type: 'checkbox' as const,
                     id: 'cpuMetaAI',

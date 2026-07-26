@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TonkOnDealCelebration } from '../components/TonkOnDealCelebration';
@@ -22,7 +22,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useTonkGame } from '../hooks/useTonkGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, playableCardStyle, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -35,6 +34,7 @@ import { parseTonkCommand, TONK_HELP } from '../utils/cli/commands/tonkCommands'
 import { formatTonkState } from '../utils/cli/formatters/tonkFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { tonkMeldIndices } from '../utils/tonkMeldIndices';
 
 const TONK_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -108,7 +108,6 @@ function TonkPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('tonk', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('tonk');
   const cliConfig: CliGameConfig<TonkResponse, Parameters<typeof tonkApi.exec>> = useMemo(
     () => ({
@@ -195,7 +194,6 @@ function TonkPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/tonk"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -230,13 +228,7 @@ function TonkPageContent() {
                     options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('pointLimit', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -401,9 +393,7 @@ function TonkPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex gap-2 items-center flex-wrap">
               {isDrawPhase && isHumanTurn && (

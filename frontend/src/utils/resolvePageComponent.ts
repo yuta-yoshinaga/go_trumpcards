@@ -1,7 +1,7 @@
 import { type ComponentType, lazy } from 'react';
 
 /** Async loader for one ESM module, returned by `import.meta.glob`. */
-type ModuleLoader = () => Promise<Record<string, ComponentType<unknown>>>;
+export type ModuleLoader = () => Promise<Record<string, ComponentType<unknown>>>;
 
 /**
  * Pulls the named export `<page>Page` out of an already-imported module

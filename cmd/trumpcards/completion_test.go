@@ -33,6 +33,10 @@ func TestWriteBashCompletion(t *testing.T) {
 	assert.Contains(t, script, "--open", "bash completion missing web --open flag")
 	assert.Contains(t, script, "--check", "bash completion missing update --check flag")
 	assert.Contains(t, script, "--dry-run", "bash completion missing update --dry-run flag")
+	// Issue #4308: --category value completion must list every registered
+	// category (including the `extra` bucket the old hardcoded list omitted).
+	assert.Contains(t, script, `compgen -W "`+strings.Join(categoryDisplayNames(), " ")+`"`,
+		"bash --category completion must list all registry categories")
 }
 
 func TestWriteZshCompletion(t *testing.T) {
@@ -53,6 +57,9 @@ func TestWriteZshCompletion(t *testing.T) {
 	assert.Contains(t, script, "--open", "zsh completion missing web --open flag")
 	assert.Contains(t, script, "--check", "zsh completion missing update --check flag")
 	assert.Contains(t, script, "--dry-run", "zsh completion missing update --dry-run flag")
+	// Issue #4308: --category value completion must list every registered category.
+	assert.Contains(t, script, `:category:(`+strings.Join(categoryDisplayNames(), " ")+`)`,
+		"zsh --category completion must list all registry categories")
 }
 
 func TestWriteFishCompletion(t *testing.T) {
@@ -74,6 +81,9 @@ func TestWriteFishCompletion(t *testing.T) {
 	assert.Contains(t, script, "-l open", "fish completion missing web --open flag")
 	assert.Contains(t, script, "-l check", "fish completion missing update --check flag")
 	assert.Contains(t, script, "-l dry-run", "fish completion missing update --dry-run flag")
+	// Issue #4308: --category value completion must list every registered category.
+	assert.Contains(t, script, `-l category -x -a '`+strings.Join(categoryDisplayNames(), " ")+`'`,
+		"fish --category completion must list all registry categories")
 }
 
 // TestCompletionGameTargets_ExcludesSubcommands guards the contract that
@@ -280,7 +290,7 @@ func TestRunHelpCommand_BuiltinSubcommand(t *testing.T) {
 			var stdout, stderr bytes.Buffer
 			code := runHelpCommand([]string{name}, "", &stdout, &stderr)
 			assert.Equal(t, 0, code)
-			assert.Contains(t, stdout.String(), "USAGE:")
+			// The USAGE line names the command regardless of the active locale.
 			assert.Contains(t, stdout.String(), "trumpcards "+name)
 			// Should NOT use the misleading "unknown game" wording.
 			assert.NotContains(t, stderr.String(), "不明なゲーム")
@@ -297,7 +307,7 @@ func TestParseSubFlagsTo_HelpFlag_WritesHelpToStdoutAndExitsZero(t *testing.T) {
 	}, &stdout, &stderr)
 	assert.False(t, ok)
 	assert.Equal(t, 0, code)
-	assert.Contains(t, stdout.String(), "USAGE:")
+	// The USAGE line names the command regardless of the active locale.
 	assert.Contains(t, stdout.String(), "trumpcards web")
 	assert.Empty(t, stderr.String())
 }
@@ -317,13 +327,13 @@ func TestParseSubFlagsTo_UnknownFlag_WritesI18nErrorAndExit2(t *testing.T) {
 }
 
 func TestBuiltinSubcommandHelp_CoversAllNonGameSubcommands(t *testing.T) {
-	expected := []string{"web", "completion", "games", "update", "help"}
-	for _, cmd := range expected {
-		lines, ok := builtinSubcommandHelp[cmd]
-		assert.True(t, ok, "builtinSubcommandHelp missing entry for %q", cmd)
+	for _, cmd := range builtinSubcommandNames {
+		lines, ok := subcommandHelp(cmd)
+		assert.True(t, ok, "subcommandHelp missing entry for %q", cmd)
 		assert.NotEmpty(t, lines, "help lines for %q must not be empty", cmd)
 		joined := strings.Join(lines, "\n")
-		assert.Contains(t, joined, "USAGE:", "%q help must include USAGE: section", cmd)
+		// The USAGE line names the command regardless of the active locale.
+		assert.Contains(t, joined, "trumpcards "+cmd, "%q help must show its usage", cmd)
 	}
 }
 

@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
@@ -25,7 +25,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -37,6 +36,7 @@ import { CATCHTEN_HELP, parseCatchTenCommand } from '../utils/cli/commands/catch
 import { formatCatchTenState } from '../utils/cli/formatters/catchtenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Catch the Ten tutorial step definitions. */
 const CT_TUTORIAL_STEPS: TutorialStep[] = [
@@ -128,13 +128,6 @@ function CatchTenPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('catchten', state);
   const { cardWidth, isMobile } = useCardDimensions();
-  const { playSound } = useSound();
-  // Memoized so WinCelebration's effect (which depends on onCelebrate) does not
-  // re-arm its timer — and replay the fanfare — on every post-win re-render.
-  const handleCelebrate = useCallback(() => {
-    playSound('winFanfare');
-  }, [playSound]);
-
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('catchten');
   const cliConfig: CliGameConfig<CatchTenResponse, Parameters<typeof catchtenApi.exec>> = useMemo(
@@ -263,7 +256,6 @@ function CatchTenPageContent() {
       gamePath="/catchten"
       gameEndFlag={!!state?.gameEndFlag}
       winShow={humanWon}
-      onCelebrate={handleCelebrate}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -299,13 +291,7 @@ function CatchTenPageContent() {
                     options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('pointLimit', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -460,9 +446,7 @@ function CatchTenPageContent() {
               messageParams={state.messageParams}
             />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {/* Action log */}
             <ActionLogSection

@@ -79,9 +79,9 @@ func (m *MockCallBreakGame) GetCurrentPlayerIdx() int {
 	return args.Int(0)
 }
 
-func (m *MockCallBreakGame) GetCurrentTrick() []*domain.CallBreakTrickCard {
+func (m *MockCallBreakGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
-	return args.Get(0).([]*domain.CallBreakTrickCard)
+	return args.Get(0).([]*domain.TrickCard)
 }
 
 func (m *MockCallBreakGame) GetSpadesBroken() bool {

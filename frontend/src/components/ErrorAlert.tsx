@@ -1,6 +1,9 @@
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useOptionalSound } from '../providers/SoundProvider';
 
-interface ErrorAlertProps {
+/** Props for {@link ErrorAlert}. */
+export interface ErrorAlertProps {
   message: string | null;
   onRetry?: () => void;
 }
@@ -8,6 +11,22 @@ interface ErrorAlertProps {
 /** Renders an error alert banner with optional retry button, hidden when message is null. */
 export function ErrorAlert({ message, onRetry }: ErrorAlertProps) {
   const { t } = useTranslation('common');
+
+  // Central errorBuzz tap (sound-centralization design): ErrorAlert is
+  // rendered by ~200 pages, so buzzing here covers every DISPLAYED error
+  // with zero page wiring. Keyed on the message so a persistent error
+  // doesn't re-buzz on every parent re-render.
+  const sound = useOptionalSound();
+  const soundRef = useRef(sound);
+  soundRef.current = sound;
+  const prevMessageRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (message && message !== prevMessageRef.current) {
+      soundRef.current?.playSound('errorBuzz');
+    }
+    prevMessageRef.current = message;
+  }, [message]);
+
   if (!message) return null;
   return (
     <div
@@ -19,7 +38,7 @@ export function ErrorAlert({ message, onRetry }: ErrorAlertProps) {
         <button
           type="button"
           onClick={onRetry}
-          className="px-3 py-1 text-xs font-medium bg-white/20 hover:bg-white/30 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
+          className="px-3 py-1 text-xs font-medium bg-white text-ds-error hover:bg-ds-text-primary hover:text-ds-error-hover rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
         >
           {t('button.retry')}
         </button>

@@ -12,6 +12,13 @@ vi.mock('../api/gameApi', () => ({
 
 const mockPlaySound = vi.fn();
 const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+/**
+ * Counts calls for one sound name. The central taps (useGameApi / GamePageShell)
+ * play through this same mocked context, so aggregate assertions on
+ * mockPlaySound would also count deal/card sounds this page does not own.
+ */
+const soundCalls = (name: string) => mockPlaySound.mock.calls.filter((c) => c[0] === name).length;
+
 vi.mock('../providers/SoundProvider', () => ({
   SoundProvider: ({ children }: { children: React.ReactNode }) => children,
   useSound: () => mockSoundValue,
@@ -241,12 +248,12 @@ describe('SpoonsPage', () => {
     // Mount in the pass phase (window closed) → no chime yet.
     renderWithProviders(<SpoonsPage />);
     const buttons = await screen.findAllByRole('button', { name: /を渡す$/ });
-    expect(mockPlaySound).not.toHaveBeenCalled();
+    expect(soundCalls('turnTick')).toBe(0);
     // Passing a card opens the grab window in the response → chime fires once.
     mockExec.mockResolvedValueOnce(grabState);
     fireEvent.click(buttons[0]);
     await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('turnTick', { pitchVariation: 0.1 }));
-    expect(mockPlaySound).toHaveBeenCalledTimes(1);
+    expect(soundCalls('turnTick')).toBe(1);
   });
 
   it('hides the grab button when the grab window is closed', async () => {
@@ -260,12 +267,12 @@ describe('SpoonsPage', () => {
     const buttons = await screen.findAllByRole('button', { name: /を渡す$/ });
     mockExec.mockResolvedValueOnce(grabState);
     fireEvent.click(buttons[0]);
-    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(soundCalls('turnTick')).toBe(1));
     // A later update that keeps the window open must not chime again.
     mockExec.mockResolvedValueOnce(makeState({ phase: 1, grabWindowOpen: true, drawPileSize: 35 }));
     fireEvent.click(screen.getByRole('button', { name: 'スプーンを取る！' }));
     await waitFor(() => expect(screen.getByText(/山札: 35/)).toBeInTheDocument());
-    expect(mockPlaySound).toHaveBeenCalledTimes(1);
+    expect(soundCalls('turnTick')).toBe(1);
   });
 
   it('shows the next round button at round end and dispatches next', async () => {

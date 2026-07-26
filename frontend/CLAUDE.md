@@ -30,7 +30,7 @@ Shared building blocks:
 | `useGameApi(apiFn, opts)` | Server-state management with loading / error / retry |
 | `GamePageShell` | Background + heading + phase indicator + reset dialog wrapper (most pages use this) |
 | `TutorialWrapper` | Tutorial provider + i18n init (always wraps the exported `XPage`) |
-| `useCliMode` + `useCliGame` + `<CliTerminal>` + `<CliToggle>` | CLI fallback mode, available on most pages (~191). Per-game parsing/formatting lives in `src/utils/cli/commands/<game>Commands.ts` + `src/utils/cli/formatters/<game>Formatter.ts` |
+| `useCliMode` + `useCliGame` + `<CliTerminal>` + `<CliToggle>` | CLI fallback mode, available on most pages. Per-game parsing/formatting lives in `src/utils/cli/commands/<game>Commands.ts` + `src/utils/cli/formatters/<game>Formatter.ts` |
 
 ## Package Manager Rule
 
@@ -119,6 +119,47 @@ All exported symbols (types, interfaces, functions, components, constants, hooks
 bun run build && bun run check && bun run test
 ```
 
+## Type checking
+
+**Always type-check with `bun run typecheck`. Never with a bare `tsc` / `bunx tsc`.**
+
+`tsc` is the only gate that catches type errors — `bun run check` is Biome only,
+and vitest transpiles without checking. Two TypeScript versions are installed on
+purpose:
+
+| Dependency | Version | Used by |
+|---|---|---|
+| `typescript` | 5.9 | `bun run docs:generate` (typedoc), editors, vitest's type surface |
+| `typescript7` (npm alias) | 7.0 | `bun run typecheck` — the gate, and `bun run build`'s first half |
+
+TypeScript 7 is the native (Go) compiler and type-checks this project in ~5s
+versus ~46s for 5.9, which matters because the commit hook in
+`.claude/settings.json` runs the gate on every commit that stages a `.ts`/`.tsx`
+file. TypeScript 5.9 has to stay because **typedoc cannot run on 7** — it depends
+on compiler internals the rewrite does not expose
+([TypeStrong/typedoc#3098](https://github.com/TypeStrong/typedoc/issues/3098),
+no timeline), and the generated docs are published to GitHub Pages by
+`deploy-pages.yml`. Alternatives such as api-extractor depend on the same
+internals, so switching tools would not help.
+
+The catch that makes the "never a bare `tsc`" rule load-bearing:
+`node_modules/.bin/tsc` points at **5.9**, so `bunx tsc -b` silently runs the
+slow compiler rather than the one the gate uses. `bun run typecheck` names the
+aliased binary explicitly. Both versions tolerate each other's
+`.tsbuildinfo` (they rebuild on a version mismatch rather than failing), so
+running one after the other is safe.
+
+Verified equivalent, not assumed: with deliberate errors injected, both versions
+reported the same diagnostics — five core `strict` cases (assignment, return
+type, `satisfies`, readonly violation, possibly-undefined) plus this project's
+less common flags, `verbatimModuleSyntax` (TS1484) and `erasableSyntaxOnly`
+(TS1294).
+
+The one behavioural difference found: an unresolvable **side-effect** import
+(`noUncheckedSideEffectImports`) is `TS2307` on 5.9 but `TS2882` on 7 — the code
+dedicated to that flag. Both error, so nothing is silently skipped, but do not
+match on the code if you ever script against tsc output.
+
 ## Tutorial System
 
 ### Key components
@@ -130,7 +171,7 @@ bun run build && bun run check && bun run test
 | `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; renders overlay (used internally by TutorialWrapper) |
 | `TutorialOverlay` | `src/components/tutorial/TutorialOverlay.tsx` | Full-screen overlay with SVG mask spotlight |
 | `useTutorial` | `src/hooks/useTutorial.ts` | State management (step progression, localStorage, resume/restart) |
-| `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hints; registry-driven via `hintFactories` (covers ~all games, currently 193). The supported set is the `HintGameName` union (`keyof typeof hintFactories`) — add a game by registering its factory there |
+| `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hints; registry-driven via `hintFactories` (covers nearly all games; currently 193). The supported set is the `HintGameName` union (`keyof typeof hintFactories`) — add a game by registering its factory there |
 | `TutorialSuggestDialog` | `src/components/tutorial/TutorialSuggestDialog.tsx` | First-visit dialog; controlled by `useFirstVisit` hook |
 | `TutorialProgressPanel` | `src/components/tutorial/TutorialProgressPanel.tsx` | Progress overview in NavBar |
 

@@ -3,7 +3,8 @@ import { btnSecondary } from '../styles/buttonStyles';
 import type { ActionLogEntry } from '../types/card';
 import { ActionLogPanel } from './ActionLogPanel';
 
-interface ActionLogSectionProps {
+/** Props for {@link ActionLogSection}. */
+export interface ActionLogSectionProps {
   isEndPhase: boolean;
   actionLog: ActionLogEntry[] | null;
   showActionLog: () => void;

@@ -11,7 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
@@ -24,8 +24,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useFreeCellGame } from '../hooks/useFreeCellGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, FreeCellResponse } from '../types/card';
@@ -37,6 +37,7 @@ import { formatFreecellState } from '../utils/cli/formatters/freecellFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { freeCellAutoCompleteReady } from '../utils/freeCellAutoComplete';
 import { freeCellFoundationTarget } from '../utils/freeCellFoundationTarget';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -93,7 +94,6 @@ function FreeCellPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('freecell');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -165,10 +165,7 @@ function FreeCellPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(handleGiveUp),
-    [requestGiveUpConfirm, handleGiveUp],
-  );
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const actionBindings = useMemo(
     () => [
@@ -220,7 +217,6 @@ function FreeCellPageContent() {
       gamePath="/freecell"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -492,11 +488,9 @@ function FreeCellPageContent() {
                 {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <div className="flex justify-center">
-                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-              </div>
-            )}
+            <div className="flex justify-center">
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            </div>
 
             <GameMessageBox
               message={state.message}
@@ -517,15 +511,7 @@ function FreeCellPageContent() {
             title={tc('settings.title')}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />

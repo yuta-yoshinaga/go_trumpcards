@@ -126,10 +126,18 @@ func isValidHostname(s string) bool {
 // #1554), the legacy `--no-color` deprecated alias, and the NO_COLOR env var
 // (https://no-color.org/) into per-stream color settings. Precedence:
 //
-//  1. NO_COLOR=<any non-empty value>     => never (POSIX-spec forces off)
-//  2. --color=never  OR  --no-color      => never
-//  3. --color=always                     => always
+//  1. --color=never  OR  --no-color      => never (explicit opt-out wins)
+//  2. --color=always                     => always (explicit opt-in; beats NO_COLOR)
+//  3. NO_COLOR=<any non-empty value>     => never (user default, unless an
+//     explicit --color=always overrode it above)
 //  4. --color=auto (default) or unset    => per-stream TTY detect
+//
+// An explicit `--color=always` intentionally overrides NO_COLOR: NO_COLOR is a
+// user "disable by default" preference, and the no-color.org FAQ (plus ripgrep /
+// git / grep) hold that an explicit command-line color request takes precedence.
+// NO_COLOR still disables color for every other invocation, so environments that
+// export it and never pass --color=always are unaffected. This reverses the
+// original issue-#1554 order (see issue #4310).
 //
 // Returns (exitCode, ok). Returns (2, false) on an unrecognized --color value;
 // the caller should propagate the exit code. The value comparison is
@@ -138,10 +146,11 @@ func isValidHostname(s string) bool {
 // message is rendered via i18n on stderr.
 func applyColorMode(mode string, noColorFlag bool, noColorEnv string, stdoutFd, stderrFd uintptr, stderr io.Writer) (int, bool) {
 	resolved := strings.ToLower(strings.TrimSpace(mode))
+	explicitAlways := resolved == "always" // user asked for color on the command line
 	switch {
-	case noColorEnv != "":
-		resolved = "never"
 	case noColorFlag:
+		resolved = "never"
+	case noColorEnv != "" && !explicitAlways:
 		resolved = "never"
 	case resolved == "":
 		resolved = "auto"
@@ -182,6 +191,42 @@ func validCategory(s string) bool {
 	return validCategoryNames[s]
 }
 
+// categoryDisplayNames returns the canonical category names in display order
+// (casino, classic, solo, extra), sourced from games.AllCategories() so the
+// help/usage text listing the `--category` values cannot drift from the
+// registry when a category is added. See issue #4308.
+func categoryDisplayNames() []string {
+	cats := games.AllCategories()
+	names := make([]string, len(cats))
+	for i, c := range cats {
+		names[i] = c.String()
+	}
+	return names
+}
+
+// categoryFilterPipe is the accepted `--category` values joined by "|"
+// (e.g. "casino|classic|solo|extra"), for compact usage strings.
+var categoryFilterPipe = strings.Join(categoryDisplayNames(), "|")
+
+// categoryFilterProse is the same list as an English clause with an Oxford
+// "or" (e.g. "casino, classic, solo, or extra"), for prose descriptions.
+var categoryFilterProse = joinOr(categoryDisplayNames())
+
+// joinOr renders items as an English list with an Oxford "or": one item as-is,
+// two joined by " or ", three+ comma-separated with a trailing ", or ".
+func joinOr(items []string) string {
+	switch len(items) {
+	case 0:
+		return ""
+	case 1:
+		return items[0]
+	case 2:
+		return items[0] + " or " + items[1]
+	default:
+		return strings.Join(items[:len(items)-1], ", ") + ", or " + items[len(items)-1]
+	}
+}
+
 // flagSetVisited reports whether any of the named flags was explicitly set
 // on fs. This lets the caller distinguish "user did not pass --port" from
 // "user passed --port 0" without needing a sentinel value in the integer
@@ -205,8 +250,6 @@ func main() {
 }
 
 func run() int {
-	helpText := buildHelpText()
-
 	// Route parse errors through i18n. Default is ExitOnError with English
 	// output to stderr; switch to ContinueOnError + a discarded sink so we
 	// own error rendering. We also suppress FlagSet.Usage — the flag package
@@ -233,6 +276,11 @@ func run() int {
 	// not English.
 	i18n.SetLang(detectBootstrapLang(os.Args[1:], os.Getenv("LANG")))
 
+	// buildHelpText reads i18n keys, so it must run after SetLang (issue #4309).
+	// detectBootstrapLang already accounts for --lang in os.Args, so `--help`
+	// and flag-error output render in the requested locale.
+	helpText := buildHelpText()
+
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		// NB: -h / --help are registered above so flag.Parse handles them
 		// itself and returns nil; flag.ErrHelp is therefore unreachable here.
@@ -248,10 +296,10 @@ func run() int {
 
 	// Color control: tristate --color=auto|always|never (issue #1554) plus the
 	// legacy --no-color flag (kept as a deprecated alias for --color=never)
-	// and the NO_COLOR env var (https://no-color.org/, which the spec defines
-	// as "presence => disable" and therefore overrides --color=always).
-	// Precedence: NO_COLOR > --color=never (or --no-color) > --color=always >
-	// --color=auto (per-stream TTY detect, the historical default).
+	// and the NO_COLOR env var (https://no-color.org/).
+	// Precedence: --color=never (or --no-color) > --color=always > NO_COLOR >
+	// --color=auto (per-stream TTY detect, the historical default). An explicit
+	// --color=always overrides NO_COLOR per the no-color.org FAQ (issue #4310).
 	if code, ok := applyColorMode(*colorMode, *noColorFlag, os.Getenv("NO_COLOR"), os.Stdout.Fd(), os.Stderr.Fd(), os.Stderr); !ok {
 		return code
 	}
@@ -311,25 +359,22 @@ func run() int {
 		fmt.Fprintln(os.Stderr, i18n.Tf("cliUnsupportedLang", "lang", langFlagWarn))
 		fmt.Fprintln(os.Stderr, i18n.T("cliSupportedLangs"))
 	}
+	// subArgs holds the subcommand's own arguments after the dispatch loop has
+	// stripped any trailing global flags (--lang/--color/--no-color/-q) via
+	// applyTrailingGlobalFlags. The subcommand handler closures below capture it
+	// by reference; it is assigned just before the handler runs (issue #4306).
+	var subArgs []string
+
 	// Build game commands from the registry (single source of truth).
 	commands := buildGameCommands()
 	commands["games"] = func() int {
 		var short, aliases, asJSON bool
 		var category string
-		// quietSink absorbs `-q`/`--quiet` when placed after the subcommand
-		// name so Go's FlagSet does not reject it as an unknown flag. The
-		// outer `quiet` was already resolved before subcommand dispatch
-		// and is the source of truth for behavior; this binding only
-		// exists so subcommand parsing does not exit 2 on a recognized
-		// global flag (PR #1582 review).
-		var quietSink bool
-		fs, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
+		fs, code, ok := parseSubFlags("games", subArgs, func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print game names only")
 			f.BoolVar(&aliases, "aliases", false, "With --short, also print each alias on its own line (long output always includes aliases inline)")
 			f.BoolVar(&asJSON, "json", false, "Emit machine-readable JSON (array of {name, category, description, aliases})")
-			f.StringVar(&category, "category", "", "Filter by category: casino|classic|solo")
-			f.BoolVar(&quietSink, "quiet", quiet, "Accepted for consistency with the global flag; the global -q already applied")
-			f.BoolVar(&quietSink, "q", quiet, "Accepted for consistency with the global flag; the global -q already applied (shorthand)")
+			f.StringVar(&category, "category", "", "Filter by category: "+categoryFilterPipe)
 		})
 		if !ok {
 			return code
@@ -358,11 +403,8 @@ func run() int {
 	}
 	commands["completion"] = func() int {
 		var noHint bool
-		var quietSink bool // see comment on the games subcommand
-		fs, code, ok := parseSubFlags("completion", func(f *flag.FlagSet) {
+		fs, code, ok := parseSubFlags("completion", subArgs, func(f *flag.FlagSet) {
 			f.BoolVar(&noHint, "no-hint", false, "Suppress installation hint comments (also implied when stdout is not a TTY)")
-			f.BoolVar(&quietSink, "quiet", quiet, "Accepted for consistency with the global flag; the global -q already applied")
-			f.BoolVar(&quietSink, "q", quiet, "Accepted for consistency with the global flag; the global -q already applied (shorthand)")
 		})
 		if !ok {
 			return code
@@ -371,11 +413,11 @@ func run() int {
 		return runCompletion(fs.Args(), stdoutIsTTY, noHint)
 	}
 	commands["help"] = func() int {
-		return runHelpCommand(flag.Args()[1:], helpText, os.Stdout, os.Stderr)
+		return runHelpCommand(subArgs, helpText, os.Stdout, os.Stderr)
 	}
 	commands["version"] = func() int {
 		var short bool
-		_, code, ok := parseSubFlags("version", func(f *flag.FlagSet) {
+		_, code, ok := parseSubFlags("version", subArgs, func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print version number only (machine-readable)")
 		})
 		if !ok {
@@ -390,14 +432,11 @@ func run() int {
 	}
 	commands["update"] = func() int {
 		var yes, check bool
-		var quietSink bool // see comment on the games subcommand
-		_, code, ok := parseSubFlags("update", func(f *flag.FlagSet) {
+		_, code, ok := parseSubFlags("update", subArgs, func(f *flag.FlagSet) {
 			f.BoolVar(&yes, "yes", false, "Skip confirmation prompt")
 			f.BoolVar(&yes, "y", false, "Skip confirmation prompt (shorthand)")
 			f.BoolVar(&check, "check", false, "Check for an update without installing (prints latest tag, status, current to stdout)")
 			f.BoolVar(&check, "dry-run", false, "Alias for --check")
-			f.BoolVar(&quietSink, "quiet", quiet, "Accepted for consistency with the global flag; the global -q already applied")
-			f.BoolVar(&quietSink, "q", quiet, "Accepted for consistency with the global flag; the global -q already applied (shorthand)")
 		})
 		if !ok {
 			return code
@@ -425,13 +464,16 @@ func run() int {
 		var port int
 		var host string
 		var openBrowser bool
-		webQuiet := quiet // inherit TRUMPCARDS_QUIET env var as default
-		fs, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
+		// webQuiet inherits TRUMPCARDS_QUIET and any trailing -q/--quiet: the
+		// dispatch loop already folded a trailing -q into `quiet` (and stripped
+		// it from subArgs) via applyTrailingGlobalFlags, so web needs no -q flag
+		// of its own — it just reads the resolved value. The web help text still
+		// documents -q (the cli_help.sub_web help text).
+		webQuiet := quiet
+		fs, code, ok := parseSubFlags("web", subArgs, func(f *flag.FlagSet) {
 			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080; 0 for OS-assigned ephemeral)")
 			f.IntVar(&port, "p", 0, "Port number for the web server (shorthand)")
 			f.StringVar(&host, "host", "", "Bind address for the web server (default: 127.0.0.1; use 0.0.0.0 to expose)")
-			f.BoolVar(&webQuiet, "quiet", webQuiet, "Suppress human-friendly startup/shutdown messages (structured slog still emitted)")
-			f.BoolVar(&webQuiet, "q", webQuiet, "Suppress human-friendly startup/shutdown messages (shorthand)")
 			f.BoolVar(&openBrowser, "open", false, "Open the resolved URL in the default browser after the server is ready (silently skipped when stderr is not a TTY)")
 			f.BoolVar(&openBrowser, "o", false, "Open the resolved URL in the default browser (shorthand)")
 		})
@@ -529,26 +571,28 @@ func run() int {
 		arg = canonical
 	}
 	if handler, ok := commands[arg]; ok {
+		// Apply --lang / --color / --no-color / -q when they land after the
+		// command name so `trumpcards <game|subcmd> --lang en` matches the
+		// prepositional form. quiet is passed by pointer because a trailing -q
+		// must update the caller's value. See issues #1509, #4306.
+		trailing := applyTrailingGlobalFlags(flag.Args()[1:], &quiet, os.Stderr)
 		if !subFlagCommands[arg] {
-			// Apply --lang / --no-color / -q when they land after the game name
-			// so `trumpcards <game> --lang en` and `trumpcards <game> -q`
-			// match the prepositional form. Done before the help short-circuit
-			// so `<game> --lang en --help` renders help in the requested locale.
-			// quiet is passed by pointer because a trailing -q must update the
-			// caller's value (otherwise the extras warning below would still
-			// fire after the user asked for silence).
-			extras := applyTrailingGlobalFlags(flag.Args()[1:], &quiet, os.Stderr)
 			// `<game> --help` / `<game> -h`: Go's flag package stops parsing at
 			// the first non-flag argument, so these trailing flags land in Args().
 			// Intercept them and print that game's help instead of launching the
 			// game. Subcommands in subFlagCommands are handled by parseSubFlags
 			// (which catches flag.ErrHelp).
-			if hasHelpFlag(extras) {
+			if hasHelpFlag(trailing) {
 				return runHelpCommand([]string{arg}, helpText, os.Stdout, os.Stderr)
 			}
-			if len(extras) > 0 && !quiet {
-				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(extras, " ")))
+			if len(trailing) > 0 && !quiet {
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(trailing, " ")))
 			}
+		} else {
+			// Subcommands parse their own flags from the stripped remainder, so
+			// --lang/--color/-q now work uniformly after any subcommand (#4306),
+			// not just the -q that used to be absorbed by per-command sinks.
+			subArgs = trailing
 		}
 		return handler()
 	}
@@ -558,9 +602,13 @@ func run() int {
 		if suggestion := cuiutil.SuggestCommand(arg, suggestionCandidates(commands), 2); suggestion != "" {
 			fmt.Fprintf(os.Stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
 		}
-		fmt.Fprintln(os.Stderr)
-		flag.Usage()
-		return 1
+		// A one-line recovery hint instead of re-dumping the full help (which
+		// buries the error). Note flag.Usage is a no-op here (SetOutput was
+		// pointed at io.Discard above), so the old flag.Usage() call rendered
+		// nothing but a stray blank line. Exit 2 (usage error) to match the
+		// `--start <unknown>` path (resolveStartGame) and the EXIT CODES table.
+		fmt.Fprintln(os.Stderr, i18n.T("cliUnknownGameHint"))
+		return 2
 	}
 
 	// No argument: start interactive multi-game mode (defaults to blackjack).
@@ -608,163 +656,51 @@ func resolveStartGame(flagValue string, stderr io.Writer) (string, int, bool) {
 	if suggestion := cuiutil.SuggestCommand(v, helpSuggestionCandidates(), 2); suggestion != "" {
 		_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
 	}
+	// Same one-line recovery hint as the top-level positional-arg path, so a
+	// far-off `--start` typo with no Did-you-mean suggestion still has a way
+	// forward. Keeps the two unknown-game entry points consistent.
+	_, _ = fmt.Fprintln(stderr, i18n.T("cliUnknownGameHint"))
 	return "", 2, false
 }
 
-// builtinSubcommandHelp maps non-game subcommand names to their Usage/Flags/Examples
-// help text. Used by both `trumpcards help <cmd>` and `trumpcards <cmd> --help`.
-var builtinSubcommandHelp = map[string][]string{
-	"web": {
-		"USAGE:",
-		"  trumpcards web [--port PORT] [--host HOST] [--quiet] [--open]",
-		"",
-		"FLAGS:",
-		"  -p, --port PORT   Port number (default: 8080; 0 = OS-assigned ephemeral; env PORT)",
-		"      --host HOST   Bind address (default: 127.0.0.1; use 0.0.0.0 to expose; env HOST)",
-		"  -q, --quiet       Suppress human-friendly startup/shutdown messages",
-		"                    (implied when stderr is not a TTY; structured slog logs still emitted)",
-		"  -o, --open        Open the resolved URL in the default browser after the server is",
-		"                    ready. Uses xdg-open / open / cmd-start. Silently skipped when",
-		"                    stderr is not a TTY (SSH/Docker/CI). Issue #1607.",
-		"",
-		"NETWORK EXPOSURE:",
-		"  Binding to a non-loopback host (0.0.0.0, ::, a LAN IP, etc.) prints a one-line",
-		"  WARNING on stderr after the listening banner so the operator notices that the",
-		"  server is reachable from other machines on the LAN/VPN. The warning is suppressed",
-		"  by --quiet / TRUMPCARDS_QUIET=1, and slog's structured 'web server listening'",
-		"  event always fires regardless. The default 127.0.0.1 bind never warns.",
-		"",
-		"EXIT CODES:",
-		"    0  Server exited cleanly without receiving a signal",
-		"    1  Server start failure (includes EADDRINUSE / port already in use —",
-		"       systemd / Docker `restart: on-failure` should retry on this code)",
-		"    2  Usage error (unknown flag, --port out of range, or invalid --host)",
-		"  130  Graceful shutdown triggered by SIGINT (Ctrl+C)  (128 + 2)",
-		"  143  Graceful shutdown triggered by SIGTERM  (128 + 15)",
-		"",
-		"EXAMPLES:",
-		"  trumpcards web",
-		"  trumpcards web --port 3000",
-		"  trumpcards web --port 0            # start on any free port; see startup log for actual port",
-		"  trumpcards web --open              # start on default port and open the browser",
-		"  trumpcards web --port 0 --open     # ephemeral port + auto-open (no need to read the log)",
-		"  trumpcards web --host 0.0.0.0      # exposes on all interfaces; prints exposure warning",
-		"  trumpcards web --quiet             # systemd / docker friendly (no exposure warning either)",
-		"  HOST=0.0.0.0 PORT=3000 trumpcards web",
-	},
-	"update": {
-		"USAGE:",
-		"  trumpcards update [--yes]",
-		"  trumpcards update --check",
-		"",
-		"FLAGS:",
-		"  -y, --yes     Skip confirmation prompt (required for non-interactive stdin)",
-		"      --check   Check for an update without installing. Writes a tab-separated",
-		"                summary '<latest-tag>\\t<status>\\t<current>' (status: latest |",
-		"                available | dev) to stdout, and a human-friendly message to",
-		"                stderr. Never prompts, never downloads. Safe in CI / cron.",
-		"      --dry-run Alias for --check.",
-		"",
-		"EXIT CODES:",
-		"   0  Success (already latest or updated; --check: already latest or dev build)",
-		"   2  Usage error (non-interactive without --yes)",
-		"   3  Network / release API failure",
-		"   4  No binary for this platform",
-		"   5  Archive extraction failure",
-		"   6  Binary apply failure (permissions, disk, integrity)",
-		"  10  --check: a newer version is available (non-error signal for scripts)",
-		"  75  User declined the prompt",
-		"   1  Unexpected error",
-		"",
-		"EXAMPLES:",
-		"  trumpcards update",
-		"  trumpcards update --yes",
-		"  trumpcards update --check                   # prints latest tag to stdout; exits 10 when newer",
-		"  trumpcards update --check | cut -f1          # latest tag only (e.g. v2.3.1)",
-		"  if trumpcards update --check; then           # exit 0 means already latest",
-		"    echo 'up to date'; fi",
-	},
-	"completion": {
-		"USAGE:",
-		"  trumpcards completion <bash|zsh|fish> [--no-hint]",
-		"",
-		"FLAGS:",
-		"      --no-hint   Suppress installation hint comments in the output",
-		"                  (implied when stdout is not a TTY, e.g. shell redirection)",
-		"",
-		"EXIT CODES:",
-		"  0  Script written successfully",
-		"  1  Write error (e.g. broken pipe, full disk)",
-		"  2  Usage error (missing shell argument or unsupported shell name)",
-		"",
-		"EXAMPLES:",
-		"  source <(trumpcards completion bash)",
-		"  trumpcards completion bash > /etc/bash_completion.d/trumpcards",
-		"  trumpcards completion zsh > \"${fpath[1]}/_trumpcards\"",
-		"  trumpcards completion fish > ~/.config/fish/completions/trumpcards.fish",
-	},
-	"games": {
-		"USAGE:",
-		"  trumpcards games [--short] [--aliases] [--json] [--category casino|classic|solo]",
-		"",
-		"FLAGS:",
-		"      --short              Print game names only (for scripting)",
-		"      --aliases            With --short, also print each alias on its own line",
-		"                           (long output always includes aliases inline)",
-		"      --json               Emit machine-readable JSON: an array of",
-		"                           {name, category, description, aliases}.",
-		"                           aliases is always [] (never null) for stable schema.",
-		"                           Combines with --category; --short / --aliases have no",
-		"                           effect in JSON mode (the schema is fixed) and emit a",
-		"                           one-line warning to stderr if used together.",
-		"      --category CAT       Restrict output to one Cloudflare Worker category:",
-		"                           casino, classic, or solo. Combinable with --short / --json.",
-		"                           Invalid value exits 2.",
-		"",
-		"EXIT CODES:",
-		"  0  List printed successfully",
-		"  1  --json: encoding error while writing the JSON array",
-		"  2  Usage error (unknown flag, invalid --category value)",
-		"",
-		"EXAMPLES:",
-		"  trumpcards games",
-		"  trumpcards games --short",
-		"  trumpcards games --short --aliases",
-		"  trumpcards games --category casino",
-		"  trumpcards games --json | jq -r '.[] | select(.category==\"solo\") | .name'",
-		"  trumpcards games --json --category classic",
-	},
-	"help": {
-		"USAGE:",
-		"  trumpcards help [game|command]",
-		"",
-		"EXIT CODES:",
-		"  0  Help printed (top-level, a known game, or a known subcommand)",
-		"  1  Unknown game / command name (a 'did you mean…' hint is offered when close)",
-		"",
-		"EXAMPLES:",
-		"  trumpcards help",
-		"  trumpcards help blackjack",
-		"  trumpcards help web",
-	},
-	"version": {
-		"USAGE:",
-		"  trumpcards version [--short]",
-		"",
-		"FLAGS:",
-		"      --short   Print the version number only (machine-readable)",
-		"",
-		"EXIT CODES:",
-		"  0  Version printed successfully",
-		"  2  Usage error (unknown flag)",
-		"",
-		"EXAMPLES:",
-		"  trumpcards version              # full info: trumpcards <ver> (commit: <sha>, built: <date>)",
-		"  trumpcards version --short      # just the version (e.g. 1.2.3)",
-		"",
-		"NOTES:",
-		"  Equivalent to the global --version / -V flag (and --version-short for --short).",
-	},
+// builtinSubcommandNames lists the non-game subcommands that have dedicated
+// help text (served by subcommandHelp). Kept as a static, locale-independent
+// slice so did-you-mean suggestion candidates do not depend on the active
+// language.
+var builtinSubcommandNames = []string{"web", "update", "completion", "games", "help", "version"}
+
+// subcommandHelpKeys maps each builtin subcommand to its cli_help locale key.
+var subcommandHelpKeys = map[string]string{
+	"web":        "cli_help.sub_web",
+	"update":     "cli_help.sub_update",
+	"completion": "cli_help.sub_completion",
+	"games":      "cli_help.sub_games",
+	"help":       "cli_help.sub_help",
+	"version":    "cli_help.sub_version",
+}
+
+// subcommandHelp returns the localized help lines for a builtin subcommand and
+// whether name is one. The text is sourced from the cli_help locale file so it
+// tracks the active language (issue #4309); the `games` entry injects the
+// registry-derived --category value lists. Used by both `trumpcards help <cmd>`
+// and `trumpcards <cmd> --help`.
+func subcommandHelp(name string) ([]string, bool) {
+	key, ok := subcommandHelpKeys[name]
+	if !ok {
+		return nil, false
+	}
+	// Only the games help carries {{catPipe}}/{{catProse}} placeholders.
+	if name == "games" {
+		return splitHelpLines(i18n.Tf(key, "catPipe", categoryFilterPipe, "catProse", categoryFilterProse)), true
+	}
+	return splitHelpLines(i18n.T(key)), true
+}
+
+// splitHelpLines splits a help blob into printable lines, dropping the single
+// trailing newline the blob ends with so callers do not emit a spurious blank
+// final line (each line is later printed with fmt.Fprintln).
+func splitHelpLines(text string) []string {
+	return strings.Split(strings.TrimSuffix(text, "\n"), "\n")
 }
 
 // runHelpCommand implements the `trumpcards help [game]` subcommand.
@@ -794,7 +730,7 @@ func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) in
 			return 0
 		}
 	}
-	if lines, ok := builtinSubcommandHelp[target]; ok {
+	if lines, ok := subcommandHelp(target); ok {
 		for _, line := range lines {
 			_, _ = fmt.Fprintln(stdout, line)
 		}
@@ -813,7 +749,7 @@ func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) in
 // alias (e.g. `gni` -> `gin`) instead of a far-off canonical name. See
 // issue #1555.
 func helpSuggestionCandidates() []string {
-	capacity := len(ui.GameNames()) + len(builtinSubcommandHelp) + len(ui.GameAliases)
+	capacity := len(ui.GameNames()) + len(builtinSubcommandNames) + len(ui.GameAliases)
 	seen := make(map[string]struct{}, capacity)
 	out := make([]string, 0, capacity)
 	add := func(name string) {
@@ -826,7 +762,7 @@ func helpSuggestionCandidates() []string {
 	for _, name := range ui.GameNames() {
 		add(name)
 	}
-	for name := range builtinSubcommandHelp {
+	for _, name := range builtinSubcommandNames {
 		add(name)
 	}
 	for alias := range ui.GameAliases {
@@ -861,11 +797,12 @@ func suggestionCandidates(commands map[string]func() int) []string {
 	return out
 }
 
-// parseSubFlags creates a FlagSet, applies setup, parses subcommand args, and
+// parseSubFlags creates a FlagSet, applies setup, parses the given subcommand
+// args (already stripped of trailing global flags by the dispatch loop), and
 // warns about extra positional arguments. Returns (fs, exitCode, ok). If ok is
 // false, the caller should return exitCode immediately.
-func parseSubFlags(name string, setup func(*flag.FlagSet)) (*flag.FlagSet, int, bool) {
-	return parseSubFlagsTo(name, flag.Args()[1:], setup, os.Stdout, os.Stderr)
+func parseSubFlags(name string, args []string, setup func(*flag.FlagSet)) (*flag.FlagSet, int, bool) {
+	return parseSubFlagsTo(name, args, setup, os.Stdout, os.Stderr)
 }
 
 // parseSubFlagsTo is the testable core of parseSubFlags: it parses args with a
@@ -876,13 +813,18 @@ func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdo
 	fs.SetOutput(io.Discard) // suppress Go's raw English error/usage text
 	setup(fs)
 	printHelp := func() {
-		if lines, ok := builtinSubcommandHelp[name]; ok {
+		if lines, ok := subcommandHelp(name); ok {
 			for _, line := range lines {
 				_, _ = fmt.Fprintln(stdout, line)
 			}
 		}
 	}
-	fs.Usage = printHelp
+	// Suppress the FlagSet's internal Usage callback: flag.Parse invokes it on
+	// *any* parse error, which would dump the full help to stdout before our
+	// localized error reaches stderr (and would double-print it on -h/--help,
+	// where the ErrHelp branch below already calls printHelp). Mirrors the
+	// top-level flag.CommandLine.Usage = func(){} in run(). See issue #4307.
+	fs.Usage = func() {}
 	if err := fs.Parse(args); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			printHelp()
@@ -982,11 +924,11 @@ func trailingFlagAny(arg string, names ...string) (inlineVal string, hasInline, 
 //
 // Color resolution is deferred to the end of the scan and dispatched
 // through `applyColorMode` (the SSoT) so the precedence rule matches the
-// top-level flag exactly: --no-color (or --color=never) beats
-// --color=always regardless of token order, and NO_COLOR env beats
-// everything (PR #1583 review). An invalid trailing --color value emits
-// the localized warning but does NOT abort the launched session — the
-// ambient state is already valid and a late typo shouldn't kill a game
+// top-level flag exactly: --no-color (or --color=never) beats --color=always
+// regardless of token order, an explicit --color=always beats NO_COLOR, and
+// NO_COLOR beats everything else (issues #1583, #4310). An invalid trailing
+// --color value emits the localized warning but does NOT abort the session —
+// the ambient state is already valid and a late typo shouldn't kill a game
 // that's about to run; applyColorMode's exit code is therefore
 // intentionally discarded here.
 //
@@ -1158,19 +1100,15 @@ const gameCategoryPreview = 5
 func buildHelpText() string {
 	var sb strings.Builder
 	categories := games.AllCategories()
-	categoryNames := make([]string, len(categories))
-	for i, c := range categories {
-		categoryNames[i] = c.String()
-	}
-	fmt.Fprintf(&sb, `USAGE:
-  trumpcards [--lang ja|en] [game]
-  trumpcards --help
-
-GAMES:
-  %d games across %d categories. Run 'trumpcards games' for the full list,
-  or 'trumpcards games --category <%s>' to filter.
-
-`, len(ui.GameRegistry()), len(categories), strings.Join(categoryNames, "|"))
+	// USAGE + GAMES intro (localized; the game/category counts and the accepted
+	// --category values are injected so they stay in lockstep with the registry).
+	sb.WriteString(i18n.T("cli_help.usage"))
+	sb.WriteString(i18n.Tf("cli_help.gamesIntro",
+		"gameCount", strconv.Itoa(len(ui.GameRegistry())),
+		"catCount", strconv.Itoa(len(categories)),
+		"catPipe", categoryFilterPipe))
+	// Category summary block: language-neutral data (category name, count, and a
+	// preview of game names), so it is built here rather than translated.
 	for _, cat := range categories {
 		entries := games.ByCategory(cat)
 		preview := make([]string, 0, gameCategoryPreview)
@@ -1186,90 +1124,11 @@ GAMES:
 		}
 		fmt.Fprintf(&sb, "  %-8s (%2d)  %s%s\n", cat.String(), len(entries), strings.Join(preview, ", "), more)
 	}
-	sb.WriteString(`
-COMMANDS:
-  games        List all available games (--short for names only; with --short, --aliases adds alias lines)
-  help [game]  Show this help, or a specific game's help text
-  completion   Generate shell completion script (bash, zsh, fish)
-  update       Self-update to the latest version
-  version      Show version information (equivalent to --version; --short for machine-readable)
-  web          Start REST API + web GUI server
-
-  (no argument) Interactive mode with game switching
-
-OPTIONS:
-  -h, --help        Show this help message
-  --start GAME      Initial game for interactive mode (no positional arg).
-                    Aliases accepted (e.g. --start gin → ginrummy). Silently
-                    ignored when a positional game name is given. An unknown
-                    name exits 2 with a Did-you-mean suggestion. Default: blackjack.
-  --lang ja|en      Language (default: ja)
-  --color MODE      Color output mode: auto (default), always, never
-                    auto:    enable when stdout/stderr is a TTY (per stream)
-                    always:  force-enable even when piped (e.g. for tee or less -R)
-                    never:   force-disable
-                    Matches git/ls/grep convention. Use instead of --no-color.
-                    Precedence: NO_COLOR env > --color=never (or --no-color)
-                    > --color=always > --color=auto (https://no-color.org/).
-  --no-color        DEPRECATED alias for --color=never. Will be removed in a
-                    future release; prefer --color=never.
-  -q, --quiet       Suppress non-essential output (banners, locale fallback warnings,
-                    and the network-exposure warning printed by 'web --host 0.0.0.0').
-                    Errors still go to stderr. Equivalent to TRUMPCARDS_QUIET=1.
-  -V, --version     Show version information
-  --version-short   Print version number only (machine-readable)
-
-EXAMPLES:
-  trumpcards                     Start interactive mode (switch games with 'switch <game>')
-  trumpcards --start poker       Start interactive mode with poker as the initial game
-  trumpcards --start gin         Same — aliases are accepted (gin → ginrummy)
-  trumpcards blackjack           Play BlackJack
-  trumpcards blackjack --help    Show BlackJack's in-game commands
-  trumpcards --lang en poker     Play Poker in English
-  trumpcards poker --lang en     Same — global flags also accepted after the game name
-  trumpcards blackjack --no-color    Play BlackJack with color disabled (legacy)
-  trumpcards blackjack --color=never  Same — preferred form
-  trumpcards holdem | tee g.log       --color defaults to auto so the pipe disables color
-  trumpcards holdem --color=always | tee g.log  Keep color even when piping
-  trumpcards games               List all available games
-  trumpcards games --short       List game names only (for scripting)
-  trumpcards games --short --aliases  List game names including aliases
-  trumpcards games --json        Machine-readable list (name, category, description, aliases)
-  trumpcards games --category solo  Filter by Cloudflare Worker category (casino|classic|solo)
-  trumpcards update              Self-update to the latest version
-  trumpcards update --yes        Update without confirmation prompt
-  trumpcards update --check      Report whether an update is available (exit 10 if yes)
-  trumpcards --version-short     Print just the version number (e.g. 1.2.3)
-  NO_COLOR=1 trumpcards hearts   Play Hearts without color output
-  trumpcards web                 Start the web GUI server (binds to 127.0.0.1)
-  trumpcards web --port 3000     Start the web GUI on port 3000
-  trumpcards web --port 0        Start on an OS-assigned ephemeral port (see startup log)
-  trumpcards web --host 0.0.0.0  Expose the web GUI on all interfaces
-  source <(trumpcards completion bash)   Enable bash completion
-
-ENVIRONMENT VARIABLES:
-  NO_COLOR          Disable color output on both stdout and stderr when set
-                    (see https://no-color.org/)
-                    Example: NO_COLOR=1 trumpcards blackjack
-  TRUMPCARDS_QUIET  Suppress non-essential output when set to a non-empty value
-                    (equivalent to --quiet/-q). Errors still go to stderr.
-                    Example: TRUMPCARDS_QUIET=1 trumpcards update --yes
-  HOST              Bind address for the web server (default: 127.0.0.1)
-                    Example: HOST=0.0.0.0 trumpcards web
-  PORT              Port number for the web server (default: 8080)
-                    Example: PORT=3000 trumpcards web
-
-EXIT CODES:
-   0  Success (normal exit, EOF, or 'exit' command)
-   1  General error (e.g., web server failed to start, interactive input read error)
-   2  Usage error (invalid flags, unknown category, missing required argument)
-  10  'update --check': a newer version is available (non-error signal for scripts)
-  75  'update': user declined the confirmation prompt
- 130  Terminated by SIGINT (Ctrl+C; POSIX 128 + 2)
- 143  Terminated by SIGTERM (POSIX 128 + 15)
-
-  See 'trumpcards help update' for update-specific exit codes (3, 4, 5, 6).
-`)
+	sb.WriteString(i18n.T("cli_help.commands"))
+	sb.WriteString(i18n.T("cli_help.options"))
+	sb.WriteString(i18n.Tf("cli_help.examples", "catPipe", categoryFilterPipe))
+	sb.WriteString(i18n.T("cli_help.envVars"))
+	sb.WriteString(i18n.T("cli_help.exitCodes"))
 	return sb.String()
 }
 
@@ -1336,16 +1195,21 @@ func detectBootstrapLang(args []string, langEnv string) string {
 // games.Category matches; the caller is expected to have validated category
 // via validCategory before invoking. See issue #1535.
 func printGames(short, aliases bool, category string, w io.Writer) {
+	if short {
+		printGamesShort(aliases, category, w)
+		return
+	}
+	printGamesLong(category, w)
+}
+
+// printGamesShort prints one game name per line (and, with aliases=true, each
+// alias on its own line), flat and unadorned so scripts can consume it. Honors
+// the --category filter.
+func printGamesShort(aliases bool, category string, w io.Writer) {
 	var reverseAliases map[string][]string
-	if !short || aliases {
+	if aliases {
 		reverseAliases = buildReverseAliases()
 	}
-
-	var descs map[string]string
-	if !short {
-		descs = ui.GameDescriptions()
-	}
-
 	// Only build the category index when a filter is active — otherwise the
 	// allocation is wasted because the gating predicate below is a no-op.
 	var categoryByName map[string]string
@@ -1356,15 +1220,50 @@ func printGames(short, aliases bool, category string, w io.Writer) {
 		if category != "" && categoryByName[name] != category {
 			continue
 		}
-		if short {
-			_, _ = fmt.Fprintln(w, name)
-			if aliases {
-				for _, alias := range reverseAliases[name] {
-					_, _ = fmt.Fprintln(w, alias)
-				}
+		_, _ = fmt.Fprintln(w, name)
+		if aliases {
+			for _, alias := range reverseAliases[name] {
+				_, _ = fmt.Fprintln(w, alias)
 			}
-		} else {
-			line := fmt.Sprintf("  %-16s %s", name, descs[name])
+		}
+	}
+}
+
+// printGamesLong prints the human-facing game list grouped by Cloudflare Worker
+// category, with an uppercase "CATEGORY (N):" heading before each group. The
+// name column is sized to the longest displayed name so long names (e.g.
+// ultimatetexasholdem, 19 chars) no longer push the description column out of
+// alignment on their row. Honors the --category filter (then only the matching
+// group prints). See issue #4311.
+func printGamesLong(category string, w io.Writer) {
+	reverseAliases := buildReverseAliases()
+	descs := ui.GameDescriptions()
+	categoryByName := gameCategoryByName()
+
+	// Bucket names by category, preserving GameNames() order within each group,
+	// and track the widest displayed name for a single shared column width
+	// (keeps the description column aligned across every group).
+	namesByCategory := make(map[string][]string)
+	width := 0
+	for _, name := range ui.GameNames() {
+		cat := categoryByName[name]
+		if category != "" && cat != category {
+			continue
+		}
+		namesByCategory[cat] = append(namesByCategory[cat], name)
+		if len(name) > width {
+			width = len(name)
+		}
+	}
+
+	for _, cat := range games.AllCategories() {
+		names := namesByCategory[cat.String()]
+		if len(names) == 0 {
+			continue
+		}
+		_, _ = fmt.Fprintf(w, "%s (%d):\n", strings.ToUpper(cat.String()), len(names))
+		for _, name := range names {
+			line := fmt.Sprintf("  %-*s %s", width, name, descs[name])
 			if aliasList := reverseAliases[name]; len(aliasList) > 0 {
 				line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliasList, ", "))
 			}

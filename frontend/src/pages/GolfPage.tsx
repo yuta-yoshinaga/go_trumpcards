@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -23,6 +23,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useGolfGame } from '../hooks/useGolfGame';
 import {
   countGolfRemaining,
@@ -32,7 +33,6 @@ import {
   golfNineHoleTotal,
   useGolfNineHole,
 } from '../hooks/useGolfNineHole';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { GolfResponse } from '../types/card';
@@ -43,6 +43,7 @@ import { GOLF_HELP, parseGolfCommand } from '../utils/cli/commands/golfCommands'
 import { formatGolfState } from '../utils/cli/formatters/golfFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isGolfAdjacent } from '../utils/hints/golfHint';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Golf Solitaire tutorial step definitions. */
 const GOLF_TUTORIAL_STEPS: TutorialStep[] = [
@@ -97,7 +98,6 @@ function GolfPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('golf');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -138,10 +138,7 @@ function GolfPageContent() {
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(handleGiveUp),
-    [requestGiveUpConfirm, handleGiveUp],
-  );
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const actionBindings = useMemo(
     () => [
@@ -217,7 +214,6 @@ function GolfPageContent() {
       gamePath="/golf"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -441,9 +437,7 @@ function GolfPageContent() {
             />
           </div>
 
-          {frontendHintEnabled && frontendHint && (
-            <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-          )}
+          <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
           {/* Settings */}
           <SettingsPanel
@@ -451,13 +445,7 @@ function GolfPageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                   {
                     type: 'checkbox' as const,
                     id: 'golfNineHole',

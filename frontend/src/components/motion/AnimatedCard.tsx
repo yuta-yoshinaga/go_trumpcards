@@ -5,7 +5,8 @@ import { useOptionalSound } from '../../providers/SoundProvider';
 import { dealSpring, hoverLift, selectLift } from '../../styles/motionPresets';
 import { CardImage } from '../CardImage';
 
-interface AnimatedCardProps extends React.ComponentProps<typeof CardImage> {
+/** Props for {@link AnimatedCard}. */
+export interface AnimatedCardProps extends React.ComponentProps<typeof CardImage> {
   /** Stagger delay in seconds for deal animation. */
   dealDelay?: number;
   /** Whether this card is selected (lift + glow). */

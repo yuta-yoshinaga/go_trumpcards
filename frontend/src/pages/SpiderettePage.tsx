@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -22,10 +22,10 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSpideretteGame } from '../hooks/useSpideretteGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SpideretteResponse } from '../types/card';
@@ -35,6 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSpideretteCommand, SPIDERETTE_HELP } from '../utils/cli/commands/spideretteCommands';
 import { formatSpideretteState } from '../utils/cli/formatters/spideretteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const SPDT_TUTORIAL_STEPS: TutorialStep[] = [
@@ -82,7 +83,6 @@ function SpiderettePageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('spiderette');
-  const { playSound } = useSound();
   const game = useSpideretteGame();
   const {
     state,
@@ -157,10 +157,7 @@ function SpiderettePageContent() {
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(handleGiveUp),
-    [requestGiveUpConfirm, handleGiveUp],
-  );
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const actionBindings = useMemo(
     () => [
@@ -207,7 +204,6 @@ function SpiderettePageContent() {
       gamePath="/spiderette"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -360,11 +356,9 @@ function SpiderettePageContent() {
                 {t('hintAvailable')}: {t('tableau')} {hint.fromCol} [{hint.cardIndex}] → {t('tableau')} {hint.toCol}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <div className="flex justify-center">
-                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-              </div>
-            )}
+            <div className="flex justify-center">
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            </div>
 
             {/* Announce the empty-column deal guard for screen readers; the key
             forces a remount on each blocked attempt so it re-announces, mirroring
@@ -398,15 +392,7 @@ function SpiderettePageContent() {
             title={tc('settings.title')}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />

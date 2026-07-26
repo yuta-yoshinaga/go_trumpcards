@@ -4,6 +4,22 @@ import { holdemBestFive } from './holdemBestFive';
 
 const c = (design: Card['design'], value: number): Card => ({ design, value });
 
+/**
+ * Calls {@link holdemBestFive} and narrows away the `null` return.
+ *
+ * Every case below except the explicit "fewer than 5 cards" one expects a
+ * hand, so the alternative is a `!` on each call — which Biome flags, and
+ * whose auto-fix (`?.`) would only push the `undefined` into the assertions
+ * and fail tsc. Throwing here keeps the call sites clean and turns a
+ * regression that starts returning null into a named failure rather than a
+ * "cannot read property of undefined".
+ */
+const bestFive = (cards: Card[]): number[] => {
+  const picked = holdemBestFive(cards);
+  if (picked === null) throw new Error('holdemBestFive unexpectedly returned null');
+  return picked;
+};
+
 describe('holdemBestFive', () => {
   it('returns null for fewer than 5 cards', () => {
     expect(holdemBestFive([c('SPADE', 2), c('CLOVER', 3)])).toBeNull();
@@ -19,7 +35,7 @@ describe('holdemBestFive', () => {
       c('SPADE', 7),
       c('SPADE', 3),
     ];
-    const picked = holdemBestFive(cards)!;
+    const picked = bestFive(cards);
     const values = picked.map((i) => cards[i].value).sort((a, b) => a - b);
     // Quad 9s + highest available kicker (7).
     expect(values).toEqual([7, 9, 9, 9, 9]);
@@ -35,7 +51,7 @@ describe('holdemBestFive', () => {
       c('HEART', 4),
       c('HEART', 6),
     ];
-    const picked = holdemBestFive(cards)!.map((i) => cards[i]);
+    const picked = bestFive(cards).map((i) => cards[i]);
     expect(picked.every((card) => card.design === 'SPADE')).toBe(true);
   });
 
@@ -49,7 +65,7 @@ describe('holdemBestFive', () => {
       c('HEART', 9),
       c('CLOVER', 10),
     ];
-    const picked = holdemBestFive(cards)!
+    const picked = bestFive(cards)
       .map((i) => cards[i].value)
       .sort((a, b) => a - b);
     expect(picked).toEqual([1, 2, 3, 4, 5]);
@@ -65,7 +81,7 @@ describe('holdemBestFive', () => {
       c('CLOVER', 7),
       c('HEART', 2),
     ];
-    const picked = holdemBestFive(cards)!
+    const picked = bestFive(cards)
       .map((i) => cards[i].value)
       .sort((a, b) => a - b);
     // Pair of 10s plus K, 9, 7 kickers.
@@ -83,7 +99,7 @@ describe('holdemBestFive', () => {
       c('HEART', 13),
       c('HEART', 1), // Ace high
     ];
-    const picked = holdemBestFive(cards)!.map((i) => cards[i]);
+    const picked = bestFive(cards).map((i) => cards[i]);
     expect(picked.every((card) => card.design === 'HEART')).toBe(true);
   });
 });

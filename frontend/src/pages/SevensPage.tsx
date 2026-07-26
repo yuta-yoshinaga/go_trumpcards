@@ -11,7 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
@@ -23,7 +23,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
-import { useSound } from '../providers/SoundProvider';
 import { badgeSuccess, badgeWarning } from '../styles/badgeStyles';
 import { btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -34,6 +33,7 @@ import { parseSevensCommand, SEVENS_HELP } from '../utils/cli/commands/sevensCom
 import { formatSevensState } from '../utils/cli/formatters/sevensFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { actionDesc, listJokerPlacements } from '../utils/sevensUtils';
 
 /** Sevens tutorial step definitions. */
@@ -61,7 +61,6 @@ export const SevensPage = withTutorial(SevensPageContent, 'sevens', SV_TUTORIAL_
 function SevensPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('sevens');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -288,13 +287,7 @@ function SevensPageContent() {
           ],
           onSelect: (v) => handleConfigChange('maxPasses', String(v)),
         },
-        {
-          type: 'checkbox',
-          id: 'frontendHint',
-          label: tc('hint.toggle', { ns: 'tutorial' }),
-          checked: frontendHintEnabled,
-          onToggle: setFrontendHintEnabled,
-        },
+        hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
       ],
     },
   ];
@@ -307,7 +300,6 @@ function SevensPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/sevens"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -445,9 +437,7 @@ function SevensPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="text-center">
               <GameResetButton

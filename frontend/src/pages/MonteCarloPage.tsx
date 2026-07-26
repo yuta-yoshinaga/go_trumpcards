@@ -7,7 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -15,6 +15,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
@@ -25,6 +26,7 @@ import { MonteCarloPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { countRemovablePairs } from '../utils/montecarloRemovablePairs';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SIZE = 5;
 
@@ -128,11 +130,10 @@ function MonteCarloPageContent() {
       const isValidPair =
         firstCard != null && firstCard.value === cell.card.value && isAdjacent(selected, { row, col });
       void execApi('remove', selected.row, selected.col, row, col);
-      playSound('cardPlace');
       if (isValidPair) flashPairRemoved();
       setSelected(null);
     },
-    [execApi, flashPairRemoved, isPlaying, playSound, selected, state],
+    [execApi, flashPairRemoved, isPlaying, selected, state],
   );
 
   const handleDeal = useCallback(() => {
@@ -153,17 +154,13 @@ function MonteCarloPageContent() {
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(handleGiveUp),
-    [requestGiveUpConfirm, handleGiveUp],
-  );
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
     void execApi('reset');
     setSelected(null);
-    playSound('shuffle');
-  }, [execApi, hideActionLog, playSound]);
+  }, [execApi, hideActionLog]);
 
   const dealHintActive = frontendHintEnabled && frontendHint?.targetAction === 'deal';
 
@@ -180,7 +177,6 @@ function MonteCarloPageContent() {
       gamePath="/montecarlo"
       gameEndFlag={!state || gameEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -215,15 +211,7 @@ function MonteCarloPageContent() {
             title={tc('settings.title', { ns: 'common' })}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -349,9 +337,7 @@ function MonteCarloPageContent() {
 
           <GameFooter className={`${gameTheme.montecarlo.footer} px-4 py-2.5`}>
             <ErrorAlert message={error} onRetry={retry} />
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="mc-controls">
               {isPlaying && (
                 <>

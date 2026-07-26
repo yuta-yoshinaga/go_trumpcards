@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // CourtPieceHandSize 各プレイヤーの手札枚数
@@ -58,12 +57,6 @@ type CourtPieceHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// CourtPieceTrickCard トリック中の1枚
-type CourtPieceTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // CourtPiece Court Piece ゲームクラス
 type CourtPiece struct {
 	trumpCards       *TrumpCards
@@ -73,7 +66,7 @@ type CourtPiece struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*CourtPieceTrickCard
+	currentTrick     []*TrickCard
 	trumpSuit        int // 0 = 未宣言、それ以外は CardDesign 値
 	callerIdx        int // 呼び手 (Hakim) のインデックス
 	leadPlayerIdx    int
@@ -423,10 +416,10 @@ func (c *CourtPiece) GetCurrentPlayerIdx() int { return c.currentPlayerIdx }
 func (c *CourtPiece) SetCurrentPlayerIdx(idx int) { c.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (c *CourtPiece) GetCurrentTrick() []*CourtPieceTrickCard { return c.currentTrick }
+func (c *CourtPiece) GetCurrentTrick() []*TrickCard { return c.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (c *CourtPiece) SetCurrentTrick(trick []*CourtPieceTrickCard) { c.currentTrick = trick }
+func (c *CourtPiece) SetCurrentTrick(trick []*TrickCard) { c.currentTrick = trick }
 
 // GetTrumpSuit トランプスート取得 (0 = 未宣言)
 func (c *CourtPiece) GetTrumpSuit() int { return c.trumpSuit }
@@ -558,7 +551,7 @@ func (c *CourtPiece) findHumanIdx() int {
 
 // playCard カードをプレイする共通処理
 func (c *CourtPiece) playCard(playerIdx int, card *Card) {
-	c.currentTrick = append(c.currentTrick, &CourtPieceTrickCard{
+	c.currentTrick = append(c.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -608,33 +601,7 @@ func courtPieceRank(v int) int {
 //   - 任意のトランプが出ていれば最高トランプの勝ち。
 //   - そうでなければリードスート最高の勝ち。
 func (c *CourtPiece) trickWinner() int {
-	if len(c.currentTrick) == 0 {
-		return 0
-	}
-	leadSuit := c.currentTrick[0].Card.GetDesign()
-	winnerIdx := c.currentTrick[0].PlayerIdx
-	winnerRank := courtPieceRank(c.currentTrick[0].Card.GetValue())
-	winnerIsTrump := c.currentTrick[0].Card.GetDesign() == c.trumpSuit
-
-	for _, tc := range c.currentTrick[1:] {
-		isTrump := tc.Card.GetDesign() == c.trumpSuit
-		r := courtPieceRank(tc.Card.GetValue())
-		switch {
-		case isTrump && !winnerIsTrump:
-			winnerIdx = tc.PlayerIdx
-			winnerRank = r
-			winnerIsTrump = true
-		case isTrump && winnerIsTrump:
-			if r > winnerRank {
-				winnerIdx = tc.PlayerIdx
-				winnerRank = r
-			}
-		case !isTrump && !winnerIsTrump && tc.Card.GetDesign() == leadSuit && r > winnerRank:
-			winnerIdx = tc.PlayerIdx
-			winnerRank = r
-		}
-	}
-	return winnerIdx
+	return ResolveTrickWinner(c.currentTrick, c.trumpSuit, func(cd *Card) int { return courtPieceRank(cd.GetValue()) })
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -646,20 +613,12 @@ func (c *CourtPiece) sortAllHands() {
 
 // courtPieceSortHand プレイヤーの手札をスート→値の順にソートする
 func courtPieceSortHand(p *CourtPiecePlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return courtPieceRank(cards[i].GetValue()) < courtPieceRank(cards[j].GetValue())
+		return courtPieceRank(ci.GetValue()) < courtPieceRank(cj.GetValue())
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す
@@ -704,14 +663,9 @@ func (c *CourtPiece) playHintReason(playerIdx, chosenIdx int) string {
 // getValidPlayIndices プレイ可能なカードのインデックスリスト
 func (c *CourtPiece) getValidPlayIndices(playerIdx int) []int {
 	player := c.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if c.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return c.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- CPU AI ---
@@ -1008,7 +962,7 @@ type courtPieceJSON struct {
 	RoundNumber      int                    `json:"rn"`
 	TrickNumber      int                    `json:"tn"`
 	CurrentPlayerIdx int                    `json:"ci"`
-	CurrentTrick     []*CourtPieceTrickCard `json:"ct"`
+	CurrentTrick     []*TrickCard           `json:"ct"`
 	TrumpSuit        int                    `json:"ts"`
 	CallerIdx        int                    `json:"ka"`
 	LeadPlayerIdx    int                    `json:"li"`
@@ -1111,7 +1065,7 @@ func (c *CourtPiece) UnmarshalJSON(data []byte) error {
 	c.currentPlayerIdx = j.CurrentPlayerIdx
 	c.currentTrick = j.CurrentTrick
 	if c.currentTrick == nil {
-		c.currentTrick = make([]*CourtPieceTrickCard, 0)
+		c.currentTrick = make([]*TrickCard, 0)
 	}
 	c.trumpSuit = j.TrumpSuit
 	c.callerIdx = j.CallerIdx

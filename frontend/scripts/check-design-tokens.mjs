@@ -69,4 +69,26 @@ if (violations.length > 0) {
   process.exit(1);
 }
 
+// Reduced-motion SSoT guard (issue #4315): prefers-reduced-motion must be
+// enforced by a single universal block, not a class-name allowlist that
+// silently misses arbitrary animate-[…] utilities and future animations.
+const indexCss = await readFile(join(SRC_DIR, 'index.css'), 'utf8');
+const rmIdx = indexCss.indexOf('@media (prefers-reduced-motion: reduce)');
+// Read to the at-rule's own closing brace — the only `}` in column 0 after it,
+// since the nested `*` rule closes indented. This used to slice a fixed 400
+// characters, which silently failed the moment a comment was added inside the
+// block: the declarations it looks for slid past the window and the guard
+// reported the SSoT block missing when it was right there.
+const rmEnd = rmIdx === -1 ? -1 : indexCss.indexOf('\n}', rmIdx);
+const rmBlock = rmIdx === -1 || rmEnd === -1 ? '' : indexCss.slice(rmIdx, rmEnd + 2);
+if (!rmBlock.includes('*,') || !rmBlock.includes('animation-duration: 0.01ms')) {
+  console.error(
+    '\nreduced-motion: index.css must enforce prefers-reduced-motion with a universal\n' +
+      '(`*, *::before, *::after`) block that near-zeroes animation/transition durations,\n' +
+      'not a per-class allowlist. See DESIGN.md Motion section and issue #4315.',
+  );
+  process.exit(1);
+}
+
 console.log(`design-tokens: OK (${files.length} source files scanned, test files skipped).`);
+console.log('reduced-motion: OK (index.css uses the universal prefers-reduced-motion block).');

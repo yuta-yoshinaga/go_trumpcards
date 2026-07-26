@@ -10,12 +10,12 @@ import type { HintResult } from '../../types/hint';
  * `lead_high`, `lead_low`, `follow_win`, `follow_duck`, `give_partner`,
  * `discard_low`, `bid_entrar`, `bid_solo`, or `bid_pass`). This adapter re-maps
  * that server hint into the frontend HintResult shape so the shared
- * {@link useGameHint} tooltip can render it. The `targetAction` is fixed to
+ * {@link hooks/useGameHint.useGameHint | useGameHint} tooltip can render it. The `targetAction` is fixed to
  * `play` because every hint ultimately points the player at a card.
  */
 export function getOmbreHint(state: OmbreResponse): HintResult | null {
   const hint = state.hint;
-  if (!hint || !hint.reason) return null;
+  if (!hint?.reason) return null;
   return {
     targetAction: 'play',
     reason: `hint.${hint.reason}`,

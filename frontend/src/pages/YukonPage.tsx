@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -24,9 +24,9 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { YukonResponse } from '../types/card';
@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseYukonCommand, YUKON_HELP } from '../utils/cli/commands/yukonCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { isInMoveBlock, isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -113,7 +114,6 @@ function YukonPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('yukon');
-  const { playSound } = useSound();
   const {
     state,
     setState,
@@ -184,8 +184,7 @@ function YukonPageContent() {
   // Action handlers
   const handleManualReset = useCallback(() => {
     void apiExec('reset');
-    playSound('shuffle');
-  }, [apiExec, playSound]);
+  }, [apiExec]);
 
   const handleGiveUp = useCallback(() => {
     void apiExec('giveup');
@@ -193,10 +192,7 @@ function YukonPageContent() {
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(handleGiveUp),
-    [requestGiveUpConfirm, handleGiveUp],
-  );
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const handleHint = useCallback(async () => {
     const res = await yukonApi.exec('hint');
@@ -239,9 +235,8 @@ function YukonPageContent() {
       if (!selectedSource) return;
       void apiExec('move', selectedSource, { zone, col });
       setSelectedSource(null);
-      playSound('cardPlace');
     },
-    [apiExec, selectedSource, playSound],
+    [apiExec, selectedSource],
   );
 
   const isPlayingForKbd = state?.phase === YukonPhase.PLAYING;
@@ -316,15 +311,7 @@ function YukonPageContent() {
             title={tc('settings.title', { ns: 'common' })}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -513,9 +500,7 @@ function YukonPageContent() {
                 {t('hintAnnouncement', { card: hintCardName, dest: hintDest })}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
               isEndPhase={isEnded}

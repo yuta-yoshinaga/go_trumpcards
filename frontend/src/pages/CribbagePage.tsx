@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -23,7 +23,6 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCribbageGame } from '..
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -36,6 +35,7 @@ import { CRIBBAGE_HELP, parseCribbageCommand } from '../utils/cli/commands/cribb
 import { formatCribbageState } from '../utils/cli/formatters/cribbageFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const CRIBBAGE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [CribbagePhase.DISCARD]: 'discard',
@@ -194,7 +194,6 @@ function CribbagePageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('cribbage', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('cribbage');
   const cliConfig: CliGameConfig<CribbageResponse, Parameters<typeof cribbageApi.exec>> = useMemo(
@@ -326,7 +325,6 @@ function CribbagePageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/cribbage"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -361,13 +359,7 @@ function CribbagePageContent() {
                     options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('pointLimit', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -626,9 +618,7 @@ function CribbagePageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex gap-2 items-center flex-wrap">
               {isDiscardPhase && isHumanTurn && (

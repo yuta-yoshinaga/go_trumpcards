@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
-interface WinCelebrationProps {
+/** Props for {@link WinCelebration}. */
+export interface WinCelebrationProps {
   /** Whether to show the celebration animation. */
   show: boolean;
   /** Delay in ms before particles appear. Default: 400 (the "tension beat"). */

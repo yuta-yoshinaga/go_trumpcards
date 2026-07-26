@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
@@ -24,7 +24,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKingAlbertGame } from '../hooks/useKingAlbertGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { KingAlbertResponse } from '../types/card';
@@ -34,6 +33,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { KINGALBERT_HELP, parseKingAlbertCommand } from '../utils/cli/commands/kingalbertCommands';
 import { formatKingAlbertState } from '../utils/cli/formatters/kingalbertFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -95,7 +95,6 @@ function KingAlbertPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('kingalbert');
-  const { playSound } = useSound();
   const game = useKingAlbertGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
 
@@ -325,7 +324,6 @@ function KingAlbertPageContent() {
       gamePath="/kingalbert"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -416,11 +414,9 @@ function KingAlbertPageContent() {
                 </div>
               )}
             </div>
-            {frontendHintEnabled && frontendHint && (
-              <div className="flex justify-center">
-                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-              </div>
-            )}
+            <div className="flex justify-center">
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            </div>
 
             <GameMessageBox
               message={state.message}
@@ -449,15 +445,7 @@ function KingAlbertPageContent() {
             title={tc('settings.title')}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />

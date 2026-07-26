@@ -2,7 +2,8 @@ import { useTranslation } from 'react-i18next';
 import type { GoFishBook } from '../../types/card';
 import { valueName } from '../../utils/cardUtils';
 
-interface GoFishBooksDisplayProps {
+/** Props for {@link GoFishBooksDisplay}. */
+export interface GoFishBooksDisplayProps {
   books: GoFishBook[];
 }
 

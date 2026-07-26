@@ -1,6 +1,26 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { SoundProvider, useSound } from '../providers/SoundProvider';
 import { BettingControls } from './BettingControls';
+
+// Track plays per sound file so the chip-sound tests can assert WHICH sound
+// fired (the global setup.ts mock can't distinguish Howl instances).
+const { playCalls } = vi.hoisted(() => ({ playCalls: [] as string[] }));
+vi.mock('howler', () => ({
+  Howl: class MockHowl {
+    private src: string;
+    constructor(opts: { src: string[] }) {
+      this.src = opts.src[0];
+    }
+    play() {
+      playCalls.push(this.src);
+      return 1;
+    }
+    volume() {}
+    rate() {}
+  },
+  Howler: { ctx: { state: 'running' } },
+}));
 
 function makeProps(overrides: Partial<Parameters<typeof BettingControls>[0]> = {}) {
   return {
@@ -325,6 +345,67 @@ describe('BettingControls', () => {
       expect(screen.getByRole('button', { name: '1/2 Pot' })).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Pot' })).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Max' })).toBeDisabled();
+    });
+  });
+
+  describe('central chip sound + exec claim', () => {
+    /** Captures the live sound context so tests can inspect the claim token. */
+    function Probe({ onReady }: { onReady: (ctx: ReturnType<typeof useSound>) => void }) {
+      onReady(useSound());
+      return null;
+    }
+
+    function renderWithSound(props: Parameters<typeof BettingControls>[0]) {
+      let ctx!: ReturnType<typeof useSound>;
+      render(
+        <SoundProvider>
+          <Probe
+            onReady={(c) => {
+              ctx = c;
+            }}
+          />
+          <BettingControls {...props} />
+        </SoundProvider>,
+      );
+      return () => ctx;
+    }
+
+    it.each([
+      ['ベット', {}],
+      ['コール', { hasOutstandingBet: true }],
+      ['レイズ', { hasOutstandingBet: true }],
+      ['オールイン', {}],
+    ])('plays chipClick and claims the exec sound on %s', (label, overrides) => {
+      playCalls.length = 0;
+      const getCtx = renderWithSound(makeProps(overrides));
+      fireEvent.click(screen.getByRole('button', { name: label }));
+      expect(playCalls).toContain('/sounds/chip-click.ogg');
+      expect(getCtx().consumeExecClaim()).toBe(true);
+    });
+
+    it.each([
+      ['チェック', {}],
+      ['フォールド', {}],
+    ])('does not play chipClick or claim on %s (no chips move)', (label, overrides) => {
+      playCalls.length = 0;
+      const getCtx = renderWithSound(makeProps(overrides));
+      fireEvent.click(screen.getByRole('button', { name: label }));
+      expect(playCalls).not.toContain('/sounds/chip-click.ogg');
+      expect(getCtx().consumeExecClaim()).toBe(false);
+    });
+
+    it('still invokes the page callback after the chip sound', () => {
+      const onBet = vi.fn();
+      renderWithSound(makeProps({ onBet }));
+      fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+      expect(onBet).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders and fires callbacks without a SoundProvider (providerless pages)', () => {
+      const onBet = vi.fn();
+      render(<BettingControls {...makeProps({ onBet })} />);
+      fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+      expect(onBet).toHaveBeenCalledTimes(1);
     });
   });
 });

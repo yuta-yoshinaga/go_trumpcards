@@ -81,10 +81,10 @@ func (m *MockWhistGame) GetCurrentPlayerIdx() int {
 	return args.Int(0)
 }
 
-func (m *MockWhistGame) GetCurrentTrick() []*domain.WhistTrickCard {
+func (m *MockWhistGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
 	if v := args.Get(0); v != nil {
-		return v.([]*domain.WhistTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

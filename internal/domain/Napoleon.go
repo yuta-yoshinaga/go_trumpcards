@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // NapoleonPlayerCnt ナポレオンプレイヤー数
@@ -1031,21 +1030,13 @@ func (n *Napoleon) sortAllHands() {
 
 // sortHand プレイヤーの手札をスート→値の順にソートする
 func (n *Napoleon) sortHand(p *NapoleonPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		di, dj := cards[i].GetDesign(), cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		di, dj := ci.GetDesign(), cj.GetDesign()
 		if di != dj {
 			return di < dj
 		}
-		return cards[i].GetValue() < cards[j].GetValue()
+		return ci.GetValue() < cj.GetValue()
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す
@@ -1106,14 +1097,9 @@ func (n *Napoleon) playHintReason(chosenIdx int) string {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (n *Napoleon) getValidPlayIndices(playerIdx int) []int {
 	player := n.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if n.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return n.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- CPU AI ---

@@ -1100,14 +1100,9 @@ func (b *Bridge) playerHasSuit(playerIdx int, suit int) bool {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (b *Bridge) getValidPlayIndices(playerIdx int) []int {
 	player := b.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if b.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return b.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // trickWinner トリックの勝者を決定する
@@ -1167,18 +1162,14 @@ func (b *Bridge) sortAllHands() {
 
 // bridgeSortHand プレイヤーの手札をスート→ランクの順にソートする
 func bridgeSortHand(p *BridgePlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		si := cards[i].GetDesign()
-		sj := cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		si := ci.GetDesign()
+		sj := cj.GetDesign()
 		if si != sj {
 			return si < sj
 		}
-		vi := cards[i].GetValue()
-		vj := cards[j].GetValue()
+		vi := ci.GetValue()
+		vj := cj.GetValue()
 		// Aceを最強にするため14に変換
 		if vi == 1 {
 			vi = 14
@@ -1188,10 +1179,6 @@ func bridgeSortHand(p *BridgePlayer) {
 		}
 		return vi < vj
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // bidSuitToCardDesign ビッドスートをカードデザインに変換する

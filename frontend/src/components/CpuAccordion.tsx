@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '../hooks/useCardDimensions';
 
-interface CpuAccordionProps {
+/** Props for {@link CpuAccordion}. */
+export interface CpuAccordionProps {
   children: React.ReactNode;
   playerCount: number;
   dataTutorial?: string;

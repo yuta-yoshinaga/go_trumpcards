@@ -10,6 +10,8 @@ vi.mock('../providers/SoundProvider', () => ({
     muted: false,
     toggleMute: vi.fn(),
     playSound: vi.fn(),
+    claimExecSound: vi.fn(),
+    consumeExecClaim: vi.fn(() => false),
   })),
 }));
 
@@ -45,26 +47,32 @@ describe('NavBar', () => {
   });
 
   for (const { path, labelKey } of gameRoutes) {
-    it(`renders ${labelKey} link`, () => {
-      renderNavBar();
-      expect(screen.getByText(labelFor(labelKey))).toBeInTheDocument();
-    });
-
     it(`marks ${labelKey} link as active when on ${path}`, () => {
       renderNavBar(path);
-      expect(screen.getByText(labelFor(labelKey))).toHaveAttribute('aria-current', 'page');
-      for (const other of gameRoutes) {
-        if (other.path !== path) {
-          expect(screen.getByText(labelFor(other.labelKey))).not.toHaveAttribute('aria-current');
-        }
-      }
+      // Exactly one link may carry aria-current, which also proves no other
+      // route's link has it.
+      const current = screen.getAllByRole('link').filter((link) => link.hasAttribute('aria-current'));
+      expect(current).toHaveLength(1);
+      expect(current[0]).toHaveAttribute('aria-current', 'page');
+      expect(current[0]).toHaveTextContent(labelFor(labelKey));
     });
   }
 
   it('links point to correct hrefs', () => {
     renderNavBar();
+    // Index the links once. Querying by accessible name recomputes it for every
+    // element in the tree, so doing that per route is quadratic.
+    // A path can be rendered by more than one link (category list, sidebar),
+    // so collect every label per href rather than keeping the last one.
+    const labelsByHref = new Map<string, string[]>();
+    for (const link of screen.getAllByRole('link')) {
+      const href = link.getAttribute('href') ?? '';
+      const labels = labelsByHref.get(href) ?? [];
+      labels.push(link.textContent ?? '');
+      labelsByHref.set(href, labels);
+    }
     for (const { path, labelKey } of gameRoutes) {
-      expect(screen.getByRole('link', { name: labelFor(labelKey) })).toHaveAttribute('href', path);
+      expect(labelsByHref.get(path)?.some((label) => label.includes(labelFor(labelKey)))).toBe(true);
     }
   });
 

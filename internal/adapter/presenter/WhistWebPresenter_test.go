@@ -17,7 +17,7 @@ func setupWhistWebMock() *interfaces.MockWhistGame {
 	m := new(interfaces.MockWhistGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.WhistTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.WhistPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -166,7 +166,7 @@ func TestWhistWebPresenter_Output(t *testing.T) {
 	t.Run("play phase follow message", func(t *testing.T) {
 		m, _ := setupWhistWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		trick := []*domain.WhistTrickCard{
+		trick := []*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		}
 		m.On("GetCurrentTrick").Return(trick)

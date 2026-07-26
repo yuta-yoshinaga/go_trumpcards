@@ -8,7 +8,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -29,6 +29,7 @@ import { DURAK_HELP, parseDurakCommand } from '../utils/cli/commands/durakComman
 import { formatDurakState } from '../utils/cli/formatters/durakFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Durak phase constants. */
 const PHASE_ATTACK = 0;
@@ -123,13 +124,11 @@ function DurakPageContent() {
   // Play a card-place sound when the human commits an attack or defense card, and
   // an error buzz for the disadvantageous "take" action (defender scoops the table).
   const handleAttackWithSound = useCallback(() => {
-    playSound('cardPlace');
     handleAttack();
-  }, [playSound, handleAttack]);
+  }, [handleAttack]);
   const handleDefendWithSound = useCallback(() => {
-    playSound('cardPlace');
     handleDefend();
-  }, [playSound, handleDefend]);
+  }, [handleDefend]);
   const handleTakeWithSound = useCallback(() => {
     playSound('errorBuzz');
     handleTake();
@@ -200,7 +199,6 @@ function DurakPageContent() {
       gamePath="/durak"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -235,13 +233,7 @@ function DurakPageContent() {
                     checked: durakConfig.transferEnabled,
                     onToggle: (checked) => handleConfigToggle('transferEnabled', checked),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -350,9 +342,7 @@ function DurakPageContent() {
                   messageParams={state.messageParams}
                 />
 
-                {frontendHintEnabled && frontendHint && (
-                  <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-                )}
+                <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
                 {/* Action log */}
                 <ActionLogSection

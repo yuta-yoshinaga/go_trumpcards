@@ -8,7 +8,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -19,7 +19,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { badgeSuccessColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -82,7 +81,6 @@ function MississippiStudPageContent() {
   const [anteAmount, setAnteAmount] = useState(100);
 
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(mississippiStudApi.exec);
   const {
     hint: frontendHint,
@@ -166,7 +164,6 @@ function MississippiStudPageContent() {
       gamePath="/mississippistud"
       gameEndFlag={isEndPhase}
       winShow={isEndPhase && state.totalPayout > state.totalBet}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -194,9 +191,7 @@ function MississippiStudPageContent() {
           {tc('hint.toggle', { ns: 'tutorial' })}
         </label>
 
-        {frontendHintEnabled && frontendHint && (
-          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-        )}
+        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
         {isAntePhase && (
           <div className="flex flex-col items-center justify-center py-4 gap-4">

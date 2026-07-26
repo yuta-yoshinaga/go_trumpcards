@@ -63,8 +63,8 @@ func (p *OhHellCuiPresenter) Output(o interfaces.OhHellGame, lastErr error) stri
 		// Current trick
 		trick := o.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
-			func(tc *domain.OhHellTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.OhHellTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(o.GetPlayer(idx), idx) },
 		)
 

@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { IGNORED_TAGS } from './keyboardNavUtils';
 
-interface UseCardKeyboardNavOptions {
+/** Options for {@link useCardKeyboardNav}. */
+export interface UseCardKeyboardNavOptions {
   cardCount: number;
   onToggle: (index: number) => void;
   onConfirm: () => void;

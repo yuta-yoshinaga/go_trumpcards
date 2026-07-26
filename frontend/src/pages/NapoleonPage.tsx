@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PartnerRevealFlash } from '../components/PartnerRevealFlash';
@@ -31,7 +31,6 @@ import {
   useNapoleonGame,
 } from '../hooks/useNapoleonGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { badgeInfo, badgeSuccess } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -46,6 +45,7 @@ import { formatNapoleonState } from '../utils/cli/formatters/napoleonFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { type AdjutantCardOption, buildAdjutantCardRows, isAdjutantCardInHand } from '../utils/napoleonAdjutant';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Napoleon tutorial step definitions. */
 const NP_TUTORIAL_STEPS: TutorialStep[] = [
@@ -117,7 +117,6 @@ export const NapoleonPage = withTutorial(NapoleonPageContent, 'napoleon', NP_TUT
 function NapoleonPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('napoleon');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -244,7 +243,6 @@ function NapoleonPageContent() {
       isHumanTurn={isHumanBidTurn || isHumanTurn || isHumanNapoleon || isHumanExchange}
       gamePath="/napoleon"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -297,13 +295,7 @@ function NapoleonPageContent() {
                     options: MIN_BID_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('minBid', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -648,9 +640,7 @@ function NapoleonPageContent() {
                       : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex gap-2 items-center flex-wrap">
               {(isHumanBidTurn || isHumanTurn || isHumanNapoleon || isHumanExchange) && (

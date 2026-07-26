@@ -10,12 +10,12 @@ import type { HintResult } from '../../types/hint';
  * `raise` / `call` / `fold`) mapped to the `targetAction` string, and a
  * `reason` suffix (`pass_weakest` / `keep_best` / `strong_hand` /
  * `medium_hand` / `weak_hand`) re-mapped into the frontend HintResult shape so
- * the shared {@link useGameHint} tooltip can render it. A `strong_hand`
+ * the shared {@link hooks/useGameHint.useGameHint | useGameHint} tooltip can render it. A `strong_hand`
  * suggestion reports strong confidence; everything else is moderate.
  */
 export function getAnacondaHint(state: AnacondaResponse): HintResult | null {
   const hint = state.hint;
-  if (!hint || !hint.reason) return null;
+  if (!hint?.reason) return null;
   return {
     targetAction: hint.action,
     reason: `hint.${hint.reason}`,

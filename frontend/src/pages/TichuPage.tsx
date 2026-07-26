@@ -20,7 +20,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TichuResponse } from '../types/card';
@@ -28,6 +27,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { tichuBombIndices } from '../utils/tichuBomb';
 import { classifyTichuCombo } from '../utils/tichuCombo';
 
@@ -129,7 +129,6 @@ function TichuPageContent() {
     clearLog,
   });
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
 
   const [selectedCards, setSelectedCards] = useState<Set<number>>(new Set());
   const [cpuDifficulty, setCpuDifficulty] = useState(0);
@@ -159,10 +158,6 @@ function TichuPageContent() {
     if (picked.length === 0) return null;
     return classifyTichuCombo(picked);
   }, [humanPlayer?.cards, selectedCards]);
-
-  useEffect(() => {
-    if (humanWon) playSound('winFanfare');
-  }, [humanWon, playSound]);
 
   const handleDeclare = useCallback(
     (value: number) => {
@@ -237,7 +232,6 @@ function TichuPageContent() {
       cancelReset={cancelReset}
       gameEndFlag={isGameEnd}
       winShow={humanWon}
-      onCelebrate={() => playSound('winFanfare')}
       headerExtra={
         <div className="flex items-center gap-2">
           <span className="text-xs opacity-75">
@@ -417,13 +411,7 @@ function TichuPageContent() {
                 options: DIFFICULTY_OPTIONS,
                 onSelect: (v: string) => handleDifficultyChange(Number.parseInt(v, 10)),
               },
-              {
-                type: 'checkbox' as const,
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: hintEnabled,
-                onToggle: setHintEnabled,
-              },
+              hintCheckboxItem(tc, hintEnabled, setHintEnabled),
             ],
           },
         ]}

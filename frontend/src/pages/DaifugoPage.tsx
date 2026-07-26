@@ -16,7 +16,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -28,7 +28,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useSound } from '../providers/SoundProvider';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -40,6 +39,7 @@ import { DAIFUGO_HELP, parseDaifugoCommand } from '../utils/cli/commands/daifugo
 import { formatDaifugoState } from '../utils/cli/formatters/daifugoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName, playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Daifugo tutorial step definitions. */
 const DF_TUTORIAL_STEPS: TutorialStep[] = [
@@ -129,7 +129,6 @@ function DaifugoPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const isMobile = useIsMobile();
-  const { playSound } = useSound();
 
   // Transient toast announcing a newly-triggered rank inversion (revolution /
   // eleven-back), on top of the background-color change which can be missed.
@@ -250,7 +249,6 @@ function DaifugoPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/daifugo"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -278,15 +276,7 @@ function DaifugoPageContent() {
               title=""
               groups={[
                 {
-                  items: [
-                    {
-                      type: 'checkbox',
-                      id: 'frontendHint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: frontendHintEnabled,
-                      onToggle: setFrontendHintEnabled,
-                    },
-                  ],
+                  items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
                 },
               ]}
             />
@@ -432,9 +422,7 @@ function DaifugoPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="text-center" data-tutorial="df-play-pass">
               {countMismatch && (

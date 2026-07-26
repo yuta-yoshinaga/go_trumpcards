@@ -11,7 +11,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { GoFishBooksDisplay } from '../components/gofish/GoFishBooksDisplay';
 import { GoFishPlayerArea } from '../components/gofish/GoFishPlayerArea';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -24,7 +24,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGoFishGame } from '../hooks/useGoFishGame';
 import { useGoFishKnownRanks } from '../hooks/useGoFishKnownRanks';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -38,6 +37,7 @@ import { GOFISH_HELP, parseGofishCommand } from '../utils/cli/commands/gofishCom
 import { formatGofishState } from '../utils/cli/formatters/gofishFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** CPU difficulty options for Go Fish. */
 const CPU_DIFFICULTY_OPTIONS = [
@@ -100,7 +100,6 @@ function GoFishPageContent() {
     handleAsk,
   } = useGoFishGame();
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -200,7 +199,6 @@ function GoFishPageContent() {
       gamePath="/gofish"
       gameEndFlag={!!isGameEnd}
       winShow={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -227,13 +225,7 @@ function GoFishPageContent() {
                     })),
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -313,9 +305,7 @@ function GoFishPageContent() {
               </div>
             )}
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {/* Message */}
             <GameMessageBox

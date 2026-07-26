@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useLocalStorageToggle } from '../hooks/useLocalStorageToggle';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
@@ -33,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { CANFIELD_HELP, parseCanfieldCommand } from '../utils/cli/commands/canfieldCommands';
 import { formatCanfieldState } from '../utils/cli/formatters/canfieldFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Ring styling applied to the hinted source / target cards (mirrors Yukon / Forty Thieves). */
 const HINT_RING = 'ring-2 ring-ds-info motion-safe:animate-pulse';
@@ -138,10 +140,7 @@ function CanfieldPageContent() {
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(handleGiveUp),
-    [requestGiveUpConfirm, handleGiveUp],
-  );
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
   const handleHint = useCallback(() => execApi('hint'), [execApi]);
   const handleAutoComplete = useCallback(() => execApi('autocomplete'), [execApi]);
   const handleUndo = useCallback(() => execApi('undo'), [execApi]);
@@ -261,13 +260,7 @@ function CanfieldPageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                   {
                     type: 'checkbox' as const,
                     id: 'collapseColActions',
@@ -503,9 +496,7 @@ function CanfieldPageContent() {
                 {hint ? t('hintAnnouncement', { card: hintCardName, dest: hintDest }) : ''}
               </div>
             </div>
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
               isEndPhase={isEnded}

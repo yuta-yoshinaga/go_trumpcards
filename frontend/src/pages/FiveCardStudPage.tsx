@@ -26,7 +26,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -92,7 +91,6 @@ function FiveCardStudPageContent() {
     useGamePageSetup('fivecardstud');
   const phaseNames = usePhaseNames('fivecardstud', FCS_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const isMobile = useIsMobile();
   const { state, loading, error, exec: execApi, retry } = useGameApi(fiveCardStudApi.exec);
 
@@ -205,7 +203,6 @@ function FiveCardStudPageContent() {
       gamePath="/fivecardstud"
       gameEndFlag={phase === FiveCardStudPhase.SHOWDOWN || phase === FiveCardStudPhase.END}
       winShow={humanWon}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

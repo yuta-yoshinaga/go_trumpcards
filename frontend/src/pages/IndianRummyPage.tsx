@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -26,7 +26,6 @@ import {
   useIndianRummyGame,
 } from '../hooks/useIndianRummyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -40,6 +39,7 @@ import { formatIndianrummyState } from '../utils/cli/formatters/indianrummyForma
 import type { CliGameConfig } from '../utils/cli/types';
 import { evaluateIndianRummyDeclare, INDIAN_RUMMY_HAND_SIZE } from '../utils/indianRummyDeclare';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const INDIANRUMMY_PHASE_KEYS: Readonly<Record<number, string>> = {
   [IndianRummyPhase.DRAW]: 'draw',
@@ -118,7 +118,6 @@ function IndianRummyPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('indianrummy', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('indianrummy');
   const cliConfig: CliGameConfig<IndianRummyResponse, Parameters<typeof indianRummyApi.exec>> = useMemo(
@@ -219,7 +218,6 @@ function IndianRummyPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/indianrummy"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -262,13 +260,7 @@ function IndianRummyPageContent() {
                     options: TARGET_ROUNDS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('targetRounds', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -418,9 +410,7 @@ function IndianRummyPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {isDiscardPhase && isHumanTurn && declarePreview && (
               <div

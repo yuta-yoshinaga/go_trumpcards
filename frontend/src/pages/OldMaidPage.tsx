@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { OldMaidDiscardedArea } from '../components/oldmaid/OldMaidDiscardedArea';
@@ -26,7 +26,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -37,6 +36,7 @@ import { OLDMAID_HELP, parseOldmaidCommand } from '../utils/cli/commands/oldmaid
 import { formatOldmaidState } from '../utils/cli/formatters/oldmaidFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Old Maid tutorial step definitions. */
 const OM_TUTORIAL_STEPS: TutorialStep[] = [
@@ -72,7 +72,6 @@ export const OldMaidPage = withTutorial(OldMaidPageContent, 'oldmaid', OM_TUTORI
 function OldMaidPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('oldmaid');
-  const { playSound } = useSound();
   const {
     displayState,
     setupMode,
@@ -204,7 +203,6 @@ function OldMaidPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/oldmaid"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -220,15 +218,7 @@ function OldMaidPageContent() {
             title={t('button.settings')}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -385,9 +375,7 @@ function OldMaidPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {/* Buttons */}
             <div className="text-center">

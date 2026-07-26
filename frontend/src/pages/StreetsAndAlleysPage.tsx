@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -25,7 +25,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useStreetsAndAlleysGame } from '../hooks/useStreetsAndAlleysGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { StreetsAndAlleysResponse } from '../types/card';
@@ -35,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseStreetsAndAlleysCommand, STREETSANDALLEYS_HELP } from '../utils/cli/commands/streetsandalleysCommands';
 import { formatStreetsAndAlleysState } from '../utils/cli/formatters/streetsandalleysFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -89,7 +89,6 @@ function StreetsAndAlleysPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('streetsandalleys');
-  const { playSound } = useSound();
   const game = useStreetsAndAlleysGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
 
@@ -280,7 +279,6 @@ function StreetsAndAlleysPageContent() {
       gamePath="/streetsandalleys"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -375,11 +373,9 @@ function StreetsAndAlleysPageContent() {
                 </div>
               )}
             </div>
-            {frontendHintEnabled && frontendHint && (
-              <div className="flex justify-center">
-                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-              </div>
-            )}
+            <div className="flex justify-center">
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            </div>
 
             <GameMessageBox
               message={state.message}
@@ -408,15 +404,7 @@ function StreetsAndAlleysPageContent() {
             title={tc('settings.title')}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />

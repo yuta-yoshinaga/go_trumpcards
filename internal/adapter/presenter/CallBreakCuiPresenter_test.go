@@ -17,7 +17,7 @@ func setupCallBreakCuiMock() *interfaces.MockCallBreakGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetSpadesBroken").Return(false)
-	m.On("GetCurrentTrick").Return([]*domain.CallBreakTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.CallBreakPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

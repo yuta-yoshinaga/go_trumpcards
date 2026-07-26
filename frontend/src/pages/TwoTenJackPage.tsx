@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
@@ -24,7 +24,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useTwoTenJackGame } from '../hooks/useTwoTenJackGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -36,6 +35,7 @@ import { parseTwoTenJackCommand, TWOTENJACK_HELP } from '../utils/cli/commands/t
 import { formatTwoTenJackState } from '../utils/cli/formatters/twoTenJackFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Tutorial steps for Two Ten Jack. Walks the player through declare, play, and scoring elements. */
 const TTJ_TUTORIAL_STEPS: TutorialStep[] = [
@@ -156,13 +156,6 @@ function TwoTenJackPageContent() {
   });
 
   const phaseNames = usePhaseNames('twotenjack', TWOTENJACK_PHASE_KEYS);
-  const { playSound } = useSound();
-  // Memoized so WinCelebration's effect (which depends on onCelebrate) does not
-  // re-arm its timer — and replay the fanfare — on every post-win re-render.
-  const handleCelebrate = useCallback(() => {
-    playSound('winFanfare');
-  }, [playSound]);
-
   const handleManualReset = useCallback(() => {
     hideActionLog();
     void dispatch('reset', undefined, undefined, {
@@ -201,7 +194,6 @@ function TwoTenJackPageContent() {
       gamePath="/twotenjack"
       gameEndFlag={!!state?.gameEndFlag}
       winShow={humanWon}
-      onCelebrate={handleCelebrate}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -236,13 +228,7 @@ function TwoTenJackPageContent() {
                     options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('pointLimit', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -390,9 +376,7 @@ function TwoTenJackPageContent() {
               messageParams={state.messageParams}
             />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
               isEndPhase={isGameEnd}

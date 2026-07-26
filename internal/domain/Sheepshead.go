@@ -597,13 +597,9 @@ func (g *Sheepshead) trickWinner() int {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Sheepshead) getValidPlayIndices(playerIdx int) []int {
 	player := g.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if g.validatePlay(playerIdx, player.GetCard(i)) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- Call helpers ---
@@ -672,21 +668,13 @@ func (g *Sheepshead) sortAllHands() {
 
 // sheepsheadSortHand 手札を切り札を先頭に、スートごと強い順にソートする。
 func sheepsheadSortHand(p *SheepsheadPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		si, sj := sheepsheadSuitID(cards[i]), sheepsheadSuitID(cards[j])
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		si, sj := sheepsheadSuitID(ci), sheepsheadSuitID(cj)
 		if si != sj {
 			return si < sj
 		}
-		return sheepsheadStrength(cards[i]) > sheepsheadStrength(cards[j])
+		return sheepsheadStrength(ci) > sheepsheadStrength(cj)
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す。

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // WizardPlayerCnt ウィザードプレイヤー数
@@ -749,20 +748,12 @@ func (o *Wizard) sortAllHands() {
 
 // wizardSortHand プレイヤーの手札をスート→値の順にソートする
 func wizardSortHand(p *WizardPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return cards[i].GetValue() < cards[j].GetValue()
+		return ci.GetValue() < cj.GetValue()
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // wizardCardStr 棋譜表示用のカード文字列 (ウィザード/ジェスターを含む)。
@@ -804,14 +795,9 @@ func (o *Wizard) appendLog(playerIdx int, actionType, detail string, cards []*Ca
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (o *Wizard) getValidPlayIndices(playerIdx int) []int {
 	player := o.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if o.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return o.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // GetHint ヒントを取得する

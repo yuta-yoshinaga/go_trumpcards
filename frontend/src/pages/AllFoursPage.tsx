@@ -21,7 +21,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { AllFoursResponse } from '../types/card';
@@ -31,6 +30,7 @@ import { ALLFOURS_HELP, parseAllFoursCommand } from '../utils/cli/commands/allfo
 import { formatAllFoursState } from '../utils/cli/formatters/allfoursFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName, playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const AF_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -130,7 +130,6 @@ function AllFoursPageContent() {
   const { t } = useTranslation('allfours');
   const { tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('allfours');
-  const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(allfoursApi.exec);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('allfours', state);
   const [selectedCardIdx, setSelectedCardIdx] = useState<number | null>(null);
@@ -208,7 +207,6 @@ function AllFoursPageContent() {
       gamePath="/allfours"
       gameEndFlag={isGameEnd}
       winShow={isGameEnd && state.winnerIdx === humanIdx}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -415,13 +413,7 @@ function AllFoursPageContent() {
                       options: [5, 7, 9, 11, 15, 21].map((v) => ({ value: v, label: String(v) })),
                       onSelect: (v) => handleConfigChange('pointLimit', Number(v)),
                     },
-                    {
-                      type: 'checkbox',
-                      id: 'frontendHint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: hintEnabled,
-                      onToggle: setHintEnabled,
-                    },
+                    hintCheckboxItem(tc, hintEnabled, setHintEnabled),
                   ],
                 },
               ]}

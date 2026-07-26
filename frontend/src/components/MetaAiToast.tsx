@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useTransientToast } from '../hooks/useTransientToast';
+import { TOAST_DURATION } from '../styles/toastDurations';
 import type { StrategyStyle } from '../utils/metaAiAdaptation';
+import { Toast } from './Toast';
 
 /** Props for the MetaAiToast component. */
 export interface MetaAiToastProps {
@@ -8,44 +10,24 @@ export interface MetaAiToastProps {
   strategyStyle: StrategyStyle | undefined;
 }
 
-const DISMISS_MS = 3000;
-
-/** Toast notification for CPU meta-AI strategy changes. Auto-dismisses after 3 seconds. */
+/**
+ * Toast notification for CPU meta-AI strategy changes. Shows when the strategy
+ * changes, auto-dismisses after the medium duration, and can be dismissed early
+ * via the close button or Escape. A thin wrapper over the shared {@link Toast}
+ * banner + {@link useTransientToast} lifecycle (issue #4313).
+ */
 export function MetaAiToast({ strategyStyle }: MetaAiToastProps) {
   const { t } = useTranslation('common');
-  const [visible, setVisible] = useState(false);
-  const prevRef = useRef<StrategyStyle | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const isFirstRender = useRef(true);
+  const { visible, dismiss } = useTransientToast(strategyStyle, TOAST_DURATION.medium, {
+    active: strategyStyle !== undefined,
+  });
 
-  useEffect(() => {
-    if (!strategyStyle) return;
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      prevRef.current = strategyStyle;
-      return;
-    }
-    if (strategyStyle !== prevRef.current) {
-      prevRef.current = strategyStyle;
-      setVisible(true);
-      clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setVisible(false), DISMISS_MS);
-    }
-    return () => clearTimeout(timerRef.current);
-  }, [strategyStyle]);
-
-  if (!visible) return null;
+  if (!visible || !strategyStyle) return null;
 
   const strategyLabel = t(`metaAi.strategy.${strategyStyle}`);
-
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      data-testid="meta-ai-toast"
-      className="absolute top-0 left-0 right-0 z-20 mx-4 mt-1 animate-[slideDown_0.3s_ease-out] rounded bg-black/70 px-3 py-1.5 text-white text-xs shadow-lg"
-    >
+    <Toast onDismiss={dismiss} testId="meta-ai-toast">
       {t('metaAi.strategyShift', { strategy: strategyLabel })}
-    </div>
+    </Toast>
   );
 }

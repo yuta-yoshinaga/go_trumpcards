@@ -37,8 +37,13 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
+      # covermode=set, not atomic. atomic updates every counter with an atomic
+      # add, which costs ~2x wall clock here (measured at CI's -p 4: 124s ->
+      # 62s) for identical numbers (82.3% either way). Go itself only defaults
+      # to atomic under -race, which this job does not use; if -race is ever
+      # added, this must go back to atomic.
       - name: Run backend tests with coverage
-        run: go test -tags test -coverprofile=coverage.out -covermode=atomic ./...
+        run: go test -tags test -coverprofile=coverage.out -covermode=set ./...
 
       - name: Upload backend coverage to Codecov
         uses: codecov/codecov-action@v6
@@ -66,9 +71,53 @@ jobs:
         working-directory: frontend
         run: bun run check
 
-  test-frontend:
-    name: Frontend Tests
+  typecheck-frontend:
+    # tsc is the only gate that catches type errors: `bun run check` is Biome
+    # only, and vitest transpiles without checking. It used to run solely as a
+    # side effect of the E2E job's `bun run build` (tsc -b && vite build), so
+    # every E2E shard paid ~48s for the same check. Run it once here instead.
+    #
+    # `bun run typecheck` uses the `typescript7` alias, not the `typescript`
+    # dependency — see frontend/CLAUDE.md "Type checking" for why both are
+    # installed. Never substitute a bare `tsc`/`bunx tsc`: that resolves to
+    # TypeScript 5.9 and takes ~46s instead of ~5s.
+    name: Frontend Typecheck (tsc)
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.10'
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Type-check
+        working-directory: frontend
+        run: bun run typecheck
+
+  test-frontend:
+    # Sharded because this is the slowest job in the pipeline (~20 min
+    # unsharded): 15,984 tests over 1,133 files. Measured on a 16-core box the
+    # run still takes ~11 min WITHOUT coverage, so the cost is the test volume
+    # itself, not the coverage instrumentation — splitting the work is the only
+    # lever that moves it. Each shard uploads its own coverage; Codecov merges
+    # them server-side.
+    #
+    # Eight rather than four: --shard splits by file COUNT, but file runtimes
+    # vary widely, so at 4 the slowest shard ran 435s against a 280s mean (the
+    # whole pipeline waits on that one). Per-shard fixed overhead is only ~16s,
+    # so extra shards are nearly free and each one dilutes the effect of a
+    # single heavy file. At 6 the spread was 199-287s over 1320s of work.
+    name: Frontend Tests (${{ matrix.shard }}/8)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
       - uses: actions/checkout@v6
 
@@ -89,18 +138,33 @@ jobs:
         # forked test workers via NODE_OPTIONS.
         env:
           NODE_OPTIONS: --max-old-space-size=8192
-        run: bun run test:coverage
+        run: bun run test:coverage -- --shard=${{ matrix.shard }}/8
 
       - name: Upload frontend coverage to Codecov
         uses: codecov/codecov-action@v6
         with:
           files: frontend/coverage/lcov.info
           flags: frontend
+          # Each shard reports partial coverage; Codecov merges the uploads for
+          # the commit, so the job must not fail when one shard misses a file.
+          fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
 
   test-e2e:
-    name: E2E Tests (Playwright)
+    # Sharded on top of the in-job parallelism (playwright.config.ts runs 4
+    # workers in CI). Each shard boots its own server binary, so shards cannot
+    # interfere with each other.
+    #
+    # Five shards, not more: ~105s of every shard is setup (frontend build,
+    # browsers, server binary) and does not shrink with the split, so the job
+    # asymptotes there. 3 -> 5 moves the slowest shard ~261s -> ~190s; 8 would
+    # buy another ~20s for three more runners.
+    name: E2E Tests (${{ matrix.shard }}/5)
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v6
 
@@ -108,6 +172,9 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: '1.26'
+          # Reuse the module + build cache across shards so `go build` of the
+          # server binary is not paid three times from cold (~37s each).
+          cache-dependency-path: go.sum
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
@@ -118,13 +185,39 @@ jobs:
         working-directory: frontend
         run: bun install --frozen-lockfile
 
+      # Bundle only — `bun run build` also runs `bun run typecheck` (~5s since
+      # the TypeScript 7 switch, ~48s before it), which the dedicated typecheck
+      # job now covers once instead of once per shard.
       - name: Build frontend
         working-directory: frontend
-        run: bun run build
+        run: bunx vite build
+
+      # The browser download is identical across shards and only changes when
+      # Playwright itself does, so key the cache on the resolved version from
+      # the lockfile. Cold: ~21s per shard; warm: a few seconds.
+      - name: Resolve Playwright version
+        id: pw
+        working-directory: frontend
+        run: echo "version=$(node -p "require('./node_modules/@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
 
       - name: Install Playwright browsers
         working-directory: frontend
         run: bunx playwright install --with-deps chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+
+      # --with-deps installs OS packages outside the cached directory, so a
+      # cache hit still needs them.
+      - name: Install Playwright OS dependencies
+        working-directory: frontend
+        run: bunx playwright install-deps chromium
+        if: steps.pw-cache.outputs.cache-hit == 'true'
 
       - name: Build server binary
         run: go build -o /tmp/trumpcards-server ./cmd/server
@@ -133,12 +226,12 @@ jobs:
         working-directory: frontend
         env:
           E2E_SERVER_BIN: /tmp/trumpcards-server
-        run: bunx playwright test
+        run: bunx playwright test --shard=${{ matrix.shard }}/5
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.shard }}
           path: frontend/playwright-report/
           retention-days: 14

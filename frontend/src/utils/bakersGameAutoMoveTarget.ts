@@ -25,6 +25,6 @@ export function bakersGameAutoMoveTarget(
   const foundationTarget = freeCellFoundationTarget(card, foundation);
   if (foundationTarget) return foundationTarget;
 
-  const emptyCell = freeCells.findIndex((c) => c === null);
+  const emptyCell = freeCells.indexOf(null);
   return emptyCell === -1 ? null : { zone: 'freecell', cell: emptyCell };
 }

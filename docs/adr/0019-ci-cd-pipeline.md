@@ -16,7 +16,7 @@ Accepted
 
 GitHub Actionsで以下のパイプラインを構築:
 
-- **CodeQL**: push/PR時にセキュリティスキャン
+- **CodeQL**: push/PR時にセキュリティスキャン（PR時の実行は [ADR-0034](0034-codeql-post-merge.md) で廃止。現在は `develop` への push と週次のみ）
 - **golangci-lint**: Go コードの静的解析
 - **CI**: バックエンド・フロントエンド双方のテスト自動実行（2026-02-19追加）
 - **Auto-tag**: `master` へのマージ時に自動でgitタグとGitHub Releaseを作成

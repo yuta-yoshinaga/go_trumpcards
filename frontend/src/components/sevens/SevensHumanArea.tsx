@@ -9,7 +9,8 @@ import { isCardPlayable, playerAreaClass } from '../../utils/sevensUtils';
 import { CardImage } from '../CardImage';
 import { StatusBadge } from '../StatusBadge';
 
-interface HumanAreaProps {
+/** Props for {@link SevensHumanArea}. */
+export interface HumanAreaProps {
   player: SevensPlayerData;
   isCurrentTurn: boolean;
   tablePlaced: number[];

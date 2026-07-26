@@ -10,12 +10,12 @@ import type { HintResult } from '../../types/hint';
  * `lead_low`, `lead_marriage`, `follow_win`, `follow_duck`, `discard_low`,
  * `bid_raise`, `bid_pass`, or `talon_discard`). This adapter re-maps that
  * server hint into the frontend HintResult shape so the shared
- * {@link useGameHint} tooltip can render it. The `targetAction` is fixed to
+ * {@link hooks/useGameHint.useGameHint | useGameHint} tooltip can render it. The `targetAction` is fixed to
  * `play` because every hint ultimately points the player at a card.
  */
 export function getTysiacHint(state: TysiacResponse): HintResult | null {
   const hint = state.hint;
-  if (!hint || !hint.reason) return null;
+  if (!hint?.reason) return null;
   return {
     targetAction: 'play',
     reason: `hint.${hint.reason}`,

@@ -20,7 +20,22 @@ vi.mock('../providers/SoundProvider', async () => {
   const actual = await vi.importActual<typeof import('../providers/SoundProvider')>('../providers/SoundProvider');
   return {
     ...actual,
-    useSound: () => ({ playSound: playSoundMock, muted: false, toggleMute: vi.fn() }),
+    useSound: () => ({
+      playSound: playSoundMock,
+      muted: false,
+      toggleMute: vi.fn(),
+      claimExecSound: vi.fn(),
+      consumeExecClaim: () => false,
+    }),
+    // GamePageShell's central taps read useOptionalSound; route it to the
+    // same spy so the fanfare it now owns is observable.
+    useOptionalSound: () => ({
+      playSound: playSoundMock,
+      muted: false,
+      toggleMute: vi.fn(),
+      claimExecSound: vi.fn(),
+      consumeExecClaim: () => false,
+    }),
   };
 });
 

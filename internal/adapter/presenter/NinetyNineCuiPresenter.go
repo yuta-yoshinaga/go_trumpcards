@@ -58,8 +58,8 @@ func (p *NinetyNineCuiPresenter) Output(o interfaces.NinetyNineGame, lastErr err
 
 		trick := o.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
-			func(tc *domain.NinetyNineTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.NinetyNineTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(o.GetPlayer(idx), idx) },
 		)
 

@@ -20,7 +20,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { badgeErrorColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -49,7 +48,6 @@ function BlackJackSwitchPageContent() {
   const [switchPreview, setSwitchPreview] = useState(false);
   const [alwaysPreview, setAlwaysPreview] = useState(false);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(blackjackswitchApi.exec);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('blackjackswitch');
@@ -137,7 +135,6 @@ function BlackJackSwitchPageContent() {
       gamePath="/blackjackswitch"
       gameEndFlag={isEndPhase}
       winShow={isEndPhase && state.totalPayout > state.hands.reduce((sum, h) => sum + h.bet, 0)}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

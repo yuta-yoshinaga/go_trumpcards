@@ -11,7 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -25,9 +25,9 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { WaspResponse } from '../types/card';
@@ -35,6 +35,7 @@ import { WaspPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { waspLegalTargets } from '../utils/waspUtils';
 
 const noop = () => {};
@@ -164,7 +165,6 @@ function WaspPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('wasp');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -225,13 +225,11 @@ function WaspPageContent() {
 
   const handleManualReset = useCallback(() => {
     void apiCall('reset');
-    playSound('shuffle');
-  }, [apiCall, playSound]);
+  }, [apiCall]);
 
   const handleDeal = useCallback(() => {
     void apiCall('deal');
-    playSound('cardPlace');
-  }, [apiCall, playSound]);
+  }, [apiCall]);
 
   // Empty-column deal guard: surfaces a shake animation + tooltip instead of failing silently.
   const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
@@ -258,10 +256,7 @@ function WaspPageContent() {
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(handleGiveUp),
-    [requestGiveUpConfirm, handleGiveUp],
-  );
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const handleHint = useCallback(() => {
     void apiCall('hint');
@@ -303,9 +298,8 @@ function WaspPageContent() {
       if (!selectedSource) return;
       void apiCall('move', selectedSource, { zone, col });
       setSelectedSource(null);
-      playSound('cardPlace');
     },
-    [apiCall, selectedSource, playSound],
+    [apiCall, selectedSource],
   );
 
   const isPlayingForKbd = state?.phase === WaspPhase.PLAYING;
@@ -377,15 +371,7 @@ function WaspPageContent() {
             title={tc('settings.title', { ns: 'common' })}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -510,9 +496,7 @@ function WaspPageContent() {
                 {state.hint.fromCol < 0 ? t('deal') : `${t('tableau')} ${state.hint.toCol}`}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
               isEndPhase={isEnded}

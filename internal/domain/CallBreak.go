@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // CallBreakPlayerCnt Call Break のプレイヤー数
@@ -37,12 +36,6 @@ type CallBreakHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// CallBreakTrickCard トリック中の 1 枚
-type CallBreakTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // CallBreak Call Break ゲームクラス
 //
 // ルール上の差分メモ (Spades との比較):
@@ -60,7 +53,7 @@ type CallBreak struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*CallBreakTrickCard
+	currentTrick     []*TrickCard
 	spadesBroken     bool
 	leadPlayerIdx    int
 	bidPlayerIdx     int
@@ -354,10 +347,10 @@ func (cb *CallBreak) GetCurrentPlayerIdx() int { return cb.currentPlayerIdx }
 func (cb *CallBreak) SetCurrentPlayerIdx(idx int) { cb.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (cb *CallBreak) GetCurrentTrick() []*CallBreakTrickCard { return cb.currentTrick }
+func (cb *CallBreak) GetCurrentTrick() []*TrickCard { return cb.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (cb *CallBreak) SetCurrentTrick(trick []*CallBreakTrickCard) { cb.currentTrick = trick }
+func (cb *CallBreak) SetCurrentTrick(trick []*TrickCard) { cb.currentTrick = trick }
 
 // GetSpadesBroken スペードブレイク状態取得
 func (cb *CallBreak) GetSpadesBroken() bool { return cb.spadesBroken }
@@ -449,7 +442,7 @@ func (cb *CallBreak) startPlayPhase() {
 
 // playCard カードをプレイする共通処理
 func (cb *CallBreak) playCard(playerIdx int, card *Card) {
-	cb.currentTrick = append(cb.currentTrick, &CallBreakTrickCard{
+	cb.currentTrick = append(cb.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -522,34 +515,7 @@ func (cb *CallBreak) playerHasNonSpade(playerIdx int) bool {
 
 // trickWinner トリックの勝者を決定する (スペードがトランプ)
 func (cb *CallBreak) trickWinner() int {
-	if len(cb.currentTrick) == 0 {
-		return 0
-	}
-	leadSuit := cb.currentTrick[0].Card.GetDesign()
-	winnerIdx := cb.currentTrick[0].PlayerIdx
-	winnerValue := cb.currentTrick[0].Card.GetValue()
-	winnerIsSpade := cb.currentTrick[0].Card.GetDesign() == CardDesignSpade
-
-	for _, tc := range cb.currentTrick[1:] {
-		isSpade := tc.Card.GetDesign() == CardDesignSpade
-
-		switch {
-		case isSpade && !winnerIsSpade:
-			// スペード (トランプ) がリードスートに勝つ
-			winnerIdx = tc.PlayerIdx
-			winnerValue = tc.Card.GetValue()
-			winnerIsSpade = true
-		case isSpade && winnerIsSpade:
-			if tc.Card.GetValue() > winnerValue {
-				winnerIdx = tc.PlayerIdx
-				winnerValue = tc.Card.GetValue()
-			}
-		case !isSpade && !winnerIsSpade && tc.Card.GetDesign() == leadSuit && tc.Card.GetValue() > winnerValue:
-			winnerIdx = tc.PlayerIdx
-			winnerValue = tc.Card.GetValue()
-		}
-	}
-	return winnerIdx
+	return ResolveTrickWinner(cb.currentTrick, CardDesignSpade, nil)
 }
 
 // checkGameEnd ゲーム終了判定: MaxRounds 到達でゲーム終了、最高スコアが勝者
@@ -581,20 +547,12 @@ func (cb *CallBreak) sortAllHands() {
 
 // callBreakSortHand プレイヤーの手札をスート → 値の順にソートする
 func callBreakSortHand(p *CallBreakPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return cards[i].GetValue() < cards[j].GetValue()
+		return ci.GetValue() < cj.GetValue()
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す
@@ -769,9 +727,9 @@ func (cb *CallBreak) cpuPlayNormal(playerIdx int, validIndices []int) int {
 
 	if len(cb.currentTrick) == 0 {
 		if tricks < bid {
-			return cb.pickHighest(player, validIndices)
+			return pickHighest(player, validIndices, nil)
 		}
-		return cb.pickLowest(player, validIndices)
+		return pickLowest(player, validIndices, nil)
 	}
 
 	leadSuit := cb.currentTrick[0].Card.GetDesign()
@@ -785,20 +743,20 @@ func (cb *CallBreak) cpuPlayNormal(playerIdx int, validIndices []int) int {
 	leadSuitIndices := filterByDesign(player, validIndices, leadSuit)
 	if len(leadSuitIndices) > 0 {
 		if tricks < bid {
-			over := filterAbove(player, leadSuitIndices, highestInTrick)
+			over := filterAbove(player, leadSuitIndices, highestInTrick, nil)
 			if len(over) > 0 {
-				return cb.pickLowest(player, over)
+				return pickLowest(player, over, nil)
 			}
 		}
-		return cb.pickLowest(player, leadSuitIndices)
+		return pickLowest(player, leadSuitIndices, nil)
 	}
 
 	// ボイド: validatePlay により残ったカードはルール上有効なものだけ。
 	// スペードを必ず切るルールがある場合、validIndices はスペードのみのはず。
 	if tricks < bid {
-		return cb.pickLowest(player, validIndices)
+		return pickLowest(player, validIndices, nil)
 	}
-	return cb.pickLowest(player, validIndices)
+	return pickLowest(player, validIndices, nil)
 }
 
 // cpuPlayHard 高度な戦略プレイ
@@ -853,12 +811,12 @@ func (cb *CallBreak) cpuPlayHard(playerIdx int, validIndices []int) int {
 			if leadSuit == CardDesignSpade {
 				threshold = highestSpadeInTrick
 			}
-			over := filterAbove(player, leadSuitIndices, threshold)
+			over := filterAbove(player, leadSuitIndices, threshold, nil)
 			if len(over) > 0 {
-				return cb.pickLowest(player, over)
+				return pickLowest(player, over, nil)
 			}
 		}
-		return cb.pickLowest(player, leadSuitIndices)
+		return pickLowest(player, leadSuitIndices, nil)
 	}
 
 	// ボイドかつ validIndices にスペードが含まれている場合は最小のスペードでカットを試みる。
@@ -866,15 +824,15 @@ func (cb *CallBreak) cpuPlayHard(playerIdx int, validIndices []int) int {
 	if len(spadeIndices) > 0 {
 		if tricks < bid {
 			if hasSpadeInTrick {
-				if over := filterAbove(player, spadeIndices, highestSpadeInTrick); len(over) > 0 {
-					return cb.pickLowest(player, over)
+				if over := filterAbove(player, spadeIndices, highestSpadeInTrick, nil); len(over) > 0 {
+					return pickLowest(player, over, nil)
 				}
 			} else {
-				return cb.pickLowest(player, spadeIndices)
+				return pickLowest(player, spadeIndices, nil)
 			}
 		}
 		// 余裕がある場合は最小スペードを温存気味に出す
-		return cb.pickLowest(player, spadeIndices)
+		return pickLowest(player, spadeIndices, nil)
 	}
 
 	// スペードを持たないボイド: 最も高い不要カードを捨てる
@@ -907,67 +865,12 @@ func (cb *CallBreak) summariseTrick(leadSuit int) (highestSpade int, hasSpade bo
 	return
 }
 
-// pickHighest validIndices の中で値が最大のインデックスを返す
-func (cb *CallBreak) pickHighest(player *CallBreakPlayer, validIndices []int) int {
-	bestIdx := validIndices[0]
-	bestVal := player.GetCard(bestIdx).GetValue()
-	for _, idx := range validIndices[1:] {
-		v := player.GetCard(idx).GetValue()
-		if v > bestVal {
-			bestVal = v
-			bestIdx = idx
-		}
-	}
-	return bestIdx
-}
-
-// pickLowest validIndices の中で値が最小のインデックスを返す
-func (cb *CallBreak) pickLowest(player *CallBreakPlayer, validIndices []int) int {
-	bestIdx := validIndices[0]
-	bestVal := player.GetCard(bestIdx).GetValue()
-	for _, idx := range validIndices[1:] {
-		v := player.GetCard(idx).GetValue()
-		if v < bestVal {
-			bestVal = v
-			bestIdx = idx
-		}
-	}
-	return bestIdx
-}
-
-// filterByDesign 指定スートを持つカードのインデックスのみを返す
-func filterByDesign(player *CallBreakPlayer, validIndices []int, design int) []int {
-	out := make([]int, 0, len(validIndices))
-	for _, idx := range validIndices {
-		if player.GetCard(idx).GetDesign() == design {
-			out = append(out, idx)
-		}
-	}
-	return out
-}
-
-// filterAbove threshold より大きい値のカードのインデックスのみを返す
-func filterAbove(player *CallBreakPlayer, validIndices []int, threshold int) []int {
-	out := make([]int, 0, len(validIndices))
-	for _, idx := range validIndices {
-		if player.GetCard(idx).GetValue() > threshold {
-			out = append(out, idx)
-		}
-	}
-	return out
-}
-
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (cb *CallBreak) getValidPlayIndices(playerIdx int) []int {
 	player := cb.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if cb.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return cb.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web 用)
@@ -977,20 +880,20 @@ func (cb *CallBreak) GetValidPlayIndices(playerIdx int) []int {
 
 // callBreakJSON is the JSON wire format for CallBreak.
 type callBreakJSON struct {
-	TrumpCards       *TrumpCards           `json:"tc"`
-	Players          []*CallBreakPlayer    `json:"ps"`
-	Config           CallBreakConfig       `json:"cf"`
-	Phase            CallBreakPhase        `json:"ph"`
-	RoundNumber      int                   `json:"rn"`
-	TrickNumber      int                   `json:"tn"`
-	CurrentPlayerIdx int                   `json:"ci"`
-	CurrentTrick     []*CallBreakTrickCard `json:"ct"`
-	SpadesBroken     bool                  `json:"sb"`
-	LeadPlayerIdx    int                   `json:"li"`
-	BidPlayerIdx     int                   `json:"bi"`
-	GameEndFlag      bool                  `json:"ge"`
-	WinnerIdx        int                   `json:"wi"`
-	ActionLog        []*ActionLogEntry     `json:"al"`
+	TrumpCards       *TrumpCards        `json:"tc"`
+	Players          []*CallBreakPlayer `json:"ps"`
+	Config           CallBreakConfig    `json:"cf"`
+	Phase            CallBreakPhase     `json:"ph"`
+	RoundNumber      int                `json:"rn"`
+	TrickNumber      int                `json:"tn"`
+	CurrentPlayerIdx int                `json:"ci"`
+	CurrentTrick     []*TrickCard       `json:"ct"`
+	SpadesBroken     bool               `json:"sb"`
+	LeadPlayerIdx    int                `json:"li"`
+	BidPlayerIdx     int                `json:"bi"`
+	GameEndFlag      bool               `json:"ge"`
+	WinnerIdx        int                `json:"wi"`
+	ActionLog        []*ActionLogEntry  `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1047,7 +950,7 @@ func (cb *CallBreak) UnmarshalJSON(data []byte) error {
 	cb.currentPlayerIdx = j.CurrentPlayerIdx
 	cb.currentTrick = j.CurrentTrick
 	if cb.currentTrick == nil {
-		cb.currentTrick = make([]*CallBreakTrickCard, 0)
+		cb.currentTrick = make([]*TrickCard, 0)
 	}
 	cb.spadesBroken = j.SpadesBroken
 	cb.leadPlayerIdx = j.LeadPlayerIdx

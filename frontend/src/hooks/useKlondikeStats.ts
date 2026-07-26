@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
+import { createLocalStorageStats } from './createLocalStorageStats';
 
 /** localStorage key for per-variant Klondike play statistics. */
 export const KLONDIKE_STATS_KEY = 'klondike_stats';
@@ -113,19 +114,14 @@ export function klondikeWinRate(stat: KlondikeVariantStat): number {
  * finished games. `recordResult` returns which personal bests were beaten so the
  * page can surface a badge.
  */
-export function useKlondikeStats() {
-  const [stats, setStats] = useState<KlondikeStats>(readKlondikeStats);
+const store = createLocalStorageStats<KlondikeStats, KlondikeResult, KlondikeBestUpdate>({
+  key: KLONDIKE_STATS_KEY,
+  read: readKlondikeStats,
+  reduce: applyKlondikeResult,
+});
 
-  const recordResult = useCallback((result: KlondikeResult): KlondikeBestUpdate => {
-    const { stats: next, update } = applyKlondikeResult(readKlondikeStats(), result);
-    setStats(next);
-    try {
-      localStorage.setItem(KLONDIKE_STATS_KEY, JSON.stringify(next));
-    } catch {
-      /* storage unavailable / quota exceeded */
-    }
-    return update;
-  }, []);
+export function useKlondikeStats() {
+  const { stats, recordResult } = store.useStats();
 
   const getStat = useCallback(
     (drawCount: number, scoringMode: number): KlondikeVariantStat =>

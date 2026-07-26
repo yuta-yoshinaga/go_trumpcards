@@ -19,7 +19,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, PLAYER_COUNT_OPTIONS, useThreeThirteenGame } from '../hooks/useThreeThirteenGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -100,7 +99,6 @@ function ThreeThirteenPageContent() {
     handleNextRound,
   } = useThreeThirteenGame();
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('threethirteen');
   const cliConfig: CliGameConfig<ThreeThirteenResponse, Parameters<typeof threethirteenApi.exec>> = useMemo(
@@ -202,7 +200,6 @@ function ThreeThirteenPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/threethirteen"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

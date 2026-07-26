@@ -19,7 +19,8 @@ function inkColor(color?: string): string {
   return (color && INK_COLORS[color]) || INK_COLORS.black;
 }
 
-interface CardFaceProps {
+/** Props for {@link CardFace}. */
+export interface CardFaceProps {
   card: Card;
   width?: number;
   style?: React.CSSProperties;

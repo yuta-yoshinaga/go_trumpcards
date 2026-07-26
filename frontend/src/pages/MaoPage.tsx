@@ -236,7 +236,6 @@ function MaoPageContent() {
       isHumanTurn={isHumanTurn || isChooseSuit || (isMustDeclare && state.players[state.currentPlayerIdx]?.isHuman)}
       gamePath="/mao"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

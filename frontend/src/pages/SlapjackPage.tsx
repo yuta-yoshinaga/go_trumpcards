@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseSlapjackCommand, slapjackHelp } from '../utils/cli/commands/slapjackCommands';
 import { formatSlapjackState } from '../utils/cli/formatters/slapjackFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 type SlapjackArgs = Parameters<typeof slapjackApi.exec>;
 
@@ -81,9 +82,8 @@ function SlapjackPageContent() {
   // Flipping the next card onto the arena is the human's tap — give it a card
   // sound (respects the global mute via SoundProvider).
   const handleStep = useCallback(() => {
-    playSound('cardPlace');
     return execApi('step');
-  }, [execApi, playSound]);
+  }, [execApi]);
   const handleSlap = useCallback(() => execApi('slap'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
 
@@ -189,7 +189,6 @@ function SlapjackPageContent() {
       gamePath="/slapjack"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -286,9 +285,7 @@ function SlapjackPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
           <SettingsPanel
@@ -308,13 +305,7 @@ function SlapjackPageContent() {
                     ],
                     onSelect: (v: string) => execApi('reset', { config: { cpuDifficulty: Number.parseInt(v, 10) } }),
                   },
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}

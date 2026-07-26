@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -22,8 +22,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CalculationResponse } from '../types/card';
@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_CNT = 4;
 const WASTE_CNT = 4;
@@ -203,7 +204,6 @@ function CalculationPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('calculation');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -248,9 +248,8 @@ function CalculationPageContent() {
 
   const handleManualReset = useCallback(() => {
     void runApi('reset');
-    playSound('shuffle');
     setSource(null);
-  }, [runApi, playSound]);
+  }, [runApi]);
 
   const handleGiveUp = useCallback(() => {
     void runApi('giveup');
@@ -259,10 +258,7 @@ function CalculationPageContent() {
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(handleGiveUp),
-    [requestGiveUpConfirm, handleGiveUp],
-  );
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const handleHint = useCallback(() => {
     void runApi('hint');
@@ -294,20 +290,18 @@ function CalculationPageContent() {
       } else {
         void runApi('move', { zone: 'waste', idx: source.idx }, { zone: 'foundation', idx: foundationIdx });
       }
-      playSound('cardPlace');
       setSource(null);
     },
-    [runApi, source, playSound],
+    [runApi, source],
   );
 
   const playToWaste = useCallback(
     (wasteIdx: number) => {
       if (source?.kind !== 'stock') return;
       void runApi('move', { zone: 'stock' }, { zone: 'waste', idx: wasteIdx });
-      playSound('cardPlace');
       setSource(null);
     },
-    [runApi, source, playSound],
+    [runApi, source],
   );
 
   const handleSelectStock = useCallback(() => {
@@ -355,7 +349,6 @@ function CalculationPageContent() {
       gamePath="/calculation"
       gameEndFlag={isEnded}
       winShow={isGameClear}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -380,15 +373,7 @@ function CalculationPageContent() {
             title={tc('settings.title', { ns: 'common' })}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -586,9 +571,7 @@ function CalculationPageContent() {
                     : `${t('waste')} ${state.hint.wasteIdx.toString()} → ${t('foundation')} ${state.hint.foundationIdx.toString()}`}
                 </div>
               )}
-              {frontendHintEnabled && frontendHint && (
-                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-              )}
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
               {source && (
                 <div className="mt-2 text-xs text-ds-text-muted">

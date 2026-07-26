@@ -4,13 +4,14 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CardRoleBadge } from '../components/CardRoleBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { Modal } from '../components/common/Modal';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PartnerRevealFlash } from '../components/PartnerRevealFlash';
@@ -27,7 +28,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, MIN_BID_OPTIONS, POINT_LIMIT_OPTIONS, useMightyGame } from '../hooks/useMightyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -42,6 +42,7 @@ import { formatMightyState } from '../utils/cli/formatters/mightyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { mightyRoleGlyph, mightySpecialRole } from '../utils/mightySpecialRole';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Mighty tutorial step definitions. */
 const MIGHTY_TUTORIAL_STEPS: TutorialStep[] = [
@@ -125,7 +126,6 @@ export const MightyPage = withTutorial(MightyPageContent, 'mighty', MIGHTY_TUTOR
 function MightyPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('mighty');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -273,7 +273,6 @@ function MightyPageContent() {
       isHumanTurn={isHumanBidTurn || isHumanTurn || isHumanDeclarer || isHumanExchange}
       gamePath="/mighty"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -326,13 +325,7 @@ function MightyPageContent() {
                     options: MIN_BID_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('minBid', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -622,35 +615,31 @@ function MightyPageContent() {
                       : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {/* Joker suit picker dialog */}
-            {jokerSuitPickerOpen && (
-              <div
-                role="dialog"
-                aria-modal="true"
-                aria-label="joker-suit-picker"
-                className="my-2 p-2 rounded bg-black/60 flex gap-2 items-center flex-wrap"
-              >
-                <span className="text-ds-text-primary text-sm mr-2">{t('demandSuit')}:</span>
-                {[1, 2, 3, 4].map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => {
-                      handleJokerLead(s);
-                      setJokerSuitPickerOpen(false);
-                    }}
-                    disabled={loading}
-                  >
-                    {t(`suitName.${SUIT_KEYS[s]}`)}
-                  </button>
-                ))}
-              </div>
-            )}
+            <Modal
+              open={jokerSuitPickerOpen}
+              onClose={() => setJokerSuitPickerOpen(false)}
+              ariaLabel={t('demandSuit')}
+              panelClassName="glass-panel rounded-lg shadow-xl p-4 flex gap-2 items-center flex-wrap max-w-sm mx-4"
+            >
+              <span className="text-ds-text-primary text-sm mr-2">{t('demandSuit')}:</span>
+              {[1, 2, 3, 4].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => {
+                    handleJokerLead(s);
+                    setJokerSuitPickerOpen(false);
+                  }}
+                  disabled={loading}
+                >
+                  {t(`suitName.${SUIT_KEYS[s]}`)}
+                </button>
+              ))}
+            </Modal>
 
             <div className="flex gap-2 items-center flex-wrap">
               {(isHumanBidTurn || isHumanTurn || isHumanDeclarer || isHumanExchange) && (

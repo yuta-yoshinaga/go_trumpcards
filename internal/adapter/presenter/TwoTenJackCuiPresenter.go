@@ -66,8 +66,8 @@ func (p *TwoTenJackCuiPresenter) Output(s interfaces.TwoTenJackGame, lastErr err
 
 		trick := s.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
-			func(tc *domain.TwoTenJackTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.TwoTenJackTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) },
 		)
 

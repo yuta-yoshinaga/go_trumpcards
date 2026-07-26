@@ -7,7 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -24,6 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import { GaigelPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Gaigel tutorial step definitions. */
 const GAIGEL_TUTORIAL_STEPS: TutorialStep[] = [
@@ -173,13 +174,7 @@ function GaigelPageContent() {
                 options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                 onSelect: (v) => handleConfigChange('targetScore', v),
               },
-              {
-                type: 'checkbox',
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: frontendHintEnabled,
-                onToggle: setFrontendHintEnabled,
-              },
+              hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
             ],
           },
         ]}
@@ -279,9 +274,7 @@ function GaigelPageContent() {
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
-        {frontendHintEnabled && frontendHint && (
-          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-        )}
+        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
         <ActionLogSection
           isEndPhase={isGameEnd}

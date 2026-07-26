@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -27,6 +27,7 @@ import { GOSTOP_HELP, parseGoStopCommand } from '../utils/cli/commands/gostopCom
 import { formatGoStopState } from '../utils/cli/formatters/gostopFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { computeNearYaku } from '../utils/gostopYaku';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Go-Stop (ゴーストップ) tutorial step definitions. */
 const GOSTOP_TUTORIAL_STEPS: TutorialStep[] = [
@@ -389,9 +390,7 @@ function GoStopPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -425,13 +424,7 @@ function GoStopPageContent() {
                     options: TARGET_SCORE_OPTIONS.map((v) => ({ value: String(v), label: String(v) })),
                     onSelect: (v: string) => handleConfigChange('targetScore', Number.parseInt(v, 10)),
                   },
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}

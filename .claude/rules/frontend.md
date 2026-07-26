@@ -13,6 +13,7 @@ globs: ["frontend/**/*.ts", "frontend/**/*.tsx"]
 ```sh
 cd frontend && bun run build   # React build
 cd frontend && bun run check   # Biome lint + format check
+cd frontend && bun run typecheck # TypeScript 7 type check (never bare `tsc`)
 cd frontend && bun run test    # Vitest unit tests
 ```
 

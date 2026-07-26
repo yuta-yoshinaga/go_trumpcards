@@ -4,7 +4,7 @@ import { GameFooter } from '../GameFooter';
 import { SkeletonBar } from './SkeletonBar';
 
 /** Props for the shared game skeleton shell. */
-interface SkeletonShellProps {
+export interface SkeletonShellProps {
   /** Background color class for the outer wrapper (e.g. "bg-game-bg-green-bright"). */
   bgClass: string;
   /** Classes for the scrollable body area. Defaults to "pt-3 px-4". */

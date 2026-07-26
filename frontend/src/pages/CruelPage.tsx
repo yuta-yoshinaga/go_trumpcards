@@ -10,7 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
@@ -23,6 +23,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import i18n from '../i18n';
@@ -36,6 +37,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { cruelHelp, parseCruelCommand } from '../utils/cli/commands/cruelCommands';
 import { formatCruelState } from '../utils/cli/formatters/cruelFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 /**
@@ -188,8 +190,7 @@ function CruelPageContent() {
   // Action handlers
   const handleManualReset = useCallback(() => {
     void apiExec('reset');
-    playSound('shuffle');
-  }, [apiExec, playSound]);
+  }, [apiExec]);
 
   const handleShift = useCallback(() => {
     void apiExec('shift');
@@ -202,10 +203,7 @@ function CruelPageContent() {
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(handleGiveUp),
-    [requestGiveUpConfirm, handleGiveUp],
-  );
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const handleHint = useCallback(async () => {
     try {
@@ -249,9 +247,8 @@ function CruelPageContent() {
       const target: CruelMoveZone = col === undefined ? { zone } : { zone, col };
       void apiExec('move', selectedSource, target);
       setSelectedSource(null);
-      playSound('cardPlace');
     },
-    [apiExec, selectedSource, playSound],
+    [apiExec, selectedSource],
   );
 
   const isPlayingForKbd = state?.phase === CruelPhase.PLAYING;
@@ -326,15 +323,7 @@ function CruelPageContent() {
             title={tc('settings.title', { ns: 'common' })}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -501,9 +490,7 @@ function CruelPageContent() {
                 })}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
               isEndPhase={isEnded}

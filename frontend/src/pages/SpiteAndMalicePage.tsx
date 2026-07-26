@@ -21,7 +21,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, SpiteAndMaliceResponse } from '../types/card';
@@ -29,6 +28,7 @@ import { SpiteAndMalicePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { isGoalTopPlayableToFoundation } from '../utils/spiteAndMaliceUtils';
 
 const samRunner = spiteAndMaliceApi;
@@ -149,7 +149,6 @@ type Selection = { kind: 'hand'; idx: number } | { kind: 'goal' } | { kind: 'sid
 function SpiteAndMalicePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('spiteandmalice');
-  const { playSound } = useSound();
   const runApi = useCallback((...args: ApiArgs) => samRunner.exec(...args), []);
   const gameApi = useGameApi<SpiteAndMaliceResponse, ApiArgs>(runApi);
   const { state, loading, error, retry } = gameApi;
@@ -211,8 +210,7 @@ function SpiteAndMalicePageContent() {
   const handleResetAction = useCallback(() => {
     setSelection(null);
     void apiCall('reset');
-    playSound('shuffle');
-  }, [apiCall, playSound]);
+  }, [apiCall]);
 
   const handleAutoComplete = useCallback(() => {
     setSelection(null);
@@ -254,9 +252,8 @@ function SpiteAndMalicePageContent() {
         void apiCall('move', { zone: 'side', idx: selection.idx }, { zone: 'foundation', idx: fIdx });
       }
       setSelection(null);
-      playSound('cardPlace');
     },
-    [apiCall, selection, isHumanTurn, isGameOver, playSound],
+    [apiCall, selection, isHumanTurn, isGameOver],
   );
 
   const handleDiscardSide = useCallback(
@@ -265,9 +262,8 @@ function SpiteAndMalicePageContent() {
       if (selection?.kind !== 'hand') return;
       void apiCall('discard', { zone: 'hand', idx: selection.idx }, { zone: 'side', idx: sideIdx });
       setSelection(null);
-      playSound('cardPlace');
     },
-    [apiCall, selection, isHumanTurn, isGameOver, playSound],
+    [apiCall, selection, isHumanTurn, isGameOver],
   );
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
 
@@ -311,13 +307,7 @@ function SpiteAndMalicePageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: hintEnabled,
-                    onToggle: setHintEnabled,
-                  },
+                  hintCheckboxItem(tc, hintEnabled, setHintEnabled),
                   {
                     type: 'select' as const,
                     id: 'samCpuSpeed',

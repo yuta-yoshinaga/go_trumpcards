@@ -138,6 +138,7 @@ func writeInstallHint(w io.Writer, shell string) {
 func writeBashCompletion(w io.Writer) error {
 	cmds := strings.Join(completionSubcommands(), " ")
 	games := strings.Join(completionGameTargets(), " ")
+	cats := strings.Join(categoryDisplayNames(), " ")
 	// `commands` (every game + alias + subcommand) and `games` (game targets
 	// only, used by --start and `help <target>`) are declared once at the
 	// top of the function so each case reuses them, avoiding the previous
@@ -178,7 +179,7 @@ func writeBashCompletion(w io.Writer) error {
             return
             ;;
         --category)
-            COMPREPLY=( $(compgen -W "casino classic solo" -- "$cur") )
+            COMPREPLY=( $(compgen -W "%[3]s" -- "$cur") )
             return
             ;;
         games|--short|--aliases|--json)
@@ -203,7 +204,7 @@ func writeBashCompletion(w io.Writer) error {
     COMPREPLY=( $(compgen -W "$commands" -- "$cur") )
 }
 complete -F _trumpcards trumpcards
-`, cmds, games)
+`, cmds, games, cats)
 	_, err := fmt.Fprint(w, script)
 	return err
 }
@@ -217,6 +218,7 @@ func writeZshCompletion(w io.Writer) error {
 		fmt.Fprintf(&sb, "        '%s:%s'\n", e.name, desc)
 	}
 	games := strings.Join(completionGameTargets(), " ")
+	cats := strings.Join(categoryDisplayNames(), " ")
 	script := fmt.Sprintf(`#compdef trumpcards
 
 _trumpcards() {
@@ -258,7 +260,7 @@ _trumpcards() {
                         '--short[Print game names only]' \
                         '--aliases[Include aliases in output]' \
                         '--json[Emit machine-readable JSON]' \
-                        '--category[Filter by category]:category:(casino classic solo)'
+                        '--category[Filter by category]:category:(%[3]s)'
                     ;;
                 web)
                     _arguments \
@@ -280,7 +282,7 @@ _trumpcards() {
 }
 
 _trumpcards "$@"
-`, sb.String(), games)
+`, sb.String(), games, cats)
 	_, err := fmt.Fprint(w, script)
 	return err
 }
@@ -294,6 +296,7 @@ func writeFishCompletion(w io.Writer) error {
 		fmt.Fprintf(&sb, "complete -c trumpcards -n __fish_use_subcommand -a %s -d '%s'\n", e.name, desc)
 	}
 	games := strings.Join(completionGameTargets(), " ")
+	cats := strings.Join(categoryDisplayNames(), " ")
 	script := fmt.Sprintf(`# Fish completion for trumpcards
 complete -c trumpcards -f
 
@@ -321,7 +324,7 @@ complete -c trumpcards -n '__fish_seen_subcommand_from update' -l dry-run -d 'Al
 complete -c trumpcards -n '__fish_seen_subcommand_from games' -l short -d 'Print game names only'
 complete -c trumpcards -n '__fish_seen_subcommand_from games' -l aliases -d 'Include aliases in output'
 complete -c trumpcards -n '__fish_seen_subcommand_from games' -l json -d 'Emit machine-readable JSON'
-complete -c trumpcards -n '__fish_seen_subcommand_from games' -l category -x -a 'casino classic solo' -d 'Filter by category'
+complete -c trumpcards -n '__fish_seen_subcommand_from games' -l category -x -a '%[3]s' -d 'Filter by category'
 
 # web subcommand
 complete -c trumpcards -n '__fish_seen_subcommand_from web' -l port -s p -d 'Port number' -x
@@ -334,7 +337,7 @@ complete -c trumpcards -n '__fish_seen_subcommand_from version' -l short -d 'Pri
 
 # help subcommand (game or subcommand argument)
 complete -c trumpcards -n '__fish_seen_subcommand_from help' -a '%[2]s completion games help update version web'
-`, sb.String(), games)
+`, sb.String(), games, cats)
 	_, err := fmt.Fprint(w, script)
 	return err
 }

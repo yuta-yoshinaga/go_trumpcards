@@ -2,7 +2,27 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import i18n from 'i18next';
 import { describe, expect, it, vi } from 'vitest';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { SoundProvider } from '../providers/SoundProvider';
 import { ErrorAlert } from './ErrorAlert';
+
+// Track plays per sound file so the errorBuzz tests can assert WHICH sound
+// fired (the global setup.ts mock can't distinguish Howl instances).
+const { playCalls } = vi.hoisted(() => ({ playCalls: [] as string[] }));
+vi.mock('howler', () => ({
+  Howl: class MockHowl {
+    private src: string;
+    constructor(opts: { src: string[] }) {
+      this.src = opts.src[0];
+    }
+    play() {
+      playCalls.push(this.src);
+      return 1;
+    }
+    volume() {}
+    rate() {}
+  },
+  Howler: { ctx: { state: 'running' } },
+}));
 
 const retryLabel = i18n.t('button.retry', { ns: 'common' });
 
@@ -44,5 +64,75 @@ describe('ErrorAlert', () => {
     const alert = screen.getByRole('alert');
     expect(alert.className).toContain('bg-ds-error');
     expect(alert.className).not.toContain('bg-ds-error/90');
+  });
+
+  it('renders the retry button on an opaque surface (no alpha) per DESIGN.md Opacity rule', () => {
+    render(<ErrorAlert message="error" onRetry={() => {}} />);
+    const btn = screen.getByRole('button', { name: retryLabel });
+    expect(btn.className).toContain('bg-white');
+    expect(btn.className).toContain('text-ds-error');
+    expect(btn.className).not.toContain('bg-white/20');
+    expect(btn.className).not.toContain('bg-white/30');
+    // Hover deepens the red text so the cream hover surface stays WCAG AA (~5.4:1).
+    expect(btn.className).toContain('hover:text-ds-error-hover');
+  });
+
+  describe('central errorBuzz tap', () => {
+    it('plays errorBuzz once when an error appears', () => {
+      playCalls.length = 0;
+      render(
+        <SoundProvider>
+          <ErrorAlert message="boom" />
+        </SoundProvider>,
+      );
+      expect(playCalls.filter((p) => p === '/sounds/error-buzz.ogg')).toHaveLength(1);
+    });
+
+    it('does not repeat the buzz when re-rendered with the same message', () => {
+      playCalls.length = 0;
+      const { rerender } = render(
+        <SoundProvider>
+          <ErrorAlert message="boom" />
+        </SoundProvider>,
+      );
+      rerender(
+        <SoundProvider>
+          <ErrorAlert message="boom" onRetry={() => {}} />
+        </SoundProvider>,
+      );
+      expect(playCalls.filter((p) => p === '/sounds/error-buzz.ogg')).toHaveLength(1);
+    });
+
+    it('buzzes again when the message changes to a new error', () => {
+      playCalls.length = 0;
+      const { rerender } = render(
+        <SoundProvider>
+          <ErrorAlert message="boom" />
+        </SoundProvider>,
+      );
+      rerender(
+        <SoundProvider>
+          <ErrorAlert message="other failure" />
+        </SoundProvider>,
+      );
+      expect(playCalls.filter((p) => p === '/sounds/error-buzz.ogg')).toHaveLength(2);
+    });
+
+    it('plays nothing when message is null', () => {
+      playCalls.length = 0;
+      render(
+        <SoundProvider>
+          <ErrorAlert message={null} />
+        </SoundProvider>,
+      );
+      expect(playCalls).toEqual([]);
+    });
+
+    it('renders without a SoundProvider (providerless tests) — no crash, no buzz', () => {
+      playCalls.length = 0;
+      render(<ErrorAlert message="boom" />);
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+      expect(playCalls).toEqual([]);
+    });
   });
 });

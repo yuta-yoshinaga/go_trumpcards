@@ -35,6 +35,10 @@ export async function navigateTo(page: Page, path: string) {
   // Suppress the first-visit tutorial suggestion dialog to avoid blocking game interaction
   await page.addInitScript(() => {
     localStorage.setItem('tutorial_no_suggest', 'true');
+    // Skip the CPU replay animation. Specs assert on state, not on the
+    // pacing of the animation, and at the default 'normal' speed every
+    // CPU action costs 800ms — Sevens alone spent ~2.9s per turn waiting.
+    localStorage.setItem('cpuReplaySpeed', 'instant');
   });
   await page.goto(`/#${path}`);
   await waitForLoaded(page);

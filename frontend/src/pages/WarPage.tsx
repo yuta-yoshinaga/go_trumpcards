@@ -8,7 +8,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -26,6 +26,7 @@ import type { WarResponse } from '../types/card';
 import { WarPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 type WarArgs = Parameters<typeof warApi.exec>;
 
@@ -137,14 +138,22 @@ function WarPageContent() {
   }, []);
   const handleReset = useCallback(() => {
     setAutoPlaying(false);
-    playSound('shuffle');
     return execApi('reset', { maxRounds });
-  }, [execApi, maxRounds, playSound]);
+  }, [execApi, maxRounds]);
 
   // Play a card-resolution SFX each time a battle settles (RESOLVED) and a
   // tension cue when a tie triggers a war (WAR_BURY). Tracks the previous phase
   // so the sound fires on the transition, not on every re-render, and skips the
   // initial mount. Muting is honored inside `playSound`.
+  // This page shows errors with its own inline retry link rather than the
+  // shared ErrorAlert, so the central errorBuzz tap never fires here — keep
+  // a page-level buzz on the error appearance edge.
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current) playSound('errorBuzz');
+    prevErrorRef.current = error;
+  }, [error, playSound]);
+
   const prevPhaseRef = useRef<number | undefined>(undefined);
   useEffect(() => {
     const phase = state?.phase;
@@ -154,13 +163,6 @@ function WarPageContent() {
     if (phase === WarPhase.RESOLVED) playSound('cardPlace');
     else if (phase === WarPhase.WAR_BURY) playSound('chipClick');
   }, [state?.phase, playSound]);
-
-  // Buzz once when a new error surfaces (e.g. a failed step/reset request).
-  const prevErrorRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (error && error !== prevErrorRef.current) playSound('errorBuzz');
-    prevErrorRef.current = error;
-  }, [error, playSound]);
 
   // Latest state/speed read from a self-scheduling autoplay loop without
   // re-subscribing the effect on every render.
@@ -254,7 +256,6 @@ function WarPageContent() {
       gamePath="/war"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -382,9 +383,7 @@ function WarPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
           <SettingsPanel
@@ -421,13 +420,7 @@ function WarPageContent() {
                     ],
                     onSelect: handleSelectSpeed,
                   },
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}

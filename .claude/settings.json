@@ -27,6 +27,12 @@
           },
           {
             "type": "command",
+            "command": "jq -r '.tool_input.command' | { read -r cmd; case \"$cmd\" in git\\ commit*) if git diff --cached --name-only | grep -qE '\\.(ts|tsx)$'; then cd frontend && output=$(bun run typecheck 2>&1); if [ $? -ne 0 ]; then jq -nc --arg msg \"$(printf '%s' \"$output\" | head -30)\" '{continue: false, stopReason: (\"tsc type-check failed (TypeScript 7 via bun run typecheck; vitest/biome do not catch this):\\n\" + $msg)}'; else echo '{}'; fi; else echo '{}'; fi ;; *) echo '{}' ;; esac; }",
+            "timeout": 180,
+            "statusMessage": "Running tsc type-check..."
+          },
+          {
+            "type": "command",
             "command": "jq -r '.tool_input.command' | { read -r cmd; case \"$cmd\" in git\\ commit*) echo '{\"hookSpecificInstructions\": \"This is a git commit. Check for documentation drift: run git diff --cached --name-only to see staged files, then verify: (1) game domain/interactor/controller/presenter changes have README.md, CLAUDE.md Commands, docs/games.md, docs/manual/ updates; (2) Web API route changes have docs/architecture.md, api/openapi.yaml updates; (3) frontend page/component changes have frontend/CLAUDE.md i18n list updates; (4) new ADR files have docs/adr/README.md index updates; (5) controller schema changes have api/openapi.yaml updates. Block if required docs are missing from staged files.\"}' ;; *) echo '{}' ;; esac; }",
             "timeout": 10,
             "statusMessage": "Checking for documentation drift..."

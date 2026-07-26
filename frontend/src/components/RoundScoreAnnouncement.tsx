@@ -7,7 +7,8 @@ export interface RoundScoreEntry {
   cumulativeScore: number;
 }
 
-interface RoundScoreAnnouncementProps {
+/** Props for {@link RoundScoreAnnouncement}. */
+export interface RoundScoreAnnouncementProps {
   active: boolean;
   entries: RoundScoreEntry[];
 }

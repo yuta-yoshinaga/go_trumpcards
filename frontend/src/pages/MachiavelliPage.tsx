@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -26,7 +26,6 @@ import {
   useMachiavelliGame,
 } from '../hooks/useMachiavelliGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -41,6 +40,7 @@ import { formatMachiavelliState } from '../utils/cli/formatters/machiavelliForma
 import type { CliGameConfig } from '../utils/cli/types';
 import { designToNum, evaluateRearrange, isMachiavelliValidMeld } from '../utils/machiavelliRearrange';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const MACHIAVELLI_PHASE_KEYS: Readonly<Record<number, string>> = {
   [MachiavelliPhase.TURN]: 'turn',
@@ -124,7 +124,6 @@ function MachiavelliPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('machiavelli', state);
   const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('machiavelli');
   const cliConfig: CliGameConfig<MachiavelliResponse, Parameters<typeof machiavelliApi.exec>> = useMemo(
@@ -252,7 +251,6 @@ function MachiavelliPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/machiavelli"
       gameEndFlag={isGameEnd}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -295,13 +293,7 @@ function MachiavelliPageContent() {
                     options: TARGET_ROUNDS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('targetRounds', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -548,9 +540,7 @@ function MachiavelliPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex gap-2 items-center flex-wrap">
               {isHumanTurn && (

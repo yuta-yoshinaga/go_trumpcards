@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useOptionalSound } from '../providers/SoundProvider';
 import { GameGiveUpDialog } from './GameGiveUpDialog';
 import { GamePageHeading } from './GamePageHeading';
 import { GameResetDialog } from './GameResetDialog';
@@ -9,7 +11,7 @@ import { PhaseIndicator } from './PhaseIndicator';
 import { TutorialButton } from './tutorial/TutorialButton';
 
 /** Base props for the GamePageShell component (everything except the give-up trio). */
-interface GamePageShellBaseProps {
+export interface GamePageShellBaseProps {
   /** Page title rendered as a visually-hidden h1 heading. */
   title: string;
   /** Tailwind background class for the outer container (e.g., gameTheme.hearts.bg). */
@@ -34,6 +36,15 @@ interface GamePageShellBaseProps {
   winShow?: boolean;
   /** Optional callback invoked when WinCelebration plays — typically used to trigger sound effects. */
   onCelebrate?: () => void;
+  /**
+   * Whether this game end is an actual loss, which plays the loss sound.
+   * Opt-in and deliberately NOT derived from `!winShow`: many casino pages
+   * pass `winShow={result > 0}`, where a push (`result === 0`) is not a win
+   * but is also not a loss — deriving it would thud at break-even. Pages that
+   * can distinguish a real loss pass `lossShow={...}`; pages that cannot stay
+   * silent on game end.
+   */
+  lossShow?: boolean;
   /** Whether an async operation is in progress; forwarded to aria-busy on the outer container. */
   loading: boolean;
   /** Whether the reset confirmation dialog is open. */
@@ -71,7 +82,7 @@ interface GamePageShellBaseProps {
  * wiring a compile error rather than a silently no-op dialog (issue #2099,
  * PR #2108 review).
  */
-type GiveUpConfirmProps =
+export type GiveUpConfirmProps =
   | { giveUpConfirmOpen?: undefined; confirmGiveUp?: undefined; cancelGiveUp?: undefined }
   | {
       /** Whether the give-up confirmation dialog is open. */
@@ -100,6 +111,7 @@ export function GamePageShell({
   gameEndFlag,
   winShow,
   onCelebrate,
+  lossShow,
   loading,
   confirmOpen,
   confirmReset,
@@ -114,6 +126,47 @@ export function GamePageShell({
 }: GamePageShellProps) {
   // long-form games (Hearts, Spades, Skat, …) don't silently lose state.
   useGameRoundGuard(!gameEndFlag);
+
+  // Central sound taps (sound-centralization design):
+  //
+  //   winFanfare ── rides WinCelebration's own trigger (show = winShow ?? gameEndFlag)
+  //   lossThud ──── explicit lossShow === true, once per game end (never
+  //                 derived from !winShow: a casino push is neither)
+  //   turnTick ──── isHumanTurn false→true edge, never when the prop is omitted
+  //
+  // The sound context is read through a ref so callbacks stay identity-stable
+  // (playSound changes identity on every mute toggle).
+  const sound = useOptionalSound();
+  const soundRef = useRef(sound);
+  soundRef.current = sound;
+  const onCelebrateRef = useRef(onCelebrate);
+  onCelebrateRef.current = onCelebrate;
+
+  const handleCelebrate = useCallback(() => {
+    soundRef.current?.playSound('winFanfare');
+    onCelebrateRef.current?.();
+  }, []);
+
+  const lossPlayedRef = useRef(false);
+  useEffect(() => {
+    if (!gameEndFlag) {
+      lossPlayedRef.current = false;
+      return;
+    }
+    if (lossShow === true && !lossPlayedRef.current) {
+      lossPlayedRef.current = true;
+      soundRef.current?.playSound('lossThud');
+    }
+  }, [gameEndFlag, lossShow]);
+
+  const prevTurnRef = useRef(isHumanTurn);
+  useEffect(() => {
+    if (isHumanTurn === true && prevTurnRef.current === false) {
+      soundRef.current?.playSound('turnTick');
+    }
+    prevTurnRef.current = isHumanTurn;
+  }, [isHumanTurn]);
+
   return (
     <div key={outerKey} className={`relative flex-1 flex flex-col min-h-0 ${gameThemeBg}`} aria-busy={loading}>
       <GamePageHeading title={title} />
@@ -124,7 +177,7 @@ export function GamePageShell({
         {headerEnd}
       </PhaseIndicator>
       {children}
-      <WinCelebration show={winShow ?? gameEndFlag} onCelebrate={onCelebrate} />
+      <WinCelebration show={winShow ?? gameEndFlag} onCelebrate={handleCelebrate} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
       {giveUpConfirmOpen !== undefined && confirmGiveUp && cancelGiveUp && (
         <GameGiveUpDialog

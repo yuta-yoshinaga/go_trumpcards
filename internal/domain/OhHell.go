@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // OhHellPlayerCnt オー・ヘルプレイヤー数
@@ -34,12 +33,6 @@ type OhHellHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// OhHellTrickCard トリック中の1枚
-type OhHellTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // OhHell オー・ヘルゲームクラス
 type OhHell struct {
 	trumpCards       *TrumpCards
@@ -51,7 +44,7 @@ type OhHell struct {
 	handSize         int // 現在のラウンドの手札枚数
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*OhHellTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	bidPlayerIdx     int
 	dealerIdx        int
@@ -357,10 +350,10 @@ func (o *OhHell) GetCurrentPlayerIdx() int { return o.currentPlayerIdx }
 func (o *OhHell) SetCurrentPlayerIdx(idx int) { o.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (o *OhHell) GetCurrentTrick() []*OhHellTrickCard { return o.currentTrick }
+func (o *OhHell) GetCurrentTrick() []*TrickCard { return o.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (o *OhHell) SetCurrentTrick(trick []*OhHellTrickCard) { o.currentTrick = trick }
+func (o *OhHell) SetCurrentTrick(trick []*TrickCard) { o.currentTrick = trick }
 
 // GetTrumpCard 切り札カード取得
 func (o *OhHell) GetTrumpCard() *Card { return o.trumpCard }
@@ -572,7 +565,7 @@ func (o *OhHell) startPlayPhase() {
 
 // playCard カードをプレイする共通処理
 func (o *OhHell) playCard(playerIdx int, card *Card) {
-	o.currentTrick = append(o.currentTrick, &OhHellTrickCard{
+	o.currentTrick = append(o.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -617,35 +610,7 @@ func (o *OhHell) playerHasSuit(playerIdx int, design int) bool {
 
 // trickWinner トリックの勝者を決定する
 func (o *OhHell) trickWinner() int {
-	if len(o.currentTrick) == 0 {
-		return 0
-	}
-	leadSuit := o.currentTrick[0].Card.GetDesign()
-	winnerIdx := o.currentTrick[0].PlayerIdx
-	winnerValue := o.currentTrick[0].Card.GetValue()
-	winnerIsTrump := o.trumpSuit >= 0 && o.currentTrick[0].Card.GetDesign() == o.trumpSuit
-
-	for _, tc := range o.currentTrick[1:] {
-		isTrump := o.trumpSuit >= 0 && tc.Card.GetDesign() == o.trumpSuit
-
-		if isTrump && !winnerIsTrump {
-			// トランプがリードスートに勝つ
-			winnerIdx = tc.PlayerIdx
-			winnerValue = tc.Card.GetValue()
-			winnerIsTrump = true
-		} else if isTrump && winnerIsTrump {
-			// トランプ同士: 高い方が勝つ
-			if tc.Card.GetValue() > winnerValue {
-				winnerIdx = tc.PlayerIdx
-				winnerValue = tc.Card.GetValue()
-			}
-		} else if !isTrump && !winnerIsTrump && tc.Card.GetDesign() == leadSuit && tc.Card.GetValue() > winnerValue {
-			// 非トランプ同士: リードスートの高い方が勝つ
-			winnerIdx = tc.PlayerIdx
-			winnerValue = tc.Card.GetValue()
-		}
-	}
-	return winnerIdx
+	return ResolveTrickWinner(o.currentTrick, o.trumpSuit, nil)
 }
 
 // determineWinner 最終的な勝者を決定する
@@ -670,20 +635,12 @@ func (o *OhHell) sortAllHands() {
 
 // ohHellSortHand プレイヤーの手札をスート→値の順にソートする
 func ohHellSortHand(p *OhHellPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return cards[i].GetValue() < cards[j].GetValue()
+		return ci.GetValue() < cj.GetValue()
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName ���レイヤー名を返す
@@ -711,14 +668,9 @@ func (o *OhHell) appendLog(playerIdx int, actionType, detail string, cards []*Ca
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (o *OhHell) getValidPlayIndices(playerIdx int) []int {
 	player := o.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if o.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return o.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // GetHint ヒントを取得する
@@ -1120,24 +1072,24 @@ func (o *OhHell) tryLoseTrick(player *OhHellPlayer, validIndices []int, leadSuit
 
 // ohHellJSON is the JSON wire format for OhHell.
 type ohHellJSON struct {
-	TrumpCards       *TrumpCards        `json:"tc"`
-	Players          []*OhHellPlayer    `json:"ps"`
-	Config           OhHellConfig       `json:"cf"`
-	Phase            OhHellPhase        `json:"ph"`
-	RoundNumber      int                `json:"rn"`
-	TotalRounds      int                `json:"tr"`
-	HandSize         int                `json:"hs"`
-	TrickNumber      int                `json:"tn"`
-	CurrentPlayerIdx int                `json:"ci"`
-	CurrentTrick     []*OhHellTrickCard `json:"ct"`
-	LeadPlayerIdx    int                `json:"li"`
-	BidPlayerIdx     int                `json:"bi"`
-	DealerIdx        int                `json:"di"`
-	TrumpCard        *Card              `json:"tp"`
-	TrumpSuit        int                `json:"ts"`
-	GameEndFlag      bool               `json:"ge"`
-	WinnerIdx        int                `json:"wi"`
-	ActionLog        []*ActionLogEntry  `json:"al"`
+	TrumpCards       *TrumpCards       `json:"tc"`
+	Players          []*OhHellPlayer   `json:"ps"`
+	Config           OhHellConfig      `json:"cf"`
+	Phase            OhHellPhase       `json:"ph"`
+	RoundNumber      int               `json:"rn"`
+	TotalRounds      int               `json:"tr"`
+	HandSize         int               `json:"hs"`
+	TrickNumber      int               `json:"tn"`
+	CurrentPlayerIdx int               `json:"ci"`
+	CurrentTrick     []*TrickCard      `json:"ct"`
+	LeadPlayerIdx    int               `json:"li"`
+	BidPlayerIdx     int               `json:"bi"`
+	DealerIdx        int               `json:"di"`
+	TrumpCard        *Card             `json:"tp"`
+	TrumpSuit        int               `json:"ts"`
+	GameEndFlag      bool              `json:"ge"`
+	WinnerIdx        int               `json:"wi"`
+	ActionLog        []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1214,7 +1166,7 @@ func (o *OhHell) UnmarshalJSON(data []byte) error {
 	o.currentPlayerIdx = j.CurrentPlayerIdx
 	o.currentTrick = j.CurrentTrick
 	if o.currentTrick == nil {
-		o.currentTrick = make([]*OhHellTrickCard, 0)
+		o.currentTrick = make([]*TrickCard, 0)
 	}
 	o.leadPlayerIdx = j.LeadPlayerIdx
 	o.bidPlayerIdx = j.BidPlayerIdx

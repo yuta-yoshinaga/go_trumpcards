@@ -21,7 +21,6 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TrashResponse, TrashSlot } from '../types/card';
@@ -137,7 +136,6 @@ export const TrashPage = withTutorial(TrashPageContent, 'trash', TR_TUTORIAL_STE
 function TrashPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('trash');
-  const { playSound } = useSound();
   const gameApi = useGameApi<TrashResponse, ApiArgs>((...args) => trashRunner.exec(...args));
   const { state, loading, error, retry } = gameApi;
   const apiCall = gameApi.exec;
@@ -192,13 +190,11 @@ function TrashPageContent() {
 
   const handleResetAction = useCallback(() => {
     void apiCall('reset');
-    playSound('shuffle');
-  }, [apiCall, playSound]);
+  }, [apiCall]);
 
   const handleDraw = useCallback(() => {
     void apiCall('draw');
-    playSound('cardPlace');
-  }, [apiCall, playSound]);
+  }, [apiCall]);
 
   const handleSlotClick = useCallback(
     (slotIdx: number) => {
@@ -208,9 +204,8 @@ function TrashPageContent() {
       const slot = state.players[0].slots[slotIdx];
       if (slot.faceUp) return;
       void apiCall('place', slotIdx + 1);
-      playSound('cardPlace');
     },
-    [apiCall, state, playSound],
+    [apiCall, state],
   );
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;

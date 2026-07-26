@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"sort"
 )
 
 // PitchPlayerCnt ピッチプレイヤー数 (4人, シングルハンド/カットスロート)
@@ -764,20 +763,12 @@ func (p *Pitch) sortAllHands() {
 }
 
 func pitchSortHand(pl *PitchPlayer) {
-	cards := make([]*Card, pl.GetCardsSize())
-	for i := 0; i < pl.GetCardsSize(); i++ {
-		cards[i] = pl.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(pl, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return pitchRankValue(cards[i].GetValue()) < pitchRankValue(cards[j].GetValue())
+		return pitchRankValue(ci.GetValue()) < pitchRankValue(cj.GetValue())
 	})
-	pl.Reset()
-	for _, c := range cards {
-		pl.AddCard(c)
-	}
 }
 
 func (p *Pitch) playerName(idx int) string {
@@ -801,15 +792,10 @@ func (p *Pitch) appendLog(playerIdx int, actionType, detail string, cards []*Car
 }
 
 func (p *Pitch) getValidPlayIndices(playerIdx int) []int {
-	pl := p.players[playerIdx]
-	var valid []int
-	for i := 0; i < pl.GetCardsSize(); i++ {
-		card := pl.GetCard(i)
-		if p.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	player := p.players[playerIdx]
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return p.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- CPU AI ---

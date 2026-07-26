@@ -11,11 +11,14 @@
 #
 name: "CodeQL"
 
+# Runs after the merge, not on the PR. The Go job takes ~460s and the
+# JavaScript one ~220s, which made CodeQL — not the CI workflow (~230s) — the
+# real wait on every PR. develop is an integration branch, not a release
+# branch (master is), so scanning right after the merge still catches a finding
+# before it can ship, and the weekly run covers query-pack updates against
+# code that has not changed. Findings land in the Security tab either way.
 on:
   push:
-    branches: [ develop ]
-  pull_request:
-    # The branches below must be a subset of the branches above
     branches: [ develop ]
   schedule:
     - cron: '37 4 * * 0'

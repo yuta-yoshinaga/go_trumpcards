@@ -28,7 +28,7 @@ func setupTTJCuiMock() (*interfaces.MockTwoTenJackGame, []*domain.TwoTenJackPlay
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
 	m.On("GetDeclarerIdx").Return(0)
-	m.On("GetCurrentTrick").Return([]*domain.TwoTenJackTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.TwoTenJackPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -113,7 +113,7 @@ func TestTwoTenJackCuiPresenter_Output(t *testing.T) {
 	t.Run("trick shown", func(t *testing.T) {
 		m, _ := setupTTJCuiMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		trick := []*domain.TwoTenJackTrickCard{
+		trick := []*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
 		}
 		m.On("GetCurrentTrick").Return(trick)

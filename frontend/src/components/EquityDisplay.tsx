@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HoldemEquity } from '../types/card';
 
-interface EquityDisplayProps {
+/** Props for {@link EquityDisplay}. */
+export interface EquityDisplayProps {
   equity: HoldemEquity;
   potOdds: number;
 }

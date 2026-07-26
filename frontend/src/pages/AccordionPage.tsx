@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KeyboardShortcutsPanel } from '../components/KeyboardShortcutsPanel';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -23,8 +23,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
-import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { AccordionResponse } from '../types/card';
@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { accordionLegalOffsets, accordionLegalTargets, accordionNextAutoMove } from '../utils/accordionUtils';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Upper bound on autocomplete merges (a 52-card deck needs at most 51) — loop guard (#3192). */
 const AC_MAX_AUTO_MERGES = 52;
@@ -129,7 +130,6 @@ function AccordionPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('accordion');
-  const { playSound } = useSound();
   const {
     state,
     setState,
@@ -184,9 +184,8 @@ function AccordionPageContent() {
 
   const handleManualReset = useCallback(() => {
     void apiCall('reset');
-    playSound('shuffle');
     setSelectedIdx(null);
-  }, [apiCall, playSound]);
+  }, [apiCall]);
 
   const handleGiveUp = useCallback(() => {
     void apiCall('giveup');
@@ -194,10 +193,7 @@ function AccordionPageContent() {
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(handleGiveUp),
-    [requestGiveUpConfirm, handleGiveUp],
-  );
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const handleHint = useCallback(() => {
     void apiCall('hint');
@@ -242,7 +238,6 @@ function AccordionPageContent() {
         if (res.phase !== AccordionPhase.PLAYING) break;
         move = accordionNextAutoMove(res.piles);
       }
-      playSound('cardPlace');
     } catch {
       // Surface the failure through the shared exec so the standard
       // error/retry channel handles it.
@@ -253,17 +248,16 @@ function AccordionPageContent() {
       autoCompletingRef.current = false;
       setIsAutoCompleting(false);
     }
-  }, [apiCall, setState, playSound]);
+  }, [apiCall, setState]);
 
   const dispatchMove = useCallback(
     (fromIdx: number, toIdx: number) => {
       const from: AccordionMoveZone = { zone: 'pile', index: fromIdx };
       const to: AccordionMoveZone = { zone: 'pile', index: toIdx };
       void apiCall('move', from, to);
-      playSound('cardPlace');
       setSelectedIdx(null);
     },
-    [apiCall, playSound],
+    [apiCall],
   );
 
   const handlePileClick = useCallback(
@@ -380,15 +374,7 @@ function AccordionPageContent() {
             title={tc('settings.title', { ns: 'common' })}
             groups={[
               {
-                items: [
-                  {
-                    type: 'checkbox' as const,
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
+                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
               },
             ]}
           />
@@ -509,9 +495,7 @@ function AccordionPageContent() {
                 {t('hintMove', { from: state.hint.fromIdx, to: state.hint.toIdx })}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
               isEndPhase={isEnded}

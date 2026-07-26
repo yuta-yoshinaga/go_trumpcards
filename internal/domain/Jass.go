@@ -1043,14 +1043,9 @@ func (g *Jass) GetValidPlayIndices(playerIdx int) []int {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *Jass) getValidPlayIndices(playerIdx int) []int {
 	player := g.players[playerIdx]
-	var valid []int
-	for i := range player.GetCardsSize() {
-		card := player.GetCard(i)
-		if g.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- Game end + bookkeeping ---
@@ -1080,22 +1075,14 @@ func (g *Jass) sortAllHands() {
 }
 
 func jassSortHand(p *JassPlayer, g *Jass) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := range p.GetCardsSize() {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		si := cards[i].GetDesign()
-		sj := cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		si := ci.GetDesign()
+		sj := cj.GetDesign()
 		if si != sj {
 			return si < sj
 		}
-		return g.cardRank(cards[i]) > g.cardRank(cards[j])
+		return g.cardRank(ci) > g.cardRank(cj)
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 func (g *Jass) findHumanIdx() int {

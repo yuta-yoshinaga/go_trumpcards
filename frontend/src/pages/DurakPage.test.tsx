@@ -14,7 +14,13 @@ vi.mock('../api/gameApi', () => ({
 // Mock the sound provider so we can assert playback without loading audio. The
 // page renders AnimatedCard, which calls useOptionalSound, so both hooks are stubbed.
 const mockPlaySound = vi.fn();
-const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+const mockSoundValue = {
+  playSound: mockPlaySound,
+  muted: false,
+  toggleMute: vi.fn(),
+  claimExecSound: vi.fn(),
+  consumeExecClaim: () => false,
+};
 vi.mock('../providers/SoundProvider', () => ({
   SoundProvider: ({ children }: { children: ReactNode }) => children,
   useSound: () => mockSoundValue,
@@ -321,7 +327,8 @@ describe('DurakPage', () => {
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     fireEvent.click(screen.getByAltText('♠ A'));
     fireEvent.click(screen.getByRole('button', { name: '攻撃' }));
-    expect(mockPlaySound).toHaveBeenCalledWith('cardPlace');
+    // The central tap plays after the exec resolves, so await it.
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('cardPlace'));
   });
 
   it('plays a card-place sound when defending', async () => {
@@ -332,7 +339,8 @@ describe('DurakPage', () => {
     fireEvent.click(screen.getByAltText('♠ A'));
     fireEvent.click(screen.getByTestId('dk-pair-0'));
     fireEvent.click(screen.getByRole('button', { name: '防御' }));
-    expect(mockPlaySound).toHaveBeenCalledWith('cardPlace');
+    // The central tap plays after the exec resolves, so await it.
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('cardPlace'));
   });
 
   it('plays an error buzz when taking the table (disadvantageous action)', async () => {

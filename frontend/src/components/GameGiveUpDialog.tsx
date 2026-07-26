@@ -10,7 +10,7 @@ export interface GameGiveUpDialogProps {
 
 /**
  * Renders a give-up confirmation dialog using common translation keys.
- * Mirrors {@link GameResetDialog} but with give-up-specific copy, since
+ * Mirrors {@link components/GameResetDialog.GameResetDialog | GameResetDialog} but with give-up-specific copy, since
  * give-up is an irreversible destructive action that deserves the same
  * "are you sure?" guard as reset (issue #2099).
  */

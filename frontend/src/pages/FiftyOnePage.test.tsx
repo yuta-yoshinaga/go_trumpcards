@@ -193,7 +193,8 @@ describe('FiftyOnePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     fireEvent.click(screen.getByTestId('exchange-all-button'));
-    expect(mockPlaySound).toHaveBeenCalledWith('cardPlace');
+    // The central tap plays after the exec resolves, so await it.
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('cardPlace'));
   });
 
   it('plays a card-place sound when exchanging a single selected card', async () => {
@@ -205,7 +206,8 @@ describe('FiftyOnePage', () => {
     fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
     mockPlaySound.mockClear();
     fireEvent.click(screen.getByTestId('exchange-button'));
-    expect(mockPlaySound).toHaveBeenCalledWith('cardPlace');
+    // The central tap plays after the exec resolves, so await it.
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('cardPlace'));
   });
 
   it('plays a chip-click sound when calling stop', async () => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { prsiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -36,6 +36,7 @@ import { formatPrsiState } from '../utils/cli/formatters/prsiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { isPrsiLegalPlay } from '../utils/prsiLegal';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const PRSI_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PrsiPhase.PLAY]: 'play',
@@ -93,26 +94,9 @@ function PrsiPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
 
-  // Play a distinct buzz the moment an illegal move / network error surfaces,
-  // so the failure is audible (respects the global mute via SoundProvider).
-  const prevErrorRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (error && error !== prevErrorRef.current) {
-      playSound('errorBuzz');
-    }
-    prevErrorRef.current = error;
-  }, [error, playSound]);
-
-  // Card-operation SFX: place a card on play, shuffle on draw. Fired on the
-  // human's own action only (the play/draw controls render solely on the
-  // human turn), mirroring SpiteAndMalicePage's fire-and-forget approach.
-  const handlePlayWithSound = useCallback(() => {
-    if (selectedCardIndices.length === 1) {
-      playSound('cardPlace');
-    }
-    handlePlay();
-  }, [handlePlay, playSound, selectedCardIndices]);
-
+  // Drawing from the stock keeps its own shuffle sound: the central tap maps
+  // only the `reset` command to shuffle, so this action would otherwise get
+  // the generic card sound.
   const handleDrawWithSound = useCallback(() => {
     playSound('shuffle');
     handleDraw();
@@ -136,8 +120,8 @@ function PrsiPageContent() {
   const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
 
   const confirmAction = useCallback(() => {
-    handlePlayWithSound();
-  }, [handlePlayWithSound]);
+    handlePlay();
+  }, [handlePlay]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -176,7 +160,6 @@ function PrsiPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/prsi"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -203,13 +186,7 @@ function PrsiPageContent() {
                     })),
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -342,9 +319,7 @@ function PrsiPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex gap-2 items-center flex-wrap">
               {isHumanTurn && (
@@ -352,7 +327,7 @@ function PrsiPageContent() {
                   <button
                     type="button"
                     className={btnPrimary}
-                    onClick={handlePlayWithSound}
+                    onClick={handlePlay}
                     disabled={loading || selectedCardIndices.length !== 1}
                   >
                     {t('playButton')}

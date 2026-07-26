@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全218ゲーム)](#12-ゲームドメイン-全218ゲーム)
+  - [1.2 ゲームドメイン (全219ゲーム)](#12-ゲームドメイン-全219ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -154,7 +154,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全218ゲーム)
+### 1.2 ゲームドメイン (全219ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -447,7 +447,7 @@ classDiagram
         -players []*HeartsPlayer
         -config HeartsConfig
         -phase HeartsPhase
-        -trickCards []*HeartsTrickCard
+        -currentTrick []*TrickCard
         +Reset()
         +PassCards(indices []int) error
         +PlayCard(index int) error
@@ -462,7 +462,7 @@ classDiagram
         -players []*SpadesPlayer
         -config SpadesConfig
         -phase SpadesPhase
-        -trickCards []*SpadesTrickCard
+        -currentTrick []*TrickCard
         +Reset()
         +Bid(amount int) error
         +PlayCard(index int) error
@@ -472,12 +472,10 @@ classDiagram
         +Phase() SpadesPhase
     }
 
-    class HeartsTrickCard {
-        +int PlayerIdx
-        +*Card Card
-    }
-
-    class SpadesTrickCard {
+    %% Shared trick-card type (internal/domain/trick_helpers.go, issue #4297) —
+    %% reused by the migrated trick-taking games (Hearts, Spades, OhHell,
+    %% TwoTenJack, Whist, …) in place of a per-game struct.
+    class TrickCard {
         +int PlayerIdx
         +*Card Card
     }
@@ -593,7 +591,7 @@ classDiagram
         -players []*OhHellPlayer
         -config OhHellConfig
         -phase OhHellPhase
-        -trickCards []*OhHellTrickCard
+        -currentTrick []*TrickCard
         -trumpCard *Card
         -trumpSuit int
         -handSize int
@@ -605,11 +603,6 @@ classDiagram
         +ScoreRound()
         +GetHint() *OhHellHint
         +GetPhase() OhHellPhase
-    }
-
-    class OhHellTrickCard {
-        +int PlayerIdx
-        +*Card Card
     }
 
     class Bridge {
@@ -643,7 +636,7 @@ classDiagram
         -players []*TwoTenJackPlayer
         -config TwoTenJackConfig
         -phase TwoTenJackPhase
-        -currentTrick []*TwoTenJackTrickCard
+        -currentTrick []*TrickCard
         -declarerIdx int
         -trumpSuit int
         +Reset()
@@ -657,15 +650,10 @@ classDiagram
         +GetPhase() TwoTenJackPhase
     }
 
-    class TwoTenJackTrickCard {
-        +int PlayerIdx
-        +*Card Card
-    }
-
     Hearts --> "4" HeartsPlayer
-    Hearts --> "*" HeartsTrickCard
+    Hearts --> "*" TrickCard
     Spades --> "4" SpadesPlayer
-    Spades --> "*" SpadesTrickCard
+    Spades --> "*" TrickCard
     Napoleon --> "4" NapoleonPlayer
     Napoleon --> "*" NapoleonTrickCard
     Mighty *-- "5" MightyPlayer
@@ -675,11 +663,11 @@ classDiagram
     Euchre --> "4" EuchrePlayer
     Euchre --> "*" EuchreTrickCard
     OhHell --> "4" OhHellPlayer
-    OhHell --> "*" OhHellTrickCard
+    OhHell --> "*" TrickCard
     Bridge --> "4" BridgePlayer
     Bridge --> "*" BridgeTrickCard
     TwoTenJack --> "4" TwoTenJackPlayer
-    TwoTenJack --> "*" TwoTenJackTrickCard
+    TwoTenJack --> "*" TrickCard
     HeartsPlayer --|> GamePlayer
     SpadesPlayer --|> GamePlayer
     NapoleonPlayer --|> GamePlayer
@@ -1354,7 +1342,7 @@ classDiagram
 
     class ClockSolitaire {
         -trumpCards *TrumpCards
-        -piles [13][]*ClockCard
+        -piles [13][]*ClockSolitaireCard
         -currentPileIdx int
         -stepCount int
         -phase ClockSolitairePhase
@@ -1420,7 +1408,7 @@ classDiagram
         +bool Matched
     }
 
-    class ClockCard {
+    class ClockSolitaireCard {
         +*Card Card
         +bool FaceUp
     }
@@ -1434,7 +1422,7 @@ classDiagram
     Memory --> "*" MemoryBoardCard
     Memory --> "*" MemoryPlayer
     MemoryPlayer --|> GamePlayer
-    ClockSolitaire --> "*" ClockCard
+    ClockSolitaire --> "*" ClockSolitaireCard
     Durak --> "*" DurakPlayer
     Durak --> "1" DurakConfig
     DurakPlayer --|> GamePlayer
@@ -1592,7 +1580,7 @@ classDiagram
         -roundNumber int
         -trickNumber int
         -currentPlayerIdx int
-        -currentTrick []*WhistTrickCard
+        -currentTrick []*TrickCard
         -trumpSuit int
         -leadPlayerIdx int
         -dealerIdx int
@@ -1715,7 +1703,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全218ゲーム共通)**
+**Interactor パターン (全219ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1787,8 +1775,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "218ゲーム × CUI/Web = 436 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "218ゲーム × CUI/Web = 436 Presenter 実装"
+    note for GameCuiController "219ゲーム × CUI/Web = 438 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "219ゲーム × CUI/Web = 438 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1828,8 +1816,8 @@ classDiagram
     }
 
     TrumpCardsWeb --> "*" gameEntry : registerAll() over games.All()
-    gameEntry --> GameWebController : holds 218 controllers
-    GameManager --> "*" CuiExecer : holds 218 games
+    gameEntry --> GameWebController : holds 219 controllers
+    GameManager --> "*" CuiExecer : holds 219 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```

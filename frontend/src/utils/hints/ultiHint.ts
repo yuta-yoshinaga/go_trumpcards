@@ -9,13 +9,13 @@ import type { HintResult } from '../../types/hint';
  * the response's `hint` field (with a `reason` i18n suffix such as `lead_high`,
  * `lead_low`, `follow_win`, `follow_duck`, `discard_low`, `discard_weak`,
  * `bid_party`, `bid_betli`, or `bid_durchmarsch`). This adapter re-maps that
- * server hint into the frontend HintResult shape so the shared {@link useGameHint}
+ * server hint into the frontend HintResult shape so the shared {@link hooks/useGameHint.useGameHint | useGameHint}
  * tooltip can render it. The `targetAction` is fixed to `play` because every hint
  * ultimately points the player at a card.
  */
 export function getUltiHint(state: UltiResponse): HintResult | null {
   const hint = state.hint;
-  if (!hint || !hint.reason) return null;
+  if (!hint?.reason) return null;
   return {
     targetAction: 'play',
     reason: `hint.${hint.reason}`,

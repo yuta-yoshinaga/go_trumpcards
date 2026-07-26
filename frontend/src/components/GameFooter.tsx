@@ -1,4 +1,5 @@
-interface GameFooterProps {
+/** Props for {@link GameFooter}. */
+export interface GameFooterProps {
   className?: string;
   children: React.ReactNode;
   /** When true, applies glassmorphism + rounded top corners + scroll on mobile. */

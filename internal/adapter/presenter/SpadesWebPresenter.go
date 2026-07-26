@@ -44,8 +44,8 @@ func (p *SpadesWebPresenter) buildBase(s interfaces.SpadesGame) *controller.Spad
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *SpadesWebPresenter) buildTrickOutput(trick []*domain.SpadesTrickCard) []*controller.SpadesWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.SpadesTrickCard) *controller.SpadesWebOutputTrickCard {
+func (p *SpadesWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SpadesWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SpadesWebOutputTrickCard {
 		return &controller.SpadesWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
@@ -72,7 +72,7 @@ func (p *SpadesWebPresenter) buildPlayersOutput(s interfaces.SpadesGame) []*cont
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *SpadesWebPresenter) buildMessage(s interfaces.SpadesGame, trick []*domain.SpadesTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *SpadesWebPresenter) buildMessage(s interfaces.SpadesGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

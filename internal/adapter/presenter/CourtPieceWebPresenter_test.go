@@ -57,7 +57,7 @@ func TestCourtPieceWebPresenter_Output(t *testing.T) {
 	t.Run("play phase follow when trick has cards", func(t *testing.T) {
 		cp := newCourtPieceForWebTest()
 		cp.SetPhase(domain.CourtPiecePhasePlay)
-		cp.SetCurrentTrick([]*domain.CourtPieceTrickCard{
+		cp.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 7, false)},
 		})
 		var got cpWebOutPartial

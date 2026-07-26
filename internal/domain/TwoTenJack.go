@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // TwoTenJackPlayerCnt ツーテンジャックプレイヤー数
@@ -43,12 +42,6 @@ type TwoTenJackHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// TwoTenJackTrickCard トリック中の1枚
-type TwoTenJackTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // TwoTenJack ツーテンジャックゲームクラス
 type TwoTenJack struct {
 	trumpCards       *TrumpCards
@@ -58,7 +51,7 @@ type TwoTenJack struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*TwoTenJackTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	declarerIdx      int
 	trumpSuit        int // -1 = 未宣言
@@ -360,10 +353,10 @@ func (t *TwoTenJack) GetCurrentPlayerIdx() int { return t.currentPlayerIdx }
 func (t *TwoTenJack) SetCurrentPlayerIdx(idx int) { t.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (t *TwoTenJack) GetCurrentTrick() []*TwoTenJackTrickCard { return t.currentTrick }
+func (t *TwoTenJack) GetCurrentTrick() []*TrickCard { return t.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (t *TwoTenJack) SetCurrentTrick(trick []*TwoTenJackTrickCard) { t.currentTrick = trick }
+func (t *TwoTenJack) SetCurrentTrick(trick []*TrickCard) { t.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (t *TwoTenJack) GetLeadPlayerIdx() int { return t.leadPlayerIdx }
@@ -438,7 +431,7 @@ func (t *TwoTenJack) startPlayPhase() {
 
 // playCard カードをプレイする共通処理
 func (t *TwoTenJack) playCard(playerIdx int, card *Card) {
-	t.currentTrick = append(t.currentTrick, &TwoTenJackTrickCard{
+	t.currentTrick = append(t.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -476,32 +469,7 @@ func (t *TwoTenJack) playerHasSuit(playerIdx int, design int) bool {
 
 // trickWinner トリックの勝者を決定する
 func (t *TwoTenJack) trickWinner() int {
-	if len(t.currentTrick) == 0 {
-		return 0
-	}
-	leadSuit := t.currentTrick[0].Card.GetDesign()
-	winnerIdx := t.currentTrick[0].PlayerIdx
-	winnerValue := ttjEffectiveValue(t.currentTrick[0].Card)
-	winnerIsTrump := t.currentTrick[0].Card.GetDesign() == t.trumpSuit
-
-	for _, tc := range t.currentTrick[1:] {
-		isTrump := tc.Card.GetDesign() == t.trumpSuit
-		v := ttjEffectiveValue(tc.Card)
-		if isTrump && !winnerIsTrump {
-			winnerIdx = tc.PlayerIdx
-			winnerValue = v
-			winnerIsTrump = true
-		} else if isTrump && winnerIsTrump {
-			if v > winnerValue {
-				winnerIdx = tc.PlayerIdx
-				winnerValue = v
-			}
-		} else if !isTrump && !winnerIsTrump && tc.Card.GetDesign() == leadSuit && v > winnerValue {
-			winnerIdx = tc.PlayerIdx
-			winnerValue = v
-		}
-	}
-	return winnerIdx
+	return ResolveTrickWinner(t.currentTrick, t.trumpSuit, ttjEffectiveValue)
 }
 
 // ttjEffectiveValue トリック比較用の値。A=14, K=13, Q=12, J=11, 10=10, ..., 2=2
@@ -540,20 +508,12 @@ func (t *TwoTenJack) sortAllHands() {
 
 // twoTenJackSortHand プレイヤーの手札をスート→値の順にソートする
 func twoTenJackSortHand(p *TwoTenJackPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return cards[i].GetValue() < cards[j].GetValue()
+		return ci.GetValue() < cj.GetValue()
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す
@@ -909,14 +869,9 @@ func (t *TwoTenJack) teamOf(playerIdx int) int {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (t *TwoTenJack) getValidPlayIndices(playerIdx int) []int {
 	player := t.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if t.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return t.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)
@@ -926,20 +881,20 @@ func (t *TwoTenJack) GetValidPlayIndices(playerIdx int) []int {
 
 // twoTenJackJSON is the JSON wire format for TwoTenJack.
 type twoTenJackJSON struct {
-	TrumpCards       *TrumpCards            `json:"tc"`
-	Players          []*TwoTenJackPlayer    `json:"ps"`
-	Config           TwoTenJackConfig       `json:"cf"`
-	Phase            TwoTenJackPhase        `json:"ph"`
-	RoundNumber      int                    `json:"rn"`
-	TrickNumber      int                    `json:"tn"`
-	CurrentPlayerIdx int                    `json:"ci"`
-	CurrentTrick     []*TwoTenJackTrickCard `json:"ct"`
-	LeadPlayerIdx    int                    `json:"li"`
-	DeclarerIdx      int                    `json:"di"`
-	TrumpSuit        int                    `json:"ts"`
-	GameEndFlag      bool                   `json:"ge"`
-	WinnerTeam       int                    `json:"wt"`
-	ActionLog        []*ActionLogEntry      `json:"al"`
+	TrumpCards       *TrumpCards         `json:"tc"`
+	Players          []*TwoTenJackPlayer `json:"ps"`
+	Config           TwoTenJackConfig    `json:"cf"`
+	Phase            TwoTenJackPhase     `json:"ph"`
+	RoundNumber      int                 `json:"rn"`
+	TrickNumber      int                 `json:"tn"`
+	CurrentPlayerIdx int                 `json:"ci"`
+	CurrentTrick     []*TrickCard        `json:"ct"`
+	LeadPlayerIdx    int                 `json:"li"`
+	DeclarerIdx      int                 `json:"di"`
+	TrumpSuit        int                 `json:"ts"`
+	GameEndFlag      bool                `json:"ge"`
+	WinnerTeam       int                 `json:"wt"`
+	ActionLog        []*ActionLogEntry   `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -990,7 +945,7 @@ func (t *TwoTenJack) UnmarshalJSON(data []byte) error {
 	t.currentPlayerIdx = j.CurrentPlayerIdx
 	t.currentTrick = j.CurrentTrick
 	if t.currentTrick == nil {
-		t.currentTrick = make([]*TwoTenJackTrickCard, 0)
+		t.currentTrick = make([]*TrickCard, 0)
 	}
 	t.leadPlayerIdx = j.LeadPlayerIdx
 	t.declarerIdx = j.DeclarerIdx

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // TarneebHandSize 各プレイヤーの手札枚数
@@ -45,12 +44,6 @@ type TarneebHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// TarneebTrickCard トリック中の1枚
-type TarneebTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Tarneeb Tarneebゲームクラス
 //
 // ルール概要:
@@ -69,7 +62,7 @@ type Tarneeb struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*TarneebTrickCard
+	currentTrick     []*TrickCard
 	trumpSuit        int // 0 = 未宣言、それ以外は CardDesign 値
 	bidPlayerIdx     int // 次にビッドするプレイヤー (ビッドフェーズ中)
 	bidWinnerIdx     int // 最高ビッド者 (-1 = 未確定)
@@ -463,10 +456,10 @@ func (t *Tarneeb) GetCurrentPlayerIdx() int { return t.currentPlayerIdx }
 func (t *Tarneeb) SetCurrentPlayerIdx(idx int) { t.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (t *Tarneeb) GetCurrentTrick() []*TarneebTrickCard { return t.currentTrick }
+func (t *Tarneeb) GetCurrentTrick() []*TrickCard { return t.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (t *Tarneeb) SetCurrentTrick(trick []*TarneebTrickCard) { t.currentTrick = trick }
+func (t *Tarneeb) SetCurrentTrick(trick []*TrickCard) { t.currentTrick = trick }
 
 // GetTrumpSuit トランプスート取得 (0 = 未宣言)
 func (t *Tarneeb) GetTrumpSuit() int { return t.trumpSuit }
@@ -631,7 +624,7 @@ func (t *Tarneeb) findHumanIdx() int {
 
 // playCard カードをプレイする共通処理
 func (t *Tarneeb) playCard(playerIdx int, card *Card) {
-	t.currentTrick = append(t.currentTrick, &TarneebTrickCard{
+	t.currentTrick = append(t.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -685,33 +678,7 @@ func tarneebRank(v int) int {
 //
 // Aces compare as the strongest rank (see tarneebRank).
 func (t *Tarneeb) trickWinner() int {
-	if len(t.currentTrick) == 0 {
-		return 0
-	}
-	leadSuit := t.currentTrick[0].Card.GetDesign()
-	winnerIdx := t.currentTrick[0].PlayerIdx
-	winnerRank := tarneebRank(t.currentTrick[0].Card.GetValue())
-	winnerIsTrump := t.currentTrick[0].Card.GetDesign() == t.trumpSuit
-
-	for _, tc := range t.currentTrick[1:] {
-		isTrump := tc.Card.GetDesign() == t.trumpSuit
-		r := tarneebRank(tc.Card.GetValue())
-		switch {
-		case isTrump && !winnerIsTrump:
-			winnerIdx = tc.PlayerIdx
-			winnerRank = r
-			winnerIsTrump = true
-		case isTrump && winnerIsTrump:
-			if r > winnerRank {
-				winnerIdx = tc.PlayerIdx
-				winnerRank = r
-			}
-		case !isTrump && !winnerIsTrump && tc.Card.GetDesign() == leadSuit && r > winnerRank:
-			winnerIdx = tc.PlayerIdx
-			winnerRank = r
-		}
-	}
-	return winnerIdx
+	return ResolveTrickWinner(t.currentTrick, t.trumpSuit, func(cd *Card) int { return tarneebRank(cd.GetValue()) })
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -723,22 +690,14 @@ func (t *Tarneeb) sortAllHands() {
 
 // tarneebSortHand プレイヤーの手札をスート→値の順にソートする
 func tarneebSortHand(p *TarneebPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
 		// Aces sort to the right (largest) so the hand display matches Tarneeb's
 		// A > K > … ranking.
-		return tarneebRank(cards[i].GetValue()) < tarneebRank(cards[j].GetValue())
+		return tarneebRank(ci.GetValue()) < tarneebRank(cj.GetValue())
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す
@@ -788,14 +747,9 @@ func (t *Tarneeb) playHintReason(playerIdx, chosenIdx int) string {
 // getValidPlayIndices プレイ可能なカードのインデックスリスト
 func (t *Tarneeb) getValidPlayIndices(playerIdx int) []int {
 	player := t.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if t.validatePlay(playerIdx, card) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return t.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // --- CPU AI ---
@@ -1198,7 +1152,7 @@ type tarneebJSON struct {
 	RoundNumber      int                 `json:"rn"`
 	TrickNumber      int                 `json:"tn"`
 	CurrentPlayerIdx int                 `json:"ci"`
-	CurrentTrick     []*TarneebTrickCard `json:"ct"`
+	CurrentTrick     []*TrickCard        `json:"ct"`
 	TrumpSuit        int                 `json:"ts"`
 	BidPlayerIdx     int                 `json:"bi"`
 	BidWinnerIdx     int                 `json:"bw"`
@@ -1269,7 +1223,7 @@ func (t *Tarneeb) UnmarshalJSON(data []byte) error {
 	t.currentPlayerIdx = j.CurrentPlayerIdx
 	t.currentTrick = j.CurrentTrick
 	if t.currentTrick == nil {
-		t.currentTrick = make([]*TarneebTrickCard, 0)
+		t.currentTrick = make([]*TrickCard, 0)
 	}
 	t.trumpSuit = j.TrumpSuit
 	t.bidPlayerIdx = j.BidPlayerIdx

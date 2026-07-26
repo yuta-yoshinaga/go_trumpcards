@@ -113,9 +113,9 @@ func (_m *MockHeartsGame) GetCurrentPlayerIdx() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockHeartsGame) GetCurrentTrick() []*domain.HeartsTrickCard {
+func (_m *MockHeartsGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]*domain.HeartsTrickCard); ok {
+	if val, ok := ret.Get(0).([]*domain.TrickCard); ok {
 		return val
 	}
 	return nil

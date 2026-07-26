@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // GongZhuPlayerCnt 拱猪（Gong Zhu）プレイヤー数
@@ -691,20 +690,12 @@ func (g *GongZhu) sortAllHands() {
 
 // gzSortHand プレイヤーの手札をスート→値の順にソートする
 func gzSortHand(p *GongZhuPlayer) {
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return cards[i].GetValue() < cards[j].GetValue()
+		return ci.GetValue() < cj.GetValue()
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す
@@ -943,13 +934,9 @@ func (g *GongZhu) cpuDiscard(player *GongZhuPlayer, validIndices []int) int {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *GongZhu) getValidPlayIndices(playerIdx int) []int {
 	player := g.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if g.validatePlay(playerIdx, player.GetCard(i)) == nil {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
+	})
 }
 
 // gzLeadDanger リード時のカード危険度（低いほど安全）

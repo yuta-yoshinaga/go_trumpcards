@@ -9,7 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
@@ -31,7 +31,6 @@ import {
   useOhHellGame,
 } from '../hooks/useOhHellGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { badgeErrorColors, badgeInfoColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -46,6 +45,7 @@ import { formatOhhellState } from '../utils/cli/formatters/ohhellFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { ohHellBidSummary } from '../utils/ohHellBid';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Oh Hell tutorial step definitions. */
 const OH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -108,7 +108,6 @@ export const OhHellPage = withTutorial(OhHellPageContent, 'ohhell', OH_TUTORIAL_
 function OhHellPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('ohhell');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -222,7 +221,6 @@ function OhHellPageContent() {
       isHumanTurn={isHumanBidTurn || isHumanTurn}
       gamePath="/ohhell"
       gameEndFlag={!!state.gameEndFlag}
-      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -311,13 +309,7 @@ function OhHellPageContent() {
                     })),
                     onSelect: (v) => handleConfigChange('roundDirection', v),
                   },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -547,9 +539,7 @@ function OhHellPageContent() {
                   : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
               </div>
             )}
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             <div className="flex gap-2 items-center" data-tutorial="oh-play-button">
               {(isHumanBidTurn || isHumanTurn) && (
                 <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>

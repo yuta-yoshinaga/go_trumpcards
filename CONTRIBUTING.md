@@ -73,7 +73,8 @@ bun run test    # ユニットテスト
 
 - PR のターゲットブランチは `develop` です
 - 関連する Issue がある場合は `Closes #123` で紐付けてください
-- CI（lint, test, CodeQL）がすべて通ることを確認してください
+- CI（lint, test, E2E）がすべて通ることを確認してください
+- CodeQL は PR では動きません。`develop` へのマージ後に実行され、結果は Security タブに出ます（[ADR-0034](docs/adr/0034-codeql-post-merge.md)）
 
 ## Architecture
 

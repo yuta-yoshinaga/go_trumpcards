@@ -7,7 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { HintTooltip } from '../components/hint/HintTooltip';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -18,6 +18,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -27,6 +28,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { computeGapsGhostHint } from '../utils/gapsGhostHint';
 import { gapsLockedPrefixLengths } from '../utils/gapsUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SUIT_SYMBOLS: Record<string, string> = {
   SPADE: '♠',
@@ -120,10 +122,7 @@ function GapsPageContent() {
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(handleGiveUp),
-    [requestGiveUpConfirm, handleGiveUp],
-  );
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const dispatchMove = useCallback(
     (source: GapsMoveZone, target: GapsMoveZone) => {
@@ -305,11 +304,9 @@ function GapsPageContent() {
           })}
         </div>
 
-        {frontendHintEnabled && frontendHint && (
-          <div className="flex justify-center">
-            <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-          </div>
-        )}
+        <div className="flex justify-center">
+          <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+        </div>
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
@@ -325,15 +322,7 @@ function GapsPageContent() {
         title={tc('settings.title')}
         groups={[
           {
-            items: [
-              {
-                type: 'checkbox' as const,
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: frontendHintEnabled,
-                onToggle: setFrontendHintEnabled,
-              },
-            ],
+            items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
           },
         ]}
       />

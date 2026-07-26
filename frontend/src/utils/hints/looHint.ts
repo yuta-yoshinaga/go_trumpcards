@@ -9,12 +9,12 @@ import type { HintResult } from '../../types/hint';
  * and surfaced on the response's `hint` field (with a `reason` i18n suffix such
  * as `decide_play`, `decide_pass`, `lead_high`, `follow_win`, or `discard_low`).
  * This adapter re-maps that server hint into the frontend HintResult shape so the
- * shared {@link useGameHint} tooltip can render it. The `targetAction` is fixed to
+ * shared {@link hooks/useGameHint.useGameHint | useGameHint} tooltip can render it. The `targetAction` is fixed to
  * `play` because every hint ultimately points the player at a decision.
  */
 export function getLooHint(state: LooResponse): HintResult | null {
   const hint = state.hint;
-  if (!hint || !hint.reason) return null;
+  if (!hint?.reason) return null;
   return {
     targetAction: 'play',
     reason: `hint.${hint.reason}`,

@@ -33,7 +33,7 @@ func setupHeartsCuiMock() *interfaces.MockHeartsGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetHeartsBroken").Return(false)
-	m.On("GetCurrentTrick").Return([]*domain.HeartsTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.HeartsPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -152,7 +152,7 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 	t.Run("current trick shown", func(t *testing.T) {
 		m, _ := setupHeartsCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		trick := []*domain.HeartsTrickCard{
+		trick := []*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 		}

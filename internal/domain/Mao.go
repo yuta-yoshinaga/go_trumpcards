@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"sort"
 	"strings"
 )
 
@@ -892,20 +891,12 @@ func (g *Mao) sortAllHands() {
 // sortHand プレイヤーの手札をスート→値の順にソートする
 func (g *Mao) sortHand(playerIdx int) {
 	p := g.players[playerIdx]
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+	sortPlayerHand(p, func(ci, cj *Card) bool {
+		if ci.GetDesign() != cj.GetDesign() {
+			return ci.GetDesign() < cj.GetDesign()
 		}
-		return cards[i].GetValue() < cards[j].GetValue()
+		return ci.GetValue() < cj.GetValue()
 	})
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
 }
 
 // playerName プレイヤー名を返す
@@ -1073,13 +1064,9 @@ func (g *Mao) countSuits(playerIdx int) map[int]int {
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *Mao) getValidPlayIndices(playerIdx int) []int {
 	player := g.players[playerIdx]
-	var valid []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if g.isValidPlay(player.GetCard(i)) {
-			valid = append(valid, i)
-		}
-	}
-	return valid
+	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
+		return g.isValidPlay(player.GetCard(i))
+	})
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)

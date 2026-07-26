@@ -9,6 +9,7 @@ Go implementations of 219 trump card game algorithms (blackjack, poker, hearts, 
 | [Go](https://go.dev/) | 1.26.x |
 | [Node.js](https://nodejs.org/) | 24.x |
 | [Bun](https://bun.sh/) | 1.3.10 |
+| [jq](https://jqlang.github.io/jq/) | any (required by the `.claude/settings.json` commit-gate hooks — they silently no-op without it) |
 
 ## Package Manager Rule
 
@@ -41,7 +42,7 @@ go run ./cmd/server                # Start REST API + web GUI server (direct)
 
 # Test
 go test -tags test ./...                                              # Run all Go tests
-go test -tags test -coverprofile=coverage.out -covermode=atomic ./... # Coverage report
+go test -tags test -coverprofile=coverage.out -covermode=set ./...    # Coverage report
 
 # Format
 goimports -w ./...           # Format and organize imports (use goimports, not gofmt)
@@ -53,6 +54,7 @@ golangci-lint run ./...      # Run Go linter (must pass before commit)
 cd frontend && bun install   # Install dependencies
 cd frontend && bun run build # Build React app
 cd frontend && bun run check # Biome lint + format check
+cd frontend && bun run typecheck # TypeScript 7 type check (never bare `tsc` -- that is 5.9; see frontend/CLAUDE.md)
 cd frontend && bun run test  # Run Vitest unit tests
 cd frontend && bun run e2e   # Run Playwright E2E tests
 cd frontend && bun run docs:generate  # Generate TypeDoc documentation
@@ -98,7 +100,7 @@ When making code changes, update the relevant documentation **in the same commit
 
 ## Cloudflare Workers (WASM)
 
-Games ship to three Cloudflare Workers (`casino`, `classic`, `solo`) as TinyGo WASM binaries, split by category purely to keep each binary under the 1 MB gzipped free-tier limit. The `Category` in the registry is a binary-size bucket, **not** a user-facing taxonomy. Adding/modifying a game touches 4 registration points (registry, `games_server.go`, the category sub-package, and `gameApi.ts`). Full per-worker game list, the build-tag split rationale, and build commands: [`docs/cloudflare-workers.md`](docs/cloudflare-workers.md).
+Games ship to four Cloudflare Workers (`casino`, `classic`, `solo`, `extra`) as TinyGo WASM binaries, split by category purely to keep each binary under the 1 MB gzipped free-tier limit (`extra` is the overflow bucket added by [ADR-0032](docs/adr/0032-fourth-worker-capacity.md)). The `Category` in the registry is a binary-size bucket, **not** a user-facing taxonomy. Adding/modifying a game touches 5 registration points (registry, `games_server.go`, the category sub-package, the `gameRegistry` CLI wiring in `internal/infrastructure/ui/GameManager.go`, and `gameApi.ts`) plus the per-category count assertions in `registry_test.go`. Full per-worker game list, the build-tag split rationale, and build commands: [`docs/cloudflare-workers.md`](docs/cloudflare-workers.md).
 
 ## New Game Addition Checklist
 
@@ -106,7 +108,7 @@ See [`docs/new-game-checklist.md`](docs/new-game-checklist.md) for the full chec
 
 ## Git Workflow
 
-- **`develop`**: Default branch; target for all PRs. CodeQL analysis and `golangci-lint` run on push/PR.
+- **`develop`**: Default branch; target for all PRs. `golangci-lint` and the CI suite run on push/PR; CodeQL runs on push to `develop` (i.e. after the merge) and weekly — see [ADR-0034](docs/adr/0034-codeql-post-merge.md).
 - **`master`**: Triggers automatic version bump, git tag, and GitHub Release.
 - **PR Summary**: When creating a PR, if there is an associated issue, the PR description must explicitly close the issue (e.g., `Closes #123`).
 
