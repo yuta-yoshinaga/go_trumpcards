@@ -51,7 +51,11 @@ describe('App non-game routes', () => {
   it('renders the 404 page for an unknown hash route', async () => {
     window.location.hash = '#/notagame';
     renderWithProviders(<App />);
-    expect(await screen.findByText('お探しのページは見つかりません')).toBeInTheDocument();
+    // Matched by role rather than by the title string: this asserts "the 404
+    // page mounted", and NotFoundPage's h1 is the only level-1 heading on the
+    // route. Keying on the copy would tie the test to one locale, which is
+    // what the sibling tests above avoid with a two-locale regex.
+    expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument();
   });
 
   it('renders the Discover survey at /discover', async () => {
