@@ -47,11 +47,6 @@ describe('NavBar', () => {
   });
 
   for (const { path, labelKey } of gameRoutes) {
-    it(`renders ${labelKey} link`, () => {
-      renderNavBar();
-      expect(screen.getByText(labelFor(labelKey))).toBeInTheDocument();
-    });
-
     it(`marks ${labelKey} link as active when on ${path}`, () => {
       renderNavBar(path);
       // Exactly one link may carry aria-current, which also proves no other
