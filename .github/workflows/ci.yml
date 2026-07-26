@@ -73,12 +73,18 @@ jobs:
     # itself, not the coverage instrumentation — splitting the work is the only
     # lever that moves it. Each shard uploads its own coverage; Codecov merges
     # them server-side.
-    name: Frontend Tests (${{ matrix.shard }}/4)
+    #
+    # Six rather than four: --shard splits by file COUNT, but file runtimes
+    # vary widely, so at 4 the slowest shard ran 435s against a 280s mean (the
+    # whole pipeline waits on that one). Per-shard fixed overhead is only ~16s,
+    # so extra shards are nearly free and each one dilutes the effect of a
+    # single heavy file.
+    name: Frontend Tests (${{ matrix.shard }}/6)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6]
     steps:
       - uses: actions/checkout@v6
 
@@ -99,7 +105,7 @@ jobs:
         # forked test workers via NODE_OPTIONS.
         env:
           NODE_OPTIONS: --max-old-space-size=8192
-        run: bun run test:coverage -- --shard=${{ matrix.shard }}/4
+        run: bun run test:coverage -- --shard=${{ matrix.shard }}/6
 
       - name: Upload frontend coverage to Codecov
         uses: codecov/codecov-action@v6
@@ -128,6 +134,9 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: '1.26'
+          # Reuse the module + build cache across shards so `go build` of the
+          # server binary is not paid three times from cold (~37s each).
+          cache-dependency-path: go.sum
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
@@ -142,9 +151,32 @@ jobs:
         working-directory: frontend
         run: bun run build
 
+      # The browser download is identical across shards and only changes when
+      # Playwright itself does, so key the cache on the resolved version from
+      # the lockfile. Cold: ~21s per shard; warm: a few seconds.
+      - name: Resolve Playwright version
+        id: pw
+        working-directory: frontend
+        run: echo "version=$(node -p "require('./node_modules/@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
       - name: Install Playwright browsers
         working-directory: frontend
         run: bunx playwright install --with-deps chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+
+      # --with-deps installs OS packages outside the cached directory, so a
+      # cache hit still needs them.
+      - name: Install Playwright OS dependencies
+        working-directory: frontend
+        run: bunx playwright install-deps chromium
+        if: steps.pw-cache.outputs.cache-hit == 'true'
 
       - name: Build server binary
         run: go build -o /tmp/trumpcards-server ./cmd/server
