@@ -14,7 +14,7 @@ import type { HintResult } from '../../types/hint';
  */
 export function getTeenPattiHint(state: TeenPattiResponse): HintResult | null {
   const hint = state.hint;
-  if (!hint || !hint.reason) return null;
+  if (!hint?.reason) return null;
   return {
     targetAction: hint.action || 'bet',
     reason: `hint.${hint.reason}`,

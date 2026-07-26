@@ -13,7 +13,7 @@ import type { HintResult } from '../../types/hint';
  */
 export function getGutsHint(state: GutsResponse): HintResult | null {
   const hint = state.hint;
-  if (!hint || !hint.reason) return null;
+  if (!hint?.reason) return null;
   return {
     targetAction: hint.declaration === 1 ? 'in' : 'out',
     reason: `hint.${hint.reason}`,

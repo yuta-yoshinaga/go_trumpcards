@@ -14,7 +14,7 @@ import type { HintResult } from '../../types/hint';
  */
 export function getBouillotteHint(state: BouillotteResponse): HintResult | null {
   const hint = state.hint;
-  if (!hint || !hint.reason) return null;
+  if (!hint?.reason) return null;
   return {
     targetAction: hint.action,
     reason: `hint.${hint.reason}`,

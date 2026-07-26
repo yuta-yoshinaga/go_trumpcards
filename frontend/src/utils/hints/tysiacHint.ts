@@ -15,7 +15,7 @@ import type { HintResult } from '../../types/hint';
  */
 export function getTysiacHint(state: TysiacResponse): HintResult | null {
   const hint = state.hint;
-  if (!hint || !hint.reason) return null;
+  if (!hint?.reason) return null;
   return {
     targetAction: 'play',
     reason: `hint.${hint.reason}`,
