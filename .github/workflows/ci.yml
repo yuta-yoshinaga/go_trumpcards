@@ -67,8 +67,18 @@ jobs:
         run: bun run check
 
   test-frontend:
-    name: Frontend Tests
+    # Sharded because this is the slowest job in the pipeline (~20 min
+    # unsharded): 15,984 tests over 1,133 files. Measured on a 16-core box the
+    # run still takes ~11 min WITHOUT coverage, so the cost is the test volume
+    # itself, not the coverage instrumentation — splitting the work is the only
+    # lever that moves it. Each shard uploads its own coverage; Codecov merges
+    # them server-side.
+    name: Frontend Tests (${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v6
 
@@ -89,18 +99,28 @@ jobs:
         # forked test workers via NODE_OPTIONS.
         env:
           NODE_OPTIONS: --max-old-space-size=8192
-        run: bun run test:coverage
+        run: bun run test:coverage -- --shard=${{ matrix.shard }}/4
 
       - name: Upload frontend coverage to Codecov
         uses: codecov/codecov-action@v6
         with:
           files: frontend/coverage/lcov.info
           flags: frontend
+          # Each shard reports partial coverage; Codecov merges the uploads for
+          # the commit, so the job must not fail when one shard misses a file.
+          fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
 
   test-e2e:
-    name: E2E Tests (Playwright)
+    # Sharded on top of the in-job parallelism (playwright.config.ts runs 4
+    # workers in CI). Each shard boots its own server binary, so shards cannot
+    # interfere with each other.
+    name: E2E Tests (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v6
 
@@ -133,12 +153,12 @@ jobs:
         working-directory: frontend
         env:
           E2E_SERVER_BIN: /tmp/trumpcards-server
-        run: bunx playwright test
+        run: bunx playwright test --shard=${{ matrix.shard }}/3
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.shard }}
           path: frontend/playwright-report/
           retention-days: 14

@@ -12,7 +12,13 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // The server keys game state by sessionId (the frontend mints one per page
+  // load via crypto.randomUUID), so specs cannot collide on shared state and
+  // can run in parallel. Measured on a 20-spec sample: 1m24s at 1 worker vs
+  // 38s at 4. Pinned to 4 rather than left undefined so a runner with more
+  // cores does not oversubscribe one Chromium per core against a single
+  // backend.
+  workers: process.env.CI ? 4 : undefined,
   reporter: 'html',
   timeout: 90_000,
   use: {
