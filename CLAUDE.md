@@ -42,7 +42,7 @@ go run ./cmd/server                # Start REST API + web GUI server (direct)
 
 # Test
 go test -tags test ./...                                              # Run all Go tests
-go test -tags test -coverprofile=coverage.out -covermode=atomic ./... # Coverage report
+go test -tags test -coverprofile=coverage.out -covermode=set ./...    # Coverage report
 
 # Format
 goimports -w ./...           # Format and organize imports (use goimports, not gofmt)
