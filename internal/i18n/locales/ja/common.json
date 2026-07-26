@@ -54,7 +54,7 @@
   "cliHelpUnknownGame": "不明なゲームです: \"{{name}}\"。'trumpcards games' でゲーム一覧を確認できます。",
   "updateNonInteractive": "標準入力が非対話モードです: --yes を付けて再実行してください。",
   "cliLangEnvFallback": "注意: LANG=\"{{lang}}\" はサポートされていない言語です。ja をデフォルトとして使用します (--quiet/-q または TRUMPCARDS_QUIET=1 で抑止可能)",
-  "cliInvalidCategory": "エラー: 無効なカテゴリ「{{category}}」です (対応: casino, classic, solo)",
+  "cliInvalidCategory": "エラー: 無効なカテゴリ「{{category}}」です (対応: {{categories}})",
   "cliGamesJSONError": "エラー: ゲーム一覧の JSON 生成に失敗しました: {{err}}",
   "cliGamesJSONIgnoredFlags": "警告: --json モードでは --short / --aliases は無視されます (JSON スキーマは固定)",
   "cliSubcommandFlagError": "エラー: trumpcards {{cmd}}: {{err}}",
