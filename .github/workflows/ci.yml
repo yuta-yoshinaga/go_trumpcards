@@ -71,6 +71,29 @@ jobs:
         working-directory: frontend
         run: bun run check
 
+  typecheck-frontend:
+    # tsc is the only gate that catches type errors: `bun run check` is Biome
+    # only, and vitest transpiles without checking. It used to run solely as a
+    # side effect of the E2E job's `bun run build` (tsc -b && vite build), so
+    # every E2E shard paid ~48s for the same check. Run it once here instead.
+    name: Frontend Typecheck (tsc)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.10'
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Type-check
+        working-directory: frontend
+        run: bunx tsc -b
+
   test-frontend:
     # Sharded because this is the slowest job in the pipeline (~20 min
     # unsharded): 15,984 tests over 1,133 files. Measured on a 16-core box the
@@ -157,9 +180,11 @@ jobs:
         working-directory: frontend
         run: bun install --frozen-lockfile
 
+      # Bundle only — `bun run build` also runs `tsc -b` (~48s), which the
+      # dedicated typecheck job now covers once instead of once per shard.
       - name: Build frontend
         working-directory: frontend
-        run: bun run build
+        run: bunx vite build
 
       # The browser download is identical across shards and only changes when
       # Playwright itself does, so key the cache on the resolved version from
