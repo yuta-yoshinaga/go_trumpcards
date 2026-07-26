@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_QUICK, waitForLoaded } from './helpers';
+import { navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe('Sevens E2E', () => {
   test('plays a full game: reset → play or pass each turn → end → reset', async ({ page }) => {
@@ -16,26 +16,22 @@ test.describe('Sevens E2E', () => {
     let gameEnded = false;
     for (let turn = 0; turn < 300; turn++) {
       const passButton = page.getByRole('button', { name: 'パス' });
-
-      // Check if game ended: all players finished
       const gameEnd = page.locator('text=ゲーム終了');
-      if (await isVisibleWithin(gameEnd, TIMEOUT_QUICK)) {
+      const playableCards = page.locator('[data-testid="playable-card"]');
+
+      // Wait for whichever of the three appears first. Probing the end state
+      // with its own timeout cost a full second every turn even mid-game.
+      await expect(gameEnd.or(playableCards).or(passButton).first()).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
+
+      if (await gameEnd.isVisible()) {
         gameEnded = true;
         break;
       }
 
-      // Try to find a playable card via data-testid and click it
-      const playableCards = page.locator('[data-testid="playable-card"]');
-      const playableCount = await playableCards.count();
-
-      if (playableCount > 0) {
+      if ((await playableCards.count()) > 0) {
         await playableCards.first().click();
-        await waitForLoaded(page);
-      } else if (await isVisibleWithin(passButton, TIMEOUT_ACTION)) {
-        if (await passButton.isEnabled()) {
-          await passButton.click();
-          await waitForLoaded(page);
-        }
+      } else if (await passButton.isEnabled()) {
+        await passButton.click();
       }
 
       await waitForLoaded(page);
