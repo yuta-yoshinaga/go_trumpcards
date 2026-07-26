@@ -20,29 +20,11 @@ export const POINT_LIMIT_OPTIONS = [21, 31, 41, 51] as const;
 
 /** Hook that manages Catch the Ten game state and player actions. */
 export function useCatchTenGame() {
-  const base = useTrickGameBase({
+  const { config, ...rest } = useTrickGameBase({
     apiFn: catchtenApi.exec,
     defaultConfig: DEFAULT_CATCHTEN_CONFIG,
     getHint: (state) => state.hint ?? null,
   });
 
-  return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hint: base.hint,
-    hintError: base.hintError,
-    hintLoading: base.hintLoading,
-    exec: base.exec,
-    catchtenConfig: base.config,
-    selectedCardIndices: base.selectedCardIndices,
-    toggleCard: base.toggleCard,
-    clearSelection: base.clearSelection,
-    handleConfigChange: base.handleConfigChange,
-    handlePlay: base.handlePlay,
-    handleNextTrick: base.handleNextTrick,
-    handleNextRound: base.handleNextRound,
-    handleHint: base.handleHint,
-    retry: base.retry,
-  };
+  return { ...rest, catchtenConfig: config };
 }

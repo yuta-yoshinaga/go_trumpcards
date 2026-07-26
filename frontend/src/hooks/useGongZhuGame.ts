@@ -21,37 +21,15 @@ export const POINT_LIMIT_OPTIONS = [500, 1000, 1500, 2000] as const;
 
 /** Hook that manages Gong Zhu game state and player actions. */
 export function useGongZhuGame() {
-  const base = useTrickGameBase({
+  const { exec, selectedCardIndices, config, ...rest } = useTrickGameBase({
     apiFn: gongzhuApi.exec,
     defaultConfig: DEFAULT_GONGZHU_CONFIG,
     getHint: (state) => state.hint ?? null,
   });
 
-  const { exec, selectedCardIndices } = base;
-
   const handleExpose = useCallback(() => {
     exec('expose', selectedCardIndices);
   }, [exec, selectedCardIndices]);
 
-  return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hint: base.hint,
-    hintError: base.hintError,
-    hintLoading: base.hintLoading,
-    exec: base.exec,
-    gongzhuConfig: base.config,
-    selectedCardIndices: base.selectedCardIndices,
-    toggleCard: base.toggleCard,
-    clearSelection: base.clearSelection,
-    handleConfigChange: base.handleConfigChange,
-    handleToggle: base.handleToggle,
-    handleExpose,
-    handlePlay: base.handlePlay,
-    handleNextTrick: base.handleNextTrick,
-    handleNextRound: base.handleNextRound,
-    handleHint: base.handleHint,
-    retry: base.retry,
-  };
+  return { ...rest, exec, gongzhuConfig: config, selectedCardIndices, handleExpose };
 }

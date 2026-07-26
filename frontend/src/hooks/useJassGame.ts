@@ -23,7 +23,7 @@ export const TARGET_SCORE_OPTIONS = [500, 1000, 1500, 2500] as const;
 
 /** Hook that manages Jass (Schieber) game state and player actions. */
 export function useJassGame() {
-  const base = useTrickGameBase({
+  const { exec, config, ...rest } = useTrickGameBase({
     apiFn: jassApi.exec,
     defaultConfig: DEFAULT_JASS_CONFIG,
     getHint: (state) => state.hint ?? null,
@@ -31,34 +31,14 @@ export function useJassGame() {
 
   const handleCallTrump = useCallback(
     (suit: number) => {
-      void (base.exec as unknown as (command: string, s?: number) => Promise<void>)('calltrump', suit);
+      void (exec as unknown as (command: string, s?: number) => Promise<void>)('calltrump', suit);
     },
-    [base.exec],
+    [exec],
   );
 
   const handleSchieben = useCallback(() => {
-    void (base.exec as unknown as (command: string) => Promise<void>)('schieben');
-  }, [base.exec]);
+    void (exec as unknown as (command: string) => Promise<void>)('schieben');
+  }, [exec]);
 
-  return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hint: base.hint,
-    hintError: base.hintError,
-    hintLoading: base.hintLoading,
-    exec: base.exec,
-    jassConfig: base.config,
-    selectedCardIndices: base.selectedCardIndices,
-    toggleCard: base.toggleCard,
-    handleConfigChange: base.handleConfigChange,
-    handleToggle: base.handleToggle,
-    handlePlay: base.handlePlay,
-    handleNextTrick: base.handleNextTrick,
-    handleNextRound: base.handleNextRound,
-    handleHint: base.handleHint,
-    handleCallTrump,
-    handleSchieben,
-    retry: base.retry,
-  };
+  return { ...rest, exec, jassConfig: config, handleCallTrump, handleSchieben };
 }

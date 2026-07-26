@@ -29,13 +29,11 @@ export const BAG_PENALTY_THRESHOLD_OPTIONS = [5, 10, 15] as const;
 
 /** Hook that manages Spades game state, bidding, and player actions. */
 export function useSpadesGame() {
-  const base = useTrickGameBase({
+  const { exec, config, ...rest } = useTrickGameBase({
     apiFn: spadesApi.exec,
     defaultConfig: DEFAULT_SPADES_CONFIG,
     getHint: (state) => state.hint ?? null,
   });
-
-  const { exec } = base;
 
   const handleBid = useCallback(
     (bid: number) => {
@@ -44,24 +42,5 @@ export function useSpadesGame() {
     [exec],
   );
 
-  return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hint: base.hint,
-    hintError: base.hintError,
-    hintLoading: base.hintLoading,
-    exec: base.exec,
-    spadesConfig: base.config,
-    selectedCardIndices: base.selectedCardIndices,
-    toggleCard: base.toggleCard,
-    clearSelection: base.clearSelection,
-    handleConfigChange: base.handleConfigChange,
-    handleBid,
-    handlePlay: base.handlePlay,
-    handleNextTrick: base.handleNextTrick,
-    handleNextRound: base.handleNextRound,
-    handleHint: base.handleHint,
-    retry: base.retry,
-  };
+  return { ...rest, exec, spadesConfig: config, handleBid };
 }

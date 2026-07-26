@@ -24,13 +24,15 @@ export const POINT_LIMIT_OPTIONS = [30, 50, 75, 100] as const;
  * Wraps {@link useTrickGameBase} and exposes a trump suit declaration handler.
  */
 export function useTwoTenJackGame() {
-  const base = useTrickGameBase({
+  const {
+    exec: dispatch,
+    config,
+    ...rest
+  } = useTrickGameBase({
     apiFn: twoTenJackApi.exec,
     defaultConfig: DEFAULT_TWOTENJACK_CONFIG,
     getHint: (state) => state.hint ?? null,
   });
-
-  const dispatch = base.exec;
 
   const handleDeclare = useCallback(
     (trumpSuit: number) => {
@@ -39,24 +41,5 @@ export function useTwoTenJackGame() {
     [dispatch],
   );
 
-  return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hint: base.hint,
-    hintError: base.hintError,
-    hintLoading: base.hintLoading,
-    exec: base.exec,
-    twoTenJackConfig: base.config,
-    selectedCardIndices: base.selectedCardIndices,
-    toggleCard: base.toggleCard,
-    clearSelection: base.clearSelection,
-    handleConfigChange: base.handleConfigChange,
-    handleDeclare,
-    handlePlay: base.handlePlay,
-    handleNextTrick: base.handleNextTrick,
-    handleNextRound: base.handleNextRound,
-    handleHint: base.handleHint,
-    retry: base.retry,
-  };
+  return { ...rest, exec: dispatch, twoTenJackConfig: config, handleDeclare };
 }

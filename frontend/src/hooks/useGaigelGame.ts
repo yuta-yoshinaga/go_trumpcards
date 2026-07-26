@@ -21,7 +21,7 @@ export const TARGET_SCORE_OPTIONS = [101, 201, 301] as const;
 
 /** Hook that manages Gaigel game state and player actions. */
 export function useGaigelGame() {
-  const base = useTrickGameBase({
+  const { exec, config, ...rest } = useTrickGameBase({
     apiFn: gaigelApi.exec,
     defaultConfig: DEFAULT_GAIGEL_CONFIG,
     getHint: (state) => state.hint ?? null,
@@ -29,32 +29,14 @@ export function useGaigelGame() {
 
   const handleMarriage = useCallback(
     (cardIndex: number) => {
-      void (base.exec as unknown as (command: string, a1?: number, ci?: number) => Promise<void>)(
+      void (exec as unknown as (command: string, a1?: number, ci?: number) => Promise<void>)(
         'marriage',
         undefined,
         cardIndex,
       );
     },
-    [base.exec],
+    [exec],
   );
 
-  return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hint: base.hint,
-    hintError: base.hintError,
-    hintLoading: base.hintLoading,
-    exec: base.exec,
-    gaigelConfig: base.config,
-    selectedCardIndices: base.selectedCardIndices,
-    toggleCard: base.toggleCard,
-    handleConfigChange: base.handleConfigChange,
-    handlePlay: base.handlePlay,
-    handleMarriage,
-    handleNextTrick: base.handleNextTrick,
-    handleNextRound: base.handleNextRound,
-    handleHint: base.handleHint,
-    retry: base.retry,
-  };
+  return { ...rest, exec, gaigelConfig: config, handleMarriage };
 }

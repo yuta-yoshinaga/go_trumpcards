@@ -23,51 +23,30 @@ export const TARGET_SCORE_OPTIONS = [500, 750, 1000, 1500] as const;
 
 /** Hook that manages Belote game state and player actions. */
 export function useBeloteGame() {
-  const base = useTrickGameBase({
+  const { exec, config, ...rest } = useTrickGameBase({
     apiFn: beloteApi.exec,
     defaultConfig: DEFAULT_BELOTE_CONFIG,
     getHint: (state) => state.hint ?? null,
   });
 
   const handleOrderUp = useCallback(() => {
-    void (base.exec as unknown as (command: string) => Promise<void>)('orderup');
-  }, [base.exec]);
+    void (exec as unknown as (command: string) => Promise<void>)('orderup');
+  }, [exec]);
 
   const handlePass = useCallback(() => {
-    void (base.exec as unknown as (command: string) => Promise<void>)('pass');
-  }, [base.exec]);
+    void (exec as unknown as (command: string) => Promise<void>)('pass');
+  }, [exec]);
 
   const handleCallTrump = useCallback(
     (suit: number) => {
-      void (base.exec as unknown as (command: string, cardIndex?: number, s?: number) => Promise<void>)(
+      void (exec as unknown as (command: string, cardIndex?: number, s?: number) => Promise<void>)(
         'calltrump',
         undefined,
         suit,
       );
     },
-    [base.exec],
+    [exec],
   );
 
-  return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hint: base.hint,
-    hintError: base.hintError,
-    hintLoading: base.hintLoading,
-    exec: base.exec,
-    beloteConfig: base.config,
-    selectedCardIndices: base.selectedCardIndices,
-    toggleCard: base.toggleCard,
-    handleConfigChange: base.handleConfigChange,
-    handleToggle: base.handleToggle,
-    handlePlay: base.handlePlay,
-    handleNextTrick: base.handleNextTrick,
-    handleNextRound: base.handleNextRound,
-    handleHint: base.handleHint,
-    handleOrderUp,
-    handlePass,
-    handleCallTrump,
-    retry: base.retry,
-  };
+  return { ...rest, exec, beloteConfig: config, handleOrderUp, handlePass, handleCallTrump };
 }
