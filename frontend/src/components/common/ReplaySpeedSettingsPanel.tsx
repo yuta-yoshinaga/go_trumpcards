@@ -7,7 +7,7 @@ const SPEED_OPTIONS: ReadonlyArray<ReplaySpeed> = ['normal', 'fast', 'instant'];
 /**
  * Renders a small settings panel that lets the player tune the CPU replay
  * animation speed (Normal / Fast / Instant). The choice is persisted globally
- * so it carries across every game that uses {@link runReplay}.
+ * so it carries across every game that uses {@link hooks/gameReplay.runReplay | runReplay}.
  *
  * Designed to sit alongside an existing per-game `<SettingsPanel>` on pages
  * that animate CPU turns (Daifugo, Old Maid, Sevens, President — see #1649).

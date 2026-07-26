@@ -10,7 +10,7 @@ import type { HintResult } from '../../types/hint';
  * `action` (`"call"` / `"raise"` / `"fold"`) mapped to the `targetAction`
  * string, and a `reason` i18n suffix (`strong_hand` / `medium_hand` /
  * `weak_hand`) re-mapped into the frontend HintResult shape so the shared
- * {@link useGameHint} tooltip can render it.
+ * {@link hooks/useGameHint.useGameHint | useGameHint} tooltip can render it.
  */
 export function getBouillotteHint(state: BouillotteResponse): HintResult | null {
   const hint = state.hint;

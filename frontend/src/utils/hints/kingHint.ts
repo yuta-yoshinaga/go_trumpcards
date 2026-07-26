@@ -8,7 +8,7 @@ import type { HintResult } from '../../types/hint';
  * King's hint is computed entirely by the Go backend and surfaced on the
  * response's `hint` field (with a `reason` i18n suffix such as `avoid_low` or
  * `win_high`). This adapter re-maps that server hint into the frontend
- * HintResult shape so the shared {@link useGameHint} tooltip can render it. The
+ * HintResult shape so the shared {@link hooks/useGameHint.useGameHint | useGameHint} tooltip can render it. The
  * `targetAction` is fixed to `play` because every hint ultimately points the
  * player at a card.
  */
