@@ -22,6 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useReflexShortcuts } from '../hooks/useReflexShortcuts';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { EgyptianRatscrewResponse } from '../types/card';
 import {
@@ -310,7 +311,7 @@ function EgyptianRatscrewPageContent() {
                 {state.isSlappable && state.lastSlapReason !== EgyptianRatscrewSlapReason.NONE && (
                   <div
                     data-testid="er-slap-reason"
-                    className="mt-1 inline-flex items-center gap-1 rounded-full bg-ds-warning/20 px-2 py-0.5 text-xs font-medium text-ds-warning"
+                    className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${badgeWarningColors}`}
                   >
                     {state.lastSlapReason === EgyptianRatscrewSlapReason.PAIR
                       ? `👯 ${t('egyptianratscrew.slapReason.pair')}`

@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -268,7 +269,7 @@ function CinchPageContent() {
                         {playerName(p.id, p.isHuman)}: {t('score', { score: p.totalScore })}
                       </span>
                       {p.id === state.bidWinnerIdx && (
-                        <span className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs">
+                        <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
                           {t('bidderBadge')}
                         </span>
                       )}

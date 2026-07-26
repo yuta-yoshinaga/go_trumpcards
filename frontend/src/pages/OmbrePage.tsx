@@ -21,6 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_ROUNDS_OPTIONS, useOmbreGame } from '../hooks/useOmbreGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -282,9 +283,7 @@ function OmbrePageContent() {
                         {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
                       </span>
                       {p.isOmbre && (
-                        <span className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs">
-                          {t('ombreBadge')}
-                        </span>
+                        <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('ombreBadge')}</span>
                       )}
                     </div>
                   ))}

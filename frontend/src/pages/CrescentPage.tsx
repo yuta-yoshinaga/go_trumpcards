@@ -26,6 +26,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
+import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, CrescentResponse } from '../types/card';
@@ -268,9 +269,7 @@ function CrescentPageContent() {
                             <span
                               data-testid={`foundation-dir-${idx}`}
                               className={`inline-block rounded px-1 font-bold ${
-                                directionKey === 'asc'
-                                  ? 'bg-ds-success/20 text-ds-success'
-                                  : 'bg-ds-warning/20 text-ds-warning'
+                                directionKey === 'asc' ? badgeSuccessColors : badgeWarningColors
                               }`}
                             >
                               {suit} {directionKey === 'asc' ? '↑' : '↓'}

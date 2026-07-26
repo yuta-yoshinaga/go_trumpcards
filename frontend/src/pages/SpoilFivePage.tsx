@@ -21,6 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, useSpoilFiveGame } from '../hooks/useSpoilFiveGame';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -196,7 +197,7 @@ function SpoilFivePageContent() {
           <span className="px-1.5 py-0.5 rounded bg-white/20 text-ds-text-primary text-xs">{t('leader')}</span>
         )}
         {isRoundWinner && (
-          <span className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs">{t('roundWinner')}</span>
+          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('roundWinner')}</span>
         )}
       </div>
     );

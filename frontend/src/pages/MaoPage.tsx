@@ -20,6 +20,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useMaoGame } from '../hooks/useMaoGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -315,10 +316,7 @@ function MaoPageContent() {
                 )}
 
                 {hasPenalty && (
-                  <div
-                    className="my-2 p-2 rounded bg-ds-warning/20 text-ds-warning text-sm font-semibold"
-                    role="status"
-                  >
+                  <div className={`my-2 p-2 rounded text-sm font-semibold ${badgeWarningColors}`} role="status">
                     {t('penaltyBanner', { count: state.penaltyDrawCount })}
                   </div>
                 )}

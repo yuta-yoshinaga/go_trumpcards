@@ -26,6 +26,7 @@ import {
   useIndianRummyGame,
 } from '../hooks/useIndianRummyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -418,7 +419,7 @@ function IndianRummyPageContent() {
                 aria-live="polite"
                 data-testid="indianrummy-declare-preview"
                 className={`mb-2 px-3 py-2 rounded text-sm ${
-                  declarePreview.valid ? 'bg-ds-success/20 text-ds-success' : 'bg-ds-warning/20 text-ds-warning'
+                  declarePreview.valid ? badgeSuccessColors : badgeWarningColors
                 }`}
               >
                 {declarePreview.valid ? (

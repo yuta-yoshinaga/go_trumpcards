@@ -21,6 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useMacauGame } from '../hooks/useMacauGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeInfoColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -298,17 +299,14 @@ function MacauPageContent() {
                 </details>
 
                 {hasPenalty && (
-                  <div
-                    className="my-2 p-2 rounded bg-ds-warning/20 text-ds-warning text-sm font-semibold"
-                    role="status"
-                  >
+                  <div className={`my-2 p-2 rounded text-sm font-semibold ${badgeWarningColors}`} role="status">
                     {t('penaltyBanner', { count: state.penaltyDrawCount })}
                   </div>
                 )}
 
                 {isMustDeclare && state.players[state.currentPlayerIdx]?.isHuman && (
                   <div
-                    className="my-2 p-2 rounded bg-ds-info/20 text-ds-info text-sm font-semibold"
+                    className={`my-2 p-2 rounded text-sm font-semibold ${badgeInfoColors}`}
                     role="status"
                     data-testid="macau-must-declare-banner"
                   >

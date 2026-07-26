@@ -23,6 +23,7 @@ import { RoundResults } from '../components/RoundResults';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCommunityPokerGame } from '../hooks/useCommunityPokerGame';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -335,7 +336,7 @@ function BigOPageContent() {
                   )}
                 </div>
                 <div
-                  className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-ds-info/20 px-2 py-0.5 text-[11px] font-semibold text-ds-info"
+                  className={`mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${badgeInfoColors}`}
                   data-testid="bigo-rule-badge"
                   title={t('mandatoryRuleAria')}
                 >

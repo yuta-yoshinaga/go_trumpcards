@@ -17,6 +17,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useJassGame } from '../hooks/useJassGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -312,7 +313,7 @@ function JassPageContent() {
                     {t('weisPanel.teamPoints', { points: state.roundWeisPoints[team] })}
                   </span>
                   {state.roundWeisPoints[team] > 0 && (
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-ds-warning/20 text-ds-warning">
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${badgeWarningColors}`}>
                       {t('weisPanel.scored')}
                     </span>
                   )}
