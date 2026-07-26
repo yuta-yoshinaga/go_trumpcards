@@ -69,12 +69,12 @@ const BELOTE_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 const BELOTE_PHASE_KEYS: Readonly<Record<number, string>> = {
-  [BelotePhase.BID_PICK_UP]: 'phase.bidPickUp',
-  [BelotePhase.BID_CALL_TRUMP]: 'phase.bidCallTrump',
-  [BelotePhase.PLAY]: 'phase.play',
-  [BelotePhase.TRICK_END]: 'phase.trickEnd',
-  [BelotePhase.ROUND_END]: 'phase.roundEnd',
-  [BelotePhase.GAME_END]: 'phase.gameEnd',
+  [BelotePhase.BID_PICK_UP]: 'bidPickUp',
+  [BelotePhase.BID_CALL_TRUMP]: 'bidCallTrump',
+  [BelotePhase.PLAY]: 'play',
+  [BelotePhase.TRICK_END]: 'trickEnd',
+  [BelotePhase.ROUND_END]: 'roundEnd',
+  [BelotePhase.GAME_END]: 'gameEnd',
 };
 
 const SUIT_LABEL_KEYS: Readonly<Record<number, string>> = {

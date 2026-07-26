@@ -81,10 +81,10 @@ const WH_TUTORIAL_STEPS: TutorialStep[] = [
 
 /** Phase translation key map for Whist. */
 const WHIST_PHASE_KEYS: Readonly<Record<number, string>> = {
-  [WhistPhase.PLAY]: 'phase.play',
-  [WhistPhase.TRICK_END]: 'phase.trickEnd',
-  [WhistPhase.ROUND_END]: 'phase.roundEnd',
-  [WhistPhase.GAME_END]: 'phase.gameEnd',
+  [WhistPhase.PLAY]: 'play',
+  [WhistPhase.TRICK_END]: 'trickEnd',
+  [WhistPhase.ROUND_END]: 'roundEnd',
+  [WhistPhase.GAME_END]: 'gameEnd',
 };
 
 /** Renders the Whist game page with trump suit, trick play, and team scoring. */

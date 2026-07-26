@@ -64,6 +64,15 @@ describe('CatchTenPage', () => {
     );
   });
 
+  // The phase key map must hold bare keys; usePhaseNames adds the `phase.`
+  // prefix itself, so a prefixed key resolved to the literal
+  // "phase.phase.play" on screen. See issue #4374.
+  it('renders the translated phase name, not the raw i18n key', async () => {
+    renderWithProviders(<CatchTenPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('プレイ'));
+    expect(screen.getByTestId('phase-indicator')).not.toHaveTextContent('phase.');
+  });
+
   it('renders CPU stats as a structured definition list with labeled fields', async () => {
     renderWithProviders(<CatchTenPage />);
     // Each CPU stat block is a <dl>; every field is a term/definition pair so

@@ -52,7 +52,11 @@
     "bid": "ビッドフェーズ",
     "skatPickup": "スカート拾い",
     "discard": "捨て札",
-    "gameDeclaration": "ゲーム宣言"
+    "gameDeclaration": "ゲーム宣言",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
   },
   "tutorial": {
     "trickDisplay": "トリックエリア。3人の出した札がここに並びます。",

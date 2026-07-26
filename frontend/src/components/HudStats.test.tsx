@@ -109,6 +109,21 @@ describe('HudStats component', () => {
     expect(badge).toHaveAttribute('data-style', expectedStyle);
     expect(badge.textContent).toContain(expectedLabel);
   });
+
+  // Every namespace that a page actually passes must own the `style.*` keys,
+  // otherwise i18next falls back to printing the key itself and the badge
+  // reads "style.tp" on screen. omahahilo / bigohilo shipped without them.
+  // See issue #4374.
+  it.each(['holdem', 'omaha', 'shortdeck', 'pineapple', 'bigo', 'omahahilo', 'bigohilo'])(
+    'resolves the style badge label in the %s namespace',
+    (namespace) => {
+      render(<HudStats vpip={15} pfr={5} threeBet={6} af="2.0" namespace={namespace} />);
+      const badge = screen.getByTestId('hud-overall-style');
+      expect(badge).toHaveAttribute('data-style', 'tp');
+      expect(badge.textContent).toContain('TP');
+      expect(badge.textContent).not.toContain('style.');
+    },
+  );
 });
 
 describe('overallStyle', () => {

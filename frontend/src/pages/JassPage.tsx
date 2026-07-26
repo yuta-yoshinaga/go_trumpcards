@@ -66,12 +66,12 @@ const JASS_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 const JASS_PHASE_KEYS: Readonly<Record<number, string>> = {
-  [JassPhase.BID_TRUMP]: 'phase.bidTrump',
-  [JassPhase.BID_PARTNER]: 'phase.bidPartner',
-  [JassPhase.PLAY]: 'phase.play',
-  [JassPhase.TRICK_END]: 'phase.trickEnd',
-  [JassPhase.ROUND_END]: 'phase.roundEnd',
-  [JassPhase.GAME_END]: 'phase.gameEnd',
+  [JassPhase.BID_TRUMP]: 'bidTrump',
+  [JassPhase.BID_PARTNER]: 'bidPartner',
+  [JassPhase.PLAY]: 'play',
+  [JassPhase.TRICK_END]: 'trickEnd',
+  [JassPhase.ROUND_END]: 'roundEnd',
+  [JassPhase.GAME_END]: 'gameEnd',
 };
 
 const SUIT_LABEL_KEYS: Readonly<Record<number, string>> = {
