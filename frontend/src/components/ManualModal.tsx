@@ -65,12 +65,12 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
     let cancelled = false;
     const load = cliMode ? loadCuiManualText : loadManualText;
     load(gamePath).then((text) => {
-      if (!cancelled) setLoaded({ key: `${gamePath}|${cliMode ? 'cui' : 'web'}`, text });
+      if (!cancelled) setLoaded({ key: manualKey, text });
     });
     return () => {
       cancelled = true;
     };
-  }, [open, gamePath, cliMode]);
+  }, [open, gamePath, cliMode, manualKey]);
 
   if (!open) return null;
 
