@@ -8,9 +8,6 @@ import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import { SkipNavLink } from './components/SkipNavLink';
 import { SkeletonBar } from './components/skeleton/SkeletonBar';
 import { gameRoutes } from './constants/gameRoutes';
-import { DiscoverPage } from './pages/DiscoverPage';
-import { DiscoverResultPage } from './pages/DiscoverResultPage';
-import { NotFoundPage } from './pages/NotFoundPage';
 import { resolvePageComponent } from './utils/resolvePageComponent';
 
 // Vite resolves this glob at build time; each match becomes its own chunk
@@ -24,6 +21,16 @@ const pageModules = import.meta.glob<Record<string, ComponentType<any>>>('./page
 const lazyPages = new Map<string, ComponentType>(
   gameRoutes.map(({ path, page }) => [path, resolvePageComponent(pageModules, path, page)]),
 );
+
+// The three non-game pages match the glob above too, so importing them
+// statically made them *both* dynamic and static imports — which a static
+// import always wins. They were therefore inlined into the entry chunk that
+// every visitor downloads, including visitors who never open Discover or hit
+// a 404. Resolving them the same way as game pages is what actually splits
+// them out (#4355). Each usage below needs its own Suspense boundary.
+const DiscoverPage = resolvePageComponent(pageModules, '/discover', 'Discover');
+const DiscoverResultPage = resolvePageComponent(pageModules, '/discover/result', 'DiscoverResult');
+const NotFoundPage = resolvePageComponent(pageModules, '*', 'NotFound');
 
 /**
  * Placeholder rendered while a lazy game-page chunk downloads. Shows a
@@ -76,13 +83,34 @@ export default function App() {
                     );
                   })}
                   {/* AI Game Concierge — survey + recommendation result. */}
-                  <Route path="/discover" element={<DiscoverPage />} />
-                  <Route path="/discover/result" element={<DiscoverResultPage />} />
+                  <Route
+                    path="/discover"
+                    element={
+                      <Suspense fallback={<RouteSuspenseFallback />}>
+                        <DiscoverPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="/discover/result"
+                    element={
+                      <Suspense fallback={<RouteSuspenseFallback />}>
+                        <DiscoverResultPage />
+                      </Suspense>
+                    }
+                  />
                   {/* BlackJack lives at "/", but external links may use "/blackjack". */}
                   <Route path="/blackjack" element={<Navigate to="/" replace />} />
                   {/* Unknown hash routes (e.g., "#/notagame") render the 404
                     surface instead of silently redirecting home — #1902. */}
-                  <Route path="*" element={<NotFoundPage />} />
+                  <Route
+                    path="*"
+                    element={
+                      <Suspense fallback={<RouteSuspenseFallback />}>
+                        <NotFoundPage />
+                      </Suspense>
+                    }
+                  />
                 </Routes>
               </RouteErrorBoundary>
             </main>
