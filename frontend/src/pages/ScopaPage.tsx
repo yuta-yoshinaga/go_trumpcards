@@ -17,6 +17,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useScopaGame } from '../hooks/useScopaGame';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ScopaResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
@@ -278,7 +279,7 @@ function ScopaPageContent() {
             {isRoundEnd && (
               <div
                 role="status"
-                className="text-center text-sm font-medium text-ds-info bg-ds-info/10 border border-ds-info/30 rounded-lg py-2 px-3"
+                className={`text-center text-sm font-medium border border-ds-info/30 rounded-lg py-2 px-3 ${badgeInfoColors}`}
                 data-testid="sc-round-end-banner"
               >
                 {t('label.roundEnd')}

@@ -23,6 +23,7 @@ import { RoundResults } from '../components/RoundResults';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCommunityPokerGame } from '../hooks/useCommunityPokerGame';
+import { badgeInfoColors, badgeSuccessColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -148,8 +149,8 @@ function OmahaLoCard({
 
 /** Design-system token classes per board-low status (live=success, possible=info, impossible=muted). */
 const BOARD_LOW_STATUS_CLASS: Readonly<Record<BoardLowStatus, string>> = {
-  live: 'border-ds-success bg-ds-success/20 text-ds-success',
-  possible: 'border-ds-info bg-ds-info/20 text-ds-info',
+  live: badgeSuccessColors,
+  possible: badgeInfoColors,
   impossible: 'border-ds-border bg-ds-surface text-ds-text-muted',
 };
 
@@ -482,7 +483,7 @@ function OmahaHiLoPageContent() {
                   )}
                 </div>
                 <div
-                  className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-ds-info/20 px-2 py-0.5 text-[11px] font-semibold text-ds-info"
+                  className={`mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${badgeInfoColors}`}
                   data-testid="omahahilo-rule-badge"
                   title={t('mandatoryRuleAria')}
                 >

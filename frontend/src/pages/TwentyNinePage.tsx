@@ -21,6 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_POINTS_OPTIONS, useTwentyNineGame } from '../hooks/useTwentyNineGame';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -237,7 +238,7 @@ function TwentyNinePageContent() {
               <div
                 role="status"
                 data-testid="tn-trump-reveal-banner"
-                className="mx-auto mb-2 w-fit rounded-lg bg-ds-warning/20 px-4 py-1.5 text-center font-semibold text-ds-warning motion-safe:animate-pulse"
+                className={`mx-auto mb-2 w-fit rounded-lg px-4 py-1.5 text-center font-semibold motion-safe:animate-pulse ${badgeWarningColors}`}
               >
                 {t('trumpRevealBanner', { suit: revealedTrumpSymbol })}
               </div>
@@ -436,7 +437,7 @@ function TwentyNinePageContent() {
             {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
           </span>
           {p.isDeclarer && (
-            <span className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs">{t('declarerBadge')}</span>
+            <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('declarerBadge')}</span>
           )}
         </div>
       ));

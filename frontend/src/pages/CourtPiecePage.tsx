@@ -26,6 +26,7 @@ import {
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -417,7 +418,7 @@ function CourtPiecePageContent() {
             {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
           </span>
           {p.id === state.callerIdx && (
-            <span className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs">{t('callerBadge')}</span>
+            <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('callerBadge')}</span>
           )}
         </div>
       ));

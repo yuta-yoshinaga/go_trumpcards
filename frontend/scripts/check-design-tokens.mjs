@@ -207,3 +207,51 @@ if (tapViolations.length > 0) {
 }
 
 console.log('tap-targets: OK (every checkbox/radio sits in a 44px label row; index.css floors the rest).');
+
+// Badge-contrast guard (issue #4367): DESIGN.md's Opacity rule forbids mixing
+// Tailwind opacity suffixes with design tokens for the text or background of
+// *meaningful* information (state badges, alerts, forced-action banners),
+// because the effective colour then depends on whatever sits beneath.
+//
+// This flags one specific, measurable shape: a translucent semantic background
+// paired with the *matching* semantic foreground in the same className, e.g.
+// `bg-ds-error/30 … text-ds-error`. That combination has no fixed contrast
+// ratio at all -- measured across the four table felts it ranges 1.13:1 to
+// 4.59:1, and 29 of 30 combinations fall below WCAG AA. badgeStyles.ts exists
+// precisely to replace it, and its helpers hold 5.8:1-12.1:1 regardless of
+// background.
+//
+// Deliberately NOT flagged: a translucent semantic background whose foreground
+// is inherited (issue #4367's "A-2", 42 sites). Those are only a problem when
+// the inherited colour is itself low-contrast, which this cannot see, and
+// DESIGN.md still permits opacity for decorative tints. Widening this rule
+// needs a per-site judgement call, not a regex.
+const BADGE_TOKEN = /\b(?:bg)-ds-(warning|info|success|error)\/\d+\b/g;
+const badgeViolations = [];
+for (const file of files) {
+  if (file.endsWith('badgeStyles.ts')) continue; // the sanctioned home for these tokens
+  const text = stripComments(await readFile(file, 'utf8'));
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i += 1) {
+    for (const m of lines[i].matchAll(BADGE_TOKEN)) {
+      const kind = m[1];
+      // Only when the same line also sets the matching semantic foreground.
+      if (!new RegExp(String.raw`\btext-ds-${kind}\b`).test(lines[i])) continue;
+      badgeViolations.push({ file: relative(ROOT, file), line: i + 1, kind, match: m[0] });
+    }
+  }
+}
+
+if (badgeViolations.length > 0) {
+  console.error('\nBadge-contrast policy violations (DESIGN.md Opacity rule):\n');
+  for (const v of badgeViolations) {
+    console.error(
+      `  ${v.file}:${v.line}  [${v.match} + text-ds-${v.kind}]  ` +
+        `use badge${v.kind[0].toUpperCase()}${v.kind.slice(1)}Colors from styles/badgeStyles.ts`,
+    );
+  }
+  console.error(`\n${badgeViolations.length} violation(s). See DESIGN.md and issue #4367.`);
+  process.exit(1);
+}
+
+console.log('badge-contrast: OK (no semantic foreground sits on a translucent semantic background).');

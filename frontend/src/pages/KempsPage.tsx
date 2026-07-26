@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -290,7 +291,7 @@ function KempsPageContent() {
             {/* Signal cues (human only) */}
             {isDeclare && state.partnerSignaling && (
               <div
-                className="my-2 p-2 rounded bg-ds-success/20 text-ds-success text-sm font-semibold"
+                className={`my-2 p-2 rounded text-sm font-semibold ${badgeSuccessColors}`}
                 role="status"
                 aria-live="polite"
                 data-testid="kemps-partner-signaling"
@@ -300,7 +301,7 @@ function KempsPageContent() {
             )}
             {isDeclare && state.opponentSignaling && (
               <div
-                className="my-2 p-2 rounded bg-ds-warning/20 text-ds-warning text-sm"
+                className={`my-2 p-2 rounded text-sm ${badgeWarningColors}`}
                 role="status"
                 aria-live="polite"
                 data-testid="kemps-opponent-signaling"
@@ -313,7 +314,7 @@ function KempsPageContent() {
                 so the human notices the quad before the declare window. */}
             {humanHasFour && !isGameEnd && (
               <div
-                className="my-2 p-2 rounded bg-ds-success/20 text-ds-success text-sm font-semibold"
+                className={`my-2 p-2 rounded text-sm font-semibold ${badgeSuccessColors}`}
                 role="status"
                 aria-live="polite"
                 data-testid="kemps-four-ready"

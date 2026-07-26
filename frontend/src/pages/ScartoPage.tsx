@@ -26,6 +26,7 @@ import {
   TARGET_DEALS_OPTIONS,
   useScartoGame,
 } from '../hooks/useScartoGame';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -273,7 +274,7 @@ function ScartoPageContent() {
                         {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
                       </span>
                       {p.isDealer && (
-                        <span className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs">
+                        <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
                           {t('dealerBadge')}
                         </span>
                       )}

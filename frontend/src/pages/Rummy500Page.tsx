@@ -19,6 +19,7 @@ import {
   RUMMY500_POINT_LIMIT_OPTIONS,
   useRummy500Game,
 } from '../hooks/useRummy500Game';
+import { badgeErrorColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -296,7 +297,7 @@ function Rummy500PageContent() {
           <div className="flex justify-end mb-1 text-xs">
             <span
               data-testid="hand-penalty-badge"
-              className="px-2 py-0.5 rounded-full bg-ds-error/20 text-ds-error border border-ds-error font-medium"
+              className={`px-2 py-0.5 rounded-full border border-ds-error font-medium ${badgeErrorColors}`}
               title={t('handPenaltyHint')}
             >
               {t('handPenalty', { points: rummy500HandPenalty(humanPlayer.cards) })}

@@ -17,6 +17,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { FaroResponse } from '../types/card';
@@ -247,7 +248,7 @@ function FaroPageContent() {
                         bet?.copper
                           ? 'border-ds-accent bg-ds-accent/20 text-ds-accent'
                           : bet
-                            ? 'border-ds-warning bg-ds-warning/20 text-ds-warning'
+                            ? badgeWarningColors
                             : 'border-white/30 bg-black/30 text-ds-text-primary'
                       } ${isBetting ? 'cursor-pointer hover:border-ds-warning hover:-translate-y-0.5' : 'cursor-default opacity-80'}`}
                       data-testid={`rank-${rank}`}

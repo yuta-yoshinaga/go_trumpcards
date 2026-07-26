@@ -331,7 +331,12 @@ describe('OmahaHiLoPage', () => {
     renderWithProviders(<OmahaHiLoPage />);
     const badge = await screen.findByTestId('omahahilo-board-low-badge');
     expect(badge).toHaveAttribute('data-status', 'possible');
-    expect(badge).toHaveClass('text-ds-info');
+    // badgeInfoColors carries the "info" signal on the border, not the text:
+    // text-ds-info is only ~4.5:1 on the surface background, so the foreground
+    // stays text-ds-text-primary (12:1) and the border does the signalling.
+    // See styles/badgeStyles.ts and issue #4367.
+    expect(badge).toHaveClass('border-ds-border-subtle');
+    expect(badge).toHaveClass('text-ds-text-primary');
   });
 
   it('shows the "live" board-low badge when the board has 3 distinct low ranks', async () => {

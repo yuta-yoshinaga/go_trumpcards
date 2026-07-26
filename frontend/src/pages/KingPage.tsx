@@ -20,7 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useKingGame } from '../hooks/useKingGame';
-import { badgeErrorColors, badgeSuccessColors } from '../styles/badgeStyles';
+import { badgeErrorColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -236,7 +236,7 @@ function KingPageContent() {
                         {playerName(p.id, p.isHuman)}: {t('score', { score: p.totalScore })}
                       </span>
                       {p.id === state.dealerIdx && (
-                        <span className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs">
+                        <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
                           {t('dealerBadge')}
                         </span>
                       )}

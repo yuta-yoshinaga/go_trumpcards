@@ -32,6 +32,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle, selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -603,7 +604,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                             )}
                             {isRecommendedDiscard && (
                               <span
-                                className="mt-0.5 rounded-full bg-ds-info/20 px-1.5 text-[10px] font-semibold text-ds-info"
+                                className={`mt-0.5 rounded-full px-1.5 text-[10px] font-semibold ${badgeInfoColors}`}
                                 data-testid="cp-discard-recommended"
                               >
                                 {t('discard.recommended')}
