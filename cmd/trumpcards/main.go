@@ -408,7 +408,7 @@ func run() int {
 	}
 	commands["completion"] = func() int {
 		var noHint bool
-		fs, code, ok := parseSubFlags("completion", subArgs, func(f *flag.FlagSet) {
+		fs, code, ok := parseSubFlagsWithArgs("completion", subArgs, func(f *flag.FlagSet) {
 			f.BoolVar(&noHint, "no-hint", false, "Suppress installation hint comments (also implied when stdout is not a TTY)")
 		})
 		if !ok {
@@ -806,14 +806,27 @@ func suggestionCandidates(commands map[string]func() int) []string {
 // args (already stripped of trailing global flags by the dispatch loop), and
 // warns about extra positional arguments. Returns (fs, exitCode, ok). If ok is
 // false, the caller should return exitCode immediately.
+//
+// Use parseSubFlagsWithArgs instead for subcommands that take positional
+// arguments of their own.
 func parseSubFlags(name string, args []string, setup func(*flag.FlagSet)) (*flag.FlagSet, int, bool) {
-	return parseSubFlagsTo(name, args, setup, os.Stdout, os.Stderr)
+	return parseSubFlagsTo(name, args, setup, os.Stdout, os.Stderr, false)
+}
+
+// parseSubFlagsWithArgs is parseSubFlags for subcommands that consume their own
+// positional arguments, and so must not be told they were ignored. `completion
+// <shell>` is the only such subcommand today: the shell name is required, and
+// runCompletion validates the argument count itself (exit 2 on anything but one).
+// See issue #4370.
+func parseSubFlagsWithArgs(name string, args []string, setup func(*flag.FlagSet)) (*flag.FlagSet, int, bool) {
+	return parseSubFlagsTo(name, args, setup, os.Stdout, os.Stderr, true)
 }
 
 // parseSubFlagsTo is the testable core of parseSubFlags: it parses args with a
 // subcommand FlagSet, wires the shared builtin help text as the usage, and
-// writes help/diagnostics to the given streams.
-func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdout, stderr io.Writer) (*flag.FlagSet, int, bool) {
+// writes help/diagnostics to the given streams. takesPositional suppresses the
+// leftover-args warning for subcommands whose handler consumes fs.Args().
+func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdout, stderr io.Writer, takesPositional bool) (*flag.FlagSet, int, bool) {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	fs.SetOutput(io.Discard) // suppress Go's raw English error/usage text
 	setup(fs)
@@ -839,7 +852,7 @@ func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdo
 		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliTryHelp", "cmd", name))
 		return nil, 2, false
 	}
-	if fs.NArg() > 0 {
+	if fs.NArg() > 0 && !takesPositional {
 		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(fs.Args(), " ")))
 	}
 	return fs, 0, true
