@@ -107,7 +107,7 @@ See [`docs/new-game-checklist.md`](docs/new-game-checklist.md) for the full chec
 
 ## Git Workflow
 
-- **`develop`**: Default branch; target for all PRs. CodeQL analysis and `golangci-lint` run on push/PR.
+- **`develop`**: Default branch; target for all PRs. `golangci-lint` and the CI suite run on push/PR; CodeQL runs on push to `develop` (i.e. after the merge) and weekly — see [ADR-0034](docs/adr/0034-codeql-post-merge.md).
 - **`master`**: Triggers automatic version bump, git tag, and GitHub Release.
 - **PR Summary**: When creating a PR, if there is an associated issue, the PR description must explicitly close the issue (e.g., `Closes #123`).
 
