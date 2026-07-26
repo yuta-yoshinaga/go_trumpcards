@@ -3,7 +3,7 @@
  */
 
 /** Minimal tableau card shape — any solitaire card with a face-up flag. */
-interface TableauCardLike {
+export interface TableauCardLike {
   faceUp: boolean;
 }
 
@@ -23,13 +23,13 @@ export function isTableauAllFaceUp(tableau: readonly (readonly TableauCardLike[]
 }
 
 /** Minimal card shape for movable-run detection: suit (`design`) + rank (`value`). */
-interface SuitRankCard {
+export interface SuitRankCard {
   design: string;
   value: number;
 }
 
 /** Tableau card with a nullable face and a face-up flag (Spider column shape). */
-interface RunTableauCard {
+export interface RunTableauCard {
   card: SuitRankCard | null;
   faceUp: boolean;
 }

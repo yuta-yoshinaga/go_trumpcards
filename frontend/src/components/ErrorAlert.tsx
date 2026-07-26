@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useOptionalSound } from '../providers/SoundProvider';
 
-interface ErrorAlertProps {
+/** Props for {@link ErrorAlert}. */
+export interface ErrorAlertProps {
   message: string | null;
   onRetry?: () => void;
 }

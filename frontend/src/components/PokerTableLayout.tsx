@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { useIsLargeDesktop } from '../hooks/useCardDimensions';
 
-interface PokerTableLayoutProps {
+/** Props for {@link PokerTableLayout}. */
+export interface PokerTableLayoutProps {
   communityCards: ReactNode;
   cpuPlayers: ReactNode;
   cpuAreaTutorial?: string;

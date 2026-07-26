@@ -4,7 +4,8 @@ import { suitName, valueName } from '../../utils/cardUtils';
 import { isPositionPlaced, isPositionPlayable, SUITS } from '../../utils/sevensUtils';
 import { ScrollFadeHint } from '../ScrollFadeHint';
 
-interface BoardProps {
+/** Props for {@link SevensBoard}. */
+export interface BoardProps {
   tablePlaced: number[];
   tunnelEnabled: boolean;
   tunnelSkipWidth: number;

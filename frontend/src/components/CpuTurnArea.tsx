@@ -3,7 +3,8 @@ import { activeTurnClass, finishedPlayerClass } from '../styles/gameConstants';
 import { playerName } from '../utils/playerUtils';
 import { StatusBadge } from './StatusBadge';
 
-interface CpuTurnAreaProps {
+/** Props for {@link CpuTurnArea}. */
+export interface CpuTurnAreaProps {
   id?: string;
   playerId: number;
   isHuman: boolean;

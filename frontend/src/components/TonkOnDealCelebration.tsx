@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import type { Card } from '../types/card';
 
-interface TonkOnDealCelebrationProps {
+/** Props for {@link TonkOnDealCelebration}. */
+export interface TonkOnDealCelebrationProps {
   /** Whether the player or CPU achieved Tonk on the deal. */
   show: boolean;
   /** Cards that produced the Tonk total — used to compute the 49 / 50 sum displayed. */

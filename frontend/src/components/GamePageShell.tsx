@@ -11,7 +11,7 @@ import { PhaseIndicator } from './PhaseIndicator';
 import { TutorialButton } from './tutorial/TutorialButton';
 
 /** Base props for the GamePageShell component (everything except the give-up trio). */
-interface GamePageShellBaseProps {
+export interface GamePageShellBaseProps {
   /** Page title rendered as a visually-hidden h1 heading. */
   title: string;
   /** Tailwind background class for the outer container (e.g., gameTheme.hearts.bg). */
@@ -82,7 +82,7 @@ interface GamePageShellBaseProps {
  * wiring a compile error rather than a silently no-op dialog (issue #2099,
  * PR #2108 review).
  */
-type GiveUpConfirmProps =
+export type GiveUpConfirmProps =
   | { giveUpConfirmOpen?: undefined; confirmGiveUp?: undefined; cancelGiveUp?: undefined }
   | {
       /** Whether the give-up confirmation dialog is open. */

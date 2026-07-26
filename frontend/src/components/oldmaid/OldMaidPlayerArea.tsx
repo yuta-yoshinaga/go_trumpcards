@@ -18,7 +18,8 @@ export interface PlayerAreaBubble {
 /** CSS class for Old Maid player area layout. */
 export const playerAreaClass = `${playerAreaBase} p-2 flex-[1_1_140px] min-w-[120px]`;
 
-interface PlayerAreaProps {
+/** Props for {@link OldMaidPlayerArea}. */
+export interface PlayerAreaProps {
   player: OldMaidPlayerData;
   isTarget: boolean;
   isHumanTurn: boolean;

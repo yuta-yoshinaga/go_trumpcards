@@ -7,7 +7,8 @@ import { CardImage } from '../CardImage';
 import { StatusBadge } from '../StatusBadge';
 import { playerAreaClass } from './DaifugoCpuArea';
 
-interface HumanPlayerAreaProps {
+/** Props for {@link DaifugoHumanArea}. */
+export interface HumanPlayerAreaProps {
   player: DaifugoPlayerData;
   selectedIndices: number[];
   onToggle: (idx: number) => void;

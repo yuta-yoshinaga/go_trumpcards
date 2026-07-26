@@ -1,6 +1,7 @@
 import { SkeletonCard } from './SkeletonCard';
 
-interface SkeletonHandProps {
+/** Props for {@link SkeletonHand}. */
+export interface SkeletonHandProps {
   cardWidth: number;
   cardHeight: number;
   count?: number;

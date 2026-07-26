@@ -4,7 +4,8 @@ import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import type { ActionLogEntry } from '../types/card';
 import { cardLabel } from '../utils/cardUtils';
 
-interface ActionLogPanelProps {
+/** Props for {@link ActionLogPanel}. */
+export interface ActionLogPanelProps {
   entries: ActionLogEntry[];
   onClose: () => void;
 }

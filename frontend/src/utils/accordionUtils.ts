@@ -1,7 +1,7 @@
 import type { AccordionPile } from '../types/card';
 
 /** The two legal merge offsets in Accordion: pile-1 (adjacent) and pile-3 (three-back). */
-const ACCORDION_OFFSETS: readonly number[] = [1, 3] as const;
+export const ACCORDION_OFFSETS: readonly number[] = [1, 3] as const;
 
 /**
  * Returns the indices of piles to the left of `fromIdx` (at offsets 1 and 3)

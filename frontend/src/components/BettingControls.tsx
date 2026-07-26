@@ -5,7 +5,8 @@ import { btnPokerAccent, btnPokerAllIn, btnPokerMuted, btnPokerPrimary } from '.
 import { ChipBetInput } from './common/ChipBetInput';
 import { KbdBadge } from './KbdBadge';
 
-interface BettingControlsProps {
+/** Props for {@link BettingControls}. */
+export interface BettingControlsProps {
   inputId: string;
   betAmount: number;
   onBetAmountChange: (v: number) => void;

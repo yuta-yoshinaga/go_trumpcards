@@ -9,7 +9,7 @@ import {
 } from '../formatterBase';
 
 /** Generic player-like structure. */
-interface GenericPlayer {
+export interface GenericPlayer {
   id: number;
   isHuman: boolean;
   cards?: Card[];
@@ -27,7 +27,7 @@ interface GenericPlayer {
 }
 
 /** Generic trick card. */
-interface GenericTrickCard {
+export interface GenericTrickCard {
   playerIdx: number;
   card: Card;
 }

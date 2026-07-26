@@ -14,7 +14,7 @@ import { useMountReset } from './useMountReset';
 import { usePhaseNames } from './usePhaseNames';
 
 /** The exec function shared by every community-poker game API. */
-type CommunityPokerExec = HoldemLikeExec<OmahaResponse>;
+export type CommunityPokerExec = HoldemLikeExec<OmahaResponse>;
 
 /** Community-card poker games sharing the Hold'em response shape + phase enum. */
 export type CommunityPokerName = 'holdem' | 'omaha' | 'omahahilo' | 'bigo' | 'bigohilo' | 'shortdeck';

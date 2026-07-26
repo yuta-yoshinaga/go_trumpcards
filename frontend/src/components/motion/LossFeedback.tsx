@@ -2,7 +2,8 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
-interface LossFeedbackProps {
+/** Props for {@link LossFeedback}. */
+export interface LossFeedbackProps {
   /** Whether to show the loss feedback. */
   show: boolean;
 }

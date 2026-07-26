@@ -28,7 +28,7 @@ const MIN_CARD_EXPOSURE_PX = 44;
 const DEAL_IN_STAGGER_S = 0.12;
 
 /** Props for the MobileHandGrid component. */
-interface MobileHandGridProps {
+export interface MobileHandGridProps {
   /** Cards to display. */
   cards: Card[];
   /** Indices of currently selected cards. */

@@ -12,7 +12,8 @@ const CASCADE_BATCH_DELAY = 0.4;
 /** Stagger between cards within a batch in seconds. */
 const CASCADE_CARD_STAGGER = 0.08;
 
-interface AnimatedPileProps {
+/** Props for {@link AnimatedPile}. */
+export interface AnimatedPileProps {
   /** Cards in this pile (bottom to top). */
   cards: Card[];
   /** Layout mode: stacked (overlapping) or fanned (spread). */

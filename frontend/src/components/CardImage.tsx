@@ -22,7 +22,8 @@ function getImagePath(card: Card): string {
   return `/images/${prefix}${zeroPad(card.value)}.png`;
 }
 
-interface CardImageProps {
+/** Props for {@link CardImage}. */
+export interface CardImageProps {
   card: Card;
   width?: number;
   style?: React.CSSProperties;
@@ -94,7 +95,8 @@ export function CardImage({
   );
 }
 
-interface CardBackProps {
+/** Props for {@link CardBack}. */
+export interface CardBackProps {
   width?: number;
   style?: React.CSSProperties;
   className?: string;

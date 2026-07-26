@@ -361,7 +361,7 @@ import { useLocalStorageToggle } from './useLocalStorageToggle';
 type HintFn = (state: unknown) => HintResult | null;
 
 /** Registry mapping game names to their hint functions. */
-const hintFactories = {
+export const hintFactories = {
   baccarat: (s) => getBaccaratHint(s as BaccaratResponse),
   blackjack: (s) => getBlackjackHint(s as BlackJackResponse),
   spanish21: (s) => getBlackjackHint(s as BlackJackResponse),

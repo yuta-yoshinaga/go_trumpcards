@@ -4,7 +4,8 @@ import type { WithTranslation } from 'react-i18next';
 import { withTranslation } from 'react-i18next';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 
-interface ErrorBoundaryProps extends WithTranslation {
+/** Props for {@link ErrorBoundary}, injected via `withTranslation()`. */
+export interface ErrorBoundaryProps extends WithTranslation {
   children: ReactNode;
 }
 

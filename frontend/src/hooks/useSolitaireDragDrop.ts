@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
 /** Options for the solitaire drag-and-drop hook. */
-interface UseSolitaireDragDropOptions<T> {
+export interface UseSolitaireDragDropOptions<T> {
   /** Callback invoked when a card is dropped on a valid target. */
   onMove: (source: T, target: T) => void;
   /** Whether the game is in a playing state. */
@@ -11,7 +11,7 @@ interface UseSolitaireDragDropOptions<T> {
 }
 
 /** Return type for the solitaire drag-and-drop hook. */
-interface UseSolitaireDragDropReturn<T> {
+export interface UseSolitaireDragDropReturn<T> {
   /** The zone currently being dragged, or null. */
   dragSource: T | null;
   /** Whether a drag operation is in progress. */
