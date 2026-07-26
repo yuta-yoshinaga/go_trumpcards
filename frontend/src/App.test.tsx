@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import App, { RouteSuspenseFallback } from './App';
 import { renderWithProviders } from './test/renderWithProviders';
 
@@ -44,6 +44,21 @@ describe('RouteSuspenseFallback', () => {
 // error (probed directly). The boundary only decides whether the skeleton
 // shows during the chunk download, so removing one is invisible here.
 describe('App non-game routes', () => {
+  beforeEach(() => {
+    // A survey draft with every question answered makes /discover legitimately
+    // NOT show the survey: DiscoverPage's submit effect fires immediately and
+    // redirects to /discover/result with the stored answers. So the two
+    // assertions below are asking for `discover-survey` in a state where its
+    // absence is correct — which is why they failed intermittently, and only in
+    // a full-suite run where an earlier test could leave such a draft behind.
+    // Verified in a browser: seeding this key lands on
+    // #/discover/result?m=0,0&... with the result page rendered.
+    // `setup.ts` does not clear localStorage globally, and
+    // `useSurveyDraft.test.ts` clears only in beforeEach, so a completed draft
+    // can outlive it. Establish the precondition here instead of inheriting it.
+    localStorage.removeItem('trumpcards-discover-draft');
+  });
+
   afterEach(() => {
     window.location.hash = '';
   });
