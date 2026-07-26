@@ -686,7 +686,7 @@ function KlondikePageContent() {
                   if (isEnded || state.moveCount === 0) apply();
                   else requestConfirm(apply);
                 }}
-                className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1 min-h-[44px]"
+                className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1"
                 aria-label={t('drawMode')}
               >
                 <option value={1}>{t('drawMode1')}</option>
@@ -709,7 +709,7 @@ function KlondikePageContent() {
                   if (isEnded || state.moveCount === 0) apply();
                   else requestConfirm(apply);
                 }}
-                className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1 min-h-[44px]"
+                className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1"
                 aria-label={t('scoringMode')}
               >
                 <option value={0}>{t('scoringNone')}</option>

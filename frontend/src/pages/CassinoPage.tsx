@@ -410,7 +410,7 @@ function CassinoPageContent() {
                   aria-label={t('label.buildValue')}
                   value={String(declaredValue)}
                   onChange={(e) => setDeclaredValue(Number.parseInt(e.target.value, 10))}
-                  className="px-2 py-2 rounded bg-black/30 text-ds-text-primary text-sm min-h-[44px]"
+                  className="px-2 py-2 rounded bg-black/30 text-ds-text-primary text-sm"
                   data-testid="build-value-select"
                 >
                   {BUILD_VALUE_OPTIONS.map((o) => (

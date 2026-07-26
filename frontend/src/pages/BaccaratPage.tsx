@@ -529,7 +529,7 @@ function BaccaratPageContent() {
                     id="baccarat-bet-type"
                     value={betType}
                     onChange={(e) => setBetType(Number(e.target.value))}
-                    className="px-2 py-1 rounded text-sm min-h-[44px]"
+                    className="px-2 py-1 rounded text-sm"
                   >
                     <option value={BaccaratBetType.PLAYER}>{t(BET_TYPE_LABELS[BaccaratBetType.PLAYER])}</option>
                     <option value={BaccaratBetType.BANKER}>{t(BET_TYPE_LABELS[BaccaratBetType.BANKER])}</option>

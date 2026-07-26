@@ -445,7 +445,7 @@ export function VideoPokerGameContent({
                     id="vp-bet-amount"
                     value={betAmount}
                     onChange={(e) => setBetAmount(Number(e.target.value))}
-                    className="px-2 py-1 rounded text-sm min-h-[44px]"
+                    className="px-2 py-1 rounded text-sm"
                   >
                     {[1, 2, 3, 4, 5].map((n) => (
                       <option key={n} value={n}>

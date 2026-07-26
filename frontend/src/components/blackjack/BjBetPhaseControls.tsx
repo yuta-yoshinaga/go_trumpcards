@@ -116,7 +116,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
           id="bj-hand-count"
           value={props.handCount}
           onChange={(e) => props.onHandCountChange(Number(e.target.value))}
-          className="px-2 py-1 rounded text-sm min-h-[44px]"
+          className="px-2 py-1 rounded text-sm"
           disabled={props.loading}
         >
           {VALID_HAND_COUNTS.map((h) => (
@@ -177,7 +177,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               id="bj-deck-count"
               value={props.deckCount}
               onChange={(e) => props.onDeckCountChange(Number(e.target.value))}
-              className="px-2 py-1 rounded text-sm min-h-[44px]"
+              className="px-2 py-1 rounded text-sm"
               disabled={props.loading}
             >
               {VALID_DECK_COUNTS.map((d) => (
@@ -193,7 +193,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               id="bj-cpu-count"
               value={props.cpuPlayerCount}
               onChange={(e) => props.onCpuPlayerCountChange(Number(e.target.value))}
-              className="px-2 py-1 rounded text-sm min-h-[44px]"
+              className="px-2 py-1 rounded text-sm"
               disabled={props.loading}
             >
               {VALID_CPU_COUNTS.map((c) => (
@@ -235,7 +235,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               aria-label={t('countingSystem')}
               value={props.countingSystem}
               onChange={(e) => props.onCountingSystemChange(Number(e.target.value))}
-              className="px-2 py-1 rounded text-sm min-h-[44px]"
+              className="px-2 py-1 rounded text-sm"
               disabled={props.loading || !props.countingEnabled}
             >
               {COUNTING_SYSTEMS.map((cs) => (
@@ -265,7 +265,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               id="bj-penetration"
               value={props.deckPenetration}
               onChange={(e) => props.onDeckPenetrationChange(Number(e.target.value))}
-              className="px-2 py-1 rounded text-sm min-h-[44px]"
+              className="px-2 py-1 rounded text-sm"
               disabled={props.loading}
             >
               {BJ_VALID_PENETRATIONS.map((p) => (
@@ -281,7 +281,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               id="bj-surrender-rule"
               value={props.surrenderRule}
               onChange={(e) => props.onSurrenderRuleChange(Number(e.target.value))}
-              className="px-2 py-1 rounded text-sm min-h-[44px]"
+              className="px-2 py-1 rounded text-sm"
               disabled={props.loading}
             >
               {VALID_SURRENDER_RULES.map((r) => (

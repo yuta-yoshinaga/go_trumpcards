@@ -569,7 +569,7 @@ function SpiderPageContent() {
                       requestConfirm(() => handleResetWithConfig({ difficulty }));
                     }
                   }}
-                  className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1 min-h-[44px]"
+                  className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1"
                   aria-label={t('difficulty')}
                 >
                   <option value={1}>{t('difficulty1')}</option>

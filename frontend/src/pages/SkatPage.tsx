@@ -364,7 +364,7 @@ function SkatPageContent() {
                     aria-label={t('trumpSuitLabel')}
                     value={trumpSuit}
                     onChange={(e) => setTrumpSuit(Number(e.target.value))}
-                    className="px-2 py-1 rounded text-black min-h-[44px]"
+                    className="px-2 py-1 rounded text-black"
                     disabled={loading}
                   >
                     <option value={SUIT_SPADE}>{t('spades')} ♠</option>
