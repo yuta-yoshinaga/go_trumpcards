@@ -553,7 +553,7 @@ func TestParseSubFlagsToNoHelpDumpOnFlagError(t *testing.T) {
 	fs, code, ok := parseSubFlagsTo("version", []string{"--bogus"}, func(fs *flag.FlagSet) {
 		var short bool
 		fs.BoolVar(&short, "short", false, "")
-	}, &stdout, &stderr)
+	}, &stdout, &stderr, false)
 
 	if ok || fs != nil {
 		t.Fatalf("expected (nil, code, false) on flag error; got ok=%v fs=%v", ok, fs)
@@ -577,7 +577,7 @@ func TestParseSubFlagsToPrintsHelpOnceOnHelpFlag(t *testing.T) {
 	fs, code, ok := parseSubFlagsTo("version", []string{"-h"}, func(fs *flag.FlagSet) {
 		var short bool
 		fs.BoolVar(&short, "short", false, "")
-	}, &stdout, &stderr)
+	}, &stdout, &stderr, false)
 
 	if ok || fs != nil {
 		t.Fatalf("expected (nil, 0, false) on -h; got ok=%v fs=%v", ok, fs)
