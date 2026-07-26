@@ -54,10 +54,8 @@ describe('NavBar', () => {
 
     it(`marks ${labelKey} link as active when on ${path}`, () => {
       renderNavBar(path);
-      // Collect the links carrying aria-current in one pass and assert there is
-      // exactly one. Equivalent to checking every other route individually, but
-      // O(n) instead of O(n^2) — the per-route version ran 219 getByText queries
-      // per test across 219 tests (~48k DOM scans) and dominated the suite.
+      // Exactly one link may carry aria-current, which also proves no other
+      // route's link has it.
       const current = screen.getAllByRole('link').filter((link) => link.hasAttribute('aria-current'));
       expect(current).toHaveLength(1);
       expect(current[0]).toHaveAttribute('aria-current', 'page');
