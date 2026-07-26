@@ -54,12 +54,14 @@ describe('NavBar', () => {
 
     it(`marks ${labelKey} link as active when on ${path}`, () => {
       renderNavBar(path);
-      expect(screen.getByText(labelFor(labelKey))).toHaveAttribute('aria-current', 'page');
-      for (const other of gameRoutes) {
-        if (other.path !== path) {
-          expect(screen.getByText(labelFor(other.labelKey))).not.toHaveAttribute('aria-current');
-        }
-      }
+      // Collect the links carrying aria-current in one pass and assert there is
+      // exactly one. Equivalent to checking every other route individually, but
+      // O(n) instead of O(n^2) — the per-route version ran 219 getByText queries
+      // per test across 219 tests (~48k DOM scans) and dominated the suite.
+      const current = screen.getAllByRole('link').filter((link) => link.hasAttribute('aria-current'));
+      expect(current).toHaveLength(1);
+      expect(current[0]).toHaveAttribute('aria-current', 'page');
+      expect(current[0]).toHaveTextContent(labelFor(labelKey));
     });
   }
 
