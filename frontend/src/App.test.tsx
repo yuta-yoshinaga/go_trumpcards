@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import App, { RouteSuspenseFallback } from './App';
+import { DISCOVER_DRAFT_KEY } from './hooks/useSurveyDraft';
 import { renderWithProviders } from './test/renderWithProviders';
 
 describe('RouteSuspenseFallback', () => {
@@ -56,7 +57,7 @@ describe('App non-game routes', () => {
     // `setup.ts` does not clear localStorage globally, and
     // `useSurveyDraft.test.ts` clears only in beforeEach, so a completed draft
     // can outlive it. Establish the precondition here instead of inheriting it.
-    localStorage.removeItem('trumpcards-discover-draft');
+    localStorage.removeItem(DISCOVER_DRAFT_KEY);
   });
 
   afterEach(() => {
