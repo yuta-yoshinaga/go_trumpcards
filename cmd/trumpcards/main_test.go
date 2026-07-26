@@ -125,8 +125,9 @@ func TestRunHelpCommandUnknownGame(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	helpText := buildHelpText()
 	code := runHelpCommand([]string{"definitelynotagame"}, helpText, &stdout, &stderr)
-	if code != 1 {
-		t.Fatalf("runHelpCommand(unknown) exit = %d, want 1", code)
+	// 2 = usage error, matching every other unknown-name path. See issue #4372.
+	if code != 2 {
+		t.Fatalf("runHelpCommand(unknown) exit = %d, want 2", code)
 	}
 	if stdout.Len() != 0 {
 		t.Errorf("expected no stdout on unknown game; got %q", stdout.String())

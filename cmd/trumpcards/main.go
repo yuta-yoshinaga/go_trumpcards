@@ -745,7 +745,10 @@ func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) in
 	if suggestion := cuiutil.SuggestCommand(target, helpSuggestionCandidates(), 2); suggestion != "" {
 		_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
 	}
-	return 1
+	// 2, not 1: naming something that does not exist is a usage error, and every
+	// other route to it (`<unknown>`, `--start`, `--category`, `completion`)
+	// already exits 2 -- as does the top-level EXIT CODES table. See issue #4372.
+	return 2
 }
 
 // helpSuggestionCandidates returns the deduplicated set of canonical game
