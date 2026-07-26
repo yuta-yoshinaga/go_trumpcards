@@ -39,7 +39,7 @@ ADR番号は連番ではない — 欠番はリトマステスト導入時に非
 | [ADR-0013](0013-docker-distroless.md) | Multi-stage Docker build with distroless image | Accepted | 2026-02-20 |
 | [ADR-0015](0015-accessibility-wcag.md) | WCAG accessibility compliance | Accepted | 2026-03-11 |
 | [ADR-0016](0016-production-middleware.md) | Production middleware stack (CORS, security headers) | Accepted | 2026-03-01 |
-| [ADR-0019](0019-ci-cd-pipeline.md) | CI/CD pipeline (CodeQL, golangci-lint, auto-tagging) | Accepted | 2021-04-15 |
+| [ADR-0019](0019-ci-cd-pipeline.md) | CI/CD pipeline (CodeQL, golangci-lint, auto-tagging) | Accepted（CodeQL の PR トリガーのみ [ADR-0034](0034-codeql-post-merge.md) が置換） | 2021-04-15 |
 | [ADR-0021](0021-bun-package-manager.md) | Migrate package manager from npm to bun | Accepted | 2026-03-15 |
 | [ADR-0022](0022-automated-quality-gates.md) | Automated quality gates via Claude Code hooks | Accepted | 2026-03-20 |
 | [ADR-0023](0023-api-documentation.md) | GoDoc/TSDoc + GitHub PagesによるAPIドキュメント自動生成 | Accepted | 2026-03-20 |
@@ -51,3 +51,4 @@ ADR番号は連番ではない — 欠番はリトマステスト導入時に非
 | [ADR-0031](0031-registry-consolidation.md) | 4 レイヤーゲームレジストリの取り扱い方針 | Accepted | 2026-05-02 |
 | [ADR-0032](0032-fourth-worker-capacity.md) | 4 つ目の Cloudflare Worker（容量バケット）の追加 | Accepted | 2026-06-29 |
 | [ADR-0033](0033-procedural-non52-card-rendering.md) | 非52枚デッキ札の手続き的（CSS/SVG）レンダリング | Accepted | 2026-07-06 |
+| [ADR-0034](0034-codeql-post-merge.md) | CodeQL を PR ではなくマージ後に実行する | Accepted | 2026-07-26 |
