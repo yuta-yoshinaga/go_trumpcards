@@ -84,6 +84,15 @@ describe('GaigelPage', () => {
     );
   });
 
+  // The phase key map must hold bare keys; usePhaseNames adds the `phase.`
+  // prefix itself, so a prefixed key resolved to the literal
+  // "phase.phase.play" on screen. See issue #4374.
+  it('renders the translated phase name, not the raw i18n key', async () => {
+    renderWithProviders(<GaigelPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('プレイ'));
+    expect(screen.getByTestId('phase-indicator')).not.toHaveTextContent('phase.');
+  });
+
   it('renders the team score table and stock readout during play', async () => {
     renderWithProviders(<GaigelPage />);
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());

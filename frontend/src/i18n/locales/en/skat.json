@@ -52,7 +52,11 @@
     "bid": "Bidding",
     "skatPickup": "Skat pickup",
     "discard": "Discard",
-    "gameDeclaration": "Game declaration"
+    "gameDeclaration": "Game declaration",
+    "play": "Play",
+    "trickEnd": "Trick end",
+    "roundEnd": "Round end",
+    "gameEnd": "Game over"
   },
   "tutorial": {
     "trickDisplay": "The trick area shows the cards each of the three players plays.",

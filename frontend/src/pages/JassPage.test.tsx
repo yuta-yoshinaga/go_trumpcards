@@ -97,6 +97,15 @@ describe('JassPage', () => {
     );
   });
 
+  // The phase key map must hold bare keys; usePhaseNames adds the `phase.`
+  // prefix itself, so a prefixed key resolved to the literal
+  // "phase.phase.bidTrump" on screen. See issue #4374.
+  it('renders the translated phase name, not the raw i18n key', async () => {
+    renderWithProviders(<JassPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('切り札を選ぶ'));
+    expect(screen.getByTestId('phase-indicator')).not.toHaveTextContent('phase.');
+  });
+
   it('shows the four trump suit buttons and Schieben in the trump-bid phase', async () => {
     renderWithProviders(<JassPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '♠ スペード' })).toBeInTheDocument());

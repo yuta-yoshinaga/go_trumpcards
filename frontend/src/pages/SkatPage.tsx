@@ -62,14 +62,14 @@ const SKAT_TUTORIAL_STEPS: TutorialStep[] = [
 
 /** Phase translation key map for Skat. */
 const SKAT_PHASE_KEYS: Readonly<Record<number, string>> = {
-  [SkatPhase.BID]: 'skat.phase.bid',
-  [SkatPhase.SKAT_PICKUP]: 'skat.phase.skatPickup',
-  [SkatPhase.DISCARD]: 'skat.phase.discard',
-  [SkatPhase.GAME_DECLARATION]: 'skat.phase.gameDeclaration',
-  [SkatPhase.PLAY]: 'phase.play',
-  [SkatPhase.TRICK_END]: 'phase.trickEnd',
-  [SkatPhase.ROUND_END]: 'phase.roundEnd',
-  [SkatPhase.GAME_END]: 'phase.gameEnd',
+  [SkatPhase.BID]: 'bid',
+  [SkatPhase.SKAT_PICKUP]: 'skatPickup',
+  [SkatPhase.DISCARD]: 'discard',
+  [SkatPhase.GAME_DECLARATION]: 'gameDeclaration',
+  [SkatPhase.PLAY]: 'play',
+  [SkatPhase.TRICK_END]: 'trickEnd',
+  [SkatPhase.ROUND_END]: 'roundEnd',
+  [SkatPhase.GAME_END]: 'gameEnd',
 };
 
 /** Renders the Skat (German trick-taking) game page. */

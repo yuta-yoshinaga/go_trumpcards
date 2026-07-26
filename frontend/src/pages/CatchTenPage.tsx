@@ -80,10 +80,10 @@ const CT_TUTORIAL_STEPS: TutorialStep[] = [
 
 /** Phase translation key map for Catch the Ten. */
 const CATCHTEN_PHASE_KEYS: Readonly<Record<number, string>> = {
-  [CatchTenPhase.PLAY]: 'phase.play',
-  [CatchTenPhase.TRICK_END]: 'phase.trickEnd',
-  [CatchTenPhase.ROUND_END]: 'phase.roundEnd',
-  [CatchTenPhase.GAME_END]: 'phase.gameEnd',
+  [CatchTenPhase.PLAY]: 'play',
+  [CatchTenPhase.TRICK_END]: 'trickEnd',
+  [CatchTenPhase.ROUND_END]: 'roundEnd',
+  [CatchTenPhase.GAME_END]: 'gameEnd',
 };
 
 /**

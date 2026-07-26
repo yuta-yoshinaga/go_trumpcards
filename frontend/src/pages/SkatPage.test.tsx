@@ -193,6 +193,29 @@ describe('SkatPage', () => {
     );
   });
 
+  // The phase key map must hold bare keys; usePhaseNames adds the `phase.`
+  // prefix itself, so Skat's namespace-qualified keys resolved to literals
+  // like "phase.skat.phase.skatPickup" on screen. The trick phases also had
+  // no locale entry at all. See issue #4374.
+  it.each([
+    [bidPhaseHumanTurn, 'ビッドフェーズ'],
+    [skatPickupPhase, 'スカート拾い'],
+    [discardPhase, '捨て札'],
+    [gameDeclarationPhase, 'ゲーム宣言'],
+    [playPhaseHumanTurn, 'プレイ'],
+    [trickEndPhase, 'トリック終了'],
+    [roundEndPhase, 'ラウンド終了'],
+  ])('renders the translated phase name, not the raw i18n key (%#)', async (state, expected) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/skat']}>
+        <SkatPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(expected));
+    expect(screen.getByTestId('phase-indicator')).not.toHaveTextContent('phase.');
+  });
+
   it('renders the CPU difficulty selector in the settings panel', async () => {
     renderWithProviders(
       <MemoryRouter initialEntries={['/skat']}>

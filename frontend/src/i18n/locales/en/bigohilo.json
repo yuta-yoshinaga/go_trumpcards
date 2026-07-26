@@ -80,5 +80,17 @@
     "weakHandRank": "Weak hand — fold recommended",
     "scoopChance": "Scoop range (hi + lo) — raise recommended",
     "lowDraw": "Low likely to qualify — call to chase the half"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive: plays few hands but bets strongly when in",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive: plays many hands and bets strongly",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive: plays few hands, mostly calls",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive: plays many hands but rarely raises",
+    "balanced": "BAL",
+    "balancedTooltip": "Balanced style"
   }
 }
