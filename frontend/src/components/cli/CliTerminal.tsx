@@ -5,7 +5,7 @@ import type { CliLogEntry } from '../../utils/cli/types';
 const MAX_HISTORY = 50;
 
 /** Props for the CliTerminal component. */
-interface CliTerminalProps {
+export interface CliTerminalProps {
   /** Log entries to display. */
   logEntries: CliLogEntry[];
   /** Callback when the user submits a command. */

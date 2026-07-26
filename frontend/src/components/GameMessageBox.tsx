@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
-interface GameMessageBoxProps {
+/** Props for {@link GameMessageBox}. */
+export interface GameMessageBoxProps {
   message: string | undefined;
   messageCode?: string;
   messageParams?: Record<string, string>;

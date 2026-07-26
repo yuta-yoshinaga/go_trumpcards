@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Log callbacks provided by useCliMode. */
-interface CliLogCallbacks {
+export interface CliLogCallbacks {
   addInput: (text: string) => void;
   addOutput: (text: string) => void;
   addError: (text: string) => void;

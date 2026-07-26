@@ -57,7 +57,7 @@ export interface GinRummyScoreBreakdown {
 }
 
 /** Minimal player shape needed to derive the round-end score breakdown. */
-interface GinRummyBreakdownPlayer {
+export interface GinRummyBreakdownPlayer {
   id: number;
   cards: readonly Card[];
 }

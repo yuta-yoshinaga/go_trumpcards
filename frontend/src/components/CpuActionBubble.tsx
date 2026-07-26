@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { TOAST_DURATION } from '../styles/toastDurations';
 
-interface CpuActionBubbleProps {
+/** Props for {@link CpuActionBubble}. */
+export interface CpuActionBubbleProps {
   /** Text shown in the bubble. Pass an empty string or undefined to hide. */
   message: string | undefined;
   /**

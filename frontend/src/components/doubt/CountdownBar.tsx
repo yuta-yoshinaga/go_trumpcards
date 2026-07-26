@@ -1,7 +1,7 @@
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 /** Props for the CountdownBar component. */
-interface CountdownBarProps {
+export interface CountdownBarProps {
   /** Seconds remaining in the countdown. */
   remaining: number;
   /** Total countdown duration in seconds. */

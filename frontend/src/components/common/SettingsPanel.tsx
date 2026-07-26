@@ -26,7 +26,8 @@ export interface SettingsGroup {
   items: SettingsItem[];
 }
 
-interface SettingsPanelProps {
+/** Props for {@link SettingsPanel}. */
+export interface SettingsPanelProps {
   title: string;
   groups: SettingsGroup[];
 }

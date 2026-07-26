@@ -1,5 +1,5 @@
 /** Props for the LandscapeBanner component. */
-interface LandscapeBannerProps {
+export interface LandscapeBannerProps {
   /** The message to display in the banner. */
   message: string;
 }

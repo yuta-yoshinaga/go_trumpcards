@@ -4,7 +4,7 @@ import { btnPrimary, btnSecondary } from '../../styles/buttonStyles';
 import { Modal } from '../common/Modal';
 
 /** Props for the OldMaidSettingsDialog component. */
-interface OldMaidSettingsDialogProps {
+export interface OldMaidSettingsDialogProps {
   open: boolean;
   mode: number;
   cpuPlacementStrategy: boolean;

@@ -45,7 +45,7 @@ function GuiIcon() {
 }
 
 /** Props for the CliToggle component. */
-interface CliToggleProps {
+export interface CliToggleProps {
   /** Whether CLI mode is currently enabled. */
   cliEnabled: boolean;
   /** Callback to toggle CLI mode. */

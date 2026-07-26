@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 /** Size variant — `'md'` matches the NavBar (44 px touch target), `'sm'` matches the desktop sidebar. */
 export type NavLangToggleSize = 'sm' | 'md';
 
-interface NavLangToggleProps {
+/** Props for {@link NavLangToggle}. */
+export interface NavLangToggleProps {
   /** Visual size; defaults to `'md'` to preserve mobile/tablet touch target. */
   size?: NavLangToggleSize;
 }

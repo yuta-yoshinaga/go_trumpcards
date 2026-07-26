@@ -26,7 +26,7 @@ export interface PlayOptions {
 }
 
 /** Context value provided by SoundProvider. */
-interface SoundContextValue {
+export interface SoundContextValue {
   /** Fire-and-forget sound playback. Silently no-ops if muted or sound fails. */
   playSound: (name: SoundName, options?: PlayOptions) => void;
   /** Whether sound is currently muted. */
@@ -36,8 +36,9 @@ interface SoundContextValue {
   /**
    * Marks the next exec resolution's generic sound as already covered by a
    * more specific action sound (e.g., chipClick on a bet). The claim is
-   * consumed by the next `consumeExecClaim` call or expires after
-   * {@link CLAIM_EXPIRY_MS}, whichever comes first.
+   * consumed by the next `consumeExecClaim` call or expires after 3s
+   * (`CLAIM_EXPIRY_MS` — deliberately not exported; it is a tuning value, not
+   * part of the contract), whichever comes first.
    */
   claimExecSound: () => void;
   /**

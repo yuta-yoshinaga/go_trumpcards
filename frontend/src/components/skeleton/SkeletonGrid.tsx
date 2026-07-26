@@ -1,4 +1,5 @@
-interface SkeletonGridProps {
+/** Props for {@link SkeletonGrid}. */
+export interface SkeletonGridProps {
   count: number;
   cols: string;
   aspectRatio?: string;

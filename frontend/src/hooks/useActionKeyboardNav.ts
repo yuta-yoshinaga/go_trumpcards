@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
 import { IGNORED_TAGS } from './keyboardNavUtils';
 
-interface ActionBinding {
+/** One keyboard shortcut bound to a game action. */
+export interface ActionBinding {
   key: string;
   action: () => void;
   enabled?: boolean;
 }
 
-interface UseActionKeyboardNavOptions {
+/** Options for {@link useActionKeyboardNav}. */
+export interface UseActionKeyboardNavOptions {
   bindings: ActionBinding[];
   enabled: boolean;
 }

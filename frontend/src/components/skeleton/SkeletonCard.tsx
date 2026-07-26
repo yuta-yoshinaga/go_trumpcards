@@ -1,4 +1,5 @@
-interface SkeletonCardProps {
+/** Props for {@link SkeletonCard}. */
+export interface SkeletonCardProps {
   width: number;
   height: number;
   className?: string;

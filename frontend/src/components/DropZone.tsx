@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 /** Props for the DropZone wrapper component. */
-interface DropZoneProps {
+export interface DropZoneProps {
   /** Whether this zone is the currently active drop target (for highlighting). */
   isDropTarget: boolean;
   /** Handler invoked on dragOver (should call preventDefault to allow drop). */

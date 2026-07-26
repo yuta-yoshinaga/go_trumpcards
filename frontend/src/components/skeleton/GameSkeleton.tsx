@@ -6,7 +6,7 @@ import { SkeletonHand } from './SkeletonHand';
 import { SkeletonShell } from './SkeletonShell';
 
 /** Centered hand sections (BlackJack/Baccarat-style table games). */
-interface CasinoTableLayout {
+export interface CasinoTableLayout {
   kind: 'casino-table';
   /** Number of cards per centered hand section (one section per entry). */
   sections: number[];
@@ -21,7 +21,7 @@ interface CasinoTableLayout {
 }
 
 /** Optional community cards + opponent boxes + footer hand (Hold'em-style poker). */
-interface CommunityPokerLayout {
+export interface CommunityPokerLayout {
   kind: 'community-poker';
   /** Cards in the community-card row. Omit to hide the row. */
   community?: number;
@@ -34,7 +34,7 @@ interface CommunityPokerLayout {
 }
 
 /** Title bar + opponent rows + optional trick area + footer hand (most trick-taking & matching games). */
-interface TrickTakingLayout {
+export interface TrickTakingLayout {
   kind: 'trick-taking';
   /** Number of opponent rows (default 3). */
   opponents?: number;
@@ -55,7 +55,7 @@ interface TrickTakingLayout {
 }
 
 /** Foundation-style top row + tableau columns (Klondike-style solitaire). */
-interface TableauLayout {
+export interface TableauLayout {
   kind: 'tableau';
   /** Cards in the top (foundation/stock/freecells) row. */
   topRow: number;
@@ -64,7 +64,7 @@ interface TableauLayout {
 }
 
 /** Triangle/columns of cards + optional stock-waste row (Pyramid/TriPeaks/Golf). */
-interface TieredRowsLayout {
+export interface TieredRowsLayout {
   kind: 'tiered-rows';
   /** Card counts per row. */
   rows: number[];
@@ -75,7 +75,7 @@ interface TieredRowsLayout {
 }
 
 /** Full grid of cards (Memory, Sevens). */
-interface CardGridLayout {
+export interface CardGridLayout {
   kind: 'card-grid';
   count: number;
   cols: string;
@@ -88,7 +88,7 @@ interface CardGridLayout {
 }
 
 /** Centered placeholder for War/PigsTail/FiftyOne. */
-interface CenteredLayout {
+export interface CenteredLayout {
   kind: 'centered';
   /** Card counts per row (centered). */
   rows: number[];

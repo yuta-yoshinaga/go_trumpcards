@@ -4,7 +4,8 @@ import { bettingActionName } from '../styles/gameConstants';
 import { TOAST_DURATION } from '../styles/toastDurations';
 import { Toast } from './Toast';
 
-interface CpuActionToastProps {
+/** Props for {@link CpuActionToast}. */
+export interface CpuActionToastProps {
   actions: { playerIdx: number; action: number; amount: number }[] | undefined;
 }
 

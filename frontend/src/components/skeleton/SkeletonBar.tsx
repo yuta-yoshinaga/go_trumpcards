@@ -1,4 +1,5 @@
-interface SkeletonBarProps {
+/** Props for {@link SkeletonBar}. */
+export interface SkeletonBarProps {
   height?: string;
   className?: string;
 }

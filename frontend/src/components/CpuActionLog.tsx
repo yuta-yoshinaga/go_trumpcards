@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { bettingActionName } from '../styles/gameConstants';
 
-interface CpuActionLogProps {
+/** Props for {@link CpuActionLog}. */
+export interface CpuActionLogProps {
   actions: { playerIdx: number; action: number; amount: number }[] | undefined;
 }
 

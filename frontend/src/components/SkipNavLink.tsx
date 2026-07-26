@@ -1,5 +1,5 @@
 /** Props for the SkipNavLink component. */
-interface SkipNavLinkProps {
+export interface SkipNavLinkProps {
   /** The id of the target element to skip to. */
   targetId: string;
   /** The visible label text for the skip link. */

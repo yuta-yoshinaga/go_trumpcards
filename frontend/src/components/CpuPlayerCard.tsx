@@ -21,7 +21,8 @@ export interface CpuMetaAiProp {
   edgePickRate?: number;
 }
 
-interface CpuPlayerCardProps {
+/** Props for {@link CpuPlayerCard}. */
+export interface CpuPlayerCardProps {
   player: {
     id: number;
     playStyleName: string;

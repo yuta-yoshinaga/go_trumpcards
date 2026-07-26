@@ -3,7 +3,8 @@ import { focusRingCard, selectedCardStyle } from '../../styles/cardStyles';
 import type { Card } from '../../types/card';
 import { CardImage } from '../CardImage';
 
-interface HandCardProps {
+/** Props for {@link DoubtHandCard}. */
+export interface HandCardProps {
   card: Card;
   index: number;
   selected: boolean;

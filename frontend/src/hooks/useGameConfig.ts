@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
 
 /** Extracts keys of T whose values extend number. */
-type NumberKeys<T> = { [K in keyof T]: T[K] extends number ? K : never }[keyof T];
+export type NumberKeys<T> = { [K in keyof T]: T[K] extends number ? K : never }[keyof T];
 
 /** Extracts keys of T whose values extend boolean. */
-type BooleanKeys<T> = { [K in keyof T]: T[K] extends boolean ? K : never }[keyof T];
+export type BooleanKeys<T> = { [K in keyof T]: T[K] extends boolean ? K : never }[keyof T];
 
 /** Generic hook for managing game configuration state with number parsing and boolean toggling. */
 export function useGameConfig<T extends object>(defaultConfig: T) {

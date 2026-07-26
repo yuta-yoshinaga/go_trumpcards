@@ -3,7 +3,8 @@ import type { DaifugoConfigInput } from '../../types/card';
 import type { SettingsGroup } from '../common/SettingsPanel';
 import { SettingsPanel } from '../common/SettingsPanel';
 
-interface DaifugoSettingsPanelProps {
+/** Props for {@link DaifugoSettingsPanel}. */
+export interface DaifugoSettingsPanelProps {
   config: DaifugoConfigInput;
   onChange: (key: keyof DaifugoConfigInput, value: boolean | number) => void;
 }

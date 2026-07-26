@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
-interface FavoriteToggleButtonProps {
+/** Props for {@link FavoriteToggleButton}. */
+export interface FavoriteToggleButtonProps {
   /** Game route path (e.g. "/blackjack") used as the favorite key passed to onToggle. */
   path: string;
   /** Whether the path is currently a favorite. Drives the ★/☆ glyph and aria-pressed. */

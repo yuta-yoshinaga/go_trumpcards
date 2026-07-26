@@ -4,7 +4,7 @@ import { TrenteEtQuaranteBetType, TrenteEtQuarantePhase } from '../types/phases'
 import { useGameApi } from './useGameApi';
 
 /** A previously placed bet, remembered so it can be replayed in the next round. */
-interface LastBet {
+export interface LastBet {
   bet: number;
   stake: number;
 }

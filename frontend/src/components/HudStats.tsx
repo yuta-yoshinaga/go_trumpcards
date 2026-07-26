@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
  * color-coded triage so casual players can enjoy the CPU style variation
  * (TAG / LAG / GTO etc.) without studying definitions first. See issue #1564.
  */
-type Tendency = 'tight' | 'normal' | 'loose' | 'passive' | 'balanced' | 'aggressive';
+export type Tendency = 'tight' | 'normal' | 'loose' | 'passive' | 'balanced' | 'aggressive';
 
 /**
  * StatTooltip renders a label that reveals a tooltip on hover/focus.
@@ -156,7 +156,7 @@ function tendencyClass(t: Tendency): string {
  * that lets variant pages (e.g. crazypineapple sharing logic with
  * pineapple) reuse this component without duplicating tooltip copy.
  */
-type HudStatsProps = {
+export type HudStatsProps = {
   vpip: number;
   pfr: number;
   threeBet: number;

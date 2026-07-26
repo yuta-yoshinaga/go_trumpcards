@@ -160,7 +160,8 @@ const SPANISH21_TUTORIAL_STEPS: TutorialStep[] = [
 /** Variant identifier shared by BlackJack and Spanish 21 (which reuses this page). */
 export type BlackJackVariant = 'blackjack' | 'spanish21';
 
-interface BlackJackPageProps {
+/** Props for {@link BlackJackPage}. */
+export interface BlackJackPageProps {
   /** Variant of BlackJack to render. Defaults to 'blackjack'. */
   variant?: BlackJackVariant;
 }

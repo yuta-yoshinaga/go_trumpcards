@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-interface PhaseIndicatorProps {
+/** Props for {@link PhaseIndicator}. */
+export interface PhaseIndicatorProps {
   phaseName: string;
   isHumanTurn?: boolean;
   children?: ReactNode;

@@ -5,7 +5,8 @@ import { useOptionalSound } from '../../providers/SoundProvider';
 import { flipSpring } from '../../styles/motionPresets';
 import { CardBack } from '../CardImage';
 
-interface AnimatedCardBackProps extends React.ComponentProps<typeof CardBack> {
+/** Props for {@link AnimatedCardBack}. */
+export interface AnimatedCardBackProps extends React.ComponentProps<typeof CardBack> {
   /** Stagger delay in seconds for deal animation. */
   dealDelay?: number;
   /** Shared layout animation ID. */
