@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { oichokabuApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -103,12 +104,12 @@ function OichoKabuPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: handleBet, enabled: isBetPhase },
-      { key: 'd', action: handleDraw, enabled: isDrawPhase },
-      { key: 's', action: handleStand, enabled: isDrawPhase },
-      { key: 'r', action: handleReset, enabled: isEndPhase },
+      { key: 'b', action: handleBet, enabled: isBetPhase, labelKey: 'kbd.action.bet' },
+      { key: 'd', action: handleDraw, enabled: isDrawPhase, labelKey: 'kbd.action.draw' },
+      { key: 's', action: handleStand, enabled: isDrawPhase, labelKey: 'kbd.action.stand' },
+      { key: 'r', action: handleReset, enabled: isEndPhase, labelKey: 'kbd.action.reset' },
       // Power-user shortcut: 'e' replays the last bet at end phase.
-      { key: 'e', action: handleRebet, enabled: isEndPhase && canRebet },
+      { key: 'e', action: handleRebet, enabled: isEndPhase && canRebet, labelKey: 'kbd.action.rebet' },
     ],
     [handleBet, handleDraw, handleStand, handleReset, handleRebet, isBetPhase, isDrawPhase, isEndPhase, canRebet],
   );
@@ -298,6 +299,7 @@ function OichoKabuPageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="oicho-kabu-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

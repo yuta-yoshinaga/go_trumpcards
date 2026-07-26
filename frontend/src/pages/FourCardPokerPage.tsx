@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { fourcardpokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -113,12 +114,28 @@ function FourCardPokerPageContent() {
         key: 'b',
         action: () => execApi('bet', anteAmount, acesUpAmount),
         enabled: isBetPhase && !betInvalid,
+        labelKey: 'kbd.action.bet',
       },
-      { key: '1', action: () => execApi('play', undefined, undefined, 1), enabled: isActionPhase },
-      { key: '2', action: () => execApi('play', undefined, undefined, 2), enabled: isActionPhase },
-      { key: '3', action: () => execApi('play', undefined, undefined, 3), enabled: isActionPhase },
-      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      {
+        key: '1',
+        action: () => execApi('play', undefined, undefined, 1),
+        enabled: isActionPhase,
+        labelKey: 'kbd.action.play',
+      },
+      {
+        key: '2',
+        action: () => execApi('play', undefined, undefined, 2),
+        enabled: isActionPhase,
+        labelKey: 'kbd.action.play',
+      },
+      {
+        key: '3',
+        action: () => execApi('play', undefined, undefined, 3),
+        enabled: isActionPhase,
+        labelKey: 'kbd.action.play',
+      },
+      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase, labelKey: 'kbd.action.fold' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, labelKey: 'kbd.action.reset' },
     ],
     [execApi, anteAmount, acesUpAmount, isBetPhase, betInvalid, isActionPhase, isEndPhase],
   );
@@ -380,6 +397,7 @@ function FourCardPokerPageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="four-card-poker-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { maoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -562,6 +563,7 @@ function MaoPageContent() {
                 dataTutorial="mao-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="mao-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

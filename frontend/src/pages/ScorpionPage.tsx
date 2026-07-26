@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { type ScorpionMoveZone, scorpionApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -306,11 +307,11 @@ function ScorpionPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'h', action: handleHint },
-      { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: confirmGiveUpAction },
-      { key: 'z', action: handleUndo },
-      { key: 'd', action: handleDealGuarded },
+      { key: 'h', action: handleHint, labelKey: 'kbd.action.hint' },
+      { key: 'a', action: handleAutoComplete, labelKey: 'kbd.action.autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, labelKey: 'kbd.action.giveUp' },
+      { key: 'z', action: handleUndo, labelKey: 'kbd.action.undo' },
+      { key: 'd', action: handleDealGuarded, labelKey: 'kbd.action.deal' },
     ],
     [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo, handleDealGuarded],
   );
@@ -556,6 +557,7 @@ function ScorpionPageContent() {
                   )}
                 </>
               )}
+              <ActionShortcutsPanel bindings={actionBindings} data-testid="scorpion-kbd-shortcuts" />
             </GameFooter>
           </div>
         </>

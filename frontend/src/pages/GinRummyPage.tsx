@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { ginrummyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -558,6 +559,7 @@ function GinRummyPageContent() {
                 dataTutorial="gr-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="gin-rummy-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

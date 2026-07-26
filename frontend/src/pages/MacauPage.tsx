@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { macauApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -468,6 +469,7 @@ function MacauPageContent() {
                 dataTutorial="macau-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="macau-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { oldmaidApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
@@ -134,8 +135,8 @@ function OldMaidPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: () => gameExec('draw') },
-      { key: 's', action: () => gameExec('shuffle') },
+      { key: 'd', action: () => gameExec('draw'), labelKey: 'kbd.action.draw' },
+      { key: 's', action: () => gameExec('shuffle'), labelKey: 'kbd.action.shuffle' },
     ],
     [gameExec],
   );
@@ -429,6 +430,7 @@ function OldMaidPageContent() {
                 {t('keyHints')}
               </p>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="old-maid-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

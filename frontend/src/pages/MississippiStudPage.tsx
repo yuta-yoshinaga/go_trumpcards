@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { mississippiStudApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -99,12 +100,12 @@ function MississippiStudPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', anteAmount), enabled: isAntePhase },
-      { key: '1', action: () => execApi('play', undefined, 1), enabled: isStreetPhase },
-      { key: '2', action: () => execApi('play', undefined, 2), enabled: isStreetPhase },
-      { key: '3', action: () => execApi('play', undefined, 3), enabled: isStreetPhase },
-      { key: 'f', action: () => execApi('fold'), enabled: isStreetPhase },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      { key: 'b', action: () => execApi('bet', anteAmount), enabled: isAntePhase, labelKey: 'kbd.action.bet' },
+      { key: '1', action: () => execApi('play', undefined, 1), enabled: isStreetPhase, labelKey: 'kbd.action.play' },
+      { key: '2', action: () => execApi('play', undefined, 2), enabled: isStreetPhase, labelKey: 'kbd.action.play' },
+      { key: '3', action: () => execApi('play', undefined, 3), enabled: isStreetPhase, labelKey: 'kbd.action.play' },
+      { key: 'f', action: () => execApi('fold'), enabled: isStreetPhase, labelKey: 'kbd.action.fold' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, labelKey: 'kbd.action.reset' },
     ],
     [execApi, anteAmount, isAntePhase, isStreetPhase, isEndPhase],
   );
@@ -341,6 +342,7 @@ function MississippiStudPageContent() {
             </button>
           </div>
         )}
+        <ActionShortcutsPanel bindings={actionBindings} data-testid="mississippi-stud-kbd-shortcuts" />
       </GameFooter>
     </GamePageShell>
   );

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type HoldemConfigInput, holdemApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -208,17 +209,28 @@ function HoldemPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'c', action: () => exec('call', undefined, undefined, getElapsed()), enabled: hasOutstandingBet },
+      {
+        key: 'c',
+        action: () => exec('call', undefined, undefined, getElapsed()),
+        enabled: hasOutstandingBet,
+        labelKey: 'kbd.action.call',
+      },
       {
         key: 'r',
         action: () =>
           hasOutstandingBet
             ? exec('raise', betAmount, undefined, getElapsed())
             : exec('bet', betAmount, undefined, getElapsed()),
+        labelKey: 'kbd.action.raiseOrBet',
       },
-      { key: 'k', action: () => exec('check', undefined, undefined, getElapsed()), enabled: !hasOutstandingBet },
-      { key: 'f', action: () => exec('fold', undefined, undefined, getElapsed()) },
-      { key: 'a', action: () => exec('allin', undefined, undefined, getElapsed()) },
+      {
+        key: 'k',
+        action: () => exec('check', undefined, undefined, getElapsed()),
+        enabled: !hasOutstandingBet,
+        labelKey: 'kbd.action.check',
+      },
+      { key: 'f', action: () => exec('fold', undefined, undefined, getElapsed()), labelKey: 'kbd.action.fold' },
+      { key: 'a', action: () => exec('allin', undefined, undefined, getElapsed()), labelKey: 'kbd.action.allin' },
     ],
     [exec, hasOutstandingBet, betAmount, getElapsed],
   );
@@ -608,6 +620,7 @@ function HoldemPageContent() {
               dataTutorial="he-reset-button"
               className="min-w-[90px]"
             />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="holdem-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

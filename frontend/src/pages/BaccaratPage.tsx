@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -351,10 +352,10 @@ function BaccaratPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: handleBet, enabled: isBetPhase },
-      { key: 'r', action: handleReset, enabled: isEndPhase },
+      { key: 'b', action: handleBet, enabled: isBetPhase, labelKey: 'kbd.action.bet' },
+      { key: 'r', action: handleReset, enabled: isEndPhase, labelKey: 'kbd.action.reset' },
       // Power-user shortcut: 'e' replays the last bet at end phase (consistent with the 'r' reset binding).
-      { key: 'e', action: handleRebet, enabled: isEndPhase && canRebet },
+      { key: 'e', action: handleRebet, enabled: isEndPhase && canRebet, labelKey: 'kbd.action.rebet' },
     ],
     [handleBet, handleReset, handleRebet, isBetPhase, isEndPhase, canRebet],
   );
@@ -598,6 +599,7 @@ function BaccaratPageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="baccarat-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

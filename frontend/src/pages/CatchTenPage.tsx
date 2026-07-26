@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { catchtenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -169,7 +170,9 @@ function CatchTenPageContent() {
     }
   }, [isTrickEndForKbd, isRoundEndForKbd, handleNextTrick, handleNextRound]);
   const advanceBindings = useMemo(
-    () => [{ key: 'n', action: advanceAction, enabled: isTrickEndForKbd || isRoundEndForKbd }],
+    () => [
+      { key: 'n', action: advanceAction, enabled: isTrickEndForKbd || isRoundEndForKbd, labelKey: 'kbd.action.next' },
+    ],
     [advanceAction, isTrickEndForKbd, isRoundEndForKbd],
   );
   useActionKeyboardNav({ bindings: advanceBindings, enabled: !!state && !loading });
@@ -525,6 +528,7 @@ function CatchTenPageContent() {
                 dataTutorial="ct-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={advanceBindings} includeCardNav data-testid="catch-ten-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

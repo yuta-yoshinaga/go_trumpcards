@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { CrescentMoveZone, crescentApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -177,11 +178,11 @@ function CrescentPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleRedeal },
-      { key: 'h', action: handleHint },
-      { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: confirmGiveUpAction },
-      { key: 'z', action: handleUndo },
+      { key: 'd', action: handleRedeal, labelKey: 'kbd.action.deal' },
+      { key: 'h', action: handleHint, labelKey: 'kbd.action.hint' },
+      { key: 'a', action: handleAutoComplete, labelKey: 'kbd.action.autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, labelKey: 'kbd.action.giveUp' },
+      { key: 'z', action: handleUndo, labelKey: 'kbd.action.undo' },
     ],
     [handleRedeal, handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
   );
@@ -519,6 +520,7 @@ function CrescentPageContent() {
                 dataTutorial="crescent-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="crescent-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

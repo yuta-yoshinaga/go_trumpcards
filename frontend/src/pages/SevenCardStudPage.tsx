@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { sevenCardStudApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -226,17 +227,28 @@ function SevenCardStudPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'c', action: () => execApi('call', undefined, undefined, getElapsed()), enabled: hasOutstandingBet },
+      {
+        key: 'c',
+        action: () => execApi('call', undefined, undefined, getElapsed()),
+        enabled: hasOutstandingBet,
+        labelKey: 'kbd.action.call',
+      },
       {
         key: 'r',
         action: () =>
           hasOutstandingBet
             ? execApi('raise', betAmount, undefined, getElapsed())
             : execApi('bet', betAmount, undefined, getElapsed()),
+        labelKey: 'kbd.action.raiseOrBet',
       },
-      { key: 'k', action: () => execApi('check', undefined, undefined, getElapsed()), enabled: !hasOutstandingBet },
-      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()) },
-      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()) },
+      {
+        key: 'k',
+        action: () => execApi('check', undefined, undefined, getElapsed()),
+        enabled: !hasOutstandingBet,
+        labelKey: 'kbd.action.check',
+      },
+      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()), labelKey: 'kbd.action.fold' },
+      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()), labelKey: 'kbd.action.allin' },
     ],
     [execApi, hasOutstandingBet, betAmount, getElapsed],
   );
@@ -568,6 +580,7 @@ function SevenCardStudPageContent() {
               dataTutorial="scs-reset-button"
               className="min-w-[90px]"
             />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="seven-card-stud-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

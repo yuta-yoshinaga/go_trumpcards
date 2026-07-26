@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { twoTenJackApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -484,6 +485,7 @@ function TwoTenJackPageContent() {
                 dataTutorial="tt-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="two-ten-jack-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

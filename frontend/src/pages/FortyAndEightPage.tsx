@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { FortyAndEightMoveZone } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -186,11 +187,11 @@ function FortyAndEightPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleDraw },
-      { key: 'h', action: handleHint },
-      { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: confirmGiveUpAction },
-      { key: 'z', action: handleUndo },
+      { key: 'd', action: handleDraw, labelKey: 'kbd.action.draw' },
+      { key: 'h', action: handleHint, labelKey: 'kbd.action.hint' },
+      { key: 'a', action: handleAutoComplete, labelKey: 'kbd.action.autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, labelKey: 'kbd.action.giveUp' },
+      { key: 'z', action: handleUndo, labelKey: 'kbd.action.undo' },
     ],
     [handleDraw, handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
   );
@@ -557,6 +558,7 @@ function FortyAndEightPageContent() {
                 dataTutorial="f8-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="forty-and-eight-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

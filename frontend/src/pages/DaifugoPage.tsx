@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { daifugoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
@@ -476,6 +477,7 @@ function DaifugoPageContent() {
                 {t('clearSelectionButton')}
               </button>
             </div>
+            <CardNavShortcutsPanel data-testid="daifugo-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

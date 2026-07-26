@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { highcardflushApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -105,24 +106,28 @@ function HighCardFlushPageContent() {
         key: 'b',
         action: () => execApi('bet', anteAmount, flushBonusAmount, straightFlushAmount),
         enabled: isBetPhase,
+        labelKey: 'kbd.action.bet',
       },
       {
         key: '1',
         action: () => execApi('raise', undefined, undefined, undefined, 1),
         enabled: isActionPhase && maxMultiplier >= 1,
+        labelKey: 'kbd.action.raise',
       },
       {
         key: '2',
         action: () => execApi('raise', undefined, undefined, undefined, 2),
         enabled: isActionPhase && maxMultiplier >= 2,
+        labelKey: 'kbd.action.raise',
       },
       {
         key: '3',
         action: () => execApi('raise', undefined, undefined, undefined, 3),
         enabled: isActionPhase && maxMultiplier >= 3,
+        labelKey: 'kbd.action.raise',
       },
-      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase, labelKey: 'kbd.action.fold' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, labelKey: 'kbd.action.reset' },
     ],
     [execApi, anteAmount, flushBonusAmount, straightFlushAmount, isBetPhase, isActionPhase, isEndPhase, maxMultiplier],
   );
@@ -436,6 +441,7 @@ function HighCardFlushPageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="high-card-flush-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

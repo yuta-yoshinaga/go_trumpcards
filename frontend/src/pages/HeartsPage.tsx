@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { heartsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -521,6 +522,7 @@ function HeartsPageContent() {
                 dataTutorial="ht-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="hearts-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

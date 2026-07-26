@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { caribbeanstudApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -135,10 +136,11 @@ function CaribbeanStudPageContent() {
         key: 'b',
         action: () => execApi('bet', anteAmount, jackpotAmount),
         enabled: isBetPhase,
+        labelKey: 'kbd.action.bet',
       },
-      { key: 'p', action: () => execApi('play'), enabled: isActionPhase },
-      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      { key: 'p', action: () => execApi('play'), enabled: isActionPhase, labelKey: 'kbd.action.play' },
+      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase, labelKey: 'kbd.action.fold' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, labelKey: 'kbd.action.reset' },
     ],
     [execApi, anteAmount, jackpotAmount, isBetPhase, isActionPhase, isEndPhase],
   );
@@ -438,6 +440,7 @@ function CaribbeanStudPageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="caribbean-stud-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

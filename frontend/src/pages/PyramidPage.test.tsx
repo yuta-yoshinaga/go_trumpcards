@@ -143,7 +143,7 @@ describe('PyramidPage', () => {
 
   it('renders stock count', async () => {
     renderWithProviders(<PyramidPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     expect(screen.getByText(/\(20\)/)).toBeInTheDocument();
   });
 
@@ -495,7 +495,7 @@ describe('PyramidPage', () => {
 
   it('stock card back is clickable during playing phase', async () => {
     renderWithProviders(<PyramidPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
@@ -578,7 +578,7 @@ describe('PyramidPage', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
     try {
       renderWithProviders(<PyramidPage />);
-      await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
@@ -589,7 +589,7 @@ describe('PyramidPage', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
     try {
       renderWithProviders(<PyramidPage />);
-      await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }

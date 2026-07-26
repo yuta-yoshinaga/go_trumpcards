@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { paigowApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -155,6 +156,7 @@ function PaiGowPageContent() {
         key: 'b',
         action: () => execApi('bet', betAmount),
         enabled: isBetPhase && !betInvalid,
+        labelKey: 'kbd.action.bet',
       },
       {
         key: 's',
@@ -164,9 +166,15 @@ function PaiGowPageContent() {
           }
         },
         enabled: isSetHandsPhase && selectedIndices.length === 2 && !foul.isFoul,
+        labelKey: 'kbd.action.setHands',
       },
-      { key: 'a', action: handleAutoSet, enabled: isSetHandsPhase && autoSplit !== null },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      {
+        key: 'a',
+        action: handleAutoSet,
+        enabled: isSetHandsPhase && autoSplit !== null,
+        labelKey: 'kbd.action.autoSet',
+      },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, labelKey: 'kbd.action.reset' },
     ],
     [
       execApi,
@@ -454,6 +462,7 @@ function PaiGowPageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="pai-gow-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

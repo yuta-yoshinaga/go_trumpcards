@@ -69,7 +69,7 @@ describe('AcesUpPage', () => {
 
   it('renders stock count', async () => {
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     expect(screen.getByText(/\(44\)/)).toBeInTheDocument();
   });
 
@@ -80,7 +80,7 @@ describe('AcesUpPage', () => {
 
   it('renders the four columns', async () => {
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     const colDivs = document.querySelectorAll('[data-tutorial="acesup-columns"] > div');
     expect(colDivs.length).toBe(4);
   });
@@ -113,13 +113,13 @@ describe('AcesUpPage', () => {
   it('renders empty stock placeholder', async () => {
     mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     expect(screen.getAllByText('空').length).toBeGreaterThanOrEqual(1);
   });
 
   it('clicking deal button dispatches draw', async () => {
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
@@ -132,7 +132,7 @@ describe('AcesUpPage', () => {
 
   it('clicking a removable top card dispatches remove', async () => {
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
@@ -144,7 +144,7 @@ describe('AcesUpPage', () => {
 
   it('clicking discard-all dispatches remove for every removable card', async () => {
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
 
     mockExec.mockClear();
     // After the first removal nothing is removable, so the batch loop stops.
@@ -174,7 +174,7 @@ describe('AcesUpPage', () => {
 
   it('clicking a move button dispatches move', async () => {
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
@@ -214,7 +214,7 @@ describe('AcesUpPage', () => {
 
   it('clicking giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(gameOverState);
@@ -227,7 +227,7 @@ describe('AcesUpPage', () => {
 
   it('clicking undo button dispatches undo', async () => {
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
@@ -238,7 +238,7 @@ describe('AcesUpPage', () => {
 
   it('clicking hint button dispatches hint', async () => {
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
 
     mockExec.mockResolvedValue({ ...playingState, hint: { type: 'remove', col: 0 } });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
@@ -250,7 +250,7 @@ describe('AcesUpPage', () => {
 
   it('renders a move hint via HintTooltip with the column', async () => {
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     mockExec.mockResolvedValue({ ...playingState, hint: { type: 'move', col: 2 } });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(screen.getByText(/列\[2\]の札を空き列へ移動/)).toBeInTheDocument());
@@ -258,7 +258,7 @@ describe('AcesUpPage', () => {
 
   it('renders a draw hint via HintTooltip without a column', async () => {
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     mockExec.mockResolvedValue({ ...playingState, hint: { type: 'draw', col: -1 } });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(screen.getByText(/山札から各列へ1枚ずつ/)).toBeInTheDocument());
@@ -280,14 +280,14 @@ describe('AcesUpPage', () => {
   it('disables undo button when canUndo is false', async () => {
     mockExec.mockResolvedValue({ ...playingState, canUndo: false });
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '元に戻す' })).toBeDisabled();
   });
 
   it('disables deal button when stock empty', async () => {
     mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '配る' })).toBeDisabled();
   });
 

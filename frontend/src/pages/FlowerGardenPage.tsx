@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { FlowerGardenMoveZone, flowerGardenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -163,10 +164,10 @@ function FlowerGardenPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'h', action: game.handleHint },
-      { key: 'a', action: game.handleAutoComplete },
-      { key: 'g', action: confirmGiveUpAction },
-      { key: 'z', action: game.handleUndo },
+      { key: 'h', action: game.handleHint, labelKey: 'kbd.action.hint' },
+      { key: 'a', action: game.handleAutoComplete, labelKey: 'kbd.action.autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, labelKey: 'kbd.action.giveUp' },
+      { key: 'z', action: game.handleUndo, labelKey: 'kbd.action.undo' },
     ],
     [game, confirmGiveUpAction],
   );
@@ -495,6 +496,7 @@ function FlowerGardenPageContent() {
                 dataTutorial="fg-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="flower-garden-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

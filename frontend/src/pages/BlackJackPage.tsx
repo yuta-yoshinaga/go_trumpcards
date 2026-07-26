@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi, spanish21Api } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
 import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
 import { BjEarlySurrenderPhaseControls } from '../components/blackjack/BjEarlySurrenderPhaseControls';
@@ -257,11 +258,11 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'h', action: () => exec('hit') },
-      { key: 's', action: () => exec('stand') },
-      { key: 'd', action: () => exec('doubledown'), enabled: showDoubleDown },
-      { key: 'p', action: () => exec('split'), enabled: showSplit },
-      { key: 'u', action: () => exec('surrender'), enabled: showSurrender },
+      { key: 'h', action: () => exec('hit'), labelKey: 'kbd.action.hit' },
+      { key: 's', action: () => exec('stand'), labelKey: 'kbd.action.stand' },
+      { key: 'd', action: () => exec('doubledown'), enabled: showDoubleDown, labelKey: 'kbd.action.doubledown' },
+      { key: 'p', action: () => exec('split'), enabled: showSplit, labelKey: 'kbd.action.split' },
+      { key: 'u', action: () => exec('surrender'), enabled: showSurrender, labelKey: 'kbd.action.surrender' },
     ],
     [exec, showDoubleDown, showSplit, showSurrender],
   );
@@ -273,8 +274,8 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
   const insuranceBindings = useMemo(
     () => [
-      { key: 'i', action: () => exec('insurance') },
-      { key: 'n', action: () => exec('declineinsurance') },
+      { key: 'i', action: () => exec('insurance'), labelKey: 'kbd.action.insurance' },
+      { key: 'n', action: () => exec('declineinsurance'), labelKey: 'kbd.action.declineinsurance' },
     ],
     [exec],
   );
@@ -286,8 +287,8 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
   const earlySurrenderBindings = useMemo(
     () => [
-      { key: 'u', action: () => exec('earlysurrender') },
-      { key: 'n', action: () => exec('declineearlysurrender') },
+      { key: 'u', action: () => exec('earlysurrender'), labelKey: 'kbd.action.earlysurrender' },
+      { key: 'n', action: () => exec('declineearlysurrender'), labelKey: 'kbd.action.declineearlysurrender' },
     ],
     [exec],
   );
@@ -712,6 +713,10 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                 </div>
               )}
             </div>
+            <ActionShortcutsPanel
+              bindings={[...actionBindings, ...insuranceBindings, ...earlySurrenderBindings]}
+              data-testid="black-jack-kbd-shortcuts"
+            />
           </GameFooter>
         </>
       )}

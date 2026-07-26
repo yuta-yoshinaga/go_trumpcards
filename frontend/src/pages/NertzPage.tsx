@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type NertzMoveZone, nertzApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -358,15 +359,15 @@ function NertzPageContent() {
   );
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleDrawStock },
-      { key: 'n', action: handleSelectNertz },
-      { key: 'w', action: handleSelectWaste },
-      { key: 'u', action: handleUndo },
+      { key: 'd', action: handleDrawStock, labelKey: 'kbd.action.draw' },
+      { key: 'n', action: handleSelectNertz, labelKey: 'kbd.action.selectNertzPile' },
+      { key: 'w', action: handleSelectWaste, labelKey: 'kbd.action.selectWastePile' },
+      { key: 'u', action: handleUndo, labelKey: 'kbd.action.undo' },
       ...Array.from({ length: 9 }, (_, i) => ({
         key: String(i + 1),
         action: () => handleFoundationKey(i),
       })),
-      { key: 'Escape', action: () => setSelection(null) },
+      { key: 'Escape', action: () => setSelection(null), labelKey: 'kbd.action.clearSelection' },
     ],
     [handleDrawStock, handleSelectNertz, handleSelectWaste, handleUndo, handleFoundationKey],
   );
@@ -669,6 +670,7 @@ function NertzPageContent() {
                 </button>
               )}
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="nertz-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

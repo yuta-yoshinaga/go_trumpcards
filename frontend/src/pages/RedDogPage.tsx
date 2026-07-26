@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { reddogApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -80,9 +81,9 @@ function RedDogPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase },
-      { key: 's', action: () => execApi('stay'), enabled: isSpreadDecision },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase, labelKey: 'kbd.action.bet' },
+      { key: 's', action: () => execApi('stay'), enabled: isSpreadDecision, labelKey: 'kbd.action.stay' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, labelKey: 'kbd.action.reset' },
     ],
     [execApi, betAmount, isBetPhase, isSpreadDecision, isEndPhase],
   );
@@ -277,6 +278,7 @@ function RedDogPageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="red-dog-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

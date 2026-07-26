@@ -138,7 +138,7 @@ describe('FortyAndEightPage', () => {
 
   it('renders stock count', async () => {
     renderWithProviders(<FortyAndEightPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     expect(screen.getByText(/\(60\)/)).toBeInTheDocument();
   });
 

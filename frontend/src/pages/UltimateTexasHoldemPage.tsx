@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ultimatetexasholdemApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { ChipBetInput } from '../components/common/ChipBetInput';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -135,14 +136,40 @@ function UltimateTexasHoldemPageContent() {
         key: 'b',
         action: () => execApi('bet', anteAmount, tripsAmount),
         enabled: isBetPhase && betBounds.valid,
+        labelKey: 'kbd.action.bet',
       },
-      { key: '4', action: () => execApi('play', undefined, undefined, 4), enabled: isPreFlopPhase },
-      { key: '3', action: () => execApi('play', undefined, undefined, 3), enabled: isPreFlopPhase },
-      { key: 'c', action: () => execApi('check'), enabled: isPreFlopPhase || isFlopPhase },
-      { key: '2', action: () => execApi('play', undefined, undefined, 2), enabled: isFlopPhase },
-      { key: '1', action: () => execApi('play', undefined, undefined, 1), enabled: isRiverPhase },
-      { key: 'f', action: () => execApi('fold'), enabled: isRiverPhase },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      {
+        key: '4',
+        action: () => execApi('play', undefined, undefined, 4),
+        enabled: isPreFlopPhase,
+        labelKey: 'kbd.action.play',
+      },
+      {
+        key: '3',
+        action: () => execApi('play', undefined, undefined, 3),
+        enabled: isPreFlopPhase,
+        labelKey: 'kbd.action.play',
+      },
+      {
+        key: 'c',
+        action: () => execApi('check'),
+        enabled: isPreFlopPhase || isFlopPhase,
+        labelKey: 'kbd.action.check',
+      },
+      {
+        key: '2',
+        action: () => execApi('play', undefined, undefined, 2),
+        enabled: isFlopPhase,
+        labelKey: 'kbd.action.play',
+      },
+      {
+        key: '1',
+        action: () => execApi('play', undefined, undefined, 1),
+        enabled: isRiverPhase,
+        labelKey: 'kbd.action.play',
+      },
+      { key: 'f', action: () => execApi('fold'), enabled: isRiverPhase, labelKey: 'kbd.action.fold' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, labelKey: 'kbd.action.reset' },
     ],
     [
       execApi,
@@ -470,6 +497,7 @@ function UltimateTexasHoldemPageContent() {
             </button>
           </div>
         )}
+        <ActionShortcutsPanel bindings={actionBindings} data-testid="ultimate-texas-holdem-kbd-shortcuts" />
       </GameFooter>
     </GamePageShell>
   );

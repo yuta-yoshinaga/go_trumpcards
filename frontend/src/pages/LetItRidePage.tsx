@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { letitrideApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -122,10 +123,16 @@ function LetItRidePageContent() {
         key: 'b',
         action: () => execApi('bet', betAmount),
         enabled: isBetPhase,
+        labelKey: 'kbd.action.bet',
       },
-      { key: 'p', action: () => requestPullConfirm(() => execApi('pull')), enabled: isDecisionPhase },
-      { key: 'l', action: () => execApi('letitride'), enabled: isDecisionPhase },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      {
+        key: 'p',
+        action: () => requestPullConfirm(() => execApi('pull')),
+        enabled: isDecisionPhase,
+        labelKey: 'kbd.action.pull',
+      },
+      { key: 'l', action: () => execApi('letitride'), enabled: isDecisionPhase, labelKey: 'kbd.action.letitride' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, labelKey: 'kbd.action.reset' },
     ],
     [execApi, betAmount, isBetPhase, isDecisionPhase, isEndPhase, requestPullConfirm],
   );
@@ -397,6 +404,7 @@ function LetItRidePageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="let-it-ride-kbd-shortcuts" />
           </GameFooter>
         </>
       )}
