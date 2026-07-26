@@ -65,8 +65,19 @@ describe('NavBar', () => {
 
   it('links point to correct hrefs', () => {
     renderNavBar();
+    // Index the links once. Querying by accessible name recomputes it for every
+    // element in the tree, so doing that per route is quadratic.
+    // A path can be rendered by more than one link (category list, sidebar),
+    // so collect every label per href rather than keeping the last one.
+    const labelsByHref = new Map<string, string[]>();
+    for (const link of screen.getAllByRole('link')) {
+      const href = link.getAttribute('href') ?? '';
+      const labels = labelsByHref.get(href) ?? [];
+      labels.push(link.textContent ?? '');
+      labelsByHref.set(href, labels);
+    }
     for (const { path, labelKey } of gameRoutes) {
-      expect(screen.getByRole('link', { name: labelFor(labelKey) })).toHaveAttribute('href', path);
+      expect(labelsByHref.get(path)?.some((label) => label.includes(labelFor(labelKey)))).toBe(true);
     }
   });
 
