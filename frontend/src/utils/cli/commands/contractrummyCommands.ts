@@ -55,7 +55,7 @@ export function parseContractRummyCommand(input: string): CliParseResult<Contrac
     case 'x':
     case 'discard': {
       const list = parseIdxList(args.join(' '));
-      if (!list || list.length !== 1) return { error: 'Usage: discard <cardIdx>' };
+      if (list?.length !== 1) return { error: 'Usage: discard <cardIdx>' };
       return { args: ['discard', { cardIndex: list[0] }] as ContractRummyArgs };
     }
     case 'meld': {
@@ -82,7 +82,7 @@ export function parseContractRummyCommand(input: string): CliParseResult<Contrac
     case 'lo':
     case 'layoff': {
       const list = parseIdxList(args.join(' '));
-      if (!list || list.length !== 3) return { error: 'Usage: layoff <cardIdx> <playerIdx> <meldIdx>' };
+      if (list?.length !== 3) return { error: 'Usage: layoff <cardIdx> <playerIdx> <meldIdx>' };
       return {
         args: ['layoff', { cardIndex: list[0], targetPlayerIdx: list[1], meldIdx: list[2] }] as ContractRummyArgs,
       };

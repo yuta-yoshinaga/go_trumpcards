@@ -159,7 +159,7 @@ function CrescentPageContent() {
   // persistent valid-destination highlight so mouse, touch, and keyboard users
   // all see where the selected card can legally go (#3257).
   const selectedCard: Card | null = useMemo(() => {
-    if (!selectedSource || selectedSource.zone !== 'tableau' || selectedSource.col === undefined) return null;
+    if (selectedSource?.zone !== 'tableau' || selectedSource.col === undefined) return null;
     const col = state?.tableau[selectedSource.col];
     if (!col || col.length === 0) return null;
     return col[col.length - 1]?.card ?? null;

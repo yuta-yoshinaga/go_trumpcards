@@ -70,10 +70,10 @@ describe('discoverAxes constants', () => {
 
   it('every axis label and question key omits the `discover.` namespace prefix', () => {
     for (const key of AXIS_KEYS) {
-      expect(AXES[key].labelI18nKey).toMatch(new RegExp('^axis\\.' + key + '\\.label$'));
+      expect(AXES[key].labelI18nKey).toMatch(new RegExp(`^axis\\.${key}\\.label$`));
       expect(AXES[key].labelI18nKey).not.toMatch(/^discover\./);
       for (const q of AXES[key].questions) {
-        expect(q.questionI18nKey).toMatch(new RegExp('^axis\\.' + key + '\\.q[12]$'));
+        expect(q.questionI18nKey).toMatch(new RegExp(`^axis\\.${key}\\.q[12]$`));
       }
     }
   });

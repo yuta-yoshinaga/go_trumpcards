@@ -16,7 +16,7 @@ import type { HintResult } from '../../types/hint';
  */
 export function getEcarteHint(state: EcarteResponse): HintResult | null {
   const hint = state.hint;
-  if (!hint || !hint.reason) return null;
+  if (!hint?.reason) return null;
   return {
     targetAction: hint.action ?? 'play',
     reason: `hint.${hint.reason}`,

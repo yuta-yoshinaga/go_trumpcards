@@ -14,7 +14,7 @@ import type { HintResult } from '../../types/hint';
  */
 export function getMusHint(state: MusResponse): HintResult | null {
   const hint = state.hint;
-  if (!hint || !hint.reason) return null;
+  if (!hint?.reason) return null;
 
   let targetAction = 'bet';
   if (hint.reason.startsWith('mus_')) targetAction = 'mus';

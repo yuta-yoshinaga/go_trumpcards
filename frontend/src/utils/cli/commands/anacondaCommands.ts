@@ -77,7 +77,7 @@ export function parseAnacondaCommand(input: string): CliParseResult<AnacondaCliA
     case 'k':
     case 'keep': {
       const indices = parseIndices(args);
-      if (!indices || indices.length !== 5) {
+      if (indices?.length !== 5) {
         return { error: 'Usage: k <i...> (keep exactly 5 card indices)' };
       }
       return { args: ['keep', indices] };

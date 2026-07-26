@@ -464,13 +464,16 @@ input:not([type]):focus-visible {
   animation: suit-watermark 0.4s ease-out;
 }
 
+/* Base first, then the higher-specificity open state — the two set different
+   properties so the cascade result is identical either way, but declaring the
+   specific rule first trips Biome's noDescendingSpecificity. */
+.sidebar-category-chevron {
+  transition: transform 150ms ease;
+}
+
 /* Rotate chevron when sidebar category is open */
 .sidebar-category[open] .sidebar-category-chevron {
   transform: rotate(90deg);
-}
-
-.sidebar-category-chevron {
-  transition: transform 150ms ease;
 }
 
 /* Force nav category details open on tablet/small desktop (sm to lg) */
@@ -569,11 +572,18 @@ input:not([type]):focus-visible {
   *,
   *::before,
   *::after {
+    /* biome-ignore-start lint/complexity/noImportantStyles: this is the
+       accessibility reset — it exists precisely to beat every component's own
+       animation/transition declaration, so `!important` is the mechanism, not
+       an accident. Dropping it would silently un-suppress motion for users who
+       asked for less of it, and `scripts/check-design-tokens.mjs` asserts this
+       block is present. */
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     animation-delay: 0s !important;
     transition-duration: 0.01ms !important;
     transition-delay: 0s !important;
     scroll-behavior: auto !important;
+    /* biome-ignore-end lint/complexity/noImportantStyles: see above */
   }
 }

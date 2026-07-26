@@ -74,7 +74,13 @@ if (violations.length > 0) {
 // silently misses arbitrary animate-[…] utilities and future animations.
 const indexCss = await readFile(join(SRC_DIR, 'index.css'), 'utf8');
 const rmIdx = indexCss.indexOf('@media (prefers-reduced-motion: reduce)');
-const rmBlock = rmIdx === -1 ? '' : indexCss.slice(rmIdx, rmIdx + 400);
+// Read to the at-rule's own closing brace — the only `}` in column 0 after it,
+// since the nested `*` rule closes indented. This used to slice a fixed 400
+// characters, which silently failed the moment a comment was added inside the
+// block: the declarations it looks for slid past the window and the guard
+// reported the SSoT block missing when it was right there.
+const rmEnd = rmIdx === -1 ? -1 : indexCss.indexOf('\n}', rmIdx);
+const rmBlock = rmIdx === -1 || rmEnd === -1 ? '' : indexCss.slice(rmIdx, rmEnd + 2);
 if (!rmBlock.includes('*,') || !rmBlock.includes('animation-duration: 0.01ms')) {
   console.error(
     '\nreduced-motion: index.css must enforce prefers-reduced-motion with a universal\n' +

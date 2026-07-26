@@ -55,8 +55,8 @@ describe('getRussianPokerHint', () => {
     });
     const hint = getRussianPokerHint(state);
     expect(hint).not.toBeNull();
-    expect(hint!.targetAction).toBe('play');
-    expect(hint!.confidence).toBe('strong');
+    expect(hint?.targetAction).toBe('play');
+    expect(hint?.confidence).toBe('strong');
   });
 
   it('recommends play with Ace-King high', () => {
@@ -73,8 +73,8 @@ describe('getRussianPokerHint', () => {
     });
     const hint = getRussianPokerHint(state);
     expect(hint).not.toBeNull();
-    expect(hint!.targetAction).toBe('play');
-    expect(hint!.confidence).toBe('moderate');
+    expect(hint?.targetAction).toBe('play');
+    expect(hint?.confidence).toBe('moderate');
   });
 
   it('recommends fold with weak hand', () => {
@@ -91,7 +91,7 @@ describe('getRussianPokerHint', () => {
     });
     const hint = getRussianPokerHint(state);
     expect(hint).not.toBeNull();
-    expect(hint!.targetAction).toBe('fold');
+    expect(hint?.targetAction).toBe('fold');
   });
 
   it('works in PostAction phase', () => {
@@ -108,6 +108,6 @@ describe('getRussianPokerHint', () => {
     });
     const hint = getRussianPokerHint(state);
     expect(hint).not.toBeNull();
-    expect(hint!.targetAction).toBe('play');
+    expect(hint?.targetAction).toBe('play');
   });
 });
