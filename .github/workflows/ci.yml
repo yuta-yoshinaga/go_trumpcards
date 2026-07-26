@@ -76,6 +76,11 @@ jobs:
     # only, and vitest transpiles without checking. It used to run solely as a
     # side effect of the E2E job's `bun run build` (tsc -b && vite build), so
     # every E2E shard paid ~48s for the same check. Run it once here instead.
+    #
+    # `bun run typecheck` uses the `typescript7` alias, not the `typescript`
+    # dependency — see frontend/CLAUDE.md "Type checking" for why both are
+    # installed. Never substitute a bare `tsc`/`bunx tsc`: that resolves to
+    # TypeScript 5.9 and takes ~46s instead of ~5s.
     name: Frontend Typecheck (tsc)
     runs-on: ubuntu-latest
     steps:
@@ -92,7 +97,7 @@ jobs:
 
       - name: Type-check
         working-directory: frontend
-        run: bunx tsc -b
+        run: bun run typecheck
 
   test-frontend:
     # Sharded because this is the slowest job in the pipeline (~20 min
@@ -180,8 +185,9 @@ jobs:
         working-directory: frontend
         run: bun install --frozen-lockfile
 
-      # Bundle only — `bun run build` also runs `tsc -b` (~48s), which the
-      # dedicated typecheck job now covers once instead of once per shard.
+      # Bundle only — `bun run build` also runs `bun run typecheck` (~5s since
+      # the TypeScript 7 switch, ~48s before it), which the dedicated typecheck
+      # job now covers once instead of once per shard.
       - name: Build frontend
         working-directory: frontend
         run: bunx vite build

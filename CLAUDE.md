@@ -54,6 +54,7 @@ golangci-lint run ./...      # Run Go linter (must pass before commit)
 cd frontend && bun install   # Install dependencies
 cd frontend && bun run build # Build React app
 cd frontend && bun run check # Biome lint + format check
+cd frontend && bun run typecheck # TypeScript 7 type check (never bare `tsc` -- that is 5.9; see frontend/CLAUDE.md)
 cd frontend && bun run test  # Run Vitest unit tests
 cd frontend && bun run e2e   # Run Playwright E2E tests
 cd frontend && bun run docs:generate  # Generate TypeDoc documentation

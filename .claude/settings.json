@@ -27,7 +27,7 @@
           },
           {
             "type": "command",
-            "command": "jq -r '.tool_input.command' | { read -r cmd; case \"$cmd\" in git\\ commit*) if git diff --cached --name-only | grep -qE '\\.(ts|tsx)$'; then cd frontend && output=$(bunx tsc -b 2>&1); if [ $? -ne 0 ]; then jq -nc --arg msg \"$(printf '%s' \"$output\" | head -30)\" '{continue: false, stopReason: (\"tsc type-check failed (CI runs tsc -b in the build; vitest/biome do not catch this):\\n\" + $msg)}'; else echo '{}'; fi; else echo '{}'; fi ;; *) echo '{}' ;; esac; }",
+            "command": "jq -r '.tool_input.command' | { read -r cmd; case \"$cmd\" in git\\ commit*) if git diff --cached --name-only | grep -qE '\\.(ts|tsx)$'; then cd frontend && output=$(bun run typecheck 2>&1); if [ $? -ne 0 ]; then jq -nc --arg msg \"$(printf '%s' \"$output\" | head -30)\" '{continue: false, stopReason: (\"tsc type-check failed (TypeScript 7 via bun run typecheck; vitest/biome do not catch this):\\n\" + $msg)}'; else echo '{}'; fi; else echo '{}'; fi ;; *) echo '{}' ;; esac; }",
             "timeout": 180,
             "statusMessage": "Running tsc type-check..."
           },
