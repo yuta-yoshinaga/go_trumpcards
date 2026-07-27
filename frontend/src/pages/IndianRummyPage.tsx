@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { indianRummyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -499,6 +500,7 @@ function IndianRummyPageContent() {
                 dataTutorial="ir-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="indian-rummy-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

@@ -75,6 +75,10 @@ describe('AccordionPage', () => {
     // Closed by default so it stays discreet.
     expect(panel).not.toHaveAttribute('open');
     expect(screen.getByText('キーボードショートカット')).toBeInTheDocument();
+    // Collapsed, the rows are not mounted and add no text to the page. See
+    // KeyboardShortcutsPanel and issue #4369.
+    expect(screen.queryByText('選択を解除')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText('キーボードショートカット'));
     expect(screen.getByText('選択を解除')).toBeInTheDocument();
     // Action buttons advertise their single-key shortcuts to assistive tech.
     expect(screen.getByRole('button', { name: 'ヒント' })).toHaveAttribute('aria-keyshortcuts', 'h');

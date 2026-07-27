@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { golfApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -142,10 +143,10 @@ function GolfPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleDraw },
-      { key: 'h', action: handleHint },
-      { key: 'g', action: confirmGiveUpAction },
-      { key: 'z', action: handleUndo },
+      { key: 'd', action: handleDraw, label: 'draw' },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+      { key: 'z', action: handleUndo, label: 'undo' },
     ],
     [handleDraw, handleHint, confirmGiveUpAction, handleUndo],
   );
@@ -498,6 +499,7 @@ function GolfPageContent() {
                 dataTutorial="golf-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="golf-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

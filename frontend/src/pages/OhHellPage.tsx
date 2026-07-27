@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { ohHellApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -606,6 +607,7 @@ function OhHellPageContent() {
                 dataTutorial="oh-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="oh-hell-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

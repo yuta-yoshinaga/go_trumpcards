@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { crazyPineappleApi, irishPokerApi, pineappleApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -325,17 +326,28 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'c', action: () => apiExec('call', undefined, undefined, getElapsed()), enabled: hasOutstandingBet },
+      {
+        key: 'c',
+        action: () => apiExec('call', undefined, undefined, getElapsed()),
+        enabled: hasOutstandingBet,
+        label: 'call',
+      },
       {
         key: 'r',
         action: () =>
           hasOutstandingBet
             ? apiExec('raise', betAmount, undefined, getElapsed())
             : apiExec('bet', betAmount, undefined, getElapsed()),
+        label: 'raiseOrBet',
       },
-      { key: 'k', action: () => apiExec('check', undefined, undefined, getElapsed()), enabled: !hasOutstandingBet },
-      { key: 'f', action: () => apiExec('fold', undefined, undefined, getElapsed()) },
-      { key: 'a', action: () => apiExec('allin', undefined, undefined, getElapsed()) },
+      {
+        key: 'k',
+        action: () => apiExec('check', undefined, undefined, getElapsed()),
+        enabled: !hasOutstandingBet,
+        label: 'check',
+      },
+      { key: 'f', action: () => apiExec('fold', undefined, undefined, getElapsed()), label: 'fold' },
+      { key: 'a', action: () => apiExec('allin', undefined, undefined, getElapsed()), label: 'allin' },
     ],
     [apiExec, hasOutstandingBet, betAmount, getElapsed],
   );
@@ -872,6 +884,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
               dataTutorial="pn-reset-button"
               className="min-w-[90px]"
             />
+            <ActionShortcutsPanel bindings={actionBindings} includeCardNav data-testid="pineapple-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

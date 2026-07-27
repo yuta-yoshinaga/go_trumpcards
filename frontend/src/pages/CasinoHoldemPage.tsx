@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { casinoholdemApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -109,14 +110,10 @@ function CasinoHoldemPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      {
-        key: 'b',
-        action: () => execApi('bet', anteAmount, bonusAmount),
-        enabled: isBetPhase,
-      },
-      { key: 'c', action: () => execApi('call'), enabled: isFlopPhase },
-      { key: 'f', action: () => execApi('fold'), enabled: isFlopPhase },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      { key: 'b', action: () => execApi('bet', anteAmount, bonusAmount), enabled: isBetPhase, label: 'bet' },
+      { key: 'c', action: () => execApi('call'), enabled: isFlopPhase, label: 'call' },
+      { key: 'f', action: () => execApi('fold'), enabled: isFlopPhase, label: 'fold' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
     [execApi, anteAmount, bonusAmount, isBetPhase, isFlopPhase, isEndPhase],
   );
@@ -393,6 +390,7 @@ function CasinoHoldemPageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="casino-holdem-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

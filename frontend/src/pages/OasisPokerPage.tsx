@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { oasispokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -147,16 +148,17 @@ function OasisPokerPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', anteAmount, jackpotAmount), enabled: isBetPhase },
-      { key: 's', action: () => execApi('stand'), enabled: isExchangePhase },
+      { key: 'b', action: () => execApi('bet', anteAmount, jackpotAmount), enabled: isBetPhase, label: 'bet' },
+      { key: 's', action: () => execApi('stand'), enabled: isExchangePhase, label: 'stand' },
       {
         key: 'e',
         action: () => execApi('exchange', undefined, undefined, [...selectedIndices]),
         enabled: isExchangePhase,
+        label: 'exchange',
       },
-      { key: 'p', action: () => execApi('play'), enabled: isActionPhase },
-      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      { key: 'p', action: () => execApi('play'), enabled: isActionPhase, label: 'play' },
+      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase, label: 'fold' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
     [execApi, isBetPhase, isExchangePhase, isActionPhase, isEndPhase, anteAmount, jackpotAmount, selectedIndices],
   );
@@ -485,6 +487,7 @@ function OasisPokerPageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="oasis-poker-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

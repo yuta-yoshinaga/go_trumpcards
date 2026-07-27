@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { euchreApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -617,6 +618,7 @@ function EuchrePageContent() {
                 dataTutorial="eu-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="euchre-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

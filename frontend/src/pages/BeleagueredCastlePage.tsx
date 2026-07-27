@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { BeleagueredCastleMoveZone, beleagueredCastleApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -157,10 +158,10 @@ function BeleagueredCastlePageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'h', action: game.handleHint },
-      { key: 'a', action: game.handleAutoComplete },
-      { key: 'g', action: confirmGiveUpAction },
-      { key: 'z', action: game.handleUndo },
+      { key: 'h', action: game.handleHint, label: 'hint' },
+      { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+      { key: 'z', action: game.handleUndo, label: 'undo' },
     ],
     [game, confirmGiveUpAction],
   );
@@ -455,6 +456,7 @@ function BeleagueredCastlePageContent() {
                 dataTutorial="bc-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="beleaguered-castle-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

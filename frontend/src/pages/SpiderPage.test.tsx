@@ -112,7 +112,7 @@ describe('SpiderPage', () => {
 
   it('renders stock count', async () => {
     renderWithProviders(<SpiderPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     expect(screen.getByText(/\(50\)/)).toBeInTheDocument();
   });
 
@@ -543,7 +543,7 @@ describe('SpiderPage', () => {
     };
     mockExec.mockResolvedValue(filledTableauState);
     renderWithProviders(<SpiderPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(filledTableauState);

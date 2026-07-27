@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { texasholdembonusApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -121,16 +122,12 @@ function TexasHoldemBonusPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      {
-        key: 'b',
-        action: () => execApi('bet', anteAmount, bonusAmount),
-        enabled: isBetPhase,
-      },
-      { key: 'p', action: () => execApi('play'), enabled: isPreFlopPhase },
-      { key: 'f', action: () => execApi('fold'), enabled: isPreFlopPhase },
-      { key: 'c', action: () => execApi('check'), enabled: isPostFlopPhase },
-      { key: 'a', action: () => execApi('raise'), enabled: isPostFlopPhase },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      { key: 'b', action: () => execApi('bet', anteAmount, bonusAmount), enabled: isBetPhase, label: 'bet' },
+      { key: 'p', action: () => execApi('play'), enabled: isPreFlopPhase, label: 'play' },
+      { key: 'f', action: () => execApi('fold'), enabled: isPreFlopPhase, label: 'fold' },
+      { key: 'c', action: () => execApi('check'), enabled: isPostFlopPhase, label: 'check' },
+      { key: 'a', action: () => execApi('raise'), enabled: isPostFlopPhase, label: 'raise' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
     [execApi, anteAmount, bonusAmount, isBetPhase, isPreFlopPhase, isPostFlopPhase, isEndPhase],
   );
@@ -420,6 +417,7 @@ function TexasHoldemBonusPageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="texas-holdem-bonus-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

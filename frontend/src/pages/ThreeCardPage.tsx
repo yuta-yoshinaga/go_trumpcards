@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { threecardApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -118,12 +119,12 @@ function ThreeCardPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: handleBet, enabled: isBetPhase },
-      { key: 'p', action: handlePlay, enabled: isActionPhase },
-      { key: 'f', action: handleFold, enabled: isActionPhase },
-      { key: 'r', action: handleReset, enabled: isEndPhase },
+      { key: 'b', action: handleBet, enabled: isBetPhase, label: 'bet' },
+      { key: 'p', action: handlePlay, enabled: isActionPhase, label: 'play' },
+      { key: 'f', action: handleFold, enabled: isActionPhase, label: 'fold' },
+      { key: 'r', action: handleReset, enabled: isEndPhase, label: 'reset' },
       // Power-user shortcut: 'n' replays the previous bet as a fresh round.
-      { key: 'n', action: handleRebet, enabled: isEndPhase && canRebet },
+      { key: 'n', action: handleRebet, enabled: isEndPhase && canRebet, label: 'rebet' },
     ],
     [handleBet, handlePlay, handleFold, handleReset, handleRebet, isBetPhase, isActionPhase, isEndPhase, canRebet],
   );
@@ -388,6 +389,7 @@ function ThreeCardPageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="three-card-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

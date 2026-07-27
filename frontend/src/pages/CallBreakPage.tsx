@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { callBreakApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BidProgressBar } from '../components/BidProgressBar';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -540,6 +541,7 @@ function CallBreakPageContent() {
                 dataTutorial="cb-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="call-break-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

@@ -107,7 +107,7 @@ describe('KlondikePage', () => {
 
   it('renders stock count', async () => {
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     expect(screen.getByText(/\(20\)/)).toBeInTheDocument();
   });
 
@@ -657,7 +657,7 @@ describe('KlondikePage', () => {
 
   it('stock card back is clickable during playing phase', async () => {
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
 
     // Stock has cards, so CardBack should be rendered and clickable
     mockExec.mockClear();

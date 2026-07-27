@@ -293,7 +293,9 @@ describe('BlackJackPage', () => {
   it('does not show message overlay when message is empty', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText('ヒット')).toBeInTheDocument());
+    // By role, like the rest of this file: "ヒット" also names the keyboard
+    // shortcut row in the footer panel, so a bare text query is ambiguous.
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
     expect(screen.queryByText('You are the winner.')).not.toBeInTheDocument();
   });
 
@@ -1369,7 +1371,10 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
-    expect(screen.queryByText(/インシュランス/)).not.toBeInTheDocument();
+    // The CPU seat renders its insurance as the bracketed badge "[インシュランス: N]"
+    // (see the sibling test above). Match that shape rather than the bare word,
+    // which now also appears in the footer's keyboard-shortcut rows.
+    expect(screen.queryByText(/\[インシュランス:/)).not.toBeInTheDocument();
   });
 
   // --- Early surrender tests ---

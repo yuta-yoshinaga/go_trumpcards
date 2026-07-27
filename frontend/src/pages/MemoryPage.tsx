@@ -1,6 +1,7 @@
 import { type KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { memoryApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -132,7 +133,7 @@ function MemoryPageContent() {
   const isResultForKbd = state?.phase === MemoryPhase.RESULT;
 
   const actionBindings = useMemo(
-    () => [{ key: 'n', action: handleNext, enabled: isResultForKbd }],
+    () => [{ key: 'n', action: handleNext, enabled: isResultForKbd, label: 'next' }],
     [handleNext, isResultForKbd],
   );
 
@@ -468,6 +469,7 @@ function MemoryPageContent() {
                 dataTutorial="mem-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="memory-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

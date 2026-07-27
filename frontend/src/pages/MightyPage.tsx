@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { mightyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CardRoleBadge } from '../components/CardRoleBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -853,6 +854,7 @@ function MightyPageContent() {
                 dataTutorial="mighty-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="mighty-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

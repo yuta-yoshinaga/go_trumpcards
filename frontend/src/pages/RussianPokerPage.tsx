@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { russianpokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -182,16 +183,17 @@ function RussianPokerPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', anteAmount), enabled: isBetPhase && !anteInvalid },
+      { key: 'b', action: () => execApi('bet', anteAmount), enabled: isBetPhase && !anteInvalid, label: 'bet' },
       {
         key: 'e',
         action: () => execApi('exchange', undefined, [...selectedIndices]),
         enabled: isActionPhase && selectedIndices.length > 0,
+        label: 'exchange',
       },
-      { key: '6', action: () => execApi('buy6th'), enabled: isActionPhase },
-      { key: 'p', action: () => execApi('play'), enabled: isActionPhase || isPostActionPhase },
-      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase || isPostActionPhase },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      { key: '6', action: () => execApi('buy6th'), enabled: isActionPhase, label: 'buy6th' },
+      { key: 'p', action: () => execApi('play'), enabled: isActionPhase || isPostActionPhase, label: 'play' },
+      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase || isPostActionPhase, label: 'fold' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
     [execApi, isBetPhase, isActionPhase, isPostActionPhase, isEndPhase, anteAmount, anteInvalid, selectedIndices],
   );
@@ -542,6 +544,7 @@ function RussianPokerPageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} includeCardNav data-testid="russian-poker-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

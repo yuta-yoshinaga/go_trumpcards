@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { shortdeckApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -177,17 +178,28 @@ function ShortDeckPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'c', action: () => execApi('call', undefined, undefined, getElapsed()), enabled: hasOutstandingBet },
+      {
+        key: 'c',
+        action: () => execApi('call', undefined, undefined, getElapsed()),
+        enabled: hasOutstandingBet,
+        label: 'call',
+      },
       {
         key: 'r',
         action: () =>
           hasOutstandingBet
             ? execApi('raise', betAmount, undefined, getElapsed())
             : execApi('bet', betAmount, undefined, getElapsed()),
+        label: 'raiseOrBet',
       },
-      { key: 'k', action: () => execApi('check', undefined, undefined, getElapsed()), enabled: !hasOutstandingBet },
-      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()) },
-      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()) },
+      {
+        key: 'k',
+        action: () => execApi('check', undefined, undefined, getElapsed()),
+        enabled: !hasOutstandingBet,
+        label: 'check',
+      },
+      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()), label: 'fold' },
+      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()), label: 'allin' },
     ],
     [execApi, hasOutstandingBet, betAmount, getElapsed],
   );
@@ -570,6 +582,7 @@ function ShortDeckPageContent() {
               dataTutorial="sd-reset-button"
               className="min-w-[90px]"
             />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="short-deck-kbd-shortcuts" />
           </GameFooter>
         </>
       )}
