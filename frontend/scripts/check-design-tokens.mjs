@@ -448,9 +448,7 @@ for (const file of hookFiles) {
   const text = stripComments(await readFile(join(SRC_DIR, 'hooks', file), 'utf8'));
   if (/\b(useIsMounted|mountedRef)\b/.test(text)) continue;
   // Setters this file owns.
-  const owned = new Set(
-    [...text.matchAll(/const \[[^,\]]+,\s*(set[A-Z]\w*)\]\s*=\s*useState/g)].map((m) => m[1]),
-  );
+  const owned = new Set([...text.matchAll(/const \[[^,\]]+,\s*(set[A-Z]\w*)\]\s*=\s*useState/g)].map((m) => m[1]));
   if (owned.size === 0) continue;
   const lines = text.split('\n');
   for (let i = 0; i < lines.length; i += 1) {
