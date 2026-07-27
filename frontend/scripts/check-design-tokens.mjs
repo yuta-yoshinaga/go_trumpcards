@@ -551,6 +551,12 @@ for (const file of await collectTests(SRC_DIR)) {
       // await, and its assertion is meaningful precisely because of that — flagging
       // it would be the guard crying wolf.
       if (/\bawait\b|advanceTimersByTime|runAllTimers|runOnlyPendingTimers/.test(lines[j])) break;
+      // Stop at the enclosing test's opening line. Without this the window walks into
+      // the PREVIOUS test block and can attribute its interaction to an assertion
+      // that legitimately has none of its own ("exec is not called on mount"), failing
+      // the build for correct code. The unmount-safety guard above needed the same
+      // boundary for the same reason; I did not carry the lesson across the first time.
+      if (/^\s*(it|test|describe)[.(]/.test(lines[j])) break;
       if (INTERACTION.test(lines[j])) {
         vacuousViolations.push({ file: relative(ROOT, file), line: i + 1, mock: m[1] });
         break;
