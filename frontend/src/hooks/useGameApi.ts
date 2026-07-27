@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useOptionalSound } from '../providers/SoundProvider';
 
@@ -55,6 +55,19 @@ export function useGameApi<TState, TArgs extends unknown[]>(
   const [state, setState] = useState<TState | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // `exec` awaits the request before setting state, so a component that unmounts
+  // mid-flight would otherwise still be written to on resolve. React treats that as
+  // a silent no-op, which is exactly why it went unnoticed: it only breaks once the
+  // surrounding environment is gone, where React's internals reach for `window` and
+  // throw from `dispatchSetState`. In CI that failed whole runs while reporting every
+  // test as passed. See issue #4444.
+  const mountedRef = useRef(true);
+  useEffect(
+    () => () => {
+      mountedRef.current = false;
+    },
+    [],
+  );
   const apiFnRef = useRef(apiFn);
   apiFnRef.current = apiFn;
   const onSuccessRef = useRef(options?.onSuccess);
@@ -76,6 +89,9 @@ export function useGameApi<TState, TArgs extends unknown[]>(
     try {
       setError(null);
       const res = await mutateAsyncRef.current(args);
+      // Everything past this point touches the component or its side effects, so a
+      // gone component gets none of it — no state write, no sound, no onSuccess.
+      if (!mountedRef.current) return;
       setState(res);
       // Sound must never break exec: optional-call the context methods
       // (test files mock the provider module with partial shapes) and
@@ -90,6 +106,7 @@ export function useGameApi<TState, TArgs extends unknown[]>(
       }
       await onSuccessRef.current?.(res);
     } catch {
+      if (!mountedRef.current) return;
       setError(NETWORK_ERROR_MESSAGE());
       try {
         soundRef.current?.consumeExecClaim?.();
@@ -97,7 +114,7 @@ export function useGameApi<TState, TArgs extends unknown[]>(
         // never let sound failures mask the API error
       }
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   }, []);
 
