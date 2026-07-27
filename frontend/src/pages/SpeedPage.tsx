@@ -216,7 +216,7 @@ function SpeedPageContent() {
                 : t('clearTime', { time: formatTime(elapsedMs) })}
             </p>
           )}
-          <div className="flex-1 flex flex-col gap-3 min-h-0">
+          <div className="flex-1 flex flex-col gap-3 min-h-0 overflow-y-auto">
             {/* CPU area */}
             <div className="flex items-center justify-center gap-2">
               <span className="text-sm text-ds-text-muted">
