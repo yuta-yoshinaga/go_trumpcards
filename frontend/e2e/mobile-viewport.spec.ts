@@ -44,7 +44,51 @@ const PATHS = [
   '/piquet',
   '/kalooki',
   '/carioca',
+  // These six were the last holdouts (#4373 phase 4). Their children measurably
+  // fitted — 606px in a 605px box — yet the document still grew, because stray
+  // scrollable overflow from a descendant propagated past the shell column. They
+  // are guarded because that is invisible to any static check and was only found
+  // by bisecting the DOM in a real browser.
+  '/memory',
+  '/openfacechinese',
+  '/jass',
+  '/clocksolitaire',
+  '/gaigel',
+  '/spiteandmalice',
 ];
+
+// The shell column clips its overflow (#4373 phase 4), which is safe for the win
+// celebration only because that overlay is `position: fixed` and the column does not
+// establish a containing block for fixed descendants. Adding `transform`, `filter`,
+// `perspective`, `contain` or `will-change` to the column would silently start
+// clipping the celebration to the play area — a regression no unit test can see, so
+// it is asserted here on the real rendered page.
+test('the clipped shell column does not become a containing block for fixed overlays', async ({ page }) => {
+  await navigateTo(page, '/hearts');
+  const result = await page.evaluate(() => {
+    const shell = document.querySelector('main > div');
+    if (!shell) return null;
+    const cs = getComputedStyle(shell);
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;inset:0;pointer-events:none';
+    shell.appendChild(probe);
+    const probeH = Math.round(probe.getBoundingClientRect().height);
+    probe.remove();
+    return {
+      overflowY: cs.overflowY,
+      containing: [cs.transform, cs.filter, cs.perspective, cs.contain, cs.willChange].filter(
+        (v) => v && v !== 'none' && v !== 'auto' && v !== 'normal',
+      ),
+      probeH,
+      viewportH: window.innerHeight,
+    };
+  });
+  expect(result).not.toBeNull();
+  expect(result?.overflowY).toBe('hidden');
+  expect(result?.containing, 'the shell column must not establish a containing block for fixed children').toEqual([]);
+  // A fixed child therefore still spans the viewport rather than being clipped to the column.
+  expect(result?.probeH).toBe(result?.viewportH);
+});
 
 for (const path of PATHS) {
   test(`${path} does not scroll the document at 375x667`, async ({ page }) => {
