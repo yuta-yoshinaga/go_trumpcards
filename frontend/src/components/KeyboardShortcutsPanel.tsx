@@ -34,8 +34,15 @@ export interface KeyboardShortcutsPanelProps extends ComponentPropsWithoutRef<'d
 export function KeyboardShortcutsPanel({ title, shortcuts, className, ...rest }: KeyboardShortcutsPanelProps) {
   const [open, setOpen] = useState(false);
   return (
+    // `hidden sm:block`: a 375px phone has no keyboard, so on mobile this panel
+    // advertises shortcuts that cannot be pressed — while costing 52px of the
+    // vertical budget (44px tap-target summary + mt-2) on all 111 game pages.
+    // That measurably regressed #4373: hearts went from exactly 667px, the
+    // issue's own example of a game that fits, to 735px. Hiding it below the
+    // `sm` breakpoint returns every one of those pages to its previous height
+    // and loses nothing, since the shortcuts are unusable there anyway.
     <details
-      className={`mt-2 w-full max-w-md mx-auto text-ds-text-muted ${className ?? ''}`}
+      className={`mt-2 hidden w-full max-w-md mx-auto text-ds-text-muted sm:block ${className ?? ''}`}
       onToggle={(e) => setOpen(e.currentTarget.open)}
       {...rest}
     >

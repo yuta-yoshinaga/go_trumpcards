@@ -31,6 +31,18 @@ describe('KeyboardShortcutsPanel', () => {
     expect(screen.getByText('キーボードショートカット')).toBeInTheDocument();
   });
 
+  it('is hidden below the sm breakpoint, where there is no keyboard to use', () => {
+    // A 375px phone cannot press these shortcuts, and the panel costs 52px of
+    // the mobile vertical budget on all 111 game pages (44px tap-target summary
+    // + mt-2). Measured: hearts went 683 -> 735 when this shipped, crossing the
+    // 667px viewport that #4373 tracks. Hiding it on mobile returns those pages
+    // to their previous height and loses nothing.
+    render(<KeyboardShortcutsPanel title="キーボードショートカット" shortcuts={shortcuts} data-testid="kbd" />);
+    const panel = screen.getByTestId('kbd');
+    expect(panel).toHaveClass('hidden');
+    expect(panel).toHaveClass('sm:block');
+  });
+
   it('contributes no shortcut text to the page while collapsed', () => {
     // The property that keeps 111 game pages' text unchanged: these rows name
     // the same actions as the buttons they describe, so leaving them mounted
