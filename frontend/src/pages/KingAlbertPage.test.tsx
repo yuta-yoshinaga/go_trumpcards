@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { kingAlbertApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, KingAlbertResponse, KingAlbertTableauCard } from '../types/card';
 import { KingAlbertPage } from './KingAlbertPage';
@@ -139,6 +140,7 @@ describe('KingAlbertPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(gameOverState);
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -211,6 +213,7 @@ describe('KingAlbertPage keyboard shortcuts', () => {
     for (const key of ['h', 'a', 'z']) {
       fireEvent.keyDown(document, { key });
     }
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 });

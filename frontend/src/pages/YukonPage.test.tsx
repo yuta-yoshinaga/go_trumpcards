@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { yukonApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, YukonResponse } from '../types/card';
 import { YukonPage } from './YukonPage';
@@ -162,6 +163,7 @@ describe('YukonPage', () => {
     mockExec.mockClear();
     // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
 
@@ -326,6 +328,7 @@ describe('YukonPage keyboard shortcuts', () => {
     for (const key of ['h', 'a', 'z']) {
       fireEvent.keyDown(document, { key });
     }
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 });

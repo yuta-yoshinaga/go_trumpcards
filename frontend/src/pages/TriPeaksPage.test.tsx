@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, tripeaksApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { TRIPEAKS_STATS_KEY } from '../hooks/useTriPeaksStats';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, TriPeaksCard, TriPeaksResponse } from '../types/card';
 import { computePeakRemaining, TriPeaksPage } from './TriPeaksPage';
@@ -183,6 +184,7 @@ describe('TriPeaksPage', () => {
     mockExec.mockResolvedValue(gameOverState);
     // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
 
@@ -480,6 +482,7 @@ describe('TriPeaksPage keyboard shortcuts', () => {
     for (const key of ['d', 'h', 'z']) {
       fireEvent.keyDown(document, { key });
     }
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 });

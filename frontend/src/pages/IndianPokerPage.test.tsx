@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { indianpokerApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { IndianPokerResponse } from '../types/card';
 import { IndianPokerPage } from './IndianPokerPage';
@@ -884,5 +885,56 @@ describe('IndianPokerPage', () => {
       await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
       expect(screen.queryByText(/バランス型/)).not.toBeInTheDocument();
     });
+  });
+});
+
+// --- keyboard shortcut execution (#4429) ---
+// These bindings are gated on the betting situation rather than on a phase: 'c'
+// (call) needs an outstanding bet and 'k' (check) needs the absence of one, and
+// 'r' is a single key whose command *changes* with that same condition — raise
+// when there is a bet to raise, open bet when there is not. Both branches are
+// covered below, since a regression collapsing them would leave one command
+// unreachable from the keyboard while every button still worked.
+//
+// The trailing argument is the elapsed-thinking-time reading, which is a live
+// measurement rather than a fixed value, so it is matched as a number.
+const kbdCases: [string, unknown[], IndianPokerResponse][] = [
+  ['c', ['call', undefined, undefined, expect.any(Number)], bettingWithBetState],
+  ['r', ['raise', 20, undefined, expect.any(Number)], bettingWithBetState],
+  ['k', ['check', undefined, undefined, expect.any(Number)], bettingState],
+  ['r', ['bet', 20, undefined, expect.any(Number)], bettingState],
+  ['f', ['fold', undefined, undefined, expect.any(Number)], bettingState],
+  ['a', ['allin', undefined, undefined, expect.any(Number)], bettingState],
+];
+
+describe('IndianPokerPage keyboard shortcuts', () => {
+  it.each(kbdCases)('pressing %s dispatches %j', async (key, expected, state) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<IndianPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(state);
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith(...expected));
+  });
+
+  it('ignores check while a bet is outstanding', async () => {
+    mockExec.mockResolvedValue(bettingWithBetState);
+    renderWithProviders(<IndianPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'k' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('ignores call when there is nothing to call', async () => {
+    mockExec.mockResolvedValue(bettingState);
+    renderWithProviders(<IndianPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'c' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });
