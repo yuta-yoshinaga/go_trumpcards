@@ -51,14 +51,14 @@ func (dp *DragonTigerWebPresenter) ActionLogOutput(dt interfaces.DragonTigerGame
 func dragonTigerEndMessage(dt interfaces.DragonTigerGame) (string, string) {
 	switch dt.GetResult() {
 	case domain.GameResultWin: // dragon wins
-		return "Dragon wins!", "dragontiger.result.dragonWins"
+		return "", "dragontiger.result.dragonWins"
 	case domain.GameResultLose: // tiger wins
-		return "Tiger wins!", "dragontiger.result.tigerWins"
+		return "", "dragontiger.result.tigerWins"
 	case domain.GameResultDraw:
 		if dt.GetBetType() == domain.DragonTigerBetTie {
-			return "Tie! You win the tie bet.", "dragontiger.result.tieWin"
+			return "", "dragontiger.result.tieWin"
 		}
-		return "Tie. Half of your bet is refunded.", "dragontiger.result.tieRefund"
+		return "", "dragontiger.result.tieRefund"
 	default:
 		return "", ""
 	}

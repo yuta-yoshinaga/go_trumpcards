@@ -149,7 +149,7 @@ func (p *UltiWebPresenter) winnerMessage(g interfaces.UltiGame) (string, string,
 		}
 	}
 	if humanIdx >= 0 && winner == humanIdx {
-		return "ゲーム終了！ あなたの勝ち！", "ulti.result.humanWin", nil
+		return "", "ulti.result.humanWin", nil
 	}
 	params := map[string]string{"player": fmt.Sprintf("%d", winner)}
 	return fmt.Sprintf("ゲーム終了！ プレイヤー%dの勝ち！", winner), "ulti.result.cpuWin", params

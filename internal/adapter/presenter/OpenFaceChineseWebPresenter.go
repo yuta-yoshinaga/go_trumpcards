@@ -99,10 +99,10 @@ func (p *OpenFaceChineseWebPresenter) buildMessage(g interfaces.OpenFaceChineseG
 func (p *OpenFaceChineseWebPresenter) winnerMessage(g interfaces.OpenFaceChineseGame) (string, string, map[string]string) {
 	winner := g.GetWinnerIdx()
 	if winner < 0 {
-		return "ゲーム終了！ 引き分け！", "openfacechinese.result.draw", nil
+		return "", "openfacechinese.result.draw", nil
 	}
 	if player := g.GetPlayer(winner); player != nil && player.GetIsHuman() {
-		return "ゲーム終了！ あなたの勝ち！", "openfacechinese.result.humanWin", nil
+		return "", "openfacechinese.result.humanWin", nil
 	}
 	params := map[string]string{"player": fmt.Sprintf("%d", winner)}
 	return fmt.Sprintf("ゲーム終了！ CPU %d の勝ち！", winner), "openfacechinese.result.cpuWin", params

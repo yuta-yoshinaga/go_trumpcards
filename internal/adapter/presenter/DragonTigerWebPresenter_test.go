@@ -74,7 +74,7 @@ func TestDragonTigerWebPresenter_Output_DragonWins(t *testing.T) {
 	m.On("GetHistory").Return([]int{domain.DragonTigerResultDragon})
 
 	r := parseDragonTigerOutput(t, p.Output(m, nil))
-	assert.Equal(t, "Dragon wins!", r.Message)
+	assert.Empty(t, r.Message)
 	assert.Equal(t, "dragontiger.result.dragonWins", r.MessageCode)
 	assert.NotNil(t, r.DragonCard)
 	assert.NotNil(t, r.TigerCard)
@@ -98,7 +98,7 @@ func TestDragonTigerWebPresenter_Output_TigerWins(t *testing.T) {
 	m.On("GetHistory").Return([]int{domain.DragonTigerResultTiger})
 
 	r := parseDragonTigerOutput(t, p.Output(m, nil))
-	assert.Equal(t, "Tiger wins!", r.Message)
+	assert.Empty(t, r.Message)
 	assert.Equal(t, "dragontiger.result.tigerWins", r.MessageCode)
 }
 
@@ -119,7 +119,7 @@ func TestDragonTigerWebPresenter_Output_Tie_OnDragonBet(t *testing.T) {
 	m.On("GetHistory").Return([]int{domain.DragonTigerResultTie})
 
 	r := parseDragonTigerOutput(t, p.Output(m, nil))
-	assert.Equal(t, "Tie. Half of your bet is refunded.", r.Message)
+	assert.Empty(t, r.Message)
 	assert.Equal(t, "dragontiger.result.tieRefund", r.MessageCode)
 }
 
@@ -140,7 +140,7 @@ func TestDragonTigerWebPresenter_Output_Tie_OnTieBet(t *testing.T) {
 	m.On("GetHistory").Return([]int{domain.DragonTigerResultTie})
 
 	r := parseDragonTigerOutput(t, p.Output(m, nil))
-	assert.Equal(t, "Tie! You win the tie bet.", r.Message)
+	assert.Empty(t, r.Message)
 	assert.Equal(t, "dragontiger.result.tieWin", r.MessageCode)
 }
 

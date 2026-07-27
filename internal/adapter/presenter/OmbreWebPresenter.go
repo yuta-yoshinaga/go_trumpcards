@@ -147,7 +147,7 @@ func (p *OmbreWebPresenter) winnerMessage(g interfaces.OmbreGame) (string, strin
 		}
 	}
 	if humanIdx >= 0 && winner == humanIdx {
-		return "ゲーム終了！ あなたの勝ち！", "ombre.result.humanWin", nil
+		return "", "ombre.result.humanWin", nil
 	}
 	params := map[string]string{"player": fmt.Sprintf("%d", winner)}
 	return fmt.Sprintf("ゲーム終了！ プレイヤー%dの勝ち！", winner), "ombre.result.cpuWin", params

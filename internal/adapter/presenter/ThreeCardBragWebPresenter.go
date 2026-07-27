@@ -136,7 +136,7 @@ func (p *ThreeCardBragWebPresenter) roundEndMessage(g interfaces.ThreeCardBragGa
 	winner := g.GetRoundWinnerIdx()
 	pl := g.GetPlayer(winner)
 	if pl != nil && pl.GetIsHuman() {
-		return "あなたがポットを獲得しました！", "threecardbrag.roundEndHumanWin", nil
+		return "", "threecardbrag.roundEndHumanWin", nil
 	}
 	params := map[string]string{"player": fmt.Sprintf("%d", winner)}
 	return fmt.Sprintf("CPU%dがポットを獲得しました。", winner), "threecardbrag.roundEndCpuWin", params

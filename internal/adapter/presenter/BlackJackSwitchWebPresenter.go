@@ -90,12 +90,12 @@ func (bp *BlackJackSwitchWebPresenter) ActionLogOutput(g interfaces.BlackJackSwi
 func blackJackSwitchEndMessage(g interfaces.BlackJackSwitchGame) (string, string) {
 	switch g.GetOverallResult() {
 	case domain.GameResultWin:
-		return "You win!", "blackjackswitch.result.overallWin"
+		return "", "blackjackswitch.result.overallWin"
 	case domain.GameResultLose:
-		return "You lose.", "blackjackswitch.result.overallLose"
+		return "", "blackjackswitch.result.overallLose"
 	}
 	if g.IsDealerPushed22() {
-		return "Dealer 22: hands pushed.", "blackjackswitch.result.dealer22Push"
+		return "", "blackjackswitch.result.dealer22Push"
 	}
-	return "Push.", "blackjackswitch.result.overallDraw"
+	return "", "blackjackswitch.result.overallDraw"
 }

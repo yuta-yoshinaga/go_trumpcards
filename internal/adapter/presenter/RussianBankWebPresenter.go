@@ -82,13 +82,13 @@ func (p *RussianBankWebPresenter) buildMessage(g interfaces.RussianBankGame, las
 func (p *RussianBankWebPresenter) winnerMessage(g interfaces.RussianBankGame) (string, string, map[string]string) {
 	winner := g.GetWinner()
 	if winner < 0 {
-		return "ゲーム終了！ 引き分け！", "russianbank.result.draw", nil
+		return "", "russianbank.result.draw", nil
 	}
 	if player := g.GetPlayer(winner); player != nil && !player.IsCPU() {
-		return "ゲーム終了！ あなたの勝ち！", "russianbank.result.humanWin", nil
+		return "", "russianbank.result.humanWin", nil
 	}
 	params := map[string]string{"player": fmt.Sprintf("%d", winner)}
-	return "ゲーム終了！ CPU の勝ち！", "russianbank.result.cpuWin", params
+	return "", "russianbank.result.cpuWin", params
 }
 
 // HintOutput ヒント情報をJSON出力する。
