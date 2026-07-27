@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { scoponeApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeScoponeState } from '../test/stateFactories';
 import { useScoponeGame } from './useScoponeGame';
 
@@ -64,6 +65,7 @@ describe('useScoponeGame', () => {
 
     mockExec.mockClear();
     act(() => result.current.play());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

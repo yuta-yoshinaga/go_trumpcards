@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { klaverjasApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeKlaverjasState } from '../test/stateFactories';
 import { DEFAULT_KLAVERJAS_CONFIG, useKlaverjasGame } from './useKlaverjasGame';
 
@@ -32,9 +33,10 @@ describe('useKlaverjasGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: DEFAULT_KLAVERJAS_CONFIG }));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useKlaverjasGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { seahaventowersApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { SeahavenTowersResponse } from '../types/card';
 import { useSeahavenTowersGame } from './useSeahavenTowersGame';
 
@@ -232,6 +233,7 @@ describe('useSeahavenTowersGame', () => {
     act(() => {
       result.current.handleSelectTarget({ zone: 'foundation', col: 0 });
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 });

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { panApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { PanResponse } from '../types/card';
 import { usePanGame } from './usePanGame';
 
@@ -129,6 +130,7 @@ describe('usePanGame', () => {
     act(() => {
       result.current.handleMeld();
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -152,6 +154,7 @@ describe('usePanGame', () => {
     act(() => {
       result.current.handleLayoff(1, 0);
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -175,6 +178,7 @@ describe('usePanGame', () => {
     act(() => {
       result.current.handleDiscard();
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

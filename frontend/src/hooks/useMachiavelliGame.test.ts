@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { machiavelliApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { MachiavelliResponse } from '../types/card';
 import { useMachiavelliGame } from './useMachiavelliGame';
 
@@ -116,6 +117,7 @@ describe('useMachiavelliGame', () => {
     act(() => {
       result.current.handleNewMeld();
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -142,6 +144,7 @@ describe('useMachiavelliGame', () => {
     act(() => {
       result.current.handleLayoff(0);
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

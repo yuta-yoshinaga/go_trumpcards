@@ -48,6 +48,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // renderHook needs a wrapper element, so we forward the providers manually.
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 
 function Hookwrapper({ children }: { children: ReactNode }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -118,6 +119,7 @@ describe('useCassinoGame', () => {
     act(() => {
       result.current.playTake();
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -128,6 +130,7 @@ describe('useCassinoGame', () => {
     act(() => {
       result.current.playBuild();
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -138,6 +141,7 @@ describe('useCassinoGame', () => {
     act(() => {
       result.current.playTrail();
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { freecellApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { FreeCellResponse } from '../types/card';
 import { useFreeCellGame } from './useFreeCellGame';
 
@@ -336,6 +337,7 @@ describe('useFreeCellGame', () => {
       result.current.handleSelectTarget({ zone: 'foundation', col: 0 });
     });
 
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

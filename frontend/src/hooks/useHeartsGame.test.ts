@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { heartsApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { HeartsResponse } from '../types/card';
 import { useHeartsGame } from './useHeartsGame';
 
@@ -142,6 +143,7 @@ describe('useHeartsGame', () => {
       result.current.handlePlay();
     });
 
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -159,6 +161,7 @@ describe('useHeartsGame', () => {
       result.current.handlePlay();
     });
 
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

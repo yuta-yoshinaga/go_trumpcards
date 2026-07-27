@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { goFishApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { GoFishResponse } from '../types/card';
 import { GoFishPhase } from '../types/phases';
 import { useGoFishGame } from './useGoFishGame';
@@ -119,6 +120,7 @@ describe('useGoFishGame', () => {
       result.current.handleAsk();
     });
 
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -134,6 +136,7 @@ describe('useGoFishGame', () => {
       result.current.handleAsk();
     });
 
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
