@@ -4,6 +4,7 @@ import type { Card, CpuAction, OldMaidResponse } from '../types/card';
 import { buildHumanActionState, buildReplayStates } from '../utils/replayBuilder';
 import { REPLAY_DELAY_MS, runReplay, shouldSkipReplay } from './gameReplay';
 import { useGameApi } from './useGameApi';
+import { useIsMounted } from './useIsMounted';
 
 /** Old Maid game mode constants (Normal or JijiNuki). */
 export const OldMaidMode = {
@@ -96,6 +97,8 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
 
 /** Hook that manages Old Maid game state, setup, CPU replay, and card reveal. */
 export function useOldMaidGame() {
+  const isMounted = useIsMounted();
+
   const [displayState, setDisplayState] = useState<OldMaidResponse | null>(null);
   const [setupMode, setSetupMode] = useState<number>(OldMaidMode.Normal);
   const [setupStrategy, setSetupStrategy] = useState(false);
@@ -139,17 +142,21 @@ export function useOldMaidGame() {
 
   const lastReplayedActionsRef = useRef<OldMaidResponse['cpuActions']>(undefined);
 
-  const onSuccess = useCallback(async (res: OldMaidResponse) => {
-    if (shouldSkipReplay(res.cpuActions ?? [], lastReplayedActionsRef, res, setDisplayState)) {
-      return;
-    }
-    await runReplay(res, setDisplayState, {
-      buildReplayStates: buildOldMaidReplayStates,
-      buildHumanActionState: buildHumanDrawState,
-      // hesitationMs is 0 when disabled; || falls back to REPLAY_DELAY_MS (min enabled value is 300ms)
-      getActionDelay: (state, i) => state.cpuActions[i]?.hesitationMs || REPLAY_DELAY_MS,
-    });
-  }, []);
+  const onSuccess = useCallback(
+    async (res: OldMaidResponse) => {
+      if (shouldSkipReplay(res.cpuActions ?? [], lastReplayedActionsRef, res, setDisplayState)) {
+        return;
+      }
+      await runReplay(res, setDisplayState, {
+        isMounted,
+        buildReplayStates: buildOldMaidReplayStates,
+        buildHumanActionState: buildHumanDrawState,
+        // hesitationMs is 0 when disabled; || falls back to REPLAY_DELAY_MS (min enabled value is 300ms)
+        getActionDelay: (state, i) => state.cpuActions[i]?.hesitationMs || REPLAY_DELAY_MS,
+      });
+    },
+    [isMounted],
+  );
 
   const { loading, error, exec: gameExec, retry } = useGameApi(oldmaidApi.exec, { onSuccess });
 

@@ -438,28 +438,64 @@ console.log(
 // throws from `dispatchSetState` — which failed whole CI runs while reporting every
 // test as passed (#4444). The fix is `useIsMounted()` and a check after the await.
 //
-// Scoped deliberately: only flags a `set<X>` that this file declares via `useState`,
-// so passing someone else's setter or calling an unrelated `set*` method is ignored.
+// Checked PER SITE, not per file. The first version of this guard skipped any file
+// that mentioned `useIsMounted` anywhere, which let `useAcesUpGame` pass with an
+// unguarded catch branch — a guard that grants a file blanket absolution is worse
+// than none, because it reads as coverage it does not provide.
 const unmountViolations = [];
-const hookFiles = (await readdir(join(SRC_DIR, 'hooks'))).filter(
+const hookDir = join(SRC_DIR, 'hooks');
+const hookFiles = (await readdir(hookDir)).filter(
   (f) => (f.endsWith('.ts') || f.endsWith('.tsx')) && !f.includes('.test.'),
 );
+const GUARD_RE = /\bisMounted\(\)|\bmountedRef\.current\b/;
 for (const file of hookFiles) {
-  const text = stripComments(await readFile(join(SRC_DIR, 'hooks', file), 'utf8'));
-  if (/\b(useIsMounted|mountedRef)\b/.test(text)) continue;
-  // Setters this file owns.
-  const owned = new Set([...text.matchAll(/const \[[^,\]]+,\s*(set[A-Z]\w*)\]\s*=\s*useState/g)].map((m) => m[1]));
-  if (owned.size === 0) continue;
+  const text = stripComments(await readFile(join(hookDir, file), 'utf8'));
   const lines = text.split('\n');
-  for (let i = 0; i < lines.length; i += 1) {
-    if (!/\bawait\b/.test(lines[i])) continue;
-    for (let j = i + 1; j < Math.min(lines.length, i + 12); j += 1) {
-      const m = /\b(set[A-Z]\w*)\(/.exec(lines[j]);
-      if (!m) continue;
-      if (owned.has(m[1])) {
-        unmountViolations.push({ file: `src/hooks/${file}`, line: j + 1, setter: m[1], awaitLine: i + 1 });
+  // Setters this file owns; passing someone else's setter is not this file's problem.
+  const owned = new Set([...text.matchAll(/const \[[^,\]]+,\s*(set[A-Z]\w*)\]\s*=\s*useState/g)].map((m) => m[1]));
+  if (owned.size > 0) {
+    for (let i = 0; i < lines.length; i += 1) {
+      if (!/\bawait\b/.test(lines[i])) continue;
+      // Every write in the window, not just the first: stopping at the first one is
+      // how useAcesUpGame's unguarded `catch` hid behind the guarded `try` above it.
+      for (let j = i + 1; j < Math.min(lines.length, i + 14); j += 1) {
+        // Stop at the end of the enclosing callback — otherwise the window spills
+        // into the next function and flags its synchronous writes, which is how an
+        // early version of this guard "found" setHint(null) in useAcesUpGame's
+        // handleUndo. A guard that cries wolf gets switched off.
+        if (/^\s{0,4}\}(,\s*\[|\)|;|$)/.test(lines[j])) break;
+        const m = /\b(set[A-Z]\w*)\(/.exec(lines[j]);
+        if (!m) continue;
+        // The guard must be in the same branch as the write. A check inside `try`
+        // does nothing for a `catch`/`finally` body, which is exactly how
+        // useAcesUpGame's catch slipped past the first version of this guard: so
+        // only look from the nearest intervening `} catch {` / `} finally {`.
+        let from = i;
+        for (let k = i + 1; k <= j; k += 1) {
+          if (/\}\s*(catch|finally)\b/.test(lines[k])) from = k;
+        }
+        const between = lines.slice(from, j + 1).join('\n');
+        if (owned.has(m[1]) && !GUARD_RE.test(between)) {
+          unmountViolations.push({
+            file: `src/hooks/${file}`,
+            line: j + 1,
+            detail: `${m[1]}() runs after the await on line ${i + 1} with no isMounted guard between them`,
+          });
+        }
       }
-      break;
+    }
+  }
+  // runReplay sleeps between steps, so it routinely outlives the page. Its callers
+  // must pass `isMounted` or it cannot stop — and the writes it drives are theirs.
+  for (const m of text.matchAll(/runReplay\(/g)) {
+    const call = text.slice(m.index, m.index + 400);
+    const body = call.slice(0, call.indexOf('});') + 1);
+    if (!/\bisMounted\b/.test(body)) {
+      unmountViolations.push({
+        file: `src/hooks/${file}`,
+        line: text.slice(0, m.index).split('\n').length,
+        detail: 'runReplay() without `isMounted` — the replay keeps driving state after the page is gone',
+      });
     }
   }
 }
@@ -467,10 +503,10 @@ for (const file of hookFiles) {
 if (unmountViolations.length > 0) {
   console.error('\nUnmount-safety violations (state written after an await, with no useIsMounted guard):\n');
   for (const v of unmountViolations) {
-    console.error(`  ${v.file}:${v.line}  ${v.setter}() runs after the await on line ${v.awaitLine}`);
+    console.error(`  ${v.file}:${v.line}  ${v.detail}`);
   }
   console.error('\nUse useIsMounted() and `if (!isMounted()) return;` after the await. See issue #4447.');
   process.exit(1);
 }
 
-console.log(`unmount-safety: OK (${hookFiles.length} hooks; no state written after an await without a guard).`);
+console.log(`unmount-safety: OK (${hookFiles.length} hooks; every await -> own-state write is guarded).`);

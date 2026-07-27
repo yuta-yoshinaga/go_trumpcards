@@ -5,6 +5,7 @@ import { buildHumanActionState, buildReplayStates } from '../utils/replayBuilder
 import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
+import { useIsMounted } from './useIsMounted';
 
 const defaultConfigInput: PresidentConfigInput = {
   revolutionEnabled: true,
@@ -86,6 +87,8 @@ function buildPresidentReplayStates(finalState: PresidentResponse): PresidentRes
 
 /** Hook that manages President game state, card selection, and CPU replay. */
 export function usePresidentGame() {
+  const isMounted = useIsMounted();
+
   const { selected: selectedIndices, toggle: toggleCardSelection, clear: clearSelection } = useCardSelection();
   const [configInput, setConfigInput] = useState<PresidentConfigInput>(defaultConfigInput);
   const [displayState, setDisplayState] = useState<PresidentResponse | null>(null);
@@ -99,11 +102,12 @@ export function usePresidentGame() {
         return;
       }
       await runReplay(res, setDisplayState, {
+        isMounted,
         buildReplayStates: buildPresidentReplayStates,
         buildHumanActionState: buildPresidentHumanActionState,
       });
     },
-    [clearSelection],
+    [clearSelection, isMounted],
   );
 
   const { loading, error, exec: callApi, retry } = useGameApi(presidentApi.exec, { onSuccess });

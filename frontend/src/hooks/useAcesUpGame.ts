@@ -55,6 +55,7 @@ export function useAcesUpGame() {
       setHint(res.hint ?? null);
       setHintError(null);
     } catch {
+      if (!isMounted()) return;
       setHintError(NETWORK_ERROR_MESSAGE());
     }
   }, [isMounted]);
