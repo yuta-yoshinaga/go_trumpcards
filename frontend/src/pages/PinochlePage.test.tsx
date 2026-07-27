@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pinochleApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PinochleResponse } from '../types/card';
 import { PinochlePage } from './PinochlePage';
@@ -169,6 +170,7 @@ describe('PinochlePage', () => {
 
     mockExec.mockClear();
     fireEvent.click(bidBtn);
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('bid', undefined, undefined, expect.anything());
   });
 

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sheepsheadApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeSheepsheadState } from '../test/stateFactories';
 import { SheepsheadPage } from './SheepsheadPage';
@@ -107,6 +108,7 @@ describe('SheepsheadPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: '1' });
     fireEvent.keyDown(document.body, { key: 'Enter' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
   });
 

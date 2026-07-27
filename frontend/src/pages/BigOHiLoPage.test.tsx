@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, bigOHiLoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OmahaResponse } from '../types/card';
 import { BigOHiLoPage } from './BigOHiLoPage';
@@ -1496,6 +1497,7 @@ describe('BigOHiLoPage', () => {
         fireEvent.keyDown(document, { key: 'f' });
         fireEvent.keyDown(document, { key: 'a' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1509,6 +1511,7 @@ describe('BigOHiLoPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'c' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1522,6 +1525,7 @@ describe('BigOHiLoPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'k' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
   });

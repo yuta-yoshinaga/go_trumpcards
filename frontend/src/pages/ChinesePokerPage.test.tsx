@@ -12,6 +12,7 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 import { chinesepokerApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { ChinesePokerPage } from './ChinesePokerPage';
 
 const mockExec = vi.mocked(chinesepokerApi.exec);
@@ -187,6 +188,7 @@ describe('ChinesePokerPage', () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'b' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

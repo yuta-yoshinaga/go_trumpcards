@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { scorpionApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ScorpionResponse } from '../types/card';
 import { ScorpionPage } from './ScorpionPage';
@@ -225,6 +226,7 @@ describe('ScorpionPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -360,6 +362,7 @@ describe('ScorpionPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'g' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -403,6 +406,7 @@ describe('ScorpionPage', () => {
     fireEvent.keyDown(document, { key: 'g' });
     fireEvent.keyDown(document, { key: 'd' });
     // No additional API calls
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -446,6 +450,7 @@ describe('ScorpionPage', () => {
     await waitFor(() => expect(heart8.className).toMatch(/ring-/));
     // Clicking again deselects (no API call)
     fireEvent.click(heart8);
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

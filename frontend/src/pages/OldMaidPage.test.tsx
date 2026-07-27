@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, oldmaidApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OldMaidResponse } from '../types/card';
 import { OldMaidPage } from './OldMaidPage';
@@ -218,6 +219,7 @@ describe('OldMaidPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
     expect(screen.queryByText('Old Maid 設定')).not.toBeInTheDocument();
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
     // Reopen dialog: mode should be reverted to 0 (original)
     fireEvent.click(screen.getByRole('button', { name: '設定' }));
@@ -969,6 +971,7 @@ describe('OldMaidPage', () => {
     });
 
     // Should NOT call API since from === to
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -981,6 +984,7 @@ describe('OldMaidPage', () => {
       dataTransfer: { getData: () => '' },
     });
 
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -1291,6 +1295,7 @@ describe('OldMaidPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'd' });
     fireEvent.keyDown(document, { key: 's' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -1300,6 +1305,7 @@ describe('OldMaidPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'd' });
     fireEvent.keyDown(document, { key: 's' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

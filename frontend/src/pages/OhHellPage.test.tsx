@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, ohHellApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OhHellResponse } from '../types/card';
 import { OhHellPage } from './OhHellPage';
@@ -295,6 +296,7 @@ describe('OhHellPage', () => {
     // Clicking the restricted bid dispatches nothing.
     mockExec.mockClear();
     fireEvent.click(restricted);
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
 
     // Other choices remain enabled and normal.

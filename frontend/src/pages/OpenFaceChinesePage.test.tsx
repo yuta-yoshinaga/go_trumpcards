@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { openfacechineseApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, OpenFaceChinesePlayer, OpenFaceChineseResponse } from '../types/card';
 import { isOfcRowFull, OpenFaceChinesePage } from './OpenFaceChinesePage';
@@ -247,6 +248,7 @@ describe('OpenFaceChinesePage', () => {
     expect(row).toBeDisabled();
     mockExec.mockClear();
     fireEvent.click(row);
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('place', expect.anything());
   });
 

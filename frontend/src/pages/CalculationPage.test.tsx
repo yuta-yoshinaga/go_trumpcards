@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { calculationApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CalculationResponse, Card, CardDesign } from '../types/card';
 import { CalculationPage, calculationNextRank } from './CalculationPage';
@@ -107,6 +108,7 @@ describe('CalculationPage', () => {
     mockExec.mockClear();
     // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     // Confirming dispatches giveup.
@@ -183,6 +185,7 @@ describe('CalculationPage', () => {
     mockExec.mockClear();
     const f0 = screen.getByLabelText(/ファンデーション 0 \+1/);
     fireEvent.click(f0);
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pishtiApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, PishtiPlayer, PishtiResponse } from '../types/card';
 import { PishtiPage } from './PishtiPage';
@@ -195,6 +196,7 @@ describe('PishtiPage', () => {
     const cardBtn = await screen.findByTestId('hand-card-0');
     mockExec.mockClear();
     fireEvent.click(cardBtn);
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

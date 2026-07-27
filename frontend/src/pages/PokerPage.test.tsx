@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, pokerApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PokerResponse } from '../types/card';
 import { PokerPage } from './PokerPage';
@@ -1194,6 +1195,7 @@ describe('PokerPage', () => {
     fireEvent.click(screen.getByAltText('♥ 5'));
 
     // Before debounce fires, no odds call
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('odds', expect.anything());
 
     // After 300ms, one odds call with both indices
@@ -1399,6 +1401,7 @@ describe('PokerPage', () => {
         fireEvent.keyDown(document, { key: 'Enter' });
       });
 
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 

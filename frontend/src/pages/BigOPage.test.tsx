@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, bigOApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OmahaResponse } from '../types/card';
 import { BigOPage } from './BigOPage';
@@ -1406,6 +1407,7 @@ describe('BigOPage', () => {
         fireEvent.keyDown(document, { key: 'f' });
         fireEvent.keyDown(document, { key: 'a' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1419,6 +1421,7 @@ describe('BigOPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'c' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1432,6 +1435,7 @@ describe('BigOPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'k' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
   });

@@ -1,6 +1,7 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { trashApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, TrashResponse, TrashSlot } from '../types/card';
 import { TrashPage } from './TrashPage';
@@ -164,6 +165,7 @@ describe('TrashPage', () => {
     fireEvent.click(slot);
     // Only the mount-time reset call is expected.
     expect(mockExec).toHaveBeenCalledTimes(1);
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('place', expect.anything());
   });
 

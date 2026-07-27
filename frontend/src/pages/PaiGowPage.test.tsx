@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, paigowApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, PaiGowResponse } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
@@ -365,6 +366,7 @@ describe('PaiGowPage', () => {
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('bet', 15);
   });
 
@@ -457,6 +459,7 @@ describe('PaiGowPage', () => {
     await waitFor(() => expect(screen.getByText(/勝利/)).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'b' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -466,6 +469,7 @@ describe('PaiGowPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'r' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { crazyPineappleApi, irishPokerApi, pineappleApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PineappleResponse } from '../types/card';
 import { PineapplePage } from './PineapplePage';
@@ -241,6 +242,7 @@ describe('PineapplePage', () => {
 
     // Pressing discard now opens an inline confirm step rather than committing immediately.
     fireEvent.click(discardBtn);
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] });
     expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
 
@@ -312,6 +314,7 @@ describe('PineapplePage', () => {
     // First Enter opens the confirm step without committing.
     fireEvent.keyDown(document.body, { key: 'Enter' });
     expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] });
     // Second Enter commits the discard.
     fireEvent.keyDown(document.body, { key: 'Enter' });
@@ -347,6 +350,7 @@ describe('PineapplePage', () => {
     // With nothing selected, Enter neither opens the confirm step nor commits.
     fireEvent.keyDown(document.body, { key: 'Enter' });
     expect(screen.queryByTestId('discard-confirm')).not.toBeInTheDocument();
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, expect.anything());
   });
 
@@ -851,6 +855,7 @@ describe('PineapplePage', () => {
     // Back to selection; nothing discarded.
     expect(screen.queryByTestId('discard-confirm')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '1枚捨ててください。' })).toBeInTheDocument();
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] });
   });
 

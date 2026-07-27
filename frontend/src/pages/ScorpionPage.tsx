@@ -440,12 +440,15 @@ function ScorpionPageContent() {
                                     isLast && legalTargets.has(colIdx) ? 'ring-2 ring-ds-success' : ''
                                   }`}
                                   onClick={() => {
-                                    if (selectedSource) {
-                                      if (isLast) {
-                                        handleSelectTarget('tableau', colIdx);
-                                      } else {
-                                        handleSelectSource('tableau', colIdx, cardIdx);
-                                      }
+                                    // Clicking the selected card again deselects it, which
+                                    // `handleSelectSource` implements by toggling. That has to be
+                                    // checked BEFORE the isLast branch: a selected card that is
+                                    // also last in its column would otherwise be treated as a move
+                                    // target and dispatch a move onto its own column, which the
+                                    // server rejects — so the player got a rejection message
+                                    // instead of a deselect. Found by #4439.
+                                    if (selectedSource && !isSelected && isLast) {
+                                      handleSelectTarget('tableau', colIdx);
                                     } else {
                                       handleSelectSource('tableau', colIdx, cardIdx);
                                     }

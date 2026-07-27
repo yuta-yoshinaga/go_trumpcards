@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, pyramidApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { PYRAMID_STATS_KEY } from '../hooks/usePyramidStats';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, PyramidCard, PyramidResponse } from '../types/card';
 import { PyramidPage } from './PyramidPage';
@@ -210,6 +211,7 @@ describe('PyramidPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(gameOverState);
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -552,6 +554,7 @@ describe('PyramidPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'd' });
     fireEvent.keyDown(document, { key: 'h' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

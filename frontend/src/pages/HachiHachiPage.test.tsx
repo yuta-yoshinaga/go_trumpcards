@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { hachihachiApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeHachiHachiState } from '../test/stateFactories';
 import { HachiHachiPage } from './HachiHachiPage';
@@ -141,6 +142,7 @@ describe('HachiHachiPage', () => {
     expect(card).toBeDisabled();
     mockExec.mockClear();
     fireEvent.click(card);
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

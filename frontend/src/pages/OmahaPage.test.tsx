@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, omahaApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OmahaResponse } from '../types/card';
 import { OmahaPage } from './OmahaPage';
@@ -1391,6 +1392,7 @@ describe('OmahaPage', () => {
         fireEvent.keyDown(document, { key: 'f' });
         fireEvent.keyDown(document, { key: 'a' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1404,6 +1406,7 @@ describe('OmahaPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'c' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1417,6 +1420,7 @@ describe('OmahaPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'k' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
   });

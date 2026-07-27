@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { letitrideApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, LetItRideResponse, MaskedCard } from '../types/card';
 import { LetItRidePhase } from '../types/phases';
@@ -312,6 +313,7 @@ describe('LetItRidePage', () => {
     expect(screen.getByText('ベットを引き下げますか？')).toBeInTheDocument();
     // firstDecisionState: betAmount 100, all 3 active → risk 300, newRisk 200.
     expect(screen.getByText(/100 が戻り、総リスクは 300 → 200/)).toBeInTheDocument();
+    await flushPendingDispatch();
     expect(mockApi).not.toHaveBeenCalledWith('pull');
 
     mockApi.mockResolvedValue(secondDecisionState);
@@ -325,6 +327,7 @@ describe('LetItRidePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'プル' })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: 'プル' }));
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await flushPendingDispatch();
     expect(mockApi).not.toHaveBeenCalledWith('pull');
   });
 
@@ -334,6 +337,7 @@ describe('LetItRidePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'プル' })).toBeInTheDocument());
     fireEvent.keyDown(document, { key: 'p' });
     expect(screen.getByText('ベットを引き下げますか？')).toBeInTheDocument();
+    await flushPendingDispatch();
     expect(mockApi).not.toHaveBeenCalledWith('pull');
   });
 
@@ -344,6 +348,7 @@ describe('LetItRidePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'プル' }));
     // With the dialog open, the 'l' shortcut must not bypass it.
     fireEvent.keyDown(document, { key: 'l' });
+    await flushPendingDispatch();
     expect(mockApi).not.toHaveBeenCalledWith('letitride');
   });
 

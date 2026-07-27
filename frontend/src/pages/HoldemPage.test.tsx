@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, holdemApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { HoldemResponse } from '../types/card';
 import { HoldemPage } from './HoldemPage';
@@ -1401,6 +1402,7 @@ describe('HoldemPage', () => {
         fireEvent.keyDown(document, { key: 'f' });
         fireEvent.keyDown(document, { key: 'a' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1414,6 +1416,7 @@ describe('HoldemPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'c' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1427,6 +1430,7 @@ describe('HoldemPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'k' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
   });
