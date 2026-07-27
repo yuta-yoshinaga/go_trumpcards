@@ -80,24 +80,9 @@ function TrucoPageContent() {
   const kbIsBoundary = state?.phase === TrucoPhase.TRICK_END || state?.phase === TrucoPhase.HAND_END;
   const actionBindings = useMemo(
     () => [
-      {
-        key: '1',
-        action: () => handlePlay(0),
-        enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 1,
-        label: 'play',
-      },
-      {
-        key: '2',
-        action: () => handlePlay(1),
-        enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 2,
-        label: 'play',
-      },
-      {
-        key: '3',
-        action: () => handlePlay(2),
-        enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 3,
-        label: 'play',
-      },
+      { key: '1', action: () => handlePlay(0), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 1, label: 'play' },
+      { key: '2', action: () => handlePlay(1), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 2, label: 'play' },
+      { key: '3', action: () => handlePlay(2), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 3, label: 'play' },
       {
         key: 't',
         action: handleTruco,

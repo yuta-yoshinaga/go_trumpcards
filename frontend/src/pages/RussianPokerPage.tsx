@@ -183,12 +183,7 @@ function RussianPokerPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      {
-        key: 'b',
-        action: () => execApi('bet', anteAmount),
-        enabled: isBetPhase && !anteInvalid,
-        label: 'bet',
-      },
+      { key: 'b', action: () => execApi('bet', anteAmount), enabled: isBetPhase && !anteInvalid, label: 'bet' },
       {
         key: 'e',
         action: () => execApi('exchange', undefined, [...selectedIndices]),
@@ -196,18 +191,8 @@ function RussianPokerPageContent() {
         label: 'exchange',
       },
       { key: '6', action: () => execApi('buy6th'), enabled: isActionPhase, label: 'buy6th' },
-      {
-        key: 'p',
-        action: () => execApi('play'),
-        enabled: isActionPhase || isPostActionPhase,
-        label: 'play',
-      },
-      {
-        key: 'f',
-        action: () => execApi('fold'),
-        enabled: isActionPhase || isPostActionPhase,
-        label: 'fold',
-      },
+      { key: 'p', action: () => execApi('play'), enabled: isActionPhase || isPostActionPhase, label: 'play' },
+      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase || isPostActionPhase, label: 'fold' },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
     [execApi, isBetPhase, isActionPhase, isPostActionPhase, isEndPhase, anteAmount, anteInvalid, selectedIndices],

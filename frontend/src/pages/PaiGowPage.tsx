@@ -152,12 +152,7 @@ function PaiGowPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      {
-        key: 'b',
-        action: () => execApi('bet', betAmount),
-        enabled: isBetPhase && !betInvalid,
-        label: 'bet',
-      },
+      { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase && !betInvalid, label: 'bet' },
       {
         key: 's',
         action: () => {
@@ -168,12 +163,7 @@ function PaiGowPageContent() {
         enabled: isSetHandsPhase && selectedIndices.length === 2 && !foul.isFoul,
         label: 'setHands',
       },
-      {
-        key: 'a',
-        action: handleAutoSet,
-        enabled: isSetHandsPhase && autoSplit !== null,
-        label: 'autoSet',
-      },
+      { key: 'a', action: handleAutoSet, enabled: isSetHandsPhase && autoSplit !== null, label: 'autoSet' },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
     [

@@ -171,12 +171,7 @@ function ChinesePokerPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      {
-        key: 'b',
-        action: () => execApi('bet', betAmount),
-        enabled: isBetPhase && !betInvalid,
-        label: 'bet',
-      },
+      { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase && !betInvalid, label: 'bet' },
       {
         key: 's',
         action: () => {

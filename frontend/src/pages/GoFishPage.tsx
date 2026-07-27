@@ -169,18 +169,8 @@ function GoFishPageContent() {
       enabled: kbdIsHumanTurn,
       label: 'selectTarget',
     }));
-    bindings.push({
-      key: 'ArrowRight',
-      action: () => cycleRank(1),
-      enabled: kbdIsHumanTurn,
-      label: 'nextRank',
-    });
-    bindings.push({
-      key: 'ArrowLeft',
-      action: () => cycleRank(-1),
-      enabled: kbdIsHumanTurn,
-      label: 'prevRank',
-    });
+    bindings.push({ key: 'ArrowRight', action: () => cycleRank(1), enabled: kbdIsHumanTurn, label: 'nextRank' });
+    bindings.push({ key: 'ArrowLeft', action: () => cycleRank(-1), enabled: kbdIsHumanTurn, label: 'prevRank' });
     // Ask key is the letter "a" only. Enter is deliberately not bound: the hook
     // listens at the document level and does not exclude BUTTON, so an Enter
     // binding would double-fire (native button activation + this handler) and

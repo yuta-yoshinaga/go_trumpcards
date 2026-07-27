@@ -122,12 +122,7 @@ function TexasHoldemBonusPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      {
-        key: 'b',
-        action: () => execApi('bet', anteAmount, bonusAmount),
-        enabled: isBetPhase,
-        label: 'bet',
-      },
+      { key: 'b', action: () => execApi('bet', anteAmount, bonusAmount), enabled: isBetPhase, label: 'bet' },
       { key: 'p', action: () => execApi('play'), enabled: isPreFlopPhase, label: 'play' },
       { key: 'f', action: () => execApi('fold'), enabled: isPreFlopPhase, label: 'fold' },
       { key: 'c', action: () => execApi('check'), enabled: isPostFlopPhase, label: 'check' },

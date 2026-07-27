@@ -110,12 +110,7 @@ function CasinoHoldemPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      {
-        key: 'b',
-        action: () => execApi('bet', anteAmount, bonusAmount),
-        enabled: isBetPhase,
-        label: 'bet',
-      },
+      { key: 'b', action: () => execApi('bet', anteAmount, bonusAmount), enabled: isBetPhase, label: 'bet' },
       { key: 'c', action: () => execApi('call'), enabled: isFlopPhase, label: 'call' },
       { key: 'f', action: () => execApi('fold'), enabled: isFlopPhase, label: 'fold' },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },

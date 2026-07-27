@@ -119,18 +119,8 @@ function LetItRidePageContent() {
 
   const actionBindings = useMemo(
     () => [
-      {
-        key: 'b',
-        action: () => execApi('bet', betAmount),
-        enabled: isBetPhase,
-        label: 'bet',
-      },
-      {
-        key: 'p',
-        action: () => requestPullConfirm(() => execApi('pull')),
-        enabled: isDecisionPhase,
-        label: 'pull',
-      },
+      { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase, label: 'bet' },
+      { key: 'p', action: () => requestPullConfirm(() => execApi('pull')), enabled: isDecisionPhase, label: 'pull' },
       { key: 'l', action: () => execApi('letitride'), enabled: isDecisionPhase, label: 'letitride' },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],

@@ -148,12 +148,7 @@ function OasisPokerPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      {
-        key: 'b',
-        action: () => execApi('bet', anteAmount, jackpotAmount),
-        enabled: isBetPhase,
-        label: 'bet',
-      },
+      { key: 'b', action: () => execApi('bet', anteAmount, jackpotAmount), enabled: isBetPhase, label: 'bet' },
       { key: 's', action: () => execApi('stand'), enabled: isExchangePhase, label: 'stand' },
       {
         key: 'e',
