@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
+import { useIsMounted } from './useIsMounted';
 
 /** Options for {@link useSolitaireGameBase}. */
 export interface SolitaireGameBaseOptions<THint, THintRes> {
@@ -91,6 +92,8 @@ export function useSolitaireGameBase<TState, TArgs extends unknown[], THint, THi
     [apiCall],
   );
 
+  const isMounted = useIsMounted();
+
   const handleReset = useCallback(() => runAction(...(['reset'] as unknown as TArgs)), [runAction]);
   const handleGiveUp = useCallback(() => runAction(...(['giveup'] as unknown as TArgs)), [runAction]);
   const handleUndo = useCallback(() => runAction(...(['undo'] as unknown as TArgs)), [runAction]);
@@ -100,13 +103,17 @@ export function useSolitaireGameBase<TState, TArgs extends unknown[], THint, THi
     if (!hintApi) return;
     try {
       const res = await hintApi();
+      // The player may have navigated away while the hint was in flight; writing
+      // state to a gone component can throw once the environment is torn down. #4447
+      if (!isMounted()) return;
       const value = selectHint ? selectHint(res) : (res as unknown as { hint?: THint | null }).hint;
       setHint(value ?? null);
       setHintError(null);
     } catch {
+      if (!isMounted()) return;
       setHintError(NETWORK_ERROR_MESSAGE());
     }
-  }, []);
+  }, [isMounted]);
 
   const handleAutoComplete = useCallback(() => {
     optionsRef.current.onClearSelection?.();

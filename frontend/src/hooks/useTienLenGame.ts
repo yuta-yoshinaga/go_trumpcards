@@ -5,6 +5,7 @@ import { buildHumanActionState, buildReplayStates } from '../utils/replayBuilder
 import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
+import { useIsMounted } from './useIsMounted';
 
 // 0 = Normal, matching the server's DefaultTienLenConfig() so the settings
 // panel's initial value agrees with the on-mount reset (which sends no config).
@@ -85,6 +86,8 @@ function buildTienLenReplayStates(finalState: TienLenResponse): TienLenResponse[
 
 /** Hook that manages Tien Len game state, card selection, and CPU replay. */
 export function useTienLenGame() {
+  const isMounted = useIsMounted();
+
   const { selected: selectedIndices, toggle: toggleCardSelection, clear: clearSelection } = useCardSelection();
   const [configInput, setConfigInput] = useState<TienLenConfigInput>(defaultConfigInput);
   const [displayState, setDisplayState] = useState<TienLenResponse | null>(null);
@@ -98,11 +101,12 @@ export function useTienLenGame() {
         return;
       }
       await runReplay(res, setDisplayState, {
+        isMounted,
         buildReplayStates: buildTienLenReplayStates,
         buildHumanActionState: buildTienLenHumanActionState,
       });
     },
-    [clearSelection],
+    [clearSelection, isMounted],
   );
 
   const { loading, error, exec: callApi, retry } = useGameApi(tienlenApi.exec, { onSuccess });

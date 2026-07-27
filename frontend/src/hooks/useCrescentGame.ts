@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { type CrescentMoveZone, crescentApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { CrescentHint } from '../types/card';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
+import { useHintRequest } from './useHintRequest';
 
 /** Hook that manages Crescent Solitaire state, source selection, hints, and moves. */
 export function useCrescentGame() {
@@ -37,15 +37,12 @@ export function useCrescentGame() {
     exec('giveup');
   }, [exec]);
 
-  const handleHint = useCallback(async () => {
-    try {
-      const res = await crescentApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    }
-  }, []);
+  const handleHint = useHintRequest({
+    fetchHint: () => crescentApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+  });
 
   const handleAutoComplete = useCallback(() => {
     setSelectedSource(null);

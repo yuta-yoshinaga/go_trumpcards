@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { napoleonApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { NapoleonConfig, NapoleonHint } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
+import { useHintRequest } from './useHintRequest';
 
 /** Default Napoleon game configuration. */
 export const DEFAULT_NAPOLEON_CONFIG: NapoleonConfig = {
@@ -84,18 +84,13 @@ export function useNapoleonGame() {
     apiExec('nextround');
   }, [apiExec]);
 
-  const handleHint = useCallback(async () => {
-    setHintLoading(true);
-    try {
-      const res = await napoleonApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    } finally {
-      setHintLoading(false);
-    }
-  }, []);
+  const handleHint = useHintRequest({
+    fetchHint: () => napoleonApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+    setHintLoading,
+  });
 
   return {
     state,

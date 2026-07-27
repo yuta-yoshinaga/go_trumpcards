@@ -20,6 +20,14 @@ export interface ReplayConfig<TState> {
   buildReplayStates: (finalState: TState) => TState[];
   buildHumanActionState?: (finalState: TState) => TState | null;
   getActionDelay?: (finalState: TState, actionIndex: number) => number;
+  /**
+   * Whether the calling component is still mounted. A replay sleeps between steps,
+   * so it routinely outlives the page a player navigates away from; without this it
+   * keeps calling `setDisplayState` on a gone component, and such a write can throw
+   * once the environment is torn down. Supplying it also stops the remaining timers
+   * rather than merely suppressing their writes. See issue #4447.
+   */
+  isMounted?: () => boolean;
 }
 
 /**
@@ -50,6 +58,7 @@ export async function runReplay<TState>(
   if (humanState) {
     setDisplayState(humanState);
     await delay(scaledDelay(REPLAY_DELAY_MS));
+    if (config.isMounted?.() === false) return;
   }
 
   const replayStates = config.buildReplayStates(finalState);
@@ -62,6 +71,7 @@ export async function runReplay<TState>(
     setDisplayState(replayStates[i]);
     const actionDelay = config.getActionDelay?.(finalState, i) ?? REPLAY_DELAY_MS;
     await delay(scaledDelay(actionDelay));
+    if (config.isMounted?.() === false) return;
   }
 
   setDisplayState(finalState);

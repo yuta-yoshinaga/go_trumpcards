@@ -3,6 +3,7 @@ import { acesupApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { AcesUpCard, AcesUpHint, AcesUpResponse } from '../types/card';
 import { useGameApi } from './useGameApi';
+import { useIsMounted } from './useIsMounted';
 
 /** Upper bound on batch-removal iterations (one per non-ace card) to guard against loops. */
 const MAX_REMOVE_ALL_STEPS = 52;
@@ -44,15 +45,20 @@ export function useAcesUpGame() {
     exec('giveup');
   }, [exec]);
 
+  const isMounted = useIsMounted();
+
   const handleHint = useCallback(async () => {
     try {
       const res = await acesupApi.exec('hint');
+      // Navigating away mid-request must not write to a gone component (#4447).
+      if (!isMounted()) return;
       setHint(res.hint ?? null);
       setHintError(null);
     } catch {
+      if (!isMounted()) return;
       setHintError(NETWORK_ERROR_MESSAGE());
     }
-  }, []);
+  }, [isMounted]);
 
   const handleUndo = useCallback(() => {
     setHint(null);
@@ -106,6 +112,8 @@ export function useAcesUpGame() {
         col = firstRemovableCol(columns);
         if (col < 0) break;
         const res = await acesupApi.exec('remove', col);
+        // Abandon the remove-all loop if the player left mid-sequence (#4447).
+        if (!isMounted()) return;
         setState(res);
         columns = res.columns;
       }
@@ -115,9 +123,9 @@ export function useAcesUpGame() {
       if (col >= 0) await exec('remove', col);
     } finally {
       removingAllRef.current = false;
-      setIsRemovingAll(false);
+      if (isMounted()) setIsRemovingAll(false);
     }
-  }, [exec, setState]);
+  }, [exec, setState, isMounted]);
 
   return {
     state,

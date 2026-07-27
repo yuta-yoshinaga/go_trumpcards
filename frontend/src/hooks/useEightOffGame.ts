@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { type EightOffMoveZone, eightoffApi } from '../api/gameApi';
 import type { EightOffHint } from '../types/card';
+import { useIsMounted } from './useIsMounted';
 import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages Eight Off game state, source selection, hints, and moves. */
@@ -30,12 +31,16 @@ export function useEightOffGame() {
   // hint value — a null hint after a request is indistinguishable from the
   // initial null without this signal.
   const [hintNonce, setHintNonce] = useState(0);
+  const isMounted = useIsMounted();
+
   // Depend on the stable baseHandleHint reference, not the base result object
   // (which is re-created whenever state/loading change), so this callback stays stable.
   const handleHint = useCallback(async () => {
     await baseHandleHint();
+    // The base guards its own writes; this nonce is ours (#4447).
+    if (!isMounted()) return;
     setHintNonce((n) => n + 1);
-  }, [baseHandleHint]);
+  }, [baseHandleHint, isMounted]);
 
   const handleSelectSource = useCallback((zone: EightOffMoveZone) => {
     setSelectedSource((prev) => {

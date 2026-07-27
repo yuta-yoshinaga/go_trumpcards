@@ -163,6 +163,114 @@ describe('runReplay', () => {
     expect(getActionDelay).toHaveBeenCalledWith('final', 0);
     expect(getActionDelay).toHaveBeenCalledWith('final', 1);
   });
+  // A replay sleeps between steps, so it routinely outlives a page the player left.
+  // It must stop rather than keep driving state into a gone component (#4447).
+  it('abandons the remaining steps once the component has unmounted', async () => {
+    const setDisplayState = vi.fn();
+    let mounted = true;
+    const config: ReplayConfig<string> = {
+      buildReplayStates: () => ['a', 'b', 'c'],
+      isMounted: () => mounted,
+    };
+    const promise = runReplay('final', setDisplayState, config);
+    // First step renders, then the player navigates away mid-sleep.
+    mounted = false;
+    await flushDelays();
+    await promise;
+    expect(setDisplayState).toHaveBeenCalledWith('a');
+    expect(setDisplayState).not.toHaveBeenCalledWith('c');
+    expect(setDisplayState).not.toHaveBeenCalledWith('final');
+  });
+
+  // The other bail-out: the human-action state renders first, then the replay sleeps
+  // before the CPU steps. Losing the page during THAT sleep must stop it too (#4447).
+  it('abandons the replay if the page is lost during the human-action delay', async () => {
+    const setDisplayState = vi.fn();
+    let mounted = true;
+    const config: ReplayConfig<string> = {
+      buildHumanActionState: () => 'human',
+      buildReplayStates: () => ['a', 'b'],
+      isMounted: () => mounted,
+    };
+    const promise = runReplay('final', setDisplayState, config);
+    mounted = false;
+    await flushDelays();
+    await promise;
+    expect(setDisplayState).toHaveBeenCalledWith('human');
+    expect(setDisplayState).not.toHaveBeenCalledWith('a');
+    expect(setDisplayState).not.toHaveBeenCalledWith('final');
+  });
+
+  it('runs every step when the component stays mounted', async () => {
+    const setDisplayState = vi.fn();
+    const config: ReplayConfig<string> = {
+      buildReplayStates: () => ['a', 'b'],
+      isMounted: () => true,
+    };
+    const promise = runReplay('final', setDisplayState, config);
+    await flushDelays();
+    await promise;
+    expect(setDisplayState).toHaveBeenCalledWith('a');
+    expect(setDisplayState).toHaveBeenCalledWith('b');
+    expect(setDisplayState).toHaveBeenLastCalledWith('final');
+  });
+});
+
+describe('shouldSkipReplay', () => {
+  it('returns false and updates ref on first call (ref is undefined)', () => {
+    const ref = { current: undefined as unknown[] | undefined };
+    const setDisplayState = vi.fn();
+    const actions = [{ id: 1 }];
+
+    const skipped = shouldSkipReplay(actions, ref, 'state', setDisplayState);
+
+    expect(skipped).toBe(false);
+    expect(ref.current).toEqual(actions);
+    expect(setDisplayState).not.toHaveBeenCalled();
+  });
+
+  it('returns true and calls setDisplayState when actions unchanged', () => {
+    const actions = [{ id: 1 }];
+    const ref = { current: [{ id: 1 }] as unknown[] | undefined };
+    const setDisplayState = vi.fn();
+
+    const skipped = shouldSkipReplay(actions, ref, 'state', setDisplayState);
+
+    expect(skipped).toBe(true);
+    expect(setDisplayState).toHaveBeenCalledWith('state');
+  });
+
+  it('returns false and updates ref when actions change', () => {
+    const ref = { current: [{ id: 1 }] as unknown[] | undefined };
+    const setDisplayState = vi.fn();
+    const newActions = [{ id: 2 }];
+
+    const skipped = shouldSkipReplay(newActions, ref, 'state', setDisplayState);
+
+    expect(skipped).toBe(false);
+    expect(ref.current).toEqual(newActions);
+    expect(setDisplayState).not.toHaveBeenCalled();
+  });
+
+  it('returns false on first call with empty actions (ref undefined vs [])', () => {
+    const ref = { current: undefined as unknown[] | undefined };
+    const setDisplayState = vi.fn();
+
+    const skipped = shouldSkipReplay([], ref, 'state', setDisplayState);
+
+    expect(skipped).toBe(false);
+    expect(ref.current).toEqual([]);
+  });
+
+  it('returns true when both current and new are empty arrays', () => {
+    const ref = { current: [] as unknown[] | undefined };
+    const setDisplayState = vi.fn();
+
+    const skipped = shouldSkipReplay([], ref, 'state', setDisplayState);
+
+    expect(skipped).toBe(true);
+    expect(setDisplayState).toHaveBeenCalledWith('state');
+  });
 });
 
 describe('shouldSkipReplay', () => {

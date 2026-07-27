@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { type BakersDozenMoveZone, bakersDozenApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { BakersDozenHint } from '../types/card';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
+import { useHintRequest } from './useHintRequest';
 
 /** Hook that manages Baker's Dozen game state, source selection, hints, and moves. */
 export function useBakersDozenGame() {
@@ -31,15 +31,12 @@ export function useBakersDozenGame() {
     exec('giveup');
   }, [exec]);
 
-  const handleHint = useCallback(async () => {
-    try {
-      const res = await bakersDozenApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    }
-  }, []);
+  const handleHint = useHintRequest({
+    fetchHint: () => bakersDozenApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+  });
 
   const handleAutoComplete = useCallback(() => {
     setSelectedSource(null);

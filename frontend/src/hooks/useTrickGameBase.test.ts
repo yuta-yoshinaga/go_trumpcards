@@ -250,4 +250,41 @@ describe('useTrickGameBase', () => {
 
     expect(result.current.config.omnibusJD).toBe(true);
   });
+
+  // `getHint` runs AFTER the mounted check — see the sibling test in
+  // useSolitaireGameBase.test.ts for why it, not the returned hint, is the observable.
+  it('does not process a hint that arrives after unmount', async () => {
+    let resolveHint: ((value: HeartsResponse) => void) | undefined;
+    mockExec.mockResolvedValue(defaultState);
+    const getHint = vi.fn((s: HeartsResponse) => s.hint ?? null);
+    const { result, unmount } = renderHook(
+      () =>
+        useTrickGameBase({
+          apiFn: heartsApi.exec,
+          defaultConfig: DEFAULT_CONFIG,
+          getHint,
+        }),
+      { wrapper: createWrapper() },
+    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    mockExec.mockImplementation(
+      () =>
+        new Promise<HeartsResponse>((resolve) => {
+          resolveHint = resolve;
+        }),
+    );
+    act(() => {
+      void result.current.handleHint();
+    });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+
+    unmount();
+    resolveHint?.(defaultState);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    expect(getHint).not.toHaveBeenCalled();
+  });
 });

@@ -5,6 +5,7 @@ import { buildHumanActionState, buildReplayStates } from '../utils/replayBuilder
 import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
+import { useIsMounted } from './useIsMounted';
 
 // 0 = Normal, matching the server's DefaultZhengConfig() so the settings
 // panel's initial value agrees with the on-mount reset (which sends no config).
@@ -85,6 +86,8 @@ function buildZhengReplayStates(finalState: ZhengResponse): ZhengResponse[] {
 
 /** Hook that manages Zheng Shangyou game state, card selection, and CPU replay. */
 export function useZhengGame() {
+  const isMounted = useIsMounted();
+
   const { selected: selectedIndices, toggle: toggleCardSelection, clear: clearSelection } = useCardSelection();
   const [configInput, setConfigInput] = useState<ZhengConfigInput>(defaultConfigInput);
   const [displayState, setDisplayState] = useState<ZhengResponse | null>(null);
@@ -98,11 +101,12 @@ export function useZhengGame() {
         return;
       }
       await runReplay(res, setDisplayState, {
+        isMounted,
         buildReplayStates: buildZhengReplayStates,
         buildHumanActionState: buildZhengHumanActionState,
       });
     },
-    [clearSelection],
+    [clearSelection, isMounted],
   );
 
   const { loading, error, exec: callApi, retry } = useGameApi(zhengApi.exec, { onSuccess });

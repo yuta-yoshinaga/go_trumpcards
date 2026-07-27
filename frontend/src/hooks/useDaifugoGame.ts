@@ -5,6 +5,7 @@ import { buildHumanActionState, buildReplayStates } from '../utils/replayBuilder
 import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
+import { useIsMounted } from './useIsMounted';
 
 const defaultConfigInput: DaifugoConfigInput = {
   jokerCount: 2,
@@ -112,6 +113,8 @@ export function useDaifugoGame() {
     clear: clearSelection,
     setSelected: setSelectedIndices,
   } = useCardSelection();
+  const isMounted = useIsMounted();
+
   const [configInput, setConfigInput] = useState<DaifugoConfigInput>(defaultConfigInput);
   const [displayState, setDisplayState] = useState<DaifugoResponse | null>(null);
 
@@ -124,11 +127,12 @@ export function useDaifugoGame() {
         return;
       }
       await runReplay(res, setDisplayState, {
+        isMounted,
         buildReplayStates: buildDaifugoReplayStates,
         buildHumanActionState: buildDaifugoHumanActionState,
       });
     },
-    [clearSelection],
+    [clearSelection, isMounted],
   );
 
   const { loading, error, exec, retry } = useGameApi(daifugoApi.exec, { onSuccess });
