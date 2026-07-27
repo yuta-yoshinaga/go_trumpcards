@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { trenteetquaranteApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeTrenteEtQuaranteState } from '../test/stateFactories';
 import type { Card, CardDesign } from '../types/card';
@@ -224,5 +225,66 @@ describe('TrenteEtQuarantePage', () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<TrenteEtQuarantePage />);
     await waitFor(() => expect(screen.queryByTestId('teq-deal-button')).not.toBeInTheDocument());
+  });
+});
+
+// --- keyboard shortcut execution (#4429) ---
+describe('TrenteEtQuarantePage keyboard shortcuts', () => {
+  it('pressing d places the currently selected bet', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(betState);
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', TrenteEtQuaranteBetType.NOIR, 100));
+  });
+
+  it('pressing r starts the next round from the result phase', async () => {
+    mockApi.mockResolvedValue(endState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await screen.findByTestId('teq-next-round-button');
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'r' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('leaves e inert until a bet has actually been placed this session', async () => {
+    // canRebet is derived from a bet placed in this session, not from server
+    // state, so arriving at a result phase without having staked anything (a
+    // reload, say) leaves the rebet shortcut with nothing to replay.
+    mockApi.mockResolvedValue(endState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await screen.findByTestId('teq-next-round-button');
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'e' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('pressing e after a bet advances the round and re-stakes the same bet', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    // Stake a bet and let the server answer with the resolved round, which is
+    // what makes the rebet shortcut live.
+    mockApi.mockResolvedValue(endState);
+    fireEvent.keyDown(document, { key: 'd' });
+    await screen.findByTestId('teq-next-round-button');
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'e' });
+    // Rebet is two commands in order: advance, then re-stake.
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('nextround'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', TrenteEtQuaranteBetType.NOIR, 100));
+  });
+
+  it('ignores the bet key once the round has been resolved', async () => {
+    mockApi.mockResolvedValue(endState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await screen.findByTestId('teq-next-round-button');
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
   });
 });

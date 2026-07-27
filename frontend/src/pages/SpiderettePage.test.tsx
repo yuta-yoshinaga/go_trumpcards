@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spideretteApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SpideretteResponse, SpideretteTableauCard } from '../types/card';
 import { SpiderettePage } from './SpiderettePage';
@@ -161,6 +162,7 @@ describe('SpiderettePage', () => {
     mockSend.mockClear();
     // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockSend).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
 
@@ -211,6 +213,7 @@ describe('SpiderettePage keyboard shortcuts', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     mockSend.mockClear();
     fireEvent.keyDown(document, { key: 'd' });
+    await flushPendingDispatch();
     expect(mockSend).not.toHaveBeenCalledWith('deal');
   });
 
@@ -222,6 +225,7 @@ describe('SpiderettePage keyboard shortcuts', () => {
     for (const key of ['d', 'h', 'a', 'z']) {
       fireEvent.keyDown(document, { key });
     }
+    await flushPendingDispatch();
     expect(mockSend).not.toHaveBeenCalled();
   });
 });

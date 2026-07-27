@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, golfApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, GolfCard, GolfResponse } from '../types/card';
 import { GolfPage } from './GolfPage';
@@ -154,6 +155,7 @@ describe('GolfPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(gameOverState);
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -411,6 +413,7 @@ describe('GolfPage keyboard shortcuts', () => {
     for (const key of ['d', 'h', 'z']) {
       fireEvent.keyDown(document, { key });
     }
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 });

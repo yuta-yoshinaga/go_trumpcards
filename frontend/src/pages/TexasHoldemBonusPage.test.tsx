@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { texasholdembonusApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, TexasHoldemBonusResponse } from '../types/card';
 import { TexasHoldemBonusPage } from './TexasHoldemBonusPage';
@@ -309,5 +310,43 @@ describe('TexasHoldemBonusPage', () => {
     mockApi.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+  });
+});
+
+// --- keyboard shortcut execution (#4429) ---
+// 'c' and 'a' are gated on isPostFlopPhase, which is FLOP *or* TURN — both are
+// covered below, since a regression narrowing that predicate to one phase would
+// otherwise go unnoticed.
+const kbdCases: [string, unknown[], TexasHoldemBonusResponse][] = [
+  ['b', ['bet', 100, 0], betPhaseState],
+  ['p', ['play'], preFlopState],
+  ['f', ['fold'], preFlopState],
+  ['c', ['check'], flopState],
+  ['a', ['raise'], flopState],
+  ['c', ['check'], turnState],
+  ['a', ['raise'], turnState],
+  ['r', ['reset'], endPlayerWins],
+];
+
+describe('TexasHoldemBonusPage keyboard shortcuts', () => {
+  it.each(kbdCases)('pressing %s dispatches %j', async (key, expected, state) => {
+    mockApi.mockResolvedValue(state);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(state);
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith(...expected));
+  });
+
+  it('ignores a key whose phase gate is closed', async () => {
+    // 'p' (play) is the pre-flop decision and must not fire during betting.
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'p' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
   });
 });

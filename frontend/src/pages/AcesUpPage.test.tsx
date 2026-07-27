@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { acesupApi, actionLogApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { AcesUpCard, AcesUpResponse, Card, CardDesign } from '../types/card';
 import { AcesUpPage } from './AcesUpPage';
@@ -219,6 +220,7 @@ describe('AcesUpPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(gameOverState);
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -347,6 +349,7 @@ describe('AcesUpPage keyboard shortcuts', () => {
     for (const key of ['d', 'h', 'z']) {
       fireEvent.keyDown(document, { key });
     }
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 });

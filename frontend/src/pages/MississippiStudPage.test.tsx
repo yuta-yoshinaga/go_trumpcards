@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mississippiStudApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, MaskedCard, MississippiStudResponse } from '../types/card';
 import { MississippiStudPhase } from '../types/phases';
@@ -330,5 +331,53 @@ describe('MississippiStudPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'アンティ' })).toBeInTheDocument());
     // CLI toggle is intentionally hidden until CLI command parsing is implemented
     expect(screen.queryByRole('button', { name: /CLI/i })).not.toBeInTheDocument();
+  });
+});
+
+// --- keyboard shortcut execution (#4429) ---
+// 1/2/3 are the raise multipliers and differ only by their third argument, so
+// asserting that argument is the only thing that distinguishes them: a test that
+// checked the command name alone would pass with all three wired to the same
+// multiplier.
+const kbdCases: [string, unknown[], MississippiStudResponse][] = [
+  ['b', ['bet', 100], antePhaseState],
+  ['1', ['play', undefined, 1], thirdStreetState],
+  ['2', ['play', undefined, 2], thirdStreetState],
+  ['3', ['play', undefined, 3], thirdStreetState],
+  ['f', ['fold'], thirdStreetState],
+  ['r', ['reset'], endPhaseWin],
+];
+
+describe('MississippiStudPage keyboard shortcuts', () => {
+  it.each(kbdCases)('pressing %s dispatches %j', async (key, expected, state) => {
+    mockApi.mockResolvedValue(state);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(state);
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith(...expected));
+  });
+
+  // The street keys stay live across all three streets, not just the third.
+  it('accepts a street raise on fourth street too', async () => {
+    mockApi.mockResolvedValue(fourthStreetState);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(fourthStreetState);
+    fireEvent.keyDown(document, { key: '3' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', undefined, 3));
+  });
+
+  it('ignores a key whose phase gate is closed', async () => {
+    // Folding is a street decision; there is nothing to fold before the ante.
+    mockApi.mockResolvedValue(antePhaseState);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'f' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
   });
 });

@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, crescentApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CrescentResponse, CrescentTableauCard } from '../types/card';
 import { CrescentPage } from './CrescentPage';
@@ -174,6 +175,7 @@ describe('CrescentPage', () => {
     mockExec.mockResolvedValue(gameOverState);
     // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     // Confirming dispatches giveup.
@@ -382,6 +384,7 @@ describe('CrescentPage keyboard shortcuts', () => {
     for (const key of ['d', 'h', 'a', 'z']) {
       fireEvent.keyDown(document, { key });
     }
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 });

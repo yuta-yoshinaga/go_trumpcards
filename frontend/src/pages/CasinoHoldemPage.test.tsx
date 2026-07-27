@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { casinoholdemApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CasinoHoldemResponse } from '../types/card';
 import { CasinoHoldemPage } from './CasinoHoldemPage';
@@ -274,5 +275,40 @@ describe('CasinoHoldemPage', () => {
     mockApi.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+  });
+});
+
+// --- keyboard shortcut execution (#4429) ---
+// Every key here is gated on a specific phase, so each case pairs the key with
+// the fixture that enables it. Asserting the exact command *and* arguments is
+// the point: a table that only checked "exec was called" would still pass if two
+// keys were swapped, which is the defect class these tests exist to catch.
+const kbdCases: [string, unknown[], CasinoHoldemResponse][] = [
+  ['b', ['bet', 100, 0], betPhaseState],
+  ['c', ['call'], flopState],
+  ['f', ['fold'], flopState],
+  ['r', ['reset'], endPlayerWins],
+];
+
+describe('CasinoHoldemPage keyboard shortcuts', () => {
+  it.each(kbdCases)('pressing %s dispatches %j', async (key, expected, state) => {
+    mockApi.mockResolvedValue(state);
+    renderWithProviders(<CasinoHoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(state);
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith(...expected));
+  });
+
+  it('ignores a key whose phase gate is closed', async () => {
+    // 'b' places the ante and is enabled only in the BET phase.
+    mockApi.mockResolvedValue(flopState);
+    renderWithProviders(<CasinoHoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'b' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
   });
 });
