@@ -59,7 +59,14 @@ export default function App() {
         <div className="flex flex-col h-full lg:flex-row">
           <SkipNavLink targetId="main-content" label={t('nav.skipToContent')} />
           <DesktopSidebar />
-          <div className="flex flex-col flex-1 min-w-0">
+          {/* `min-h-0` is load-bearing, not defensive: this is a flex item in a
+              `h-full` column, and without it its automatic minimum size is its
+              content height, so it refuses to shrink to the viewport and instead
+              grows the document. That is what made 179 of 219 game pages scroll
+              vertically on a 375x667 phone even though every page already has an
+              internal `flex-1 overflow-y-auto` region meant to absorb the
+              overflow. See issue #4373. */}
+          <div className="flex flex-col flex-1 min-w-0 min-h-0">
             <NavBar />
             <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col min-h-0">
               {/* Route-scoped boundary: a crash in one page is contained here so
