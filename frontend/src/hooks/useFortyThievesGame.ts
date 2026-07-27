@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { type FortyThievesMoveZone, fortyThievesApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { Card, FortyThievesHint } from '../types/card';
 import { fortyThievesFoundationTarget } from '../utils/fortyThievesFoundationTarget';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
-import { useIsMounted } from './useIsMounted';
+import { useHintRequest } from './useHintRequest';
 
 /** Hook that manages Forty Thieves game state, source selection, hints, and moves. */
 export function useFortyThievesGame() {
@@ -39,20 +38,12 @@ export function useFortyThievesGame() {
     exec('giveup');
   }, [exec]);
 
-  const isMounted = useIsMounted();
-
-  const handleHint = useCallback(async () => {
-    try {
-      const res = await fortyThievesApi.exec('hint');
-      // Navigating away mid-request must not write to a gone component (#4447).
-      if (!isMounted()) return;
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      if (!isMounted()) return;
-      setHintError(NETWORK_ERROR_MESSAGE());
-    }
-  }, [isMounted]);
+  const handleHint = useHintRequest({
+    fetchHint: () => fortyThievesApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+  });
 
   const handleAutoComplete = useCallback(() => {
     setSelectedSource(null);

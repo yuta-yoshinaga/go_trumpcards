@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { type StreetsAndAlleysMoveZone, streetsAndAlleysApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { StreetsAndAlleysHint } from '../types/card';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
-import { useIsMounted } from './useIsMounted';
+import { useHintRequest } from './useHintRequest';
 
 /** Hook that manages Streets and Alleys game state, source selection, hints, and moves. */
 export function useStreetsAndAlleysGame() {
@@ -32,20 +31,12 @@ export function useStreetsAndAlleysGame() {
     runApi('giveup');
   }, [runApi]);
 
-  const isMounted = useIsMounted();
-
-  const handleHint = useCallback(async () => {
-    try {
-      const res = await streetsAndAlleysApi.exec('hint');
-      // Navigating away mid-request must not write to a gone component (#4447).
-      if (!isMounted()) return;
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      if (!isMounted()) return;
-      setHintError(NETWORK_ERROR_MESSAGE());
-    }
-  }, [isMounted]);
+  const handleHint = useHintRequest({
+    fetchHint: () => streetsAndAlleysApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+  });
 
   const handleAutoComplete = useCallback(() => {
     setSelectedSource(null);

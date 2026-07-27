@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { skatApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { SkatConfig, SkatHint } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
-import { useIsMounted } from './useIsMounted';
+import { useHintRequest } from './useHintRequest';
 
 /** Default Skat game configuration. */
 export const DEFAULT_SKAT_CONFIG: SkatConfig = {
@@ -88,23 +87,13 @@ export function useSkatGame() {
     dispatch('nextround');
   }, [dispatch]);
 
-  const isMounted = useIsMounted();
-
-  const handleHint = useCallback(async () => {
-    setHintLoading(true);
-    try {
-      const res = await skatApi.exec('hint');
-      // Navigating away mid-request must not write to a gone component (#4447).
-      if (!isMounted()) return;
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      if (!isMounted()) return;
-      setHintError(NETWORK_ERROR_MESSAGE());
-    } finally {
-      if (isMounted()) setHintLoading(false);
-    }
-  }, [isMounted]);
+  const handleHint = useHintRequest({
+    fetchHint: () => skatApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+    setHintLoading,
+  });
 
   return {
     state,

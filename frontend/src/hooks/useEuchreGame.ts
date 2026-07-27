@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { euchreApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { EuchreConfig, EuchreHint } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
-import { useIsMounted } from './useIsMounted';
+import { useHintRequest } from './useHintRequest';
 
 /** Default Euchre game configuration. */
 export const DEFAULT_EUCHRE_CONFIG: EuchreConfig = {
@@ -79,23 +78,13 @@ export function useEuchreGame() {
     apiExec('nextround');
   }, [apiExec]);
 
-  const isMounted = useIsMounted();
-
-  const handleHint = useCallback(async () => {
-    setHintLoading(true);
-    try {
-      const res = await euchreApi.exec('hint');
-      // Navigating away mid-request must not write to a gone component (#4447).
-      if (!isMounted()) return;
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      if (!isMounted()) return;
-      setHintError(NETWORK_ERROR_MESSAGE());
-    } finally {
-      if (isMounted()) setHintLoading(false);
-    }
-  }, [isMounted]);
+  const handleHint = useHintRequest({
+    fetchHint: () => euchreApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+    setHintLoading,
+  });
 
   return {
     state,

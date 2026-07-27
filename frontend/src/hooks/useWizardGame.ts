@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { wizardApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { WizardConfig, WizardHint } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
-import { useIsMounted } from './useIsMounted';
+import { useHintRequest } from './useHintRequest';
 
 /** Default Wizard game configuration. */
 export const DEFAULT_WIZARD_CONFIG: WizardConfig = {
@@ -59,23 +58,13 @@ export function useWizardGame() {
     exec('nextround');
   }, [exec]);
 
-  const isMounted = useIsMounted();
-
-  const handleHint = useCallback(async () => {
-    setHintLoading(true);
-    try {
-      const res = await wizardApi.exec('hint');
-      // Navigating away mid-request must not write to a gone component (#4447).
-      if (!isMounted()) return;
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      if (!isMounted()) return;
-      setHintError(NETWORK_ERROR_MESSAGE());
-    } finally {
-      if (isMounted()) setHintLoading(false);
-    }
-  }, [isMounted]);
+  const handleHint = useHintRequest({
+    fetchHint: () => wizardApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+    setHintLoading,
+  });
 
   return {
     state,

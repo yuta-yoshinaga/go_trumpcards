@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { type SultanMoveZone, sultanApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { SultanHint } from '../types/card';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
-import { useIsMounted } from './useIsMounted';
+import { useHintRequest } from './useHintRequest';
 
 /** Hook that manages Sultan of Turkey game state, source selection, hints, redeal, and moves. */
 export function useSultanGame() {
@@ -39,20 +38,12 @@ export function useSultanGame() {
     exec('giveup');
   }, [exec]);
 
-  const isMounted = useIsMounted();
-
-  const handleHint = useCallback(async () => {
-    try {
-      const res = await sultanApi.exec('hint');
-      // Navigating away mid-request must not write to a gone component (#4447).
-      if (!isMounted()) return;
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      if (!isMounted()) return;
-      setHintError(NETWORK_ERROR_MESSAGE());
-    }
-  }, [isMounted]);
+  const handleHint = useHintRequest({
+    fetchHint: () => sultanApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+  });
 
   const handleAutoComplete = useCallback(() => {
     setHint(null);
