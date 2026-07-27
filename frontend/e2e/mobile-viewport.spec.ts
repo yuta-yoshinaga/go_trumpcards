@@ -44,6 +44,17 @@ const PATHS = [
   '/piquet',
   '/kalooki',
   '/carioca',
+  // These six were the last holdouts (#4373 phase 4). Their children measurably
+  // fitted — 606px in a 605px box — yet the document still grew, because stray
+  // scrollable overflow from a descendant propagated past the shell column. They
+  // are guarded because that is invisible to any static check and was only found
+  // by bisecting the DOM in a real browser.
+  '/memory',
+  '/openfacechinese',
+  '/jass',
+  '/clocksolitaire',
+  '/gaigel',
+  '/spiteandmalice',
 ];
 
 for (const path of PATHS) {

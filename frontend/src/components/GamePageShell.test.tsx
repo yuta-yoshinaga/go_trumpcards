@@ -316,6 +316,24 @@ describe('GamePageShell', () => {
     expect(outer.className).toContain('relative');
   });
 
+  // This column's children each scroll themselves (the play area and the footer
+  // both carry `overflow-y-auto`), so nothing should overflow it — but stray
+  // scrollable overflow from a descendant still propagated to the viewport and grew
+  // the document, which is what kept 6 game pages scrolling at 375x667 while their
+  // children measurably fit. Clipping here is what stops that. See issue #4373.
+  it('clips its own overflow so a descendant cannot grow the document', () => {
+    const { container } = render(
+      <GamePageShell {...baseProps}>
+        <div data-testid="anchor" />
+      </GamePageShell>,
+    );
+    const outer = container.firstElementChild as HTMLElement;
+    expect(outer.className).toContain('overflow-hidden');
+    // min-h-0 is the other half of the contract: without it this column refuses to
+    // shrink to the viewport in the first place.
+    expect(outer.className).toContain('min-h-0');
+  });
+
   describe('central sound taps', () => {
     beforeEach(() => {
       playCalls.length = 0;

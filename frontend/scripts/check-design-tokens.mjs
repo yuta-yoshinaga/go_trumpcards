@@ -392,6 +392,24 @@ if (appColumn === undefined) {
   );
 }
 
+// The shell column must clip: its children each scroll themselves, so any overflow
+// reaching it would otherwise propagate to the viewport and grow the document.
+const shellText = await readFile(join(SRC_DIR, 'components/GamePageShell.tsx'), 'utf8');
+const shellColumn = [...shellText.matchAll(/className=\{`([^`]*)`\}/g)]
+  .map((m) => m[1])
+  .find((cls) => /\bflex-1\b/.test(cls) && /\bflex-col\b/.test(cls) && /\brelative\b/.test(cls));
+if (shellColumn === undefined) {
+  shellViolations.push('src/components/GamePageShell.tsx: could not find the shell column — did its markup change?');
+} else {
+  for (const need of ['min-h-0', 'overflow-hidden']) {
+    if (!new RegExp(`\\b${need.replace('-', '-')}\\b`).test(shellColumn)) {
+      shellViolations.push(
+        `src/components/GamePageShell.tsx: the shell column lost ${need} (found "${shellColumn}") — a descendant's overflow will grow the document on mobile`,
+      );
+    }
+  }
+}
+
 const footerText = await readFile(join(SRC_DIR, 'components/GameFooter.tsx'), 'utf8');
 for (const need of ['max-h-[45vh]', 'overflow-y-auto', 'sm:max-h-none', 'sm:overflow-y-visible']) {
   if (!footerText.includes(need)) {
@@ -408,4 +426,6 @@ if (shellViolations.length > 0) {
   process.exit(1);
 }
 
-console.log('shell-height: OK (App.tsx column keeps min-h-0; GameFooter keeps its 45vh mobile cap).');
+console.log(
+  'shell-height: OK (App.tsx + GamePageShell columns keep min-h-0, the shell clips, GameFooter keeps its 45vh mobile cap).',
+);
