@@ -17,6 +17,15 @@ test.use({ viewport: { width: 375, height: 667 } });
 // (watten 558px, spades 511px before the cap), a trick-taking page that used to
 // fit at exactly 667, a deep tableau, a page with tall CPU meld display, a
 // solitaire, a betting page, and the default route.
+//
+// Each runs against one unseeded deal, and page height IS deal-dependent — `/pan`
+// varies by 46px across deals, and elsewhere `jass` varies by 200px. That does not
+// make these assertions flaky, because what they assert is deal-independent: once
+// the shell constrains the column, extra content lands in the `overflow-y-auto`
+// play area and cannot change the document height. A flake here would therefore
+// mean a page grew tall `shrink-0` content *outside* its play area — which is a
+// real regression and exactly what this spec is for, so investigate rather than
+// retry.
 const PATHS = ['/watten', '/spades', '/hearts', '/crescent', '/pan', '/freecell', '/poker', '/'];
 
 for (const path of PATHS) {

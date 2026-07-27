@@ -377,12 +377,18 @@ console.log(`kbd-labels: OK (every ActionBinding label resolves; ${knownLabels.s
 const shellViolations = [];
 
 const appText = await readFile(join(SRC_DIR, 'App.tsx'), 'utf8');
-const appColumn = /<div className="([^"]*\bflex-1\b[^"]*\bmin-w-0\b[^"]*)"/.exec(appText);
-if (!appColumn) {
+// Identify the column by the classes it has, in any order: a single regex
+// requiring `flex-1` to textually precede `min-w-0` would still fail the build if
+// a class sorter reordered them, but with a misleading "markup changed" message
+// instead of naming the real problem.
+const appColumn = [...appText.matchAll(/className="([^"]*)"/g)]
+  .map((m) => m[1])
+  .find((cls) => /\bflex-1\b/.test(cls) && /\bmin-w-0\b/.test(cls));
+if (appColumn === undefined) {
   shellViolations.push('src/App.tsx: could not find the main flex column (flex-1 + min-w-0) — did its markup change?');
-} else if (!/\bmin-h-0\b/.test(appColumn[1])) {
+} else if (!/\bmin-h-0\b/.test(appColumn)) {
   shellViolations.push(
-    `src/App.tsx: the main flex column lost min-h-0 (found "${appColumn[1]}") — the document will grow past the viewport on mobile`,
+    `src/App.tsx: the main flex column lost min-h-0 (found "${appColumn}") — the document will grow past the viewport on mobile`,
   );
 }
 
