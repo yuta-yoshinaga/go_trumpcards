@@ -251,157 +251,162 @@ function ContractRummyPageContent() {
         <>
           {error && <ErrorAlert message={error} onRetry={retry} />}
 
-          <section className="px-4 py-2 flex flex-wrap gap-3 items-center text-white" data-tutorial="cr-contract">
-            <span className="font-semibold">
-              {t('roundLabel', { round: state.roundNumber, total: state.totalRounds })}
-            </span>
-            <span>
-              {t('contractLabel')}: {state.contractSlots.map((s) => formatSlot(s, t)).join(' + ')}
-            </span>
-            <span>
-              {t('stockLabel')}: {state.drawPileCount}
-            </span>
-            {state.discardTop && (
-              <span className="flex items-center gap-2">
-                {t('discardLabel')}:
-                <AnimatedCard card={state.discardTop} width={cardWidth} />
+          {/* Scrollable state display: this page had no play area, so its
+              content grew the document at 375x667 while the action row below
+              stayed pinned and reachable. See issue #4373. */}
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <section className="px-4 py-2 flex flex-wrap gap-3 items-center text-white" data-tutorial="cr-contract">
+              <span className="font-semibold">
+                {t('roundLabel', { round: state.roundNumber, total: state.totalRounds })}
               </span>
-            )}
-          </section>
-
-          {isPlayPhase && humanPlayer && !humanPlayer.contractMet && state.contractSlots.length > 0 && (
-            <section className="px-4 py-2 flex flex-wrap gap-2 text-sm" data-testid="cr-slot-progress">
-              {state.contractSlots.map((slot, slotIdx) => {
-                const ev = slotEvaluations[slotIdx] ?? {
-                  placed: 0,
-                  required: slot.size,
-                  satisfied: false,
-                  invalid: false,
-                };
-                const color = ev.satisfied
-                  ? badgeSuccessColors
-                  : ev.invalid
-                    ? badgeErrorColors
-                    : ev.placed === 0
-                      ? 'bg-black/20 border border-white/30 text-ds-text-muted'
-                      : badgeWarningColors;
-                return (
-                  <span
-                    key={`slot-${slotIdx}`}
-                    className={`px-2 py-1 rounded ${color}`}
-                    data-testid={`cr-slot-progress-${slotIdx}`}
-                    data-state={
-                      ev.satisfied ? 'satisfied' : ev.invalid ? 'invalid' : ev.placed === 0 ? 'empty' : 'partial'
-                    }
-                  >
-                    {formatSlot(slot, t)} ({ev.placed}/{ev.required}){ev.satisfied ? ' ✓' : ''}
-                  </span>
-                );
-              })}
+              <span>
+                {t('contractLabel')}: {state.contractSlots.map((s) => formatSlot(s, t)).join(' + ')}
+              </span>
+              <span>
+                {t('stockLabel')}: {state.drawPileCount}
+              </span>
+              {state.discardTop && (
+                <span className="flex items-center gap-2">
+                  {t('discardLabel')}:
+                  <AnimatedCard card={state.discardTop} width={cardWidth} />
+                </span>
+              )}
             </section>
-          )}
 
-          <section className="px-4 py-2 grid gap-2 md:grid-cols-3">
-            {state.players.map((p) => (
-              <div
-                key={p.id}
-                className={`p-3 rounded border ${
-                  state.currentPlayerIdx === p.id ? 'border-ds-warning' : 'border-white/30'
-                } text-white text-sm bg-black/20`}
-              >
-                <div className="flex justify-between font-semibold">
-                  <span>
-                    {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
-                    {p.contractMet ? ` ✓` : ''}
-                  </span>
-                  <span>
-                    {t('cards')}: {p.cardCount}
-                  </span>
-                </div>
-                <div className="text-xs opacity-75">
-                  {t('scoreLabel')}: {p.cumulativeScore} (+{p.roundScore})
-                </div>
-                {p.melds.length > 0 && (
-                  <div className="mt-2">
-                    {p.melds.map((m, mi) => {
-                      const isLayoffTarget = layoffTarget?.playerIdx === p.id && layoffTarget?.meldIdx === mi;
-                      const playerLabel = p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id });
-                      // The meld is only a selectable layoff target once both contracts are met.
-                      const canLayoff = humanPlayer?.contractMet === true && p.contractMet;
-                      return (
-                        <button
-                          type="button"
-                          key={`${p.id}-${mi}`}
-                          onClick={() => {
-                            if (canLayoff) {
-                              setLayoffTarget({ playerIdx: p.id, meldIdx: mi });
-                            }
-                          }}
-                          aria-label={t('meldAria', { player: playerLabel, meld: mi + 1 })}
-                          // Only expose the toggle semantics when the meld is actually actionable.
-                          aria-pressed={canLayoff ? isLayoffTarget : undefined}
-                          className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${
-                            isLayoffTarget ? 'ring-2 ring-ds-warning bg-ds-warning/20' : ''
-                          }`}
-                        >
-                          {m.cards.map((c, ci) => (
-                            <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
-                          ))}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            ))}
-          </section>
-
-          {humanPlayer && (
-            <section className="px-4 py-2" data-tutorial="cr-hand">
-              <div className="text-white text-sm mb-1">
-                {t('yourHand')} ({humanPlayer.cardCount})
-                {contractSlots.length > 0 && (
-                  <span className="ml-2 opacity-75">
-                    {t('slotsBuilt')}: {contractSlots.length}
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {humanPlayer.cards.map((c: Card, idx: number) => {
-                  const isSelected = selectedCards.includes(idx);
-                  const slotOfCard = contractSlots.findIndex((slot) => slot.includes(idx));
-                  const isInSlot = slotOfCard !== -1;
+            {isPlayPhase && humanPlayer && !humanPlayer.contractMet && state.contractSlots.length > 0 && (
+              <section className="px-4 py-2 flex flex-wrap gap-2 text-sm" data-testid="cr-slot-progress">
+                {state.contractSlots.map((slot, slotIdx) => {
+                  const ev = slotEvaluations[slotIdx] ?? {
+                    placed: 0,
+                    required: slot.size,
+                    satisfied: false,
+                    invalid: false,
+                  };
+                  const color = ev.satisfied
+                    ? badgeSuccessColors
+                    : ev.invalid
+                      ? badgeErrorColors
+                      : ev.placed === 0
+                        ? 'bg-black/20 border border-white/30 text-ds-text-muted'
+                        : badgeWarningColors;
                   return (
-                    <button
-                      type="button"
-                      key={`${idx}-${c.design}-${c.value}`}
-                      // A staged card removes itself from its slot; an unstaged card toggles selection.
-                      onClick={() => (isInSlot ? handleRemoveCardFromSlot(idx) : toggleCard(idx))}
-                      aria-pressed={isInSlot ? undefined : isSelected}
-                      aria-label={
-                        isInSlot ? t('cardInSlotRemoveAria', { card: cardAlt(c), n: slotOfCard + 1 }) : cardAlt(c)
+                    <span
+                      key={`slot-${slotIdx}`}
+                      className={`px-2 py-1 rounded ${color}`}
+                      data-testid={`cr-slot-progress-${slotIdx}`}
+                      data-state={
+                        ev.satisfied ? 'satisfied' : ev.invalid ? 'invalid' : ev.placed === 0 ? 'empty' : 'partial'
                       }
-                      data-testid={isInSlot ? `cr-slot-card-${idx}` : undefined}
-                      data-slot={isInSlot ? slotOfCard + 1 : undefined}
-                      className={`relative ${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${
-                        isInSlot ? 'opacity-40' : ''
-                      }`}
                     >
-                      {isInSlot && (
-                        <span
-                          className={`absolute top-0 left-0 z-10 px-1 rounded-br text-[10px] font-bold ${badgeWarningColors}`}
-                          aria-hidden="true"
-                        >
-                          {slotOfCard + 1}
-                        </span>
-                      )}
-                      <AnimatedCard card={c} width={cardWidth} />
-                    </button>
+                      {formatSlot(slot, t)} ({ev.placed}/{ev.required}){ev.satisfied ? ' ✓' : ''}
+                    </span>
                   );
                 })}
-              </div>
+              </section>
+            )}
+
+            <section className="px-4 py-2 grid gap-2 md:grid-cols-3">
+              {state.players.map((p) => (
+                <div
+                  key={p.id}
+                  className={`p-3 rounded border ${
+                    state.currentPlayerIdx === p.id ? 'border-ds-warning' : 'border-white/30'
+                  } text-white text-sm bg-black/20`}
+                >
+                  <div className="flex justify-between font-semibold">
+                    <span>
+                      {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
+                      {p.contractMet ? ` ✓` : ''}
+                    </span>
+                    <span>
+                      {t('cards')}: {p.cardCount}
+                    </span>
+                  </div>
+                  <div className="text-xs opacity-75">
+                    {t('scoreLabel')}: {p.cumulativeScore} (+{p.roundScore})
+                  </div>
+                  {p.melds.length > 0 && (
+                    <div className="mt-2">
+                      {p.melds.map((m, mi) => {
+                        const isLayoffTarget = layoffTarget?.playerIdx === p.id && layoffTarget?.meldIdx === mi;
+                        const playerLabel = p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id });
+                        // The meld is only a selectable layoff target once both contracts are met.
+                        const canLayoff = humanPlayer?.contractMet === true && p.contractMet;
+                        return (
+                          <button
+                            type="button"
+                            key={`${p.id}-${mi}`}
+                            onClick={() => {
+                              if (canLayoff) {
+                                setLayoffTarget({ playerIdx: p.id, meldIdx: mi });
+                              }
+                            }}
+                            aria-label={t('meldAria', { player: playerLabel, meld: mi + 1 })}
+                            // Only expose the toggle semantics when the meld is actually actionable.
+                            aria-pressed={canLayoff ? isLayoffTarget : undefined}
+                            className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${
+                              isLayoffTarget ? 'ring-2 ring-ds-warning bg-ds-warning/20' : ''
+                            }`}
+                          >
+                            {m.cards.map((c, ci) => (
+                              <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
+                            ))}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
             </section>
-          )}
+
+            {humanPlayer && (
+              <section className="px-4 py-2" data-tutorial="cr-hand">
+                <div className="text-white text-sm mb-1">
+                  {t('yourHand')} ({humanPlayer.cardCount})
+                  {contractSlots.length > 0 && (
+                    <span className="ml-2 opacity-75">
+                      {t('slotsBuilt')}: {contractSlots.length}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {humanPlayer.cards.map((c: Card, idx: number) => {
+                    const isSelected = selectedCards.includes(idx);
+                    const slotOfCard = contractSlots.findIndex((slot) => slot.includes(idx));
+                    const isInSlot = slotOfCard !== -1;
+                    return (
+                      <button
+                        type="button"
+                        key={`${idx}-${c.design}-${c.value}`}
+                        // A staged card removes itself from its slot; an unstaged card toggles selection.
+                        onClick={() => (isInSlot ? handleRemoveCardFromSlot(idx) : toggleCard(idx))}
+                        aria-pressed={isInSlot ? undefined : isSelected}
+                        aria-label={
+                          isInSlot ? t('cardInSlotRemoveAria', { card: cardAlt(c), n: slotOfCard + 1 }) : cardAlt(c)
+                        }
+                        data-testid={isInSlot ? `cr-slot-card-${idx}` : undefined}
+                        data-slot={isInSlot ? slotOfCard + 1 : undefined}
+                        className={`relative ${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${
+                          isInSlot ? 'opacity-40' : ''
+                        }`}
+                      >
+                        {isInSlot && (
+                          <span
+                            className={`absolute top-0 left-0 z-10 px-1 rounded-br text-[10px] font-bold ${badgeWarningColors}`}
+                            aria-hidden="true"
+                          >
+                            {slotOfCard + 1}
+                          </span>
+                        )}
+                        <AnimatedCard card={c} width={cardWidth} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+          </div>
 
           <section className="px-4 py-2 flex flex-wrap gap-2" data-tutorial="cr-actions">
             {isDrawPhase && (

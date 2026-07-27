@@ -26,7 +26,25 @@ test.use({ viewport: { width: 375, height: 667 } });
 // mean a page grew tall `shrink-0` content *outside* its play area — which is a
 // real regression and exactly what this spec is for, so investigate rather than
 // retry.
-const PATHS = ['/watten', '/spades', '/hearts', '/crescent', '/pan', '/freecell', '/poker', '/'];
+const PATHS = [
+  '/watten',
+  '/spades',
+  '/hearts',
+  '/crescent',
+  '/pan',
+  '/freecell',
+  '/poker',
+  '/',
+  // These five had no play area at all until #4373 phase 3 — their content went
+  // straight into the document height. `/speed` is the reason they are guarded
+  // rather than trusted: it fitted on some deals and overflowed by 201px on
+  // others, so it looked fine whenever it was spot-checked.
+  '/speed',
+  '/contractrummy',
+  '/piquet',
+  '/kalooki',
+  '/carioca',
+];
 
 for (const path of PATHS) {
   test(`${path} does not scroll the document at 375x667`, async ({ page }) => {
