@@ -170,9 +170,7 @@ function CatchTenPageContent() {
     }
   }, [isTrickEndForKbd, isRoundEndForKbd, handleNextTrick, handleNextRound]);
   const advanceBindings = useMemo(
-    () => [
-      { key: 'n', action: advanceAction, enabled: isTrickEndForKbd || isRoundEndForKbd, labelKey: 'kbd.action.next' },
-    ],
+    () => [{ key: 'n', action: advanceAction, enabled: isTrickEndForKbd || isRoundEndForKbd, label: 'next' }],
     [advanceAction, isTrickEndForKbd, isRoundEndForKbd],
   );
   useActionKeyboardNav({ bindings: advanceBindings, enabled: !!state && !loading });

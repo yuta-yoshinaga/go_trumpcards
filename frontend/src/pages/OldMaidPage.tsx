@@ -135,8 +135,8 @@ function OldMaidPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: () => gameExec('draw'), labelKey: 'kbd.action.draw' },
-      { key: 's', action: () => gameExec('shuffle'), labelKey: 'kbd.action.shuffle' },
+      { key: 'd', action: () => gameExec('draw'), label: 'draw' },
+      { key: 's', action: () => gameExec('shuffle'), label: 'shuffle' },
     ],
     [gameExec],
   );

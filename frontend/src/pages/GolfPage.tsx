@@ -143,10 +143,10 @@ function GolfPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleDraw, labelKey: 'kbd.action.draw' },
-      { key: 'h', action: handleHint, labelKey: 'kbd.action.hint' },
-      { key: 'g', action: confirmGiveUpAction, labelKey: 'kbd.action.giveUp' },
-      { key: 'z', action: handleUndo, labelKey: 'kbd.action.undo' },
+      { key: 'd', action: handleDraw, label: 'draw' },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+      { key: 'z', action: handleUndo, label: 'undo' },
     ],
     [handleDraw, handleHint, confirmGiveUpAction, handleUndo],
   );

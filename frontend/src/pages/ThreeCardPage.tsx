@@ -119,12 +119,12 @@ function ThreeCardPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: handleBet, enabled: isBetPhase, labelKey: 'kbd.action.bet' },
-      { key: 'p', action: handlePlay, enabled: isActionPhase, labelKey: 'kbd.action.play' },
-      { key: 'f', action: handleFold, enabled: isActionPhase, labelKey: 'kbd.action.fold' },
-      { key: 'r', action: handleReset, enabled: isEndPhase, labelKey: 'kbd.action.reset' },
+      { key: 'b', action: handleBet, enabled: isBetPhase, label: 'bet' },
+      { key: 'p', action: handlePlay, enabled: isActionPhase, label: 'play' },
+      { key: 'f', action: handleFold, enabled: isActionPhase, label: 'fold' },
+      { key: 'r', action: handleReset, enabled: isEndPhase, label: 'reset' },
       // Power-user shortcut: 'n' replays the previous bet as a fresh round.
-      { key: 'n', action: handleRebet, enabled: isEndPhase && canRebet, labelKey: 'kbd.action.rebet' },
+      { key: 'n', action: handleRebet, enabled: isEndPhase && canRebet, label: 'rebet' },
     ],
     [handleBet, handlePlay, handleFold, handleReset, handleRebet, isBetPhase, isActionPhase, isEndPhase, canRebet],
   );

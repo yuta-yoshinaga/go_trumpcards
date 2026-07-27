@@ -231,7 +231,7 @@ function SevenCardStudPageContent() {
         key: 'c',
         action: () => execApi('call', undefined, undefined, getElapsed()),
         enabled: hasOutstandingBet,
-        labelKey: 'kbd.action.call',
+        label: 'call',
       },
       {
         key: 'r',
@@ -239,16 +239,16 @@ function SevenCardStudPageContent() {
           hasOutstandingBet
             ? execApi('raise', betAmount, undefined, getElapsed())
             : execApi('bet', betAmount, undefined, getElapsed()),
-        labelKey: 'kbd.action.raiseOrBet',
+        label: 'raiseOrBet',
       },
       {
         key: 'k',
         action: () => execApi('check', undefined, undefined, getElapsed()),
         enabled: !hasOutstandingBet,
-        labelKey: 'kbd.action.check',
+        label: 'check',
       },
-      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()), labelKey: 'kbd.action.fold' },
-      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()), labelKey: 'kbd.action.allin' },
+      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()), label: 'fold' },
+      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()), label: 'allin' },
     ],
     [execApi, hasOutstandingBet, betAmount, getElapsed],
   );

@@ -258,11 +258,11 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'h', action: () => exec('hit'), labelKey: 'kbd.action.hit' },
-      { key: 's', action: () => exec('stand'), labelKey: 'kbd.action.stand' },
-      { key: 'd', action: () => exec('doubledown'), enabled: showDoubleDown, labelKey: 'kbd.action.doubledown' },
-      { key: 'p', action: () => exec('split'), enabled: showSplit, labelKey: 'kbd.action.split' },
-      { key: 'u', action: () => exec('surrender'), enabled: showSurrender, labelKey: 'kbd.action.surrender' },
+      { key: 'h', action: () => exec('hit'), label: 'hit' },
+      { key: 's', action: () => exec('stand'), label: 'stand' },
+      { key: 'd', action: () => exec('doubledown'), enabled: showDoubleDown, label: 'doubledown' },
+      { key: 'p', action: () => exec('split'), enabled: showSplit, label: 'split' },
+      { key: 'u', action: () => exec('surrender'), enabled: showSurrender, label: 'surrender' },
     ],
     [exec, showDoubleDown, showSplit, showSurrender],
   );
@@ -274,8 +274,8 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
   const insuranceBindings = useMemo(
     () => [
-      { key: 'i', action: () => exec('insurance'), labelKey: 'kbd.action.insurance' },
-      { key: 'n', action: () => exec('declineinsurance'), labelKey: 'kbd.action.declineinsurance' },
+      { key: 'i', action: () => exec('insurance'), label: 'insurance' },
+      { key: 'n', action: () => exec('declineinsurance'), label: 'declineinsurance' },
     ],
     [exec],
   );
@@ -287,8 +287,8 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
   const earlySurrenderBindings = useMemo(
     () => [
-      { key: 'u', action: () => exec('earlysurrender'), labelKey: 'kbd.action.earlysurrender' },
-      { key: 'n', action: () => exec('declineearlysurrender'), labelKey: 'kbd.action.declineearlysurrender' },
+      { key: 'u', action: () => exec('earlysurrender'), label: 'earlysurrender' },
+      { key: 'n', action: () => exec('declineearlysurrender'), label: 'declineearlysurrender' },
     ],
     [exec],
   );

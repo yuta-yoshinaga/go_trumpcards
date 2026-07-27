@@ -7,18 +7,23 @@ export interface ActionBinding {
   action: () => void;
   enabled?: boolean;
   /**
-   * i18n key in the `common` namespace naming what this shortcut does, e.g.
-   * `'kbd.action.fold'`. Supplying it lets
-   * {@link components/ActionShortcutsPanel.ActionShortcutsPanel | ActionShortcutsPanel} advertise the
-   * binding, so the list a player sees is generated from the same array that
-   * binds the keys and cannot drift from it. Bindings without one are bound but
-   * not advertised. See issue #4369.
+   * Which shared `kbd.action.*` label describes this shortcut. Supplying it
+   * lets {@link components/ActionShortcutsPanel.ActionShortcutsPanel | ActionShortcutsPanel}
+   * advertise the binding, so the list a player sees is generated from the same
+   * array that binds the keys and cannot drift from it. Bindings without one are
+   * bound but not advertised. See issue #4369.
    *
-   * A key rather than translated text deliberately: pages build these arrays
-   * inside `useMemo`, and closing over a `t` function would add it to every
-   * dependency list for no benefit.
+   * A label name rather than translated text deliberately: pages build these
+   * arrays inside `useMemo`, and closing over a `t` function would add it to
+   * every dependency list for no benefit.
+   *
+   * Typed `string` rather than a union of the known names: a union would force an
+   * explicit `useMemo<ActionBinding[]>` annotation on all 56 pages, since these
+   * array literals have no contextual type and would widen. The names are
+   * validated instead by the kbd-label guard in scripts/check-design-tokens.mjs,
+   * which fails the build if one has no `kbd.action.*` entry in common.json.
    */
-  labelKey?: string;
+  label?: string;
 }
 
 /** Options for {@link useActionKeyboardNav}. */

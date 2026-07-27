@@ -330,7 +330,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
         key: 'c',
         action: () => apiExec('call', undefined, undefined, getElapsed()),
         enabled: hasOutstandingBet,
-        labelKey: 'kbd.action.call',
+        label: 'call',
       },
       {
         key: 'r',
@@ -338,16 +338,16 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
           hasOutstandingBet
             ? apiExec('raise', betAmount, undefined, getElapsed())
             : apiExec('bet', betAmount, undefined, getElapsed()),
-        labelKey: 'kbd.action.raiseOrBet',
+        label: 'raiseOrBet',
       },
       {
         key: 'k',
         action: () => apiExec('check', undefined, undefined, getElapsed()),
         enabled: !hasOutstandingBet,
-        labelKey: 'kbd.action.check',
+        label: 'check',
       },
-      { key: 'f', action: () => apiExec('fold', undefined, undefined, getElapsed()), labelKey: 'kbd.action.fold' },
-      { key: 'a', action: () => apiExec('allin', undefined, undefined, getElapsed()), labelKey: 'kbd.action.allin' },
+      { key: 'f', action: () => apiExec('fold', undefined, undefined, getElapsed()), label: 'fold' },
+      { key: 'a', action: () => apiExec('allin', undefined, undefined, getElapsed()), label: 'allin' },
     ],
     [apiExec, hasOutstandingBet, betAmount, getElapsed],
   );

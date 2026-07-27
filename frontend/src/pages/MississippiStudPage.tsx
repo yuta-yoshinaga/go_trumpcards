@@ -100,12 +100,12 @@ function MississippiStudPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', anteAmount), enabled: isAntePhase, labelKey: 'kbd.action.bet' },
-      { key: '1', action: () => execApi('play', undefined, 1), enabled: isStreetPhase, labelKey: 'kbd.action.play' },
-      { key: '2', action: () => execApi('play', undefined, 2), enabled: isStreetPhase, labelKey: 'kbd.action.play' },
-      { key: '3', action: () => execApi('play', undefined, 3), enabled: isStreetPhase, labelKey: 'kbd.action.play' },
-      { key: 'f', action: () => execApi('fold'), enabled: isStreetPhase, labelKey: 'kbd.action.fold' },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, labelKey: 'kbd.action.reset' },
+      { key: 'b', action: () => execApi('bet', anteAmount), enabled: isAntePhase, label: 'bet' },
+      { key: '1', action: () => execApi('play', undefined, 1), enabled: isStreetPhase, label: 'play' },
+      { key: '2', action: () => execApi('play', undefined, 2), enabled: isStreetPhase, label: 'play' },
+      { key: '3', action: () => execApi('play', undefined, 3), enabled: isStreetPhase, label: 'play' },
+      { key: 'f', action: () => execApi('fold'), enabled: isStreetPhase, label: 'fold' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
     [execApi, anteAmount, isAntePhase, isStreetPhase, isEndPhase],
   );

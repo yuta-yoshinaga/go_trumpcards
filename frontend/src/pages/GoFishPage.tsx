@@ -167,25 +167,25 @@ function GoFishPageContent() {
         setKbdAnnounce(t('a11y.targetSelected', { name: playerName(p.id, false) }));
       },
       enabled: kbdIsHumanTurn,
-      labelKey: 'kbd.action.selectTarget',
+      label: 'selectTarget',
     }));
     bindings.push({
       key: 'ArrowRight',
       action: () => cycleRank(1),
       enabled: kbdIsHumanTurn,
-      labelKey: 'kbd.action.nextRank',
+      label: 'nextRank',
     });
     bindings.push({
       key: 'ArrowLeft',
       action: () => cycleRank(-1),
       enabled: kbdIsHumanTurn,
-      labelKey: 'kbd.action.prevRank',
+      label: 'prevRank',
     });
     // Ask key is the letter "a" only. Enter is deliberately not bound: the hook
     // listens at the document level and does not exclude BUTTON, so an Enter
     // binding would double-fire (native button activation + this handler) and
     // send a duplicate ask when a button is focused.
-    bindings.push({ key: 'a', action: handleAsk, enabled: kbdCanAsk, labelKey: 'kbd.action.ask' });
+    bindings.push({ key: 'a', action: handleAsk, enabled: kbdCanAsk, label: 'ask' });
     return bindings;
   }, [kbdCpuPlayers, handleSelectTarget, cycleRank, handleAsk, kbdIsHumanTurn, kbdCanAsk, t]);
   useActionKeyboardNav({ bindings: askBindings, enabled: !!kbdIsHumanTurn });

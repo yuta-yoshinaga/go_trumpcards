@@ -175,7 +175,7 @@ function ChinesePokerPageContent() {
         key: 'b',
         action: () => execApi('bet', betAmount),
         enabled: isBetPhase && !betInvalid,
-        labelKey: 'kbd.action.bet',
+        label: 'bet',
       },
       {
         key: 's',
@@ -183,9 +183,9 @@ function ChinesePokerPageContent() {
           if (canSet) execApi('set', undefined, frontIndices, middleIndices);
         },
         enabled: isSetHandsPhase && canSet,
-        labelKey: 'kbd.action.setHands',
+        label: 'setHands',
       },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, labelKey: 'kbd.action.reset' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
     [execApi, betAmount, betInvalid, frontIndices, middleIndices, isBetPhase, isSetHandsPhase, isEndPhase, canSet],
   );

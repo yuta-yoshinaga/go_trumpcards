@@ -139,11 +139,11 @@ function SultanPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleDraw, labelKey: 'kbd.action.draw' },
-      { key: 'h', action: handleHint, labelKey: 'kbd.action.hint' },
-      { key: 'a', action: handleAutoComplete, labelKey: 'kbd.action.autoComplete' },
-      { key: 'g', action: () => requestGiveUpConfirm(handleGiveUp), labelKey: 'kbd.action.giveUp' },
-      { key: 'z', action: handleUndo, labelKey: 'kbd.action.undo' },
+      { key: 'd', action: handleDraw, label: 'draw' },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      { key: 'g', action: () => requestGiveUpConfirm(handleGiveUp), label: 'giveUp' },
+      { key: 'z', action: handleUndo, label: 'undo' },
     ],
     [handleDraw, handleHint, handleAutoComplete, requestGiveUpConfirm, handleGiveUp, handleUndo],
   );

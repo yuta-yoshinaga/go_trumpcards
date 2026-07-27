@@ -178,11 +178,11 @@ function CrescentPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleRedeal, labelKey: 'kbd.action.deal' },
-      { key: 'h', action: handleHint, labelKey: 'kbd.action.hint' },
-      { key: 'a', action: handleAutoComplete, labelKey: 'kbd.action.autoComplete' },
-      { key: 'g', action: confirmGiveUpAction, labelKey: 'kbd.action.giveUp' },
-      { key: 'z', action: handleUndo, labelKey: 'kbd.action.undo' },
+      { key: 'd', action: handleRedeal, label: 'deal' },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+      { key: 'z', action: handleUndo, label: 'undo' },
     ],
     [handleRedeal, handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
   );

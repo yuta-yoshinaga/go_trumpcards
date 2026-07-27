@@ -164,10 +164,10 @@ function FlowerGardenPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'h', action: game.handleHint, labelKey: 'kbd.action.hint' },
-      { key: 'a', action: game.handleAutoComplete, labelKey: 'kbd.action.autoComplete' },
-      { key: 'g', action: confirmGiveUpAction, labelKey: 'kbd.action.giveUp' },
-      { key: 'z', action: game.handleUndo, labelKey: 'kbd.action.undo' },
+      { key: 'h', action: game.handleHint, label: 'hint' },
+      { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+      { key: 'z', action: game.handleUndo, label: 'undo' },
     ],
     [game, confirmGiveUpAction],
   );

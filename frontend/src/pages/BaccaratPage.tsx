@@ -352,10 +352,10 @@ function BaccaratPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: handleBet, enabled: isBetPhase, labelKey: 'kbd.action.bet' },
-      { key: 'r', action: handleReset, enabled: isEndPhase, labelKey: 'kbd.action.reset' },
+      { key: 'b', action: handleBet, enabled: isBetPhase, label: 'bet' },
+      { key: 'r', action: handleReset, enabled: isEndPhase, label: 'reset' },
       // Power-user shortcut: 'e' replays the last bet at end phase (consistent with the 'r' reset binding).
-      { key: 'e', action: handleRebet, enabled: isEndPhase && canRebet, labelKey: 'kbd.action.rebet' },
+      { key: 'e', action: handleRebet, enabled: isEndPhase && canRebet, label: 'rebet' },
     ],
     [handleBet, handleReset, handleRebet, isBetPhase, isEndPhase, canRebet],
   );

@@ -154,6 +154,19 @@ function enclosingLabelTag(text, index) {
 
 const LABEL_SIZED = new Set(['checkbox', 'radio']);
 
+/** Index of the `}` closing the object literal that starts at `i`. */
+function objectEnd(text, i) {
+  let d = 0;
+  for (let j = i; j < text.length; j += 1) {
+    if (text[j] === '{') d += 1;
+    else if (text[j] === '}') {
+      d -= 1;
+      if (d === 0) return j;
+    }
+  }
+  return -1;
+}
+
 /**
  * Blank out comment bodies, preserving length and newlines so byte offsets and
  * reported line numbers still line up. Several doc comments mention `<select>`
@@ -294,3 +307,54 @@ if (badgeViolations.length > 0) {
 }
 
 console.log('badge-contrast: OK (no semantic foreground sits on a translucent semantic background).');
+
+// Keyboard-label guard (issue #4369): every `label` on an ActionBinding names a
+// shared entry under `kbd.action.*` in common.json, and ActionShortcutsPanel
+// renders `t('kbd.action.' + label)`. A typo would therefore print the raw i18n
+// key on a game page — the exact defect #4374 existed to clean up.
+//
+// ActionBinding.label is typed `string` rather than a union of the known names,
+// because a union would force an explicit `useMemo<ActionBinding[]>` annotation
+// on all 56 pages: those array literals have no contextual type and would widen.
+// This check buys the same safety without the ceremony.
+const commonJa = JSON.parse(await readFile(join(SRC_DIR, 'i18n/locales/ja/common.json'), 'utf8'));
+const commonEn = JSON.parse(await readFile(join(SRC_DIR, 'i18n/locales/en/common.json'), 'utf8'));
+const knownLabels = new Set(Object.keys(commonJa.kbd?.action ?? {}));
+const knownLabelsEn = new Set(Object.keys(commonEn.kbd?.action ?? {}));
+
+const labelViolations = [];
+for (const file of files) {
+  const text = stripComments(await readFile(file, 'utf8'));
+  // Only `label:` inside a binding object — one that also carries key: and
+  // action:. Plenty of unrelated option lists use a `label` property too
+  // (`{ value: 0, label: 'easy' }`), and those are not i18n keys.
+  for (const m of text.matchAll(/\{\s*key:\s*'[^']+'\s*,\s*action:/g)) {
+    const end = objectEnd(text, m.index);
+    if (end === -1) continue;
+    const body = text.slice(m.index, end + 1);
+    const label = /\blabel:\s*'([^']*)'/.exec(body);
+    if (!label) continue;
+    const missing = [];
+    if (!knownLabels.has(label[1])) missing.push('ja');
+    if (!knownLabelsEn.has(label[1])) missing.push('en');
+    if (missing.length > 0) {
+      labelViolations.push({
+        file: relative(ROOT, file),
+        line: text.slice(0, m.index).split('\n').length,
+        label: label[1],
+        missing: missing.join(' + '),
+      });
+    }
+  }
+}
+
+if (labelViolations.length > 0) {
+  console.error('\nKeyboard-label violations (ActionBinding.label with no kbd.action.* entry):\n');
+  for (const v of labelViolations) {
+    console.error(`  ${v.file}:${v.line}  label: '${v.label}'  missing kbd.action.${v.label} in ${v.missing}`);
+  }
+  console.error(`\n${labelViolations.length} violation(s). See DESIGN.md and issue #4369.`);
+  process.exit(1);
+}
+
+console.log(`kbd-labels: OK (every ActionBinding label resolves; ${knownLabels.size} shared labels).`);

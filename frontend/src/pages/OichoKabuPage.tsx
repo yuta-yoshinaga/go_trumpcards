@@ -104,12 +104,12 @@ function OichoKabuPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: handleBet, enabled: isBetPhase, labelKey: 'kbd.action.bet' },
-      { key: 'd', action: handleDraw, enabled: isDrawPhase, labelKey: 'kbd.action.draw' },
-      { key: 's', action: handleStand, enabled: isDrawPhase, labelKey: 'kbd.action.stand' },
-      { key: 'r', action: handleReset, enabled: isEndPhase, labelKey: 'kbd.action.reset' },
+      { key: 'b', action: handleBet, enabled: isBetPhase, label: 'bet' },
+      { key: 'd', action: handleDraw, enabled: isDrawPhase, label: 'draw' },
+      { key: 's', action: handleStand, enabled: isDrawPhase, label: 'stand' },
+      { key: 'r', action: handleReset, enabled: isEndPhase, label: 'reset' },
       // Power-user shortcut: 'e' replays the last bet at end phase.
-      { key: 'e', action: handleRebet, enabled: isEndPhase && canRebet, labelKey: 'kbd.action.rebet' },
+      { key: 'e', action: handleRebet, enabled: isEndPhase && canRebet, label: 'rebet' },
     ],
     [handleBet, handleDraw, handleStand, handleReset, handleRebet, isBetPhase, isDrawPhase, isEndPhase, canRebet],
   );

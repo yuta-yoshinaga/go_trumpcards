@@ -156,7 +156,7 @@ function PaiGowPageContent() {
         key: 'b',
         action: () => execApi('bet', betAmount),
         enabled: isBetPhase && !betInvalid,
-        labelKey: 'kbd.action.bet',
+        label: 'bet',
       },
       {
         key: 's',
@@ -166,15 +166,15 @@ function PaiGowPageContent() {
           }
         },
         enabled: isSetHandsPhase && selectedIndices.length === 2 && !foul.isFoul,
-        labelKey: 'kbd.action.setHands',
+        label: 'setHands',
       },
       {
         key: 'a',
         action: handleAutoSet,
         enabled: isSetHandsPhase && autoSplit !== null,
-        labelKey: 'kbd.action.autoSet',
+        label: 'autoSet',
       },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, labelKey: 'kbd.action.reset' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
     [
       execApi,

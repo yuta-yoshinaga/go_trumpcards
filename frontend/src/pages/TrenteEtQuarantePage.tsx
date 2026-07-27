@@ -103,10 +103,10 @@ function TrenteEtQuarantePageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleBet, enabled: isBetPhase, labelKey: 'kbd.action.bet' },
-      { key: 'r', action: handleNextRound, enabled: isResultPhase, labelKey: 'kbd.action.next' },
+      { key: 'd', action: handleBet, enabled: isBetPhase, label: 'bet' },
+      { key: 'r', action: handleNextRound, enabled: isResultPhase, label: 'next' },
       // Power-user shortcut: 'e' replays the last bet once the round has ended.
-      { key: 'e', action: handleRebet, enabled: isResultPhase && canRebet, labelKey: 'kbd.action.rebet' },
+      { key: 'e', action: handleRebet, enabled: isResultPhase && canRebet, label: 'rebet' },
     ],
     [handleBet, handleNextRound, handleRebet, isBetPhase, isResultPhase, canRebet],
   );

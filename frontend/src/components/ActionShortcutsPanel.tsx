@@ -26,15 +26,15 @@ export interface ActionShortcutsPanelProps extends Omit<ComponentPropsWithoutRef
  * this was written — `ja/blackjack.json` shipped `kbd.*` keys that no component
  * read. See issue #4369.
  *
- * A binding is listed only when it carries a `labelKey` and is not currently
+ * A binding is listed only when it carries a `label` and is not currently
  * disabled: `enabled: false` means pressing the key does nothing right now, so
  * listing it would advertise an action the player cannot take.
  */
 export function ActionShortcutsPanel({ bindings, includeCardNav = false, ...rest }: ActionShortcutsPanelProps) {
   const { t } = useTranslation('common');
   const shortcuts: KeyboardShortcut[] = bindings
-    .filter((b) => b.labelKey && b.enabled !== false)
-    .map((b) => ({ keys: [b.key], description: t(b.labelKey as string) }));
+    .filter((b) => b.label && b.enabled !== false)
+    .map((b) => ({ keys: [b.key], description: t(`kbd.action.${b.label}`) }));
 
   if (includeCardNav) {
     shortcuts.push(

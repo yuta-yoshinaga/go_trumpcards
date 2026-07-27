@@ -133,7 +133,7 @@ function MemoryPageContent() {
   const isResultForKbd = state?.phase === MemoryPhase.RESULT;
 
   const actionBindings = useMemo(
-    () => [{ key: 'n', action: handleNext, enabled: isResultForKbd, labelKey: 'kbd.action.next' }],
+    () => [{ key: 'n', action: handleNext, enabled: isResultForKbd, label: 'next' }],
     [handleNext, isResultForKbd],
   );
 

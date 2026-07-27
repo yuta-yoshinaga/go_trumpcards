@@ -81,9 +81,9 @@ function RedDogPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase, labelKey: 'kbd.action.bet' },
-      { key: 's', action: () => execApi('stay'), enabled: isSpreadDecision, labelKey: 'kbd.action.stay' },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, labelKey: 'kbd.action.reset' },
+      { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase, label: 'bet' },
+      { key: 's', action: () => execApi('stay'), enabled: isSpreadDecision, label: 'stay' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
     [execApi, betAmount, isBetPhase, isSpreadDecision, isEndPhase],
   );

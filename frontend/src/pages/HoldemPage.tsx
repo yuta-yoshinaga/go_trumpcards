@@ -213,7 +213,7 @@ function HoldemPageContent() {
         key: 'c',
         action: () => exec('call', undefined, undefined, getElapsed()),
         enabled: hasOutstandingBet,
-        labelKey: 'kbd.action.call',
+        label: 'call',
       },
       {
         key: 'r',
@@ -221,16 +221,16 @@ function HoldemPageContent() {
           hasOutstandingBet
             ? exec('raise', betAmount, undefined, getElapsed())
             : exec('bet', betAmount, undefined, getElapsed()),
-        labelKey: 'kbd.action.raiseOrBet',
+        label: 'raiseOrBet',
       },
       {
         key: 'k',
         action: () => exec('check', undefined, undefined, getElapsed()),
         enabled: !hasOutstandingBet,
-        labelKey: 'kbd.action.check',
+        label: 'check',
       },
-      { key: 'f', action: () => exec('fold', undefined, undefined, getElapsed()), labelKey: 'kbd.action.fold' },
-      { key: 'a', action: () => exec('allin', undefined, undefined, getElapsed()), labelKey: 'kbd.action.allin' },
+      { key: 'f', action: () => exec('fold', undefined, undefined, getElapsed()), label: 'fold' },
+      { key: 'a', action: () => exec('allin', undefined, undefined, getElapsed()), label: 'allin' },
     ],
     [exec, hasOutstandingBet, betAmount, getElapsed],
   );

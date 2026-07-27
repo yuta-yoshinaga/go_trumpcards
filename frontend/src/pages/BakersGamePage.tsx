@@ -171,10 +171,10 @@ function BakersGamePageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'h', action: handleHint, labelKey: 'kbd.action.hint' },
-      { key: 'a', action: handleAutoComplete, labelKey: 'kbd.action.autoComplete' },
-      { key: 'g', action: confirmGiveUpAction, labelKey: 'kbd.action.giveUp' },
-      { key: 'z', action: handleUndo, labelKey: 'kbd.action.undo' },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+      { key: 'z', action: handleUndo, label: 'undo' },
     ],
     [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
   );

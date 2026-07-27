@@ -359,15 +359,15 @@ function NertzPageContent() {
   );
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleDrawStock, labelKey: 'kbd.action.draw' },
-      { key: 'n', action: handleSelectNertz, labelKey: 'kbd.action.selectNertzPile' },
-      { key: 'w', action: handleSelectWaste, labelKey: 'kbd.action.selectWastePile' },
-      { key: 'u', action: handleUndo, labelKey: 'kbd.action.undo' },
+      { key: 'd', action: handleDrawStock, label: 'draw' },
+      { key: 'n', action: handleSelectNertz, label: 'selectNertzPile' },
+      { key: 'w', action: handleSelectWaste, label: 'selectWastePile' },
+      { key: 'u', action: handleUndo, label: 'undo' },
       ...Array.from({ length: 9 }, (_, i) => ({
         key: String(i + 1),
         action: () => handleFoundationKey(i),
       })),
-      { key: 'Escape', action: () => setSelection(null), labelKey: 'kbd.action.clearSelection' },
+      { key: 'Escape', action: () => setSelection(null), label: 'clearSelection' },
     ],
     [handleDrawStock, handleSelectNertz, handleSelectWaste, handleUndo, handleFoundationKey],
   );
