@@ -61,13 +61,20 @@ export function useGameApi<TState, TArgs extends unknown[]>(
   // surrounding environment is gone, where React's internals reach for `window` and
   // throw from `dispatchSetState`. In CI that failed whole runs while reporting every
   // test as passed. See issue #4444.
+  //
+  // The effect body re-arms the flag rather than relying on the `useRef(true)`
+  // initialiser: StrictMode runs mount -> cleanup -> remount in dev, so a
+  // cleanup-only effect would latch this `false` on a component that is genuinely
+  // mounted, and every later `exec` would skip its `setState` — leaving every game
+  // page on its skeleton under `bun run dev` while CI stayed green. Same pattern as
+  // usePokerGame.
   const mountedRef = useRef(true);
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
       mountedRef.current = false;
-    },
-    [],
-  );
+    };
+  }, []);
   const apiFnRef = useRef(apiFn);
   apiFnRef.current = apiFn;
   const onSuccessRef = useRef(options?.onSuccess);

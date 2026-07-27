@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { useGameApi } from './useGameApi';
 
@@ -72,5 +73,33 @@ describe('useGameApi unmount safety (#4444)', () => {
     } finally {
       globalThis.window = realWindow;
     }
+  });
+  // The mounted flag must be re-armed by the effect body, not just initialised at
+  // `useRef(true)`. StrictMode deliberately runs mount -> cleanup -> remount in dev to
+  // surface exactly this, and `main.tsx` wraps the whole app in it. With a
+  // cleanup-only effect the flag latches `false` after that cycle and never recovers,
+  // so every later `exec` silently skips its `setState` and every game page sits on
+  // its skeleton forever under `bun run dev` — while production builds, E2E and CI all
+  // stay green, because they do not double-invoke effects.
+  it('still updates state after a StrictMode mount/cleanup/remount cycle', async () => {
+    const apiFn = vi.fn(() => Promise.resolve({ message: '', messageCode: 'ok' }));
+    const captured: { exec?: (...args: unknown[]) => Promise<void> } = {};
+    function Harness() {
+      const { exec, state } = useGameApi(apiFn as (...args: unknown[]) => Promise<unknown>);
+      captured.exec = exec;
+      return <div data-testid="loaded">{state === null ? 'empty' : 'loaded'}</div>;
+    }
+    const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    render(
+      <StrictMode>
+        <QueryClientProvider client={client}>
+          <Harness />
+        </QueryClientProvider>
+      </StrictMode>,
+    );
+    expect(screen.getByTestId('loaded')).toHaveTextContent('empty');
+
+    await captured.exec?.('reset');
+    await waitFor(() => expect(screen.getByTestId('loaded')).toHaveTextContent('loaded'));
   });
 });
