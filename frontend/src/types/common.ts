@@ -96,22 +96,3 @@ export interface ActionLogEntry {
 export interface ActionLogResponse {
   entries: ActionLogEntry[];
 }
-
-/** CPU draw/discard action in Old Maid. */
-export interface CpuAction {
-  drawPlayerIdx: number;
-  drawFromIdx: number;
-  drawnCard: Card | null;
-  discardedPairs: number;
-  discardedCards?: Card[];
-  hesitationMs?: number;
-}
-
-/** History entry for a card draw in Old Maid. */
-export interface DrawHistoryEntry {
-  drawPlayerIdx: number;
-  drawFromIdx: number;
-  discardedPairs: number;
-  drawerFinished: boolean;
-  targetFinished: boolean;
-}
