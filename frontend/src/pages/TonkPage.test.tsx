@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tonkApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, TonkResponse } from '../types/card';
 import { TonkPhase } from '../types/phases';
@@ -191,6 +192,7 @@ describe('TonkPage', () => {
     expect(pile.className).not.toContain('ring-ds-info');
     mockExec.mockClear();
     fireEvent.click(pile);
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('drawdiscard');
   });
 

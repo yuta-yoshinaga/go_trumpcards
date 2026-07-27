@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { montecarloApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, MonteCarloBoardCell, MonteCarloResponse } from '../types/card';
 import { MonteCarloPage } from './MonteCarloPage';
@@ -105,6 +106,7 @@ describe('MonteCarloPage', () => {
     expect(prompt.textContent).toMatch(/隣接/);
     fireEvent.click(cell00);
     expect(cell00).toHaveAttribute('aria-pressed', 'false');
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -130,6 +132,7 @@ describe('MonteCarloPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));

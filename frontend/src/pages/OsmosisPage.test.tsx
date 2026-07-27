@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { osmosisApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, OsmosisResponse } from '../types/card';
 import { OsmosisPage } from './OsmosisPage';
@@ -142,6 +143,7 @@ describe('OsmosisPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -213,6 +215,7 @@ describe('OsmosisPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: 'g' });
     // The key must not dispatch giveup directly — it opens the confirm dialog first.
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -226,7 +229,9 @@ describe('OsmosisPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: 'd' });
     fireEvent.keyDown(document.body, { key: 'h' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('draw');
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('hint');
   });
 
@@ -316,6 +321,7 @@ describe('OsmosisPage', () => {
       mockExec.mockClear();
       // No dragStart ran, so the dataTransfer carries no source payload.
       fireEvent.drop(dropZone, { dataTransfer: buildDataTransfer() });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 

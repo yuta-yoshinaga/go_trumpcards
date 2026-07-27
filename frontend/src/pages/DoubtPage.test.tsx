@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, doubtApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DoubtConfig, DoubtResponse } from '../types/card';
 import { DoubtPage } from './DoubtPage';
@@ -438,6 +439,7 @@ describe('DoubtPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(selectEl, { key: ' ' });
     fireEvent.keyDown(selectEl, { key: 'Escape' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

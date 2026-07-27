@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, spiderApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SpiderResponse, SpiderTableauCard } from '../types/card';
 import { SpiderPage } from './SpiderPage';
@@ -261,6 +262,7 @@ describe('SpiderPage', () => {
     mockExec.mockResolvedValue(gameOverState);
     // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
 
@@ -342,6 +344,7 @@ describe('SpiderPage', () => {
     mockExec.mockResolvedValue({ ...playingState, difficulty: 2 });
     fireEvent.change(screen.getByLabelText('難易度'), { target: { value: '2' } });
     // Mid-game: no reset until the dialog is confirmed (#2188).
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
@@ -355,6 +358,7 @@ describe('SpiderPage', () => {
     mockExec.mockClear();
     fireEvent.change(screen.getByLabelText('難易度'), { target: { value: '4' } });
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -492,6 +496,7 @@ describe('SpiderPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'd' });
     fireEvent.keyDown(document, { key: 'h' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spanish21Api } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BlackJackResponse } from '../types/card';
 import { Spanish21Page } from './Spanish21Page';
@@ -93,6 +94,7 @@ describe('Spanish21Page', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     expect(screen.getByText('本当にゲームをリセットしますか？')).toBeInTheDocument();
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

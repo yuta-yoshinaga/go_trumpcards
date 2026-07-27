@@ -2,6 +2,7 @@ import { act, createEvent, fireEvent, screen, waitFor } from '@testing-library/r
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, daifugoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DaifugoResponse } from '../types/card';
 import { DaifugoPage } from './DaifugoPage';
@@ -996,6 +997,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     fireEvent(dropZone, dropEvent);
     // exec should NOT be called when draggedIdx is NaN
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -1247,6 +1249,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'Enter' });
     // exec should not have been called with 'play' since no cards selected
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
   });
 
@@ -1258,6 +1261,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: '1' });
     fireEvent.keyDown(document, { key: 'Enter' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
   });
 
@@ -1299,6 +1303,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'Enter' });
     // no cards selected so Enter should not call play
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
   });
 

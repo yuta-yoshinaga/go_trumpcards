@@ -3,6 +3,7 @@ import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, blackjackApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BlackJackCpuSeat, BlackJackHand, BlackJackResponse } from '../types/card';
 import { BlackJackPage } from './BlackJackPage';
@@ -1477,6 +1478,7 @@ describe('BlackJackPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     // Confirmation dialog appears and no reset fires until it is confirmed.
     expect(screen.getByText('本当にゲームをリセットしますか？')).toBeInTheDocument();
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -1554,6 +1556,7 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'd' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('doubledown');
   });
 
@@ -1564,6 +1567,7 @@ describe('BlackJackPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'h' });
     fireEvent.keyDown(document, { key: 's' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -1593,6 +1597,7 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'i' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('insurance');
   });
 
@@ -1624,6 +1629,7 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'u' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('earlysurrender');
   });
 

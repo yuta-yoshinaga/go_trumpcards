@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, shortdeckApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { ShortDeckResponse } from '../types/card';
 import { ShortDeckPage } from './ShortDeckPage';
@@ -990,6 +991,7 @@ describe('ShortDeckPage', () => {
         fireEvent.keyDown(document, { key: 'f' });
         fireEvent.keyDown(document, { key: 'a' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
   });

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { trucoApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, TrucoResponse } from '../types/card';
 import { TrucoPage } from './TrucoPage';
@@ -92,8 +93,11 @@ describe('TrucoPage', () => {
     fireEvent.keyDown(document, { key: '1' });
     fireEvent.keyDown(document, { key: 'a' });
     fireEvent.keyDown(document, { key: 't' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('play', 0);
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('accept');
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('truco');
   });
 

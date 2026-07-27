@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { thirtyoneApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, ThirtyOneResponse } from '../types/card';
 import { ThirtyOnePhase } from '../types/phases';
@@ -281,6 +282,7 @@ describe('ThirtyOnePage', () => {
     renderWithProviders(<ThirtyOnePage />);
     // The key is inert until a card is selected (mirrors the disabled button).
     fireEvent.keyDown(document.body, { key: 'x' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('discard', expect.anything());
     fireEvent.click(await screen.findByTestId('hand-card-0'));
     fireEvent.keyDown(document.body, { key: 'x' });

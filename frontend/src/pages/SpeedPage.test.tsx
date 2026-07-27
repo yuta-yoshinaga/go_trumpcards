@@ -1,6 +1,7 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { speedApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SpeedResponse } from '../types/card';
 import { SpeedPage } from './SpeedPage';
@@ -301,6 +302,7 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(window, { key: ' ' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -335,6 +337,7 @@ describe('SpeedPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(window, { key: 'ArrowLeft' });
     fireEvent.keyDown(window, { key: 'ArrowRight' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -343,6 +346,7 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(window, { key: '5' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -353,6 +357,7 @@ describe('SpeedPage', () => {
     fireEvent.keyDown(window, { key: '1', ctrlKey: true });
     fireEvent.keyDown(window, { key: 'ArrowLeft', altKey: true });
     fireEvent.keyDown(window, { key: '2', metaKey: true });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { accordionApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { AccordionResponse, Card, CardDesign } from '../types/card';
 import { AccordionPage } from './AccordionPage';
@@ -127,6 +128,7 @@ describe('AccordionPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -274,6 +276,7 @@ describe('AccordionPage', () => {
     fireEvent.click(pile0);
     await waitFor(() => expect(pile0.className).toMatch(/ring-/));
     fireEvent.click(pile0);
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -319,6 +322,7 @@ describe('AccordionPage', () => {
     const pile0 = screen.getByRole('button', { name: /^0:/ });
     fireEvent.click(pile0);
     // offset=2 is invalid; pile0 becomes the new selection instead
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
     await waitFor(() => expect(pile0.className).toMatch(/ring-/));
   });

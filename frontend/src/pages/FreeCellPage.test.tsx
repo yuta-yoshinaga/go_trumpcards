@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, freecellApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, FreeCellResponse } from '../types/card';
 import { FreeCellPage } from './FreeCellPage';
@@ -233,6 +234,7 @@ describe('FreeCellPage', () => {
     mockExec.mockResolvedValue(gameOverState);
     // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2180).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
 
@@ -247,6 +249,7 @@ describe('FreeCellPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
   });
 
@@ -495,6 +498,7 @@ describe('FreeCellPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(gameOverState);
     fireEvent.keyDown(document, { key: 'g' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -521,6 +525,7 @@ describe('FreeCellPage', () => {
     fireEvent.keyDown(document, { key: 'a' });
     fireEvent.keyDown(document, { key: 'g' });
     fireEvent.keyDown(document, { key: 'z' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

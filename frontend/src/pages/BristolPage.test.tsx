@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bristolApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BristolResponse, Card, CardDesign } from '../types/card';
 import { BristolPage } from './BristolPage';
@@ -179,6 +180,7 @@ describe('BristolPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -239,6 +241,7 @@ describe('BristolPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: 'd' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('draw');
   });
 
@@ -256,6 +259,7 @@ describe('BristolPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: 'z' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('undo');
   });
 
@@ -264,6 +268,7 @@ describe('BristolPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: 'g' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -346,6 +351,7 @@ describe('BristolPage', () => {
       fireEvent.drop(dropZone, { dataTransfer });
 
       // No source was dragged, so getData returns '' and no move is dispatched.
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
     });
   });

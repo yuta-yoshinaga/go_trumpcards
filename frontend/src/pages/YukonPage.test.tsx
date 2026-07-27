@@ -332,3 +332,24 @@ describe('YukonPage keyboard shortcuts', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 });
+
+describe('YukonPage deselect routing (#4439)', () => {
+  // Clicking a selected card that is ALSO the last card in its column must
+  // deselect it. It used to be routed to handleSelectTarget instead, dispatching a
+  // move onto its own column, which the server rejects — so a player trying to
+  // deselect got a rejection message. Scorpion had this same bug and had a test
+  // for it, but the assertion ran before react-query's microtask could deliver the
+  // call, so it passed regardless. These two pages had no such test at all.
+  it('clicking the same selected card deselects it instead of moving onto itself', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    const heart8 = screen.getByRole('button', { name: /♥ 8/ });
+    fireEvent.click(heart8);
+    await waitFor(() => expect(heart8.className).toMatch(/ring-/));
+    fireEvent.click(heart8);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+});

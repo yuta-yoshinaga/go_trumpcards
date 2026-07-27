@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, klondikeApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, KlondikeResponse, KlondikeTableauCard } from '../types/card';
 import { KlondikePage } from './KlondikePage';
@@ -293,6 +294,7 @@ describe('KlondikePage', () => {
     mockExec.mockResolvedValue(gameOverState);
     // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
 
@@ -308,6 +310,7 @@ describe('KlondikePage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
   });
 
@@ -730,6 +733,7 @@ describe('KlondikePage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'd' });
     fireEvent.keyDown(document, { key: 'h' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -754,6 +758,7 @@ describe('KlondikePage', () => {
     mockExec.mockResolvedValue({ ...playingState, drawCount: 3 });
     fireEvent.change(screen.getByLabelText('ドローモード'), { target: { value: '3' } });
     // Mid-game: no reset until the dialog is confirmed (#2179).
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
@@ -769,6 +774,7 @@ describe('KlondikePage', () => {
     mockExec.mockClear();
     fireEvent.change(screen.getByLabelText('ドローモード'), { target: { value: '3' } });
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
     // The select must revert to the still-active setting.
     expect(screen.getByLabelText('ドローモード')).toHaveValue('1');
@@ -781,6 +787,7 @@ describe('KlondikePage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue({ ...playingState, scoringMode: 1 });
     fireEvent.change(screen.getByLabelText('スコアモード'), { target: { value: '1' } });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
@@ -809,6 +816,7 @@ describe('KlondikePage', () => {
     mockExec.mockClear();
     fireEvent.change(screen.getByLabelText('スコアモード'), { target: { value: '1' } });
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
     expect(screen.getByLabelText('スコアモード')).toHaveValue('0');
   });

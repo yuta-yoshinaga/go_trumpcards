@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, conquianApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { ConquianResponse } from '../types/card';
 import { ConquianPage } from './ConquianPage';
@@ -233,6 +234,7 @@ describe('ConquianPage', () => {
     await screen.findByRole('button', { name: '捨て札から引く' });
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: 'd' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('drawdiscard');
   });
 
@@ -243,7 +245,9 @@ describe('ConquianPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: 's' });
     fireEvent.keyDown(document.body, { key: 'd' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('drawstock');
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('drawdiscard');
   });
 
