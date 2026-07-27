@@ -17,7 +17,7 @@ import (
 func mustSoloWhistOutputJSON(msg string) string {
 	out := &controller.SoloWhistWebOutput{
 		Players:         []*controller.SoloWhistWebOutputPlayer{},
-		CurrentTrick:    []*controller.SoloWhistWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		DeclarerIdx:     -1,
 		WinnerPlayer:    -1,

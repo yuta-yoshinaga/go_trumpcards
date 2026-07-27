@@ -17,7 +17,7 @@ import (
 func mustUltiOutputJSON(msg string) string {
 	out := &controller.UltiWebOutput{
 		Players:         []*controller.UltiWebOutputPlayer{},
-		CurrentTrick:    []*controller.UltiWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		TrumpSuit:       -1,
 		LastTrickWinner: -1,

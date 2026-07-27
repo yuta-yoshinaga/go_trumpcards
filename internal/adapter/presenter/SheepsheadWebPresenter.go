@@ -69,7 +69,7 @@ func (p *SheepsheadWebPresenter) buildBase(g interfaces.SheepsheadGame) *control
 		TargetChips:   cfg.TargetChips,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -96,13 +96,6 @@ func (p *SheepsheadWebPresenter) playableIndices(g interfaces.SheepsheadGame) []
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *SheepsheadWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SheepsheadWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SheepsheadWebOutputTrickCard {
-		return &controller.SheepsheadWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

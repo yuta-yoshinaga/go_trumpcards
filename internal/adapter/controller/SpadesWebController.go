@@ -37,12 +37,6 @@ type SpadesWebOutputPlayer struct {
 	Bags            int              `json:"bags"`
 }
 
-// SpadesWebOutputTrickCard トリック中の1枚
-type SpadesWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // SpadesWebOutputHint ヒント出力
 type SpadesWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -52,18 +46,18 @@ type SpadesWebOutputHint struct {
 
 // SpadesWebOutput スペードWebアウトプット
 type SpadesWebOutput struct {
-	Players          []*SpadesWebOutputPlayer    `json:"players"`
-	Phase            int                         `json:"phase"`
-	RoundNumber      int                         `json:"roundNumber"`
-	TrickNumber      int                         `json:"trickNumber"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                         `json:"bidPlayerIdx"`
-	CurrentTrick     []*SpadesWebOutputTrickCard `json:"currentTrick"`
-	SpadesBroken     bool                        `json:"spadesBroken"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerIdx        int                         `json:"winnerIdx"`
-	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	Hint             *SpadesWebOutputHint        `json:"hint,omitempty"`
+	Players          []*SpadesWebOutputPlayer `json:"players"`
+	Phase            int                      `json:"phase"`
+	RoundNumber      int                      `json:"roundNumber"`
+	TrickNumber      int                      `json:"trickNumber"`
+	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                      `json:"bidPlayerIdx"`
+	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
+	SpadesBroken     bool                     `json:"spadesBroken"`
+	GameEndFlag      bool                     `json:"gameEndFlag"`
+	WinnerIdx        int                      `json:"winnerIdx"`
+	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
+	Hint             *SpadesWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config SpadesWebOutputConfig `json:"config"`
 }
@@ -103,7 +97,7 @@ var NewSpadesWebController, NewSpadesWebControllerWithProvider = webControllerPa
 func newSpadesDefaultOutput(msg string) *SpadesWebOutput {
 	return &SpadesWebOutput{
 		Players:       make([]*SpadesWebOutputPlayer, 0),
-		CurrentTrick:  make([]*SpadesWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

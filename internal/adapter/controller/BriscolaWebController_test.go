@@ -20,7 +20,7 @@ import (
 func mustBriscolaOutputJSON(msg string) string {
 	out := &controller.BriscolaWebOutput{
 		Players:       []*controller.BriscolaWebOutputPlayer{},
-		CurrentTrick:  []*controller.BriscolaWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerIdx:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

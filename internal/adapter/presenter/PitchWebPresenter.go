@@ -38,7 +38,7 @@ func (p *PitchWebPresenter) buildBase(s interfaces.PitchGame) *controller.PitchW
 		PointLimit:    cfg.PointLimit,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(s.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
 	resObj.LastTrick, resObj.LastTrickWinner = p.buildLastTrickOutput(s)
 	resObj.Players = p.buildPlayersOutput(s)
 
@@ -55,20 +55,13 @@ func (p *PitchWebPresenter) buildBase(s interfaces.PitchGame) *controller.PitchW
 	return resObj
 }
 
-// buildTrickOutput 現在のトリック情報を構築
-func (p *PitchWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.PitchWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.PitchWebOutputTrickCard {
-		return &controller.PitchWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
-}
-
 // buildLastTrickOutput は直前に解決されたトリック（誰が何を出し誰が取ったか）を
 // アクションログから再構築する。ドメインは専用の lastTrick フィールドを持たないが、
 // 各トリックの "play" ログ（プレイヤーと札）と "trick_win" ログ（勝者）から
 // 現ラウンドの直近トリックを復元できる。ラウンド開始直後（プレイフェーズのトリック 1
 // で、この局のトリックがまだ確定していない）は空スライスと -1 を返す。
-func (p *PitchWebPresenter) buildLastTrickOutput(s interfaces.PitchGame) ([]*controller.PitchWebOutputTrickCard, int) {
-	empty := make([]*controller.PitchWebOutputTrickCard, 0)
+func (p *PitchWebPresenter) buildLastTrickOutput(s interfaces.PitchGame) ([]*controller.WebOutputTrickCard, int) {
+	empty := make([]*controller.WebOutputTrickCard, 0)
 	// ラウンド最初のトリックがプレイ中は、この局に確定済みトリックが無いため空を返す。
 	if s.GetPhase() == domain.PitchPhasePlay && s.GetTrickNumber() <= 1 {
 		return empty, -1
@@ -98,9 +91,9 @@ func (p *PitchWebPresenter) buildLastTrickOutput(s interfaces.PitchGame) ([]*con
 	}
 	plays = plays[len(plays)-domain.PitchPlayerCnt:]
 
-	out := make([]*controller.PitchWebOutputTrickCard, 0, len(plays))
+	out := make([]*controller.WebOutputTrickCard, 0, len(plays))
 	for _, e := range plays {
-		out = append(out, &controller.PitchWebOutputTrickCard{
+		out = append(out, &controller.WebOutputTrickCard{
 			PlayerIdx: e.PlayerIdx,
 			Card:      cardToOutput(e.Cards[0]),
 		})

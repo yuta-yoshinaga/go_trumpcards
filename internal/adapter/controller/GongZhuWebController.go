@@ -37,12 +37,6 @@ type GongZhuWebOutputPlayer struct {
 	TrickCount         int              `json:"trickCount"`
 }
 
-// GongZhuWebOutputTrickCard トリック中の1枚
-type GongZhuWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // GongZhuWebOutputExposure 公開されたポイントカード
 type GongZhuWebOutputExposure struct {
 	Pig     bool `json:"pig"`
@@ -51,27 +45,21 @@ type GongZhuWebOutputExposure struct {
 	Doubler bool `json:"doubler"`
 }
 
-// GongZhuWebOutputHint ヒント出力
-type GongZhuWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // GongZhuWebOutput 拱猪Webアウトプット
 type GongZhuWebOutput struct {
-	Players          []*GongZhuWebOutputPlayer    `json:"players"`
-	Phase            int                          `json:"phase"`
-	RoundNumber      int                          `json:"roundNumber"`
-	TrickNumber      int                          `json:"trickNumber"`
-	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
-	CurrentTrick     []*GongZhuWebOutputTrickCard `json:"currentTrick"`
-	HeartsBroken     bool                         `json:"heartsBroken"`
-	Exposed          GongZhuWebOutputExposure     `json:"exposed"`
-	ExposableIndices []int                        `json:"exposableIndices"`
-	GameEndFlag      bool                         `json:"gameEndFlag"`
-	WinnerIdx        int                          `json:"winnerIdx"`
-	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
-	Hint             *GongZhuWebOutputHint        `json:"hint,omitempty"`
+	Players          []*GongZhuWebOutputPlayer `json:"players"`
+	Phase            int                       `json:"phase"`
+	RoundNumber      int                       `json:"roundNumber"`
+	TrickNumber      int                       `json:"trickNumber"`
+	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
+	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
+	HeartsBroken     bool                      `json:"heartsBroken"`
+	Exposed          GongZhuWebOutputExposure  `json:"exposed"`
+	ExposableIndices []int                     `json:"exposableIndices"`
+	GameEndFlag      bool                      `json:"gameEndFlag"`
+	WinnerIdx        int                       `json:"winnerIdx"`
+	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
+	Hint             *WebOutputCardHint        `json:"hint,omitempty"`
 	WebOutputBase
 	Config GongZhuWebOutputConfig `json:"config"`
 }
@@ -107,7 +95,7 @@ var NewGongZhuWebController, NewGongZhuWebControllerWithProvider = webController
 func newGongZhuDefaultOutput(msg string) *GongZhuWebOutput {
 	return &GongZhuWebOutput{
 		Players:          make([]*GongZhuWebOutputPlayer, 0),
-		CurrentTrick:     make([]*GongZhuWebOutputTrickCard, 0),
+		CurrentTrick:     make([]*WebOutputTrickCard, 0),
 		ExposableIndices: make([]int, 0),
 		WinnerIdx:        -1,
 		WebOutputBase:    WebOutputBase{Message: msg},

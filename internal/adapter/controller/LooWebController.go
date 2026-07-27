@@ -49,12 +49,6 @@ type LooWebOutputPlayer struct {
 	Chips      int              `json:"chips"`
 }
 
-// LooWebOutputTrickCard はトリック中の 1 枚。
-type LooWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // LooWebOutputDealDetail は 1 ディールの精算内訳。
 type LooWebOutputDealDetail struct {
 	PotStart  int         `json:"potStart"`
@@ -75,26 +69,26 @@ type LooWebOutputHint struct {
 
 // LooWebOutput はルー Web アウトプット。
 type LooWebOutput struct {
-	Players         []*LooWebOutputPlayer    `json:"players"`
-	Phase           int                      `json:"phase"`
-	RoundNumber     int                      `json:"roundNumber"`
-	TrickNumber     int                      `json:"trickNumber"`
-	TotalTricks     int                      `json:"totalTricks"`
-	DealerIdx       int                      `json:"dealerIdx"`
-	CurrentTurn     int                      `json:"currentTurn"`
-	DecidePlayerIdx int                      `json:"decidePlayerIdx"`
-	TrumpSuit       int                      `json:"trumpSuit"`
-	TurnUp          *WebOutputCard           `json:"turnUp,omitempty"`
-	Pot             int                      `json:"pot"`
-	PotStart        int                      `json:"potStart"`
-	CurrentTrick    []*LooWebOutputTrickCard `json:"currentTrick"`
-	LastTrick       []*LooWebOutputTrickCard `json:"lastTrick"`
-	LastTrickWinner int                      `json:"lastTrickWinner"`
-	PlayableIndices []int                    `json:"playableIndices"`
-	GameEndFlag     bool                     `json:"gameEndFlag"`
-	LastDealDetail  *LooWebOutputDealDetail  `json:"lastDealDetail"`
-	IsHumanTurn     bool                     `json:"isHumanTurn"`
-	Hint            *LooWebOutputHint        `json:"hint,omitempty"`
+	Players         []*LooWebOutputPlayer   `json:"players"`
+	Phase           int                     `json:"phase"`
+	RoundNumber     int                     `json:"roundNumber"`
+	TrickNumber     int                     `json:"trickNumber"`
+	TotalTricks     int                     `json:"totalTricks"`
+	DealerIdx       int                     `json:"dealerIdx"`
+	CurrentTurn     int                     `json:"currentTurn"`
+	DecidePlayerIdx int                     `json:"decidePlayerIdx"`
+	TrumpSuit       int                     `json:"trumpSuit"`
+	TurnUp          *WebOutputCard          `json:"turnUp,omitempty"`
+	Pot             int                     `json:"pot"`
+	PotStart        int                     `json:"potStart"`
+	CurrentTrick    []*WebOutputTrickCard   `json:"currentTrick"`
+	LastTrick       []*WebOutputTrickCard   `json:"lastTrick"`
+	LastTrickWinner int                     `json:"lastTrickWinner"`
+	PlayableIndices []int                   `json:"playableIndices"`
+	GameEndFlag     bool                    `json:"gameEndFlag"`
+	LastDealDetail  *LooWebOutputDealDetail `json:"lastDealDetail"`
+	IsHumanTurn     bool                    `json:"isHumanTurn"`
+	Hint            *LooWebOutputHint       `json:"hint,omitempty"`
 	WebOutputBase
 	Config LooWebConfigOutput `json:"config"`
 }
@@ -117,8 +111,8 @@ var NewLooWebController, NewLooWebControllerWithProvider = webControllerPair[use
 func newLooDefaultOutput(msg string) *LooWebOutput {
 	return &LooWebOutput{
 		Players:         make([]*LooWebOutputPlayer, 0),
-		CurrentTrick:    make([]*LooWebOutputTrickCard, 0),
-		LastTrick:       make([]*LooWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		TotalTricks:     domain.LooTrickCount,
 		LastTrickWinner: -1,

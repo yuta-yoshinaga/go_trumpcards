@@ -44,7 +44,7 @@ func (p *SpoilFiveWebPresenter) buildBase(g interfaces.SpoilFiveGame) *controlle
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -59,13 +59,6 @@ func (p *SpoilFiveWebPresenter) playableIndices(g interfaces.SpoilFiveGame) []in
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *SpoilFiveWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SpoilFiveWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SpoilFiveWebOutputTrickCard {
-		return &controller.SpoilFiveWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -136,7 +129,7 @@ func (p *SpoilFiveWebPresenter) HintOutput(g interfaces.SpoilFiveGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.SpoilFiveWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

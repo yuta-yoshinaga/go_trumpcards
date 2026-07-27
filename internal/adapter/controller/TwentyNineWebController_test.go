@@ -17,7 +17,7 @@ import (
 func mustTwentyNineOutputJSON(msg string) string {
 	out := &controller.TwentyNineWebOutput{
 		Players:         []*controller.TwentyNineWebOutputPlayer{},
-		CurrentTrick:    []*controller.TwentyNineWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		DeclarerIdx:     -1,
 		WinnerTeam:      -1,

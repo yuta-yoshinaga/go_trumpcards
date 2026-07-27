@@ -37,12 +37,6 @@ type PinochleWebOutputPlayer struct {
 	TrickPoints int              `json:"trickPoints"`
 }
 
-// PinochleWebOutputTrickCard トリック中の1枚
-type PinochleWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // PinochleWebOutputMeld メルド情報
 type PinochleWebOutputMeld struct {
 	Type   int              `json:"type"`
@@ -61,24 +55,24 @@ type PinochleWebOutputHint struct {
 
 // PinochleWebOutput ピノクルWebアウトプット
 type PinochleWebOutput struct {
-	Players          []*PinochleWebOutputPlayer    `json:"players"`
-	Phase            int                           `json:"phase"`
-	RoundNumber      int                           `json:"roundNumber"`
-	TrickNumber      int                           `json:"trickNumber"`
-	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                           `json:"bidPlayerIdx"`
-	DealerIdx        int                           `json:"dealerIdx"`
-	TrumpSuit        int                           `json:"trumpSuit"`
-	HighestBid       int                           `json:"highestBid"`
-	HighestBidder    int                           `json:"highestBidder"`
-	CurrentTrick     []*PinochleWebOutputTrickCard `json:"currentTrick"`
-	TeamScores       [2]int                        `json:"teamScores"`
-	GameEndFlag      bool                          `json:"gameEndFlag"`
-	WinnerTeam       int                           `json:"winnerTeam"`
-	LeadPlayerIdx    int                           `json:"leadPlayerIdx"`
-	PlayerMelds      [4][]*PinochleWebOutputMeld   `json:"playerMelds"`
-	ValidPlayIndices []int                         `json:"validPlayIndices,omitempty"`
-	Hint             *PinochleWebOutputHint        `json:"hint,omitempty"`
+	Players          []*PinochleWebOutputPlayer  `json:"players"`
+	Phase            int                         `json:"phase"`
+	RoundNumber      int                         `json:"roundNumber"`
+	TrickNumber      int                         `json:"trickNumber"`
+	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                         `json:"bidPlayerIdx"`
+	DealerIdx        int                         `json:"dealerIdx"`
+	TrumpSuit        int                         `json:"trumpSuit"`
+	HighestBid       int                         `json:"highestBid"`
+	HighestBidder    int                         `json:"highestBidder"`
+	CurrentTrick     []*WebOutputTrickCard       `json:"currentTrick"`
+	TeamScores       [2]int                      `json:"teamScores"`
+	GameEndFlag      bool                        `json:"gameEndFlag"`
+	WinnerTeam       int                         `json:"winnerTeam"`
+	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
+	PlayerMelds      [4][]*PinochleWebOutputMeld `json:"playerMelds"`
+	ValidPlayIndices []int                       `json:"validPlayIndices,omitempty"`
+	Hint             *PinochleWebOutputHint      `json:"hint,omitempty"`
 	WebOutputBase
 	Config PinochleWebOutputConfig `json:"config"`
 }
@@ -114,7 +108,7 @@ var NewPinochleWebController, NewPinochleWebControllerWithProvider = webControll
 func newPinochleDefaultOutput(msg string) *PinochleWebOutput {
 	return &PinochleWebOutput{
 		Players:       make([]*PinochleWebOutputPlayer, 0),
-		CurrentTrick:  make([]*PinochleWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerTeam:    -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

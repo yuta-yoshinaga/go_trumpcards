@@ -17,7 +17,7 @@ import (
 func mustTysiacOutputJSON(msg string) string {
 	out := &controller.TysiacWebOutput{
 		Players:         []*controller.TysiacWebOutputPlayer{},
-		CurrentTrick:    []*controller.TysiacWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		DeclarerIdx:     -1,
 		LastTrickWinner: -1,

@@ -38,18 +38,6 @@ type TysiacWebOutputPlayer struct {
 	IsDeclarer bool             `json:"isDeclarer"`
 }
 
-// TysiacWebOutputTrickCard トリック中の1枚
-type TysiacWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// TysiacWebOutputHint ヒント出力
-type TysiacWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // TysiacWebOutput サウザンドのWebアウトプット
 type TysiacWebOutput struct {
 	Players          []*TysiacWebOutputPlayer    `json:"players"`
@@ -64,7 +52,7 @@ type TysiacWebOutput struct {
 	Contract         int                         `json:"contract"`
 	CurrentBid       int                         `json:"currentBid"`
 	TrumpSuit        int                         `json:"trumpSuit"`
-	CurrentTrick     []*TysiacWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard       `json:"currentTrick"`
 	PlayerScores     [domain.TysiacPlayerCnt]int `json:"playerScores"`
 	RoundCardPoints  [domain.TysiacPlayerCnt]int `json:"roundCardPoints"`
 	RoundMarriage    [domain.TysiacPlayerCnt]int `json:"roundMarriage"`
@@ -73,7 +61,7 @@ type TysiacWebOutput struct {
 	GameEndFlag      bool                        `json:"gameEndFlag"`
 	WinnerPlayer     int                         `json:"winnerPlayer"`
 	IsHumanTurn      bool                        `json:"isHumanTurn"`
-	Hint             *TysiacWebOutputHint        `json:"hint,omitempty"`
+	Hint             *WebOutputCardHint          `json:"hint,omitempty"`
 	WebOutputBase
 	Config TysiacWebOutputConfig `json:"config"`
 }
@@ -109,7 +97,7 @@ var NewTysiacWebController, NewTysiacWebControllerWithProvider = webControllerPa
 func newTysiacDefaultOutput(msg string) *TysiacWebOutput {
 	return &TysiacWebOutput{
 		Players:         make([]*TysiacWebOutputPlayer, 0),
-		CurrentTrick:    make([]*TysiacWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		DeclarerIdx:     -1,
 		LastTrickWinner: -1,

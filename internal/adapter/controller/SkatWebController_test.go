@@ -17,7 +17,7 @@ import (
 func mustSkatOutputJSON(msg string) string {
 	out := &controller.SkatWebOutput{
 		Players:           []*controller.SkatWebOutputPlayer{},
-		CurrentTrick:      []*controller.SkatWebOutputTrickCard{},
+		CurrentTrick:      []*controller.WebOutputTrickCard{},
 		WinnerSide:        domain.SkatWinnerUndecided,
 		DeclarerIdx:       -1,
 		ActiveBidActorIdx: -1,

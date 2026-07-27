@@ -33,35 +33,23 @@ type TressetteWebOutputPlayer struct {
 	TeamID     int              `json:"teamId"`
 }
 
-// TressetteWebOutputTrickCard トリック中の1枚
-type TressetteWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// TressetteWebOutputHint ヒント出力
-type TressetteWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // TressetteWebOutput トレセッテのWebアウトプット
 type TressetteWebOutput struct {
-	Players          []*TressetteWebOutputPlayer    `json:"players"`
-	Phase            int                            `json:"phase"`
-	RoundNumber      int                            `json:"roundNumber"`
-	TrickNumber      int                            `json:"trickNumber"`
-	CurrentPlayerIdx int                            `json:"currentPlayerIdx"`
-	CurrentTrick     []*TressetteWebOutputTrickCard `json:"currentTrick"`
-	LastTrick        []*TressetteWebOutputTrickCard `json:"lastTrick"`
-	LastTrickWinner  int                            `json:"lastTrickWinner"`
-	LeadPlayerIdx    int                            `json:"leadPlayerIdx"`
-	TeamScores       []int                          `json:"teamScores"`
-	TeamRoundThirds  []int                          `json:"teamRoundThirds"`
-	PlayableIndices  []int                          `json:"playableIndices"`
-	GameEndFlag      bool                           `json:"gameEndFlag"`
-	WinnerTeam       int                            `json:"winnerTeam"`
-	Hint             *TressetteWebOutputHint        `json:"hint,omitempty"`
+	Players          []*TressetteWebOutputPlayer `json:"players"`
+	Phase            int                         `json:"phase"`
+	RoundNumber      int                         `json:"roundNumber"`
+	TrickNumber      int                         `json:"trickNumber"`
+	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
+	CurrentTrick     []*WebOutputTrickCard       `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard       `json:"lastTrick"`
+	LastTrickWinner  int                         `json:"lastTrickWinner"`
+	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
+	TeamScores       []int                       `json:"teamScores"`
+	TeamRoundThirds  []int                       `json:"teamRoundThirds"`
+	PlayableIndices  []int                       `json:"playableIndices"`
+	GameEndFlag      bool                        `json:"gameEndFlag"`
+	WinnerTeam       int                         `json:"winnerTeam"`
+	Hint             *WebOutputCardHint          `json:"hint,omitempty"`
 	WebOutputBase
 	Config TressetteWebOutputConfig `json:"config"`
 }
@@ -97,8 +85,8 @@ var NewTressetteWebController, NewTressetteWebControllerWithProvider = webContro
 func newTressetteDefaultOutput(msg string) *TressetteWebOutput {
 	return &TressetteWebOutput{
 		Players:         make([]*TressetteWebOutputPlayer, 0),
-		CurrentTrick:    make([]*TressetteWebOutputTrickCard, 0),
-		LastTrick:       make([]*TressetteWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
 		LastTrickWinner: -1,
 		TeamScores:      make([]int, 0),
 		TeamRoundThirds: make([]int, 0),

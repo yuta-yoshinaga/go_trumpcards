@@ -43,18 +43,6 @@ type UltiWebOutputPlayer struct {
 	IsDeclarer bool             `json:"isDeclarer"`
 }
 
-// UltiWebOutputTrickCard トリック中の1枚
-type UltiWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// UltiWebOutputHint ヒント出力
-type UltiWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // UltiWebOutput ウルティのWebアウトプット
 type UltiWebOutput struct {
 	Players          []*UltiWebOutputPlayer    `json:"players"`
@@ -70,7 +58,7 @@ type UltiWebOutput struct {
 	TalonCount       int                       `json:"talonCount"`
 	TalonTaken       bool                      `json:"talonTaken"`
 	DiscardCount     int                       `json:"discardCount"`
-	CurrentTrick     []*UltiWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
 	PlayerCoins      [domain.UltiPlayerCnt]int `json:"playerCoins"`
 	LastTrickWinner  int                       `json:"lastTrickWinner"`
 	Outcome          int                       `json:"outcome"`
@@ -80,7 +68,7 @@ type UltiWebOutput struct {
 	WinnerPlayer     int                       `json:"winnerPlayer"`
 	IsHumanTurn      bool                      `json:"isHumanTurn"`
 	IsHumanBidTurn   bool                      `json:"isHumanBidTurn"`
-	Hint             *UltiWebOutputHint        `json:"hint,omitempty"`
+	Hint             *WebOutputCardHint        `json:"hint,omitempty"`
 	WebOutputBase
 	Config UltiWebOutputConfig `json:"config"`
 }
@@ -132,7 +120,7 @@ var NewUltiWebController, NewUltiWebControllerWithProvider = webControllerPair[u
 func newUltiDefaultOutput(msg string) *UltiWebOutput {
 	return &UltiWebOutput{
 		Players:         make([]*UltiWebOutputPlayer, 0),
-		CurrentTrick:    make([]*UltiWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		DeclarerIdx:     0,
 		TrumpSuit:       -1,

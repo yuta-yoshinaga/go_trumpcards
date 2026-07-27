@@ -20,7 +20,7 @@ import (
 func mustCatchTenOutputJSON(msg string) string {
 	out := &controller.CatchTenWebOutput{
 		Players:       []*controller.CatchTenWebOutputPlayer{},
-		CurrentTrick:  []*controller.CatchTenWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerTeam:    -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

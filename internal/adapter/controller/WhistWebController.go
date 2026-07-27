@@ -33,12 +33,6 @@ type WhistWebOutputPlayer struct {
 	Team            int              `json:"team"`
 }
 
-// WhistWebOutputTrickCard トリック中の1枚
-type WhistWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // WhistWebOutputHint ヒント出力
 type WhistWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -47,19 +41,19 @@ type WhistWebOutputHint struct {
 
 // WhistWebOutput ホイストWebアウトプット
 type WhistWebOutput struct {
-	Players          []*WhistWebOutputPlayer    `json:"players"`
-	Phase            int                        `json:"phase"`
-	RoundNumber      int                        `json:"roundNumber"`
-	TrickNumber      int                        `json:"trickNumber"`
-	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
-	CurrentTrick     []*WhistWebOutputTrickCard `json:"currentTrick"`
-	TrumpSuit        int                        `json:"trumpSuit"`
-	DealerIdx        int                        `json:"dealerIdx"`
-	TeamScores       [2]int                     `json:"teamScores"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerTeam       int                        `json:"winnerTeam"`
-	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
-	Hint             *WhistWebOutputHint        `json:"hint,omitempty"`
+	Players          []*WhistWebOutputPlayer `json:"players"`
+	Phase            int                     `json:"phase"`
+	RoundNumber      int                     `json:"roundNumber"`
+	TrickNumber      int                     `json:"trickNumber"`
+	CurrentPlayerIdx int                     `json:"currentPlayerIdx"`
+	CurrentTrick     []*WebOutputTrickCard   `json:"currentTrick"`
+	TrumpSuit        int                     `json:"trumpSuit"`
+	DealerIdx        int                     `json:"dealerIdx"`
+	TeamScores       [2]int                  `json:"teamScores"`
+	GameEndFlag      bool                    `json:"gameEndFlag"`
+	WinnerTeam       int                     `json:"winnerTeam"`
+	LeadPlayerIdx    int                     `json:"leadPlayerIdx"`
+	Hint             *WhistWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config WhistWebOutputConfig `json:"config"`
 }
@@ -95,7 +89,7 @@ var NewWhistWebController, NewWhistWebControllerWithProvider = webControllerPair
 func newWhistDefaultOutput(msg string) *WhistWebOutput {
 	return &WhistWebOutput{
 		Players:       make([]*WhistWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WhistWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerTeam:    -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

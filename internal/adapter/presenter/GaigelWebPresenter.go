@@ -48,15 +48,9 @@ func (p *GaigelWebPresenter) buildBase(g interfaces.GaigelGame) *controller.Gaig
 		TargetScore:   cfg.TargetScore,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
-}
-
-func (p *GaigelWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.GaigelWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.GaigelWebOutputTrickCard {
-		return &controller.GaigelWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 func (p *GaigelWebPresenter) buildPlayersOutput(g interfaces.GaigelGame) []*controller.GaigelWebOutputPlayer {

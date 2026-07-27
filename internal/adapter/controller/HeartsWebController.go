@@ -38,32 +38,20 @@ type HeartsWebOutputPlayer struct {
 	PenaltyCards []*WebOutputCard `json:"penaltyCards"`
 }
 
-// HeartsWebOutputTrickCard トリック中の1枚
-type HeartsWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// HeartsWebOutputHint ヒント出力
-type HeartsWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // HeartsWebOutput ハーツWebアウトプット
 type HeartsWebOutput struct {
-	Players          []*HeartsWebOutputPlayer    `json:"players"`
-	Phase            int                         `json:"phase"`
-	RoundNumber      int                         `json:"roundNumber"`
-	TrickNumber      int                         `json:"trickNumber"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	CurrentTrick     []*HeartsWebOutputTrickCard `json:"currentTrick"`
-	HeartsBroken     bool                        `json:"heartsBroken"`
-	PassDirection    int                         `json:"passDirection"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerIdx        int                         `json:"winnerIdx"`
-	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	Hint             *HeartsWebOutputHint        `json:"hint,omitempty"`
+	Players          []*HeartsWebOutputPlayer `json:"players"`
+	Phase            int                      `json:"phase"`
+	RoundNumber      int                      `json:"roundNumber"`
+	TrickNumber      int                      `json:"trickNumber"`
+	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
+	HeartsBroken     bool                     `json:"heartsBroken"`
+	PassDirection    int                      `json:"passDirection"`
+	GameEndFlag      bool                     `json:"gameEndFlag"`
+	WinnerIdx        int                      `json:"winnerIdx"`
+	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
+	Hint             *WebOutputCardHint       `json:"hint,omitempty"`
 	WebOutputBase
 	Config HeartsWebOutputConfig `json:"config"`
 }
@@ -101,7 +89,7 @@ var NewHeartsWebController, NewHeartsWebControllerWithProvider = webControllerPa
 func newHeartsDefaultOutput(msg string) *HeartsWebOutput {
 	return &HeartsWebOutput{
 		Players:       make([]*HeartsWebOutputPlayer, 0),
-		CurrentTrick:  make([]*HeartsWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

@@ -50,12 +50,6 @@ type CinchWebOutputPlayer struct {
 	TotalScore int              `json:"totalScore"`
 }
 
-// CinchWebOutputTrickCard はトリック中の 1 枚。
-type CinchWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // CinchWebOutputDealDetail は 1 ディールの得点内訳。
 type CinchWebOutputDealDetail struct {
 	TrumpSuit int         `json:"trumpSuit"`
@@ -76,27 +70,27 @@ type CinchWebOutputHint struct {
 
 // CinchWebOutput はチンチ Web アウトプット。
 type CinchWebOutput struct {
-	Players         []*CinchWebOutputPlayer    `json:"players"`
-	Phase           int                        `json:"phase"`
-	RoundNumber     int                        `json:"roundNumber"`
-	TrickNumber     int                        `json:"trickNumber"`
-	TotalTricks     int                        `json:"totalTricks"`
-	DealerIdx       int                        `json:"dealerIdx"`
-	CurrentTurn     int                        `json:"currentTurn"`
-	BidPlayerIdx    int                        `json:"bidPlayerIdx"`
-	CurrentBid      int                        `json:"currentBid"`
-	BidWinnerIdx    int                        `json:"bidWinnerIdx"`
-	TrumpSuit       int                        `json:"trumpSuit"`
-	CurrentTrick    []*CinchWebOutputTrickCard `json:"currentTrick"`
-	LastTrick       []*CinchWebOutputTrickCard `json:"lastTrick"`
-	LastTrickWinner int                        `json:"lastTrickWinner"`
-	PlayableIndices []int                      `json:"playableIndices"`
-	GameEndFlag     bool                       `json:"gameEndFlag"`
-	WinnerIdx       int                        `json:"winnerIdx"`
-	RoundWinners    []int                      `json:"roundWinners"`
-	LastDealDetail  *CinchWebOutputDealDetail  `json:"lastDealDetail"`
-	IsHumanTurn     bool                       `json:"isHumanTurn"`
-	Hint            *CinchWebOutputHint        `json:"hint,omitempty"`
+	Players         []*CinchWebOutputPlayer   `json:"players"`
+	Phase           int                       `json:"phase"`
+	RoundNumber     int                       `json:"roundNumber"`
+	TrickNumber     int                       `json:"trickNumber"`
+	TotalTricks     int                       `json:"totalTricks"`
+	DealerIdx       int                       `json:"dealerIdx"`
+	CurrentTurn     int                       `json:"currentTurn"`
+	BidPlayerIdx    int                       `json:"bidPlayerIdx"`
+	CurrentBid      int                       `json:"currentBid"`
+	BidWinnerIdx    int                       `json:"bidWinnerIdx"`
+	TrumpSuit       int                       `json:"trumpSuit"`
+	CurrentTrick    []*WebOutputTrickCard     `json:"currentTrick"`
+	LastTrick       []*WebOutputTrickCard     `json:"lastTrick"`
+	LastTrickWinner int                       `json:"lastTrickWinner"`
+	PlayableIndices []int                     `json:"playableIndices"`
+	GameEndFlag     bool                      `json:"gameEndFlag"`
+	WinnerIdx       int                       `json:"winnerIdx"`
+	RoundWinners    []int                     `json:"roundWinners"`
+	LastDealDetail  *CinchWebOutputDealDetail `json:"lastDealDetail"`
+	IsHumanTurn     bool                      `json:"isHumanTurn"`
+	Hint            *CinchWebOutputHint       `json:"hint,omitempty"`
 	WebOutputBase
 	Config CinchWebConfigOutput `json:"config"`
 }
@@ -119,8 +113,8 @@ var NewCinchWebController, NewCinchWebControllerWithProvider = webControllerPair
 func newCinchDefaultOutput(msg string) *CinchWebOutput {
 	return &CinchWebOutput{
 		Players:         make([]*CinchWebOutputPlayer, 0),
-		CurrentTrick:    make([]*CinchWebOutputTrickCard, 0),
-		LastTrick:       make([]*CinchWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		RoundWinners:    make([]int, 0),
 		TotalTricks:     domain.CinchTotalTricks,

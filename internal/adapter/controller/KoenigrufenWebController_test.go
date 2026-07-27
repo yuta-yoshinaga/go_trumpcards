@@ -17,7 +17,7 @@ import (
 func mustKoenigrufenOutputJSON(msg string) string {
 	out := &controller.KoenigrufenWebOutput{
 		Players:         []*controller.KoenigrufenWebOutputPlayer{},
-		CurrentTrick:    []*controller.KoenigrufenWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		Talon:           []*controller.WebOutputCard{},
 		PlayableIndices: []int{},
 		DeclarerIdx:     -1,

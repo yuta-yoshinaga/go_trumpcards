@@ -18,7 +18,7 @@ import (
 func mustNapoleonOutputJSON(msg string) string {
 	out := &controller.NapoleonWebOutput{
 		Players:       []*controller.NapoleonWebOutputPlayer{},
-		CurrentTrick:  []*controller.NapoleonWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerTeam:    domain.NapoleonWinnerUndecided,
 		NapoleonIdx:   -1,
 		AdjutantIdx:   -1,

@@ -23,7 +23,7 @@ func mustBeziqueOutputJSON(msg string) string {
 		DealPoints:     []int{},
 		DealMeldPoints: []int{},
 		MatchScore:     []int{},
-		CurrentTrick:   []*controller.BeziqueWebOutputTrickCard{},
+		CurrentTrick:   []*controller.WebOutputTrickCard{},
 		AvailableMelds: []*controller.BeziqueWebOutputMeld{},
 		WinnerIdx:      -1,
 		WebOutputBase:  controller.WebOutputBase{Message: msg},

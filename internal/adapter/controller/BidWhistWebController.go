@@ -46,12 +46,6 @@ type BidWhistWebOutputPlayer struct {
 	IsDeclarer bool                  `json:"isDeclarer"`
 }
 
-// BidWhistWebOutputTrickCard トリック中の1枚
-type BidWhistWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // BidWhistWebOutputHint ヒント出力
 type BidWhistWebOutputHint struct {
 	BidTricks      *int   `json:"bidTricks,omitempty"`
@@ -65,27 +59,27 @@ type BidWhistWebOutputHint struct {
 
 // BidWhistWebOutput Bid Whist Webアウトプット
 type BidWhistWebOutput struct {
-	Players           []*BidWhistWebOutputPlayer    `json:"players"`
-	Phase             int                           `json:"phase"`
-	RoundNumber       int                           `json:"roundNumber"`
-	TrickNumber       int                           `json:"trickNumber"`
-	CurrentPlayerIdx  int                           `json:"currentPlayerIdx"`
-	BidPlayerIdx      int                           `json:"bidPlayerIdx"`
-	DealerIdx         int                           `json:"dealerIdx"`
-	LeadPlayerIdx     int                           `json:"leadPlayerIdx"`
-	TrumpSuit         int                           `json:"trumpSuit"`
-	ContractTricks    int                           `json:"contractTricks"`
-	ContractDirection int                           `json:"contractDirection"`
-	DeclarerIdx       int                           `json:"declarerIdx"`
-	HighestBid        *BidWhistWebOutputBid         `json:"highestBid,omitempty"`
-	HighestBidder     int                           `json:"highestBidder"`
-	KittyCount        int                           `json:"kittyCount"`
-	KittyIndices      []int                         `json:"kittyIndices"`
-	CurrentTrick      []*BidWhistWebOutputTrickCard `json:"currentTrick"`
-	TeamScores        [2]int                        `json:"teamScores"`
-	GameEndFlag       bool                          `json:"gameEndFlag"`
-	WinnerTeam        int                           `json:"winnerTeam"`
-	Hint              *BidWhistWebOutputHint        `json:"hint,omitempty"`
+	Players           []*BidWhistWebOutputPlayer `json:"players"`
+	Phase             int                        `json:"phase"`
+	RoundNumber       int                        `json:"roundNumber"`
+	TrickNumber       int                        `json:"trickNumber"`
+	CurrentPlayerIdx  int                        `json:"currentPlayerIdx"`
+	BidPlayerIdx      int                        `json:"bidPlayerIdx"`
+	DealerIdx         int                        `json:"dealerIdx"`
+	LeadPlayerIdx     int                        `json:"leadPlayerIdx"`
+	TrumpSuit         int                        `json:"trumpSuit"`
+	ContractTricks    int                        `json:"contractTricks"`
+	ContractDirection int                        `json:"contractDirection"`
+	DeclarerIdx       int                        `json:"declarerIdx"`
+	HighestBid        *BidWhistWebOutputBid      `json:"highestBid,omitempty"`
+	HighestBidder     int                        `json:"highestBidder"`
+	KittyCount        int                        `json:"kittyCount"`
+	KittyIndices      []int                      `json:"kittyIndices"`
+	CurrentTrick      []*WebOutputTrickCard      `json:"currentTrick"`
+	TeamScores        [2]int                     `json:"teamScores"`
+	GameEndFlag       bool                       `json:"gameEndFlag"`
+	WinnerTeam        int                        `json:"winnerTeam"`
+	Hint              *BidWhistWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config BidWhistWebOutputConfig `json:"config"`
 }
@@ -125,7 +119,7 @@ var NewBidWhistWebController, NewBidWhistWebControllerWithProvider = webControll
 func newBidWhistDefaultOutput(msg string) *BidWhistWebOutput {
 	return &BidWhistWebOutput{
 		Players:       make([]*BidWhistWebOutputPlayer, 0),
-		CurrentTrick:  make([]*BidWhistWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		KittyIndices:  make([]int, 0),
 		WinnerTeam:    -1,
 		DeclarerIdx:   -1,

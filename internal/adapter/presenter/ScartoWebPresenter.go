@@ -102,7 +102,7 @@ func (p *ScartoWebPresenter) buildBase(g interfaces.ScartoGame) *controller.Scar
 		TargetDeals:   cfg.TargetDeals,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutputWithFace(g.GetCurrentTrick(), scartoFace)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -117,13 +117,6 @@ func (p *ScartoWebPresenter) playableIndices(g interfaces.ScartoGame) []int {
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *ScartoWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.ScartoWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.ScartoWebOutputTrickCard {
-		return &controller.ScartoWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutputWithFace(tc.Card, scartoFace)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築 (人間のみ手札を公開、伏せたスカルトは非公開)
@@ -211,7 +204,7 @@ func (p *ScartoWebPresenter) HintOutput(g interfaces.ScartoGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.ScartoWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

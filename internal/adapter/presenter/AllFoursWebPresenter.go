@@ -40,7 +40,7 @@ func (p *AllFoursWebPresenter) buildBase(s interfaces.AllFoursGame) *controller.
 		PointLimit:    cfg.PointLimit,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(s.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(s)
 	resObj.RoundBreakdown = p.buildRoundBreakdown(s)
 
@@ -54,13 +54,6 @@ func (p *AllFoursWebPresenter) buildBase(s interfaces.AllFoursGame) *controller.
 		resObj.ValidPlayIndices = make([]int, 0)
 	}
 	return resObj
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *AllFoursWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.AllFoursWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.AllFoursWebOutputTrickCard {
-		return &controller.AllFoursWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

@@ -54,17 +54,10 @@ func (p *EcarteWebPresenter) buildBase(b interfaces.EcarteGame) *controller.Ecar
 		resObj.MatchScore[i] = b.GetMatchScore(i)
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(b.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(b.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(b)
 	resObj.ValidPlays = p.buildValidPlays(b)
 	return resObj
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *EcarteWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.EcarteWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.EcarteWebOutputTrickCard {
-		return &controller.EcarteWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

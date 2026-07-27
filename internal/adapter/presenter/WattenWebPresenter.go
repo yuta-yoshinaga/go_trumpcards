@@ -50,15 +50,9 @@ func (p *WattenWebPresenter) buildBase(g interfaces.WattenGame) *controller.Watt
 		MaxRaises:     cfg.MaxRaises,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
-}
-
-func (p *WattenWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.WattenWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.WattenWebOutputTrickCard {
-		return &controller.WattenWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 func (p *WattenWebPresenter) buildPlayersOutput(g interfaces.WattenGame) []*controller.WattenWebOutputPlayer {

@@ -38,16 +38,9 @@ func (p *SpadesWebPresenter) buildBase(s interfaces.SpadesGame) *controller.Spad
 		BagPenaltyThreshold: cfg.BagPenaltyThreshold,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(s.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(s)
 	return resObj
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *SpadesWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SpadesWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SpadesWebOutputTrickCard {
-		return &controller.SpadesWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

@@ -54,7 +54,7 @@ func (p *BridgeWebPresenter) buildBase(b interfaces.BridgeGame) *controller.Brid
 	}
 
 	resObj.BidHistory = p.buildBidHistoryOutput(b.GetBidHistory())
-	resObj.CurrentTrick = p.buildTrickOutput(b.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(b.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(b)
 	return resObj
 }
@@ -71,13 +71,6 @@ func (p *BridgeWebPresenter) buildBidHistoryOutput(history []*domain.BridgeBidEn
 		})
 	}
 	return out
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *BridgeWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.BridgeWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.BridgeWebOutputTrickCard {
-		return &controller.BridgeWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

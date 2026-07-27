@@ -45,12 +45,6 @@ type SkatWebOutputPlayer struct {
 	TrickCount      int              `json:"trickCount"`
 }
 
-// SkatWebOutputTrickCard one card played in a trick.
-type SkatWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // SkatWebOutputHint hint output.
 type SkatWebOutputHint struct {
 	CardIndex    *int   `json:"cardIndex,omitempty"`
@@ -64,31 +58,31 @@ type SkatWebOutputHint struct {
 
 // SkatWebOutput Skat web response payload.
 type SkatWebOutput struct {
-	Players             []*SkatWebOutputPlayer    `json:"players"`
-	Phase               int                       `json:"phase"`
-	RoundNumber         int                       `json:"roundNumber"`
-	TrickNumber         int                       `json:"trickNumber"`
-	CurrentPlayerIdx    int                       `json:"currentPlayerIdx"`
-	CurrentTrick        []*SkatWebOutputTrickCard `json:"currentTrick"`
-	ForehandIdx         int                       `json:"forehandIdx"`
-	MiddlehandIdx       int                       `json:"middlehandIdx"`
-	RearhandIdx         int                       `json:"rearhandIdx"`
-	DealerIdx           int                       `json:"dealerIdx"`
-	DeclarerIdx         int                       `json:"declarerIdx"`
-	CurrentBid          int                       `json:"currentBid"`
-	ActiveBidActorIdx   int                       `json:"activeBidActorIdx"`
-	GameType            int                       `json:"gameType"`
-	TrumpSuit           int                       `json:"trumpSuit"`
-	Skat                []*WebOutputCard          `json:"skat,omitempty"`
-	OriginalSkat        []*WebOutputCard          `json:"originalSkat,omitempty"`
-	PickedSkat          bool                      `json:"pickedSkat"`
-	DeclarerCardPoints  int                       `json:"declarerCardPoints"`
-	DefendersCardPoints int                       `json:"defendersCardPoints"`
-	WinnerSide          int                       `json:"winnerSide"`
-	GameValue           int                       `json:"gameValue"`
-	GameEndFlag         bool                      `json:"gameEndFlag"`
-	LeadPlayerIdx       int                       `json:"leadPlayerIdx"`
-	Hint                *SkatWebOutputHint        `json:"hint,omitempty"`
+	Players             []*SkatWebOutputPlayer `json:"players"`
+	Phase               int                    `json:"phase"`
+	RoundNumber         int                    `json:"roundNumber"`
+	TrickNumber         int                    `json:"trickNumber"`
+	CurrentPlayerIdx    int                    `json:"currentPlayerIdx"`
+	CurrentTrick        []*WebOutputTrickCard  `json:"currentTrick"`
+	ForehandIdx         int                    `json:"forehandIdx"`
+	MiddlehandIdx       int                    `json:"middlehandIdx"`
+	RearhandIdx         int                    `json:"rearhandIdx"`
+	DealerIdx           int                    `json:"dealerIdx"`
+	DeclarerIdx         int                    `json:"declarerIdx"`
+	CurrentBid          int                    `json:"currentBid"`
+	ActiveBidActorIdx   int                    `json:"activeBidActorIdx"`
+	GameType            int                    `json:"gameType"`
+	TrumpSuit           int                    `json:"trumpSuit"`
+	Skat                []*WebOutputCard       `json:"skat,omitempty"`
+	OriginalSkat        []*WebOutputCard       `json:"originalSkat,omitempty"`
+	PickedSkat          bool                   `json:"pickedSkat"`
+	DeclarerCardPoints  int                    `json:"declarerCardPoints"`
+	DefendersCardPoints int                    `json:"defendersCardPoints"`
+	WinnerSide          int                    `json:"winnerSide"`
+	GameValue           int                    `json:"gameValue"`
+	GameEndFlag         bool                   `json:"gameEndFlag"`
+	LeadPlayerIdx       int                    `json:"leadPlayerIdx"`
+	Hint                *SkatWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config SkatWebOutputConfig `json:"config"`
 }
@@ -128,7 +122,7 @@ var NewSkatWebController, NewSkatWebControllerWithProvider = webControllerPair[u
 func newSkatDefaultOutput(msg string) *SkatWebOutput {
 	return &SkatWebOutput{
 		Players:           make([]*SkatWebOutputPlayer, 0),
-		CurrentTrick:      make([]*SkatWebOutputTrickCard, 0),
+		CurrentTrick:      make([]*WebOutputTrickCard, 0),
 		WinnerSide:        domain.SkatWinnerUndecided,
 		DeclarerIdx:       -1,
 		ActiveBidActorIdx: -1,

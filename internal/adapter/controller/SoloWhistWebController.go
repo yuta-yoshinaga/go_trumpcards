@@ -38,18 +38,6 @@ type SoloWhistWebOutputPlayer struct {
 	IsDeclarer bool             `json:"isDeclarer"`
 }
 
-// SoloWhistWebOutputTrickCard トリック中の1枚
-type SoloWhistWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// SoloWhistWebOutputHint ヒント出力
-type SoloWhistWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // SoloWhistWebOutput ソロ・ホイストのWebアウトプット
 type SoloWhistWebOutput struct {
 	Players          []*SoloWhistWebOutputPlayer    `json:"players"`
@@ -63,7 +51,7 @@ type SoloWhistWebOutput struct {
 	Contract         int                            `json:"contract"`
 	TrumpSuit        int                            `json:"trumpSuit"`
 	Bids             [domain.SoloWhistPlayerCnt]int `json:"bids"`
-	CurrentTrick     []*SoloWhistWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard          `json:"currentTrick"`
 	PlayerScores     [domain.SoloWhistPlayerCnt]int `json:"playerScores"`
 	RoundTricks      [domain.SoloWhistPlayerCnt]int `json:"roundTricks"`
 	PlayableIndices  []int                          `json:"playableIndices"`
@@ -71,7 +59,7 @@ type SoloWhistWebOutput struct {
 	WinnerPlayer     int                            `json:"winnerPlayer"`
 	IsHumanTurn      bool                           `json:"isHumanTurn"`
 	IsHumanBidTurn   bool                           `json:"isHumanBidTurn"`
-	Hint             *SoloWhistWebOutputHint        `json:"hint,omitempty"`
+	Hint             *WebOutputCardHint             `json:"hint,omitempty"`
 	WebOutputBase
 	Config SoloWhistWebOutputConfig `json:"config"`
 }
@@ -107,7 +95,7 @@ var NewSoloWhistWebController, NewSoloWhistWebControllerWithProvider = webContro
 func newSoloWhistDefaultOutput(msg string) *SoloWhistWebOutput {
 	return &SoloWhistWebOutput{
 		Players:         make([]*SoloWhistWebOutputPlayer, 0),
-		CurrentTrick:    make([]*SoloWhistWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		DeclarerIdx:     -1,
 		WinnerPlayer:    -1,

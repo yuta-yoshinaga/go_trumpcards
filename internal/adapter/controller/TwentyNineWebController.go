@@ -38,18 +38,6 @@ type TwentyNineWebOutputPlayer struct {
 	IsDeclarer bool             `json:"isDeclarer"`
 }
 
-// TwentyNineWebOutputTrickCard トリック中の1枚
-type TwentyNineWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// TwentyNineWebOutputHint ヒント出力
-type TwentyNineWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // TwentyNineWebOutput トゥエンティナイン (29) のWebアウトプット
 type TwentyNineWebOutput struct {
 	Players          []*TwentyNineWebOutputPlayer    `json:"players"`
@@ -64,7 +52,7 @@ type TwentyNineWebOutput struct {
 	TrumpSuit        int                             `json:"trumpSuit"`
 	TrumpRevealed    bool                            `json:"trumpRevealed"`
 	Bids             [domain.TwentyNinePlayerCnt]int `json:"bids"`
-	CurrentTrick     []*TwentyNineWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard           `json:"currentTrick"`
 	TeamScores       [domain.TwentyNineTeamCnt]int   `json:"teamScores"`
 	RoundTeamPoints  [domain.TwentyNineTeamCnt]int   `json:"roundTeamPoints"`
 	PlayableIndices  []int                           `json:"playableIndices"`
@@ -72,7 +60,7 @@ type TwentyNineWebOutput struct {
 	WinnerTeam       int                             `json:"winnerTeam"`
 	IsHumanTurn      bool                            `json:"isHumanTurn"`
 	IsHumanBidTurn   bool                            `json:"isHumanBidTurn"`
-	Hint             *TwentyNineWebOutputHint        `json:"hint,omitempty"`
+	Hint             *WebOutputCardHint              `json:"hint,omitempty"`
 	WebOutputBase
 	Config TwentyNineWebOutputConfig `json:"config"`
 }
@@ -108,7 +96,7 @@ var NewTwentyNineWebController, NewTwentyNineWebControllerWithProvider = webCont
 func newTwentyNineDefaultOutput(msg string) *TwentyNineWebOutput {
 	return &TwentyNineWebOutput{
 		Players:         make([]*TwentyNineWebOutputPlayer, 0),
-		CurrentTrick:    make([]*TwentyNineWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		DeclarerIdx:     -1,
 		WinnerTeam:      -1,

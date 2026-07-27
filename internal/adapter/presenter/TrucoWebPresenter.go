@@ -53,16 +53,9 @@ func (p *TrucoWebPresenter) buildBase(g interfaces.TrucoGame) *controller.TrucoW
 		MatchTarget:   g.GetMatchTarget(),
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
-}
-
-// buildTrickOutput 現在のバサ情報を構築
-func (p *TrucoWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.TrucoWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.TrucoWebOutputTrickCard {
-		return &controller.TrucoWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

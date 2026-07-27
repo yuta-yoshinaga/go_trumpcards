@@ -32,12 +32,6 @@ type SchnapsenWebOutputPlayer struct {
 	TrickCount int              `json:"trickCount"`
 }
 
-// SchnapsenWebOutputTrickCard トリック中の1枚
-type SchnapsenWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // SchnapsenWebOutputHint ヒント出力
 type SchnapsenWebOutputHint struct {
 	CardIndex  *int   `json:"cardIndex,omitempty"`
@@ -47,22 +41,22 @@ type SchnapsenWebOutputHint struct {
 
 // SchnapsenWebOutput シュナプセンWebアウトプット
 type SchnapsenWebOutput struct {
-	Players          []*SchnapsenWebOutputPlayer    `json:"players"`
-	Phase            int                            `json:"phase"`
-	TrickNumber      int                            `json:"trickNumber"`
-	CurrentPlayerIdx int                            `json:"currentPlayerIdx"`
-	CurrentTrick     []*SchnapsenWebOutputTrickCard `json:"currentTrick"`
-	TrumpSuit        int                            `json:"trumpSuit"`
-	TrumpCard        *WebOutputCard                 `json:"trumpCard,omitempty"`
-	DealerIdx        int                            `json:"dealerIdx"`
-	LeadPlayerIdx    int                            `json:"leadPlayerIdx"`
-	StockRemaining   int                            `json:"stockRemaining"`
-	IsEndgame        bool                           `json:"isEndgame"`
-	ValidPlays       []int                          `json:"validPlays"`
-	MarriagePlays    []int                          `json:"marriagePlays"`
-	GameEndFlag      bool                           `json:"gameEndFlag"`
-	WinnerIdx        int                            `json:"winnerIdx"`
-	Hint             *SchnapsenWebOutputHint        `json:"hint,omitempty"`
+	Players          []*SchnapsenWebOutputPlayer `json:"players"`
+	Phase            int                         `json:"phase"`
+	TrickNumber      int                         `json:"trickNumber"`
+	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
+	CurrentTrick     []*WebOutputTrickCard       `json:"currentTrick"`
+	TrumpSuit        int                         `json:"trumpSuit"`
+	TrumpCard        *WebOutputCard              `json:"trumpCard,omitempty"`
+	DealerIdx        int                         `json:"dealerIdx"`
+	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
+	StockRemaining   int                         `json:"stockRemaining"`
+	IsEndgame        bool                        `json:"isEndgame"`
+	ValidPlays       []int                       `json:"validPlays"`
+	MarriagePlays    []int                       `json:"marriagePlays"`
+	GameEndFlag      bool                        `json:"gameEndFlag"`
+	WinnerIdx        int                         `json:"winnerIdx"`
+	Hint             *SchnapsenWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config SchnapsenWebOutputConfig `json:"config"`
 }
@@ -98,7 +92,7 @@ var NewSchnapsenWebController, NewSchnapsenWebControllerWithProvider = webContro
 func newSchnapsenDefaultOutput(msg string) *SchnapsenWebOutput {
 	return &SchnapsenWebOutput{
 		Players:       make([]*SchnapsenWebOutputPlayer, 0),
-		CurrentTrick:  make([]*SchnapsenWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		ValidPlays:    make([]int, 0),
 		MarriagePlays: make([]int, 0),
 		WinnerIdx:     -1,

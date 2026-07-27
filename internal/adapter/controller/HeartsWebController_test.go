@@ -18,7 +18,7 @@ import (
 func mustHeartsOutputJSON(msg string) string {
 	out := &controller.HeartsWebOutput{
 		Players:       []*controller.HeartsWebOutputPlayer{},
-		CurrentTrick:  []*controller.HeartsWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerIdx:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

@@ -46,16 +46,9 @@ func (p *EuchreWebPresenter) buildBase(e interfaces.EuchreGame) *controller.Euch
 		PointLimit:    cfg.PointLimit,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(e.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(e.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(e)
 	return resObj
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *EuchreWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.EuchreWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.EuchreWebOutputTrickCard {
-		return &controller.EuchreWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

@@ -46,7 +46,7 @@ func (p *SuecaWebPresenter) buildBase(g interfaces.SuecaGame) *controller.SuecaW
 		TargetGamePoints: cfg.TargetGamePoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -61,13 +61,6 @@ func (p *SuecaWebPresenter) playableIndices(g interfaces.SuecaGame) []int {
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *SuecaWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SuecaWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SuecaWebOutputTrickCard {
-		return &controller.SuecaWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -136,7 +129,7 @@ func (p *SuecaWebPresenter) HintOutput(g interfaces.SuecaGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.SuecaWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

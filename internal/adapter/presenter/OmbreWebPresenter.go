@@ -51,7 +51,7 @@ func (p *OmbreWebPresenter) buildBase(g interfaces.OmbreGame) *controller.OmbreW
 		TargetRounds:  cfg.TargetRounds,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -66,13 +66,6 @@ func (p *OmbreWebPresenter) playableIndices(g interfaces.OmbreGame) []int {
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *OmbreWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.OmbreWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.OmbreWebOutputTrickCard {
-		return &controller.OmbreWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -158,7 +151,7 @@ func (p *OmbreWebPresenter) HintOutput(g interfaces.OmbreGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.OmbreWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

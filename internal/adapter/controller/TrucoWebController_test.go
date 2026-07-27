@@ -20,7 +20,7 @@ import (
 func mustTrucoOutputJSON(msg string) string {
 	out := &controller.TrucoWebOutput{
 		Players:       []*controller.TrucoWebOutputPlayer{},
-		CurrentTrick:  []*controller.TrucoWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		MatchPoints:   []int{},
 		WinnerIdx:     -1,
 		HandWinnerIdx: -1,

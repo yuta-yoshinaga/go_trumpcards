@@ -17,7 +17,7 @@ import (
 func mustTwoTenJackOutputJSON(msg string) string {
 	out := &controller.TwoTenJackWebOutput{
 		Players:       []*controller.TwoTenJackWebOutputPlayer{},
-		CurrentTrick:  []*controller.TwoTenJackWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerTeam:    -1,
 		TrumpSuit:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},

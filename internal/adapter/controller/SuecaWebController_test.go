@@ -17,7 +17,7 @@ import (
 func mustSuecaOutputJSON(msg string) string {
 	out := &controller.SuecaWebOutput{
 		Players:         []*controller.SuecaWebOutputPlayer{},
-		CurrentTrick:    []*controller.SuecaWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		WinnerTeam:      -1,
 		RoundWinnerTeam: -1,

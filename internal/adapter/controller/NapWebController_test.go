@@ -17,7 +17,7 @@ import (
 func mustNapOutputJSON(msg string) string {
 	out := &controller.NapWebOutput{
 		Players:         []*controller.NapWebOutputPlayer{},
-		CurrentTrick:    []*controller.NapWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		DeclarerIdx:     -1,
 		WinnerPlayer:    -1,

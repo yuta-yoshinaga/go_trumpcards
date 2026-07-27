@@ -45,16 +45,9 @@ func (p *TarneebWebPresenter) buildBase(t interfaces.TarneebGame) *controller.Ta
 	}
 
 	resObj.TeamScores = []int{t.GetTeamScore(0), t.GetTeamScore(1)}
-	resObj.CurrentTrick = p.buildTrickOutput(t.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(t.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(t)
 	return resObj
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *TarneebWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.TarneebWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.TarneebWebOutputTrickCard {
-		return &controller.TarneebWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

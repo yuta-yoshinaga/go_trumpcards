@@ -43,7 +43,7 @@ func (p *TressetteWebPresenter) buildBase(g interfaces.TressetteGame) *controlle
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.LastTrick, resObj.LastTrickWinner = p.buildLastTrickOutput(g)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
@@ -54,8 +54,8 @@ func (p *TressetteWebPresenter) buildBase(g interfaces.TressetteGame) *controlle
 // 各トリックの "play" ログ（プレイヤーと札）と "trick_win" ログ（勝者）から
 // 現ラウンドの直近トリックを復元できる。ラウンド開始直後（プレイフェーズのトリック 1
 // で、この局のトリックがまだ確定していない）は空スライスと -1 を返す。
-func (p *TressetteWebPresenter) buildLastTrickOutput(g interfaces.TressetteGame) ([]*controller.TressetteWebOutputTrickCard, int) {
-	empty := make([]*controller.TressetteWebOutputTrickCard, 0)
+func (p *TressetteWebPresenter) buildLastTrickOutput(g interfaces.TressetteGame) ([]*controller.WebOutputTrickCard, int) {
+	empty := make([]*controller.WebOutputTrickCard, 0)
 	// ラウンド最初のトリックがプレイ中は、この局に確定済みトリックが無いため空を返す。
 	if g.GetPhase() == domain.TressettePhasePlay && g.GetTrickNumber() <= 1 {
 		return empty, -1
@@ -85,9 +85,9 @@ func (p *TressetteWebPresenter) buildLastTrickOutput(g interfaces.TressetteGame)
 	}
 	plays = plays[len(plays)-domain.TressettePlayerCnt:]
 
-	out := make([]*controller.TressetteWebOutputTrickCard, 0, len(plays))
+	out := make([]*controller.WebOutputTrickCard, 0, len(plays))
 	for _, e := range plays {
-		out = append(out, &controller.TressetteWebOutputTrickCard{
+		out = append(out, &controller.WebOutputTrickCard{
 			PlayerIdx: e.PlayerIdx,
 			Card:      cardToOutput(e.Cards[0]),
 		})
@@ -105,13 +105,6 @@ func (p *TressetteWebPresenter) playableIndices(g interfaces.TressetteGame) []in
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *TressetteWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.TressetteWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.TressetteWebOutputTrickCard {
-		return &controller.TressetteWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -182,7 +175,7 @@ func (p *TressetteWebPresenter) HintOutput(g interfaces.TressetteGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.TressetteWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

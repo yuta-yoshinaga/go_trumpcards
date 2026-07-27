@@ -34,12 +34,6 @@ type TwoTenJackWebOutputPlayer struct {
 	CapturedPoints  int              `json:"capturedPoints"`
 }
 
-// TwoTenJackWebOutputTrickCard トリック中の1枚
-type TwoTenJackWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // TwoTenJackWebOutputHint ヒント出力
 type TwoTenJackWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -49,18 +43,18 @@ type TwoTenJackWebOutputHint struct {
 
 // TwoTenJackWebOutput ツーテンジャックWebアウトプット
 type TwoTenJackWebOutput struct {
-	Players          []*TwoTenJackWebOutputPlayer    `json:"players"`
-	Phase            int                             `json:"phase"`
-	RoundNumber      int                             `json:"roundNumber"`
-	TrickNumber      int                             `json:"trickNumber"`
-	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`
-	DeclarerIdx      int                             `json:"declarerIdx"`
-	TrumpSuit        int                             `json:"trumpSuit"`
-	CurrentTrick     []*TwoTenJackWebOutputTrickCard `json:"currentTrick"`
-	GameEndFlag      bool                            `json:"gameEndFlag"`
-	WinnerTeam       int                             `json:"winnerTeam"`
-	LeadPlayerIdx    int                             `json:"leadPlayerIdx"`
-	Hint             *TwoTenJackWebOutputHint        `json:"hint,omitempty"`
+	Players          []*TwoTenJackWebOutputPlayer `json:"players"`
+	Phase            int                          `json:"phase"`
+	RoundNumber      int                          `json:"roundNumber"`
+	TrickNumber      int                          `json:"trickNumber"`
+	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
+	DeclarerIdx      int                          `json:"declarerIdx"`
+	TrumpSuit        int                          `json:"trumpSuit"`
+	CurrentTrick     []*WebOutputTrickCard        `json:"currentTrick"`
+	GameEndFlag      bool                         `json:"gameEndFlag"`
+	WinnerTeam       int                          `json:"winnerTeam"`
+	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
+	Hint             *TwoTenJackWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config TwoTenJackWebOutputConfig `json:"config"`
 }
@@ -95,7 +89,7 @@ var NewTwoTenJackWebController, NewTwoTenJackWebControllerWithProvider = webCont
 func newTwoTenJackDefaultOutput(msg string) *TwoTenJackWebOutput {
 	return &TwoTenJackWebOutput{
 		Players:       make([]*TwoTenJackWebOutputPlayer, 0),
-		CurrentTrick:  make([]*TwoTenJackWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerTeam:    -1,
 		TrumpSuit:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},

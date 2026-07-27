@@ -18,7 +18,7 @@ import (
 func mustEuchreOutputJSON(msg string) string {
 	out := &controller.EuchreWebOutput{
 		Players:       []*controller.EuchreWebOutputPlayer{},
-		CurrentTrick:  []*controller.EuchreWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerTeam:    -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

@@ -17,7 +17,7 @@ import (
 func mustSedmaOutputJSON(msg string) string {
 	out := &controller.SedmaWebOutput{
 		Players:         []*controller.SedmaWebOutputPlayer{},
-		CurrentTrick:    []*controller.SedmaWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		WinnerTeam:      -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},

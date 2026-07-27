@@ -17,7 +17,7 @@ import (
 func mustKlaverjasOutputJSON(msg string) string {
 	out := &controller.KlaverjasWebOutput{
 		Players:         []*controller.KlaverjasWebOutputPlayer{},
-		CurrentTrick:    []*controller.KlaverjasWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		WinnerTeam:      -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},

@@ -65,7 +65,7 @@ func (p *RookWebPresenter) buildBase(g interfaces.RookGame) *controller.RookWebO
 	}
 
 	resObj.Nest = p.buildNestOutput(g)
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutputWithFace(g.GetCurrentTrick(), rookFace)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -83,13 +83,6 @@ func (p *RookWebPresenter) buildNestOutput(g interfaces.RookGame) []*controller.
 		out = append(out, cardToOutputWithFace(c, rookFace))
 	}
 	return out
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *RookWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.RookWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.RookWebOutputTrickCard {
-		return &controller.RookWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutputWithFace(tc.Card, rookFace)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築 (人間のみ手札を公開)

@@ -38,37 +38,25 @@ type KnockoutWhistWebOutputPlayer struct {
 	RoundTricks int              `json:"roundTricks"`
 }
 
-// KnockoutWhistWebOutputTrickCard トリック中の1枚
-type KnockoutWhistWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// KnockoutWhistWebOutputHint ヒント出力
-type KnockoutWhistWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // KnockoutWhistWebOutput ノックアウト・ホイストのWebアウトプット
 type KnockoutWhistWebOutput struct {
-	Players          []*KnockoutWhistWebOutputPlayer    `json:"players"`
-	Phase            int                                `json:"phase"`
-	RoundNumber      int                                `json:"roundNumber"`
-	HandSize         int                                `json:"handSize"`
-	TrickNumber      int                                `json:"trickNumber"`
-	CurrentPlayerIdx int                                `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                                `json:"leadPlayerIdx"`
-	DealerIdx        int                                `json:"dealerIdx"`
-	TrumpSuit        int                                `json:"trumpSuit"`
-	RoundWinnerIdx   int                                `json:"roundWinnerIdx"`
-	CurrentTrick     []*KnockoutWhistWebOutputTrickCard `json:"currentTrick"`
-	ActiveCount      int                                `json:"activeCount"`
-	PlayableIndices  []int                              `json:"playableIndices"`
-	GameEndFlag      bool                               `json:"gameEndFlag"`
-	WinnerPlayer     int                                `json:"winnerPlayer"`
-	IsHumanTurn      bool                               `json:"isHumanTurn"`
-	Hint             *KnockoutWhistWebOutputHint        `json:"hint,omitempty"`
+	Players          []*KnockoutWhistWebOutputPlayer `json:"players"`
+	Phase            int                             `json:"phase"`
+	RoundNumber      int                             `json:"roundNumber"`
+	HandSize         int                             `json:"handSize"`
+	TrickNumber      int                             `json:"trickNumber"`
+	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                             `json:"leadPlayerIdx"`
+	DealerIdx        int                             `json:"dealerIdx"`
+	TrumpSuit        int                             `json:"trumpSuit"`
+	RoundWinnerIdx   int                             `json:"roundWinnerIdx"`
+	CurrentTrick     []*WebOutputTrickCard           `json:"currentTrick"`
+	ActiveCount      int                             `json:"activeCount"`
+	PlayableIndices  []int                           `json:"playableIndices"`
+	GameEndFlag      bool                            `json:"gameEndFlag"`
+	WinnerPlayer     int                             `json:"winnerPlayer"`
+	IsHumanTurn      bool                            `json:"isHumanTurn"`
+	Hint             *WebOutputCardHint              `json:"hint,omitempty"`
 	WebOutputBase
 	Config KnockoutWhistWebOutputConfig `json:"config"`
 }
@@ -102,7 +90,7 @@ var NewKnockoutWhistWebController, NewKnockoutWhistWebControllerWithProvider = w
 func newKnockoutWhistDefaultOutput(msg string) *KnockoutWhistWebOutput {
 	return &KnockoutWhistWebOutput{
 		Players:         make([]*KnockoutWhistWebOutputPlayer, 0),
-		CurrentTrick:    make([]*KnockoutWhistWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		RoundWinnerIdx:  -1,
 		WinnerPlayer:    -1,

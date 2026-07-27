@@ -35,36 +35,24 @@ type ManilleWebOutputPlayer struct {
 	TeamScore  int              `json:"teamScore"`
 }
 
-// ManilleWebOutputTrickCard トリック中の1枚
-type ManilleWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// ManilleWebOutputHint ヒント出力
-type ManilleWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // ManilleWebOutput マニーユのWebアウトプット
 type ManilleWebOutput struct {
-	Players          []*ManilleWebOutputPlayer    `json:"players"`
-	Phase            int                          `json:"phase"`
-	RoundNumber      int                          `json:"roundNumber"`
-	TrickNumber      int                          `json:"trickNumber"`
-	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
-	DealerIdx        int                          `json:"dealerIdx"`
-	TrumpSuit        int                          `json:"trumpSuit"`
-	CurrentTrick     []*ManilleWebOutputTrickCard `json:"currentTrick"`
-	TeamScores       [domain.ManilleTeamCnt]int   `json:"teamScores"`
-	RoundCardPoints  [domain.ManilleTeamCnt]int   `json:"roundCardPoints"`
-	PlayableIndices  []int                        `json:"playableIndices"`
-	GameEndFlag      bool                         `json:"gameEndFlag"`
-	WinnerTeam       int                          `json:"winnerTeam"`
-	IsHumanTurn      bool                         `json:"isHumanTurn"`
-	Hint             *ManilleWebOutputHint        `json:"hint,omitempty"`
+	Players          []*ManilleWebOutputPlayer  `json:"players"`
+	Phase            int                        `json:"phase"`
+	RoundNumber      int                        `json:"roundNumber"`
+	TrickNumber      int                        `json:"trickNumber"`
+	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
+	DealerIdx        int                        `json:"dealerIdx"`
+	TrumpSuit        int                        `json:"trumpSuit"`
+	CurrentTrick     []*WebOutputTrickCard      `json:"currentTrick"`
+	TeamScores       [domain.ManilleTeamCnt]int `json:"teamScores"`
+	RoundCardPoints  [domain.ManilleTeamCnt]int `json:"roundCardPoints"`
+	PlayableIndices  []int                      `json:"playableIndices"`
+	GameEndFlag      bool                       `json:"gameEndFlag"`
+	WinnerTeam       int                        `json:"winnerTeam"`
+	IsHumanTurn      bool                       `json:"isHumanTurn"`
+	Hint             *WebOutputCardHint         `json:"hint,omitempty"`
 	WebOutputBase
 	Config ManilleWebOutputConfig `json:"config"`
 }
@@ -100,7 +88,7 @@ var NewManilleWebController, NewManilleWebControllerWithProvider = webController
 func newManilleDefaultOutput(msg string) *ManilleWebOutput {
 	return &ManilleWebOutput{
 		Players:         make([]*ManilleWebOutputPlayer, 0),
-		CurrentTrick:    make([]*ManilleWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		WinnerTeam:      -1,
 		WebOutputBase:   WebOutputBase{Message: msg},

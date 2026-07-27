@@ -17,7 +17,7 @@ import (
 func mustFrenchTarotOutputJSON(msg string) string {
 	out := &controller.FrenchTarotWebOutput{
 		Players:         []*controller.FrenchTarotWebOutputPlayer{},
-		CurrentTrick:    []*controller.FrenchTarotWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		Chien:           []*controller.WebOutputCard{},
 		PlayableIndices: []int{},
 		DeclarerIdx:     -1,
