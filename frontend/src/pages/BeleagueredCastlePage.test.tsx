@@ -199,3 +199,46 @@ describe('BeleagueredCastlePage', () => {
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
 });
+
+// Keyboard shortcuts are bound by useActionKeyboardNav and advertised by
+// ActionShortcutsPanel, but nothing asserted that pressing a key actually runs
+// its action — a wrong `key` or a wrong `enabled` condition would have failed no
+// test. See issue #4429.
+describe('BeleagueredCastlePage keyboard shortcuts', () => {
+  it.each([
+    ['h', 'hint'],
+    ['a', 'autocomplete'],
+    ['z', 'undo'],
+  ])('pressing %s dispatches %s', async (key, command) => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith(command));
+  });
+
+  it('pressing g asks for give-up confirmation rather than firing it', async () => {
+    // give-up is irreversible, so the key must route through the dialog (#2099)
+    // instead of dispatching straight away.
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    expect(await screen.findByText('投了確認')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('ignores shortcuts once the game has ended', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    for (const key of ['h', 'a', 'z']) {
+      fireEvent.keyDown(document, { key });
+    }
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+});
