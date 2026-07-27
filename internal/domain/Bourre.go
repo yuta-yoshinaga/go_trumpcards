@@ -37,12 +37,6 @@ const (
 	BourrePhaseGameEnd BourrePhase = 4
 )
 
-// BourreTrickCard トリック中の1枚
-type BourreTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // BourreHandResult ハンド結果 (表示用)
 type BourreHandResult struct {
 	PlayerIdx int  `json:"pi"`
@@ -65,8 +59,8 @@ type Bourre struct {
 	dealerIdx        int
 	currentPlayerIdx int
 	trickNumber      int
-	currentTrick     []*BourreTrickCard
-	lastTrick        []*BourreTrickCard
+	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
 	lastTrickWinner  int
 	leadPlayerIdx    int
 	handNumber       int
@@ -420,7 +414,7 @@ func (b *Bourre) CpuPlay() {
 
 // playCard カードをトリックに加える共通処理
 func (b *Bourre) playCard(playerIdx int, card *Card) {
-	b.currentTrick = append(b.currentTrick, &BourreTrickCard{PlayerIdx: playerIdx, Card: card})
+	b.currentTrick = append(b.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	b.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", b.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(b.currentTrick) == b.activeCount() {
@@ -901,10 +895,10 @@ func (b *Bourre) GetDealerIdx() int { return b.dealerIdx }
 func (b *Bourre) GetTrickNumber() int { return b.trickNumber }
 
 // GetCurrentTrick 現在進行中のトリック取得
-func (b *Bourre) GetCurrentTrick() []*BourreTrickCard { return b.currentTrick }
+func (b *Bourre) GetCurrentTrick() []*TrickCard { return b.currentTrick }
 
 // GetLastTrick 直前に解決されたトリック取得
-func (b *Bourre) GetLastTrick() []*BourreTrickCard { return b.lastTrick }
+func (b *Bourre) GetLastTrick() []*TrickCard { return b.lastTrick }
 
 // GetLastTrickWinner 直前トリックの勝者インデックス取得 (-1 = なし)
 func (b *Bourre) GetLastTrickWinner() int { return b.lastTrickWinner }
@@ -976,8 +970,8 @@ type bourreJSON struct {
 	DealerIdx        int                 `json:"di"`
 	CurrentPlayerIdx int                 `json:"ci"`
 	TrickNumber      int                 `json:"tn"`
-	CurrentTrick     []*BourreTrickCard  `json:"ct"`
-	LastTrick        []*BourreTrickCard  `json:"lt"`
+	CurrentTrick     []*TrickCard        `json:"ct"`
+	LastTrick        []*TrickCard        `json:"lt"`
 	LastTrickWinner  int                 `json:"lw"`
 	LeadPlayerIdx    int                 `json:"li"`
 	HandNumber       int                 `json:"hn"`
@@ -1046,11 +1040,11 @@ func (b *Bourre) UnmarshalJSON(data []byte) error {
 	b.trickNumber = j.TrickNumber
 	b.currentTrick = j.CurrentTrick
 	if b.currentTrick == nil {
-		b.currentTrick = make([]*BourreTrickCard, 0)
+		b.currentTrick = make([]*TrickCard, 0)
 	}
 	b.lastTrick = j.LastTrick
 	if b.lastTrick == nil {
-		b.lastTrick = make([]*BourreTrickCard, 0)
+		b.lastTrick = make([]*TrickCard, 0)
 	}
 	b.lastTrickWinner = j.LastTrickWinner
 	b.leadPlayerIdx = j.LeadPlayerIdx

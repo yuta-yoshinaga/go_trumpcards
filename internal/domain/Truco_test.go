@@ -116,16 +116,16 @@ func TestTrucoBazaWinner(t *testing.T) {
 	tieA := NewCard(CardDesignHeart, 5, false)   // 2
 	tieB := NewCard(CardDesignDiamond, 5, false) // 2
 
-	if got := trucoBazaWinner([]*TrucoTrickCard{{0, strong}, {1, weak}}); got != 0 {
+	if got := trucoBazaWinner([]*TrickCard{{0, strong}, {1, weak}}); got != 0 {
 		t.Errorf("strong-vs-weak winner = %d, want 0", got)
 	}
-	if got := trucoBazaWinner([]*TrucoTrickCard{{0, weak}, {1, strong}}); got != 1 {
+	if got := trucoBazaWinner([]*TrickCard{{0, weak}, {1, strong}}); got != 1 {
 		t.Errorf("weak-vs-strong winner = %d, want 1", got)
 	}
-	if got := trucoBazaWinner([]*TrucoTrickCard{{0, tieA}, {1, tieB}}); got != -1 {
+	if got := trucoBazaWinner([]*TrickCard{{0, tieA}, {1, tieB}}); got != -1 {
 		t.Errorf("equal strength = %d, want -1 (parda)", got)
 	}
-	if got := trucoBazaWinner([]*TrucoTrickCard{{0, strong}}); got != -1 {
+	if got := trucoBazaWinner([]*TrickCard{{0, strong}}); got != -1 {
 		t.Errorf("incomplete baza = %d, want -1", got)
 	}
 }
@@ -563,14 +563,14 @@ func TestTrucoCpuSelectPlayCard(t *testing.T) {
 		t.Errorf("lead pick value = %d, want 4 (weakest)", g.GetPlayer(1).GetCard(idx).GetValue())
 	}
 	// following a mid card -> smallest winner
-	g.SetCurrentTrick([]*TrucoTrickCard{{0, NewCard(CardDesignDiamond, 12, false)}}) // caballo str 6
+	g.SetCurrentTrick([]*TrickCard{{0, NewCard(CardDesignDiamond, 12, false)}}) // caballo str 6
 	idx := g.cpuSelectPlayCard(1)
 	got := TrucoCardStrength(g.GetPlayer(1).GetCard(idx))
 	if got != 7 { // rey (13) is smallest card that beats caballo(6) in this hand
 		t.Errorf("follow pick strength = %d, want 7 (smallest winner)", got)
 	}
 	// following an unbeatable card -> dump weakest
-	g.SetCurrentTrick([]*TrucoTrickCard{{0, NewCard(CardDesignClover, 1, false)}}) // 1 bastos str 13
+	g.SetCurrentTrick([]*TrickCard{{0, NewCard(CardDesignClover, 1, false)}}) // 1 bastos str 13
 	idx = g.cpuSelectPlayCard(1)
 	if g.GetPlayer(1).GetCard(idx).GetValue() != 4 {
 		t.Errorf("dump pick value = %d, want 4 (weakest)", g.GetPlayer(1).GetCard(idx).GetValue())

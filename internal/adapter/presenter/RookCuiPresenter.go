@@ -121,8 +121,8 @@ func (p *RookCuiPresenter) Output(g interfaces.RookGame, lastErr error) string {
 		b.WriteString("----------\n")
 
 		cuiTrickBlock(b, g.GetCurrentTrick(),
-			func(tc *domain.RookTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.RookTrickCard) string { return rookCuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return rookCuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 

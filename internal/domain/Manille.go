@@ -54,12 +54,6 @@ type ManilleHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// ManilleTrickCard トリック中の 1 枚
-type ManilleTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Manille マニーユのゲームクラス
 type Manille struct {
 	trumpCards       *TrumpCards
@@ -69,7 +63,7 @@ type Manille struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*ManilleTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	trumpSuit        int                 // 切り札スート
@@ -202,7 +196,7 @@ func (g *Manille) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Manille) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &ManilleTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == ManillePlayerCnt {
@@ -624,10 +618,10 @@ func (g *Manille) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Manille) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Manille) GetCurrentTrick() []*ManilleTrickCard { return g.currentTrick }
+func (g *Manille) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Manille) SetCurrentTrick(trick []*ManilleTrickCard) { g.currentTrick = trick }
+func (g *Manille) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Manille) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -709,7 +703,7 @@ type manilleJSON struct {
 	RoundNumber      int                 `json:"rn"`
 	TrickNumber      int                 `json:"tn"`
 	CurrentPlayerIdx int                 `json:"ci"`
-	CurrentTrick     []*ManilleTrickCard `json:"ct"`
+	CurrentTrick     []*TrickCard        `json:"ct"`
 	LeadPlayerIdx    int                 `json:"li"`
 	DealerIdx        int                 `json:"di"`
 	TrumpSuit        int                 `json:"ts"`
@@ -792,7 +786,7 @@ func (g *Manille) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*ManilleTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

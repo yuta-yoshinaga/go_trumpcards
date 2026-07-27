@@ -69,7 +69,7 @@ func TestSedma_Points(t *testing.T) {
 func TestSedma_TrickWinnerSameRankCaptures(t *testing.T) {
 	g := newSedGame(false)
 	// Lead K♣; p2 plays another K (same rank) -> captures; p3 discards.
-	g.SetCurrentTrick([]*SedmaTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: sedCard(CardDesignClover, 13)},
 		{PlayerIdx: 1, Card: sedCard(CardDesignHeart, 9)},
 		{PlayerIdx: 2, Card: sedCard(CardDesignSpade, 13)},
@@ -83,7 +83,7 @@ func TestSedma_TrickWinnerSameRankCaptures(t *testing.T) {
 func TestSedma_TrickWinnerSevenCaptures(t *testing.T) {
 	g := newSedGame(false)
 	// Lead A♣; p3 plays a 7 (wild) -> captures even though no one matched rank.
-	g.SetCurrentTrick([]*SedmaTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: sedCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: sedCard(CardDesignHeart, 9)},
 		{PlayerIdx: 2, Card: sedCard(CardDesignSpade, 8)},
@@ -96,7 +96,7 @@ func TestSedma_TrickWinnerSevenCaptures(t *testing.T) {
 
 func TestSedma_TrickWinnerNoCaptureLeadWins(t *testing.T) {
 	g := newSedGame(false)
-	g.SetCurrentTrick([]*SedmaTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: sedCard(CardDesignClover, 13)},
 		{PlayerIdx: 1, Card: sedCard(CardDesignHeart, 9)},
 		{PlayerIdx: 2, Card: sedCard(CardDesignSpade, 8)},
@@ -110,7 +110,7 @@ func TestSedma_TrickWinnerNoCaptureLeadWins(t *testing.T) {
 func TestSedma_TrickWinnerLastCaptureWins(t *testing.T) {
 	g := newSedGame(false)
 	// Lead K; p1 captures with K; p3 captures again with a 7 -> last capturer wins.
-	g.SetCurrentTrick([]*SedmaTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: sedCard(CardDesignClover, 13)},
 		{PlayerIdx: 1, Card: sedCard(CardDesignHeart, 13)},
 		{PlayerIdx: 2, Card: sedCard(CardDesignSpade, 8)},
@@ -124,7 +124,7 @@ func TestSedma_TrickWinnerLastCaptureWins(t *testing.T) {
 func TestSedma_TrickWinnerSevenLeadOnlySevenCaptures(t *testing.T) {
 	// Lead is itself a 7: only another 7 captures it (a King does not).
 	g := newSedGame(false)
-	g.SetCurrentTrick([]*SedmaTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: sedCard(CardDesignClover, 7)},
 		{PlayerIdx: 1, Card: sedCard(CardDesignHeart, 13)},
 		{PlayerIdx: 2, Card: sedCard(CardDesignSpade, 7)},
@@ -138,7 +138,7 @@ func TestSedma_TrickWinnerSevenLeadOnlySevenCaptures(t *testing.T) {
 func TestSedma_TrickWinnerSevenLeadNoCapture(t *testing.T) {
 	// Lead 7, nobody else plays a 7 -> the lead player keeps the trick.
 	g := newSedGame(false)
-	g.SetCurrentTrick([]*SedmaTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: sedCard(CardDesignClover, 7)},
 		{PlayerIdx: 1, Card: sedCard(CardDesignHeart, 13)},
 		{PlayerIdx: 2, Card: sedCard(CardDesignSpade, 1)},
@@ -153,7 +153,7 @@ func TestSedma_AnyCardIsPlayable(t *testing.T) {
 	g := newSedGame(true)
 	g.SetPhase(SedmaPhasePlay)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*SedmaTrickCard{{PlayerIdx: 1, Card: sedCard(CardDesignClover, 13)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: sedCard(CardDesignClover, 13)}})
 	sedSetHand(g.GetPlayer(0), sedCard(CardDesignHeart, 9), sedCard(CardDesignDiamond, 8), sedCard(CardDesignSpade, 1))
 	if idxs := g.GetPlayableIndices(0); len(idxs) != 3 {
 		t.Errorf("playable = %v, want all 3 (no follow obligation)", idxs)
@@ -168,7 +168,7 @@ func TestSedma_ResolveTrickPointsAndLastBonus(t *testing.T) {
 	g.SetPhase(SedmaPhaseTrickEnd)
 	g.SetTrickNumber(SedmaTrickCount) // final trick -> +10 bonus
 	// A♣(10) + 10♥(10) + K♠(0) + 7♦(0); 7♦ captures for player 3 (team 1). pts 20 + 10 last.
-	g.SetCurrentTrick([]*SedmaTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: sedCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: sedCard(CardDesignHeart, 10)},
 		{PlayerIdx: 2, Card: sedCard(CardDesignSpade, 13)},

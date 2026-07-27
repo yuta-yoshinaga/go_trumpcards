@@ -301,7 +301,7 @@ func TestSheepshead_MustFollowSuit(t *testing.T) {
 	g.SetCurrentPlayerIdx(0) // 人間 (player 0) が追従する
 	g.SetLeadPlayerIdx(3)
 	// リード: クラブ A (フェイル ♣) を player 3 が出す。
-	g.SetCurrentTrick([]*SheepsheadTrickCard{{PlayerIdx: 3, Card: ssCard(CardDesignClover, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: ssCard(CardDesignClover, 1)}})
 	// 人間はクラブを持つ → クラブ以外は不可。
 	ssSetHand(g.GetPlayer(0), ssCard(CardDesignClover, 10), ssCard(CardDesignSpade, 10))
 	if err := g.PlayerPlay(1); err == nil { // spade を出そうとする
@@ -314,7 +314,7 @@ func TestSheepshead_MustFollowSuit(t *testing.T) {
 
 func TestSheepshead_TrickTopStrengthGuard(t *testing.T) {
 	g := newSSGame(false)
-	g.SetCurrentTrick([]*SheepsheadTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: ssCard(CardDesignClover, 1)},
 	})
 	// A winner not present in the current trick yields the sentinel, not a panic.
@@ -331,7 +331,7 @@ func TestSheepshead_TrickWinnerTrumpBeatsFail(t *testing.T) {
 	g.SetPhase(SheepsheadPhaseTrickEnd)
 	g.SetTrickNumber(1)
 	// リード フェイル A♣、続いて Q♦ (切り札), A♠, 7♣, 8♣ → Q♦ が勝つ。
-	g.SetCurrentTrick([]*SheepsheadTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: ssCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: ssCard(CardDesignDiamond, 12)},
 		{PlayerIdx: 2, Card: ssCard(CardDesignSpade, 1)},
@@ -346,7 +346,7 @@ func TestSheepshead_TrickWinnerTrumpBeatsFail(t *testing.T) {
 func TestSheepshead_TrickWinnerHighFail(t *testing.T) {
 	g := newSSGame(false)
 	// 切り札なし: リードスート ♣ の最強が勝つ。
-	g.SetCurrentTrick([]*SheepsheadTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 2, Card: ssCard(CardDesignClover, 13)}, // K♣
 		{PlayerIdx: 3, Card: ssCard(CardDesignClover, 1)},  // A♣ (最強)
 		{PlayerIdx: 4, Card: ssCard(CardDesignSpade, 1)},   // A♠ (別スート無効)
@@ -362,7 +362,7 @@ func TestSheepshead_ResolveAndNextTrick(t *testing.T) {
 	g := newSSGame(false)
 	g.SetPhase(SheepsheadPhaseTrickEnd)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*SheepsheadTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: ssCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: ssCard(CardDesignClover, 10)},
 		{PlayerIdx: 2, Card: ssCard(CardDesignClover, 13)},
@@ -389,7 +389,7 @@ func TestSheepshead_LastTrickGoesToRoundEnd(t *testing.T) {
 	g := newSSGame(false)
 	g.SetPhase(SheepsheadPhaseTrickEnd)
 	g.SetTrickNumber(SheepsheadTrickCount)
-	g.SetCurrentTrick([]*SheepsheadTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: ssCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: ssCard(CardDesignClover, 10)},
 		{PlayerIdx: 2, Card: ssCard(CardDesignClover, 13)},
@@ -409,7 +409,7 @@ func TestSheepshead_PartnerRevealOnCalledAce(t *testing.T) {
 	g.SetPartnerIdx(2)
 	g.calledSuit = CardDesignClover
 	g.SetCurrentPlayerIdx(2)
-	g.SetCurrentTrick([]*SheepsheadTrickCard{{PlayerIdx: 1, Card: ssCard(CardDesignClover, 10)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: ssCard(CardDesignClover, 10)}})
 	ssSetHand(g.GetPlayer(2), ssCard(CardDesignClover, 1)) // 呼びカード
 	g.SetCurrentPlayerIdx(2)
 	// CPU プレイで呼びカードが出る。

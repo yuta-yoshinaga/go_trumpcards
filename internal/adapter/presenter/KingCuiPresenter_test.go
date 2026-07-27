@@ -62,7 +62,7 @@ func TestKingCuiPresenter_ContractAndTrick(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignSpade)
 	g.SetPhase(domain.KingPhasePlay)
 	g.SetCurrentTurn(0)
-	g.SetCurrentTrick([]*domain.KingTrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
 	p := new(presenter.KingCuiPresenter)
 	out := p.Output(g, nil)
 	assert.NotEmpty(t, out)

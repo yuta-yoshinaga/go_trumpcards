@@ -93,7 +93,7 @@ func TestTute_TrickWinnerTrumpBeatsLead(t *testing.T) {
 	g := newTuteGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
 	// Lead ♣ A (strongest non-trump); a ♦ (trump) overtrumps and wins.
-	g.SetCurrentTrick([]*TuteTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: tuteCard(CardDesignClover, 1)},  // A♣ lead, strong fail
 		{PlayerIdx: 1, Card: tuteCard(CardDesignDiamond, 2)}, // 2♦ trump (weak but trump)
 		{PlayerIdx: 2, Card: tuteCard(CardDesignClover, 3)},  // 3♣ fail
@@ -108,7 +108,7 @@ func TestTute_TrickWinnerHighOfLeadSuit(t *testing.T) {
 	g := newTuteGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
 	// No trump played; highest of lead suit (♣) wins: A♣.
-	g.SetCurrentTrick([]*TuteTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: tuteCard(CardDesignClover, 13)}, // K♣
 		{PlayerIdx: 1, Card: tuteCard(CardDesignClover, 1)},  // A♣ (strongest)
 		{PlayerIdx: 2, Card: tuteCard(CardDesignClover, 3)},  // 3♣
@@ -124,7 +124,7 @@ func TestTute_MustFollowSuit(t *testing.T) {
 	g.SetPhase(TutePhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*TuteTrickCard{{PlayerIdx: 3, Card: tuteCard(CardDesignClover, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: tuteCard(CardDesignClover, 1)}})
 	tuteSetHand(g.GetPlayer(0), tuteCard(CardDesignClover, 13), tuteCard(CardDesignSpade, 1))
 	if err := g.PlayerPlay(1); err == nil { // spade while holding club
 		t.Error("expected must-follow error")
@@ -166,7 +166,7 @@ func TestTute_MarriageDeclaration(t *testing.T) {
 		t.Error("re-declaring a suit should fail")
 	}
 	// Cannot declare while not leading (mid-trick).
-	g.SetCurrentTrick([]*TuteTrickCard{{PlayerIdx: 3, Card: tuteCard(CardDesignSpade, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: tuteCard(CardDesignSpade, 1)}})
 	if g.canDeclareMarriage(0, CardDesignHeart) {
 		t.Error("cannot declare mid-trick")
 	}
@@ -194,7 +194,7 @@ func TestTute_GetHumanDeclarableMarriageSuits(t *testing.T) {
 	assert.Equal(t, []int{CardDesignDiamond}, g.GetHumanDeclarableMarriageSuits())
 
 	// Mid-trick (not leading) → nothing is declarable.
-	g.SetCurrentTrick([]*TuteTrickCard{{PlayerIdx: 3, Card: tuteCard(CardDesignSpade, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: tuteCard(CardDesignSpade, 1)}})
 	assert.Empty(t, g.GetHumanDeclarableMarriageSuits())
 }
 
@@ -224,7 +224,7 @@ func TestTute_ResolveTrickAddsPointsAndLastBonus(t *testing.T) {
 	g.SetPhase(TutePhaseTrickEnd)
 	g.SetTrickNumber(1)
 	// A♣(11) + 3♣(10) + K♣(4) + 2♣(0) = 25 pts, A♣ wins for team 0 (player 0).
-	g.SetCurrentTrick([]*TuteTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: tuteCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: tuteCard(CardDesignClover, 3)},
 		{PlayerIdx: 2, Card: tuteCard(CardDesignClover, 13)},
@@ -240,7 +240,7 @@ func TestTute_ResolveTrickAddsPointsAndLastBonus(t *testing.T) {
 	// Last trick gives +10.
 	g.SetPhase(TutePhaseTrickEnd)
 	g.SetTrickNumber(TuteTrickCount)
-	g.SetCurrentTrick([]*TuteTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: tuteCard(CardDesignClover, 11)}, // J♣ 2pts wins
 		{PlayerIdx: 1, Card: tuteCard(CardDesignClover, 4)},
 		{PlayerIdx: 2, Card: tuteCard(CardDesignClover, 5)},

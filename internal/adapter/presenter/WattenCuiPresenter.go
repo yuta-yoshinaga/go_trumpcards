@@ -63,8 +63,8 @@ func (p *WattenCuiPresenter) Output(g interfaces.WattenGame, lastErr error) stri
 
 		trick := g.GetCurrentTrick()
 		cuiTrickBlock(out, trick,
-			func(tc *domain.WattenTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.WattenTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 

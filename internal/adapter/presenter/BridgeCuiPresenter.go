@@ -125,8 +125,8 @@ func (p *BridgeCuiPresenter) Output(b interfaces.BridgeGame, lastErr error) stri
 		// Current trick
 		trick := b.GetCurrentTrick()
 		cuiTrickBlock(sb, trick,
-			func(tc *domain.BridgeTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.BridgeTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(b.GetPlayer(idx), idx) },
 		)
 

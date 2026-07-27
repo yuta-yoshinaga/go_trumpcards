@@ -27,7 +27,7 @@ func setupPreferenceCuiMock() *interfaces.MockPreferenceGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
-	m.On("GetCurrentTrick").Return(([]*domain.PreferenceTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.PreferencePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

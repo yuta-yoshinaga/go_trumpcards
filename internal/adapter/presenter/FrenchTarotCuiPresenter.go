@@ -124,8 +124,8 @@ func (p *FrenchTarotCuiPresenter) Output(g interfaces.FrenchTarotGame, lastErr e
 		b.WriteString("----------\n")
 
 		cuiTrickBlock(b, g.GetCurrentTrick(),
-			func(tc *domain.FrenchTarotTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.FrenchTarotTrickCard) string { return frenchTarotCuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return frenchTarotCuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 

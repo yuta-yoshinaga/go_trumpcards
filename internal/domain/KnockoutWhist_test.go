@@ -64,7 +64,7 @@ func TestKnockoutWhist_ResetDealsSevenAndArmsDogbones(t *testing.T) {
 func TestKnockoutWhist_TrickWinnerTrumpBeatsLead(t *testing.T) {
 	g := newKoGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
-	g.SetCurrentTrick([]*KnockoutWhistTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: koCard(CardDesignClover, 1)},  // Ace lead
 		{PlayerIdx: 1, Card: koCard(CardDesignDiamond, 2)}, // low trump beats it
 		{PlayerIdx: 2, Card: koCard(CardDesignClover, 13)},
@@ -80,7 +80,7 @@ func TestKnockoutWhist_MustFollow(t *testing.T) {
 	g.SetPhase(KnockoutWhistPhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*KnockoutWhistTrickCard{{PlayerIdx: 1, Card: koCard(CardDesignClover, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: koCard(CardDesignClover, 1)}})
 	koSetHand(g.GetPlayer(0), koCard(CardDesignClover, 13), koCard(CardDesignDiamond, 7))
 	if err := g.PlayerPlay(1); err == nil { // diamond while holding club
 		t.Error("expected must-follow error")
@@ -96,7 +96,7 @@ func TestKnockoutWhist_ResolveTrickCountsRoundTricks(t *testing.T) {
 	g.SetPhase(KnockoutWhistPhaseTrickEnd)
 	g.SetHandSize(2)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*KnockoutWhistTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: koCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: koCard(CardDesignClover, 5)},
 		{PlayerIdx: 2, Card: koCard(CardDesignClover, 13)},

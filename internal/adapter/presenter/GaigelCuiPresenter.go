@@ -61,8 +61,8 @@ func (p *GaigelCuiPresenter) Output(g interfaces.GaigelGame, lastErr error) stri
 
 		trick := g.GetCurrentTrick()
 		cuiTrickBlock(out, trick,
-			func(tc *domain.GaigelTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.GaigelTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 

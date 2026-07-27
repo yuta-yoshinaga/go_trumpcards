@@ -18,7 +18,7 @@ func setupGongZhuCuiMock() *interfaces.MockGongZhuGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetExposure").Return(domain.GongZhuExposure{})
-	m.On("GetCurrentTrick").Return([]*domain.GongZhuTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.GongZhuPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

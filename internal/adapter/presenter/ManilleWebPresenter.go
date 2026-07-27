@@ -62,8 +62,8 @@ func (p *ManilleWebPresenter) playableIndices(g interfaces.ManilleGame) []int {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *ManilleWebPresenter) buildTrickOutput(trick []*domain.ManilleTrickCard) []*controller.ManilleWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.ManilleTrickCard) *controller.ManilleWebOutputTrickCard {
+func (p *ManilleWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.ManilleWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.ManilleWebOutputTrickCard {
 		return &controller.ManilleWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

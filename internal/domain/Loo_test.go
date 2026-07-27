@@ -239,7 +239,7 @@ func TestLoo_MustFollowAndHead(t *testing.T) {
 	// リード: player 1 が ハート 7 を出した状態を作る。
 	g.SetCurrentTurn(0)
 	g.SetLeadPlayerIdx(1)
-	g.SetCurrentTrick([]*domain.LooTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: looCard(domain.CardDesignHeart, 7)},
 	})
 	// player 0 は ハート A と ハート 3 を持つ。マストヘッドで A を出す義務がある。
@@ -260,7 +260,7 @@ func TestLoo_MustTrumpWhenVoid(t *testing.T) {
 	g.GetPlayer(1).SetPlaying(true)
 	g.SetCurrentTurn(0)
 	g.SetLeadPlayerIdx(1)
-	g.SetCurrentTrick([]*domain.LooTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: looCard(domain.CardDesignHeart, 9)},
 	})
 	// player 0 は ハートなし。スペード (切り札) K とクラブ 4 を持つ。切り札を出す義務。
@@ -281,7 +281,7 @@ func TestLoo_DiscardWhenNoLeadNoTrump(t *testing.T) {
 	g.GetPlayer(1).SetPlaying(true)
 	g.SetCurrentTurn(0)
 	g.SetLeadPlayerIdx(1)
-	g.SetCurrentTrick([]*domain.LooTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: looCard(domain.CardDesignHeart, 9)},
 	})
 	setLooHand(g, 0, looCard(domain.CardDesignClover, 4), looCard(domain.CardDesignDiamond, 2))
@@ -296,7 +296,7 @@ func TestLoo_TrickWinner_TrumpBeatsLead(t *testing.T) {
 	g.GetPlayer(0).SetPlaying(true)
 	g.GetPlayer(1).SetPlaying(true)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*domain.LooTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: looCard(domain.CardDesignHeart, 1)}, // ハート A (リード)
 		{PlayerIdx: 1, Card: looCard(domain.CardDesignSpade, 2)}, // スペード 2 (切り札)
 	})

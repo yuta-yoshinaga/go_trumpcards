@@ -120,8 +120,8 @@ func (p *ScartoWebPresenter) playableIndices(g interfaces.ScartoGame) []int {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *ScartoWebPresenter) buildTrickOutput(trick []*domain.ScartoTrickCard) []*controller.ScartoWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.ScartoTrickCard) *controller.ScartoWebOutputTrickCard {
+func (p *ScartoWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.ScartoWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.ScartoWebOutputTrickCard {
 		return &controller.ScartoWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutputWithFace(tc.Card, scartoFace)}
 	})
 }

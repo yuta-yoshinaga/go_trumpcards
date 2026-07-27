@@ -108,8 +108,8 @@ func (p *TressetteWebPresenter) playableIndices(g interfaces.TressetteGame) []in
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *TressetteWebPresenter) buildTrickOutput(trick []*domain.TressetteTrickCard) []*controller.TressetteWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TressetteTrickCard) *controller.TressetteWebOutputTrickCard {
+func (p *TressetteWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.TressetteWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.TressetteWebOutputTrickCard {
 		return &controller.TressetteWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

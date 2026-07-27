@@ -376,7 +376,7 @@ func TestBelote_PlayerPlay_MustFollowSuit(t *testing.T) {
 	b.SetTrumpSuit(domain.CardDesignHeart)
 	b.SetPhase(domain.BelotePhasePlay)
 	b.SetCurrentPlayerIdx(0)
-	b.SetCurrentTrick([]*domain.BeloteTrickCard{
+	b.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
 	})
 	setupBeloteHand(b, 0, []*domain.Card{
@@ -396,7 +396,7 @@ func TestBelote_PlayerPlay_ObligationToTrump(t *testing.T) {
 	b.SetPhase(domain.BelotePhasePlay)
 	b.SetCurrentPlayerIdx(0)
 	// P3 (opponent) leads spade A → P0 currently winning is P3 → not partner → must trump
-	b.SetCurrentTrick([]*domain.BeloteTrickCard{
+	b.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
 	})
 	setupBeloteHand(b, 0, []*domain.Card{
@@ -414,7 +414,7 @@ func TestBelote_PlayerPlay_ObligationToOverTrump(t *testing.T) {
 	b.SetPhase(domain.BelotePhasePlay)
 	b.SetCurrentPlayerIdx(0)
 	// P2 (partner of P0) leads, P3 (opponent) trumps with K → must over-trump
-	b.SetCurrentTrick([]*domain.BeloteTrickCard{
+	b.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},  // P2 partner leads
 		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignHeart, 13, false)}, // P3 opponent trump K
 	})
@@ -435,7 +435,7 @@ func TestBelote_PlayerPlay_PartnerWinning_FreeDiscard(t *testing.T) {
 	b.SetPhase(domain.BelotePhasePlay)
 	b.SetCurrentPlayerIdx(0)
 	// P2 (partner) leads spade A; P3 plays weak spade. P2 still winning when P0 plays.
-	b.SetCurrentTrick([]*domain.BeloteTrickCard{
+	b.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
 		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 7, false)},
 	})
@@ -452,7 +452,7 @@ func TestBelote_TrickWinner_HighestOfLeadSuit(t *testing.T) {
 	b := newTestBelote()
 	b.Reset()
 	b.SetTrumpSuit(domain.CardDesignDiamond)
-	b.SetCurrentTrick([]*domain.BeloteTrickCard{
+	b.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 12, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 1, false)}, // A
@@ -468,7 +468,7 @@ func TestBelote_TrickWinner_TrumpCutWins(t *testing.T) {
 	b := newTestBelote()
 	b.Reset()
 	b.SetTrumpSuit(domain.CardDesignHeart)
-	b.SetCurrentTrick([]*domain.BeloteTrickCard{
+	b.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 1, false)}, // lead, A
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 7, false)}, // weakest trump
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},
@@ -484,7 +484,7 @@ func TestBelote_TrickWinner_HighTrumpBeatsLowTrump(t *testing.T) {
 	b := newTestBelote()
 	b.Reset()
 	b.SetTrumpSuit(domain.CardDesignHeart)
-	b.SetCurrentTrick([]*domain.BeloteTrickCard{
+	b.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 7, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 11, false)}, // J = highest trump
@@ -791,7 +791,7 @@ func TestBelote_CpuPlay_ExecutesValidCard(t *testing.T) {
 	b.SetTrumpSuit(domain.CardDesignHeart)
 	b.SetPhase(domain.BelotePhasePlay)
 	b.SetCurrentPlayerIdx(1)
-	b.SetCurrentTrick([]*domain.BeloteTrickCard{
+	b.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
 	})
 	setupBeloteHand(b, 1, []*domain.Card{

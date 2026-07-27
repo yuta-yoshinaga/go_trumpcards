@@ -101,18 +101,18 @@ func (_m *MockBarbuGame) GetTrickNumber() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockBarbuGame) GetCurrentTrick() []*domain.BarbuTrickCard {
+func (_m *MockBarbuGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
-	if v, ok := ret.Get(0).([]*domain.BarbuTrickCard); ok {
+	if v, ok := ret.Get(0).([]*domain.TrickCard); ok {
 		return v
 	}
 	return nil
 }
 
 // GetLastTrick モック
-func (_m *MockBarbuGame) GetLastTrick() []*domain.BarbuTrickCard {
+func (_m *MockBarbuGame) GetLastTrick() []*domain.TrickCard {
 	ret := _m.Called()
-	if v, ok := ret.Get(0).([]*domain.BarbuTrickCard); ok {
+	if v, ok := ret.Get(0).([]*domain.TrickCard); ok {
 		return v
 	}
 	return nil

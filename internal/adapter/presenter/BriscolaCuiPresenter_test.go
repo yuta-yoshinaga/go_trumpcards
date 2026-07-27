@@ -17,7 +17,7 @@ import (
 func setupBriscolaCuiMock(trumpCard *domain.Card) *interfaces.MockBriscolaGame {
 	m := new(interfaces.MockBriscolaGame)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.BriscolaTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.BriscolaPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

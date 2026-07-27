@@ -106,19 +106,19 @@ func (_m *MockKingGame) GetTrickNumber() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockKingGame) GetCurrentTrick() []*domain.KingTrickCard {
+func (_m *MockKingGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.KingTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }
 
 // GetLastTrick モック
-func (_m *MockKingGame) GetLastTrick() []*domain.KingTrickCard {
+func (_m *MockKingGame) GetLastTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.KingTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

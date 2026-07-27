@@ -36,7 +36,7 @@ func setupNapCuiMock() *interfaces.MockNapGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
-	m.On("GetCurrentTrick").Return(([]*domain.NapTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.NapPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

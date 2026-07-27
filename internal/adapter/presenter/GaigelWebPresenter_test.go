@@ -17,7 +17,7 @@ func setupGaigelWebMock() *interfaces.MockGaigelGame {
 	m := new(interfaces.MockGaigelGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.GaigelTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.GaigelPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

@@ -73,8 +73,8 @@ func (p *SkatWebPresenter) buildBaseOutput(s interfaces.SkatGame) *controller.Sk
 }
 
 // buildTrickOutput maps the current trick to the response shape.
-func (p *SkatWebPresenter) buildTrickOutput(trick []*domain.SkatTrickCard) []*controller.SkatWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.SkatTrickCard) *controller.SkatWebOutputTrickCard {
+func (p *SkatWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SkatWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SkatWebOutputTrickCard {
 		return &controller.SkatWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

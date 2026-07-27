@@ -90,8 +90,8 @@ func (p *CalabresellaWebPresenter) playableIndices(g interfaces.CalabresellaGame
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *CalabresellaWebPresenter) buildTrickOutput(trick []*domain.CalabresellaTrickCard) []*controller.CalabresellaWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.CalabresellaTrickCard) *controller.CalabresellaWebOutputTrickCard {
+func (p *CalabresellaWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.CalabresellaWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.CalabresellaWebOutputTrickCard {
 		return &controller.CalabresellaWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

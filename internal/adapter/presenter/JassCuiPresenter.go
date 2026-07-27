@@ -61,8 +61,8 @@ func (p *JassCuiPresenter) Output(g interfaces.JassGame, lastErr error) string {
 
 		trick := g.GetCurrentTrick()
 		cuiTrickBlock(out, trick,
-			func(tc *domain.JassTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.JassTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 

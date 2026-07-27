@@ -46,7 +46,7 @@ type EcarteGame interface {
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
-	GetCurrentTrick() []*domain.EcarteTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetTrumpSuit トランプスートを取得する
 	GetTrumpSuit() int
 	// GetTrumpCard 場に表向きで置かれている切り札表示カードを取得する (なければ nil)

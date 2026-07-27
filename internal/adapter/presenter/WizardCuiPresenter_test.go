@@ -20,7 +20,7 @@ func setupWizardCuiMock() *interfaces.MockWizardGame {
 	m.On("GetTotalRounds").Return(15)
 	m.On("GetHandSize").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.WizardTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.WizardPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -70,7 +70,7 @@ func TestWizardCuiPresenter_Output(t *testing.T) {
 		m, _ := setupWizardCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
 		// A Jester (skipped) then a heart establishes hearts as the lead suit.
-		m.On("GetCurrentTrick").Return([]*domain.WizardTrickCard{
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(domain.WizardDesignJester, 1, false)},
 			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 9, false)},
 		})

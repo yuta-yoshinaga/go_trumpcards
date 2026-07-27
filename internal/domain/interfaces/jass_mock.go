@@ -80,10 +80,10 @@ func (m *MockJassGame) GetCurrentPlayerIdx() int {
 	return args.Int(0)
 }
 
-func (m *MockJassGame) GetCurrentTrick() []*domain.JassTrickCard {
+func (m *MockJassGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
 	if v := args.Get(0); v != nil {
-		return v.([]*domain.JassTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

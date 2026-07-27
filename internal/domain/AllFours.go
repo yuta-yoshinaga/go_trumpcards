@@ -47,12 +47,6 @@ const (
 	AllFoursPhaseGameEnd AllFoursPhase = 5
 )
 
-// AllFoursTrickCard トリック中の1枚
-type AllFoursTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // AllFoursHint ヒント情報
 type AllFoursHint struct {
 	CardIndex *int   // 推奨カードインデックス (プレイ時)
@@ -70,7 +64,7 @@ type AllFours struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*AllFoursTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	trumpSuit        int   // 切り札スート (AllFoursTrumpUnset=未確定)
 	turnUp           *Card // めくり札 (provisional trump)
@@ -353,7 +347,7 @@ func (a *AllFours) CpuPlay() {
 
 // playCard カードをプレイする共通処理
 func (a *AllFours) playCard(playerIdx int, card *Card) {
-	a.currentTrick = append(a.currentTrick, &AllFoursTrickCard{PlayerIdx: playerIdx, Card: card})
+	a.currentTrick = append(a.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	a.appendLog(playerIdx, "play",
 		fmt.Sprintf("%s plays %s", a.playerName(playerIdx), cardStr(card)), []*Card{card})
 	if len(a.currentTrick) == AllFoursPlayerCnt {
@@ -645,10 +639,10 @@ func (a *AllFours) GetCurrentPlayerIdx() int { return a.currentPlayerIdx }
 func (a *AllFours) SetCurrentPlayerIdx(idx int) { a.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (a *AllFours) GetCurrentTrick() []*AllFoursTrickCard { return a.currentTrick }
+func (a *AllFours) GetCurrentTrick() []*TrickCard { return a.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (a *AllFours) SetCurrentTrick(trick []*AllFoursTrickCard) { a.currentTrick = trick }
+func (a *AllFours) SetCurrentTrick(trick []*TrickCard) { a.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (a *AllFours) GetLeadPlayerIdx() int { return a.leadPlayerIdx }
@@ -973,22 +967,22 @@ func (a *AllFours) playHintReason(playerIdx, chosenIdx int) string {
 
 // allFoursJSON is the JSON wire format for AllFours.
 type allFoursJSON struct {
-	TrumpCards       *TrumpCards          `json:"tc"`
-	Players          []*AllFoursPlayer    `json:"ps"`
-	Config           AllFoursConfig       `json:"cf"`
-	Phase            AllFoursPhase        `json:"ph"`
-	RoundNumber      int                  `json:"rn"`
-	TrickNumber      int                  `json:"tn"`
-	CurrentPlayerIdx int                  `json:"ci"`
-	CurrentTrick     []*AllFoursTrickCard `json:"ct"`
-	LeadPlayerIdx    int                  `json:"li"`
-	TrumpSuit        int                  `json:"ts"`
-	TurnUp           *Card                `json:"tu"`
-	RunCount         int                  `json:"rc"`
-	GiftAward        int                  `json:"ga"`
-	GameEndFlag      bool                 `json:"ge"`
-	WinnerIdx        int                  `json:"wi"`
-	ActionLog        []*ActionLogEntry    `json:"al"`
+	TrumpCards       *TrumpCards       `json:"tc"`
+	Players          []*AllFoursPlayer `json:"ps"`
+	Config           AllFoursConfig    `json:"cf"`
+	Phase            AllFoursPhase     `json:"ph"`
+	RoundNumber      int               `json:"rn"`
+	TrickNumber      int               `json:"tn"`
+	CurrentPlayerIdx int               `json:"ci"`
+	CurrentTrick     []*TrickCard      `json:"ct"`
+	LeadPlayerIdx    int               `json:"li"`
+	TrumpSuit        int               `json:"ts"`
+	TurnUp           *Card             `json:"tu"`
+	RunCount         int               `json:"rc"`
+	GiftAward        int               `json:"ga"`
+	GameEndFlag      bool              `json:"ge"`
+	WinnerIdx        int               `json:"wi"`
+	ActionLog        []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1060,7 +1054,7 @@ func (a *AllFours) UnmarshalJSON(data []byte) error {
 	a.currentPlayerIdx = j.CurrentPlayerIdx
 	a.currentTrick = j.CurrentTrick
 	if a.currentTrick == nil {
-		a.currentTrick = make([]*AllFoursTrickCard, 0)
+		a.currentTrick = make([]*TrickCard, 0)
 	}
 	a.leadPlayerIdx = j.LeadPlayerIdx
 	a.trumpSuit = j.TrumpSuit

@@ -63,8 +63,8 @@ func (p *KlaverjasWebPresenter) playableIndices(g interfaces.KlaverjasGame) []in
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *KlaverjasWebPresenter) buildTrickOutput(trick []*domain.KlaverjasTrickCard) []*controller.KlaverjasWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.KlaverjasTrickCard) *controller.KlaverjasWebOutputTrickCard {
+func (p *KlaverjasWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.KlaverjasWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.KlaverjasWebOutputTrickCard {
 		return &controller.KlaverjasWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

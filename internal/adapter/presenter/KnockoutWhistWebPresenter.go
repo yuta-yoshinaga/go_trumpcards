@@ -62,8 +62,8 @@ func (p *KnockoutWhistWebPresenter) playableIndices(g interfaces.KnockoutWhistGa
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *KnockoutWhistWebPresenter) buildTrickOutput(trick []*domain.KnockoutWhistTrickCard) []*controller.KnockoutWhistWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.KnockoutWhistTrickCard) *controller.KnockoutWhistWebOutputTrickCard {
+func (p *KnockoutWhistWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.KnockoutWhistWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.KnockoutWhistWebOutputTrickCard {
 		return &controller.KnockoutWhistWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

@@ -104,19 +104,19 @@ func (_m *MockLooGame) GetDecidePlayerIdx() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockLooGame) GetCurrentTrick() []*domain.LooTrickCard {
+func (_m *MockLooGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.LooTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }
 
 // GetLastTrick モック
-func (_m *MockLooGame) GetLastTrick() []*domain.LooTrickCard {
+func (_m *MockLooGame) GetLastTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.LooTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

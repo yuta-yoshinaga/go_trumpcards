@@ -123,7 +123,7 @@ func TestPreference_AllPassVoidsRound(t *testing.T) {
 func TestPreference_TrickWinnerTrumpBeatsLead(t *testing.T) {
 	g := newPrefGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
-	g.SetCurrentTrick([]*PreferenceTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: prefCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: prefCard(CardDesignDiamond, 7)},
 		{PlayerIdx: 2, Card: prefCard(CardDesignClover, 13)},
@@ -138,7 +138,7 @@ func TestPreference_MustFollow(t *testing.T) {
 	g.SetPhase(PreferencePhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*PreferenceTrickCard{{PlayerIdx: 1, Card: prefCard(CardDesignClover, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: prefCard(CardDesignClover, 1)}})
 	prefSetHand(g.GetPlayer(0), prefCard(CardDesignClover, 13), prefCard(CardDesignDiamond, 7))
 	if err := g.PlayerPlay(1); err == nil {
 		t.Error("expected must-follow error")

@@ -134,12 +134,6 @@ type FiveHundredHint struct {
 	Reason         string // ヒント理由キー
 }
 
-// FiveHundredTrickCard トリック中の1枚
-type FiveHundredTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // FiveHundred 500 (Five Hundred) ゲームクラス
 type FiveHundred struct {
 	trumpCards       *TrumpCards
@@ -149,7 +143,7 @@ type FiveHundred struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*FiveHundredTrickCard
+	currentTrick     []*TrickCard
 	dealerIdx        int
 	kitty            []*Card
 	leadPlayerIdx    int
@@ -516,7 +510,7 @@ func (g *FiveHundred) playCard(playerIdx int, card *Card, jokerSuit int) {
 			g.jokerLeadSuit = g.cpuNominateSuit(playerIdx)
 		}
 	}
-	g.currentTrick = append(g.currentTrick, &FiveHundredTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play",
 		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), fiveHundredCardLabel(card)), []*Card{card})
 	if len(g.currentTrick) == g.activePlayerCount() {
@@ -1106,10 +1100,10 @@ func (g *FiveHundred) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *FiveHundred) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *FiveHundred) GetCurrentTrick() []*FiveHundredTrickCard { return g.currentTrick }
+func (g *FiveHundred) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *FiveHundred) SetCurrentTrick(trick []*FiveHundredTrickCard) { g.currentTrick = trick }
+func (g *FiveHundred) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetGameEndFlag ゲーム終了フラグ取得
 func (g *FiveHundred) GetGameEndFlag() bool { return g.gameEndFlag }
@@ -1344,7 +1338,7 @@ type fiveHundredJSON struct {
 	RoundNumber      int                        `json:"rn"`
 	TrickNumber      int                        `json:"tn"`
 	CurrentPlayerIdx int                        `json:"ci"`
-	CurrentTrick     []*FiveHundredTrickCard    `json:"ct"`
+	CurrentTrick     []*TrickCard               `json:"ct"`
 	DealerIdx        int                        `json:"di"`
 	Kitty            []*Card                    `json:"kt"`
 	LeadPlayerIdx    int                        `json:"li"`
@@ -1427,7 +1421,7 @@ func (g *FiveHundred) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*FiveHundredTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.dealerIdx = j.DealerIdx
 	g.kitty = j.Kitty

@@ -61,8 +61,8 @@ func (p *SedmaWebPresenter) playableIndices(g interfaces.SedmaGame) []int {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *SedmaWebPresenter) buildTrickOutput(trick []*domain.SedmaTrickCard) []*controller.SedmaWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.SedmaTrickCard) *controller.SedmaWebOutputTrickCard {
+func (p *SedmaWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SedmaWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SedmaWebOutputTrickCard {
 		return &controller.SedmaWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

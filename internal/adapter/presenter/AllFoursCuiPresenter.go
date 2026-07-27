@@ -70,8 +70,8 @@ func (p *AllFoursCuiPresenter) Output(s interfaces.AllFoursGame, lastErr error) 
 
 		trick := s.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
-			func(tc *domain.AllFoursTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.AllFoursTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) },
 		)
 

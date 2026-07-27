@@ -70,8 +70,8 @@ func (p *UltiWebPresenter) playableIndices(g interfaces.UltiGame) []int {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *UltiWebPresenter) buildTrickOutput(trick []*domain.UltiTrickCard) []*controller.UltiWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.UltiTrickCard) *controller.UltiWebOutputTrickCard {
+func (p *UltiWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.UltiWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.UltiWebOutputTrickCard {
 		return &controller.UltiWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

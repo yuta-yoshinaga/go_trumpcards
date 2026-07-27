@@ -65,8 +65,8 @@ func (p *BeloteCuiPresenter) Output(b interfaces.BeloteGame, lastErr error) stri
 
 		trick := b.GetCurrentTrick()
 		cuiTrickBlock(out, trick,
-			func(tc *domain.BeloteTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.BeloteTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(b.GetPlayer(idx), idx) },
 		)
 

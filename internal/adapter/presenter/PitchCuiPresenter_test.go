@@ -20,7 +20,7 @@ func setupPitchCuiMock() *interfaces.MockPitchGame {
 	m.On("GetCurrentBid").Return(0)
 	m.On("GetTrumpSuit").Return(0)
 	m.On("GetBidWinnerIdx").Return(-1)
-	m.On("GetCurrentTrick").Return([]*domain.PitchTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.PitchPhaseBid)
 	m.On("GetCurrentPlayerIdx").Return(0)

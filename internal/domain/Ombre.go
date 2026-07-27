@@ -138,12 +138,6 @@ type OmbreHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// OmbreTrickCard トリック中の 1 枚
-type OmbreTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Ombre オンブルのゲームクラス
 type Ombre struct {
 	trumpCards       *TrumpCards
@@ -153,7 +147,7 @@ type Ombre struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*OmbreTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	forehandIdx      int                      // ディーラーの左隣 (ビッド開始)
@@ -517,7 +511,7 @@ func (g *Ombre) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Ombre) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &OmbreTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == OmbrePlayerCnt {
@@ -1190,10 +1184,10 @@ func (g *Ombre) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Ombre) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Ombre) GetCurrentTrick() []*OmbreTrickCard { return g.currentTrick }
+func (g *Ombre) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Ombre) SetCurrentTrick(trick []*OmbreTrickCard) { g.currentTrick = trick }
+func (g *Ombre) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Ombre) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -1304,7 +1298,7 @@ type ombreJSON struct {
 	RoundNumber      int                      `json:"rn"`
 	TrickNumber      int                      `json:"tn"`
 	CurrentPlayerIdx int                      `json:"ci"`
-	CurrentTrick     []*OmbreTrickCard        `json:"ct"`
+	CurrentTrick     []*TrickCard             `json:"ct"`
 	LeadPlayerIdx    int                      `json:"li"`
 	DealerIdx        int                      `json:"di"`
 	ForehandIdx      int                      `json:"fh"`
@@ -1486,7 +1480,7 @@ func (g *Ombre) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*OmbreTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

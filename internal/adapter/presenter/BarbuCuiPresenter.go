@@ -142,7 +142,7 @@ func barbuTrumpLabel(suit int) string {
 // barbuLegalTrickIndices returns the hand positions the player may legally play
 // in a trick contract: cards of the lead suit, or the whole hand when leading
 // or void in the lead suit.
-func barbuLegalTrickIndices(player *domain.BarbuPlayer, trick []*domain.BarbuTrickCard) []int {
+func barbuLegalTrickIndices(player *domain.BarbuPlayer, trick []*domain.TrickCard) []int {
 	cardsSize := player.GetCardsSize()
 	makeAll := func() []int {
 		all := make([]int, cardsSize)

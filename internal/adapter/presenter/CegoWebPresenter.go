@@ -130,8 +130,8 @@ func (p *CegoWebPresenter) playableIndices(g interfaces.CegoGame) []int {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *CegoWebPresenter) buildTrickOutput(trick []*domain.CegoTrickCard) []*controller.CegoWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.CegoTrickCard) *controller.CegoWebOutputTrickCard {
+func (p *CegoWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.CegoWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.CegoWebOutputTrickCard {
 		return &controller.CegoWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutputWithFace(tc.Card, cegoFace)}
 	})
 }

@@ -97,10 +97,10 @@ func (m *MockWattenGame) GetCurrentPlayerIdx() int {
 	return args.Int(0)
 }
 
-func (m *MockWattenGame) GetCurrentTrick() []*domain.WattenTrickCard {
+func (m *MockWattenGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
 	if v := args.Get(0); v != nil {
-		return v.([]*domain.WattenTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

@@ -52,8 +52,8 @@ func (p *BeloteWebPresenter) buildBase(b interfaces.BeloteGame) *controller.Belo
 	return resObj
 }
 
-func (p *BeloteWebPresenter) buildTrickOutput(trick []*domain.BeloteTrickCard) []*controller.BeloteWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.BeloteTrickCard) *controller.BeloteWebOutputTrickCard {
+func (p *BeloteWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.BeloteWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.BeloteWebOutputTrickCard {
 		return &controller.BeloteWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
@@ -75,7 +75,7 @@ func (p *BeloteWebPresenter) buildPlayersOutput(b interfaces.BeloteGame) []*cont
 	return out
 }
 
-func (p *BeloteWebPresenter) buildMessage(b interfaces.BeloteGame, trick []*domain.BeloteTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *BeloteWebPresenter) buildMessage(b interfaces.BeloteGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

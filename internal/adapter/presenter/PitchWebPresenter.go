@@ -56,8 +56,8 @@ func (p *PitchWebPresenter) buildBase(s interfaces.PitchGame) *controller.PitchW
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *PitchWebPresenter) buildTrickOutput(trick []*domain.PitchTrickCard) []*controller.PitchWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.PitchTrickCard) *controller.PitchWebOutputTrickCard {
+func (p *PitchWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.PitchWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.PitchWebOutputTrickCard {
 		return &controller.PitchWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
@@ -129,7 +129,7 @@ func (p *PitchWebPresenter) buildPlayersOutput(s interfaces.PitchGame) []*contro
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *PitchWebPresenter) buildMessage(s interfaces.PitchGame, trick []*domain.PitchTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *PitchWebPresenter) buildMessage(s interfaces.PitchGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

@@ -75,12 +75,6 @@ type RookHint struct {
 	Reason         string // ヒント理由キー
 }
 
-// RookTrickCard トリック中の1枚
-type RookTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Rook ルーク(Rook)ゲームクラス
 type Rook struct {
 	deck             []*Card
@@ -91,7 +85,7 @@ type Rook struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*RookTrickCard
+	currentTrick     []*TrickCard
 	dealerIdx        int
 	nest             []*Card
 	nestPoints       int
@@ -475,7 +469,7 @@ func (g *Rook) CpuPlay() {
 
 // playCard カードをプレイする共通処理
 func (g *Rook) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &RookTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play",
 		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), rookCardLabel(card)), []*Card{card})
 	if len(g.currentTrick) == RookPlayerCnt {
@@ -1006,10 +1000,10 @@ func (g *Rook) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Rook) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Rook) GetCurrentTrick() []*RookTrickCard { return g.currentTrick }
+func (g *Rook) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Rook) SetCurrentTrick(trick []*RookTrickCard) { g.currentTrick = trick }
+func (g *Rook) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetGameEndFlag ゲーム終了フラグ取得
 func (g *Rook) GetGameEndFlag() bool { return g.gameEndFlag }
@@ -1249,7 +1243,7 @@ type rookJSON struct {
 	RoundNumber      int                 `json:"rn"`
 	TrickNumber      int                 `json:"tn"`
 	CurrentPlayerIdx int                 `json:"ci"`
-	CurrentTrick     []*RookTrickCard    `json:"ct"`
+	CurrentTrick     []*TrickCard        `json:"ct"`
 	DealerIdx        int                 `json:"di"`
 	Nest             []*Card             `json:"nt"`
 	NestPoints       int                 `json:"np"`
@@ -1369,7 +1363,7 @@ func (g *Rook) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*RookTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.dealerIdx = j.DealerIdx
 	g.nest = j.Nest

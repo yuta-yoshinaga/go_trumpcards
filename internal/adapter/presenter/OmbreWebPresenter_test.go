@@ -19,7 +19,7 @@ func setupOmbreWebMock() *interfaces.MockOmbreGame {
 	m := new(interfaces.MockOmbreGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return(([]*domain.OmbreTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.OmbrePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -104,7 +104,7 @@ func TestOmbreWebPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
 		m.On("GetPhase").Return(domain.OmbrePhasePlay)
-		m.On("GetCurrentTrick").Return([]*domain.OmbreTrickCard{
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
 		})
 		result := p.Output(m, nil)

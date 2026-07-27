@@ -136,12 +136,6 @@ type PiquetDeclarationResult struct {
 	Sets         []*PiquetClaim        `json:"sets,omitempty"`
 }
 
-// PiquetTrickCard トリック中の1枚
-type PiquetTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // PiquetHint ヒント情報
 type PiquetHint struct {
 	// CardIndex プレイ時の推奨カードインデックス
@@ -178,7 +172,7 @@ type Piquet struct {
 	declResults []*PiquetDeclarationResult
 
 	// プレイフェーズ
-	currentTrick     []*PiquetTrickCard
+	currentTrick     []*TrickCard
 	currentPlayerIdx int
 	trickNumber      int
 	leadPlayerIdx    int
@@ -423,7 +417,7 @@ func (p *Piquet) GetDeclStage() PiquetDeclarationKind { return p.declStage }
 func (p *Piquet) GetDeclResults() []*PiquetDeclarationResult { return p.declResults }
 
 // GetCurrentTrick 現在のトリック
-func (p *Piquet) GetCurrentTrick() []*PiquetTrickCard { return p.currentTrick }
+func (p *Piquet) GetCurrentTrick() []*TrickCard { return p.currentTrick }
 
 // GetCurrentPlayerIdx 現在の手番プレイヤー
 func (p *Piquet) GetCurrentPlayerIdx() int { return p.currentPlayerIdx }
@@ -680,7 +674,7 @@ func (p *Piquet) PlayCard(cardIdx int) error {
 	}
 	pl := p.players[playerIdx]
 	card := pl.RemoveCard(cardIdx)
-	p.currentTrick = append(p.currentTrick, &PiquetTrickCard{PlayerIdx: playerIdx, Card: card})
+	p.currentTrick = append(p.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	p.appendLog(playerIdx, "play", "カードプレイ", []*Card{card})
 
 	// リード側が出した瞬間は得点
@@ -1263,7 +1257,7 @@ type piquetJSON struct {
 	YoungerRevealedTalon []*Card                        `json:"yr"`
 	DeclStage            PiquetDeclarationKind          `json:"ds"`
 	DeclResults          []*PiquetDeclarationResult     `json:"dr"`
-	CurrentTrick         []*PiquetTrickCard             `json:"ct"`
+	CurrentTrick         []*TrickCard                   `json:"ct"`
 	CurrentPlayerIdx     int                            `json:"cp"`
 	TrickNumber          int                            `json:"tn"`
 	LeadPlayerIdx        int                            `json:"lp"`

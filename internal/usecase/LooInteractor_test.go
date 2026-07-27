@@ -220,7 +220,7 @@ func TestLooInteractor_HumanCompletesTrick(t *testing.T) {
 	g.SetLeadPlayerIdx(1)
 	g.SetCurrentTurn(0)
 	// CPU (1) が既に 1 枚出した。人間 (0) が最後の 1 枚を出すとトリック完了。
-	g.SetCurrentTrick([]*domain.LooTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 	})
 	g.GetPlayer(0).Reset()

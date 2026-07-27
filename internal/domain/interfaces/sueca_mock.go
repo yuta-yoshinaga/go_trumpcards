@@ -97,10 +97,10 @@ func (_m *MockSuecaGame) GetCurrentPlayerIdx() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockSuecaGame) GetCurrentTrick() []*domain.SuecaTrickCard {
+func (_m *MockSuecaGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.SuecaTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

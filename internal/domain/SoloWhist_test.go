@@ -117,7 +117,7 @@ func TestSoloWhist_AllPassVoidsRound(t *testing.T) {
 func TestSoloWhist_TrickWinnerTrumpBeatsLead(t *testing.T) {
 	g := newSwGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
-	g.SetCurrentTrick([]*SoloWhistTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: swCard(CardDesignClover, 1)},  // Ace lead
 		{PlayerIdx: 1, Card: swCard(CardDesignDiamond, 2)}, // low trump beats it
 		{PlayerIdx: 2, Card: swCard(CardDesignClover, 13)},
@@ -131,7 +131,7 @@ func TestSoloWhist_TrickWinnerTrumpBeatsLead(t *testing.T) {
 func TestSoloWhist_TrickWinnerNoTrumpMisere(t *testing.T) {
 	g := newSwGame(false)
 	g.SetTrumpSuit(0) // Misère: no trump
-	g.SetCurrentTrick([]*SoloWhistTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: swCard(CardDesignClover, 13)},
 		{PlayerIdx: 1, Card: swCard(CardDesignDiamond, 1)}, // off-suit ace cannot win
 		{PlayerIdx: 2, Card: swCard(CardDesignClover, 1)},  // ace of lead suit wins
@@ -147,7 +147,7 @@ func TestSoloWhist_MustFollow(t *testing.T) {
 	g.SetPhase(SoloWhistPhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*SoloWhistTrickCard{{PlayerIdx: 1, Card: swCard(CardDesignClover, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: swCard(CardDesignClover, 1)}})
 	swSetHand(g.GetPlayer(0), swCard(CardDesignClover, 13), swCard(CardDesignDiamond, 7))
 	if err := g.PlayerPlay(1); err == nil { // diamond while holding club
 		t.Error("expected must-follow error")
@@ -162,7 +162,7 @@ func TestSoloWhist_ResolveTrickCountsTricks(t *testing.T) {
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetPhase(SoloWhistPhaseTrickEnd)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*SoloWhistTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: swCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: swCard(CardDesignClover, 5)},
 		{PlayerIdx: 2, Card: swCard(CardDesignClover, 13)},

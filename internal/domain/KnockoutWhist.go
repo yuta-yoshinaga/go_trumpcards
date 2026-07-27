@@ -50,12 +50,6 @@ type KnockoutWhistHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// KnockoutWhistTrickCard トリック中の 1 枚
-type KnockoutWhistTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // KnockoutWhist ノックアウト・ホイストのゲームクラス
 type KnockoutWhist struct {
 	trumpCards       *TrumpCards
@@ -66,7 +60,7 @@ type KnockoutWhist struct {
 	handSize         int // 現ラウンドの配り枚数 (8 - roundNumber)
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*KnockoutWhistTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	trumpSuit        int
@@ -285,7 +279,7 @@ func (g *KnockoutWhist) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *KnockoutWhist) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &KnockoutWhistTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) >= g.activeCount() {
@@ -673,10 +667,10 @@ func (g *KnockoutWhist) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *KnockoutWhist) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *KnockoutWhist) GetCurrentTrick() []*KnockoutWhistTrickCard { return g.currentTrick }
+func (g *KnockoutWhist) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *KnockoutWhist) SetCurrentTrick(trick []*KnockoutWhistTrickCard) { g.currentTrick = trick }
+func (g *KnockoutWhist) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *KnockoutWhist) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -745,22 +739,22 @@ func (g *KnockoutWhist) GetPlayableIndices(playerIdx int) []int {
 
 // knockoutWhistJSON is the JSON wire format for KnockoutWhist.
 type knockoutWhistJSON struct {
-	TrumpCards       *TrumpCards               `json:"tc"`
-	Players          []*KnockoutWhistPlayer    `json:"ps"`
-	Config           KnockoutWhistConfig       `json:"cf"`
-	Phase            KnockoutWhistPhase        `json:"ph"`
-	RoundNumber      int                       `json:"rn"`
-	HandSize         int                       `json:"hs"`
-	TrickNumber      int                       `json:"tn"`
-	CurrentPlayerIdx int                       `json:"ci"`
-	CurrentTrick     []*KnockoutWhistTrickCard `json:"ct"`
-	LeadPlayerIdx    int                       `json:"li"`
-	DealerIdx        int                       `json:"di"`
-	TrumpSuit        int                       `json:"ts"`
-	RoundWinnerIdx   int                       `json:"rw"`
-	GameEndFlag      bool                      `json:"ge"`
-	WinnerPlayer     int                       `json:"wp"`
-	ActionLog        []*ActionLogEntry         `json:"al"`
+	TrumpCards       *TrumpCards            `json:"tc"`
+	Players          []*KnockoutWhistPlayer `json:"ps"`
+	Config           KnockoutWhistConfig    `json:"cf"`
+	Phase            KnockoutWhistPhase     `json:"ph"`
+	RoundNumber      int                    `json:"rn"`
+	HandSize         int                    `json:"hs"`
+	TrickNumber      int                    `json:"tn"`
+	CurrentPlayerIdx int                    `json:"ci"`
+	CurrentTrick     []*TrickCard           `json:"ct"`
+	LeadPlayerIdx    int                    `json:"li"`
+	DealerIdx        int                    `json:"di"`
+	TrumpSuit        int                    `json:"ts"`
+	RoundWinnerIdx   int                    `json:"rw"`
+	GameEndFlag      bool                   `json:"ge"`
+	WinnerPlayer     int                    `json:"wp"`
+	ActionLog        []*ActionLogEntry      `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -853,7 +847,7 @@ func (g *KnockoutWhist) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*KnockoutWhistTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

@@ -19,7 +19,7 @@ func setupFortyFivesWebMock() *interfaces.MockFortyFivesGame {
 	m := new(interfaces.MockFortyFivesGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return(([]*domain.FortyFivesTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.FortyFivesPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -100,7 +100,7 @@ func TestFortyFivesWebPresenter_Output(t *testing.T) {
 	t.Run("play phase follow when trick has cards", func(t *testing.T) {
 		m, _ := setupFortyFivesWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		m.On("GetCurrentTrick").Return([]*domain.FortyFivesTrickCard{
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
 		})
 		result := p.Output(m, nil)

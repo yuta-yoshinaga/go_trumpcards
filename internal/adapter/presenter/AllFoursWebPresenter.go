@@ -57,8 +57,8 @@ func (p *AllFoursWebPresenter) buildBase(s interfaces.AllFoursGame) *controller.
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *AllFoursWebPresenter) buildTrickOutput(trick []*domain.AllFoursTrickCard) []*controller.AllFoursWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.AllFoursTrickCard) *controller.AllFoursWebOutputTrickCard {
+func (p *AllFoursWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.AllFoursWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.AllFoursWebOutputTrickCard {
 		return &controller.AllFoursWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
@@ -181,7 +181,7 @@ func (p *AllFoursWebPresenter) buildRoundBreakdown(s interfaces.AllFoursGame) *c
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *AllFoursWebPresenter) buildMessage(s interfaces.AllFoursGame, trick []*domain.AllFoursTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *AllFoursWebPresenter) buildMessage(s interfaces.AllFoursGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

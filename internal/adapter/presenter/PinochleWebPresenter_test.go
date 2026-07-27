@@ -19,7 +19,7 @@ func setupPinochleWebMock() *interfaces.MockPinochleGame {
 	m := new(interfaces.MockPinochleGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.PinochleTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.PinochlePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -101,7 +101,7 @@ func TestPinochleWebPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = nil
 		m.On("GetRoundNumber").Return(1)
 		m.On("GetTrickNumber").Return(12)
-		m.On("GetCurrentTrick").Return([]*domain.PinochleTrickCard(nil))
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetPhase").Return(domain.PinochlePhaseGameEnd)
 		m.On("GetCurrentPlayerIdx").Return(0)

@@ -257,7 +257,7 @@ func TestSkatTrickWinnerSuit(t *testing.T) {
 	g := newSkatForTest(t, DefaultSkatConfig())
 	g.round.gameType = SkatGameSuit
 	g.round.trumpSuit = CardDesignSpade
-	g.round.currentTrick = []*SkatTrickCard{
+	g.round.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, skatValueAce, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, skatValueKing, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, skatValueSeven, false)}, // trump
@@ -266,7 +266,7 @@ func TestSkatTrickWinnerSuit(t *testing.T) {
 		t.Fatalf("trump should win: got %d", got)
 	}
 
-	g.round.currentTrick = []*SkatTrickCard{
+	g.round.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, skatValueAce, false)}, // lead trump
 		{PlayerIdx: 1, Card: NewCard(CardDesignClover, skatValueJack, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, skatValueTen, false)},
@@ -279,7 +279,7 @@ func TestSkatTrickWinnerSuit(t *testing.T) {
 func TestSkatTrickWinnerNull(t *testing.T) {
 	g := newSkatForTest(t, DefaultSkatConfig())
 	g.round.gameType = SkatGameNull
-	g.round.currentTrick = []*SkatTrickCard{
+	g.round.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, skatValueSeven, false)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, skatValueAce, false)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignDiamond, skatValueAce, false)},
@@ -295,7 +295,7 @@ func TestSkatValidatePlayMustFollowSuit(t *testing.T) {
 	g.round.gameType = SkatGameSuit
 	g.round.trumpSuit = CardDesignSpade
 	g.round.currentPlayerIdx = 0
-	g.round.currentTrick = []*SkatTrickCard{
+	g.round.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, skatValueKing, false)},
 	}
 	human := g.GetPlayer(0)
@@ -530,7 +530,7 @@ func TestSkatGetValidPlayIndicesNoFollow(t *testing.T) {
 	resetForControlledPhase(g)
 	g.round.gameType = SkatGameSuit
 	g.round.trumpSuit = CardDesignSpade
-	g.round.currentTrick = []*SkatTrickCard{
+	g.round.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, skatValueAce, false)},
 	}
 	p := g.GetPlayer(0)

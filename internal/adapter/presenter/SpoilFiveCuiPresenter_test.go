@@ -33,7 +33,7 @@ func setupSpoilFiveCuiMock() *interfaces.MockSpoilFiveGame {
 	m.On("GetPot").Return(5)
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetRoundWinnerIdx").Return(-1)
-	m.On("GetCurrentTrick").Return(([]*domain.SpoilFiveTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.SpoilFivePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

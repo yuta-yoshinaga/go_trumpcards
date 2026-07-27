@@ -62,12 +62,6 @@ const (
 	GaigelPhaseGameEnd
 )
 
-// GaigelTrickCard トリック中の1枚
-type GaigelTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // GaigelHint ヒント情報
 type GaigelHint struct {
 	CardIndex  *int   // 推奨カードインデックス
@@ -84,7 +78,7 @@ type Gaigel struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*GaigelTrickCard
+	currentTrick     []*TrickCard
 	trumpCard        *Card // 場に表向きで置かれる切り札表示カード (山札の最後)
 	trumpSuit        int
 	leadPlayerIdx    int
@@ -396,7 +390,7 @@ func (g *Gaigel) isMarriageStarter(player *GaigelPlayer, card *Card) bool {
 
 // playCard カードをプレイする共通処理
 func (g *Gaigel) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &GaigelTrickCard{
+	g.currentTrick = append(g.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -665,10 +659,10 @@ func (g *Gaigel) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Gaigel) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Gaigel) GetCurrentTrick() []*GaigelTrickCard { return g.currentTrick }
+func (g *Gaigel) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Gaigel) SetCurrentTrick(trick []*GaigelTrickCard) { g.currentTrick = trick }
+func (g *Gaigel) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetTrumpSuit 切り札スート取得
 func (g *Gaigel) GetTrumpSuit() int { return g.trumpSuit }
@@ -1087,7 +1081,7 @@ type gaigelJSON struct {
 	RoundNumber      int                     `json:"rn"`
 	TrickNumber      int                     `json:"tn"`
 	CurrentPlayerIdx int                     `json:"cp"`
-	CurrentTrick     []*GaigelTrickCard      `json:"ct"`
+	CurrentTrick     []*TrickCard            `json:"ct"`
 	TrumpCard        *Card                   `json:"tu"`
 	TrumpSuit        int                     `json:"ts"`
 	LeadPlayerIdx    int                     `json:"li"`

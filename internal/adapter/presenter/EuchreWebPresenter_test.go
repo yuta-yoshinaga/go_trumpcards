@@ -18,7 +18,7 @@ func setupEuchreWebMock() *interfaces.MockEuchreGame {
 	m := new(interfaces.MockEuchreGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.EuchreTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.EuchrePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -112,7 +112,7 @@ func TestEuchreWebPresenter_Output(t *testing.T) {
 	t.Run("current trick populated", func(t *testing.T) {
 		m, _ := setupEuchreWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		trick := []*domain.EuchreTrickCard{
+		trick := []*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 		}
@@ -306,7 +306,7 @@ func TestEuchreWebPresenter_Output(t *testing.T) {
 	t.Run("play phase follow messageCode when trick has cards", func(t *testing.T) {
 		m, _ := setupEuchreWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		trick := []*domain.EuchreTrickCard{
+		trick := []*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
 		}
 		m.On("GetCurrentTrick").Return(trick)

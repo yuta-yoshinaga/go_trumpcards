@@ -76,8 +76,8 @@ func (_m *MockScartoGame) GetTrickNumber() int { return _m.Called().Int(0) }
 func (_m *MockScartoGame) GetCurrentPlayerIdx() int { return _m.Called().Int(0) }
 
 // GetCurrentTrick モック
-func (_m *MockScartoGame) GetCurrentTrick() []*domain.ScartoTrickCard {
-	return _m.Called().Get(0).([]*domain.ScartoTrickCard)
+func (_m *MockScartoGame) GetCurrentTrick() []*domain.TrickCard {
+	return _m.Called().Get(0).([]*domain.TrickCard)
 }
 
 // GetLeadPlayerIdx モック

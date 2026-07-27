@@ -153,7 +153,7 @@ func TestCegoCpuDiscardKeepsBest(t *testing.T) {
 
 // --- getValidPlayIndices: suit-follow branches ---
 
-func cegoPlayable(t *testing.T, hand []*domain.Card, trick []*domain.CegoTrickCard) []int {
+func cegoPlayable(t *testing.T, hand []*domain.Card, trick []*domain.TrickCard) []int {
 	t.Helper()
 	g := domain.NewDefaultCego()
 	g.Reset()
@@ -168,14 +168,14 @@ func cegoPlayable(t *testing.T, hand []*domain.Card, trick []*domain.CegoTrickCa
 func TestCegoValidPlaySuitFollowHasLed(t *testing.T) {
 	got := cegoPlayable(t,
 		[]*domain.Card{cegoSuitCard(domain.CardDesignSpade, 7), cegoSuitCard(domain.CardDesignHeart, 4), cegoTrumpCard(2)},
-		[]*domain.CegoTrickCard{{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 3)}})
+		[]*domain.TrickCard{{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 3)}})
 	assert.Equal(t, []int{0}, got) // must follow the led spade
 }
 
 func TestCegoValidPlaySuitVoidMustOvertrump(t *testing.T) {
 	got := cegoPlayable(t,
 		[]*domain.Card{cegoTrumpCard(10), cegoTrumpCard(2), cegoSuitCard(domain.CardDesignHeart, 4)},
-		[]*domain.CegoTrickCard{
+		[]*domain.TrickCard{
 			{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 3)},
 			{PlayerIdx: 2, Card: cegoTrumpCard(5)},
 		})
@@ -185,7 +185,7 @@ func TestCegoValidPlaySuitVoidMustOvertrump(t *testing.T) {
 func TestCegoValidPlaySuitVoidTrumpNoHigher(t *testing.T) {
 	got := cegoPlayable(t,
 		[]*domain.Card{cegoTrumpCard(2), cegoTrumpCard(5), cegoSuitCard(domain.CardDesignHeart, 4)},
-		[]*domain.CegoTrickCard{
+		[]*domain.TrickCard{
 			{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 3)},
 			{PlayerIdx: 2, Card: cegoTrumpCard(20)},
 		})
@@ -195,7 +195,7 @@ func TestCegoValidPlaySuitVoidTrumpNoHigher(t *testing.T) {
 func TestCegoValidPlaySuitVoidNoTrumpInTrick(t *testing.T) {
 	got := cegoPlayable(t,
 		[]*domain.Card{cegoTrumpCard(2), cegoTrumpCard(5)},
-		[]*domain.CegoTrickCard{
+		[]*domain.TrickCard{
 			{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 3)},
 			{PlayerIdx: 2, Card: cegoSuitCard(domain.CardDesignHeart, 4)},
 		})
@@ -205,7 +205,7 @@ func TestCegoValidPlaySuitVoidNoTrumpInTrick(t *testing.T) {
 func TestCegoValidPlaySuitVoidNoTrump(t *testing.T) {
 	got := cegoPlayable(t,
 		[]*domain.Card{cegoSuitCard(domain.CardDesignHeart, 4), cegoSuitCard(domain.CardDesignDiamond, 5)},
-		[]*domain.CegoTrickCard{{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 3)}})
+		[]*domain.TrickCard{{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 3)}})
 	assert.Equal(t, []int{0, 1}, got) // void in led suit and no trumps -> anything goes
 }
 
@@ -214,21 +214,21 @@ func TestCegoValidPlaySuitVoidNoTrump(t *testing.T) {
 func TestCegoValidPlayTrumpLedMustOvertrump(t *testing.T) {
 	got := cegoPlayable(t,
 		[]*domain.Card{cegoTrumpCard(10), cegoTrumpCard(2), cegoSuitCard(domain.CardDesignSpade, 3)},
-		[]*domain.CegoTrickCard{{PlayerIdx: 1, Card: cegoTrumpCard(5)}})
+		[]*domain.TrickCard{{PlayerIdx: 1, Card: cegoTrumpCard(5)}})
 	assert.Equal(t, []int{0}, got) // trump led -> must play a higher trump (T10)
 }
 
 func TestCegoValidPlayTrumpLedNoHigher(t *testing.T) {
 	got := cegoPlayable(t,
 		[]*domain.Card{cegoTrumpCard(2), cegoTrumpCard(5), cegoSuitCard(domain.CardDesignSpade, 3)},
-		[]*domain.CegoTrickCard{{PlayerIdx: 1, Card: cegoTrumpCard(20)}})
+		[]*domain.TrickCard{{PlayerIdx: 1, Card: cegoTrumpCard(20)}})
 	assert.Equal(t, []int{0, 1}, got) // cannot beat T20 -> any trump is legal
 }
 
 func TestCegoValidPlayTrumpLedVoid(t *testing.T) {
 	got := cegoPlayable(t,
 		[]*domain.Card{cegoSuitCard(domain.CardDesignSpade, 3), cegoSuitCard(domain.CardDesignHeart, 4)},
-		[]*domain.CegoTrickCard{{PlayerIdx: 1, Card: cegoTrumpCard(5)}})
+		[]*domain.TrickCard{{PlayerIdx: 1, Card: cegoTrumpCard(5)}})
 	assert.Equal(t, []int{0, 1}, got) // no trumps -> discard anything
 }
 
@@ -236,7 +236,7 @@ func TestCegoValidPlayTrumpLedVoid(t *testing.T) {
 
 // cegoCpuPlaySetup builds a Play-phase game with a fixed declarer, difficulty,
 // current trick and the acting CPU's hand, then returns the game.
-func cegoCpuPlaySetup(declarer, actor int, diff domain.CegoCpuDifficulty, hand []*domain.Card, trick []*domain.CegoTrickCard) *domain.Cego {
+func cegoCpuPlaySetup(declarer, actor int, diff domain.CegoCpuDifficulty, hand []*domain.Card, trick []*domain.TrickCard) *domain.Cego {
 	g := domain.NewDefaultCego()
 	g.Reset()
 	g.SetConfig(domain.CegoConfig{CpuDifficulty: diff, TargetDeals: 5})
@@ -269,7 +269,7 @@ func TestCegoCpuPlayAllyWinning(t *testing.T) {
 	// Declarer=0 (human). Opponent 2 leads a strong trump (winning), opponent 3 follows.
 	g := cegoCpuPlaySetup(0, 3, domain.CegoCpuDifficultyNormal,
 		[]*domain.Card{cegoTrumpCard(2), cegoTrumpCard(5)},
-		[]*domain.CegoTrickCard{{PlayerIdx: 2, Card: cegoTrumpCard(20)}})
+		[]*domain.TrickCard{{PlayerIdx: 2, Card: cegoTrumpCard(20)}})
 	before := g.GetPlayer(3).GetCardsSize()
 	g.CpuPlay()
 	assert.Equal(t, before-1, g.GetPlayer(3).GetCardsSize())
@@ -279,7 +279,7 @@ func TestCegoCpuPlayCanBeatDeclarer(t *testing.T) {
 	// Declarer=0 leads a low spade; opponent 1 can overtake it.
 	g := cegoCpuPlaySetup(0, 1, domain.CegoCpuDifficultyNormal,
 		[]*domain.Card{cegoSuitCard(domain.CardDesignSpade, 7), cegoSuitCard(domain.CardDesignSpade, 1)},
-		[]*domain.CegoTrickCard{{PlayerIdx: 0, Card: cegoSuitCard(domain.CardDesignSpade, 3)}})
+		[]*domain.TrickCard{{PlayerIdx: 0, Card: cegoSuitCard(domain.CardDesignSpade, 3)}})
 	before := g.GetPlayer(1).GetCardsSize()
 	g.CpuPlay()
 	assert.Equal(t, before-1, g.GetPlayer(1).GetCardsSize())
@@ -289,7 +289,7 @@ func TestCegoCpuPlayCannotBeatDucks(t *testing.T) {
 	// Declarer=0 leads a high spade; opponent 1 cannot beat it -> ducks.
 	g := cegoCpuPlaySetup(0, 1, domain.CegoCpuDifficultyNormal,
 		[]*domain.Card{cegoSuitCard(domain.CardDesignSpade, 1), cegoSuitCard(domain.CardDesignSpade, 2)},
-		[]*domain.CegoTrickCard{{PlayerIdx: 0, Card: cegoSuitCard(domain.CardDesignSpade, 7)}})
+		[]*domain.TrickCard{{PlayerIdx: 0, Card: cegoSuitCard(domain.CardDesignSpade, 7)}})
 	before := g.GetPlayer(1).GetCardsSize()
 	g.CpuPlay()
 	assert.Equal(t, before-1, g.GetPlayer(1).GetCardsSize())
@@ -306,7 +306,7 @@ func TestCegoCpuPlayEasyRandom(t *testing.T) {
 func TestCegoCpuPlaySingleValid(t *testing.T) {
 	g := cegoCpuPlaySetup(0, 1, domain.CegoCpuDifficultyNormal,
 		[]*domain.Card{cegoSuitCard(domain.CardDesignSpade, 3)},
-		[]*domain.CegoTrickCard{{PlayerIdx: 0, Card: cegoSuitCard(domain.CardDesignSpade, 7)}})
+		[]*domain.TrickCard{{PlayerIdx: 0, Card: cegoSuitCard(domain.CardDesignSpade, 7)}})
 	g.CpuPlay()
 	assert.Equal(t, 0, g.GetPlayer(1).GetCardsSize())
 }
@@ -478,7 +478,7 @@ func TestCegoPlayerPlayErrors(t *testing.T) {
 		g.SetPhase(domain.CegoPhasePlay)
 		g.SetCurrentPlayerIdx(0)
 		cegoSetHand(g, 0, cegoSuitCard(domain.CardDesignSpade, 7), cegoSuitCard(domain.CardDesignHeart, 4))
-		g.SetCurrentTrick([]*domain.CegoTrickCard{{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 3)}})
+		g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 3)}})
 		assert.Error(t, g.PlayerPlay(1)) // must follow spade, cannot dump the heart
 	})
 	t.Run("legal play", func(t *testing.T) {
@@ -489,14 +489,14 @@ func TestCegoPlayerPlayErrors(t *testing.T) {
 		g.SetPhase(domain.CegoPhasePlay)
 		g.SetCurrentPlayerIdx(0)
 		cegoSetHand(g, 0, cegoSuitCard(domain.CardDesignSpade, 7), cegoSuitCard(domain.CardDesignHeart, 4))
-		g.SetCurrentTrick([]*domain.CegoTrickCard{{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 3)}})
+		g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 3)}})
 		assert.NoError(t, g.PlayerPlay(0))
 	})
 }
 
 // --- Play-phase hint reason branches ---
 
-func cegoPlayHint(t *testing.T, declarer int, hand []*domain.Card, trick []*domain.CegoTrickCard) *domain.CegoHint {
+func cegoPlayHint(t *testing.T, declarer int, hand []*domain.Card, trick []*domain.TrickCard) *domain.CegoHint {
 	t.Helper()
 	g := domain.NewDefaultCego()
 	g.Reset()
@@ -526,14 +526,14 @@ func TestCegoHintLeadLow(t *testing.T) {
 func TestCegoHintFollowWin(t *testing.T) {
 	h := cegoPlayHint(t, 1,
 		[]*domain.Card{cegoSuitCard(domain.CardDesignSpade, 7), cegoSuitCard(domain.CardDesignSpade, 1)},
-		[]*domain.CegoTrickCard{{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 3)}})
+		[]*domain.TrickCard{{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 3)}})
 	assert.Equal(t, "follow_win", h.Reason)
 }
 
 func TestCegoHintFollowDuck(t *testing.T) {
 	h := cegoPlayHint(t, 1,
 		[]*domain.Card{cegoSuitCard(domain.CardDesignSpade, 1), cegoSuitCard(domain.CardDesignSpade, 2)},
-		[]*domain.CegoTrickCard{{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 7)}})
+		[]*domain.TrickCard{{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 7)}})
 	assert.Equal(t, "follow_duck", h.Reason)
 }
 

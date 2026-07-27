@@ -58,12 +58,6 @@ type SpoilFiveHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// SpoilFiveTrickCard トリック中の 1 枚
-type SpoilFiveTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // SpoilFive スポイル・ファイブのゲームクラス
 type SpoilFive struct {
 	trumpCards       *TrumpCards
@@ -73,7 +67,7 @@ type SpoilFive struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*SpoilFiveTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	trumpSuit        int
@@ -204,7 +198,7 @@ func (g *SpoilFive) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *SpoilFive) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &SpoilFiveTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == SpoilFivePlayerCnt {
@@ -619,10 +613,10 @@ func (g *SpoilFive) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *SpoilFive) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *SpoilFive) GetCurrentTrick() []*SpoilFiveTrickCard { return g.currentTrick }
+func (g *SpoilFive) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *SpoilFive) SetCurrentTrick(trick []*SpoilFiveTrickCard) { g.currentTrick = trick }
+func (g *SpoilFive) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *SpoilFive) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -694,22 +688,22 @@ func (g *SpoilFive) GetPlayableIndices(playerIdx int) []int {
 
 // spoilFiveJSON is the JSON wire format for SpoilFive.
 type spoilFiveJSON struct {
-	TrumpCards       *TrumpCards           `json:"tc"`
-	Players          []*SpoilFivePlayer    `json:"ps"`
-	Config           SpoilFiveConfig       `json:"cf"`
-	Phase            SpoilFivePhase        `json:"ph"`
-	RoundNumber      int                   `json:"rn"`
-	TrickNumber      int                   `json:"tn"`
-	CurrentPlayerIdx int                   `json:"ci"`
-	CurrentTrick     []*SpoilFiveTrickCard `json:"ct"`
-	LeadPlayerIdx    int                   `json:"li"`
-	DealerIdx        int                   `json:"di"`
-	TrumpSuit        int                   `json:"ts"`
-	Pot              int                   `json:"po"`
-	RoundWinnerIdx   int                   `json:"rw"`
-	GameEndFlag      bool                  `json:"ge"`
-	WinnerPlayer     int                   `json:"wp"`
-	ActionLog        []*ActionLogEntry     `json:"al"`
+	TrumpCards       *TrumpCards        `json:"tc"`
+	Players          []*SpoilFivePlayer `json:"ps"`
+	Config           SpoilFiveConfig    `json:"cf"`
+	Phase            SpoilFivePhase     `json:"ph"`
+	RoundNumber      int                `json:"rn"`
+	TrickNumber      int                `json:"tn"`
+	CurrentPlayerIdx int                `json:"ci"`
+	CurrentTrick     []*TrickCard       `json:"ct"`
+	LeadPlayerIdx    int                `json:"li"`
+	DealerIdx        int                `json:"di"`
+	TrumpSuit        int                `json:"ts"`
+	Pot              int                `json:"po"`
+	RoundWinnerIdx   int                `json:"rw"`
+	GameEndFlag      bool               `json:"ge"`
+	WinnerPlayer     int                `json:"wp"`
+	ActionLog        []*ActionLogEntry  `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -799,7 +793,7 @@ func (g *SpoilFive) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*SpoilFiveTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

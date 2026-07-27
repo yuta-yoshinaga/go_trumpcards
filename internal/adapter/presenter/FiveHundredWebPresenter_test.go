@@ -109,7 +109,7 @@ func TestFiveHundredWebPresenter_PhaseMessages(t *testing.T) {
 		g.SetDeclarerIdx(0)
 		g.SetPhase(phase)
 		if phase == domain.FiveHundredPhasePlay {
-			g.SetCurrentTrick([]*domain.FiveHundredTrickCard{
+			g.SetCurrentTrick([]*domain.TrickCard{
 				{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},
 			})
 		}

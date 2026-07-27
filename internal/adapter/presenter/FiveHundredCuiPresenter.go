@@ -104,8 +104,8 @@ func (p *FiveHundredCuiPresenter) Output(g interfaces.FiveHundredGame, lastErr e
 		b.WriteString("----------\n")
 
 		cuiTrickBlock(b, g.GetCurrentTrick(),
-			func(tc *domain.FiveHundredTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.FiveHundredTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 

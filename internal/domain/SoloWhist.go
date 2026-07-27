@@ -91,12 +91,6 @@ type SoloWhistHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// SoloWhistTrickCard トリック中の 1 枚
-type SoloWhistTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // SoloWhist ソロ・ホイストのゲームクラス
 type SoloWhist struct {
 	trumpCards       *TrumpCards
@@ -106,7 +100,7 @@ type SoloWhist struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*SoloWhistTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	bids             [SoloWhistPlayerCnt]SoloWhistBid // 各プレイヤーの入札
@@ -372,7 +366,7 @@ func (g *SoloWhist) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *SoloWhist) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &SoloWhistTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == SoloWhistPlayerCnt {
@@ -765,10 +759,10 @@ func (g *SoloWhist) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *SoloWhist) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *SoloWhist) GetCurrentTrick() []*SoloWhistTrickCard { return g.currentTrick }
+func (g *SoloWhist) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *SoloWhist) SetCurrentTrick(trick []*SoloWhistTrickCard) { g.currentTrick = trick }
+func (g *SoloWhist) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *SoloWhist) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -869,7 +863,7 @@ type soloWhistJSON struct {
 	RoundNumber      int                              `json:"rn"`
 	TrickNumber      int                              `json:"tn"`
 	CurrentPlayerIdx int                              `json:"ci"`
-	CurrentTrick     []*SoloWhistTrickCard            `json:"ct"`
+	CurrentTrick     []*TrickCard                     `json:"ct"`
 	LeadPlayerIdx    int                              `json:"li"`
 	DealerIdx        int                              `json:"di"`
 	Bids             [SoloWhistPlayerCnt]SoloWhistBid `json:"bd"`
@@ -960,7 +954,7 @@ func (g *SoloWhist) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*SoloWhistTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

@@ -81,8 +81,8 @@ func (p *WizardWebPresenter) buildBase(o interfaces.WizardGame) *controller.Wiza
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *WizardWebPresenter) buildTrickOutput(trick []*domain.WizardTrickCard) []*controller.WizardWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.WizardTrickCard) *controller.WizardWebOutputTrickCard {
+func (p *WizardWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.WizardWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.WizardWebOutputTrickCard {
 		return &controller.WizardWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutputWithFace(tc.Card, wizardFace)}
 	})
 }

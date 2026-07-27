@@ -99,8 +99,8 @@ func (p *SheepsheadWebPresenter) playableIndices(g interfaces.SheepsheadGame) []
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *SheepsheadWebPresenter) buildTrickOutput(trick []*domain.SheepsheadTrickCard) []*controller.SheepsheadWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.SheepsheadTrickCard) *controller.SheepsheadWebOutputTrickCard {
+func (p *SheepsheadWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SheepsheadWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SheepsheadWebOutputTrickCard {
 		return &controller.SheepsheadWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

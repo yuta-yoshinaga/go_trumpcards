@@ -97,12 +97,6 @@ type BidWhistHint struct {
 	Reason         string // ヒント理由キー
 }
 
-// BidWhistTrickCard トリック中の1枚
-type BidWhistTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // BidWhist Bid Whist ゲームクラス
 //
 // ルール概要:
@@ -122,7 +116,7 @@ type BidWhist struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*BidWhistTrickCard
+	currentTrick     []*TrickCard
 	dealerIdx        int
 	kitty            []*Card
 	// declarerKitty retains a copy of the six kitty cards handed to the declarer
@@ -509,7 +503,7 @@ func (g *BidWhist) CpuPlay() {
 
 // playCard カードをプレイする共通処理
 func (g *BidWhist) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &BidWhistTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play",
 		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), bidWhistCardLabel(card)), []*Card{card})
 	if len(g.currentTrick) == BidWhistPlayerCnt {
@@ -1041,10 +1035,10 @@ func (g *BidWhist) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *BidWhist) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *BidWhist) GetCurrentTrick() []*BidWhistTrickCard { return g.currentTrick }
+func (g *BidWhist) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *BidWhist) SetCurrentTrick(trick []*BidWhistTrickCard) { g.currentTrick = trick }
+func (g *BidWhist) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetGameEndFlag ゲーム終了フラグ取得
 func (g *BidWhist) GetGameEndFlag() bool { return g.gameEndFlag }
@@ -1340,7 +1334,7 @@ type bidWhistJSON struct {
 	RoundNumber      int                     `json:"rn"`
 	TrickNumber      int                     `json:"tn"`
 	CurrentPlayerIdx int                     `json:"ci"`
-	CurrentTrick     []*BidWhistTrickCard    `json:"ct"`
+	CurrentTrick     []*TrickCard            `json:"ct"`
 	DealerIdx        int                     `json:"di"`
 	Kitty            []*Card                 `json:"kt"`
 	DeclarerKitty    []*Card                 `json:"dk"`
@@ -1425,7 +1419,7 @@ func (g *BidWhist) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*BidWhistTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	for _, tc := range g.currentTrick {
 		if tc == nil || tc.Card == nil {

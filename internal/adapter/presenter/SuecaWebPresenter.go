@@ -64,8 +64,8 @@ func (p *SuecaWebPresenter) playableIndices(g interfaces.SuecaGame) []int {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *SuecaWebPresenter) buildTrickOutput(trick []*domain.SuecaTrickCard) []*controller.SuecaWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.SuecaTrickCard) *controller.SuecaWebOutputTrickCard {
+func (p *SuecaWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SuecaWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SuecaWebOutputTrickCard {
 		return &controller.SuecaWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

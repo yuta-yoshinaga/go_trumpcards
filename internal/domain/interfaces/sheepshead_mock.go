@@ -115,10 +115,10 @@ func (_m *MockSheepsheadGame) GetCurrentPlayerIdx() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockSheepsheadGame) GetCurrentTrick() []*domain.SheepsheadTrickCard {
+func (_m *MockSheepsheadGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.SheepsheadTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

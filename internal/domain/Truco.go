@@ -63,12 +63,6 @@ const (
 	TrucoMaxLevel = TrucoLevelValeCuatro
 )
 
-// TrucoTrickCard バサ (トリック) 中の1枚
-type TrucoTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // TrucoHint ヒント情報。Action は "play" / "call" / "accept" / "decline"。
 type TrucoHint struct {
 	Action    string // 推奨アクション種別
@@ -139,7 +133,7 @@ type Truco struct {
 	trickNumber       int
 	currentPlayerIdx  int
 	responderIdx      int // Respond フェーズで応答すべきプレイヤー、それ以外は -1
-	currentTrick      []*TrucoTrickCard
+	currentTrick      []*TrickCard
 	trickResults      []int // 完了したバサの勝者 (0/1) または -1 (パルダ)
 	leadPlayerIdx     int
 	manoIdx           int // 親 (elder hand = 非ディーラー)。全パルダ時のタイブレーク
@@ -309,10 +303,10 @@ func (t *Truco) GetResponderIdx() int { return t.responderIdx }
 func (t *Truco) SetResponderIdx(idx int) { t.responderIdx = idx }
 
 // GetCurrentTrick 現在のバサ取得
-func (t *Truco) GetCurrentTrick() []*TrucoTrickCard { return t.currentTrick }
+func (t *Truco) GetCurrentTrick() []*TrickCard { return t.currentTrick }
 
 // SetCurrentTrick バサ設定 (テスト用)
-func (t *Truco) SetCurrentTrick(trick []*TrucoTrickCard) { t.currentTrick = trick }
+func (t *Truco) SetCurrentTrick(trick []*TrickCard) { t.currentTrick = trick }
 
 // GetTrickResults 当該マノで完了したバサの勝者リスト取得 (0/1 または -1=パルダ)
 func (t *Truco) GetTrickResults() []int { return t.trickResults }
@@ -554,7 +548,7 @@ func (t *Truco) respond(responder int, accept bool) {
 
 // playCard カードをプレイする共通処理。
 func (t *Truco) playCard(playerIdx int, card *Card) {
-	t.currentTrick = append(t.currentTrick, &TrucoTrickCard{PlayerIdx: playerIdx, Card: card})
+	t.currentTrick = append(t.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	t.appendLog(playerIdx, "play",
 		fmt.Sprintf("%s plays %s", t.playerName(playerIdx), cardStr(card)), []*Card{card})
 	if len(t.currentTrick) == TrucoPlayerCnt {
@@ -654,7 +648,7 @@ func (t *Truco) dealHand() {
 // --- Pure rule helpers ---
 
 // trucoBazaWinner バサの勝者プレイヤーインデックスを返す。同強なら -1 (パルダ)。
-func trucoBazaWinner(trick []*TrucoTrickCard) int {
+func trucoBazaWinner(trick []*TrickCard) int {
 	if len(trick) < TrucoPlayerCnt {
 		return -1
 	}
@@ -929,7 +923,7 @@ type trucoJSON struct {
 	TrickNumber       int               `json:"tn"`
 	CurrentPlayerIdx  int               `json:"ci"`
 	ResponderIdx      int               `json:"ri"`
-	CurrentTrick      []*TrucoTrickCard `json:"ct"`
+	CurrentTrick      []*TrickCard      `json:"ct"`
 	TrickResults      []int             `json:"tr"`
 	LeadPlayerIdx     int               `json:"li"`
 	ManoIdx           int               `json:"mi"`
@@ -1060,7 +1054,7 @@ func (t *Truco) UnmarshalJSON(data []byte) error {
 	t.responderIdx = j.ResponderIdx
 	t.currentTrick = j.CurrentTrick
 	if t.currentTrick == nil {
-		t.currentTrick = make([]*TrucoTrickCard, 0)
+		t.currentTrick = make([]*TrickCard, 0)
 	}
 	t.trickResults = j.TrickResults
 	t.leadPlayerIdx = j.LeadPlayerIdx

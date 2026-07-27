@@ -58,8 +58,8 @@ func intSliceOrEmpty(in []int) []int {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *SchnapsenWebPresenter) buildTrickOutput(trick []*domain.SchnapsenTrickCard) []*controller.SchnapsenWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.SchnapsenTrickCard) *controller.SchnapsenWebOutputTrickCard {
+func (p *SchnapsenWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SchnapsenWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SchnapsenWebOutputTrickCard {
 		return &controller.SchnapsenWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

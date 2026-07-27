@@ -48,9 +48,9 @@ type LooGame interface {
 	// GetDecidePlayerIdx 現在 play/pass を決めるプレイヤーインデックスを取得する
 	GetDecidePlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
-	GetCurrentTrick() []*domain.LooTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetLastTrick 直前に完了したトリックを取得する
-	GetLastTrick() []*domain.LooTrickCard
+	GetLastTrick() []*domain.TrickCard
 	// GetLastTrickWinner 直前トリックの勝者を取得する (-1=なし)
 	GetLastTrickWinner() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する

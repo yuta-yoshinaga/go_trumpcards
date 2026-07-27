@@ -121,7 +121,7 @@ func TestFortyFives_FixedTrumpRankAndHeartAce(t *testing.T) {
 	}
 	// ♥A is a top trump even when hearts isn't trump.
 	g.SetTrumpSuit(CardDesignSpade)
-	g.SetCurrentTrick([]*FortyFivesTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: ffCard(CardDesignSpade, 7)},
 		{PlayerIdx: 1, Card: ffCard(CardDesignHeart, 1)},
 	})
@@ -135,7 +135,7 @@ func TestFortyFives_RenegingTopTrump(t *testing.T) {
 	g.SetPhase(FortyFivesPhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*FortyFivesTrickCard{{PlayerIdx: 1, Card: ffCard(CardDesignDiamond, 7)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: ffCard(CardDesignDiamond, 7)}})
 	// Only trump is the 5♦ (top trump) -> may renege and play a club.
 	ffSetHand(g.GetPlayer(0), ffCard(CardDesignDiamond, 5), ffCard(CardDesignClover, 9))
 	if err := g.PlayerPlay(1); err != nil {
@@ -149,7 +149,7 @@ func TestFortyFives_ResolveTrickFivePointsPerTrick(t *testing.T) {
 	g.SetPhase(FortyFivesPhaseTrickEnd)
 	g.SetTrickNumber(1)
 	// p0 (team 0) wins with the best trump.
-	g.SetCurrentTrick([]*FortyFivesTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: ffCard(CardDesignDiamond, 5)},
 		{PlayerIdx: 1, Card: ffCard(CardDesignClover, 9)},
 		{PlayerIdx: 2, Card: ffCard(CardDesignClover, 8)},

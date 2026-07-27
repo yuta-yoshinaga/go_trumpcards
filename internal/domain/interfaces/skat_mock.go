@@ -62,12 +62,12 @@ func (m *MockSkatGame) GetRoundNumber() int      { return m.Called().Int(0) }
 func (m *MockSkatGame) GetTrickNumber() int      { return m.Called().Int(0) }
 func (m *MockSkatGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
 
-func (m *MockSkatGame) GetCurrentTrick() []*domain.SkatTrickCard {
+func (m *MockSkatGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
 	if args.Get(0) == nil {
 		return nil
 	}
-	return args.Get(0).([]*domain.SkatTrickCard)
+	return args.Get(0).([]*domain.TrickCard)
 }
 
 func (m *MockSkatGame) GetForehandIdx() int       { return m.Called().Int(0) }

@@ -68,8 +68,8 @@ func bidToOutput(b *domain.FiveHundredBid) *controller.FiveHundredWebOutputBid {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *FiveHundredWebPresenter) buildTrickOutput(trick []*domain.FiveHundredTrickCard) []*controller.FiveHundredWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.FiveHundredTrickCard) *controller.FiveHundredWebOutputTrickCard {
+func (p *FiveHundredWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.FiveHundredWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.FiveHundredWebOutputTrickCard {
 		return &controller.FiveHundredWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

@@ -28,7 +28,7 @@ func setupOmbreCuiMock() *interfaces.MockOmbreGame {
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetWinningBid").Return(domain.OmbreBidEntrar)
 	m.On("GetTrumpSuit").Return(domain.CardDesignHeart)
-	m.On("GetCurrentTrick").Return(([]*domain.OmbreTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.OmbrePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

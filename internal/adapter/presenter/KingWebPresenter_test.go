@@ -19,7 +19,7 @@ func TestKingWebPresenter_Output(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetPhase(domain.KingPhasePlay)
 	g.SetCurrentTurn(0)
-	g.SetCurrentTrick([]*domain.KingTrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
 	p := new(presenter.KingWebPresenter)
 	out := p.Output(g, nil)
 

@@ -105,9 +105,9 @@ func (m *MockAllFoursGame) GetCurrentPlayerIdx() int {
 	return args.Int(0)
 }
 
-func (m *MockAllFoursGame) GetCurrentTrick() []*domain.AllFoursTrickCard {
+func (m *MockAllFoursGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
-	if v, ok := args.Get(0).([]*domain.AllFoursTrickCard); ok {
+	if v, ok := args.Get(0).([]*domain.TrickCard); ok {
 		return v
 	}
 	return nil

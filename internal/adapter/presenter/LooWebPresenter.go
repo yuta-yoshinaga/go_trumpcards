@@ -106,8 +106,8 @@ func (p *LooWebPresenter) playableIndices(g interfaces.LooGame) []int {
 }
 
 // looTrickToOutput はトリックを WebOutput 表現に変換する。
-func looTrickToOutput(trick []*domain.LooTrickCard) []*controller.LooWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.LooTrickCard) *controller.LooWebOutputTrickCard {
+func looTrickToOutput(trick []*domain.TrickCard) []*controller.LooWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.LooWebOutputTrickCard {
 		if tc == nil {
 			return nil
 		}

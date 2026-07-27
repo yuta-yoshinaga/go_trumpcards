@@ -78,10 +78,10 @@ func (m *MockSchnapsenGame) GetCurrentPlayerIdx() int {
 	return args.Int(0)
 }
 
-func (m *MockSchnapsenGame) GetCurrentTrick() []*domain.SchnapsenTrickCard {
+func (m *MockSchnapsenGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
 	if v := args.Get(0); v != nil {
-		return v.([]*domain.SchnapsenTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

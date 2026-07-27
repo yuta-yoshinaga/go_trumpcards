@@ -39,12 +39,6 @@ type GongZhuHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// GongZhuTrickCard トリック中の1枚
-type GongZhuTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // GongZhuExposure 公開（明牌）されたポイントカードの集合。誰が獲得しても得点が倍増する。
 type GongZhuExposure struct {
 	Pig     bool `json:"pg"` // ♠Q
@@ -62,7 +56,7 @@ type GongZhu struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*GongZhuTrickCard
+	currentTrick     []*TrickCard
 	heartsBroken     bool
 	exposed          GongZhuExposure
 	exposeReady      [GongZhuPlayerCnt]bool
@@ -422,10 +416,10 @@ func (g *GongZhu) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *GongZhu) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *GongZhu) GetCurrentTrick() []*GongZhuTrickCard { return g.currentTrick }
+func (g *GongZhu) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *GongZhu) SetCurrentTrick(trick []*GongZhuTrickCard) { g.currentTrick = trick }
+func (g *GongZhu) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetHeartsBroken ハーツブレイク状態取得
 func (g *GongZhu) GetHeartsBroken() bool { return g.heartsBroken }
@@ -590,7 +584,7 @@ func (g *GongZhu) findTwoOfClubs() int {
 
 // playCard カードをプレイする共通処理
 func (g *GongZhu) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &GongZhuTrickCard{
+	g.currentTrick = append(g.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -1012,7 +1006,7 @@ type gongZhuJSON struct {
 	RoundNumber      int                    `json:"rn"`
 	TrickNumber      int                    `json:"tn"`
 	CurrentPlayerIdx int                    `json:"ci"`
-	CurrentTrick     []*GongZhuTrickCard    `json:"ct"`
+	CurrentTrick     []*TrickCard           `json:"ct"`
 	HeartsBroken     bool                   `json:"hb"`
 	Exposed          GongZhuExposure        `json:"ex"`
 	ExposeReady      [GongZhuPlayerCnt]bool `json:"er"`
@@ -1074,7 +1068,7 @@ func (g *GongZhu) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*GongZhuTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.heartsBroken = j.HeartsBroken
 	g.exposed = j.Exposed

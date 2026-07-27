@@ -18,7 +18,7 @@ import (
 func setupSchnapsenWebMock(trumpCard *domain.Card) *interfaces.MockSchnapsenGame {
 	m := new(interfaces.MockSchnapsenGame)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.SchnapsenTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.SchnapsenPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

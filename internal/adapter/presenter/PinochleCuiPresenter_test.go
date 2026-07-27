@@ -19,7 +19,7 @@ func setupPinochleCuiMock() *interfaces.MockPinochleGame {
 	m := new(interfaces.MockPinochleGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.PinochleTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.PinochlePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -130,7 +130,7 @@ func TestPinochleCuiPresenter_Output(t *testing.T) {
 	t.Run("shows current trick on table", func(t *testing.T) {
 		m, _ := setupPinochleCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		trick := []*domain.PinochleTrickCard{
+		trick := []*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
 		}

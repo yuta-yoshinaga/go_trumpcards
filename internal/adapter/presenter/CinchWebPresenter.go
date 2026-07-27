@@ -104,8 +104,8 @@ func (p *CinchWebPresenter) playableIndices(g interfaces.CinchGame) []int {
 }
 
 // cinchTrickToOutput はトリックを WebOutput 表現に変換する。
-func cinchTrickToOutput(trick []*domain.CinchTrickCard) []*controller.CinchWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.CinchTrickCard) *controller.CinchWebOutputTrickCard {
+func cinchTrickToOutput(trick []*domain.TrickCard) []*controller.CinchWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.CinchWebOutputTrickCard {
 		if tc == nil {
 			return nil
 		}

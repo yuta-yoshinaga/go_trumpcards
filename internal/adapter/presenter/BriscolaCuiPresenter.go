@@ -53,8 +53,8 @@ func (p *BriscolaCuiPresenter) Output(b interfaces.BriscolaGame, lastErr error) 
 
 		trick := b.GetCurrentTrick()
 		cuiTrickBlock(sb, trick,
-			func(tc *domain.BriscolaTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.BriscolaTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(b.GetPlayer(idx), idx) },
 		)
 

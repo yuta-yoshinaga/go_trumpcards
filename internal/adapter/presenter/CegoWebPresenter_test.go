@@ -87,7 +87,7 @@ func TestCegoWebPresenter_ProceduralFaces(t *testing.T) {
 	g.GetPlayer(0).Reset()
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CegoSkusDesign, domain.CegoSkusValue, false))
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, domain.CegoKingValue, false))
-	g.SetCurrentTrick([]*domain.CegoTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CegoTrumpDesign, 21, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},
 	})

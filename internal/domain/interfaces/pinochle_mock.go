@@ -87,9 +87,9 @@ func (m *MockPinochleGame) GetCurrentPlayerIdx() int {
 	return args.Int(0)
 }
 
-func (m *MockPinochleGame) GetCurrentTrick() []*domain.PinochleTrickCard {
+func (m *MockPinochleGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
-	return args.Get(0).([]*domain.PinochleTrickCard)
+	return args.Get(0).([]*domain.TrickCard)
 }
 
 func (m *MockPinochleGame) GetLeadPlayerIdx() int {

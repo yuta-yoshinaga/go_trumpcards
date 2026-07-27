@@ -129,7 +129,7 @@ func TestSchnapsen_TrickWinner(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := newTestSchnapsen()
 			s.SetTrumpSuit(tt.trumpSuit)
-			s.SetCurrentTrick([]*domain.SchnapsenTrickCard{
+			s.SetCurrentTrick([]*domain.TrickCard{
 				{PlayerIdx: 0, Card: tt.lead},
 				{PlayerIdx: 1, Card: tt.challenge},
 			})
@@ -146,7 +146,7 @@ func TestSchnapsen_ResolveTrick_AddsPointsAndWinsAt66(t *testing.T) {
 	s := newTestSchnapsen()
 	s.SetTrumpSuit(domain.CardDesignSpade)
 	s.SetPlayerPoints(0, 60)
-	s.SetCurrentTrick([]*domain.SchnapsenTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: schnCard(domain.CardDesignClover, 1)},  // A=11 (lead, wins)
 		{PlayerIdx: 1, Card: schnCard(domain.CardDesignClover, 11)}, // J=2
 	})
@@ -166,7 +166,7 @@ func TestSchnapsen_ResolveTrick_AddsPointsAndWinsAt66(t *testing.T) {
 func TestSchnapsen_ResolveTrick_GuardWrongPhase(t *testing.T) {
 	s := newTestSchnapsen()
 	s.SetPhase(domain.SchnapsenPhasePlay)
-	s.SetCurrentTrick([]*domain.SchnapsenTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: schnCard(domain.CardDesignClover, 1)},
 	})
 	s.ResolveTrick() // not enough cards / wrong phase -> no-op
@@ -244,7 +244,7 @@ func TestSchnapsen_Marriage_Errors(t *testing.T) {
 		t.Error("out-of-range index should error")
 	}
 	// Not on lead (trick has a card already)
-	s.SetCurrentTrick([]*domain.SchnapsenTrickCard{{PlayerIdx: 1, Card: schnCard(domain.CardDesignHeart, 1)}})
+	s.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: schnCard(domain.CardDesignHeart, 1)}})
 	schnSetHand(s.GetPlayer(0), schnCard(domain.CardDesignClover, 13), schnCard(domain.CardDesignClover, 12))
 	if err := s.PlayerDeclareMarriage(0); err == nil {
 		t.Error("declaring when not on lead should error")
@@ -307,7 +307,7 @@ func TestSchnapsen_EndgameFollowRules(t *testing.T) {
 	}
 	s.SetPhase(domain.SchnapsenPhasePlay)
 	s.SetCurrentPlayerIdx(1)
-	s.SetCurrentTrick([]*domain.SchnapsenTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: schnCard(domain.CardDesignClover, 13)}, // K clover lead
 	})
 	// Follower has clover A (wins) and clover J (loses) and a heart.
@@ -327,7 +327,7 @@ func TestSchnapsen_EndgameMustTrumpWhenVoid(t *testing.T) {
 	s.SetTrumpSuit(domain.CardDesignSpade)
 	drainStock(s)
 	s.SetCurrentPlayerIdx(1)
-	s.SetCurrentTrick([]*domain.SchnapsenTrickCard{
+	s.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: schnCard(domain.CardDesignClover, 13)},
 	})
 	schnSetHand(s.GetPlayer(1),

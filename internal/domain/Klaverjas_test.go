@@ -96,7 +96,7 @@ func TestKlaverjas_TrickWinnerTrumpBeatsLead(t *testing.T) {
 	g := newKlavGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
 	// Lead A♣; trump J♦ (top trump) overtrumps and wins even vs another trump.
-	g.SetCurrentTrick([]*KlaverjasTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: klavCard(CardDesignClover, 1)},   // A♣ lead
 		{PlayerIdx: 1, Card: klavCard(CardDesignDiamond, 9)},  // 9♦ Nel trump
 		{PlayerIdx: 2, Card: klavCard(CardDesignDiamond, 11)}, // J♦ Jas (top trump)
@@ -114,7 +114,7 @@ func TestKlaverjas_MustOvertrump(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	// Lead A♣ by p3; a trump 9♦ already played by p1. Human is void in clubs but
 	// holds J♦ (beats 9♦) and 7♦ — must play the higher trump (J♦), not 7♦.
-	g.SetCurrentTrick([]*KlaverjasTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 3, Card: klavCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: klavCard(CardDesignDiamond, 9)},
 	})
@@ -135,7 +135,7 @@ func TestKlaverjas_MustFollowAndTrumpWhenVoid(t *testing.T) {
 	g.SetPhase(KlaverjasPhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*KlaverjasTrickCard{{PlayerIdx: 3, Card: klavCard(CardDesignClover, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: klavCard(CardDesignClover, 1)}})
 	// Has a club → must follow (no trump on table yet, no overtrump needed).
 	klavSetHand(g.GetPlayer(0), klavCard(CardDesignClover, 13), klavCard(CardDesignDiamond, 7))
 	if err := g.PlayerPlay(1); err == nil { // diamond while holding club
@@ -178,9 +178,9 @@ func TestKlaverjas_MustOvertrumpOnTrumpLead(t *testing.T) {
 	g.SetPhase(KlaverjasPhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*KlaverjasTrickCard{{PlayerIdx: 3, Card: klavCard(CardDesignDiamond, 9)}}) // 9♦ trump lead
-	klavSetHand(g.GetPlayer(0), klavCard(CardDesignDiamond, 11), klavCard(CardDesignDiamond, 7))   // J♦ beats, 7♦ does not
-	if err := g.PlayerPlay(1); err == nil {                                                        // 7♦ — must overtrump with J♦
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: klavCard(CardDesignDiamond, 9)}})        // 9♦ trump lead
+	klavSetHand(g.GetPlayer(0), klavCard(CardDesignDiamond, 11), klavCard(CardDesignDiamond, 7)) // J♦ beats, 7♦ does not
+	if err := g.PlayerPlay(1); err == nil {                                                      // 7♦ — must overtrump with J♦
 		t.Error("expected must-overtrump error when a higher trump is held on a trump lead")
 	}
 	if err := g.PlayerPlay(0); err != nil { // J♦ overtrumps the led 9♦
@@ -205,7 +205,7 @@ func TestKlaverjas_ResolveTrickPointsAndLastBonus(t *testing.T) {
 	g.SetPhase(KlaverjasPhaseTrickEnd)
 	g.SetTrickNumber(1)
 	// trump J♦(20)+9♦(14) + A♣(11) + 7♣(0); J♦ wins for team 0.
-	g.SetCurrentTrick([]*KlaverjasTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: klavCard(CardDesignDiamond, 11)},
 		{PlayerIdx: 1, Card: klavCard(CardDesignDiamond, 9)},
 		{PlayerIdx: 2, Card: klavCard(CardDesignClover, 1)},
@@ -218,7 +218,7 @@ func TestKlaverjas_ResolveTrickPointsAndLastBonus(t *testing.T) {
 	// Last trick +10.
 	g.SetPhase(KlaverjasPhaseTrickEnd)
 	g.SetTrickNumber(KlaverjasTrickCount)
-	g.SetCurrentTrick([]*KlaverjasTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: klavCard(CardDesignClover, 13)}, // K♣ 4pts wins
 		{PlayerIdx: 1, Card: klavCard(CardDesignClover, 7)},
 		{PlayerIdx: 2, Card: klavCard(CardDesignClover, 8)},
