@@ -63,15 +63,15 @@ func trenteEtQuaranteWireResult(g interfaces.TrenteEtQuaranteGame) int {
 // trenteEtQuaranteEndMessage はラウンド終了時の表示メッセージと i18n キーを返す。
 func trenteEtQuaranteEndMessage(g interfaces.TrenteEtQuaranteGame) (string, string) {
 	if g.GetRefait() {
-		return "Refait at 31 — half your stake goes to the house.", "trenteetquarante.result.refait"
+		return "", "trenteetquarante.result.refait"
 	}
 	switch g.GetResult() {
 	case domain.TrenteEtQuaranteResultWin:
-		return "You win!", "trenteetquarante.result.win"
+		return "", "trenteetquarante.result.win"
 	case domain.TrenteEtQuaranteResultDraw:
-		return "Push — your stake is returned.", "trenteetquarante.result.push"
+		return "", "trenteetquarante.result.push"
 	default:
-		return "You lose.", "trenteetquarante.result.lose"
+		return "", "trenteetquarante.result.lose"
 	}
 }
 

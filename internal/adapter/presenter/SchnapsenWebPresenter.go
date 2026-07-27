@@ -95,11 +95,11 @@ func (p *SchnapsenWebPresenter) buildMessage(s interfaces.SchnapsenGame, lastErr
 		}
 		switch s.GetWinnerIdx() {
 		case 0:
-			return fmt.Sprintf("ゲーム終了！ あなたの勝利です (%d-%d)！", p0, p1), "schnapsen.result.p0Win", params
+			return "", "schnapsen.result.p0Win", params
 		case 1:
-			return fmt.Sprintf("ゲーム終了！ CPUの勝利です (%d-%d)。", p0, p1), "schnapsen.result.p1Win", params
+			return "", "schnapsen.result.p1Win", params
 		default:
-			return fmt.Sprintf("ゲーム終了！ 引き分けです (%d-%d)。", p0, p1), "schnapsen.result.tie", params
+			return "", "schnapsen.result.tie", params
 		}
 	}
 	switch s.GetPhase() {

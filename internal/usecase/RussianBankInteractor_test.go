@@ -116,18 +116,24 @@ func TestRussianBankInteractor_PlaysToGameEnd(t *testing.T) {
 }
 
 func TestRussianBankInteractor_WinnerMessages(t *testing.T) {
+	// Asserts the messageCode, not the Japanese text that used to be baked into
+	// the presenter. Those literals were the reason the frontend rendered a raw
+	// Japanese string in the English UI: with no translation for the code, it fell
+	// back to whatever the presenter had hardcoded. The code is the contract now
+	// and the copy lives in common.json. See issue #4365.
 	for _, tc := range []struct {
 		winner int
 		want   string
 	}{
-		{0, "あなたの勝ち"},
-		{1, "CPU の勝ち"},
-		{-1, "引き分け"},
+		{0, `"messageCode":"russianbank.result.humanWin"`},
+		{1, `"messageCode":"russianbank.result.cpuWin"`},
+		{-1, `"messageCode":"russianbank.result.draw"`},
 	} {
 		g := rbGameEndState(tc.winner)
 		ti := usecase.NewRussianBankInteractor(g, new(presenter.RussianBankWebPresenter))
 		out := ti.CallStop() // guardGameEnd -> presenter.Output on the ended game
 		assert.Contains(t, out, tc.want)
+		assert.Contains(t, out, `"message":""`, "the presenter must not carry its own copy")
 	}
 }
 

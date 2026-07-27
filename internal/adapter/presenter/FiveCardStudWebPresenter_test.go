@@ -297,7 +297,7 @@ func TestFiveCardStudWebPresenter_Output(t *testing.T) {
 		var out controller.FiveCardStudWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "You are the winner.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "fivecardstud.result.win", out.MessageCode)
 	})
 
@@ -314,7 +314,7 @@ func TestFiveCardStudWebPresenter_Output(t *testing.T) {
 		var out controller.FiveCardStudWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "You lose.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "fivecardstud.result.lose", out.MessageCode)
 	})
 
@@ -331,7 +331,7 @@ func TestFiveCardStudWebPresenter_Output(t *testing.T) {
 		var out controller.FiveCardStudWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "You folded.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "fivecardstud.result.folded", out.MessageCode)
 	})
 
@@ -348,7 +348,7 @@ func TestFiveCardStudWebPresenter_Output(t *testing.T) {
 		var out controller.FiveCardStudWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "You mucked.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "fivecardstud.result.mucked", out.MessageCode)
 	})
 
@@ -361,7 +361,7 @@ func TestFiveCardStudWebPresenter_Output(t *testing.T) {
 		var out controller.FiveCardStudWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "Game over.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "fivecardstud.result.gameOver", out.MessageCode)
 	})
 
@@ -377,7 +377,7 @@ func TestFiveCardStudWebPresenter_Output(t *testing.T) {
 		var out controller.FiveCardStudWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "Muck or show your hand.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "fivecardstud.muck.prompt", out.MessageCode)
 	})
 

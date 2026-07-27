@@ -82,11 +82,11 @@ func (p *BriscolaWebPresenter) buildMessage(b interfaces.BriscolaGame, lastErr e
 		}
 		switch b.GetWinnerIdx() {
 		case 0:
-			return fmt.Sprintf("ゲーム終了！ あなたの勝利です (%d-%d)！", p0, p1), "briscola.result.p0Win", params
+			return "", "briscola.result.p0Win", params
 		case 1:
-			return fmt.Sprintf("ゲーム終了！ CPUの勝利です (%d-%d)。", p0, p1), "briscola.result.p1Win", params
+			return "", "briscola.result.p1Win", params
 		default:
-			return fmt.Sprintf("ゲーム終了！ 引き分けです (%d-%d)。", p0, p1), "briscola.result.tie", params
+			return "", "briscola.result.tie", params
 		}
 	}
 	switch b.GetPhase() {

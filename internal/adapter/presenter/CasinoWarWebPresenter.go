@@ -57,19 +57,19 @@ func casinoWarEndMessage(cw interfaces.CasinoWarGame) (string, string) {
 		if cw.GetWarBet() > 0 {
 			pr, dr := casinoWarRanks(cw)
 			if pr == dr {
-				return "Player wins (war tie).", "casinowar.result.warTieWin"
+				return "", "casinowar.result.warTieWin"
 			}
-			return "Player wins the war!", "casinowar.result.warWin"
+			return "", "casinowar.result.warWin"
 		}
-		return "Player wins!", "casinowar.result.playerWins"
+		return "", "casinowar.result.playerWins"
 	}
 	if cw.GetWarBet() > 0 {
-		return "Player loses the war.", "casinowar.result.warLoss"
+		return "", "casinowar.result.warLoss"
 	}
 	if cw.GetTotalPayout() > 0 {
-		return "Surrendered.", "casinowar.result.surrender"
+		return "", "casinowar.result.surrender"
 	}
-	return "Player loses.", "casinowar.result.dealerWins"
+	return "", "casinowar.result.dealerWins"
 }
 
 // casinoWarRanks は war 後の両者ランクを返す（同値判定用）

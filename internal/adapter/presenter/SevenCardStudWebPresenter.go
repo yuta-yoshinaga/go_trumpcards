@@ -181,7 +181,7 @@ func (p *SevenCardStudWebPresenter) buildMessage(s interfaces.SevenCardStudGame,
 		return lastErr.Error(), "", nil
 	}
 	if s.IsMuckAvailable() {
-		return "Muck or show your hand.", "sevencardstud.muck.prompt", nil
+		return "", "sevencardstud.muck.prompt", nil
 	}
 	if s.GetGameEndFlag() {
 		msg, code := p.buildResultMessage(s)
@@ -194,13 +194,13 @@ func (p *SevenCardStudWebPresenter) buildMessage(s interfaces.SevenCardStudGame,
 func (p *SevenCardStudWebPresenter) buildResultMessage(s interfaces.SevenCardStudGame) (string, string) {
 	results := s.GetRoundResults()
 	if len(results) == 0 {
-		return "Game over.", "sevencardstud.result.gameOver"
+		return "", "sevencardstud.result.gameOver"
 	}
 
 	for _, r := range results {
 		if s.GetPlayer(r.PlayerIdx).GetIsHuman() {
 			if r.WonAmount > 0 {
-				return "You are the winner.", "sevencardstud.result.win"
+				return "", "sevencardstud.result.win"
 			}
 		}
 	}
@@ -208,18 +208,18 @@ func (p *SevenCardStudWebPresenter) buildResultMessage(s interfaces.SevenCardStu
 	// Human not in results (folded)
 	for i := 0; i < s.GetPlayerCnt(); i++ {
 		if s.GetPlayer(i).GetIsHuman() && s.GetPlayer(i).GetFolded() {
-			return "You folded.", "sevencardstud.result.folded"
+			return "", "sevencardstud.result.folded"
 		}
 	}
 
 	// Human mucked
 	for _, r := range results {
 		if s.GetPlayer(r.PlayerIdx).GetIsHuman() && r.Mucked {
-			return "You mucked.", "sevencardstud.result.mucked"
+			return "", "sevencardstud.result.mucked"
 		}
 	}
 
-	return "You lose.", "sevencardstud.result.lose"
+	return "", "sevencardstud.result.lose"
 }
 
 // ActionLogOutput 棋譜をJSON出力

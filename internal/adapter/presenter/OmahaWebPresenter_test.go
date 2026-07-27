@@ -327,7 +327,7 @@ func TestOmahaWebPresenter_Output(t *testing.T) {
 		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Contains(t, out.Message, "You are the winner.")
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "omaha.result.win", out.MessageCode)
 	})
 
@@ -344,7 +344,7 @@ func TestOmahaWebPresenter_Output(t *testing.T) {
 		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Contains(t, out.Message, "You lose.")
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "omaha.result.lose", out.MessageCode)
 	})
 
@@ -361,7 +361,7 @@ func TestOmahaWebPresenter_Output(t *testing.T) {
 		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Contains(t, out.Message, "You folded.")
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "omaha.result.folded", out.MessageCode)
 	})
 
@@ -374,7 +374,7 @@ func TestOmahaWebPresenter_Output(t *testing.T) {
 		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "Game over.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "omaha.result.gameOver", out.MessageCode)
 	})
 
@@ -818,7 +818,7 @@ func TestOmahaWebPresenter_Output_MuckFields(t *testing.T) {
 		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "Muck or show your hand.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "omaha.muck.prompt", out.MessageCode)
 	})
 
@@ -850,7 +850,7 @@ func TestOmahaWebPresenter_Output_MuckFields(t *testing.T) {
 		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "You mucked.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "omaha.result.mucked", out.MessageCode)
 	})
 }

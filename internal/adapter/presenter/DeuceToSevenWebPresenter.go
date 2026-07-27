@@ -78,20 +78,20 @@ func (dwp *DeuceToSevenWebPresenter) buildMessage(g interfaces.DeuceToSevenGame,
 func (dwp *DeuceToSevenWebPresenter) buildResultMessage(g interfaces.DeuceToSevenGame) (string, string) {
 	results := g.GetRoundResults()
 	if len(results) == 0 {
-		return "Game over.", "deucetoseven.result.gameOver"
+		return "", "deucetoseven.result.gameOver"
 	}
 	players := g.GetPlayers()
 	for _, r := range results {
 		if players[r.PlayerIdx].GetIsHuman() && r.WonAmount > 0 {
-			return "You are the winner.", "deucetoseven.result.win"
+			return "", "deucetoseven.result.win"
 		}
 	}
 	for _, pl := range players {
 		if pl.GetIsHuman() && pl.GetFolded() {
-			return "You folded.", "deucetoseven.result.folded"
+			return "", "deucetoseven.result.folded"
 		}
 	}
-	return "You lose.", "deucetoseven.result.lose"
+	return "", "deucetoseven.result.lose"
 }
 
 func (dwp *DeuceToSevenWebPresenter) buildSidePots(g interfaces.DeuceToSevenGame) []*controller.DeuceToSevenWebOutputSidePot {

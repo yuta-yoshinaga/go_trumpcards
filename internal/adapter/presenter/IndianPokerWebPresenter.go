@@ -151,13 +151,13 @@ func (iwp *IndianPokerWebPresenter) buildMessage(ip interfaces.IndianPokerGame, 
 func (iwp *IndianPokerWebPresenter) buildResultMessage(ip interfaces.IndianPokerGame) (string, string) {
 	results := ip.GetRoundResults()
 	if len(results) == 0 {
-		return "Game over.", "indianpoker.result.gameOver"
+		return "", "indianpoker.result.gameOver"
 	}
 
 	for _, r := range results {
 		if ip.GetPlayer(r.PlayerIdx).GetIsHuman() {
 			if r.WonAmount > 0 {
-				return "You are the winner.", "indianpoker.result.win"
+				return "", "indianpoker.result.win"
 			}
 		}
 	}
@@ -165,11 +165,11 @@ func (iwp *IndianPokerWebPresenter) buildResultMessage(ip interfaces.IndianPoker
 	// Human not in results (folded)
 	for i := 0; i < ip.GetPlayerCnt(); i++ {
 		if ip.GetPlayer(i).GetIsHuman() && ip.GetPlayer(i).GetFolded() {
-			return "You folded.", "indianpoker.result.folded"
+			return "", "indianpoker.result.folded"
 		}
 	}
 
-	return "You lose.", "indianpoker.result.lose"
+	return "", "indianpoker.result.lose"
 }
 
 // ActionLogOutput 棋譜をJSON出力
