@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { indianRummyApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { IndianRummyResponse } from '../types/card';
 import { useIndianRummyGame } from './useIndianRummyGame';
 
@@ -127,6 +128,7 @@ describe('useIndianRummyGame', () => {
     act(() => {
       result.current.handleDiscard();
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -142,6 +144,7 @@ describe('useIndianRummyGame', () => {
     act(() => {
       result.current.handleDiscard();
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -168,6 +171,7 @@ describe('useIndianRummyGame', () => {
     act(() => {
       result.current.handleDeclare();
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

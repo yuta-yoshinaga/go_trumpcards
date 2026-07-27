@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ultiApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeUltiState } from '../test/stateFactories';
 import { DEFAULT_ULTI_CONFIG, useUltiGame } from './useUltiGame';
 
@@ -44,10 +45,11 @@ describe('useUltiGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { contract: 'party', trumpSuit: 3 }));
   });
 
-  it('handleDiscard does nothing without exactly two selected cards', () => {
+  it('handleDiscard does nothing without exactly two selected cards', async () => {
     const { result } = renderHook(() => useUltiGame(), { wrapper: createWrapper() });
     act(() => result.current.toggleCard(0));
     act(() => result.current.handleDiscard());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -59,9 +61,10 @@ describe('useUltiGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndices: [0, 3] }));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useUltiGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

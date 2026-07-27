@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { calabresellaApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeCalabresellaState } from '../test/stateFactories';
 import { DEFAULT_CALABRESELLA_CONFIG, useCalabresellaGame } from './useCalabresellaGame';
 
@@ -40,9 +41,10 @@ describe('useCalabresellaGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 0 }));
   });
 
-  it('handleDiscard does nothing without exactly one selected card', () => {
+  it('handleDiscard does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useCalabresellaGame(), { wrapper: createWrapper() });
     act(() => result.current.handleDiscard());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -53,9 +55,10 @@ describe('useCalabresellaGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndex: 1 }));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useCalabresellaGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

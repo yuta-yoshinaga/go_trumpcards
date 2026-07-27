@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { klondikeApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { KlondikeResponse } from '../types/card';
 import { useKlondikeGame } from './useKlondikeGame';
 
@@ -219,6 +220,7 @@ describe('useKlondikeGame', () => {
       result.current.handleSelectTarget({ zone: 'tableau', col: 3 });
     });
 
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

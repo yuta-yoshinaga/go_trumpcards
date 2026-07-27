@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { kingApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeKingState } from '../test/stateFactories';
 import { DEFAULT_KING_CONFIG, useKingGame } from './useKingGame';
 
@@ -44,9 +45,10 @@ describe('useKingGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('contract', { contract: 6, trumpSuit: 3 }));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useKingGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

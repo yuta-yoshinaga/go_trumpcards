@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { manilleApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeManilleState } from '../test/stateFactories';
 import { DEFAULT_MANILLE_CONFIG, useManilleGame } from './useManilleGame';
 
@@ -32,9 +33,10 @@ describe('useManilleGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: DEFAULT_MANILLE_CONFIG }));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useManilleGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

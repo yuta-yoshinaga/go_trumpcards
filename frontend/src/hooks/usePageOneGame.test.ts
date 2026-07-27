@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pageoneApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { PageOneResponse } from '../types/card';
 import { usePageOneGame } from './usePageOneGame';
 
@@ -79,6 +80,7 @@ describe('usePageOneGame', () => {
     act(() => {
       result.current.handlePlay();
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

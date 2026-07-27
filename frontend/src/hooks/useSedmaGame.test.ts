@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sedmaApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeSedmaState } from '../test/stateFactories';
 import { DEFAULT_SEDMA_CONFIG, useSedmaGame } from './useSedmaGame';
 
@@ -32,9 +33,10 @@ describe('useSedmaGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: DEFAULT_SEDMA_CONFIG }));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useSedmaGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

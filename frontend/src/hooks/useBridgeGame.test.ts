@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { bridgeApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { BridgeResponse } from '../types/card';
 import { DEFAULT_BRIDGE_CONFIG, useBridgeGame } from './useBridgeGame';
 
@@ -91,6 +92,7 @@ describe('useBridgeGame', () => {
 
     mockExec.mockClear();
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

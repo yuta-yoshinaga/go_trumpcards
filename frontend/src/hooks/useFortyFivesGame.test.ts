@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fortyFivesApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeFortyFivesState } from '../test/stateFactories';
 import { DEFAULT_FORTY_FIVES_CONFIG, useFortyFivesGame } from './useFortyFivesGame';
 
@@ -38,9 +39,10 @@ describe('useFortyFivesGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 15 }));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useFortyFivesGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

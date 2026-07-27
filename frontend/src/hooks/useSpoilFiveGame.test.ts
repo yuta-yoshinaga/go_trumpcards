@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spoilFiveApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeSpoilFiveState } from '../test/stateFactories';
 import { DEFAULT_SPOIL_FIVE_CONFIG, useSpoilFiveGame } from './useSpoilFiveGame';
 
@@ -32,9 +33,10 @@ describe('useSpoilFiveGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: DEFAULT_SPOIL_FIVE_CONFIG }));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useSpoilFiveGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

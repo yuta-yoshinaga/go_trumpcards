@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tonkApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { TonkResponse } from '../types/card';
 import { useTonkGame } from './useTonkGame';
 
@@ -114,6 +115,7 @@ describe('useTonkGame', () => {
       result.current.handleDiscard();
     });
 
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -143,6 +145,7 @@ describe('useTonkGame', () => {
       result.current.handleKnock();
     });
 
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

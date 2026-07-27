@@ -510,3 +510,62 @@ if (unmountViolations.length > 0) {
 }
 
 console.log(`unmount-safety: OK (${hookFiles.length} hooks; every await -> own-state write is guarded).`);
+
+// --- Vacuous "not called" assertions in tests (issues #4439, #4451) ---------
+//
+// `expect(<apiMock>).not.toHaveBeenCalled()` placed straight after an interaction
+// passes whether or not the action fired: `exec` dispatches through react-query's
+// `mutateAsync`, which invokes the mutation function on a microtask. The assertion
+// runs first and sees nothing, so it asserts nothing. #4443 fixed 148 of these and
+// found a real 3-page bug doing so; #4451 fixed 76 more that its detector could not
+// see, because that one keyed on `fireEvent` and missed the `act(...)` form used in
+// hook tests. The fix is `await flushPendingDispatch()` before the assertion.
+//
+// Checked per site, and the interaction list is deliberately broad — three widenings
+// (fireEvent -> act -> raw .click()) each turned up sites the previous pass called
+// clean, so a narrow matcher here reads as coverage it does not provide.
+const vacuousViolations = [];
+const INTERACTION = /fireEvent|userEvent|\bact\(|\.click\(\)|\.type\(/;
+async function collectTests(dir) {
+  const out = [];
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...(await collectTests(full)));
+    else if (/\.test\.tsx?$/.test(entry.name)) out.push(full);
+  }
+  return out;
+}
+for (const file of await collectTests(SRC_DIR)) {
+  const text = await readFile(file, 'utf8');
+  // Only mocks of a game API — a plain `vi.fn()` prop callback IS synchronous and
+  // needs no flush, so flagging those would be noise that gets the guard switched off.
+  const apiMocks = new Set([...text.matchAll(/const (\w+) = vi\.mocked\((\w+Api)\.\w+\)/g)].map((m) => m[1]));
+  if (apiMocks.size === 0) continue;
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i += 1) {
+    const m = /^\s*expect\((\w+)\)\.not\.toHaveBeenCalled/.exec(lines[i]);
+    if (!m || !apiMocks.has(m[1])) continue;
+    for (let j = i - 1; j >= Math.max(0, i - 8); j -= 1) {
+      // Already flushed. Advancing fake timers counts: usePokerGame's debounce test
+      // drives the pending timer with `vi.advanceTimersByTime(300)` rather than an
+      // await, and its assertion is meaningful precisely because of that — flagging
+      // it would be the guard crying wolf.
+      if (/\bawait\b|advanceTimersByTime|runAllTimers|runOnlyPendingTimers/.test(lines[j])) break;
+      if (INTERACTION.test(lines[j])) {
+        vacuousViolations.push({ file: relative(ROOT, file), line: i + 1, mock: m[1] });
+        break;
+      }
+    }
+  }
+}
+
+if (vacuousViolations.length > 0) {
+  console.error('\nVacuous "not called" assertions (no await between the interaction and the assertion):\n');
+  for (const v of vacuousViolations) {
+    console.error(`  ${v.file}:${v.line}  expect(${v.mock}).not.toHaveBeenCalled() cannot fail here`);
+  }
+  console.error('\nAwait flushPendingDispatch() first. See issues #4439 and #4451.');
+  process.exit(1);
+}
+
+console.log('vacuous-assertions: OK (every "not called" assertion on an api mock is awaited first).');

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gaigelApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { GaigelResponse } from '../types/card';
 import { GaigelPhase } from '../types/phases';
 import { DEFAULT_GAIGEL_CONFIG, useGaigelGame } from './useGaigelGame';
@@ -74,6 +75,7 @@ describe('useGaigelGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     mockExec.mockClear();
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

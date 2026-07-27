@@ -339,6 +339,7 @@ describe('EasthavenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     screen.getByRole('button', { name: '配る' }).click();
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('deal');
   });
 

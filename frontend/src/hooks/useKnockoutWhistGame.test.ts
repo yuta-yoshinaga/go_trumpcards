@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { knockoutWhistApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeKnockoutWhistState } from '../test/stateFactories';
 import { DEFAULT_KNOCKOUT_WHIST_CONFIG, useKnockoutWhistGame } from './useKnockoutWhistGame';
 
@@ -32,9 +33,10 @@ describe('useKnockoutWhistGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: DEFAULT_KNOCKOUT_WHIST_CONFIG }));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useKnockoutWhistGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
