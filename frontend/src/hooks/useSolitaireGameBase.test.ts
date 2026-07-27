@@ -93,4 +93,36 @@ describe('useSolitaireGameBase', () => {
     rerender();
     expect(result.current).toBe(before);
   });
+
+  // `selectHint` runs AFTER the mounted check, so it is the observable that
+  // distinguishes a guarded hook from an unguarded one: asserting on the returned
+  // hint cannot, because React no-ops a post-unmount setState either way. #4447
+  it('does not process a hint that arrives after unmount', async () => {
+    let resolveHint: ((value: FakeState) => void) | undefined;
+    const hintApi = vi.fn(
+      () =>
+        new Promise<FakeState>((resolve) => {
+          resolveHint = resolve;
+        }),
+    );
+    const selectHint = vi.fn((res: FakeState) => res.hint ?? null);
+    const { result, unmount } = renderHook(
+      () => useSolitaireGameBase<FakeState, unknown[], { kind: string }>(mockExec, { hintApi, selectHint }),
+      { wrapper: createWrapper() },
+    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    act(() => {
+      void result.current.handleHint();
+    });
+    await waitFor(() => expect(hintApi).toHaveBeenCalled());
+
+    unmount();
+    resolveHint?.({ message: 'late', hint: { kind: 'too-late' } });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    expect(selectHint).not.toHaveBeenCalled();
+  });
 });
