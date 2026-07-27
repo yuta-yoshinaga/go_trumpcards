@@ -402,7 +402,7 @@ if (shellColumn === undefined) {
   shellViolations.push('src/components/GamePageShell.tsx: could not find the shell column — did its markup change?');
 } else {
   for (const need of ['min-h-0', 'overflow-hidden']) {
-    if (!new RegExp(`\\b${need.replace('-', '-')}\\b`).test(shellColumn)) {
+    if (!shellColumn.split(/\s+/).includes(need)) {
       shellViolations.push(
         `src/components/GamePageShell.tsx: the shell column lost ${need} (found "${shellColumn}") — a descendant's overflow will grow the document on mobile`,
       );
