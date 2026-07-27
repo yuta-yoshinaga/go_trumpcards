@@ -5,6 +5,7 @@ import type { Card, FortyThievesHint } from '../types/card';
 import { fortyThievesFoundationTarget } from '../utils/fortyThievesFoundationTarget';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
+import { useIsMounted } from './useIsMounted';
 
 /** Hook that manages Forty Thieves game state, source selection, hints, and moves. */
 export function useFortyThievesGame() {
@@ -38,15 +39,20 @@ export function useFortyThievesGame() {
     exec('giveup');
   }, [exec]);
 
+  const isMounted = useIsMounted();
+
   const handleHint = useCallback(async () => {
     try {
       const res = await fortyThievesApi.exec('hint');
+      // Navigating away mid-request must not write to a gone component (#4447).
+      if (!isMounted()) return;
       setHint(res.hint ?? null);
       setHintError(null);
     } catch {
+      if (!isMounted()) return;
       setHintError(NETWORK_ERROR_MESSAGE());
     }
-  }, []);
+  }, [isMounted]);
 
   const handleAutoComplete = useCallback(() => {
     setSelectedSource(null);

@@ -5,6 +5,7 @@ import { buildReplayStates } from '../utils/replayBuilder';
 import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
+import { useIsMounted } from './useIsMounted';
 
 /**
  * Local config state shape for the Sevens settings panel. Mirrors the
@@ -93,6 +94,8 @@ function buildSevensReplayStates(finalState: SevensResponse): SevensResponse[] {
 
 /** Hook that manages Sevens game state, joker placement, configuration, and CPU replay. */
 export function useSevensGame() {
+  const isMounted = useIsMounted();
+
   const [jokerCardIdx, setJokerCardIdx] = useState<number | null>(null);
   const { config, setConfig, handleConfigChange, handleToggle } =
     useGameConfig<SevensConfigState>(DEFAULT_SEVENS_CONFIG);
@@ -121,10 +124,11 @@ export function useSevensGame() {
         return;
       }
       await runReplay(res, setDisplayState, {
+        isMounted,
         buildReplayStates: buildSevensReplayStates,
       });
     },
-    [setConfig],
+    [setConfig, isMounted],
   );
 
   const { loading, error, exec, retry } = useGameApi(sevensApi.exec, { onSuccess });

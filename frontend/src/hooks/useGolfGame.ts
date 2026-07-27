@@ -3,6 +3,7 @@ import { golfApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { GolfHint } from '../types/card';
 import { useGameApi } from './useGameApi';
+import { useIsMounted } from './useIsMounted';
 
 /** Hook that manages Golf Solitaire game state, hints, and card removal actions. */
 export function useGolfGame() {
@@ -29,15 +30,20 @@ export function useGolfGame() {
     exec('giveup');
   }, [exec]);
 
+  const isMounted = useIsMounted();
+
   const handleHint = useCallback(async () => {
     try {
       const res = await golfApi.exec('hint');
+      // Navigating away mid-request must not write to a gone component (#4447).
+      if (!isMounted()) return;
       setHint(res.hint ?? null);
       setHintError(null);
     } catch {
+      if (!isMounted()) return;
       setHintError(NETWORK_ERROR_MESSAGE());
     }
-  }, []);
+  }, [isMounted]);
 
   const handleUndo = useCallback(() => {
     setHint(null);

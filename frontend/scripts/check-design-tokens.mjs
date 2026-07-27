@@ -429,3 +429,50 @@ if (shellViolations.length > 0) {
 console.log(
   'shell-height: OK (App.tsx + GamePageShell columns keep min-h-0, the shell clips, GameFooter keeps its 45vh mobile cap).',
 );
+
+// --- Unmount-safe state writes in hooks (issue #4447) -----------------------
+//
+// A hook that awaits and then writes its own state can have that write land after
+// the component is gone. React makes it a silent no-op, so nothing complains until
+// the surrounding environment is torn down, where React reaches for `window` and
+// throws from `dispatchSetState` — which failed whole CI runs while reporting every
+// test as passed (#4444). The fix is `useIsMounted()` and a check after the await.
+//
+// Scoped deliberately: only flags a `set<X>` that this file declares via `useState`,
+// so passing someone else's setter or calling an unrelated `set*` method is ignored.
+const unmountViolations = [];
+const hookFiles = (await readdir(join(SRC_DIR, 'hooks'))).filter(
+  (f) => (f.endsWith('.ts') || f.endsWith('.tsx')) && !f.includes('.test.'),
+);
+for (const file of hookFiles) {
+  const text = stripComments(await readFile(join(SRC_DIR, 'hooks', file), 'utf8'));
+  if (/\b(useIsMounted|mountedRef)\b/.test(text)) continue;
+  // Setters this file owns.
+  const owned = new Set(
+    [...text.matchAll(/const \[[^,\]]+,\s*(set[A-Z]\w*)\]\s*=\s*useState/g)].map((m) => m[1]),
+  );
+  if (owned.size === 0) continue;
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i += 1) {
+    if (!/\bawait\b/.test(lines[i])) continue;
+    for (let j = i + 1; j < Math.min(lines.length, i + 12); j += 1) {
+      const m = /\b(set[A-Z]\w*)\(/.exec(lines[j]);
+      if (!m) continue;
+      if (owned.has(m[1])) {
+        unmountViolations.push({ file: `src/hooks/${file}`, line: j + 1, setter: m[1], awaitLine: i + 1 });
+      }
+      break;
+    }
+  }
+}
+
+if (unmountViolations.length > 0) {
+  console.error('\nUnmount-safety violations (state written after an await, with no useIsMounted guard):\n');
+  for (const v of unmountViolations) {
+    console.error(`  ${v.file}:${v.line}  ${v.setter}() runs after the await on line ${v.awaitLine}`);
+  }
+  console.error('\nUse useIsMounted() and `if (!isMounted()) return;` after the await. See issue #4447.');
+  process.exit(1);
+}
+
+console.log(`unmount-safety: OK (${hookFiles.length} hooks; no state written after an await without a guard).`);

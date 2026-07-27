@@ -4,6 +4,7 @@ import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { PinochleConfig } from '../types/card';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
+import { useIsMounted } from './useIsMounted';
 
 /**
  * Server-computed hint returned by the Pinochle `hint` command. Exactly one of
@@ -97,21 +98,26 @@ export function usePinochleGame() {
   // The `hint` command returns only the hint object (not full game state), so
   // it is fetched directly and stored separately rather than via gameExec,
   // which would otherwise clobber the rendered game state.
+  const isMounted = useIsMounted();
+
   const handleHint = useCallback(async () => {
     setHintLoading(true);
     try {
       const res = await pinochleApi.exec('hint');
+      // Navigating away mid-request must not write to a gone component (#4447).
+      if (!isMounted()) return;
       // Server marshals the bare hint fields at the top level (cardIndex,
       // bidAmount, pass, suit, reason); when no hint applies `reason` is absent.
       const raw = res as unknown as Partial<PinochleHint>;
       setHint(raw.reason ? (raw as PinochleHint) : null);
       setHintError(null);
     } catch {
+      if (!isMounted()) return;
       setHintError(NETWORK_ERROR_MESSAGE());
     } finally {
-      setHintLoading(false);
+      if (isMounted()) setHintLoading(false);
     }
-  }, []);
+  }, [isMounted]);
 
   return {
     state,

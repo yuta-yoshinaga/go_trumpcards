@@ -4,6 +4,7 @@ import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { FlowerGardenHint } from '../types/card';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
+import { useIsMounted } from './useIsMounted';
 
 /** Hook that manages Flower Garden game state, source selection, hints, and moves. */
 export function useFlowerGardenGame() {
@@ -31,15 +32,20 @@ export function useFlowerGardenGame() {
     runApi('giveup');
   }, [runApi]);
 
+  const isMounted = useIsMounted();
+
   const handleHint = useCallback(async () => {
     try {
       const res = await flowerGardenApi.exec('hint');
+      // Navigating away mid-request must not write to a gone component (#4447).
+      if (!isMounted()) return;
       setHint(res.hint ?? null);
       setHintError(null);
     } catch {
+      if (!isMounted()) return;
       setHintError(NETWORK_ERROR_MESSAGE());
     }
-  }, []);
+  }, [isMounted]);
 
   const handleAutoComplete = useCallback(() => {
     setSelectedSource(null);

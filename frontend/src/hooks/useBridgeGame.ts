@@ -5,6 +5,7 @@ import type { BridgeConfig, BridgeHint } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
+import { useIsMounted } from './useIsMounted';
 
 /** Default Bridge game configuration. */
 export const DEFAULT_BRIDGE_CONFIG: BridgeConfig = {
@@ -58,18 +59,23 @@ export function useBridgeGame() {
     apiExec('nextround');
   }, [apiExec]);
 
+  const isMounted = useIsMounted();
+
   const handleHint = useCallback(async () => {
     setHintLoading(true);
     try {
       const res = await bridgeApi.exec('hint');
+      // Navigating away mid-request must not write to a gone component (#4447).
+      if (!isMounted()) return;
       setHint(res.hint ?? null);
       setHintError(null);
     } catch {
+      if (!isMounted()) return;
       setHintError(NETWORK_ERROR_MESSAGE());
     } finally {
-      setHintLoading(false);
+      if (isMounted()) setHintLoading(false);
     }
-  }, []);
+  }, [isMounted]);
 
   return {
     state,
