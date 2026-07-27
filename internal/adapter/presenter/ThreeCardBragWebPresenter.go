@@ -139,7 +139,7 @@ func (p *ThreeCardBragWebPresenter) roundEndMessage(g interfaces.ThreeCardBragGa
 		return "", "threecardbrag.roundEndHumanWin", nil
 	}
 	params := map[string]string{"player": fmt.Sprintf("%d", winner)}
-	return fmt.Sprintf("CPU%dがポットを獲得しました。", winner), "threecardbrag.roundEndCpuWin", params
+	return "", "threecardbrag.roundEndCpuWin", params
 }
 
 // winnerMessage 試合終了メッセージを構築する

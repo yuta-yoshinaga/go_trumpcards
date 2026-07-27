@@ -150,7 +150,7 @@ func (p *OmbreWebPresenter) winnerMessage(g interfaces.OmbreGame) (string, strin
 		return "", "ombre.result.humanWin", nil
 	}
 	params := map[string]string{"player": fmt.Sprintf("%d", winner)}
-	return fmt.Sprintf("ゲーム終了！ プレイヤー%dの勝ち！", winner), "ombre.result.cpuWin", params
+	return "", "ombre.result.cpuWin", params
 }
 
 // HintOutput ヒント情報をJSON出力する

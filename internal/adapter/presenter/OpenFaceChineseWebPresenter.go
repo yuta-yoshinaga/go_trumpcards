@@ -105,7 +105,7 @@ func (p *OpenFaceChineseWebPresenter) winnerMessage(g interfaces.OpenFaceChinese
 		return "", "openfacechinese.result.humanWin", nil
 	}
 	params := map[string]string{"player": fmt.Sprintf("%d", winner)}
-	return fmt.Sprintf("ゲーム終了！ CPU %d の勝ち！", winner), "openfacechinese.result.cpuWin", params
+	return "", "openfacechinese.result.cpuWin", params
 }
 
 // HintOutput ヒント情報をJSON出力する

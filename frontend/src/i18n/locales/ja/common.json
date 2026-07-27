@@ -1184,6 +1184,7 @@
     "sixcardgolf.roundOver": "ラウンド終了",
     "sixcardgolf.setup": "最初にめくる2枚を選んでください。",
     "skat.bidPhase": "入札フェーズ — 入札してください。",
+    "skat.discard": "手札から2枚を捨ててください。",
     "skat.gameDeclaration": "ゲームの種類と切り札を宣言してください。",
     "skat.gameEnd": "ゲーム終了",
     "skat.playPhase.follow": "あなたの番です — リードスートに従ってカードを選んでください。",
@@ -1218,7 +1219,17 @@
     "wizard.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
     "wizard.roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
     "wizard.trickEnd": "トリック終了 — 次へ進んでください。",
-    "skat.discard": "手札から2枚を捨ててください。"
+    "briscola.result.p0Win": "ゲーム終了！ あなたの勝利です（{{p0}}-{{p1}}）！",
+    "briscola.result.p1Win": "ゲーム終了！ CPU の勝利です（{{p0}}-{{p1}}）。",
+    "calabresella.result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
+    "ombre.result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
+    "openfacechinese.result.cpuWin": "ゲーム終了！ CPU {{player}} の勝ち！",
+    "schnapsen.result.p0Win": "ゲーム終了！ あなたの勝利です（{{p0}}-{{p1}}）！",
+    "schnapsen.result.p1Win": "ゲーム終了！ CPU の勝利です（{{p0}}-{{p1}}）。",
+    "schnapsen.result.tie": "ゲーム終了！ 引き分けです（{{p0}}-{{p1}}）。",
+    "threecardbrag.roundEndCpuWin": "CPU{{player}}がポットを獲得しました。",
+    "ulti.result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
+    "briscola.result.tie": "ゲーム終了！ 引き分けです（{{p0}}-{{p1}}）。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

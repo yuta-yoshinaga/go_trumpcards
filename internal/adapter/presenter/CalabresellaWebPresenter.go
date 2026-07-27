@@ -161,7 +161,7 @@ func (p *CalabresellaWebPresenter) winnerMessage(g interfaces.CalabresellaGame) 
 		return "", "calabresella.result.humanWin", nil
 	}
 	params := map[string]string{"player": fmt.Sprintf("%d", winner)}
-	return fmt.Sprintf("ゲーム終了！ プレイヤー%dの勝ち！", winner), "calabresella.result.cpuWin", params
+	return "", "calabresella.result.cpuWin", params
 }
 
 // HintOutput ヒント情報をJSON出力する

@@ -36,15 +36,72 @@ const LOCALES = join(FRONTEND, 'src/i18n/locales');
  * frontend has nothing to fall back on, which is the worse of the two failure
  * modes, so the two are reported separately.
  */
+/**
+ * Split a return statement's arguments at top-level commas, respecting nesting
+ * and string literals.
+ *
+ * A regex cannot do this. The first version of this guard matched the message
+ * argument as a quoted literal, so it never even looked at
+ * `return fmt.Sprintf("…%d…", n), "code", params`. Widening it to `[^,\n]+`
+ * did not help either, because a Sprintf contains its own commas. Eleven codes
+ * fell through that hole, and since an unmatched return is simply not collected,
+ * the guard printed `OK (all 569 codes…)` while they stayed broken — the worst
+ * thing a guard can do, which is to be confidently silent.
+ */
+function splitArgs(text, start) {
+  const args = [];
+  let depth = 0;
+  let quote = null;
+  let cur = '';
+  for (let i = start; i < text.length; i += 1) {
+    const c = text[i];
+    if (quote) {
+      cur += c;
+      if (c === '\\') {
+        cur += text[i + 1] ?? '';
+        i += 1;
+      } else if (c === quote) quote = null;
+      continue;
+    }
+    if (c === '"' || c === '`') {
+      quote = c;
+      cur += c;
+      continue;
+    }
+    if ('([{'.includes(c)) depth += 1;
+    else if (')]}'.includes(c)) {
+      if (depth === 0) break; // the enclosing func's closing brace
+      depth -= 1;
+    } else if (c === '\n' && depth === 0) {
+      break;
+    } else if (c === ',' && depth === 0) {
+      args.push(cur.trim());
+      cur = '';
+      continue;
+    }
+    cur += c;
+  }
+  if (cur.trim()) args.push(cur.trim());
+  return args;
+}
+
 async function emittedCodes() {
   const out = new Map();
   const files = (await readdir(PRESENTER_DIR)).filter((f) => f.endsWith('WebPresenter.go'));
   for (const name of files) {
     const text = await readFile(join(PRESENTER_DIR, name), 'utf8');
-    for (const m of text.matchAll(/return\s+("(?:[^"\\]|\\.)*"),\s*"([a-zA-Z0-9_.]+)"/g)) {
-      const [, literal, code] = m;
+    for (const m of text.matchAll(/\breturn\s+/g)) {
+      const args = splitArgs(text, m.index + m[0].length);
+      // Presenters return (message, messageCode, params). Only the shape where
+      // the second argument is a quoted string is a messageCode emission.
+      if (args.length < 2) continue;
+      const codeArg = args[1];
+      if (!/^"[a-zA-Z0-9_.]+"$/.test(codeArg)) continue;
+      const code = codeArg.slice(1, -1);
       if (!out.has(code)) out.set(code, { literals: new Set(), files: new Set() });
-      out.get(code).literals.add(literal);
+      // A computed message (Sprintf, a variable) cannot be empty, so it renders
+      // as a fallback when untranslated — the same failure as a plain literal.
+      out.get(code).literals.add(args[0].startsWith('"') ? args[0] : '<computed>');
       out.get(code).files.add(name);
     }
   }
@@ -55,8 +112,17 @@ const emitted = await emittedCodes();
 const ja = JSON.parse(await readFile(join(LOCALES, 'ja/common.json'), 'utf8')).messageCode ?? {};
 const en = JSON.parse(await readFile(join(LOCALES, 'en/common.json'), 'utf8')).messageCode ?? {};
 
+/**
+ * Codes whose message deliberately *is* the payload, so there is nothing to
+ * translate. `return lastErr.Error(), "error", nil` in 8 presenters carries the
+ * Go error text itself; GameMessageBox's fallback to the raw message is the
+ * intended behaviour there, not a defect.
+ */
+const PASSTHROUGH = new Set(['error']);
+
 const missing = [];
 for (const [code, info] of emitted) {
+  if (PASSTHROUGH.has(code)) continue;
   const gaps = [];
   if (!(code in ja)) gaps.push('ja');
   if (!(code in en)) gaps.push('en');
