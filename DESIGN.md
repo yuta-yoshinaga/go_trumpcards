@@ -160,6 +160,35 @@ Visual size of a checkbox or radio dot may stay at ~16-20px so the element still
 - **Approach:** Grid-disciplined — strict alignment for game UI, consistent card grid sizing
 - **Grid:** Desktop: sidebar (240px fixed) + fluid main. Mobile: single column with hamburger nav
 - **Max content width:** 1200px for non-game content. Game area fills available space.
+
+### Mobile vertical budget (a game page must not scroll the document)
+
+On a 375×667 phone a game page fits the viewport and scrolls **inside** its play
+area, never by growing the document. This has regressed repeatedly (#1861, #1367,
+#4373), so the contract is written down here:
+
+| Region | Behaviour |
+|---|---|
+| Mobile nav | fixed, ~62px |
+| Header block (phase, score chips, settings `<details>`) | `shrink-0` |
+| Play area | `flex-1 overflow-y-auto` **and `min-h-0`** — this is the only region allowed to absorb overflow |
+| `GameFooter` (actions) | `shrink-0`, capped at `max-h-[45vh]` with internal scroll below `sm` |
+
+Two classes are load-bearing and must not be "cleaned up":
+
+- **`min-h-0` on the flex column in `App.tsx`.** A flex item's automatic minimum
+  size is its content height, so without this the column refuses to shrink to the
+  viewport and grows the document instead — which is what made 179 of 219 game
+  pages scroll vertically even though every page already had a play area meant to
+  absorb it.
+- **The `45vh` cap on `GameFooter`.** The footer is `shrink-0`, so without a cap it
+  takes whatever its controls want and the play area is what gives way. Measured,
+  the tallest footer was 558px (84% of the viewport) and 26 pages were left under
+  80px of play area. The cap is lifted at `sm` and up.
+
+When adding a game page, verify at 375×667 that `document.documentElement.scrollHeight`
+equals the viewport height. Note that page height depends on the deal — measure
+several, not one.
 - **Border radius:**
   | Token | Value | Usage |
   |-------|-------|-------|

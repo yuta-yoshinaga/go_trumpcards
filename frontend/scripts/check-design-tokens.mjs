@@ -358,3 +358,54 @@ if (labelViolations.length > 0) {
 }
 
 console.log(`kbd-labels: OK (every ActionBinding label resolves; ${knownLabels.size} shared labels).`);
+
+// --- Mobile shell-height contract (issue #4373) -----------------------------
+//
+// Two classes keep every game page inside a 375x667 viewport, and both look like
+// redundant cruft to a reader or an autofixer:
+//
+//   * `min-h-0` on the flex column in App.tsx — without it that column's
+//     automatic minimum size is its content height, so it grows the document
+//     instead of shrinking to the viewport. Removing it made 179 of 219 game
+//     pages scroll vertically.
+//   * the `max-h-[45vh]` cap on GameFooter — the footer is `shrink-0`, so without
+//     a cap it takes whatever its controls want and the play area is squeezed
+//     instead (measured: tallest footer 558px, 26 pages left under 80px).
+//
+// This has regressed five times (#965, #993, #1058, #1367, #4373), which is why
+// it is a guard and not only a line in DESIGN.md.
+const shellViolations = [];
+
+const appText = await readFile(join(SRC_DIR, 'App.tsx'), 'utf8');
+// Identify the column by the classes it has, in any order: a single regex
+// requiring `flex-1` to textually precede `min-w-0` would still fail the build if
+// a class sorter reordered them, but with a misleading "markup changed" message
+// instead of naming the real problem.
+const appColumn = [...appText.matchAll(/className="([^"]*)"/g)]
+  .map((m) => m[1])
+  .find((cls) => /\bflex-1\b/.test(cls) && /\bmin-w-0\b/.test(cls));
+if (appColumn === undefined) {
+  shellViolations.push('src/App.tsx: could not find the main flex column (flex-1 + min-w-0) — did its markup change?');
+} else if (!/\bmin-h-0\b/.test(appColumn)) {
+  shellViolations.push(
+    `src/App.tsx: the main flex column lost min-h-0 (found "${appColumn}") — the document will grow past the viewport on mobile`,
+  );
+}
+
+const footerText = await readFile(join(SRC_DIR, 'components/GameFooter.tsx'), 'utf8');
+for (const need of ['max-h-[45vh]', 'overflow-y-auto', 'sm:max-h-none', 'sm:overflow-y-visible']) {
+  if (!footerText.includes(need)) {
+    shellViolations.push(
+      `src/components/GameFooter.tsx: lost "${need}" — the footer will crowd out the play area on mobile`,
+    );
+  }
+}
+
+if (shellViolations.length > 0) {
+  console.error('\nMobile shell-height violations:\n');
+  for (const v of shellViolations) console.error(`  ${v}`);
+  console.error('\nSee the "Mobile vertical budget" section of DESIGN.md and issue #4373.');
+  process.exit(1);
+}
+
+console.log('shell-height: OK (App.tsx column keeps min-h-0; GameFooter keeps its 45vh mobile cap).');
