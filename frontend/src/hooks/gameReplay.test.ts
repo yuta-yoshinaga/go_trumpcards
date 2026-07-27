@@ -182,6 +182,25 @@ describe('runReplay', () => {
     expect(setDisplayState).not.toHaveBeenCalledWith('final');
   });
 
+  // The other bail-out: the human-action state renders first, then the replay sleeps
+  // before the CPU steps. Losing the page during THAT sleep must stop it too (#4447).
+  it('abandons the replay if the page is lost during the human-action delay', async () => {
+    const setDisplayState = vi.fn();
+    let mounted = true;
+    const config: ReplayConfig<string> = {
+      buildHumanActionState: () => 'human',
+      buildReplayStates: () => ['a', 'b'],
+      isMounted: () => mounted,
+    };
+    const promise = runReplay('final', setDisplayState, config);
+    mounted = false;
+    await flushDelays();
+    await promise;
+    expect(setDisplayState).toHaveBeenCalledWith('human');
+    expect(setDisplayState).not.toHaveBeenCalledWith('a');
+    expect(setDisplayState).not.toHaveBeenCalledWith('final');
+  });
+
   it('runs every step when the component stays mounted', async () => {
     const setDisplayState = vi.fn();
     const config: ReplayConfig<string> = {
