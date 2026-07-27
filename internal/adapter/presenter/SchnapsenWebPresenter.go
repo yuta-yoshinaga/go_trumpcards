@@ -44,7 +44,7 @@ func (p *SchnapsenWebPresenter) buildBase(s interfaces.SchnapsenGame) *controlle
 		CpuDifficulty: int(cfg.CpuDifficulty),
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(s.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(s)
 	return resObj
 }
@@ -55,13 +55,6 @@ func intSliceOrEmpty(in []int) []int {
 		return make([]int, 0)
 	}
 	return in
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *SchnapsenWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SchnapsenWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SchnapsenWebOutputTrickCard {
-		return &controller.SchnapsenWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

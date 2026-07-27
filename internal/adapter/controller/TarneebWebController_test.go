@@ -19,7 +19,7 @@ func mustTarneebOutputJSON(msg string) string {
 	out := &controller.TarneebWebOutput{
 		Players:       []*controller.TarneebWebOutputPlayer{},
 		TeamScores:    []int{},
-		CurrentTrick:  []*controller.TarneebWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerTeam:    -1,
 		BidWinnerIdx:  -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},

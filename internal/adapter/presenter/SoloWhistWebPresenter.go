@@ -48,7 +48,7 @@ func (p *SoloWhistWebPresenter) buildBase(g interfaces.SoloWhistGame) *controlle
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -73,13 +73,6 @@ func (p *SoloWhistWebPresenter) playableIndices(g interfaces.SoloWhistGame) []in
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *SoloWhistWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SoloWhistWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SoloWhistWebOutputTrickCard {
-		return &controller.SoloWhistWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -151,7 +144,7 @@ func (p *SoloWhistWebPresenter) HintOutput(g interfaces.SoloWhistGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.SoloWhistWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

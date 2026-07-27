@@ -39,18 +39,6 @@ type ScartoWebOutputPlayer struct {
 	IsDealer   bool             `json:"isDealer"`
 }
 
-// ScartoWebOutputTrickCard トリック中の1枚
-type ScartoWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// ScartoWebOutputHint ヒント出力
-type ScartoWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // ScartoWebOutput スカルトのWebアウトプット
 type ScartoWebOutput struct {
 	Players          []*ScartoWebOutputPlayer    `json:"players"`
@@ -61,7 +49,7 @@ type ScartoWebOutput struct {
 	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
 	DealerIdx        int                         `json:"dealerIdx"`
 	ScartoCount      int                         `json:"scartoCount"`
-	CurrentTrick     []*ScartoWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard       `json:"currentTrick"`
 	PlayerScores     [domain.ScartoPlayerCnt]int `json:"playerScores"`
 	DealScores       [domain.ScartoPlayerCnt]int `json:"dealScores"`
 	LastTrickWinner  int                         `json:"lastTrickWinner"`
@@ -72,7 +60,7 @@ type ScartoWebOutput struct {
 	WinnerPlayer     int                         `json:"winnerPlayer"`
 	IsHumanTurn      bool                        `json:"isHumanTurn"`
 	IsHumanScarto    bool                        `json:"isHumanScarto"`
-	Hint             *ScartoWebOutputHint        `json:"hint,omitempty"`
+	Hint             *WebOutputCardHint          `json:"hint,omitempty"`
 	WebOutputBase
 	Config ScartoWebOutputConfig `json:"config"`
 }
@@ -108,7 +96,7 @@ var NewScartoWebController, NewScartoWebControllerWithProvider = webControllerPa
 func newScartoDefaultOutput(msg string) *ScartoWebOutput {
 	return &ScartoWebOutput{
 		Players:         make([]*ScartoWebOutputPlayer, 0),
-		CurrentTrick:    make([]*ScartoWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		LastTrickWinner: -1,
 		WinnerPlayer:    -1,

@@ -31,8 +31,8 @@ func (p *CinchWebPresenter) Output(g interfaces.CinchGame, lastErr error) string
 func (p *CinchWebPresenter) buildBase(g interfaces.CinchGame) *controller.CinchWebOutput {
 	resObj := new(controller.CinchWebOutput)
 	resObj.Players = make([]*controller.CinchWebOutputPlayer, 0)
-	resObj.CurrentTrick = make([]*controller.CinchWebOutputTrickCard, 0)
-	resObj.LastTrick = make([]*controller.CinchWebOutputTrickCard, 0)
+	resObj.CurrentTrick = make([]*controller.WebOutputTrickCard, 0)
+	resObj.LastTrick = make([]*controller.WebOutputTrickCard, 0)
 	resObj.PlayableIndices = make([]int, 0)
 	resObj.RoundWinners = make([]int, 0)
 
@@ -104,12 +104,12 @@ func (p *CinchWebPresenter) playableIndices(g interfaces.CinchGame) []int {
 }
 
 // cinchTrickToOutput はトリックを WebOutput 表現に変換する。
-func cinchTrickToOutput(trick []*domain.TrickCard) []*controller.CinchWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.CinchWebOutputTrickCard {
+func cinchTrickToOutput(trick []*domain.TrickCard) []*controller.WebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.WebOutputTrickCard {
 		if tc == nil {
 			return nil
 		}
-		return &controller.CinchWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
+		return &controller.WebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
 

@@ -35,12 +35,6 @@ type BeziqueWebOutputPlayer struct {
 	TrickCount      int              `json:"trickCount"`
 }
 
-// BeziqueWebOutputTrickCard トリック中の1枚
-type BeziqueWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // BeziqueWebOutputMeld 宣言可能な役
 type BeziqueWebOutputMeld struct {
 	Type   int `json:"type"`
@@ -57,25 +51,25 @@ type BeziqueWebOutputHint struct {
 
 // BeziqueWebOutput ベジークWebアウトプット
 type BeziqueWebOutput struct {
-	Players          []*BeziqueWebOutputPlayer    `json:"players"`
-	DealPoints       []int                        `json:"dealPoints"`
-	DealMeldPoints   []int                        `json:"dealMeldPoints"`
-	MatchScore       []int                        `json:"matchScore"`
-	Phase            int                          `json:"phase"`
-	RoundNumber      int                          `json:"roundNumber"`
-	TrickNumber      int                          `json:"trickNumber"`
-	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
-	DealerIdx        int                          `json:"dealerIdx"`
-	TrumpSuit        int                          `json:"trumpSuit"`
-	TrumpCard        *WebOutputCard               `json:"trumpCard,omitempty"`
-	CurrentTrick     []*BeziqueWebOutputTrickCard `json:"currentTrick"`
-	StockRemaining   int                          `json:"stockRemaining"`
-	IsEndgame        bool                         `json:"isEndgame"`
-	AvailableMelds   []*BeziqueWebOutputMeld      `json:"availableMelds"`
-	GameEndFlag      bool                         `json:"gameEndFlag"`
-	WinnerIdx        int                          `json:"winnerIdx"`
-	Hint             *BeziqueWebOutputHint        `json:"hint,omitempty"`
+	Players          []*BeziqueWebOutputPlayer `json:"players"`
+	DealPoints       []int                     `json:"dealPoints"`
+	DealMeldPoints   []int                     `json:"dealMeldPoints"`
+	MatchScore       []int                     `json:"matchScore"`
+	Phase            int                       `json:"phase"`
+	RoundNumber      int                       `json:"roundNumber"`
+	TrickNumber      int                       `json:"trickNumber"`
+	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
+	DealerIdx        int                       `json:"dealerIdx"`
+	TrumpSuit        int                       `json:"trumpSuit"`
+	TrumpCard        *WebOutputCard            `json:"trumpCard,omitempty"`
+	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
+	StockRemaining   int                       `json:"stockRemaining"`
+	IsEndgame        bool                      `json:"isEndgame"`
+	AvailableMelds   []*BeziqueWebOutputMeld   `json:"availableMelds"`
+	GameEndFlag      bool                      `json:"gameEndFlag"`
+	WinnerIdx        int                       `json:"winnerIdx"`
+	Hint             *BeziqueWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config BeziqueWebOutputConfig `json:"config"`
 }
@@ -116,7 +110,7 @@ func newBeziqueDefaultOutput(msg string) *BeziqueWebOutput {
 		DealPoints:     make([]int, 0),
 		DealMeldPoints: make([]int, 0),
 		MatchScore:     make([]int, 0),
-		CurrentTrick:   make([]*BeziqueWebOutputTrickCard, 0),
+		CurrentTrick:   make([]*WebOutputTrickCard, 0),
 		AvailableMelds: make([]*BeziqueWebOutputMeld, 0),
 		WinnerIdx:      -1,
 		WebOutputBase:  WebOutputBase{Message: msg},

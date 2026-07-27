@@ -37,12 +37,6 @@ type WattenWebOutputPlayer struct {
 	TrickCount int              `json:"trickCount"`
 }
 
-// WattenWebOutputTrickCard トリック中の1枚
-type WattenWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // WattenWebOutputHint ヒント出力
 type WattenWebOutputHint struct {
 	Action    string `json:"action"`
@@ -54,29 +48,29 @@ type WattenWebOutputHint struct {
 
 // WattenWebOutput ヴァッテンWebアウトプット
 type WattenWebOutput struct {
-	Players          []*WattenWebOutputPlayer    `json:"players"`
-	Phase            int                         `json:"phase"`
-	RoundNumber      int                         `json:"roundNumber"`
-	TrickNumber      int                         `json:"trickNumber"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	DealerIdx        int                         `json:"dealerIdx"`
-	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	SchlagRank       int                         `json:"schlagRank"`
-	CriticalSuit     int                         `json:"criticalSuit"`
-	Stake            int                         `json:"stake"`
-	PendingStake     int                         `json:"pendingStake"`
-	RaiseCount       int                         `json:"raiseCount"`
-	RaiserTeam       int                         `json:"raiserTeam"`
-	ResponderIdx     int                         `json:"responderIdx"`
-	CanRaise         bool                        `json:"canRaise"`
-	CurrentTrick     []*WattenWebOutputTrickCard `json:"currentTrick"`
-	TeamScores       [2]int                      `json:"teamScores"`
-	TeamTricks       [2]int                      `json:"teamTricks"`
-	DealWinnerTeam   int                         `json:"dealWinnerTeam"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerTeam       int                         `json:"winnerTeam"`
-	Result           int                         `json:"result"`
-	Hint             *WattenWebOutputHint        `json:"hint,omitempty"`
+	Players          []*WattenWebOutputPlayer `json:"players"`
+	Phase            int                      `json:"phase"`
+	RoundNumber      int                      `json:"roundNumber"`
+	TrickNumber      int                      `json:"trickNumber"`
+	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	DealerIdx        int                      `json:"dealerIdx"`
+	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
+	SchlagRank       int                      `json:"schlagRank"`
+	CriticalSuit     int                      `json:"criticalSuit"`
+	Stake            int                      `json:"stake"`
+	PendingStake     int                      `json:"pendingStake"`
+	RaiseCount       int                      `json:"raiseCount"`
+	RaiserTeam       int                      `json:"raiserTeam"`
+	ResponderIdx     int                      `json:"responderIdx"`
+	CanRaise         bool                     `json:"canRaise"`
+	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
+	TeamScores       [2]int                   `json:"teamScores"`
+	TeamTricks       [2]int                   `json:"teamTricks"`
+	DealWinnerTeam   int                      `json:"dealWinnerTeam"`
+	GameEndFlag      bool                     `json:"gameEndFlag"`
+	WinnerTeam       int                      `json:"winnerTeam"`
+	Result           int                      `json:"result"`
+	Hint             *WattenWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config WattenWebOutputConfig `json:"config"`
 }
@@ -114,7 +108,7 @@ var NewWattenWebController, NewWattenWebControllerWithProvider = webControllerPa
 func newWattenDefaultOutput(msg string) *WattenWebOutput {
 	return &WattenWebOutput{
 		Players:        make([]*WattenWebOutputPlayer, 0),
-		CurrentTrick:   make([]*WattenWebOutputTrickCard, 0),
+		CurrentTrick:   make([]*WebOutputTrickCard, 0),
 		WinnerTeam:     -1,
 		RaiserTeam:     -1,
 		ResponderIdx:   -1,

@@ -43,7 +43,7 @@ func (p *GongZhuWebPresenter) buildBase(g interfaces.GongZhuGame) *controller.Go
 		PointLimit:    cfg.PointLimit,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -60,13 +60,6 @@ func (p *GongZhuWebPresenter) exposableIndices(g interfaces.GongZhuGame) []int {
 		}
 	}
 	return make([]int, 0)
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *GongZhuWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.GongZhuWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.GongZhuWebOutputTrickCard {
-		return &controller.GongZhuWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -129,7 +122,7 @@ func (p *GongZhuWebPresenter) HintOutput(g interfaces.GongZhuGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.GongZhuWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

@@ -17,7 +17,7 @@ import (
 func mustTuteOutputJSON(msg string) string {
 	out := &controller.TuteWebOutput{
 		Players:         []*controller.TuteWebOutputPlayer{},
-		CurrentTrick:    []*controller.TuteWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		DeclaredSuits:   make([]bool, domain.CardDesignMax+1),
 		PlayableIndices: []int{},
 		WinnerTeam:      -1,

@@ -33,12 +33,6 @@ type GaigelWebOutputPlayer struct {
 	TrickCount int              `json:"trickCount"`
 }
 
-// GaigelWebOutputTrickCard トリック中の1枚
-type GaigelWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // GaigelWebOutputHint ヒント出力
 type GaigelWebOutputHint struct {
 	CardIndex  *int   `json:"cardIndex,omitempty"`
@@ -48,24 +42,24 @@ type GaigelWebOutputHint struct {
 
 // GaigelWebOutput ガイゲルWebアウトプット
 type GaigelWebOutput struct {
-	Players          []*GaigelWebOutputPlayer    `json:"players"`
-	Phase            int                         `json:"phase"`
-	RoundNumber      int                         `json:"roundNumber"`
-	TrickNumber      int                         `json:"trickNumber"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	DealerIdx        int                         `json:"dealerIdx"`
-	TrumpSuit        int                         `json:"trumpSuit"`
-	TrumpCard        *WebOutputCard              `json:"trumpCard,omitempty"`
-	StockRemaining   int                         `json:"stockRemaining"`
-	CurrentTrick     []*GaigelWebOutputTrickCard `json:"currentTrick"`
-	TeamScores       [2]int                      `json:"teamScores"`
-	RoundPoints      [2]int                      `json:"roundPoints"`
-	RoundMarriage    [2]int                      `json:"roundMarriage"`
-	MarriageIndices  []int                       `json:"marriageIndices"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerTeam       int                         `json:"winnerTeam"`
-	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	Hint             *GaigelWebOutputHint        `json:"hint,omitempty"`
+	Players          []*GaigelWebOutputPlayer `json:"players"`
+	Phase            int                      `json:"phase"`
+	RoundNumber      int                      `json:"roundNumber"`
+	TrickNumber      int                      `json:"trickNumber"`
+	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	DealerIdx        int                      `json:"dealerIdx"`
+	TrumpSuit        int                      `json:"trumpSuit"`
+	TrumpCard        *WebOutputCard           `json:"trumpCard,omitempty"`
+	StockRemaining   int                      `json:"stockRemaining"`
+	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
+	TeamScores       [2]int                   `json:"teamScores"`
+	RoundPoints      [2]int                   `json:"roundPoints"`
+	RoundMarriage    [2]int                   `json:"roundMarriage"`
+	MarriageIndices  []int                    `json:"marriageIndices"`
+	GameEndFlag      bool                     `json:"gameEndFlag"`
+	WinnerTeam       int                      `json:"winnerTeam"`
+	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
+	Hint             *GaigelWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config GaigelWebOutputConfig `json:"config"`
 }
@@ -101,7 +95,7 @@ var NewGaigelWebController, NewGaigelWebControllerWithProvider = webControllerPa
 func newGaigelDefaultOutput(msg string) *GaigelWebOutput {
 	return &GaigelWebOutput{
 		Players:         make([]*GaigelWebOutputPlayer, 0),
-		CurrentTrick:    make([]*GaigelWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		MarriageIndices: make([]int, 0),
 		WinnerTeam:      -1,
 		WebOutputBase:   WebOutputBase{Message: msg},

@@ -17,7 +17,7 @@ import (
 func mustMariasOutputJSON(msg string) string {
 	out := &controller.MariasWebOutput{
 		Players:         []*controller.MariasWebOutputPlayer{},
-		CurrentTrick:    []*controller.MariasWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		LastTrickWinner: -1,
 		WinnerPlayer:    -1,

@@ -38,18 +38,6 @@ type NapWebOutputPlayer struct {
 	IsDeclarer bool             `json:"isDeclarer"`
 }
 
-// NapWebOutputTrickCard トリック中の1枚
-type NapWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// NapWebOutputHint ヒント出力
-type NapWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // NapWebOutput ナップのWebアウトプット
 type NapWebOutput struct {
 	Players          []*NapWebOutputPlayer    `json:"players"`
@@ -63,7 +51,7 @@ type NapWebOutput struct {
 	Contract         int                      `json:"contract"`
 	TrumpSuit        int                      `json:"trumpSuit"`
 	Bids             [domain.NapPlayerCnt]int `json:"bids"`
-	CurrentTrick     []*NapWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
 	PlayerScores     [domain.NapPlayerCnt]int `json:"playerScores"`
 	RoundTricks      [domain.NapPlayerCnt]int `json:"roundTricks"`
 	PlayableIndices  []int                    `json:"playableIndices"`
@@ -71,7 +59,7 @@ type NapWebOutput struct {
 	WinnerPlayer     int                      `json:"winnerPlayer"`
 	IsHumanTurn      bool                     `json:"isHumanTurn"`
 	IsHumanBidTurn   bool                     `json:"isHumanBidTurn"`
-	Hint             *NapWebOutputHint        `json:"hint,omitempty"`
+	Hint             *WebOutputCardHint       `json:"hint,omitempty"`
 	WebOutputBase
 	Config NapWebOutputConfig `json:"config"`
 }
@@ -107,7 +95,7 @@ var NewNapWebController, NewNapWebControllerWithProvider = webControllerPair[use
 func newNapDefaultOutput(msg string) *NapWebOutput {
 	return &NapWebOutput{
 		Players:         make([]*NapWebOutputPlayer, 0),
-		CurrentTrick:    make([]*NapWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		DeclarerIdx:     -1,
 		WinnerPlayer:    -1,

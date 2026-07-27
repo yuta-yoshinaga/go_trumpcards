@@ -17,7 +17,7 @@ import (
 func mustGongZhuOutputJSON(msg string) string {
 	out := &controller.GongZhuWebOutput{
 		Players:          []*controller.GongZhuWebOutputPlayer{},
-		CurrentTrick:     []*controller.GongZhuWebOutputTrickCard{},
+		CurrentTrick:     []*controller.WebOutputTrickCard{},
 		ExposableIndices: []int{},
 		WinnerIdx:        -1,
 		WebOutputBase:    controller.WebOutputBase{Message: msg},

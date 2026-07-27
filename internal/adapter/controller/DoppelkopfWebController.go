@@ -39,43 +39,31 @@ type DoppelkopfWebOutputPlayer struct {
 	IsRe bool `json:"isRe"`
 }
 
-// DoppelkopfWebOutputTrickCard トリック中の1枚
-type DoppelkopfWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// DoppelkopfWebOutputHint ヒント出力
-type DoppelkopfWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // DoppelkopfWebOutput ドッペルコップのWebアウトプット
 type DoppelkopfWebOutput struct {
-	Players          []*DoppelkopfWebOutputPlayer    `json:"players"`
-	Phase            int                             `json:"phase"`
-	RoundNumber      int                             `json:"roundNumber"`
-	TrickNumber      int                             `json:"trickNumber"`
-	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                             `json:"leadPlayerIdx"`
-	DealerIdx        int                             `json:"dealerIdx"`
-	CurrentTrick     []*DoppelkopfWebOutputTrickCard `json:"currentTrick"`
+	Players          []*DoppelkopfWebOutputPlayer `json:"players"`
+	Phase            int                          `json:"phase"`
+	RoundNumber      int                          `json:"roundNumber"`
+	TrickNumber      int                          `json:"trickNumber"`
+	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
+	DealerIdx        int                          `json:"dealerIdx"`
+	CurrentTrick     []*WebOutputTrickCard        `json:"currentTrick"`
 	// ReTeam 各プレイヤーの Re チーム所属 (チーム公開後のみ true になりうる; 4要素)
-	ReTeam          []bool                   `json:"reTeam"`
-	SoloRe          bool                     `json:"soloRe"`
-	TeamsRevealed   bool                     `json:"teamsRevealed"`
-	ReAnnounced     bool                     `json:"reAnnounced"`
-	KontraAnnounced bool                     `json:"kontraAnnounced"`
-	CanAnnounce     bool                     `json:"canAnnounce"`
-	YouAreRe        bool                     `json:"youAreRe"`
-	PlayableIndices []int                    `json:"playableIndices"`
-	RoundRePoints   int                      `json:"roundRePoints"`
-	RoundReWon      bool                     `json:"roundReWon"`
-	RoundGamePoints int                      `json:"roundGamePoints"`
-	GameEndFlag     bool                     `json:"gameEndFlag"`
-	WinnerIdx       int                      `json:"winnerIdx"`
-	Hint            *DoppelkopfWebOutputHint `json:"hint,omitempty"`
+	ReTeam          []bool             `json:"reTeam"`
+	SoloRe          bool               `json:"soloRe"`
+	TeamsRevealed   bool               `json:"teamsRevealed"`
+	ReAnnounced     bool               `json:"reAnnounced"`
+	KontraAnnounced bool               `json:"kontraAnnounced"`
+	CanAnnounce     bool               `json:"canAnnounce"`
+	YouAreRe        bool               `json:"youAreRe"`
+	PlayableIndices []int              `json:"playableIndices"`
+	RoundRePoints   int                `json:"roundRePoints"`
+	RoundReWon      bool               `json:"roundReWon"`
+	RoundGamePoints int                `json:"roundGamePoints"`
+	GameEndFlag     bool               `json:"gameEndFlag"`
+	WinnerIdx       int                `json:"winnerIdx"`
+	Hint            *WebOutputCardHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config DoppelkopfWebOutputConfig `json:"config"`
 }
@@ -115,7 +103,7 @@ var NewDoppelkopfWebController, NewDoppelkopfWebControllerWithProvider = webCont
 func newDoppelkopfDefaultOutput(msg string) *DoppelkopfWebOutput {
 	return &DoppelkopfWebOutput{
 		Players:         make([]*DoppelkopfWebOutputPlayer, 0),
-		CurrentTrick:    make([]*DoppelkopfWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		ReTeam:          make([]bool, domain.DoppelkopfPlayerCnt),
 		PlayableIndices: make([]int, 0),
 		WinnerIdx:       -1,

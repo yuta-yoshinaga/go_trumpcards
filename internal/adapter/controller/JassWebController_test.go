@@ -17,8 +17,8 @@ import (
 func mustJassOutputJSON(msg string) string {
 	out := &controller.JassWebOutput{
 		Players:         []*controller.JassWebOutputPlayer{},
-		CurrentTrick:    []*controller.JassWebOutputTrickCard{},
-		LastTrick:       []*controller.JassWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		LastTrick:       []*controller.WebOutputTrickCard{},
 		LastTrickWinner: -1,
 		WinnerTeam:      -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},

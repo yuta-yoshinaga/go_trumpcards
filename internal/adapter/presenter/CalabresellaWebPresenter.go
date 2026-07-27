@@ -48,7 +48,7 @@ func (p *CalabresellaWebPresenter) buildBase(g interfaces.CalabresellaGame) *con
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.Monte = p.buildMonteOutput(g)
 	return resObj
@@ -87,13 +87,6 @@ func (p *CalabresellaWebPresenter) playableIndices(g interfaces.CalabresellaGame
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *CalabresellaWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.CalabresellaWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.CalabresellaWebOutputTrickCard {
-		return &controller.CalabresellaWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -169,7 +162,7 @@ func (p *CalabresellaWebPresenter) HintOutput(g interfaces.CalabresellaGame) str
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.CalabresellaWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

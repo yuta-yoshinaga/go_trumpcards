@@ -39,16 +39,9 @@ func (p *BriscolaWebPresenter) buildBase(b interfaces.BriscolaGame) *controller.
 		CpuDifficulty: int(cfg.CpuDifficulty),
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(b.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(b.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(b)
 	return resObj
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *BriscolaWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.BriscolaWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.BriscolaWebOutputTrickCard {
-		return &controller.BriscolaWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

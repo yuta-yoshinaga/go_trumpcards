@@ -36,16 +36,9 @@ func (p *CatchTenWebPresenter) buildBase(g interfaces.CatchTenGame) *controller.
 		PointLimit:    cfg.PointLimit,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *CatchTenWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.CatchTenWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.CatchTenWebOutputTrickCard {
-		return &controller.CatchTenWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

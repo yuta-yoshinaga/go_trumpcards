@@ -17,7 +17,7 @@ import (
 func mustOmbreOutputJSON(msg string) string {
 	out := &controller.OmbreWebOutput{
 		Players:         []*controller.OmbreWebOutputPlayer{},
-		CurrentTrick:    []*controller.OmbreWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		OmbreIdx:        -1,
 		TrumpSuit:       -1,

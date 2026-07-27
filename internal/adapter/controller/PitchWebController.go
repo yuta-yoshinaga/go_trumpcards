@@ -34,12 +34,6 @@ type PitchWebOutputPlayer struct {
 	TrickCount      int              `json:"trickCount"`
 }
 
-// PitchWebOutputTrickCard トリック中の1枚
-type PitchWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // PitchWebOutputHint ヒント出力
 type PitchWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -49,24 +43,24 @@ type PitchWebOutputHint struct {
 
 // PitchWebOutput ピッチWebアウトプット
 type PitchWebOutput struct {
-	Players          []*PitchWebOutputPlayer    `json:"players"`
-	Phase            int                        `json:"phase"`
-	RoundNumber      int                        `json:"roundNumber"`
-	TrickNumber      int                        `json:"trickNumber"`
-	DealerIdx        int                        `json:"dealerIdx"`
-	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                        `json:"bidPlayerIdx"`
-	CurrentBid       int                        `json:"currentBid"`
-	BidWinnerIdx     int                        `json:"bidWinnerIdx"`
-	TrumpSuit        int                        `json:"trumpSuit"`
-	CurrentTrick     []*PitchWebOutputTrickCard `json:"currentTrick"`
-	LastTrick        []*PitchWebOutputTrickCard `json:"lastTrick"`
-	LastTrickWinner  int                        `json:"lastTrickWinner"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerIdx        int                        `json:"winnerIdx"`
-	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
-	ValidPlayIndices []int                      `json:"validPlayIndices,omitempty"`
-	Hint             *PitchWebOutputHint        `json:"hint,omitempty"`
+	Players          []*PitchWebOutputPlayer `json:"players"`
+	Phase            int                     `json:"phase"`
+	RoundNumber      int                     `json:"roundNumber"`
+	TrickNumber      int                     `json:"trickNumber"`
+	DealerIdx        int                     `json:"dealerIdx"`
+	CurrentPlayerIdx int                     `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                     `json:"bidPlayerIdx"`
+	CurrentBid       int                     `json:"currentBid"`
+	BidWinnerIdx     int                     `json:"bidWinnerIdx"`
+	TrumpSuit        int                     `json:"trumpSuit"`
+	CurrentTrick     []*WebOutputTrickCard   `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard   `json:"lastTrick"`
+	LastTrickWinner  int                     `json:"lastTrickWinner"`
+	GameEndFlag      bool                    `json:"gameEndFlag"`
+	WinnerIdx        int                     `json:"winnerIdx"`
+	LeadPlayerIdx    int                     `json:"leadPlayerIdx"`
+	ValidPlayIndices []int                   `json:"validPlayIndices,omitempty"`
+	Hint             *PitchWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config PitchWebOutputConfig `json:"config"`
 }
@@ -102,8 +96,8 @@ var NewPitchWebController, NewPitchWebControllerWithProvider = webControllerPair
 func newPitchDefaultOutput(msg string) *PitchWebOutput {
 	return &PitchWebOutput{
 		Players:         make([]*PitchWebOutputPlayer, 0),
-		CurrentTrick:    make([]*PitchWebOutputTrickCard, 0),
-		LastTrick:       make([]*PitchWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
 		LastTrickWinner: -1,
 		WinnerIdx:       -1,
 		BidWinnerIdx:    -1,

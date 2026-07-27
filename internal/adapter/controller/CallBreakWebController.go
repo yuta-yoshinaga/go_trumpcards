@@ -37,12 +37,6 @@ type CallBreakWebOutputPlayer struct {
 	TrickCount      int              `json:"trickCount"`
 }
 
-// CallBreakWebOutputTrickCard トリック中の 1 枚
-type CallBreakWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // CallBreakWebOutputHint ヒント出力
 type CallBreakWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -52,19 +46,19 @@ type CallBreakWebOutputHint struct {
 
 // CallBreakWebOutput Call Break Web アウトプット
 type CallBreakWebOutput struct {
-	Players          []*CallBreakWebOutputPlayer    `json:"players"`
-	Phase            int                            `json:"phase"`
-	RoundNumber      int                            `json:"roundNumber"`
-	TrickNumber      int                            `json:"trickNumber"`
-	CurrentPlayerIdx int                            `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                            `json:"bidPlayerIdx"`
-	CurrentTrick     []*CallBreakWebOutputTrickCard `json:"currentTrick"`
-	SpadesBroken     bool                           `json:"spadesBroken"`
-	GameEndFlag      bool                           `json:"gameEndFlag"`
-	WinnerIdx        int                            `json:"winnerIdx"`
-	LeadPlayerIdx    int                            `json:"leadPlayerIdx"`
-	Hint             *CallBreakWebOutputHint        `json:"hint,omitempty"`
-	ValidPlayIndices []int                          `json:"validPlayIndices"`
+	Players          []*CallBreakWebOutputPlayer `json:"players"`
+	Phase            int                         `json:"phase"`
+	RoundNumber      int                         `json:"roundNumber"`
+	TrickNumber      int                         `json:"trickNumber"`
+	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                         `json:"bidPlayerIdx"`
+	CurrentTrick     []*WebOutputTrickCard       `json:"currentTrick"`
+	SpadesBroken     bool                        `json:"spadesBroken"`
+	GameEndFlag      bool                        `json:"gameEndFlag"`
+	WinnerIdx        int                         `json:"winnerIdx"`
+	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
+	Hint             *CallBreakWebOutputHint     `json:"hint,omitempty"`
+	ValidPlayIndices []int                       `json:"validPlayIndices"`
 	WebOutputBase
 	Config CallBreakWebOutputConfig `json:"config"`
 }
@@ -100,7 +94,7 @@ var NewCallBreakWebController, NewCallBreakWebControllerWithProvider = webContro
 func newCallBreakDefaultOutput(msg string) *CallBreakWebOutput {
 	return &CallBreakWebOutput{
 		Players:          make([]*CallBreakWebOutputPlayer, 0),
-		CurrentTrick:     make([]*CallBreakWebOutputTrickCard, 0),
+		CurrentTrick:     make([]*WebOutputTrickCard, 0),
 		ValidPlayIndices: make([]int, 0),
 		WinnerIdx:        -1,
 		WebOutputBase:    WebOutputBase{Message: msg},

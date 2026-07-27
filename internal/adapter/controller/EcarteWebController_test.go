@@ -22,7 +22,7 @@ func mustEcarteOutputJSON(msg string) string {
 		Players:       []*controller.EcarteWebOutputPlayer{},
 		DealPoints:    []int{},
 		MatchScore:    []int{},
-		CurrentTrick:  []*controller.EcarteWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		ValidPlays:    []int{},
 		WinnerIdx:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},

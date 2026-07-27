@@ -17,7 +17,7 @@ import (
 func mustBeloteOutputJSON(msg string) string {
 	out := &controller.BeloteWebOutput{
 		Players:       []*controller.BeloteWebOutputPlayer{},
-		CurrentTrick:  []*controller.BeloteWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerTeam:    -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

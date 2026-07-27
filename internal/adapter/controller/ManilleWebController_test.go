@@ -17,7 +17,7 @@ import (
 func mustManilleOutputJSON(msg string) string {
 	out := &controller.ManilleWebOutput{
 		Players:         []*controller.ManilleWebOutputPlayer{},
-		CurrentTrick:    []*controller.ManilleWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		WinnerTeam:      -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},

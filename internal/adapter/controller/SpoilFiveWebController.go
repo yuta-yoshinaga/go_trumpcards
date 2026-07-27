@@ -35,36 +35,24 @@ type SpoilFiveWebOutputPlayer struct {
 	RoundTricks int              `json:"roundTricks"`
 }
 
-// SpoilFiveWebOutputTrickCard トリック中の1枚
-type SpoilFiveWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// SpoilFiveWebOutputHint ヒント出力
-type SpoilFiveWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // SpoilFiveWebOutput スポイル・ファイブのWebアウトプット
 type SpoilFiveWebOutput struct {
-	Players          []*SpoilFiveWebOutputPlayer    `json:"players"`
-	Phase            int                            `json:"phase"`
-	RoundNumber      int                            `json:"roundNumber"`
-	TrickNumber      int                            `json:"trickNumber"`
-	CurrentPlayerIdx int                            `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                            `json:"leadPlayerIdx"`
-	DealerIdx        int                            `json:"dealerIdx"`
-	TrumpSuit        int                            `json:"trumpSuit"`
-	Pot              int                            `json:"pot"`
-	RoundWinnerIdx   int                            `json:"roundWinnerIdx"`
-	CurrentTrick     []*SpoilFiveWebOutputTrickCard `json:"currentTrick"`
-	PlayableIndices  []int                          `json:"playableIndices"`
-	GameEndFlag      bool                           `json:"gameEndFlag"`
-	WinnerPlayer     int                            `json:"winnerPlayer"`
-	IsHumanTurn      bool                           `json:"isHumanTurn"`
-	Hint             *SpoilFiveWebOutputHint        `json:"hint,omitempty"`
+	Players          []*SpoilFiveWebOutputPlayer `json:"players"`
+	Phase            int                         `json:"phase"`
+	RoundNumber      int                         `json:"roundNumber"`
+	TrickNumber      int                         `json:"trickNumber"`
+	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
+	DealerIdx        int                         `json:"dealerIdx"`
+	TrumpSuit        int                         `json:"trumpSuit"`
+	Pot              int                         `json:"pot"`
+	RoundWinnerIdx   int                         `json:"roundWinnerIdx"`
+	CurrentTrick     []*WebOutputTrickCard       `json:"currentTrick"`
+	PlayableIndices  []int                       `json:"playableIndices"`
+	GameEndFlag      bool                        `json:"gameEndFlag"`
+	WinnerPlayer     int                         `json:"winnerPlayer"`
+	IsHumanTurn      bool                        `json:"isHumanTurn"`
+	Hint             *WebOutputCardHint          `json:"hint,omitempty"`
 	WebOutputBase
 	Config SpoilFiveWebOutputConfig `json:"config"`
 }
@@ -99,7 +87,7 @@ var NewSpoilFiveWebController, NewSpoilFiveWebControllerWithProvider = webContro
 func newSpoilFiveDefaultOutput(msg string) *SpoilFiveWebOutput {
 	return &SpoilFiveWebOutput{
 		Players:         make([]*SpoilFiveWebOutputPlayer, 0),
-		CurrentTrick:    make([]*SpoilFiveWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		RoundWinnerIdx:  -1,
 		WinnerPlayer:    -1,

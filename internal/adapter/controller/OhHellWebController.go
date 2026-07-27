@@ -36,12 +36,6 @@ type OhHellWebOutputPlayer struct {
 	TrickCount      int              `json:"trickCount"`
 }
 
-// OhHellWebOutputTrickCard トリック中の1枚
-type OhHellWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // OhHellWebOutputHint ヒント出力
 type OhHellWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -51,23 +45,23 @@ type OhHellWebOutputHint struct {
 
 // OhHellWebOutput オー・ヘルWebアウトプット
 type OhHellWebOutput struct {
-	Players          []*OhHellWebOutputPlayer    `json:"players"`
-	Phase            int                         `json:"phase"`
-	RoundNumber      int                         `json:"roundNumber"`
-	TotalRounds      int                         `json:"totalRounds"`
-	HandSize         int                         `json:"handSize"`
-	TrickNumber      int                         `json:"trickNumber"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                         `json:"bidPlayerIdx"`
-	DealerIdx        int                         `json:"dealerIdx"`
-	TrumpCard        *WebOutputCard              `json:"trumpCard"`
-	TrumpSuit        int                         `json:"trumpSuit"`
-	RestrictedBid    int                         `json:"restrictedBid"`
-	CurrentTrick     []*OhHellWebOutputTrickCard `json:"currentTrick"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerIdx        int                         `json:"winnerIdx"`
-	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	Hint             *OhHellWebOutputHint        `json:"hint,omitempty"`
+	Players          []*OhHellWebOutputPlayer `json:"players"`
+	Phase            int                      `json:"phase"`
+	RoundNumber      int                      `json:"roundNumber"`
+	TotalRounds      int                      `json:"totalRounds"`
+	HandSize         int                      `json:"handSize"`
+	TrickNumber      int                      `json:"trickNumber"`
+	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                      `json:"bidPlayerIdx"`
+	DealerIdx        int                      `json:"dealerIdx"`
+	TrumpCard        *WebOutputCard           `json:"trumpCard"`
+	TrumpSuit        int                      `json:"trumpSuit"`
+	RestrictedBid    int                      `json:"restrictedBid"`
+	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
+	GameEndFlag      bool                     `json:"gameEndFlag"`
+	WinnerIdx        int                      `json:"winnerIdx"`
+	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
+	Hint             *OhHellWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config OhHellWebOutputConfig `json:"config"`
 }
@@ -107,7 +101,7 @@ var NewOhHellWebController, NewOhHellWebControllerWithProvider = webControllerPa
 func newOhHellDefaultOutput(msg string) *OhHellWebOutput {
 	return &OhHellWebOutput{
 		Players:       make([]*OhHellWebOutputPlayer, 0),
-		CurrentTrick:  make([]*OhHellWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerIdx:     -1,
 		TrumpSuit:     -1,
 		RestrictedBid: -1,

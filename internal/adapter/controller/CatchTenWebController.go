@@ -33,12 +33,6 @@ type CatchTenWebOutputPlayer struct {
 	Team            int              `json:"team"`
 }
 
-// CatchTenWebOutputTrickCard トリック中の1枚
-type CatchTenWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // CatchTenWebOutputHint ヒント出力
 type CatchTenWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -47,19 +41,19 @@ type CatchTenWebOutputHint struct {
 
 // CatchTenWebOutput Catch the Ten Webアウトプット
 type CatchTenWebOutput struct {
-	Players          []*CatchTenWebOutputPlayer    `json:"players"`
-	Phase            int                           `json:"phase"`
-	RoundNumber      int                           `json:"roundNumber"`
-	TrickNumber      int                           `json:"trickNumber"`
-	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
-	CurrentTrick     []*CatchTenWebOutputTrickCard `json:"currentTrick"`
-	TrumpSuit        int                           `json:"trumpSuit"`
-	DealerIdx        int                           `json:"dealerIdx"`
-	TeamScores       [2]int                        `json:"teamScores"`
-	GameEndFlag      bool                          `json:"gameEndFlag"`
-	WinnerTeam       int                           `json:"winnerTeam"`
-	LeadPlayerIdx    int                           `json:"leadPlayerIdx"`
-	Hint             *CatchTenWebOutputHint        `json:"hint,omitempty"`
+	Players          []*CatchTenWebOutputPlayer `json:"players"`
+	Phase            int                        `json:"phase"`
+	RoundNumber      int                        `json:"roundNumber"`
+	TrickNumber      int                        `json:"trickNumber"`
+	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
+	CurrentTrick     []*WebOutputTrickCard      `json:"currentTrick"`
+	TrumpSuit        int                        `json:"trumpSuit"`
+	DealerIdx        int                        `json:"dealerIdx"`
+	TeamScores       [2]int                     `json:"teamScores"`
+	GameEndFlag      bool                       `json:"gameEndFlag"`
+	WinnerTeam       int                        `json:"winnerTeam"`
+	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
+	Hint             *CatchTenWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config CatchTenWebOutputConfig `json:"config"`
 }
@@ -95,7 +89,7 @@ var NewCatchTenWebController, NewCatchTenWebControllerWithProvider = webControll
 func newCatchTenDefaultOutput(msg string) *CatchTenWebOutput {
 	return &CatchTenWebOutput{
 		Players:       make([]*CatchTenWebOutputPlayer, 0),
-		CurrentTrick:  make([]*CatchTenWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerTeam:    -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

@@ -45,12 +45,6 @@ type KoenigrufenWebOutputPlayer struct {
 	IsPartner  bool             `json:"isPartner"`
 }
 
-// KoenigrufenWebOutputTrickCard トリック中の1枚
-type KoenigrufenWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // KoenigrufenWebOutputHint ヒント出力
 type KoenigrufenWebOutputHint struct {
 	Bid         *int   `json:"bid,omitempty"`
@@ -80,7 +74,7 @@ type KoenigrufenWebOutput struct {
 	TalonCount       int                              `json:"talonCount"`
 	Talon            []*WebOutputCard                 `json:"talon"`
 	StashOwner       int                              `json:"stashOwner"`
-	CurrentTrick     []*KoenigrufenWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard            `json:"currentTrick"`
 	PlayerScores     [domain.KoenigrufenPlayerCnt]int `json:"playerScores"`
 	LastTrickWinner  int                              `json:"lastTrickWinner"`
 	Outcome          int                              `json:"outcome"`
@@ -138,7 +132,7 @@ var NewKoenigrufenWebController, NewKoenigrufenWebControllerWithProvider = webCo
 func newKoenigrufenDefaultOutput(msg string) *KoenigrufenWebOutput {
 	return &KoenigrufenWebOutput{
 		Players:         make([]*KoenigrufenWebOutputPlayer, 0),
-		CurrentTrick:    make([]*KoenigrufenWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		Talon:           make([]*WebOutputCard, 0),
 		PlayableIndices: make([]int, 0),
 		DeclarerIdx:     -1,

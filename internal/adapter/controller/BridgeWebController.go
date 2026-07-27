@@ -35,12 +35,6 @@ type BridgeWebOutputPlayer struct {
 	TrickCount int              `json:"trickCount"`
 }
 
-// BridgeWebOutputTrickCard トリック中の1枚
-type BridgeWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // BridgeWebOutputBidEntry ビッド履歴エントリ
 type BridgeWebOutputBidEntry struct {
 	PlayerIdx int `json:"playerIdx"`
@@ -60,31 +54,31 @@ type BridgeWebOutputHint struct {
 
 // BridgeWebOutput ブリッジWebアウトプット
 type BridgeWebOutput struct {
-	Players          []*BridgeWebOutputPlayer    `json:"players"`
-	Phase            int                         `json:"phase"`
-	RoundNumber      int                         `json:"roundNumber"`
-	TrickNumber      int                         `json:"trickNumber"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                         `json:"bidPlayerIdx"`
-	DealerIdx        int                         `json:"dealerIdx"`
-	TrumpSuit        int                         `json:"trumpSuit"`
-	ContractLevel    int                         `json:"contractLevel"`
-	ContractSuit     int                         `json:"contractSuit"`
-	Doubled          int                         `json:"doubled"`
-	DeclarerIdx      int                         `json:"declarerIdx"`
-	DummyIdx         int                         `json:"dummyIdx"`
-	BidHistory       []*BridgeWebOutputBidEntry  `json:"bidHistory"`
-	Vulnerability    [2]bool                     `json:"vulnerability"`
-	CurrentTrick     []*BridgeWebOutputTrickCard `json:"currentTrick"`
-	TeamScores       [2]int                      `json:"teamScores"`
-	GamesWon         [2]int                      `json:"gamesWon"`
-	BelowLine        [2]int                      `json:"belowLine"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerTeam       int                         `json:"winnerTeam"`
-	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	OpeningLeadDone  bool                        `json:"openingLeadDone"`
-	DummyHand        []*WebOutputCard            `json:"dummyHand"`
-	Hint             *BridgeWebOutputHint        `json:"hint,omitempty"`
+	Players          []*BridgeWebOutputPlayer   `json:"players"`
+	Phase            int                        `json:"phase"`
+	RoundNumber      int                        `json:"roundNumber"`
+	TrickNumber      int                        `json:"trickNumber"`
+	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                        `json:"bidPlayerIdx"`
+	DealerIdx        int                        `json:"dealerIdx"`
+	TrumpSuit        int                        `json:"trumpSuit"`
+	ContractLevel    int                        `json:"contractLevel"`
+	ContractSuit     int                        `json:"contractSuit"`
+	Doubled          int                        `json:"doubled"`
+	DeclarerIdx      int                        `json:"declarerIdx"`
+	DummyIdx         int                        `json:"dummyIdx"`
+	BidHistory       []*BridgeWebOutputBidEntry `json:"bidHistory"`
+	Vulnerability    [2]bool                    `json:"vulnerability"`
+	CurrentTrick     []*WebOutputTrickCard      `json:"currentTrick"`
+	TeamScores       [2]int                     `json:"teamScores"`
+	GamesWon         [2]int                     `json:"gamesWon"`
+	BelowLine        [2]int                     `json:"belowLine"`
+	GameEndFlag      bool                       `json:"gameEndFlag"`
+	WinnerTeam       int                        `json:"winnerTeam"`
+	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
+	OpeningLeadDone  bool                       `json:"openingLeadDone"`
+	DummyHand        []*WebOutputCard           `json:"dummyHand"`
+	Hint             *BridgeWebOutputHint       `json:"hint,omitempty"`
 	WebOutputBase
 	Config BridgeWebOutputConfig `json:"config"`
 }
@@ -119,7 +113,7 @@ func newBridgeDefaultOutput(msg string) *BridgeWebOutput {
 	return &BridgeWebOutput{
 		Players:       make([]*BridgeWebOutputPlayer, 0),
 		BidHistory:    make([]*BridgeWebOutputBidEntry, 0),
-		CurrentTrick:  make([]*BridgeWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		DummyHand:     make([]*WebOutputCard, 0),
 		WinnerTeam:    -1,
 		DeclarerIdx:   -1,

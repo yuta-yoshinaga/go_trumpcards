@@ -17,7 +17,7 @@ import (
 func mustNinetyNineOutputJSON(msg string) string {
 	out := &controller.NinetyNineWebOutput{
 		Players:       []*controller.NinetyNineWebOutputPlayer{},
-		CurrentTrick:  []*controller.NinetyNineWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerIdx:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

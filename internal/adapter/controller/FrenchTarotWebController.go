@@ -41,12 +41,6 @@ type FrenchTarotWebOutputPlayer struct {
 	IsDeclarer bool             `json:"isDeclarer"`
 }
 
-// FrenchTarotWebOutputTrickCard トリック中の1枚
-type FrenchTarotWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // FrenchTarotWebOutputHint ヒント出力
 type FrenchTarotWebOutputHint struct {
 	Bid         *int   `json:"bid,omitempty"`
@@ -72,7 +66,7 @@ type FrenchTarotWebOutput struct {
 	Chien            []*WebOutputCard                 `json:"chien"`
 	ChienRevealed    bool                             `json:"chienRevealed"`
 	StashOwner       int                              `json:"stashOwner"`
-	CurrentTrick     []*FrenchTarotWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard            `json:"currentTrick"`
 	PlayerScores     [domain.FrenchTarotPlayerCnt]int `json:"playerScores"`
 	LastTrickWinner  int                              `json:"lastTrickWinner"`
 	Outcome          int                              `json:"outcome"`
@@ -135,7 +129,7 @@ var NewFrenchTarotWebController, NewFrenchTarotWebControllerWithProvider = webCo
 func newFrenchTarotDefaultOutput(msg string) *FrenchTarotWebOutput {
 	return &FrenchTarotWebOutput{
 		Players:         make([]*FrenchTarotWebOutputPlayer, 0),
-		CurrentTrick:    make([]*FrenchTarotWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		Chien:           make([]*WebOutputCard, 0),
 		PlayableIndices: make([]int, 0),
 		DeclarerIdx:     -1,

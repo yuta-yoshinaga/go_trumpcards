@@ -19,7 +19,7 @@ func mustCourtPieceOutputJSON(msg string) string {
 	out := &controller.CourtPieceWebOutput{
 		Players:       []*controller.CourtPieceWebOutputPlayer{},
 		TeamScores:    []int{},
-		CurrentTrick:  []*controller.CourtPieceWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerTeam:    -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

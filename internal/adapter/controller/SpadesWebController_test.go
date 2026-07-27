@@ -18,7 +18,7 @@ import (
 func mustSpadesOutputJSON(msg string) string {
 	out := &controller.SpadesWebOutput{
 		Players:       []*controller.SpadesWebOutputPlayer{},
-		CurrentTrick:  []*controller.SpadesWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerIdx:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

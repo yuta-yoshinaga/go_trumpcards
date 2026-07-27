@@ -33,12 +33,6 @@ type WizardWebOutputPlayer struct {
 	TrickCount      int              `json:"trickCount"`
 }
 
-// WizardWebOutputTrickCard トリック中の1枚
-type WizardWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // WizardWebOutputHint ヒント出力
 type WizardWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -48,23 +42,23 @@ type WizardWebOutputHint struct {
 
 // WizardWebOutput ウィザードWebアウトプット
 type WizardWebOutput struct {
-	Players          []*WizardWebOutputPlayer    `json:"players"`
-	Phase            int                         `json:"phase"`
-	RoundNumber      int                         `json:"roundNumber"`
-	TotalRounds      int                         `json:"totalRounds"`
-	HandSize         int                         `json:"handSize"`
-	TrickNumber      int                         `json:"trickNumber"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                         `json:"bidPlayerIdx"`
-	DealerIdx        int                         `json:"dealerIdx"`
-	TrumpCard        *WebOutputCard              `json:"trumpCard"`
-	TrumpSuit        int                         `json:"trumpSuit"`
-	RestrictedBid    int                         `json:"restrictedBid"`
-	CurrentTrick     []*WizardWebOutputTrickCard `json:"currentTrick"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerIdx        int                         `json:"winnerIdx"`
-	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	Hint             *WizardWebOutputHint        `json:"hint,omitempty"`
+	Players          []*WizardWebOutputPlayer `json:"players"`
+	Phase            int                      `json:"phase"`
+	RoundNumber      int                      `json:"roundNumber"`
+	TotalRounds      int                      `json:"totalRounds"`
+	HandSize         int                      `json:"handSize"`
+	TrickNumber      int                      `json:"trickNumber"`
+	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                      `json:"bidPlayerIdx"`
+	DealerIdx        int                      `json:"dealerIdx"`
+	TrumpCard        *WebOutputCard           `json:"trumpCard"`
+	TrumpSuit        int                      `json:"trumpSuit"`
+	RestrictedBid    int                      `json:"restrictedBid"`
+	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
+	GameEndFlag      bool                     `json:"gameEndFlag"`
+	WinnerIdx        int                      `json:"winnerIdx"`
+	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
+	Hint             *WizardWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config WizardWebOutputConfig `json:"config"`
 }
@@ -98,7 +92,7 @@ var NewWizardWebController, NewWizardWebControllerWithProvider = webControllerPa
 func newWizardDefaultOutput(msg string) *WizardWebOutput {
 	return &WizardWebOutput{
 		Players:       make([]*WizardWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WizardWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerIdx:     -1,
 		TrumpSuit:     -1,
 		RestrictedBid: -1,

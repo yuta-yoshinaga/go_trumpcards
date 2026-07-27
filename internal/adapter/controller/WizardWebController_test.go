@@ -17,7 +17,7 @@ import (
 func mustWizardOutputJSON(msg string) string {
 	out := &controller.WizardWebOutput{
 		Players:       []*controller.WizardWebOutputPlayer{},
-		CurrentTrick:  []*controller.WizardWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerIdx:     -1,
 		TrumpSuit:     -1,
 		RestrictedBid: -1,

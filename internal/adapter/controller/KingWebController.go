@@ -40,12 +40,6 @@ type KingWebOutputPlayer struct {
 	TotalScore int              `json:"totalScore"`
 }
 
-// KingWebOutputTrickCard はトリック中の 1 枚。
-type KingWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // KingWebOutputDealDetail は 1 ディールの得点内訳。
 type KingWebOutputDealDetail struct {
 	Contract  int         `json:"contract"`
@@ -54,34 +48,28 @@ type KingWebOutputDealDetail struct {
 	Gained    map[int]int `json:"gained"`
 }
 
-// KingWebOutputHint はヒント出力。
-type KingWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // KingWebOutput はキング Web アウトプット。
 type KingWebOutput struct {
-	Players         []*KingWebOutputPlayer    `json:"players"`
-	Phase           string                    `json:"phase"`
-	DealNumber      int                       `json:"dealNumber"`
-	TotalDeals      int                       `json:"totalDeals"`
-	DealerIdx       int                       `json:"dealerIdx"`
-	CurrentTurn     int                       `json:"currentTurn"`
-	CurrentContract int                       `json:"currentContract"`
-	TrumpSuit       int                       `json:"trumpSuit"`
-	TrickNumber     int                       `json:"trickNumber"`
-	CurrentTrick    []*KingWebOutputTrickCard `json:"currentTrick"`
-	LastTrick       []*KingWebOutputTrickCard `json:"lastTrick"`
-	LastTrickWinner int                       `json:"lastTrickWinner"`
-	UsedContracts   []bool                    `json:"usedContracts"`
-	PlayableIndices []int                     `json:"playableIndices"`
-	GameEndFlag     bool                      `json:"gameEndFlag"`
-	Config          KingWebConfig             `json:"config"`
-	RoundWinners    []int                     `json:"roundWinners"`
-	LastDealDetail  *KingWebOutputDealDetail  `json:"lastDealDetail"`
-	IsHumanTurn     bool                      `json:"isHumanTurn"`
-	Hint            *KingWebOutputHint        `json:"hint,omitempty"`
+	Players         []*KingWebOutputPlayer   `json:"players"`
+	Phase           string                   `json:"phase"`
+	DealNumber      int                      `json:"dealNumber"`
+	TotalDeals      int                      `json:"totalDeals"`
+	DealerIdx       int                      `json:"dealerIdx"`
+	CurrentTurn     int                      `json:"currentTurn"`
+	CurrentContract int                      `json:"currentContract"`
+	TrumpSuit       int                      `json:"trumpSuit"`
+	TrickNumber     int                      `json:"trickNumber"`
+	CurrentTrick    []*WebOutputTrickCard    `json:"currentTrick"`
+	LastTrick       []*WebOutputTrickCard    `json:"lastTrick"`
+	LastTrickWinner int                      `json:"lastTrickWinner"`
+	UsedContracts   []bool                   `json:"usedContracts"`
+	PlayableIndices []int                    `json:"playableIndices"`
+	GameEndFlag     bool                     `json:"gameEndFlag"`
+	Config          KingWebConfig            `json:"config"`
+	RoundWinners    []int                    `json:"roundWinners"`
+	LastDealDetail  *KingWebOutputDealDetail `json:"lastDealDetail"`
+	IsHumanTurn     bool                     `json:"isHumanTurn"`
+	Hint            *WebOutputCardHint       `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -97,8 +85,8 @@ var NewKingWebController, NewKingWebControllerWithProvider = webControllerPair[u
 func newKingDefaultOutput(msg string) *KingWebOutput {
 	return &KingWebOutput{
 		Players:         make([]*KingWebOutputPlayer, 0),
-		CurrentTrick:    make([]*KingWebOutputTrickCard, 0),
-		LastTrick:       make([]*KingWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
 		UsedContracts:   make([]bool, 0),
 		PlayableIndices: make([]int, 0),
 		RoundWinners:    make([]int, 0),

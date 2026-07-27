@@ -109,3 +109,30 @@ func cardsToOutputOrEmpty(cards []*domain.Card) []*controller.WebOutputCard {
 	}
 	return cardsToOutput(cards)
 }
+
+// trickCardsToOutput はトリックを共通の WebOutputTrickCard スライスに変換する。
+//
+// 50ゲームが同一のラッパー（buildTrickOutput）を各 *WebPresenter.go に持って
+// いたものを統合した（issue #4432）。
+//
+// Mighty / Napoleon は domain 側が共有の TrickCard ではない独自型のままなので
+// （#4363 / PR #4431 の除外理由を参照）、この関数の対象外で、各自のラッパーを
+// 維持する。
+func trickCardsToOutput(trick []*domain.TrickCard) []*controller.WebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.WebOutputTrickCard {
+		return &controller.WebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
+	})
+}
+
+// trickCardsToOutputWithFace は trickCardsToOutput の手続き描画版。
+//
+// 非52枚デッキの6ゲーム（Cego / FrenchTarot / Koenigrufen / Rook / Scarto /
+// Wizard）は、トリック中の札にも Glyph/Label/Color/Deck を載せる必要がある
+// (ADR-0033)。face 引数のない trickCardsToOutput にこれらを寄せると、トリック
+// 表示だけ手続き描画のメタデータが落ちて標準札として描かれる — 型にもテストにも
+// 現れない、静かな表示バグになる。
+func trickCardsToOutputWithFace(trick []*domain.TrickCard, fp faceProvider) []*controller.WebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.WebOutputTrickCard {
+		return &controller.WebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutputWithFace(tc.Card, fp)}
+	})
+}

@@ -38,18 +38,6 @@ type FortyFivesWebOutputPlayer struct {
 	IsDeclarer bool             `json:"isDeclarer"`
 }
 
-// FortyFivesWebOutputTrickCard トリック中の1枚
-type FortyFivesWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// FortyFivesWebOutputHint ヒント出力
-type FortyFivesWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // FortyFivesWebOutput オークション・フォーティファイブズのWebアウトプット
 type FortyFivesWebOutput struct {
 	Players          []*FortyFivesWebOutputPlayer    `json:"players"`
@@ -63,7 +51,7 @@ type FortyFivesWebOutput struct {
 	Contract         int                             `json:"contract"`
 	TrumpSuit        int                             `json:"trumpSuit"`
 	Bids             [domain.FortyFivesPlayerCnt]int `json:"bids"`
-	CurrentTrick     []*FortyFivesWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard           `json:"currentTrick"`
 	TeamScores       [domain.FortyFivesTeamCnt]int   `json:"teamScores"`
 	RoundTeamPoints  [domain.FortyFivesTeamCnt]int   `json:"roundTeamPoints"`
 	PlayableIndices  []int                           `json:"playableIndices"`
@@ -71,7 +59,7 @@ type FortyFivesWebOutput struct {
 	WinnerTeam       int                             `json:"winnerTeam"`
 	IsHumanTurn      bool                            `json:"isHumanTurn"`
 	IsHumanBidTurn   bool                            `json:"isHumanBidTurn"`
-	Hint             *FortyFivesWebOutputHint        `json:"hint,omitempty"`
+	Hint             *WebOutputCardHint              `json:"hint,omitempty"`
 	WebOutputBase
 	Config FortyFivesWebOutputConfig `json:"config"`
 }
@@ -107,7 +95,7 @@ var NewFortyFivesWebController, NewFortyFivesWebControllerWithProvider = webCont
 func newFortyFivesDefaultOutput(msg string) *FortyFivesWebOutput {
 	return &FortyFivesWebOutput{
 		Players:         make([]*FortyFivesWebOutputPlayer, 0),
-		CurrentTrick:    make([]*FortyFivesWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		DeclarerIdx:     -1,
 		WinnerTeam:      -1,

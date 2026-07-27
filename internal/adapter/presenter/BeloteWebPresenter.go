@@ -47,15 +47,9 @@ func (p *BeloteWebPresenter) buildBase(b interfaces.BeloteGame) *controller.Belo
 		EnableBeloteRebelote: cfg.EnableBeloteRebelote,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(b.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(b.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(b)
 	return resObj
-}
-
-func (p *BeloteWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.BeloteWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.BeloteWebOutputTrickCard {
-		return &controller.BeloteWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 func (p *BeloteWebPresenter) buildPlayersOutput(b interfaces.BeloteGame) []*controller.BeloteWebOutputPlayer {

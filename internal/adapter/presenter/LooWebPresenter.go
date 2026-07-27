@@ -31,8 +31,8 @@ func (p *LooWebPresenter) Output(g interfaces.LooGame, lastErr error) string {
 func (p *LooWebPresenter) buildBase(g interfaces.LooGame) *controller.LooWebOutput {
 	resObj := new(controller.LooWebOutput)
 	resObj.Players = make([]*controller.LooWebOutputPlayer, 0)
-	resObj.CurrentTrick = make([]*controller.LooWebOutputTrickCard, 0)
-	resObj.LastTrick = make([]*controller.LooWebOutputTrickCard, 0)
+	resObj.CurrentTrick = make([]*controller.WebOutputTrickCard, 0)
+	resObj.LastTrick = make([]*controller.WebOutputTrickCard, 0)
 	resObj.PlayableIndices = make([]int, 0)
 
 	resObj.Phase = int(g.GetPhase())
@@ -106,12 +106,12 @@ func (p *LooWebPresenter) playableIndices(g interfaces.LooGame) []int {
 }
 
 // looTrickToOutput はトリックを WebOutput 表現に変換する。
-func looTrickToOutput(trick []*domain.TrickCard) []*controller.LooWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.LooWebOutputTrickCard {
+func looTrickToOutput(trick []*domain.TrickCard) []*controller.WebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.WebOutputTrickCard {
 		if tc == nil {
 			return nil
 		}
-		return &controller.LooWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
+		return &controller.WebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
 

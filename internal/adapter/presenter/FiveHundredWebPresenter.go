@@ -49,7 +49,7 @@ func (p *FiveHundredWebPresenter) buildBase(g interfaces.FiveHundredGame) *contr
 		TargetScore:   cfg.TargetScore,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -65,13 +65,6 @@ func bidToOutput(b *domain.FiveHundredBid) *controller.FiveHundredWebOutputBid {
 		Suit:   b.Suit,
 		Value:  b.Value(),
 	}
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *FiveHundredWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.FiveHundredWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.FiveHundredWebOutputTrickCard {
-		return &controller.FiveHundredWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築。オープンミゼールの落札者は手札を公開する。

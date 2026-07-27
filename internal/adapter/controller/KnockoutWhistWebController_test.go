@@ -17,7 +17,7 @@ import (
 func mustKnockoutWhistOutputJSON(msg string) string {
 	out := &controller.KnockoutWhistWebOutput{
 		Players:         []*controller.KnockoutWhistWebOutputPlayer{},
-		CurrentTrick:    []*controller.KnockoutWhistWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		RoundWinnerIdx:  -1,
 		WinnerPlayer:    -1,

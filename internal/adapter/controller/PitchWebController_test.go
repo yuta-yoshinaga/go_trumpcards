@@ -17,8 +17,8 @@ import (
 func mustPitchOutputJSON(msg string) string {
 	out := &controller.PitchWebOutput{
 		Players:         []*controller.PitchWebOutputPlayer{},
-		CurrentTrick:    []*controller.PitchWebOutputTrickCard{},
-		LastTrick:       []*controller.PitchWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		LastTrick:       []*controller.WebOutputTrickCard{},
 		LastTrickWinner: -1,
 		WinnerIdx:       -1,
 		BidWinnerIdx:    -1,
