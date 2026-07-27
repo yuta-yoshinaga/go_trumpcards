@@ -340,6 +340,26 @@ describe('YukonPage deselect routing (#4439)', () => {
   // deselect got a rejection message. Scorpion had this same bug and had a test
   // for it, but the assertion ran before react-query's microtask could deliver the
   // call, so it passed regardless. These two pages had no such test at all.
+  // The other branch of the same condition: a DIFFERENT column's last card, while
+  // something is selected, is a move target. Neither of these two pages had any
+  // test covering a move dispatch at all before this, so the fix above changed a
+  // line that nothing exercised.
+  it("clicking another column's last card while a card is selected dispatches the move", async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: /\u2665 8/ }));
+    fireEvent.click(screen.getByRole('button', { name: /\u2663 5/ }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 1, cardIndex: 1 },
+        { zone: 'tableau', col: 2 },
+      ),
+    );
+  });
+
   it('clicking the same selected card deselects it instead of moving onto itself', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<YukonPage />);
