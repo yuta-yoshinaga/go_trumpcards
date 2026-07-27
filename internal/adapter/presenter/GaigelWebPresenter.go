@@ -53,8 +53,8 @@ func (p *GaigelWebPresenter) buildBase(g interfaces.GaigelGame) *controller.Gaig
 	return resObj
 }
 
-func (p *GaigelWebPresenter) buildTrickOutput(trick []*domain.GaigelTrickCard) []*controller.GaigelWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.GaigelTrickCard) *controller.GaigelWebOutputTrickCard {
+func (p *GaigelWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.GaigelWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.GaigelWebOutputTrickCard {
 		return &controller.GaigelWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
@@ -76,7 +76,7 @@ func (p *GaigelWebPresenter) buildPlayersOutput(g interfaces.GaigelGame) []*cont
 	return out
 }
 
-func (p *GaigelWebPresenter) buildMessage(g interfaces.GaigelGame, trick []*domain.GaigelTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *GaigelWebPresenter) buildMessage(g interfaces.GaigelGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

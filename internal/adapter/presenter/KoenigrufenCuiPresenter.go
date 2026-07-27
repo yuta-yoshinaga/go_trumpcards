@@ -123,8 +123,8 @@ func (p *KoenigrufenCuiPresenter) Output(g interfaces.KoenigrufenGame, lastErr e
 		b.WriteString("----------\n")
 
 		cuiTrickBlock(b, g.GetCurrentTrick(),
-			func(tc *domain.KoenigrufenTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.KoenigrufenTrickCard) string { return koenigrufenCuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return koenigrufenCuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 

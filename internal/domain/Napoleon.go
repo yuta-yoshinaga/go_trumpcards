@@ -63,6 +63,16 @@ type NapoleonHint struct {
 }
 
 // NapoleonTrickCard トリック中の1枚
+// Deliberately NOT migrated to the shared domain.TrickCard (issue #4363), even
+// though the field set is identical. The wire keys differ: this type marshals
+// through napoleonTrickCardJSON below as `pi`/`cd`, while the shared type uses
+// `pi`/`c`. Swapping it would rename `cd` to `c` in the KV snapshot, and
+// encoding/json leaves an unmatched field at its zero value rather than
+// erroring — so an in-progress Napoleon game would restore with an empty trick,
+// silently. Migrating needs a versioned snapshot migration that reads both keys.
+//
+// (Skat's equivalent type WAS migrated: it has no marshaller and no tags, and
+// its currentTrick is unexported, so encoding/json never serialized it at all.)
 type NapoleonTrickCard struct {
 	PlayerIdx int
 	Card      *Card

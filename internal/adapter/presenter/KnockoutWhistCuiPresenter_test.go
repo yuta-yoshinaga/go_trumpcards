@@ -29,7 +29,7 @@ func setupKnockoutWhistCuiMock() *interfaces.MockKnockoutWhistGame {
 	m.On("GetHandSize").Return(7)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
-	m.On("GetCurrentTrick").Return(([]*domain.KnockoutWhistTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.KnockoutWhistPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

@@ -68,8 +68,8 @@ func (p *TysiacWebPresenter) playableIndices(g interfaces.TysiacGame) []int {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *TysiacWebPresenter) buildTrickOutput(trick []*domain.TysiacTrickCard) []*controller.TysiacWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TysiacTrickCard) *controller.TysiacWebOutputTrickCard {
+func (p *TysiacWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.TysiacWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.TysiacWebOutputTrickCard {
 		return &controller.TysiacWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

@@ -131,7 +131,7 @@ func TestFiveHundred_CardRank_BowersAndJoker(t *testing.T) {
 func TestFiveHundred_TrickWinner_TrumpBeatsLead(t *testing.T) {
 	g := newFiveHundredForTest()
 	g.SetContract(domain.FiveHundredContractSuit, 7, domain.CardDesignSpade)
-	g.SetCurrentTrick([]*domain.FiveHundredTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},  // lead heart A
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 13, false)}, // heart K
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},  // trump 5
@@ -148,14 +148,14 @@ func TestFiveHundred_TrickWinner_TrumpBeatsLead(t *testing.T) {
 func TestFiveHundred_TrickWinner_JokerWinsNoTrump(t *testing.T) {
 	g := newFiveHundredForTest()
 	g.SetContract(domain.FiveHundredContractNoTrump, 7, -1)
-	g.SetCurrentTrick([]*domain.FiveHundredTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 1, false)}, // lead heart A
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignJoker, 1, false)}, // joker
 	})
 	g.SetPhase(domain.FiveHundredPhaseTrickEnd)
 	g.SetCurrentPlayerIdx(0)
 	// Only 2 active is wrong for NT; force resolve via a 4-card trick instead.
-	g.SetCurrentTrick([]*domain.FiveHundredTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignJoker, 1, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
@@ -332,7 +332,7 @@ func TestFiveHundred_FollowSuitEnforced(t *testing.T) {
 	g.SetPhase(domain.FiveHundredPhasePlay)
 	g.SetTrickNumber(1)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*domain.FiveHundredTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 13, false)}, // heart led
 	})
 	// Player holds a heart, so playing diamond (idx 1) must be rejected.
@@ -730,7 +730,7 @@ func TestFiveHundred_CpuPlay_FollowScenarios(t *testing.T) {
 	// already winning the trick -> it sheds its weakest card.
 	g := newFiveHundredForTest()
 	g.SetContract(domain.FiveHundredContractSuit, 7, domain.CardDesignSpade)
-	g.SetCurrentTrick([]*domain.FiveHundredTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 3, Card: fhCard(domain.CardDesignHeart, 1)}, // partner of player 1 winning (heart A)
 	})
 	g.GetPlayer(1).AddCard(fhCard(domain.CardDesignHeart, 5))
@@ -746,7 +746,7 @@ func TestFiveHundred_CpuPlay_FollowScenarios(t *testing.T) {
 	// CPU over-cards when it can beat the current winner.
 	g2 := newFiveHundredForTest()
 	g2.SetContract(domain.FiveHundredContractSuit, 7, domain.CardDesignSpade)
-	g2.SetCurrentTrick([]*domain.FiveHundredTrickCard{
+	g2.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: fhCard(domain.CardDesignHeart, 10)},
 	})
 	g2.GetPlayer(1).AddCard(fhCard(domain.CardDesignHeart, 1)) // can win

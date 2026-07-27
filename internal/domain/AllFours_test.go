@@ -133,7 +133,7 @@ func TestAllFours_ValidatePlayMustFollow(t *testing.T) {
 	a.SetLeadPlayerIdx(domain.AllFoursDealerIdx)
 	a.SetCurrentPlayerIdx(domain.AllFoursNonDealerIdx)
 	// Dealer led a spade; non-dealer must follow spade if holding one.
-	a.SetCurrentTrick([]*domain.AllFoursTrickCard{
+	a.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: domain.AllFoursDealerIdx, Card: afCard(domain.CardDesignSpade, 10)},
 	})
 	human := a.GetPlayer(domain.AllFoursNonDealerIdx)
@@ -155,7 +155,7 @@ func TestAllFours_TrumpAlwaysLegal(t *testing.T) {
 	a.SetPhase(domain.AllFoursPhasePlay)
 	a.SetTrumpSuit(domain.CardDesignHeart)
 	a.SetCurrentPlayerIdx(domain.AllFoursNonDealerIdx)
-	a.SetCurrentTrick([]*domain.AllFoursTrickCard{
+	a.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: domain.AllFoursDealerIdx, Card: afCard(domain.CardDesignSpade, 10)},
 	})
 	human := a.GetPlayer(domain.AllFoursNonDealerIdx)

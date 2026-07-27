@@ -74,8 +74,8 @@ func (p *BridgeWebPresenter) buildBidHistoryOutput(history []*domain.BridgeBidEn
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *BridgeWebPresenter) buildTrickOutput(trick []*domain.BridgeTrickCard) []*controller.BridgeWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.BridgeTrickCard) *controller.BridgeWebOutputTrickCard {
+func (p *BridgeWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.BridgeWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.BridgeWebOutputTrickCard {
 		return &controller.BridgeWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
@@ -99,7 +99,7 @@ func (p *BridgeWebPresenter) buildPlayersOutput(b interfaces.BridgeGame) []*cont
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *BridgeWebPresenter) buildMessage(b interfaces.BridgeGame, trick []*domain.BridgeTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *BridgeWebPresenter) buildMessage(b interfaces.BridgeGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

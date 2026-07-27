@@ -60,12 +60,6 @@ const (
 	BarbuPhaseGameEnd = "gameEnd"
 )
 
-// BarbuTrickCard はトリック中の 1 枚。
-type BarbuTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // BarbuDealDetail は 1 ディールの結果内訳。
 type BarbuDealDetail struct {
 	Contract  int         // 選択されたコントラクト
@@ -87,11 +81,11 @@ type Barbu struct {
 	usedContracts   [BarbuPlayerCnt][BarbuContractCnt]bool
 	currentPlayer   int
 	leadPlayer      int
-	trickNumber     int               // 1..BarbuHandSize
-	currentTrick    []*BarbuTrickCard // 進行中のトリック
-	lastTrick       []*BarbuTrickCard // 直前に完了したトリック (UI 表示用)
-	lastTrickWinner int               // 直前トリックの勝者 (-1 = なし)
-	tablePlaced     [5]uint16         // Dominoes の場 (index 1-4 = スート)
+	trickNumber     int          // 1..BarbuHandSize
+	currentTrick    []*TrickCard // 進行中のトリック
+	lastTrick       []*TrickCard // 直前に完了したトリック (UI 表示用)
+	lastTrickWinner int          // 直前トリックの勝者 (-1 = なし)
+	tablePlaced     [5]uint16    // Dominoes の場 (index 1-4 = スート)
 	passCount       [BarbuPlayerCnt]int
 	dominoFinished  int // Dominoes で上がった人数
 	gameEndFlag     bool
@@ -279,7 +273,7 @@ func (b *Barbu) applyTrickPlay(playerIdx, handIdx int) error {
 		return err
 	}
 	played := player.RemoveCard(handIdx)
-	b.currentTrick = append(b.currentTrick, &BarbuTrickCard{PlayerIdx: playerIdx, Card: played})
+	b.currentTrick = append(b.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: played})
 	b.appendLog(playerIdx, "play", fmt.Sprintf("player %d plays %s", playerIdx, cardStr(played)), []*Card{played})
 
 	if len(b.currentTrick) == BarbuPlayerCnt {
@@ -514,10 +508,10 @@ func (b *Barbu) GetTrumpSuit() int { return b.trumpSuit }
 func (b *Barbu) GetTrickNumber() int { return b.trickNumber }
 
 // GetCurrentTrick は進行中のトリックを返す。
-func (b *Barbu) GetCurrentTrick() []*BarbuTrickCard { return b.currentTrick }
+func (b *Barbu) GetCurrentTrick() []*TrickCard { return b.currentTrick }
 
 // GetLastTrick は直前に完了したトリックを返す。
-func (b *Barbu) GetLastTrick() []*BarbuTrickCard { return b.lastTrick }
+func (b *Barbu) GetLastTrick() []*TrickCard { return b.lastTrick }
 
 // GetLastTrickWinner は直前トリックの勝者を返す (-1 = なし)。
 func (b *Barbu) GetLastTrickWinner() int { return b.lastTrickWinner }
@@ -584,8 +578,8 @@ type barbuJSON struct {
 	CurrentPlayer   int                                    `json:"cp"`
 	LeadPlayer      int                                    `json:"lp"`
 	TrickNumber     int                                    `json:"tn"`
-	CurrentTrick    []*BarbuTrickCard                      `json:"ct"`
-	LastTrick       []*BarbuTrickCard                      `json:"lt"`
+	CurrentTrick    []*TrickCard                           `json:"ct"`
+	LastTrick       []*TrickCard                           `json:"lt"`
 	LastTrickWinner int                                    `json:"lw"`
 	TablePlaced     [5]uint16                              `json:"tb"`
 	PassCount       [BarbuPlayerCnt]int                    `json:"pc"`

@@ -50,12 +50,6 @@ type EuchreHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// EuchreTrickCard トリック中の1枚
-type EuchreTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Euchre ユーカーゲームクラス
 type Euchre struct {
 	trumpCards          *TrumpCards
@@ -65,7 +59,7 @@ type Euchre struct {
 	roundNumber         int
 	trickNumber         int
 	currentPlayerIdx    int
-	currentTrick        []*EuchreTrickCard
+	currentTrick        []*TrickCard
 	dealerIdx           int
 	trumpSuit           int // 切り札スート (CardDesignSpade等)
 	faceUpCard          *Card
@@ -566,10 +560,10 @@ func (e *Euchre) GetCurrentPlayerIdx() int { return e.currentPlayerIdx }
 func (e *Euchre) SetCurrentPlayerIdx(idx int) { e.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (e *Euchre) GetCurrentTrick() []*EuchreTrickCard { return e.currentTrick }
+func (e *Euchre) GetCurrentTrick() []*TrickCard { return e.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (e *Euchre) SetCurrentTrick(trick []*EuchreTrickCard) { e.currentTrick = trick }
+func (e *Euchre) SetCurrentTrick(trick []*TrickCard) { e.currentTrick = trick }
 
 // GetGameEndFlag ゲーム終了フラグ取得
 func (e *Euchre) GetGameEndFlag() bool { return e.gameEndFlag }
@@ -797,7 +791,7 @@ func (e *Euchre) nextActivePlayer(idx int) int {
 
 // playCard カードをプレイする共通処理
 func (e *Euchre) playCard(playerIdx int, card *Card) {
-	e.currentTrick = append(e.currentTrick, &EuchreTrickCard{
+	e.currentTrick = append(e.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -1414,7 +1408,7 @@ type euchreJSON struct {
 	RoundNumber         int                `json:"rn"`
 	TrickNumber         int                `json:"tn"`
 	CurrentPlayerIdx    int                `json:"ci"`
-	CurrentTrick        []*EuchreTrickCard `json:"ct"`
+	CurrentTrick        []*TrickCard       `json:"ct"`
 	DealerIdx           int                `json:"di"`
 	TrumpSuit           int                `json:"ts"`
 	FaceUpCard          *Card              `json:"fu"`
@@ -1486,7 +1480,7 @@ func (e *Euchre) UnmarshalJSON(data []byte) error {
 	e.currentPlayerIdx = j.CurrentPlayerIdx
 	e.currentTrick = j.CurrentTrick
 	if e.currentTrick == nil {
-		e.currentTrick = make([]*EuchreTrickCard, 0)
+		e.currentTrick = make([]*TrickCard, 0)
 	}
 	e.dealerIdx = j.DealerIdx
 	e.trumpSuit = j.TrumpSuit

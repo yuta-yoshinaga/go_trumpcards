@@ -29,7 +29,7 @@ func setupTwentyNineCuiMock() *interfaces.MockTwentyNineGame {
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
 	m.On("GetTrumpRevealed").Return(true)
-	m.On("GetCurrentTrick").Return(([]*domain.TwentyNineTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.TwentyNinePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

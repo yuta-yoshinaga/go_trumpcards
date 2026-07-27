@@ -46,7 +46,7 @@ type TwentyNineGame interface {
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
-	GetCurrentTrick() []*domain.TwentyNineTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
 	// GetDealerIdx ディーラーインデックスを取得する

@@ -45,8 +45,8 @@ func (p *BriscolaWebPresenter) buildBase(b interfaces.BriscolaGame) *controller.
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *BriscolaWebPresenter) buildTrickOutput(trick []*domain.BriscolaTrickCard) []*controller.BriscolaWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.BriscolaTrickCard) *controller.BriscolaWebOutputTrickCard {
+func (p *BriscolaWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.BriscolaWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.BriscolaWebOutputTrickCard {
 		return &controller.BriscolaWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

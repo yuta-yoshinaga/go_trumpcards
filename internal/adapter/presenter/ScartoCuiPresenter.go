@@ -116,8 +116,8 @@ func (p *ScartoCuiPresenter) Output(g interfaces.ScartoGame, lastErr error) stri
 		b.WriteString("----------\n")
 
 		cuiTrickBlock(b, g.GetCurrentTrick(),
-			func(tc *domain.ScartoTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.ScartoTrickCard) string { return scartoCuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return scartoCuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 

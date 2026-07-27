@@ -150,7 +150,7 @@ func TestCegoTrickWinnerTrumpPriority(t *testing.T) {
 	g := domain.NewDefaultCego()
 	g.SetPhase(domain.CegoPhasePlay)
 	// Led spade king (high), then a low trump beats it.
-	g.SetCurrentTrick([]*domain.CegoTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: cegoKingCard(domain.CardDesignSpade)},
 		{PlayerIdx: 1, Card: cegoTrumpCard(2)},
 		{PlayerIdx: 2, Card: cegoSuitCard(domain.CardDesignSpade, 7)},
@@ -162,7 +162,7 @@ func TestCegoTrickWinnerTrumpPriority(t *testing.T) {
 func TestCegoTrickWinnerSkusHighest(t *testing.T) {
 	g := domain.NewDefaultCego()
 	g.SetPhase(domain.CegoPhasePlay)
-	g.SetCurrentTrick([]*domain.CegoTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: cegoTrumpCard(21)},
 		{PlayerIdx: 1, Card: cegoTrumpCard(1)},
 		{PlayerIdx: 2, Card: cegoSkusCard()},
@@ -176,7 +176,7 @@ func TestCegoTrickWinnerHighestOfLedSuit(t *testing.T) {
 	g := domain.NewDefaultCego()
 	g.SetPhase(domain.CegoPhasePlay)
 	// No trumps -> highest of led suit (spade) wins.
-	g.SetCurrentTrick([]*domain.CegoTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: cegoSuitCard(domain.CardDesignSpade, 3)},
 		{PlayerIdx: 1, Card: cegoKingCard(domain.CardDesignSpade)},
 		{PlayerIdx: 2, Card: cegoSuitCard(domain.CardDesignHeart, 8)}, // off-suit

@@ -66,8 +66,8 @@ func (p *KnockoutWhistCuiPresenter) Output(g interfaces.KnockoutWhistGame, lastE
 		b.WriteString("----------\n")
 
 		cuiTrickBlock(b, g.GetCurrentTrick(),
-			func(tc *domain.KnockoutWhistTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.KnockoutWhistTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 

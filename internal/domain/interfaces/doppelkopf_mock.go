@@ -103,10 +103,10 @@ func (_m *MockDoppelkopfGame) GetCurrentPlayerIdx() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockDoppelkopfGame) GetCurrentTrick() []*domain.DoppelkopfTrickCard {
+func (_m *MockDoppelkopfGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.DoppelkopfTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

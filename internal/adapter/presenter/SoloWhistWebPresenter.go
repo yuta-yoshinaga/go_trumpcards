@@ -76,8 +76,8 @@ func (p *SoloWhistWebPresenter) playableIndices(g interfaces.SoloWhistGame) []in
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *SoloWhistWebPresenter) buildTrickOutput(trick []*domain.SoloWhistTrickCard) []*controller.SoloWhistWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.SoloWhistTrickCard) *controller.SoloWhistWebOutputTrickCard {
+func (p *SoloWhistWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SoloWhistWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SoloWhistWebOutputTrickCard {
 		return &controller.SoloWhistWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

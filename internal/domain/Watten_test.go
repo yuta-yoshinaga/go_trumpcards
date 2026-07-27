@@ -164,7 +164,7 @@ func TestWatten_ValidatePlay_TrumpLead(t *testing.T) {
 	g.SetSchlagRank(10)
 	g.SetPhase(domain.WattenPhasePlay)
 	g.SetCurrentPlayerIdx(1)
-	g.SetCurrentTrick([]*domain.WattenTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wattenCard(domain.CardDesignHeart, 8)}, // heart = trump lead
 	})
 	// P1 holds a trump (♥9) and a plain (♠7): must follow trump.
@@ -184,7 +184,7 @@ func TestWatten_ValidatePlay_PlainLead(t *testing.T) {
 	g.SetSchlagRank(10)
 	g.SetPhase(domain.WattenPhasePlay)
 	g.SetCurrentPlayerIdx(1)
-	g.SetCurrentTrick([]*domain.WattenTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wattenCard(domain.CardDesignSpade, 13)}, // K♠ plain lead
 	})
 	// P1 holds a plain spade (♠7) and a trump heart (♥7): must follow spade.
@@ -204,7 +204,7 @@ func TestWatten_TrickWinner_Trump(t *testing.T) {
 	g.SetSchlagRank(10)
 	g.SetPhase(domain.WattenPhaseTrickEnd)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*domain.WattenTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wattenCard(domain.CardDesignClover, 1)}, // A♣ plain lead
 		{PlayerIdx: 1, Card: wattenCard(domain.CardDesignClover, 13)},
 		{PlayerIdx: 2, Card: wattenCard(domain.CardDesignSpade, 7)}, // ♠7 critical trump - wins
@@ -223,7 +223,7 @@ func TestWatten_TrickWinner_Max(t *testing.T) {
 	g.SetSchlagRank(10)
 	g.SetPhase(domain.WattenPhaseTrickEnd)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*domain.WattenTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wattenCard(domain.CardDesignHeart, 13)},   // Max
 		{PlayerIdx: 1, Card: wattenCard(domain.CardDesignSpade, 10)},   // schlag
 		{PlayerIdx: 2, Card: wattenCard(domain.CardDesignDiamond, 13)}, // Belli
@@ -241,7 +241,7 @@ func TestWatten_TrickWinner_Plain(t *testing.T) {
 	g.SetSchlagRank(11)
 	g.SetPhase(domain.WattenPhaseTrickEnd)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*domain.WattenTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wattenCard(domain.CardDesignClover, 9)}, // lead
 		{PlayerIdx: 1, Card: wattenCard(domain.CardDesignClover, 1)}, // A♣ - highest clover, wins
 		{PlayerIdx: 2, Card: wattenCard(domain.CardDesignClover, 8)}, // follow low
@@ -261,7 +261,7 @@ func TestWatten_LastTrick_DealScore(t *testing.T) {
 	g.SetPhase(domain.WattenPhaseTrickEnd)
 	g.SetTrickNumber(domain.WattenHandSize) // last trick
 	g.SetTeamTricksForTest(0, 2)            // team 0 already has 2
-	g.SetCurrentTrick([]*domain.WattenTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wattenCard(domain.CardDesignSpade, 1)}, // A♠ trump, P0 (team0) wins
 		{PlayerIdx: 1, Card: wattenCard(domain.CardDesignClover, 7)},
 		{PlayerIdx: 2, Card: wattenCard(domain.CardDesignClover, 8)},
@@ -395,7 +395,7 @@ func TestWatten_MatchEnd(t *testing.T) {
 	g.SetPhase(domain.WattenPhaseTrickEnd)
 	g.SetTrickNumber(domain.WattenHandSize)
 	g.SetTeamTricksForTest(0, 3)
-	g.SetCurrentTrick([]*domain.WattenTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wattenCard(domain.CardDesignSpade, 1)},
 		{PlayerIdx: 1, Card: wattenCard(domain.CardDesignClover, 7)},
 		{PlayerIdx: 2, Card: wattenCard(domain.CardDesignClover, 8)},
@@ -471,7 +471,7 @@ func TestWatten_NextRound(t *testing.T) {
 	g.SetTeamTricksForTest(0, 3)
 	g.SetCriticalSuit(domain.CardDesignSpade)
 	g.SetSchlagRank(10)
-	g.SetCurrentTrick([]*domain.WattenTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wattenCard(domain.CardDesignSpade, 1)},
 		{PlayerIdx: 1, Card: wattenCard(domain.CardDesignClover, 7)},
 		{PlayerIdx: 2, Card: wattenCard(domain.CardDesignClover, 8)},
@@ -510,7 +510,7 @@ func TestWatten_GetHint(t *testing.T) {
 	g.SetPhase(domain.WattenPhasePlay)
 	g.SetCurrentPlayerIdx(0)
 	g.SetLeadPlayerIdx(2)
-	g.SetCurrentTrick([]*domain.WattenTrickCard{{PlayerIdx: 2, Card: wattenCard(domain.CardDesignClover, 9)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 2, Card: wattenCard(domain.CardDesignClover, 9)}})
 	wattenSetHand(g, 0, []*domain.Card{wattenCard(domain.CardDesignClover, 1), wattenCard(domain.CardDesignHeart, 8)})
 	hp := g.GetHint()
 	assert.NotNil(t, hp)

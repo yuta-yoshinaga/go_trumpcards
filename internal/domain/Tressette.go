@@ -59,12 +59,6 @@ type TressetteHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// TressetteTrickCard トリック中の1枚
-type TressetteTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Tressette トレセッテのゲームクラス
 type Tressette struct {
 	trumpCards       *TrumpCards
@@ -74,7 +68,7 @@ type Tressette struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*TressetteTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	teamScores       [TressetteTeamCnt]int // 累積点 (整数点)
 	teamRoundThirds  [TressetteTeamCnt]int // 現ラウンドで獲得した 1/3点 の合計
@@ -287,10 +281,10 @@ func (g *Tressette) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Tressette) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Tressette) GetCurrentTrick() []*TressetteTrickCard { return g.currentTrick }
+func (g *Tressette) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Tressette) SetCurrentTrick(trick []*TressetteTrickCard) { g.currentTrick = trick }
+func (g *Tressette) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Tressette) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -363,7 +357,7 @@ func (g *Tressette) findHumanIdx() int {
 
 // playCard カードをプレイする共通処理
 func (g *Tressette) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &TressetteTrickCard{
+	g.currentTrick = append(g.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -689,7 +683,7 @@ type tressetteJSON struct {
 	RoundNumber      int                   `json:"rn"`
 	TrickNumber      int                   `json:"tn"`
 	CurrentPlayerIdx int                   `json:"ci"`
-	CurrentTrick     []*TressetteTrickCard `json:"ct"`
+	CurrentTrick     []*TrickCard          `json:"ct"`
 	LeadPlayerIdx    int                   `json:"li"`
 	TeamScores       [TressetteTeamCnt]int `json:"ts"`
 	TeamRoundThirds  [TressetteTeamCnt]int `json:"tr"`
@@ -749,7 +743,7 @@ func (g *Tressette) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*TressetteTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.teamScores = j.TeamScores

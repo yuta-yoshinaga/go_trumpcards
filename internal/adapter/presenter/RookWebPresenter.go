@@ -86,8 +86,8 @@ func (p *RookWebPresenter) buildNestOutput(g interfaces.RookGame) []*controller.
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *RookWebPresenter) buildTrickOutput(trick []*domain.RookTrickCard) []*controller.RookWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.RookTrickCard) *controller.RookWebOutputTrickCard {
+func (p *RookWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.RookWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.RookWebOutputTrickCard {
 		return &controller.RookWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutputWithFace(tc.Card, rookFace)}
 	})
 }

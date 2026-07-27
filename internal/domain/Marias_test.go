@@ -81,7 +81,7 @@ func TestMarias_StrengthAndPoints(t *testing.T) {
 func TestMarias_TrickWinnerTrumpBeatsLead(t *testing.T) {
 	g := newMarGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
-	g.SetCurrentTrick([]*MariasTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: marCard(CardDesignClover, 1)},  // Ace lead
 		{PlayerIdx: 1, Card: marCard(CardDesignDiamond, 7)}, // low trump beats it
 		{PlayerIdx: 2, Card: marCard(CardDesignClover, 10)},
@@ -96,7 +96,7 @@ func TestMarias_MustFollowAndTrumpWhenVoid(t *testing.T) {
 	g.SetPhase(MariasPhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*MariasTrickCard{{PlayerIdx: 1, Card: marCard(CardDesignClover, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: marCard(CardDesignClover, 1)}})
 	// Holds a club -> must follow.
 	marSetHand(g.GetPlayer(0), marCard(CardDesignClover, 13), marCard(CardDesignDiamond, 7))
 	if err := g.PlayerPlay(1); err == nil {
@@ -106,7 +106,7 @@ func TestMarias_MustFollowAndTrumpWhenVoid(t *testing.T) {
 		t.Fatalf("valid follow err: %v", err)
 	}
 	// Void in clubs but holds a trump -> must trump.
-	g.SetCurrentTrick([]*MariasTrickCard{{PlayerIdx: 1, Card: marCard(CardDesignClover, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: marCard(CardDesignClover, 1)}})
 	g.SetCurrentPlayerIdx(0)
 	marSetHand(g.GetPlayer(0), marCard(CardDesignHeart, 13), marCard(CardDesignDiamond, 7))
 	if err := g.PlayerPlay(0); err == nil { // heart discard while holding trump
@@ -138,7 +138,7 @@ func TestMarias_ResolveTrickPointsAndLastBonus(t *testing.T) {
 	g.SetPhase(MariasPhaseTrickEnd)
 	g.SetTrickNumber(MariasTrickCount) // final trick -> +10 bonus
 	// A♣(11) + 10♣(10) + K♣(4) = 25; A♣ wins for player 0, +10 last-trick bonus = 35.
-	g.SetCurrentTrick([]*MariasTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: marCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: marCard(CardDesignClover, 10)},
 		{PlayerIdx: 2, Card: marCard(CardDesignClover, 13)},

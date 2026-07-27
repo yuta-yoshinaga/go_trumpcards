@@ -124,7 +124,7 @@ func TestTwentyNine_TrickWinnerJHighAndTrump(t *testing.T) {
 	g := newTnGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
 	// Lead A♣; J♣ beats it (J high in plain suit); a low trump 7♦ beats all plain.
-	g.SetCurrentTrick([]*TwentyNineTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: tnCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: tnCard(CardDesignClover, 11)},
 		{PlayerIdx: 2, Card: tnCard(CardDesignDiamond, 7)},
@@ -142,7 +142,7 @@ func TestTwentyNine_HiddenTrumpRevealsOnOffSuit(t *testing.T) {
 	g.SetTrumpRevealed(false)
 	g.SetCurrentPlayerIdx(0)
 	// Lead was a club (by p3); human is void in clubs, plays a diamond (trump) -> reveal.
-	g.SetCurrentTrick([]*TwentyNineTrickCard{{PlayerIdx: 3, Card: tnCard(CardDesignClover, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: tnCard(CardDesignClover, 1)}})
 	tnSetHand(g.GetPlayer(0), tnCard(CardDesignDiamond, 11), tnCard(CardDesignHeart, 7))
 	if err := g.PlayerPlay(0); err != nil { // play J♦ (off-suit) — legal (void in clubs)
 		t.Fatalf("off-suit play err: %v", err)
@@ -157,7 +157,7 @@ func TestTwentyNine_MustFollow(t *testing.T) {
 	g.SetPhase(TwentyNinePhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*TwentyNineTrickCard{{PlayerIdx: 1, Card: tnCard(CardDesignClover, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: tnCard(CardDesignClover, 1)}})
 	tnSetHand(g.GetPlayer(0), tnCard(CardDesignClover, 13), tnCard(CardDesignDiamond, 7))
 	if err := g.PlayerPlay(1); err == nil {
 		t.Error("expected must-follow error")
@@ -173,7 +173,7 @@ func TestTwentyNine_ResolveTrickPointsAndLastBonus(t *testing.T) {
 	g.SetPhase(TwentyNinePhaseTrickEnd)
 	g.SetTrickNumber(TwentyNineTrickCount) // final trick -> +1
 	// J♣(3) + 9♣(2) + A♣(1) + 10♣(1) = 7; J♣ wins for team 0 (p0). +1 last = 8.
-	g.SetCurrentTrick([]*TwentyNineTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: tnCard(CardDesignClover, 11)},
 		{PlayerIdx: 1, Card: tnCard(CardDesignClover, 9)},
 		{PlayerIdx: 2, Card: tnCard(CardDesignClover, 1)},

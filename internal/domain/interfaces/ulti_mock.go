@@ -120,10 +120,10 @@ func (_m *MockUltiGame) GetCurrentPlayerIdx() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockUltiGame) GetCurrentTrick() []*domain.UltiTrickCard {
+func (_m *MockUltiGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.UltiTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

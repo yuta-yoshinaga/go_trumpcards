@@ -42,8 +42,8 @@ func (p *CatchTenWebPresenter) buildBase(g interfaces.CatchTenGame) *controller.
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *CatchTenWebPresenter) buildTrickOutput(trick []*domain.CatchTenTrickCard) []*controller.CatchTenWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.CatchTenTrickCard) *controller.CatchTenWebOutputTrickCard {
+func (p *CatchTenWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.CatchTenWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.CatchTenWebOutputTrickCard {
 		return &controller.CatchTenWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
@@ -70,7 +70,7 @@ func (p *CatchTenWebPresenter) buildPlayersOutput(g interfaces.CatchTenGame) []*
 
 // buildMessage ゲーム結果メッセージを構築
 // 終了時は humanWin(チーム0=人間側) / cpuWin(チーム1) / draw のいずれかを返す。
-func (p *CatchTenWebPresenter) buildMessage(g interfaces.CatchTenGame, trick []*domain.CatchTenTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *CatchTenWebPresenter) buildMessage(g interfaces.CatchTenGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

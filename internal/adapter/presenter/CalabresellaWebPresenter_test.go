@@ -19,7 +19,7 @@ func setupCalabresellaWebMock() *interfaces.MockCalabresellaGame {
 	m := new(interfaces.MockCalabresellaGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return(([]*domain.CalabresellaTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.CalabresellaPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -110,7 +110,7 @@ func TestCalabresellaWebPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
 		m.On("GetPhase").Return(domain.CalabresellaPhasePlay)
-		m.On("GetCurrentTrick").Return([]*domain.CalabresellaTrickCard{
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
 		})
 		result := p.Output(m, nil)

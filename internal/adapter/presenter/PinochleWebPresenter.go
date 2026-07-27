@@ -74,8 +74,8 @@ func (p *PinochleWebPresenter) ActionLogOutput(g interfaces.PinochleGame) string
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *PinochleWebPresenter) buildTrickOutput(trick []*domain.PinochleTrickCard) []*controller.PinochleWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.PinochleTrickCard) *controller.PinochleWebOutputTrickCard {
+func (p *PinochleWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.PinochleWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.PinochleWebOutputTrickCard {
 		return &controller.PinochleWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

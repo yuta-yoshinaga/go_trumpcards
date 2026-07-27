@@ -56,12 +56,6 @@ type BeloteHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// BeloteTrickCard トリック中の1枚
-type BeloteTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Belote ベロートゲームクラス
 type Belote struct {
 	trumpCards        *TrumpCards
@@ -71,7 +65,7 @@ type Belote struct {
 	roundNumber       int
 	trickNumber       int
 	currentPlayerIdx  int
-	currentTrick      []*BeloteTrickCard
+	currentTrick      []*TrickCard
 	dealerIdx         int
 	trumpSuit         int // 切り札スート (0 = 未確定, CardDesignSpade等)
 	faceUpCard        *Card
@@ -588,10 +582,10 @@ func (b *Belote) GetCurrentPlayerIdx() int { return b.currentPlayerIdx }
 func (b *Belote) SetCurrentPlayerIdx(idx int) { b.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (b *Belote) GetCurrentTrick() []*BeloteTrickCard { return b.currentTrick }
+func (b *Belote) GetCurrentTrick() []*TrickCard { return b.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (b *Belote) SetCurrentTrick(trick []*BeloteTrickCard) { b.currentTrick = trick }
+func (b *Belote) SetCurrentTrick(trick []*TrickCard) { b.currentTrick = trick }
 
 // GetGameEndFlag ゲーム終了フラグ取得
 func (b *Belote) GetGameEndFlag() bool { return b.gameEndFlag }
@@ -826,7 +820,7 @@ func (b *Belote) startPlayPhase() {
 
 // playCard カードをプレイする共通処理
 func (b *Belote) playCard(playerIdx int, card *Card) {
-	b.currentTrick = append(b.currentTrick, &BeloteTrickCard{
+	b.currentTrick = append(b.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -1432,7 +1426,7 @@ type beloteJSON struct {
 	RoundNumber       int                `json:"rn"`
 	TrickNumber       int                `json:"tn"`
 	CurrentPlayerIdx  int                `json:"cp"`
-	CurrentTrick      []*BeloteTrickCard `json:"ct"`
+	CurrentTrick      []*TrickCard       `json:"ct"`
 	DealerIdx         int                `json:"di"`
 	TrumpSuit         int                `json:"ts"`
 	FaceUpCard        *Card              `json:"fu,omitempty"`

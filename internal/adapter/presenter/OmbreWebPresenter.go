@@ -69,8 +69,8 @@ func (p *OmbreWebPresenter) playableIndices(g interfaces.OmbreGame) []int {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *OmbreWebPresenter) buildTrickOutput(trick []*domain.OmbreTrickCard) []*controller.OmbreWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.OmbreTrickCard) *controller.OmbreWebOutputTrickCard {
+func (p *OmbreWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.OmbreWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.OmbreWebOutputTrickCard {
 		return &controller.OmbreWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

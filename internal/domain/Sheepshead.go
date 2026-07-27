@@ -67,12 +67,6 @@ type SheepsheadHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// SheepsheadTrickCard トリック中の 1 枚
-type SheepsheadTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Sheepshead シープスヘッドのゲームクラス
 type Sheepshead struct {
 	trumpCards       *TrumpCards
@@ -82,7 +76,7 @@ type Sheepshead struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*SheepsheadTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	blind            []*Card // 場に伏せられた札 (ピック前)
@@ -389,7 +383,7 @@ func (g *Sheepshead) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Sheepshead) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &SheepsheadTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	// 呼びカードがプレイされたら相棒が判明する。
@@ -869,10 +863,10 @@ func (g *Sheepshead) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Sheepshead) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Sheepshead) GetCurrentTrick() []*SheepsheadTrickCard { return g.currentTrick }
+func (g *Sheepshead) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Sheepshead) SetCurrentTrick(trick []*SheepsheadTrickCard) { g.currentTrick = trick }
+func (g *Sheepshead) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Sheepshead) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -1234,29 +1228,29 @@ func sheepsheadFilter(indices []int, pred func(int) bool) []int {
 
 // sheepsheadJSON is the JSON wire format for Sheepshead.
 type sheepsheadJSON struct {
-	TrumpCards       *TrumpCards            `json:"tc"`
-	Players          []*SheepsheadPlayer    `json:"ps"`
-	Config           SheepsheadConfig       `json:"cf"`
-	Phase            SheepsheadPhase        `json:"ph"`
-	RoundNumber      int                    `json:"rn"`
-	TrickNumber      int                    `json:"tn"`
-	CurrentPlayerIdx int                    `json:"ci"`
-	CurrentTrick     []*SheepsheadTrickCard `json:"ct"`
-	LeadPlayerIdx    int                    `json:"li"`
-	DealerIdx        int                    `json:"di"`
-	Blind            []*Card                `json:"bl"`
-	Buried           []*Card                `json:"bu"`
-	PassCount        int                    `json:"pc"`
-	PickerIdx        int                    `json:"pk"`
-	PartnerIdx       int                    `json:"pt"`
-	CalledSuit       int                    `json:"cs"`
-	PartnerRevealed  bool                   `json:"pr"`
-	RoundPickerPts   int                    `json:"rp"`
-	RoundMultiplier  int                    `json:"rm"`
-	RoundPickerWon   bool                   `json:"rw"`
-	GameEndFlag      bool                   `json:"ge"`
-	WinnerIdx        int                    `json:"wi"`
-	ActionLog        []*ActionLogEntry      `json:"al"`
+	TrumpCards       *TrumpCards         `json:"tc"`
+	Players          []*SheepsheadPlayer `json:"ps"`
+	Config           SheepsheadConfig    `json:"cf"`
+	Phase            SheepsheadPhase     `json:"ph"`
+	RoundNumber      int                 `json:"rn"`
+	TrickNumber      int                 `json:"tn"`
+	CurrentPlayerIdx int                 `json:"ci"`
+	CurrentTrick     []*TrickCard        `json:"ct"`
+	LeadPlayerIdx    int                 `json:"li"`
+	DealerIdx        int                 `json:"di"`
+	Blind            []*Card             `json:"bl"`
+	Buried           []*Card             `json:"bu"`
+	PassCount        int                 `json:"pc"`
+	PickerIdx        int                 `json:"pk"`
+	PartnerIdx       int                 `json:"pt"`
+	CalledSuit       int                 `json:"cs"`
+	PartnerRevealed  bool                `json:"pr"`
+	RoundPickerPts   int                 `json:"rp"`
+	RoundMultiplier  int                 `json:"rm"`
+	RoundPickerWon   bool                `json:"rw"`
+	GameEndFlag      bool                `json:"ge"`
+	WinnerIdx        int                 `json:"wi"`
+	ActionLog        []*ActionLogEntry   `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1319,7 +1313,7 @@ func (g *Sheepshead) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*SheepsheadTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

@@ -57,7 +57,7 @@ func (b *Barbu) BarbuTestSetLeadPlayer(idx int) { b.leadPlayer = idx }
 func (b *Barbu) BarbuTestSetTrickNumber(n int) { b.trickNumber = n }
 
 // BarbuTestSetCurrentTrick はテスト用に進行中トリックを設定する。
-func (b *Barbu) BarbuTestSetCurrentTrick(trick []*BarbuTrickCard) { b.currentTrick = trick }
+func (b *Barbu) BarbuTestSetCurrentTrick(trick []*TrickCard) { b.currentTrick = trick }
 
 // BarbuTestSetLastTrickWinner はテスト用に直前トリックの勝者を設定する。
 func (b *Barbu) BarbuTestSetLastTrickWinner(idx int) { b.lastTrickWinner = idx }

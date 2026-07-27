@@ -40,7 +40,7 @@ type TrucoGame interface {
 	// GetResponderIdx 応答すべきプレイヤーインデックスを取得する (-1: 応答待ちでない)
 	GetResponderIdx() int
 	// GetCurrentTrick 現在のバサを取得する
-	GetCurrentTrick() []*domain.TrucoTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetTrickResults 当該マノで完了したバサの勝者リストを取得する
 	GetTrickResults() []int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する

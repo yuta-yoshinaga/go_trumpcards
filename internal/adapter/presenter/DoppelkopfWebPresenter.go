@@ -93,8 +93,8 @@ func (p *DoppelkopfWebPresenter) playableIndices(g interfaces.DoppelkopfGame) []
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *DoppelkopfWebPresenter) buildTrickOutput(trick []*domain.DoppelkopfTrickCard) []*controller.DoppelkopfWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.DoppelkopfTrickCard) *controller.DoppelkopfWebOutputTrickCard {
+func (p *DoppelkopfWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.DoppelkopfWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.DoppelkopfWebOutputTrickCard {
 		return &controller.DoppelkopfWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

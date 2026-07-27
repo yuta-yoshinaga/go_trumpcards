@@ -63,8 +63,8 @@ func (p *GongZhuWebPresenter) exposableIndices(g interfaces.GongZhuGame) []int {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *GongZhuWebPresenter) buildTrickOutput(trick []*domain.GongZhuTrickCard) []*controller.GongZhuWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.GongZhuTrickCard) *controller.GongZhuWebOutputTrickCard {
+func (p *GongZhuWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.GongZhuWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.GongZhuWebOutputTrickCard {
 		return &controller.GongZhuWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
@@ -98,7 +98,7 @@ func gongZhuCapturedPointCards(player *domain.GongZhuPlayer) []*controller.WebOu
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *GongZhuWebPresenter) buildMessage(g interfaces.GongZhuGame, trick []*domain.GongZhuTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *GongZhuWebPresenter) buildMessage(g interfaces.GongZhuGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

@@ -114,10 +114,10 @@ func (_m *MockSoloWhistGame) GetCurrentPlayerIdx() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockSoloWhistGame) GetCurrentTrick() []*domain.SoloWhistTrickCard {
+func (_m *MockSoloWhistGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.SoloWhistTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

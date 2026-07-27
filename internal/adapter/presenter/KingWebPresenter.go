@@ -101,8 +101,8 @@ func (kwp *KingWebPresenter) playableIndices(kg interfaces.KingGame) []int {
 }
 
 // kingTrickToOutput はトリックを WebOutput 表現に変換する。
-func kingTrickToOutput(trick []*domain.KingTrickCard) []*controller.KingWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.KingTrickCard) *controller.KingWebOutputTrickCard {
+func kingTrickToOutput(trick []*domain.TrickCard) []*controller.KingWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.KingWebOutputTrickCard {
 		if tc == nil {
 			return nil
 		}

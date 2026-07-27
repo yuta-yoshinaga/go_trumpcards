@@ -89,12 +89,6 @@ const (
 	KingTrumpReward = 5
 )
 
-// KingTrickCard はトリック中の 1 枚。
-type KingTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // KingDealDetail は 1 ディールの結果内訳。
 type KingDealDetail struct {
 	Contract  int         // 選択されたコントラクト
@@ -116,10 +110,10 @@ type King struct {
 	usedContracts   [KingContractCnt]bool
 	currentPlayer   int
 	leadPlayer      int
-	trickNumber     int              // 1..KingHandSize
-	currentTrick    []*KingTrickCard // 進行中のトリック
-	lastTrick       []*KingTrickCard // 直前に完了したトリック (UI 表示用)
-	lastTrickWinner int              // 直前トリックの勝者 (-1 = なし)
+	trickNumber     int          // 1..KingHandSize
+	currentTrick    []*TrickCard // 進行中のトリック
+	lastTrick       []*TrickCard // 直前に完了したトリック (UI 表示用)
+	lastTrickWinner int          // 直前トリックの勝者 (-1 = なし)
 	gameEndFlag     bool
 	lastDealDetail  *KingDealDetail
 	actionLog       []*ActionLogEntry
@@ -296,7 +290,7 @@ func (g *King) applyTrickPlay(playerIdx, handIdx int) error {
 		return err
 	}
 	played := player.RemoveCard(handIdx)
-	g.currentTrick = append(g.currentTrick, &KingTrickCard{PlayerIdx: playerIdx, Card: played})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: played})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("player %d plays %s", playerIdx, cardStr(played)), []*Card{played})
 
 	if len(g.currentTrick) == KingPlayerCnt {
@@ -560,13 +554,13 @@ func (g *King) GetTrickNumber() int { return g.trickNumber }
 func (g *King) SetTrickNumber(n int) { g.trickNumber = n }
 
 // GetCurrentTrick は進行中のトリックを返す。
-func (g *King) GetCurrentTrick() []*KingTrickCard { return g.currentTrick }
+func (g *King) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick は進行中のトリックを設定する (テスト用)。
-func (g *King) SetCurrentTrick(trick []*KingTrickCard) { g.currentTrick = trick }
+func (g *King) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLastTrick は直前に完了したトリックを返す。
-func (g *King) GetLastTrick() []*KingTrickCard { return g.lastTrick }
+func (g *King) GetLastTrick() []*TrickCard { return g.lastTrick }
 
 // GetLastTrickWinner は直前トリックの勝者を返す (-1 = なし)。
 func (g *King) GetLastTrickWinner() int { return g.lastTrickWinner }
@@ -630,8 +624,8 @@ type kingJSON struct {
 	CurrentPlayer   int                   `json:"cp"`
 	LeadPlayer      int                   `json:"lp"`
 	TrickNumber     int                   `json:"tn"`
-	CurrentTrick    []*KingTrickCard      `json:"ct"`
-	LastTrick       []*KingTrickCard      `json:"lt"`
+	CurrentTrick    []*TrickCard          `json:"ct"`
+	LastTrick       []*TrickCard          `json:"lt"`
 	LastTrickWinner int                   `json:"lw"`
 	GameEndFlag     bool                  `json:"ge"`
 	LastDealDetail  *KingDealDetail       `json:"ld"`
@@ -747,7 +741,7 @@ func (g *King) UnmarshalJSON(data []byte) error {
 	g.trickNumber = j.TrickNumber
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*KingTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.lastTrick = j.LastTrick
 	g.lastTrickWinner = j.LastTrickWinner
@@ -762,7 +756,7 @@ func (g *King) UnmarshalJSON(data []byte) error {
 }
 
 // kingValidateTrick は復元したトリック配列の各要素を検証する。
-func kingValidateTrick(trick []*KingTrickCard) error {
+func kingValidateTrick(trick []*TrickCard) error {
 	for _, tc := range trick {
 		if tc == nil || tc.Card == nil {
 			return fmt.Errorf("king: invalid trick card")

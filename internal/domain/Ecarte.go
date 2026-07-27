@@ -60,12 +60,6 @@ const (
 	EcarteNegDealerDiscard
 )
 
-// EcarteTrickCard トリック中の1枚
-type EcarteTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // EcarteHint ヒント情報
 type EcarteHint struct {
 	CardIndex *int   // 推奨カードインデックス (プレイフェーズ)
@@ -104,7 +98,7 @@ type Ecarte struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*EcarteTrickCard
+	currentTrick     []*TrickCard
 	trumpCard        *Card // 表向きの切り札表示カード
 	trumpSuit        int
 	dealerIdx        int
@@ -423,7 +417,7 @@ func (e *Ecarte) PlayerProposeCPU() error {
 
 // playCard カードをプレイする共通処理。2枚出そろったらトリックを解決する。
 func (e *Ecarte) playCard(playerIdx int, card *Card) {
-	e.currentTrick = append(e.currentTrick, &EcarteTrickCard{PlayerIdx: playerIdx, Card: card})
+	e.currentTrick = append(e.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	e.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", e.playerName(playerIdx), cardStr(card)), []*Card{card})
 	if len(e.currentTrick) == EcartePlayerCnt {
 		e.resolveTrick()
@@ -654,10 +648,10 @@ func (e *Ecarte) GetCurrentPlayerIdx() int { return e.currentPlayerIdx }
 func (e *Ecarte) SetCurrentPlayerIdx(idx int) { e.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (e *Ecarte) GetCurrentTrick() []*EcarteTrickCard { return e.currentTrick }
+func (e *Ecarte) GetCurrentTrick() []*TrickCard { return e.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (e *Ecarte) SetCurrentTrick(trick []*EcarteTrickCard) { e.currentTrick = trick }
+func (e *Ecarte) SetCurrentTrick(trick []*TrickCard) { e.currentTrick = trick }
 
 // GetTrumpSuit トランプスート取得
 func (e *Ecarte) GetTrumpSuit() int { return e.trumpSuit }
@@ -942,25 +936,25 @@ func (e *Ecarte) pickStrongest(p *EcartePlayer, legal []int) int {
 // --- JSON ---
 
 type ecarteJSON struct {
-	TrumpCards       *TrumpCards        `json:"tc"`
-	Players          []*EcartePlayer    `json:"ps"`
-	Config           EcarteConfig       `json:"cf"`
-	Phase            EcartePhase        `json:"ph"`
-	NegStep          EcarteNegStep      `json:"ns"`
-	RoundNumber      int                `json:"rn"`
-	TrickNumber      int                `json:"tn"`
-	CurrentPlayerIdx int                `json:"ci"`
-	CurrentTrick     []*EcarteTrickCard `json:"ct"`
-	TrumpCard        *Card              `json:"tu"`
-	TrumpSuit        int                `json:"ts"`
-	DealerIdx        int                `json:"di"`
-	LeadPlayerIdx    int                `json:"li"`
-	DealPoints       []int              `json:"dp"`
-	MatchScore       []int              `json:"ms"`
-	RefusalByDealer  bool               `json:"rf"`
-	GameEndFlag      bool               `json:"ge"`
-	WinnerIdx        int                `json:"wi"`
-	ActionLog        []*ActionLogEntry  `json:"al"`
+	TrumpCards       *TrumpCards       `json:"tc"`
+	Players          []*EcartePlayer   `json:"ps"`
+	Config           EcarteConfig      `json:"cf"`
+	Phase            EcartePhase       `json:"ph"`
+	NegStep          EcarteNegStep     `json:"ns"`
+	RoundNumber      int               `json:"rn"`
+	TrickNumber      int               `json:"tn"`
+	CurrentPlayerIdx int               `json:"ci"`
+	CurrentTrick     []*TrickCard      `json:"ct"`
+	TrumpCard        *Card             `json:"tu"`
+	TrumpSuit        int               `json:"ts"`
+	DealerIdx        int               `json:"di"`
+	LeadPlayerIdx    int               `json:"li"`
+	DealPoints       []int             `json:"dp"`
+	MatchScore       []int             `json:"ms"`
+	RefusalByDealer  bool              `json:"rf"`
+	GameEndFlag      bool              `json:"ge"`
+	WinnerIdx        int               `json:"wi"`
+	ActionLog        []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1040,7 +1034,7 @@ func (e *Ecarte) UnmarshalJSON(data []byte) error {
 	e.currentPlayerIdx = j.CurrentPlayerIdx
 	e.currentTrick = j.CurrentTrick
 	if e.currentTrick == nil {
-		e.currentTrick = make([]*EcarteTrickCard, 0)
+		e.currentTrick = make([]*TrickCard, 0)
 	}
 	e.trumpCard = j.TrumpCard
 	e.trumpSuit = j.TrumpSuit

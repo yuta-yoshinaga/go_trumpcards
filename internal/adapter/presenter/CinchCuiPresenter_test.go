@@ -32,7 +32,7 @@ func TestCinchCuiPresenter_Output_AllPhases(t *testing.T) {
 	g.SetPhase(domain.CinchPhasePlay)
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetCurrentTurn(0)
-	g.SetCurrentTrick([]*domain.CinchTrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
 	assert.NotEmpty(t, p.Output(g, nil))
 
 	g.SetPhase(domain.CinchPhaseTrickEnd)

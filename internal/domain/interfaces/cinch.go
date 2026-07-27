@@ -48,9 +48,9 @@ type CinchGame interface {
 	// GetCurrentTurn 現在の手番プレイヤーインデックスを取得する
 	GetCurrentTurn() int
 	// GetCurrentTrick 現在のトリックを取得する
-	GetCurrentTrick() []*domain.CinchTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetLastTrick 直前に完了したトリックを取得する
-	GetLastTrick() []*domain.CinchTrickCard
+	GetLastTrick() []*domain.TrickCard
 	// GetLastTrickWinner 直前トリックの勝者を取得する (-1=なし)
 	GetLastTrickWinner() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する

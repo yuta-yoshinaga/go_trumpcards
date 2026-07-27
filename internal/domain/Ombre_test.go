@@ -136,7 +136,7 @@ func TestOmbre_BidOrdering(t *testing.T) {
 }
 
 func TestOmbre_MatadorRanking(t *testing.T) {
-	resolve := func(trump int, trick []*domain.OmbreTrickCard) int {
+	resolve := func(trump int, trick []*domain.TrickCard) int {
 		g := newTestOmbre()
 		g.SetOmbreIdx(0)
 		g.SetTrumpSuit(trump)
@@ -148,35 +148,35 @@ func TestOmbre_MatadorRanking(t *testing.T) {
 	}
 
 	// Spadille (♠A) beats Manille (7 of trump) and Basto (♣A) even when spades isn't trump.
-	assert.Equal(t, 1, resolve(domain.CardDesignHeart, []*domain.OmbreTrickCard{
+	assert.Equal(t, 1, resolve(domain.CardDesignHeart, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: ombreCard(domain.CardDesignHeart, 7)},  // Manille
 		{PlayerIdx: 1, Card: ombreCard(domain.CardDesignSpade, 1)},  // Spadille (highest)
 		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignClover, 1)}, // Basto
 	}))
 
 	// Manille (7 of trump) beats Basto, Punto and the trump King.
-	assert.Equal(t, 2, resolve(domain.CardDesignHeart, []*domain.OmbreTrickCard{
+	assert.Equal(t, 2, resolve(domain.CardDesignHeart, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: ombreCard(domain.CardDesignHeart, 1)},  // Punto
 		{PlayerIdx: 1, Card: ombreCard(domain.CardDesignHeart, 13)}, // trump K
 		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignHeart, 7)},  // Manille (highest)
 	}))
 
 	// Basto (♣A) beats Punto (red-trump Ace) and lower trumps.
-	assert.Equal(t, 0, resolve(domain.CardDesignHeart, []*domain.OmbreTrickCard{
+	assert.Equal(t, 0, resolve(domain.CardDesignHeart, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: ombreCard(domain.CardDesignClover, 1)}, // Basto (highest here)
 		{PlayerIdx: 1, Card: ombreCard(domain.CardDesignHeart, 1)},  // Punto
 		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignHeart, 13)}, // trump K
 	}))
 
 	// Any trump beats any plain card (low trump 2 beats plain King).
-	assert.Equal(t, 1, resolve(domain.CardDesignHeart, []*domain.OmbreTrickCard{
+	assert.Equal(t, 1, resolve(domain.CardDesignHeart, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: ombreCard(domain.CardDesignSpade, 13)}, // plain K (lead)
 		{PlayerIdx: 1, Card: ombreCard(domain.CardDesignHeart, 2)},  // trump 2
 		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignSpade, 12)}, // plain Q
 	}))
 
 	// No Punto for a BLACK trump: ♠A is Spadille, trump-suit K ranks below it.
-	assert.Equal(t, 0, resolve(domain.CardDesignSpade, []*domain.OmbreTrickCard{
+	assert.Equal(t, 0, resolve(domain.CardDesignSpade, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: ombreCard(domain.CardDesignSpade, 1)},  // Spadille
 		{PlayerIdx: 1, Card: ombreCard(domain.CardDesignSpade, 13)}, // trump K
 		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignSpade, 2)},  // trump 2
@@ -191,7 +191,7 @@ func TestOmbre_PlainSuit_AceLowAndOffSuit(t *testing.T) {
 	g.SetPhase(domain.OmbrePhaseTrickEnd)
 	// Plain red suit (diamonds): K>Q>J>A>2>3>4>5>6>7 — the Ace is the
 	// 4th-highest (outranking 2..7), NOT low as in the black plain suits.
-	g.SetCurrentTrick([]*domain.OmbreTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: ombreCard(domain.CardDesignDiamond, 2)}, // 2
 		{PlayerIdx: 1, Card: ombreCard(domain.CardDesignDiamond, 1)}, // A beats 2 and 7
 		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignDiamond, 7)}, // 7 (lowest red plain)
@@ -203,7 +203,7 @@ func TestOmbre_PlainSuit_AceLowAndOffSuit(t *testing.T) {
 	// Red ranking: diamond 3 outranks diamond 7.
 	g.SetTrickNumber(1)
 	g.SetPhase(domain.OmbrePhaseTrickEnd)
-	g.SetCurrentTrick([]*domain.OmbreTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: ombreCard(domain.CardDesignDiamond, 7)}, // lead 7 (lowest red)
 		{PlayerIdx: 1, Card: ombreCard(domain.CardDesignClover, 13)}, // off-suit K (cannot win, ♣K is plain)
 		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignDiamond, 3)}, // follows, higher (red 3 > red 7)
@@ -219,7 +219,7 @@ func TestOmbre_MustFollow_TrumpGroupIsASuit(t *testing.T) {
 	g.SetPhase(domain.OmbrePhasePlay)
 	g.SetCurrentPlayerIdx(1)
 	// Trump (diamond) is led -> ♠A counts as trump and must be followed.
-	g.SetCurrentTrick([]*domain.OmbreTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: ombreCard(domain.CardDesignDiamond, 5)},
 	})
 	setOmbreHand(g, 1,
@@ -240,7 +240,7 @@ func TestOmbre_NextTrick(t *testing.T) {
 	g.SetPhase(domain.OmbrePhaseTrickEnd)
 	g.SetLeadPlayerIdx(2)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*domain.OmbreTrickCard{{PlayerIdx: 0, Card: ombreCard(domain.CardDesignSpade, 1)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 0, Card: ombreCard(domain.CardDesignSpade, 1)}})
 	g.NextTrick()
 	assert.Equal(t, domain.OmbrePhasePlay, g.GetPhase())
 	assert.Equal(t, 2, g.GetCurrentPlayerIdx())
@@ -364,7 +364,7 @@ func TestOmbre_PlayerPlay_FollowSuitViolation(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetPhase(domain.OmbrePhasePlay)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*domain.OmbreTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: ombreCard(domain.CardDesignDiamond, 13)}, // plain diamond lead
 	})
 	setOmbreHand(g, 0,
@@ -386,7 +386,7 @@ func TestOmbre_PlayerPlay_SuccessAndTrickComplete(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetPhase(domain.OmbrePhasePlay)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*domain.OmbreTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: ombreCard(domain.CardDesignSpade, 5)},
 		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignSpade, 6)},
 	})
@@ -447,7 +447,7 @@ func TestOmbre_GetHint_PlayReasons(t *testing.T) {
 	g.SetPhase(domain.OmbrePhasePlay)
 	g.SetCurrentPlayerIdx(0)
 	// Opponent (Ombre seat 2) leads a plain diamond Queen; player 0 can win or duck.
-	g.SetCurrentTrick([]*domain.OmbreTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignDiamond, 12)},
 	})
 	setOmbreHand(g, 0,
@@ -458,7 +458,7 @@ func TestOmbre_GetHint_PlayReasons(t *testing.T) {
 	assert.Contains(t, []string{"follow_win", "follow_duck"}, h.Reason)
 
 	// discard_low: void in lead suit.
-	g.SetCurrentTrick([]*domain.OmbreTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignDiamond, 12)},
 	})
 	setOmbreHand(g, 0, ombreCard(domain.CardDesignClover, 13)) // off-suit only
@@ -469,7 +469,7 @@ func TestOmbre_GetHint_PlayReasons(t *testing.T) {
 	// give_partner: partner (same side) is winning.
 	g.SetOmbreIdx(1) // players 0 and 2 are coalition (same side)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*domain.OmbreTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignDiamond, 13)}, // partner winning with K
 	})
 	setOmbreHand(g, 0,

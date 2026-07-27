@@ -233,7 +233,7 @@ func TestCalabresella_TrickResolution_RankOrder(t *testing.T) {
 	g.SetTrickNumber(1)
 	g.SetPhase(domain.CalabresellaPhaseTrickEnd)
 	// 3 > 2 > A: the 3 wins.
-	g.SetCurrentTrick([]*domain.CalabresellaTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: calCard(domain.CardDesignSpade, 1)}, // A
 		{PlayerIdx: 1, Card: calCard(domain.CardDesignSpade, 3)}, // 3 (highest)
 		{PlayerIdx: 2, Card: calCard(domain.CardDesignSpade, 2)}, // 2
@@ -249,7 +249,7 @@ func TestCalabresella_TrickResolution_OffSuitDoesNotWin(t *testing.T) {
 	g.SetSoloistIdx(0)
 	g.SetTrickNumber(1)
 	g.SetPhase(domain.CalabresellaPhaseTrickEnd)
-	g.SetCurrentTrick([]*domain.CalabresellaTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: calCard(domain.CardDesignSpade, 4)},  // lead low
 		{PlayerIdx: 1, Card: calCard(domain.CardDesignClover, 3)}, // off-suit 3 (cannot win)
 		{PlayerIdx: 2, Card: calCard(domain.CardDesignSpade, 5)},  // follows, higher
@@ -263,7 +263,7 @@ func TestCalabresella_TrickResolution_LastTrickUltima(t *testing.T) {
 	g.SetSoloistIdx(0)
 	g.SetTrickNumber(domain.CalabresellaTrickCount) // final trick
 	g.SetPhase(domain.CalabresellaPhaseTrickEnd)
-	g.SetCurrentTrick([]*domain.CalabresellaTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: calCard(domain.CardDesignSpade, 4)},
 		{PlayerIdx: 1, Card: calCard(domain.CardDesignSpade, 5)},
 		{PlayerIdx: 2, Card: calCard(domain.CardDesignSpade, 6)},
@@ -279,7 +279,7 @@ func TestCalabresella_NextTrick(t *testing.T) {
 	g.SetPhase(domain.CalabresellaPhaseTrickEnd)
 	g.SetLeadPlayerIdx(2)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*domain.CalabresellaTrickCard{{PlayerIdx: 0, Card: calCard(domain.CardDesignSpade, 1)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 0, Card: calCard(domain.CardDesignSpade, 1)}})
 	g.NextTrick()
 	assert.Equal(t, domain.CalabresellaPhasePlay, g.GetPhase())
 	assert.Equal(t, 2, g.GetCurrentPlayerIdx())
@@ -297,7 +297,7 @@ func TestCalabresella_ValidatePlay_MustFollowSuit(t *testing.T) {
 	g.SetSoloistIdx(0)
 	g.SetPhase(domain.CalabresellaPhasePlay)
 	g.SetCurrentPlayerIdx(1)
-	g.SetCurrentTrick([]*domain.CalabresellaTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: calCard(domain.CardDesignSpade, 13)},
 	})
 	setCalabresellaHand(g, 1,
@@ -318,7 +318,7 @@ func TestCalabresella_ValidatePlay_VoidCanDiscard(t *testing.T) {
 	g := newTestCalabresella()
 	g.SetSoloistIdx(0)
 	g.SetPhase(domain.CalabresellaPhasePlay)
-	g.SetCurrentTrick([]*domain.CalabresellaTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: calCard(domain.CardDesignSpade, 13)},
 	})
 	// Player 1 void in spades -> any card is legal.
@@ -409,7 +409,7 @@ func TestCalabresella_PlayerPlay_FollowSuitViolation(t *testing.T) {
 	g.SetSoloistIdx(0)
 	g.SetPhase(domain.CalabresellaPhasePlay)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*domain.CalabresellaTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: calCard(domain.CardDesignSpade, 13)},
 	})
 	setCalabresellaHand(g, 0,
@@ -493,7 +493,7 @@ func TestCalabresella_GetHint_PlayReasons(t *testing.T) {
 	g.SetPhase(domain.CalabresellaPhasePlay)
 	g.SetCurrentPlayerIdx(0)
 	// Opponent (soloist seat 1 in trick) leads a Queen; player 0 can win or duck.
-	g.SetCurrentTrick([]*domain.CalabresellaTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 2, Card: calCard(domain.CardDesignSpade, 12)}, // Q lead by soloist
 	})
 	setCalabresellaHand(g, 0,
@@ -504,7 +504,7 @@ func TestCalabresella_GetHint_PlayReasons(t *testing.T) {
 	assert.Contains(t, []string{"follow_win", "follow_duck"}, h.Reason)
 
 	// Discard-low reason: void in lead suit.
-	g.SetCurrentTrick([]*domain.CalabresellaTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 2, Card: calCard(domain.CardDesignSpade, 12)},
 	})
 	setCalabresellaHand(g, 0, calCard(domain.CardDesignClover, 1)) // off-suit only
@@ -515,7 +515,7 @@ func TestCalabresella_GetHint_PlayReasons(t *testing.T) {
 	// give_partner reason: partner (same side) is winning.
 	g.SetSoloistIdx(1) // players 0 and 2 are coalition (same side)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*domain.CalabresellaTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 2, Card: calCard(domain.CardDesignSpade, 3)}, // partner (coalition) winning
 	})
 	setCalabresellaHand(g, 0,

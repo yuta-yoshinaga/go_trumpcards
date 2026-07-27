@@ -73,7 +73,7 @@ func TestGaigel_TrickWinner_DoubleDeckTie(t *testing.T) {
 	a2 := domain.NewCard(domain.CardDesignSpade, 1, false)
 	low := domain.NewCard(domain.CardDesignSpade, 7, false)
 	low2 := domain.NewCard(domain.CardDesignSpade, 7, false)
-	g.SetCurrentTrick([]*domain.GaigelTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: a1},
 		{PlayerIdx: 1, Card: low},
 		{PlayerIdx: 2, Card: a2},
@@ -91,7 +91,7 @@ func TestGaigel_TrumpBeatsNonTrump(t *testing.T) {
 	g.Reset()
 	g.SetTrumpSuit(domain.CardDesignDiamond)
 	// Lead spade Ace, player 2 plays trump 7 -> trump wins.
-	g.SetCurrentTrick([]*domain.GaigelTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 10, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignDiamond, 7, false)},
@@ -171,7 +171,7 @@ func TestGaigel_PhaseSwitch_Phase1Optional(t *testing.T) {
 	p0.AddCard(domain.NewCard(domain.CardDesignClover, 7, false)) // off suit
 	p0.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))  // trump
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*domain.GaigelTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},
 	})
 	g.SetPhase(domain.GaigelPhasePlay)
@@ -212,7 +212,7 @@ func TestGaigel_PhaseSwitch_Phase2MustFollow(t *testing.T) {
 	p.Reset()
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))   // led suit
 	p.AddCard(domain.NewCard(domain.CardDesignClover, 10, false)) // off suit
-	g.SetCurrentTrick([]*domain.GaigelTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: (g.GetCurrentPlayerIdx() + 3) % 4, Card: domain.NewCard(domain.CardDesignSpade, 7, false)},
 	})
 	g.SetPhase(domain.GaigelPhasePlay)

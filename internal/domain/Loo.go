@@ -47,12 +47,6 @@ const (
 	LooPhaseRoundEnd LooPhase = 3
 )
 
-// LooTrickCard はトリック中の 1 枚。
-type LooTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // LooDealDetail は 1 ディールの精算内訳。
 type LooDealDetail struct {
 	PotStart  int         // ディール開始時 (アンティ加算後) のポット額
@@ -83,8 +77,8 @@ type Loo struct {
 	currentPlayerIdx int
 	decidePlayerIdx  int // 現在 play/pass を決めるプレイヤー
 	decideDone       [LooPlayerCnt]bool
-	currentTrick     []*LooTrickCard
-	lastTrick        []*LooTrickCard
+	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
 	lastTrickWinner  int
 	leadPlayerIdx    int
 	trumpSuit        int // 切り札スート (0=未確定)
@@ -378,7 +372,7 @@ func (g *Loo) CpuPlay() {
 
 // playCard はカードをプレイする共通処理。
 func (g *Loo) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &LooTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == len(g.activePlayers()) {
@@ -871,13 +865,13 @@ func (g *Loo) GetDecidePlayerIdx() int { return g.decidePlayerIdx }
 func (g *Loo) SetDecidePlayerIdx(idx int) { g.decidePlayerIdx = idx }
 
 // GetCurrentTrick は進行中のトリックを返す。
-func (g *Loo) GetCurrentTrick() []*LooTrickCard { return g.currentTrick }
+func (g *Loo) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick は進行中のトリックを設定する (テスト用)。
-func (g *Loo) SetCurrentTrick(trick []*LooTrickCard) { g.currentTrick = trick }
+func (g *Loo) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLastTrick は直前に完了したトリックを返す。
-func (g *Loo) GetLastTrick() []*LooTrickCard { return g.lastTrick }
+func (g *Loo) GetLastTrick() []*TrickCard { return g.lastTrick }
 
 // GetLastTrickWinner は直前トリックの勝者を返す (-1=なし)。
 func (g *Loo) GetLastTrickWinner() int { return g.lastTrickWinner }
@@ -975,8 +969,8 @@ type looJSON struct {
 	CurrentPlayerIdx int                `json:"ci"`
 	DecidePlayerIdx  int                `json:"dp"`
 	DecideDone       [LooPlayerCnt]bool `json:"dd"`
-	CurrentTrick     []*LooTrickCard    `json:"ct"`
-	LastTrick        []*LooTrickCard    `json:"lt"`
+	CurrentTrick     []*TrickCard       `json:"ct"`
+	LastTrick        []*TrickCard       `json:"lt"`
 	LastTrickWinner  int                `json:"lw"`
 	LeadPlayerIdx    int                `json:"li"`
 	TrumpSuit        int                `json:"ts"`
@@ -1030,7 +1024,7 @@ func looInRange(v int) bool { return v >= 0 && v < LooPlayerCnt }
 func looInRangeOrUnset(v int) bool { return v == -1 || looInRange(v) }
 
 // looValidateTrick は復元したトリック配列の各要素を検証する。
-func looValidateTrick(trick []*LooTrickCard) error {
+func looValidateTrick(trick []*TrickCard) error {
 	for _, tc := range trick {
 		if tc == nil || tc.Card == nil {
 			return fmt.Errorf("loo: invalid trick card")
@@ -1115,7 +1109,7 @@ func (g *Loo) UnmarshalJSON(data []byte) error {
 	g.decideDone = j.DecideDone
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*LooTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.lastTrick = j.LastTrick
 	g.lastTrickWinner = j.LastTrickWinner

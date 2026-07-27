@@ -154,8 +154,8 @@ func (p *KoenigrufenWebPresenter) buildTalonOutput(g interfaces.KoenigrufenGame)
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *KoenigrufenWebPresenter) buildTrickOutput(trick []*domain.KoenigrufenTrickCard) []*controller.KoenigrufenWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.KoenigrufenTrickCard) *controller.KoenigrufenWebOutputTrickCard {
+func (p *KoenigrufenWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.KoenigrufenWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.KoenigrufenWebOutputTrickCard {
 		return &controller.KoenigrufenWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutputWithFace(tc.Card, koenigrufenFace)}
 	})
 }

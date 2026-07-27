@@ -137,7 +137,7 @@ func TestCatchTen_PlayerPlay(t *testing.T) {
 		setupCatchTenPlayPhase(g, 0, 1, 1)
 
 		leadCard := domain.NewCard(domain.CardDesignHeart, 10, false)
-		g.SetCurrentTrick([]*domain.CatchTenTrickCard{{PlayerIdx: 1, Card: leadCard}})
+		g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: leadCard}})
 
 		p := g.GetPlayer(0)
 		p.Reset()
@@ -178,7 +178,7 @@ func TestCatchTen_TrumpJackIsHighest(t *testing.T) {
 	g.SetPhase(domain.CatchTenPhaseTrickEnd)
 
 	// All trump: J should beat A, K, Q
-	trick := []*domain.CatchTenTrickCard{
+	trick := []*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},  // A trump
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 13, false)}, // K trump
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 11, false)}, // J trump (highest)
@@ -197,7 +197,7 @@ func TestCatchTen_TrumpAceBeatsTen(t *testing.T) {
 	g.SetTrickNumber(1)
 	g.SetPhase(domain.CatchTenPhaseTrickEnd)
 
-	trick := []*domain.CatchTenTrickCard{
+	trick := []*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 10, false)}, // 10 trump
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},  // A trump (beats 10)
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 9, false)},  // 9 trump
@@ -216,7 +216,7 @@ func TestCatchTen_PlainSuitAceHigh(t *testing.T) {
 	g.SetTrickNumber(1)
 	g.SetPhase(domain.CatchTenPhaseTrickEnd)
 
-	trick := []*domain.CatchTenTrickCard{
+	trick := []*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)}, // K heart
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},  // A heart (highest)
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 10, false)}, // 10 heart
@@ -235,7 +235,7 @@ func TestCatchTen_TrumpBeatsLeadSuit(t *testing.T) {
 	g.SetTrickNumber(1)
 	g.SetPhase(domain.CatchTenPhaseTrickEnd)
 
-	trick := []*domain.CatchTenTrickCard{
+	trick := []*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 1, false)}, // A heart lead
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 6, false)}, // 6 trump (wins)
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
@@ -255,7 +255,7 @@ func TestCatchTen_HonorCaptureScoring(t *testing.T) {
 	g.SetPhase(domain.CatchTenPhaseTrickEnd)
 
 	// Trump J (11) + trump 10 (10) + trump A (4) in a trick; winner takes 25 honors
-	trick := []*domain.CatchTenTrickCard{
+	trick := []*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 11, false)}, // J trump (wins) honor 11
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 10, false)}, // 10 trump honor 10
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},  // A trump honor 4
@@ -274,7 +274,7 @@ func TestCatchTen_HonorKingQueen(t *testing.T) {
 	g.SetTrickNumber(1)
 	g.SetPhase(domain.CatchTenPhaseTrickEnd)
 
-	trick := []*domain.CatchTenTrickCard{
+	trick := []*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 13, false)}, // K trump (wins) honor 3
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 12, false)}, // Q trump honor 2
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 9, false)},  // 9 trump honor 0
@@ -292,7 +292,7 @@ func TestCatchTen_ResolveTrick_LastTrick(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignSpade)
 	g.SetTrickNumber(domain.CatchTenHandSize) // last trick
 	g.SetPhase(domain.CatchTenPhaseTrickEnd)
-	g.SetCurrentTrick([]*domain.CatchTenTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 6, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
@@ -312,7 +312,7 @@ func TestCatchTen_PlayCardDoesNotAutoResolve(t *testing.T) {
 	g.Reset()
 	g.SetTrumpSuit(domain.CardDesignSpade)
 	setupCatchTenPlayPhase(g, 3, 0, 1) // seat 3 (a CPU) plays the 4th card
-	g.SetCurrentTrick([]*domain.CatchTenTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 7, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 9, false)},

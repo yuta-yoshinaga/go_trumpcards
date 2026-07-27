@@ -69,7 +69,7 @@ type SkatGame interface {
 	// GetCurrentPlayerIdx returns the player whose turn it is to play a card.
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick returns the current trick (in play order).
-	GetCurrentTrick() []*domain.SkatTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetForehandIdx returns the forehand index.
 	GetForehandIdx() int
 	// GetMiddlehandIdx returns the middlehand index.

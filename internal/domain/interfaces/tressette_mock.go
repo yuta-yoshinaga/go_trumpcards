@@ -97,9 +97,9 @@ func (_m *MockTressetteGame) GetCurrentPlayerIdx() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockTressetteGame) GetCurrentTrick() []*domain.TressetteTrickCard {
+func (_m *MockTressetteGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
-	return ret.Get(0).([]*domain.TressetteTrickCard)
+	return ret.Get(0).([]*domain.TrickCard)
 }
 
 // GetLeadPlayerIdx モック

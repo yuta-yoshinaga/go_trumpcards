@@ -141,8 +141,8 @@ func (p *FrenchTarotWebPresenter) buildChienOutput(g interfaces.FrenchTarotGame)
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *FrenchTarotWebPresenter) buildTrickOutput(trick []*domain.FrenchTarotTrickCard) []*controller.FrenchTarotWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.FrenchTarotTrickCard) *controller.FrenchTarotWebOutputTrickCard {
+func (p *FrenchTarotWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.FrenchTarotWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.FrenchTarotWebOutputTrickCard {
 		return &controller.FrenchTarotWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutputWithFace(tc.Card, frenchTarotFace)}
 	})
 }

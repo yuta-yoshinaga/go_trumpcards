@@ -74,12 +74,6 @@ type TwentyNineHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// TwentyNineTrickCard トリック中の 1 枚
-type TwentyNineTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // TwentyNine トゥエンティナインのゲームクラス
 type TwentyNine struct {
 	trumpCards       *TrumpCards
@@ -89,7 +83,7 @@ type TwentyNine struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*TwentyNineTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	bids             [TwentyNinePlayerCnt]TwentyNineBid
@@ -376,7 +370,7 @@ func (g *TwentyNine) playCard(playerIdx int, card *Card) {
 			g.appendLog(playerIdx, "reveal_trump", fmt.Sprintf("trump (%d) is revealed", g.trumpSuit), nil)
 		}
 	}
-	g.currentTrick = append(g.currentTrick, &TwentyNineTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == TwentyNinePlayerCnt {
@@ -777,10 +771,10 @@ func (g *TwentyNine) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *TwentyNine) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *TwentyNine) GetCurrentTrick() []*TwentyNineTrickCard { return g.currentTrick }
+func (g *TwentyNine) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *TwentyNine) SetCurrentTrick(trick []*TwentyNineTrickCard) { g.currentTrick = trick }
+func (g *TwentyNine) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *TwentyNine) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -883,7 +877,7 @@ type twentyNineJSON struct {
 	RoundNumber      int                                `json:"rn"`
 	TrickNumber      int                                `json:"tn"`
 	CurrentPlayerIdx int                                `json:"ci"`
-	CurrentTrick     []*TwentyNineTrickCard             `json:"ct"`
+	CurrentTrick     []*TrickCard                       `json:"ct"`
 	LeadPlayerIdx    int                                `json:"li"`
 	DealerIdx        int                                `json:"di"`
 	Bids             [TwentyNinePlayerCnt]TwentyNineBid `json:"bd"`
@@ -1002,7 +996,7 @@ func (g *TwentyNine) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*TwentyNineTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

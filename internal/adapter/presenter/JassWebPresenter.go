@@ -109,8 +109,8 @@ func (p *JassWebPresenter) buildLastTrickOutput(g interfaces.JassGame) ([]*contr
 	return out, log[winIdx].PlayerIdx
 }
 
-func (p *JassWebPresenter) buildTrickOutput(trick []*domain.JassTrickCard) []*controller.JassWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.JassTrickCard) *controller.JassWebOutputTrickCard {
+func (p *JassWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.JassWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.JassWebOutputTrickCard {
 		return &controller.JassWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
@@ -132,7 +132,7 @@ func (p *JassWebPresenter) buildPlayersOutput(g interfaces.JassGame) []*controll
 	return out
 }
 
-func (p *JassWebPresenter) buildMessage(g interfaces.JassGame, trick []*domain.JassTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *JassWebPresenter) buildMessage(g interfaces.JassGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

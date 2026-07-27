@@ -28,7 +28,7 @@ func TestSkatCpuPickPlayDoesNotChaseOffSuitNonTrump(t *testing.T) {
 	g.round.phase = SkatPhasePlay
 	g.round.currentPlayerIdx = 2
 	// Lead is 9 of Hearts (non-trump); CPU 1 followed with King of Hearts.
-	g.round.currentTrick = []*SkatTrickCard{
+	g.round.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: skatTestCard(CardDesignHeart, skatValueNine)},
 		{PlayerIdx: 1, Card: skatTestCard(CardDesignHeart, skatValueKing)},
 	}
@@ -61,7 +61,7 @@ func TestSkatCpuPickPlayWinsWithLeadSuit(t *testing.T) {
 	g.round.trumpSuit = CardDesignSpade
 	g.round.phase = SkatPhasePlay
 	g.round.currentPlayerIdx = 1
-	g.round.currentTrick = []*SkatTrickCard{
+	g.round.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: skatTestCard(CardDesignHeart, skatValueKing)},
 	}
 	cpu := g.GetPlayer(1)
@@ -100,7 +100,7 @@ func TestSkatCpuPickPlayHardAlwaysTakesTrick(t *testing.T) {
 		g.round.trumpSuit = CardDesignSpade
 		g.round.phase = SkatPhasePlay
 		g.round.currentPlayerIdx = 1
-		g.round.currentTrick = []*SkatTrickCard{
+		g.round.currentTrick = []*TrickCard{
 			{PlayerIdx: 0, Card: skatTestCard(CardDesignHeart, skatValueNine)},
 		}
 		cpu := g.GetPlayer(1)
@@ -232,7 +232,7 @@ func TestSkatGameMultiplierUsesSnapshot(t *testing.T) {
 func TestSkatTrickWinnerNullOffSuitIgnored(t *testing.T) {
 	g := newSkatForTest(t, DefaultSkatConfig())
 	g.round.gameType = SkatGameNull
-	g.round.currentTrick = []*SkatTrickCard{
+	g.round.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: skatTestCard(CardDesignHeart, skatValueNine)},
 		{PlayerIdx: 1, Card: skatTestCard(CardDesignDiamond, skatValueAce)}, // off-suit
 		{PlayerIdx: 2, Card: skatTestCard(CardDesignHeart, skatValueKing)},  // higher in lead suit
@@ -256,7 +256,7 @@ func TestSkatTrickWinnerEmptyTrickReturnsZero(t *testing.T) {
 func TestSkatTrickWinnerGrandJackBeatsLead(t *testing.T) {
 	g := newSkatForTest(t, DefaultSkatConfig())
 	g.round.gameType = SkatGameGrand
-	g.round.currentTrick = []*SkatTrickCard{
+	g.round.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: skatTestCard(CardDesignHeart, skatValueAce)},
 		{PlayerIdx: 1, Card: skatTestCard(CardDesignDiamond, skatValueJack)}, // weakest jack
 		{PlayerIdx: 2, Card: skatTestCard(CardDesignClover, skatValueJack)},  // top jack
@@ -328,7 +328,7 @@ func TestSkatValidatePlayTrumpRequiredWhenLeadIsTrump(t *testing.T) {
 	resetForControlledPhase(g)
 	g.round.gameType = SkatGameSuit
 	g.round.trumpSuit = CardDesignSpade
-	g.round.currentTrick = []*SkatTrickCard{
+	g.round.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: skatTestCard(CardDesignClover, skatValueJack)}, // jack = trump
 	}
 	human := g.GetPlayer(0)
@@ -349,7 +349,7 @@ func TestSkatValidatePlayDiscardingNonTrumpHoldsLeadSuit(t *testing.T) {
 	resetForControlledPhase(g)
 	g.round.gameType = SkatGameSuit
 	g.round.trumpSuit = CardDesignSpade
-	g.round.currentTrick = []*SkatTrickCard{
+	g.round.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: skatTestCard(CardDesignHeart, skatValueKing)},
 	}
 	human := g.GetPlayer(0)

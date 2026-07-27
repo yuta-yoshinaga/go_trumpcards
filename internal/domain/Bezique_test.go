@@ -85,7 +85,7 @@ func TestBezique_PlayMustFollowOnlyInEndgame(t *testing.T) {
 	b.SetCurrentPlayerIdx(0)
 	// Phase 1 (stock present): any card is legal even off-suit.
 	b.SetTrumpCard(bzCard(domain.CardDesignSpade, 1))
-	b.SetCurrentTrick([]*domain.BeziqueTrickCard{{PlayerIdx: 1, Card: bzCard(domain.CardDesignHeart, 10)}})
+	b.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: bzCard(domain.CardDesignHeart, 10)}})
 	bzSetHand(b.GetPlayer(0), bzCard(domain.CardDesignHeart, 13), bzCard(domain.CardDesignClover, 9))
 	require.NoError(t, b.PlayerPlay(1)) // off-suit clover legal in phase 1
 }
@@ -97,8 +97,8 @@ func TestBezique_TrickWinnerTrumpBeatsFailLead(t *testing.T) {
 	b.SetTrickNumber(1)
 	b.SetTrumpCard(bzCard(domain.CardDesignSpade, 7)) // stock present → phase 1 meld after
 	b.SetCurrentPlayerIdx(0)
-	b.SetCurrentTrick([]*domain.BeziqueTrickCard{{PlayerIdx: 1, Card: bzCard(domain.CardDesignHeart, 1)}}) // A♥ lead
-	bzSetHand(b.GetPlayer(0), bzCard(domain.CardDesignSpade, 7))                                           // 7♠ trump
+	b.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: bzCard(domain.CardDesignHeart, 1)}}) // A♥ lead
+	bzSetHand(b.GetPlayer(0), bzCard(domain.CardDesignSpade, 7))                                    // 7♠ trump
 	require.NoError(t, b.PlayerPlay(0))
 	// Trick resolved; seat 0 (trump) should have won → it's now seat 0's meld turn.
 	assert.Equal(t, domain.BeziquePhaseMeld, b.GetPhase())

@@ -48,7 +48,7 @@ type WizardGame interface {
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
-	GetCurrentTrick() []*domain.WizardTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetTrumpCard 切り札カードを取得する
 	GetTrumpCard() *domain.Card
 	// GetTrumpSuit 切り札スートを取得する (-1 = 切り札なし)

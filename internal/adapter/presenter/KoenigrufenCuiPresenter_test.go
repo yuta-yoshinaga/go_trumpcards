@@ -62,7 +62,7 @@ func TestKoenigrufenCuiPresenter_Output(t *testing.T) {
 		g.GetPlayer(0).Reset()
 		g.GetPlayer(0).AddCard(domain.NewCard(domain.KoenigrufenTrumpDesign, 7, false))
 		g.GetPlayer(0).AddCard(domain.NewCard(domain.KoenigrufenSkusDesign, 0, false))
-		g.SetCurrentTrick([]*domain.KoenigrufenTrickCard{
+		g.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		})
 		result := p.Output(g, nil)

@@ -47,9 +47,9 @@ type BourreGame interface {
 	// GetTrickNumber 現在のトリック番号を取得する
 	GetTrickNumber() int
 	// GetCurrentTrick 進行中のトリックを取得する
-	GetCurrentTrick() []*domain.BourreTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetLastTrick 直前のトリックを取得する
-	GetLastTrick() []*domain.BourreTrickCard
+	GetLastTrick() []*domain.TrickCard
 	// GetLastTrickWinner 直前トリックの勝者を取得する
 	GetLastTrickWinner() int
 	// GetLeadPlayerIdx リードプレイヤーを取得する

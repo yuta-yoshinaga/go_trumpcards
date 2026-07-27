@@ -126,7 +126,7 @@ func TestDoppelkopf_DulleBeatsAllAndTieFirstWins(t *testing.T) {
 	g.SetPhase(DoppelkopfPhaseTrickEnd)
 	g.SetTrickNumber(1)
 	// Two Dulle (♥10) played by p1 then p3; first (p1) wins the tie.
-	g.SetCurrentTrick([]*DoppelkopfTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: dkCard(CardDesignClover, 12)}, // Q♣ trump
 		{PlayerIdx: 1, Card: dkCard(CardDesignHeart, 10)},  // Dulle (highest)
 		{PlayerIdx: 2, Card: dkCard(CardDesignDiamond, 1)}, // A♦ trump
@@ -139,7 +139,7 @@ func TestDoppelkopf_DulleBeatsAllAndTieFirstWins(t *testing.T) {
 
 func TestDoppelkopf_TrickWinnerHighFail(t *testing.T) {
 	g := newDKGame(false)
-	g.SetCurrentTrick([]*DoppelkopfTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: dkCard(CardDesignClover, 13)}, // K♣
 		{PlayerIdx: 1, Card: dkCard(CardDesignClover, 1)},  // A♣ (strongest fail in suit)
 		{PlayerIdx: 2, Card: dkCard(CardDesignSpade, 1)},   // off-suit, ignored
@@ -154,7 +154,7 @@ func TestDoppelkopf_TrumpBeatsFailLead(t *testing.T) {
 	// A fail suit is led; a player void in it overruffs with trump. The trump
 	// must win even though its suit ID (trump) differs from the lead suit.
 	g := newDKGame(false)
-	g.SetCurrentTrick([]*DoppelkopfTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: dkCard(CardDesignClover, 1)},   // A♣ fail lead
 		{PlayerIdx: 1, Card: dkCard(CardDesignDiamond, 13)}, // K♦ trump
 		{PlayerIdx: 2, Card: dkCard(CardDesignClover, 10)},  // 10♣ fail
@@ -164,7 +164,7 @@ func TestDoppelkopf_TrumpBeatsFailLead(t *testing.T) {
 		t.Errorf("winner = %d, want 1 (K♦ trump beats the ♣ fail lead)", w)
 	}
 	// And the Dulle (♥10) beats a lower trump played earlier.
-	g.SetCurrentTrick([]*DoppelkopfTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: dkCard(CardDesignClover, 1)},  // A♣ fail lead
 		{PlayerIdx: 1, Card: dkCard(CardDesignDiamond, 1)}, // A♦ trump
 		{PlayerIdx: 2, Card: dkCard(CardDesignHeart, 10)},  // Dulle (top trump)
@@ -177,7 +177,7 @@ func TestDoppelkopf_TrumpBeatsFailLead(t *testing.T) {
 
 func TestDoppelkopf_TrickTopStrengthGuard(t *testing.T) {
 	g := newDKGame(false)
-	g.SetCurrentTrick([]*DoppelkopfTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: dkCard(CardDesignClover, 1)},
 	})
 	// A winner not present in the current trick must yield the sentinel, not panic.
@@ -193,7 +193,7 @@ func TestDoppelkopf_MustFollowSuit(t *testing.T) {
 	g := newDKGame(true) // human is player 0
 	g.SetPhase(DoppelkopfPhasePlay)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*DoppelkopfTrickCard{{PlayerIdx: 3, Card: dkCard(CardDesignClover, 1)}}) // lead ♣ fail
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: dkCard(CardDesignClover, 1)}}) // lead ♣ fail
 	// Human (player 0) has a club → must follow.
 	dkSetHand(g.GetPlayer(0), dkCard(CardDesignClover, 13), dkCard(CardDesignSpade, 1))
 	if err := g.PlayerPlay(1); err == nil { // try spade
@@ -208,7 +208,7 @@ func TestDoppelkopf_ResolveAndNextTrick(t *testing.T) {
 	g := newDKGame(false)
 	g.SetPhase(DoppelkopfPhaseTrickEnd)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*DoppelkopfTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: dkCard(CardDesignHeart, 10)},
 		{PlayerIdx: 1, Card: dkCard(CardDesignClover, 12)},
 		{PlayerIdx: 2, Card: dkCard(CardDesignSpade, 1)},
@@ -231,7 +231,7 @@ func TestDoppelkopf_LastTrickToRoundEnd(t *testing.T) {
 	g := newDKGame(false)
 	g.SetPhase(DoppelkopfPhaseTrickEnd)
 	g.SetTrickNumber(DoppelkopfTrickCount)
-	g.SetCurrentTrick([]*DoppelkopfTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: dkCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: dkCard(CardDesignClover, 13)},
 		{PlayerIdx: 2, Card: dkCard(CardDesignClover, 10)},

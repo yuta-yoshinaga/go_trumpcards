@@ -61,8 +61,8 @@ func (p *EcarteWebPresenter) buildBase(b interfaces.EcarteGame) *controller.Ecar
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *EcarteWebPresenter) buildTrickOutput(trick []*domain.EcarteTrickCard) []*controller.EcarteWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.EcarteTrickCard) *controller.EcarteWebOutputTrickCard {
+func (p *EcarteWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.EcarteWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.EcarteWebOutputTrickCard {
 		return &controller.EcarteWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

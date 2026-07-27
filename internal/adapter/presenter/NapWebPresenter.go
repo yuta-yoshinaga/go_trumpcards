@@ -76,8 +76,8 @@ func (p *NapWebPresenter) playableIndices(g interfaces.NapGame) []int {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *NapWebPresenter) buildTrickOutput(trick []*domain.NapTrickCard) []*controller.NapWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.NapTrickCard) *controller.NapWebOutputTrickCard {
+func (p *NapWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.NapWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.NapWebOutputTrickCard {
 		return &controller.NapWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

@@ -54,7 +54,7 @@ func TestBourreBeats(t *testing.T) {
 
 func TestBourreTrickWinner(t *testing.T) {
 	b := &Bourre{trumpSuit: CardDesignSpade}
-	b.currentTrick = []*BourreTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: bcard(CardDesignHeart, 10)},
 		{PlayerIdx: 1, Card: bcard(CardDesignHeart, 13)}, // higher lead
 		{PlayerIdx: 2, Card: bcard(CardDesignSpade, 2)},  // trump cuts
@@ -66,7 +66,7 @@ func TestBourreTrickWinner(t *testing.T) {
 }
 
 func TestBourreLegalPlays(t *testing.T) {
-	newGame := func(hand []*Card, trick []*BourreTrickCard) *Bourre {
+	newGame := func(hand []*Card, trick []*TrickCard) *Bourre {
 		b := &Bourre{trumpSuit: CardDesignSpade}
 		p := NewBourrePlayer(true)
 		for _, c := range hand {
@@ -87,7 +87,7 @@ func TestBourreLegalPlays(t *testing.T) {
 	t.Run("must follow and must win", func(t *testing.T) {
 		// lead Heart 10; hand has Heart 5 (cannot beat) and Heart 13 (can beat) -> must play the winner
 		hand := []*Card{bcard(CardDesignHeart, 5), bcard(CardDesignHeart, 13), bcard(CardDesignClover, 9)}
-		trick := []*BourreTrickCard{{PlayerIdx: 1, Card: bcard(CardDesignHeart, 10)}}
+		trick := []*TrickCard{{PlayerIdx: 1, Card: bcard(CardDesignHeart, 10)}}
 		b := newGame(hand, trick)
 		got := b.legalPlays(0)
 		if len(got) != 1 || b.players[0].GetCard(got[0]).GetValue() != 13 {
@@ -98,7 +98,7 @@ func TestBourreLegalPlays(t *testing.T) {
 	t.Run("follow without beating", func(t *testing.T) {
 		// lead Heart 13; only Heart 5 -> follow, cannot beat
 		hand := []*Card{bcard(CardDesignHeart, 5), bcard(CardDesignClover, 9)}
-		trick := []*BourreTrickCard{{PlayerIdx: 1, Card: bcard(CardDesignHeart, 13)}}
+		trick := []*TrickCard{{PlayerIdx: 1, Card: bcard(CardDesignHeart, 13)}}
 		b := newGame(hand, trick)
 		got := b.legalPlays(0)
 		if len(got) != 1 || b.players[0].GetCard(got[0]).GetDesign() != CardDesignHeart {
@@ -109,7 +109,7 @@ func TestBourreLegalPlays(t *testing.T) {
 	t.Run("must trump when void", func(t *testing.T) {
 		// lead Heart; void of heart, has spade trump + clover -> must play spade
 		hand := []*Card{bcard(CardDesignSpade, 4), bcard(CardDesignClover, 9)}
-		trick := []*BourreTrickCard{{PlayerIdx: 1, Card: bcard(CardDesignHeart, 13)}}
+		trick := []*TrickCard{{PlayerIdx: 1, Card: bcard(CardDesignHeart, 13)}}
 		b := newGame(hand, trick)
 		got := b.legalPlays(0)
 		if len(got) != 1 || b.players[0].GetCard(got[0]).GetDesign() != CardDesignSpade {
@@ -120,7 +120,7 @@ func TestBourreLegalPlays(t *testing.T) {
 	t.Run("must over-trump when able", func(t *testing.T) {
 		// lead Heart; trump Spade 5 already played; hand Spade 8 (over) + Spade 2 (under) -> must over-trump
 		hand := []*Card{bcard(CardDesignSpade, 2), bcard(CardDesignSpade, 8)}
-		trick := []*BourreTrickCard{
+		trick := []*TrickCard{
 			{PlayerIdx: 1, Card: bcard(CardDesignHeart, 13)},
 			{PlayerIdx: 2, Card: bcard(CardDesignSpade, 5)},
 		}
@@ -133,7 +133,7 @@ func TestBourreLegalPlays(t *testing.T) {
 
 	t.Run("discard when void of lead and trump", func(t *testing.T) {
 		hand := []*Card{bcard(CardDesignClover, 9), bcard(CardDesignDiamond, 4)}
-		trick := []*BourreTrickCard{{PlayerIdx: 1, Card: bcard(CardDesignHeart, 13)}}
+		trick := []*TrickCard{{PlayerIdx: 1, Card: bcard(CardDesignHeart, 13)}}
 		b := newGame(hand, trick)
 		if got := b.legalPlays(0); len(got) != 2 {
 			t.Errorf("should discard anything, got %v", got)
@@ -143,7 +143,7 @@ func TestBourreLegalPlays(t *testing.T) {
 	t.Run("follow trump lead must over", func(t *testing.T) {
 		// trump is Spade and lead is Spade 9; hand Spade 11 + Spade 3 -> must play 11
 		hand := []*Card{bcard(CardDesignSpade, 3), bcard(CardDesignSpade, 11)}
-		trick := []*BourreTrickCard{{PlayerIdx: 1, Card: bcard(CardDesignSpade, 9)}}
+		trick := []*TrickCard{{PlayerIdx: 1, Card: bcard(CardDesignSpade, 9)}}
 		b := newGame(hand, trick)
 		got := b.legalPlays(0)
 		if len(got) != 1 || b.players[0].GetCard(got[0]).GetValue() != 11 {

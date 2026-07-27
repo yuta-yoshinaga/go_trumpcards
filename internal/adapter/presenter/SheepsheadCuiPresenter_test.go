@@ -35,7 +35,7 @@ func setupSheepsheadCuiMock() *interfaces.MockSheepsheadGame {
 	m.On("GetCalledSuit").Return(0)
 	m.On("GetBlind").Return([]*domain.Card(nil))
 	m.On("GetPassCount").Return(0)
-	m.On("GetCurrentTrick").Return([]*domain.SheepsheadTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.SheepsheadPhasePick)
 	m.On("GetCurrentPlayerIdx").Return(0)

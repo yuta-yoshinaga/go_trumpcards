@@ -95,7 +95,7 @@ func newBarbuOutput(bg interfaces.BarbuGame) *controller.BarbuWebOutput {
 }
 
 // barbuTrickToOutput はトリックを WebOutput 表現に変換する。
-func barbuTrickToOutput(trick []*domain.BarbuTrickCard) []*controller.BarbuWebOutputTrickCard {
+func barbuTrickToOutput(trick []*domain.TrickCard) []*controller.BarbuWebOutputTrickCard {
 	out := make([]*controller.BarbuWebOutputTrickCard, 0, len(trick))
 	for _, tc := range trick {
 		if tc == nil {

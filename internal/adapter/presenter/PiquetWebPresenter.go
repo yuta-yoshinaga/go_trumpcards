@@ -114,7 +114,7 @@ func piquetBuildPlayers(g interfaces.PiquetGame) []*controller.PiquetWebOutputPl
 	return out
 }
 
-func piquetBuildCurrentTrick(trick []*domain.PiquetTrickCard) []*controller.PiquetWebOutputTrickCard {
+func piquetBuildCurrentTrick(trick []*domain.TrickCard) []*controller.PiquetWebOutputTrickCard {
 	out := make([]*controller.PiquetWebOutputTrickCard, len(trick))
 	for i, tc := range trick {
 		out[i] = &controller.PiquetWebOutputTrickCard{

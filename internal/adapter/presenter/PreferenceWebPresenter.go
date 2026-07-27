@@ -76,8 +76,8 @@ func (p *PreferenceWebPresenter) playableIndices(g interfaces.PreferenceGame) []
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *PreferenceWebPresenter) buildTrickOutput(trick []*domain.PreferenceTrickCard) []*controller.PreferenceWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.PreferenceTrickCard) *controller.PreferenceWebOutputTrickCard {
+func (p *PreferenceWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.PreferenceWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.PreferenceWebOutputTrickCard {
 		return &controller.PreferenceWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

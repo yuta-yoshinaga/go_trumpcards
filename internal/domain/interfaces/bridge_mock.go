@@ -55,10 +55,10 @@ func (m *MockBridgeGame) GetCurrentPlayerIdx() int {
 	return m.Called().Int(0)
 }
 
-func (m *MockBridgeGame) GetCurrentTrick() []*domain.BridgeTrickCard {
+func (m *MockBridgeGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
 	if v := args.Get(0); v != nil {
-		return v.([]*domain.BridgeTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

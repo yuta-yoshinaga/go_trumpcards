@@ -89,12 +89,6 @@ type WattenHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// WattenTrickCard トリック中の1枚
-type WattenTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Watten ヴァッテンゲームクラス
 type Watten struct {
 	trumpCards       *TrumpCards
@@ -104,7 +98,7 @@ type Watten struct {
 	roundNumber      int // ディール番号 (1 始まり)
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*WattenTrickCard
+	currentTrick     []*TrickCard
 	dealerIdx        int
 	leadPlayerIdx    int
 	schlagRank       int // 宣言された Schlag ランク (0 = 未宣言)
@@ -334,7 +328,7 @@ func (g *Watten) CpuPlay() {
 
 // playCard カードをプレイする共通処理
 func (g *Watten) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &WattenTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play",
 		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
@@ -1073,10 +1067,10 @@ func (g *Watten) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Watten) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Watten) GetCurrentTrick() []*WattenTrickCard { return g.currentTrick }
+func (g *Watten) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Watten) SetCurrentTrick(trick []*WattenTrickCard) { g.currentTrick = trick }
+func (g *Watten) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetDealerIdx ディーラーインデックス取得
 func (g *Watten) GetDealerIdx() int { return g.dealerIdx }
@@ -1236,7 +1230,7 @@ type wattenJSON struct {
 	RoundNumber      int                `json:"rn"`
 	TrickNumber      int                `json:"tn"`
 	CurrentPlayerIdx int                `json:"cp"`
-	CurrentTrick     []*WattenTrickCard `json:"ct"`
+	CurrentTrick     []*TrickCard       `json:"ct"`
 	DealerIdx        int                `json:"di"`
 	LeadPlayerIdx    int                `json:"li"`
 	SchlagRank       int                `json:"sr"`

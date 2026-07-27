@@ -77,8 +77,8 @@ func (p *TwentyNineWebPresenter) playableIndices(g interfaces.TwentyNineGame) []
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *TwentyNineWebPresenter) buildTrickOutput(trick []*domain.TwentyNineTrickCard) []*controller.TwentyNineWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TwentyNineTrickCard) *controller.TwentyNineWebOutputTrickCard {
+func (p *TwentyNineWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.TwentyNineWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.TwentyNineWebOutputTrickCard {
 		return &controller.TwentyNineWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

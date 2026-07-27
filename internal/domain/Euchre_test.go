@@ -452,7 +452,7 @@ func TestEuchre_PlayerPlay_FollowSuit(t *testing.T) {
 	e.SetTrickNumber(1)
 
 	// Lead with spade
-	e.SetCurrentTrick([]*domain.EuchreTrickCard{
+	e.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 10, false)},
 	})
 
@@ -478,7 +478,7 @@ func TestEuchre_PlayerPlay_LeftBower_FollowSuit(t *testing.T) {
 	e.SetTrickNumber(1)
 
 	// Lead with trump (spade)
-	e.SetCurrentTrick([]*domain.EuchreTrickCard{
+	e.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 9, false)},
 	})
 
@@ -525,7 +525,7 @@ func TestEuchre_TrickWinner_HighestLeadSuit(t *testing.T) {
 	e.SetPhase(domain.EuchrePhaseTrickEnd)
 	e.SetTrickNumber(1)
 
-	e.SetCurrentTrick([]*domain.EuchreTrickCard{
+	e.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 9, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 13, false)}, // highest
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 10, false)},
@@ -543,7 +543,7 @@ func TestEuchre_TrickWinner_TrumpBeatsLeadSuit(t *testing.T) {
 	e.SetPhase(domain.EuchrePhaseTrickEnd)
 	e.SetTrickNumber(1)
 
-	e.SetCurrentTrick([]*domain.EuchreTrickCard{
+	e.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},   // A♠ (lead suit)
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 9, false)},   // 9♥ (trump, wins)
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},  // K♠
@@ -561,7 +561,7 @@ func TestEuchre_TrickWinner_RightBowerWins(t *testing.T) {
 	e.SetPhase(domain.EuchrePhaseTrickEnd)
 	e.SetTrickNumber(1)
 
-	e.SetCurrentTrick([]*domain.EuchreTrickCard{
+	e.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},    // A♥
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 11, false)},   // J♥ = Right Bower (wins)
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignDiamond, 11, false)}, // J♦ = Left Bower
@@ -579,7 +579,7 @@ func TestEuchre_TrickWinner_LeftBowerBeatsAce(t *testing.T) {
 	e.SetPhase(domain.EuchrePhaseTrickEnd)
 	e.SetTrickNumber(1)
 
-	e.SetCurrentTrick([]*domain.EuchreTrickCard{
+	e.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},    // A♥
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 11, false)}, // J♦ = Left Bower (wins)
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},   // K♥
@@ -911,7 +911,7 @@ func TestEuchre_ResolveTrick_GoingAlone(t *testing.T) {
 	e.SetGoingAlonePlayerIdx(0) // Partner (2) skipped
 
 	// Only 3 cards in trick
-	e.SetCurrentTrick([]*domain.EuchreTrickCard{
+	e.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 9, false)},
 		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 10, false)},
@@ -1013,7 +1013,7 @@ func TestEuchre_ResolveTrick_LastTrick_GoesToRoundEnd(t *testing.T) {
 	e.SetPhase(domain.EuchrePhaseTrickEnd)
 	e.SetTrickNumber(5) // last trick
 
-	e.SetCurrentTrick([]*domain.EuchreTrickCard{
+	e.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 9, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 10, false)},
@@ -1060,7 +1060,7 @@ func TestEuchre_GetValidPlayIndices(t *testing.T) {
 	assert.Equal(t, 3, len(indices))
 
 	// With lead of spade: only spade valid
-	e.SetCurrentTrick([]*domain.EuchreTrickCard{
+	e.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 10, false)},
 	})
 	indices = e.GetValidPlayIndices(0)

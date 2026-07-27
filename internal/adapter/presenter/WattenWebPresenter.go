@@ -55,8 +55,8 @@ func (p *WattenWebPresenter) buildBase(g interfaces.WattenGame) *controller.Watt
 	return resObj
 }
 
-func (p *WattenWebPresenter) buildTrickOutput(trick []*domain.WattenTrickCard) []*controller.WattenWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.WattenTrickCard) *controller.WattenWebOutputTrickCard {
+func (p *WattenWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.WattenWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.WattenWebOutputTrickCard {
 		return &controller.WattenWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

@@ -65,8 +65,8 @@ func (p *MariasWebPresenter) playableIndices(g interfaces.MariasGame) []int {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *MariasWebPresenter) buildTrickOutput(trick []*domain.MariasTrickCard) []*controller.MariasWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.MariasTrickCard) *controller.MariasWebOutputTrickCard {
+func (p *MariasWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.MariasWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.MariasWebOutputTrickCard {
 		return &controller.MariasWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

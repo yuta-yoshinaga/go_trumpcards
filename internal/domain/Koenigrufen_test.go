@@ -44,7 +44,7 @@ func koenigrufenSetHand(g *domain.Koenigrufen, idx int, cards ...*domain.Card) {
 	}
 }
 
-func koenigrufenTrickCards(cards ...*domain.KoenigrufenTrickCard) []*domain.KoenigrufenTrickCard {
+func koenigrufenTrickCards(cards ...*domain.TrickCard) []*domain.TrickCard {
 	return cards
 }
 
@@ -345,7 +345,7 @@ func TestKoenigrufenFollowSuit(t *testing.T) {
 		koenigrufenTrumpCard(4),
 	)
 	g.SetCurrentTrick(koenigrufenTrickCards(
-		&domain.KoenigrufenTrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignHeart, 7)},
 	))
 	g.SetCurrentPlayerIdx(1)
 	assert.ElementsMatch(t, []int{0, 1}, g.GetPlayableIndices(1))
@@ -362,7 +362,7 @@ func TestKoenigrufenVoidMustTrump(t *testing.T) {
 		koenigrufenSkusCard(),
 	)
 	g.SetCurrentTrick(koenigrufenTrickCards(
-		&domain.KoenigrufenTrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignHeart, 7)},
 	))
 	g.SetCurrentPlayerIdx(1)
 	assert.ElementsMatch(t, []int{1, 2}, g.GetPlayableIndices(1)) // trump + skus
@@ -378,8 +378,8 @@ func TestKoenigrufenOvertrumpObligation(t *testing.T) {
 		koenigrufenTrumpCard(15),
 	)
 	g.SetCurrentTrick(koenigrufenTrickCards(
-		&domain.KoenigrufenTrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignHeart, 7)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 1, Card: koenigrufenTrumpCard(10)},
+		&domain.TrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 1, Card: koenigrufenTrumpCard(10)},
 	))
 	g.SetCurrentPlayerIdx(2)
 	assert.ElementsMatch(t, []int{1}, g.GetPlayableIndices(2))
@@ -396,8 +396,8 @@ func TestKoenigrufenSkusOvertrumpsAll(t *testing.T) {
 		koenigrufenSkusCard(),
 	)
 	g.SetCurrentTrick(koenigrufenTrickCards(
-		&domain.KoenigrufenTrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignHeart, 7)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 1, Card: koenigrufenTrumpCard(21)},
+		&domain.TrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 1, Card: koenigrufenTrumpCard(21)},
 	))
 	g.SetCurrentPlayerIdx(2)
 	// Only the skus can overtrump the 21.
@@ -423,10 +423,10 @@ func TestKoenigrufenLeadAllValid(t *testing.T) {
 func TestKoenigrufenTrickWinnerHighestTrump(t *testing.T) {
 	g := koenigrufenNewReset()
 	g.SetCurrentTrick(koenigrufenTrickCards(
-		&domain.KoenigrufenTrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignHeart, 8)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 1, Card: koenigrufenTrumpCard(3)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 2, Card: koenigrufenTrumpCard(9)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 3, Card: koenigrufenSuitCard(domain.CardDesignHeart, 2)},
+		&domain.TrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignHeart, 8)},
+		&domain.TrickCard{PlayerIdx: 1, Card: koenigrufenTrumpCard(3)},
+		&domain.TrickCard{PlayerIdx: 2, Card: koenigrufenTrumpCard(9)},
+		&domain.TrickCard{PlayerIdx: 3, Card: koenigrufenSuitCard(domain.CardDesignHeart, 2)},
 	))
 	assert.Equal(t, 2, g.TrickWinnerPublic())
 }
@@ -434,10 +434,10 @@ func TestKoenigrufenTrickWinnerHighestTrump(t *testing.T) {
 func TestKoenigrufenSkusWinsAsTopTrump(t *testing.T) {
 	g := koenigrufenNewReset()
 	g.SetCurrentTrick(koenigrufenTrickCards(
-		&domain.KoenigrufenTrickCard{PlayerIdx: 0, Card: koenigrufenTrumpCard(21)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 1, Card: koenigrufenSkusCard()},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 2, Card: koenigrufenTrumpCard(20)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 3, Card: koenigrufenKingCard(domain.CardDesignHeart)},
+		&domain.TrickCard{PlayerIdx: 0, Card: koenigrufenTrumpCard(21)},
+		&domain.TrickCard{PlayerIdx: 1, Card: koenigrufenSkusCard()},
+		&domain.TrickCard{PlayerIdx: 2, Card: koenigrufenTrumpCard(20)},
+		&domain.TrickCard{PlayerIdx: 3, Card: koenigrufenKingCard(domain.CardDesignHeart)},
 	))
 	assert.Equal(t, 1, g.TrickWinnerPublic()) // Sküs is the top trump
 }
@@ -445,10 +445,10 @@ func TestKoenigrufenSkusWinsAsTopTrump(t *testing.T) {
 func TestKoenigrufenTrickWinnerLedSuit(t *testing.T) {
 	g := koenigrufenNewReset()
 	g.SetCurrentTrick(koenigrufenTrickCards(
-		&domain.KoenigrufenTrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignHeart, 6)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 1, Card: koenigrufenSuitCard(domain.CardDesignHeart, 8)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 2, Card: koenigrufenSuitCard(domain.CardDesignSpade, 8)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 3, Card: koenigrufenSuitCard(domain.CardDesignHeart, 3)},
+		&domain.TrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignHeart, 6)},
+		&domain.TrickCard{PlayerIdx: 1, Card: koenigrufenSuitCard(domain.CardDesignHeart, 8)},
+		&domain.TrickCard{PlayerIdx: 2, Card: koenigrufenSuitCard(domain.CardDesignSpade, 8)},
+		&domain.TrickCard{PlayerIdx: 3, Card: koenigrufenSuitCard(domain.CardDesignHeart, 3)},
 	))
 	assert.Equal(t, domain.CardDesignHeart, g.LedSuitPublic())
 	assert.Equal(t, 1, g.TrickWinnerPublic())
@@ -458,8 +458,8 @@ func TestKoenigrufenSkusLedIsTrumpSuit(t *testing.T) {
 	g := koenigrufenNewReset()
 	// Sküs leads → led suit is trump; a trump wins.
 	g.SetCurrentTrick(koenigrufenTrickCards(
-		&domain.KoenigrufenTrickCard{PlayerIdx: 0, Card: koenigrufenSkusCard()},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 1, Card: koenigrufenSuitCard(domain.CardDesignSpade, 8)},
+		&domain.TrickCard{PlayerIdx: 0, Card: koenigrufenSkusCard()},
+		&domain.TrickCard{PlayerIdx: 1, Card: koenigrufenSuitCard(domain.CardDesignSpade, 8)},
 	))
 	assert.Equal(t, domain.KoenigrufenTrumpDesign, g.LedSuitPublic())
 	assert.Equal(t, 0, g.TrickWinnerPublic()) // skus is highest trump
@@ -475,10 +475,10 @@ func TestKoenigrufenResolveTrickCapturesAll(t *testing.T) {
 	g.SetLeadPlayerIdx(0)
 	g.SetPhase(domain.KoenigrufenPhaseTrickEnd)
 	g.SetCurrentTrick(koenigrufenTrickCards(
-		&domain.KoenigrufenTrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignSpade, 2)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 1, Card: koenigrufenSuitCard(domain.CardDesignSpade, 3)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 2, Card: koenigrufenTrumpCard(4)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 3, Card: koenigrufenSkusCard()},
+		&domain.TrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignSpade, 2)},
+		&domain.TrickCard{PlayerIdx: 1, Card: koenigrufenSuitCard(domain.CardDesignSpade, 3)},
+		&domain.TrickCard{PlayerIdx: 2, Card: koenigrufenTrumpCard(4)},
+		&domain.TrickCard{PlayerIdx: 3, Card: koenigrufenSkusCard()},
 	))
 	g.ResolveTrick()
 	// Sküs (top trump) wins for player 3; the whole trick (4 cards) goes to player 3.
@@ -496,10 +496,10 @@ func TestKoenigrufenEnterRoundEndZeroSum(t *testing.T) {
 	g.SetLeadPlayerIdx(0)
 	g.SetPhase(domain.KoenigrufenPhaseTrickEnd)
 	g.SetCurrentTrick(koenigrufenTrickCards(
-		&domain.KoenigrufenTrickCard{PlayerIdx: 1, Card: koenigrufenSuitCard(domain.CardDesignSpade, 2)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 2, Card: koenigrufenSuitCard(domain.CardDesignSpade, 3)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 3, Card: koenigrufenSuitCard(domain.CardDesignSpade, 4)},
-		&domain.KoenigrufenTrickCard{PlayerIdx: 0, Card: koenigrufenTrumpCard(1)},
+		&domain.TrickCard{PlayerIdx: 1, Card: koenigrufenSuitCard(domain.CardDesignSpade, 2)},
+		&domain.TrickCard{PlayerIdx: 2, Card: koenigrufenSuitCard(domain.CardDesignSpade, 3)},
+		&domain.TrickCard{PlayerIdx: 3, Card: koenigrufenSuitCard(domain.CardDesignSpade, 4)},
+		&domain.TrickCard{PlayerIdx: 0, Card: koenigrufenTrumpCard(1)},
 	))
 	g.ResolveTrick()
 	assert.Equal(t, domain.KoenigrufenPhaseRoundEnd, g.GetPhase())

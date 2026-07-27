@@ -61,8 +61,8 @@ func (p *BeziqueWebPresenter) buildBase(b interfaces.BeziqueGame) *controller.Be
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *BeziqueWebPresenter) buildTrickOutput(trick []*domain.BeziqueTrickCard) []*controller.BeziqueWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.BeziqueTrickCard) *controller.BeziqueWebOutputTrickCard {
+func (p *BeziqueWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.BeziqueWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.BeziqueWebOutputTrickCard {
 		return &controller.BeziqueWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

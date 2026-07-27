@@ -160,7 +160,7 @@ func TestBriscola_TrickWinner(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			b := newTestBriscola()
 			b.SetTrumpSuit(tt.trumpSuit)
-			b.SetCurrentTrick([]*domain.BriscolaTrickCard{
+			b.SetCurrentTrick([]*domain.TrickCard{
 				{PlayerIdx: 0, Card: tt.lead},
 				{PlayerIdx: 1, Card: tt.challenge},
 			})
@@ -178,7 +178,7 @@ func TestBriscola_TrickWinner(t *testing.T) {
 func TestBriscola_ResolveTrick_AwardsPoints(t *testing.T) {
 	b := newTestBriscola()
 	b.SetTrumpSuit(domain.CardDesignSpade)
-	b.SetCurrentTrick([]*domain.BriscolaTrickCard{
+	b.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 1, false)},  // A=11pt, lead
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 13, false)}, // K=4pt
 	})

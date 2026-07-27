@@ -52,12 +52,6 @@ type PitchHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// PitchTrickCard トリック中の1枚
-type PitchTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Pitch ピッチ (Auction Pitch / Setback) ゲームクラス
 type Pitch struct {
 	trumpCards       *TrumpCards
@@ -68,7 +62,7 @@ type Pitch struct {
 	trickNumber      int
 	dealerIdx        int
 	currentPlayerIdx int
-	currentTrick     []*PitchTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	bidPlayerIdx     int // 現在ビッド中のプレイヤー
 	currentBid       int // 最高ビッド値 (0=未ビッド/パスのみ)
@@ -337,7 +331,7 @@ func (p *Pitch) playCard(playerIdx int, card *Card) {
 		p.appendLog(playerIdx, "trump_set",
 			fmt.Sprintf("Trump is %s", suitName(p.trumpSuit)), nil)
 	}
-	p.currentTrick = append(p.currentTrick, &PitchTrickCard{
+	p.currentTrick = append(p.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -663,10 +657,10 @@ func (p *Pitch) GetCurrentPlayerIdx() int { return p.currentPlayerIdx }
 func (p *Pitch) SetCurrentPlayerIdx(idx int) { p.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (p *Pitch) GetCurrentTrick() []*PitchTrickCard { return p.currentTrick }
+func (p *Pitch) GetCurrentTrick() []*TrickCard { return p.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (p *Pitch) SetCurrentTrick(trick []*PitchTrickCard) { p.currentTrick = trick }
+func (p *Pitch) SetCurrentTrick(trick []*TrickCard) { p.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (p *Pitch) GetLeadPlayerIdx() int { return p.leadPlayerIdx }
@@ -1182,7 +1176,7 @@ type pitchJSON struct {
 	TrickNumber      int               `json:"tn"`
 	DealerIdx        int               `json:"di"`
 	CurrentPlayerIdx int               `json:"ci"`
-	CurrentTrick     []*PitchTrickCard `json:"ct"`
+	CurrentTrick     []*TrickCard      `json:"ct"`
 	LeadPlayerIdx    int               `json:"li"`
 	BidPlayerIdx     int               `json:"bi"`
 	CurrentBid       int               `json:"cb"`
@@ -1246,7 +1240,7 @@ func (p *Pitch) UnmarshalJSON(data []byte) error {
 	p.currentPlayerIdx = j.CurrentPlayerIdx
 	p.currentTrick = j.CurrentTrick
 	if p.currentTrick == nil {
-		p.currentTrick = make([]*PitchTrickCard, 0)
+		p.currentTrick = make([]*TrickCard, 0)
 	}
 	p.leadPlayerIdx = j.LeadPlayerIdx
 	p.bidPlayerIdx = j.BidPlayerIdx

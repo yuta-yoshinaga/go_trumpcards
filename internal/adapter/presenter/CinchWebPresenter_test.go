@@ -22,7 +22,7 @@ func TestCinchWebPresenter_Output(t *testing.T) {
 	g.SetLeadPlayerIdx(0)
 	g.SetCurrentTurn(0)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*domain.CinchTrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
 
 	p := new(presenter.CinchWebPresenter)
 	out := p.Output(g, nil)

@@ -74,8 +74,8 @@ func (p *TuteWebPresenter) playableIndices(g interfaces.TuteGame) []int {
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *TuteWebPresenter) buildTrickOutput(trick []*domain.TuteTrickCard) []*controller.TuteWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TuteTrickCard) *controller.TuteWebOutputTrickCard {
+func (p *TuteWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.TuteWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.TuteWebOutputTrickCard {
 		return &controller.TuteWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

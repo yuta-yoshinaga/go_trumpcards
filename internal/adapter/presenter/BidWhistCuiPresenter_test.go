@@ -48,7 +48,7 @@ func TestBidWhistCuiPresenter_Output_Phases(t *testing.T) {
 		g.SetContract(3, domain.BidWhistDirectionNoTrump, -1)
 		g.SetDeclarerIdx(0)
 		g.SetPhase(domain.BidWhistPhasePlay)
-		g.SetCurrentTrick([]*domain.BidWhistTrickCard{
+		g.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},
 		})
 		if out := p.Output(g, nil); out == "" {

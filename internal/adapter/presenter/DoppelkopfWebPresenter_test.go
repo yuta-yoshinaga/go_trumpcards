@@ -19,7 +19,7 @@ func setupDoppelkopfWebMock() *interfaces.MockDoppelkopfGame {
 	m := new(interfaces.MockDoppelkopfGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return(([]*domain.DoppelkopfTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.DoppelkopfPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -96,7 +96,7 @@ func TestDoppelkopfWebPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
 		m.On("GetPhase").Return(domain.DoppelkopfPhasePlay)
-		m.On("GetCurrentTrick").Return([]*domain.DoppelkopfTrickCard{
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 9, false)},
 		})
 		result := p.Output(m, nil)

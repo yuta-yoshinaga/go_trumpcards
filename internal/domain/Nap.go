@@ -70,12 +70,6 @@ type NapHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// NapTrickCard トリック中の 1 枚
-type NapTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Nap ナップのゲームクラス
 type Nap struct {
 	trumpCards       *TrumpCards
@@ -85,7 +79,7 @@ type Nap struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*NapTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	bids             [NapPlayerCnt]NapBid
@@ -349,7 +343,7 @@ func (g *Nap) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Nap) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &NapTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == NapPlayerCnt {
@@ -742,10 +736,10 @@ func (g *Nap) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Nap) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Nap) GetCurrentTrick() []*NapTrickCard { return g.currentTrick }
+func (g *Nap) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Nap) SetCurrentTrick(trick []*NapTrickCard) { g.currentTrick = trick }
+func (g *Nap) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Nap) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -842,7 +836,7 @@ type napJSON struct {
 	RoundNumber      int                  `json:"rn"`
 	TrickNumber      int                  `json:"tn"`
 	CurrentPlayerIdx int                  `json:"ci"`
-	CurrentTrick     []*NapTrickCard      `json:"ct"`
+	CurrentTrick     []*TrickCard         `json:"ct"`
 	LeadPlayerIdx    int                  `json:"li"`
 	DealerIdx        int                  `json:"di"`
 	Bids             [NapPlayerCnt]NapBid `json:"bd"`
@@ -948,7 +942,7 @@ func (g *Nap) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*NapTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

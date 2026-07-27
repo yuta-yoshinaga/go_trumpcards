@@ -40,7 +40,7 @@ func scartoSetHand(g *domain.Scarto, idx int, cards ...*domain.Card) {
 	}
 }
 
-func scartoTrickCards(cards ...*domain.ScartoTrickCard) []*domain.ScartoTrickCard {
+func scartoTrickCards(cards ...*domain.TrickCard) []*domain.TrickCard {
 	return cards
 }
 
@@ -249,7 +249,7 @@ func TestScartoFollowSuit(t *testing.T) {
 		scartoTrumpCard(4),
 	)
 	g.SetCurrentTrick(scartoTrickCards(
-		&domain.ScartoTrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 7)},
 	))
 	g.SetCurrentPlayerIdx(1)
 	valid := g.GetPlayableIndices(1)
@@ -265,7 +265,7 @@ func TestScartoVoidMustTrump(t *testing.T) {
 		scartoTrumpCard(9),
 	)
 	g.SetCurrentTrick(scartoTrickCards(
-		&domain.ScartoTrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 7)},
 	))
 	g.SetCurrentPlayerIdx(1)
 	valid := g.GetPlayableIndices(1)
@@ -280,8 +280,8 @@ func TestScartoOvertrumpObligation(t *testing.T) {
 		scartoTrumpCard(15),
 	)
 	g.SetCurrentTrick(scartoTrickCards(
-		&domain.ScartoTrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 7)},
-		&domain.ScartoTrickCard{PlayerIdx: 1, Card: scartoTrumpCard(10)},
+		&domain.TrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 1, Card: scartoTrumpCard(10)},
 	))
 	g.SetCurrentPlayerIdx(2)
 	valid := g.GetPlayableIndices(2)
@@ -296,8 +296,8 @@ func TestScartoCannotOvertrumpPlaysAnyTrump(t *testing.T) {
 		scartoTrumpCard(9),
 	)
 	g.SetCurrentTrick(scartoTrickCards(
-		&domain.ScartoTrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 7)},
-		&domain.ScartoTrickCard{PlayerIdx: 1, Card: scartoTrumpCard(18)},
+		&domain.TrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 1, Card: scartoTrumpCard(18)},
 	))
 	g.SetCurrentPlayerIdx(2)
 	valid := g.GetPlayableIndices(2)
@@ -313,7 +313,7 @@ func TestScartoExcuseAlwaysPlayable(t *testing.T) {
 		scartoSuitCard(domain.CardDesignSpade, 3),
 	)
 	g.SetCurrentTrick(scartoTrickCards(
-		&domain.ScartoTrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 7)},
 	))
 	g.SetCurrentPlayerIdx(1)
 	valid := g.GetPlayableIndices(1)
@@ -339,9 +339,9 @@ func TestScartoLeadAllValid(t *testing.T) {
 func TestScartoTrickWinnerHighestTrump(t *testing.T) {
 	g := scartoNewReset()
 	g.SetCurrentTrick(scartoTrickCards(
-		&domain.ScartoTrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 14)},
-		&domain.ScartoTrickCard{PlayerIdx: 1, Card: scartoTrumpCard(3)},
-		&domain.ScartoTrickCard{PlayerIdx: 2, Card: scartoTrumpCard(9)},
+		&domain.TrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 14)},
+		&domain.TrickCard{PlayerIdx: 1, Card: scartoTrumpCard(3)},
+		&domain.TrickCard{PlayerIdx: 2, Card: scartoTrumpCard(9)},
 	))
 	assert.Equal(t, 2, g.TrickWinnerPublic())
 }
@@ -349,9 +349,9 @@ func TestScartoTrickWinnerHighestTrump(t *testing.T) {
 func TestScartoTrickWinnerLedSuit(t *testing.T) {
 	g := scartoNewReset()
 	g.SetCurrentTrick(scartoTrickCards(
-		&domain.ScartoTrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 8)},
-		&domain.ScartoTrickCard{PlayerIdx: 1, Card: scartoSuitCard(domain.CardDesignHeart, 14)},
-		&domain.ScartoTrickCard{PlayerIdx: 2, Card: scartoSuitCard(domain.CardDesignSpade, 14)},
+		&domain.TrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignHeart, 8)},
+		&domain.TrickCard{PlayerIdx: 1, Card: scartoSuitCard(domain.CardDesignHeart, 14)},
+		&domain.TrickCard{PlayerIdx: 2, Card: scartoSuitCard(domain.CardDesignSpade, 14)},
 	))
 	assert.Equal(t, 1, g.TrickWinnerPublic()) // heart 14
 }
@@ -359,9 +359,9 @@ func TestScartoTrickWinnerLedSuit(t *testing.T) {
 func TestScartoExcuseNeverWinsAndLedSuit(t *testing.T) {
 	g := scartoNewReset()
 	g.SetCurrentTrick(scartoTrickCards(
-		&domain.ScartoTrickCard{PlayerIdx: 0, Card: scartoExcuseCard()},
-		&domain.ScartoTrickCard{PlayerIdx: 1, Card: scartoSuitCard(domain.CardDesignSpade, 5)},
-		&domain.ScartoTrickCard{PlayerIdx: 2, Card: scartoSuitCard(domain.CardDesignSpade, 9)},
+		&domain.TrickCard{PlayerIdx: 0, Card: scartoExcuseCard()},
+		&domain.TrickCard{PlayerIdx: 1, Card: scartoSuitCard(domain.CardDesignSpade, 5)},
+		&domain.TrickCard{PlayerIdx: 2, Card: scartoSuitCard(domain.CardDesignSpade, 9)},
 	))
 	assert.Equal(t, domain.CardDesignSpade, g.LedSuitPublic())
 	assert.Equal(t, 2, g.TrickWinnerPublic()) // spade 9, excuse never wins
@@ -375,9 +375,9 @@ func TestScartoResolveTrickExcuseKeptByOwner(t *testing.T) {
 	g.SetLeadPlayerIdx(0)
 	g.SetPhase(domain.ScartoPhaseTrickEnd)
 	g.SetCurrentTrick(scartoTrickCards(
-		&domain.ScartoTrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignSpade, 5)},
-		&domain.ScartoTrickCard{PlayerIdx: 1, Card: scartoTrumpCard(4)},
-		&domain.ScartoTrickCard{PlayerIdx: 2, Card: scartoExcuseCard()},
+		&domain.TrickCard{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignSpade, 5)},
+		&domain.TrickCard{PlayerIdx: 1, Card: scartoTrumpCard(4)},
+		&domain.TrickCard{PlayerIdx: 2, Card: scartoExcuseCard()},
 	))
 	g.ResolveTrick()
 	// Winner (player 1) keeps the two non-excuse cards; excuse owner (player 2) keeps the excuse.
@@ -395,9 +395,9 @@ func TestScartoEnterRoundEndZeroSum(t *testing.T) {
 	g.SetLeadPlayerIdx(0)
 	g.SetPhase(domain.ScartoPhaseTrickEnd)
 	g.SetCurrentTrick(scartoTrickCards(
-		&domain.ScartoTrickCard{PlayerIdx: 1, Card: scartoSuitCard(domain.CardDesignSpade, 14)},
-		&domain.ScartoTrickCard{PlayerIdx: 2, Card: scartoSuitCard(domain.CardDesignSpade, 3)},
-		&domain.ScartoTrickCard{PlayerIdx: 0, Card: scartoTrumpCard(5)}, // player 0 wins with a trump
+		&domain.TrickCard{PlayerIdx: 1, Card: scartoSuitCard(domain.CardDesignSpade, 14)},
+		&domain.TrickCard{PlayerIdx: 2, Card: scartoSuitCard(domain.CardDesignSpade, 3)},
+		&domain.TrickCard{PlayerIdx: 0, Card: scartoTrumpCard(5)}, // player 0 wins with a trump
 	))
 	g.ResolveTrick() // last trick -> RoundEnd + enterRoundEnd
 	assert.Equal(t, domain.ScartoPhaseRoundEnd, g.GetPhase())

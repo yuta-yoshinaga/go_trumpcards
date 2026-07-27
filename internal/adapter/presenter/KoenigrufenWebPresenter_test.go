@@ -56,7 +56,7 @@ func TestKoenigrufenWebPresenter_ProceduralFaces(t *testing.T) {
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.KoenigrufenSkusDesign, domain.KoenigrufenSkusValue, false))
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, domain.KoenigrufenKingValue, false))
 	// Trick: a trump and a spade.
-	g.SetCurrentTrick([]*domain.KoenigrufenTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.KoenigrufenTrumpDesign, 21, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},
 	})
@@ -210,7 +210,7 @@ func TestKoenigrufenWebPresenter_PhaseMessages(t *testing.T) {
 		g.SetContract(domain.KoenigrufenBidRufer)
 		g.SetPhase(phase)
 		if phase == domain.KoenigrufenPhasePlay {
-			g.SetCurrentTrick([]*domain.KoenigrufenTrickCard{
+			g.SetCurrentTrick([]*domain.TrickCard{
 				{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 			})
 		}

@@ -122,7 +122,7 @@ func TestRookTrickWinner(t *testing.T) {
 	g.SetLeadPlayerIdx(0)
 
 	t.Run("highest of led suit wins", func(t *testing.T) {
-		g.SetCurrentTrick([]*domain.RookTrickCard{
+		g.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: rookCard(1, 10)},
 			{PlayerIdx: 1, Card: rookCard(1, 1)}, // 1 is high in led suit
 			{PlayerIdx: 2, Card: rookCard(1, 13)},
@@ -141,7 +141,7 @@ func TestRookTrickWinner(t *testing.T) {
 		g2.SetDeclarerIdx(0)
 		g2.SetLeadPlayerIdx(0)
 		g2.SetTrickNumber(1)
-		g2.SetCurrentTrick([]*domain.RookTrickCard{
+		g2.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: rookCard(1, 1)},  // led plain suit, high
 			{PlayerIdx: 1, Card: rookCard(4, 2)},  // low trump
 			{PlayerIdx: 2, Card: rookBird()},      // rook bird, highest trump
@@ -272,7 +272,7 @@ func TestRookValidatePlayFollowSuit(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	g.SetLeadPlayerIdx(1)
 	// Trick led with color 1; player 0 holds color 1 and must follow.
-	g.SetCurrentTrick([]*domain.RookTrickCard{{PlayerIdx: 1, Card: rookCard(1, 8)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: rookCard(1, 8)}})
 	p := g.GetPlayer(0)
 	p.Reset()
 	p.AddCard(rookCard(1, 5)) // idx 0 follows suit
@@ -358,7 +358,7 @@ func TestRookNestPointsToLastTrick(t *testing.T) {
 	g.SetLeadPlayerIdx(0)
 	g.SetTrickNumber(domain.RookTrickCnt)
 	before := g.GetPlayer(1).GetPoints()
-	g.SetCurrentTrick([]*domain.RookTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: rookCard(1, 8)},
 		{PlayerIdx: 1, Card: rookCard(1, 1)}, // wins the led suit
 		{PlayerIdx: 2, Card: rookCard(1, 7)},

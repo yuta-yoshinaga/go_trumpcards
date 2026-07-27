@@ -21,7 +21,7 @@ func setupUltiCuiMock() *interfaces.MockUltiGame {
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetContract").Return(domain.UltiContractParty)
 	m.On("GetTrumpSuit").Return(domain.CardDesignHeart)
-	m.On("GetCurrentTrick").Return(([]*domain.UltiTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.UltiPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

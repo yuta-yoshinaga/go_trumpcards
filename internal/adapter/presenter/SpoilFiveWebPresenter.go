@@ -62,8 +62,8 @@ func (p *SpoilFiveWebPresenter) playableIndices(g interfaces.SpoilFiveGame) []in
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *SpoilFiveWebPresenter) buildTrickOutput(trick []*domain.SpoilFiveTrickCard) []*controller.SpoilFiveWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.SpoilFiveTrickCard) *controller.SpoilFiveWebOutputTrickCard {
+func (p *SpoilFiveWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.SpoilFiveWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.SpoilFiveWebOutputTrickCard {
 		return &controller.SpoilFiveWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }

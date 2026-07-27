@@ -76,8 +76,8 @@ func bidWhistBidToOutput(b *domain.BidWhistBid) *controller.BidWhistWebOutputBid
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *BidWhistWebPresenter) buildTrickOutput(trick []*domain.BidWhistTrickCard) []*controller.BidWhistWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.BidWhistTrickCard) *controller.BidWhistWebOutputTrickCard {
+func (p *BidWhistWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.BidWhistWebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.BidWhistWebOutputTrickCard {
 		return &controller.BidWhistWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
