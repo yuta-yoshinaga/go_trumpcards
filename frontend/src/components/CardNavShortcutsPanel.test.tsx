@@ -1,6 +1,19 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { CardNavShortcutsPanel } from './CardNavShortcutsPanel';
+
+/**
+ * Open the panel before asserting on its rows: they are mounted on demand, so a
+ * collapsed panel contributes no text to the page (which is the point — see the
+ * component docs and issue #4369).
+ */
+function openPanel() {
+  // By element, not by title text: KeyboardShortcutsPanel takes an arbitrary
+  // title, so keying on the shared i18n string would not work for its own tests.
+  const summary = document.querySelector('summary');
+  if (!summary) throw new Error('no <summary> to open — the panel did not render');
+  fireEvent.click(summary);
+}
 
 /**
  * useCardKeyboardNav's bindings are fixed for every page that uses it — number
@@ -11,6 +24,7 @@ import { CardNavShortcutsPanel } from './CardNavShortcutsPanel';
 describe('CardNavShortcutsPanel', () => {
   it('lists the number-key range, Enter and Esc', () => {
     render(<CardNavShortcutsPanel />);
+    openPanel();
     expect(screen.getByText('キーボードショートカット')).toBeInTheDocument();
     for (const key of ['1', '0', 'Enter', 'Esc']) {
       expect(screen.getByText(key)).toBeInTheDocument();
@@ -25,6 +39,7 @@ describe('CardNavShortcutsPanel', () => {
     // selection when onDirectPlay is supplied, so Enter/Esc are meaningless
     // there and advertising them would be a lie.
     render(<CardNavShortcutsPanel directPlay />);
+    openPanel();
     expect(screen.getByText('数字キーで手札のカードをそのまま出す')).toBeInTheDocument();
     expect(screen.queryByText('Enter')).not.toBeInTheDocument();
     expect(screen.queryByText('Esc')).not.toBeInTheDocument();
@@ -39,6 +54,7 @@ describe('CardNavShortcutsPanel', () => {
 
   it('forwards extra props so pages can attach a test id', () => {
     render(<CardNavShortcutsPanel data-testid="kbd-panel" />);
+    openPanel();
     expect(screen.getByTestId('kbd-panel')).toBeInTheDocument();
   });
 
@@ -46,6 +62,7 @@ describe('CardNavShortcutsPanel', () => {
     // Pages that also bind their own keys (e.g. `n` for "next trick") pass them
     // here rather than rendering a second panel.
     render(<CardNavShortcutsPanel extra={[{ keys: ['n'], description: '次へ' }]} />);
+    openPanel();
     expect(screen.getByText('n')).toBeInTheDocument();
     expect(screen.getByText('次へ')).toBeInTheDocument();
   });

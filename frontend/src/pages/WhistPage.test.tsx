@@ -79,6 +79,12 @@ describe('WhistPage', () => {
     // Closed by default so it stays discreet.
     expect(panel).not.toHaveAttribute('open');
     expect(screen.getByText('キーボードショートカット')).toBeInTheDocument();
+    // While collapsed the rows are not mounted, so they add no text to the page
+    // — the shortcut labels name the same actions as the buttons around them.
+    // See KeyboardShortcutsPanel and issue #4369.
+    expect(screen.queryByText('次のトリック / ラウンドへ進む')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('キーボードショートカット'));
     // The 'n' advance shortcut and card-selection keys are advertised.
     expect(screen.getByText('次のトリック / ラウンドへ進む')).toBeInTheDocument();
     expect(screen.getByText('数字キーで手札のカードを選択')).toBeInTheDocument();

@@ -1,7 +1,20 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { ActionBinding } from '../hooks/useActionKeyboardNav';
 import { ActionShortcutsPanel } from './ActionShortcutsPanel';
+
+/**
+ * Open the panel before asserting on its rows: they are mounted on demand, so a
+ * collapsed panel contributes no text to the page (which is the point — see the
+ * component docs and issue #4369).
+ */
+function openPanel() {
+  // By element, not by title text: KeyboardShortcutsPanel takes an arbitrary
+  // title, so keying on the shared i18n string would not work for its own tests.
+  const summary = document.querySelector('summary');
+  if (!summary) throw new Error('no <summary> to open — the panel did not render');
+  fireEvent.click(summary);
+}
 
 const b = (key: string, labelKey?: string, enabled?: boolean): ActionBinding => ({
   key,
@@ -17,6 +30,7 @@ const b = (key: string, labelKey?: string, enabled?: boolean): ActionBinding => 
 describe('ActionShortcutsPanel', () => {
   it('lists each labelled binding with its key and translated label', () => {
     render(<ActionShortcutsPanel bindings={[b('f', 'kbd.action.fold'), b('c', 'kbd.action.call')]} />);
+    openPanel();
     expect(screen.getByText('f')).toBeInTheDocument();
     expect(screen.getByText('フォールド')).toBeInTheDocument();
     expect(screen.getByText('c')).toBeInTheDocument();
@@ -27,6 +41,7 @@ describe('ActionShortcutsPanel', () => {
     // A binding may be bound deliberately without being advertised; it must not
     // surface as an untranslated i18n key (the failure mode of #4374).
     render(<ActionShortcutsPanel bindings={[b('f', 'kbd.action.fold'), b('x')]} />);
+    openPanel();
     expect(screen.getByText('f')).toBeInTheDocument();
     expect(screen.queryByText('x')).not.toBeInTheDocument();
   });
@@ -35,6 +50,7 @@ describe('ActionShortcutsPanel', () => {
     // enabled:false means the key does nothing right now, so advertising it
     // would be telling the player about an action they cannot take.
     render(<ActionShortcutsPanel bindings={[b('f', 'kbd.action.fold'), b('d', 'kbd.action.doubledown', false)]} />);
+    openPanel();
     expect(screen.getByText('f')).toBeInTheDocument();
     expect(screen.queryByText('ダブルダウン')).not.toBeInTheDocument();
   });
@@ -52,6 +68,7 @@ describe('ActionShortcutsPanel', () => {
 
   it('appends card-nav rows for pages that use both hooks', () => {
     render(<ActionShortcutsPanel bindings={[b('f', 'kbd.action.fold')]} includeCardNav />);
+    openPanel();
     expect(screen.getByText('Enter')).toBeInTheDocument();
     expect(screen.getByText('選択したカードを出す')).toBeInTheDocument();
     expect(screen.getByText('フォールド')).toBeInTheDocument();
