@@ -78,7 +78,8 @@ ADR-0032 は「ゲームを移す手順」しか残していなかったため�
 5. `internal/infrastructure/games/registry_test.go` — カテゴリ別カウント
 6. `Makefile` — `build-worker-<name>` と `build-workers` への追加
 7. `.github/workflows/cloudflare-workers-build.yml` — matrix
-8. `.github/workflows/deploy-cloudflare.yml` — matrix と URL 変数
+8. `.github/workflows/deploy-cloudflare.yml` — URL 変数。**matrix への追加は KV ID を
+   実物に差し替える変更と同時に行うこと**（下記）
 9. `frontend/src/api/gameExec.ts` — `WORKER_<NAME>` 定数
 10. `frontend/vite-env.d.ts` — `VITE_WORKER_<NAME>_URL`
 11. `docs/cloudflare-workers.md` — 一覧
@@ -90,6 +91,15 @@ ADR-0032 は「ゲームを移す手順」しか残していなかったため�
 - フロントエンドビルド用に `VITE_WORKER_<NAME>_URL` を設定
 
 **この 3 つが揃うまで新 Worker は実際にはデプロイできない。** Phase 1 の PR は KV ID をプレースホルダで置き、ビルドとサイズチェックまでを通す。
+
+**プレースホルダのまま deploy matrix に足してはいけない。** `deploy-cloudflare.yml` は
+`cmd/workers/**` と `workers/**` の変更で develop への push 時に走るため、Phase 1 の変更
+そのものがトリガーになる。プレースホルダ ID で `wrangler deploy` が失敗し、`fail-fast` は
+既定 true なので**他の 4 Worker のデプロイまで巻き添えでキャンセル**され、さらに
+`deploy-pages` が `needs: deploy-workers` なのでフロントエンドのデプロイも止まる。
+つまり「新 Worker がデプロイされないだけ」では済まず、**デプロイ経路全体が壊れる**。
+build 専用の `cloudflare-workers-build.yml` は wrangler も KV も触らないので Phase 1 で
+足して問題ない。Makefile の `deploy-workers` ターゲットも同じ理由で 4 つのままにしてある。
 
 ## Consequences
 

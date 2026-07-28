@@ -50,8 +50,11 @@ build-worker-extra3:
 	$(call build_worker,extra3)
 
 clean-workers:
-	rm -rf workers/casino/build workers/classic/build workers/solo/build workers/extra/build
+	rm -rf workers/casino/build workers/classic/build workers/solo/build workers/extra/build workers/extra2/build workers/extra3/build
 
+# extra2/extra3 are intentionally missing here, exactly as in the CI deploy matrix:
+# their wrangler.toml still holds REPLACE_ME KV namespace IDs (ADR-0036 Phase 1), so
+# `wrangler deploy` would fail. Add them in the change that fills in the real IDs.
 deploy-workers: build-workers
 	cd workers/casino && bunx wrangler deploy
 	cd workers/classic && bunx wrangler deploy
