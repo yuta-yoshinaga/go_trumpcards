@@ -20,6 +20,7 @@ type MemoryWebInput struct {
 // MemoryWebConfig 神経衰弱Web設定
 type MemoryWebConfig struct {
 	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
+	PairCount     *int `json:"pairCount,omitempty"`
 }
 
 // MemoryWebOutputPlayer 神経衰弱Webアウトプットプレイヤー
@@ -57,12 +58,14 @@ type MemoryWebOutput struct {
 // MemoryWebOutputConfig 神経衰弱設定アウトプット
 type MemoryWebOutputConfig struct {
 	CpuDifficulty int `json:"cpuDifficulty"`
+	PairCount     int `json:"pairCount"`
 }
 
 // ToConfig builds a MemoryConfig from the nested web config, applying bounds checking.
 func (c *MemoryWebConfig) ToConfig() domain.MemoryConfig {
 	cfg := domain.DefaultMemoryConfig()
 	cfg.CpuDifficulty = domain.MemoryCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.MemoryCpuDifficultyEasy), int(domain.MemoryCpuDifficultyHard), int(cfg.CpuDifficulty)))
+	cfg.PairCount = webutil.BoundedIntPtr(c.PairCount, domain.MemoryMinPairCount, domain.MemoryMaxPairCount, cfg.PairCount)
 	return cfg
 }
 

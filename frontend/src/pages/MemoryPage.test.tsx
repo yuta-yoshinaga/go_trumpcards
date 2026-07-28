@@ -45,7 +45,7 @@ const flip1State: MemoryResponse = {
   winnerIdx: -1,
   turnNumber: 0,
   message: '',
-  config: { cpuDifficulty: 1 },
+  config: { cpuDifficulty: 1, pairCount: 26 },
 };
 
 const flip2State: MemoryResponse = {
@@ -102,7 +102,7 @@ describe('MemoryPage', () => {
 
   it('renders reset on mount', async () => {
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pairCount: 26 }));
   });
 
   it('renders player scores inline', async () => {
@@ -209,7 +209,7 @@ describe('MemoryPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pairCount: 26 }));
   });
 
   it('does not show visited badge on a freshly dealt board', async () => {
@@ -305,7 +305,7 @@ describe('MemoryPage', () => {
     mockExec.mockResolvedValue(flip1State);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2, pairCount: 26 }));
   });
 
   it('board cards disabled when face up', async () => {
@@ -383,7 +383,7 @@ describe('MemoryPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pairCount: 26 }));
   });
 
   it('displays error message', async () => {

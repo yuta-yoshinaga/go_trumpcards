@@ -16,7 +16,9 @@
       "manual": "Manual",
       "fast": "1s",
       "slow": "2s"
-    }
+    },
+    "pairCount": "Pairs",
+    "pairCountOption": "{{pairs}} pairs ({{cards}} cards)"
   },
   "scores": "Scores",
   "cardFaceDown": "Card {{position}} (face down)",

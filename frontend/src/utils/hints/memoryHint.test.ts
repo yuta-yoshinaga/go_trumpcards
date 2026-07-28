@@ -22,7 +22,7 @@ function makeState(overrides: Partial<MemoryResponse> = {}): MemoryResponse {
     winnerIdx: -1,
     turnNumber: 1,
     message: '',
-    config: { cpuDifficulty: 1 },
+    config: { cpuDifficulty: 1, pairCount: 26 },
     ...overrides,
   };
 }

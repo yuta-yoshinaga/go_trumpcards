@@ -7,6 +7,8 @@ import { gameExec } from '../gameExec';
 /** Configuration options for Memory game settings. */
 export interface MemoryConfigInput {
   cpuDifficulty?: number;
+  /** Pairs to deal, 6-26 (26 = full deck). See ADR-0035. */
+  pairCount?: number;
 }
 
 /** API client for the Memory /memory/exec endpoint. */

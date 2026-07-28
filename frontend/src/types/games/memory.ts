@@ -22,6 +22,12 @@ export interface MemoryBoardCard {
 /** Memory game configuration. */
 export interface MemoryConfig {
   cpuDifficulty: number;
+  /**
+   * Pairs dealt to the board, 6-26. 26 is the full deck. Narrow screens start
+   * lower because 52 cards cannot fit a 375x667 viewport while every card keeps a
+   * 44x44 tap target — see ADR-0035.
+   */
+  pairCount: number;
 }
 
 /** Full Memory game state returned from the API. */

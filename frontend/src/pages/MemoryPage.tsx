@@ -20,7 +20,12 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { AUTO_NEXT_DELAY_OPTIONS, CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
+import {
+  AUTO_NEXT_DELAY_OPTIONS,
+  CPU_DIFFICULTY_OPTIONS,
+  PAIR_COUNT_OPTIONS,
+  useMemoryGame,
+} from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -225,8 +230,8 @@ function MemoryPageContent() {
   const handleManualReset = useCallback(() => {
     hideActionLog();
     setVisited(new Set());
-    void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty });
-  }, [exec, hideActionLog, memoryConfig.cpuDifficulty]);
+    void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty, pairCount: memoryConfig.pairCount });
+  }, [exec, hideActionLog, memoryConfig.cpuDifficulty, memoryConfig.pairCount]);
 
   if (!state)
     return (
@@ -284,6 +289,25 @@ function MemoryPageContent() {
                       label: t(`settings.${o.label.toLowerCase()}`),
                     })),
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'pairCount',
+                    label: t('settings.pairCount'),
+                    value: memoryConfig.pairCount,
+                    options: PAIR_COUNT_OPTIONS.map((pairs) => ({
+                      value: pairs,
+                      label: t('settings.pairCountOption', { pairs, cards: pairs * 2 }),
+                    })),
+                    // Re-deal at once: this changes the board's shape, so deferring it
+                    // to the next reset would read as the setting doing nothing.
+                    onSelect: (v) => {
+                      const pairs = Number(v);
+                      handleConfigChange('pairCount', v);
+                      hideActionLog();
+                      setVisited(new Set());
+                      void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty, pairCount: pairs });
+                    },
                   },
                   {
                     type: 'select',
