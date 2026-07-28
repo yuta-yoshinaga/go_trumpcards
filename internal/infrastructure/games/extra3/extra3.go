@@ -1,8 +1,9 @@
 //go:build js && wasm
 
 // Package extra3 binds the Cloudflare Worker KV-backed handlers for the games
-// assigned to the sixth size bucket. A worker main blank-imports this package so
-// the init below runs before games.RegisterCategory is called.
+// assigned to the sixth size bucket. A worker main blank-imports this package
+// for its registration side effects, so that whatever it registers is in place
+// before games.RegisterCategory is called.
 //
 // Like casino/classic/solo/extra this is purely a binary-size bucket, not a
 // user-facing taxonomy (ADR-0036). The colourless name is deliberate: it holds
