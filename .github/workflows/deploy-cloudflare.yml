@@ -34,6 +34,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        # extra2/extra3 are deliberately absent until their KV namespaces exist
+        # (ADR-0036 Phase 1 ships them with REPLACE_ME placeholder IDs). Adding
+        # them here would run `wrangler deploy` against those placeholders on every
+        # push to develop; with fail-fast defaulting to true that failure cancels
+        # the other four legs, and deploy-pages `needs: deploy-workers`, so the
+        # frontend deploy dies too. Add them in the same change that fills in the
+        # real IDs.
         worker: [casino, classic, solo, extra]
     environment:
       name: ${{ github.ref == 'refs/heads/master' && 'production' || 'staging' }}
@@ -122,6 +129,8 @@ jobs:
           VITE_WORKER_CLASSIC_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_CLASSIC_URL || vars.WORKER_CLASSIC_STAGING_URL }}
           VITE_WORKER_SOLO_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_SOLO_URL || vars.WORKER_SOLO_STAGING_URL }}
           VITE_WORKER_EXTRA_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_EXTRA_URL || vars.WORKER_EXTRA_STAGING_URL }}
+          VITE_WORKER_EXTRA2_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_EXTRA2_URL || vars.WORKER_EXTRA2_STAGING_URL }}
+          VITE_WORKER_EXTRA3_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_EXTRA3_URL || vars.WORKER_EXTRA3_STAGING_URL }}
         run: bun run build
 
       - name: Deploy to Cloudflare Pages

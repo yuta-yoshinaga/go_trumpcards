@@ -20,6 +20,10 @@ export const WORKER_CLASSIC = import.meta.env.VITE_WORKER_CLASSIC_URL || '';
 export const WORKER_SOLO = import.meta.env.VITE_WORKER_SOLO_URL || '';
 
 export const WORKER_EXTRA = import.meta.env.VITE_WORKER_EXTRA_URL || '';
+/** Fifth size bucket (ADR-0036). Empty until Phase 2 moves games in. */
+export const WORKER_EXTRA2 = import.meta.env.VITE_WORKER_EXTRA2_URL || '';
+/** Sixth size bucket (ADR-0036). Empty until Phase 2 moves games in. */
+export const WORKER_EXTRA3 = import.meta.env.VITE_WORKER_EXTRA3_URL || '';
 
 /** Maps each game to its Worker base URL. */
 export const workerUrl: Record<string, string> = {

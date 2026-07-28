@@ -3,9 +3,9 @@ WASM_OPT ?= wasm-opt
 ASSETS_GEN := go run github.com/syumai/workers/cmd/workers-assets-gen
 COVERAGE_DIR := build/coverage
 
-.PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo build-worker-extra clean-workers deploy-workers coverage clean-cov
+.PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo build-worker-extra build-worker-extra2 build-worker-extra3 clean-workers deploy-workers coverage clean-cov
 
-build-workers: build-worker-casino build-worker-classic build-worker-solo build-worker-extra
+build-workers: build-worker-casino build-worker-classic build-worker-solo build-worker-extra build-worker-extra2 build-worker-extra3
 
 define build_worker
 	@echo "Building worker: $(1)"
@@ -43,9 +43,18 @@ build-worker-solo:
 build-worker-extra:
 	$(call build_worker,extra)
 
-clean-workers:
-	rm -rf workers/casino/build workers/classic/build workers/solo/build workers/extra/build
+build-worker-extra2:
+	$(call build_worker,extra2)
 
+build-worker-extra3:
+	$(call build_worker,extra3)
+
+clean-workers:
+	rm -rf workers/casino/build workers/classic/build workers/solo/build workers/extra/build workers/extra2/build workers/extra3/build
+
+# extra2/extra3 are intentionally missing here, exactly as in the CI deploy matrix:
+# their wrangler.toml still holds REPLACE_ME KV namespace IDs (ADR-0036 Phase 1), so
+# `wrangler deploy` would fail. Add them in the change that fills in the real IDs.
 deploy-workers: build-workers
 	cd workers/casino && bunx wrangler deploy
 	cd workers/classic && bunx wrangler deploy

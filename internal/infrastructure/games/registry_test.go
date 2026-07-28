@@ -17,7 +17,11 @@ const (
 	expectedClassic = 57
 	expectedSolo    = 52
 	expectedExtra   = 46
-	expectedTotal   = expectedCasino + expectedClassic + expectedSolo + expectedExtra
+	// ADR-0036 Phase 1: the fifth and sixth buckets exist but hold nothing yet.
+	// Phase 2 rebalances into them, and these numbers move with it.
+	expectedExtra2 = 0
+	expectedExtra3 = 0
+	expectedTotal  = expectedCasino + expectedClassic + expectedSolo + expectedExtra + expectedExtra2 + expectedExtra3
 )
 
 func TestAllReturnsExpectedTotal(t *testing.T) {
@@ -54,6 +58,8 @@ func TestByCategoryCounts(t *testing.T) {
 		{games.CategoryClassic, expectedClassic},
 		{games.CategorySolo, expectedSolo},
 		{games.CategoryExtra, expectedExtra},
+		{games.CategoryExtra2, expectedExtra2},
+		{games.CategoryExtra3, expectedExtra3},
 	}
 	for _, c := range cases {
 		t.Run(c.cat.String(), func(t *testing.T) {
