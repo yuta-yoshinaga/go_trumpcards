@@ -1,0 +1,50 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "stock": "Stock",
+  "waste": "Waste",
+  "draw": "Draw",
+  "moveCount": "Moves",
+  "giveup": "Give Up",
+  "empty": "Empty",
+  "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}})",
+  "emptyColumnAriaLabel": "Empty tableau column {{col}}",
+  "stockAriaLabel": "Stock, {{count}} cards left, draw one",
+  "emptyWasteAriaLabel": "The waste is empty",
+  "landscapeBanner": "Landscape mode recommended",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available once a foundation builds past the deal",
+  "undo": "Undo",
+  "stalemate": "Stalemate",
+  "playing": "Move cards to build the foundations",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "gameOverSummary": "Reached {{count}}/104 cards on the foundations ({{percent}}%)",
+  "hintAvailable": "Hint available",
+  "noHint": "No hint available",
+  "tutorial": {
+    "foundation": "Eight foundations sit in the middle, pre-seeded with the Aces from both decks. Build each up by suit from Ace to King; getting all eight to the King wins.",
+    "stock": "Turn the stock one card at a time onto the waste and look for a place to put it. There is no redeal — you get a single pass.",
+    "tableau": "The tableau is a square of twelve columns of four. A card can only be stacked on one of the same suit exactly one rank higher. An empty column accepts anything.",
+    "runs": "Group moves are the heart of this game. Cards that already run down in the same suit can be carried together — pick the head of the run and the whole block moves.",
+    "controls": "Use the draw, hint, undo, and auto-complete buttons."
+  },
+  "frontendHint": {
+    "tableau": "Tableau column {{col}}",
+    "foundation": "Foundation {{idx}}",
+    "waste": "Waste",
+    "stock": "Stock"
+  },
+  "hintReason": {
+    "toFoundation": "Send this card to a foundation to free up the board.",
+    "toTableau": "Apply the suggested tableau move to dig out the cards underneath.",
+    "draw": "Nothing on the board can move, so turn a card from the stock."
+  }
+}

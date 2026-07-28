@@ -191,6 +191,8 @@ tags:
     description: Sir Tommy game
   - name: bisley
     description: Bisley (ビズリー) game - fully open solitaire with two foundation sets, four ascending (A→K, dealt with the Aces) and four descending (K→A, opened by playing a King)
+  - name: napoleonssquare
+    description: Napoleon's Square game - two-deck square solitaire; eight foundations seeded with the Aces, twelve columns of four, and same-suit runs that move as one unit
   - name: spiteandmalice
     description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
   - name: skat
@@ -10315,6 +10317,134 @@ paths:
               schema:
                 $ref: '#/components/schemas/BisleyResponse'
 
+  /napoleonssquare/exec:
+    post:
+      tags:
+        - napoleonssquare
+      summary: Execute a Napoleon's Square game command
+      description: |
+        Send a command to advance the Napoleon's Square (ナポレオンズ・スクエア)
+        game session identified by `sessionId`. It is a two-deck (104-card)
+        solitaire laid out as a square.
+
+        The eight Aces are lifted onto **eight foundations** (two per suit, each
+        pinned to a suit so the layout is stable across deals). 48 cards are
+        dealt into **twelve columns of four**, and the remaining 48 form the
+        stock, turned one card at a time onto a waste with **no redeal**.
+
+        Foundations build up A->K by suit; the tableau builds down by suit. The
+        rule that distinguishes this game is the **group move**: a same-suit
+        descending run is carried as one unit by naming the index of its head in
+        `from.cardIndex`. An empty column accepts any card or run.
+
+        Note that the issue this game was implemented from says the Aces are
+        seeded *and* that "the remaining 96 cards" are dealt to a 12x4 tableau;
+        12x4 is 48, so 48 go to the tableau and the other 48 to the stock.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All eight foundations reached the King |
+        | GameOver   | `2`   | Player gave up |
+
+        | Command        | Aliases     | Description |
+        |----------------|-------------|-------------|
+        | `reset`        | `r`         | Start / restart a game |
+        | `draw`         | `d`         | Turn one card from the stock onto the waste |
+        | `move`         | `m`         | Move a card or run (requires `from` and `to`) |
+        | `giveup`       | `g`         | Give up the current game |
+        | `hint`         | `h`         | Foundation move, else tableau move, else "turn the stock" |
+        | `autocomplete` | `ac`        | Send every legal card to the foundations |
+        | `undo`         | `u`         | Undo the last action |
+        | `undo_n`       | -           | Undo the last `n` actions |
+        | `log`          | `l`         | View action log |
+
+        Move zones:
+        * `from`: `{zone: "waste"}` or `{zone: "tableau", col: 0..11, cardIndex?: n}`
+        * `to`: `{zone: "foundation"}` or `{zone: "tableau", col: 0..11}`
+
+      operationId: napoleonssquareExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/NapoleonsSquareMoveZone'
+                to:
+                  $ref: '#/components/schemas/NapoleonsSquareMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Turn one card from the stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              moveWasteToFoundation:
+                summary: Send the waste top to its foundation
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: waste
+                  to:
+                    zone: foundation
+              moveTopCardBetweenColumns:
+                summary: Move only the top card of column 0 onto column 5
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 0
+                  to:
+                    zone: tableau
+                    col: 5
+              moveRunBetweenColumns:
+                summary: Carry the run starting at index 2 of column 0 onto column 5
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 0
+                    cardIndex: 2
+                  to:
+                    zone: tableau
+                    col: 5
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NapoleonsSquareResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NapoleonsSquareResponse'
+
   /spiteandmalice/exec:
     post:
       tags:
@@ -19560,6 +19690,107 @@ components:
           description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
         hint:
           $ref: '#/components/schemas/BisleyHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    NapoleonsSquareMoveZone:
+      type: object
+      description: Source or target zone for a Napoleon's Square card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier
+          enum: [waste, tableau, foundation]
+        col:
+          type: integer
+          description: |
+            Tableau column index (0..11). Required when `zone` is `tableau`, and
+            for a `tableau` destination. Ignored for `waste`; for a `foundation`
+            destination the server picks the pile from the card's suit.
+        cardIndex:
+          type: integer
+          description: |
+            Head of the same-suit descending run to carry, for a `tableau` source
+            moving to `tableau`. Omit to move only the top card (the server then
+            uses -1, which it resolves to the top of the column).
+    NapoleonsSquareTableauCard:
+      type: object
+      description: A single tableau card. Every card is face-up by rule, but the flag is surfaced rather than assumed.
+      properties:
+        card:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+        faceUp:
+          type: boolean
+    NapoleonsSquareHint:
+      type: object
+      description: Suggested next move for Napoleon's Square
+      properties:
+        fromZone:
+          type: string
+          description: "`stock` means: turn a card."
+          enum: [waste, tableau, stock]
+        fromCol:
+          type: integer
+          description: Source tableau column, or -1 when the source is the waste or stock
+        cardIndex:
+          type: integer
+          description: Head of the run to carry, or -1 when the source is not the tableau
+        toZone:
+          type: string
+          enum: [foundation, tableau, waste]
+        toCol:
+          type: integer
+          description: Destination foundation or column index, or -1 for the waste
+    NapoleonsSquareResponse:
+      type: object
+      description: Response payload for /napoleonssquare/exec
+      properties:
+        tableau:
+          type: array
+          description: Twelve columns of four, arranged as a square around the foundations.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/NapoleonsSquareTableauCard'
+        stockCount:
+          type: integer
+          description: Cards left in the stock. There is no redeal, so this only decreases.
+        waste:
+          type: array
+          description: The waste pile; only its last card is playable.
+          items:
+            $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: Eight foundations, two per suit, each seeded with its Ace at deal time.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
+        hint:
+          $ref: '#/components/schemas/NapoleonsSquareHint'
         message:
           type: string
         messageCode:

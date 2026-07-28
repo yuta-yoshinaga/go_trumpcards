@@ -133,6 +133,7 @@ export * from './games/montecarlo';
 export * from './games/mus';
 export * from './games/nap';
 export * from './games/napoleon';
+export * from './games/napoleonssquare';
 export * from './games/nertz';
 export * from './games/ninetynine';
 export * from './games/oasispoker';
@@ -308,6 +309,7 @@ export const games = [
   'calculation',
   'sirtommy',
   'bisley',
+  'napoleonssquare',
   'canfield',
   'osmosis',
   'fivehundred',
