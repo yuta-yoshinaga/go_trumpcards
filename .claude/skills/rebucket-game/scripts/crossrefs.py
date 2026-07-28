@@ -13,6 +13,13 @@ The classic example is GameResult: a core enum used across the whole casino
 bucket that happens to be declared in BlackJack.go. Moving blackjack out
 therefore breaks every casino game that reports a result -- nothing about the
 game's own code hints at that.
+
+Read the counts as an upper bound, not a tally. References are matched
+lexically, so a package-level symbol sharing a name with a struct field
+somewhere (`dealerIdx` is both a func in BlackJackBasicStrategy.go and a field
+on a dozen games) is credited with users that never call it. The compiler is
+still the authority; this only tells you where to look before paying for a
+3.5-minute TinyGo build.
 """
 
 from __future__ import annotations
@@ -88,7 +95,15 @@ def main() -> None:
         d, r = set(), set()
         for p in mg.game_files(t, all_types):
             s = p.read_text(encoding="utf-8")
-            d |= package_decls(s)
+            # Only files that actually carry a bucket tag can strand anything.
+            # An untagged file compiles into every worker, so its symbols stay
+            # reachable no matter which bucket the game lands in -- move-game.py
+            # leaves them alone for exactly that reason. Counting them made this
+            # report claim the PokerHand* enums would strand when moving `poker`;
+            # they live in the untagged poker_hand_rank.go and never move.
+            first = s.split("\n", 1)[0]
+            if first.startswith("//go:build") and re.search(r"\b(casino|classic|solo|extra[23]?)\b", first):
+                d |= package_decls(s)
             r |= set(REF.findall(s))
         decls[t], refs[t] = d, r
 
@@ -96,15 +111,16 @@ def main() -> None:
     stay = [t for t in by_type if buckets[by_type[t][0]] in src_buckets and t not in moving_types]
     move = sorted(moving_types)
 
+    # `_` is the blank identifier, never a real dependency.
     broken_old: dict[str, list[str]] = collections.defaultdict(list)
     for t in move:
         for u in stay:
-            for sym in decls[t] & refs[u]:
+            for sym in (decls[t] & refs[u]) - {"_"}:
                 broken_old[sym].append(u)
     broken_new: dict[str, list[str]] = collections.defaultdict(list)
     for u in stay:
         for t in move:
-            for sym in decls[u] & refs[t]:
+            for sym in (decls[u] & refs[t]) - {"_"}:
                 broken_new[sym].append(t)
 
     print(f"moving {len(names)} games ({len(move)} units) out of {', '.join(sorted(src_buckets))} -> {target}\n")

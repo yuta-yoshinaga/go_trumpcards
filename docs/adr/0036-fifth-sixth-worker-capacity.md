@@ -125,7 +125,9 @@ build 専用の `cloudflare-workers-build.yml` は wrangler も KV も触らな�
 
 ### 制約 2: バケット内が共有シンボルで溶接されている
 
-より重い制約。`GameResult` は **`BlackJack.go` の中で宣言されている**のに casino の 19 ゲームが使い、`PokerHand*` 列挙は `Poker.go` にあって 11 ゲームが使う。つまり blackjack や poker を casino から出すと、**90 個のパッケージレベルシンボルが宙に浮いて残りが軽量化どころかコンパイルすら通らない**。
+より重い制約。`GameResult` / `GameResultWin` / `GameResultLose` / `GameResultDraw` は **`BlackJack.go` の中で宣言されている**のに casino の 19 ゲームが使う。同様に `compareHighCardsSlice` は `HoldemPlayer.go` にあって 12 ゲームが、`HoldemPlayStyle` 系は `HoldemConfig.go` にあって 6 ゲームが使う。blackjack / poker / holdem を casino から出すと、**最大 82 個のパッケージレベルシンボル**が宙に浮き、残りが軽量化どころかコンパイルすら通らない。
+
+この 82 は**上限**として読むこと。参照は字句一致で数えているので、パッケージレベルのシンボルと同名の構造体フィールドがどこかにあると、呼んでもいないゲームが利用者として数えられる（`dealerIdx` は `BlackJackBasicStrategy.go` の関数であると同時に十数ゲームのフィールド名でもあり、実際の呼び出しは 0）。逆に**タグの無いファイルの宣言は数に入れない** — 例えば `PokerHand*` は `poker_hand_rank.go`（build タグ無し）にあり全 worker に入るので、`poker` がどこへ動いても宙に浮かない。最終的な判定は常にコンパイラ。
 
 自由に動かせる（他ユニットと一切シンボルを交換しない）ユニット数は次のとおり:
 

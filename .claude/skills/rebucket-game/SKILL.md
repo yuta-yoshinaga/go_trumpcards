@@ -71,9 +71,12 @@ production file, so the bucket belongs to the implementation, not the game. `mov
 refuses a partial group; the full list is `move-game.py --check`'s companion output.
 
 **A bucket's games can be welded together by shared package-level symbols.** `GameResult`
-lives in `BlackJack.go` and `PokerHand*` in `Poker.go`, yet ~19 other casino games use them.
-Moving blackjack or poker out of casino strands 90 symbols and the remaining games stop
-compiling. Run `crossrefs.py` before choosing a move set -- it reports, in both directions,
+lives in `BlackJack.go` and 19 other casino games use it; `compareHighCardsSlice` lives in
+`HoldemPlayer.go` and 12 do. Moving blackjack or holdem out of casino strands up to 82
+symbols and the remaining games stop compiling. Treat that count as an upper bound: it is a
+lexical match, so a symbol sharing a name with some game's struct field is credited with
+users that never call it, and declarations in untagged files are excluded because those
+compile into every worker regardless. Run `crossrefs.py` before choosing a move set -- it reports, in both directions,
 every package-level symbol that would cross the boundary. As of ADR-0036 Phase 2 only 6 of
 casino's 55 units are freely movable, versus 23 of solo's 51.
 
