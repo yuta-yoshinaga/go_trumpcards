@@ -1,20 +1,18 @@
-# ADR-0036 Phase 1: the extra3 bucket exists so the build and size checks run.
-# The KV namespace IDs below are PLACEHOLDERS. Create real namespaces in
-# Cloudflare (production, preview and staging) and paste their IDs here before
-# deploying — copying another worker's IDs would make two workers share one
-# session store and collide on keys.
 name = "go-trumpcards-extra3"
 main = "./build/worker.mjs"
 compatibility_date = "2024-09-23"
 
+# Dedicated namespaces, matching `extra` (ADR-0032). See workers/extra2/wrangler.toml
+# for why sharing would also have been safe, and why separate stores are preferred
+# anyway. Production, preview and staging are three DIFFERENT namespaces.
 [[kv_namespaces]]
 binding = "GAME_SESSIONS"
-id = "REPLACE_ME_EXTRA3_KV_ID"
-preview_id = "REPLACE_ME_EXTRA3_KV_PREVIEW_ID"
+id = "14080bf47090424aa495ec3cd677c270"
+preview_id = "aef6b2be3e444f8191808ac4123e4e22"
 
 [env.staging]
 name = "go-trumpcards-extra3-staging"
 
 [[env.staging.kv_namespaces]]
 binding = "GAME_SESSIONS"
-id = "REPLACE_ME_EXTRA3_KV_ID"
+id = "fe1f52261f06430f80eea6a376eac693"
