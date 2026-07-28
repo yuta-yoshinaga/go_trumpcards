@@ -135,6 +135,15 @@ describe('AnimatedCard', () => {
     expect(screen.getByTestId('animated-card')).toBeInTheDocument();
   });
 
+  it('honours a caller-supplied wrapperClassName in reduced motion mode', () => {
+    vi.mocked(useReducedMotion).mockReturnValue(true);
+    render(<AnimatedCard card={mockCard} wrapperClassName="w-16 shrink-0" />);
+    const wrapper = screen.getByTestId('animated-card');
+    expect(wrapper.className).toContain('w-16');
+    // The default inline-block is only a fallback; a caller's layout classes win.
+    expect(wrapper.className).not.toContain('inline-block');
+  });
+
   it('never fires the deal callback or sound in reduced motion mode', () => {
     vi.mocked(useReducedMotion).mockReturnValue(true);
     const onDealComplete = vi.fn();

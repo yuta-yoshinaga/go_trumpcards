@@ -53,11 +53,7 @@ export function AnimatedCard({
     // animation, so it is allowed here (and the universal reduced-motion block in
     // index.css strips any transition on it anyway).
     return (
-      <span
-        className={wrapperClassName ?? 'inline-block'}
-        data-testid="animated-card"
-        style={wrapperClassName ? undefined : { display: 'inline-block' }}
-      >
+      <span className={wrapperClassName ?? 'inline-block'} data-testid="animated-card">
         <span className="block hover:brightness-110 hover:shadow-lg hover:shadow-black/40">
           <CardImage {...rest} />
         </span>
