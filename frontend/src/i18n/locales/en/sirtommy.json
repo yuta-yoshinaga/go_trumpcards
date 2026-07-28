@@ -36,20 +36,14 @@
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
   "stalemate": "Stalemate",
-  "stepLabels": {
-    "f0": "+1",
-    "f1": "+2",
-    "f2": "+3",
-    "f3": "+4"
-  },
   "landscapeBanner": "Landscape recommended",
   "frontendHint": {
     "sirtommyStock": "The stock card can be played to a foundation",
     "sirtommyWaste": "A waste pile top can be played to a foundation"
   },
   "tutorial": {
-    "foundations": "Four foundations at the top start with A, 2, 3, 4 and build up to K with +1, +2, +3, +4 step sizes respectively (mod 13).",
-    "stockWaste": "Draw from the stock and place the card on either a foundation or one of four waste piles.",
+    "foundations": "The four foundations start empty and are opened by an Ace. From there each builds up A-2-3...-K one rank at a time, ignoring suit.",
+    "stockWaste": "Turn the stock one card at a time onto a foundation or one of four wastes. Only a waste’s top card can move later, so where you put it is the whole decision.",
     "controls": "Control buttons: hints, undo, give up, and more.",
     "resetButton": "Start a new game."
   },

@@ -8,11 +8,11 @@ test.describe('SirTommy E2E', () => {
     // Wait for the move-count readout
     await expect(page.getByText(/手数/).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
-    // Foundations row: 4 foundations with step labels. Use the JA-locale label
-    // ("ファンデーション") since PR #1971 localised the aria-label and the Playwright
-    // suite runs against the JA-default browser.
-    await expect(page.getByLabel(/ファンデーション 0 \+1/).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
-    await expect(page.getByLabel(/ファンデーション 3 \+4/).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    // Foundations row. Use the JA-locale label ("ファンデーション") since PR #1971
+    // localised the aria-label and the Playwright suite runs against the
+    // JA-default browser. No step suffix: every Sir Tommy foundation builds +1.
+    await expect(page.getByLabel(/ファンデーション 0 /).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    await expect(page.getByLabel(/ファンデーション 3 /).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
     // Control buttons while playing
     await expect(page.getByRole('button', { name: 'ヒント' }).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
