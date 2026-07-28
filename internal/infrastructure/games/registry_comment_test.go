@@ -85,3 +85,35 @@ func TestRegistryCommentsDoNotNameBuckets(t *testing.T) {
 			len(offenders), strings.Join(offenders, "\n  "))
 	}
 }
+
+// TestBucketRefRegexp pins the matcher down in both directions.
+//
+// The guard above can only fail on comments that exist today, so a branch that
+// nothing currently writes -- the Japanese ワーカー/バケット wording -- would sit
+// there unexercised and possibly wrong. These cases exercise every branch, and
+// just as importantly the two phrasings that must NOT match: a proximity-based
+// version of this regex flagged both, which is why it matches adjacency instead.
+func TestBucketRefRegexp(t *testing.T) {
+	cases := []struct {
+		text  string
+		match bool
+	}{
+		{"bucketed into the casino worker purely for size", true},
+		{"Classic worker bucket - casino was full", true},
+		{"routed to the EXTRA worker", true},
+		{"moved off casino in #4462", true},
+		{"solo バケットに入れている", true},
+		{"casino ワーカーへ移した", true},
+		{"Macau is a classic Crazy Eights variant", false},
+		{"a French casino banking game - the simplest possible", false},
+		{"Barbu is a classic compendium trick-taking game", false},
+		{"Category is only a size bucket", false},
+	}
+	for _, c := range cases {
+		t.Run(c.text, func(t *testing.T) {
+			if got := bucketRefRe.MatchString(c.text); got != c.match {
+				t.Errorf("MatchString(%q) = %v, want %v", c.text, got, c.match)
+			}
+		})
+	}
+}
