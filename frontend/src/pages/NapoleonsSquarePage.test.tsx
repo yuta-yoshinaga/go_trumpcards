@@ -136,7 +136,7 @@ describe('NapoleonsSquarePage', () => {
     await waitFor(() => expect(buried).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: '空のタブロー列 5' }));
+    fireEvent.click(screen.getByRole('button', { name: '空のタブロー列 4' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith(
         'move',
@@ -211,6 +211,60 @@ describe('NapoleonsSquarePage', () => {
     mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: 2, canUndo: true });
     renderWithProviders(<NapoleonsSquarePage />);
     await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
+  });
+});
+
+// The waste, the hint row and CLI mode are all whole branches of the page that
+// the happy-path state never reaches.
+describe('NapoleonsSquarePage waste, hints and CLI mode', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  const withWaste: NapoleonsSquareResponse = { ...playingState, waste: [card('DIAMOND', 4)] };
+
+  it('labels the waste as empty when there is nothing on it', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<NapoleonsSquarePage />);
+    await waitFor(() => expect(screen.getByLabelText('捨て札は空です')).toBeInTheDocument());
+  });
+
+  it('selects the waste top and sends it to a foundation', async () => {
+    mockExec.mockResolvedValue(withWaste);
+    renderWithProviders(<NapoleonsSquarePage />);
+    const wasteCard = await screen.findByRole('button', { name: '♦ 4' });
+    fireEvent.click(wasteCard);
+    await waitFor(() => expect(wasteCard).toHaveAttribute('aria-pressed', 'true'));
+    mockExec.mockClear();
+
+    // Foundation 3 is the diamond pile of the first deck.
+    fireEvent.click(screen.getByRole('button', { name: '♦ 組札3 1枚' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 3 }),
+    );
+  });
+
+  it.each([
+    ['foundation', { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'foundation', toCol: 2 }, '組札2'],
+    ['tableau', { fromZone: 'tableau', fromCol: 1, cardIndex: 0, toZone: 'tableau', toCol: 4 }, 'タブロー列4'],
+    ['stock', { fromZone: 'stock', fromCol: -1, cardIndex: -1, toZone: 'waste', toCol: -1 }, '捨て札'],
+  ])('renders a %s hint after the hint button is pressed', async (_name, hint, expected) => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, hint });
+    renderWithProviders(<NapoleonsSquarePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(new RegExp(expected))).toBeInTheDocument());
+  });
+
+  it('swaps the board for a terminal when CLI mode is toggled', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<NapoleonsSquarePage />);
+    await waitFor(() => expect(screen.getByText('#0')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
+    await waitFor(() => expect(screen.queryByText('#0')).not.toBeInTheDocument());
   });
 });
 

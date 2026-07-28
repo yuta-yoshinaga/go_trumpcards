@@ -124,6 +124,39 @@ describe('useNapoleonsSquareGame', () => {
     expect(result.current.selectedSource).toBeNull();
   });
 
+  // The waste zone carries no col/cardIndex, so the toggle compares undefined
+  // against undefined — a path the tableau cases never exercise.
+  it('handleSelectSource toggles the waste zone', async () => {
+    const { result } = renderHook(() => useNapoleonsSquareGame(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    act(() => result.current.handleSelectSource({ zone: 'waste' }));
+    expect(result.current.selectedSource).toEqual({ zone: 'waste' });
+
+    act(() => result.current.handleSelectSource({ zone: 'waste' }));
+    expect(result.current.selectedSource).toBeNull();
+  });
+
+  it('clears the selection and the hint on every board-resetting action', async () => {
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({
+      ...baseState,
+      hint: { fromZone: 'stock', fromCol: -1, cardIndex: -1, toZone: 'waste', toCol: -1 },
+    });
+    const { result } = renderHook(() => useNapoleonsSquareGame(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    await act(async () => {
+      await result.current.handleHint();
+    });
+    act(() => result.current.handleSelectSource({ zone: 'waste' }));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.selectedSource).not.toBeNull();
+
+    act(() => result.current.handleDraw());
+    await waitFor(() => expect(result.current.hint).toBeNull());
+    expect(result.current.selectedSource).toBeNull();
+  });
+
   it('handleSelectTarget no-ops without a selected source', async () => {
     const { result } = renderHook(() => useNapoleonsSquareGame(), { wrapper: makeWrapper() });
     await waitFor(() => expect(mockExec).toHaveBeenCalled());

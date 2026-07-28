@@ -15,7 +15,7 @@
   "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}})",
   "emptyColumnAriaLabel": "Empty tableau column {{col}}",
-  "stockAriaLabel": "Stock, {{count}} cards left, draw one",
+  "stockAriaLabel": "Stock, {{count}} cards left",
   "emptyWasteAriaLabel": "The waste is empty",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",

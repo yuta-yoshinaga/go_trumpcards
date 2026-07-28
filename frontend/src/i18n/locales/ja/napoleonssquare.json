@@ -15,7 +15,7 @@
   "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}})",
   "emptyColumnAriaLabel": "空のタブロー列 {{col}}",
-  "stockAriaLabel": "山札 残り{{count}}枚 めくる",
+  "stockAriaLabel": "山札 残り{{count}}枚",
   "emptyWasteAriaLabel": "捨て札は空です",
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",

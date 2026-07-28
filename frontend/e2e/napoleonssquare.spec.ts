@@ -8,7 +8,9 @@ test.describe("Napoleon's Square E2E", () => {
     await expect(page.getByText(/手数/)).toBeVisible();
 
     // The stock is the one action always available at the start of a deal.
-    const drawButton = page.getByRole('button', { name: 'めくる' });
+    // exact, because the stock pile is also a button and a substring match would
+    // pick up any label that merely contains the word.
+    const drawButton = page.getByRole('button', { name: 'めくる', exact: true });
     await expect(drawButton).toBeVisible();
     await drawButton.click();
     await waitForLoaded(page);

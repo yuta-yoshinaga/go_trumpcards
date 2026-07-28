@@ -40,6 +40,10 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 // so a pile keeps its position across deals.
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
 
+// Every index shown to the player is 0-based, matching the visible #0..#11
+// column headers, the hint text, and the CUI presenter. Mixing 1-based aria
+// labels with 0-based hints is how a hint ends up naming a different pile than
+// the label the screen reader just read out.
 const TABLEAU_COLS = 12;
 const TOTAL_CARDS = 104;
 
@@ -195,7 +199,7 @@ function NapoleonsSquarePageContent() {
                 type="button"
                 onClick={() => game.handleSelectTarget(tableauColZone)}
                 disabled={!isPlaying || loading || !selectedSource}
-                aria-label={t('emptyColumnAriaLabel', { col: colIdx + 1 })}
+                aria-label={t('emptyColumnAriaLabel', { col: colIdx })}
                 style={{ height: dims.ch }}
                 className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
               >
@@ -305,7 +309,7 @@ function NapoleonsSquarePageContent() {
                             disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
-                              idx: idx + 1,
+                              idx,
                               count: pile.length,
                             })}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
@@ -324,7 +328,7 @@ function NapoleonsSquarePageContent() {
                             disabled={!isPlaying || loading || !selectedSource}
                             aria-label={t('emptyFoundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
-                              idx: idx + 1,
+                              idx,
                             })}
                             style={{ width: dims.cw, height: dims.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}

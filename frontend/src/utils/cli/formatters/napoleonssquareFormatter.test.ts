@@ -66,4 +66,24 @@ describe('formatNapoleonsSquareState', () => {
   it('shows congrats on win phase', () => {
     expect(formatNapoleonsSquareState(makeState({ phase: 1 }))).toContain('Congratulations');
   });
+
+  // A null card can reach the formatter from a partially-restored KV snapshot;
+  // it must render a placeholder rather than throw.
+  it('renders a placeholder for a missing card', () => {
+    const result = formatNapoleonsSquareState(
+      makeState({
+        tableau: [[{ card: null, faceUp: true }], ...Array.from({ length: 11 }, () => [])],
+      }),
+    );
+    expect(result).toContain('[?]');
+  });
+
+  it('renders a waste-to-foundation hint', () => {
+    const result = formatNapoleonsSquareState(
+      makeState({ hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'foundation', toCol: 2 } }),
+    );
+    expect(result).toContain('HINT');
+    expect(result).toContain('waste');
+    expect(result).toContain('foundation2');
+  });
 });
