@@ -49,8 +49,10 @@ const (
 	MichiganPhaseResult MichiganPhase = 2
 )
 
-// MichiganResult は人間プレイヤーから見たラウンド結果。extra ワーカーから GameResult
-// (casino タグ) に到達できないため、extra 到達可能な形で再定義する。
+// MichiganResult は人間プレイヤーから見たラウンド結果。
+// GameResult は共有ファイル internal/domain/game_result.go に移動したので到達可能に
+// なったが、この型名は JSON ペイロードに出るため統合していない（#4462）。値は
+// GameResult と同一。
 type MichiganResult int
 
 const (

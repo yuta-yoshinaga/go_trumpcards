@@ -158,8 +158,10 @@ const (
 	KoenigrufenOutcomeLoss KoenigrufenOutcome = 2
 )
 
-// KoenigrufenResult 人間視点のマッチ結果。casino タグの GameResult は extra ワーカーから
-// 到達不能なため、ゲームローカルの結果型を定義する。
+// KoenigrufenResult 人間視点のマッチ結果。
+// GameResult は共有ファイル internal/domain/game_result.go に移動したので到達可能に
+// なったが、この型名は JSON ペイロードに出るため統合していない（#4462）。値は
+// GameResult と同一。
 type KoenigrufenResult int
 
 // Königrufen のマッチ結果定数

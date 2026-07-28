@@ -156,9 +156,10 @@ var registry = []*Game{
 	// worker's trick-play code with ohhell. The casino worker is at the 1 MB gzip
 	// limit, so it is bucketed into classic. Category is only a size bucket.
 	{Name: "ninetynine", Category: CategoryClassic},
-	// Bridge is a trick-taking game bucketed into the casino worker purely for
-	// binary-size balancing (#2126): it is one of the heaviest games and the
-	// classic worker is at the 1 MB gzip limit. Category is only a size bucket.
+	// Bridge is a trick-taking game bucketed into extra3 purely for binary-size
+	// balancing: it is one of the heaviest games, and it moved off casino in
+	// #4462 to bring that worker back over 150 KB of headroom. It has been in
+	// three buckets now (#2126, #4462) -- Category is only a size bucket.
 	{Name: "bridge", Category: CategoryExtra3},
 	{Name: "speed", Category: CategoryExtra2},
 	{Name: "gofish", Category: CategoryExtra2},
@@ -197,8 +198,8 @@ var registry = []*Game{
 	{Name: "spanish21", Category: CategoryCasino},
 	{Name: "calculation", Category: CategorySolo},
 	{Name: "spiteandmalice", Category: CategoryExtra2},
-	// Skat is a trick-taking game bucketed into the casino worker purely for
-	// binary-size balancing (#2126). Category is only a size bucket.
+	// Skat is a trick-taking game bucketed into extra3 purely for binary-size
+	// balancing (#2126, moved off casino in #4462). Category is only a size bucket.
 	{Name: "skat", Category: CategoryExtra3},
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
@@ -215,8 +216,8 @@ var registry = []*Game{
 	{Name: "ultimatetexasholdem", Category: CategoryCasino},
 	{Name: "crescent", Category: CategorySolo},
 	{Name: "mississippistud", Category: CategoryCasino},
-	// Belote is bucketed into the casino worker purely for binary-size balancing
-	// (#2126). Category is only a size bucket.
+	// Belote is bucketed into extra3 purely for binary-size balancing (#2126,
+	// moved off casino in #4462). Category is only a size bucket.
 	{Name: "belote", Category: CategoryExtra3},
 	{Name: "spiderette", Category: CategorySolo},
 	// Mighty is a trick-taking game, but it is bucketed into the casino worker
@@ -344,8 +345,8 @@ var registry = []*Game{
 	{Name: "bourre", Category: CategoryCasino},
 	// Sheepshead (シープスヘッド) is a German-American 5-player trick-taking game
 	// with a fixed-trump system (all Queens + all Jacks + all Diamonds) and a
-	// secret picker/partner formed via a called Ace. Casino worker (binary-size
-	// bucket only; see package doc).
+	// secret picker/partner formed via a called Ace. extra3 worker (binary-size
+	// bucket only, moved off casino in #4462; see package doc).
 	{Name: "sheepshead", Category: CategoryExtra3},
 	// Doppelkopf (ドッペルコップ) is a German 4-player partnership trick-taking
 	// game on a doubled 48-card deck with a fixed trump (♥10 Dulle + all Q + all

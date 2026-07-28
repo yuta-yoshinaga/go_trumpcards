@@ -84,8 +84,9 @@ const (
 )
 
 // TrenteEtQuaranteResult はラウンド結果 (勝ち=1 / 引き分け(プッシュ)=0 / 負け=-1)。
-// BlackJack の GameResult は casino ビルドタグで extra ワーカーから到達できないため、
-// extra 到達可能な形で再定義する。
+// GameResult は共有ファイル internal/domain/game_result.go に移動したので到達可能に
+// なったが、この型名は JSON ペイロードに出るため統合していない（#4462）。値は
+// GameResult と同一。
 type TrenteEtQuaranteResult int
 
 const (

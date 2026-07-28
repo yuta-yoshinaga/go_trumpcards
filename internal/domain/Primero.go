@@ -71,8 +71,10 @@ const (
 // primeroSupremusThreshold は Supremus/Primero を分けるポイント合計しきい値。
 const primeroSupremusThreshold = 50
 
-// PrimeroResult は人間プレイヤーから見たラウンド結果。Poker の GameResult は casino
-// ビルドタグで extra ワーカーから到達できないため、extra 到達可能な形で再定義する。
+// PrimeroResult は人間プレイヤーから見たラウンド結果。
+// GameResult は共有ファイル internal/domain/game_result.go に移動したので到達可能に
+// なったが、この型名は JSON ペイロードに出るため統合していない（#4462）。値は
+// GameResult と同一。
 type PrimeroResult int
 
 const (
