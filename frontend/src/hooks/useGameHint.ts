@@ -133,6 +133,7 @@ import type {
   SheepsheadResponse,
   ShitheadResponse,
   ShortDeckResponse,
+  SirTommyResponse,
   SixCardGolfResponse,
   SkatResponse,
   SlapjackResponse,
@@ -314,6 +315,7 @@ import { getSevensHint } from '../utils/hints/sevensHint';
 import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
 import { getShitheadHint } from '../utils/hints/shitheadHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
+import { getSirTommyHint } from '../utils/hints/sirtommyHint';
 import { getSixcardgolfHint } from '../utils/hints/sixcardgolfHint';
 import { getSkatHint } from '../utils/hints/skatHint';
 import { getSlapjackHint } from '../utils/hints/slapjackHint';
@@ -485,6 +487,7 @@ export const hintFactories = {
   easthaven: (s) => getEasthavenHint(s as EasthavenResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
+  sirtommy: (s) => getSirTommyHint(s as SirTommyResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   sheepshead: (s) => getSheepsheadHint(s as SheepsheadResponse),
   doppelkopf: (s) => getDoppelkopfHint(s as DoppelkopfResponse),

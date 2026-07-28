@@ -182,6 +182,7 @@ export * from './games/sheepshead';
 export * from './games/shithead';
 export * from './games/shortdeck';
 export * from './games/simplesimon';
+export * from './games/sirtommy';
 export * from './games/sixcardgolf';
 export * from './games/skat';
 export * from './games/slapjack';
@@ -304,6 +305,7 @@ export const games = [
   'clocksolitaire',
   'fortythieves',
   'calculation',
+  'sirtommy',
   'canfield',
   'osmosis',
   'fivehundred',

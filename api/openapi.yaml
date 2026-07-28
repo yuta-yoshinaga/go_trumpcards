@@ -187,6 +187,8 @@ tags:
     description: Trash (トラッシュ / ガベージ) game - 2-player matching game where each player flips 10 face-down cards into position 1..10 using wilds
   - name: calculation
     description: Calculation (カルキュレーション) game - arithmetic-progression solitaire where 4 foundations (A,2,3,4) build up mod-13 with step sizes +1/+2/+3/+4
+  - name: sirtommy
+    description: Sir Tommy game
   - name: spiteandmalice
     description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
   - name: skat
@@ -10077,6 +10079,120 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CalculationResponse'
+  /sirtommy/exec:
+    post:
+      tags:
+        - sirtommy
+      summary: Execute a Sir Tommy game command
+      description: |
+        Send a command to advance the Sir Tommy (サー・トミー) game session
+        identified by `sessionId`. Sir Tommy is one of the oldest recorded
+        single-player patiences, played with a standard 52-card deck.
+
+        All 52 cards start face-down in the stock and **no foundation is dealt**:
+        a foundation is opened by playing an Ace onto it. Foundations then build
+        up one rank at a time, A to K, **ignoring suit**. A card that cannot be
+        played goes on top of one of four waste piles, and only a waste pile's
+        **top** card may later move to a foundation - piles are never reordered
+        and cards never move between wastes, so choosing which pile to bury a
+        card on is the only real decision in the game.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All 52 cards are on the foundations |
+        | GameOver   | `2`   | Player gave up, or the stock ran out with no legal move |
+
+        | Command        | Aliases     | Description |
+        |----------------|-------------|-------------|
+        | `reset`        | `r`         | Start / restart a game |
+        | `move`         | `m`         | Move a card (requires `from` and `to` zones) |
+        | `giveup`       | `g`         | Give up the current game |
+        | `hint`         | `h`         | Return a hint (stock/waste to foundation), if any |
+        | `autocomplete` | `ac`        | Auto-play every legal move to the foundations |
+        | `undo`         | `u`         | Undo the last action |
+        | `undo_n`       | -           | Undo the last `n` actions |
+        | `log`          | `l`         | View action log |
+
+        Move zones:
+        * `from`: `{zone: "stock"}` or `{zone: "waste", idx: 0..3}`
+        * `to`: `{zone: "foundation", idx: 0..3}` or `{zone: "waste", idx: 0..3}`
+
+      operationId: sirtommyExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/SirTommyMoveZone'
+                to:
+                  $ref: '#/components/schemas/SirTommyMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              moveStockToFoundation:
+                summary: Play the stock top to foundation 0
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: stock
+                  to:
+                    zone: foundation
+                    idx: 0
+              moveStockToWaste:
+                summary: Park the stock top on waste pile 2
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: stock
+                  to:
+                    zone: waste
+                    idx: 2
+              moveWasteToFoundation:
+                summary: Play waste 1 top to foundation 3
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: waste
+                    idx: 1
+                  to:
+                    zone: foundation
+                    idx: 3
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SirTommyResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SirTommyResponse'
 
   /spiteandmalice/exec:
     post:
@@ -33395,6 +33511,19 @@ components:
         idx:
           type: integer
           description: Pile index (required for waste/foundation; ignored for stock)
+    SirTommyMoveZone:
+      type: object
+      description: Source or target zone for a SirTommy card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (stock, waste, foundation)
+          enum: [stock, waste, foundation]
+        idx:
+          type: integer
+          description: Pile index (required for waste/foundation; ignored for stock)
     CalculationHint:
       type: object
       description: Suggested best move for Calculation
@@ -33446,6 +33575,56 @@ components:
           description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
         hint:
           $ref: '#/components/schemas/CalculationHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
+    # Spite and Malice
+    # -------------------------------------------------------------------------
+    SirTommyResponse:
+      type: object
+      description: Response payload for /sirtommy/exec
+      properties:
+        foundations:
+          type: array
+          description: Four foundation piles indexed 0..3 with step sizes +1, +2, +3, +4 respectively.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        wastes:
+          type: array
+          description: Four waste piles indexed 0..3.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        stockCount:
+          type: integer
+        stockTop:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
+        hint:
+          $ref: '#/components/schemas/SirTommyHint'
         message:
           type: string
         messageCode:

@@ -189,6 +189,9 @@ var registry = []*Game{
 	{Name: "cassino", Category: CategoryClassic},
 	{Name: "spanish21", Category: CategoryCasino},
 	{Name: "calculation", Category: CategorySolo},
+	// Sir Tommy is one of the oldest recorded patiences: deal the stock one card at
+	// a time, open foundations with Aces, and build them up A-K ignoring suit.
+	{Name: "sirtommy", Category: CategoryExtra2},
 	{Name: "spiteandmalice", Category: CategoryExtra2},
 	// Skat is a trick-taking game.
 	{Name: "skat", Category: CategoryExtra3},

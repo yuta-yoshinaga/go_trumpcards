@@ -1,0 +1,59 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "SirTommy",
+  "stock": "Stock",
+  "waste": "Waste",
+  "foundation": "Foundation",
+  "foundations": "Foundations",
+  "moveCount": "Moves",
+  "stockCount": "Remaining",
+  "stockTop": "Next card",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "autoComplete": "Auto complete",
+  "selectSource": "Select source",
+  "selectTarget": "Select target",
+  "deselect": "Cancel",
+  "draw": "Draw",
+  "empty": "Empty",
+  "nextRankBadge": "Next: {{rank}}",
+  "nextRankAria": "Next required card {{rank}}",
+  "upcomingRanksTooltip": "Upcoming cards: {{sequence}}",
+  "upcomingRanksToggle": "Upcoming ranks",
+  "upcomingRanksDetailAria": "Upcoming ranks for foundation {{idx}}: {{sequence}}",
+  "wasteRanksTooltip": "Waste {{idx}} (top 3): {{ranks}}",
+  "wasteEmptyAria": "Waste {{idx}}: empty",
+  "stockTopAria": "Stock top: {{card}}",
+  "foundationCompleteAria": "Complete",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "stalemate": "Stalemate",
+  "stepLabels": {
+    "f0": "+1",
+    "f1": "+2",
+    "f2": "+3",
+    "f3": "+4"
+  },
+  "landscapeBanner": "Landscape recommended",
+  "frontendHint": {
+    "sirtommyStock": "The stock card can be played to a foundation",
+    "sirtommyWaste": "A waste pile top can be played to a foundation"
+  },
+  "tutorial": {
+    "foundations": "Four foundations at the top start with A, 2, 3, 4 and build up to K with +1, +2, +3, +4 step sizes respectively (mod 13).",
+    "stockWaste": "Draw from the stock and place the card on either a foundation or one of four waste piles.",
+    "controls": "Control buttons: hints, undo, give up, and more.",
+    "resetButton": "Start a new game."
+  },
+  "nav": {
+    "sirtommy": "SirTommy"
+  }
+}

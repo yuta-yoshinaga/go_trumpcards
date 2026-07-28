@@ -1276,6 +1276,24 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "sirtommy", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSirTommyCuiController(usecase.NewSirTommyInteractor(
+				domain.NewDefaultSirTommy(), new(presenter.SirTommyCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sirtommy.helpTitle",
+				CommandKeys: []string{
+					"sirtommy.helpStockToFoundation",
+					"sirtommy.helpStockToWaste",
+					"sirtommy.helpWasteToFoundation",
+					"sirtommy.helpGiveUp",
+					"sirtommy.helpHint",
+					"sirtommy.helpAutoComplete",
+					"sirtommy.helpUndo",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "spiteandmalice", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSpiteAndMaliceCuiController(usecase.NewSpiteAndMaliceInteractor(

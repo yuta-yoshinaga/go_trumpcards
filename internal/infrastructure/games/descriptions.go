@@ -88,6 +88,7 @@ var gameDescriptions = map[string]string{
 	"cassino":             "Cassino (カッシーノ)",
 	"spanish21":           "Spanish 21 (スパニッシュ21)",
 	"calculation":         "Calculation (カルキュレーション)",
+	"sirtommy":            "サー・トミー（最古級のペイシェンス）",
 	"spiteandmalice":      "Spite and Malice (スパイト・アンド・マリス)",
 	"skat":                "Skat (スカート)",
 	"shithead":            "Shithead / Karma (シットヘッド)",
