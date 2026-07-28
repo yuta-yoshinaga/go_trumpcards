@@ -252,10 +252,21 @@ body {
    card rendered inside a button — showed an arrow cursor. Measured before fixing:
    `cursor: default` on buttons across all pages, while `<a>` got `pointer` natively,
    which is why nav links felt clickable and buttons did not. Pages that had already
-   added `cursor-pointer` by hand (Klondike's cards) are unaffected. */
-button:not(:disabled),
-[role="button"]:not([aria-disabled="true"]) {
-  cursor: pointer;
+   added `cursor-pointer` by hand (Klondike's cards) are unaffected.
+
+   It MUST live in `@layer base`. Unlayered CSS beats every cascade layer, including
+   Tailwind's `utilities`, so an unlayered version of this rule overrode
+   `cursor-not-allowed` on the soft-disabled cards in PlayerHandSection /
+   MobileHandGrid — those render illegal cards as buttons with `aria-disabled` rather
+   than the native attribute (deliberately, to keep them focusable), so
+   `button:not(:disabled)` still matches them. Verified: with the rule unlayered a
+   `cursor-not-allowed` button computed `pointer`; inside `@layer base` it computes
+   `not-allowed`. The `aria-disabled` exclusion is belt-and-braces on top. */
+@layer base {
+  button:not(:disabled):not([aria-disabled="true"]),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
 }
 
 /* Prevent iOS Safari auto-zoom on input focus (triggers when font-size < 16px) */

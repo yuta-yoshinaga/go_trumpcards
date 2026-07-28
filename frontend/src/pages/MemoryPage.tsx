@@ -359,7 +359,8 @@ function MemoryPageContent() {
               </div>
             </details>
 
-            {/* Board: responsive grid (4/8/13 columns); on lg fills remaining height */}
+            {/* Board: responsive grid (7/8/10/13 columns). Narrow screens drop the 2/3 aspect
+                so all 8 rows fit the play area; on lg it fills the remaining height. */}
             <div
               className="my-3 max-sm:my-1 lg:my-1 p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
               data-tutorial="mem-board"
