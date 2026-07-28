@@ -1,0 +1,20 @@
+{
+  "helpTitle": "Bisley (ビズリー)",
+  "helpMoveTA": "  m <col> a            タブローから昇順基礎札 (A→K) へ",
+  "helpMoveTK": "  m <col> k            タブローから降順基礎札 (K→A) へ",
+  "helpMoveTT": "  m <fromCol> <toCol>  タブロー間で1枚移動 (同スートで±1)",
+  "helpGiveUp": "  g                    ギブアップ",
+  "helpHint": "  h                    ヒント",
+  "helpAutoComplete": "  ac                   オートコンプリート",
+  "helpUndo": "  u                    1手戻す",
+  "promptToZone": "移動先を入力してください (列番号, a=昇順基礎札, k=降順基礎札):",
+  "aceFoundationHeader": "昇順基礎札 (A→K): ",
+  "kingFoundationHeader": "降順基礎札 (K→A): ",
+  "columnLabel": "列{{col}}:",
+  "hintFrom": "タブロー列{{col}}",
+  "hintToAce": "昇順基礎札{{idx}}",
+  "hintToKing": "降順基礎札{{idx}}",
+  "hintToTableau": "タブロー列{{col}}",
+  "hintLine": "ヒント: {{from}} → {{to}}",
+  "undoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）"
+}

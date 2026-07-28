@@ -189,6 +189,8 @@ tags:
     description: Calculation (カルキュレーション) game - arithmetic-progression solitaire where 4 foundations (A,2,3,4) build up mod-13 with step sizes +1/+2/+3/+4
   - name: sirtommy
     description: Sir Tommy game
+  - name: bisley
+    description: Bisley (ビズリー) game - fully open solitaire with two foundation sets, four ascending (A→K, dealt with the Aces) and four descending (K→A, opened by playing a King)
   - name: spiteandmalice
     description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
   - name: skat
@@ -10194,6 +10196,125 @@ paths:
               schema:
                 $ref: '#/components/schemas/SirTommyResponse'
 
+  /bisley/exec:
+    post:
+      tags:
+        - bisley
+      summary: Execute a Bisley game command
+      description: |
+        Send a command to advance the Bisley (ビズリー) game session identified
+        by `sessionId`. Bisley is a fully open single-player solitaire played
+        with a standard 52-card deck: every card is face-up from the deal, so
+        the only randomness is the layout.
+
+        The four Aces are lifted onto the **ascending** foundations, which build
+        A→2→…→K **by suit**. The remaining 48 cards are dealt face-up into **13
+        tableau columns** (four of three cards, nine of four). A second set of
+        four **descending** foundations starts empty and opens when the player
+        plays a King, building K→Q→…→A by suit.
+
+        Only the **top (last) card** of a column may move. It can be stacked on
+        another column's top card only when it is the **same suit and exactly
+        one rank away**, up or down. An emptied column is **not** a free cell:
+        allowing it would make every deal trivially solvable.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All 52 cards are on the two foundation sets |
+        | GameOver   | `2`   | Player gave up |
+
+        | Command        | Aliases     | Description |
+        |----------------|-------------|-------------|
+        | `reset`        | `r`         | Start / restart a game |
+        | `move`         | `m`         | Move a card (requires `from` and `to` zones) |
+        | `giveup`       | `g`         | Give up the current game |
+        | `hint`         | `h`         | Return a foundation move, if any |
+        | `autocomplete` | `ac`        | Send every legal card to the foundations |
+        | `undo`         | `u`         | Undo the last action |
+        | `undo_n`       | -           | Undo the last `n` actions |
+        | `log`          | `l`         | View action log |
+
+        Move zones:
+        * `from`: `{zone: "tableau", col: 0..12}`
+        * `to`: `{zone: "tableau", col: 0..12}`, `{zone: "ace"}`, or `{zone: "king"}`
+
+      operationId: bisleyExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/BisleyMoveZone'
+                to:
+                  $ref: '#/components/schemas/BisleyMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              moveTableauToAceFoundation:
+                summary: Send column 3's top card to its ascending foundation
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 3
+                  to:
+                    zone: ace
+              moveTableauToKingFoundation:
+                summary: Open or extend a descending foundation from column 7
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 7
+                  to:
+                    zone: king
+              moveTableauToTableau:
+                summary: Stack column 0's top card onto column 11 (same suit, one rank away)
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 0
+                  to:
+                    zone: tableau
+                    col: 11
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BisleyResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BisleyResponse'
+
   /spiteandmalice/exec:
     post:
       tags:
@@ -19358,6 +19479,96 @@ components:
         cardIndex:
           type: integer
           description: Optional / ignored. The server always operates on the top card of the source column; clients may omit this field. Retained for parity with BakersDozenMoveZone.
+    BisleyMoveZone:
+      type: object
+      description: Source or target zone for a Bisley card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: |
+            Zone identifier. `tableau` is a column, `ace` is an ascending
+            (A→K) foundation, `king` is a descending (K→A) foundation.
+          enum: [tableau, ace, king]
+        col:
+          type: integer
+          description: |
+            Column index. Required when `zone` is `tableau` (0..12). For the
+            two foundation zones the server derives the pile from the card's
+            suit, so this field is ignored.
+    BisleyTableauCard:
+      type: object
+      description: A single tableau card in Bisley. Every card is face-up by rule, but the flag is surfaced rather than assumed.
+      properties:
+        card:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+        faceUp:
+          type: boolean
+    BisleyHint:
+      type: object
+      description: Suggested next move for Bisley
+      properties:
+        fromCol:
+          type: integer
+          description: Source tableau column (0..12)
+        toZone:
+          type: string
+          description: Destination zone
+          enum: [ace, king, tableau]
+        toIdx:
+          type: integer
+          description: Foundation index (0..3) when `toZone` is `ace`/`king`, otherwise the destination column
+    BisleyResponse:
+      type: object
+      description: Response payload for /bisley/exec
+      properties:
+        tableau:
+          type: array
+          description: Thirteen tableau columns; four hold three cards and nine hold four at the deal.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/BisleyTableauCard'
+        aceFoundations:
+          type: array
+          description: Four ascending foundations indexed by suit (spade, clover, heart, diamond), each seeded with its Ace.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        kingFoundations:
+          type: array
+          description: Four descending foundations indexed by suit; each starts empty and opens when its King is played.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
+        hint:
+          $ref: '#/components/schemas/BisleyHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
     Card:
       type: object
       description: A single playing card

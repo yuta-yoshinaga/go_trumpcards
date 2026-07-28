@@ -89,6 +89,7 @@ var gameDescriptions = map[string]string{
 	"spanish21":           "Spanish 21 (スパニッシュ21)",
 	"calculation":         "Calculation (カルキュレーション)",
 	"sirtommy":            "サー・トミー（最古級のペイシェンス）",
+	"bisley":              "ビズリー（昇降2組の基礎札ソリティア）",
 	"spiteandmalice":      "Spite and Malice (スパイト・アンド・マリス)",
 	"skat":                "Skat (スカート)",
 	"shithead":            "Shithead / Karma (シットヘッド)",

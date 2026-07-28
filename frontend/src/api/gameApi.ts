@@ -28,6 +28,7 @@ export * from './games/bidwhist';
 export * from './games/bigo';
 export * from './games/bigohilo';
 export * from './games/bigtwo';
+export * from './games/bisley';
 export * from './games/blackhole';
 export * from './games/blackjack';
 export * from './games/blackjackswitch';
@@ -306,6 +307,7 @@ export const games = [
   'fortythieves',
   'calculation',
   'sirtommy',
+  'bisley',
   'canfield',
   'osmosis',
   'fivehundred',
