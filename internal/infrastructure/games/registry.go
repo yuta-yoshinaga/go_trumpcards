@@ -159,7 +159,7 @@ var registry = []*Game{
 	// Bridge is a trick-taking game bucketed into the casino worker purely for
 	// binary-size balancing (#2126): it is one of the heaviest games and the
 	// classic worker is at the 1 MB gzip limit. Category is only a size bucket.
-	{Name: "bridge", Category: CategoryCasino},
+	{Name: "bridge", Category: CategoryExtra3},
 	{Name: "speed", Category: CategoryExtra2},
 	{Name: "gofish", Category: CategoryExtra2},
 	{Name: "pinochle", Category: CategoryExtra2},
@@ -199,7 +199,7 @@ var registry = []*Game{
 	{Name: "spiteandmalice", Category: CategoryExtra2},
 	// Skat is a trick-taking game bucketed into the casino worker purely for
 	// binary-size balancing (#2126). Category is only a size bucket.
-	{Name: "skat", Category: CategoryCasino},
+	{Name: "skat", Category: CategoryExtra3},
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},
@@ -217,7 +217,7 @@ var registry = []*Game{
 	{Name: "mississippistud", Category: CategoryCasino},
 	// Belote is bucketed into the casino worker purely for binary-size balancing
 	// (#2126). Category is only a size bucket.
-	{Name: "belote", Category: CategoryCasino},
+	{Name: "belote", Category: CategoryExtra3},
 	{Name: "spiderette", Category: CategorySolo},
 	// Mighty is a trick-taking game, but it is bucketed into the casino worker
 	// purely for binary-size balancing (#2126): it is one of the heaviest games
@@ -346,7 +346,7 @@ var registry = []*Game{
 	// with a fixed-trump system (all Queens + all Jacks + all Diamonds) and a
 	// secret picker/partner formed via a called Ace. Casino worker (binary-size
 	// bucket only; see package doc).
-	{Name: "sheepshead", Category: CategoryCasino},
+	{Name: "sheepshead", Category: CategoryExtra3},
 	// Doppelkopf (ドッペルコップ) is a German 4-player partnership trick-taking
 	// game on a doubled 48-card deck with a fixed trump (♥10 Dulle + all Q + all
 	// J + all ♦) and secret Re/Kontra teams formed by the two Q♣ holders. Casino

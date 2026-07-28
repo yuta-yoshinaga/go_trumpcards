@@ -322,15 +322,6 @@ func init() {
 	// worker because the classic worker is at the 1 MB gzip free-tier limit.
 	// Workers are pure binary-size partitions with no user-facing meaning.
 
-	games.RegisterKVGame("bridge", games.CategoryCasino,
-		func() usecase.BridgeInteractorIF {
-			return usecase.NewBridgeInteractor(domain.NewDefaultBridge(), new(presenter.BridgeWebPresenter))
-		},
-		func(data []byte) (usecase.BridgeInteractorIF, error) {
-			return usecase.RestoreBridgeInteractor(data, new(presenter.BridgeWebPresenter))
-		},
-		controller.NewBridgeWebControllerWithProvider)
-
 	games.RegisterKVGame("napoleon", games.CategoryCasino,
 		func() usecase.NapoleonInteractorIF {
 			return usecase.NewNapoleonInteractor(domain.NewDefaultNapoleon(), new(presenter.NapoleonWebPresenter))
@@ -339,15 +330,6 @@ func init() {
 			return usecase.RestoreNapoleonInteractor(data, new(presenter.NapoleonWebPresenter))
 		},
 		controller.NewNapoleonWebControllerWithProvider)
-
-	games.RegisterKVGame("skat", games.CategoryCasino,
-		func() usecase.SkatInteractorIF {
-			return usecase.NewSkatInteractor(domain.NewDefaultSkat(), new(presenter.SkatWebPresenter))
-		},
-		func(data []byte) (usecase.SkatInteractorIF, error) {
-			return usecase.RestoreSkatInteractor(data, new(presenter.SkatWebPresenter))
-		},
-		controller.NewSkatWebControllerWithProvider)
 
 	games.RegisterKVGame("tarneeb", games.CategoryCasino,
 		func() usecase.TarneebInteractorIF {
@@ -358,14 +340,6 @@ func init() {
 		},
 		controller.NewTarneebWebControllerWithProvider)
 
-	games.RegisterKVGame("belote", games.CategoryCasino,
-		func() usecase.BeloteInteractorIF {
-			return usecase.NewBeloteInteractor(domain.NewDefaultBelote(), new(presenter.BeloteWebPresenter))
-		},
-		func(data []byte) (usecase.BeloteInteractorIF, error) {
-			return usecase.RestoreBeloteInteractor(data, new(presenter.BeloteWebPresenter))
-		},
-		controller.NewBeloteWebControllerWithProvider)
 	games.RegisterKVGame("tressette", games.CategoryCasino,
 		func() usecase.TressetteInteractorIF {
 			return usecase.NewTressetteInteractor(domain.NewDefaultTressette(), new(presenter.TressetteWebPresenter))
@@ -374,14 +348,6 @@ func init() {
 			return usecase.RestoreTressetteInteractor(data, new(presenter.TressetteWebPresenter))
 		},
 		controller.NewTressetteWebControllerWithProvider)
-	games.RegisterKVGame("sheepshead", games.CategoryCasino,
-		func() usecase.SheepsheadInteractorIF {
-			return usecase.NewSheepsheadInteractor(domain.NewDefaultSheepshead(), new(presenter.SheepsheadWebPresenter))
-		},
-		func(data []byte) (usecase.SheepsheadInteractorIF, error) {
-			return usecase.RestoreSheepsheadInteractor(data, new(presenter.SheepsheadWebPresenter))
-		},
-		controller.NewSheepsheadWebControllerWithProvider)
 	games.RegisterKVGame("doppelkopf", games.CategoryCasino,
 		func() usecase.DoppelkopfInteractorIF {
 			return usecase.NewDoppelkopfInteractor(domain.NewDefaultDoppelkopf(), new(presenter.DoppelkopfWebPresenter))
