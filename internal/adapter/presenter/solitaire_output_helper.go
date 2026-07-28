@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo || extra || extra3
+//go:build !js || !wasm || solo || extra || extra3 || extra2
 
 package presenter
 
