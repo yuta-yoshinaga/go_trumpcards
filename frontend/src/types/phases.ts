@@ -1636,6 +1636,13 @@ export const BeleagueredCastlePhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Bisley phase constants (sync: internal/domain/Bisley.go). */
+export const BisleyPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Streets and Alleys phase constants (sync: internal/domain/StreetsAndAlleys.go). */
 export const StreetsAndAlleysPhase = {
   PLAYING: 0,

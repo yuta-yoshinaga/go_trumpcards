@@ -1,0 +1,46 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "aceFoundation": "昇順 (A→K)",
+  "kingFoundation": "降順 (K→A)",
+  "tableau": "場札",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "empty": "空",
+  "aceFoundationAriaLabel": "{{suit}} 昇順組札 {{count}}枚",
+  "kingFoundationAriaLabel": "{{suit}} 降順組札 {{count}}枚",
+  "emptyAceFoundationAriaLabel": "空の昇順組札 ({{suit}})",
+  "emptyKingFoundationAriaLabel": "空の降順組札 ({{suit}})",
+  "emptyColumnAriaLabel": "空のタブロー列 {{col}}",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "組札を配り札より先へ進めると有効になります",
+  "undo": "元に戻す",
+  "stalemate": "手詰まりです",
+  "playing": "カードを移動してください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "gameOverSummary": "組札 {{count}}/52 枚（{{percent}}%）まで到達",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "tutorial": {
+    "foundation": "組札は2組あります。上段の昇順組札には最初から4枚のAが置かれ、同じスートでA→Kに積みます。下段の降順組札は空で、キングを上げたときに開き、K→Aに積みます。",
+    "tableau": "残り48枚は13列に表向きで配られます（4列が3枚、9列が4枚）。動かせるのは各列の一番下（最後）のカード1枚だけです。",
+    "moves": "場札の上へは「同じスートでランクが1つ違う」カードだけ重ねられます。上下どちらでも構いません。空になった列は置き場としては使えません。",
+    "controls": "ヒント・元に戻す・自動完成などの操作ボタンです。"
+  },
+  "frontendHint": {
+    "tableau": "タブロー列{{col}}",
+    "aceFoundation": "{{suit}} 昇順組札",
+    "kingFoundation": "{{suit}} 降順組札"
+  },
+  "hintReason": {
+    "toAce": "このカードを昇順組札に上げると列が1枚軽くなります",
+    "toKing": "このカードを降順組札に上げると列が1枚軽くなります",
+    "toTableau": "示唆された場札への移動で下のカードを掘り出しましょう"
+  }
+}

@@ -1334,6 +1334,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 5, 2], skill: [3, 4, 4, 2], social: [5, 1, 0, 2, 4], theme: [3, 4, 2, 1, 2, 3] },
       },
       {
+        path: '/bisley',
+        labelKey: 'nav.bisley',
+        icon: '🎯',
+        page: 'Bisley',
+        profile: { mood: [5, 1, 5, 2], skill: [3, 4, 4, 2], social: [5, 1, 0, 2, 4], theme: [3, 4, 2, 1, 2, 3] },
+      },
+      {
         path: '/streetsandalleys',
         labelKey: 'nav.streetsandalleys',
         icon: '🛣️',

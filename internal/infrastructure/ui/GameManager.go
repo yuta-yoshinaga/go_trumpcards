@@ -1294,6 +1294,24 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "bisley", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBisleyCuiController(usecase.NewBisleyInteractor(
+				domain.NewDefaultBisley(), new(presenter.BisleyCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "bisley.helpTitle",
+				CommandKeys: []string{
+					"bisley.helpMoveTA",
+					"bisley.helpMoveTK",
+					"bisley.helpMoveTT",
+					"bisley.helpGiveUp",
+					"bisley.helpHint",
+					"bisley.helpAutoComplete",
+					"bisley.helpUndo",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "spiteandmalice", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSpiteAndMaliceCuiController(usecase.NewSpiteAndMaliceInteractor(

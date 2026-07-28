@@ -23,6 +23,7 @@ export * from './games/belote';
 export * from './games/bezique';
 export * from './games/bidwhist';
 export * from './games/bigtwo';
+export * from './games/bisley';
 export * from './games/blackhole';
 export * from './games/blackjack';
 export * from './games/blackjackswitch';
