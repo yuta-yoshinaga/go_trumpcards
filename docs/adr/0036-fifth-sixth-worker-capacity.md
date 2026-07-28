@@ -86,13 +86,24 @@ ADR-0032 は「ゲームを移す手順」しか残していなかったため�
 
 **Cloudflare アカウント側（コードでは完結しない）**
 
-- KV namespace を production / preview / staging 分作成し、その ID を `wrangler.toml` に入れる
+- KV namespace を production / preview / staging の **3 つ**作成し、その ID を `wrangler.toml` に入れる。3 つは別物であること（Phase 1 のプレースホルダは production と staging に同じトークンを使っていたため、素朴に置換すると staging が production のストアを指す）
 - GitHub の deploy variables に `WORKER_<NAME>_URL` と `WORKER_<NAME>_STAGING_URL` を設定
-- フロントエンドビルド用に `VITE_WORKER_<NAME>_URL` を設定
 
-**この 3 つが揃うまで新 Worker は実際にはデプロイできない。** Phase 1 の PR は KV ID をプレースホルダで置き、ビルドとサイズチェックまでを通す。
+`VITE_WORKER_<NAME>_URL` は**手で設定しない**。`deploy-cloudflare.yml` が上記 2 つから
+ref に応じて導出する（master→production, それ以外→staging）ので、設定するのは worker
+あたり 2 変数だけ。
 
-**プレースホルダのまま deploy matrix に足してはいけない。** `deploy-cloudflare.yml` は
+**この 2 つが揃うまで新 Worker は実際にはデプロイできない。** Phase 1 の PR は KV ID をプレースホルダで置き、ビルドとサイズチェックまでを通す。
+
+なお KV namespace は **worker ごとに分ける必要はない**。KV キーは `<game>:<sessionId>`
+（`worker_helper.go` が `name+":"` を prefix に渡す）で、ゲームは必ず 1 バケットにしか
+属さないため、複数 worker が 1 つの namespace を共有しても衝突しない。実際
+casino / classic / solo は ADR-0027 以来 1 つを共有している。それでも `extra` 以降は
+worker ごとに分けている — 片方のセッションだけを列挙・削除できる方が運用が楽なため。
+
+**プレースホルダのまま deploy matrix に足してはいけない**（extra2/extra3 の
+namespace と変数は 2026-07-28 に用意済みで、matrix にも追加した。以下は
+なぜ Phase 1 で足さなかったかの記録）**。** `deploy-cloudflare.yml` は
 `cmd/workers/**` と `workers/**` の変更で develop への push 時に走るため、Phase 1 の変更
 そのものがトリガーになる。プレースホルダ ID で `wrangler deploy` が失敗し、`fail-fast` は
 既定 true なので**他の 4 Worker のデプロイまで巻き添えでキャンセル**され、さらに
