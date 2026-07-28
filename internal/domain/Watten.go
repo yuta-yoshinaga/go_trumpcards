@@ -66,8 +66,10 @@ const (
 	WattenPhaseGameEnd WattenPhase = 5
 )
 
-// WattenResult は人間 (チーム 0) から見たマッチ結果。BlackJack の GameResult は
-// casino タグ付きで extra ワーカーから不可視のため、ローカルに定義する。
+// WattenResult は人間 (チーム 0) から見たマッチ結果。
+// GameResult は共有ファイル internal/domain/game_result.go に移動したので到達可能に
+// なったが、この型名は JSON ペイロードに出るため統合していない（#4462）。値は
+// GameResult と同一。
 type WattenResult int
 
 // Wattenの結果定数

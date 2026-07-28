@@ -15,9 +15,10 @@ const (
 	OichoKabuPhaseEnd  = 3 // 終了フェーズ（結果表示）
 )
 
-// OichoKabuResult は子（human）から見たラウンド結果。BlackJack の GameResult は
-// casino ビルドタグで extra ワーカーから到達できないため、extra 到達可能な形で
-// 再定義する（Guts/Anaconda と同じ理由）。
+// OichoKabuResult は子（human）から見たラウンド結果。
+// GameResult は共有ファイル internal/domain/game_result.go に移動したので到達可能に
+// なったが、この型名は JSON ペイロードに出るため統合していない（#4462）。値は
+// GameResult と同一。
 type OichoKabuResult int
 
 // OichoKabuResult 定数（値は GameResult と同一）

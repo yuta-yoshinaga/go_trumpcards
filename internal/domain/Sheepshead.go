@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra3
 
 // Package domain シープスヘッド (Sheepshead) のドメインモデル。
 //

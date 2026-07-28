@@ -173,4 +173,36 @@ func init() {
 			return usecase.RestoreFortyAndEightInteractor(data, new(presenter.FortyAndEightWebPresenter))
 		},
 		controller.NewFortyAndEightWebControllerWithProvider)
+	games.RegisterKVGame("bridge", games.CategoryExtra3,
+		func() usecase.BridgeInteractorIF {
+			return usecase.NewBridgeInteractor(domain.NewDefaultBridge(), new(presenter.BridgeWebPresenter))
+		},
+		func(data []byte) (usecase.BridgeInteractorIF, error) {
+			return usecase.RestoreBridgeInteractor(data, new(presenter.BridgeWebPresenter))
+		},
+		controller.NewBridgeWebControllerWithProvider)
+	games.RegisterKVGame("skat", games.CategoryExtra3,
+		func() usecase.SkatInteractorIF {
+			return usecase.NewSkatInteractor(domain.NewDefaultSkat(), new(presenter.SkatWebPresenter))
+		},
+		func(data []byte) (usecase.SkatInteractorIF, error) {
+			return usecase.RestoreSkatInteractor(data, new(presenter.SkatWebPresenter))
+		},
+		controller.NewSkatWebControllerWithProvider)
+	games.RegisterKVGame("belote", games.CategoryExtra3,
+		func() usecase.BeloteInteractorIF {
+			return usecase.NewBeloteInteractor(domain.NewDefaultBelote(), new(presenter.BeloteWebPresenter))
+		},
+		func(data []byte) (usecase.BeloteInteractorIF, error) {
+			return usecase.RestoreBeloteInteractor(data, new(presenter.BeloteWebPresenter))
+		},
+		controller.NewBeloteWebControllerWithProvider)
+	games.RegisterKVGame("sheepshead", games.CategoryExtra3,
+		func() usecase.SheepsheadInteractorIF {
+			return usecase.NewSheepsheadInteractor(domain.NewDefaultSheepshead(), new(presenter.SheepsheadWebPresenter))
+		},
+		func(data []byte) (usecase.SheepsheadInteractorIF, error) {
+			return usecase.RestoreSheepsheadInteractor(data, new(presenter.SheepsheadWebPresenter))
+		},
+		controller.NewSheepsheadWebControllerWithProvider)
 }
