@@ -34,6 +34,18 @@ const (
 	// mix of rummy, shedding/matching and light banking games moved off the
 	// other workers to keep every binary under the free-tier limit.
 	CategoryExtra
+	// CategoryExtra2 and CategoryExtra3 are the fifth and sixth size buckets
+	// (ADR-0036), added when all four earlier workers reached 93-99% of the
+	// 1 MB gzip limit at 219 games. The deliberately colourless names restate
+	// what the doc comments have said since ADR-0027: a Category is a
+	// binary-size bucket, never a taxonomy. A name like "puzzle" would invite
+	// the next person to reason about where a game "belongs".
+	//
+	// New games go to whichever worker has the most headroom. Do not think
+	// about genre.
+	CategoryExtra2
+	// CategoryExtra3 is the sixth size bucket. See CategoryExtra2.
+	CategoryExtra3
 )
 
 // String returns the lowercase worker name (casino/classic/solo). Panics on
@@ -50,6 +62,10 @@ func (c Category) String() string {
 		return "solo"
 	case CategoryExtra:
 		return "extra"
+	case CategoryExtra2:
+		return "extra2"
+	case CategoryExtra3:
+		return "extra3"
 	default:
 		panic(fmt.Sprintf("games: unknown Category %d", int(c)))
 	}

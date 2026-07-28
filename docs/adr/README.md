@@ -53,3 +53,4 @@ ADR番号は連番ではない — 欠番はリトマステスト導入時に非
 | [ADR-0033](0033-procedural-non52-card-rendering.md) | 非52枚デッキ札の手続き的（CSS/SVG）レンダリング | Accepted | 2026-07-06 |
 | [ADR-0034](0034-codeql-post-merge.md) | CodeQL を PR ではなくマージ後に実行する | Accepted | 2026-07-26 |
 | [ADR-0035](0035-memory-mobile-pair-count.md) | 神経衰弱のペア数を可変にし、モバイル縦のデフォルトを下げる | Accepted | 2026-07-28 |
+| [ADR-0036](0036-fifth-sixth-worker-capacity.md) | 5つ目・6つ目の Cloudflare Worker（容量バケット）の追加 | Accepted | 2026-07-28 |
