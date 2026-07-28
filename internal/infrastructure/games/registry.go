@@ -109,9 +109,9 @@ var registry = []*Game{
 	{Name: "poker", Category: CategoryCasino},
 	{Name: "oldmaid", Category: CategoryClassic},
 	{Name: "daifugo", Category: CategoryClassic},
-	{Name: "bigtwo", Category: CategoryClassic},
+	{Name: "bigtwo", Category: CategoryExtra2},
 	{Name: "sevens", Category: CategoryClassic},
-	{Name: "doubt", Category: CategoryClassic},
+	{Name: "doubt", Category: CategoryExtra2},
 	{Name: "holdem", Category: CategoryCasino},
 	{Name: "omaha", Category: CategoryCasino},
 	{Name: "omahahilo", Category: CategoryCasino},
@@ -149,7 +149,7 @@ var registry = []*Game{
 	{Name: "euchre", Category: CategorySolo},
 	{Name: "pyramid", Category: CategorySolo},
 	{Name: "tripeaks", Category: CategorySolo},
-	{Name: "cribbage", Category: CategorySolo},
+	{Name: "cribbage", Category: CategoryExtra3},
 	{Name: "threecard", Category: CategoryCasino},
 	{Name: "ohhell", Category: CategoryClassic},
 	// Ninety-Nine (David Parlett) is a trick-taking game; it shares the classic
@@ -160,11 +160,11 @@ var registry = []*Game{
 	// binary-size balancing (#2126): it is one of the heaviest games and the
 	// classic worker is at the 1 MB gzip limit. Category is only a size bucket.
 	{Name: "bridge", Category: CategoryCasino},
-	{Name: "speed", Category: CategoryClassic},
-	{Name: "gofish", Category: CategoryClassic},
-	{Name: "pinochle", Category: CategoryClassic},
+	{Name: "speed", Category: CategoryExtra2},
+	{Name: "gofish", Category: CategoryExtra2},
+	{Name: "pinochle", Category: CategoryExtra2},
 	{Name: "golf", Category: CategorySolo},
-	{Name: "pigtail", Category: CategoryClassic},
+	{Name: "pigtail", Category: CategoryExtra2},
 	{Name: "sevencardstud", Category: CategoryCasino},
 	{Name: "clocksolitaire", Category: CategorySolo},
 	{Name: "durak", Category: CategoryClassic},
@@ -173,9 +173,9 @@ var registry = []*Game{
 	{Name: "twotenjack", Category: CategoryClassic},
 	{Name: "caribbeanstud", Category: CategoryCasino},
 	{Name: "texasholdembonus", Category: CategoryCasino},
-	{Name: "war", Category: CategoryClassic},
+	{Name: "war", Category: CategoryExtra2},
 	{Name: "canfield", Category: CategorySolo},
-	{Name: "fiftyone", Category: CategoryClassic},
+	{Name: "fiftyone", Category: CategoryExtra2},
 	{Name: "yukon", Category: CategorySolo},
 	{Name: "russiansolitaire", Category: CategorySolo},
 	{Name: "whist", Category: CategoryClassic},
@@ -190,18 +190,18 @@ var registry = []*Game{
 	{Name: "scorpion", Category: CategorySolo},
 	{Name: "wasp", Category: CategorySolo},
 	{Name: "accordion", Category: CategorySolo},
-	{Name: "trash", Category: CategoryClassic},
-	{Name: "sevenbridge", Category: CategorySolo},
+	{Name: "trash", Category: CategoryExtra2},
+	{Name: "sevenbridge", Category: CategoryExtra3},
 	{Name: "president", Category: CategoryClassic},
 	{Name: "cassino", Category: CategoryClassic},
 	{Name: "spanish21", Category: CategoryCasino},
 	{Name: "calculation", Category: CategorySolo},
-	{Name: "spiteandmalice", Category: CategoryClassic},
+	{Name: "spiteandmalice", Category: CategoryExtra2},
 	// Skat is a trick-taking game bucketed into the casino worker purely for
 	// binary-size balancing (#2126). Category is only a size bucket.
 	{Name: "skat", Category: CategoryCasino},
 	{Name: "shithead", Category: CategoryClassic},
-	{Name: "nertz", Category: CategoryClassic},
+	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},
 	{Name: "egyptianratscrew", Category: CategoryClassic},
 	{Name: "bakersdozen", Category: CategorySolo},
@@ -223,7 +223,7 @@ var registry = []*Game{
 	// purely for binary-size balancing (#2126): it is one of the heaviest games
 	// and the classic worker is at the 1 MB gzip limit. Category is only a
 	// per-worker size bucket with no user-facing meaning.
-	{Name: "mighty", Category: CategoryCasino},
+	{Name: "mighty", Category: CategoryExtra2},
 	{Name: "oasispoker", Category: CategoryCasino},
 	{Name: "beleagueredcastle", Category: CategorySolo},
 	// Streets and Alleys is a Beleaguered Castle variant routed to the EXTRA
@@ -236,7 +236,7 @@ var registry = []*Game{
 	// 1 MB gzip limit. Category is only a per-worker size bucket.
 	{Name: "kingalbert", Category: CategoryExtra},
 	{Name: "flowergarden", Category: CategoryExtra},
-	{Name: "fortyandeight", Category: CategoryExtra},
+	{Name: "fortyandeight", Category: CategoryExtra3},
 	// Agnes Sorel is a Klondike+Canfield hybrid patience routed to the EXTRA
 	// worker purely for binary-size balancing — the solo worker is at the 1 MB
 	// gzip limit. Category is only a per-worker size bucket.
@@ -246,7 +246,7 @@ var registry = []*Game{
 	{Name: "sultan", Category: CategoryExtra},
 	// Piquet is a trick-taking game bucketed into the SOLO worker purely for
 	// binary-size balancing (#2126). Category is only a size bucket.
-	{Name: "piquet", Category: CategorySolo},
+	{Name: "piquet", Category: CategoryExtra3},
 	{Name: "casinoholdem", Category: CategoryCasino},
 	{Name: "callbreak", Category: CategoryClassic},
 	// Tarneeb is a trick-taking game bucketed into the casino worker purely for
@@ -261,7 +261,7 @@ var registry = []*Game{
 	{Name: "russianpoker", Category: CategoryCasino},
 	{Name: "penguin", Category: CategorySolo},
 	{Name: "chinesepoker", Category: CategoryCasino},
-	{Name: "sixcardgolf", Category: CategoryClassic},
+	{Name: "sixcardgolf", Category: CategoryExtra2},
 	// Dou Dizhu is bucketed into the casino worker purely for binary-size
 	// balancing (#2126). Category is only a size bucket.
 	{Name: "doudizhu", Category: CategoryClassic},
@@ -335,7 +335,7 @@ var registry = []*Game{
 	// the classic worker, but that worker is at the 1 MB gzip free-tier limit, so
 	// Tichu is bucketed into the casino worker. Category is purely a binary-size
 	// bucket here (see package doc).
-	{Name: "tichu", Category: CategoryClassic},
+	{Name: "tichu", Category: CategoryExtra2},
 	// Baker's Game is FreeCell's same-suit ancestor; it reuses the FreeCell
 	// engine (domain.NewDefaultBakersGame) and ships in the solo worker.
 	{Name: "bakersgame", Category: CategorySolo},
@@ -439,31 +439,31 @@ var registry = []*Game{
 	// rule" the human must infer (penalties for non-compliance, a half-hint
 	// after three correct follows). 4 players, 52-card deck, magic cards
 	// (8 wild, A skip, 2 draw-two). Solo worker bucket — it builds on Macau.
-	{Name: "mao", Category: CategorySolo},
+	{Name: "mao", Category: CategoryExtra3},
 	// Spoons: American party speed game. 4 players, 52-card deck; pass cards
 	// around until someone collects four of a kind, then everyone races to grab
 	// one of the N-1 spoons. Missing out earns a letter (S-P-O-O-N-S); six
 	// letters eliminates you, last player standing wins. Classic worker bucket
 	// (binary-size bucket — casino was full).
-	{Name: "spoons", Category: CategoryClassic},
+	{Name: "spoons", Category: CategoryExtra2},
 	// Kemps: 4-player, 2-team matching game. Swap cards through a shared field
 	// until you collect four of a kind, then your partner signals secretly and
 	// your team declares "Kemps!" for a point — or the opponents call
 	// "Counter-Kemps!" to steal it. First team to 5 wins. Casino worker bucket.
-	{Name: "kemps", Category: CategoryCasino},
+	{Name: "kemps", Category: CategoryExtra2},
 	// Cuckoo (Chase the Ace / Ranter-Go-Round): a European life-survival game.
 	// 4 players each hold one card and 3 lives; on your turn keep or swap with
 	// your neighbour (a King holder may refuse). The lowest card each round
 	// loses a life; last player standing wins. Casino worker bucket.
-	{Name: "cuckoo", Category: CategoryClassic},
+	{Name: "cuckoo", Category: CategoryExtra2},
 	// Pişti: a popular Turkish fishing/capture game. 2–4 players; play a card
 	// matching the pile top (or any Jack) to capture the whole pile. Matching a
 	// lone card scores a Pişti (+10; +20 for Jack-on-Jack). Casino worker bucket.
-	{Name: "pishti", Category: CategoryCasino},
+	{Name: "pishti", Category: CategoryExtra2},
 	// Cuarenta: the national card game of Ecuador. 4 players in 2 teams, 40-card
 	// deck (no 8/9/10); capture by rank with caída/ronda/limpia bonuses, first
 	// team to 40 points wins. Casino worker bucket (reuses Scopa's 40-card deck).
-	{Name: "cuarenta", Category: CategoryCasino},
+	{Name: "cuarenta", Category: CategoryExtra2},
 	// Five Card Stud: one of the oldest stud poker variants. 2–6 players, one
 	// face-down hole card plus four face-up cards dealt over four betting
 	// streets (bring-in on the lowest up-card), standard poker showdown. Casino
@@ -474,7 +474,7 @@ var registry = []*Game{
 	// 13-rank layout (a copper bets the rank to lose); the bank deals cards in
 	// turns of two (losing card then winning card), with a half-collect on
 	// splits and a final 3-card call. Casino worker bucket.
-	{Name: "faro", Category: CategoryCasino},
+	{Name: "faro", Category: CategoryExtra2},
 	// Open Face Chinese Poker (OFC): a modern Chinese-poker variant. Players
 	// receive cards and place them one at a time into three rows (top/middle/
 	// bottom) face-up with no rearranging; rows must rank bottom >= middle >=
@@ -501,7 +501,7 @@ var registry = []*Game{
 	// Double Klondike (Gargantua): a two-deck Klondike. 104 cards over 9 tableau
 	// columns and 8 foundations (two A-K piles per suit); deal/draw/waste play
 	// as in Klondike. Clear all eight foundations to win. Classic worker bucket.
-	{Name: "doubleklondike", Category: CategoryClassic},
+	{Name: "doubleklondike", Category: CategoryExtra2},
 	// Black Hole: a one-deck patience by David Parlett. 51 cards dealt into 17
 	// fans of three around a central foundation (the black hole) seeded with the
 	// ♠A; play a fan top whose rank is ±1 (any suit, no K-A wrap) onto the pile.
@@ -512,7 +512,7 @@ var registry = []*Game{
 	// cards (J=1, Q=2, K=3, A=4) force the opponent to pay that many cards; a new
 	// penalty card during payment flips the obligation. The player who collects all
 	// 52 cards wins. Casino worker bucket.
-	{Name: "beggarmyneighbour", Category: CategoryCasino},
+	{Name: "beggarmyneighbour", Category: CategoryExtra2},
 	// All Fours (Seven Up / Old Sledge): classic English 2-player trick-taking
 	// game with a beg/stand negotiation and a turn-up trump. Each deal scores
 	// High/Low/Jack/Game; first to 7 points wins. Classic worker bucket (the
@@ -531,7 +531,7 @@ var registry = []*Game{
 	// trump Jack (Bauer) and 9 (Nell) outrank the Ace. Modelled on belote.
 	// Extra worker bucket — the issue proposed casino but that worker is at the
 	// 1 MB gzip limit, so it routes to the overflow ("extra") worker.
-	{Name: "jass", Category: CategoryExtra},
+	{Name: "jass", Category: CategoryExtra3},
 	// Gaigel: a 48-card (A,10,K,Q,J,7 doubled) 4-player/2-team Schwabian
 	// point-trick game in the Schnapsen/66 family. A stock/talon refills hands
 	// in phase 1 (optional follow); phase 2 enforces must-follow. Marriage
@@ -566,7 +566,7 @@ var registry = []*Game{
 	// = Sacar (win), tied = Puesta, beaten = Codille. Extra worker bucket — the issue
 	// proposed casino but that worker is at the 1 MB gzip limit, so it routes to the
 	// overflow ("extra") worker.
-	{Name: "ombre", Category: CategoryExtra},
+	{Name: "ombre", Category: CategoryExtra3},
 	// Ulti (Ulti / Ultimó): a Hungarian 3-player contract trick-taker. One declarer
 	// (the human) vs a 2-CPU coalition. 32-card deck (A,10,K,Q,J,9,8,7); trick rank
 	// A>10>K>Q>J>9>8>7. 10 cards each + a 2-card talon. Reduced ruleset: the declarer
@@ -575,7 +575,7 @@ var registry = []*Game{
 	// win every trick) — takes the talon, discards 2, then leads 10 tricks. Coin
 	// settlement ±2/±5/±6 per defender. Solo worker bucket (rebucketed off the
 	// full extra worker for size headroom).
-	{Name: "ulti", Category: CategorySolo},
+	{Name: "ulti", Category: CategoryExtra3},
 	// King (Greek/Brazilian compendium): a 4-player 52-card trick-avoidance game.
 	// Each deal the dealer picks one of 7 not-yet-played contracts (No Tricks /
 	// No Hearts / No Queens / No King♥ / No Last Two / No Men / King-Trump); the
@@ -601,7 +601,7 @@ var registry = []*Game{
 	// deals (no target-score race). Extra worker bucket — the issue proposed casino
 	// but that worker is at the 1 MB gzip free-tier limit, so it routes to the
 	// overflow ("extra") worker.
-	{Name: "loo", Category: CategoryExtra},
+	{Name: "loo", Category: CategoryExtra3},
 	// Basra (Bastra): an Egyptian/Levantine fishing (capture) game on a 52-card
 	// deck. 4 players (you + 3 CPU, individual scoring); each is dealt 4 cards with
 	// 4 face-up on the table. A played number card captures same-rank cards and any
@@ -611,7 +611,7 @@ var registry = []*Game{
 	// each Ace, and each Basra. Extra worker bucket — the issue proposed casino but
 	// that worker is at the 1 MB gzip free-tier limit, so it routes to the overflow
 	// ("extra") worker.
-	{Name: "basra", Category: CategoryExtra},
+	{Name: "basra", Category: CategoryExtra3},
 	// Tablanet (Tablić): a Balkan fishing (capture) game on a 52-card deck, closely
 	// related to Basra. 4 players (you + 3 CPU, individual scoring); each is dealt 4
 	// cards with 4 face-up on the table. A played number card captures same-rank cards
@@ -621,7 +621,7 @@ var registry = []*Game{
 	// Tablanet points: most cards, each Ace, each Jack, 10♦, 2♣, and each Tabla. Extra
 	// worker bucket — the casino/classic/solo workers are at the 1 MB gzip free-tier
 	// limit, so it routes to the overflow ("extra") worker.
-	{Name: "tablanet", Category: CategoryExtra},
+	{Name: "tablanet", Category: CategoryExtra3},
 	// Trente et Quarante (Rouge et Noir): a French casino banking game — the simplest
 	// possible, with no player card decisions. On a 6-deck (312-card) shoe the dealer
 	// deals a Noir (black) row then a Rouge (red) row, each until its running total (A=1,
@@ -652,7 +652,7 @@ var registry = []*Game{
 	// game ends after a fixed number of rounds, and the richest player wins. Extra
 	// worker bucket — the casino/classic/solo workers are at the 1 MB gzip
 	// free-tier limit, so it routes to the overflow ("extra") worker.
-	{Name: "bouillotte", Category: CategoryExtra},
+	{Name: "bouillotte", Category: CategoryExtra3},
 	// Primero: a 16th-century Renaissance vying/betting pot game, an ancestor of
 	// poker, on a 40-card deck (A,2,3,4,5,6,7,J,Q,K × 4 suits). 2–6 players ante
 	// to a pot and are dealt 4 cards each (no shared card). Players bet in turn
@@ -664,7 +664,7 @@ var registry = []*Game{
 	// number of rounds, and the richest player wins. Extra worker bucket — the
 	// casino/classic/solo workers are at the 1 MB gzip free-tier limit, so it
 	// routes to the overflow ("extra") worker.
-	{Name: "primero", Category: CategoryExtra},
+	{Name: "primero", Category: CategoryExtra3},
 	// Michigan (a.k.a. Newmarket / Boodle / Chicago): a "stops" family gambling
 	// party game on a standard 52-card deck. 3–8 players each spread an ante across
 	// four fixed center "boodle" cards (A♥, K♣, Q♦, J♠), then all 52 cards are dealt
@@ -677,7 +677,7 @@ var registry = []*Game{
 	// over. Chips accumulate; the game ends after a fixed number of rounds, and the
 	// richest player wins. Extra worker bucket — the casino/classic/solo workers are
 	// at the 1 MB gzip free-tier limit, so it routes to the overflow ("extra") worker.
-	{Name: "michigan", Category: CategoryExtra},
+	{Name: "michigan", Category: CategoryExtra3},
 	// Watten: a Bavarian/Austrian 4-player/2-team trick-taker on a 32-card pack
 	// (7..A) with a bluff-raise stake mechanic. The dealer declares a Schlag rank
 	// and a critical (trump) suit; ranking is fixed Max(♥K) > Belli(♦K) > Spitz(♦7)
@@ -722,16 +722,16 @@ var registry = []*Game{
 	// Wizard is a 60-card (52 + 4 wizards + 4 jesters) exact-bid trick-taker; its
 	// wizard/jester cards are the first to use the non-52 procedural render path
 	// (ADR-0033). Routed to the extra worker bucket.
-	{Name: "wizard", Category: CategoryExtra},
+	{Name: "wizard", Category: CategoryExtra3},
 	// Oicho-Kabu is a kabufuda (40-card, values 1-10) baccarat-style banking
 	// game; its cards use the non-52 procedural render path (ADR-0033). Extra bucket.
 	{Name: "oichokabu", Category: CategoryExtra},
 	// Rook is a 57-card (4 colors 1-14 + Rook bird) 2-team point-trick game; its
 	// special-deck cards use the non-52 procedural render path (ADR-0033). Extra bucket.
-	{Name: "rook", Category: CategoryExtra},
+	{Name: "rook", Category: CategoryExtra3},
 	// Koi-Koi is a 48-card hanafuda capture game with yaku scoring; the hanafuda
 	// cards use the non-52 procedural render path (ADR-0033). Extra bucket.
-	{Name: "koikoi", Category: CategoryExtra},
+	{Name: "koikoi", Category: CategoryExtra3},
 	// Go-Stop (Godori) is a Korean hanafuda capture game (same 48-card Hwatu deck
 	// as Koi-Koi) with Gwang/Godori scoring + Go/Stop; procedural render (ADR-0033).
 	{Name: "gostop", Category: CategoryExtra},
@@ -749,12 +749,12 @@ var registry = []*Game{
 	// solo worker (not extra) purely for binary-size headroom — the extra worker
 	// reached the 1 MB gzip free-tier limit; Category is a size bucket, not a
 	// user-facing taxonomy.
-	{Name: "scarto", Category: CategorySolo},
+	{Name: "scarto", Category: CategoryExtra3},
 	// Cego is a German (Baden) tarock trick-taker on the 54-card tarock deck with
 	// the signature Cego-blind swap; procedural render path (ADR-0033). Bucketed
 	// into solo (not extra, which hit the 1 MB gzip limit); Category is a size
 	// bucket, not a user-facing taxonomy.
-	{Name: "cego", Category: CategorySolo},
+	{Name: "cego", Category: CategoryExtra3},
 	// Zheng Shangyou is a Chinese climbing/shedding game (ancestor of Big Two /
 	// Daifugo) on a 54-card deck (52 + 2 jokers); suits are irrelevant to rank
 	// strength. Bucketed into solo (extra hit the 1 MB gzip limit); Category is
@@ -792,7 +792,10 @@ func ByCategory(cat Category) []Game {
 // guarantee that consumers (e.g. the CLI --help summary) cannot drift out
 // of sync with the registry.
 func AllCategories() []Category {
-	return []Category{CategoryCasino, CategoryClassic, CategorySolo, CategoryExtra}
+	return []Category{
+		CategoryCasino, CategoryClassic, CategorySolo,
+		CategoryExtra, CategoryExtra2, CategoryExtra3,
+	}
 }
 
 // find locates a game by name; returns nil if not found.

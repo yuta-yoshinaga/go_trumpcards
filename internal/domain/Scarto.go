@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra3
 
 // Package domain スカルト (Scarto / Piedmontese Tarot) のドメインモデル。
 //

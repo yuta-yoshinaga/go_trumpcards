@@ -8,20 +8,19 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 )
 
-// expected category counts derived from the Phase 2 design: the three
-// Cloudflare Workers split games into casino / classic / solo. A mismatch
-// here indicates that a game's Category is wrong (and would route to the
-// wrong worker in production).
+// Expected per-bucket counts. The six Cloudflare Workers each compile one
+// bucket's games, so a mismatch here means a game's Category is wrong and it
+// would route to a worker whose binary does not contain it -- a 404 at runtime,
+// not a build failure. Only expectedTotal is invariant; the rest move whenever
+// games are rebucketed for size (ADR-0036).
 const (
-	expectedCasino  = 64
-	expectedClassic = 57
-	expectedSolo    = 52
-	expectedExtra   = 46
-	// ADR-0036 Phase 1: the fifth and sixth buckets exist but hold nothing yet.
-	// Phase 2 rebalances into them, and these numbers move with it.
-	expectedExtra2 = 0
-	expectedExtra3 = 0
-	expectedTotal  = expectedCasino + expectedClassic + expectedSolo + expectedExtra + expectedExtra2 + expectedExtra3
+	expectedCasino  = 58
+	expectedClassic = 41
+	expectedSolo    = 45
+	expectedExtra   = 34
+	expectedExtra2  = 22
+	expectedExtra3  = 19
+	expectedTotal   = expectedCasino + expectedClassic + expectedSolo + expectedExtra + expectedExtra2 + expectedExtra3
 )
 
 func TestAllReturnsExpectedTotal(t *testing.T) {
@@ -76,12 +75,59 @@ func TestCategoryString(t *testing.T) {
 		games.CategoryClassic: "classic",
 		games.CategorySolo:    "solo",
 		games.CategoryExtra:   "extra",
+		games.CategoryExtra2:  "extra2",
+		games.CategoryExtra3:  "extra3",
 	}
 	for cat, want := range cases {
 		if got := cat.String(); got != want {
 			t.Errorf("Category(%d).String() = %q, want %q", int(cat), got, want)
 		}
 	}
+}
+
+// TestAllCategoriesCoversEveryDeclaredCategory enforces the coupling that
+// AllCategories' doc comment claims: every declared Category must appear in it.
+//
+// The comment alone did not hold. ADR-0036 Phase 1 added CategoryExtra2 and
+// CategoryExtra3 without extending the slice, and nothing failed -- until games
+// were bucketed there and `trumpcards games` silently omitted 41 of them,
+// because printGamesLong iterates AllCategories(). Declared categories are
+// discovered by walking Category values until String() panics, which is the
+// same boundary TestCategoryStringPanicsOnUnknown pins down.
+func TestAllCategoriesCoversEveryDeclaredCategory(t *testing.T) {
+	declared := 0
+	for i := range 64 {
+		if !categoryIsDeclared(games.Category(i)) {
+			break
+		}
+		declared++
+	}
+	if declared == 0 {
+		t.Fatal("no declared categories found -- Category(0) should be valid")
+	}
+	if got := len(games.AllCategories()); got != declared {
+		t.Errorf("AllCategories() has %d entries but %d Category values are declared; "+
+			"extend AllCategories when adding a bucket", got, declared)
+	}
+	seen := make(map[games.Category]bool, declared)
+	for _, c := range games.AllCategories() {
+		if seen[c] {
+			t.Errorf("AllCategories() lists %s twice", c)
+		}
+		seen[c] = true
+	}
+}
+
+// categoryIsDeclared reports whether String() accepts the value (i.e. the
+// constant exists) rather than panicking on an out-of-range Category.
+func categoryIsDeclared(c games.Category) (ok bool) {
+	defer func() {
+		if recover() != nil {
+			ok = false
+		}
+	}()
+	_ = c.String()
+	return true
 }
 
 // TestCategoryStringPanicsOnUnknown asserts that String() panics on an
@@ -112,7 +158,8 @@ func TestAllEntriesAreValid(t *testing.T) {
 			t.Errorf("game %q: NewWebController() returned nil", g.Name)
 		}
 		switch g.Category {
-		case games.CategoryCasino, games.CategoryClassic, games.CategorySolo, games.CategoryExtra:
+		case games.CategoryCasino, games.CategoryClassic, games.CategorySolo,
+			games.CategoryExtra, games.CategoryExtra2, games.CategoryExtra3:
 			// valid
 		default:
 			t.Errorf("game %q has invalid Category %d", g.Name, int(g.Category))

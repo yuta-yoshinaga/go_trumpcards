@@ -19,13 +19,26 @@ TUT_PANEL=frontend/src/components/tutorial/TutorialProgressPanel.test.tsx
 fail=0
 
 # --- source of truth: RegisterKVGame calls per category sub-package ---
-cas=$(grep -rc 'RegisterKVGame' internal/infrastructure/games/casino/  2>/dev/null | awk -F: '{s+=$2} END{print s+0}')
-cla=$(grep -rc 'RegisterKVGame' internal/infrastructure/games/classic/ 2>/dev/null | awk -F: '{s+=$2} END{print s+0}')
-sol=$(grep -rc 'RegisterKVGame' internal/infrastructure/games/solo/    2>/dev/null | awk -F: '{s+=$2} END{print s+0}')
-total=$((cas + cla + sol))
+# Buckets are discovered, not listed. This block used to name casino/classic/solo
+# literally and was never updated when ADR-0032 added `extra`, so TOTAL was short
+# by that worker's games and every frontend assertion looked wrong (219 vs 144).
+# A size bucket is added roughly once a year -- long enough to forget this file.
+bucket_count() { grep -rc 'RegisterKVGame' "internal/infrastructure/games/$1/" 2>/dev/null | awk -F: '{s+=$2} END{print s+0}'; }
+
+buckets=$(find internal/infrastructure/games -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort)
+total=0
+sot_line=""
+for b in $buckets; do
+  n=$(bucket_count "$b")
+  [ "$n" = "0" ] && continue
+  total=$((total + n))
+  sot_line="$sot_line  $b=$n"
+  eval "count_$b=$n"
+done
+cas=${count_casino:-0}; cla=${count_classic:-0}; sol=${count_solo:-0}
 
 echo "── Source of truth (RegisterKVGame calls) ──────────────────────"
-printf '  casino=%s  classic=%s  solo=%s  TOTAL=%s\n\n' "$cas" "$cla" "$sol" "$total"
+printf ' %s  TOTAL=%s\n\n' "$sot_line" "$total"
 
 check() { # label  actual  expected
   if [ "$2" = "$3" ]; then
@@ -45,6 +58,14 @@ echo "── Go: $REG_TEST ───────────"
 check "expectedCasino"  "$(grepval "$REG_TEST" 'expectedCasino[[:space:]]*=')"  "$cas"
 check "expectedClassic" "$(grepval "$REG_TEST" 'expectedClassic[[:space:]]*=')" "$cla"
 check "expectedSolo"    "$(grepval "$REG_TEST" 'expectedSolo[[:space:]]*=')"    "$sol"
+for b in $buckets; do
+  case "$b" in casino|classic|solo) continue ;; esac
+  n=$(eval "echo \${count_$b:-}")
+  [ -z "$n" ] && continue
+  # expectedExtra2 -> the constant is the bucket name with a capitalised first letter
+  konst="expected$(printf '%s' "$b" | cut -c1 | tr '[:lower:]' '[:upper:]')$(printf '%s' "$b" | cut -c2-)"
+  check "$konst" "$(grepval "$REG_TEST" "$konst[[:space:]]*=")" "$n"
+done
 echo
 
 echo "── Frontend (tsc-only — NOT caught by 'bun run check') ─────────"

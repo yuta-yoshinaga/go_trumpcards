@@ -321,14 +321,6 @@ func init() {
 	// Scopa is a classic fishing game, but it is bucketed into the casino
 	// worker because the classic worker is at the 1 MB gzip free-tier limit.
 	// Workers are pure binary-size partitions with no user-facing meaning.
-	games.RegisterKVGame("mighty", games.CategoryCasino,
-		func() usecase.MightyInteractorIF {
-			return usecase.NewMightyInteractor(domain.NewDefaultMighty(), new(presenter.MightyWebPresenter))
-		},
-		func(data []byte) (usecase.MightyInteractorIF, error) {
-			return usecase.RestoreMightyInteractor(data, new(presenter.MightyWebPresenter))
-		},
-		controller.NewMightyWebControllerWithProvider)
 
 	games.RegisterKVGame("bridge", games.CategoryCasino,
 		func() usecase.BridgeInteractorIF {
@@ -479,33 +471,6 @@ func init() {
 		},
 		controller.NewTeenPattiWebControllerWithProvider)
 
-	games.RegisterKVGame("kemps", games.CategoryCasino,
-		func() usecase.KempsInteractorIF {
-			return usecase.NewKempsInteractor(domain.NewDefaultKemps(), new(presenter.KempsWebPresenter))
-		},
-		func(data []byte) (usecase.KempsInteractorIF, error) {
-			return usecase.RestoreKempsInteractor(data, new(presenter.KempsWebPresenter))
-		},
-		controller.NewKempsWebControllerWithProvider)
-
-	games.RegisterKVGame("pishti", games.CategoryCasino,
-		func() usecase.PishtiInteractorIF {
-			return usecase.NewPishtiInteractor(domain.NewDefaultPishti(), new(presenter.PishtiWebPresenter))
-		},
-		func(data []byte) (usecase.PishtiInteractorIF, error) {
-			return usecase.RestorePishtiInteractor(data, new(presenter.PishtiWebPresenter))
-		},
-		controller.NewPishtiWebControllerWithProvider)
-
-	games.RegisterKVGame("cuarenta", games.CategoryCasino,
-		func() usecase.CuarentaInteractorIF {
-			return usecase.NewCuarentaInteractor(domain.NewDefaultCuarenta(), new(presenter.CuarentaWebPresenter))
-		},
-		func(data []byte) (usecase.CuarentaInteractorIF, error) {
-			return usecase.RestoreCuarentaInteractor(data, new(presenter.CuarentaWebPresenter))
-		},
-		controller.NewCuarentaWebControllerWithProvider)
-
 	games.RegisterKVGame("fivecardstud", games.CategoryCasino,
 		func() usecase.FiveCardStudInteractorIF {
 			return usecase.NewFiveCardStudInteractor(domain.NewDefaultFiveCardStud(), new(presenter.FiveCardStudWebPresenter))
@@ -515,15 +480,6 @@ func init() {
 		},
 		controller.NewFiveCardStudWebControllerWithProvider)
 
-	games.RegisterKVGame("faro", games.CategoryCasino,
-		func() usecase.FaroInteractorIF {
-			return usecase.NewFaroInteractor(domain.NewDefaultFaro(), new(presenter.FaroWebPresenter))
-		},
-		func(data []byte) (usecase.FaroInteractorIF, error) {
-			return usecase.RestoreFaroInteractor(data, new(presenter.FaroWebPresenter))
-		},
-		controller.NewFaroWebControllerWithProvider)
-
 	games.RegisterKVGame("openfacechinese", games.CategoryCasino,
 		func() usecase.OpenFaceChineseInteractorIF {
 			return usecase.NewOpenFaceChineseInteractor(domain.NewDefaultOpenFaceChinese(), new(presenter.OpenFaceChineseWebPresenter))
@@ -532,14 +488,5 @@ func init() {
 			return usecase.RestoreOpenFaceChineseInteractor(data, new(presenter.OpenFaceChineseWebPresenter))
 		},
 		controller.NewOpenFaceChineseWebControllerWithProvider)
-
-	games.RegisterKVGame("beggarmyneighbour", games.CategoryCasino,
-		func() usecase.BeggarMyNeighbourInteractorIF {
-			return usecase.NewBeggarMyNeighbourInteractor(domain.NewDefaultBeggarMyNeighbour(), new(presenter.BeggarMyNeighbourWebPresenter))
-		},
-		func(data []byte) (usecase.BeggarMyNeighbourInteractorIF, error) {
-			return usecase.RestoreBeggarMyNeighbourInteractor(data, new(presenter.BeggarMyNeighbourWebPresenter))
-		},
-		controller.NewBeggarMyNeighbourWebControllerWithProvider)
 
 }
