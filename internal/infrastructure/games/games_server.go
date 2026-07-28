@@ -410,6 +410,11 @@ func init() {
 			return usecase.NewCalculationInteractor(domain.NewDefaultCalculation(), new(presenter.CalculationWebPresenter))
 		},
 		controller.NewCalculationWebController)
+	BindWebControllerFor("sirtommy",
+		func() usecase.SirTommyInteractorIF {
+			return usecase.NewSirTommyInteractor(domain.NewDefaultSirTommy(), new(presenter.SirTommyWebPresenter))
+		},
+		controller.NewSirTommyWebController)
 	BindWebControllerFor("spiteandmalice",
 		func() usecase.SpiteAndMaliceInteractorIF {
 			return usecase.NewSpiteAndMaliceInteractor(domain.NewDefaultSpiteAndMalice(), new(presenter.SpiteAndMaliceWebPresenter))

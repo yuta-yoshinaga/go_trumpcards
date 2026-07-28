@@ -197,4 +197,12 @@ func init() {
 			return usecase.RestoreWarInteractor(data, new(presenter.WarWebPresenter))
 		},
 		controller.NewWarWebControllerWithProvider)
+	games.RegisterKVGame("sirtommy", games.CategoryExtra2,
+		func() usecase.SirTommyInteractorIF {
+			return usecase.NewSirTommyInteractor(domain.NewDefaultSirTommy(), new(presenter.SirTommyWebPresenter))
+		},
+		func(data []byte) (usecase.SirTommyInteractorIF, error) {
+			return usecase.RestoreSirTommyInteractor(data, new(presenter.SirTommyWebPresenter))
+		},
+		controller.NewSirTommyWebControllerWithProvider)
 }

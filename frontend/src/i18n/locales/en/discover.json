@@ -304,7 +304,8 @@
     "michigan": "Michigan (Newmarket). A 'stops' chip-betting family game. Players first stake chips across four center 'boodle' cards (A♥, K♣, Q♦, J♠), then play cards in ascending same-suit sequences. A 'stop' occurs when the next card sits in the face-down dead hand or the run passes the King, and the last player to play starts a fresh sequence. Playing a card that matches a boodle wins its chips; the first player to empty their hand ends the round. After the set number of rounds the richest player wins — a light, luck-and-timing family classic.",
     "pan": "Panguingue (Pan). A large multi-deck rummy from the saloons of Mexico and the American Southwest. It uses eight 40-card decks (the 8s, 9s and 10s removed — 320 cards in all) dealt ten to a hand across 3-6 players. On your turn draw from the stock or discard, lay down sets and ropes (runs — since 8/9/10 are gone, 7 is followed by J), lay single cards off onto existing melds, then discard to end your turn. Qualifying melds are automatically paid in chips by the other players, and the first to meld eleven cards declares 'Pan' and wins — a classic rummy with a distinctive casino chip economy.",
     "carioca": "Carioca. A South American (Chilean/Brazilian) contract-rummy game played over seven rounds with a double deck plus wild jokers. Each round sets a stricter contract of melds — sets (tríos of matching ranks) and runs (escalas of same-suit sequences) — that you must lay down before you can go out. Draw from the stock or discard, build the required melds, then discard to end your turn; the first player to shed every card ends the round and everyone else scores the pips left in hand. After seven rounds the lowest total wins — a sociable, escalating rummy classic.",
-    "zheng": "Zheng Shangyou (争上游). The traditional Chinese climbing game that fathered Daifugo and Big Two. Four players split a 54-card deck (jokers included) and race to shed their hands, beating the table with singles, pairs, triples, straights, and pair runs — or passing. Strength runs 3<4<…<K<A<2<small joker<big joker, and suits never matter. A four-of-a-kind bomb tops any normal play, and the two-joker bomb beats everything. Finish order sets ranks 1st through 4th."
+    "zheng": "Zheng Shangyou (争上游). The traditional Chinese climbing game that fathered Daifugo and Big Two. Four players split a 54-card deck (jokers included) and race to shed their hands, beating the table with singles, pairs, triples, straights, and pair runs — or passing. Strength runs 3<4<…<K<A<2<small joker<big joker, and suits never matter. A four-of-a-kind bomb tops any normal play, and the two-joker bomb beats everything. Finish order sets ranks 1st through 4th.",
+    "sirtommy": "One of the oldest recorded patiences: deal the stock into four wastes and build A-K foundations."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -525,6 +526,7 @@
     "michigan": "Stake chips on four boodle cards, then race to play ascending suit runs and empty your hand for the pot.",
     "pan": "A large 8-deck (320-card) Mexican rummy — lay down sets and ropes, earn chips, and race to meld eleven cards first.",
     "carioca": "A seven-round South American contract rummy — meet each round's harder sets and runs, shed your hand, and finish with the lowest score.",
-    "zheng": "The Chinese ancestor of Daifugo — suits never matter, and bombs or the joker bomb can flip the table."
+    "zheng": "The Chinese ancestor of Daifugo — suits never matter, and bombs or the joker bomb can flip the table.",
+    "sirtommy": "Once a card is placed it cannot be moved. Every decision is where to discard it - nothing else."
   }
 }

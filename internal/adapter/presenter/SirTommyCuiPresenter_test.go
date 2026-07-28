@@ -1,0 +1,147 @@
+//go:build test
+
+package presenter
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+func setupSirTommyCuiMockDefaults(g *interfaces.MockSirTommyGame) {
+	g.On("GetPhase").Return(domain.SirTommyPhasePlaying).Maybe()
+	g.On("GetMoveCount").Return(0).Maybe()
+	g.On("IsStalemate").Return(false).Maybe()
+	g.On("GetStockCount").Return(5).Maybe()
+	g.On("GetStockTop").Return(domain.NewCard(domain.CardDesignSpade, 7, false)).Maybe()
+
+	var foundations [domain.SirTommyFoundationCnt][]*domain.Card
+	for i := range domain.SirTommyFoundationCnt {
+		foundations[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, i+1, false)}
+	}
+	g.On("GetFoundations").Return(foundations).Maybe()
+
+	var wastes [domain.SirTommyWasteCnt][]*domain.Card
+	wastes[0] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 11, false)}
+	g.On("GetWastes").Return(wastes).Maybe()
+}
+
+func TestSirTommyCuiPresenter_Output(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+		setupSirTommyCuiMockDefaults(g)
+		p := new(SirTommyCuiPresenter)
+
+		result := p.Output(g, nil)
+		assert.Contains(t, result, "Sir Tommy")
+		assert.Contains(t, result, "[F0")
+		assert.Contains(t, result, "[W0]")
+		assert.Contains(t, result, "ストック")
+	})
+
+	t.Run("with error", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+		setupSirTommyCuiMockDefaults(g)
+		p := new(SirTommyCuiPresenter)
+		result := p.Output(g, assert.AnError)
+		assert.Contains(t, result, assert.AnError.Error())
+	})
+
+	t.Run("stalemate", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+		g.On("GetPhase").Return(domain.SirTommyPhasePlaying).Maybe()
+		g.On("GetMoveCount").Return(1).Maybe()
+		g.On("IsStalemate").Return(true).Maybe()
+		g.On("GetStockCount").Return(0).Maybe()
+		g.On("GetStockTop").Return((*domain.Card)(nil)).Maybe()
+		var foundations [domain.SirTommyFoundationCnt][]*domain.Card
+		g.On("GetFoundations").Return(foundations).Maybe()
+		var wastes [domain.SirTommyWasteCnt][]*domain.Card
+		g.On("GetWastes").Return(wastes).Maybe()
+
+		result := new(SirTommyCuiPresenter).Output(g, nil)
+		assert.Contains(t, result, "手詰まり")
+	})
+
+	t.Run("game clear", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+		g.On("GetPhase").Return(domain.SirTommyPhaseGameClear).Maybe()
+		g.On("GetMoveCount").Return(100).Maybe()
+		g.On("IsStalemate").Return(false).Maybe()
+		g.On("GetStockCount").Return(0).Maybe()
+		g.On("GetStockTop").Return((*domain.Card)(nil)).Maybe()
+		var foundations [domain.SirTommyFoundationCnt][]*domain.Card
+		g.On("GetFoundations").Return(foundations).Maybe()
+		var wastes [domain.SirTommyWasteCnt][]*domain.Card
+		g.On("GetWastes").Return(wastes).Maybe()
+
+		result := new(SirTommyCuiPresenter).Output(g, nil)
+		assert.Contains(t, result, "ゲームクリア")
+	})
+
+	t.Run("game over", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+		g.On("GetPhase").Return(domain.SirTommyPhaseGameOver).Maybe()
+		g.On("GetMoveCount").Return(10).Maybe()
+		g.On("IsStalemate").Return(false).Maybe()
+		g.On("GetStockCount").Return(0).Maybe()
+		g.On("GetStockTop").Return((*domain.Card)(nil)).Maybe()
+		var foundations [domain.SirTommyFoundationCnt][]*domain.Card
+		g.On("GetFoundations").Return(foundations).Maybe()
+		var wastes [domain.SirTommyWasteCnt][]*domain.Card
+		g.On("GetWastes").Return(wastes).Maybe()
+
+		result := new(SirTommyCuiPresenter).Output(g, nil)
+		assert.Contains(t, result, "ゲームオーバー")
+	})
+}
+
+func TestSirTommyCuiPresenter_HintOutput(t *testing.T) {
+	t.Run("stock hint", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+		g.On("GetHint").Return(&domain.SirTommyHint{FromZone: "stock", WasteIdx: -1, FoundationIdx: 2})
+		result := new(SirTommyCuiPresenter).HintOutput(g)
+		assert.Contains(t, result, "ストック")
+		assert.Contains(t, result, "ファンデーション2")
+	})
+
+	t.Run("waste hint", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+		g.On("GetHint").Return(&domain.SirTommyHint{FromZone: "waste", WasteIdx: 1, FoundationIdx: 0})
+		result := new(SirTommyCuiPresenter).HintOutput(g)
+		assert.Contains(t, result, "ウェイスト1")
+		assert.Contains(t, result, "ファンデーション0")
+	})
+
+	t.Run("no hint", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+		g.On("GetHint").Return((*domain.SirTommyHint)(nil))
+		result := new(SirTommyCuiPresenter).HintOutput(g)
+		assert.Contains(t, result, "ヒントはありません")
+	})
+
+	t.Run("unknown zone falls through to no-hint", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+		g.On("GetHint").Return(&domain.SirTommyHint{FromZone: "???"})
+		result := new(SirTommyCuiPresenter).HintOutput(g)
+		assert.Contains(t, result, "ヒントはありません")
+	})
+}
+
+func TestSirTommyCuiPresenter_ActionLogOutput(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+		g.On("GetPhase").Return(domain.SirTommyPhasePlaying)
+		assert.NotEmpty(t, new(SirTommyCuiPresenter).ActionLogOutput(g))
+	})
+
+	t.Run("game over", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+		g.On("GetPhase").Return(domain.SirTommyPhaseGameOver)
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "move", Detail: "test"}})
+		assert.NotEmpty(t, new(SirTommyCuiPresenter).ActionLogOutput(g))
+	})
+}

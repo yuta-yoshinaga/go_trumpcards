@@ -1,0 +1,53 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "サー・トミー",
+  "stock": "ストック",
+  "waste": "ウェイスト",
+  "foundation": "ファンデーション",
+  "foundations": "ファンデーション",
+  "moveCount": "手数",
+  "stockCount": "残り",
+  "stockTop": "次のカード",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "undo": "元に戻す",
+  "autoComplete": "オートコンプリート",
+  "selectSource": "移動元を選択してください",
+  "selectTarget": "移動先を選択してください",
+  "deselect": "キャンセル",
+  "draw": "ドロー",
+  "empty": "空",
+  "nextRankBadge": "次:{{rank}}",
+  "nextRankAria": "次に置くべきカード {{rank}}",
+  "upcomingRanksTooltip": "今後の必要カード: {{sequence}}",
+  "upcomingRanksToggle": "先読みランク一覧",
+  "upcomingRanksDetailAria": "ファンデーション{{idx}}の先読みランク一覧: {{sequence}}",
+  "wasteRanksTooltip": "ウェイスト{{idx}}（上3枚）: {{ranks}}",
+  "wasteEmptyAria": "ウェイスト{{idx}}: 空",
+  "stockTopAria": "山札のトップ: {{card}}",
+  "foundationCompleteAria": "完成",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "stalemate": "手詰まりです",
+  "landscapeBanner": "横向き画面推奨",
+  "frontendHint": {
+    "sirtommyStock": "ストックのカードをファンデーションに置けます",
+    "sirtommyWaste": "ウェイストのカードをファンデーションに置けます"
+  },
+  "tutorial": {
+    "foundations": "上段の4つがファンデーション。最初は空で、Aを置いて開きます。以降はスートを問わずA→2→3…→K(13)へ1ずつ積み上げます。",
+    "stockWaste": "ストックから1枚ずつ引き、ファンデーションか4つのウェイストのどれかに置きます。ウェイストは一番上のカードしか動かせないので、どこに置くかが勝負どころです。",
+    "controls": "操作ボタン。ヒント・ギブアップ・元に戻すなどが行えます。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "nav": {
+    "sirtommy": "サー・トミー"
+  }
+}
