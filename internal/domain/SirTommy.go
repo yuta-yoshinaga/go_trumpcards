@@ -211,6 +211,12 @@ func (s *SirTommy) AutoComplete() error {
 	if s.phase != SirTommyPhasePlaying {
 		return errors.New("game is not in playing phase")
 	}
+	// Same gate as Calculation: auto-complete finishes an endgame, it does not
+	// play for you mid-deal. The frontend button already requires an empty stock
+	// (autoCompleteReady), so without this the CLI and API would disagree with it.
+	if !s.AllFaceUp() {
+		return errors.New("stock is not empty")
+	}
 	moved := false
 	// 1 手ごとに全体を見直す。1 枚積むと別のウェイスト最上段が解放されるため、
 	// 単純な一巡では取りこぼす。

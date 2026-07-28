@@ -183,7 +183,7 @@ describe('SirTommyPage', () => {
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
-    const f0 = screen.getByLabelText(/ファンデーション 0 \+1/);
+    const f0 = screen.getByLabelText(/ファンデーション 0 /);
     fireEvent.click(f0);
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
@@ -195,7 +195,7 @@ describe('SirTommyPage', () => {
     mockExec.mockClear();
 
     fireEvent.click(screen.getByTestId('calc-stock-button'));
-    fireEvent.click(screen.getByLabelText(/ファンデーション 2 \+3/));
+    fireEvent.click(screen.getByLabelText(/ファンデーション 2 /));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'stock' }, { zone: 'foundation', idx: 2 }),
@@ -223,7 +223,7 @@ describe('SirTommyPage', () => {
     mockExec.mockClear();
 
     fireEvent.click(screen.getByTestId('calc-waste-button-1'));
-    fireEvent.click(screen.getByLabelText(/ファンデーション 1 \+2/));
+    fireEvent.click(screen.getByLabelText(/ファンデーション 1 /));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste', idx: 1 }, { zone: 'foundation', idx: 1 }),
@@ -328,14 +328,15 @@ describe('SirTommyPage', () => {
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
   });
 
-  it('renders the next-rank badge on each foundation reflecting the +1/+2/+3/+4 progression', async () => {
+  it('renders a next-rank badge that advances one rank on every foundation', async () => {
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    // Foundations seeded with A, 2, 3, 4 ⇒ next required ranks 2, 4, 6, 8.
+    // Every pile builds +1 regardless of index: tops A, 2, 3, 4 need 2, 3, 4, 5.
+    // (Calculation's +1/+2/+3/+4 progression does not apply here.)
     expect(screen.getByTestId('calc-foundation-next-0')).toHaveTextContent('次:2');
-    expect(screen.getByTestId('calc-foundation-next-1')).toHaveTextContent('次:4');
-    expect(screen.getByTestId('calc-foundation-next-2')).toHaveTextContent('次:6');
-    expect(screen.getByTestId('calc-foundation-next-3')).toHaveTextContent('次:8');
+    expect(screen.getByTestId('calc-foundation-next-1')).toHaveTextContent('次:3');
+    expect(screen.getByTestId('calc-foundation-next-2')).toHaveTextContent('次:4');
+    expect(screen.getByTestId('calc-foundation-next-3')).toHaveTextContent('次:5');
   });
 
   it('hides the next-rank badge once a foundation reaches K (13 cards)', async () => {
@@ -347,7 +348,7 @@ describe('SirTommyPage', () => {
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByTestId('calc-foundation-next-0')).not.toBeInTheDocument();
-    expect(screen.getByTestId('calc-foundation-next-1')).toHaveTextContent('次:4');
+    expect(screen.getByTestId('calc-foundation-next-1')).toHaveTextContent('次:3');
     // The count readout reflects the foundation-cap constant (13/13) for a full pile.
     expect(screen.getByText('13/13')).toBeInTheDocument();
   });
@@ -385,22 +386,23 @@ describe('SirTommyPage', () => {
 });
 
 describe('sirtommyNextRank', () => {
-  it('returns the step value when the pile is empty', () => {
-    expect(sirtommyNextRank(0, undefined, 0)).toBe(1);
-    expect(sirtommyNextRank(1, undefined, 0)).toBe(2);
-    expect(sirtommyNextRank(2, undefined, 0)).toBe(3);
-    expect(sirtommyNextRank(3, undefined, 0)).toBe(4);
+  it('requires an Ace to open an empty foundation, on every pile', () => {
+    // No per-foundation step: unlike Calculation, all four build +1 from an Ace.
+    expect(sirtommyNextRank(undefined, 0)).toBe(1);
   });
 
-  it('wraps modulo 13 when the next value exceeds K', () => {
-    // F3 (+4): K(13) → 4 → 8 → 12 → 3 → 7 → ...
-    expect(sirtommyNextRank(3, 13, 4)).toBe(4);
-    expect(sirtommyNextRank(3, 12, 7)).toBe(3);
-    // F2 (+3): J(11) → A(1)
-    expect(sirtommyNextRank(2, 11, 4)).toBe(1);
+  it('advances exactly one rank regardless of suit', () => {
+    expect(sirtommyNextRank(1, 1)).toBe(2);
+    expect(sirtommyNextRank(11, 11)).toBe(12);
+  });
+
+  it('does not wrap past the King', () => {
+    // Calculation wraps mod 13; Sir Tommy simply stops.
+    expect(sirtommyNextRank(12, 12)).toBe(13);
+    expect(sirtommyNextRank(13, 13)).toBeNull();
   });
 
   it('returns null once the pile already contains 13 cards', () => {
-    expect(sirtommyNextRank(0, 13, 13)).toBeNull();
+    expect(sirtommyNextRank(13, 13)).toBeNull();
   });
 });

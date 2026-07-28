@@ -312,3 +312,14 @@ func TestSirTommy_UndoToEscapeAndAllFaceUp(t *testing.T) {
 	require.True(t, fresh.IsStalemate())
 	assert.Equal(t, -1, fresh.UndoToEscape())
 }
+
+func TestSirTommy_AutoCompleteRefusesWhileStockRemains(t *testing.T) {
+	s := newTestSirTommy()
+	// A playable Ace on top, but the stock is not exhausted: auto-complete is an
+	// endgame convenience, not an autoplayer, and the frontend button agrees.
+	stackDeck(s, []*Card{NewCard(0, 9, true), NewCard(0, 1, true)})
+
+	require.Error(t, s.AutoComplete(), "stock is not empty")
+	assert.Equal(t, 2, s.GetStockCount(), "a refused auto-complete changes nothing")
+	assert.Equal(t, 0, s.GetMoveCount())
+}

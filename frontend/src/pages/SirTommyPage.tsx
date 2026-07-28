@@ -36,25 +36,21 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_CNT = 4;
 const WASTE_CNT = 4;
-const STEP_LABELS = ['+1', '+2', '+3', '+4'] as const;
 const FOUNDATION_PILE_FULL = 13;
 
 /**
- * Required rank to advance the foundation at `foundationIdx` whose top card is
- * `topValue` (or `undefined` if the pile is empty). Mirrors the `+1/+2/+3/+4`
- * progression with mod 13 used by `internal/domain/SirTommy.go`. Returns
+ * Required rank to advance a foundation whose top card is `topValue` (or
+ * `undefined` if the pile is empty). Every Sir Tommy foundation builds up one
+ * rank at a time ignoring suit, and an empty pile can only be opened by an Ace
+ * -- see `canPlaceOnFoundation` in `internal/domain/SirTommy.go`. Returns
  * `null` once the pile is complete and no further card may be placed.
+ *
+ * There is deliberately no per-foundation step and no mod-13 wraparound here:
+ * that is Calculation's rule, and this page was derived from that one.
  */
-export function sirtommyNextRank(
-  foundationIdx: number,
-  topValue: number | undefined,
-  pileLength: number,
-): number | null {
+export function sirtommyNextRank(topValue: number | undefined, pileLength: number): number | null {
   if (pileLength >= FOUNDATION_PILE_FULL) return null;
-  const step = foundationIdx + 1;
-  if (topValue === undefined) return step;
-  const next = topValue + step;
-  return next > FOUNDATION_PILE_FULL ? next - FOUNDATION_PILE_FULL : next;
+  return topValue === undefined ? 1 : topValue + 1;
 }
 
 /**
@@ -62,17 +58,12 @@ export function sirtommyNextRank(
  * required rank and including up to `maxLookAhead` (or until the pile would
  * be complete). Used for the "next cards" preview tooltip.
  */
-export function sirtommyUpcomingRanks(
-  foundationIdx: number,
-  topValue: number | undefined,
-  pileLength: number,
-  maxLookAhead = 6,
-): number[] {
+export function sirtommyUpcomingRanks(topValue: number | undefined, pileLength: number, maxLookAhead = 6): number[] {
   const out: number[] = [];
   let v = topValue;
   let len = pileLength;
   for (let i = 0; i < maxLookAhead; i += 1) {
-    const next = sirtommyNextRank(foundationIdx, v, len);
+    const next = sirtommyNextRank(v, len);
     if (next === null) break;
     out.push(next);
     v = next;
@@ -164,9 +155,7 @@ function formatSirTommyState(state: SirTommyResponse): string {
     `Foundations: ${state.foundations
       .map((pile, i) => {
         const top = pile[pile.length - 1];
-        return top
-          ? `F${i}(${STEP_LABELS[i]}):${top.design[0]}${top.value}(${pile.length}/${FOUNDATION_PILE_FULL})`
-          : `F${i}:-`;
+        return top ? `F${i}:${top.design[0]}${top.value}(${pile.length}/${FOUNDATION_PILE_FULL})` : `F${i}:-`;
       })
       .join(' ')}`,
   );
@@ -382,9 +371,9 @@ function SirTommyPageContent() {
                 const pile = state.foundations[idx] ?? [];
                 const top = pile[pile.length - 1];
                 const isHint = hintFoundation === idx;
-                const nextRank = sirtommyNextRank(idx, top?.value, pile.length);
+                const nextRank = sirtommyNextRank(top?.value, pile.length);
                 const nextRankLabel = nextRank !== null ? valueName(nextRank) : null;
-                const upcomingRanks = sirtommyUpcomingRanks(idx, top?.value, pile.length);
+                const upcomingRanks = sirtommyUpcomingRanks(top?.value, pile.length);
                 const upcomingLabel = upcomingRanks.map(valueName).join(' → ');
                 return (
                   <div key={`f-${idx.toString()}`} className="flex flex-col items-center">
@@ -396,13 +385,11 @@ function SirTommyPageContent() {
                       title={upcomingLabel ? t('upcomingRanksTooltip', { sequence: upcomingLabel }) : undefined}
                       aria-label={
                         nextRankLabel
-                          ? `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('nextRankAria', { rank: nextRankLabel })}`
-                          : `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('foundationCompleteAria')}`
+                          ? `${t('foundation')} ${idx} ${t('nextRankAria', { rank: nextRankLabel })}`
+                          : `${t('foundation')} ${idx} ${t('foundationCompleteAria')}`
                       }
                     >
-                      <span className="text-[11px] mb-0.5 text-ds-text-muted">
-                        F{idx} {STEP_LABELS[idx]}
-                      </span>
+                      <span className="text-[11px] mb-0.5 text-ds-text-muted">F{idx}</span>
                       <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
                         {top ? (
                           <AnimatedCard card={top} width={cardWidth} />
