@@ -11,7 +11,6 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
-import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -236,8 +235,8 @@ function MemoryPageContent() {
         layout={{
           kind: 'card-grid',
           count: 52,
-          cols: 'grid-cols-4 md:grid-cols-8 lg:grid-cols-13',
-          aspectRatio: 'aspect-[2/3] lg:aspect-auto',
+          cols: 'grid-cols-7 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13',
+          aspectRatio: 'aspect-[2/3] max-sm:aspect-auto max-sm:h-11 lg:aspect-auto',
           gridClassName: 'lg:grid-rows-4 lg:h-full',
           topPills: 4,
         }}
@@ -269,8 +268,6 @@ function MemoryPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <LandscapeBanner message={t('landscapeBanner')} />
-
           {/* Settings */}
           <SettingsPanel
             title={t('settings.title')}
@@ -362,9 +359,10 @@ function MemoryPageContent() {
               </div>
             </details>
 
-            {/* Board: responsive grid (4/8/13 columns); on lg fills remaining height */}
+            {/* Board: responsive grid (7/8/10/13 columns). Narrow screens drop the 2/3 aspect
+                so all 8 rows fit the play area; on lg it fills the remaining height. */}
             <div
-              className="my-3 lg:my-1 p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
+              className="my-3 max-sm:my-1 lg:my-1 p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
               data-tutorial="mem-board"
             >
               {/* biome-ignore lint/a11y/noStaticElementInteractions: keydown only routes arrow keys for roving focus; the real controls are the child <button>s */}
@@ -390,7 +388,7 @@ function MemoryPageContent() {
                       disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                       tabIndex={idx === focusedIdx ? 0 : -1}
                       onClick={() => handleFlip(idx)}
-                      className={`memory-card relative aspect-[2/3] min-h-[44px] min-w-[44px] lg:aspect-auto rounded ${focusRingWhite} ${
+                      className={`memory-card relative aspect-[2/3] max-sm:aspect-auto max-sm:h-11 min-h-[44px] min-w-[44px] lg:aspect-auto rounded ${focusRingWhite} ${
                         bc.taken
                           ? 'hidden'
                           : bc.faceUp

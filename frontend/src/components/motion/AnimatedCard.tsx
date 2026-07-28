@@ -46,7 +46,19 @@ export function AnimatedCard({
   const dealCalledRef = useRef(false);
 
   if (reduced) {
-    return <CardImage {...rest} />;
+    // Reduced motion means no movement, not no feedback. This branch used to return a
+    // bare CardImage, so anyone with `prefers-reduced-motion: reduce` got no hover
+    // affordance on cards at all while everyone else got a lift — the gap #930 asked
+    // about. A brightness/shadow change is a state indication rather than an
+    // animation, so it is allowed here (and the universal reduced-motion block in
+    // index.css strips any transition on it anyway).
+    return (
+      <span className={wrapperClassName ?? 'inline-block'} data-testid="animated-card">
+        <span className="block hover:brightness-110 hover:shadow-lg hover:shadow-black/40">
+          <CardImage {...rest} />
+        </span>
+      </span>
+    );
   }
 
   return (

@@ -344,10 +344,13 @@ describe('MemoryPage', () => {
     await waitFor(() => expect(screen.getByText('1枚目をめくってください')).toBeInTheDocument());
   });
 
-  it('renders landscape orientation banner in DOM', async () => {
+  // The landscape banner was a workaround for the board not fitting a portrait phone,
+  // and #1367 called it out as an escape hatch rather than a fix. It also consumed
+  // 36px of the very space the board needed. Removed once the grid was made to fit.
+  it('does not fall back to telling the player to rotate their phone', async () => {
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
-    expect(screen.getByText('横向きにすると快適にプレイできます')).toBeInTheDocument();
+    expect(screen.queryByText('横向きにすると快適にプレイできます')).not.toBeInTheDocument();
   });
 
   // ── ConfirmDialog on reset ─────────────────────────────────────────────────
