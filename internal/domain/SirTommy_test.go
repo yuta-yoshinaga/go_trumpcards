@@ -177,7 +177,13 @@ func TestSirTommy_StalemateOnlyWhenStockEmptyAndNothingPlayable(t *testing.T) {
 
 func TestSirTommy_Hint(t *testing.T) {
 	s := newTestSirTommy()
-	assert.Nil(t, s.GetHint(), "no hint before anything is playable")
+
+	// Deal a stock whose top is not an Ace, with every foundation empty, so
+	// nothing is playable. Asserting this on a freshly shuffled deck would be a
+	// 4-in-52 flake: a real Reset leaves whatever the shuffle put on top, and an
+	// Ace there is a legitimate hint.
+	stackDeck(s, []*Card{NewCard(0, 9, true)})
+	assert.Nil(t, s.GetHint(), "no hint while nothing is playable")
 
 	// stock top is an Ace -> hint points at the stock
 	stackDeck(s, []*Card{NewCard(0, 1, true)})
