@@ -158,7 +158,7 @@ func (b *Bisley) MoveTableauToAceFoundation(col int) error {
 	b.takeSnapshot()
 	b.popTop(col)
 	b.aceFoundations[fIdx] = append(b.aceFoundations[fIdx], card)
-	b.afterMove("move", fmt.Sprintf("列%d→昇順基礎%d", col+1, fIdx+1), card)
+	b.afterMove("move", fmt.Sprintf("タブロー列%d→昇順基礎%d", col, fIdx), card)
 	return nil
 }
 
@@ -175,7 +175,7 @@ func (b *Bisley) MoveTableauToKingFoundation(col int) error {
 	b.takeSnapshot()
 	b.popTop(col)
 	b.kingFoundations[fIdx] = append(b.kingFoundations[fIdx], card)
-	b.afterMove("move", fmt.Sprintf("列%d→降順基礎%d", col+1, fIdx+1), card)
+	b.afterMove("move", fmt.Sprintf("タブロー列%d→降順基礎%d", col, fIdx), card)
 	return nil
 }
 
@@ -203,7 +203,7 @@ func (b *Bisley) MoveTableauToTableau(fromCol, toCol int) error {
 	b.takeSnapshot()
 	b.popTop(fromCol)
 	b.tableau[toCol] = append(b.tableau[toCol], &BisleyTableauCard{Card: card, FaceUp: true})
-	b.afterMove("move", fmt.Sprintf("列%d→列%d", fromCol+1, toCol+1), card)
+	b.afterMove("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), card)
 	return nil
 }
 
@@ -215,17 +215,27 @@ func (b *Bisley) GiveUp() {
 	}
 }
 
-// GetHint 基礎札へ送れる手を優先して 1 つ提示する
+// GetHint 手を 1 つ提示する。基礎札へ送れる手を優先し、無ければタブロー上の手を返す。
+//
+// 基礎札の手が無くてもタブローに動かせる札が残っていることはあるので、そこで nil を
+// 返すと「打つ手はあるのにヒント無し」になってしまう。手詰まり判定もこの関数を使う。
 func (b *Bisley) GetHint() *BisleyHint {
+	if h := b.foundationHint(); h != nil {
+		return h
+	}
+	return b.tableauHint()
+}
+
+// foundationHint 基礎札へ送れる手を 1 つ返す（オートコンプリート用）。
+func (b *Bisley) foundationHint() *BisleyHint {
 	if b.phase != BisleyPhasePlaying {
 		return nil
 	}
 	for col := range BisleyTableauCnt {
-		pile := b.tableau[col]
-		if len(pile) == 0 {
+		card := b.topCard(col)
+		if card == nil {
 			continue
 		}
-		card := pile[len(pile)-1].Card
 		fIdx := BisleySuitIndex(card.GetDesign())
 		if fIdx < 0 {
 			continue
@@ -240,14 +250,41 @@ func (b *Bisley) GetHint() *BisleyHint {
 	return nil
 }
 
-// AutoComplete 基礎札へ送れる札がなくなるまで自動で送る
+// tableauHint 同スートで隣接ランクの列へ重ねる手を 1 つ返す。
+func (b *Bisley) tableauHint() *BisleyHint {
+	if b.phase != BisleyPhasePlaying {
+		return nil
+	}
+	for from := range BisleyTableauCnt {
+		card := b.topCard(from)
+		if card == nil {
+			continue
+		}
+		for to := range BisleyTableauCnt {
+			if to == from {
+				continue
+			}
+			top := b.topCard(to)
+			if top == nil {
+				continue
+			}
+			if top.GetDesign() == card.GetDesign() && abs(top.GetValue()-card.GetValue()) == 1 {
+				return &BisleyHint{FromCol: from, ToZone: "tableau", ToIdx: to}
+			}
+		}
+	}
+	return nil
+}
+
+// AutoComplete 基礎札へ送れる札がなくなるまで自動で送る。
+// タブロー上の移動は行わないので、GetHint ではなく foundationHint を使う。
 func (b *Bisley) AutoComplete() error {
 	if b.phase != BisleyPhasePlaying {
 		return errors.New("game is not in playing phase")
 	}
 	moved := false
 	for {
-		h := b.GetHint()
+		h := b.foundationHint()
 		if h == nil {
 			break
 		}
@@ -367,6 +404,16 @@ func (b *Bisley) topOf(col int) (*Card, error) {
 	return pile[len(pile)-1].Card, nil
 }
 
+// topCard 指定列の最上段カードを返す（列が空なら nil）。手の探索用で、topOf と違い
+// フェーズも範囲も見ない — 呼び出し側が 0..BisleyTableauCnt-1 を回しているため。
+func (b *Bisley) topCard(col int) *Card {
+	pile := b.tableau[col]
+	if len(pile) == 0 {
+		return nil
+	}
+	return pile[len(pile)-1].Card
+}
+
 // popTop 指定列の最上段を取り除く
 func (b *Bisley) popTop(col int) {
 	b.tableau[col] = b.tableau[col][:len(b.tableau[col])-1]
@@ -411,34 +458,15 @@ func (b *Bisley) checkGameClear() {
 	}
 }
 
-// checkStalemate 打つ手が一つも無い状態か
+// checkStalemate 打つ手が一つも無い状態か。
+// GetHint は基礎札の手とタブローの手の両方を見るので、「ヒントが無い」と
+// 「手詰まり」は同じ条件になる。以前はここでタブロー走査を別に持っていたが、
+// 二重に持つと片方だけ直したときに静かに食い違う。
 func (b *Bisley) checkStalemate() {
 	if b.phase != BisleyPhasePlaying {
 		return
 	}
-	if b.GetHint() != nil {
-		b.isStalemate = false
-		return
-	}
-	// 基礎札へ送れなくても、タブロー上で動かせる札が残っていれば手詰まりではない。
-	for from := range BisleyTableauCnt {
-		pile := b.tableau[from]
-		if len(pile) == 0 {
-			continue
-		}
-		card := pile[len(pile)-1].Card
-		for to := range BisleyTableauCnt {
-			if to == from || len(b.tableau[to]) == 0 {
-				continue
-			}
-			top := b.tableau[to][len(b.tableau[to])-1].Card
-			if top.GetDesign() == card.GetDesign() && abs(top.GetValue()-card.GetValue()) == 1 {
-				b.isStalemate = false
-				return
-			}
-		}
-	}
-	b.isStalemate = true
+	b.isStalemate = b.GetHint() == nil
 }
 
 // takeSnapshot 現在の状態を保存する

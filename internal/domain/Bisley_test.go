@@ -309,3 +309,91 @@ func TestBisley_StalemateWhenNothingCanMove(t *testing.T) {
 	b.checkStalemate()
 	assert.False(t, b.IsStalemate())
 }
+
+// The action-log detail is rendered verbatim in the UI, so its column numbers
+// have to match what the board, the hint and the CLI show. Nothing asserted on
+// the string before, which is how a 1-indexed log shipped next to a 0-indexed
+// board (review on #4468).
+func TestBisley_ActionLogDetailUsesZeroBasedColumns(t *testing.T) {
+	b := newTestBisley()
+	var aces, kings [BisleyFoundationCnt][]*Card
+	aces[0] = []*Card{NewCard(CardDesignSpade, 1, true)}
+	setBoard(b, aces, kings, [][]*Card{
+		{},
+		{NewCard(CardDesignSpade, 2, true)},
+		{NewCard(CardDesignHeart, 13, true)},
+		{NewCard(CardDesignHeart, 7, true)},
+		{NewCard(CardDesignHeart, 6, true)},
+	})
+
+	require.NoError(t, b.MoveTableauToAceFoundation(1))
+	require.NoError(t, b.MoveTableauToKingFoundation(2))
+	require.NoError(t, b.MoveTableauToTableau(3, 4))
+
+	log := b.GetActionLog()
+	require.Len(t, log, 3)
+	// Spade is foundation 0, heart is foundation 2 — both raw indices.
+	assert.Equal(t, "タブロー列1→昇順基礎0", log[0].Detail)
+	assert.Equal(t, "タブロー列2→降順基礎2", log[1].Detail)
+	assert.Equal(t, "タブロー列3→タブロー列4", log[2].Detail)
+}
+
+// GetHint used to only look at the foundations, so a board with legal tableau
+// moves and no foundation move reported "no hint" while not being stalemated —
+// the two disagreed. It also left the "tableau" branch of every consumer dead.
+func TestBisley_GetHintFallsBackToATableauMove(t *testing.T) {
+	b := newTestBisley()
+	var aces, kings [BisleyFoundationCnt][]*Card
+	// No ace pile is open and no King is exposed, so nothing reaches a
+	// foundation; but ♠5 and ♠6 are a legal tableau pair.
+	setBoard(b, aces, kings, [][]*Card{
+		{NewCard(CardDesignSpade, 5, true)},
+		{NewCard(CardDesignSpade, 6, true)},
+	})
+
+	h := b.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, "tableau", h.ToZone)
+	assert.Equal(t, 0, h.FromCol)
+	assert.Equal(t, 1, h.ToIdx)
+	b.checkStalemate()
+	assert.False(t, b.IsStalemate(), "a hint exists, so this is not a dead end")
+
+	// The hint the player is shown must be a move the domain actually accepts.
+	// (This consumes the only move, so it comes after the stalemate check.)
+	require.NoError(t, b.MoveTableauToTableau(h.FromCol, h.ToIdx))
+}
+
+// A foundation move always outranks a tableau shuffle.
+func TestBisley_GetHintPrefersTheFoundation(t *testing.T) {
+	b := newTestBisley()
+	var aces, kings [BisleyFoundationCnt][]*Card
+	aces[0] = []*Card{NewCard(CardDesignSpade, 1, true)}
+	setBoard(b, aces, kings, [][]*Card{
+		{NewCard(CardDesignHeart, 5, true)},
+		{NewCard(CardDesignHeart, 6, true)},
+		{NewCard(CardDesignSpade, 2, true)},
+	})
+
+	h := b.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, "ace", h.ToZone, "♠2 goes up even though ♥5/♥6 pair")
+	assert.Equal(t, 2, h.FromCol)
+}
+
+// AutoComplete must never make a tableau move, or it would shuffle the board
+// instead of clearing it — it drives off foundationHint, not GetHint.
+func TestBisley_AutoCompleteIgnoresTableauMoves(t *testing.T) {
+	b := newTestBisley()
+	var aces, kings [BisleyFoundationCnt][]*Card
+	setBoard(b, aces, kings, [][]*Card{
+		{NewCard(CardDesignSpade, 5, true)},
+		{NewCard(CardDesignSpade, 6, true)},
+	})
+
+	require.NotNil(t, b.GetHint(), "a tableau move exists")
+	assert.Error(t, b.AutoComplete(), "but nothing can go to a foundation")
+	assert.Equal(t, 0, b.GetMoveCount())
+	assert.Len(t, b.GetTableau()[0], 1, "the board is untouched")
+	assert.Len(t, b.GetTableau()[1], 1)
+}
