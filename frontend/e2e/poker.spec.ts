@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
+import { navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe('Poker E2E', () => {
   test('plays a full round: reset → bet → stand (no exchange) → bet → result → reset', async ({ page }) => {
@@ -12,40 +12,40 @@ test.describe('Poker E2E', () => {
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
-    // DEAL phase: use チェック or コール to proceed
     const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
     const callButton = page.getByRole('button', { name: 'コール', exact: true });
-    if (await isVisibleWithin(checkButton, TIMEOUT_ACTION)) {
-      await checkButton.click();
-    } else {
-      await callButton.click();
-    }
-    await waitForLoaded(page);
-
-    // EXCHANGE phase: click スタンド (no exchange)
     const standButton = page.getByRole('button', { name: 'スタンド' });
-    if (await isVisibleWithin(standButton, TIMEOUT_ACTION)) {
-      await standButton.click();
-      await waitForLoaded(page);
-    }
-
-    // SECOND_BET phase: check/call repeatedly until end-state 次のゲーム appears.
-    // A single check/call may not conclude the hand if a CPU re-raises.
-    //
-    // Wait for whichever control appears FIRST rather than probing each one in
-    // turn: two sequential 3s probes cost 6s per lap even when the hand has
-    // already ended, so a re-raising CPU could push 20 laps past the 90s test
-    // timeout. Playwright then tears the context down, and the in-flight
-    // waitForSelector reports "Target page, context or browser has been closed"
-    // — which reads like a browser crash but is really this timeout (#2443).
-    // Racing them returns as soon as any control is actionable, and a genuine
-    // stall now fails fast with a clear message instead of burning the budget.
     const endResetButton = page.getByRole('button', { name: '次のゲーム' });
-    for (let i = 0; i < 20; i++) {
-      const anyControl = endResetButton.or(checkButton).or(callButton).first();
+
+    // One loop drives the whole hand — deal betting, exchange, and second
+    // betting — answering whichever control the game offers next.
+    //
+    // It used to be a step per phase, each probing its own control with
+    // `if (await isVisibleWithin(btn, TIMEOUT_ACTION))`. That is what made this
+    // spec flaky (#4459). A 3s probe loses the race whenever the first betting
+    // round runs long — three CPUs re-raising each other takes well over 3s —
+    // and the `if` then turns a *mandatory* action into a silent no-op. The
+    // hand cannot advance until the human stands or exchanges, so the run died
+    // ten seconds later in the betting loop, waiting for チェック/コール/次のゲーム
+    // that could never appear. The CI trace showed the page parked on
+    // 「現在のフェーズ: 交換、あなたのターン」 with スタンド visible throughout.
+    //
+    // Racing every control the human can be asked for removes the timing
+    // assumption entirely: order and duration no longer matter, only that the
+    // game is waiting for one of them. A real stall still fails fast, because
+    // no control appearing within TIMEOUT_GAME_LOOP is itself the failure.
+    //
+    // Keep the cap well above the ~8 decisions a 3-CPU hand needs. Looping
+    // without one risks outliving the 90s test timeout, which surfaces as
+    // "Target page, context or browser has been closed" and reads like a
+    // browser crash rather than a timeout (#2443).
+    for (let i = 0; i < 24; i++) {
+      const anyControl = endResetButton.or(standButton).or(checkButton).or(callButton).first();
       await expect(anyControl).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
       if (await endResetButton.isVisible()) break;
-      if (await checkButton.isVisible()) {
+      if (await standButton.isVisible()) {
+        await standButton.click(); // decline the exchange, play the dealt hand
+      } else if (await checkButton.isVisible()) {
         await checkButton.click();
       } else {
         await callButton.click();
