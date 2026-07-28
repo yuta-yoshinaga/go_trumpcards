@@ -34,14 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # extra2/extra3 are deliberately absent until their KV namespaces exist
-        # (ADR-0036 Phase 1 ships them with REPLACE_ME placeholder IDs). Adding
-        # them here would run `wrangler deploy` against those placeholders on every
-        # push to develop; with fail-fast defaulting to true that failure cancels
-        # the other four legs, and deploy-pages `needs: deploy-workers`, so the
-        # frontend deploy dies too. Add them in the same change that fills in the
-        # real IDs.
-        worker: [casino, classic, solo, extra]
+        worker: [casino, classic, solo, extra, extra2, extra3]
     environment:
       name: ${{ github.ref == 'refs/heads/master' && 'production' || 'staging' }}
     steps:
