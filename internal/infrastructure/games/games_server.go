@@ -420,6 +420,11 @@ func init() {
 			return usecase.NewBisleyInteractor(domain.NewDefaultBisley(), new(presenter.BisleyWebPresenter))
 		},
 		controller.NewBisleyWebController)
+	BindWebControllerFor("napoleonssquare",
+		func() usecase.NapoleonsSquareInteractorIF {
+			return usecase.NewNapoleonsSquareInteractor(domain.NewDefaultNapoleonsSquare(), new(presenter.NapoleonsSquareWebPresenter))
+		},
+		controller.NewNapoleonsSquareWebController)
 	BindWebControllerFor("spiteandmalice",
 		func() usecase.SpiteAndMaliceInteractorIF {
 			return usecase.NewSpiteAndMaliceInteractor(domain.NewDefaultSpiteAndMalice(), new(presenter.SpiteAndMaliceWebPresenter))

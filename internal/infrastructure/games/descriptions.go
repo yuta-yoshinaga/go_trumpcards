@@ -90,6 +90,7 @@ var gameDescriptions = map[string]string{
 	"calculation":         "Calculation (カルキュレーション)",
 	"sirtommy":            "サー・トミー（最古級のペイシェンス）",
 	"bisley":              "ビズリー（昇降2組の基礎札ソリティア）",
+	"napoleonssquare":     "ナポレオンズ・スクエア（2デッキの正方形ソリティア）",
 	"spiteandmalice":      "Spite and Malice (スパイト・アンド・マリス)",
 	"skat":                "Skat (スカート)",
 	"shithead":            "Shithead / Karma (シットヘッド)",

@@ -241,6 +241,11 @@ func (ns *NapoleonsSquare) MoveTableauToTableau(fromCol, cardIndex, toCol int) e
 		return errors.New("from and to columns are the same")
 	}
 	fromCards := ns.tableau[fromCol]
+	// -1 は「最上段 1 枚」を表す。BeleagueredCastle など既存のソリティアと同じ約束で、
+	// 呼び出し側が列の長さを知らなくても最上段を動かせる。
+	if cardIndex == -1 {
+		cardIndex = len(fromCards) - 1
+	}
 	if cardIndex < 0 || cardIndex >= len(fromCards) {
 		return errors.New("invalid card index")
 	}

@@ -110,7 +110,7 @@ func TestNapoleonsSquare_RejectsInvalidTableauArguments(t *testing.T) {
 	assert.Error(t, ns.MoveTableauToTableau(0, 0, NapoleonsSquareTableauCnt), "to out of range")
 	assert.Error(t, ns.MoveTableauToTableau(0, 0, 0), "same column")
 	assert.Error(t, ns.MoveTableauToTableau(0, 5, 1), "card index past the pile")
-	assert.Error(t, ns.MoveTableauToTableau(0, -1, 1), "negative card index")
+	assert.Error(t, ns.MoveTableauToTableau(0, -2, 1), "negative card index")
 	assert.Error(t, ns.MoveWasteToTableau(-1), "column out of range")
 	assert.Error(t, ns.MoveWasteToTableau(0), "waste is empty")
 	assert.Error(t, ns.MoveTableauToFoundation(1), "column is empty")
@@ -162,6 +162,25 @@ func TestNapoleonsSquare_RejectsABrokenRun(t *testing.T) {
 
 	assert.Error(t, ns.MoveTableauToTableau(0, 0, 1), "7,5 is not consecutive")
 	assert.Error(t, ns.MoveTableauToTableau(0, 1, 1), "♠5 does not sit on ♠8")
+}
+
+// -1 means "the top card" so a caller that does not know the pile length can
+// still move it; the Web controller relies on this when cardIndex is omitted.
+func TestNapoleonsSquare_CardIndexMinusOneMeansTheTopCard(t *testing.T) {
+	ns := newTestNapoleonsSquare()
+	var empty [NapoleonsSquareFoundationCnt][]*Card
+	setNSBoard(ns, empty, [][]*Card{
+		{NewCard(CardDesignHeart, 2, true), NewCard(CardDesignSpade, 6, true)},
+		{NewCard(CardDesignSpade, 7, true)},
+	}, nil, nil)
+
+	require.NoError(t, ns.MoveTableauToTableau(0, -1, 1))
+	assert.Len(t, ns.GetTableau()[1], 2, "only ♠6 moved, not the ♥2 under it")
+	assert.Len(t, ns.GetTableau()[0], 1)
+
+	// An empty column has no top card, so -1 stays out of range rather than
+	// silently doing nothing.
+	assert.Error(t, ns.MoveTableauToTableau(5, -1, 1), "no top card in an empty column")
 }
 
 func TestNapoleonsSquare_EmptyColumnAcceptsAnythingIncludingARun(t *testing.T) {

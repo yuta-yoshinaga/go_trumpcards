@@ -213,4 +213,12 @@ func init() {
 			return usecase.RestoreBisleyInteractor(data, new(presenter.BisleyWebPresenter))
 		},
 		controller.NewBisleyWebControllerWithProvider)
+	games.RegisterKVGame("napoleonssquare", games.CategoryExtra2,
+		func() usecase.NapoleonsSquareInteractorIF {
+			return usecase.NewNapoleonsSquareInteractor(domain.NewDefaultNapoleonsSquare(), new(presenter.NapoleonsSquareWebPresenter))
+		},
+		func(data []byte) (usecase.NapoleonsSquareInteractorIF, error) {
+			return usecase.RestoreNapoleonsSquareInteractor(data, new(presenter.NapoleonsSquareWebPresenter))
+		},
+		controller.NewNapoleonsSquareWebControllerWithProvider)
 }
