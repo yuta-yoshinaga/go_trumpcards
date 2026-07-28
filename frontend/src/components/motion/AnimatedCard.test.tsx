@@ -73,11 +73,20 @@ describe('AnimatedCard', () => {
     expect(screen.getByTestId('animated-card')).toBeInTheDocument();
   });
 
-  it('renders plain CardImage when reduced motion is preferred', () => {
+  // Reduced motion means no movement, not no feedback. This branch used to render a
+  // bare CardImage, which left those users with no hover affordance on cards at all
+  // while everyone else got a lift (#930). It now renders the card with a static
+  // brightness/shadow hover and NO transform.
+  it('renders the card with a static hover affordance and no motion when reduced motion is preferred', () => {
     vi.mocked(useReducedMotion).mockReturnValue(true);
-    render(<AnimatedCard card={mockCard} />);
-    expect(screen.queryByTestId('animated-card')).not.toBeInTheDocument();
+    const { container } = render(<AnimatedCard card={mockCard} />);
     expect(screen.getByRole('img')).toBeInTheDocument();
+    const hoverTarget = container.querySelector('[class*="hover:brightness"]');
+    expect(hoverTarget).not.toBeNull();
+    expect(hoverTarget?.className).toContain('hover:shadow-lg');
+    // No lift/scale: those are motion, which is exactly what this branch avoids.
+    expect(container.innerHTML).not.toContain('translate');
+    expect(container.innerHTML).not.toContain('scale(');
   });
 
   it('passes width and style to CardImage', () => {
@@ -126,11 +135,12 @@ describe('AnimatedCard', () => {
     expect(screen.getByTestId('animated-card')).toBeInTheDocument();
   });
 
-  it('does not pass onDealComplete in reduced motion mode', () => {
+  it('never fires the deal callback or sound in reduced motion mode', () => {
     vi.mocked(useReducedMotion).mockReturnValue(true);
     const onDealComplete = vi.fn();
     render(<AnimatedCard card={mockCard} onDealComplete={onDealComplete} />);
-    expect(screen.queryByTestId('animated-card')).not.toBeInTheDocument();
+    // There is no deal animation to complete, so the callback must not fire.
+    expect(onDealComplete).not.toHaveBeenCalled();
   });
 
   describe('default SFX contract (issue #1845)', () => {

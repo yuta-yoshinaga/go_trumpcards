@@ -246,6 +246,18 @@ body {
   height: 100%;
 }
 
+/* Clickable things must look clickable (issue #930).
+   Browsers give `<button>` `cursor: default` and Tailwind's preflight does not
+   override it, so every action button in the app — hit, stand, reset, and every
+   card rendered inside a button — showed an arrow cursor. Measured before fixing:
+   `cursor: default` on buttons across all pages, while `<a>` got `pointer` natively,
+   which is why nav links felt clickable and buttons did not. Pages that had already
+   added `cursor-pointer` by hand (Klondike's cards) are unaffected. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
 /* Prevent iOS Safari auto-zoom on input focus (triggers when font-size < 16px) */
 input,
 select,
