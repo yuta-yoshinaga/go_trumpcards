@@ -169,10 +169,15 @@ Phase 1 は「ビルドとデプロイ経路が通ること」を確認したが
 
 `deploy-cloudflare.yml` は `internal/**` と `frontend/**` の push で走る。Phase 2 は必ず両方に触るため、**Cloudflare 側の準備が済む前にマージすると 41 ゲームが本番で 404 になる**（既存 4 worker が移動後のゲームを含まない状態で再デプロイされ、extra2/extra3 は matrix に無く、フロントは空 URL へルーティングする）。Phase 1 と違い「新 worker が増えないだけ」では済まない。順序は次のとおり:
 
-1. KV namespace を作成し `wrangler.toml` の `REPLACE_ME_*` を差し替える
-2. `WORKER_EXTRA{2,3}_URL` / `_STAGING_URL` と `VITE_WORKER_EXTRA{2,3}_URL` を設定する
-3. deploy matrix に `extra2` / `extra3` を追加する（1 と同じ変更で）
+1. ~~KV namespace を作成し `wrangler.toml` の `REPLACE_ME_*` を差し替える~~
+2. ~~`WORKER_EXTRA{2,3}_URL` / `_STAGING_URL` を設定する~~（`VITE_WORKER_*` は
+   workflow が導出するので設定不要。上記「Cloudflare アカウント側」参照）
+3. ~~deploy matrix に `extra2` / `extra3` を追加する（1 と同じ変更で）~~
 4. **その後に** Phase 2 をマージする
+
+1〜3 は [#4461](https://github.com/yuta-yoshinaga/go_trumpcards/pull/4461) で完了。
+extra2/extra3 は中身 0 ゲームの空 worker としてデプロイ済みなので、この順序の
+「本番で 404」リスクは解消している。
 
 ## Consequences
 
