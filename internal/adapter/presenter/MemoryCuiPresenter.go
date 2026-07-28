@@ -67,13 +67,20 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 
 		b.WriteString("----------\n")
 
-		// Render the 4×13 board; highlight the flipped (face-up) cells.
+		// 13 列で折り返して描画する。行数は盤面の長さから決めること: ペア数設定で
+		// 52 枚未満になりうるため (ADR-0035)、4 行固定だと index out of range になる。
+		// Web プレゼンターで同じ誤りを踏んでおり、こちらは CUI にペア数変更コマンドが
+		// 無いので現状は到達しないが、同じ地雷を残す理由はない。
+		const memoryCuiCols = 13
 		resultMatch := m.GetPhase() == domain.MemoryPhaseResult && m.GetLastMatchResult()
-		for row := 0; row < 4; row++ {
-			rowParts := make([]string, 13)
-			for col := 0; col < 13; col++ {
-				pos := row*13 + col
-				rowParts[col] = memoryCellStr(board[pos], pos, resultMatch)
+		for start := 0; start < len(board); start += memoryCuiCols {
+			end := start + memoryCuiCols
+			if end > len(board) {
+				end = len(board)
+			}
+			rowParts := make([]string, 0, end-start)
+			for pos := start; pos < end; pos++ {
+				rowParts = append(rowParts, memoryCellStr(board[pos], pos, resultMatch))
 			}
 			b.WriteString(strings.Join(rowParts, " "))
 			b.WriteString("\n")

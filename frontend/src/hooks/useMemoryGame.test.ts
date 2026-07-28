@@ -194,6 +194,23 @@ describe('useMemoryGame', () => {
       expect(MOBILE_DEFAULT_PAIRS * 2).toBeLessThanOrEqual(7 * 6);
     });
 
+    // The bug this guards: the settings state was seeded with the 26-pair default
+    // while the mount deal used initialPairCount(), so on a phone the select read
+    // "26 pairs" over a 40-card board and pressing Reset re-dealt 52 — undoing
+    // ADR-0035 on exactly the screen it exists for.
+    it('keeps the settings value in step with the board it dealt, so Reset does not blow it back up', async () => {
+      Object.defineProperty(window, 'innerWidth', { value: 375, configurable: true, writable: true });
+      const { result } = renderHook(() => useMemoryGame(), { wrapper: createWrapper() });
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      // What the settings select shows must match what was dealt.
+      expect(result.current.memoryConfig.pairCount).toBe(MOBILE_DEFAULT_PAIRS);
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        cpuDifficulty: 1,
+        pairCount: MOBILE_DEFAULT_PAIRS,
+      });
+    });
+
     it('resets on mount with the viewport-appropriate pair count', async () => {
       Object.defineProperty(window, 'innerWidth', { value: 375, configurable: true, writable: true });
       renderHook(() => useMemoryGame(), { wrapper: createWrapper() });

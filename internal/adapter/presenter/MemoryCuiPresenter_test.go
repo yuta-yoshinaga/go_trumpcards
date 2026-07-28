@@ -345,3 +345,30 @@ func TestMemoryCuiPresenterActionLog(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 }
+
+// TestMemoryCuiPresenter_ShortBoard は 52 枚未満の盤面で Output が落ちないことを見る。
+//
+// 盤面描画が 4 行 x 13 列固定だったため、ペア数を減らすと index out of range で
+// panic した (ADR-0035)。Web 側と同じ誤りで、こちらは CUI にペア数変更コマンドが
+// 無いため現状ユーザーからは到達しないが、既存テストが 52 枚しか流しておらず
+// 検出できない状態だったのは同じ。
+func TestMemoryCuiPresenter_ShortBoard(t *testing.T) {
+	for _, pairs := range []int{domain.MemoryMinPairCount, 20} {
+		mg := newMockMemoryGame()
+		setupMemoryMockDefaults(mg)
+
+		board := make([]*domain.MemoryBoardCard, pairs*2)
+		for i := range board {
+			board[i] = &domain.MemoryBoardCard{
+				Card:   domain.NewCard(domain.CardDesignSpade, (i/2)+1, false),
+				FaceUp: false,
+				Taken:  false,
+			}
+		}
+		mg.ExpectedCalls = filterOutCall(mg.ExpectedCalls, "GetBoard")
+		mg.On("GetBoard").Return(board).Maybe()
+
+		p := &MemoryCuiPresenter{}
+		assert.NotPanics(t, func() { p.Output(mg, nil) }, "ペア数 %d で panic してはならない", pairs)
+	}
+}
