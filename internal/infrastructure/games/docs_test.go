@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -44,7 +45,7 @@ func TestDocsMatchRegistry(t *testing.T) {
 		for _, m := range docsKeyRe.FindAllStringSubmatch(cell, -1) {
 			keys = append(keys, m[1])
 		}
-		if got := strings.TrimSpace(count); got != itoa(len(keys)) {
+		if got := strings.TrimSpace(count); got != strconv.Itoa(len(keys)) {
 			t.Errorf("%s: table says %s games but lists %d keys", worker, got, len(keys))
 		}
 		documented[worker] = keys
@@ -77,6 +78,61 @@ func TestDocsMatchRegistry(t *testing.T) {
 	}
 }
 
+// gameExecPath holds the frontend's game -> Worker URL map.
+const gameExecPath = "../../../frontend/src/api/gameExec.ts"
+
+var gameExecRe = regexp.MustCompile(`(?m)^\s+([a-z0-9]+): WORKER_([A-Z0-9]+),`)
+
+// TestGameExecMatchesRegistry asserts that frontend/src/api/gameExec.ts routes every
+// game to the worker its registry Category names.
+//
+// This map is the one touchpoint where a mistake is invisible everywhere else: Go
+// still builds, the worker still builds, every test still passes, and the game simply
+// 404s in production because the browser asks a worker whose binary does not contain
+// it. Nothing but the move script kept it in step with registry.go, and a script only
+// helps the moves that actually use it.
+func TestGameExecMatchesRegistry(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Clean(gameExecPath))
+	if err != nil {
+		t.Fatalf("read %s: %v", gameExecPath, err)
+	}
+	matches := gameExecRe.FindAllStringSubmatch(string(raw), -1)
+	if len(matches) == 0 {
+		t.Fatalf("no workerUrl entries parsed from %s -- the map format changed; update gameExecRe", gameExecPath)
+	}
+
+	routed := make(map[string]string, len(matches))
+	for _, m := range matches {
+		routed[m[1]] = strings.ToLower(m[2])
+	}
+
+	for _, g := range games.All() {
+		worker, ok := routed[g.Name]
+		if !ok {
+			t.Errorf("%s: missing from workerUrl in %s", g.Name, gameExecPath)
+			continue
+		}
+		if worker != g.Category.String() {
+			t.Errorf("%s: routed to %q but registry says %q", g.Name, worker, g.Category)
+		}
+	}
+	for name := range routed {
+		if !registered(name) {
+			t.Errorf("%s: routed in %s but absent from the registry", name, gameExecPath)
+		}
+	}
+}
+
+// registered reports whether name is a game in the registry.
+func registered(name string) bool {
+	for _, g := range games.All() {
+		if g.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
 // diff returns the elements of a that are absent from b.
 func diff(a, b []string) []string {
 	in := make(map[string]bool, len(b))
@@ -90,16 +146,4 @@ func diff(a, b []string) []string {
 		}
 	}
 	return out
-}
-
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	var b []byte
-	for n > 0 {
-		b = append([]byte{byte('0' + n%10)}, b...)
-		n /= 10
-	}
-	return string(b)
 }

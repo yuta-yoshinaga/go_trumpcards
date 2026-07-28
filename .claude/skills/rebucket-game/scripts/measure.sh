@@ -14,7 +14,15 @@ export PATH="$HOME/sdk/go1.25.8/bin:$HOME/.local/opt/tinygo/bin:$PATH"
 export GOTOOLCHAIN=local          # TinyGo 0.40.1 refuses a newer toolchain
 LIMIT=1048576
 
-for w in "${@:-casino classic solo extra extra2 extra3}"; do
+# Build the list as an array. `for w in "${@:-a b c}"` looks equivalent but is not:
+# with no arguments bash substitutes the default *inside the quotes*, so it iterates
+# once with all six names as a single string and tinygo gets one invalid -tags value.
+workers=("$@")
+if [ ${#workers[@]} -eq 0 ]; then
+  workers=(casino classic solo extra extra2 extra3)
+fi
+
+for w in "${workers[@]}"; do
   mkdir -p "workers/$w/build"
   go run github.com/syumai/workers/cmd/workers-assets-gen -mode=tinygo -o "workers/$w/build" >/dev/null
   tinygo build -tags "$w" -o "workers/$w/build/app.wasm" -target wasm \
