@@ -2,10 +2,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createElement } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { memoryApi } from '../api/gameApi';
 import type { MemoryResponse } from '../types/card';
-import { useMemoryGame } from './useMemoryGame';
+import { FULL_DECK_PAIRS, initialPairCount, MOBILE_DEFAULT_PAIRS, useMemoryGame } from './useMemoryGame';
 
 vi.mock('../api/gameApi', () => ({
   memoryApi: { exec: vi.fn() },
@@ -36,7 +36,7 @@ const defaultState: MemoryResponse = {
   winnerIdx: -1,
   turnNumber: 0,
   message: '',
-  config: { cpuDifficulty: 1 },
+  config: { cpuDifficulty: 1, pairCount: 26 },
 };
 
 beforeEach(() => {
@@ -46,7 +46,7 @@ beforeEach(() => {
 describe('useMemoryGame', () => {
   it('calls reset on mount', async () => {
     renderHook(() => useMemoryGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pairCount: 26 }));
   });
 
   it('returns initial state after mount', async () => {
@@ -171,5 +171,38 @@ describe('useMemoryGame', () => {
     expect(result.current.autoNextDelayMs).toBe(2000);
     expect(localStorage.getItem('memory_auto_next_delay_ms')).toBe('2000');
     localStorage.removeItem('memory_auto_next_delay_ms');
+  });
+
+  // ADR-0035: 52 cards cannot fit a 375x667 viewport while every card keeps its 44x44
+  // tap target, so a narrow screen opens with fewer pairs. The player can still pick
+  // the full deck from settings — this is the starting value, not a cap.
+  describe('initial pair count by viewport (ADR-0035)', () => {
+    const realWidth = window.innerWidth;
+    afterEach(() => {
+      Object.defineProperty(window, 'innerWidth', { value: realWidth, configurable: true, writable: true });
+    });
+
+    it('opens with the full deck on a wide viewport', () => {
+      Object.defineProperty(window, 'innerWidth', { value: 1280, configurable: true, writable: true });
+      expect(initialPairCount()).toBe(FULL_DECK_PAIRS);
+    });
+
+    it('opens with fewer pairs on a phone-width viewport', () => {
+      Object.defineProperty(window, 'innerWidth', { value: 375, configurable: true, writable: true });
+      expect(initialPairCount()).toBe(MOBILE_DEFAULT_PAIRS);
+      // Must still fit 7 columns x 6 rows, the most a 44px grid allows there.
+      expect(MOBILE_DEFAULT_PAIRS * 2).toBeLessThanOrEqual(7 * 6);
+    });
+
+    it('resets on mount with the viewport-appropriate pair count', async () => {
+      Object.defineProperty(window, 'innerWidth', { value: 375, configurable: true, writable: true });
+      renderHook(() => useMemoryGame(), { wrapper: createWrapper() });
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+          cpuDifficulty: 1,
+          pairCount: MOBILE_DEFAULT_PAIRS,
+        }),
+      );
+    });
   });
 });

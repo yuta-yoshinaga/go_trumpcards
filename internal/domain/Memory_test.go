@@ -243,7 +243,7 @@ func TestMemorySetConfig(t *testing.T) {
 func TestMemorySetBoard(t *testing.T) {
 	m := newTestMemory()
 	m.Reset()
-	var board [MemoryBoardSize]*MemoryBoardCard
+	board := make([]*MemoryBoardCard, MemoryBoardSize)
 	for i := 0; i < MemoryBoardSize; i++ {
 		board[i] = &MemoryBoardCard{
 			Card:   NewCard(CardDesignSpade, 1, false),
@@ -395,4 +395,59 @@ func TestMemoryAdvancePlayerWraps(t *testing.T) {
 	_ = m.flip(2)
 	m.ResolveFlip()
 	assert.Equal(t, 0, m.GetCurrentPlayerIdx()) // wraps around
+}
+
+// --- ADR-0035: 可変ペア数 ---
+
+func TestDefaultMemoryConfig_PairCountIsFullDeck(t *testing.T) {
+	cfg := DefaultMemoryConfig()
+	assert.Equal(t, MemoryMaxPairCount, cfg.PairCount, "既定は従来どおりフルデッキ相当でなければならない")
+	assert.Equal(t, MemoryBoardSize, cfg.PairCount*2)
+}
+
+func TestMemory_ResetHonorsPairCount(t *testing.T) {
+	for _, pairs := range []int{MemoryMinPairCount, 20, MemoryMaxPairCount} {
+		m := newTestMemory()
+		cfg := DefaultMemoryConfig()
+		cfg.PairCount = pairs
+		m.SetConfig(cfg)
+		m.Reset()
+		assert.Len(t, m.GetBoard(), pairs*2, "ペア数 %d のとき盤面は %d 枚", pairs, pairs*2)
+	}
+}
+
+// 一致判定はランク基準なので、配られたカードは各ランクが偶数枚でなければ
+// 相方のいないカードが残り、allTaken() に到達できずゲームが終われなくなる。
+// 52枚では各ランク4枚なので自然に成立していたが、枚数を減らすと崩れうる。
+func TestMemory_ResetDealsOnlyMatchableCards(t *testing.T) {
+	for _, pairs := range []int{MemoryMinPairCount, 13, 20, 25, MemoryMaxPairCount} {
+		m := newTestMemory()
+		cfg := DefaultMemoryConfig()
+		cfg.PairCount = pairs
+		m.SetConfig(cfg)
+		m.Reset()
+
+		byRank := map[int]int{}
+		for _, bc := range m.GetBoard() {
+			if assert.NotNil(t, bc, "空きマスがあってはならない") && assert.NotNil(t, bc.Card) {
+				byRank[bc.Card.GetValue()]++
+			}
+		}
+		for rank, n := range byRank {
+			assert.Zero(t, n%2, "ペア数 %d: ランク %d が %d 枚で奇数 — 相方がおらずゲームが終わらない", pairs, rank, n)
+		}
+	}
+}
+
+func TestMemoryConfig_ClampPairCount(t *testing.T) {
+	cases := []struct{ in, want int }{
+		{0, MemoryMaxPairCount}, // 未設定は既定へ
+		{MemoryMinPairCount - 1, MemoryMinPairCount},
+		{MemoryMaxPairCount + 1, MemoryMaxPairCount},
+		{20, 20},
+	}
+	for _, c := range cases {
+		cfg := MemoryConfig{PairCount: c.in}
+		assert.Equal(t, c.want, cfg.NormalizedPairCount(), "入力 %d", c.in)
+	}
 }

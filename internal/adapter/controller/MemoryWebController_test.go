@@ -190,7 +190,7 @@ func TestMemoryWebController_ResetWithConfig(t *testing.T) {
 
 	t.Run("custom cpuDifficulty is passed", func(t *testing.T) {
 		diff := 2
-		expected := domain.MemoryConfig{CpuDifficulty: domain.MemoryCpuDifficultyHard}
+		expected := domain.MemoryConfig{CpuDifficulty: domain.MemoryCpuDifficultyHard, PairCount: domain.MemoryMaxPairCount}
 		miMock := new(usecase.MockMemoryInteractor)
 		miMock.On("ResetWithConfig", expected).Return(mockOutput)
 

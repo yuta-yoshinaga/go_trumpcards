@@ -6,9 +6,35 @@ import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
 import { useLocalStorageNumber } from './useLocalStorageToggle';
 
+/** Pair-count options, from a quick board to the full deck (ADR-0035). */
+export const PAIR_COUNT_OPTIONS = [6, 10, 15, 20, 26] as const;
+
+/** Full deck: 26 pairs = 52 cards. */
+export const FULL_DECK_PAIRS = 26;
+
+/**
+ * Pairs a narrow screen starts with.
+ *
+ * 52 cards cannot fit a 375x667 viewport while every card keeps its 44x44 tap
+ * target: 335px of width allows at most 7 columns, so 52 cards need 8 rows = 366px
+ * against a 286px board budget. 20 pairs fit in 6 rows with slack. The player can
+ * still choose 26 from the settings. See ADR-0035.
+ */
+export const MOBILE_DEFAULT_PAIRS = 20;
+
+/** Below this width the board cannot show a full deck; see MOBILE_DEFAULT_PAIRS. */
+const NARROW_VIEWPORT_PX = 640;
+
+/** Pairs to open with, given the current viewport. */
+export function initialPairCount(): number {
+  if (typeof window === 'undefined') return FULL_DECK_PAIRS;
+  return window.innerWidth < NARROW_VIEWPORT_PX ? MOBILE_DEFAULT_PAIRS : FULL_DECK_PAIRS;
+}
+
 /** Default Memory game configuration. */
 export const DEFAULT_MEMORY_CONFIG: MemoryConfig = {
   cpuDifficulty: 1,
+  pairCount: FULL_DECK_PAIRS,
 };
 
 /** CPU difficulty level options for Memory. */
@@ -44,7 +70,7 @@ export function useMemoryGame() {
   const runApi = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
   useEffect(() => {
-    runApi('reset', undefined, DEFAULT_MEMORY_CONFIG);
+    runApi('reset', undefined, { ...DEFAULT_MEMORY_CONFIG, pairCount: initialPairCount() });
   }, [runApi]);
 
   const handleFlip = useCallback(

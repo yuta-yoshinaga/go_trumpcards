@@ -53,7 +53,7 @@ const (
 // Memory 神経衰弱ゲームクラス
 type Memory struct {
 	trumpCards       *TrumpCards
-	board            [MemoryBoardSize]*MemoryBoardCard
+	board            []*MemoryBoardCard
 	players          []*MemoryPlayer
 	config           MemoryConfig
 	phase            MemoryPhase
@@ -108,14 +108,49 @@ func (m *Memory) Reset() {
 		p.ResetGame()
 	}
 
-	// ボードにカードを配置
+	// ボードにカードを配置。
+	//
+	// 一致判定はランク基準なので、単に上から N 枚引くと相方のいないランクが
+	// 残り、allTaken() に到達できずゲームが終わらなくなる。フルデッキ 52 枚では
+	// 各ランクが 4 枚で自然に偶数だったが、枚数を減らすとこの前提が崩れる。
+	// そこで山から引いた札をランクごとに束ね、2 枚ずつの組にしてから必要な
+	// ペア数だけ採用する。 (ADR-0035)
+	pairCount := m.config.NormalizedPairCount()
+	byRank := make(map[int][]*Card, MemoryMaxPairCount)
 	for i := 0; i < MemoryBoardSize; i++ {
 		card := m.trumpCards.DrawCard()
-		m.board[i] = &MemoryBoardCard{
-			Card:   card,
-			FaceUp: false,
-			Taken:  false,
+		if card == nil {
+			continue
 		}
+		byRank[card.GetValue()] = append(byRank[card.GetValue()], card)
+	}
+
+	pairs := make([][2]*Card, 0, MemoryMaxPairCount)
+	for _, cards := range byRank {
+		for i := 0; i+1 < len(cards); i += 2 {
+			pairs = append(pairs, [2]*Card{cards[i], cards[i+1]})
+		}
+	}
+	// byRank の走査順はマップなので不定。並べる前に順序を決め直す必要はないが、
+	// どのランクが採用されるかが偏らないようシャッフルしてから切り詰める。
+	for i := len(pairs) - 1; i > 0; i-- {
+		j := rand.Intn(i + 1)
+		pairs[i], pairs[j] = pairs[j], pairs[i]
+	}
+	if len(pairs) > pairCount {
+		pairs = pairs[:pairCount]
+	}
+
+	m.board = make([]*MemoryBoardCard, 0, len(pairs)*2)
+	for _, pair := range pairs {
+		for _, card := range pair {
+			m.board = append(m.board, &MemoryBoardCard{Card: card, FaceUp: false, Taken: false})
+		}
+	}
+	// ここまでだとペアが隣り合ってしまうので、盤面上の位置を混ぜる。
+	for i := len(m.board) - 1; i > 0; i-- {
+		j := rand.Intn(i + 1)
+		m.board[i], m.board[j] = m.board[j], m.board[i]
 	}
 }
 
@@ -266,18 +301,18 @@ func (m *Memory) GetPlayer(i int) *MemoryPlayer {
 }
 
 // GetBoard ボードカードを取得
-func (m *Memory) GetBoard() [MemoryBoardSize]*MemoryBoardCard { return m.board }
+func (m *Memory) GetBoard() []*MemoryBoardCard { return m.board }
 
 // GetBoardCard 指定位置のボードカードを取得
 func (m *Memory) GetBoardCard(pos int) *MemoryBoardCard {
-	if pos < 0 || pos >= MemoryBoardSize {
+	if pos < 0 || pos >= len(m.board) {
 		return nil
 	}
 	return m.board[pos]
 }
 
 // SetBoard ボード設定 (テスト用)
-func (m *Memory) SetBoard(board [MemoryBoardSize]*MemoryBoardCard) { m.board = board }
+func (m *Memory) SetBoard(board []*MemoryBoardCard) { m.board = board }
 
 // GetConfig 設定を取得
 func (m *Memory) GetConfig() MemoryConfig { return m.config }
@@ -300,7 +335,7 @@ func (m *Memory) GetActionLog() []*ActionLogEntry { return m.actionLog }
 
 // flip 1枚めくる
 func (m *Memory) flip(pos int) error {
-	if pos < 0 || pos >= MemoryBoardSize {
+	if pos < 0 || pos >= len(m.board) {
 		return errors.New("invalid position")
 	}
 	bc := m.board[pos]
@@ -369,7 +404,7 @@ func (m *Memory) decayRate() float64 {
 // randomAvailablePosition ランダムに利用可能な位置を返す (excludeを除く)
 func (m *Memory) randomAvailablePosition(exclude int) int {
 	available := []int{}
-	for i := 0; i < MemoryBoardSize; i++ {
+	for i := 0; i < len(m.board); i++ {
 		if i != exclude && !m.board[i].Taken && !m.board[i].FaceUp {
 			available = append(available, i)
 		}
@@ -387,7 +422,7 @@ func (m *Memory) advancePlayer() {
 
 // allTaken 全カードが取られたか判定
 func (m *Memory) allTaken() bool {
-	for i := 0; i < MemoryBoardSize; i++ {
+	for i := 0; i < len(m.board); i++ {
 		if !m.board[i].Taken {
 			return false
 		}
@@ -421,19 +456,19 @@ func (m *Memory) appendLog(actionType, detail string, cards []*Card) {
 
 // memoryJSON is the JSON wire format for Memory.
 type memoryJSON struct {
-	TrumpCards       *TrumpCards                       `json:"tc"`
-	Board            [MemoryBoardSize]*MemoryBoardCard `json:"bd"`
-	Players          []*MemoryPlayer                   `json:"pl"`
-	Config           MemoryConfig                      `json:"cf"`
-	Phase            MemoryPhase                       `json:"ps"`
-	CurrentPlayerIdx int                               `json:"ci"`
-	FirstFlipPos     int                               `json:"f1"`
-	SecondFlipPos    int                               `json:"f2"`
-	LastMatchResult  bool                              `json:"lm"`
-	GameEndFlag      bool                              `json:"ge"`
-	WinnerIdx        int                               `json:"wi"`
-	TurnNumber       int                               `json:"tn"`
-	ActionLog        []*ActionLogEntry                 `json:"al"`
+	TrumpCards       *TrumpCards        `json:"tc"`
+	Board            []*MemoryBoardCard `json:"bd"`
+	Players          []*MemoryPlayer    `json:"pl"`
+	Config           MemoryConfig       `json:"cf"`
+	Phase            MemoryPhase        `json:"ps"`
+	CurrentPlayerIdx int                `json:"ci"`
+	FirstFlipPos     int                `json:"f1"`
+	SecondFlipPos    int                `json:"f2"`
+	LastMatchResult  bool               `json:"lm"`
+	GameEndFlag      bool               `json:"ge"`
+	WinnerIdx        int                `json:"wi"`
+	TurnNumber       int                `json:"tn"`
+	ActionLog        []*ActionLogEntry  `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.

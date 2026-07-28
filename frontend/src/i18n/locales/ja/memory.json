@@ -16,7 +16,9 @@
       "manual": "手動",
       "fast": "1秒",
       "slow": "2秒"
-    }
+    },
+    "pairCount": "ペア数",
+    "pairCountOption": "{{pairs}}ペア（{{cards}}枚）"
   },
   "scores": "スコア",
   "cardFaceDown": "{{position}}枚目のカード（裏向き）",

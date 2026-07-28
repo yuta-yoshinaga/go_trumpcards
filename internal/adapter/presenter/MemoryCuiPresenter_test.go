@@ -27,7 +27,7 @@ func setupMemoryMockDefaults(mg *interfaces.MockMemoryGame) {
 	mg.On("GetWinnerIdx").Return(-1).Maybe()
 	mg.On("GetTurnNumber").Return(0).Maybe()
 
-	var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+	board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 	for i := 0; i < domain.MemoryBoardSize; i++ {
 		board[i] = &domain.MemoryBoardCard{
 			Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -73,7 +73,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		mg.On("GetCurrentPlayerIdx").Return(0)
 		mg.On("GetLastMatchResult").Return(false)
 		mg.On("GetWinnerIdx").Return(-1)
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{Card: domain.NewCard(domain.CardDesignSpade, (i%13)+1, false)}
 		}
@@ -103,7 +103,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		mg.On("GetLastMatchResult").Return(false)
 		mg.On("GetWinnerIdx").Return(-1)
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -136,7 +136,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		mg.On("GetLastMatchResult").Return(false)
 		mg.On("GetWinnerIdx").Return(-1)
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -168,7 +168,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		mg.On("GetLastMatchResult").Return(true)
 		mg.On("GetWinnerIdx").Return(-1)
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -198,7 +198,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		mg.On("GetLastMatchResult").Return(false)
 		mg.On("GetWinnerIdx").Return(-1)
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -225,7 +225,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		mg.On("GetPhase").Return(domain.MemoryPhaseFlip1)
 		mg.On("GetWinnerIdx").Return(0)
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -252,7 +252,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		mg.On("GetPhase").Return(domain.MemoryPhaseFlip1)
 		mg.On("GetWinnerIdx").Return(2)
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -290,7 +290,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		mg.On("GetWinnerIdx").Return(-1)
 		mg.On("GetLastMatchResult").Return(false)
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),

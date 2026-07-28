@@ -30,12 +30,18 @@ func (p *MemoryWebPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 	cfg := m.GetConfig()
 	resObj.Config = controller.MemoryWebOutputConfig{
 		CpuDifficulty: int(cfg.CpuDifficulty),
+		// Normalized so a snapshot saved before ADR-0035 (PairCount 0) reports the
+		// full deck rather than 0, which the UI would otherwise render as a blank
+		// setting.
+		PairCount: cfg.NormalizedPairCount(),
 	}
 
 	// ボード
 	board := m.GetBoard()
-	resObj.Board = make([]*controller.MemoryWebOutputBoardCard, domain.MemoryBoardSize)
-	for i := 0; i < domain.MemoryBoardSize; i++ {
+	// 盤面の長さはペア数設定で変わる (ADR-0035)。定数で回すと 52 未満の盤面で
+	// index out of range になる。
+	resObj.Board = make([]*controller.MemoryWebOutputBoardCard, len(board))
+	for i := 0; i < len(board); i++ {
 		bc := board[i]
 		outCard := &controller.MemoryWebOutputBoardCard{
 			FaceUp: bc.FaceUp,

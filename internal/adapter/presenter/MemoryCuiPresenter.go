@@ -51,7 +51,8 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 		for i := 0; i < m.GetPlayerCnt(); i++ {
 			matched += m.GetPlayer(i).GetPairCount()
 		}
-		totalPairs := domain.MemoryBoardSize / 2
+		// 盤面の長さはペア数設定で変わる (ADR-0035)。
+		totalPairs := len(m.GetBoard()) / 2
 		b.WriteString(i18n.Tf("memory.progressLine",
 			"remaining", strconv.Itoa(totalPairs-matched),
 			"total", strconv.Itoa(totalPairs)) + "\n")

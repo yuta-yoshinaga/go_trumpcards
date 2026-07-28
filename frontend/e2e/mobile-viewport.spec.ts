@@ -90,6 +90,39 @@ test('the clipped shell column does not become a containing block for fixed over
   expect(result?.probeH).toBe(result?.viewportH);
 });
 
+// ADR-0035: Memory opens with fewer pairs on a phone because 52 cards cannot fit a
+// 375x667 viewport while every card keeps a 44x44 tap target. This asserts the board
+// is genuinely all on screen — the point of the whole exercise, and something the
+// document-height checks below cannot see, since the board could scroll inside the
+// play area while the page itself stays pinned.
+//
+// Visibility is measured against the PLAY AREA's box, not the viewport. A card past
+// the play area's bottom edge is clipped but still reports a rect inside the
+// viewport, which is exactly how an earlier pass on this concluded "all 52 visible"
+// when only 42 were.
+test('/memory shows its whole board without scrolling the play area', async ({ page }) => {
+  await navigateTo(page, '/memory');
+  await page.waitForSelector('.memory-card', { timeout: 10_000 });
+  const board = await page.evaluate(() => {
+    const cards = [...document.querySelectorAll('.memory-card')];
+    const region = document.querySelector('main [class*="overflow-y-auto"]');
+    if (!region || cards.length === 0) return null;
+    const rr = region.getBoundingClientRect();
+    const visible = cards.filter((c) => {
+      const cb = c.getBoundingClientRect();
+      return cb.top >= rr.top - 1 && cb.bottom <= rr.bottom + 1;
+    }).length;
+    const smallest = Math.min(
+      ...cards.map((c) => Math.min(c.getBoundingClientRect().width, c.getBoundingClientRect().height)),
+    );
+    return { total: cards.length, visible, smallest: Math.round(smallest) };
+  });
+  expect(board).not.toBeNull();
+  expect(board?.visible, `only ${board?.visible} of ${board?.total} cards are inside the play area`).toBe(board?.total);
+  // The fit must not have been bought by shrinking below the tap-target floor.
+  expect(board?.smallest).toBeGreaterThanOrEqual(44);
+});
+
 for (const path of PATHS) {
   test(`${path} does not scroll the document at 375x667`, async ({ page }) => {
     await navigateTo(page, path);
