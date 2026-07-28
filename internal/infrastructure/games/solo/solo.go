@@ -89,14 +89,6 @@ func init() {
 			return usecase.RestoreTriPeaksInteractor(data, new(presenter.TriPeaksWebPresenter))
 		},
 		controller.NewTriPeaksWebControllerWithProvider)
-	games.RegisterKVGame("cribbage", games.CategorySolo,
-		func() usecase.CribbageInteractorIF {
-			return usecase.NewCribbageInteractor(domain.NewDefaultCribbage(), new(presenter.CribbageWebPresenter))
-		},
-		func(data []byte) (usecase.CribbageInteractorIF, error) {
-			return usecase.RestoreCribbageInteractor(data, new(presenter.CribbageWebPresenter))
-		},
-		controller.NewCribbageWebControllerWithProvider)
 	games.RegisterKVGame("golf", games.CategorySolo,
 		func() usecase.GolfInteractorIF {
 			return usecase.NewGolfInteractor(domain.NewDefaultGolf(), new(presenter.GolfWebPresenter))
@@ -177,14 +169,6 @@ func init() {
 			return usecase.RestoreAccordionInteractor(data, new(presenter.AccordionWebPresenter))
 		},
 		controller.NewAccordionWebControllerWithProvider)
-	games.RegisterKVGame("sevenbridge", games.CategorySolo,
-		func() usecase.SevenBridgeInteractorIF {
-			return usecase.NewSevenBridgeInteractor(domain.NewDefaultSevenBridge(), new(presenter.SevenBridgeWebPresenter))
-		},
-		func(data []byte) (usecase.SevenBridgeInteractorIF, error) {
-			return usecase.RestoreSevenBridgeInteractor(data, new(presenter.SevenBridgeWebPresenter))
-		},
-		controller.NewSevenBridgeWebControllerWithProvider)
 	games.RegisterKVGame("calculation", games.CategorySolo,
 		func() usecase.CalculationInteractorIF {
 			return usecase.NewCalculationInteractor(domain.NewDefaultCalculation(), new(presenter.CalculationWebPresenter))
@@ -337,15 +321,6 @@ func init() {
 		},
 		controller.NewEuchreWebControllerWithProvider)
 
-	games.RegisterKVGame("piquet", games.CategorySolo,
-		func() usecase.PiquetInteractorIF {
-			return usecase.NewPiquetInteractor(domain.NewDefaultPiquet(), new(presenter.PiquetWebPresenter))
-		},
-		func(data []byte) (usecase.PiquetInteractorIF, error) {
-			return usecase.RestorePiquetInteractor(data, new(presenter.PiquetWebPresenter))
-		},
-		controller.NewPiquetWebControllerWithProvider)
-
 	games.RegisterKVGame("gongzhu", games.CategorySolo,
 		func() usecase.GongZhuInteractorIF {
 			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))
@@ -382,15 +357,6 @@ func init() {
 		},
 		controller.NewEasthavenWebControllerWithProvider)
 
-	games.RegisterKVGame("mao", games.CategorySolo,
-		func() usecase.MaoInteractorIF {
-			return usecase.NewMaoInteractor(domain.NewDefaultMao(), new(presenter.MaoWebPresenter))
-		},
-		func(data []byte) (usecase.MaoInteractorIF, error) {
-			return usecase.RestoreMaoInteractor(data, new(presenter.MaoWebPresenter))
-		},
-		controller.NewMaoWebControllerWithProvider)
-
 	games.RegisterKVGame("russianbank", games.CategorySolo,
 		func() usecase.RussianBankInteractorIF {
 			return usecase.NewRussianBankInteractor(domain.NewDefaultRussianBank(), new(presenter.RussianBankWebPresenter))
@@ -411,23 +377,7 @@ func init() {
 	// Scarto (78-card Italian tarot trick-taker) is bucketed here for binary-size
 	// headroom; the extra worker hit the 1 MB gzip free-tier limit. Category is a
 	// size bucket, not a user-facing taxonomy.
-	games.RegisterKVGame("scarto", games.CategorySolo,
-		func() usecase.ScartoInteractorIF {
-			return usecase.NewScartoInteractor(domain.NewDefaultScarto(), new(presenter.ScartoWebPresenter))
-		},
-		func(data []byte) (usecase.ScartoInteractorIF, error) {
-			return usecase.RestoreScartoInteractor(data, new(presenter.ScartoWebPresenter))
-		},
-		controller.NewScartoWebControllerWithProvider)
 	// Cego (54-card Baden tarock, Cego-blind swap) — bucketed in solo (extra full).
-	games.RegisterKVGame("cego", games.CategorySolo,
-		func() usecase.CegoInteractorIF {
-			return usecase.NewCegoInteractor(domain.NewDefaultCego(), new(presenter.CegoWebPresenter))
-		},
-		func(data []byte) (usecase.CegoInteractorIF, error) {
-			return usecase.RestoreCegoInteractor(data, new(presenter.CegoWebPresenter))
-		},
-		controller.NewCegoWebControllerWithProvider)
 	// Zheng Shangyou (54-card Chinese climbing game, suit-blind ranks).
 	games.RegisterKVGame("zheng", games.CategorySolo,
 		func() usecase.ZhengInteractorIF {
@@ -445,12 +395,4 @@ func init() {
 			return usecase.RestoreYanivInteractor(data, new(presenter.YanivWebPresenter))
 		},
 		controller.NewYanivWebControllerWithProvider)
-	games.RegisterKVGame("ulti", games.CategorySolo,
-		func() usecase.UltiInteractorIF {
-			return usecase.NewUltiInteractor(domain.NewDefaultUlti(), new(presenter.UltiWebPresenter))
-		},
-		func(data []byte) (usecase.UltiInteractorIF, error) {
-			return usecase.RestoreUltiInteractor(data, new(presenter.UltiWebPresenter))
-		},
-		controller.NewUltiWebControllerWithProvider)
 }

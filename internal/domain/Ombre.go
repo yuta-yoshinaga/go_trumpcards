@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra3
 
 // Package domain オンブル / オンブレ (Ombre / Hombre) のドメインモデル。
 //

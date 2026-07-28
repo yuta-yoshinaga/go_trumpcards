@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra2
 
 package controller
 

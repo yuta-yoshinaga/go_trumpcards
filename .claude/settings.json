@@ -39,7 +39,7 @@
           },
           {
             "type": "command",
-            "command": "jq -r '.tool_input.command' | { read -r cmd; case \"$cmd\" in git\\ commit*) script=.claude/skills/new-game/scripts/count-audit.sh; if [ -f \"$script\" ] && git diff --cached --name-only | grep -qE 'internal/infrastructure/games/(registry(_test)?\\.go|casino/|classic/|solo/)|frontend/src/(hooks/useTutorialProgress\\.test\\.ts|components/tutorial/TutorialProgressPanel\\.test\\.tsx)'; then output=$(bash \"$script\" 2>&1); if [ $? -ne 0 ]; then jq -nc --arg msg \"$output\" '{continue: false, stopReason: (\"game-count assertions are inconsistent \\u2014 bump them in the same commit before committing:\\n\" + $msg)}'; else echo '{}'; fi; else echo '{}'; fi ;; *) echo '{}' ;; esac; }",
+            "command": "jq -r '.tool_input.command' | { read -r cmd; case \"$cmd\" in git\\ commit*) script=.claude/skills/new-game/scripts/count-audit.sh; if [ -f \"$script\" ] && git diff --cached --name-only | grep -qE 'internal/infrastructure/games/(registry(_test)?\\.go|[a-z0-9]+/)|frontend/src/(hooks/useTutorialProgress\\.test\\.ts|components/tutorial/TutorialProgressPanel\\.test\\.tsx)'; then output=$(bash \"$script\" 2>&1); if [ $? -ne 0 ]; then jq -nc --arg msg \"$output\" '{continue: false, stopReason: (\"game-count assertions are inconsistent \\u2014 bump them in the same commit before committing:\\n\" + $msg)}'; else echo '{}'; fi; else echo '{}'; fi ;; *) echo '{}' ;; esac; }",
             "timeout": 30,
             "statusMessage": "Auditing game-count assertions..."
           }
