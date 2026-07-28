@@ -43,7 +43,7 @@ func (p *SedmaWebPresenter) buildBase(g interfaces.SedmaGame) *controller.SedmaW
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -58,13 +58,6 @@ func (p *SedmaWebPresenter) playableIndices(g interfaces.SedmaGame) []int {
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *SedmaWebPresenter) buildTrickOutput(trick []*domain.SedmaTrickCard) []*controller.SedmaWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.SedmaTrickCard) *controller.SedmaWebOutputTrickCard {
-		return &controller.SedmaWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -134,7 +127,7 @@ func (p *SedmaWebPresenter) HintOutput(g interfaces.SedmaGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.SedmaWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

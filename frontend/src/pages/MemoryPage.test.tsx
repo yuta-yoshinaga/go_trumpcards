@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, memoryApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, MemoryBoardCard, MemoryResponse } from '../types/card';
 import { MemoryPage } from './MemoryPage';
@@ -44,7 +45,7 @@ const flip1State: MemoryResponse = {
   winnerIdx: -1,
   turnNumber: 0,
   message: '',
-  config: { cpuDifficulty: 1 },
+  config: { cpuDifficulty: 1, pairCount: 26 },
 };
 
 const flip2State: MemoryResponse = {
@@ -101,7 +102,7 @@ describe('MemoryPage', () => {
 
   it('renders reset on mount', async () => {
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pairCount: 26 }));
   });
 
   it('renders player scores inline', async () => {
@@ -208,7 +209,7 @@ describe('MemoryPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pairCount: 26 }));
   });
 
   it('does not show visited badge on a freshly dealt board', async () => {
@@ -304,7 +305,7 @@ describe('MemoryPage', () => {
     mockExec.mockResolvedValue(flip1State);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2, pairCount: 26 }));
   });
 
   it('board cards disabled when face up', async () => {
@@ -343,10 +344,13 @@ describe('MemoryPage', () => {
     await waitFor(() => expect(screen.getByText('1枚目をめくってください')).toBeInTheDocument());
   });
 
-  it('renders landscape orientation banner in DOM', async () => {
+  // The landscape banner was a workaround for the board not fitting a portrait phone,
+  // and #1367 called it out as an escape hatch rather than a fix. It also consumed
+  // 36px of the very space the board needed. Removed once the grid was made to fit.
+  it('does not fall back to telling the player to rotate their phone', async () => {
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
-    expect(screen.getByText('横向きにすると快適にプレイできます')).toBeInTheDocument();
+    expect(screen.queryByText('横向きにすると快適にプレイできます')).not.toBeInTheDocument();
   });
 
   // ── ConfirmDialog on reset ─────────────────────────────────────────────────
@@ -379,7 +383,7 @@ describe('MemoryPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pairCount: 26 }));
   });
 
   it('displays error message', async () => {
@@ -455,6 +459,7 @@ describe('MemoryPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'n' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

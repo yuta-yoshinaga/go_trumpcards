@@ -56,12 +56,6 @@ const (
 	SchnapsenPhaseGameEnd
 )
 
-// SchnapsenTrickCard トリック中の1枚
-type SchnapsenTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // SchnapsenHint ヒント情報
 type SchnapsenHint struct {
 	CardIndex  *int   // 推奨カードインデックス
@@ -121,7 +115,7 @@ type Schnapsen struct {
 	phase            SchnapsenPhase
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*SchnapsenTrickCard
+	currentTrick     []*TrickCard
 	trumpCard        *Card // 場に表向きで置かれる切り札表示カード (山札の最後)
 	trumpSuit        int
 	leadPlayerIdx    int
@@ -315,10 +309,10 @@ func (s *Schnapsen) GetCurrentPlayerIdx() int { return s.currentPlayerIdx }
 func (s *Schnapsen) SetCurrentPlayerIdx(idx int) { s.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (s *Schnapsen) GetCurrentTrick() []*SchnapsenTrickCard { return s.currentTrick }
+func (s *Schnapsen) GetCurrentTrick() []*TrickCard { return s.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (s *Schnapsen) SetCurrentTrick(trick []*SchnapsenTrickCard) { s.currentTrick = trick }
+func (s *Schnapsen) SetCurrentTrick(trick []*TrickCard) { s.currentTrick = trick }
 
 // GetTrumpSuit トランプスート取得
 func (s *Schnapsen) GetTrumpSuit() int { return s.trumpSuit }
@@ -544,7 +538,7 @@ func (s *Schnapsen) isMarriageStarter(player *SchnapsenPlayer, card *Card) bool 
 
 // playCard カードをプレイする共通処理
 func (s *Schnapsen) playCard(playerIdx int, card *Card) {
-	s.currentTrick = append(s.currentTrick, &SchnapsenTrickCard{
+	s.currentTrick = append(s.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -967,7 +961,7 @@ type schnapsenJSON struct {
 	Phase            SchnapsenPhase          `json:"ph"`
 	TrickNumber      int                     `json:"tn"`
 	CurrentPlayerIdx int                     `json:"ci"`
-	CurrentTrick     []*SchnapsenTrickCard   `json:"ct"`
+	CurrentTrick     []*TrickCard            `json:"ct"`
 	TrumpCard        *Card                   `json:"tu"`
 	TrumpSuit        int                     `json:"ts"`
 	LeadPlayerIdx    int                     `json:"li"`
@@ -1064,7 +1058,7 @@ func (s *Schnapsen) UnmarshalJSON(data []byte) error {
 	s.currentPlayerIdx = j.CurrentPlayerIdx
 	s.currentTrick = j.CurrentTrick
 	if s.currentTrick == nil {
-		s.currentTrick = make([]*SchnapsenTrickCard, 0)
+		s.currentTrick = make([]*TrickCard, 0)
 	}
 	s.trumpCard = j.TrumpCard
 	s.trumpSuit = j.TrumpSuit

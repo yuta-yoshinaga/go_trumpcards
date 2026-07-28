@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pokerApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { PokerResponse } from '../types/card';
 import { PokerPhase } from '../types/phases';
 import { usePokerGame } from './usePokerGame';
@@ -135,6 +136,7 @@ describe('usePokerGame', () => {
     mockExec.mockResolvedValue({ ...exchangeState, odds: [] });
 
     act(() => result.current.toggleCard(0));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
 
     await act(async () => {

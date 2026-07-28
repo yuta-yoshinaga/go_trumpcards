@@ -104,12 +104,6 @@ type PinochleHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// PinochleTrickCard トリック中の1枚
-type PinochleTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Pinochle ピノクルゲームクラス
 type Pinochle struct {
 	trumpCards       *TrumpCards
@@ -119,7 +113,7 @@ type Pinochle struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*PinochleTrickCard
+	currentTrick     []*TrickCard
 	dealerIdx        int
 	trumpSuit        int // 切り札スート (CardDesignSpade等)
 	highestBid       int // 現在の最高ビッド
@@ -233,7 +227,7 @@ func (p *Pinochle) GetTrickNumber() int { return p.trickNumber }
 func (p *Pinochle) GetCurrentPlayerIdx() int { return p.currentPlayerIdx }
 
 // GetCurrentTrick 現在のトリックを取得
-func (p *Pinochle) GetCurrentTrick() []*PinochleTrickCard { return p.currentTrick }
+func (p *Pinochle) GetCurrentTrick() []*TrickCard { return p.currentTrick }
 
 // GetDealerIdx ディーラーインデックスを取得
 func (p *Pinochle) GetDealerIdx() int { return p.dealerIdx }
@@ -941,7 +935,7 @@ func (p *Pinochle) doPlay(playerIdx, cardIndex int) error {
 	}
 
 	card := player.RemoveCard(cardIndex)
-	p.currentTrick = append(p.currentTrick, &PinochleTrickCard{
+	p.currentTrick = append(p.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -1296,7 +1290,7 @@ type pinochleJSON struct {
 	RoundNumber      int                                `json:"rn"`
 	TrickNumber      int                                `json:"tn"`
 	CurrentPlayerIdx int                                `json:"ci"`
-	CurrentTrick     []*PinochleTrickCard               `json:"ct"`
+	CurrentTrick     []*TrickCard                       `json:"ct"`
 	DealerIdx        int                                `json:"di"`
 	TrumpSuit        int                                `json:"ts"`
 	HighestBid       int                                `json:"hb"`

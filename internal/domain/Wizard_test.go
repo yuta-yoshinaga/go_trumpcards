@@ -432,7 +432,7 @@ func TestWizard_PlayerPlay_FollowSuit(t *testing.T) {
 	p.AddCard(wizardCard(domain.CardDesignSpade, 10))
 
 	setupWizardPlayPhase(o, 0, 1, 1)
-	o.SetCurrentTrick([]*domain.WizardTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: wizardCard(domain.CardDesignHeart, 8)},
 	})
 
@@ -451,7 +451,7 @@ func TestWizard_PlayerPlay_NoFollowSuitWhenVoid(t *testing.T) {
 	p.AddCard(wizardCard(domain.CardDesignSpade, 10))
 
 	setupWizardPlayPhase(o, 0, 1, 1)
-	o.SetCurrentTrick([]*domain.WizardTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: wizardCard(domain.CardDesignHeart, 8)},
 	})
 
@@ -470,7 +470,7 @@ func TestWizard_WizardAndJesterAlwaysPlayable(t *testing.T) {
 	p.AddCard(wizardCard(domain.CardDesignSpade, 10))   // off-suit (index 3)
 
 	setupWizardPlayPhase(o, 0, 1, 1)
-	o.SetCurrentTrick([]*domain.WizardTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: wizardCard(domain.CardDesignHeart, 8)},
 	})
 
@@ -490,7 +490,7 @@ func TestWizard_WizardLed_NoFollowObligation(t *testing.T) {
 
 	setupWizardPlayPhase(o, 0, 1, 1)
 	// A Wizard was led → no lead suit → anything legal
-	o.SetCurrentTrick([]*domain.WizardTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: wizardCard(domain.WizardDesignWizard, 1)},
 	})
 
@@ -509,7 +509,7 @@ func TestWizard_JesterLed_SuitSetByLaterCard(t *testing.T) {
 
 	setupWizardPlayPhase(o, 0, 1, 1)
 	// Jester led then a heart → lead suit is heart, must follow
-	o.SetCurrentTrick([]*domain.WizardTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: wizardCard(domain.WizardDesignJester, 1)},
 		{PlayerIdx: 2, Card: wizardCard(domain.CardDesignHeart, 9)},
 	})
@@ -576,7 +576,7 @@ func TestWizard_CpuPlay_NeedTrickPlaysWizard(t *testing.T) {
 	p.SetBid(1) // needs a trick
 
 	setupWizardPlayPhase(o, 1, 0, 1)
-	o.SetCurrentTrick([]*domain.WizardTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wizardCard(domain.CardDesignHeart, 13)},
 	})
 
@@ -612,7 +612,7 @@ func TestWizard_CpuPlay_FollowSuit(t *testing.T) {
 	p.SetBid(1)
 
 	setupWizardPlayPhase(o, 1, 0, 1)
-	o.SetCurrentTrick([]*domain.WizardTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wizardCard(domain.CardDesignHeart, 8)},
 	})
 
@@ -624,7 +624,7 @@ func TestWizard_CpuPlay_FollowSuit(t *testing.T) {
 
 // --- Trick resolution tests (Wizard rules) ---
 
-func resolveWizardTrick(o *domain.Wizard, trick []*domain.WizardTrickCard) {
+func resolveWizardTrick(o *domain.Wizard, trick []*domain.TrickCard) {
 	o.SetPhase(domain.WizardPhaseTrickEnd)
 	o.SetTrickNumber(1)
 	o.SetHandSize(3)
@@ -636,7 +636,7 @@ func TestWizard_TrickWinner_HighestLeadWins(t *testing.T) {
 	o := newTestWizard()
 	o.Reset()
 	// All hearts, no trump — highest lead suit wins
-	resolveWizardTrick(o, []*domain.WizardTrickCard{
+	resolveWizardTrick(o, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: wizardCard(domain.CardDesignHeart, 5)},
 		{PlayerIdx: 1, Card: wizardCard(domain.CardDesignHeart, 10)},
 		{PlayerIdx: 2, Card: wizardCard(domain.CardDesignHeart, 13)},
@@ -650,7 +650,7 @@ func TestWizard_TrickWinner_TrumpWins(t *testing.T) {
 	o := newTestWizard()
 	o.Reset()
 	o.SetTrumpSuit(domain.CardDesignSpade)
-	resolveWizardTrick(o, []*domain.WizardTrickCard{
+	resolveWizardTrick(o, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: wizardCard(domain.CardDesignHeart, 13)},
 		{PlayerIdx: 1, Card: wizardCard(domain.CardDesignHeart, 10)},
 		{PlayerIdx: 2, Card: wizardCard(domain.CardDesignSpade, 2)},
@@ -665,7 +665,7 @@ func TestWizard_TrickWinner_WizardBeatsAll(t *testing.T) {
 	o.Reset()
 	o.SetTrumpSuit(domain.CardDesignSpade)
 	// A Wizard played by player 1 beats even trump aces
-	resolveWizardTrick(o, []*domain.WizardTrickCard{
+	resolveWizardTrick(o, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: wizardCard(domain.CardDesignSpade, 1)},
 		{PlayerIdx: 1, Card: wizardCard(domain.WizardDesignWizard, 3)},
 		{PlayerIdx: 2, Card: wizardCard(domain.CardDesignSpade, 13)},
@@ -680,7 +680,7 @@ func TestWizard_TrickWinner_JesterNeverWins(t *testing.T) {
 	o := newTestWizard()
 	o.Reset()
 	// No trump; jester led then hearts — highest heart wins, jester loses
-	resolveWizardTrick(o, []*domain.WizardTrickCard{
+	resolveWizardTrick(o, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: wizardCard(domain.WizardDesignJester, 1)},
 		{PlayerIdx: 1, Card: wizardCard(domain.CardDesignHeart, 4)},
 		{PlayerIdx: 2, Card: wizardCard(domain.CardDesignHeart, 11)},
@@ -692,7 +692,7 @@ func TestWizard_TrickWinner_JesterNeverWins(t *testing.T) {
 func TestWizard_TrickWinner_AllJestersFirstWins(t *testing.T) {
 	o := newTestWizard()
 	o.Reset()
-	resolveWizardTrick(o, []*domain.WizardTrickCard{
+	resolveWizardTrick(o, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: wizardCard(domain.WizardDesignJester, 1)},
 		{PlayerIdx: 1, Card: wizardCard(domain.WizardDesignJester, 2)},
 		{PlayerIdx: 2, Card: wizardCard(domain.WizardDesignJester, 3)},
@@ -707,7 +707,7 @@ func TestWizard_TrickWinner_NoTrumpOnlyLeadCounts(t *testing.T) {
 	o.Reset()
 	o.SetTrumpSuit(-1) // Reset() flips a random trump; force no-trump so off-suit cards can't win
 	// No trump; off-suit high cards cannot win
-	resolveWizardTrick(o, []*domain.WizardTrickCard{
+	resolveWizardTrick(o, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: wizardCard(domain.CardDesignHeart, 5)},
 		{PlayerIdx: 1, Card: wizardCard(domain.CardDesignSpade, 13)},
 		{PlayerIdx: 2, Card: wizardCard(domain.CardDesignHeart, 10)},
@@ -722,7 +722,7 @@ func TestWizard_ResolveTrick_SetsRoundEnd(t *testing.T) {
 	o.SetPhase(domain.WizardPhaseTrickEnd)
 	o.SetTrickNumber(3)
 	o.SetHandSize(3) // last trick
-	o.SetCurrentTrick([]*domain.WizardTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wizardCard(domain.CardDesignHeart, 5)},
 		{PlayerIdx: 1, Card: wizardCard(domain.CardDesignHeart, 10)},
 		{PlayerIdx: 2, Card: wizardCard(domain.CardDesignHeart, 3)},
@@ -743,7 +743,7 @@ func TestWizard_ResolveTrick_IncompleteTrick(t *testing.T) {
 	o := newTestWizard()
 	o.Reset()
 	o.SetPhase(domain.WizardPhaseTrickEnd)
-	o.SetCurrentTrick([]*domain.WizardTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wizardCard(domain.CardDesignHeart, 5)},
 	})
 	o.ResolveTrick() // should do nothing (not 4 cards)
@@ -1074,7 +1074,7 @@ func TestWizard_GetValidPlayIndices_FollowSuit(t *testing.T) {
 	p.AddCard(wizardCard(domain.CardDesignHeart, 8))
 
 	setupWizardPlayPhase(o, 0, 1, 1)
-	o.SetCurrentTrick([]*domain.WizardTrickCard{
+	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: wizardCard(domain.CardDesignHeart, 3)},
 	})
 

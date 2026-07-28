@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { bridgeApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { BridgeConfig, BridgeHint } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
+import { useHintRequest } from './useHintRequest';
 
 /** Default Bridge game configuration. */
 export const DEFAULT_BRIDGE_CONFIG: BridgeConfig = {
@@ -58,18 +58,13 @@ export function useBridgeGame() {
     apiExec('nextround');
   }, [apiExec]);
 
-  const handleHint = useCallback(async () => {
-    setHintLoading(true);
-    try {
-      const res = await bridgeApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    } finally {
-      setHintLoading(false);
-    }
-  }, []);
+  const handleHint = useHintRequest({
+    fetchHint: () => bridgeApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+    setHintLoading,
+  });
 
   return {
     state,

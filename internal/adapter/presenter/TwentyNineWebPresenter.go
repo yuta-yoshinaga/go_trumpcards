@@ -49,7 +49,7 @@ func (p *TwentyNineWebPresenter) buildBase(g interfaces.TwentyNineGame) *control
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -74,13 +74,6 @@ func (p *TwentyNineWebPresenter) playableIndices(g interfaces.TwentyNineGame) []
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *TwentyNineWebPresenter) buildTrickOutput(trick []*domain.TwentyNineTrickCard) []*controller.TwentyNineWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TwentyNineTrickCard) *controller.TwentyNineWebOutputTrickCard {
-		return &controller.TwentyNineWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -153,7 +146,7 @@ func (p *TwentyNineWebPresenter) HintOutput(g interfaces.TwentyNineGame) string 
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.TwentyNineWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

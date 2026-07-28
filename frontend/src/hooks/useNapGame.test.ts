@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { napApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeNapState } from '../test/stateFactories';
 import { DEFAULT_NAP_CONFIG, useNapGame } from './useNapGame';
 
@@ -38,9 +39,10 @@ describe('useNapGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 5 }));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useNapGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

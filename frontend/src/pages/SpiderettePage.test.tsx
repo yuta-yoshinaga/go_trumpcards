@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spideretteApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SpideretteResponse, SpideretteTableauCard } from '../types/card';
 import { SpiderettePage } from './SpiderettePage';
@@ -134,7 +135,7 @@ describe('SpiderettePage', () => {
 
   it('renders stock count', async () => {
     renderWithProviders(<SpiderettePage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     expect(screen.getByText(/\(24\)/)).toBeInTheDocument();
   });
 
@@ -161,11 +162,70 @@ describe('SpiderettePage', () => {
     mockSend.mockClear();
     // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockSend).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
 
     // Confirming dispatches giveup.
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockSend).toHaveBeenCalledWith('giveup'));
+  });
+});
+
+// Keyboard shortcuts are bound by useActionKeyboardNav and advertised by
+// ActionShortcutsPanel, but nothing asserted that pressing a key actually runs
+// its action — a wrong `key` or a wrong `enabled` condition would have failed no
+// test. See issue #4429.
+describe('SpiderettePage keyboard shortcuts', () => {
+  it.each([
+    ['h', 'hint'],
+    ['a', 'autocomplete'],
+    ['z', 'undo'],
+  ])('pressing %s dispatches %s', async (key, command) => {
+    mockSend.mockResolvedValue(playingState);
+    renderWithProviders(<SpiderettePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockSend.mockClear();
+    mockSend.mockResolvedValue(playingState);
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockSend).toHaveBeenCalledWith(command));
+  });
+
+  it('pressing g asks for give-up confirmation rather than firing it', async () => {
+    // give-up is irreversible, so the key must route through the dialog (#2099)
+    // instead of dispatching straight away.
+    mockSend.mockResolvedValue(playingState);
+    renderWithProviders(<SpiderettePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockSend.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    expect(await screen.findByText('投了確認')).toBeInTheDocument();
+    expect(mockSend).not.toHaveBeenCalled();
+  });
+
+  it('pressing d does not deal while an empty column blocks it', async () => {
+    // handleDealGuarded refuses to deal when a tableau column is empty and stock
+    // remains. playingState is exactly that (four empty columns, stock 24), so the
+    // key must be inert rather than dispatching. Verified empirically: the same
+    // test against Easthaven's fixture DOES dispatch, because its tableau is full.
+    mockSend.mockResolvedValue(playingState);
+    renderWithProviders(<SpiderettePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockSend.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await flushPendingDispatch();
+    expect(mockSend).not.toHaveBeenCalledWith('deal');
+  });
+
+  it('ignores shortcuts once the game has ended', async () => {
+    mockSend.mockResolvedValue(gameClearState);
+    renderWithProviders(<SpiderettePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockSend.mockClear();
+    for (const key of ['d', 'h', 'a', 'z']) {
+      fireEvent.keyDown(document, { key });
+    }
+    await flushPendingDispatch();
+    expect(mockSend).not.toHaveBeenCalled();
   });
 });

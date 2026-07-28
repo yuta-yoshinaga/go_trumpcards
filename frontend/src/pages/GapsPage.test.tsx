@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gapsApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, GapsResponse } from '../types/card';
 import { GapsPage } from './GapsPage';
@@ -144,6 +145,7 @@ describe('GapsPage', () => {
     renderWithProviders(<GapsPage />);
     const btn = await screen.findByRole('button', { name: 'ギブアップ' });
     fireEvent.click(btn);
+    await flushPendingDispatch();
     expect(mockedRun).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -209,6 +211,7 @@ describe('GapsPage', () => {
     await screen.findByRole('button', { name: '元に戻す' });
     mockedRun.mockClear();
     fireEvent.keyDown(document.body, { key: 'z' });
+    await flushPendingDispatch();
     expect(mockedRun).not.toHaveBeenCalledWith('undo');
   });
 
@@ -226,6 +229,7 @@ describe('GapsPage', () => {
     await screen.findByTestId('gaps-redeal-button');
     mockedRun.mockClear();
     fireEvent.keyDown(document.body, { key: 'd' });
+    await flushPendingDispatch();
     expect(mockedRun).not.toHaveBeenCalledWith('redeal');
   });
 
@@ -242,6 +246,7 @@ describe('GapsPage', () => {
     await screen.findByRole('button', { name: 'ギブアップ' });
     mockedRun.mockClear();
     fireEvent.keyDown(document.body, { key: 'g' });
+    await flushPendingDispatch();
     expect(mockedRun).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -254,6 +259,7 @@ describe('GapsPage', () => {
     await waitFor(() => expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument());
     mockedRun.mockClear();
     fireEvent.keyDown(document.body, { key: 'h' });
+    await flushPendingDispatch();
     expect(mockedRun).not.toHaveBeenCalledWith('hint');
   });
 

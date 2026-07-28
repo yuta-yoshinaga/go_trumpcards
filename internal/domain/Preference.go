@@ -98,12 +98,6 @@ type PreferenceHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// PreferenceTrickCard トリック中の 1 枚
-type PreferenceTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Preference プレフェランスのゲームクラス
 type Preference struct {
 	trumpCards       *TrumpCards
@@ -113,7 +107,7 @@ type Preference struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*PreferenceTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	bids             [PreferencePlayerCnt]PreferenceBid
@@ -381,7 +375,7 @@ func (g *Preference) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Preference) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &PreferenceTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == PreferencePlayerCnt {
@@ -771,10 +765,10 @@ func (g *Preference) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Preference) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Preference) GetCurrentTrick() []*PreferenceTrickCard { return g.currentTrick }
+func (g *Preference) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Preference) SetCurrentTrick(trick []*PreferenceTrickCard) { g.currentTrick = trick }
+func (g *Preference) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Preference) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -871,7 +865,7 @@ type preferenceJSON struct {
 	RoundNumber      int                                `json:"rn"`
 	TrickNumber      int                                `json:"tn"`
 	CurrentPlayerIdx int                                `json:"ci"`
-	CurrentTrick     []*PreferenceTrickCard             `json:"ct"`
+	CurrentTrick     []*TrickCard                       `json:"ct"`
 	LeadPlayerIdx    int                                `json:"li"`
 	DealerIdx        int                                `json:"di"`
 	Bids             [PreferencePlayerCnt]PreferenceBid `json:"bd"`
@@ -976,7 +970,7 @@ func (g *Preference) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*PreferenceTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

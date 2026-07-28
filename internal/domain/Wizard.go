@@ -47,12 +47,6 @@ type WizardHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// WizardTrickCard トリック中の1枚
-type WizardTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Wizard ウィザードゲームクラス
 type Wizard struct {
 	deck             []*Card // 山札 (60枚から配り、末尾からpopする)
@@ -64,7 +58,7 @@ type Wizard struct {
 	handSize         int // 現在のラウンドの手札枚数 (= roundNumber)
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*WizardTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	bidPlayerIdx     int
 	dealerIdx        int
@@ -378,10 +372,10 @@ func (o *Wizard) GetCurrentPlayerIdx() int { return o.currentPlayerIdx }
 func (o *Wizard) SetCurrentPlayerIdx(idx int) { o.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (o *Wizard) GetCurrentTrick() []*WizardTrickCard { return o.currentTrick }
+func (o *Wizard) GetCurrentTrick() []*TrickCard { return o.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (o *Wizard) SetCurrentTrick(trick []*WizardTrickCard) { o.currentTrick = trick }
+func (o *Wizard) SetCurrentTrick(trick []*TrickCard) { o.currentTrick = trick }
 
 // GetTrumpCard 切り札カード取得
 func (o *Wizard) GetTrumpCard() *Card { return o.trumpCard }
@@ -596,7 +590,7 @@ func (o *Wizard) startPlayPhase() {
 
 // playCard カードをプレイする共通処理
 func (o *Wizard) playCard(playerIdx int, card *Card) {
-	o.currentTrick = append(o.currentTrick, &WizardTrickCard{
+	o.currentTrick = append(o.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -1237,24 +1231,24 @@ func (o *Wizard) tryLoseTrick(player *WizardPlayer, validIndices []int, leadSuit
 
 // wizardJSON is the JSON wire format for Wizard.
 type wizardJSON struct {
-	Deck             []*Card            `json:"dk"`
-	Players          []*WizardPlayer    `json:"ps"`
-	Config           WizardConfig       `json:"cf"`
-	Phase            WizardPhase        `json:"ph"`
-	RoundNumber      int                `json:"rn"`
-	TotalRounds      int                `json:"tr"`
-	HandSize         int                `json:"hs"`
-	TrickNumber      int                `json:"tn"`
-	CurrentPlayerIdx int                `json:"ci"`
-	CurrentTrick     []*WizardTrickCard `json:"ct"`
-	LeadPlayerIdx    int                `json:"li"`
-	BidPlayerIdx     int                `json:"bi"`
-	DealerIdx        int                `json:"di"`
-	TrumpCard        *Card              `json:"tp"`
-	TrumpSuit        int                `json:"ts"`
-	GameEndFlag      bool               `json:"ge"`
-	WinnerIdx        int                `json:"wi"`
-	ActionLog        []*ActionLogEntry  `json:"al"`
+	Deck             []*Card           `json:"dk"`
+	Players          []*WizardPlayer   `json:"ps"`
+	Config           WizardConfig      `json:"cf"`
+	Phase            WizardPhase       `json:"ph"`
+	RoundNumber      int               `json:"rn"`
+	TotalRounds      int               `json:"tr"`
+	HandSize         int               `json:"hs"`
+	TrickNumber      int               `json:"tn"`
+	CurrentPlayerIdx int               `json:"ci"`
+	CurrentTrick     []*TrickCard      `json:"ct"`
+	LeadPlayerIdx    int               `json:"li"`
+	BidPlayerIdx     int               `json:"bi"`
+	DealerIdx        int               `json:"di"`
+	TrumpCard        *Card             `json:"tp"`
+	TrumpSuit        int               `json:"ts"`
+	GameEndFlag      bool              `json:"ge"`
+	WinnerIdx        int               `json:"wi"`
+	ActionLog        []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1347,7 +1341,7 @@ func (o *Wizard) UnmarshalJSON(data []byte) error {
 	o.currentPlayerIdx = j.CurrentPlayerIdx
 	o.currentTrick = j.CurrentTrick
 	if o.currentTrick == nil {
-		o.currentTrick = make([]*WizardTrickCard, 0)
+		o.currentTrick = make([]*TrickCard, 0)
 	}
 	o.leadPlayerIdx = j.LeadPlayerIdx
 	o.bidPlayerIdx = j.BidPlayerIdx

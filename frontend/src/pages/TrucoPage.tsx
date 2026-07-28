@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { trucoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -79,13 +80,18 @@ function TrucoPageContent() {
   const kbIsBoundary = state?.phase === TrucoPhase.TRICK_END || state?.phase === TrucoPhase.HAND_END;
   const actionBindings = useMemo(
     () => [
-      { key: '1', action: () => handlePlay(0), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 1 },
-      { key: '2', action: () => handlePlay(1), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 2 },
-      { key: '3', action: () => handlePlay(2), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 3 },
-      { key: 't', action: handleTruco, enabled: (kbIsHumanPlayTurn || kbIsHumanRespond) && kbCanTruco },
-      { key: 'a', action: handleAccept, enabled: kbIsHumanRespond },
-      { key: 'd', action: handleDecline, enabled: kbIsHumanRespond },
-      { key: 'n', action: handleNext, enabled: kbIsBoundary },
+      { key: '1', action: () => handlePlay(0), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 1, label: 'play' },
+      { key: '2', action: () => handlePlay(1), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 2, label: 'play' },
+      { key: '3', action: () => handlePlay(2), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 3, label: 'play' },
+      {
+        key: 't',
+        action: handleTruco,
+        enabled: (kbIsHumanPlayTurn || kbIsHumanRespond) && kbCanTruco,
+        label: 'truco',
+      },
+      { key: 'a', action: handleAccept, enabled: kbIsHumanRespond, label: 'accept' },
+      { key: 'd', action: handleDecline, enabled: kbIsHumanRespond, label: 'decline' },
+      { key: 'n', action: handleNext, enabled: kbIsBoundary, label: 'next' },
     ],
     [
       handlePlay,
@@ -277,7 +283,10 @@ function TrucoPageContent() {
           <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
             {t('actions.reset')}
           </button>
-          <label className="flex items-center gap-1 text-ds-text-primary text-sm" data-testid="truco-hint-toggle">
+          <label
+            className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]"
+            data-testid="truco-hint-toggle"
+          >
             <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
             {tc('hint')}
           </label>
@@ -290,6 +299,9 @@ function TrucoPageContent() {
         showActionLog={showActionLog}
         hideActionLog={hideActionLog}
       />
+      {/* No GameFooter on this page, where the other 55 action-nav pages put the
+          panel, so it sits after the action log instead — still last on the page. */}
+      <ActionShortcutsPanel bindings={actionBindings} data-testid="truco-kbd-shortcuts" />
     </GamePageShell>
   );
 }

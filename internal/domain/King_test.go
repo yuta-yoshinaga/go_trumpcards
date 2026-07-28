@@ -206,7 +206,7 @@ func TestKing_FollowSuit(t *testing.T) {
 	g.SetTrumpSuit(-1)
 	g.SetPhase(domain.KingPhasePlay)
 	g.SetCurrentTurn(1)
-	g.SetCurrentTrick([]*domain.KingTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: card(domain.CardDesignSpade, 13)},
 	})
 	setKingHand(g, 1,

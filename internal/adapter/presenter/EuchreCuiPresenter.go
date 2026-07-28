@@ -100,8 +100,8 @@ func (p *EuchreCuiPresenter) Output(e interfaces.EuchreGame, lastErr error) stri
 		// Current trick
 		trick := e.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
-			func(tc *domain.EuchreTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.EuchreTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(e.GetPlayer(idx), idx) },
 		)
 

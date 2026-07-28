@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { mightyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CardRoleBadge } from '../components/CardRoleBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -677,7 +678,7 @@ function MightyPageContent() {
                       </button>
                     ))}
                   </fieldset>
-                  <label className="flex items-center gap-1 text-ds-text-primary text-sm">
+                  <label className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]">
                     <input
                       type="checkbox"
                       checked={bidNoTrumpToggle}
@@ -853,6 +854,7 @@ function MightyPageContent() {
                 dataTutorial="mighty-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="mighty-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

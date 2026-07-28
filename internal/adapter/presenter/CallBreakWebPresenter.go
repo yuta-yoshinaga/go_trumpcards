@@ -35,7 +35,7 @@ func (p *CallBreakWebPresenter) buildBase(cb interfaces.CallBreakGame) *controll
 		MaxRounds:     cfg.MaxRounds,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(cb.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(cb.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(cb)
 
 	// Provide the human player's valid play indices so the frontend can grey out
@@ -50,13 +50,6 @@ func (p *CallBreakWebPresenter) buildBase(cb interfaces.CallBreakGame) *controll
 		resObj.ValidPlayIndices = make([]int, 0)
 	}
 	return resObj
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *CallBreakWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.CallBreakWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.CallBreakWebOutputTrickCard {
-		return &controller.CallBreakWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

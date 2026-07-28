@@ -55,7 +55,7 @@ func TestScartoWebPresenter_ProceduralFaces(t *testing.T) {
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.ScartoExcuseDesign, domain.ScartoExcuseValue, false))
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 14, false))
 	// Trick: a trump 21 and a spade.
-	g.SetCurrentTrick([]*domain.ScartoTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.ScartoTrumpDesign, 21, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},
 	})
@@ -138,7 +138,7 @@ func TestScartoWebPresenter_PhaseMessages(t *testing.T) {
 		g.Reset()
 		g.SetPhase(phase)
 		if phase == domain.ScartoPhasePlay {
-			g.SetCurrentTrick([]*domain.ScartoTrickCard{
+			g.SetCurrentTrick([]*domain.TrickCard{
 				{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 			})
 		}

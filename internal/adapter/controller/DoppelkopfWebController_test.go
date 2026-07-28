@@ -17,7 +17,7 @@ import (
 func mustDoppelkopfOutputJSON(msg string) string {
 	out := &controller.DoppelkopfWebOutput{
 		Players:         []*controller.DoppelkopfWebOutputPlayer{},
-		CurrentTrick:    []*controller.DoppelkopfWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		ReTeam:          make([]bool, domain.DoppelkopfPlayerCnt),
 		PlayableIndices: []int{},
 		WinnerIdx:       -1,

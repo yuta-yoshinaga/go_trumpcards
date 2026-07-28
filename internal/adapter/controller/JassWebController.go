@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra3
 
 package controller
 
@@ -36,12 +36,6 @@ type JassWebOutputPlayer struct {
 	TrickCount int              `json:"trickCount"`
 }
 
-// JassWebOutputTrickCard トリック中の1枚
-type JassWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // JassWebOutputHint ヒント出力
 type JassWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -52,29 +46,29 @@ type JassWebOutputHint struct {
 
 // JassWebOutput ヤスWebアウトプット
 type JassWebOutput struct {
-	Players          []*JassWebOutputPlayer    `json:"players"`
-	Phase            int                       `json:"phase"`
-	RoundNumber      int                       `json:"roundNumber"`
-	TrickNumber      int                       `json:"trickNumber"`
-	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                       `json:"bidPlayerIdx"`
-	DealerIdx        int                       `json:"dealerIdx"`
-	ForehandIdx      int                       `json:"forehandIdx"`
-	TrumpSuit        int                       `json:"trumpSuit"`
-	Schieben         bool                      `json:"schieben"`
-	MakerTeam        int                       `json:"makerTeam"`
-	MakerPlayerIdx   int                       `json:"makerPlayerIdx"`
-	CurrentTrick     []*JassWebOutputTrickCard `json:"currentTrick"`
-	LastTrick        []*JassWebOutputTrickCard `json:"lastTrick"`
-	LastTrickWinner  int                       `json:"lastTrickWinner"`
-	TeamScores       [2]int                    `json:"teamScores"`
-	RoundPoints      [2]int                    `json:"roundPoints"`
-	RoundWeisPoints  [2]int                    `json:"roundWeisPoints"`
-	RoundStockPoints [2]int                    `json:"roundStockPoints"`
-	GameEndFlag      bool                      `json:"gameEndFlag"`
-	WinnerTeam       int                       `json:"winnerTeam"`
-	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
-	Hint             *JassWebOutputHint        `json:"hint,omitempty"`
+	Players          []*JassWebOutputPlayer `json:"players"`
+	Phase            int                    `json:"phase"`
+	RoundNumber      int                    `json:"roundNumber"`
+	TrickNumber      int                    `json:"trickNumber"`
+	CurrentPlayerIdx int                    `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                    `json:"bidPlayerIdx"`
+	DealerIdx        int                    `json:"dealerIdx"`
+	ForehandIdx      int                    `json:"forehandIdx"`
+	TrumpSuit        int                    `json:"trumpSuit"`
+	Schieben         bool                   `json:"schieben"`
+	MakerTeam        int                    `json:"makerTeam"`
+	MakerPlayerIdx   int                    `json:"makerPlayerIdx"`
+	CurrentTrick     []*WebOutputTrickCard  `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard  `json:"lastTrick"`
+	LastTrickWinner  int                    `json:"lastTrickWinner"`
+	TeamScores       [2]int                 `json:"teamScores"`
+	RoundPoints      [2]int                 `json:"roundPoints"`
+	RoundWeisPoints  [2]int                 `json:"roundWeisPoints"`
+	RoundStockPoints [2]int                 `json:"roundStockPoints"`
+	GameEndFlag      bool                   `json:"gameEndFlag"`
+	WinnerTeam       int                    `json:"winnerTeam"`
+	LeadPlayerIdx    int                    `json:"leadPlayerIdx"`
+	Hint             *JassWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config JassWebOutputConfig `json:"config"`
 }
@@ -116,8 +110,8 @@ var NewJassWebController, NewJassWebControllerWithProvider = webControllerPair[u
 func newJassDefaultOutput(msg string) *JassWebOutput {
 	return &JassWebOutput{
 		Players:         make([]*JassWebOutputPlayer, 0),
-		CurrentTrick:    make([]*JassWebOutputTrickCard, 0),
-		LastTrick:       make([]*JassWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
 		LastTrickWinner: -1,
 		WinnerTeam:      -1,
 		WebOutputBase:   WebOutputBase{Message: msg},

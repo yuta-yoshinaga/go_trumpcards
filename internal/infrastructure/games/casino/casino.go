@@ -321,23 +321,6 @@ func init() {
 	// Scopa is a classic fishing game, but it is bucketed into the casino
 	// worker because the classic worker is at the 1 MB gzip free-tier limit.
 	// Workers are pure binary-size partitions with no user-facing meaning.
-	games.RegisterKVGame("mighty", games.CategoryCasino,
-		func() usecase.MightyInteractorIF {
-			return usecase.NewMightyInteractor(domain.NewDefaultMighty(), new(presenter.MightyWebPresenter))
-		},
-		func(data []byte) (usecase.MightyInteractorIF, error) {
-			return usecase.RestoreMightyInteractor(data, new(presenter.MightyWebPresenter))
-		},
-		controller.NewMightyWebControllerWithProvider)
-
-	games.RegisterKVGame("bridge", games.CategoryCasino,
-		func() usecase.BridgeInteractorIF {
-			return usecase.NewBridgeInteractor(domain.NewDefaultBridge(), new(presenter.BridgeWebPresenter))
-		},
-		func(data []byte) (usecase.BridgeInteractorIF, error) {
-			return usecase.RestoreBridgeInteractor(data, new(presenter.BridgeWebPresenter))
-		},
-		controller.NewBridgeWebControllerWithProvider)
 
 	games.RegisterKVGame("napoleon", games.CategoryCasino,
 		func() usecase.NapoleonInteractorIF {
@@ -348,15 +331,6 @@ func init() {
 		},
 		controller.NewNapoleonWebControllerWithProvider)
 
-	games.RegisterKVGame("skat", games.CategoryCasino,
-		func() usecase.SkatInteractorIF {
-			return usecase.NewSkatInteractor(domain.NewDefaultSkat(), new(presenter.SkatWebPresenter))
-		},
-		func(data []byte) (usecase.SkatInteractorIF, error) {
-			return usecase.RestoreSkatInteractor(data, new(presenter.SkatWebPresenter))
-		},
-		controller.NewSkatWebControllerWithProvider)
-
 	games.RegisterKVGame("tarneeb", games.CategoryCasino,
 		func() usecase.TarneebInteractorIF {
 			return usecase.NewTarneebInteractor(domain.NewDefaultTarneeb(), new(presenter.TarneebWebPresenter))
@@ -366,14 +340,6 @@ func init() {
 		},
 		controller.NewTarneebWebControllerWithProvider)
 
-	games.RegisterKVGame("belote", games.CategoryCasino,
-		func() usecase.BeloteInteractorIF {
-			return usecase.NewBeloteInteractor(domain.NewDefaultBelote(), new(presenter.BeloteWebPresenter))
-		},
-		func(data []byte) (usecase.BeloteInteractorIF, error) {
-			return usecase.RestoreBeloteInteractor(data, new(presenter.BeloteWebPresenter))
-		},
-		controller.NewBeloteWebControllerWithProvider)
 	games.RegisterKVGame("tressette", games.CategoryCasino,
 		func() usecase.TressetteInteractorIF {
 			return usecase.NewTressetteInteractor(domain.NewDefaultTressette(), new(presenter.TressetteWebPresenter))
@@ -382,14 +348,6 @@ func init() {
 			return usecase.RestoreTressetteInteractor(data, new(presenter.TressetteWebPresenter))
 		},
 		controller.NewTressetteWebControllerWithProvider)
-	games.RegisterKVGame("sheepshead", games.CategoryCasino,
-		func() usecase.SheepsheadInteractorIF {
-			return usecase.NewSheepsheadInteractor(domain.NewDefaultSheepshead(), new(presenter.SheepsheadWebPresenter))
-		},
-		func(data []byte) (usecase.SheepsheadInteractorIF, error) {
-			return usecase.RestoreSheepsheadInteractor(data, new(presenter.SheepsheadWebPresenter))
-		},
-		controller.NewSheepsheadWebControllerWithProvider)
 	games.RegisterKVGame("doppelkopf", games.CategoryCasino,
 		func() usecase.DoppelkopfInteractorIF {
 			return usecase.NewDoppelkopfInteractor(domain.NewDefaultDoppelkopf(), new(presenter.DoppelkopfWebPresenter))
@@ -479,33 +437,6 @@ func init() {
 		},
 		controller.NewTeenPattiWebControllerWithProvider)
 
-	games.RegisterKVGame("kemps", games.CategoryCasino,
-		func() usecase.KempsInteractorIF {
-			return usecase.NewKempsInteractor(domain.NewDefaultKemps(), new(presenter.KempsWebPresenter))
-		},
-		func(data []byte) (usecase.KempsInteractorIF, error) {
-			return usecase.RestoreKempsInteractor(data, new(presenter.KempsWebPresenter))
-		},
-		controller.NewKempsWebControllerWithProvider)
-
-	games.RegisterKVGame("pishti", games.CategoryCasino,
-		func() usecase.PishtiInteractorIF {
-			return usecase.NewPishtiInteractor(domain.NewDefaultPishti(), new(presenter.PishtiWebPresenter))
-		},
-		func(data []byte) (usecase.PishtiInteractorIF, error) {
-			return usecase.RestorePishtiInteractor(data, new(presenter.PishtiWebPresenter))
-		},
-		controller.NewPishtiWebControllerWithProvider)
-
-	games.RegisterKVGame("cuarenta", games.CategoryCasino,
-		func() usecase.CuarentaInteractorIF {
-			return usecase.NewCuarentaInteractor(domain.NewDefaultCuarenta(), new(presenter.CuarentaWebPresenter))
-		},
-		func(data []byte) (usecase.CuarentaInteractorIF, error) {
-			return usecase.RestoreCuarentaInteractor(data, new(presenter.CuarentaWebPresenter))
-		},
-		controller.NewCuarentaWebControllerWithProvider)
-
 	games.RegisterKVGame("fivecardstud", games.CategoryCasino,
 		func() usecase.FiveCardStudInteractorIF {
 			return usecase.NewFiveCardStudInteractor(domain.NewDefaultFiveCardStud(), new(presenter.FiveCardStudWebPresenter))
@@ -515,15 +446,6 @@ func init() {
 		},
 		controller.NewFiveCardStudWebControllerWithProvider)
 
-	games.RegisterKVGame("faro", games.CategoryCasino,
-		func() usecase.FaroInteractorIF {
-			return usecase.NewFaroInteractor(domain.NewDefaultFaro(), new(presenter.FaroWebPresenter))
-		},
-		func(data []byte) (usecase.FaroInteractorIF, error) {
-			return usecase.RestoreFaroInteractor(data, new(presenter.FaroWebPresenter))
-		},
-		controller.NewFaroWebControllerWithProvider)
-
 	games.RegisterKVGame("openfacechinese", games.CategoryCasino,
 		func() usecase.OpenFaceChineseInteractorIF {
 			return usecase.NewOpenFaceChineseInteractor(domain.NewDefaultOpenFaceChinese(), new(presenter.OpenFaceChineseWebPresenter))
@@ -532,14 +454,5 @@ func init() {
 			return usecase.RestoreOpenFaceChineseInteractor(data, new(presenter.OpenFaceChineseWebPresenter))
 		},
 		controller.NewOpenFaceChineseWebControllerWithProvider)
-
-	games.RegisterKVGame("beggarmyneighbour", games.CategoryCasino,
-		func() usecase.BeggarMyNeighbourInteractorIF {
-			return usecase.NewBeggarMyNeighbourInteractor(domain.NewDefaultBeggarMyNeighbour(), new(presenter.BeggarMyNeighbourWebPresenter))
-		},
-		func(data []byte) (usecase.BeggarMyNeighbourInteractorIF, error) {
-			return usecase.RestoreBeggarMyNeighbourInteractor(data, new(presenter.BeggarMyNeighbourWebPresenter))
-		},
-		controller.NewBeggarMyNeighbourWebControllerWithProvider)
 
 }

@@ -48,7 +48,7 @@ func TestBarbuCuiPresenter_HintOutput(t *testing.T) {
 		b.BarbuTestSetPhase(domain.BarbuPhasePlay)
 		b.BarbuTestSetCurrentPlayer(0)
 		b.BarbuTestSetHand(0, []*domain.Card{bcard(domain.CardDesignHeart, 5), bcard(domain.CardDesignSpade, 9)})
-		b.BarbuTestSetCurrentTrick([]*domain.BarbuTrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
+		b.BarbuTestSetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
 		assert.Contains(t, p.HintOutput(b), "合法手")
 	})
 
@@ -68,7 +68,7 @@ func TestBarbuCuiPresenter_HintOutput(t *testing.T) {
 		b.BarbuTestSetCurrentPlayer(0)
 		// Hand has no hearts, lead is a heart -> void -> every card is legal.
 		b.BarbuTestSetHand(0, []*domain.Card{bcard(domain.CardDesignSpade, 5), bcard(domain.CardDesignClover, 9)})
-		b.BarbuTestSetCurrentTrick([]*domain.BarbuTrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
+		b.BarbuTestSetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
 		assert.Contains(t, p.HintOutput(b), "合法手")
 	})
 
@@ -78,7 +78,7 @@ func TestBarbuCuiPresenter_HintOutput(t *testing.T) {
 		b.BarbuTestSetPhase(domain.BarbuPhasePlay)
 		b.BarbuTestSetCurrentPlayer(0)
 		b.BarbuTestSetHand(0, []*domain.Card{bcard(domain.CardDesignSpade, 5)})
-		b.BarbuTestSetCurrentTrick([]*domain.BarbuTrickCard{{PlayerIdx: 3, Card: nil}})
+		b.BarbuTestSetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: nil}})
 		assert.Contains(t, p.HintOutput(b), "合法手")
 	})
 
@@ -95,7 +95,7 @@ func TestBarbuCuiPresenter_ContractAndTrick(t *testing.T) {
 	b.BarbuTestSetPhase(domain.BarbuPhasePlay)
 	b.BarbuTestSetCurrentPlayer(0)
 	b.BarbuTestSetHand(0, []*domain.Card{bcard(domain.CardDesignSpade, 5)})
-	b.BarbuTestSetCurrentTrick([]*domain.BarbuTrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
+	b.BarbuTestSetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
 	p := new(presenter.BarbuCuiPresenter)
 	out := p.Output(b, nil)
 	assert.NotEmpty(t, out)

@@ -36,7 +36,7 @@ func setupSkatWebMock() *interfaces.MockSkatGame {
 	m.On("GetGameValue").Return(0)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetLeadPlayerIdx").Return(-1)
-	m.On("GetCurrentTrick").Return(([]*domain.SkatTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetSkat").Return(([]*domain.Card)(nil))
 	m.On("GetOriginalSkat").Return(([]*domain.Card)(nil))
 	m.On("GetConfig").Return(domain.DefaultSkatConfig())
@@ -95,7 +95,7 @@ func TestSkatWebPresenter_OutputRoundEndExposesSkat(t *testing.T) {
 	m.On("GetGameValue").Return(22)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetLeadPlayerIdx").Return(0)
-	m.On("GetCurrentTrick").Return(([]*domain.SkatTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	skat := []*domain.Card{
 		domain.NewCard(domain.CardDesignDiamond, 7, false),
 		domain.NewCard(domain.CardDesignDiamond, 8, false),

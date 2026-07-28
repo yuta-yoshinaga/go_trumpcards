@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, threecardApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ThreeCardResponse } from '../types/card';
 import { ThreeCardPage } from './ThreeCardPage';
@@ -392,6 +393,7 @@ describe('ThreeCardPage', () => {
     await waitFor(() => expect(screen.getByText(/勝利/)).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'b' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -401,6 +403,7 @@ describe('ThreeCardPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'r' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -566,6 +569,7 @@ describe('ThreeCardPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'n' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 });

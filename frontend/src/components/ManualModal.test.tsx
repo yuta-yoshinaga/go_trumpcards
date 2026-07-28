@@ -9,23 +9,31 @@ vi.mock('mermaid', () => ({
   },
 }));
 
+// Manuals are fetched per game now, so these mock the loaders rather than a
+// prebuilt map. Every assertion on rendered content therefore has to await.
+const WEB_MANUALS: Record<string, string> = {
+  '/': '# BlackJack\n\nTest **bold** content\n\n| A | B |\n|---|---|\n| 1 | 2 |',
+  '/poker': '# Poker\n\nPoker manual',
+  '/mermaid': '# Flow\n\n```mermaid\nflowchart TD\n    A-->B\n```',
+  '/code': '# Code\n\n```js\nconsole.log("hello");\n```',
+};
+
 vi.mock('../constants/manualTexts', () => ({
-  manualTexts: {
-    '/': '# BlackJack\n\nTest **bold** content\n\n| A | B |\n|---|---|\n| 1 | 2 |',
-    '/poker': '# Poker\n\nPoker manual',
-    '/mermaid': '# Flow\n\n```mermaid\nflowchart TD\n    A-->B\n```',
-    '/code': '# Code\n\n```js\nconsole.log("hello");\n```',
-  },
+  loadManualText: (gamePath: string) => Promise.resolve(WEB_MANUALS[gamePath] ?? ''),
 }));
 
+const CUI_MANUALS: Record<string, string> = {
+  '/': '# BlackJack CUI\n\nCUI manual text',
+  '/poker': '# Poker CUI\n\nCUI poker manual',
+};
+
+// isCliModeEnabled stays real — the CLI-mode tests drive it through
+// localStorage, which is the behaviour worth exercising.
 vi.mock('../constants/cuiManualTexts', async () => {
   const actual = await vi.importActual<typeof import('../constants/cuiManualTexts')>('../constants/cuiManualTexts');
   return {
     ...actual,
-    cuiManualTexts: {
-      '/': '# BlackJack CUI\n\nCUI manual text',
-      '/poker': '# Poker CUI\n\nCUI poker manual',
-    },
+    loadCuiManualText: (gamePath: string) => Promise.resolve(CUI_MANUALS[gamePath] ?? ''),
   };
 });
 
@@ -40,49 +48,49 @@ describe('ManualModal', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('renders markdown content when open', () => {
+  it('renders markdown content when open', async () => {
     render(<ManualModal open={true} onClose={vi.fn()} gamePath="/" />);
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('BlackJack')).toBeInTheDocument();
+    expect(await screen.findByText('BlackJack')).toBeInTheDocument();
     expect(screen.getByText('bold')).toBeInTheDocument();
   });
 
-  it('renders GFM table', () => {
+  it('renders GFM table', async () => {
     render(<ManualModal open={true} onClose={vi.fn()} gamePath="/" />);
-    expect(screen.getByRole('table')).toBeInTheDocument();
+    expect(await screen.findByRole('table')).toBeInTheDocument();
   });
 
-  it('renders different manual for different gamePath', () => {
+  it('renders different manual for different gamePath', async () => {
     render(<ManualModal open={true} onClose={vi.fn()} gamePath="/poker" />);
-    expect(screen.getByText('Poker')).toBeInTheDocument();
+    expect(await screen.findByText('Poker')).toBeInTheDocument();
   });
 
-  it('renders CUI manual when CLI mode is enabled for the game', () => {
+  it('renders CUI manual when CLI mode is enabled for the game', async () => {
     localStorage.setItem('cli-mode-blackjack', 'true');
     render(<ManualModal open={true} onClose={vi.fn()} gamePath="/" />);
-    expect(screen.getByText('BlackJack CUI')).toBeInTheDocument();
+    expect(await screen.findByText('BlackJack CUI')).toBeInTheDocument();
     expect(screen.queryByText('BlackJack')).not.toBeInTheDocument();
   });
 
-  it('renders web manual when CLI mode is disabled', () => {
+  it('renders web manual when CLI mode is disabled', async () => {
     localStorage.setItem('cli-mode-blackjack', 'false');
     render(<ManualModal open={true} onClose={vi.fn()} gamePath="/" />);
-    expect(screen.getByText('BlackJack')).toBeInTheDocument();
+    expect(await screen.findByText('BlackJack')).toBeInTheDocument();
     expect(screen.queryByText('BlackJack CUI')).not.toBeInTheDocument();
   });
 
-  it('renders CUI manual for /poker when CLI mode is enabled for poker', () => {
+  it('renders CUI manual for /poker when CLI mode is enabled for poker', async () => {
     localStorage.setItem('cli-mode-poker', 'true');
     render(<ManualModal open={true} onClose={vi.fn()} gamePath="/poker" />);
-    expect(screen.getByText('Poker CUI')).toBeInTheDocument();
+    expect(await screen.findByText('Poker CUI')).toBeInTheDocument();
   });
 
-  it('renders web manual when localStorage.getItem throws', () => {
+  it('renders web manual when localStorage.getItem throws', async () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('localStorage unavailable');
     });
     render(<ManualModal open={true} onClose={vi.fn()} gamePath="/" />);
-    expect(screen.getByText('BlackJack')).toBeInTheDocument();
+    expect(await screen.findByText('BlackJack')).toBeInTheDocument();
     expect(screen.queryByText('BlackJack CUI')).not.toBeInTheDocument();
   });
 
@@ -168,10 +176,12 @@ describe('ManualModal', () => {
     expect(document.activeElement).toBe(closeBtn);
   });
 
-  it('renders regular code block inside pre without unwrapping', () => {
+  it('renders regular code block inside pre without unwrapping', async () => {
     render(<ManualModal open={true} onClose={vi.fn()} gamePath="/code" />);
     const dialog = screen.getByRole('dialog');
-    expect(dialog.querySelector('pre')).toBeInTheDocument();
+    // querySelector has no findBy equivalent, so wait for the loaded manual to
+    // render before inspecting the DOM shape.
+    await waitFor(() => expect(dialog.querySelector('pre')).toBeInTheDocument());
     expect(dialog.querySelector('code')).toBeInTheDocument();
   });
 

@@ -114,7 +114,7 @@ func bourreHumanIdx(bg interfaces.BourreGame) int {
 }
 
 // bourreTrickToOutput トリックを WebOutput 形式に変換する
-func bourreTrickToOutput(trick []*domain.BourreTrickCard) []*controller.BourreWebTrickCard {
+func bourreTrickToOutput(trick []*domain.TrickCard) []*controller.BourreWebTrickCard {
 	out := make([]*controller.BourreWebTrickCard, 0, len(trick))
 	for _, tc := range trick {
 		if tc == nil {

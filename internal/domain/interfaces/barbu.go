@@ -41,9 +41,9 @@ type BarbuGame interface {
 	// GetTrickNumber 現在のトリック番号を取得する
 	GetTrickNumber() int
 	// GetCurrentTrick 進行中のトリックを取得する
-	GetCurrentTrick() []*domain.BarbuTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetLastTrick 直前に完了したトリックを取得する
-	GetLastTrick() []*domain.BarbuTrickCard
+	GetLastTrick() []*domain.TrickCard
 	// GetLastTrickWinner 直前トリックの勝者を取得する (-1 = なし)
 	GetLastTrickWinner() int
 	// GetTablePlaced Dominoes の場の状態を取得する (index 1-4 = スート)

@@ -17,7 +17,7 @@ import (
 func mustGaigelOutputJSON(msg string) string {
 	out := &controller.GaigelWebOutput{
 		Players:         []*controller.GaigelWebOutputPlayer{},
-		CurrentTrick:    []*controller.GaigelWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		MarriageIndices: []int{},
 		WinnerTeam:      -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},

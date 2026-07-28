@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { CrescentMoveZone, crescentApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -26,6 +27,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
+import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, CrescentResponse } from '../types/card';
@@ -176,11 +178,11 @@ function CrescentPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleRedeal },
-      { key: 'h', action: handleHint },
-      { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: confirmGiveUpAction },
-      { key: 'z', action: handleUndo },
+      { key: 'd', action: handleRedeal, label: 'deal' },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+      { key: 'z', action: handleUndo, label: 'undo' },
     ],
     [handleRedeal, handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
   );
@@ -268,9 +270,7 @@ function CrescentPageContent() {
                             <span
                               data-testid={`foundation-dir-${idx}`}
                               className={`inline-block rounded px-1 font-bold ${
-                                directionKey === 'asc'
-                                  ? 'bg-ds-success/20 text-ds-success'
-                                  : 'bg-ds-warning/20 text-ds-warning'
+                                directionKey === 'asc' ? badgeSuccessColors : badgeWarningColors
                               }`}
                             >
                               {suit} {directionKey === 'asc' ? '↑' : '↓'}
@@ -520,6 +520,7 @@ function CrescentPageContent() {
                 dataTutorial="crescent-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="crescent-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

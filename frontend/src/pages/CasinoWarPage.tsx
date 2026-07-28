@@ -24,6 +24,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -183,7 +184,7 @@ function CasinoWarPageContent() {
               messageParams={state.messageParams}
             />
 
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer">
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer min-h-[44px]">
               <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
               {tc('hint.toggle', { ns: 'tutorial' })}
             </label>
@@ -353,7 +354,7 @@ function CasinoWarPageContent() {
                 <p className="text-ds-text-muted text-sm">{t('tieGuide')}</p>
                 <span
                   data-testid="war-cost-badge"
-                  className="inline-flex items-center rounded-full bg-ds-warning/20 px-2 py-0.5 font-bold text-ds-warning text-xs"
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 font-bold text-xs ${badgeWarningColors}`}
                 >
                   {t('warCost', { amount: state.ante })}
                 </span>

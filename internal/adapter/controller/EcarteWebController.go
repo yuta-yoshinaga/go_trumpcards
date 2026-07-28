@@ -36,12 +36,6 @@ type EcarteWebOutputPlayer struct {
 	TrickCount      int              `json:"trickCount"`
 }
 
-// EcarteWebOutputTrickCard トリック中の1枚
-type EcarteWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // EcarteWebOutputHint ヒント出力
 type EcarteWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -51,26 +45,26 @@ type EcarteWebOutputHint struct {
 
 // EcarteWebOutput エカルテWebアウトプット
 type EcarteWebOutput struct {
-	Players          []*EcarteWebOutputPlayer    `json:"players"`
-	DealPoints       []int                       `json:"dealPoints"`
-	MatchScore       []int                       `json:"matchScore"`
-	Phase            int                         `json:"phase"`
-	NegStep          int                         `json:"negStep"`
-	RoundNumber      int                         `json:"roundNumber"`
-	TrickNumber      int                         `json:"trickNumber"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	DealerIdx        int                         `json:"dealerIdx"`
-	ElderIdx         int                         `json:"elderIdx"`
-	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	TrumpSuit        int                         `json:"trumpSuit"`
-	TrumpCard        *WebOutputCard              `json:"trumpCard,omitempty"`
-	CurrentTrick     []*EcarteWebOutputTrickCard `json:"currentTrick"`
-	StockRemaining   int                         `json:"stockRemaining"`
-	RefusalByDealer  bool                        `json:"refusalByDealer"`
-	ValidPlays       []int                       `json:"validPlays"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerIdx        int                         `json:"winnerIdx"`
-	Hint             *EcarteWebOutputHint        `json:"hint,omitempty"`
+	Players          []*EcarteWebOutputPlayer `json:"players"`
+	DealPoints       []int                    `json:"dealPoints"`
+	MatchScore       []int                    `json:"matchScore"`
+	Phase            int                      `json:"phase"`
+	NegStep          int                      `json:"negStep"`
+	RoundNumber      int                      `json:"roundNumber"`
+	TrickNumber      int                      `json:"trickNumber"`
+	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	DealerIdx        int                      `json:"dealerIdx"`
+	ElderIdx         int                      `json:"elderIdx"`
+	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
+	TrumpSuit        int                      `json:"trumpSuit"`
+	TrumpCard        *WebOutputCard           `json:"trumpCard,omitempty"`
+	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
+	StockRemaining   int                      `json:"stockRemaining"`
+	RefusalByDealer  bool                     `json:"refusalByDealer"`
+	ValidPlays       []int                    `json:"validPlays"`
+	GameEndFlag      bool                     `json:"gameEndFlag"`
+	WinnerIdx        int                      `json:"winnerIdx"`
+	Hint             *EcarteWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config EcarteWebOutputConfig `json:"config"`
 }
@@ -110,7 +104,7 @@ func newEcarteDefaultOutput(msg string) *EcarteWebOutput {
 		Players:       make([]*EcarteWebOutputPlayer, 0),
 		DealPoints:    make([]int, 0),
 		MatchScore:    make([]int, 0),
-		CurrentTrick:  make([]*EcarteWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		ValidPlays:    make([]int, 0),
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},

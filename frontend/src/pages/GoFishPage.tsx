@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { goFishApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -15,7 +16,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { type ActionBinding, useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -157,21 +158,24 @@ function GoFishPageContent() {
     [kbdHumanRanks, selectedRank, handleSelectRank, t],
   );
   const askBindings = useMemo(() => {
-    const bindings = kbdCpuPlayers.map((p, i) => ({
+    // Annotated so the pushes below can carry labelKey; inference from the map
+    // alone would fix the element type to exactly these three properties.
+    const bindings: ActionBinding[] = kbdCpuPlayers.map((p, i) => ({
       key: String(i + 1),
       action: () => {
         handleSelectTarget(p.id);
         setKbdAnnounce(t('a11y.targetSelected', { name: playerName(p.id, false) }));
       },
       enabled: kbdIsHumanTurn,
+      label: 'selectTarget',
     }));
-    bindings.push({ key: 'ArrowRight', action: () => cycleRank(1), enabled: kbdIsHumanTurn });
-    bindings.push({ key: 'ArrowLeft', action: () => cycleRank(-1), enabled: kbdIsHumanTurn });
+    bindings.push({ key: 'ArrowRight', action: () => cycleRank(1), enabled: kbdIsHumanTurn, label: 'nextRank' });
+    bindings.push({ key: 'ArrowLeft', action: () => cycleRank(-1), enabled: kbdIsHumanTurn, label: 'prevRank' });
     // Ask key is the letter "a" only. Enter is deliberately not bound: the hook
     // listens at the document level and does not exclude BUTTON, so an Enter
     // binding would double-fire (native button activation + this handler) and
     // send a duplicate ask when a button is focused.
-    bindings.push({ key: 'a', action: handleAsk, enabled: kbdCanAsk });
+    bindings.push({ key: 'a', action: handleAsk, enabled: kbdCanAsk, label: 'ask' });
     return bindings;
   }, [kbdCpuPlayers, handleSelectTarget, cycleRank, handleAsk, kbdIsHumanTurn, kbdCanAsk, t]);
   useActionKeyboardNav({ bindings: askBindings, enabled: !!kbdIsHumanTurn });
@@ -372,6 +376,7 @@ function GoFishPageContent() {
                 dataTutorial="gf-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={askBindings} data-testid="go-fish-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

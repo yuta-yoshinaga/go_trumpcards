@@ -44,7 +44,7 @@ type MemoryGame interface {
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.MemoryPlayer
 	// GetBoard ボード全体を取得する
-	GetBoard() [domain.MemoryBoardSize]*domain.MemoryBoardCard
+	GetBoard() []*domain.MemoryBoardCard
 	// GetBoardCard 指定位置のボードカードを取得する
 	GetBoardCard(pos int) *domain.MemoryBoardCard
 }

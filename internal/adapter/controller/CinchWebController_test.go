@@ -17,8 +17,8 @@ import (
 func mustCinchOutputJSON(msg string) string {
 	out := &controller.CinchWebOutput{
 		Players:         []*controller.CinchWebOutputPlayer{},
-		CurrentTrick:    []*controller.CinchWebOutputTrickCard{},
-		LastTrick:       []*controller.CinchWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		LastTrick:       []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		RoundWinners:    []int{},
 		TotalTricks:     domain.CinchTotalTricks,

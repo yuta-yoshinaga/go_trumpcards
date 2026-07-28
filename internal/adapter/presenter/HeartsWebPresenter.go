@@ -39,16 +39,9 @@ func (p *HeartsWebPresenter) buildBase(h interfaces.HeartsGame) *controller.Hear
 		OmnibusJD:     cfg.OmnibusJD,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(h.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(h.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(h)
 	return resObj
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *HeartsWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.HeartsWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.HeartsWebOutputTrickCard {
-		return &controller.HeartsWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -140,7 +133,7 @@ func (p *HeartsWebPresenter) HintOutput(h interfaces.HeartsGame) string {
 	hint := h.GetHint()
 	resObj := p.buildBase(h)
 	if hint != nil {
-		resObj.Hint = &controller.HeartsWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

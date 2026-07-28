@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { crazyPineappleApi, irishPokerApi, pineappleApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -32,6 +33,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle, selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -324,17 +326,28 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'c', action: () => apiExec('call', undefined, undefined, getElapsed()), enabled: hasOutstandingBet },
+      {
+        key: 'c',
+        action: () => apiExec('call', undefined, undefined, getElapsed()),
+        enabled: hasOutstandingBet,
+        label: 'call',
+      },
       {
         key: 'r',
         action: () =>
           hasOutstandingBet
             ? apiExec('raise', betAmount, undefined, getElapsed())
             : apiExec('bet', betAmount, undefined, getElapsed()),
+        label: 'raiseOrBet',
       },
-      { key: 'k', action: () => apiExec('check', undefined, undefined, getElapsed()), enabled: !hasOutstandingBet },
-      { key: 'f', action: () => apiExec('fold', undefined, undefined, getElapsed()) },
-      { key: 'a', action: () => apiExec('allin', undefined, undefined, getElapsed()) },
+      {
+        key: 'k',
+        action: () => apiExec('check', undefined, undefined, getElapsed()),
+        enabled: !hasOutstandingBet,
+        label: 'check',
+      },
+      { key: 'f', action: () => apiExec('fold', undefined, undefined, getElapsed()), label: 'fold' },
+      { key: 'a', action: () => apiExec('allin', undefined, undefined, getElapsed()), label: 'allin' },
     ],
     [apiExec, hasOutstandingBet, betAmount, getElapsed],
   );
@@ -603,7 +616,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                             )}
                             {isRecommendedDiscard && (
                               <span
-                                className="mt-0.5 rounded-full bg-ds-info/20 px-1.5 text-[10px] font-semibold text-ds-info"
+                                className={`mt-0.5 rounded-full px-1.5 text-[10px] font-semibold ${badgeInfoColors}`}
                                 data-testid="cp-discard-recommended"
                               >
                                 {t('discard.recommended')}
@@ -835,25 +848,28 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
               </summary>
               <div className="flex flex-col gap-2 py-1">
                 <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
-                  <label htmlFor="learningModeCheckbox" className="text-ds-text-primary text-sm cursor-pointer">
+                  <label
+                    htmlFor="learningModeCheckbox"
+                    className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
+                  >
                     {t('learning.toggle')}
+                    <input
+                      id="learningModeCheckbox"
+                      type="checkbox"
+                      checked={learningMode}
+                      onChange={(e) => setLearningMode(e.target.checked)}
+                    />
                   </label>
-                  <input
-                    id="learningModeCheckbox"
-                    type="checkbox"
-                    checked={learningMode}
-                    onChange={(e) => setLearningMode(e.target.checked)}
-                  />
                 </div>
                 {learningMode && state?.equity && state.potOdds != null && (
                   <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
                 )}
                 <div className="flex items-center gap-3">
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                     <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
                     {tc('hint.toggle', { ns: 'tutorial' })}
                   </label>
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                     <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
                     {t('settings.cpuMetaAI')}
                   </label>
@@ -868,6 +884,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
               dataTutorial="pn-reset-button"
               className="min-w-[90px]"
             />
+            <ActionShortcutsPanel bindings={actionBindings} includeCardNav data-testid="pineapple-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

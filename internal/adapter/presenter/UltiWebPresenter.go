@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra3
 
 package presenter
 
@@ -52,7 +52,7 @@ func (p *UltiWebPresenter) buildBase(g interfaces.UltiGame) *controller.UltiWebO
 		TargetRounds:  cfg.TargetRounds,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -67,13 +67,6 @@ func (p *UltiWebPresenter) playableIndices(g interfaces.UltiGame) []int {
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *UltiWebPresenter) buildTrickOutput(trick []*domain.UltiTrickCard) []*controller.UltiWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.UltiTrickCard) *controller.UltiWebOutputTrickCard {
-		return &controller.UltiWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -149,10 +142,10 @@ func (p *UltiWebPresenter) winnerMessage(g interfaces.UltiGame) (string, string,
 		}
 	}
 	if humanIdx >= 0 && winner == humanIdx {
-		return "ゲーム終了！ あなたの勝ち！", "ulti.result.humanWin", nil
+		return "", "ulti.result.humanWin", nil
 	}
 	params := map[string]string{"player": fmt.Sprintf("%d", winner)}
-	return fmt.Sprintf("ゲーム終了！ プレイヤー%dの勝ち！", winner), "ulti.result.cpuWin", params
+	return "", "ulti.result.cpuWin", params
 }
 
 // HintOutput ヒント情報をJSON出力する
@@ -160,7 +153,7 @@ func (p *UltiWebPresenter) HintOutput(g interfaces.UltiGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.UltiWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

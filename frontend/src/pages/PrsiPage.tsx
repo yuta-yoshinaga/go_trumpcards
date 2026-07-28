@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { prsiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -23,6 +24,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, usePrsiGame } from '../hooks/usePrsiGame';
 import { useSound } from '../providers/SoundProvider';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -247,7 +249,7 @@ function PrsiPageContent() {
 
                 {hasPenalty && (
                   <div
-                    className="my-2 p-2 rounded bg-ds-warning/20 text-ds-warning text-sm font-semibold"
+                    className={`my-2 p-2 rounded text-sm font-semibold ${badgeWarningColors}`}
                     data-testid="penalty-indicator"
                   >
                     {t('penalty', { count: state.penaltyDrawCount })}
@@ -345,6 +347,7 @@ function PrsiPageContent() {
                 dataTutorial="prsi-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="prsi-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

@@ -25,6 +25,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
+import { badgeErrorColors, badgeSuccessColors } from '../styles/badgeStyles';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { AccordionResponse } from '../types/card';
@@ -474,11 +475,9 @@ function AccordionPageContent() {
                 data-testid="result-banner"
                 role="status"
                 aria-live="polite"
-                className={
-                  isGameClear
-                    ? 'text-sm text-center font-medium rounded px-3 py-1.5 mt-1 border bg-ds-success/20 text-ds-success border-ds-success'
-                    : 'text-sm text-center font-medium rounded px-3 py-1.5 mt-1 border bg-ds-error/20 text-ds-error border-ds-error'
-                }
+                className={`text-sm text-center font-medium rounded px-3 py-1.5 mt-1 ${
+                  isGameClear ? badgeSuccessColors : badgeErrorColors
+                }`}
               >
                 {isGameClear
                   ? t('result.clear', { moveCount: state.moveCount })

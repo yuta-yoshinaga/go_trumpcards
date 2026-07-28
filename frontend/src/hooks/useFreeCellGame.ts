@@ -8,7 +8,7 @@ export function useFreeCellGame() {
   const [selectedSource, setSelectedSource] = useState<FreeCellMoveZone | null>(null);
   const onClearSelection = useCallback(() => setSelectedSource(null), []);
 
-  const base = useSolitaireGameBase<
+  const { apiCall, runAction, setHint, ...rest } = useSolitaireGameBase<
     Awaited<ReturnType<typeof freecellApi.exec>>,
     Parameters<typeof freecellApi.exec>,
     FreeCellHint
@@ -17,10 +17,7 @@ export function useFreeCellGame() {
     hintApi: () => freecellApi.exec('hint'),
   });
 
-  const handleUndoEscape = useCallback(
-    (n: number) => base.runAction('undo_n', undefined, undefined, n),
-    [base.runAction],
-  );
+  const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
 
   const handleSelectSource = useCallback((zone: FreeCellMoveZone) => {
     setSelectedSource((prev) => {
@@ -40,11 +37,11 @@ export function useFreeCellGame() {
   const handleSelectTarget = useCallback(
     (zone: FreeCellMoveZone) => {
       if (!selectedSource) return;
-      base.setHint(null);
-      void base.apiCall('move', selectedSource, zone);
+      setHint(null);
+      void apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, base],
+    [selectedSource, apiCall, setHint],
   );
 
   // Double-click / double-tap shortcut: dispatch a pre-computed foundation
@@ -52,31 +49,22 @@ export function useFreeCellGame() {
   // clear any pending selection so it stays in lockstep.
   const handleAutoFoundation = useCallback(
     (source: FreeCellMoveZone, target: FreeCellMoveZone) => {
-      base.setHint(null);
-      void base.apiCall('move', source, target);
+      setHint(null);
+      void apiCall('move', source, target);
       setSelectedSource(null);
     },
-    [base],
+    [apiCall, setHint],
   );
 
   return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hintError: base.hintError,
-    exec: base.apiCall,
+    ...rest,
+    runAction,
+    setHint,
+    exec: apiCall,
     selectedSource,
-    hint: base.hint,
-    handleReset: base.handleReset,
-    handleGiveUp: base.handleGiveUp,
-    handleHint: base.handleHint,
-    handleAutoComplete: base.handleAutoComplete,
-    handleUndo: base.handleUndo,
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
     handleAutoFoundation,
-    isAutoCompleting: base.isAutoCompleting,
-    retry: base.retry,
   };
 }

@@ -100,6 +100,15 @@ describe('BelotePage', () => {
     );
   });
 
+  // The phase key map must hold bare keys; usePhaseNames adds the `phase.`
+  // prefix itself, so a prefixed key resolved to the literal
+  // "phase.phase.bidPickUp" on screen. See issue #4374.
+  it('renders the translated phase name, not the raw i18n key', async () => {
+    renderWithProviders(<BelotePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ターンアップを取る'));
+    expect(screen.getByTestId('phase-indicator')).not.toHaveTextContent('phase.');
+  });
+
   it('shows the orderup and pass buttons in pick-up phase when human is bid turn', async () => {
     renderWithProviders(<BelotePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '取る' })).toBeInTheDocument());

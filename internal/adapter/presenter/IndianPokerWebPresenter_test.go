@@ -273,7 +273,7 @@ func TestIndianPokerWebPresenter_Output(t *testing.T) {
 		var out controller.IndianPokerWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Contains(t, out.Message, "You are the winner.")
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "indianpoker.result.win", out.MessageCode)
 	})
 
@@ -290,7 +290,7 @@ func TestIndianPokerWebPresenter_Output(t *testing.T) {
 		var out controller.IndianPokerWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Contains(t, out.Message, "You lose.")
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "indianpoker.result.lose", out.MessageCode)
 	})
 
@@ -307,7 +307,7 @@ func TestIndianPokerWebPresenter_Output(t *testing.T) {
 		var out controller.IndianPokerWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Contains(t, out.Message, "You folded.")
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "indianpoker.result.folded", out.MessageCode)
 	})
 
@@ -320,7 +320,7 @@ func TestIndianPokerWebPresenter_Output(t *testing.T) {
 		var out controller.IndianPokerWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "Game over.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "indianpoker.result.gameOver", out.MessageCode)
 	})
 

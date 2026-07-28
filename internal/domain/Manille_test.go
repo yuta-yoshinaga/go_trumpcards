@@ -75,7 +75,7 @@ func TestManille_TrickWinnerTrumpBeatsLead(t *testing.T) {
 	g := newManGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
 	// Lead 10♣ (Manille, strongest plain) but a low trump 7♦ beats it.
-	g.SetCurrentTrick([]*ManilleTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: manCard(CardDesignClover, 10)},
 		{PlayerIdx: 1, Card: manCard(CardDesignDiamond, 7)},
 		{PlayerIdx: 2, Card: manCard(CardDesignClover, 1)},
@@ -89,7 +89,7 @@ func TestManille_TrickWinnerTrumpBeatsLead(t *testing.T) {
 func TestManille_TenBeatsAceInPlainSuit(t *testing.T) {
 	g := newManGame(false)
 	g.SetTrumpSuit(CardDesignDiamond) // no trump in trick
-	g.SetCurrentTrick([]*ManilleTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: manCard(CardDesignClover, 1)},  // Ace lead
 		{PlayerIdx: 1, Card: manCard(CardDesignClover, 10)}, // Manille beats Ace
 	})
@@ -103,7 +103,7 @@ func TestManille_MustFollow(t *testing.T) {
 	g.SetPhase(ManillePhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*ManilleTrickCard{{PlayerIdx: 3, Card: manCard(CardDesignClover, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: manCard(CardDesignClover, 1)}})
 	manSetHand(g.GetPlayer(0), manCard(CardDesignClover, 13), manCard(CardDesignDiamond, 7))
 	if err := g.PlayerPlay(1); err == nil { // diamond while holding club
 		t.Error("expected must-follow error")
@@ -120,7 +120,7 @@ func TestManille_PartnerWinningTrumpExemption(t *testing.T) {
 	g.SetCurrentPlayerIdx(0) // human plays last in this trick
 	// Trick led by p1; the human's partner p2 (team 0) is currently winning with 10♣.
 	// The human is void in clubs but holds a trump — partner-winning exemption lets them discard.
-	g.SetCurrentTrick([]*ManilleTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 1, Card: manCard(CardDesignClover, 7)},
 		{PlayerIdx: 2, Card: manCard(CardDesignClover, 10)},
 		{PlayerIdx: 3, Card: manCard(CardDesignClover, 8)},
@@ -137,7 +137,7 @@ func TestManille_MustTrumpWhenOpponentWinning(t *testing.T) {
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0) // human plays last
 	// Opponent p1 (team 1) is winning with 10♣. Human is void in clubs but holds a trump → must trump.
-	g.SetCurrentTrick([]*ManilleTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 1, Card: manCard(CardDesignClover, 10)},
 		{PlayerIdx: 2, Card: manCard(CardDesignClover, 7)},
 		{PlayerIdx: 3, Card: manCard(CardDesignClover, 8)},
@@ -157,7 +157,7 @@ func TestManille_ResolveTrickPoints(t *testing.T) {
 	g.SetPhase(ManillePhaseTrickEnd)
 	g.SetTrickNumber(1)
 	// 10♣(5) + A♣(4) + K♣(3) + 7♣(0) = 12; 10♣ wins for team 0 (p0).
-	g.SetCurrentTrick([]*ManilleTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: manCard(CardDesignClover, 10)},
 		{PlayerIdx: 1, Card: manCard(CardDesignClover, 1)},
 		{PlayerIdx: 2, Card: manCard(CardDesignClover, 13)},

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra3
 
 package domain
 
@@ -51,12 +51,6 @@ type JassHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// JassTrickCard トリック中の1枚
-type JassTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Jass ヤス(シーバー)ゲームクラス
 type Jass struct {
 	trumpCards       *TrumpCards
@@ -66,7 +60,7 @@ type Jass struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*JassTrickCard
+	currentTrick     []*TrickCard
 	dealerIdx        int
 	forehandIdx      int  // フォアハンド (ビッド開始 & 第1トリックのリード)
 	trumpSuit        int  // 切り札スート (0 = 未確定)
@@ -422,10 +416,10 @@ func (g *Jass) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Jass) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Jass) GetCurrentTrick() []*JassTrickCard { return g.currentTrick }
+func (g *Jass) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Jass) SetCurrentTrick(trick []*JassTrickCard) { g.currentTrick = trick }
+func (g *Jass) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetGameEndFlag ゲーム終了フラグ取得
 func (g *Jass) GetGameEndFlag() bool { return g.gameEndFlag }
@@ -921,7 +915,7 @@ func (g *Jass) startPlayPhase() {
 
 // playCard カードをプレイする共通処理
 func (g *Jass) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &JassTrickCard{
+	g.currentTrick = append(g.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -1389,7 +1383,7 @@ type jassJSON struct {
 	RoundNumber      int               `json:"rn"`
 	TrickNumber      int               `json:"tn"`
 	CurrentPlayerIdx int               `json:"cp"`
-	CurrentTrick     []*JassTrickCard  `json:"ct"`
+	CurrentTrick     []*TrickCard      `json:"ct"`
 	DealerIdx        int               `json:"di"`
 	ForehandIdx      int               `json:"fh"`
 	TrumpSuit        int               `json:"ts"`

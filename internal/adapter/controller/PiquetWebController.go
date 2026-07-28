@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra3
 
 package controller
 
@@ -56,12 +56,6 @@ type PiquetWebOutputPlayer struct {
 	MatchScore int              `json:"matchScore"`
 }
 
-// PiquetWebOutputTrickCard トリック中の1枚
-type PiquetWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // PiquetWebOutputClaim 宣言の中身
 type PiquetWebOutputClaim struct {
 	Length   int              `json:"length"`
@@ -117,7 +111,7 @@ type PiquetWebOutput struct {
 	CarteBlanche         [2]bool                       `json:"carteBlanche"`
 	DeclStage            int                           `json:"declStage"`
 	DeclResults          []*PiquetWebOutputDeclaration `json:"declResults"`
-	CurrentTrick         []*PiquetWebOutputTrickCard   `json:"currentTrick"`
+	CurrentTrick         []*WebOutputTrickCard         `json:"currentTrick"`
 	LegalPlayIndices     []int                         `json:"legalPlayIndices,omitempty"`
 	GameEndFlag          bool                          `json:"gameEndFlag"`
 	WinnerIdx            int                           `json:"winnerIdx"`
@@ -137,7 +131,7 @@ var NewPiquetWebController, NewPiquetWebControllerWithProvider = webControllerPa
 func newPiquetDefaultOutput(msg string) *PiquetWebOutput {
 	return &PiquetWebOutput{
 		Players:       make([]*PiquetWebOutputPlayer, 0),
-		CurrentTrick:  make([]*PiquetWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		DeclResults:   make([]*PiquetWebOutputDeclaration, 0),
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},

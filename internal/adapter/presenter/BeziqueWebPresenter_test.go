@@ -19,7 +19,7 @@ func setupBeziqueWebMock(trumpCard *domain.Card) *interfaces.MockBeziqueGame {
 	m := new(interfaces.MockBeziqueGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.BeziqueTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.BeziquePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra3
 
 // Package domain チェゴ (Cego) のドメインモデル。
 //
@@ -174,8 +174,10 @@ const (
 	CegoOutcomeLoss CegoOutcome = 2
 )
 
-// CegoResult 人間視点のマッチ結果。casino タグの GameResult は solo ワーカーから到達不能なため、
-// ゲームローカルの結果型を定義する。
+// CegoResult 人間視点のマッチ結果。
+// GameResult は共有ファイル internal/domain/game_result.go に移動したので到達可能に
+// なったが、この型名は JSON ペイロードに出るため統合していない（#4462）。値は
+// GameResult と同一。
 type CegoResult int
 
 // Cego のマッチ結果定数
@@ -194,12 +196,6 @@ type CegoHint struct {
 	Contract    *int   // 推奨コントラクト (コントラクトフェーズ)
 	CardIndices []int  // 推奨カードインデックス (交換/プレイ)
 	Reason      string // ヒント理由キー
-}
-
-// CegoTrickCard トリック中の 1 枚
-type CegoTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
 }
 
 // CegoBreakdown 得点計算の内訳 (純粋関数 cegoScoreDeal の出力)。
@@ -232,7 +228,7 @@ type Cego struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*CegoTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	// --- bidding state ---
@@ -705,7 +701,7 @@ func (g *Cego) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Cego) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &CegoTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cegoCardStr(card)), []*Card{card})
 	if len(g.currentTrick) == CegoPlayerCnt {
 		g.phase = CegoPhaseTrickEnd
@@ -1539,10 +1535,10 @@ func (g *Cego) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Cego) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Cego) GetCurrentTrick() []*CegoTrickCard { return g.currentTrick }
+func (g *Cego) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Cego) SetCurrentTrick(trick []*CegoTrickCard) { g.currentTrick = trick }
+func (g *Cego) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Cego) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -1746,7 +1742,7 @@ type cegoJSON struct {
 	RoundNumber      int                 `json:"rn"`
 	TrickNumber      int                 `json:"tn"`
 	CurrentPlayerIdx int                 `json:"ci"`
-	CurrentTrick     []*CegoTrickCard    `json:"ct"`
+	CurrentTrick     []*TrickCard        `json:"ct"`
 	LeadPlayerIdx    int                 `json:"li"`
 	DealerIdx        int                 `json:"di"`
 	BidPlayerIdx     int                 `json:"bi"`
@@ -1947,7 +1943,7 @@ func (g *Cego) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*CegoTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

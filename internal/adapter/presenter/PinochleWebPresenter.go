@@ -36,7 +36,7 @@ func (p *PinochleWebPresenter) Output(g interfaces.PinochleGame, lastErr error) 
 	}
 
 	trick := g.GetCurrentTrick()
-	resObj.CurrentTrick = p.buildTrickOutput(trick)
+	resObj.CurrentTrick = trickCardsToOutput(trick)
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.PlayerMelds = p.buildMeldsOutput(g)
 
@@ -71,13 +71,6 @@ func (p *PinochleWebPresenter) HintOutput(g interfaces.PinochleGame) string {
 // ActionLogOutput 棋譜を出力
 func (p *PinochleWebPresenter) ActionLogOutput(g interfaces.PinochleGame) string {
 	return actionLogToJSON(g.GetActionLog())
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *PinochleWebPresenter) buildTrickOutput(trick []*domain.PinochleTrickCard) []*controller.PinochleWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.PinochleTrickCard) *controller.PinochleWebOutputTrickCard {
-		return &controller.PinochleWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

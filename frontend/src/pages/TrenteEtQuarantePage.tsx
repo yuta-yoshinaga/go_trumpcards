@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { trenteetquaranteApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -102,10 +103,10 @@ function TrenteEtQuarantePageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleBet, enabled: isBetPhase },
-      { key: 'r', action: handleNextRound, enabled: isResultPhase },
+      { key: 'd', action: handleBet, enabled: isBetPhase, label: 'bet' },
+      { key: 'r', action: handleNextRound, enabled: isResultPhase, label: 'next' },
       // Power-user shortcut: 'e' replays the last bet once the round has ended.
-      { key: 'e', action: handleRebet, enabled: isResultPhase && canRebet },
+      { key: 'e', action: handleRebet, enabled: isResultPhase && canRebet, label: 'rebet' },
     ],
     [handleBet, handleNextRound, handleRebet, isBetPhase, isResultPhase, canRebet],
   );
@@ -160,7 +161,7 @@ function TrenteEtQuarantePageContent() {
               messageParams={state.messageParams}
             />
 
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer">
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer min-h-[44px]">
               <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
               {tc('hint.toggle', { ns: 'tutorial' })}
             </label>
@@ -331,6 +332,7 @@ function TrenteEtQuarantePageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="trente-et-quarante-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

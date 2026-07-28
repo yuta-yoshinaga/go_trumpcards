@@ -58,12 +58,6 @@ type KlaverjasHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// KlaverjasTrickCard トリック中の 1 枚
-type KlaverjasTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Klaverjas クラヴァヤスのゲームクラス
 type Klaverjas struct {
 	trumpCards       *TrumpCards
@@ -73,7 +67,7 @@ type Klaverjas struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*KlaverjasTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	trumpSuit        int                   // 切り札スート
@@ -222,7 +216,7 @@ func (g *Klaverjas) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Klaverjas) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &KlaverjasTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == KlaverjasPlayerCnt {
@@ -785,10 +779,10 @@ func (g *Klaverjas) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Klaverjas) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Klaverjas) GetCurrentTrick() []*KlaverjasTrickCard { return g.currentTrick }
+func (g *Klaverjas) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Klaverjas) SetCurrentTrick(trick []*KlaverjasTrickCard) { g.currentTrick = trick }
+func (g *Klaverjas) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Klaverjas) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -873,7 +867,7 @@ type klaverjasJSON struct {
 	RoundNumber      int                   `json:"rn"`
 	TrickNumber      int                   `json:"tn"`
 	CurrentPlayerIdx int                   `json:"ci"`
-	CurrentTrick     []*KlaverjasTrickCard `json:"ct"`
+	CurrentTrick     []*TrickCard          `json:"ct"`
 	LeadPlayerIdx    int                   `json:"li"`
 	DealerIdx        int                   `json:"di"`
 	TrumpSuit        int                   `json:"ts"`
@@ -945,7 +939,7 @@ func (g *Klaverjas) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*KlaverjasTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

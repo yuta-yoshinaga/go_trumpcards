@@ -10,7 +10,7 @@ export function useSpideretteGame() {
   const [selectedSource, setSelectedSource] = useState<SpideretteMoveZone | null>(null);
   const onClearSelection = useCallback(() => setSelectedSource(null), []);
 
-  const base = useSolitaireGameBase<
+  const { apiCall, runAction, setHint, ...rest } = useSolitaireGameBase<
     Awaited<ReturnType<typeof runCommand>>,
     Parameters<typeof runCommand>,
     SpideretteHint
@@ -19,11 +19,8 @@ export function useSpideretteGame() {
     hintApi: () => runCommand('hint'),
   });
 
-  const handleDeal = useCallback(() => base.runAction('deal'), [base.runAction]);
-  const handleUndoEscape = useCallback(
-    (n: number) => base.runAction('undo_n', undefined, undefined, n),
-    [base.runAction],
-  );
+  const handleDeal = useCallback(() => runAction('deal'), [runAction]);
+  const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
 
   const handleSelectSource = useCallback((zone: SpideretteMoveZone) => {
     setSelectedSource((prev) => {
@@ -37,31 +34,22 @@ export function useSpideretteGame() {
   const handleSelectTarget = useCallback(
     (zone: SpideretteMoveZone) => {
       if (!selectedSource) return;
-      base.setHint(null);
-      void base.apiCall('move', selectedSource, zone);
+      setHint(null);
+      void apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, base],
+    [selectedSource, apiCall, setHint],
   );
 
   return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    exec: base.apiCall,
-    hintError: base.hintError,
+    ...rest,
+    runAction,
+    setHint,
+    exec: apiCall,
     selectedSource,
-    hint: base.hint,
     handleDeal,
-    handleReset: base.handleReset,
-    handleGiveUp: base.handleGiveUp,
-    handleHint: base.handleHint,
-    handleAutoComplete: base.handleAutoComplete,
-    handleUndo: base.handleUndo,
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
-    isAutoCompleting: base.isAutoCompleting,
-    retry: base.retry,
   };
 }

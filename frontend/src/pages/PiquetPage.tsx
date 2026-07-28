@@ -133,63 +133,72 @@ function PiquetPageContent() {
       <ErrorAlert message={error} onRetry={retry} />
       <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
-      <div className="text-sm opacity-80 px-2">
-        {t('dealHeader', { deal: state.dealNumber, total: state.dealsPerPartie })}
-      </div>
-
-      <PlayerCard label={t('roleElder')} player={state.players[elderIdx]} carteBlanche={state.carteBlanche[elderIdx]} />
-      <PlayerCard
-        label={t('roleYounger')}
-        player={state.players[state.youngerIdx]}
-        carteBlanche={state.carteBlanche[state.youngerIdx]}
-      />
-
-      {human ? (
-        <div data-tutorial="piquet-hand" className="rounded border border-white/20 p-2 mx-2">
-          <div className="mb-1 flex items-center justify-between text-xs">
-            <span className="opacity-70">{t('yourHand')}</span>
-            {activeHighlight ? (
-              <span
-                data-testid="piquet-meld-badge"
-                className={`rounded px-2 py-0.5 text-xs font-bold ${
-                  activeHighlight.won ? badgeSuccessColors : badgeErrorColors
-                }`}
-              >
-                {t(activeHighlight.won ? 'meldWonBadge' : 'meldLostBadge', {
-                  label: t(activeHighlight.labelKey, { count: activeHighlight.count }),
-                })}
-              </span>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {human.cards.map((c, i) => {
-              const selected = selectedDiscards.includes(i);
-              const highlighted = activeHighlight?.cardIndices.includes(i) ?? false;
-              // Highlight ring lives on the AnimatedCard wrapper so it tracks the lift; the
-              // selection lift/glow is driven by AnimatedCard's isSelected (Framer Motion).
-              const ringClass = highlighted
-                ? activeHighlight?.won
-                  ? 'ring-2 ring-ds-success'
-                  : 'ring-2 ring-ds-error'
-                : '';
-              const handlePlay = () => game.handlePlay(i);
-              const handleClick = humanCanExchange ? () => toggleDiscard(i) : humanCanPlay ? handlePlay : undefined;
-              return (
-                <button
-                  key={`hand-${i}-${c.design}-${c.value}`}
-                  type="button"
-                  aria-pressed={humanCanExchange ? selected : undefined}
-                  className="rounded"
-                  onClick={handleClick}
-                  disabled={handleClick == null}
-                >
-                  <AnimatedCard card={c} width={cardWidth} isSelected={selected} wrapperClassName={ringClass} />
-                </button>
-              );
-            })}
-          </div>
+      {/* Scrollable state display. Piquet fits a 375x667 viewport today with
+          room to spare, but it had no play area at all, so any growth would have
+          gone straight into the document height. See issue #4373. */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="text-sm opacity-80 px-2">
+          {t('dealHeader', { deal: state.dealNumber, total: state.dealsPerPartie })}
         </div>
-      ) : null}
+
+        <PlayerCard
+          label={t('roleElder')}
+          player={state.players[elderIdx]}
+          carteBlanche={state.carteBlanche[elderIdx]}
+        />
+        <PlayerCard
+          label={t('roleYounger')}
+          player={state.players[state.youngerIdx]}
+          carteBlanche={state.carteBlanche[state.youngerIdx]}
+        />
+
+        {human ? (
+          <div data-tutorial="piquet-hand" className="rounded border border-white/20 p-2 mx-2">
+            <div className="mb-1 flex items-center justify-between text-xs">
+              <span className="opacity-70">{t('yourHand')}</span>
+              {activeHighlight ? (
+                <span
+                  data-testid="piquet-meld-badge"
+                  className={`rounded px-2 py-0.5 text-xs font-bold ${
+                    activeHighlight.won ? badgeSuccessColors : badgeErrorColors
+                  }`}
+                >
+                  {t(activeHighlight.won ? 'meldWonBadge' : 'meldLostBadge', {
+                    label: t(activeHighlight.labelKey, { count: activeHighlight.count }),
+                  })}
+                </span>
+              ) : null}
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {human.cards.map((c, i) => {
+                const selected = selectedDiscards.includes(i);
+                const highlighted = activeHighlight?.cardIndices.includes(i) ?? false;
+                // Highlight ring lives on the AnimatedCard wrapper so it tracks the lift; the
+                // selection lift/glow is driven by AnimatedCard's isSelected (Framer Motion).
+                const ringClass = highlighted
+                  ? activeHighlight?.won
+                    ? 'ring-2 ring-ds-success'
+                    : 'ring-2 ring-ds-error'
+                  : '';
+                const handlePlay = () => game.handlePlay(i);
+                const handleClick = humanCanExchange ? () => toggleDiscard(i) : humanCanPlay ? handlePlay : undefined;
+                return (
+                  <button
+                    key={`hand-${i}-${c.design}-${c.value}`}
+                    type="button"
+                    aria-pressed={humanCanExchange ? selected : undefined}
+                    className="rounded"
+                    onClick={handleClick}
+                    disabled={handleClick == null}
+                  >
+                    <AnimatedCard card={c} width={cardWidth} isSelected={selected} wrapperClassName={ringClass} />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+      </div>
 
       <div data-tutorial="piquet-controls" className="flex flex-wrap gap-2 px-2">
         {humanCanExchange && state.exchangeTurn === PiquetExchangeTurn.ELDER ? (

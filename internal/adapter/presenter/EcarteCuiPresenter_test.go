@@ -18,7 +18,7 @@ func setupEcarteCuiMock(trumpCard *domain.Card) *interfaces.MockEcarteGame {
 	m := new(interfaces.MockEcarteGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.EcarteTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.EcartePhasePlay)
 	m.On("GetNegStep").Return(domain.EcarteNegElderDecide)

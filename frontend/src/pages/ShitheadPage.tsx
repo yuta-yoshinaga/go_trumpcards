@@ -18,7 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useShitheadGame } from '../hooks/useShitheadGame';
-import { badgeWarningColors } from '../styles/badgeStyles';
+import { badgeInfoColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { focusRingCard } from '../styles/cardStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -161,7 +161,7 @@ function ShitheadPageContent() {
                 key={state.currentSource}
                 role="status"
                 data-testid="sh-source-banner"
-                className="mb-2 animate-pulse-once rounded-lg bg-ds-info/20 px-3 py-1.5 text-center font-medium text-ds-info text-sm"
+                className={`mb-2 animate-pulse-once rounded-lg px-3 py-1.5 text-center font-medium text-sm ${badgeInfoColors}`}
               >
                 {t(`sourceBanner.${state.currentSource}`)}
               </div>
@@ -266,7 +266,7 @@ function ShitheadPageContent() {
 
           <GameFooter className={`${gameTheme.shithead.footer} px-4 py-2.5`}>
             <div className="flex flex-wrap gap-2 items-center">
-              <label className="flex items-center gap-1 text-ds-text-primary text-xs">
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs min-h-[44px]">
                 <input
                   type="checkbox"
                   checked={hintEnabled}

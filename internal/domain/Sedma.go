@@ -56,12 +56,6 @@ type SedmaHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// SedmaTrickCard トリック中の 1 枚
-type SedmaTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Sedma セドマのゲームクラス
 type Sedma struct {
 	trumpCards       *TrumpCards
@@ -71,7 +65,7 @@ type Sedma struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*SedmaTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	teamScores       [SedmaTeamCnt]int // 累積点
@@ -194,7 +188,7 @@ func (g *Sedma) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Sedma) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &SedmaTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == SedmaPlayerCnt {
@@ -529,10 +523,10 @@ func (g *Sedma) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Sedma) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Sedma) GetCurrentTrick() []*SedmaTrickCard { return g.currentTrick }
+func (g *Sedma) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Sedma) SetCurrentTrick(trick []*SedmaTrickCard) { g.currentTrick = trick }
+func (g *Sedma) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Sedma) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -608,7 +602,7 @@ type sedmaJSON struct {
 	RoundNumber      int               `json:"rn"`
 	TrickNumber      int               `json:"tn"`
 	CurrentPlayerIdx int               `json:"ci"`
-	CurrentTrick     []*SedmaTrickCard `json:"ct"`
+	CurrentTrick     []*TrickCard      `json:"ct"`
 	LeadPlayerIdx    int               `json:"li"`
 	DealerIdx        int               `json:"di"`
 	TeamScores       [SedmaTeamCnt]int `json:"sc"`
@@ -689,7 +683,7 @@ func (g *Sedma) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*SedmaTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

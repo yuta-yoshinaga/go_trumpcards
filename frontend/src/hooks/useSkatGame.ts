@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { skatApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { SkatConfig, SkatHint } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
+import { useHintRequest } from './useHintRequest';
 
 /** Default Skat game configuration. */
 export const DEFAULT_SKAT_CONFIG: SkatConfig = {
@@ -87,18 +87,13 @@ export function useSkatGame() {
     dispatch('nextround');
   }, [dispatch]);
 
-  const handleHint = useCallback(async () => {
-    setHintLoading(true);
-    try {
-      const res = await skatApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    } finally {
-      setHintLoading(false);
-    }
-  }, []);
+  const handleHint = useHintRequest({
+    fetchHint: () => skatApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+    setHintLoading,
+  });
 
   return {
     state,

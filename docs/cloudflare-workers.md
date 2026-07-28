@@ -1,20 +1,55 @@
 # Cloudflare Workers (WASM)
 
-Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. **Four** workers split games into size buckets to keep each binary under the free-tier 1 MB gzipped limit. The fourth, **`extra`**, was added in [ADR-0032](adr/0032-fourth-worker-capacity.md) once the original three approached the limit; it is an overflow bucket that games are rebalanced into. Like the others, the `Category` is purely a binary-size bucket, **not** a user-facing taxonomy.
+Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. **Six** workers split games into size buckets to keep each binary under the free-tier 1 MB gzipped limit. The fourth, **`extra`**, was added in [ADR-0032](adr/0032-fourth-worker-capacity.md) once the original three approached the limit; it is an overflow bucket that games are rebalanced into. Like the others, the `Category` is purely a binary-size bucket, **not** a user-facing taxonomy.
 
-| Worker | Entry point | Games |
-|--------|-------------|-------|
-| **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, omahahilo, bigo, bigohilo, shortdeck, pineapple, crazypineapple, irishpoker, indianpoker, videopoker, deuceswild, jokerpoker, threecard, fourcardpoker, caribbeanstud, texasholdembonus, ultimatetexasholdem, mississippistud, sevencardstud, paigow, chinesepoker, letitride, reddog, razz, badugi, deucetoseven, spanish21, casinowar, dragontiger, blackjackswitch, oasispoker, russianpoker, casinoholdem, highcardflush, tressette, bourre, napoleon, mighty, bridge, skat, belote, tarneeb, sheepshead, doppelkopf, mus, tute, sueca, fortyfives, twentynine, courtpiece, ecarte, threecardbrag, teenpatti, kemps, pishti, cuarenta, fivecardstud, faro, openfacechinese) |
-| **classic** | `cmd/workers/classic/main.go` | Trick-taking, matching & fishing (hearts, spades, pitch, twotenjack, callbreak, briscola, oldmaid, doubt, daifugo, bigtwo, sevens, crazyeights, ohhell, speed, gofish, pinochle, pigtail, durak, war, fiftyone, whist, pageone, trash, president, cassino, spiteandmalice, shithead, nertz, slapjack, egyptianratscrew, tonk, sixcardgolf, truco, klaverjas, manille, marias, sedma, solowhist, knockoutwhist, nap, preference, spoilfive, doudizhu, tichu, scopa, scopone, escoba, bezique, cuckoo, spoons, labellelucie, simplesimon, doubleklondike) |
-| **extra** | `cmd/workers/extra/main.go` | Overflow size bucket — games rebalanced off the other three workers (see ADR-0032). Rummy family moved off `solo` (ginrummy, conquian, chinchon, threethirteen, canasta, handandfoot, contractrummy, kalooki, burraco, rummy500); plus solitaires streetsandalleys, kingalbert, flowergarden, fortyandeight, agnes, sultan; plus the trick-takers jass, gaigel, tysiac, calabresella, ombre, king, cinch, and loo; plus the fishing games basra and tablanet; plus the banking game trenteetquarante; plus the poker-vying pot games guts, bouillotte, primero, and the Pass-the-Trash poker game anaconda; plus the stops chip-betting game michigan; plus the raise/bluff trick-taker watten; plus the contract-rummy game carioca; plus the three-deck Canasta variant samba; plus the 13-card Indian Rummy (indianrummy); plus the Italian shared-table Rummy Machiavelli (machiavelli); plus the multi-deck Mexican Rummy Panguingue (pan); plus the first non-52 procedural-render-path games (ADR-0033): the Wizard trick-taker (wizard), the kabufuda banking game Oicho-Kabu (oichokabu), the 57-card Rook (rook), the hanafuda games Koi-Koi (koikoi), Go-Stop (gostop) and Hachi-Hachi (hachihachi), the 78-card French Tarot (frenchtarot), and the Austrian tarock game Königrufen (koenigrufen). |
-| **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, seahaventowers, cruel, spider, spiderette, pyramid, tripeaks, memory, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, russiansolitaire, scorpion, wasp, accordion, pokersquares, montecarlo, calculation, bakersdozen, beleagueredcastle, sevenbridge, crescent, gaps, eightoff, penguin, acesup, barbu, macau, mao, thirtyone, tienlen, osmosis, fivehundred, schnapsen, gongzhu, bristol, bidwhist, easthaven, bakersgame, euchre, piquet, russianbank, blackhole; plus — bucketed here for size headroom once the extra worker hit the 1 MB limit — the 78-card Italian tarot trick-taker Scarto (scarto, ADR-0033), the 54-card Baden tarock game Cego (cego), and the 54-card Chinese climbing game Zheng Shangyou (zheng); plus the Israeli draw-and-discard game Yaniv (yaniv), rebucketed off `casino` for size headroom; plus the Hungarian contract trick-taker Ulti (ulti), rebucketed off the full `extra` worker for size headroom) |
+Each row lists the games' **registry keys** verbatim, so the table can be checked
+mechanically -- `TestDocsMatchRegistry` in `internal/infrastructure/games` fails if
+this table and `registry.go` disagree. It is generated, not curated: the previous
+hand-written prose drifted repeatedly (it still named three workers after the fourth
+shipped), which is why the lists are now flat and guarded.
 
-The worker entry points (`cmd/workers/{casino,classic,solo}/main.go`) are thin shells that blank-import the matching `internal/infrastructure/games/<category>` sub-package and call `games.RegisterCategory(mux, games.Category…)`. The registry itself (`internal/infrastructure/games/registry.go`) stores `{Name, Category}` for each game; the human-readable descriptions live in a separate `descriptions.go` map (build-tagged `//go:build !js || !wasm` to keep them out of the WASM binaries). The Web-server factories live in `games_server.go` (excluded from WASM via build tags) and the Worker bindings live in per-category sub-packages — this split is what keeps each Cloudflare Worker binary under the 1 MB gzipped free-tier limit by letting TinyGo dead-code-eliminate the games from the other two categories.
+A bucket is chosen purely by binary size. Nothing about a game's genre puts it in a
+particular worker, and games move between buckets whenever one approaches the limit.
+
+| Worker | Entry point | Games | Registry keys |
+|--------|-------------|-------|---------------|
+| **casino** | `cmd/workers/casino/main.go` | 54 | `baccarat`, `badugi`, `bigo`, `bigohilo`, `blackjack`, `blackjackswitch`, `bourre`, `caribbeanstud`, `casinoholdem`, `casinowar`, `chinesepoker`, `courtpiece`, `crazypineapple`, `deuceswild`, `deucetoseven`, `doppelkopf`, `dragontiger`, `ecarte`, `fivecardstud`, `fortyfives`, `fourcardpoker`, `highcardflush`, `holdem`, `indianpoker`, `irishpoker`, `jokerpoker`, `letitride`, `mississippistud`, `mus`, `napoleon`, `oasispoker`, `omaha`, `omahahilo`, `openfacechinese`, `paigow`, `pineapple`, `poker`, `razz`, `reddog`, `russianpoker`, `sevencardstud`, `shortdeck`, `spanish21`, `sueca`, `tarneeb`, `teenpatti`, `texasholdembonus`, `threecard`, `threecardbrag`, `tressette`, `tute`, `twentynine`, `ultimatetexasholdem`, `videopoker` |
+| **classic** | `cmd/workers/classic/main.go` | 41 | `allfours`, `bezique`, `briscola`, `callbreak`, `cassino`, `catchten`, `crazyeights`, `daifugo`, `doudizhu`, `durak`, `egyptianratscrew`, `escoba`, `hearts`, `klaverjas`, `knockoutwhist`, `labellelucie`, `manille`, `marias`, `nap`, `ninetynine`, `ohhell`, `oldmaid`, `pageone`, `pitch`, `preference`, `president`, `prsi`, `scopa`, `scopone`, `sedma`, `sevens`, `shithead`, `simplesimon`, `slapjack`, `solowhist`, `spades`, `spoilfive`, `tonk`, `truco`, `twotenjack`, `whist` |
+| **solo** | `cmd/workers/solo/main.go` | 45 | `accordion`, `acesup`, `bakersdozen`, `bakersgame`, `barbu`, `beleagueredcastle`, `bidwhist`, `blackhole`, `bristol`, `calculation`, `canfield`, `clocksolitaire`, `crescent`, `cruel`, `easthaven`, `eightoff`, `euchre`, `fivehundred`, `fortythieves`, `freecell`, `gaps`, `golf`, `gongzhu`, `klondike`, `macau`, `memory`, `montecarlo`, `osmosis`, `penguin`, `pokersquares`, `pyramid`, `russianbank`, `russiansolitaire`, `schnapsen`, `scorpion`, `seahaventowers`, `spider`, `spiderette`, `thirtyone`, `tienlen`, `tripeaks`, `wasp`, `yaniv`, `yukon`, `zheng` |
+| **extra** | `cmd/workers/extra/main.go` | 34 | `agnes`, `anaconda`, `burraco`, `calabresella`, `canasta`, `carioca`, `chinchon`, `cinch`, `conquian`, `contractrummy`, `flowergarden`, `frenchtarot`, `gaigel`, `ginrummy`, `gostop`, `guts`, `hachihachi`, `handandfoot`, `indianrummy`, `kalooki`, `king`, `kingalbert`, `koenigrufen`, `machiavelli`, `oichokabu`, `pan`, `rummy500`, `samba`, `streetsandalleys`, `sultan`, `threethirteen`, `trenteetquarante`, `tysiac`, `watten` |
+| **extra2** | `cmd/workers/extra2/main.go` | 22 | `beggarmyneighbour`, `bigtwo`, `cuarenta`, `cuckoo`, `doubleklondike`, `doubt`, `faro`, `fiftyone`, `gofish`, `kemps`, `mighty`, `nertz`, `pigtail`, `pinochle`, `pishti`, `sixcardgolf`, `speed`, `spiteandmalice`, `spoons`, `tichu`, `trash`, `war` |
+| **extra3** | `cmd/workers/extra3/main.go` | 23 | `basra`, `belote`, `bouillotte`, `bridge`, `cego`, `cribbage`, `fortyandeight`, `jass`, `koikoi`, `loo`, `mao`, `michigan`, `ombre`, `piquet`, `primero`, `rook`, `scarto`, `sevenbridge`, `sheepshead`, `skat`, `tablanet`, `ulti`, `wizard` |
+
+The worker entry points (`cmd/workers/{casino,classic,solo,extra,extra2,extra3}/main.go`) are thin shells that blank-import the matching `internal/infrastructure/games/<category>` sub-package and call `games.RegisterCategory(mux, games.Category…)`. The registry itself (`internal/infrastructure/games/registry.go`) stores `{Name, Category}` for each game; the human-readable descriptions live in a separate `descriptions.go` map (build-tagged `//go:build !js || !wasm` to keep them out of the WASM binaries). The Web-server factories live in `games_server.go` (excluded from WASM via build tags) and the Worker bindings live in per-category sub-packages — this split is what keeps each Cloudflare Worker binary under the 1 MB gzipped free-tier limit by letting TinyGo dead-code-eliminate the games from the other categories.
 
 **When adding/modifying a game, always update:**
 1. `internal/infrastructure/games/registry.go` — `{Name, Category}` entry (selects the worker), plus the matching CLI display title in `descriptions.go`
 2. `internal/infrastructure/games/games_server.go` — `BindWebControllerFor("<name>", …)` for the HTTP server factory
-3. `internal/infrastructure/games/{casino,classic,solo,extra}/<category>.go` — `games.RegisterKVGame("<name>", games.Category…, …)` for the KV-backed worker route (must match the `Category`)
+3. `internal/infrastructure/games/{casino,classic,solo,extra,extra2,extra3}/<category>.go` — `games.RegisterKVGame("<name>", games.Category…, …)` for the KV-backed worker route (must match the `Category`)
 4. `frontend/src/api/gameApi.ts` `workerUrl` — must match the `Category`
 
-Build: `make build-worker-{solo,casino,classic,extra}` or `make build-workers` (requires TinyGo).
+Build: `make build-worker-{solo,casino,classic,extra,extra2,extra3}` or `make build-workers` (requires TinyGo).
+
+## ローカルでサイズを実測する
+
+ADR-0032 の時点では TinyGo をローカルに持たず CI のレポート頼りだったが、いまは手元で測れる
+（Go 1.25.8 + TinyGo 0.40.1、CI と同じ組み合わせ）。
+
+```sh
+export PATH="$HOME/sdk/go1.25.8/bin:$HOME/.local/opt/tinygo/bin:$PATH"
+export GOTOOLCHAIN=local            # ← 必須
+mkdir -p workers/<w>/build
+go run github.com/syumai/workers/cmd/workers-assets-gen -mode=tinygo -o workers/<w>/build
+tinygo build -tags <w> -o workers/<w>/build/app.wasm -target wasm \
+  -stack-size=128KB -no-debug -opt=z ./cmd/workers/<w>
+wasm-opt --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext \
+  -Oz workers/<w>/build/app.wasm -o workers/<w>/build/app.wasm
+gzip -c workers/<w>/build/app.wasm | wc -c    # 1,048,576 と比較する
+```
+
+- **`GOTOOLCHAIN=local` を忘れないこと。** `go.mod` の `toolchain go1.26.0` により Go 1.25 でも
+  1.26 に自動アップグレードされ、TinyGo 0.40.1 が
+  `requires go version 1.19 through 1.25, got go1.26` で止まる。CI も同じ理由で明示している。
+- **`wasm-opt` 前の値で判断しない。** extra は 1,077,248 → 1,029,817 と 47 KB 縮む。最適化前だと
+  上限超過に見える。
+- `make` が無い環境では上のコマンドが Makefile レシピの展開そのもの。

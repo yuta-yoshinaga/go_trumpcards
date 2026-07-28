@@ -150,7 +150,7 @@ func TestUlti_Discard(t *testing.T) {
 }
 
 func TestUlti_TrickWinner(t *testing.T) {
-	resolve := func(contract domain.UltiContract, trump int, trick []*domain.UltiTrickCard) int {
+	resolve := func(contract domain.UltiContract, trump int, trick []*domain.TrickCard) int {
 		g := newTestUlti()
 		g.SetDeclarerIdx(0)
 		g.SetContract(contract)
@@ -163,28 +163,28 @@ func TestUlti_TrickWinner(t *testing.T) {
 	}
 
 	// Party: any trump beats plain; heart 7 (lowest trump) beats spade Ace.
-	assert.Equal(t, 2, resolve(domain.UltiContractParty, domain.CardDesignHeart, []*domain.UltiTrickCard{
+	assert.Equal(t, 2, resolve(domain.UltiContractParty, domain.CardDesignHeart, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: ultiCard(domain.CardDesignSpade, 1)},  // spade A (plain)
 		{PlayerIdx: 1, Card: ultiCard(domain.CardDesignSpade, 10)}, // spade 10 (plain)
 		{PlayerIdx: 2, Card: ultiCard(domain.CardDesignHeart, 7)},  // heart 7 (trump)
 	}))
 
 	// Party: no trump in trick -> highest of led suit (A > 10).
-	assert.Equal(t, 0, resolve(domain.UltiContractParty, domain.CardDesignHeart, []*domain.UltiTrickCard{
+	assert.Equal(t, 0, resolve(domain.UltiContractParty, domain.CardDesignHeart, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: ultiCard(domain.CardDesignSpade, 1)},   // spade A wins
 		{PlayerIdx: 1, Card: ultiCard(domain.CardDesignSpade, 10)},  // spade 10
 		{PlayerIdx: 2, Card: ultiCard(domain.CardDesignClover, 13)}, // off-suit K cannot win
 	}))
 
 	// Betli (no trump): Ace beats 10 and K of led suit; off-suit cannot win.
-	assert.Equal(t, 1, resolve(domain.UltiContractBetli, -1, []*domain.UltiTrickCard{
+	assert.Equal(t, 1, resolve(domain.UltiContractBetli, -1, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: ultiCard(domain.CardDesignHeart, 7)}, // led heart 7
 		{PlayerIdx: 1, Card: ultiCard(domain.CardDesignHeart, 1)}, // heart A wins
 		{PlayerIdx: 2, Card: ultiCard(domain.CardDesignSpade, 1)}, // off-suit A cannot win
 	}))
 
 	// Trick rank order: 10 > K (10 outranks King).
-	assert.Equal(t, 1, resolve(domain.UltiContractBetli, -1, []*domain.UltiTrickCard{
+	assert.Equal(t, 1, resolve(domain.UltiContractBetli, -1, []*domain.TrickCard{
 		{PlayerIdx: 0, Card: ultiCard(domain.CardDesignHeart, 13)}, // led K
 		{PlayerIdx: 1, Card: ultiCard(domain.CardDesignHeart, 10)}, // 10 beats K
 		{PlayerIdx: 2, Card: ultiCard(domain.CardDesignHeart, 12)}, // Q
@@ -200,7 +200,7 @@ func TestUlti_MustFollow(t *testing.T) {
 	g.SetCurrentPlayerIdx(1)
 
 	// Must follow led suit (spade) when holding it.
-	g.SetCurrentTrick([]*domain.UltiTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: ultiCard(domain.CardDesignSpade, 13)},
 	})
 	setUltiHand(g, 1,
@@ -215,7 +215,7 @@ func TestUlti_MustFollow(t *testing.T) {
 	assert.Len(t, g.GetPlayableIndices(1), 2)
 
 	// Overtrump obligation: a trump is already in the trick and player can beat it.
-	g.SetCurrentTrick([]*domain.UltiTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: ultiCard(domain.CardDesignSpade, 13)}, // led spade
 		{PlayerIdx: 2, Card: ultiCard(domain.CardDesignHeart, 7)},  // trump 7 (rank 0)
 	})
@@ -225,7 +225,7 @@ func TestUlti_MustFollow(t *testing.T) {
 	assert.Equal(t, []int{0}, g.GetPlayableIndices(1), "must overtrump")
 
 	// Cannot beat the highest trump -> any card allowed.
-	g.SetCurrentTrick([]*domain.UltiTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: ultiCard(domain.CardDesignSpade, 13)},
 		{PlayerIdx: 2, Card: ultiCard(domain.CardDesignHeart, 1)}, // trump A (top)
 	})
@@ -353,7 +353,7 @@ func TestUlti_NextRoundAndTrick(t *testing.T) {
 	g.SetPhase(domain.UltiPhaseTrickEnd)
 	g.SetLeadPlayerIdx(2)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*domain.UltiTrickCard{{PlayerIdx: 0, Card: ultiCard(domain.CardDesignSpade, 1)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 0, Card: ultiCard(domain.CardDesignSpade, 1)}})
 	g.NextTrick()
 	assert.Equal(t, domain.UltiPhasePlay, g.GetPhase())
 	assert.Equal(t, 2, g.GetCurrentPlayerIdx())
@@ -395,7 +395,7 @@ func TestUlti_PlayerPlay_FollowViolationAndComplete(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetPhase(domain.UltiPhasePlay)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*domain.UltiTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: ultiCard(domain.CardDesignClover, 13)}, // led club
 	})
 	setUltiHand(g, 0,
@@ -411,7 +411,7 @@ func TestUlti_PlayerPlay_FollowViolationAndComplete(t *testing.T) {
 	assert.ErrorIs(t, g.PlayerPlay(spadeIdx), domain.ErrInvalidPlay)
 
 	// Completing the trick moves to TrickEnd.
-	g.SetCurrentTrick([]*domain.UltiTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: ultiCard(domain.CardDesignSpade, 9)},
 		{PlayerIdx: 2, Card: ultiCard(domain.CardDesignSpade, 8)},
 	})
@@ -472,7 +472,7 @@ func TestUlti_GetHint_PlayReasons(t *testing.T) {
 	g.SetPhase(domain.UltiPhasePlay)
 	g.SetCurrentPlayerIdx(0)
 	// Declarer (seat 2) leads a plain club Queen; coalition can win or duck.
-	g.SetCurrentTrick([]*domain.UltiTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 2, Card: ultiCard(domain.CardDesignClover, 12)},
 	})
 	setUltiHand(g, 0,
@@ -483,7 +483,7 @@ func TestUlti_GetHint_PlayReasons(t *testing.T) {
 	assert.Contains(t, []string{"follow_win", "follow_duck"}, h.Reason)
 
 	// discard_low: void in lead suit.
-	g.SetCurrentTrick([]*domain.UltiTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 2, Card: ultiCard(domain.CardDesignClover, 12)},
 	})
 	setUltiHand(g, 0, ultiCard(domain.CardDesignSpade, 13)) // off-suit only (no trump either)
@@ -693,7 +693,7 @@ func TestUltiPlayer_JSON_And_ResetRound(t *testing.T) {
 func TestUlti_UltiContract(t *testing.T) {
 	// driveFinalTrick sets up the 10th (final) trick and resolves it, which sets
 	// lastTrickWinner and runs the Ulti round-end scoring.
-	driveFinalTrick := func(trump int, trick []*domain.UltiTrickCard) *domain.Ulti {
+	driveFinalTrick := func(trump int, trick []*domain.TrickCard) *domain.Ulti {
 		g := newTestUlti()
 		g.SetDeclarerIdx(0)
 		g.SetContract(domain.UltiContractUlti)
@@ -706,7 +706,7 @@ func TestUlti_UltiContract(t *testing.T) {
 	}
 
 	t.Run("win: declarer takes the final trick with the trump 7", func(t *testing.T) {
-		g := driveFinalTrick(domain.CardDesignHeart, []*domain.UltiTrickCard{
+		g := driveFinalTrick(domain.CardDesignHeart, []*domain.TrickCard{
 			{PlayerIdx: 0, Card: ultiCard(domain.CardDesignHeart, 7)},  // trump 7 leads and wins (only trump)
 			{PlayerIdx: 1, Card: ultiCard(domain.CardDesignSpade, 1)},  // off-suit A cannot win
 			{PlayerIdx: 2, Card: ultiCard(domain.CardDesignSpade, 10)}, // off-suit 10 cannot win
@@ -718,7 +718,7 @@ func TestUlti_UltiContract(t *testing.T) {
 	})
 
 	t.Run("loss: final trick won with a trump other than the 7", func(t *testing.T) {
-		g := driveFinalTrick(domain.CardDesignHeart, []*domain.UltiTrickCard{
+		g := driveFinalTrick(domain.CardDesignHeart, []*domain.TrickCard{
 			{PlayerIdx: 0, Card: ultiCard(domain.CardDesignHeart, 1)}, // trump A wins, but it is not the 7
 			{PlayerIdx: 1, Card: ultiCard(domain.CardDesignSpade, 1)},
 			{PlayerIdx: 2, Card: ultiCard(domain.CardDesignSpade, 10)},
@@ -729,7 +729,7 @@ func TestUlti_UltiContract(t *testing.T) {
 	})
 
 	t.Run("loss: declarer plays the trump 7 but a coalition trump overtakes it", func(t *testing.T) {
-		g := driveFinalTrick(domain.CardDesignHeart, []*domain.UltiTrickCard{
+		g := driveFinalTrick(domain.CardDesignHeart, []*domain.TrickCard{
 			{PlayerIdx: 0, Card: ultiCard(domain.CardDesignHeart, 7)},  // trump 7
 			{PlayerIdx: 1, Card: ultiCard(domain.CardDesignHeart, 1)},  // trump A overtakes
 			{PlayerIdx: 2, Card: ultiCard(domain.CardDesignSpade, 10)}, // off-suit

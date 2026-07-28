@@ -46,16 +46,9 @@ func (p *EuchreWebPresenter) buildBase(e interfaces.EuchreGame) *controller.Euch
 		PointLimit:    cfg.PointLimit,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(e.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(e.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(e)
 	return resObj
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *EuchreWebPresenter) buildTrickOutput(trick []*domain.EuchreTrickCard) []*controller.EuchreWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.EuchreTrickCard) *controller.EuchreWebOutputTrickCard {
-		return &controller.EuchreWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -77,7 +70,7 @@ func (p *EuchreWebPresenter) buildPlayersOutput(e interfaces.EuchreGame) []*cont
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *EuchreWebPresenter) buildMessage(e interfaces.EuchreGame, trick []*domain.EuchreTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *EuchreWebPresenter) buildMessage(e interfaces.EuchreGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

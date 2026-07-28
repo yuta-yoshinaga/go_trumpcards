@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra3
 
 // Package domain ウルティ / ウルティモ (Ulti / Ultimó) のドメインモデル。
 //
@@ -152,12 +152,6 @@ type UltiHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// UltiTrickCard トリック中の 1 枚
-type UltiTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Ulti ウルティのゲームクラス
 type Ulti struct {
 	trumpCards       *TrumpCards
@@ -167,7 +161,7 @@ type Ulti struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*UltiTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	declarerIdx      int          // デクレアラー (常に人間 seat 0)
@@ -422,7 +416,7 @@ func (g *Ulti) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Ulti) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &UltiTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == UltiPlayerCnt {
@@ -1192,10 +1186,10 @@ func (g *Ulti) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Ulti) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Ulti) GetCurrentTrick() []*UltiTrickCard { return g.currentTrick }
+func (g *Ulti) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Ulti) SetCurrentTrick(trick []*UltiTrickCard) { g.currentTrick = trick }
+func (g *Ulti) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Ulti) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -1322,7 +1316,7 @@ type ultiJSON struct {
 	RoundNumber      int                `json:"rn"`
 	TrickNumber      int                `json:"tn"`
 	CurrentPlayerIdx int                `json:"ci"`
-	CurrentTrick     []*UltiTrickCard   `json:"ct"`
+	CurrentTrick     []*TrickCard       `json:"ct"`
 	LeadPlayerIdx    int                `json:"li"`
 	DealerIdx        int                `json:"di"`
 	DeclarerIdx      int                `json:"dc"`
@@ -1508,7 +1502,7 @@ func (g *Ulti) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*UltiTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

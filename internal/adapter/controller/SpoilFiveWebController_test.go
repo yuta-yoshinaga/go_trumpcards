@@ -17,7 +17,7 @@ import (
 func mustSpoilFiveOutputJSON(msg string) string {
 	out := &controller.SpoilFiveWebOutput{
 		Players:         []*controller.SpoilFiveWebOutputPlayer{},
-		CurrentTrick:    []*controller.SpoilFiveWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		RoundWinnerIdx:  -1,
 		WinnerPlayer:    -1,

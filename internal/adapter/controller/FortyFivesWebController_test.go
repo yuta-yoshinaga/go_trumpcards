@@ -17,7 +17,7 @@ import (
 func mustFortyFivesOutputJSON(msg string) string {
 	out := &controller.FortyFivesWebOutput{
 		Players:         []*controller.FortyFivesWebOutputPlayer{},
-		CurrentTrick:    []*controller.FortyFivesWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		DeclarerIdx:     -1,
 		WinnerTeam:      -1,

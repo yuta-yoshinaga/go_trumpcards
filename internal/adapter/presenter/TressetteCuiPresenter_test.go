@@ -21,7 +21,7 @@ func setupTressetteCuiMock() *interfaces.MockTressetteGame {
 	m.On("GetTeamScores").Return([domain.TressetteTeamCnt]int{0, 0})
 	m.On("GetTeamRoundThirds").Return([domain.TressetteTeamCnt]int{0, 0})
 	m.On("GetLeadPlayerIdx").Return(0)
-	m.On("GetCurrentTrick").Return([]*domain.TressetteTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.TressettePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

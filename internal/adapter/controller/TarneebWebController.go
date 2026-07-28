@@ -39,12 +39,6 @@ type TarneebWebOutputPlayer struct {
 	TrickCount      int              `json:"trickCount"`
 }
 
-// TarneebWebOutputTrickCard トリック中の 1 枚
-type TarneebWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // TarneebWebOutputHint ヒント出力
 type TarneebWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -62,23 +56,23 @@ type TarneebWebOutputConfig struct {
 
 // TarneebWebOutput Tarneeb Web アウトプット
 type TarneebWebOutput struct {
-	Players          []*TarneebWebOutputPlayer    `json:"players"`
-	TeamScores       []int                        `json:"teamScores"`
-	Phase            int                          `json:"phase"`
-	RoundNumber      int                          `json:"roundNumber"`
-	TrickNumber      int                          `json:"trickNumber"`
-	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                          `json:"bidPlayerIdx"`
-	BidWinnerIdx     int                          `json:"bidWinnerIdx"`
-	HighestBid       int                          `json:"highestBid"`
-	TrumpSuit        int                          `json:"trumpSuit"`
-	RedealCount      int                          `json:"redealCount"`
-	DealerIdx        int                          `json:"dealerIdx"`
-	CurrentTrick     []*TarneebWebOutputTrickCard `json:"currentTrick"`
-	GameEndFlag      bool                         `json:"gameEndFlag"`
-	WinnerTeam       int                          `json:"winnerTeam"`
-	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
-	Hint             *TarneebWebOutputHint        `json:"hint,omitempty"`
+	Players          []*TarneebWebOutputPlayer `json:"players"`
+	TeamScores       []int                     `json:"teamScores"`
+	Phase            int                       `json:"phase"`
+	RoundNumber      int                       `json:"roundNumber"`
+	TrickNumber      int                       `json:"trickNumber"`
+	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                       `json:"bidPlayerIdx"`
+	BidWinnerIdx     int                       `json:"bidWinnerIdx"`
+	HighestBid       int                       `json:"highestBid"`
+	TrumpSuit        int                       `json:"trumpSuit"`
+	RedealCount      int                       `json:"redealCount"`
+	DealerIdx        int                       `json:"dealerIdx"`
+	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
+	GameEndFlag      bool                      `json:"gameEndFlag"`
+	WinnerTeam       int                       `json:"winnerTeam"`
+	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
+	Hint             *TarneebWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config TarneebWebOutputConfig `json:"config"`
 }
@@ -110,7 +104,7 @@ func newTarneebDefaultOutput(msg string) *TarneebWebOutput {
 	return &TarneebWebOutput{
 		Players:       make([]*TarneebWebOutputPlayer, 0),
 		TeamScores:    make([]int, 0),
-		CurrentTrick:  make([]*TarneebWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerTeam:    -1,
 		BidWinnerIdx:  -1,
 		WebOutputBase: WebOutputBase{Message: msg},

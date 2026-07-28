@@ -20,6 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -235,7 +236,7 @@ function CuckooPageContent() {
             {/* Round losers */}
             {(isRoundEnd || isGameEnd) && state.roundLosers.length > 0 && (
               <div
-                className="mb-2 p-2 rounded bg-ds-warning/20 text-ds-warning text-sm"
+                className={`mb-2 p-2 rounded text-sm ${badgeWarningColors}`}
                 data-tutorial="cuckoo-losers"
                 data-testid="cuckoo-losers"
                 role="status"

@@ -425,7 +425,7 @@ func TestCinch_GetHint_PlayReasons(t *testing.T) {
 
 	// フォロー中で切り札を切る → trump_cut。リードは Clover、手札に Clover が無く切り札あり。
 	g = newPlay()
-	g.SetCurrentTrick([]*domain.CinchTrickCard{{PlayerIdx: 3, Card: cinchCard(domain.CardDesignClover, 9)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: cinchCard(domain.CardDesignClover, 9)}})
 	setCinchHand(g, 0, cinchCard(domain.CardDesignHeart, 1))
 	hint = g.GetHint()
 	require.NotNil(t, hint)
@@ -433,7 +433,7 @@ func TestCinch_GetHint_PlayReasons(t *testing.T) {
 
 	// リードスートに従う → follow_suit。リード Clover、手札に Clover のみ。
 	g = newPlay()
-	g.SetCurrentTrick([]*domain.CinchTrickCard{{PlayerIdx: 3, Card: cinchCard(domain.CardDesignClover, 9)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: cinchCard(domain.CardDesignClover, 9)}})
 	setCinchHand(g, 0, cinchCard(domain.CardDesignClover, 3))
 	hint = g.GetHint()
 	require.NotNil(t, hint)
@@ -441,7 +441,7 @@ func TestCinch_GetHint_PlayReasons(t *testing.T) {
 
 	// リードにも切り札にも従えない → discard_low。リード Clover、手札に Diamond のみ (切り札 Heart)。
 	g = newPlay()
-	g.SetCurrentTrick([]*domain.CinchTrickCard{{PlayerIdx: 3, Card: cinchCard(domain.CardDesignClover, 9)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: cinchCard(domain.CardDesignClover, 9)}})
 	setCinchHand(g, 0, cinchCard(domain.CardDesignDiamond, 3))
 	hint = g.GetHint()
 	require.NotNil(t, hint)
@@ -455,7 +455,7 @@ func TestCinch_ValidatePlay_Rules(t *testing.T) {
 	g.SetPhase(domain.CinchPhasePlay)
 
 	// 切り札リードに対し、切り札を持っているのに従わない → エラー。
-	g.SetCurrentTrick([]*domain.CinchTrickCard{{PlayerIdx: 1, Card: cinchCard(domain.CardDesignHeart, 9)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: cinchCard(domain.CardDesignHeart, 9)}})
 	setCinchHand(g, 0, cinchCard(domain.CardDesignHeart, 2), cinchCard(domain.CardDesignSpade, 3))
 	assert.Error(t, g.ValidatePlayForTest(0, cinchCard(domain.CardDesignSpade, 3)))
 	assert.NoError(t, g.ValidatePlayForTest(0, cinchCard(domain.CardDesignHeart, 2)))
@@ -465,7 +465,7 @@ func TestCinch_ValidatePlay_Rules(t *testing.T) {
 	assert.NoError(t, g.ValidatePlayForTest(0, cinchCard(domain.CardDesignSpade, 3)))
 
 	// オフ切り札リード (Clover) に対し、Clover を持っているのに従わない → エラー。
-	g.SetCurrentTrick([]*domain.CinchTrickCard{{PlayerIdx: 1, Card: cinchCard(domain.CardDesignClover, 9)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: cinchCard(domain.CardDesignClover, 9)}})
 	setCinchHand(g, 0, cinchCard(domain.CardDesignClover, 3), cinchCard(domain.CardDesignDiamond, 4))
 	assert.Error(t, g.ValidatePlayForTest(0, cinchCard(domain.CardDesignDiamond, 4)))
 	assert.NoError(t, g.ValidatePlayForTest(0, cinchCard(domain.CardDesignClover, 3)))

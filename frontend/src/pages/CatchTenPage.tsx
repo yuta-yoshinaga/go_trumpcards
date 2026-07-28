@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { catchtenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -80,10 +81,10 @@ const CT_TUTORIAL_STEPS: TutorialStep[] = [
 
 /** Phase translation key map for Catch the Ten. */
 const CATCHTEN_PHASE_KEYS: Readonly<Record<number, string>> = {
-  [CatchTenPhase.PLAY]: 'phase.play',
-  [CatchTenPhase.TRICK_END]: 'phase.trickEnd',
-  [CatchTenPhase.ROUND_END]: 'phase.roundEnd',
-  [CatchTenPhase.GAME_END]: 'phase.gameEnd',
+  [CatchTenPhase.PLAY]: 'play',
+  [CatchTenPhase.TRICK_END]: 'trickEnd',
+  [CatchTenPhase.ROUND_END]: 'roundEnd',
+  [CatchTenPhase.GAME_END]: 'gameEnd',
 };
 
 /**
@@ -169,7 +170,7 @@ function CatchTenPageContent() {
     }
   }, [isTrickEndForKbd, isRoundEndForKbd, handleNextTrick, handleNextRound]);
   const advanceBindings = useMemo(
-    () => [{ key: 'n', action: advanceAction, enabled: isTrickEndForKbd || isRoundEndForKbd }],
+    () => [{ key: 'n', action: advanceAction, enabled: isTrickEndForKbd || isRoundEndForKbd, label: 'next' }],
     [advanceAction, isTrickEndForKbd, isRoundEndForKbd],
   );
   useActionKeyboardNav({ bindings: advanceBindings, enabled: !!state && !loading });
@@ -525,6 +526,7 @@ function CatchTenPageContent() {
                 dataTutorial="ct-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={advanceBindings} includeCardNav data-testid="catch-ten-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

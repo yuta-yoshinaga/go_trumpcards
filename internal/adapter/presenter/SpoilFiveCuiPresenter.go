@@ -69,8 +69,8 @@ func (p *SpoilFiveCuiPresenter) Output(g interfaces.SpoilFiveGame, lastErr error
 		b.WriteString("----------\n")
 
 		cuiTrickBlock(b, g.GetCurrentTrick(),
-			func(tc *domain.SpoilFiveTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.SpoilFiveTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { russianSolitaireApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, RussianSolitaireResponse } from '../types/card';
 import { RussianSolitairePage } from './RussianSolitairePage';
@@ -192,6 +193,7 @@ describe('RussianSolitairePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -247,5 +249,90 @@ describe('RussianSolitairePage', () => {
     expect(screen.getByText('♣')).toBeInTheDocument();
     expect(screen.getByText('♥')).toBeInTheDocument();
     expect(screen.getByText('♦')).toBeInTheDocument();
+  });
+});
+
+// Keyboard shortcuts are bound by useActionKeyboardNav and advertised by
+// ActionShortcutsPanel, but nothing asserted that pressing a key actually runs
+// its action — a wrong `key` or a wrong `enabled` condition would have failed no
+// test. See issue #4429.
+describe('RussianSolitairePage keyboard shortcuts', () => {
+  it.each([
+    ['h', 'hint'],
+    ['a', 'autocomplete'],
+    ['z', 'undo'],
+  ])('pressing %s dispatches %s', async (key, command) => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith(command));
+  });
+
+  it('pressing g asks for give-up confirmation rather than firing it', async () => {
+    // give-up is irreversible, so the key must route through the dialog (#2099)
+    // instead of dispatching straight away.
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    expect(await screen.findByText('投了確認')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('ignores shortcuts once the game has ended', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    for (const key of ['h', 'a', 'z']) {
+      fireEvent.keyDown(document, { key });
+    }
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+});
+
+describe('RussianSolitairePage deselect routing (#4439)', () => {
+  // Clicking a selected card that is ALSO the last card in its column must
+  // deselect it. It used to be routed to handleSelectTarget instead, dispatching a
+  // move onto its own column, which the server rejects — so a player trying to
+  // deselect got a rejection message. Scorpion had this same bug and had a test
+  // for it, but the assertion ran before react-query's microtask could deliver the
+  // call, so it passed regardless. These two pages had no such test at all.
+  // The other branch of the same condition: a DIFFERENT column's last card, while
+  // something is selected, is a move target. Neither of these two pages had any
+  // test covering a move dispatch at all before this, so the fix above changed a
+  // line that nothing exercised.
+  it("clicking another column's last card while a card is selected dispatches the move", async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: /\u2665 8/ }));
+    fireEvent.click(screen.getByRole('button', { name: /\u2663 5/ }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 1, cardIndex: 1 },
+        { zone: 'tableau', col: 2 },
+      ),
+    );
+  });
+
+  it('clicking the same selected card deselects it instead of moving onto itself', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    const heart8 = screen.getByRole('button', { name: /♥ 8/ });
+    fireEvent.click(heart8);
+    await waitFor(() => expect(heart8.className).toMatch(/ring-/));
+    fireEvent.click(heart8);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { crazyeightsApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { CrazyEightsResponse } from '../types/card';
 import { useCrazyEightsGame } from './useCrazyEightsGame';
 
@@ -84,6 +85,7 @@ describe('useCrazyEightsGame', () => {
       result.current.handlePlay();
     });
 
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -101,6 +103,7 @@ describe('useCrazyEightsGame', () => {
       result.current.handlePlay();
     });
 
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

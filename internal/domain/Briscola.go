@@ -40,12 +40,6 @@ const (
 	BriscolaPhaseGameEnd
 )
 
-// BriscolaTrickCard トリック中の1枚
-type BriscolaTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // BriscolaHint ヒント情報
 type BriscolaHint struct {
 	CardIndex *int   // 推奨カードインデックス
@@ -100,7 +94,7 @@ type Briscola struct {
 	phase            BriscolaPhase
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*BriscolaTrickCard
+	currentTrick     []*TrickCard
 	trumpCard        *Card // 場に表向きで置かれるトランプ (山札の最後)
 	trumpSuit        int
 	leadPlayerIdx    int
@@ -264,10 +258,10 @@ func (b *Briscola) GetCurrentPlayerIdx() int { return b.currentPlayerIdx }
 func (b *Briscola) SetCurrentPlayerIdx(idx int) { b.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (b *Briscola) GetCurrentTrick() []*BriscolaTrickCard { return b.currentTrick }
+func (b *Briscola) GetCurrentTrick() []*TrickCard { return b.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (b *Briscola) SetCurrentTrick(trick []*BriscolaTrickCard) { b.currentTrick = trick }
+func (b *Briscola) SetCurrentTrick(trick []*TrickCard) { b.currentTrick = trick }
 
 // GetTrumpSuit トランプスート取得
 func (b *Briscola) GetTrumpSuit() int { return b.trumpSuit }
@@ -409,7 +403,7 @@ func (b *Briscola) startPlayPhase() {
 
 // playCard カードをプレイする共通処理
 func (b *Briscola) playCard(playerIdx int, card *Card) {
-	b.currentTrick = append(b.currentTrick, &BriscolaTrickCard{
+	b.currentTrick = append(b.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -756,21 +750,21 @@ func dumpScore(c *Card, trumpSuit int) int {
 
 // briscolaJSON is the JSON wire format for Briscola.
 type briscolaJSON struct {
-	TrumpCards       *TrumpCards          `json:"tc"`
-	Players          []*BriscolaPlayer    `json:"ps"`
-	Config           BriscolaConfig       `json:"cf"`
-	Phase            BriscolaPhase        `json:"ph"`
-	TrickNumber      int                  `json:"tn"`
-	CurrentPlayerIdx int                  `json:"ci"`
-	CurrentTrick     []*BriscolaTrickCard `json:"ct"`
-	TrumpCard        *Card                `json:"tu"`
-	TrumpSuit        int                  `json:"ts"`
-	LeadPlayerIdx    int                  `json:"li"`
-	DealerIdx        int                  `json:"di"`
-	PlayerPoints     []int                `json:"pp"`
-	GameEndFlag      bool                 `json:"ge"`
-	WinnerIdx        int                  `json:"wi"`
-	ActionLog        []*ActionLogEntry    `json:"al"`
+	TrumpCards       *TrumpCards       `json:"tc"`
+	Players          []*BriscolaPlayer `json:"ps"`
+	Config           BriscolaConfig    `json:"cf"`
+	Phase            BriscolaPhase     `json:"ph"`
+	TrickNumber      int               `json:"tn"`
+	CurrentPlayerIdx int               `json:"ci"`
+	CurrentTrick     []*TrickCard      `json:"ct"`
+	TrumpCard        *Card             `json:"tu"`
+	TrumpSuit        int               `json:"ts"`
+	LeadPlayerIdx    int               `json:"li"`
+	DealerIdx        int               `json:"di"`
+	PlayerPoints     []int             `json:"pp"`
+	GameEndFlag      bool              `json:"ge"`
+	WinnerIdx        int               `json:"wi"`
+	ActionLog        []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -833,7 +827,7 @@ func (b *Briscola) UnmarshalJSON(data []byte) error {
 	b.currentPlayerIdx = j.CurrentPlayerIdx
 	b.currentTrick = j.CurrentTrick
 	if b.currentTrick == nil {
-		b.currentTrick = make([]*BriscolaTrickCard, 0)
+		b.currentTrick = make([]*TrickCard, 0)
 	}
 	b.trumpCard = j.TrumpCard
 	b.trumpSuit = j.TrumpSuit

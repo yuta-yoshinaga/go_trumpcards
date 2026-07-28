@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -24,7 +25,7 @@ func setupMemoryWebMockDefaults(mg *interfaces.MockMemoryGame) {
 	mg.On("GetTurnNumber").Return(0).Maybe()
 	mg.On("GetConfig").Return(domain.DefaultMemoryConfig()).Maybe()
 
-	var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+	board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 	for i := 0; i < domain.MemoryBoardSize; i++ {
 		board[i] = &domain.MemoryBoardCard{
 			Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -84,7 +85,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 		mg.On("GetTurnNumber").Return(0)
 		mg.On("GetConfig").Return(domain.DefaultMemoryConfig())
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -119,7 +120,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 		mg.On("GetTurnNumber").Return(0)
 		mg.On("GetConfig").Return(domain.DefaultMemoryConfig())
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -153,7 +154,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 		mg.On("GetTurnNumber").Return(1)
 		mg.On("GetConfig").Return(domain.DefaultMemoryConfig())
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -186,7 +187,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 		mg.On("GetTurnNumber").Return(1)
 		mg.On("GetConfig").Return(domain.DefaultMemoryConfig())
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -217,7 +218,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 		mg.On("GetTurnNumber").Return(26)
 		mg.On("GetConfig").Return(domain.DefaultMemoryConfig())
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -250,7 +251,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 		mg.On("GetTurnNumber").Return(26)
 		mg.On("GetConfig").Return(domain.DefaultMemoryConfig())
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -283,7 +284,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 		mg.On("GetTurnNumber").Return(0)
 		mg.On("GetConfig").Return(domain.DefaultMemoryConfig())
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -337,7 +338,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 		mg.On("GetTurnNumber").Return(0)
 		mg.On("GetConfig").Return(domain.MemoryConfig{CpuDifficulty: domain.MemoryCpuDifficultyHard})
 
-		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
 		for i := 0; i < domain.MemoryBoardSize; i++ {
 			board[i] = &domain.MemoryBoardCard{
 				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
@@ -394,4 +395,54 @@ func TestMemoryWebPresenterBuildResultMessageNilPlayer(t *testing.T) {
 	// nil player maps to isHuman=false → CPU message
 	result := buildWinnerResultMessage(5, false)
 	assert.Contains(t, result, "CPU 5")
+}
+
+// TestMemoryWebPresenter_ShortBoard は 52 枚未満の盤面で Output が落ちないことを見る。
+//
+// ペア数可変化 (ADR-0035) の際、プレゼンターが定数 MemoryBoardSize でループしたまま
+// だったため、20 ペア = 40 枚の盤面で「index out of range [40] with length 40」の
+// panic が出た。既存テストはすべて 52 枚の盤面を組み立てていたので、Go のテストは
+// 一件もこれを検出できず、ブラウザで叩いて初めて分かった。短い盤面を明示的に流す
+// このテストがその穴を塞ぐ。
+func TestMemoryWebPresenter_ShortBoard(t *testing.T) {
+	for _, pairs := range []int{domain.MemoryMinPairCount, 20} {
+		mg := new(interfaces.MockMemoryGame)
+		setupMemoryWebMockDefaults(mg)
+
+		board := make([]*domain.MemoryBoardCard, pairs*2)
+		for i := range board {
+			board[i] = &domain.MemoryBoardCard{
+				Card:   domain.NewCard(domain.CardDesignSpade, (i/2)+1, false),
+				FaceUp: false,
+				Taken:  false,
+			}
+		}
+		// 既定モックの 52 枚を短い盤面で上書きする。
+		mg.ExpectedCalls = filterOutCall(mg.ExpectedCalls, "GetBoard")
+		mg.On("GetBoard").Return(board).Maybe()
+
+		cfg := domain.DefaultMemoryConfig()
+		cfg.PairCount = pairs
+		mg.ExpectedCalls = filterOutCall(mg.ExpectedCalls, "GetConfig")
+		mg.On("GetConfig").Return(cfg).Maybe()
+
+		p := &MemoryWebPresenter{}
+		var out string
+		assert.NotPanics(t, func() { out = p.Output(mg, nil) }, "ペア数 %d で panic してはならない", pairs)
+
+		parsed := parseMemoryOutput(t, out)
+		assert.Len(t, parsed.Board, pairs*2, "ペア数 %d のとき盤面は %d 枚", pairs, pairs*2)
+		assert.Equal(t, pairs, parsed.Config.PairCount)
+	}
+}
+
+// filterOutCall は指定メソッドの既定モック設定を取り除く。
+func filterOutCall(calls []*mock.Call, method string) []*mock.Call {
+	kept := calls[:0]
+	for _, c := range calls {
+		if c.Method != method {
+			kept = append(kept, c)
+		}
+	}
+	return kept
 }

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { type EasthavenMoveZone, easthavenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -264,11 +265,11 @@ function EasthavenPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'h', action: handleHint },
-      { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: confirmGiveUpAction },
-      { key: 'z', action: handleUndo },
-      { key: 'd', action: handleDealGuarded },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+      { key: 'z', action: handleUndo, label: 'undo' },
+      { key: 'd', action: handleDealGuarded, label: 'deal' },
     ],
     [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo, handleDealGuarded],
   );
@@ -608,6 +609,7 @@ function EasthavenPageContent() {
                   )}
                 </>
               )}
+              <ActionShortcutsPanel bindings={actionBindings} data-testid="easthaven-kbd-shortcuts" />
             </GameFooter>
           </div>
         </>

@@ -17,7 +17,7 @@ import (
 func mustWattenOutputJSON(msg string) string {
 	out := &controller.WattenWebOutput{
 		Players:        []*controller.WattenWebOutputPlayer{},
-		CurrentTrick:   []*controller.WattenWebOutputTrickCard{},
+		CurrentTrick:   []*controller.WebOutputTrickCard{},
 		WinnerTeam:     -1,
 		RaiserTeam:     -1,
 		ResponderIdx:   -1,

@@ -46,7 +46,7 @@ type PitchGame interface {
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
-	GetCurrentTrick() []*domain.PitchTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
 	// GetBidPlayerIdx 現在ビッド中のプレイヤーインデックスを取得する

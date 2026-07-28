@@ -48,7 +48,7 @@ func (p *CalabresellaWebPresenter) buildBase(g interfaces.CalabresellaGame) *con
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.Monte = p.buildMonteOutput(g)
 	return resObj
@@ -87,13 +87,6 @@ func (p *CalabresellaWebPresenter) playableIndices(g interfaces.CalabresellaGame
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *CalabresellaWebPresenter) buildTrickOutput(trick []*domain.CalabresellaTrickCard) []*controller.CalabresellaWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.CalabresellaTrickCard) *controller.CalabresellaWebOutputTrickCard {
-		return &controller.CalabresellaWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -158,10 +151,10 @@ func (p *CalabresellaWebPresenter) winnerMessage(g interfaces.CalabresellaGame) 
 		}
 	}
 	if humanIdx >= 0 && winner == humanIdx {
-		return "ゲーム終了！ あなたの勝ち！", "calabresella.result.humanWin", nil
+		return "", "calabresella.result.humanWin", nil
 	}
 	params := map[string]string{"player": fmt.Sprintf("%d", winner)}
-	return fmt.Sprintf("ゲーム終了！ プレイヤー%dの勝ち！", winner), "calabresella.result.cpuWin", params
+	return "", "calabresella.result.cpuWin", params
 }
 
 // HintOutput ヒント情報をJSON出力する
@@ -169,7 +162,7 @@ func (p *CalabresellaWebPresenter) HintOutput(g interfaces.CalabresellaGame) str
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.CalabresellaWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

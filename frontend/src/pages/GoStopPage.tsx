@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useGoStopGame } from '../hooks/useGoStopGame';
+import { badgeInfoColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { GoStopBreakdown, GoStopResponse } from '../types/card';
@@ -295,7 +296,7 @@ function GoStopPageContent() {
                       {pendingNearYaku.map((y) => (
                         <span
                           key={y.category}
-                          className="px-1.5 py-0.5 rounded bg-ds-info/20 text-ds-info"
+                          className={`px-1.5 py-0.5 rounded ${badgeInfoColors}`}
                           data-testid={`gostop-yaku-preview-${y.category}`}
                         >
                           {t('preview.item', { name: t(`preview.${y.target}`), remaining: y.remaining })}
@@ -342,7 +343,7 @@ function GoStopPageContent() {
                   <div className="flex gap-1 justify-center flex-wrap mt-1" data-testid="gostop-bak-badges">
                     {state.lastRoundResult.gwangBak && (
                       <span
-                        className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-[11px]"
+                        className={`px-1.5 py-0.5 rounded text-[11px] ${badgeWarningColors}`}
                         data-testid="gostop-bak-gwang"
                       >
                         {t('bak.gwang')}
@@ -350,7 +351,7 @@ function GoStopPageContent() {
                     )}
                     {state.lastRoundResult.piBak && (
                       <span
-                        className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-[11px]"
+                        className={`px-1.5 py-0.5 rounded text-[11px] ${badgeWarningColors}`}
                         data-testid="gostop-bak-pi"
                       >
                         {t('bak.pi')}
@@ -358,7 +359,7 @@ function GoStopPageContent() {
                     )}
                     {state.lastRoundResult.goBak && (
                       <span
-                        className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-[11px]"
+                        className={`px-1.5 py-0.5 rounded text-[11px] ${badgeWarningColors}`}
                         data-testid="gostop-bak-go"
                       >
                         {t('bak.go')}

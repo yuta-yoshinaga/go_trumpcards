@@ -16,7 +16,9 @@
       "manual": "手動",
       "fast": "1秒",
       "slow": "2秒"
-    }
+    },
+    "pairCount": "ペア数",
+    "pairCountOption": "{{pairs}}ペア（{{cards}}枚）"
   },
   "scores": "スコア",
   "cardFaceDown": "{{position}}枚目のカード（裏向き）",
@@ -33,7 +35,6 @@
     "match": "{{first}} / {{second}} — 一致",
     "mismatch": "{{first}} / {{second}} — 不一致"
   },
-  "landscapeBanner": "横向きにすると快適にプレイできます",
   "tutorial": {
     "scoreTable": "各プレイヤーのペア数が表示されます。最も多くペアを集めた人が勝ちです。",
     "board": "カードボードです。自分のターンにカードをクリックしてめくります。2枚が一致すればペア獲得です。",

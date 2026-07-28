@@ -36,18 +36,6 @@ type MariasWebOutputPlayer struct {
 	IsSoloist  bool             `json:"isSoloist"`
 }
 
-// MariasWebOutputTrickCard トリック中の1枚
-type MariasWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// MariasWebOutputHint ヒント出力
-type MariasWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // MariasWebOutput マリアーシュのWebアウトプット
 type MariasWebOutput struct {
 	Players          []*MariasWebOutputPlayer    `json:"players"`
@@ -59,7 +47,7 @@ type MariasWebOutput struct {
 	DealerIdx        int                         `json:"dealerIdx"`
 	SoloistIdx       int                         `json:"soloistIdx"`
 	TrumpSuit        int                         `json:"trumpSuit"`
-	CurrentTrick     []*MariasWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard       `json:"currentTrick"`
 	PlayerScores     [domain.MariasPlayerCnt]int `json:"playerScores"`
 	RoundCardPoints  [domain.MariasPlayerCnt]int `json:"roundCardPoints"`
 	RoundMarriage    [domain.MariasPlayerCnt]int `json:"roundMarriage"`
@@ -68,7 +56,7 @@ type MariasWebOutput struct {
 	GameEndFlag      bool                        `json:"gameEndFlag"`
 	WinnerPlayer     int                         `json:"winnerPlayer"`
 	IsHumanTurn      bool                        `json:"isHumanTurn"`
-	Hint             *MariasWebOutputHint        `json:"hint,omitempty"`
+	Hint             *WebOutputCardHint          `json:"hint,omitempty"`
 	WebOutputBase
 	Config MariasWebOutputConfig `json:"config"`
 }
@@ -104,7 +92,7 @@ var NewMariasWebController, NewMariasWebControllerWithProvider = webControllerPa
 func newMariasDefaultOutput(msg string) *MariasWebOutput {
 	return &MariasWebOutput{
 		Players:         make([]*MariasWebOutputPlayer, 0),
-		CurrentTrick:    make([]*MariasWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		LastTrickWinner: -1,
 		WinnerPlayer:    -1,

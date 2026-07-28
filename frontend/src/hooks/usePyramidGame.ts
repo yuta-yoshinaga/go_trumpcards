@@ -15,7 +15,7 @@ export function usePyramidGame() {
   const [selectedCard, setSelectedCard] = useState<PyramidSelection | null>(null);
   const onClearSelection = useCallback(() => setSelectedCard(null), []);
 
-  const base = useSolitaireGameBase<
+  const { apiCall, runAction, setHint, ...rest } = useSolitaireGameBase<
     Awaited<ReturnType<typeof pyramidApi.exec>>,
     Parameters<typeof pyramidApi.exec>,
     PyramidHint
@@ -24,11 +24,8 @@ export function usePyramidGame() {
     hintApi: () => pyramidApi.exec('hint'),
   });
 
-  const handleDraw = useCallback(() => base.runAction('draw'), [base.runAction]);
-  const handleUndoEscape = useCallback(
-    (n: number) => base.runAction('undo_n', undefined, undefined, n),
-    [base.runAction],
-  );
+  const handleDraw = useCallback(() => runAction('draw'), [runAction]);
+  const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
 
   const selectionToRemoveCard = useCallback((sel: PyramidSelection): PyramidRemoveCard => {
     return { zone: sel.zone, row: sel.row, col: sel.col };
@@ -37,10 +34,10 @@ export function usePyramidGame() {
   const handleSelectCard = useCallback(
     (sel: PyramidSelection, cardValue?: number) => {
       // Any card interaction consumes the current hint.
-      base.setHint(null);
+      setHint(null);
       // King (value 13) - remove solo immediately
       if (cardValue === 13) {
-        void base.apiCall('remove', selectionToRemoveCard(sel));
+        void apiCall('remove', selectionToRemoveCard(sel));
         setSelectedCard(null);
         return;
       }
@@ -58,27 +55,11 @@ export function usePyramidGame() {
       }
 
       // Second card selected - attempt to remove pair
-      void base.apiCall('remove', selectionToRemoveCard(selectedCard), selectionToRemoveCard(sel));
+      void apiCall('remove', selectionToRemoveCard(selectedCard), selectionToRemoveCard(sel));
       setSelectedCard(null);
     },
-    [selectedCard, base, selectionToRemoveCard],
+    [selectedCard, apiCall, setHint, selectionToRemoveCard],
   );
 
-  return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    exec: base.apiCall,
-    hintError: base.hintError,
-    selectedCard,
-    hint: base.hint,
-    handleDraw,
-    handleReset: base.handleReset,
-    handleGiveUp: base.handleGiveUp,
-    handleHint: base.handleHint,
-    handleUndo: base.handleUndo,
-    handleUndoEscape,
-    handleSelectCard,
-    retry: base.retry,
-  };
+  return { ...rest, runAction, setHint, exec: apiCall, selectedCard, handleDraw, handleUndoEscape, handleSelectCard };
 }

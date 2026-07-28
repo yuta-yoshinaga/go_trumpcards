@@ -49,12 +49,6 @@ type FiveHundredWebOutputPlayer struct {
 	IsDeclarer bool                     `json:"isDeclarer"`
 }
 
-// FiveHundredWebOutputTrickCard トリック中の1枚
-type FiveHundredWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // FiveHundredWebOutputHint ヒント出力
 type FiveHundredWebOutputHint struct {
 	BidKind        *int   `json:"bidKind,omitempty"`
@@ -69,28 +63,28 @@ type FiveHundredWebOutputHint struct {
 
 // FiveHundredWebOutput 500 Webアウトプット
 type FiveHundredWebOutput struct {
-	Players          []*FiveHundredWebOutputPlayer    `json:"players"`
-	Phase            int                              `json:"phase"`
-	RoundNumber      int                              `json:"roundNumber"`
-	TrickNumber      int                              `json:"trickNumber"`
-	CurrentPlayerIdx int                              `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                              `json:"bidPlayerIdx"`
-	DealerIdx        int                              `json:"dealerIdx"`
-	LeadPlayerIdx    int                              `json:"leadPlayerIdx"`
-	TrumpSuit        int                              `json:"trumpSuit"`
-	ContractKind     int                              `json:"contractKind"`
-	ContractTricks   int                              `json:"contractTricks"`
-	ContractValue    int                              `json:"contractValue"`
-	DeclarerIdx      int                              `json:"declarerIdx"`
-	HighestBid       *FiveHundredWebOutputBid         `json:"highestBid,omitempty"`
-	HighestBidder    int                              `json:"highestBidder"`
-	JokerLeadSuit    int                              `json:"jokerLeadSuit"`
-	KittyCount       int                              `json:"kittyCount"`
-	CurrentTrick     []*FiveHundredWebOutputTrickCard `json:"currentTrick"`
-	TeamScores       [2]int                           `json:"teamScores"`
-	GameEndFlag      bool                             `json:"gameEndFlag"`
-	WinnerTeam       int                              `json:"winnerTeam"`
-	Hint             *FiveHundredWebOutputHint        `json:"hint,omitempty"`
+	Players          []*FiveHundredWebOutputPlayer `json:"players"`
+	Phase            int                           `json:"phase"`
+	RoundNumber      int                           `json:"roundNumber"`
+	TrickNumber      int                           `json:"trickNumber"`
+	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                           `json:"bidPlayerIdx"`
+	DealerIdx        int                           `json:"dealerIdx"`
+	LeadPlayerIdx    int                           `json:"leadPlayerIdx"`
+	TrumpSuit        int                           `json:"trumpSuit"`
+	ContractKind     int                           `json:"contractKind"`
+	ContractTricks   int                           `json:"contractTricks"`
+	ContractValue    int                           `json:"contractValue"`
+	DeclarerIdx      int                           `json:"declarerIdx"`
+	HighestBid       *FiveHundredWebOutputBid      `json:"highestBid,omitempty"`
+	HighestBidder    int                           `json:"highestBidder"`
+	JokerLeadSuit    int                           `json:"jokerLeadSuit"`
+	KittyCount       int                           `json:"kittyCount"`
+	CurrentTrick     []*WebOutputTrickCard         `json:"currentTrick"`
+	TeamScores       [2]int                        `json:"teamScores"`
+	GameEndFlag      bool                          `json:"gameEndFlag"`
+	WinnerTeam       int                           `json:"winnerTeam"`
+	Hint             *FiveHundredWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config FiveHundredWebOutputConfig `json:"config"`
 }
@@ -130,7 +124,7 @@ var NewFiveHundredWebController, NewFiveHundredWebControllerWithProvider = webCo
 func newFiveHundredDefaultOutput(msg string) *FiveHundredWebOutput {
 	return &FiveHundredWebOutput{
 		Players:       make([]*FiveHundredWebOutputPlayer, 0),
-		CurrentTrick:  make([]*FiveHundredWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerTeam:    -1,
 		DeclarerIdx:   -1,
 		HighestBidder: -1,

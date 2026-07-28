@@ -334,7 +334,7 @@ function PigsTailPageContent() {
 
           <GameFooter className={`${gameTheme.pigtail.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center items-center flex-wrap">
-              <label className="flex items-center gap-1 text-ds-text-primary text-xs">
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs min-h-[44px]">
                 <input
                   type="checkbox"
                   checked={hintEnabled}

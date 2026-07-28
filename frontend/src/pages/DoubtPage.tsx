@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { doubtApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -569,6 +570,7 @@ function DoubtPageContent() {
                 </button>
               )}
             </div>
+            <CardNavShortcutsPanel data-testid="doubt-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

@@ -45,12 +45,6 @@ type NapoleonWebOutputPlayer struct {
 	TrickCount       int              `json:"trickCount"`
 }
 
-// NapoleonWebOutputTrickCard トリック中の1枚
-type NapoleonWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // NapoleonWebOutputHint ヒント出力
 type NapoleonWebOutputHint struct {
 	CardIndex     *int   `json:"cardIndex,omitempty"`
@@ -64,25 +58,25 @@ type NapoleonWebOutputHint struct {
 
 // NapoleonWebOutput ナポレオンWebアウトプット
 type NapoleonWebOutput struct {
-	Players          []*NapoleonWebOutputPlayer    `json:"players"`
-	Phase            int                           `json:"phase"`
-	RoundNumber      int                           `json:"roundNumber"`
-	TrickNumber      int                           `json:"trickNumber"`
-	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                           `json:"bidPlayerIdx"`
-	CurrentTrick     []*NapoleonWebOutputTrickCard `json:"currentTrick"`
-	TrumpSuit        int                           `json:"trumpSuit"`
-	AdjutantCard     *WebOutputCard                `json:"adjutantCard,omitempty"`
-	NapoleonIdx      int                           `json:"napoleonIdx"`
-	AdjutantIdx      int                           `json:"adjutantIdx"`
-	AdjutantRevealed bool                          `json:"adjutantRevealed"`
-	HighestBid       int                           `json:"highestBid"`
-	HighestBidder    int                           `json:"highestBidder"`
-	Kitty            []*WebOutputCard              `json:"kitty,omitempty"`
-	GameEndFlag      bool                          `json:"gameEndFlag"`
-	WinnerTeam       int                           `json:"winnerTeam"`
-	LeadPlayerIdx    int                           `json:"leadPlayerIdx"`
-	Hint             *NapoleonWebOutputHint        `json:"hint,omitempty"`
+	Players          []*NapoleonWebOutputPlayer `json:"players"`
+	Phase            int                        `json:"phase"`
+	RoundNumber      int                        `json:"roundNumber"`
+	TrickNumber      int                        `json:"trickNumber"`
+	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                        `json:"bidPlayerIdx"`
+	CurrentTrick     []*WebOutputTrickCard      `json:"currentTrick"`
+	TrumpSuit        int                        `json:"trumpSuit"`
+	AdjutantCard     *WebOutputCard             `json:"adjutantCard,omitempty"`
+	NapoleonIdx      int                        `json:"napoleonIdx"`
+	AdjutantIdx      int                        `json:"adjutantIdx"`
+	AdjutantRevealed bool                       `json:"adjutantRevealed"`
+	HighestBid       int                        `json:"highestBid"`
+	HighestBidder    int                        `json:"highestBidder"`
+	Kitty            []*WebOutputCard           `json:"kitty,omitempty"`
+	GameEndFlag      bool                       `json:"gameEndFlag"`
+	WinnerTeam       int                        `json:"winnerTeam"`
+	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
+	Hint             *NapoleonWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config NapoleonWebOutputConfig `json:"config"`
 }
@@ -120,7 +114,7 @@ var NewNapoleonWebController, NewNapoleonWebControllerWithProvider = webControll
 func newNapoleonDefaultOutput(msg string) *NapoleonWebOutput {
 	return &NapoleonWebOutput{
 		Players:       make([]*NapoleonWebOutputPlayer, 0),
-		CurrentTrick:  make([]*NapoleonWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerTeam:    domain.NapoleonWinnerUndecided,
 		NapoleonIdx:   -1,
 		AdjutantIdx:   -1,

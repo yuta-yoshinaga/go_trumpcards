@@ -44,7 +44,7 @@ func (p *KnockoutWhistWebPresenter) buildBase(g interfaces.KnockoutWhistGame) *c
 		CpuDifficulty: int(cfg.CpuDifficulty),
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -59,13 +59,6 @@ func (p *KnockoutWhistWebPresenter) playableIndices(g interfaces.KnockoutWhistGa
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *KnockoutWhistWebPresenter) buildTrickOutput(trick []*domain.KnockoutWhistTrickCard) []*controller.KnockoutWhistWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.KnockoutWhistTrickCard) *controller.KnockoutWhistWebOutputTrickCard {
-		return &controller.KnockoutWhistWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -134,7 +127,7 @@ func (p *KnockoutWhistWebPresenter) HintOutput(g interfaces.KnockoutWhistGame) s
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.KnockoutWhistWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

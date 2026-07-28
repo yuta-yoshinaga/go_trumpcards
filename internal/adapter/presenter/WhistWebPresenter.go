@@ -39,16 +39,9 @@ func (p *WhistWebPresenter) buildBase(w interfaces.WhistGame) *controller.WhistW
 		PointLimit:    cfg.PointLimit,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(w.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(w.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(w)
 	return resObj
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *WhistWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.WhistWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.WhistWebOutputTrickCard {
-		return &controller.WhistWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

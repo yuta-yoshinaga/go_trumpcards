@@ -66,8 +66,8 @@ func (p *MariasCuiPresenter) Output(g interfaces.MariasGame, lastErr error) stri
 		b.WriteString("----------\n")
 
 		cuiTrickBlock(b, g.GetCurrentTrick(),
-			func(tc *domain.MariasTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.MariasTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra3
 
 package presenter
 
@@ -112,7 +112,7 @@ func (p *CegoWebPresenter) buildBase(g interfaces.CegoGame) *controller.CegoWebO
 
 	// 場札 (Cego / blind) の中身は決して公開しない (伏せ札)。BlindCount のみを出力する。
 	resObj.Blind = make([]*controller.WebOutputCard, 0)
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutputWithFace(g.GetCurrentTrick(), cegoFace)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -127,13 +127,6 @@ func (p *CegoWebPresenter) playableIndices(g interfaces.CegoGame) []int {
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *CegoWebPresenter) buildTrickOutput(trick []*domain.CegoTrickCard) []*controller.CegoWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.CegoTrickCard) *controller.CegoWebOutputTrickCard {
-		return &controller.CegoWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutputWithFace(tc.Card, cegoFace)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築 (人間のみ手札を公開)。

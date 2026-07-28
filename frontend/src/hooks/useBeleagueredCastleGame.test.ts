@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { beleagueredCastleApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { BeleagueredCastleResponse } from '../types/card';
 import { useBeleagueredCastleGame } from './useBeleagueredCastleGame';
 
@@ -119,6 +120,7 @@ describe('useBeleagueredCastleGame', () => {
     mockExec.mockClear();
 
     act(() => result.current.handleSelectTarget({ zone: 'tableau', col: 1 }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 

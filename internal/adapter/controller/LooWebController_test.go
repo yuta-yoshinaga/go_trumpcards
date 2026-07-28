@@ -17,8 +17,8 @@ import (
 func mustLooOutputJSON(msg string) string {
 	out := &controller.LooWebOutput{
 		Players:         []*controller.LooWebOutputPlayer{},
-		CurrentTrick:    []*controller.LooWebOutputTrickCard{},
-		LastTrick:       []*controller.LooWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		LastTrick:       []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		TotalTricks:     domain.LooTrickCount,
 		LastTrickWinner: -1,

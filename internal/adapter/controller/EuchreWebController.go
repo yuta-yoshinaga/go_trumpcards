@@ -36,12 +36,6 @@ type EuchreWebOutputPlayer struct {
 	TrickCount int              `json:"trickCount"`
 }
 
-// EuchreWebOutputTrickCard トリック中の1枚
-type EuchreWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // EuchreWebOutputHint ヒント出力
 type EuchreWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -53,24 +47,24 @@ type EuchreWebOutputHint struct {
 
 // EuchreWebOutput ユーカーWebアウトプット
 type EuchreWebOutput struct {
-	Players             []*EuchreWebOutputPlayer    `json:"players"`
-	Phase               int                         `json:"phase"`
-	RoundNumber         int                         `json:"roundNumber"`
-	TrickNumber         int                         `json:"trickNumber"`
-	CurrentPlayerIdx    int                         `json:"currentPlayerIdx"`
-	BidPlayerIdx        int                         `json:"bidPlayerIdx"`
-	DealerIdx           int                         `json:"dealerIdx"`
-	TrumpSuit           int                         `json:"trumpSuit"`
-	FaceUpCard          *WebOutputCard              `json:"faceUpCard"`
-	MakerTeam           int                         `json:"makerTeam"`
-	GoingAlone          bool                        `json:"goingAlone"`
-	GoingAlonePlayerIdx int                         `json:"goingAlonePlayerIdx"`
-	CurrentTrick        []*EuchreWebOutputTrickCard `json:"currentTrick"`
-	TeamScores          [2]int                      `json:"teamScores"`
-	GameEndFlag         bool                        `json:"gameEndFlag"`
-	WinnerTeam          int                         `json:"winnerTeam"`
-	LeadPlayerIdx       int                         `json:"leadPlayerIdx"`
-	Hint                *EuchreWebOutputHint        `json:"hint,omitempty"`
+	Players             []*EuchreWebOutputPlayer `json:"players"`
+	Phase               int                      `json:"phase"`
+	RoundNumber         int                      `json:"roundNumber"`
+	TrickNumber         int                      `json:"trickNumber"`
+	CurrentPlayerIdx    int                      `json:"currentPlayerIdx"`
+	BidPlayerIdx        int                      `json:"bidPlayerIdx"`
+	DealerIdx           int                      `json:"dealerIdx"`
+	TrumpSuit           int                      `json:"trumpSuit"`
+	FaceUpCard          *WebOutputCard           `json:"faceUpCard"`
+	MakerTeam           int                      `json:"makerTeam"`
+	GoingAlone          bool                     `json:"goingAlone"`
+	GoingAlonePlayerIdx int                      `json:"goingAlonePlayerIdx"`
+	CurrentTrick        []*WebOutputTrickCard    `json:"currentTrick"`
+	TeamScores          [2]int                   `json:"teamScores"`
+	GameEndFlag         bool                     `json:"gameEndFlag"`
+	WinnerTeam          int                      `json:"winnerTeam"`
+	LeadPlayerIdx       int                      `json:"leadPlayerIdx"`
+	Hint                *EuchreWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config EuchreWebOutputConfig `json:"config"`
 }
@@ -106,7 +100,7 @@ var NewEuchreWebController, NewEuchreWebControllerWithProvider = webControllerPa
 func newEuchreDefaultOutput(msg string) *EuchreWebOutput {
 	return &EuchreWebOutput{
 		Players:       make([]*EuchreWebOutputPlayer, 0),
-		CurrentTrick:  make([]*EuchreWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerTeam:    -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

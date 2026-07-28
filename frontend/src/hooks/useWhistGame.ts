@@ -20,29 +20,11 @@ export const POINT_LIMIT_OPTIONS = [3, 5, 7, 10] as const;
 
 /** Hook that manages Whist game state and player actions. */
 export function useWhistGame() {
-  const base = useTrickGameBase({
+  const { config, ...rest } = useTrickGameBase({
     apiFn: whistApi.exec,
     defaultConfig: DEFAULT_WHIST_CONFIG,
     getHint: (state) => state.hint ?? null,
   });
 
-  return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hint: base.hint,
-    hintError: base.hintError,
-    hintLoading: base.hintLoading,
-    exec: base.exec,
-    whistConfig: base.config,
-    selectedCardIndices: base.selectedCardIndices,
-    toggleCard: base.toggleCard,
-    clearSelection: base.clearSelection,
-    handleConfigChange: base.handleConfigChange,
-    handlePlay: base.handlePlay,
-    handleNextTrick: base.handleNextTrick,
-    handleNextRound: base.handleNextRound,
-    handleHint: base.handleHint,
-    retry: base.retry,
-  };
+  return { ...rest, whistConfig: config };
 }

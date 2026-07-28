@@ -212,6 +212,11 @@ var categoryFilterPipe = strings.Join(categoryDisplayNames(), "|")
 // "or" (e.g. "casino, classic, solo, or extra"), for prose descriptions.
 var categoryFilterProse = joinOr(categoryDisplayNames())
 
+// categoryFilterList is the same list comma-separated without a conjunction
+// (e.g. "casino, classic, solo, extra"), for interpolation into localized
+// messages where the surrounding grammar is supplied by the locale file.
+var categoryFilterList = strings.Join(categoryDisplayNames(), ", ")
+
 // joinOr renders items as an English list with an Oxford "or": one item as-is,
 // two joined by " or ", three+ comma-separated with a trailing ", or ".
 func joinOr(items []string) string {
@@ -380,7 +385,7 @@ func run() int {
 			return code
 		}
 		if category != "" && !validCategory(category) {
-			fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidCategory", "category", category))
+			fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidCategory", "category", category, "categories", categoryFilterList))
 			return 2
 		}
 		if asJSON {
@@ -403,7 +408,7 @@ func run() int {
 	}
 	commands["completion"] = func() int {
 		var noHint bool
-		fs, code, ok := parseSubFlags("completion", subArgs, func(f *flag.FlagSet) {
+		fs, code, ok := parseSubFlagsWithArgs("completion", subArgs, func(f *flag.FlagSet) {
 			f.BoolVar(&noHint, "no-hint", false, "Suppress installation hint comments (also implied when stdout is not a TTY)")
 		})
 		if !ok {
@@ -740,7 +745,10 @@ func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) in
 	if suggestion := cuiutil.SuggestCommand(target, helpSuggestionCandidates(), 2); suggestion != "" {
 		_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
 	}
-	return 1
+	// 2, not 1: naming something that does not exist is a usage error, and every
+	// other route to it (`<unknown>`, `--start`, `--category`, `completion`)
+	// already exits 2 -- as does the top-level EXIT CODES table. See issue #4372.
+	return 2
 }
 
 // helpSuggestionCandidates returns the deduplicated set of canonical game
@@ -801,14 +809,27 @@ func suggestionCandidates(commands map[string]func() int) []string {
 // args (already stripped of trailing global flags by the dispatch loop), and
 // warns about extra positional arguments. Returns (fs, exitCode, ok). If ok is
 // false, the caller should return exitCode immediately.
+//
+// Use parseSubFlagsWithArgs instead for subcommands that take positional
+// arguments of their own.
 func parseSubFlags(name string, args []string, setup func(*flag.FlagSet)) (*flag.FlagSet, int, bool) {
-	return parseSubFlagsTo(name, args, setup, os.Stdout, os.Stderr)
+	return parseSubFlagsTo(name, args, setup, os.Stdout, os.Stderr, false)
+}
+
+// parseSubFlagsWithArgs is parseSubFlags for subcommands that consume their own
+// positional arguments, and so must not be told they were ignored. `completion
+// <shell>` is the only such subcommand today: the shell name is required, and
+// runCompletion validates the argument count itself (exit 2 on anything but one).
+// See issue #4370.
+func parseSubFlagsWithArgs(name string, args []string, setup func(*flag.FlagSet)) (*flag.FlagSet, int, bool) {
+	return parseSubFlagsTo(name, args, setup, os.Stdout, os.Stderr, true)
 }
 
 // parseSubFlagsTo is the testable core of parseSubFlags: it parses args with a
 // subcommand FlagSet, wires the shared builtin help text as the usage, and
-// writes help/diagnostics to the given streams.
-func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdout, stderr io.Writer) (*flag.FlagSet, int, bool) {
+// writes help/diagnostics to the given streams. takesPositional suppresses the
+// leftover-args warning for subcommands whose handler consumes fs.Args().
+func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdout, stderr io.Writer, takesPositional bool) (*flag.FlagSet, int, bool) {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	fs.SetOutput(io.Discard) // suppress Go's raw English error/usage text
 	setup(fs)
@@ -834,7 +855,7 @@ func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdo
 		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliTryHelp", "cmd", name))
 		return nil, 2, false
 	}
-	if fs.NArg() > 0 {
+	if fs.NArg() > 0 && !takesPositional {
 		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(fs.Args(), " ")))
 	}
 	return fs, 0, true

@@ -40,7 +40,7 @@ func frenchTarotSetHand(g *domain.FrenchTarot, idx int, cards ...*domain.Card) {
 	}
 }
 
-func frenchTarotTrickCards(cards ...*domain.FrenchTarotTrickCard) []*domain.FrenchTarotTrickCard {
+func frenchTarotTrickCards(cards ...*domain.TrickCard) []*domain.TrickCard {
 	return cards
 }
 
@@ -359,7 +359,7 @@ func TestFrenchTarotFollowSuit(t *testing.T) {
 		frenchTarotTrumpCard(4),
 	)
 	g.SetCurrentTrick(frenchTarotTrickCards(
-		&domain.FrenchTarotTrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 7)},
 	))
 	g.SetCurrentPlayerIdx(1)
 	valid := g.GetPlayableIndices(1)
@@ -378,7 +378,7 @@ func TestFrenchTarotVoidMustTrump(t *testing.T) {
 		frenchTarotTrumpCard(9),
 	)
 	g.SetCurrentTrick(frenchTarotTrickCards(
-		&domain.FrenchTarotTrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 7)},
 	))
 	g.SetCurrentPlayerIdx(1)
 	valid := g.GetPlayableIndices(1)
@@ -397,8 +397,8 @@ func TestFrenchTarotOvertrumpObligation(t *testing.T) {
 		frenchTarotTrumpCard(15),
 	)
 	g.SetCurrentTrick(frenchTarotTrickCards(
-		&domain.FrenchTarotTrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 7)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 1, Card: frenchTarotTrumpCard(10)},
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotTrumpCard(10)},
 	))
 	g.SetCurrentPlayerIdx(2)
 	valid := g.GetPlayableIndices(2)
@@ -416,8 +416,8 @@ func TestFrenchTarotCannotOvertrumpPlaysAnyTrump(t *testing.T) {
 		frenchTarotTrumpCard(9),
 	)
 	g.SetCurrentTrick(frenchTarotTrickCards(
-		&domain.FrenchTarotTrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 7)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 1, Card: frenchTarotTrumpCard(18)},
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotTrumpCard(18)},
 	))
 	g.SetCurrentPlayerIdx(2)
 	valid := g.GetPlayableIndices(2)
@@ -436,7 +436,7 @@ func TestFrenchTarotExcuseAlwaysPlayable(t *testing.T) {
 		frenchTarotSuitCard(domain.CardDesignSpade, 3),
 	)
 	g.SetCurrentTrick(frenchTarotTrickCards(
-		&domain.FrenchTarotTrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 7)},
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 7)},
 	))
 	g.SetCurrentPlayerIdx(1)
 	valid := g.GetPlayableIndices(1)
@@ -464,10 +464,10 @@ func TestFrenchTarotTrickWinnerHighestTrump(t *testing.T) {
 	g := frenchTarotNewReset()
 	g.SetContract(domain.FrenchTarotBidPetite)
 	g.SetCurrentTrick(frenchTarotTrickCards(
-		&domain.FrenchTarotTrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 14)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 1, Card: frenchTarotTrumpCard(3)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 2, Card: frenchTarotTrumpCard(9)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 3, Card: frenchTarotSuitCard(domain.CardDesignHeart, 2)},
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 14)},
+		&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotTrumpCard(3)},
+		&domain.TrickCard{PlayerIdx: 2, Card: frenchTarotTrumpCard(9)},
+		&domain.TrickCard{PlayerIdx: 3, Card: frenchTarotSuitCard(domain.CardDesignHeart, 2)},
 	))
 	assert.Equal(t, 2, g.TrickWinnerPublic())
 }
@@ -476,10 +476,10 @@ func TestFrenchTarotTrickWinnerLedSuit(t *testing.T) {
 	g := frenchTarotNewReset()
 	g.SetContract(domain.FrenchTarotBidPetite)
 	g.SetCurrentTrick(frenchTarotTrickCards(
-		&domain.FrenchTarotTrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 8)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignHeart, 14)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 2, Card: frenchTarotSuitCard(domain.CardDesignSpade, 14)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 3, Card: frenchTarotSuitCard(domain.CardDesignHeart, 3)},
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignHeart, 8)},
+		&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignHeart, 14)},
+		&domain.TrickCard{PlayerIdx: 2, Card: frenchTarotSuitCard(domain.CardDesignSpade, 14)},
+		&domain.TrickCard{PlayerIdx: 3, Card: frenchTarotSuitCard(domain.CardDesignHeart, 3)},
 	))
 	assert.Equal(t, 1, g.TrickWinnerPublic()) // heart 14
 }
@@ -489,10 +489,10 @@ func TestFrenchTarotExcuseNeverWinsAndLedSuit(t *testing.T) {
 	g.SetContract(domain.FrenchTarotBidPetite)
 	// Excuse led; the led suit becomes the next card (spade).
 	g.SetCurrentTrick(frenchTarotTrickCards(
-		&domain.FrenchTarotTrickCard{PlayerIdx: 0, Card: frenchTarotExcuseCard()},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignSpade, 5)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 2, Card: frenchTarotSuitCard(domain.CardDesignSpade, 9)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 3, Card: frenchTarotSuitCard(domain.CardDesignHeart, 14)},
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotExcuseCard()},
+		&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignSpade, 5)},
+		&domain.TrickCard{PlayerIdx: 2, Card: frenchTarotSuitCard(domain.CardDesignSpade, 9)},
+		&domain.TrickCard{PlayerIdx: 3, Card: frenchTarotSuitCard(domain.CardDesignHeart, 14)},
 	))
 	assert.Equal(t, domain.CardDesignSpade, g.LedSuitPublic())
 	assert.Equal(t, 2, g.TrickWinnerPublic()) // spade 9, excuse never wins
@@ -509,10 +509,10 @@ func TestFrenchTarotResolveTrickExcuseKeptByOwner(t *testing.T) {
 	g.SetPhase(domain.FrenchTarotPhaseTrickEnd)
 	// Player 3 plays the excuse; player 2 wins with a trump.
 	g.SetCurrentTrick(frenchTarotTrickCards(
-		&domain.FrenchTarotTrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignSpade, 5)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignSpade, 9)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 2, Card: frenchTarotTrumpCard(4)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 3, Card: frenchTarotExcuseCard()},
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignSpade, 5)},
+		&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignSpade, 9)},
+		&domain.TrickCard{PlayerIdx: 2, Card: frenchTarotTrumpCard(4)},
+		&domain.TrickCard{PlayerIdx: 3, Card: frenchTarotExcuseCard()},
 	))
 	g.ResolveTrick()
 	// Winner (player 2) keeps 3 cards; excuse owner (player 3) keeps the excuse.
@@ -533,10 +533,10 @@ func TestFrenchTarotEnterRoundEndZeroSum(t *testing.T) {
 	g.SetPhase(domain.FrenchTarotPhaseTrickEnd)
 	// Give the declarer a strong last trick (contains the petit).
 	g.SetCurrentTrick(frenchTarotTrickCards(
-		&domain.FrenchTarotTrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignSpade, 5)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 2, Card: frenchTarotSuitCard(domain.CardDesignSpade, 9)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 3, Card: frenchTarotSuitCard(domain.CardDesignSpade, 3)},
-		&domain.FrenchTarotTrickCard{PlayerIdx: 0, Card: frenchTarotTrumpCard(1)}, // petit, declarer wins
+		&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignSpade, 5)},
+		&domain.TrickCard{PlayerIdx: 2, Card: frenchTarotSuitCard(domain.CardDesignSpade, 9)},
+		&domain.TrickCard{PlayerIdx: 3, Card: frenchTarotSuitCard(domain.CardDesignSpade, 3)},
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotTrumpCard(1)}, // petit, declarer wins
 	))
 	g.ResolveTrick() // last trick → RoundEnd + enterRoundEnd
 	assert.Equal(t, domain.FrenchTarotPhaseRoundEnd, g.GetPhase())

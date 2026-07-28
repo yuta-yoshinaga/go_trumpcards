@@ -89,10 +89,10 @@ func (m *MockTrucoGame) GetResponderIdx() int {
 	return args.Int(0)
 }
 
-func (m *MockTrucoGame) GetCurrentTrick() []*domain.TrucoTrickCard {
+func (m *MockTrucoGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
 	if v := args.Get(0); v != nil {
-		return v.([]*domain.TrucoTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

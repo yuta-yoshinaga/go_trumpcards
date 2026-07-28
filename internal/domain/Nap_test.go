@@ -115,7 +115,7 @@ func TestNap_AllPassVoidsRound(t *testing.T) {
 func TestNap_TrickWinnerTrumpBeatsLead(t *testing.T) {
 	g := newNapGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
-	g.SetCurrentTrick([]*NapTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: napCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: napCard(CardDesignDiamond, 2)},
 		{PlayerIdx: 2, Card: napCard(CardDesignClover, 13)},
@@ -131,7 +131,7 @@ func TestNap_MustFollow(t *testing.T) {
 	g.SetPhase(NapPhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*NapTrickCard{{PlayerIdx: 1, Card: napCard(CardDesignClover, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: napCard(CardDesignClover, 1)}})
 	napSetHand(g.GetPlayer(0), napCard(CardDesignClover, 13), napCard(CardDesignDiamond, 7))
 	if err := g.PlayerPlay(1); err == nil {
 		t.Error("expected must-follow error")

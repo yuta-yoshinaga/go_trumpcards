@@ -5,7 +5,7 @@ import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages TriPeaks game state, hints, and card removal actions. */
 export function useTriPeaksGame() {
-  const base = useSolitaireGameBase<
+  const { apiCall, runAction, setHint, ...rest } = useSolitaireGameBase<
     Awaited<ReturnType<typeof tripeaksApi.exec>>,
     Parameters<typeof tripeaksApi.exec>,
     TriPeaksHint
@@ -13,34 +13,16 @@ export function useTriPeaksGame() {
     hintApi: () => tripeaksApi.exec('hint'),
   });
 
-  const handleDraw = useCallback(() => base.runAction('draw'), [base.runAction]);
-  const handleUndoEscape = useCallback(
-    (n: number) => base.runAction('undo_n', undefined, undefined, n),
-    [base.runAction],
-  );
+  const handleDraw = useCallback(() => runAction('draw'), [runAction]);
+  const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
 
   const handleSelectCard = useCallback(
     (row: number, col: number) => {
-      base.setHint(null);
-      void base.apiCall('remove', row, col);
+      setHint(null);
+      void apiCall('remove', row, col);
     },
-    [base],
+    [apiCall, setHint],
   );
 
-  return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    exec: base.apiCall,
-    hintError: base.hintError,
-    hint: base.hint,
-    handleDraw,
-    handleReset: base.handleReset,
-    handleGiveUp: base.handleGiveUp,
-    handleHint: base.handleHint,
-    handleUndo: base.handleUndo,
-    handleUndoEscape,
-    handleSelectCard,
-    retry: base.retry,
-  };
+  return { ...rest, runAction, setHint, exec: apiCall, handleDraw, handleUndoEscape, handleSelectCard };
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { fourcardpokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -113,12 +114,13 @@ function FourCardPokerPageContent() {
         key: 'b',
         action: () => execApi('bet', anteAmount, acesUpAmount),
         enabled: isBetPhase && !betInvalid,
+        label: 'bet',
       },
-      { key: '1', action: () => execApi('play', undefined, undefined, 1), enabled: isActionPhase },
-      { key: '2', action: () => execApi('play', undefined, undefined, 2), enabled: isActionPhase },
-      { key: '3', action: () => execApi('play', undefined, undefined, 3), enabled: isActionPhase },
-      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      { key: '1', action: () => execApi('play', undefined, undefined, 1), enabled: isActionPhase, label: 'play' },
+      { key: '2', action: () => execApi('play', undefined, undefined, 2), enabled: isActionPhase, label: 'play' },
+      { key: '3', action: () => execApi('play', undefined, undefined, 3), enabled: isActionPhase, label: 'play' },
+      { key: 'f', action: () => execApi('fold'), enabled: isActionPhase, label: 'fold' },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
     [execApi, anteAmount, acesUpAmount, isBetPhase, betInvalid, isActionPhase, isEndPhase],
   );
@@ -380,6 +382,7 @@ function FourCardPokerPageContent() {
                 </button>
               </div>
             )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="four-card-poker-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

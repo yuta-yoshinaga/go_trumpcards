@@ -77,12 +77,6 @@ const (
 	CinchPhaseGameEnd CinchPhase = 5
 )
 
-// CinchTrickCard はトリック中の 1 枚。
-type CinchTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // CinchDealDetail は 1 ディールの得点内訳。
 type CinchDealDetail struct {
 	TrumpSuit int         // 切り札スート
@@ -111,8 +105,8 @@ type Cinch struct {
 	trickNumber      int
 	dealerIdx        int
 	currentPlayerIdx int
-	currentTrick     []*CinchTrickCard
-	lastTrick        []*CinchTrickCard
+	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
 	lastTrickWinner  int
 	leadPlayerIdx    int
 	bidPlayerIdx     int // 現在ビッド中のプレイヤー
@@ -528,7 +522,7 @@ func (g *Cinch) CpuPlay() {
 
 // playCard はカードをプレイする共通処理。
 func (g *Cinch) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &CinchTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == CinchPlayerCnt {
@@ -874,13 +868,13 @@ func (g *Cinch) GetCurrentTurn() int { return g.currentPlayerIdx }
 func (g *Cinch) SetCurrentTurn(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick は進行中のトリックを返す。
-func (g *Cinch) GetCurrentTrick() []*CinchTrickCard { return g.currentTrick }
+func (g *Cinch) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick は進行中のトリックを設定する (テスト用)。
-func (g *Cinch) SetCurrentTrick(trick []*CinchTrickCard) { g.currentTrick = trick }
+func (g *Cinch) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLastTrick は直前に完了したトリックを返す。
-func (g *Cinch) GetLastTrick() []*CinchTrickCard { return g.lastTrick }
+func (g *Cinch) GetLastTrick() []*TrickCard { return g.lastTrick }
 
 // GetLastTrickWinner は直前トリックの勝者を返す (-1=なし)。
 func (g *Cinch) GetLastTrickWinner() int { return g.lastTrickWinner }
@@ -1001,8 +995,8 @@ type cinchJSON struct {
 	TrickNumber      int               `json:"tn"`
 	DealerIdx        int               `json:"di"`
 	CurrentPlayerIdx int               `json:"ci"`
-	CurrentTrick     []*CinchTrickCard `json:"ct"`
-	LastTrick        []*CinchTrickCard `json:"lt"`
+	CurrentTrick     []*TrickCard      `json:"ct"`
+	LastTrick        []*TrickCard      `json:"lt"`
 	LastTrickWinner  int               `json:"lw"`
 	LeadPlayerIdx    int               `json:"li"`
 	BidPlayerIdx     int               `json:"bi"`
@@ -1052,7 +1046,7 @@ func cinchInRange(v int) bool { return v >= 0 && v < CinchPlayerCnt }
 func cinchInRangeOrUnset(v int) bool { return v == -1 || cinchInRange(v) }
 
 // cinchValidateTrick は復元したトリック配列の各要素を検証する。
-func cinchValidateTrick(trick []*CinchTrickCard) error {
+func cinchValidateTrick(trick []*TrickCard) error {
 	for _, tc := range trick {
 		if tc == nil || tc.Card == nil {
 			return fmt.Errorf("cinch: invalid trick card")
@@ -1141,7 +1135,7 @@ func (g *Cinch) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*CinchTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.lastTrick = j.LastTrick
 	g.lastTrickWinner = j.LastTrickWinner

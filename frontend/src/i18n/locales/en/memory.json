@@ -16,7 +16,9 @@
       "manual": "Manual",
       "fast": "1s",
       "slow": "2s"
-    }
+    },
+    "pairCount": "Pairs",
+    "pairCountOption": "{{pairs}} pairs ({{cards}} cards)"
   },
   "scores": "Scores",
   "cardFaceDown": "Card {{position}} (face down)",
@@ -33,7 +35,6 @@
     "match": "{{first}} / {{second}} — match",
     "mismatch": "{{first}} / {{second}} — no match"
   },
-  "landscapeBanner": "Rotate to landscape for a better experience",
   "tutorial": {
     "scoreTable": "Each player's pair count is shown here. The player with the most pairs wins.",
     "board": "This is the card board. Click cards on your turn to flip them. Match two cards to collect a pair.",

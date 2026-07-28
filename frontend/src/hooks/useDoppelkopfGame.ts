@@ -3,6 +3,7 @@ import { type DoppelkopfConfigInput, doppelkopfApi } from '../api/gameApi';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
+import { useIsMounted } from './useIsMounted';
 
 /** Default Doppelkopf game configuration. */
 export const DEFAULT_DOPPELKOPF_CONFIG: Required<DoppelkopfConfigInput> = {
@@ -42,15 +43,18 @@ export function useDoppelkopfGame() {
 
   const [hintLoading, setHintLoading] = useState(false);
 
+  const isMounted = useIsMounted();
+
   /** Requests a play hint from the server; guards against double-clicks. */
   const handleHint = useCallback(async () => {
     setHintLoading(true);
     try {
       await exec('hint');
     } finally {
-      setHintLoading(false);
+      // The hint request outliving the page must not write to it (#4447).
+      if (isMounted()) setHintLoading(false);
     }
-  }, [exec]);
+  }, [exec, isMounted]);
 
   /** Resets the game, applying the current config. */
   const reset = useCallback(() => {

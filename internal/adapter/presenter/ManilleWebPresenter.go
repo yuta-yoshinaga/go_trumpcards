@@ -44,7 +44,7 @@ func (p *ManilleWebPresenter) buildBase(g interfaces.ManilleGame) *controller.Ma
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -59,13 +59,6 @@ func (p *ManilleWebPresenter) playableIndices(g interfaces.ManilleGame) []int {
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *ManilleWebPresenter) buildTrickOutput(trick []*domain.ManilleTrickCard) []*controller.ManilleWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.ManilleTrickCard) *controller.ManilleWebOutputTrickCard {
-		return &controller.ManilleWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -134,7 +127,7 @@ func (p *ManilleWebPresenter) HintOutput(g interfaces.ManilleGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.ManilleWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

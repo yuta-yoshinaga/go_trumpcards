@@ -1,6 +1,7 @@
 import { type KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { memoryApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -10,7 +11,6 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
-import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -20,7 +20,12 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { AUTO_NEXT_DELAY_OPTIONS, CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
+import {
+  AUTO_NEXT_DELAY_OPTIONS,
+  CPU_DIFFICULTY_OPTIONS,
+  PAIR_COUNT_OPTIONS,
+  useMemoryGame,
+} from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -132,7 +137,7 @@ function MemoryPageContent() {
   const isResultForKbd = state?.phase === MemoryPhase.RESULT;
 
   const actionBindings = useMemo(
-    () => [{ key: 'n', action: handleNext, enabled: isResultForKbd }],
+    () => [{ key: 'n', action: handleNext, enabled: isResultForKbd, label: 'next' }],
     [handleNext, isResultForKbd],
   );
 
@@ -225,8 +230,8 @@ function MemoryPageContent() {
   const handleManualReset = useCallback(() => {
     hideActionLog();
     setVisited(new Set());
-    void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty });
-  }, [exec, hideActionLog, memoryConfig.cpuDifficulty]);
+    void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty, pairCount: memoryConfig.pairCount });
+  }, [exec, hideActionLog, memoryConfig.cpuDifficulty, memoryConfig.pairCount]);
 
   if (!state)
     return (
@@ -235,8 +240,8 @@ function MemoryPageContent() {
         layout={{
           kind: 'card-grid',
           count: 52,
-          cols: 'grid-cols-4 md:grid-cols-8 lg:grid-cols-13',
-          aspectRatio: 'aspect-[2/3] lg:aspect-auto',
+          cols: 'grid-cols-7 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13',
+          aspectRatio: 'aspect-[2/3] max-sm:aspect-auto max-sm:h-11 lg:aspect-auto',
           gridClassName: 'lg:grid-rows-4 lg:h-full',
           topPills: 4,
         }}
@@ -268,8 +273,6 @@ function MemoryPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <LandscapeBanner message={t('landscapeBanner')} />
-
           {/* Settings */}
           <SettingsPanel
             title={t('settings.title')}
@@ -286,6 +289,25 @@ function MemoryPageContent() {
                       label: t(`settings.${o.label.toLowerCase()}`),
                     })),
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'pairCount',
+                    label: t('settings.pairCount'),
+                    value: memoryConfig.pairCount,
+                    options: PAIR_COUNT_OPTIONS.map((pairs) => ({
+                      value: pairs,
+                      label: t('settings.pairCountOption', { pairs, cards: pairs * 2 }),
+                    })),
+                    // Re-deal at once: this changes the board's shape, so deferring it
+                    // to the next reset would read as the setting doing nothing.
+                    onSelect: (v) => {
+                      const pairs = Number(v);
+                      handleConfigChange('pairCount', v);
+                      hideActionLog();
+                      setVisited(new Set());
+                      void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty, pairCount: pairs });
+                    },
                   },
                   {
                     type: 'select',
@@ -361,9 +383,10 @@ function MemoryPageContent() {
               </div>
             </details>
 
-            {/* Board: responsive grid (4/8/13 columns); on lg fills remaining height */}
+            {/* Board: responsive grid (7/8/10/13 columns). Narrow screens drop the 2/3 aspect
+                so all 8 rows fit the play area; on lg it fills the remaining height. */}
             <div
-              className="my-3 lg:my-1 p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
+              className="my-3 max-sm:my-1 lg:my-1 p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
               data-tutorial="mem-board"
             >
               {/* biome-ignore lint/a11y/noStaticElementInteractions: keydown only routes arrow keys for roving focus; the real controls are the child <button>s */}
@@ -389,7 +412,7 @@ function MemoryPageContent() {
                       disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                       tabIndex={idx === focusedIdx ? 0 : -1}
                       onClick={() => handleFlip(idx)}
-                      className={`memory-card relative aspect-[2/3] min-h-[44px] min-w-[44px] lg:aspect-auto rounded ${focusRingWhite} ${
+                      className={`memory-card relative aspect-[2/3] max-sm:aspect-auto max-sm:h-11 min-h-[44px] min-w-[44px] lg:aspect-auto rounded ${focusRingWhite} ${
                         bc.taken
                           ? 'hidden'
                           : bc.faceUp
@@ -468,6 +491,7 @@ function MemoryPageContent() {
                 dataTutorial="mem-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="memory-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

@@ -66,6 +66,23 @@ export function useDoubtGame() {
     if (state) cpuDoubtersRef.current = state.cpuDoubters;
   }, [state]);
 
+  // Clear the countdown interval on unmount. It was only ever cleared by
+  // stopCountdown or by its own tick reaching zero, so unmounting mid-countdown
+  // left it running: the next tick called setCountdown on a gone component, and
+  // in a test environment that is `ReferenceError: window is not defined` thrown
+  // from React's dispatchSetState — an unhandled error that fails the whole
+  // vitest run even when every test passed. Surfaced on CI by #4429's added
+  // tests shifting shard timing; latent before that.
+  useEffect(
+    () => () => {
+      if (countdownRef.current !== null) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+    },
+    [],
+  );
+
   const stopCountdown = useCallback(() => {
     autoSkipRef.current = false;
     if (countdownRef.current !== null) {

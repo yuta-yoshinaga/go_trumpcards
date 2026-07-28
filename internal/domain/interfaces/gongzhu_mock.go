@@ -113,9 +113,9 @@ func (_m *MockGongZhuGame) GetCurrentPlayerIdx() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockGongZhuGame) GetCurrentTrick() []*domain.GongZhuTrickCard {
+func (_m *MockGongZhuGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]*domain.GongZhuTrickCard); ok {
+	if val, ok := ret.Get(0).([]*domain.TrickCard); ok {
 		return val
 	}
 	return nil

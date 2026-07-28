@@ -168,7 +168,20 @@ export function GamePageShell({
   }, [isHumanTurn]);
 
   return (
-    <div key={outerKey} className={`relative flex-1 flex flex-col min-h-0 ${gameThemeBg}`} aria-busy={loading}>
+    // `overflow-hidden` is load-bearing. This is a full-height flex column whose
+    // children each manage their own scrolling (the play area and the footer both
+    // carry `overflow-y-auto`), so nothing should ever overflow this box — but
+    // stray scrollable overflow from a descendant still propagated to the
+    // viewport and grew the document. That is what kept 6 pages scrolling at
+    // 375x667 (`memory` +257, `openfacechinese` +216, `jass` +209) even though
+    // their children measurably fit: 606px of children in a 605px box. Clipping
+    // here is correct rather than a workaround, and it does not affect the
+    // celebration or dialogs, which are `fixed`. See issue #4373.
+    <div
+      key={outerKey}
+      className={`relative flex-1 flex flex-col min-h-0 overflow-hidden ${gameThemeBg}`}
+      aria-busy={loading}
+    >
       <GamePageHeading title={title} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
         {headerExtra}

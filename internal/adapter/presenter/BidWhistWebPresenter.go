@@ -48,7 +48,7 @@ func (p *BidWhistWebPresenter) buildBase(g interfaces.BidWhistGame) *controller.
 		TargetScore:   cfg.TargetScore,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -73,13 +73,6 @@ func bidWhistBidToOutput(b *domain.BidWhistBid) *controller.BidWhistWebOutputBid
 		Tricks:    b.Tricks,
 		Direction: b.Direction,
 	}
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *BidWhistWebPresenter) buildTrickOutput(trick []*domain.BidWhistTrickCard) []*controller.BidWhistWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.BidWhistTrickCard) *controller.BidWhistWebOutputTrickCard {
-		return &controller.BidWhistWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築 (人間の手札のみ公開)

@@ -26,7 +26,7 @@ func setupTressetteWebMock() *interfaces.MockTressetteGame {
 	m := new(interfaces.MockTressetteGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.TressetteTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.TressettePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -87,7 +87,7 @@ func TestTressetteWebPresenter_Output(t *testing.T) {
 	t.Run("play phase follow when trick has cards", func(t *testing.T) {
 		m, _ := setupTressetteWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		m.On("GetCurrentTrick").Return([]*domain.TressetteTrickCard{
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 3, false)},
 		})
 		result := p.Output(m, nil)

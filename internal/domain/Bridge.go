@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra3
 
 package domain
 
@@ -73,12 +73,6 @@ type BridgeBidEntry struct {
 	Suit      int           `json:"su"` // BridgeBidSuitClub-BridgeBidSuitNT (BidNormal時のみ)
 }
 
-// BridgeTrickCard トリック中の1枚
-type BridgeTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // BridgeHint ヒント情報
 type BridgeHint struct {
 	CardIndex *int   // 推奨カードインデックス (プレイ時)
@@ -97,7 +91,7 @@ type Bridge struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*BridgeTrickCard
+	currentTrick     []*TrickCard
 	dealerIdx        int
 	bidPlayerIdx     int // 現在のビッド手番
 	bidHistory       []*BridgeBidEntry
@@ -806,10 +800,10 @@ func (b *Bridge) GetCurrentPlayerIdx() int { return b.currentPlayerIdx }
 func (b *Bridge) SetCurrentPlayerIdx(idx int) { b.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (b *Bridge) GetCurrentTrick() []*BridgeTrickCard { return b.currentTrick }
+func (b *Bridge) GetCurrentTrick() []*TrickCard { return b.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (b *Bridge) SetCurrentTrick(trick []*BridgeTrickCard) { b.currentTrick = trick }
+func (b *Bridge) SetCurrentTrick(trick []*TrickCard) { b.currentTrick = trick }
 
 // GetGameEndFlag ゲーム終了フラグ取得
 func (b *Bridge) GetGameEndFlag() bool { return b.gameEndFlag }
@@ -1047,7 +1041,7 @@ func (b *Bridge) findHumanIdx() int {
 
 // playCard カードをプレイする共通処理
 func (b *Bridge) playCard(playerIdx int, card *Card) {
-	b.currentTrick = append(b.currentTrick, &BridgeTrickCard{
+	b.currentTrick = append(b.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -1957,7 +1951,7 @@ type bridgeJSON struct {
 	RoundNumber      int                 `json:"rn"`
 	TrickNumber      int                 `json:"tn"`
 	CurrentPlayerIdx int                 `json:"ci"`
-	CurrentTrick     []*BridgeTrickCard  `json:"ct"`
+	CurrentTrick     []*TrickCard        `json:"ct"`
 	DealerIdx        int                 `json:"di"`
 	BidPlayerIdx     int                 `json:"bi"`
 	BidHistory       []*BridgeBidEntry   `json:"bh"`

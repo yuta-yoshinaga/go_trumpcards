@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, baccaratApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BaccaratResponse, Card, CardDesign } from '../types/card';
 import { BaccaratPage } from './BaccaratPage';
@@ -455,6 +456,7 @@ describe('BaccaratPage', () => {
     await waitFor(() => expect(screen.getByText(/プレイヤーの勝ち/)).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'b' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -464,6 +466,7 @@ describe('BaccaratPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'r' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

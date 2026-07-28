@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra3
 
 package presenter
 
@@ -49,7 +49,7 @@ func (p *JassWebPresenter) buildBase(g interfaces.JassGame) *controller.JassWebO
 		EnableWeis:     cfg.EnableWeis,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.LastTrick, resObj.LastTrickWinner = p.buildLastTrickOutput(g)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
@@ -62,8 +62,8 @@ func (p *JassWebPresenter) buildBase(g interfaces.JassGame) *controller.JassWebO
 // プレイ中（この局にまだ確定済みトリックが無い）は空スライスと -1 を返す。
 // アクションログはゲーム全体で累積されるため、フェーズガードにより前ラウンドの
 // トリックを誤って表示しないようにする。
-func (p *JassWebPresenter) buildLastTrickOutput(g interfaces.JassGame) ([]*controller.JassWebOutputTrickCard, int) {
-	empty := make([]*controller.JassWebOutputTrickCard, 0)
+func (p *JassWebPresenter) buildLastTrickOutput(g interfaces.JassGame) ([]*controller.WebOutputTrickCard, int) {
+	empty := make([]*controller.WebOutputTrickCard, 0)
 	switch g.GetPhase() {
 	case domain.JassPhaseBidTrump, domain.JassPhaseBidPartner:
 		// 新ラウンドのビッド中は当ラウンドの確定済みトリックが無いため空を返す。
@@ -99,20 +99,14 @@ func (p *JassWebPresenter) buildLastTrickOutput(g interfaces.JassGame) ([]*contr
 	}
 	plays = plays[len(plays)-domain.JassPlayerCnt:]
 
-	out := make([]*controller.JassWebOutputTrickCard, 0, len(plays))
+	out := make([]*controller.WebOutputTrickCard, 0, len(plays))
 	for _, e := range plays {
-		out = append(out, &controller.JassWebOutputTrickCard{
+		out = append(out, &controller.WebOutputTrickCard{
 			PlayerIdx: e.PlayerIdx,
 			Card:      cardToOutput(e.Cards[0]),
 		})
 	}
 	return out, log[winIdx].PlayerIdx
-}
-
-func (p *JassWebPresenter) buildTrickOutput(trick []*domain.JassTrickCard) []*controller.JassWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.JassTrickCard) *controller.JassWebOutputTrickCard {
-		return &controller.JassWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 func (p *JassWebPresenter) buildPlayersOutput(g interfaces.JassGame) []*controller.JassWebOutputPlayer {
@@ -132,7 +126,7 @@ func (p *JassWebPresenter) buildPlayersOutput(g interfaces.JassGame) []*controll
 	return out
 }
 
-func (p *JassWebPresenter) buildMessage(g interfaces.JassGame, trick []*domain.JassTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *JassWebPresenter) buildMessage(g interfaces.JassGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

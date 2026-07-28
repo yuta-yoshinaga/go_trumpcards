@@ -114,7 +114,7 @@ func (p *KoenigrufenWebPresenter) buildBase(g interfaces.KoenigrufenGame) *contr
 	}
 
 	resObj.Talon = p.buildTalonOutput(g)
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutputWithFace(g.GetCurrentTrick(), koenigrufenFace)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -151,13 +151,6 @@ func (p *KoenigrufenWebPresenter) buildTalonOutput(g interfaces.KoenigrufenGame)
 		out = append(out, cardToOutputWithFace(c, koenigrufenFace))
 	}
 	return out
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *KoenigrufenWebPresenter) buildTrickOutput(trick []*domain.KoenigrufenTrickCard) []*controller.KoenigrufenWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.KoenigrufenTrickCard) *controller.KoenigrufenWebOutputTrickCard {
-		return &controller.KoenigrufenWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutputWithFace(tc.Card, koenigrufenFace)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築 (人間のみ手札を公開)。IsPartner は partnerRevealed=true

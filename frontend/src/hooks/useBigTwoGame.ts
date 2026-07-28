@@ -5,6 +5,7 @@ import { buildHumanActionState, buildReplayStates } from '../utils/replayBuilder
 import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
+import { useIsMounted } from './useIsMounted';
 
 const defaultConfigInput: BigTwoConfigInput = {
   cpuDifficulty: 1,
@@ -83,6 +84,8 @@ function buildBigTwoReplayStates(finalState: BigTwoResponse): BigTwoResponse[] {
 
 /** Hook that manages Big Two game state, card selection, and CPU replay. */
 export function useBigTwoGame() {
+  const isMounted = useIsMounted();
+
   const { selected: selectedIndices, toggle: toggleCardSelection, clear: clearSelection } = useCardSelection();
   const [configInput, setConfigInput] = useState<BigTwoConfigInput>(defaultConfigInput);
   const [displayState, setDisplayState] = useState<BigTwoResponse | null>(null);
@@ -96,11 +99,12 @@ export function useBigTwoGame() {
         return;
       }
       await runReplay(res, setDisplayState, {
+        isMounted,
         buildReplayStates: buildBigTwoReplayStates,
         buildHumanActionState: buildBigTwoHumanActionState,
       });
     },
-    [clearSelection],
+    [clearSelection, isMounted],
   );
 
   const { loading, error, exec: callApi, retry } = useGameApi(bigtwoApi.exec, { onSuccess });

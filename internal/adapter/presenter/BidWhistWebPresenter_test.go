@@ -169,7 +169,7 @@ func TestBidWhistWebPresenter_PhaseMessages(t *testing.T) {
 		g.SetDeclarerIdx(0)
 		g.SetPhase(phase)
 		if phase == domain.BidWhistPhasePlay {
-			g.SetCurrentTrick([]*domain.BidWhistTrickCard{
+			g.SetCurrentTrick([]*domain.TrickCard{
 				{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},
 			})
 		}

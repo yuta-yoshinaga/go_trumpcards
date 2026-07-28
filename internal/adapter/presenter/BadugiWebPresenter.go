@@ -79,20 +79,20 @@ func (bwp *BadugiWebPresenter) buildMessage(g interfaces.BadugiGame, lastErr err
 func (bwp *BadugiWebPresenter) buildResultMessage(g interfaces.BadugiGame) (string, string) {
 	results := g.GetRoundResults()
 	if len(results) == 0 {
-		return "Game over.", "badugi.result.gameOver"
+		return "", "badugi.result.gameOver"
 	}
 	players := g.GetPlayers()
 	for _, r := range results {
 		if players[r.PlayerIdx].GetIsHuman() && r.WonAmount > 0 {
-			return "You are the winner.", "badugi.result.win"
+			return "", "badugi.result.win"
 		}
 	}
 	for _, pl := range players {
 		if pl.GetIsHuman() && pl.GetFolded() {
-			return "You folded.", "badugi.result.folded"
+			return "", "badugi.result.folded"
 		}
 	}
-	return "You lose.", "badugi.result.lose"
+	return "", "badugi.result.lose"
 }
 
 func (bwp *BadugiWebPresenter) buildSidePots(g interfaces.BadugiGame) []*controller.BadugiWebOutputSidePot {

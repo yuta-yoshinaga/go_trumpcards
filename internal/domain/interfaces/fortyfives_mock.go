@@ -114,10 +114,10 @@ func (_m *MockFortyFivesGame) GetCurrentPlayerIdx() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockFortyFivesGame) GetCurrentTrick() []*domain.FortyFivesTrickCard {
+func (_m *MockFortyFivesGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.FortyFivesTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

@@ -27,7 +27,7 @@ func setupSedmaCuiMock() *interfaces.MockSedmaGame {
 	m := new(interfaces.MockSedmaGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return(([]*domain.SedmaTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.SedmaPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -70,7 +70,7 @@ func TestSedmaCuiPresenter_Output(t *testing.T) {
 		m.On("GetLeadPlayerIdx").Return(2)
 		// One ace and one ten (10 pts each) plus a plain card (0 pts) → 20 pts,
 		// exercising all three branches of the point-counting loop.
-		m.On("GetCurrentTrick").Return([]*domain.SedmaTrickCard{
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
 			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
 			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 7, false)},

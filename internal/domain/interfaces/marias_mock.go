@@ -97,10 +97,10 @@ func (_m *MockMariasGame) GetCurrentPlayerIdx() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockMariasGame) GetCurrentTrick() []*domain.MariasTrickCard {
+func (_m *MockMariasGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.MariasTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

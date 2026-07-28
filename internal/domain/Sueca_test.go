@@ -95,7 +95,7 @@ func TestSueca_GamePoints(t *testing.T) {
 func TestSueca_TrickWinnerTrumpBeatsLead(t *testing.T) {
 	g := newSuecaGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
-	g.SetCurrentTrick([]*SuecaTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: suecaCard(CardDesignClover, 1)},  // A♣ lead (strong fail)
 		{PlayerIdx: 1, Card: suecaCard(CardDesignDiamond, 2)}, // 2♦ trump
 		{PlayerIdx: 2, Card: suecaCard(CardDesignClover, 7)},  // 7♣ fail
@@ -110,7 +110,7 @@ func TestSueca_TrickWinnerHighOfLeadSuit(t *testing.T) {
 	g := newSuecaGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
 	// No trump; A♣ beats 7♣ beats K♣ (A>7>K).
-	g.SetCurrentTrick([]*SuecaTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: suecaCard(CardDesignClover, 13)}, // K♣
 		{PlayerIdx: 1, Card: suecaCard(CardDesignClover, 7)},  // 7♣
 		{PlayerIdx: 2, Card: suecaCard(CardDesignClover, 1)},  // A♣ (strongest)
@@ -126,7 +126,7 @@ func TestSueca_MustFollowSuit(t *testing.T) {
 	g.SetPhase(SuecaPhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*SuecaTrickCard{{PlayerIdx: 3, Card: suecaCard(CardDesignClover, 1)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: suecaCard(CardDesignClover, 1)}})
 	suecaSetHand(g.GetPlayer(0), suecaCard(CardDesignClover, 13), suecaCard(CardDesignSpade, 1))
 	if err := g.PlayerPlay(1); err == nil { // spade while holding club
 		t.Error("expected must-follow error")
@@ -142,7 +142,7 @@ func TestSueca_ResolveTrickAddsPoints(t *testing.T) {
 	g.SetPhase(SuecaPhaseTrickEnd)
 	g.SetTrickNumber(1)
 	// A♣(11)+7♣(10)+K♣(4)+2♣(0)=25, A♣ wins for team 0.
-	g.SetCurrentTrick([]*SuecaTrickCard{
+	g.SetCurrentTrick([]*TrickCard{
 		{PlayerIdx: 0, Card: suecaCard(CardDesignClover, 1)},
 		{PlayerIdx: 1, Card: suecaCard(CardDesignClover, 7)},
 		{PlayerIdx: 2, Card: suecaCard(CardDesignClover, 13)},

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { macauApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { MacauResponse } from '../types/card';
 import { useMacauGame } from './useMacauGame';
 
@@ -75,6 +76,7 @@ describe('useMacauGame', () => {
     await waitFor(() => expect(result.current.state).not.toBeNull());
     mockExec.mockClear();
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

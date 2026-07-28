@@ -35,12 +35,6 @@ type NinetyNineWebOutputPlayer struct {
 	BuriedCount     int              `json:"buriedCount"`
 }
 
-// NinetyNineWebOutputTrickCard トリック中の1枚
-type NinetyNineWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // NinetyNineWebOutputHint ヒント出力
 type NinetyNineWebOutputHint struct {
 	CardIndex   *int   `json:"cardIndex,omitempty"`
@@ -50,21 +44,21 @@ type NinetyNineWebOutputHint struct {
 
 // NinetyNineWebOutput ナインティナインWebアウトプット
 type NinetyNineWebOutput struct {
-	Players          []*NinetyNineWebOutputPlayer    `json:"players"`
-	Phase            int                             `json:"phase"`
-	DealNumber       int                             `json:"dealNumber"`
-	TargetScore      int                             `json:"targetScore"`
-	HandSize         int                             `json:"handSize"`
-	TrickNumber      int                             `json:"trickNumber"`
-	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                             `json:"bidPlayerIdx"`
-	DealerIdx        int                             `json:"dealerIdx"`
-	TrumpSuit        int                             `json:"trumpSuit"`
-	CurrentTrick     []*NinetyNineWebOutputTrickCard `json:"currentTrick"`
-	GameEndFlag      bool                            `json:"gameEndFlag"`
-	WinnerIdx        int                             `json:"winnerIdx"`
-	LeadPlayerIdx    int                             `json:"leadPlayerIdx"`
-	Hint             *NinetyNineWebOutputHint        `json:"hint,omitempty"`
+	Players          []*NinetyNineWebOutputPlayer `json:"players"`
+	Phase            int                          `json:"phase"`
+	DealNumber       int                          `json:"dealNumber"`
+	TargetScore      int                          `json:"targetScore"`
+	HandSize         int                          `json:"handSize"`
+	TrickNumber      int                          `json:"trickNumber"`
+	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                          `json:"bidPlayerIdx"`
+	DealerIdx        int                          `json:"dealerIdx"`
+	TrumpSuit        int                          `json:"trumpSuit"`
+	CurrentTrick     []*WebOutputTrickCard        `json:"currentTrick"`
+	GameEndFlag      bool                         `json:"gameEndFlag"`
+	WinnerIdx        int                          `json:"winnerIdx"`
+	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
+	Hint             *NinetyNineWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config NinetyNineWebOutputConfig `json:"config"`
 }
@@ -100,7 +94,7 @@ var NewNinetyNineWebController, NewNinetyNineWebControllerWithProvider = webCont
 func newNinetyNineDefaultOutput(msg string) *NinetyNineWebOutput {
 	return &NinetyNineWebOutput{
 		Players:       make([]*NinetyNineWebOutputPlayer, 0),
-		CurrentTrick:  make([]*NinetyNineWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

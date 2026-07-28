@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { pokerApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuActionToast } from '../components/CpuActionToast';
@@ -496,6 +497,7 @@ function PokerPageContent() {
                 className="min-w-[90px]"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="poker-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

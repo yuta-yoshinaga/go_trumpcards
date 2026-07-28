@@ -20,6 +20,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { badgeErrorColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BigTwoResponse } from '../types/card';
@@ -230,7 +231,7 @@ function BigTwoPageContent() {
                     <span
                       data-testid="bt-selected-playtype"
                       role="status"
-                      className="rounded-full bg-ds-error/30 px-2 py-0.5 text-xs font-semibold text-ds-error"
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badgeErrorColors}`}
                     >
                       {t('invalidCombo')}
                     </span>

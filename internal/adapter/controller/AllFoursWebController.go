@@ -34,12 +34,6 @@ type AllFoursWebOutputPlayer struct {
 	TrickCount      int              `json:"trickCount"`
 }
 
-// AllFoursWebOutputTrickCard トリック中の1枚
-type AllFoursWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // AllFoursWebOutputHint ヒント出力
 type AllFoursWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -89,7 +83,7 @@ type AllFoursWebOutput struct {
 	TrumpSuit        int                              `json:"trumpSuit"`
 	TurnUp           *WebOutputCard                   `json:"turnUp"`
 	RunCount         int                              `json:"runCount"`
-	CurrentTrick     []*AllFoursWebOutputTrickCard    `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard            `json:"currentTrick"`
 	GameEndFlag      bool                             `json:"gameEndFlag"`
 	WinnerIdx        int                              `json:"winnerIdx"`
 	LeadPlayerIdx    int                              `json:"leadPlayerIdx"`
@@ -131,7 +125,7 @@ var NewAllFoursWebController, NewAllFoursWebControllerWithProvider = webControll
 func newAllFoursDefaultOutput(msg string) *AllFoursWebOutput {
 	return &AllFoursWebOutput{
 		Players:       make([]*AllFoursWebOutputPlayer, 0),
-		CurrentTrick:  make([]*AllFoursWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

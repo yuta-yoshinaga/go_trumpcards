@@ -154,7 +154,7 @@ func TestJass_ValidatePlay_MustFollow(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetPhase(domain.JassPhasePlay)
 	g.SetCurrentPlayerIdx(1)
-	g.SetCurrentTrick([]*domain.JassTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: jcard(domain.CardDesignSpade, 13)}, // lead spade
 	})
 	// P1 holds a spade and a heart (trump). Must follow spade -> only spade valid.
@@ -175,7 +175,7 @@ func TestJass_ValidatePlay_TrumpLead(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetPhase(domain.JassPhasePlay)
 	g.SetCurrentPlayerIdx(1)
-	g.SetCurrentTrick([]*domain.JassTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: jcard(domain.CardDesignHeart, 13)}, // lead trump
 	})
 	// Holds two hearts: must follow trump.
@@ -196,7 +196,7 @@ func TestJass_TrickWinner(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetPhase(domain.JassPhaseTrickEnd)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*domain.JassTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: jcard(domain.CardDesignSpade, 1)},  // A spade (lead)
 		{PlayerIdx: 1, Card: jcard(domain.CardDesignSpade, 13)}, // K spade
 		{PlayerIdx: 2, Card: jcard(domain.CardDesignHeart, 6)},  // 6 trump - wins
@@ -207,7 +207,7 @@ func TestJass_TrickWinner(t *testing.T) {
 	// Trump J beats trump 6.
 	g.SetPhase(domain.JassPhaseTrickEnd)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*domain.JassTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: jcard(domain.CardDesignHeart, 1)},  // A trump
 		{PlayerIdx: 1, Card: jcard(domain.CardDesignHeart, 11)}, // J trump - wins
 		{PlayerIdx: 2, Card: jcard(domain.CardDesignHeart, 9)},  // 9 trump
@@ -224,7 +224,7 @@ func TestJass_LastTrickBonus(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetPhase(domain.JassPhaseTrickEnd)
 	g.SetTrickNumber(domain.JassHandSize) // 9 = last trick
-	g.SetCurrentTrick([]*domain.JassTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: jcard(domain.CardDesignSpade, 1)}, // 11 pts, wins (team 0)
 		{PlayerIdx: 1, Card: jcard(domain.CardDesignSpade, 6)},
 		{PlayerIdx: 2, Card: jcard(domain.CardDesignSpade, 7)},

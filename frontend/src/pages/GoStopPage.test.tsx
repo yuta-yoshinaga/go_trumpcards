@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gostopApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeGoStopState } from '../test/stateFactories';
 import { GoStopPage } from './GoStopPage';
@@ -219,6 +220,7 @@ describe('GoStopPage', () => {
     expect(card).toBeDisabled();
     mockExec.mockClear();
     fireEvent.click(card);
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

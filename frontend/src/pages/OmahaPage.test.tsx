@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, omahaApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OmahaResponse } from '../types/card';
 import { OmahaPage } from './OmahaPage';
@@ -1391,6 +1392,7 @@ describe('OmahaPage', () => {
         fireEvent.keyDown(document, { key: 'f' });
         fireEvent.keyDown(document, { key: 'a' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1404,6 +1406,7 @@ describe('OmahaPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'c' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1417,6 +1420,7 @@ describe('OmahaPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'k' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
   });
@@ -1500,6 +1504,21 @@ describe('OmahaPage', () => {
 
       fireEvent.click(screen.getByLabelText('ラーニングモード'));
       expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
+    });
+  });
+
+  // The settings toggles are wrapped in a 44px-tall <label> so the whole row is
+  // a tap target (DESIGN.md Interactive Element Minimum Size, issue #4368).
+  // Clicking the label's *text* must therefore flip the checkbox -- that is the
+  // behaviour the tap target buys, and it was previously untested here.
+  describe('settings toggles are driven by their full label row', () => {
+    it.each(['ヒント表示', 'メタAI（CPUがプレイスタイルを学習）'])('toggles %s', async (label) => {
+      mockExec.mockResolvedValue(preFlopState);
+      renderWithProviders(<OmahaPage />);
+      const box = await waitFor(() => screen.getByLabelText(label) as HTMLInputElement);
+      const before = box.checked;
+      fireEvent.click(screen.getByText(label));
+      expect((screen.getByLabelText(label) as HTMLInputElement).checked).toBe(!before);
     });
   });
 

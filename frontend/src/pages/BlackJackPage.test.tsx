@@ -3,6 +3,7 @@ import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, blackjackApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BlackJackCpuSeat, BlackJackHand, BlackJackResponse } from '../types/card';
 import { BlackJackPage } from './BlackJackPage';
@@ -293,7 +294,9 @@ describe('BlackJackPage', () => {
   it('does not show message overlay when message is empty', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText('ヒット')).toBeInTheDocument());
+    // By role, like the rest of this file: "ヒット" also names the keyboard
+    // shortcut row in the footer panel, so a bare text query is ambiguous.
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
     expect(screen.queryByText('You are the winner.')).not.toBeInTheDocument();
   });
 
@@ -1369,7 +1372,10 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
-    expect(screen.queryByText(/インシュランス/)).not.toBeInTheDocument();
+    // The CPU seat renders its insurance as the bracketed badge "[インシュランス: N]"
+    // (see the sibling test above). Match that shape rather than the bare word,
+    // which now also appears in the footer's keyboard-shortcut rows.
+    expect(screen.queryByText(/\[インシュランス:/)).not.toBeInTheDocument();
   });
 
   // --- Early surrender tests ---
@@ -1472,6 +1478,7 @@ describe('BlackJackPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     // Confirmation dialog appears and no reset fires until it is confirmed.
     expect(screen.getByText('本当にゲームをリセットしますか？')).toBeInTheDocument();
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -1549,6 +1556,7 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'd' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('doubledown');
   });
 
@@ -1559,6 +1567,7 @@ describe('BlackJackPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'h' });
     fireEvent.keyDown(document, { key: 's' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -1588,6 +1597,7 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'i' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('insurance');
   });
 
@@ -1619,6 +1629,7 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'u' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('earlysurrender');
   });
 

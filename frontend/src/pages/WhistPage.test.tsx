@@ -64,12 +64,27 @@ describe('WhistPage', () => {
     );
   });
 
+  // The phase key map must hold bare keys; usePhaseNames adds the `phase.`
+  // prefix itself, so a prefixed key resolved to the literal
+  // "phase.phase.play" on screen. See issue #4374.
+  it('renders the translated phase name, not the raw i18n key', async () => {
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('プレイ'));
+    expect(screen.getByTestId('phase-indicator')).not.toHaveTextContent('phase.');
+  });
+
   it('lists the keyboard shortcuts in a collapsible panel', async () => {
     renderWithProviders(<WhistPage />);
     const panel = await screen.findByTestId('wh-kbd-shortcuts');
     // Closed by default so it stays discreet.
     expect(panel).not.toHaveAttribute('open');
     expect(screen.getByText('キーボードショートカット')).toBeInTheDocument();
+    // While collapsed the rows are not mounted, so they add no text to the page
+    // — the shortcut labels name the same actions as the buttons around them.
+    // See KeyboardShortcutsPanel and issue #4369.
+    expect(screen.queryByText('次のトリック / ラウンドへ進む')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('キーボードショートカット'));
     // The 'n' advance shortcut and card-selection keys are advertised.
     expect(screen.getByText('次のトリック / ラウンドへ進む')).toBeInTheDocument();
     expect(screen.getByText('数字キーで手札のカードを選択')).toBeInTheDocument();

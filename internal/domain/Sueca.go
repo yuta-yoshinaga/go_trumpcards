@@ -53,12 +53,6 @@ type SuecaHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// SuecaTrickCard トリック中の 1 枚
-type SuecaTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Sueca スエカのゲームクラス
 type Sueca struct {
 	trumpCards       *TrumpCards
@@ -68,7 +62,7 @@ type Sueca struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*SuecaTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	trumpSuit        int               // 切り札スート (最後に配った札のスート)
@@ -197,7 +191,7 @@ func (g *Sueca) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Sueca) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &SuecaTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == SuecaPlayerCnt {
@@ -657,10 +651,10 @@ func (g *Sueca) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Sueca) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Sueca) GetCurrentTrick() []*SuecaTrickCard { return g.currentTrick }
+func (g *Sueca) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Sueca) SetCurrentTrick(trick []*SuecaTrickCard) { g.currentTrick = trick }
+func (g *Sueca) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Sueca) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -748,7 +742,7 @@ type suecaJSON struct {
 	RoundNumber      int               `json:"rn"`
 	TrickNumber      int               `json:"tn"`
 	CurrentPlayerIdx int               `json:"ci"`
-	CurrentTrick     []*SuecaTrickCard `json:"ct"`
+	CurrentTrick     []*TrickCard      `json:"ct"`
 	LeadPlayerIdx    int               `json:"li"`
 	DealerIdx        int               `json:"di"`
 	TrumpSuit        int               `json:"ts"`
@@ -822,7 +816,7 @@ func (g *Sueca) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*SuecaTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

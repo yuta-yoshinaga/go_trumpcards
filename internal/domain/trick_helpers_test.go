@@ -2,7 +2,10 @@
 
 package domain
 
-import "testing"
+import (
+	"encoding/json"
+	"testing"
+)
 
 func tc(playerIdx, design, value int) *TrickCard {
 	return &TrickCard{PlayerIdx: playerIdx, Card: NewCard(design, value, false)}
@@ -70,5 +73,40 @@ func TestResolveTrickWinner_CustomRank(t *testing.T) {
 	}
 	if got := ResolveTrickWinner(trick, -1, invert); got != 1 {
 		t.Fatalf("custom rank: want seat 1, got %d", got)
+	}
+}
+
+// TestTrickCard_WireShape pins the serialized field names.
+//
+// This one type now carries the trick in 51 games' KV snapshots (issue #4363),
+// each of which previously declared its own struct with these exact tags. A
+// change to either tag would therefore break restore for all 51 at once, and
+// silently: encoding/json simply leaves an unmatched field at its zero value,
+// so an in-progress trick would come back empty rather than erroring.
+func TestTrickCard_WireShape(t *testing.T) {
+	data, err := json.Marshal(&TrickCard{PlayerIdx: 3, Card: NewCard(2, 11, false)})
+	if err != nil {
+		t.Fatalf("Marshal: %v", err)
+	}
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	for _, key := range []string{"pi", "c"} {
+		if _, ok := raw[key]; !ok {
+			t.Errorf("TrickCard must serialize %q; got %s", key, data)
+		}
+	}
+	if len(raw) != 2 {
+		t.Errorf("TrickCard must serialize exactly pi + c; got %s", data)
+	}
+
+	// And it must round-trip, since restore is the direction that matters.
+	var back TrickCard
+	if err := json.Unmarshal(data, &back); err != nil {
+		t.Fatalf("round-trip Unmarshal: %v", err)
+	}
+	if back.PlayerIdx != 3 || back.Card == nil || back.Card.GetValue() != 11 {
+		t.Errorf("round-trip lost data: %+v", back)
 	}
 }

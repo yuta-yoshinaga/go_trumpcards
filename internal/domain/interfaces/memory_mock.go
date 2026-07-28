@@ -94,9 +94,9 @@ func (_m *MockMemoryGame) GetPlayer(i int) *domain.MemoryPlayer {
 	return ret.Get(0).(*domain.MemoryPlayer)
 }
 
-func (_m *MockMemoryGame) GetBoard() [domain.MemoryBoardSize]*domain.MemoryBoardCard {
+func (_m *MockMemoryGame) GetBoard() []*domain.MemoryBoardCard {
 	ret := _m.Called()
-	return ret.Get(0).([domain.MemoryBoardSize]*domain.MemoryBoardCard)
+	return ret.Get(0).([]*domain.MemoryBoardCard)
 }
 
 func (_m *MockMemoryGame) GetBoardCard(pos int) *domain.MemoryBoardCard {

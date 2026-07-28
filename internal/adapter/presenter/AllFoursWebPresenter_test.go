@@ -31,7 +31,7 @@ func setupAllFoursWebMock() *interfaces.MockAllFoursGame {
 	m.On("GetTrumpSuit").Return(0)
 	m.On("GetTurnUp").Return((*domain.Card)(nil))
 	m.On("GetRunCount").Return(0)
-	m.On("GetCurrentTrick").Return([]*domain.AllFoursTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.AllFoursPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

@@ -245,7 +245,7 @@ func TestTysiac_TrickResolution_TrumpBeatsNonTrump(t *testing.T) {
 	g.SetTrickNumber(1)
 	g.SetPhase(domain.TysiacPhaseTrickEnd)
 	// Lead spade Ace (strongest non-trump); player 2 trumps with a diamond 9.
-	g.SetCurrentTrick([]*domain.TysiacTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: tysCard(domain.CardDesignSpade, 1)},
 		{PlayerIdx: 1, Card: tysCard(domain.CardDesignSpade, 10)},
 		{PlayerIdx: 2, Card: tysCard(domain.CardDesignDiamond, 9)},
@@ -261,7 +261,7 @@ func TestTysiac_TrickResolution_RankOrder(t *testing.T) {
 	g.SetTrumpSuit(0) // no trump: lead suit highest wins, A>10>K>Q>J>9
 	g.SetTrickNumber(1)
 	g.SetPhase(domain.TysiacPhaseTrickEnd)
-	g.SetCurrentTrick([]*domain.TysiacTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: tysCard(domain.CardDesignSpade, 13)}, // K
 		{PlayerIdx: 1, Card: tysCard(domain.CardDesignSpade, 1)},  // A (highest)
 		{PlayerIdx: 2, Card: tysCard(domain.CardDesignSpade, 10)}, // 10
@@ -275,7 +275,7 @@ func TestTysiac_TrickResolution_LastTrickEndsRound(t *testing.T) {
 	g.SetTrumpSuit(0)
 	g.SetTrickNumber(domain.TysiacTrickCount) // final trick
 	g.SetPhase(domain.TysiacPhaseTrickEnd)
-	g.SetCurrentTrick([]*domain.TysiacTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: tysCard(domain.CardDesignSpade, 1)},
 		{PlayerIdx: 1, Card: tysCard(domain.CardDesignSpade, 9)},
 		{PlayerIdx: 2, Card: tysCard(domain.CardDesignSpade, 10)},
@@ -289,7 +289,7 @@ func TestTysiac_NextTrick(t *testing.T) {
 	g.SetPhase(domain.TysiacPhaseTrickEnd)
 	g.SetLeadPlayerIdx(2)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*domain.TysiacTrickCard{{PlayerIdx: 0, Card: tysCard(domain.CardDesignSpade, 1)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 0, Card: tysCard(domain.CardDesignSpade, 1)}})
 	g.NextTrick()
 	assert.Equal(t, domain.TysiacPhasePlay, g.GetPhase())
 	assert.Equal(t, 2, g.GetCurrentPlayerIdx())
@@ -308,7 +308,7 @@ func TestTysiac_ValidatePlay_FollowSuitAndTrump(t *testing.T) {
 	g.SetPhase(domain.TysiacPhasePlay)
 	g.SetCurrentPlayerIdx(1)
 	// Lead is spades; player 1 holds a spade (must follow) plus a heart trump.
-	g.SetCurrentTrick([]*domain.TysiacTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: tysCard(domain.CardDesignSpade, 13)},
 	})
 	setTysiacHand(g, 1,
@@ -330,7 +330,7 @@ func TestTysiac_ValidatePlay_MustTrumpWhenVoid(t *testing.T) {
 	g := newTestTysiac()
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetPhase(domain.TysiacPhasePlay)
-	g.SetCurrentTrick([]*domain.TysiacTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: tysCard(domain.CardDesignSpade, 13)},
 	})
 	// Player 1 is void in spades but holds a trump and an off-suit -> must trump.
@@ -354,7 +354,7 @@ func TestTysiac_ValidatePlay_Overtrump(t *testing.T) {
 	g.SetPhase(domain.TysiacPhasePlay)
 	// Trick already contains a heart Jack (trump); player 1 void in lead spades,
 	// holds a higher heart (King) and a lower heart (9). Must overtrump -> only K.
-	g.SetCurrentTrick([]*domain.TysiacTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: tysCard(domain.CardDesignSpade, 13)},
 		{PlayerIdx: 2, Card: tysCard(domain.CardDesignHeart, 11)}, // trump J in trick
 	})
@@ -381,7 +381,7 @@ func TestTysiac_ValidatePlay_MustOvertrumpOnTrumpLead(t *testing.T) {
 	g.SetPhase(domain.TysiacPhasePlay)
 	// Trump (hearts) is led with a Jack; player 1 follows suit and holds both a
 	// higher trump (King) and a lower trump (9). Only the King is legal.
-	g.SetCurrentTrick([]*domain.TysiacTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: tysCard(domain.CardDesignHeart, 11)}, // trump J led
 	})
 	setTysiacHand(g, 1,
@@ -540,7 +540,7 @@ func TestTysiac_GetHint_PlayReasons(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	// Following: player must play spades to a spade lead; higher card -> follow_win.
-	g.SetCurrentTrick([]*domain.TysiacTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: tysCard(domain.CardDesignSpade, 12)}, // Q lead
 	})
 	setTysiacHand(g, 0,
@@ -552,7 +552,7 @@ func TestTysiac_GetHint_PlayReasons(t *testing.T) {
 
 	// Discard-low reason: void in lead suit and no trump held.
 	g.SetTrumpSuit(domain.CardDesignHeart)
-	g.SetCurrentTrick([]*domain.TysiacTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: tysCard(domain.CardDesignSpade, 12)},
 	})
 	setTysiacHand(g, 0, tysCard(domain.CardDesignClover, 1)) // off-suit, no trump

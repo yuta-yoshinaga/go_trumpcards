@@ -511,7 +511,7 @@ func TestGetLegalPlayIndicesFollowSuit(t *testing.T) {
 	p.players[1].AddCard(sp(7))
 	p.players[1].AddCard(cl(7))
 	p.players[1].AddCard(he(7))
-	p.currentTrick = []*PiquetTrickCard{
+	p.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: sp(13)},
 	}
 	legal := p.GetLegalPlayIndices(1)
@@ -527,7 +527,7 @@ func TestGetLegalPlayIndicesAllWhenNoSuit(t *testing.T) {
 	p.players[1].Reset()
 	p.players[1].AddCard(cl(7))
 	p.players[1].AddCard(he(7))
-	p.currentTrick = []*PiquetTrickCard{
+	p.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: sp(13)},
 	}
 	legal := p.GetLegalPlayIndices(1)

@@ -39,16 +39,9 @@ func (p *BriscolaWebPresenter) buildBase(b interfaces.BriscolaGame) *controller.
 		CpuDifficulty: int(cfg.CpuDifficulty),
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(b.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(b.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(b)
 	return resObj
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *BriscolaWebPresenter) buildTrickOutput(trick []*domain.BriscolaTrickCard) []*controller.BriscolaWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.BriscolaTrickCard) *controller.BriscolaWebOutputTrickCard {
-		return &controller.BriscolaWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -82,11 +75,11 @@ func (p *BriscolaWebPresenter) buildMessage(b interfaces.BriscolaGame, lastErr e
 		}
 		switch b.GetWinnerIdx() {
 		case 0:
-			return fmt.Sprintf("ゲーム終了！ あなたの勝利です (%d-%d)！", p0, p1), "briscola.result.p0Win", params
+			return "", "briscola.result.p0Win", params
 		case 1:
-			return fmt.Sprintf("ゲーム終了！ CPUの勝利です (%d-%d)。", p0, p1), "briscola.result.p1Win", params
+			return "", "briscola.result.p1Win", params
 		default:
-			return fmt.Sprintf("ゲーム終了！ 引き分けです (%d-%d)。", p0, p1), "briscola.result.tie", params
+			return "", "briscola.result.tie", params
 		}
 	}
 	switch b.GetPhase() {

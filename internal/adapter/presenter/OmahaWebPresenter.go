@@ -31,7 +31,7 @@ func (owp *OmahaWebPresenter) buildMessage(o interfaces.OmahaGame, lastErr error
 		return lastErr.Error(), "", nil
 	}
 	if o.IsMuckAvailable() {
-		return "Muck or show your hand.", "omaha.muck.prompt", nil
+		return "", "omaha.muck.prompt", nil
 	}
 	if o.GetGameEndFlag() {
 		msg, code := owp.buildResultMessage(o)
@@ -43,7 +43,7 @@ func (owp *OmahaWebPresenter) buildMessage(o interfaces.OmahaGame, lastErr error
 func (owp *OmahaWebPresenter) buildResultMessage(o interfaces.OmahaGame) (string, string) {
 	results := o.GetRoundResults()
 	if len(results) == 0 {
-		return "Game over.", "omaha.result.gameOver"
+		return "", "omaha.result.gameOver"
 	}
 
 	hiLo := o.GetIsHiLo()
@@ -53,31 +53,31 @@ func (owp *OmahaWebPresenter) buildResultMessage(o interfaces.OmahaGame) (string
 				if hiLo {
 					switch {
 					case r.HiWonAmount > 0 && r.LowWonAmount > 0:
-						return "You scooped the pot (Hi + Lo).", "omahahilo.result.scoop"
+						return "", "omahahilo.result.scoop"
 					case r.LowWonAmount > 0:
-						return "You won the low half.", "omahahilo.result.lowWin"
+						return "", "omahahilo.result.lowWin"
 					case r.HiWonAmount > 0:
-						return "You won the high half.", "omahahilo.result.hiWin"
+						return "", "omahahilo.result.hiWin"
 					}
 				}
-				return "You are the winner.", "omaha.result.win"
+				return "", "omaha.result.win"
 			}
 		}
 	}
 
 	for i := 0; i < o.GetPlayerCnt(); i++ {
 		if o.GetPlayer(i).GetIsHuman() && o.GetPlayer(i).GetFolded() {
-			return "You folded.", "omaha.result.folded"
+			return "", "omaha.result.folded"
 		}
 	}
 
 	for _, r := range results {
 		if o.GetPlayer(r.PlayerIdx).GetIsHuman() && r.Mucked {
-			return "You mucked.", "omaha.result.mucked"
+			return "", "omaha.result.mucked"
 		}
 	}
 
-	return "You lose.", "omaha.result.lose"
+	return "", "omaha.result.lose"
 }
 
 // ActionLogOutput 棋譜をJSON出力

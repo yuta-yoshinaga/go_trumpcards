@@ -3,6 +3,7 @@ import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
+import { useIsMounted } from './useIsMounted';
 
 /**
  * Options passed to {@link useTrickGameBase} to configure the base trick-taking game hook.
@@ -124,18 +125,24 @@ export function useTrickGameBase<TState, TArgs extends unknown[], TConfig extend
     (exec as unknown as ExecCmd)('nextround');
   }, [exec]);
 
+  const isMounted = useIsMounted();
+
   const handleHint = useCallback(async () => {
     setHintLoading(true);
     try {
       const res = await (apiFn as unknown as ApiCmd)('hint');
+      // The player may have navigated away while the hint was in flight; writing
+      // state to a gone component can throw once the environment is torn down. #4447
+      if (!isMounted()) return;
       setHint(getHint(res) ?? null);
       setHintError(null);
     } catch {
+      if (!isMounted()) return;
       setHintError(NETWORK_ERROR_MESSAGE());
     } finally {
-      setHintLoading(false);
+      if (isMounted()) setHintLoading(false);
     }
-  }, [apiFn, getHint]);
+  }, [apiFn, getHint, isMounted]);
 
   return {
     state,

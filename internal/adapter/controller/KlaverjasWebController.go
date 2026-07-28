@@ -35,37 +35,25 @@ type KlaverjasWebOutputPlayer struct {
 	TeamScore  int              `json:"teamScore"`
 }
 
-// KlaverjasWebOutputTrickCard トリック中の1枚
-type KlaverjasWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// KlaverjasWebOutputHint ヒント出力
-type KlaverjasWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // KlaverjasWebOutput クラヴァヤスのWebアウトプット
 type KlaverjasWebOutput struct {
-	Players          []*KlaverjasWebOutputPlayer    `json:"players"`
-	Phase            int                            `json:"phase"`
-	RoundNumber      int                            `json:"roundNumber"`
-	TrickNumber      int                            `json:"trickNumber"`
-	CurrentPlayerIdx int                            `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                            `json:"leadPlayerIdx"`
-	DealerIdx        int                            `json:"dealerIdx"`
-	TrumpSuit        int                            `json:"trumpSuit"`
-	CurrentTrick     []*KlaverjasWebOutputTrickCard `json:"currentTrick"`
-	TeamScores       [domain.KlaverjasTeamCnt]int   `json:"teamScores"`
-	RoundCardPoints  [domain.KlaverjasTeamCnt]int   `json:"roundCardPoints"`
-	RoundRoem        [domain.KlaverjasTeamCnt]int   `json:"roundRoem"`
-	PlayableIndices  []int                          `json:"playableIndices"`
-	GameEndFlag      bool                           `json:"gameEndFlag"`
-	WinnerTeam       int                            `json:"winnerTeam"`
-	IsHumanTurn      bool                           `json:"isHumanTurn"`
-	Hint             *KlaverjasWebOutputHint        `json:"hint,omitempty"`
+	Players          []*KlaverjasWebOutputPlayer  `json:"players"`
+	Phase            int                          `json:"phase"`
+	RoundNumber      int                          `json:"roundNumber"`
+	TrickNumber      int                          `json:"trickNumber"`
+	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
+	DealerIdx        int                          `json:"dealerIdx"`
+	TrumpSuit        int                          `json:"trumpSuit"`
+	CurrentTrick     []*WebOutputTrickCard        `json:"currentTrick"`
+	TeamScores       [domain.KlaverjasTeamCnt]int `json:"teamScores"`
+	RoundCardPoints  [domain.KlaverjasTeamCnt]int `json:"roundCardPoints"`
+	RoundRoem        [domain.KlaverjasTeamCnt]int `json:"roundRoem"`
+	PlayableIndices  []int                        `json:"playableIndices"`
+	GameEndFlag      bool                         `json:"gameEndFlag"`
+	WinnerTeam       int                          `json:"winnerTeam"`
+	IsHumanTurn      bool                         `json:"isHumanTurn"`
+	Hint             *WebOutputCardHint           `json:"hint,omitempty"`
 	WebOutputBase
 	Config KlaverjasWebOutputConfig `json:"config"`
 }
@@ -101,7 +89,7 @@ var NewKlaverjasWebController, NewKlaverjasWebControllerWithProvider = webContro
 func newKlaverjasDefaultOutput(msg string) *KlaverjasWebOutput {
 	return &KlaverjasWebOutput{
 		Players:         make([]*KlaverjasWebOutputPlayer, 0),
-		CurrentTrick:    make([]*KlaverjasWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		WinnerTeam:      -1,
 		WebOutputBase:   WebOutputBase{Message: msg},

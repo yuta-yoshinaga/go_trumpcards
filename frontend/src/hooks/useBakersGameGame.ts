@@ -12,7 +12,7 @@ export function useBakersGameGame() {
   const [selectedSource, setSelectedSource] = useState<FreeCellMoveZone | null>(null);
   const onClearSelection = useCallback(() => setSelectedSource(null), []);
 
-  const base = useSolitaireGameBase<
+  const { apiCall, runAction, setHint, ...rest } = useSolitaireGameBase<
     Awaited<ReturnType<typeof bakersgameApi.exec>>,
     Parameters<typeof bakersgameApi.exec>,
     FreeCellHint
@@ -21,10 +21,7 @@ export function useBakersGameGame() {
     hintApi: () => bakersgameApi.exec('hint'),
   });
 
-  const handleUndoEscape = useCallback(
-    (n: number) => base.runAction('undo_n', undefined, undefined, n),
-    [base.runAction],
-  );
+  const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
 
   const handleSelectSource = useCallback((zone: FreeCellMoveZone) => {
     setSelectedSource((prev) => {
@@ -44,11 +41,11 @@ export function useBakersGameGame() {
   const handleSelectTarget = useCallback(
     (zone: FreeCellMoveZone) => {
       if (!selectedSource) return;
-      base.setHint(null);
-      void base.apiCall('move', selectedSource, zone);
+      setHint(null);
+      void apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, base],
+    [selectedSource, apiCall, setHint],
   );
 
   // Double-click / double-tap shortcut: dispatch a pre-computed auto-move (a
@@ -57,31 +54,22 @@ export function useBakersGameGame() {
   // stays in lockstep.
   const handleAutoMove = useCallback(
     (source: FreeCellMoveZone, target: FreeCellMoveZone) => {
-      base.setHint(null);
-      void base.apiCall('move', source, target);
+      setHint(null);
+      void apiCall('move', source, target);
       setSelectedSource(null);
     },
-    [base],
+    [apiCall, setHint],
   );
 
   return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hintError: base.hintError,
-    exec: base.apiCall,
+    ...rest,
+    runAction,
+    setHint,
+    exec: apiCall,
     selectedSource,
-    hint: base.hint,
-    handleReset: base.handleReset,
-    handleGiveUp: base.handleGiveUp,
-    handleHint: base.handleHint,
-    handleAutoComplete: base.handleAutoComplete,
-    handleUndo: base.handleUndo,
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
     handleAutoMove,
-    isAutoCompleting: base.isAutoCompleting,
-    retry: base.retry,
   };
 }

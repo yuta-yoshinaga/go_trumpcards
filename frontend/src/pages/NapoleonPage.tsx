@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { napoleonApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -749,6 +750,7 @@ function NapoleonPageContent() {
                 dataTutorial="np-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="napoleon-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

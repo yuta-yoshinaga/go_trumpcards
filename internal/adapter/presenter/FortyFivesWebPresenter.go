@@ -48,7 +48,7 @@ func (p *FortyFivesWebPresenter) buildBase(g interfaces.FortyFivesGame) *control
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -73,13 +73,6 @@ func (p *FortyFivesWebPresenter) playableIndices(g interfaces.FortyFivesGame) []
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *FortyFivesWebPresenter) buildTrickOutput(trick []*domain.FortyFivesTrickCard) []*controller.FortyFivesWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.FortyFivesTrickCard) *controller.FortyFivesWebOutputTrickCard {
-		return &controller.FortyFivesWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -152,7 +145,7 @@ func (p *FortyFivesWebPresenter) HintOutput(g interfaces.FortyFivesGame) string 
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.FortyFivesWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

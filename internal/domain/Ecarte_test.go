@@ -150,7 +150,7 @@ func TestEcarte_MustFollowAndWin(t *testing.T) {
 	e.SetTrickNumber(1)
 	e.SetCurrentPlayerIdx(0)
 	// Lead a heart; seat 0 holds two hearts -> must follow AND must win if able.
-	e.SetCurrentTrick([]*domain.EcarteTrickCard{{PlayerIdx: 1, Card: ecCard(domain.CardDesignHeart, 11)}}) // J♥ lead
+	e.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: ecCard(domain.CardDesignHeart, 11)}}) // J♥ lead
 	ecSetHand(e.GetPlayer(0),
 		ecCard(domain.CardDesignHeart, 13), // K♥ (can win) idx 0
 		ecCard(domain.CardDesignHeart, 1))  // A♥ (loses to J? A<J in ecarte) idx 1
@@ -165,7 +165,7 @@ func TestEcarte_TrickWinnerTrumpBeatsLead(t *testing.T) {
 	e.SetTrumpSuit(domain.CardDesignSpade)
 	e.SetTrickNumber(1)
 	e.SetCurrentPlayerIdx(0)
-	e.SetCurrentTrick([]*domain.EcarteTrickCard{{PlayerIdx: 1, Card: ecCard(domain.CardDesignHeart, 13)}}) // K♥ lead
+	e.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: ecCard(domain.CardDesignHeart, 13)}}) // K♥ lead
 	ecSetHand(e.GetPlayer(0),
 		ecCard(domain.CardDesignSpade, 7),  // 7♠ trump (only card; void in heart) idx 0
 		ecCard(domain.CardDesignClover, 9)) // spare so hands not empty
@@ -186,7 +186,7 @@ func TestEcarte_ScoreDealVoleAndRefusal(t *testing.T) {
 		e.GetPlayer(0).AddTrick([]*domain.Card{ecCard(domain.CardDesignSpade, 2)})
 	}
 	// Last trick: seat0 plays, seat1 follows -> resolve. Set both to have 1 card.
-	e.SetCurrentTrick([]*domain.EcarteTrickCard{{PlayerIdx: 1, Card: ecCard(domain.CardDesignHeart, 7)}})
+	e.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: ecCard(domain.CardDesignHeart, 7)}})
 	ecSetHand(e.GetPlayer(0), ecCard(domain.CardDesignHeart, 13)) // K♥ beats 7♥
 	ecSetHand(e.GetPlayer(1))                                     // empty
 	require.NoError(t, e.PlayerPlay(0))

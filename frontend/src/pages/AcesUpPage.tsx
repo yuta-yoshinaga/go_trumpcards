@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { acesupApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -139,10 +140,10 @@ function AcesUpPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleDraw },
-      { key: 'h', action: handleHint },
-      { key: 'g', action: confirmGiveUpAction },
-      { key: 'z', action: handleUndo },
+      { key: 'd', action: handleDraw, label: 'draw' },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+      { key: 'z', action: handleUndo, label: 'undo' },
     ],
     [handleDraw, handleHint, confirmGiveUpAction, handleUndo],
   );
@@ -410,6 +411,7 @@ function AcesUpPageContent() {
                 dataTutorial="acesup-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="aces-up-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

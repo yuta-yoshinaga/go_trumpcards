@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra3
 
 package interfaces
 
@@ -70,7 +70,7 @@ type PiquetGame interface {
 	GetDeclResults() []*domain.PiquetDeclarationResult
 
 	// GetCurrentTrick 現在のトリック
-	GetCurrentTrick() []*domain.PiquetTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetCurrentPlayerIdx 現プレイヤー
 	GetCurrentPlayerIdx() int
 	// GetTrickNumber 0始まりトリック番号

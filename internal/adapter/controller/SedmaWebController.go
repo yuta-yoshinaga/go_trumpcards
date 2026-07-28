@@ -35,35 +35,23 @@ type SedmaWebOutputPlayer struct {
 	TeamScore  int              `json:"teamScore"`
 }
 
-// SedmaWebOutputTrickCard トリック中の1枚
-type SedmaWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// SedmaWebOutputHint ヒント出力
-type SedmaWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // SedmaWebOutput セドマのWebアウトプット
 type SedmaWebOutput struct {
-	Players          []*SedmaWebOutputPlayer    `json:"players"`
-	Phase            int                        `json:"phase"`
-	RoundNumber      int                        `json:"roundNumber"`
-	TrickNumber      int                        `json:"trickNumber"`
-	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
-	DealerIdx        int                        `json:"dealerIdx"`
-	CurrentTrick     []*SedmaWebOutputTrickCard `json:"currentTrick"`
-	TeamScores       [domain.SedmaTeamCnt]int   `json:"teamScores"`
-	RoundCardPoints  [domain.SedmaTeamCnt]int   `json:"roundCardPoints"`
-	PlayableIndices  []int                      `json:"playableIndices"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerTeam       int                        `json:"winnerTeam"`
-	IsHumanTurn      bool                       `json:"isHumanTurn"`
-	Hint             *SedmaWebOutputHint        `json:"hint,omitempty"`
+	Players          []*SedmaWebOutputPlayer  `json:"players"`
+	Phase            int                      `json:"phase"`
+	RoundNumber      int                      `json:"roundNumber"`
+	TrickNumber      int                      `json:"trickNumber"`
+	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
+	DealerIdx        int                      `json:"dealerIdx"`
+	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
+	TeamScores       [domain.SedmaTeamCnt]int `json:"teamScores"`
+	RoundCardPoints  [domain.SedmaTeamCnt]int `json:"roundCardPoints"`
+	PlayableIndices  []int                    `json:"playableIndices"`
+	GameEndFlag      bool                     `json:"gameEndFlag"`
+	WinnerTeam       int                      `json:"winnerTeam"`
+	IsHumanTurn      bool                     `json:"isHumanTurn"`
+	Hint             *WebOutputCardHint       `json:"hint,omitempty"`
 	WebOutputBase
 	Config SedmaWebOutputConfig `json:"config"`
 }
@@ -99,7 +87,7 @@ var NewSedmaWebController, NewSedmaWebControllerWithProvider = webControllerPair
 func newSedmaDefaultOutput(msg string) *SedmaWebOutput {
 	return &SedmaWebOutput{
 		Players:         make([]*SedmaWebOutputPlayer, 0),
-		CurrentTrick:    make([]*SedmaWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		WinnerTeam:      -1,
 		WebOutputBase:   WebOutputBase{Message: msg},

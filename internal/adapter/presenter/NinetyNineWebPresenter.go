@@ -58,16 +58,9 @@ func (p *NinetyNineWebPresenter) buildBase(o interfaces.NinetyNineGame) *control
 		TargetScore:   cfg.TargetScore,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(o.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(o.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(o)
 	return resObj
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *NinetyNineWebPresenter) buildTrickOutput(trick []*domain.TrickCard) []*controller.NinetyNineWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.NinetyNineWebOutputTrickCard {
-		return &controller.NinetyNineWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

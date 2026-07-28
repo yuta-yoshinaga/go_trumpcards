@@ -20,7 +20,7 @@ import (
 func mustSchnapsenOutputJSON(msg string) string {
 	out := &controller.SchnapsenWebOutput{
 		Players:       []*controller.SchnapsenWebOutputPlayer{},
-		CurrentTrick:  []*controller.SchnapsenWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		ValidPlays:    []int{},
 		MarriagePlays: []int{},
 		WinnerIdx:     -1,

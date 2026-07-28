@@ -400,7 +400,7 @@ func TestBridgeFollowSuit(t *testing.T) {
 	setupBridgePlayPhase(b)
 
 	// Lead with a club
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignClover, 5, true)},
 	}
 	b.SetCurrentPlayerIdx(0) // Human has only spades
@@ -421,7 +421,7 @@ func TestBridgeFollowSuitViolation(t *testing.T) {
 	b.players[0].AddCard(NewCard(CardDesignSpade, 10, true))
 
 	// Lead with a club
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignClover, 3, true)},
 	}
 	b.SetCurrentPlayerIdx(0)
@@ -440,7 +440,7 @@ func TestBridgeResolveTrick(t *testing.T) {
 	b.Reset()
 	setupBridgePlayPhase(b)
 
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignClover, 10, true)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 5, true)},
 		{PlayerIdx: 3, Card: NewCard(CardDesignDiamond, 8, true)},
@@ -461,7 +461,7 @@ func TestBridgeResolveTrickNoTrump(t *testing.T) {
 	setupBridgePlayPhase(b)
 	b.trumpSuit = -1 // NoTrump
 
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignClover, 10, true)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignClover, 1, true)}, // Ace
 		{PlayerIdx: 3, Card: NewCard(CardDesignDiamond, 1, true)},
@@ -1084,14 +1084,14 @@ func TestBridgePlayHintReasons(t *testing.T) {
 
 	// Follow suit
 	b.trumpSuit = CardDesignSpade
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 5, true)},
 	}
 	reason = b.playHintReason(0, 0)
 	assert.Equal(t, "follow_suit", reason)
 
 	// Trump cut
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignClover, 5, true)},
 	}
 	reason = b.playHintReason(0, 0) // spade card when lead is club
@@ -1099,7 +1099,7 @@ func TestBridgePlayHintReasons(t *testing.T) {
 
 	// Discard weak
 	b.trumpSuit = CardDesignHeart // player 0 has only spades
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignClover, 5, true)},
 	}
 	reason = b.playHintReason(0, 0)
@@ -1135,7 +1135,7 @@ func TestBridgeResolveTrickWrongCardCount(t *testing.T) {
 	b := newTestBridge()
 	b.Reset()
 	b.SetPhase(BridgePhaseTrickEnd)
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 5, true)},
 	}
 	b.ResolveTrick()
@@ -1148,7 +1148,7 @@ func TestBridgeTrickEndToRoundEnd(t *testing.T) {
 	setupBridgePlayPhase(b)
 	b.trickNumber = BridgeTotalTricks
 	b.SetPhase(BridgePhaseTrickEnd)
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 1, true)},
 		{PlayerIdx: 1, Card: NewCard(CardDesignClover, 1, true)},
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 1, true)},
@@ -1188,7 +1188,7 @@ func TestBridgeCpuPlayHardPartnerWinning(t *testing.T) {
 	b.config.CpuDifficulty = BridgeCpuDifficultyHard
 
 	// Player 1 (team 1) leads high card, player 3 (team 1) follows
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 1, Card: NewCard(CardDesignClover, 1, true)}, // Ace
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 2, true)},
 	}
@@ -1358,7 +1358,7 @@ func TestBridgeSmartFollowTrumpCut(t *testing.T) {
 	b.players[1].AddCard(NewCard(CardDesignSpade, 2, true))  // Trump
 	b.players[1].AddCard(NewCard(CardDesignClover, 3, true)) // Non-trump
 
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 10, true)},
 	}
 
@@ -1842,7 +1842,7 @@ func TestBridgeCpuPlayHard_PartnerWinning(t *testing.T) {
 	setupBridgePlayPhaseHard(b)
 
 	// Player 3 (team 1, partner of player 1) is winning
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 5, true)},
 		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 1, true)}, // Partner winning with Ace
 	}
@@ -1863,7 +1863,7 @@ func TestBridgeCpuPlayHard_4thSeatMinWin(t *testing.T) {
 	setupBridgePlayPhaseHard(b)
 
 	// Player 1 (team 1) is 4th to play. Opponent (team 0) is winning.
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 5, true)},  // team 1 (partner, low)
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 10, true)}, // team 0 (opponent, winning)
 		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 8, true)},  // team 0
@@ -1885,7 +1885,7 @@ func TestBridgeCpuPlayHard_TrumpCutLowest(t *testing.T) {
 	setupBridgePlayPhaseHard(b)
 
 	// Lead is hearts, player 1 has no hearts but has multiple trumps (spades)
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 10, true)},
 	}
 
@@ -1907,7 +1907,7 @@ func TestBridgeCpuPlayHard_DiscardShortSuit(t *testing.T) {
 	b.trumpSuit = -1 // NoTrump
 
 	// Lead is hearts, player 1 has no hearts and no trumps
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 10, true)},
 	}
 
@@ -1927,7 +1927,7 @@ func TestBridgeCpuPlayHard_OpponentWinningSmartFollow(t *testing.T) {
 	setupBridgePlayPhaseHard(b)
 
 	// Lead is hearts, opponent winning, player 1 can follow
-	b.currentTrick = []*BridgeTrickCard{
+	b.currentTrick = []*TrickCard{
 		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 10, true)},
 	}
 

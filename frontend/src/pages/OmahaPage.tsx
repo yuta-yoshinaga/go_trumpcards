@@ -23,6 +23,7 @@ import { RoundResults } from '../components/RoundResults';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCommunityPokerGame } from '../hooks/useCommunityPokerGame';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -342,7 +343,7 @@ function OmahaPageContent() {
                   )}
                 </div>
                 <div
-                  className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-ds-info/20 px-2 py-0.5 text-[11px] font-semibold text-ds-info"
+                  className={`mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${badgeInfoColors}`}
                   data-testid="omaha-rule-badge"
                   title={t('mandatoryRuleAria')}
                 >
@@ -499,25 +500,28 @@ function OmahaPageContent() {
               </summary>
               <div className="flex flex-col gap-2 py-1">
                 <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
-                  <label htmlFor="learningModeCheckbox" className="text-ds-text-primary text-sm cursor-pointer">
+                  <label
+                    htmlFor="learningModeCheckbox"
+                    className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
+                  >
                     {t('learning.toggle')}
+                    <input
+                      id="learningModeCheckbox"
+                      type="checkbox"
+                      checked={learningMode}
+                      onChange={(e) => setLearningMode(e.target.checked)}
+                    />
                   </label>
-                  <input
-                    id="learningModeCheckbox"
-                    type="checkbox"
-                    checked={learningMode}
-                    onChange={(e) => setLearningMode(e.target.checked)}
-                  />
                 </div>
                 {learningMode && state?.equity && state.potOdds != null && (
                   <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
                 )}
                 <div className="flex items-center gap-3">
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                     <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
                     {tc('hint.toggle', { ns: 'tutorial' })}
                   </label>
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                     <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
                     {t('settings.cpuMetaAI')}
                   </label>

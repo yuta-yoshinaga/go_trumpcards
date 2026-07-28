@@ -33,7 +33,7 @@ func TestLooCuiPresenter_Output_AllPhases(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetCurrentTurn(0)
 	g.GetPlayer(0).SetPlaying(true)
-	g.SetCurrentTrick([]*domain.LooTrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
 	assert.NotEmpty(t, p.Output(g, nil))
 
 	g.SetPhase(domain.LooPhaseTrickEnd)

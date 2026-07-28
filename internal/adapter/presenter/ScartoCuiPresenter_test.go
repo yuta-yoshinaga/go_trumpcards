@@ -55,7 +55,7 @@ func TestScartoCuiPresenter_Output(t *testing.T) {
 		g.GetPlayer(0).Reset()
 		g.GetPlayer(0).AddCard(domain.NewCard(domain.ScartoTrumpDesign, 7, false))
 		g.GetPlayer(0).AddCard(domain.NewCard(domain.ScartoExcuseDesign, 0, false))
-		g.SetCurrentTrick([]*domain.ScartoTrickCard{
+		g.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		})
 		result := p.Output(g, nil)

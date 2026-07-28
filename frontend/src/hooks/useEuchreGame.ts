@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { euchreApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { EuchreConfig, EuchreHint } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
+import { useHintRequest } from './useHintRequest';
 
 /** Default Euchre game configuration. */
 export const DEFAULT_EUCHRE_CONFIG: EuchreConfig = {
@@ -78,18 +78,13 @@ export function useEuchreGame() {
     apiExec('nextround');
   }, [apiExec]);
 
-  const handleHint = useCallback(async () => {
-    setHintLoading(true);
-    try {
-      const res = await euchreApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    } finally {
-      setHintLoading(false);
-    }
-  }, []);
+  const handleHint = useHintRequest({
+    fetchHint: () => euchreApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+    setHintLoading,
+  });
 
   return {
     state,

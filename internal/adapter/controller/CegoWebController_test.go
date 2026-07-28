@@ -17,7 +17,7 @@ import (
 func mustCegoOutputJSON(msg string) string {
 	out := &controller.CegoWebOutput{
 		Players:         []*controller.CegoWebOutputPlayer{},
-		CurrentTrick:    []*controller.CegoWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		Blind:           []*controller.WebOutputCard{},
 		PlayableIndices: []int{},
 		DeclarerIdx:     -1,

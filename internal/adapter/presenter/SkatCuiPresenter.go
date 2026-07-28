@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra3
 
 package presenter
 
@@ -75,8 +75,8 @@ func (p *SkatCuiPresenter) Output(s interfaces.SkatGame, lastErr error) string {
 
 		trick := s.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
-			func(tc *domain.SkatTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.SkatTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) },
 		)
 

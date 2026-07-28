@@ -104,19 +104,19 @@ func (_m *MockCinchGame) GetCurrentTurn() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockCinchGame) GetCurrentTrick() []*domain.CinchTrickCard {
+func (_m *MockCinchGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.CinchTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }
 
 // GetLastTrick モック
-func (_m *MockCinchGame) GetLastTrick() []*domain.CinchTrickCard {
+func (_m *MockCinchGame) GetLastTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.CinchTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

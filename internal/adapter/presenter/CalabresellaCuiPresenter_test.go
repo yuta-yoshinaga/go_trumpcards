@@ -28,7 +28,7 @@ func setupCalabresellaCuiMock() *interfaces.MockCalabresellaGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetWinningBid").Return(domain.CalabresellaBidChiamo)
-	m.On("GetCurrentTrick").Return(([]*domain.CalabresellaTrickCard)(nil))
+	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.CalabresellaPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

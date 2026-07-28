@@ -101,8 +101,8 @@ func (_m *MockKoenigrufenGame) GetTrickNumber() int { return _m.Called().Int(0) 
 func (_m *MockKoenigrufenGame) GetCurrentPlayerIdx() int { return _m.Called().Int(0) }
 
 // GetCurrentTrick モック
-func (_m *MockKoenigrufenGame) GetCurrentTrick() []*domain.KoenigrufenTrickCard {
-	return _m.Called().Get(0).([]*domain.KoenigrufenTrickCard)
+func (_m *MockKoenigrufenGame) GetCurrentTrick() []*domain.TrickCard {
+	return _m.Called().Get(0).([]*domain.TrickCard)
 }
 
 // GetLeadPlayerIdx モック

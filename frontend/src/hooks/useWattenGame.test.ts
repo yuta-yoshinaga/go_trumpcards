@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { wattenApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeWattenState } from '../test/stateFactories';
 import { DEFAULT_WATTEN_CONFIG, useWattenGame } from './useWattenGame';
 
@@ -40,9 +41,10 @@ describe('useWattenGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declare', 13, 3));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useWattenGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

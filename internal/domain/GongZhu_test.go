@@ -227,7 +227,7 @@ func TestGongZhuValidatePlayFollowSuit(t *testing.T) {
 	g.SetTrickNumber(2)
 	g.SetCurrentPlayerIdx(0)
 	g.SetHeartsBroken(true)
-	g.SetCurrentTrick([]*domain.GongZhuTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 3, Card: gzCard(domain.CardDesignSpade, 5)},
 	})
 	p := g.GetPlayer(0)
@@ -278,7 +278,7 @@ func TestGongZhuTrickWinnerAceHigh(t *testing.T) {
 	g := newTestGongZhu()
 	g.SetPhase(domain.GongZhuPhaseTrickEnd)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*domain.GongZhuTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: gzCard(domain.CardDesignSpade, 13)}, // K
 		{PlayerIdx: 1, Card: gzCard(domain.CardDesignSpade, 1)},  // A (wins)
 		{PlayerIdx: 2, Card: gzCard(domain.CardDesignSpade, 9)},
@@ -304,7 +304,7 @@ func TestGongZhuResolveTrickLastSetsRoundEnd(t *testing.T) {
 	g := newTestGongZhu()
 	g.SetPhase(domain.GongZhuPhaseTrickEnd)
 	g.SetTrickNumber(domain.GongZhuHandSize)
-	g.SetCurrentTrick([]*domain.GongZhuTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: gzCard(domain.CardDesignSpade, 13)},
 		{PlayerIdx: 1, Card: gzCard(domain.CardDesignSpade, 2)},
 		{PlayerIdx: 2, Card: gzCard(domain.CardDesignSpade, 9)},
@@ -406,7 +406,7 @@ func TestGongZhuCpuFollowCapturesSheep(t *testing.T) {
 	g.SetCurrentPlayerIdx(1)
 	g.SetHeartsBroken(true)
 	// lead diamond 5, sheep (J) already in trick -> CPU should try to win with A
-	g.SetCurrentTrick([]*domain.GongZhuTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: gzCard(domain.CardDesignDiamond, 5)},
 		{PlayerIdx: 3, Card: gzCard(domain.CardDesignDiamond, 11)}, // sheep
 	})
@@ -428,7 +428,7 @@ func TestGongZhuCpuDiscardDumpsPig(t *testing.T) {
 	g.SetTrickNumber(2)
 	g.SetCurrentPlayerIdx(1)
 	g.SetHeartsBroken(true)
-	g.SetCurrentTrick([]*domain.GongZhuTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: gzCard(domain.CardDesignClover, 5)},
 	})
 	p := g.GetPlayer(1)

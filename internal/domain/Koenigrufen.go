@@ -158,8 +158,10 @@ const (
 	KoenigrufenOutcomeLoss KoenigrufenOutcome = 2
 )
 
-// KoenigrufenResult 人間視点のマッチ結果。casino タグの GameResult は extra ワーカーから
-// 到達不能なため、ゲームローカルの結果型を定義する。
+// KoenigrufenResult 人間視点のマッチ結果。
+// GameResult は共有ファイル internal/domain/game_result.go に移動したので到達可能に
+// なったが、この型名は JSON ペイロードに出るため統合していない（#4462）。値は
+// GameResult と同一。
 type KoenigrufenResult int
 
 // Königrufen のマッチ結果定数
@@ -178,12 +180,6 @@ type KoenigrufenHint struct {
 	CallSuit    *int   // 推奨呼び王スート (王呼びフェーズ)
 	CardIndices []int  // 推奨カードインデックス (交換/プレイ)
 	Reason      string // ヒント理由キー
-}
-
-// KoenigrufenTrickCard トリック中の 1 枚
-type KoenigrufenTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
 }
 
 // KoenigrufenBreakdown 得点計算の内訳 (純粋関数 koenigrufenScoreDeal の出力)。
@@ -220,7 +216,7 @@ type Koenigrufen struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*KoenigrufenTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	// --- bidding state ---
@@ -749,7 +745,7 @@ func (g *Koenigrufen) CpuPlay() {
 
 // playCard カードをプレイする共通処理。呼ばれたキングが出たらパートナーを公開する。
 func (g *Koenigrufen) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &KoenigrufenTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	if koenigrufenIsCalledKing(card, g.calledKing) {
 		g.partnerRevealed = true
 	}
@@ -1643,10 +1639,10 @@ func (g *Koenigrufen) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Koenigrufen) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Koenigrufen) GetCurrentTrick() []*KoenigrufenTrickCard { return g.currentTrick }
+func (g *Koenigrufen) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Koenigrufen) SetCurrentTrick(trick []*KoenigrufenTrickCard) { g.currentTrick = trick }
+func (g *Koenigrufen) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Koenigrufen) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -1854,7 +1850,7 @@ type koenigrufenJSON struct {
 	RoundNumber      int                        `json:"rn"`
 	TrickNumber      int                        `json:"tn"`
 	CurrentPlayerIdx int                        `json:"ci"`
-	CurrentTrick     []*KoenigrufenTrickCard    `json:"ct"`
+	CurrentTrick     []*TrickCard               `json:"ct"`
 	LeadPlayerIdx    int                        `json:"li"`
 	DealerIdx        int                        `json:"di"`
 	BidPlayerIdx     int                        `json:"bi"`
@@ -2059,7 +2055,7 @@ func (g *Koenigrufen) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*KoenigrufenTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

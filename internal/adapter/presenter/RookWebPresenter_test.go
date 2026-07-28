@@ -56,7 +56,7 @@ func TestRookWebPresenter_ProceduralFaces(t *testing.T) {
 	g.SetTrumpColor(1)
 	g.SetDeclarerIdx(0)
 	g.SetPhase(domain.RookPhasePlay)
-	g.SetCurrentTrick([]*domain.RookTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(3, 9, false)},                                        // green 9
 		{PlayerIdx: 2, Card: domain.NewCard(domain.RookBirdDesign, domain.RookBirdValue, false)}, // rook bird
 	})
@@ -160,7 +160,7 @@ func TestRookWebPresenter_PhaseMessages(t *testing.T) {
 		g.SetDeclarerIdx(0)
 		g.SetPhase(phase)
 		if phase == domain.RookPhasePlay {
-			g.SetCurrentTrick([]*domain.RookTrickCard{
+			g.SetCurrentTrick([]*domain.TrickCard{
 				{PlayerIdx: 0, Card: domain.NewCard(1, 1, false)},
 			})
 		}

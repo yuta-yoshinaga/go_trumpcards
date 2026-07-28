@@ -37,12 +37,6 @@ type TuteWebOutputPlayer struct {
 	TeamScore  int              `json:"teamScore"`
 }
 
-// TuteWebOutputTrickCard トリック中の1枚
-type TuteWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // TuteWebOutputHint ヒント出力
 type TuteWebOutputHint struct {
 	CardIndices []int  `json:"cardIndices"`
@@ -52,15 +46,15 @@ type TuteWebOutputHint struct {
 
 // TuteWebOutput トゥーテのWebアウトプット
 type TuteWebOutput struct {
-	Players          []*TuteWebOutputPlayer    `json:"players"`
-	Phase            int                       `json:"phase"`
-	RoundNumber      int                       `json:"roundNumber"`
-	TrickNumber      int                       `json:"trickNumber"`
-	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
-	DealerIdx        int                       `json:"dealerIdx"`
-	TrumpSuit        int                       `json:"trumpSuit"`
-	CurrentTrick     []*TuteWebOutputTrickCard `json:"currentTrick"`
+	Players          []*TuteWebOutputPlayer `json:"players"`
+	Phase            int                    `json:"phase"`
+	RoundNumber      int                    `json:"roundNumber"`
+	TrickNumber      int                    `json:"trickNumber"`
+	CurrentPlayerIdx int                    `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                    `json:"leadPlayerIdx"`
+	DealerIdx        int                    `json:"dealerIdx"`
+	TrumpSuit        int                    `json:"trumpSuit"`
+	CurrentTrick     []*WebOutputTrickCard  `json:"currentTrick"`
 	// DeclaredSuits 結婚宣言済みスート (インデックス1-4が有効; 0は未使用)
 	DeclaredSuits      []bool                  `json:"declaredSuits"`
 	TeamScores         [domain.TuteTeamCnt]int `json:"teamScores"`
@@ -107,7 +101,7 @@ var NewTuteWebController, NewTuteWebControllerWithProvider = webControllerPair[u
 func newTuteDefaultOutput(msg string) *TuteWebOutput {
 	return &TuteWebOutput{
 		Players:         make([]*TuteWebOutputPlayer, 0),
-		CurrentTrick:    make([]*TuteWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		DeclaredSuits:   make([]bool, domain.CardDesignMax+1),
 		PlayableIndices: make([]int, 0),
 		WinnerTeam:      -1,

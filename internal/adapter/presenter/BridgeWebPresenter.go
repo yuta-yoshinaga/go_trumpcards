@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra3
 
 package presenter
 
@@ -54,7 +54,7 @@ func (p *BridgeWebPresenter) buildBase(b interfaces.BridgeGame) *controller.Brid
 	}
 
 	resObj.BidHistory = p.buildBidHistoryOutput(b.GetBidHistory())
-	resObj.CurrentTrick = p.buildTrickOutput(b.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(b.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(b)
 	return resObj
 }
@@ -71,13 +71,6 @@ func (p *BridgeWebPresenter) buildBidHistoryOutput(history []*domain.BridgeBidEn
 		})
 	}
 	return out
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *BridgeWebPresenter) buildTrickOutput(trick []*domain.BridgeTrickCard) []*controller.BridgeWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.BridgeTrickCard) *controller.BridgeWebOutputTrickCard {
-		return &controller.BridgeWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -99,7 +92,7 @@ func (p *BridgeWebPresenter) buildPlayersOutput(b interfaces.BridgeGame) []*cont
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *BridgeWebPresenter) buildMessage(b interfaces.BridgeGame, trick []*domain.BridgeTrickCard, lastErr error) (string, string, map[string]string) {
+func (p *BridgeWebPresenter) buildMessage(b interfaces.BridgeGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}

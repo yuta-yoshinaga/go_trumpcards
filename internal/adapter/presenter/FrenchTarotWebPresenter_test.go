@@ -57,7 +57,7 @@ func TestFrenchTarotWebPresenter_ProceduralFaces(t *testing.T) {
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.FrenchTarotExcuseDesign, domain.FrenchTarotExcuseValue, false))
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 14, false))
 	// Trick: a trump and a spade.
-	g.SetCurrentTrick([]*domain.FrenchTarotTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.FrenchTarotTrumpDesign, 21, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},
 	})
@@ -167,7 +167,7 @@ func TestFrenchTarotWebPresenter_PhaseMessages(t *testing.T) {
 		g.SetContract(domain.FrenchTarotBidGarde)
 		g.SetPhase(phase)
 		if phase == domain.FrenchTarotPhasePlay {
-			g.SetCurrentTrick([]*domain.FrenchTarotTrickCard{
+			g.SetCurrentTrick([]*domain.TrickCard{
 				{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 			})
 		}
@@ -238,7 +238,7 @@ func TestFrenchTarotWebPresenter_GameEnd(t *testing.T) {
 	g.SetTrickNumber(domain.FrenchTarotTrickCount)
 	g.SetLeadPlayerIdx(0)
 	g.SetPhase(domain.FrenchTarotPhaseTrickEnd)
-	g.SetCurrentTrick([]*domain.FrenchTarotTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 9, false)},
 		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 3, false)},

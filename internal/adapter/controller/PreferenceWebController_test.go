@@ -17,7 +17,7 @@ import (
 func mustPreferenceOutputJSON(msg string) string {
 	out := &controller.PreferenceWebOutput{
 		Players:         []*controller.PreferenceWebOutputPlayer{},
-		CurrentTrick:    []*controller.PreferenceWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		DeclarerIdx:     -1,
 		WinnerPlayer:    -1,

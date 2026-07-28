@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra3
 
 package controller
 
@@ -40,12 +40,6 @@ type RookWebOutputPlayer struct {
 	IsDeclarer bool             `json:"isDeclarer"`
 }
 
-// RookWebOutputTrickCard トリック中の1枚
-type RookWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // RookWebOutputHint ヒント出力
 type RookWebOutputHint struct {
 	Bid            *int   `json:"bid,omitempty"`
@@ -58,27 +52,27 @@ type RookWebOutputHint struct {
 
 // RookWebOutput ルーク(Rook) Webアウトプット
 type RookWebOutput struct {
-	Players          []*RookWebOutputPlayer    `json:"players"`
-	Phase            int                       `json:"phase"`
-	RoundNumber      int                       `json:"roundNumber"`
-	TrickNumber      int                       `json:"trickNumber"`
-	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                       `json:"bidPlayerIdx"`
-	DealerIdx        int                       `json:"dealerIdx"`
-	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
-	TrumpColor       int                       `json:"trumpColor"`
-	ContractBid      int                       `json:"contractBid"`
-	DeclarerIdx      int                       `json:"declarerIdx"`
-	HighestBid       int                       `json:"highestBid"`
-	HighestBidder    int                       `json:"highestBidder"`
-	NestCount        int                       `json:"nestCount"`
-	Nest             []*WebOutputCard          `json:"nest"`
-	CurrentTrick     []*RookWebOutputTrickCard `json:"currentTrick"`
-	TeamScores       [2]int                    `json:"teamScores"`
-	TeamPoints       [2]int                    `json:"teamPoints"`
-	GameEndFlag      bool                      `json:"gameEndFlag"`
-	WinnerTeam       int                       `json:"winnerTeam"`
-	Hint             *RookWebOutputHint        `json:"hint,omitempty"`
+	Players          []*RookWebOutputPlayer `json:"players"`
+	Phase            int                    `json:"phase"`
+	RoundNumber      int                    `json:"roundNumber"`
+	TrickNumber      int                    `json:"trickNumber"`
+	CurrentPlayerIdx int                    `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                    `json:"bidPlayerIdx"`
+	DealerIdx        int                    `json:"dealerIdx"`
+	LeadPlayerIdx    int                    `json:"leadPlayerIdx"`
+	TrumpColor       int                    `json:"trumpColor"`
+	ContractBid      int                    `json:"contractBid"`
+	DeclarerIdx      int                    `json:"declarerIdx"`
+	HighestBid       int                    `json:"highestBid"`
+	HighestBidder    int                    `json:"highestBidder"`
+	NestCount        int                    `json:"nestCount"`
+	Nest             []*WebOutputCard       `json:"nest"`
+	CurrentTrick     []*WebOutputTrickCard  `json:"currentTrick"`
+	TeamScores       [2]int                 `json:"teamScores"`
+	TeamPoints       [2]int                 `json:"teamPoints"`
+	GameEndFlag      bool                   `json:"gameEndFlag"`
+	WinnerTeam       int                    `json:"winnerTeam"`
+	Hint             *RookWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config RookWebOutputConfig `json:"config"`
 }
@@ -118,7 +112,7 @@ var NewRookWebController, NewRookWebControllerWithProvider = webControllerPair[u
 func newRookDefaultOutput(msg string) *RookWebOutput {
 	return &RookWebOutput{
 		Players:       make([]*RookWebOutputPlayer, 0),
-		CurrentTrick:  make([]*RookWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		Nest:          make([]*WebOutputCard, 0),
 		WinnerTeam:    -1,
 		DeclarerIdx:   -1,

@@ -1,11 +1,11 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { cuiManualTexts, isCliModeEnabled } from '../constants/cuiManualTexts';
-import { manualTexts } from '../constants/manualTexts';
+import { isCliModeEnabled, loadCuiManualText } from '../constants/cuiManualTexts';
+import { loadManualText } from '../constants/manualTexts';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { btnSecondary } from '../styles/buttonStyles';
@@ -43,14 +43,39 @@ const markdownComponents: Components = {
 export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
   const { t } = useTranslation('common');
   const dialogRef = useRef<HTMLDivElement>(null);
+  // Tagged with what it is a manual OF, not just the text. Holding a bare
+  // string would render the previous game's manual for a frame when `gamePath`
+  // changes while the modal is open, and would serve the web manual after the
+  // reader toggles CLI mode. Comparing the tag makes a mismatch render the
+  // loading state instead, and still reuses the text when reopening the same
+  // manual (Vite caches the chunk, so that resolves in a microtask).
+  const [loaded, setLoaded] = useState<{ key: string; text: string } | null>(null);
 
   useBodyScrollLock(open);
   useFocusTrap(dialogRef, open, onClose);
 
+  const cliMode = isCliModeEnabled(gamePath);
+  const manualKey = `${gamePath}|${cliMode ? 'cui' : 'web'}`;
+
+  // Each manual is its own chunk now, so it arrives a tick after the modal
+  // opens rather than being already in memory. `cancelled` covers the reader
+  // closing the modal or switching games before the fetch lands.
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    const load = cliMode ? loadCuiManualText : loadManualText;
+    load(gamePath).then((text) => {
+      if (!cancelled) setLoaded({ key: manualKey, text });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, gamePath, cliMode, manualKey]);
+
   if (!open) return null;
 
-  const cliMode = isCliModeEnabled(gamePath);
-  const markdown = (cliMode ? cuiManualTexts[gamePath] : manualTexts[gamePath]) ?? '';
+  const ready = loaded?.key === manualKey;
+  const markdown = ready ? loaded.text : '';
 
   return createPortal(
     // biome-ignore lint/a11y/noStaticElementInteractions: overlay backdrop dismisses modal on click
@@ -74,9 +99,18 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
           </button>
         </div>
         <div className="overflow-y-auto flex-1 min-h-0 prose prose-invert max-w-none">
-          <Markdown remarkPlugins={remarkPlugins} components={markdownComponents}>
-            {markdown}
-          </Markdown>
+          {ready ? (
+            <Markdown remarkPlugins={remarkPlugins} components={markdownComponents}>
+              {markdown}
+            </Markdown>
+          ) : (
+            // The chunk is small and same-origin, so this is usually one frame —
+            // but it is a fetch, and on a cold cache over a slow link it is not.
+            // Mirrors RouteSuspenseFallback's role="status" / aria-busy contract.
+            <p role="status" aria-busy="true" className="text-ds-text-muted">
+              {t('skeleton.loading')}
+            </p>
+          )}
         </div>
       </div>
     </div>,

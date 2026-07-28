@@ -206,7 +206,7 @@ func TestBidWhist_TrickWinner(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignSpade)
 
 	// Lead hearts A, partner trumps with spade 2, opponent over-trumps with big joker.
-	g.SetCurrentTrick([]*domain.BidWhistTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: bwCard(domain.CardDesignHeart, 1)},
 		{PlayerIdx: 1, Card: bwCard(domain.CardDesignSpade, 2)},
 		{PlayerIdx: 2, Card: bwCard(domain.CardDesignJoker, 2)},
@@ -442,7 +442,7 @@ func TestBidWhist_PlayValidationAndCpu(t *testing.T) {
 	g2.SetTrumpSuit(domain.CardDesignSpade)
 	g2.SetPhase(domain.BidWhistPhasePlay)
 	g2.SetCurrentPlayerIdx(1)
-	g2.SetCurrentTrick([]*domain.BidWhistTrickCard{
+	g2.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: bwCard(domain.CardDesignHeart, 5)},
 	})
 	g2.GetPlayer(1).AddCard(bwCard(domain.CardDesignHeart, 10))
@@ -461,7 +461,7 @@ func TestBidWhist_PlayValidationAndCpu(t *testing.T) {
 	g3.SetTrumpSuit(domain.CardDesignSpade)
 	g3.SetPhase(domain.BidWhistPhasePlay)
 	g3.SetCurrentPlayerIdx(2) // CPU on team 0, partner of leader idx 0
-	g3.SetCurrentTrick([]*domain.BidWhistTrickCard{
+	g3.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: bwCard(domain.CardDesignHeart, 1)}, // partner leads the ace
 	})
 	g3.GetPlayer(2).AddCard(bwCard(domain.CardDesignHeart, 4))
@@ -593,7 +593,7 @@ func TestBidWhist_CpuPlayBranches(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignSpade)
 	g.SetPhase(domain.BidWhistPhasePlay)
 	g.SetCurrentPlayerIdx(1) // team 1, opponent of leader 0 (team 0)
-	g.SetCurrentTrick([]*domain.BidWhistTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: bwCard(domain.CardDesignHeart, 5)},
 	})
 	g.GetPlayer(1).AddCard(bwCard(domain.CardDesignHeart, 13)) // beats the 5
@@ -609,7 +609,7 @@ func TestBidWhist_CpuPlayBranches(t *testing.T) {
 	g2.SetTrumpSuit(domain.CardDesignSpade)
 	g2.SetPhase(domain.BidWhistPhasePlay)
 	g2.SetCurrentPlayerIdx(1)
-	g2.SetCurrentTrick([]*domain.BidWhistTrickCard{
+	g2.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: bwCard(domain.CardDesignHeart, 13)},
 	})
 	g2.GetPlayer(1).AddCard(bwCard(domain.CardDesignHeart, 4))
@@ -625,7 +625,7 @@ func TestBidWhist_NoTrumpAndDowntownTrickResolution(t *testing.T) {
 	g := newBidWhistForTest()
 	g.SetContract(3, domain.BidWhistDirectionNoTrump, -1)
 	g.SetTrickNumber(1)
-	g.SetCurrentTrick([]*domain.BidWhistTrickCard{
+	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: bwCard(domain.CardDesignHeart, 5)},
 		{PlayerIdx: 1, Card: bwCard(domain.CardDesignHeart, 13)},
 		{PlayerIdx: 2, Card: bwCard(domain.CardDesignJoker, 2)},
@@ -641,7 +641,7 @@ func TestBidWhist_NoTrumpAndDowntownTrickResolution(t *testing.T) {
 	g2 := newBidWhistForTest()
 	g2.SetContract(3, domain.BidWhistDirectionNoTrump, -1)
 	g2.SetTrickNumber(1)
-	g2.SetCurrentTrick([]*domain.BidWhistTrickCard{
+	g2.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: bwCard(domain.CardDesignJoker, 2)},
 		{PlayerIdx: 1, Card: bwCard(domain.CardDesignHeart, 13)},
 		{PlayerIdx: 2, Card: bwCard(domain.CardDesignSpade, 5)},
@@ -658,7 +658,7 @@ func TestBidWhist_NoTrumpAndDowntownTrickResolution(t *testing.T) {
 	g3.SetContract(3, domain.BidWhistDirectionDowntown, domain.CardDesignSpade)
 	g3.SetTrumpSuit(domain.CardDesignSpade)
 	g3.SetTrickNumber(1)
-	g3.SetCurrentTrick([]*domain.BidWhistTrickCard{
+	g3.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: bwCard(domain.CardDesignSpade, 13)},
 		{PlayerIdx: 1, Card: bwCard(domain.CardDesignSpade, 2)},
 		{PlayerIdx: 2, Card: bwCard(domain.CardDesignHeart, 1)},

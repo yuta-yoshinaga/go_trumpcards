@@ -36,12 +36,6 @@ type CourtPieceWebOutputPlayer struct {
 	TrickCount      int              `json:"trickCount"`
 }
 
-// CourtPieceWebOutputTrickCard トリック中の 1 枚
-type CourtPieceWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // CourtPieceWebOutputHint ヒント出力
 type CourtPieceWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -57,22 +51,22 @@ type CourtPieceWebOutputConfig struct {
 
 // CourtPieceWebOutput Court Piece Web アウトプット
 type CourtPieceWebOutput struct {
-	Players          []*CourtPieceWebOutputPlayer    `json:"players"`
-	TeamScores       []int                           `json:"teamScores"`
-	Phase            int                             `json:"phase"`
-	RoundNumber      int                             `json:"roundNumber"`
-	TrickNumber      int                             `json:"trickNumber"`
-	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`
-	CallerIdx        int                             `json:"callerIdx"`
-	TrumpSuit        int                             `json:"trumpSuit"`
-	CurrentTrick     []*CourtPieceWebOutputTrickCard `json:"currentTrick"`
-	ConsecutiveWins  int                             `json:"consecutiveWins"`
-	LastWinnerTeam   int                             `json:"lastWinnerTeam"`
-	LastRoundCourt   bool                            `json:"lastRoundCourt"`
-	GameEndFlag      bool                            `json:"gameEndFlag"`
-	WinnerTeam       int                             `json:"winnerTeam"`
-	LeadPlayerIdx    int                             `json:"leadPlayerIdx"`
-	Hint             *CourtPieceWebOutputHint        `json:"hint,omitempty"`
+	Players          []*CourtPieceWebOutputPlayer `json:"players"`
+	TeamScores       []int                        `json:"teamScores"`
+	Phase            int                          `json:"phase"`
+	RoundNumber      int                          `json:"roundNumber"`
+	TrickNumber      int                          `json:"trickNumber"`
+	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
+	CallerIdx        int                          `json:"callerIdx"`
+	TrumpSuit        int                          `json:"trumpSuit"`
+	CurrentTrick     []*WebOutputTrickCard        `json:"currentTrick"`
+	ConsecutiveWins  int                          `json:"consecutiveWins"`
+	LastWinnerTeam   int                          `json:"lastWinnerTeam"`
+	LastRoundCourt   bool                         `json:"lastRoundCourt"`
+	GameEndFlag      bool                         `json:"gameEndFlag"`
+	WinnerTeam       int                          `json:"winnerTeam"`
+	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
+	Hint             *CourtPieceWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config CourtPieceWebOutputConfig `json:"config"`
 }
@@ -103,7 +97,7 @@ func newCourtPieceDefaultOutput(msg string) *CourtPieceWebOutput {
 	return &CourtPieceWebOutput{
 		Players:       make([]*CourtPieceWebOutputPlayer, 0),
 		TeamScores:    make([]int, 0),
-		CurrentTrick:  make([]*CourtPieceWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerTeam:    -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

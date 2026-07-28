@@ -85,8 +85,8 @@ func (p *PitchCuiPresenter) Output(s interfaces.PitchGame, lastErr error) string
 		// Current trick
 		trick := s.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
-			func(tc *domain.PitchTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.PitchTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) },
 		)
 

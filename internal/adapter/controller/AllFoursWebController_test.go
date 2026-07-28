@@ -17,7 +17,7 @@ import (
 func mustAllFoursOutputJSON(msg string) string {
 	out := &controller.AllFoursWebOutput{
 		Players:       []*controller.AllFoursWebOutputPlayer{},
-		CurrentTrick:  []*controller.AllFoursWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerIdx:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

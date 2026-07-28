@@ -77,12 +77,6 @@ type TysiacHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// TysiacTrickCard トリック中の 1 枚
-type TysiacTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Tysiac サウザンドのゲームクラス
 type Tysiac struct {
 	trumpCards       *TrumpCards
@@ -92,7 +86,7 @@ type Tysiac struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*TysiacTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	forehandIdx      int                   // ディーラーの左隣 (ビッド開始 & talon 交換後の最初のリード)
@@ -524,7 +518,7 @@ func (g *Tysiac) maybeDeclareMarriage(playerIdx int, card *Card) {
 
 // playCard カードをプレイする共通処理。
 func (g *Tysiac) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &TysiacTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == TysiacPlayerCnt {
@@ -1058,10 +1052,10 @@ func (g *Tysiac) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Tysiac) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Tysiac) GetCurrentTrick() []*TysiacTrickCard { return g.currentTrick }
+func (g *Tysiac) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Tysiac) SetCurrentTrick(trick []*TysiacTrickCard) { g.currentTrick = trick }
+func (g *Tysiac) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Tysiac) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -1181,7 +1175,7 @@ type tysiacJSON struct {
 	RoundNumber      int                   `json:"rn"`
 	TrickNumber      int                   `json:"tn"`
 	CurrentPlayerIdx int                   `json:"ci"`
-	CurrentTrick     []*TysiacTrickCard    `json:"ct"`
+	CurrentTrick     []*TrickCard          `json:"ct"`
 	LeadPlayerIdx    int                   `json:"li"`
 	DealerIdx        int                   `json:"di"`
 	ForehandIdx      int                   `json:"fh"`
@@ -1329,7 +1323,7 @@ func (g *Tysiac) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*TysiacTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

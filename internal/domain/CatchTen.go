@@ -30,12 +30,6 @@ type CatchTenHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// CatchTenTrickCard トリック中の1枚
-type CatchTenTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // CatchTen Catch the Ten (Scotch Whist) ゲームクラス
 type CatchTen struct {
 	trumpCards       *TrumpCards
@@ -45,7 +39,7 @@ type CatchTen struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*CatchTenTrickCard
+	currentTrick     []*TrickCard
 	trumpSuit        int // トランプ（切り札）スート
 	leadPlayerIdx    int
 	dealerIdx        int
@@ -317,10 +311,10 @@ func (g *CatchTen) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *CatchTen) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *CatchTen) GetCurrentTrick() []*CatchTenTrickCard { return g.currentTrick }
+func (g *CatchTen) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *CatchTen) SetCurrentTrick(trick []*CatchTenTrickCard) { g.currentTrick = trick }
+func (g *CatchTen) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetTrumpSuit トランプスート取得
 func (g *CatchTen) GetTrumpSuit() int { return g.trumpSuit }
@@ -439,7 +433,7 @@ func (g *CatchTen) startPlayPhase() {
 
 // playCard カードをプレイする共通処理
 func (g *CatchTen) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &CatchTenTrickCard{
+	g.currentTrick = append(g.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -824,7 +818,7 @@ type catchTenJSON struct {
 	RoundNumber      int                  `json:"rn"`
 	TrickNumber      int                  `json:"tn"`
 	CurrentPlayerIdx int                  `json:"ci"`
-	CurrentTrick     []*CatchTenTrickCard `json:"ct"`
+	CurrentTrick     []*TrickCard         `json:"ct"`
 	TrumpSuit        int                  `json:"ts"`
 	LeadPlayerIdx    int                  `json:"li"`
 	DealerIdx        int                  `json:"di"`
@@ -932,7 +926,7 @@ func (g *CatchTen) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*CatchTenTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.trumpSuit = j.TrumpSuit
 	g.leadPlayerIdx = j.LeadPlayerIdx

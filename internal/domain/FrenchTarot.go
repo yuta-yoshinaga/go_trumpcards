@@ -160,8 +160,10 @@ const (
 	FrenchTarotOutcomeLoss FrenchTarotOutcome = 2
 )
 
-// FrenchTarotResult 人間視点のマッチ結果。casino タグの GameResult は extra ワーカーから
-// 到達不能なため、ゲームローカルの結果型を定義する。
+// FrenchTarotResult 人間視点のマッチ結果。
+// GameResult は共有ファイル internal/domain/game_result.go に移動したので到達可能に
+// なったが、この型名は JSON ペイロードに出るため統合していない（#4462）。値は
+// GameResult と同一。
 type FrenchTarotResult int
 
 // French Tarot のマッチ結果定数
@@ -179,12 +181,6 @@ type FrenchTarotHint struct {
 	Bid         *int   // 推奨入札 (入札フェーズ)。nil の場合はパス推奨
 	CardIndices []int  // 推奨カードインデックス (エカルト/プレイ)
 	Reason      string // ヒント理由キー
-}
-
-// FrenchTarotTrickCard トリック中の 1 枚
-type FrenchTarotTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
 }
 
 // FrenchTarotBreakdown 得点計算の内訳 (純粋関数 frenchTarotScoreDeal の出力)。
@@ -223,7 +219,7 @@ type FrenchTarot struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*FrenchTarotTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	// --- bidding state ---
@@ -647,7 +643,7 @@ func (g *FrenchTarot) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *FrenchTarot) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &FrenchTarotTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), frenchTarotCardStr(card)), []*Card{card})
 	if len(g.currentTrick) == FrenchTarotPlayerCnt {
 		g.phase = FrenchTarotPhaseTrickEnd
@@ -1598,10 +1594,10 @@ func (g *FrenchTarot) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *FrenchTarot) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *FrenchTarot) GetCurrentTrick() []*FrenchTarotTrickCard { return g.currentTrick }
+func (g *FrenchTarot) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *FrenchTarot) SetCurrentTrick(trick []*FrenchTarotTrickCard) { g.currentTrick = trick }
+func (g *FrenchTarot) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *FrenchTarot) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -1796,7 +1792,7 @@ type frenchTarotJSON struct {
 	RoundNumber      int                        `json:"rn"`
 	TrickNumber      int                        `json:"tn"`
 	CurrentPlayerIdx int                        `json:"ci"`
-	CurrentTrick     []*FrenchTarotTrickCard    `json:"ct"`
+	CurrentTrick     []*TrickCard               `json:"ct"`
 	LeadPlayerIdx    int                        `json:"li"`
 	DealerIdx        int                        `json:"di"`
 	BidPlayerIdx     int                        `json:"bi"`
@@ -1994,7 +1990,7 @@ func (g *FrenchTarot) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*FrenchTarotTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

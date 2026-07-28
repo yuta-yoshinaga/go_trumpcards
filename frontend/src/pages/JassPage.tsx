@@ -17,6 +17,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useJassGame } from '../hooks/useJassGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -66,12 +67,12 @@ const JASS_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 const JASS_PHASE_KEYS: Readonly<Record<number, string>> = {
-  [JassPhase.BID_TRUMP]: 'phase.bidTrump',
-  [JassPhase.BID_PARTNER]: 'phase.bidPartner',
-  [JassPhase.PLAY]: 'phase.play',
-  [JassPhase.TRICK_END]: 'phase.trickEnd',
-  [JassPhase.ROUND_END]: 'phase.roundEnd',
-  [JassPhase.GAME_END]: 'phase.gameEnd',
+  [JassPhase.BID_TRUMP]: 'bidTrump',
+  [JassPhase.BID_PARTNER]: 'bidPartner',
+  [JassPhase.PLAY]: 'play',
+  [JassPhase.TRICK_END]: 'trickEnd',
+  [JassPhase.ROUND_END]: 'roundEnd',
+  [JassPhase.GAME_END]: 'gameEnd',
 };
 
 const SUIT_LABEL_KEYS: Readonly<Record<number, string>> = {
@@ -312,7 +313,7 @@ function JassPageContent() {
                     {t('weisPanel.teamPoints', { points: state.roundWeisPoints[team] })}
                   </span>
                   {state.roundWeisPoints[team] > 0 && (
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-ds-warning/20 text-ds-warning">
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${badgeWarningColors}`}>
                       {t('weisPanel.scored')}
                     </span>
                   )}

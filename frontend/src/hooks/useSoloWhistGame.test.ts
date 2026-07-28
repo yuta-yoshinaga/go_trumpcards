@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { soloWhistApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeSoloWhistState } from '../test/stateFactories';
 import { DEFAULT_SOLO_WHIST_CONFIG, useSoloWhistGame } from './useSoloWhistGame';
 
@@ -38,9 +39,10 @@ describe('useSoloWhistGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 1 }));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useSoloWhistGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

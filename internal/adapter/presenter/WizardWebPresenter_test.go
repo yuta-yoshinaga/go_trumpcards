@@ -31,7 +31,7 @@ func setupWizardWebMock() *interfaces.MockWizardGame {
 	m.On("GetTotalRounds").Return(15)
 	m.On("GetHandSize").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.WizardTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.WizardPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -156,7 +156,7 @@ func TestWizardWebPresenter_Output(t *testing.T) {
 	t.Run("play phase follow message", func(t *testing.T) {
 		m, _ := setupWizardWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		m.On("GetCurrentTrick").Return([]*domain.WizardTrickCard{
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 3, false)},
 		})
 

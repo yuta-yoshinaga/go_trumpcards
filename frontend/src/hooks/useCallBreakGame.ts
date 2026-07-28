@@ -21,13 +21,11 @@ export const CALLBREAK_MAX_ROUNDS_OPTIONS = [3, 5, 7, 10] as const;
 
 /** Hook that manages Call Break game state, bidding, and player actions. */
 export function useCallBreakGame() {
-  const base = useTrickGameBase({
+  const { exec, config, ...rest } = useTrickGameBase({
     apiFn: callBreakApi.exec,
     defaultConfig: DEFAULT_CALLBREAK_CONFIG,
     getHint: (state) => state.hint ?? null,
   });
-
-  const { exec } = base;
 
   const handleBid = useCallback(
     (bid: number) => {
@@ -36,24 +34,5 @@ export function useCallBreakGame() {
     [exec],
   );
 
-  return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hint: base.hint,
-    hintError: base.hintError,
-    hintLoading: base.hintLoading,
-    exec: base.exec,
-    callBreakConfig: base.config,
-    selectedCardIndices: base.selectedCardIndices,
-    toggleCard: base.toggleCard,
-    clearSelection: base.clearSelection,
-    handleConfigChange: base.handleConfigChange,
-    handleBid,
-    handlePlay: base.handlePlay,
-    handleNextTrick: base.handleNextTrick,
-    handleNextRound: base.handleNextRound,
-    handleHint: base.handleHint,
-    retry: base.retry,
-  };
+  return { ...rest, exec, callBreakConfig: config, handleBid };
 }

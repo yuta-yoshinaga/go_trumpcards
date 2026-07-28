@@ -146,9 +146,9 @@ func (m *MockPiquetGame) GetDeclResults() []*domain.PiquetDeclarationResult {
 	return args.Get(0).([]*domain.PiquetDeclarationResult)
 }
 
-func (m *MockPiquetGame) GetCurrentTrick() []*domain.PiquetTrickCard {
+func (m *MockPiquetGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
-	return args.Get(0).([]*domain.PiquetTrickCard)
+	return args.Get(0).([]*domain.TrickCard)
 }
 
 func (m *MockPiquetGame) GetCurrentPlayerIdx() int {

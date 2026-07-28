@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra3
 
 package presenter
 
@@ -51,7 +51,7 @@ func (p *OmbreWebPresenter) buildBase(g interfaces.OmbreGame) *controller.OmbreW
 		TargetRounds:  cfg.TargetRounds,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -66,13 +66,6 @@ func (p *OmbreWebPresenter) playableIndices(g interfaces.OmbreGame) []int {
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *OmbreWebPresenter) buildTrickOutput(trick []*domain.OmbreTrickCard) []*controller.OmbreWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.OmbreTrickCard) *controller.OmbreWebOutputTrickCard {
-		return &controller.OmbreWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -147,10 +140,10 @@ func (p *OmbreWebPresenter) winnerMessage(g interfaces.OmbreGame) (string, strin
 		}
 	}
 	if humanIdx >= 0 && winner == humanIdx {
-		return "ゲーム終了！ あなたの勝ち！", "ombre.result.humanWin", nil
+		return "", "ombre.result.humanWin", nil
 	}
 	params := map[string]string{"player": fmt.Sprintf("%d", winner)}
-	return fmt.Sprintf("ゲーム終了！ プレイヤー%dの勝ち！", winner), "ombre.result.cpuWin", params
+	return "", "ombre.result.cpuWin", params
 }
 
 // HintOutput ヒント情報をJSON出力する
@@ -158,7 +151,7 @@ func (p *OmbreWebPresenter) HintOutput(g interfaces.OmbreGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.OmbreWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

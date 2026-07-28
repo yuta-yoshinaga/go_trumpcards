@@ -54,12 +54,6 @@ type DoppelkopfHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// DoppelkopfTrickCard トリック中の 1 枚
-type DoppelkopfTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Doppelkopf ドッペルコップのゲームクラス
 type Doppelkopf struct {
 	trumpCards       *TrumpCards
@@ -69,7 +63,7 @@ type Doppelkopf struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*DoppelkopfTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	reTeam           [DoppelkopfPlayerCnt]bool // Re チームのメンバー
@@ -263,7 +257,7 @@ func (g *Doppelkopf) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Doppelkopf) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &DoppelkopfTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == DoppelkopfPlayerCnt {
@@ -707,10 +701,10 @@ func (g *Doppelkopf) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Doppelkopf) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Doppelkopf) GetCurrentTrick() []*DoppelkopfTrickCard { return g.currentTrick }
+func (g *Doppelkopf) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Doppelkopf) SetCurrentTrick(trick []*DoppelkopfTrickCard) { g.currentTrick = trick }
+func (g *Doppelkopf) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Doppelkopf) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -979,7 +973,7 @@ type doppelkopfJSON struct {
 	RoundNumber      int                       `json:"rn"`
 	TrickNumber      int                       `json:"tn"`
 	CurrentPlayerIdx int                       `json:"ci"`
-	CurrentTrick     []*DoppelkopfTrickCard    `json:"ct"`
+	CurrentTrick     []*TrickCard              `json:"ct"`
 	LeadPlayerIdx    int                       `json:"li"`
 	DealerIdx        int                       `json:"di"`
 	ReTeam           [DoppelkopfPlayerCnt]bool `json:"rt"`
@@ -1053,7 +1047,7 @@ func (g *Doppelkopf) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*DoppelkopfTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

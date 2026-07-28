@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra3
 
 package controller
 
@@ -43,12 +43,6 @@ type CegoWebOutputPlayer struct {
 	IsDeclarer bool             `json:"isDeclarer"`
 }
 
-// CegoWebOutputTrickCard トリック中の1枚
-type CegoWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // CegoWebOutputHint ヒント出力
 type CegoWebOutputHint struct {
 	Bid         *int   `json:"bid,omitempty"`
@@ -76,7 +70,7 @@ type CegoWebOutput struct {
 	BlindCount       int                       `json:"blindCount"`
 	Blind            []*WebOutputCard          `json:"blind"`
 	StashOwner       int                       `json:"stashOwner"`
-	CurrentTrick     []*CegoWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
 	PlayerScores     [domain.CegoPlayerCnt]int `json:"playerScores"`
 	LastTrickWinner  int                       `json:"lastTrickWinner"`
 	Outcome          int                       `json:"outcome"`
@@ -146,7 +140,7 @@ var NewCegoWebController, NewCegoWebControllerWithProvider = webControllerPair[u
 func newCegoDefaultOutput(msg string) *CegoWebOutput {
 	return &CegoWebOutput{
 		Players:         make([]*CegoWebOutputPlayer, 0),
-		CurrentTrick:    make([]*CegoWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		Blind:           make([]*WebOutputCard, 0),
 		PlayableIndices: make([]int, 0),
 		DeclarerIdx:     -1,

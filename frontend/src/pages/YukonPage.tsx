@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { type YukonMoveZone, yukonApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -243,10 +244,10 @@ function YukonPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'h', action: handleHint },
-      { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: confirmGiveUpAction },
-      { key: 'z', action: handleUndo },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+      { key: 'z', action: handleUndo, label: 'undo' },
     ],
     [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
   );
@@ -453,12 +454,14 @@ function YukonPageContent() {
                                         inHoverBlock && !isSelected ? 'ring-2 ring-ds-accent/70' : ''
                                       } ${inSelectedBlock && !isSelected ? 'ring-2 ring-ds-info' : ''}`}
                                       onClick={() => {
-                                        if (selectedSource) {
-                                          if (isLast) {
-                                            handleSelectTarget('tableau', colIdx);
-                                          } else {
-                                            handleSelectSource('tableau', colIdx, cardIdx);
-                                          }
+                                        // Clicking the selected card again deselects it, which
+                                        // `handleSelectSource` implements by toggling. That has to be checked
+                                        // BEFORE the isLast branch: a selected card that is also last in its
+                                        // column would otherwise be treated as a move target and dispatch a move
+                                        // onto its own column, which the server rejects — so the player got a
+                                        // rejection message instead of a deselect. Found by #4439.
+                                        if (selectedSource && !isSelected && isLast) {
+                                          handleSelectTarget('tableau', colIdx);
                                         } else {
                                           handleSelectSource('tableau', colIdx, cardIdx);
                                         }
@@ -553,6 +556,7 @@ function YukonPageContent() {
                   )}
                 </>
               )}
+              <ActionShortcutsPanel bindings={actionBindings} data-testid="yukon-kbd-shortcuts" />
             </GameFooter>
           </div>
         </>

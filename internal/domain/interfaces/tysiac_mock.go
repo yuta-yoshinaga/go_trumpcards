@@ -120,10 +120,10 @@ func (_m *MockTysiacGame) GetCurrentPlayerIdx() int {
 }
 
 // GetCurrentTrick モック
-func (_m *MockTysiacGame) GetCurrentTrick() []*domain.TysiacTrickCard {
+func (_m *MockTysiacGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v := ret.Get(0); v != nil {
-		return v.([]*domain.TysiacTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

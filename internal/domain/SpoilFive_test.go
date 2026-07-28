@@ -26,9 +26,9 @@ func sfSetHand(p *SpoilFivePlayer, cards ...*Card) {
 }
 
 func sfTrick(g *SpoilFive, cards ...*Card) {
-	t := make([]*SpoilFiveTrickCard, len(cards))
+	t := make([]*TrickCard, len(cards))
 	for i, c := range cards {
-		t[i] = &SpoilFiveTrickCard{PlayerIdx: i, Card: c}
+		t[i] = &TrickCard{PlayerIdx: i, Card: c}
 	}
 	g.SetCurrentTrick(t)
 }
@@ -96,7 +96,7 @@ func TestSpoilFive_RenegingTopTrumpNotForced(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	// Trump (diamond) led low. Human holds only a top trump (5♦) + an off-suit club.
 	// Reneging: may decline to play the top trump and play the club instead.
-	g.SetCurrentTrick([]*SpoilFiveTrickCard{{PlayerIdx: 1, Card: sfCard(CardDesignDiamond, 7)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: sfCard(CardDesignDiamond, 7)}})
 	sfSetHand(g.GetPlayer(0), sfCard(CardDesignDiamond, 5), sfCard(CardDesignClover, 9))
 	if err := g.PlayerPlay(1); err != nil { // play the club (renege the 5♦) — allowed
 		t.Fatalf("reneging a top trump should be allowed, got: %v", err)
@@ -108,7 +108,7 @@ func TestSpoilFive_MustFollowOrdinaryTrump(t *testing.T) {
 	g.SetPhase(SpoilFivePhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
 	g.SetCurrentPlayerIdx(0)
-	g.SetCurrentTrick([]*SpoilFiveTrickCard{{PlayerIdx: 1, Card: sfCard(CardDesignDiamond, 7)}})
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: sfCard(CardDesignDiamond, 7)}})
 	// Holds an ordinary trump (K♦, not a top trump) → must follow.
 	sfSetHand(g.GetPlayer(0), sfCard(CardDesignDiamond, 13), sfCard(CardDesignClover, 9))
 	if err := g.PlayerPlay(1); err == nil { // club while holding K♦

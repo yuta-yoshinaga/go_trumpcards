@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { sevensApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
@@ -463,6 +464,7 @@ function SevensPageContent() {
                 </button>
               )}
             </div>
+            <CardNavShortcutsPanel directPlay data-testid="sevens-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

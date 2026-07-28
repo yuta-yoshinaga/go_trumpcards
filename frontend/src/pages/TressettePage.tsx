@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { tressetteApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -460,6 +461,7 @@ function TressettePageContent() {
                 dataTutorial="tr-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="tressette-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

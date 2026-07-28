@@ -61,10 +61,10 @@ const GAIGEL_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 const GAIGEL_PHASE_KEYS: Readonly<Record<number, string>> = {
-  [GaigelPhase.PLAY]: 'phase.play',
-  [GaigelPhase.TRICK_END]: 'phase.trickEnd',
-  [GaigelPhase.ROUND_END]: 'phase.roundEnd',
-  [GaigelPhase.GAME_END]: 'phase.gameEnd',
+  [GaigelPhase.PLAY]: 'play',
+  [GaigelPhase.TRICK_END]: 'trickEnd',
+  [GaigelPhase.ROUND_END]: 'roundEnd',
+  [GaigelPhase.GAME_END]: 'gameEnd',
 };
 
 const SUIT_LABEL_KEYS: Readonly<Record<number, string>> = {

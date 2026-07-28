@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ohHellApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { OhHellConfig, OhHellHint } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
+import { useHintRequest } from './useHintRequest';
 
 /** Default Oh Hell game configuration. */
 export const DEFAULT_OH_HELL_CONFIG: OhHellConfig = {
@@ -76,18 +76,13 @@ export function useOhHellGame() {
     exec('nextround');
   }, [exec]);
 
-  const handleHint = useCallback(async () => {
-    setHintLoading(true);
-    try {
-      const res = await ohHellApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    } finally {
-      setHintLoading(false);
-    }
-  }, []);
+  const handleHint = useHintRequest({
+    fetchHint: () => ohHellApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+    setHintLoading,
+  });
 
   return {
     state,

@@ -65,8 +65,8 @@ func (p *SchnapsenCuiPresenter) Output(s interfaces.SchnapsenGame, lastErr error
 
 		trick := s.GetCurrentTrick()
 		cuiTrickBlock(sb, trick,
-			func(tc *domain.SchnapsenTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.SchnapsenTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) },
 		)
 

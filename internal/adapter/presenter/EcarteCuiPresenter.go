@@ -58,8 +58,8 @@ func (p *EcarteCuiPresenter) Output(b interfaces.EcarteGame, lastErr error) stri
 
 		trick := b.GetCurrentTrick()
 		cuiTrickBlock(sb, trick,
-			func(tc *domain.EcarteTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.EcarteTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(b.GetPlayer(idx), idx) },
 		)
 

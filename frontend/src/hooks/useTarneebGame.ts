@@ -25,13 +25,15 @@ export const TARNEEB_MIN_BID_OPTIONS = [5, 6, 7, 8] as const;
 
 /** Hook that manages Tarneeb game state, bidding, trump declaration, and play. */
 export function useTarneebGame() {
-  const base = useTrickGameBase({
+  const {
+    exec: runAction,
+    config,
+    ...rest
+  } = useTrickGameBase({
     apiFn: tarneebApi.exec,
     defaultConfig: DEFAULT_TARNEEB_CONFIG,
     getHint: (state) => state.hint ?? null,
   });
-
-  const runAction = base.exec;
 
   const handleBid = useCallback(
     (bid: number) => {
@@ -47,25 +49,5 @@ export function useTarneebGame() {
     [runAction],
   );
 
-  return {
-    state: base.state,
-    loading: base.loading,
-    error: base.error,
-    hint: base.hint,
-    hintError: base.hintError,
-    hintLoading: base.hintLoading,
-    exec: base.exec,
-    tarneebConfig: base.config,
-    selectedCardIndices: base.selectedCardIndices,
-    toggleCard: base.toggleCard,
-    clearSelection: base.clearSelection,
-    handleConfigChange: base.handleConfigChange,
-    handleBid,
-    handleDeclareTrump,
-    handlePlay: base.handlePlay,
-    handleNextTrick: base.handleNextTrick,
-    handleNextRound: base.handleNextRound,
-    handleHint: base.handleHint,
-    retry: base.retry,
-  };
+  return { ...rest, exec: runAction, tarneebConfig: config, handleBid, handleDeclareTrump };
 }

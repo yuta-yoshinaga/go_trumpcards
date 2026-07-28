@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type NertzMoveZone, nertzApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -358,15 +359,15 @@ function NertzPageContent() {
   );
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleDrawStock },
-      { key: 'n', action: handleSelectNertz },
-      { key: 'w', action: handleSelectWaste },
-      { key: 'u', action: handleUndo },
+      { key: 'd', action: handleDrawStock, label: 'draw' },
+      { key: 'n', action: handleSelectNertz, label: 'selectNertzPile' },
+      { key: 'w', action: handleSelectWaste, label: 'selectWastePile' },
+      { key: 'u', action: handleUndo, label: 'undo' },
       ...Array.from({ length: 9 }, (_, i) => ({
         key: String(i + 1),
         action: () => handleFoundationKey(i),
       })),
-      { key: 'Escape', action: () => setSelection(null) },
+      { key: 'Escape', action: () => setSelection(null), label: 'clearSelection' },
     ],
     [handleDrawStock, handleSelectNertz, handleSelectWaste, handleUndo, handleFoundationKey],
   );
@@ -642,7 +643,7 @@ function NertzPageContent() {
 
           <GameFooter className={`${gameTheme.nertz.footer} px-4 py-2.5`}>
             <div className="flex flex-wrap gap-2 items-center">
-              <label className="flex items-center gap-1 text-ds-text-primary text-xs">
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs min-h-[44px]">
                 <input
                   type="checkbox"
                   checked={hintEnabled}
@@ -669,6 +670,7 @@ function NertzPageContent() {
                 </button>
               )}
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="nertz-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

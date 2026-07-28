@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra3
 
 package controller
 
@@ -40,18 +40,6 @@ type OmbreWebOutputPlayer struct {
 	IsOmbre    bool             `json:"isOmbre"`
 }
 
-// OmbreWebOutputTrickCard トリック中の1枚
-type OmbreWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// OmbreWebOutputHint ヒント出力
-type OmbreWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // OmbreWebOutput オンブルのWebアウトプット
 type OmbreWebOutput struct {
 	Players          []*OmbreWebOutputPlayer    `json:"players"`
@@ -66,7 +54,7 @@ type OmbreWebOutput struct {
 	OmbreIdx         int                        `json:"ombreIdx"`
 	WinningBid       int                        `json:"winningBid"`
 	TrumpSuit        int                        `json:"trumpSuit"`
-	CurrentTrick     []*OmbreWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard      `json:"currentTrick"`
 	PlayerScores     [domain.OmbrePlayerCnt]int `json:"playerScores"`
 	LastTrickWinner  int                        `json:"lastTrickWinner"`
 	Outcome          int                        `json:"outcome"`
@@ -76,7 +64,7 @@ type OmbreWebOutput struct {
 	WinnerPlayer     int                        `json:"winnerPlayer"`
 	IsHumanTurn      bool                       `json:"isHumanTurn"`
 	IsHumanBidTurn   bool                       `json:"isHumanBidTurn"`
-	Hint             *OmbreWebOutputHint        `json:"hint,omitempty"`
+	Hint             *WebOutputCardHint         `json:"hint,omitempty"`
 	WebOutputBase
 	Config OmbreWebOutputConfig `json:"config"`
 }
@@ -112,7 +100,7 @@ var NewOmbreWebController, NewOmbreWebControllerWithProvider = webControllerPair
 func newOmbreDefaultOutput(msg string) *OmbreWebOutput {
 	return &OmbreWebOutput{
 		Players:         make([]*OmbreWebOutputPlayer, 0),
-		CurrentTrick:    make([]*OmbreWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		OmbreIdx:        -1,
 		TrumpSuit:       -1,

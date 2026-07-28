@@ -38,7 +38,7 @@ func TestRookCuiPresenter_Output_Phases(t *testing.T) {
 		g.SetDeclarerIdx(0)
 		g.SetTrumpColor(2)
 		g.SetPhase(domain.RookPhasePlay)
-		g.SetCurrentTrick([]*domain.RookTrickCard{
+		g.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(1, 1, false)},
 			{PlayerIdx: 1, Card: domain.NewCard(domain.RookBirdDesign, domain.RookBirdValue, false)},
 		})

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { briscolaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
@@ -291,6 +292,9 @@ function BriscolaPageContent() {
         showActionLog={showActionLog}
         hideActionLog={hideActionLog}
       />
+      {/* This page has no GameFooter, where the other 37 card-nav pages put the
+          panel, so it sits after the action log instead — still last on the page. */}
+      <CardNavShortcutsPanel data-testid="briscola-kbd-shortcuts" />
     </GamePageShell>
   );
 }

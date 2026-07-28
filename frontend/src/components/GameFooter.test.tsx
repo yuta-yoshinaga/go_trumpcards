@@ -56,27 +56,33 @@ describe('GameFooter', () => {
     expect(footer.className).toContain('py-3');
   });
 
-  it('applies floating classes when floating is true', () => {
+  // The footer is `shrink-0`, so whatever height its content wants, it takes —
+  // and the sibling scroll region is what gives way. Measured at 375x667 across
+  // all 219 game pages, 26 pages were left with under 80px for their content and
+  // the tallest footer was 558px (`watten`), 84% of the viewport. Capping it at
+  // 45vh guarantees at least 102px of content on every page that has both a
+  // footer and a scroll region. See issue #4373.
+  it('caps its height and scrolls internally on mobile', () => {
     render(
-      <GameFooter floating>
+      <GameFooter>
         <span>content</span>
       </GameFooter>,
     );
     const footer = screen.getByRole('contentinfo');
-    expect(footer.className).toContain('glass-panel');
-    expect(footer.className).toContain('rounded-t-xl');
-    expect(footer.className).toContain('max-h-[60vh]');
+    expect(footer.className).toContain('max-h-[45vh]');
     expect(footer.className).toContain('overflow-y-auto');
   });
 
-  it('does not apply floating classes when floating is false', () => {
+  // The cap exists to protect a 667px-tall phone; on a laptop it would only add a
+  // pointless inner scrollbar, so it must be lifted from `sm` up.
+  it('lifts the cap from the sm breakpoint up', () => {
     render(
-      <GameFooter floating={false}>
+      <GameFooter>
         <span>content</span>
       </GameFooter>,
     );
     const footer = screen.getByRole('contentinfo');
-    expect(footer.className).not.toContain('glass-panel');
-    expect(footer.className).not.toContain('rounded-t-xl');
+    expect(footer.className).toContain('sm:max-h-none');
+    expect(footer.className).toContain('sm:overflow-y-visible');
   });
 });

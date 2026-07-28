@@ -21,7 +21,7 @@ func TestLooWebPresenter_Output(t *testing.T) {
 	g.SetCurrentTurn(0)
 	g.SetTrickNumber(1)
 	g.GetPlayer(0).SetPlaying(true)
-	g.SetCurrentTrick([]*domain.LooTrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
 
 	p := new(presenter.LooWebPresenter)
 	out := p.Output(g, nil)

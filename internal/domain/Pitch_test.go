@@ -241,7 +241,7 @@ func TestPitch_ValidatePlay_FollowOrTrump(t *testing.T) {
 	p.SetLeadPlayerIdx(1)
 	p.SetCurrentPlayerIdx(0)
 	// CPU 1 が ♥ をリード
-	p.SetCurrentTrick([]*domain.PitchTrickCard{
+	p.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: newPitchCard(domain.CardDesignHeart, 10)},
 	})
 	// human の手札: ♥9 (lead), ♠5 (trump), ♦4 (off-suit)
@@ -262,7 +262,7 @@ func TestPitch_ValidatePlay_TrumpAlwaysLegal(t *testing.T) {
 	p.SetTrickNumber(2)
 	p.SetLeadPlayerIdx(1)
 	p.SetCurrentPlayerIdx(0)
-	p.SetCurrentTrick([]*domain.PitchTrickCard{
+	p.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: newPitchCard(domain.CardDesignHeart, 10)},
 	})
 	setHandPitch(p.GetPlayer(0),
@@ -281,7 +281,7 @@ func TestPitch_ValidatePlay_RejectOffSuitWhenLeadPresent(t *testing.T) {
 	p.SetTrickNumber(2)
 	p.SetLeadPlayerIdx(1)
 	p.SetCurrentPlayerIdx(0)
-	p.SetCurrentTrick([]*domain.PitchTrickCard{
+	p.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: newPitchCard(domain.CardDesignHeart, 10)},
 	})
 	setHandPitch(p.GetPlayer(0),
@@ -301,7 +301,7 @@ func TestPitch_ValidatePlay_VoidAllowsAnyCard(t *testing.T) {
 	p.SetTrickNumber(2)
 	p.SetLeadPlayerIdx(1)
 	p.SetCurrentPlayerIdx(0)
-	p.SetCurrentTrick([]*domain.PitchTrickCard{
+	p.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: newPitchCard(domain.CardDesignHeart, 10)},
 	})
 	// void in ♥
@@ -361,7 +361,7 @@ func TestPitch_TrickWinner_TrumpBeatsLead(t *testing.T) {
 	p.SetPhase(domain.PitchPhaseTrickEnd)
 	p.SetTrickNumber(2)
 	// ♥A, ♥K, ♠2(trump), ♥Q → ♠2 wins (trump)
-	p.SetCurrentTrick([]*domain.PitchTrickCard{
+	p.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: newPitchCard(domain.CardDesignHeart, 1)},
 		{PlayerIdx: 1, Card: newPitchCard(domain.CardDesignHeart, 13)},
 		{PlayerIdx: 2, Card: newPitchCard(domain.CardDesignSpade, 2)},
@@ -380,7 +380,7 @@ func TestPitch_TrickWinner_HighestTrumpWins(t *testing.T) {
 	p.SetPhase(domain.PitchPhaseTrickEnd)
 	p.SetTrickNumber(2)
 	// ♠5, ♠A(=14 rank), ♠K, ♥10 → ♠A wins
-	p.SetCurrentTrick([]*domain.PitchTrickCard{
+	p.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: newPitchCard(domain.CardDesignSpade, 5)},
 		{PlayerIdx: 1, Card: newPitchCard(domain.CardDesignSpade, 1)},
 		{PlayerIdx: 2, Card: newPitchCard(domain.CardDesignSpade, 13)},
@@ -397,7 +397,7 @@ func TestPitch_TrickWinner_NoTrump(t *testing.T) {
 	p.SetPhase(domain.PitchPhaseTrickEnd)
 	p.SetTrickNumber(2)
 	// ♥10, ♥K, ♥A, ♣4 → ♥A wins (lead suit highest, no trump played)
-	p.SetCurrentTrick([]*domain.PitchTrickCard{
+	p.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: newPitchCard(domain.CardDesignHeart, 10)},
 		{PlayerIdx: 1, Card: newPitchCard(domain.CardDesignHeart, 13)},
 		{PlayerIdx: 2, Card: newPitchCard(domain.CardDesignHeart, 1)},
@@ -413,7 +413,7 @@ func TestPitch_NextTrick(t *testing.T) {
 	p.SetPhase(domain.PitchPhaseTrickEnd)
 	p.SetTrickNumber(1)
 	p.SetLeadPlayerIdx(2)
-	p.SetCurrentTrick([]*domain.PitchTrickCard{{PlayerIdx: 0, Card: newPitchCard(domain.CardDesignSpade, 5)}})
+	p.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 0, Card: newPitchCard(domain.CardDesignSpade, 5)}})
 	p.NextTrick()
 	assert.Equal(t, domain.PitchPhasePlay, p.GetPhase())
 	assert.Equal(t, 2, p.GetCurrentPlayerIdx())
@@ -555,7 +555,7 @@ func TestPitch_GetValidPlayIndices(t *testing.T) {
 	p.SetPhase(domain.PitchPhasePlay)
 	p.SetTrumpSuit(domain.CardDesignSpade)
 	p.SetCurrentPlayerIdx(0)
-	p.SetCurrentTrick([]*domain.PitchTrickCard{
+	p.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: newPitchCard(domain.CardDesignHeart, 10)},
 	})
 	setHandPitch(p.GetPlayer(0),

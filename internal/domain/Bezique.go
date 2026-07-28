@@ -95,12 +95,6 @@ const (
 	BeziquePhaseGameEnd
 )
 
-// BeziqueTrickCard トリック中の1枚
-type BeziqueTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // BeziqueMeld 宣言可能な役 (suit は結婚のスート、それ以外は -1)
 type BeziqueMeld struct {
 	Type   BeziqueMeldType `json:"ty"`
@@ -166,7 +160,7 @@ type Bezique struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*BeziqueTrickCard
+	currentTrick     []*TrickCard
 	trumpCard        *Card // 場に表向きで置かれる切り札表示カード
 	trumpSuit        int
 	leadPlayerIdx    int
@@ -386,10 +380,10 @@ func (b *Bezique) GetCurrentPlayerIdx() int { return b.currentPlayerIdx }
 func (b *Bezique) SetCurrentPlayerIdx(idx int) { b.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (b *Bezique) GetCurrentTrick() []*BeziqueTrickCard { return b.currentTrick }
+func (b *Bezique) GetCurrentTrick() []*TrickCard { return b.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (b *Bezique) SetCurrentTrick(trick []*BeziqueTrickCard) { b.currentTrick = trick }
+func (b *Bezique) SetCurrentTrick(trick []*TrickCard) { b.currentTrick = trick }
 
 // GetTrumpSuit トランプスート取得
 func (b *Bezique) GetTrumpSuit() int { return b.trumpSuit }
@@ -546,7 +540,7 @@ func (b *Bezique) GetHint() *BeziqueHint {
 
 // playCard カードをプレイする共通処理。2枚出そろったらトリックを解決する。
 func (b *Bezique) playCard(playerIdx int, card *Card) {
-	b.currentTrick = append(b.currentTrick, &BeziqueTrickCard{PlayerIdx: playerIdx, Card: card})
+	b.currentTrick = append(b.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	b.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", b.playerName(playerIdx), cardStr(card)), []*Card{card})
 	if len(b.currentTrick) == BeziquePlayerCnt {
 		b.resolveTrick()
@@ -1071,25 +1065,25 @@ func (b *Bezique) legalAllowsDump(playerIdx int, legal []int) bool {
 
 // beziqueJSON is the JSON wire format for Bezique.
 type beziqueJSON struct {
-	TrumpCards       *TrumpCards         `json:"tc"`
-	Players          []*BeziquePlayer    `json:"ps"`
-	Config           BeziqueConfig       `json:"cf"`
-	Phase            BeziquePhase        `json:"ph"`
-	RoundNumber      int                 `json:"rn"`
-	TrickNumber      int                 `json:"tn"`
-	CurrentPlayerIdx int                 `json:"ci"`
-	CurrentTrick     []*BeziqueTrickCard `json:"ct"`
-	TrumpCard        *Card               `json:"tu"`
-	TrumpSuit        int                 `json:"ts"`
-	LeadPlayerIdx    int                 `json:"li"`
-	DealerIdx        int                 `json:"di"`
-	DealPoints       []int               `json:"dp"`
-	DealMeldPoints   []int               `json:"dmp"`
-	MatchScore       []int               `json:"ms"`
-	MeldsDeclared    []int               `json:"me"`
-	GameEndFlag      bool                `json:"ge"`
-	WinnerIdx        int                 `json:"wi"`
-	ActionLog        []*ActionLogEntry   `json:"al"`
+	TrumpCards       *TrumpCards       `json:"tc"`
+	Players          []*BeziquePlayer  `json:"ps"`
+	Config           BeziqueConfig     `json:"cf"`
+	Phase            BeziquePhase      `json:"ph"`
+	RoundNumber      int               `json:"rn"`
+	TrickNumber      int               `json:"tn"`
+	CurrentPlayerIdx int               `json:"ci"`
+	CurrentTrick     []*TrickCard      `json:"ct"`
+	TrumpCard        *Card             `json:"tu"`
+	TrumpSuit        int               `json:"ts"`
+	LeadPlayerIdx    int               `json:"li"`
+	DealerIdx        int               `json:"di"`
+	DealPoints       []int             `json:"dp"`
+	DealMeldPoints   []int             `json:"dmp"`
+	MatchScore       []int             `json:"ms"`
+	MeldsDeclared    []int             `json:"me"`
+	GameEndFlag      bool              `json:"ge"`
+	WinnerIdx        int               `json:"wi"`
+	ActionLog        []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1173,7 +1167,7 @@ func (b *Bezique) UnmarshalJSON(data []byte) error {
 	b.currentPlayerIdx = j.CurrentPlayerIdx
 	b.currentTrick = j.CurrentTrick
 	if b.currentTrick == nil {
-		b.currentTrick = make([]*BeziqueTrickCard, 0)
+		b.currentTrick = make([]*TrickCard, 0)
 	}
 	b.trumpCard = j.TrumpCard
 	b.trumpSuit = j.TrumpSuit

@@ -298,7 +298,7 @@ func TestSevenCardStudWebPresenter_Output(t *testing.T) {
 		var out controller.SevenCardStudWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "You are the winner.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "sevencardstud.result.win", out.MessageCode)
 	})
 
@@ -315,7 +315,7 @@ func TestSevenCardStudWebPresenter_Output(t *testing.T) {
 		var out controller.SevenCardStudWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "You lose.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "sevencardstud.result.lose", out.MessageCode)
 	})
 
@@ -332,7 +332,7 @@ func TestSevenCardStudWebPresenter_Output(t *testing.T) {
 		var out controller.SevenCardStudWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "You folded.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "sevencardstud.result.folded", out.MessageCode)
 	})
 
@@ -349,7 +349,7 @@ func TestSevenCardStudWebPresenter_Output(t *testing.T) {
 		var out controller.SevenCardStudWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "You mucked.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "sevencardstud.result.mucked", out.MessageCode)
 	})
 
@@ -362,7 +362,7 @@ func TestSevenCardStudWebPresenter_Output(t *testing.T) {
 		var out controller.SevenCardStudWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "Game over.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "sevencardstud.result.gameOver", out.MessageCode)
 	})
 
@@ -378,7 +378,7 @@ func TestSevenCardStudWebPresenter_Output(t *testing.T) {
 		var out controller.SevenCardStudWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "Muck or show your hand.", out.Message)
+		assert.Empty(t, out.Message)
 		assert.Equal(t, "sevencardstud.muck.prompt", out.MessageCode)
 	})
 

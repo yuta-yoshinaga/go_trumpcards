@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import App, { RouteSuspenseFallback } from './App';
+import { DISCOVER_DRAFT_KEY } from './hooks/useSurveyDraft';
 import { renderWithProviders } from './test/renderWithProviders';
 
 describe('RouteSuspenseFallback', () => {
@@ -44,6 +45,21 @@ describe('RouteSuspenseFallback', () => {
 // error (probed directly). The boundary only decides whether the skeleton
 // shows during the chunk download, so removing one is invisible here.
 describe('App non-game routes', () => {
+  beforeEach(() => {
+    // A survey draft with every question answered makes /discover legitimately
+    // NOT show the survey: DiscoverPage's submit effect fires immediately and
+    // redirects to /discover/result with the stored answers. So the two
+    // assertions below are asking for `discover-survey` in a state where its
+    // absence is correct — which is why they failed intermittently, and only in
+    // a full-suite run where an earlier test could leave such a draft behind.
+    // Verified in a browser: seeding this key lands on
+    // #/discover/result?m=0,0&... with the result page rendered.
+    // `setup.ts` does not clear localStorage globally, and
+    // `useSurveyDraft.test.ts` clears only in beforeEach, so a completed draft
+    // can outlive it. Establish the precondition here instead of inheriting it.
+    localStorage.removeItem(DISCOVER_DRAFT_KEY);
+  });
+
   afterEach(() => {
     window.location.hash = '';
   });
@@ -58,18 +74,28 @@ describe('App non-game routes', () => {
     expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument();
   });
 
+  // Both assertions wait on a lazily-loaded route chunk, so they need more than
+  // the 5s global asyncUtilTimeout from setup.ts. In a full-suite run every core
+  // is busy compiling other files, and the wait is for a dynamic import to
+  // resolve rather than for a state update — the second test below measured
+  // 5810ms against the 5000ms budget and failed, while passing in ~1s when run
+  // alone. Raising just these two keeps the global default tight.
+  const CHUNK_TIMEOUT = { timeout: 20000 };
+
   it('renders the Discover survey at /discover', async () => {
     window.location.hash = '#/discover';
     renderWithProviders(<App />);
-    expect(await screen.findByTestId('discover-survey')).toBeInTheDocument();
+    expect(await screen.findByTestId('discover-survey', {}, CHUNK_TIMEOUT)).toBeInTheDocument();
   });
 
   it('sends /discover/result back to the survey when the params are absent', async () => {
     // DiscoverResultPage redirects to /discover when it cannot parse the
     // search params. Reaching that redirect at all proves its own chunk
-    // resolved under Suspense first, so this covers both pages.
+    // resolved under Suspense first, so this covers both pages — which is also
+    // why it is the slowest of the three: two dynamic imports resolve in
+    // sequence, not one.
     window.location.hash = '#/discover/result';
     renderWithProviders(<App />);
-    expect(await screen.findByTestId('discover-survey')).toBeInTheDocument();
+    expect(await screen.findByTestId('discover-survey', {}, CHUNK_TIMEOUT)).toBeInTheDocument();
   });
 });

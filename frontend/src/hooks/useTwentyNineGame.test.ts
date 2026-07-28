@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { twentyNineApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeTwentyNineState } from '../test/stateFactories';
 import { DEFAULT_TWENTY_NINE_CONFIG, useTwentyNineGame } from './useTwentyNineGame';
 
@@ -38,9 +39,10 @@ describe('useTwentyNineGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 20 }));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useTwentyNineGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

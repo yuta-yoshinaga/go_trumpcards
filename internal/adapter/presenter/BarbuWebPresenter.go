@@ -69,8 +69,8 @@ func (bwp *BarbuWebPresenter) Output(bg interfaces.BarbuGame, lastErr error) str
 func newBarbuOutput(bg interfaces.BarbuGame) *controller.BarbuWebOutput {
 	resObj := new(controller.BarbuWebOutput)
 	resObj.Players = make([]*controller.BarbuWebOutputPlayer, 0)
-	resObj.CurrentTrick = make([]*controller.BarbuWebOutputTrickCard, 0)
-	resObj.LastTrick = make([]*controller.BarbuWebOutputTrickCard, 0)
+	resObj.CurrentTrick = make([]*controller.WebOutputTrickCard, 0)
+	resObj.LastTrick = make([]*controller.WebOutputTrickCard, 0)
 	resObj.TablePlaced = make([]int, 0)
 	resObj.DominoPlayable = make([]int, 0)
 	resObj.UsedContracts = make([]bool, 0)
@@ -95,13 +95,13 @@ func newBarbuOutput(bg interfaces.BarbuGame) *controller.BarbuWebOutput {
 }
 
 // barbuTrickToOutput はトリックを WebOutput 表現に変換する。
-func barbuTrickToOutput(trick []*domain.BarbuTrickCard) []*controller.BarbuWebOutputTrickCard {
-	out := make([]*controller.BarbuWebOutputTrickCard, 0, len(trick))
+func barbuTrickToOutput(trick []*domain.TrickCard) []*controller.WebOutputTrickCard {
+	out := make([]*controller.WebOutputTrickCard, 0, len(trick))
 	for _, tc := range trick {
 		if tc == nil {
 			continue
 		}
-		out = append(out, &controller.BarbuWebOutputTrickCard{
+		out = append(out, &controller.WebOutputTrickCard{
 			PlayerIdx: tc.PlayerIdx,
 			Card:      cardToOutput(tc.Card),
 		})

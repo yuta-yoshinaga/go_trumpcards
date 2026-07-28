@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { bakersDozenApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { BakersDozenResponse } from '../types/card';
 import { useBakersDozenGame } from './useBakersDozenGame';
 
@@ -120,6 +121,7 @@ describe('useBakersDozenGame', () => {
 
     act(() => result.current.handleSelectTarget({ zone: 'tableau', col: 1 }));
     // No move call should have been issued.
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 

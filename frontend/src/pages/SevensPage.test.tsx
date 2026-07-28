@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, sevensApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SevensResponse } from '../types/card';
 import { SevensPage } from './SevensPage';
@@ -267,6 +268,7 @@ describe('SevensPage', () => {
     await waitFor(() => expect(screen.getByAltText('♥ 5')).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.click(screen.getByAltText('♥ 5'));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -1640,6 +1642,7 @@ describe('SevensPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: '1' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1652,6 +1655,7 @@ describe('SevensPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: '1' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1664,6 +1668,7 @@ describe('SevensPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: '5' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
   });

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra3
 
 package presenter
 
@@ -140,8 +140,8 @@ func (p *CegoCuiPresenter) Output(g interfaces.CegoGame, lastErr error) string {
 		b.WriteString("----------\n")
 
 		cuiTrickBlock(b, g.GetCurrentTrick(),
-			func(tc *domain.CegoTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.CegoTrickCard) string { return cegoCuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cegoCuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 

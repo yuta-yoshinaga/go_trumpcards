@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, omahaHiLoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OmahaResponse } from '../types/card';
 import { OmahaHiLoPage } from './OmahaHiLoPage';
@@ -331,7 +332,12 @@ describe('OmahaHiLoPage', () => {
     renderWithProviders(<OmahaHiLoPage />);
     const badge = await screen.findByTestId('omahahilo-board-low-badge');
     expect(badge).toHaveAttribute('data-status', 'possible');
-    expect(badge).toHaveClass('text-ds-info');
+    // badgeInfoColors carries the "info" signal on the border, not the text:
+    // text-ds-info is only ~4.5:1 on the surface background, so the foreground
+    // stays text-ds-text-primary (12:1) and the border does the signalling.
+    // See styles/badgeStyles.ts and issue #4367.
+    expect(badge).toHaveClass('border-ds-border-subtle');
+    expect(badge).toHaveClass('text-ds-text-primary');
   });
 
   it('shows the "live" board-low badge when the board has 3 distinct low ranks', async () => {
@@ -1464,6 +1470,7 @@ describe('OmahaHiLoPage', () => {
         fireEvent.keyDown(document, { key: 'f' });
         fireEvent.keyDown(document, { key: 'a' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1477,6 +1484,7 @@ describe('OmahaHiLoPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'c' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
 
@@ -1490,6 +1498,7 @@ describe('OmahaHiLoPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'k' });
       });
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalled();
     });
   });
@@ -1618,5 +1627,19 @@ describe('OmahaHiLoPage', () => {
     const allSummaries = container.querySelectorAll('details summary');
     const settingsSummary = Array.from(allSummaries).find((s) => s.textContent?.includes('設定'));
     expect(settingsSummary).toBeTruthy();
+  });
+  // The settings toggles are wrapped in a 44px-tall <label> so the whole row is
+  // a tap target (DESIGN.md Interactive Element Minimum Size, issue #4368).
+  // Clicking the label's *text* must therefore flip the checkbox -- that is the
+  // behaviour the tap target buys, and it was previously untested here.
+  describe('settings toggles are driven by their full label row', () => {
+    it.each(['ヒント表示', 'メタAI（CPUがプレイスタイルを学習）'])('toggles %s', async (label) => {
+      mockExec.mockResolvedValue(preFlopState);
+      renderWithProviders(<OmahaHiLoPage />);
+      const box = await waitFor(() => screen.getByLabelText(label) as HTMLInputElement);
+      const before = box.checked;
+      fireEvent.click(screen.getByText(label));
+      expect((screen.getByLabelText(label) as HTMLInputElement).checked).toBe(!before);
+    });
   });
 });

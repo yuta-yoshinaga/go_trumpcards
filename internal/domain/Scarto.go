@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra3
 
 // Package domain スカルト (Scarto / Piedmontese Tarot) のドメインモデル。
 //
@@ -125,8 +125,10 @@ const (
 	ScartoOutcomeLoss ScartoOutcome = 2
 )
 
-// ScartoResult 人間視点のマッチ結果。casino タグの GameResult は extra ワーカーから
-// 到達不能なため、ゲームローカルの結果型を定義する。
+// ScartoResult 人間視点のマッチ結果。
+// GameResult は共有ファイル internal/domain/game_result.go に移動したので到達可能に
+// なったが、この型名は JSON ペイロードに出るため統合していない（#4462）。値は
+// GameResult と同一。
 type ScartoResult int
 
 // Scarto のマッチ結果定数
@@ -145,12 +147,6 @@ type ScartoHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// ScartoTrickCard トリック中の 1 枚
-type ScartoTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Scarto スカルトのゲームクラス
 type Scarto struct {
 	deck             []*Card
@@ -161,7 +157,7 @@ type Scarto struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*ScartoTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	scarto           []*Card // 親が捨てた 3 枚 (親の捕獲点に計上)
@@ -443,7 +439,7 @@ func (g *Scarto) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Scarto) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &ScartoTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), scartoCardStr(card)), []*Card{card})
 	if len(g.currentTrick) == ScartoPlayerCnt {
 		g.phase = ScartoPhaseTrickEnd
@@ -1206,10 +1202,10 @@ func (g *Scarto) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Scarto) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Scarto) GetCurrentTrick() []*ScartoTrickCard { return g.currentTrick }
+func (g *Scarto) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Scarto) SetCurrentTrick(trick []*ScartoTrickCard) { g.currentTrick = trick }
+func (g *Scarto) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Scarto) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -1366,7 +1362,7 @@ type scartoJSON struct {
 	RoundNumber      int                  `json:"rn"`
 	TrickNumber      int                  `json:"tn"`
 	CurrentPlayerIdx int                  `json:"ci"`
-	CurrentTrick     []*ScartoTrickCard   `json:"ct"`
+	CurrentTrick     []*TrickCard         `json:"ct"`
 	LeadPlayerIdx    int                  `json:"li"`
 	DealerIdx        int                  `json:"di"`
 	Scarto           []*Card              `json:"sk"`
@@ -1527,7 +1523,7 @@ func (g *Scarto) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*ScartoTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

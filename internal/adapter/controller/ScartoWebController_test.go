@@ -17,7 +17,7 @@ import (
 func mustScartoOutputJSON(msg string) string {
 	out := &controller.ScartoWebOutput{
 		Players:         []*controller.ScartoWebOutputPlayer{},
-		CurrentTrick:    []*controller.ScartoWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		LastTrickWinner: -1,
 		WinnerPlayer:    -1,

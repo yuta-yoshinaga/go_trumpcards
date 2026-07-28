@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -138,11 +139,11 @@ function SultanPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleDraw },
-      { key: 'h', action: handleHint },
-      { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: () => requestGiveUpConfirm(handleGiveUp) },
-      { key: 'z', action: handleUndo },
+      { key: 'd', action: handleDraw, label: 'draw' },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      { key: 'g', action: () => requestGiveUpConfirm(handleGiveUp), label: 'giveUp' },
+      { key: 'z', action: handleUndo, label: 'undo' },
     ],
     [handleDraw, handleHint, handleAutoComplete, requestGiveUpConfirm, handleGiveUp, handleUndo],
   );
@@ -445,6 +446,7 @@ function SultanPageContent() {
                 dataTutorial="sultan-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="sultan-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

@@ -125,8 +125,9 @@ func TestRunHelpCommandUnknownGame(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	helpText := buildHelpText()
 	code := runHelpCommand([]string{"definitelynotagame"}, helpText, &stdout, &stderr)
-	if code != 1 {
-		t.Fatalf("runHelpCommand(unknown) exit = %d, want 1", code)
+	// 2 = usage error, matching every other unknown-name path. See issue #4372.
+	if code != 2 {
+		t.Fatalf("runHelpCommand(unknown) exit = %d, want 2", code)
 	}
 	if stdout.Len() != 0 {
 		t.Errorf("expected no stdout on unknown game; got %q", stdout.String())
@@ -553,7 +554,7 @@ func TestParseSubFlagsToNoHelpDumpOnFlagError(t *testing.T) {
 	fs, code, ok := parseSubFlagsTo("version", []string{"--bogus"}, func(fs *flag.FlagSet) {
 		var short bool
 		fs.BoolVar(&short, "short", false, "")
-	}, &stdout, &stderr)
+	}, &stdout, &stderr, false)
 
 	if ok || fs != nil {
 		t.Fatalf("expected (nil, code, false) on flag error; got ok=%v fs=%v", ok, fs)
@@ -577,7 +578,7 @@ func TestParseSubFlagsToPrintsHelpOnceOnHelpFlag(t *testing.T) {
 	fs, code, ok := parseSubFlagsTo("version", []string{"-h"}, func(fs *flag.FlagSet) {
 		var short bool
 		fs.BoolVar(&short, "short", false, "")
-	}, &stdout, &stderr)
+	}, &stdout, &stderr, false)
 
 	if ok || fs != nil {
 		t.Fatalf("expected (nil, 0, false) on -h; got ok=%v fs=%v", ok, fs)
@@ -1406,6 +1407,15 @@ func TestRunGamesInvalidCategoryExits2(t *testing.T) {
 	}
 	if !strings.Contains(errBuf.String(), "bogus") {
 		t.Errorf("stderr must name the offending category 'bogus'; got: %q", errBuf.String())
+	}
+	// The list of accepted values must come from the registry, not a literal
+	// baked into the locale file: `extra` was added by ADR-0032 and the help
+	// text picked it up in #4308, but this error message kept advertising only
+	// three categories while `--category extra` worked fine. See issue #4371.
+	for _, want := range categoryDisplayNames() {
+		if !strings.Contains(errBuf.String(), want) {
+			t.Errorf("stderr must list the accepted category %q; got: %q", want, errBuf.String())
+		}
 	}
 }
 

@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { goFishApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, GoFishResponse } from '../types/card';
 import { GoFishPhase } from '../types/phases';
@@ -179,6 +180,7 @@ describe('GoFishPage', () => {
     fireEvent.keyDown(document.body, { key: '1' });
     fireEvent.keyDown(document.body, { key: 'ArrowRight' });
     fireEvent.keyDown(document.body, { key: 'a' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('ask', expect.anything(), expect.anything());
     expect(screen.getByTestId('gf-kbd-announce').textContent).toBe('');
   });

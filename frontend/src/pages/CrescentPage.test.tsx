@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, crescentApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CrescentResponse, CrescentTableauCard } from '../types/card';
 import { CrescentPage } from './CrescentPage';
@@ -174,6 +175,7 @@ describe('CrescentPage', () => {
     mockExec.mockResolvedValue(gameOverState);
     // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     // Confirming dispatches giveup.
@@ -339,5 +341,50 @@ describe('CrescentPage', () => {
     expect(screen.getByTestId('crescent-col-badge-15')).toHaveTextContent('[15]');
     // The badge is decorative — it must not add to the SR card label noise.
     expect(screen.getByTestId('crescent-col-badge-7')).toHaveAttribute('aria-hidden', 'true');
+  });
+});
+
+// Keyboard shortcuts are bound by useActionKeyboardNav and advertised by
+// ActionShortcutsPanel, but nothing asserted that pressing a key actually runs
+// its action — a wrong `key` or a wrong `enabled` condition would have failed no
+// test. See issue #4429.
+describe('CrescentPage keyboard shortcuts', () => {
+  it.each([
+    ['d', 'redeal'],
+    ['h', 'hint'],
+    ['a', 'autocomplete'],
+    ['z', 'undo'],
+  ])('pressing %s dispatches %s', async (key, command) => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith(command));
+  });
+
+  it('pressing g asks for give-up confirmation rather than firing it', async () => {
+    // give-up is irreversible, so the key must route through the dialog (#2099)
+    // instead of dispatching straight away.
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    expect(await screen.findByText('投了確認')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('ignores shortcuts once the game has ended', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    for (const key of ['d', 'h', 'a', 'z']) {
+      fireEvent.keyDown(document, { key });
+    }
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });

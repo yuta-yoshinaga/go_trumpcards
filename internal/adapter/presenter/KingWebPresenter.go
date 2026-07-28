@@ -35,8 +35,8 @@ func (kwp *KingWebPresenter) Output(kg interfaces.KingGame, lastErr error) strin
 func (kwp *KingWebPresenter) buildBase(kg interfaces.KingGame) *controller.KingWebOutput {
 	resObj := new(controller.KingWebOutput)
 	resObj.Players = make([]*controller.KingWebOutputPlayer, 0)
-	resObj.CurrentTrick = make([]*controller.KingWebOutputTrickCard, 0)
-	resObj.LastTrick = make([]*controller.KingWebOutputTrickCard, 0)
+	resObj.CurrentTrick = make([]*controller.WebOutputTrickCard, 0)
+	resObj.LastTrick = make([]*controller.WebOutputTrickCard, 0)
 	resObj.UsedContracts = make([]bool, 0)
 	resObj.PlayableIndices = make([]int, 0)
 	resObj.RoundWinners = make([]int, 0)
@@ -101,12 +101,12 @@ func (kwp *KingWebPresenter) playableIndices(kg interfaces.KingGame) []int {
 }
 
 // kingTrickToOutput はトリックを WebOutput 表現に変換する。
-func kingTrickToOutput(trick []*domain.KingTrickCard) []*controller.KingWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.KingTrickCard) *controller.KingWebOutputTrickCard {
+func kingTrickToOutput(trick []*domain.TrickCard) []*controller.WebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.TrickCard) *controller.WebOutputTrickCard {
 		if tc == nil {
 			return nil
 		}
-		return &controller.KingWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
+		return &controller.WebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
 
@@ -151,7 +151,7 @@ func (kwp *KingWebPresenter) buildResultMessage(kg interfaces.KingGame) string {
 func (kwp *KingWebPresenter) HintOutput(kg interfaces.KingGame) string {
 	resObj := kwp.buildBase(kg)
 	if hint := kg.GetHint(); hint != nil {
-		resObj.Hint = &controller.KingWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

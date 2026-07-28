@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"flag"
+	"io"
+	"os"
 	"strings"
 	"testing"
 
@@ -11,6 +13,44 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 )
+
+// runCLI drives the real run() entry point with the given argv (the program
+// name is prepended) and returns what reached stdout, stderr, and the exit
+// code. Both pipes are drained concurrently: the completion scripts are several
+// KB, which would deadlock a read-after-close approach once the output exceeds
+// the pipe buffer.
+func runCLI(t *testing.T, args ...string) (stdout, stderr string, exit int) {
+	t.Helper()
+	origArgs, origCmdLine := os.Args, flag.CommandLine
+	origStdout, origStderr := os.Stdout, os.Stderr
+	t.Cleanup(func() {
+		os.Args, flag.CommandLine = origArgs, origCmdLine
+		os.Stdout, os.Stderr = origStdout, origStderr
+	})
+
+	flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+	os.Args = append([]string{"trumpcards"}, args...)
+
+	rOut, wOut, err := os.Pipe()
+	require.NoError(t, err)
+	rErr, wErr, err := os.Pipe()
+	require.NoError(t, err)
+	os.Stdout, os.Stderr = wOut, wErr
+
+	outCh, errCh := make(chan string, 1), make(chan string, 1)
+	drain := func(r *os.File, ch chan<- string) {
+		var buf bytes.Buffer
+		_, _ = io.Copy(&buf, r)
+		ch <- buf.String()
+	}
+	go drain(rOut, outCh)
+	go drain(rErr, errCh)
+
+	exit = run()
+	require.NoError(t, wOut.Close())
+	require.NoError(t, wErr.Close())
+	return <-outCh, <-errCh, exit
+}
 
 func TestWriteBashCompletion(t *testing.T) {
 	var buf bytes.Buffer
@@ -156,6 +196,22 @@ func TestRunCompletion_ExtraArgs(t *testing.T) {
 	assert.Equal(t, 2, code)
 }
 
+// TestCompletionShellArgNotReportedAsIgnored guards the documented, canonical
+// invocation `trumpcards completion <shell>`: the shell name is a required
+// argument that runCompletionTo consumes, so the generic leftover-args warning
+// must not claim it was ignored. Users source this from .bashrc, which made the
+// bogus warning appear on every shell startup. See issue #4370.
+func TestCompletionShellArgNotReportedAsIgnored(t *testing.T) {
+	for _, shell := range []string{"bash", "zsh", "fish"} {
+		t.Run(shell, func(t *testing.T) {
+			stdout, stderr, exit := runCLI(t, "completion", shell)
+			assert.Equal(t, 0, exit)
+			assert.NotEmpty(t, stdout, "the completion script must still reach stdout")
+			assert.Empty(t, stderr, "a valid invocation must not warn on stderr")
+		})
+	}
+}
+
 func TestRunCompletion_UnsupportedShell(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	code := runCompletionTo([]string{"powershell"}, &stdout, &stderr, false, false)
@@ -268,10 +324,14 @@ func TestRunHelpCommand_CaseInsensitive(t *testing.T) {
 	assert.NotEmpty(t, stdout.String())
 }
 
+// An unknown name is a usage error, so it exits 2 like every other
+// unknown-name path in the CLI (`<unknown>`, `--start`, `--category`,
+// `completion`) and like the top-level EXIT CODES table documents.
+// See issue #4372.
 func TestRunHelpCommand_UnknownGame(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	code := runHelpCommand([]string{"nosuchgame"}, "", &stdout, &stderr)
-	assert.Equal(t, 1, code)
+	assert.Equal(t, 2, code)
 	assert.Empty(t, stdout.String())
 	assert.Contains(t, stderr.String(), "nosuchgame")
 }
@@ -304,7 +364,7 @@ func TestParseSubFlagsTo_HelpFlag_WritesHelpToStdoutAndExitsZero(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	_, code, ok := parseSubFlagsTo("web", []string{"--help"}, func(fs *flag.FlagSet) {
 		fs.String("port", "", "port")
-	}, &stdout, &stderr)
+	}, &stdout, &stderr, false)
 	assert.False(t, ok)
 	assert.Equal(t, 0, code)
 	// The USAGE line names the command regardless of the active locale.
@@ -316,7 +376,7 @@ func TestParseSubFlagsTo_UnknownFlag_WritesI18nErrorAndExit2(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	_, code, ok := parseSubFlagsTo("web", []string{"--nope"}, func(fs *flag.FlagSet) {
 		fs.String("port", "", "port")
-	}, &stdout, &stderr)
+	}, &stdout, &stderr, false)
 	assert.False(t, ok)
 	assert.Equal(t, 2, code)
 	// Must not leak Go's raw "flag provided but not defined" line to either stream
@@ -324,6 +384,36 @@ func TestParseSubFlagsTo_UnknownFlag_WritesI18nErrorAndExit2(t *testing.T) {
 	assert.NotContains(t, stdout.String(), "flag provided but not defined")
 	assert.Contains(t, stderr.String(), "web")
 	assert.Contains(t, stderr.String(), "help web")
+}
+
+// The leftover-args warning is right for the five subcommands that take no
+// positional arguments and wrong for the one that does, so it is gated on
+// takesPositional rather than on fs.NArg() alone. See issue #4370.
+func TestParseSubFlagsTo_LeftoverArgs_WarnsOnlyWhenNotExpected(t *testing.T) {
+	for _, tc := range []struct {
+		name            string
+		takesPositional bool
+		wantWarning     bool
+	}{
+		{"warns when the subcommand takes no positional args", false, true},
+		{"stays quiet when the subcommand consumes them", true, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			fs, code, ok := parseSubFlagsTo("completion", []string{"bash"}, func(fs *flag.FlagSet) {
+				fs.Bool("no-hint", false, "no-hint")
+			}, &stdout, &stderr, tc.takesPositional)
+			require.True(t, ok)
+			assert.Equal(t, 0, code)
+			// Either way the argument is handed to the caller, never swallowed.
+			assert.Equal(t, []string{"bash"}, fs.Args())
+			if tc.wantWarning {
+				assert.NotEmpty(t, stderr.String())
+			} else {
+				assert.Empty(t, stderr.String())
+			}
+		})
+	}
 }
 
 func TestBuiltinSubcommandHelp_CoversAllNonGameSubcommands(t *testing.T) {
@@ -341,8 +431,30 @@ func TestRunHelpCommand_UnknownGame_DidYouMean(t *testing.T) {
 	// "blackjac" → distance 1 from "blackjack"
 	var stdout, stderr bytes.Buffer
 	code := runHelpCommand([]string{"blackjac"}, "", &stdout, &stderr)
-	assert.Equal(t, 1, code)
+	assert.Equal(t, 2, code)
 	assert.Contains(t, stderr.String(), "blackjack")
+}
+
+// TestUnknownNameExitCodesAreUniform pins the scriptability contract: "you
+// named something that does not exist" is one user error and must produce one
+// exit code, whichever entry point it arrives through. `help <unknown>` used to
+// be the lone outlier at 1, which also made the two EXIT CODES tables in the
+// help text contradict each other. See issue #4372.
+func TestUnknownNameExitCodesAreUniform(t *testing.T) {
+	for _, argv := range [][]string{
+		{"bogusgame"},
+		{"--start", "bogusgame"},
+		{"games", "--category", "bogus"},
+		{"completion", "bogusshell"},
+		{"help", "bogusgame"},
+		{"help", "bogussubcommand"},
+	} {
+		t.Run(strings.Join(argv, " "), func(t *testing.T) {
+			_, stderr, exit := runCLI(t, argv...)
+			assert.Equal(t, 2, exit, "unknown-name usage errors must all exit 2")
+			assert.NotEmpty(t, stderr, "the offending name must be reported on stderr")
+		})
+	}
 }
 
 func TestCompletionSubcommands_ContainsAllGames(t *testing.T) {

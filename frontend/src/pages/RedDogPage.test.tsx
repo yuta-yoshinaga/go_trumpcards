@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { reddogApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, RedDogResponse } from '../types/card';
 import { RedDogPhase } from '../types/phases';
@@ -172,5 +173,36 @@ describe('RedDogPage', () => {
     await waitFor(() => expect(screen.getByTestId('reddog-ghost-7')).toBeInTheDocument());
     const hitChip = screen.getByTestId('reddog-ghost-7');
     expect(hitChip.className).toContain('bg-ds-success');
+  });
+});
+
+// --- keyboard shortcut execution (#4429) ---
+// Red Dog binds only three keys, each gated on a different phase.
+const kbdCases: [string, unknown[], RedDogResponse][] = [
+  ['b', ['bet', 100], betState],
+  ['s', ['stay'], spreadState],
+  ['r', ['reset'], winState],
+];
+
+describe('RedDogPage keyboard shortcuts', () => {
+  it.each(kbdCases)('pressing %s dispatches %j', async (key, expected, state) => {
+    mockApi.mockResolvedValue(state);
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(state);
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith(...expected));
+  });
+
+  it('ignores a key whose phase gate is closed', async () => {
+    // 's' (stay) is only offered once the spread has been revealed.
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 's' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
   });
 });

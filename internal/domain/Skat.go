@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra3
 
 package domain
 
@@ -97,19 +97,13 @@ type SkatHint struct {
 	Reason       string
 }
 
-// SkatTrickCard one card played in a trick
-type SkatTrickCard struct {
-	PlayerIdx int
-	Card      *Card
-}
-
 // skatRoundState round-scoped state
 type skatRoundState struct {
 	phase            SkatPhase
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*SkatTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int // rotates each round
 	forehandIdx      int // first to bid response (left of dealer)
@@ -662,7 +656,7 @@ func (s *Skat) CpuPlay() {
 
 // playCard appends the card to the current trick and advances the turn.
 func (s *Skat) playCard(playerIdx int, card *Card) {
-	s.round.currentTrick = append(s.round.currentTrick, &SkatTrickCard{PlayerIdx: playerIdx, Card: card})
+	s.round.currentTrick = append(s.round.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	s.appendLog(playerIdx, "play",
 		fmt.Sprintf("%s plays %s", s.playerName(playerIdx), cardStr(card)), []*Card{card})
 	if len(s.round.currentTrick) == SkatPlayerCnt {
@@ -1331,10 +1325,10 @@ func (s *Skat) GetCurrentPlayerIdx() int { return s.round.currentPlayerIdx }
 func (s *Skat) SetCurrentPlayerIdx(idx int) { s.round.currentPlayerIdx = idx }
 
 // GetCurrentTrick returns the current trick (in play order).
-func (s *Skat) GetCurrentTrick() []*SkatTrickCard { return s.round.currentTrick }
+func (s *Skat) GetCurrentTrick() []*TrickCard { return s.round.currentTrick }
 
 // SetCurrentTrick sets the current trick (test only).
-func (s *Skat) SetCurrentTrick(trick []*SkatTrickCard) { s.round.currentTrick = trick }
+func (s *Skat) SetCurrentTrick(trick []*TrickCard) { s.round.currentTrick = trick }
 
 // GetForehandIdx returns the forehand index.
 func (s *Skat) GetForehandIdx() int { return s.round.forehandIdx }

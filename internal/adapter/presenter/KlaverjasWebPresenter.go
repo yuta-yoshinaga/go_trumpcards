@@ -45,7 +45,7 @@ func (p *KlaverjasWebPresenter) buildBase(g interfaces.KlaverjasGame) *controlle
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -60,13 +60,6 @@ func (p *KlaverjasWebPresenter) playableIndices(g interfaces.KlaverjasGame) []in
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *KlaverjasWebPresenter) buildTrickOutput(trick []*domain.KlaverjasTrickCard) []*controller.KlaverjasWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.KlaverjasTrickCard) *controller.KlaverjasWebOutputTrickCard {
-		return &controller.KlaverjasWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -135,7 +128,7 @@ func (p *KlaverjasWebPresenter) HintOutput(g interfaces.KlaverjasGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.KlaverjasWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

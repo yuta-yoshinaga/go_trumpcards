@@ -15,7 +15,7 @@ func setupBeloteCuiMock() *interfaces.MockBeloteGame {
 	m := new(interfaces.MockBeloteGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
-	m.On("GetCurrentTrick").Return([]*domain.BeloteTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.BelotePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

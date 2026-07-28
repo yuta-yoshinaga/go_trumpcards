@@ -30,12 +30,6 @@ type BriscolaWebOutputPlayer struct {
 	TrickCount int              `json:"trickCount"`
 }
 
-// BriscolaWebOutputTrickCard トリック中の1枚
-type BriscolaWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // BriscolaWebOutputHint ヒント出力
 type BriscolaWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -44,19 +38,19 @@ type BriscolaWebOutputHint struct {
 
 // BriscolaWebOutput ブリスコラWebアウトプット
 type BriscolaWebOutput struct {
-	Players          []*BriscolaWebOutputPlayer    `json:"players"`
-	Phase            int                           `json:"phase"`
-	TrickNumber      int                           `json:"trickNumber"`
-	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
-	CurrentTrick     []*BriscolaWebOutputTrickCard `json:"currentTrick"`
-	TrumpSuit        int                           `json:"trumpSuit"`
-	TrumpCard        *WebOutputCard                `json:"trumpCard,omitempty"`
-	DealerIdx        int                           `json:"dealerIdx"`
-	LeadPlayerIdx    int                           `json:"leadPlayerIdx"`
-	StockRemaining   int                           `json:"stockRemaining"`
-	GameEndFlag      bool                          `json:"gameEndFlag"`
-	WinnerIdx        int                           `json:"winnerIdx"`
-	Hint             *BriscolaWebOutputHint        `json:"hint,omitempty"`
+	Players          []*BriscolaWebOutputPlayer `json:"players"`
+	Phase            int                        `json:"phase"`
+	TrickNumber      int                        `json:"trickNumber"`
+	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
+	CurrentTrick     []*WebOutputTrickCard      `json:"currentTrick"`
+	TrumpSuit        int                        `json:"trumpSuit"`
+	TrumpCard        *WebOutputCard             `json:"trumpCard,omitempty"`
+	DealerIdx        int                        `json:"dealerIdx"`
+	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
+	StockRemaining   int                        `json:"stockRemaining"`
+	GameEndFlag      bool                       `json:"gameEndFlag"`
+	WinnerIdx        int                        `json:"winnerIdx"`
+	Hint             *BriscolaWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config BriscolaWebOutputConfig `json:"config"`
 }
@@ -92,7 +86,7 @@ var NewBriscolaWebController, NewBriscolaWebControllerWithProvider = webControll
 func newBriscolaDefaultOutput(msg string) *BriscolaWebOutput {
 	return &BriscolaWebOutput{
 		Players:       make([]*BriscolaWebOutputPlayer, 0),
-		CurrentTrick:  make([]*BriscolaWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

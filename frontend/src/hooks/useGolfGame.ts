@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { golfApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { GolfHint } from '../types/card';
 import { useGameApi } from './useGameApi';
+import { useHintRequest } from './useHintRequest';
 
 /** Hook that manages Golf Solitaire game state, hints, and card removal actions. */
 export function useGolfGame() {
@@ -29,15 +29,12 @@ export function useGolfGame() {
     exec('giveup');
   }, [exec]);
 
-  const handleHint = useCallback(async () => {
-    try {
-      const res = await golfApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    }
-  }, []);
+  const handleHint = useHintRequest({
+    fetchHint: () => golfApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+  });
 
   const handleUndo = useCallback(() => {
     setHint(null);

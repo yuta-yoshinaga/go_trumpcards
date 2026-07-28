@@ -63,12 +63,6 @@ type TuteHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// TuteTrickCard トリック中の 1 枚
-type TuteTrickCard struct {
-	PlayerIdx int   `json:"pi"`
-	Card      *Card `json:"c"`
-}
-
 // Tute トゥーテのゲームクラス
 type Tute struct {
 	trumpCards       *TrumpCards
@@ -78,7 +72,7 @@ type Tute struct {
 	roundNumber      int
 	trickNumber      int
 	currentPlayerIdx int
-	currentTrick     []*TuteTrickCard
+	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
 	trumpSuit        int                     // 切り札スート
@@ -290,7 +284,7 @@ func (g *Tute) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Tute) playCard(playerIdx int, card *Card) {
-	g.currentTrick = append(g.currentTrick, &TuteTrickCard{PlayerIdx: playerIdx, Card: card})
+	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == TutePlayerCnt {
@@ -773,10 +767,10 @@ func (g *Tute) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 func (g *Tute) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (g *Tute) GetCurrentTrick() []*TuteTrickCard { return g.currentTrick }
+func (g *Tute) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Tute) SetCurrentTrick(trick []*TuteTrickCard) { g.currentTrick = trick }
+func (g *Tute) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Tute) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -895,7 +889,7 @@ type tuteJSON struct {
 	RoundNumber      int                     `json:"rn"`
 	TrickNumber      int                     `json:"tn"`
 	CurrentPlayerIdx int                     `json:"ci"`
-	CurrentTrick     []*TuteTrickCard        `json:"ct"`
+	CurrentTrick     []*TrickCard            `json:"ct"`
 	LeadPlayerIdx    int                     `json:"li"`
 	DealerIdx        int                     `json:"di"`
 	TrumpSuit        int                     `json:"ts"`
@@ -967,7 +961,7 @@ func (g *Tute) UnmarshalJSON(data []byte) error {
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
 	if g.currentTrick == nil {
-		g.currentTrick = make([]*TuteTrickCard, 0)
+		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx

@@ -39,18 +39,6 @@ type CalabresellaWebOutputPlayer struct {
 	RoundThirds int              `json:"roundThirds"`
 }
 
-// CalabresellaWebOutputTrickCard トリック中の1枚
-type CalabresellaWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// CalabresellaWebOutputHint ヒント出力
-type CalabresellaWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // CalabresellaWebOutput カラブレセッラのWebアウトプット
 type CalabresellaWebOutput struct {
 	Players          []*CalabresellaWebOutputPlayer    `json:"players"`
@@ -64,7 +52,7 @@ type CalabresellaWebOutput struct {
 	ForehandIdx      int                               `json:"forehandIdx"`
 	SoloistIdx       int                               `json:"soloistIdx"`
 	WinningBid       int                               `json:"winningBid"`
-	CurrentTrick     []*CalabresellaWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard             `json:"currentTrick"`
 	Monte            []*WebOutputCard                  `json:"monte,omitempty"`
 	PlayerScores     [domain.CalabresellaPlayerCnt]int `json:"playerScores"`
 	RoundThirds      [domain.CalabresellaPlayerCnt]int `json:"roundThirds"`
@@ -73,7 +61,7 @@ type CalabresellaWebOutput struct {
 	GameEndFlag      bool                              `json:"gameEndFlag"`
 	WinnerPlayer     int                               `json:"winnerPlayer"`
 	IsHumanTurn      bool                              `json:"isHumanTurn"`
-	Hint             *CalabresellaWebOutputHint        `json:"hint,omitempty"`
+	Hint             *WebOutputCardHint                `json:"hint,omitempty"`
 	WebOutputBase
 	Config CalabresellaWebOutputConfig `json:"config"`
 }
@@ -109,7 +97,7 @@ var NewCalabresellaWebController, NewCalabresellaWebControllerWithProvider = web
 func newCalabresellaDefaultOutput(msg string) *CalabresellaWebOutput {
 	return &CalabresellaWebOutput{
 		Players:         make([]*CalabresellaWebOutputPlayer, 0),
-		CurrentTrick:    make([]*CalabresellaWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		SoloistIdx:      -1,
 		LastTrickWinner: -1,

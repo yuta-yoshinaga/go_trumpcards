@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, doubtApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DoubtConfig, DoubtResponse } from '../types/card';
 import { DoubtPage } from './DoubtPage';
@@ -438,6 +439,7 @@ describe('DoubtPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(selectEl, { key: ' ' });
     fireEvent.keyDown(selectEl, { key: 'Escape' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -520,6 +522,23 @@ describe('DoubtPage', () => {
       // The countdown text appears in both the visible (aria-hidden) node and the
       // throttled sr timer at the 10s mark, so assert at least one is present.
       await waitFor(() => expect(screen.getAllByText(/残り 10 秒/).length).toBeGreaterThan(0));
+    });
+
+    it('clears the countdown interval when the page unmounts', async () => {
+      // Without an unmount cleanup the interval kept ticking after the component
+      // was gone, and the next tick called setCountdown on it. In a test that is
+      // `ReferenceError: window is not defined` out of React's dispatchSetState,
+      // an unhandled error that fails the whole vitest run even with every test
+      // passing. It only fired on slower runs, so it sat latent until #4429's
+      // added tests shifted shard timing on CI.
+      mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
+      const { unmount } = renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getAllByText(/残り 10 秒/).length).toBeGreaterThan(0));
+
+      const cleared = vi.spyOn(globalThis, 'clearInterval');
+      unmount();
+      expect(cleared).toHaveBeenCalled();
+      cleared.mockRestore();
     });
 
     it('exposes the countdown as a throttled polite role=timer region', async () => {

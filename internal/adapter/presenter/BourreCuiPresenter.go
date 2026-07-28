@@ -35,8 +35,8 @@ func (p *BourreCuiPresenter) Output(bg interfaces.BourreGame, lastErr error) str
 		if phase == domain.BourrePhasePlay {
 			b.WriteString("----------\n")
 			cuiTrickBlock(b, bg.GetCurrentTrick(),
-				func(tc *domain.BourreTrickCard) int { return tc.PlayerIdx },
-				func(tc *domain.BourreTrickCard) string { return cuiCardStr(tc.Card) },
+				func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+				func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 				func(i int) string { return bourreName(bg, i) })
 		}
 

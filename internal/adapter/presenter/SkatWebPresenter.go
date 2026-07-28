@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra3
 
 package presenter
 
@@ -67,16 +67,9 @@ func (p *SkatWebPresenter) buildBaseOutput(s interfaces.SkatGame) *controller.Sk
 		TargetScore:   cfg.TargetScore,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(s.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(s)
 	return resObj
-}
-
-// buildTrickOutput maps the current trick to the response shape.
-func (p *SkatWebPresenter) buildTrickOutput(trick []*domain.SkatTrickCard) []*controller.SkatWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.SkatTrickCard) *controller.SkatWebOutputTrickCard {
-		return &controller.SkatWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput builds the per-player output.

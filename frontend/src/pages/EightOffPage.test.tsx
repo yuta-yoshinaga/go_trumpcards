@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, eightoffApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, EightOffResponse } from '../types/card';
 import { EightOffPage } from './EightOffPage';
@@ -315,6 +316,7 @@ describe('EightOffPage', () => {
     mockExec.mockResolvedValue(gameOverState);
     // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     // Confirming dispatches giveup.
@@ -545,6 +547,7 @@ describe('EightOffPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(gameOverState);
     fireEvent.keyDown(document, { key: 'g' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -571,6 +574,7 @@ describe('EightOffPage', () => {
     fireEvent.keyDown(document, { key: 'a' });
     fireEvent.keyDown(document, { key: 'g' });
     fireEvent.keyDown(document, { key: 'z' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -924,6 +928,7 @@ describe('EightOffPage', () => {
       const cardButton = screen.getByAltText('♠ K').closest('button') as HTMLButtonElement;
       fireEvent.doubleClick(cardButton);
 
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
     });
 

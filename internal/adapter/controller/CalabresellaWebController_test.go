@@ -17,7 +17,7 @@ import (
 func mustCalabresellaOutputJSON(msg string) string {
 	out := &controller.CalabresellaWebOutput{
 		Players:         []*controller.CalabresellaWebOutputPlayer{},
-		CurrentTrick:    []*controller.CalabresellaWebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		SoloistIdx:      -1,
 		LastTrickWinner: -1,

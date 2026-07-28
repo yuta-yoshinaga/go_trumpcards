@@ -19,7 +19,7 @@ func mustBridgeOutputJSON(msg string) string {
 	out := &controller.BridgeWebOutput{
 		Players:       []*controller.BridgeWebOutputPlayer{},
 		BidHistory:    []*controller.BridgeWebOutputBidEntry{},
-		CurrentTrick:  []*controller.BridgeWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		DummyHand:     []*controller.WebOutputCard{},
 		WinnerTeam:    -1,
 		DeclarerIdx:   -1,

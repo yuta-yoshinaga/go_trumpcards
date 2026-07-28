@@ -47,7 +47,7 @@ func (p *MariasWebPresenter) buildBase(g interfaces.MariasGame) *controller.Mari
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -62,13 +62,6 @@ func (p *MariasWebPresenter) playableIndices(g interfaces.MariasGame) []int {
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *MariasWebPresenter) buildTrickOutput(trick []*domain.MariasTrickCard) []*controller.MariasWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.MariasTrickCard) *controller.MariasWebOutputTrickCard {
-		return &controller.MariasWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -138,7 +131,7 @@ func (p *MariasWebPresenter) HintOutput(g interfaces.MariasGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.MariasWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

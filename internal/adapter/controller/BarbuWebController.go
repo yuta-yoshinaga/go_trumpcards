@@ -42,12 +42,6 @@ type BarbuWebOutputPlayer struct {
 	TotalScore int              `json:"totalScore"`
 }
 
-// BarbuWebOutputTrickCard トリック中の 1 枚
-type BarbuWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // BarbuWebOutputDealDetail 1 ディールの得点内訳
 type BarbuWebOutputDealDetail struct {
 	Contract  int         `json:"contract"`
@@ -67,8 +61,8 @@ type BarbuWebOutput struct {
 	CurrentContract int                         `json:"currentContract"`
 	TrumpSuit       int                         `json:"trumpSuit"`
 	TrickNumber     int                         `json:"trickNumber"`
-	CurrentTrick    []*BarbuWebOutputTrickCard  `json:"currentTrick"`
-	LastTrick       []*BarbuWebOutputTrickCard  `json:"lastTrick"`
+	CurrentTrick    []*WebOutputTrickCard       `json:"currentTrick"`
+	LastTrick       []*WebOutputTrickCard       `json:"lastTrick"`
 	LastTrickWinner int                         `json:"lastTrickWinner"`
 	TablePlaced     []int                       `json:"tablePlaced"`
 	DominoPlayable  []int                       `json:"dominoPlayable"`
@@ -93,8 +87,8 @@ var NewBarbuWebController, NewBarbuWebControllerWithProvider = webControllerPair
 func newBarbuDefaultOutput(msg string) *BarbuWebOutput {
 	return &BarbuWebOutput{
 		Players:        make([]*BarbuWebOutputPlayer, 0),
-		CurrentTrick:   make([]*BarbuWebOutputTrickCard, 0),
-		LastTrick:      make([]*BarbuWebOutputTrickCard, 0),
+		CurrentTrick:   make([]*WebOutputTrickCard, 0),
+		LastTrick:      make([]*WebOutputTrickCard, 0),
 		TablePlaced:    make([]int, 0),
 		DominoPlayable: make([]int, 0),
 		UsedContracts:  make([]bool, 0),

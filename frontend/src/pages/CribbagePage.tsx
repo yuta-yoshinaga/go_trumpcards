@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { cribbageApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -692,6 +693,7 @@ function CribbagePageContent() {
                 dataTutorial="cb-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="cribbage-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

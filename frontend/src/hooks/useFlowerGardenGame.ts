@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { type FlowerGardenMoveZone, flowerGardenApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { FlowerGardenHint } from '../types/card';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
+import { useHintRequest } from './useHintRequest';
 
 /** Hook that manages Flower Garden game state, source selection, hints, and moves. */
 export function useFlowerGardenGame() {
@@ -31,15 +31,12 @@ export function useFlowerGardenGame() {
     runApi('giveup');
   }, [runApi]);
 
-  const handleHint = useCallback(async () => {
-    try {
-      const res = await flowerGardenApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    }
-  }, []);
+  const handleHint = useHintRequest({
+    fetchHint: () => flowerGardenApi.exec('hint'),
+    selectHint: (res) => res.hint,
+    setHint,
+    setHintError,
+  });
 
   const handleAutoComplete = useCallback(() => {
     setSelectedSource(null);

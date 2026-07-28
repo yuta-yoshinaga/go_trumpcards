@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tysiacApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeTysiacState } from '../test/stateFactories';
 import { DEFAULT_TYSIAC_CONFIG, useTysiacGame } from './useTysiacGame';
 
@@ -40,9 +41,10 @@ describe('useTysiacGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { raise: false }));
   });
 
-  it('handleDiscard does nothing without exactly one selected card', () => {
+  it('handleDiscard does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useTysiacGame(), { wrapper: createWrapper() });
     act(() => result.current.handleDiscard());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -53,9 +55,10 @@ describe('useTysiacGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndex: 1 }));
   });
 
-  it('handlePlay does nothing without exactly one selected card', () => {
+  it('handlePlay does nothing without exactly one selected card', async () => {
     const { result } = renderHook(() => useTysiacGame(), { wrapper: createWrapper() });
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

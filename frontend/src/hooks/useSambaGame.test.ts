@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sambaApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeSambaState } from '../test/stateFactories';
 import { useSambaGame } from './useSambaGame';
 
@@ -74,6 +75,7 @@ describe('useSambaGame', () => {
     act(() => {
       result.current.handleDrawDiscard();
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -104,6 +106,7 @@ describe('useSambaGame', () => {
     act(() => {
       result.current.handleMeldSelected();
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -139,6 +142,7 @@ describe('useSambaGame', () => {
     act(() => {
       result.current.handleDiscard();
     });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

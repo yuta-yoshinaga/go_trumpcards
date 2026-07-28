@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { skatApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { SkatResponse } from '../types/card';
 import { SkatGameType } from '../types/phases';
 import { DEFAULT_SKAT_CONFIG, useSkatGame } from './useSkatGame';
@@ -126,11 +127,13 @@ describe('useSkatGame', () => {
 
     mockExec.mockClear();
     act(() => result.current.handleDiscard()); // 0 selected
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
 
     act(() => result.current.toggleCard(0));
     mockExec.mockClear();
     act(() => result.current.handleDiscard()); // 1 selected
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -178,6 +181,7 @@ describe('useSkatGame', () => {
 
     mockExec.mockClear();
     act(() => result.current.handlePlay());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

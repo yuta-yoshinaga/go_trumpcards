@@ -1,0 +1,25 @@
+name = "go-trumpcards-extra2"
+main = "./build/worker.mjs"
+compatibility_date = "2024-09-23"
+
+# Dedicated namespaces, matching `extra` (ADR-0032). Sharing one namespace across
+# workers would in fact be safe -- KV keys are "<game>:<sessionId>" (worker_helper.go
+# passes name+":" as the prefix) and a game lives in exactly one bucket, which is why
+# casino/classic/solo have shared a single namespace since ADR-0027. Separate stores
+# are still preferred: they let one worker's sessions be listed or purged without
+# touching another's.
+#
+# Production, preview and staging are three DIFFERENT namespaces. Phase 1's
+# placeholders used one token for both production and staging, so a find-replace
+# would have quietly pointed staging at the production store.
+[[kv_namespaces]]
+binding = "GAME_SESSIONS"
+id = "2b905bc12dfd4b69bfc4124838c8442d"
+preview_id = "3f47dc95789d47b1b017c81a2f1f6c35"
+
+[env.staging]
+name = "go-trumpcards-extra2-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "GAME_SESSIONS"
+id = "70c217c24a7f4d5d8947df3329f47b97"

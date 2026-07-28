@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra2
 
 package presenter
 
@@ -66,7 +66,10 @@ func (p *MightyWebPresenter) buildBaseOutput(m interfaces.MightyGame) *controlle
 	return resObj
 }
 
-// buildTrickOutput 現在のトリック情報を構築
+// buildTrickOutput 現在のトリック情報を構築。
+//
+// 共有の trickCardsToOutput に寄せられない: Mighty は domain / controller とも
+// IsJokerLead と LeadDemandSuit を追加で持つ正当な別形状（#4363）。
 func (p *MightyWebPresenter) buildTrickOutput(trick []*domain.MightyTrickCard) []*controller.MightyWebOutputTrickCard {
 	return buildTrickCards(trick, func(tc *domain.MightyTrickCard) *controller.MightyWebOutputTrickCard {
 		out := &controller.MightyWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}

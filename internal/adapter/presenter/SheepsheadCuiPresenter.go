@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra3
 
 package presenter
 
@@ -88,8 +88,8 @@ func (p *SheepsheadCuiPresenter) Output(g interfaces.SheepsheadGame, lastErr err
 		b.WriteString("----------\n")
 
 		cuiTrickBlock(b, g.GetCurrentTrick(),
-			func(tc *domain.SheepsheadTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.SheepsheadTrickCard) string { return cuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 

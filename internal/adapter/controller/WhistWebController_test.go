@@ -20,7 +20,7 @@ import (
 func mustWhistOutputJSON(msg string) string {
 	out := &controller.WhistWebOutput{
 		Players:       []*controller.WhistWebOutputPlayer{},
-		CurrentTrick:  []*controller.WhistWebOutputTrickCard{},
+		CurrentTrick:  []*controller.WebOutputTrickCard{},
 		WinnerTeam:    -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

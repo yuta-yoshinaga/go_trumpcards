@@ -44,7 +44,7 @@ func (p *SchnapsenWebPresenter) buildBase(s interfaces.SchnapsenGame) *controlle
 		CpuDifficulty: int(cfg.CpuDifficulty),
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(s.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(s)
 	return resObj
 }
@@ -55,13 +55,6 @@ func intSliceOrEmpty(in []int) []int {
 		return make([]int, 0)
 	}
 	return in
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *SchnapsenWebPresenter) buildTrickOutput(trick []*domain.SchnapsenTrickCard) []*controller.SchnapsenWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.SchnapsenTrickCard) *controller.SchnapsenWebOutputTrickCard {
-		return &controller.SchnapsenWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -95,11 +88,11 @@ func (p *SchnapsenWebPresenter) buildMessage(s interfaces.SchnapsenGame, lastErr
 		}
 		switch s.GetWinnerIdx() {
 		case 0:
-			return fmt.Sprintf("ゲーム終了！ あなたの勝利です (%d-%d)！", p0, p1), "schnapsen.result.p0Win", params
+			return "", "schnapsen.result.p0Win", params
 		case 1:
-			return fmt.Sprintf("ゲーム終了！ CPUの勝利です (%d-%d)。", p0, p1), "schnapsen.result.p1Win", params
+			return "", "schnapsen.result.p1Win", params
 		default:
-			return fmt.Sprintf("ゲーム終了！ 引き分けです (%d-%d)。", p0, p1), "schnapsen.result.tie", params
+			return "", "schnapsen.result.tie", params
 		}
 	}
 	switch s.GetPhase() {

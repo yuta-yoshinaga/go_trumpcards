@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        worker: [casino, classic, solo, extra]
+        worker: [casino, classic, solo, extra, extra2, extra3]
     environment:
       name: ${{ github.ref == 'refs/heads/master' && 'production' || 'staging' }}
     steps:
@@ -122,6 +122,8 @@ jobs:
           VITE_WORKER_CLASSIC_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_CLASSIC_URL || vars.WORKER_CLASSIC_STAGING_URL }}
           VITE_WORKER_SOLO_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_SOLO_URL || vars.WORKER_SOLO_STAGING_URL }}
           VITE_WORKER_EXTRA_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_EXTRA_URL || vars.WORKER_EXTRA_STAGING_URL }}
+          VITE_WORKER_EXTRA2_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_EXTRA2_URL || vars.WORKER_EXTRA2_STAGING_URL }}
+          VITE_WORKER_EXTRA3_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_EXTRA3_URL || vars.WORKER_EXTRA3_STAGING_URL }}
         run: bun run build
 
       - name: Deploy to Cloudflare Pages

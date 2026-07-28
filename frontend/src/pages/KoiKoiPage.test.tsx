@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { koikoiApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeKoiKoiState } from '../test/stateFactories';
 import { KoiKoiPage } from './KoiKoiPage';
@@ -137,6 +138,7 @@ describe('KoiKoiPage', () => {
     mockExec.mockClear();
     fireEvent.click(card);
     // Clicking a disabled/non-human-turn card issues no API call.
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

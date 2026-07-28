@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spiderApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { SpiderResponse } from '../types/card';
 import { useSpiderGame } from './useSpiderGame';
 
@@ -261,6 +262,7 @@ describe('useSpiderGame', () => {
       result.current.handleSelectTarget({ zone: 'tableau', col: 3 });
     });
 
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

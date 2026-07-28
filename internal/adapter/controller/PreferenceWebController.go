@@ -38,18 +38,6 @@ type PreferenceWebOutputPlayer struct {
 	IsDeclarer bool             `json:"isDeclarer"`
 }
 
-// PreferenceWebOutputTrickCard トリック中の1枚
-type PreferenceWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// PreferenceWebOutputHint ヒント出力
-type PreferenceWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // PreferenceWebOutput プレフェランスのWebアウトプット
 type PreferenceWebOutput struct {
 	Players          []*PreferenceWebOutputPlayer    `json:"players"`
@@ -63,7 +51,7 @@ type PreferenceWebOutput struct {
 	Contract         int                             `json:"contract"`
 	TrumpSuit        int                             `json:"trumpSuit"`
 	Bids             [domain.PreferencePlayerCnt]int `json:"bids"`
-	CurrentTrick     []*PreferenceWebOutputTrickCard `json:"currentTrick"`
+	CurrentTrick     []*WebOutputTrickCard           `json:"currentTrick"`
 	PlayerScores     [domain.PreferencePlayerCnt]int `json:"playerScores"`
 	RoundTricks      [domain.PreferencePlayerCnt]int `json:"roundTricks"`
 	PlayableIndices  []int                           `json:"playableIndices"`
@@ -71,7 +59,7 @@ type PreferenceWebOutput struct {
 	WinnerPlayer     int                             `json:"winnerPlayer"`
 	IsHumanTurn      bool                            `json:"isHumanTurn"`
 	IsHumanBidTurn   bool                            `json:"isHumanBidTurn"`
-	Hint             *PreferenceWebOutputHint        `json:"hint,omitempty"`
+	Hint             *WebOutputCardHint              `json:"hint,omitempty"`
 	WebOutputBase
 	Config PreferenceWebOutputConfig `json:"config"`
 }
@@ -107,7 +95,7 @@ var NewPreferenceWebController, NewPreferenceWebControllerWithProvider = webCont
 func newPreferenceDefaultOutput(msg string) *PreferenceWebOutput {
 	return &PreferenceWebOutput{
 		Players:         make([]*PreferenceWebOutputPlayer, 0),
-		CurrentTrick:    make([]*PreferenceWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		DeclarerIdx:     -1,
 		WinnerPlayer:    -1,

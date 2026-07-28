@@ -68,10 +68,15 @@ func (p *NapoleonWebPresenter) buildBaseOutput(n interfaces.NapoleonGame) *contr
 	return resObj
 }
 
-// buildTrickOutput 現在のトリック情報を構築
-func (p *NapoleonWebPresenter) buildTrickOutput(trick []*domain.NapoleonTrickCard) []*controller.NapoleonWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.NapoleonTrickCard) *controller.NapoleonWebOutputTrickCard {
-		return &controller.NapoleonWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
+// buildTrickOutput 現在のトリック情報を構築。
+//
+// 共有の trickCardsToOutput に寄せられない: Napoleon は KV スナップショットの
+// タグ差異（pi/cd）のため domain 側が独自型のままで（#4363 / PR #4431）、この
+// ラッパーがその型と共有の WebOutputTrickCard を橋渡ししている。出力型は共有型
+// なので REST 形状は他の60ゲームと同一。
+func (p *NapoleonWebPresenter) buildTrickOutput(trick []*domain.NapoleonTrickCard) []*controller.WebOutputTrickCard {
+	return buildTrickCards(trick, func(tc *domain.NapoleonTrickCard) *controller.WebOutputTrickCard {
+		return &controller.WebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
 	})
 }
 

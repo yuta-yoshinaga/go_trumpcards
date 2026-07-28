@@ -48,7 +48,7 @@ func (p *PreferenceWebPresenter) buildBase(g interfaces.PreferenceGame) *control
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -73,13 +73,6 @@ func (p *PreferenceWebPresenter) playableIndices(g interfaces.PreferenceGame) []
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *PreferenceWebPresenter) buildTrickOutput(trick []*domain.PreferenceTrickCard) []*controller.PreferenceWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.PreferenceTrickCard) *controller.PreferenceWebOutputTrickCard {
-		return &controller.PreferenceWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -151,7 +144,7 @@ func (p *PreferenceWebPresenter) HintOutput(g interfaces.PreferenceGame) string 
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.PreferenceWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

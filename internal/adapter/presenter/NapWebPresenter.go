@@ -48,7 +48,7 @@ func (p *NapWebPresenter) buildBase(g interfaces.NapGame) *controller.NapWebOutp
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -73,13 +73,6 @@ func (p *NapWebPresenter) playableIndices(g interfaces.NapGame) []int {
 		return make([]int, 0)
 	}
 	return idx
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *NapWebPresenter) buildTrickOutput(trick []*domain.NapTrickCard) []*controller.NapWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.NapTrickCard) *controller.NapWebOutputTrickCard {
-		return &controller.NapWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -151,7 +144,7 @@ func (p *NapWebPresenter) HintOutput(g interfaces.NapGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.NapWebOutputHint{
+		resObj.Hint = &controller.WebOutputCardHint{
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}

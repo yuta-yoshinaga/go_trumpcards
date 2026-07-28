@@ -38,7 +38,7 @@ type CatchTenGame interface {
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
-	GetCurrentTrick() []*domain.CatchTenTrickCard
+	GetCurrentTrick() []*domain.TrickCard
 	// GetTrumpSuit トランプスートを取得する
 	GetTrumpSuit() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する

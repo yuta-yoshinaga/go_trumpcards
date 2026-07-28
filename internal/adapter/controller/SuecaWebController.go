@@ -35,38 +35,26 @@ type SuecaWebOutputPlayer struct {
 	TeamGamePoints int              `json:"teamGamePoints"`
 }
 
-// SuecaWebOutputTrickCard トリック中の1枚
-type SuecaWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
-// SuecaWebOutputHint ヒント出力
-type SuecaWebOutputHint struct {
-	CardIndices []int  `json:"cardIndices"`
-	Reason      string `json:"reason"`
-}
-
 // SuecaWebOutput スエカのWebアウトプット
 type SuecaWebOutput struct {
-	Players          []*SuecaWebOutputPlayer    `json:"players"`
-	Phase            int                        `json:"phase"`
-	RoundNumber      int                        `json:"roundNumber"`
-	TrickNumber      int                        `json:"trickNumber"`
-	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
-	DealerIdx        int                        `json:"dealerIdx"`
-	TrumpSuit        int                        `json:"trumpSuit"`
-	CurrentTrick     []*SuecaWebOutputTrickCard `json:"currentTrick"`
-	TeamGamePoints   [domain.SuecaTeamCnt]int   `json:"teamGamePoints"`
-	RoundCardPoints  [domain.SuecaTeamCnt]int   `json:"roundCardPoints"`
-	RoundWinnerTeam  int                        `json:"roundWinnerTeam"`
-	RoundGamePoints  int                        `json:"roundGamePoints"`
-	PlayableIndices  []int                      `json:"playableIndices"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerTeam       int                        `json:"winnerTeam"`
-	IsHumanTurn      bool                       `json:"isHumanTurn"`
-	Hint             *SuecaWebOutputHint        `json:"hint,omitempty"`
+	Players          []*SuecaWebOutputPlayer  `json:"players"`
+	Phase            int                      `json:"phase"`
+	RoundNumber      int                      `json:"roundNumber"`
+	TrickNumber      int                      `json:"trickNumber"`
+	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
+	DealerIdx        int                      `json:"dealerIdx"`
+	TrumpSuit        int                      `json:"trumpSuit"`
+	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
+	TeamGamePoints   [domain.SuecaTeamCnt]int `json:"teamGamePoints"`
+	RoundCardPoints  [domain.SuecaTeamCnt]int `json:"roundCardPoints"`
+	RoundWinnerTeam  int                      `json:"roundWinnerTeam"`
+	RoundGamePoints  int                      `json:"roundGamePoints"`
+	PlayableIndices  []int                    `json:"playableIndices"`
+	GameEndFlag      bool                     `json:"gameEndFlag"`
+	WinnerTeam       int                      `json:"winnerTeam"`
+	IsHumanTurn      bool                     `json:"isHumanTurn"`
+	Hint             *WebOutputCardHint       `json:"hint,omitempty"`
 	WebOutputBase
 	Config SuecaWebOutputConfig `json:"config"`
 }
@@ -102,7 +90,7 @@ var NewSuecaWebController, NewSuecaWebControllerWithProvider = webControllerPair
 func newSuecaDefaultOutput(msg string) *SuecaWebOutput {
 	return &SuecaWebOutput{
 		Players:         make([]*SuecaWebOutputPlayer, 0),
-		CurrentTrick:    make([]*SuecaWebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		WinnerTeam:      -1,
 		RoundWinnerTeam: -1,

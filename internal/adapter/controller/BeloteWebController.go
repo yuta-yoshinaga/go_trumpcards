@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra3
 
 package controller
 
@@ -37,12 +37,6 @@ type BeloteWebOutputPlayer struct {
 	TrickCount int              `json:"trickCount"`
 }
 
-// BeloteWebOutputTrickCard トリック中の1枚
-type BeloteWebOutputTrickCard struct {
-	PlayerIdx int            `json:"playerIdx"`
-	Card      *WebOutputCard `json:"card"`
-}
-
 // BeloteWebOutputHint ヒント出力
 type BeloteWebOutputHint struct {
 	CardIndex *int   `json:"cardIndex,omitempty"`
@@ -53,25 +47,25 @@ type BeloteWebOutputHint struct {
 
 // BeloteWebOutput ベロートWebアウトプット
 type BeloteWebOutput struct {
-	Players          []*BeloteWebOutputPlayer    `json:"players"`
-	Phase            int                         `json:"phase"`
-	RoundNumber      int                         `json:"roundNumber"`
-	TrickNumber      int                         `json:"trickNumber"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	BidPlayerIdx     int                         `json:"bidPlayerIdx"`
-	DealerIdx        int                         `json:"dealerIdx"`
-	TrumpSuit        int                         `json:"trumpSuit"`
-	FaceUpCard       *WebOutputCard              `json:"faceUpCard"`
-	MakerTeam        int                         `json:"makerTeam"`
-	MakerPlayerIdx   int                         `json:"makerPlayerIdx"`
-	CurrentTrick     []*BeloteWebOutputTrickCard `json:"currentTrick"`
-	TeamScores       [2]int                      `json:"teamScores"`
-	RoundPoints      [2]int                      `json:"roundPoints"`
-	RoundBeloteBonus [2]int                      `json:"roundBeloteBonus"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerTeam       int                         `json:"winnerTeam"`
-	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	Hint             *BeloteWebOutputHint        `json:"hint,omitempty"`
+	Players          []*BeloteWebOutputPlayer `json:"players"`
+	Phase            int                      `json:"phase"`
+	RoundNumber      int                      `json:"roundNumber"`
+	TrickNumber      int                      `json:"trickNumber"`
+	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                      `json:"bidPlayerIdx"`
+	DealerIdx        int                      `json:"dealerIdx"`
+	TrumpSuit        int                      `json:"trumpSuit"`
+	FaceUpCard       *WebOutputCard           `json:"faceUpCard"`
+	MakerTeam        int                      `json:"makerTeam"`
+	MakerPlayerIdx   int                      `json:"makerPlayerIdx"`
+	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
+	TeamScores       [2]int                   `json:"teamScores"`
+	RoundPoints      [2]int                   `json:"roundPoints"`
+	RoundBeloteBonus [2]int                   `json:"roundBeloteBonus"`
+	GameEndFlag      bool                     `json:"gameEndFlag"`
+	WinnerTeam       int                      `json:"winnerTeam"`
+	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
+	Hint             *BeloteWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config BeloteWebOutputConfig `json:"config"`
 }
@@ -113,7 +107,7 @@ var NewBeloteWebController, NewBeloteWebControllerWithProvider = webControllerPa
 func newBeloteDefaultOutput(msg string) *BeloteWebOutput {
 	return &BeloteWebOutput{
 		Players:       make([]*BeloteWebOutputPlayer, 0),
-		CurrentTrick:  make([]*BeloteWebOutputTrickCard, 0),
+		CurrentTrick:  make([]*WebOutputTrickCard, 0),
 		WinnerTeam:    -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

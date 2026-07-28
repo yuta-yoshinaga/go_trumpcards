@@ -30,7 +30,7 @@ func wizardCuiCardStr(card *domain.Card) string {
 // or -1 when none is established yet — a Wizard led (suit is irrelevant) or only
 // Jesters have been played. Mirrors Wizard.leadSuitOfTrick so the CUI can name
 // the suit players must follow without a dedicated domain accessor.
-func wizardLeadSuit(trick []*domain.WizardTrickCard) int {
+func wizardLeadSuit(trick []*domain.TrickCard) int {
 	for _, tc := range trick {
 		switch tc.Card.GetDesign() {
 		case domain.WizardDesignWizard:
@@ -102,8 +102,8 @@ func (p *WizardCuiPresenter) Output(o interfaces.WizardGame, lastErr error) stri
 		// Current trick
 		trick := o.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
-			func(tc *domain.WizardTrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.WizardTrickCard) string { return wizardCuiCardStr(tc.Card) },
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return wizardCuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(o.GetPlayer(idx), idx) },
 		)
 

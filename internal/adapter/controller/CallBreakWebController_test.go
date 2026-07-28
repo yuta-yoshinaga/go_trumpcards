@@ -18,7 +18,7 @@ import (
 func mustCallBreakOutputJSON(msg string) string {
 	out := &controller.CallBreakWebOutput{
 		Players:          []*controller.CallBreakWebOutputPlayer{},
-		CurrentTrick:     []*controller.CallBreakWebOutputTrickCard{},
+		CurrentTrick:     []*controller.WebOutputTrickCard{},
 		ValidPlayIndices: []int{},
 		WinnerIdx:        -1,
 		WebOutputBase:    controller.WebOutputBase{Message: msg},

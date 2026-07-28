@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ultimatetexasholdemApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, UltimateTexasHoldemResponse } from '../types/card';
 import { UltimateTexasHoldemPage } from './UltimateTexasHoldemPage';
@@ -432,6 +433,7 @@ describe('UltimateTexasHoldemPage', () => {
 
     // A blocked over-balance bet must not reach the server.
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await flushPendingDispatch();
     expect(mockApi).not.toHaveBeenCalledWith('bet', expect.anything(), expect.anything());
   });
 
@@ -449,5 +451,44 @@ describe('UltimateTexasHoldemPage', () => {
     fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '400' } });
     await waitFor(() => expect(Number(tripsInput.value)).toBe(200));
     expect(screen.queryByTestId('uth-bet-error')).not.toBeInTheDocument();
+  });
+});
+
+// --- keyboard shortcut execution (#4429) ---
+// The digit keys are the play multipliers (4x/3x pre-flop, 2x on the flop, 1x on
+// the river) and differ only by their fourth argument, so that argument is what
+// each case pins.
+const kbdCases: [string, unknown[], UltimateTexasHoldemResponse][] = [
+  ['b', ['bet', 100, 0], betPhaseState],
+  ['4', ['play', undefined, undefined, 4], preFlopState],
+  ['3', ['play', undefined, undefined, 3], preFlopState],
+  ['c', ['check'], preFlopState],
+  ['2', ['play', undefined, undefined, 2], flopState],
+  ['c', ['check'], flopState],
+  ['1', ['play', undefined, undefined, 1], riverState],
+  ['f', ['fold'], riverState],
+  ['r', ['reset'], endPlayerWins],
+];
+
+describe('UltimateTexasHoldemPage keyboard shortcuts', () => {
+  it.each(kbdCases)('pressing %s dispatches %j', async (key, expected, state) => {
+    mockApi.mockResolvedValue(state);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(state);
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith(...expected));
+  });
+
+  it('ignores a play multiplier that belongs to another street', async () => {
+    // '2' is the flop bet; pre-flop offers only 4x and 3x.
+    mockApi.mockResolvedValue(preFlopState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: '2' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
   });
 });

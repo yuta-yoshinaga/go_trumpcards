@@ -27,7 +27,7 @@ func setupGongZhuWebMock() *interfaces.MockGongZhuGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetHeartsBroken").Return(false)
-	m.On("GetCurrentTrick").Return([]*domain.GongZhuTrickCard(nil))
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.GongZhuPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -136,7 +136,7 @@ func TestGongZhuWebPresenter_Output(t *testing.T) {
 	t.Run("play phase follow when trick has cards", func(t *testing.T) {
 		m, _ := setupGongZhuWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
-		m.On("GetCurrentTrick").Return([]*domain.GongZhuTrickCard{
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
 		})
 		result := p.Output(m, nil)

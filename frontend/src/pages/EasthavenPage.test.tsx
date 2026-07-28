@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { easthavenApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, EasthavenResponse } from '../types/card';
 import { EasthavenPage } from './EasthavenPage';
@@ -160,6 +161,7 @@ describe('EasthavenPage', () => {
     mockExec.mockClear();
     // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('giveup');
     expect(screen.getByText('投了確認')).toBeInTheDocument();
     // Confirming dispatches giveup.
@@ -300,6 +302,7 @@ describe('EasthavenPage', () => {
     mockExec.mockClear();
     // ♥8 has no legal foundation target (the empty ♥ pile needs an Ace first).
     fireEvent.doubleClick(screen.getByRole('button', { name: '♥ 8' }));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
@@ -336,6 +339,7 @@ describe('EasthavenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     screen.getByRole('button', { name: '配る' }).click();
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('deal');
   });
 
@@ -344,5 +348,50 @@ describe('EasthavenPage', () => {
     renderWithProviders(<EasthavenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument();
+  });
+});
+
+// Keyboard shortcuts are bound by useActionKeyboardNav and advertised by
+// ActionShortcutsPanel, but nothing asserted that pressing a key actually runs
+// its action — a wrong `key` or a wrong `enabled` condition would have failed no
+// test. See issue #4429.
+describe('EasthavenPage keyboard shortcuts', () => {
+  it.each([
+    ['d', 'deal'],
+    ['h', 'hint'],
+    ['a', 'autocomplete'],
+    ['z', 'undo'],
+  ])('pressing %s dispatches %s', async (key, command) => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith(command));
+  });
+
+  it('pressing g asks for give-up confirmation rather than firing it', async () => {
+    // give-up is irreversible, so the key must route through the dialog (#2099)
+    // instead of dispatching straight away.
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    expect(await screen.findByText('投了確認')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('ignores shortcuts once the game has ended', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    for (const key of ['h', 'a', 'z', 'd']) {
+      fireEvent.keyDown(document, { key });
+    }
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });

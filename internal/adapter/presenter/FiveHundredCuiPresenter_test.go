@@ -35,7 +35,7 @@ func TestFiveHundredCuiPresenter_Output_Phases(t *testing.T) {
 		g := newFiveHundredGame()
 		g.SetContract(domain.FiveHundredContractNoTrump, 7, -1)
 		g.SetPhase(domain.FiveHundredPhasePlay)
-		g.SetCurrentTrick([]*domain.FiveHundredTrickCard{
+		g.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},
 		})
 		if out := p.Output(g, nil); out == "" {

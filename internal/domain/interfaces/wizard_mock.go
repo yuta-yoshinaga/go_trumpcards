@@ -105,9 +105,9 @@ func (m *MockWizardGame) GetCurrentPlayerIdx() int {
 	return args.Int(0)
 }
 
-func (m *MockWizardGame) GetCurrentTrick() []*domain.WizardTrickCard {
+func (m *MockWizardGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
-	return args.Get(0).([]*domain.WizardTrickCard)
+	return args.Get(0).([]*domain.TrickCard)
 }
 
 func (m *MockWizardGame) GetTrumpCard() *domain.Card {

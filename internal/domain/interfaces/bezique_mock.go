@@ -88,10 +88,10 @@ func (m *MockBeziqueGame) GetCurrentPlayerIdx() int {
 	return args.Int(0)
 }
 
-func (m *MockBeziqueGame) GetCurrentTrick() []*domain.BeziqueTrickCard {
+func (m *MockBeziqueGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()
 	if v := args.Get(0); v != nil {
-		return v.([]*domain.BeziqueTrickCard)
+		return v.([]*domain.TrickCard)
 	}
 	return nil
 }

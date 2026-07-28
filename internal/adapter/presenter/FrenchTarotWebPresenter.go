@@ -110,7 +110,7 @@ func (p *FrenchTarotWebPresenter) buildBase(g interfaces.FrenchTarotGame) *contr
 	}
 
 	resObj.Chien = p.buildChienOutput(g)
-	resObj.CurrentTrick = p.buildTrickOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = trickCardsToOutputWithFace(g.GetCurrentTrick(), frenchTarotFace)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -138,13 +138,6 @@ func (p *FrenchTarotWebPresenter) buildChienOutput(g interfaces.FrenchTarotGame)
 		out = append(out, cardToOutputWithFace(c, frenchTarotFace))
 	}
 	return out
-}
-
-// buildTrickOutput 現在のトリック情報を構築
-func (p *FrenchTarotWebPresenter) buildTrickOutput(trick []*domain.FrenchTarotTrickCard) []*controller.FrenchTarotWebOutputTrickCard {
-	return buildTrickCards(trick, func(tc *domain.FrenchTarotTrickCard) *controller.FrenchTarotWebOutputTrickCard {
-		return &controller.FrenchTarotWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutputWithFace(tc.Card, frenchTarotFace)}
-	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築 (人間のみ手札を公開)

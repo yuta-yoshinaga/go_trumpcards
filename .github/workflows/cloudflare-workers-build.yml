@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        worker: [casino, classic, solo, extra]
+        worker: [casino, classic, solo, extra, extra2, extra3]
     steps:
       - uses: actions/checkout@v6
 
