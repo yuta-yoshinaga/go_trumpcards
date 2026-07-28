@@ -1643,6 +1643,13 @@ export const BisleyPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Napoleon's Square phase constants (sync: internal/domain/NapoleonsSquare.go). */
+export const NapoleonsSquarePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Streets and Alleys phase constants (sync: internal/domain/StreetsAndAlleys.go). */
 export const StreetsAndAlleysPhase = {
   PLAYING: 0,

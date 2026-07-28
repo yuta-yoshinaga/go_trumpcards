@@ -196,6 +196,9 @@ var registry = []*Game{
 	// four ascending by suit from the dealt Aces, four descending that open
 	// when their King is played.
 	{Name: "bisley", Category: CategoryExtra2},
+	// Napoleon's Square is a two-deck square tableau whose same-suit runs move as
+	// a unit; eight foundations sit in the middle, two per suit.
+	{Name: "napoleonssquare", Category: CategoryExtra2},
 	{Name: "spiteandmalice", Category: CategoryExtra2},
 	// Skat is a trick-taking game.
 	{Name: "skat", Category: CategoryExtra3},

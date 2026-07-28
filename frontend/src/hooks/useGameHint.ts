@@ -92,6 +92,7 @@ import type {
   MonteCarloResponse,
   MusResponse,
   NapoleonResponse,
+  NapoleonsSquareResponse,
   NapResponse,
   NertzResponse,
   NinetyNineResponse,
@@ -275,6 +276,7 @@ import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getMusHint } from '../utils/hints/musHint';
 import { getNapHint } from '../utils/hints/napHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
+import { getNapoleonsSquareHint } from '../utils/hints/napoleonssquareHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getNinetyNineHint } from '../utils/hints/ninetynineHint';
 import { getOasisPokerHint } from '../utils/hints/oasispokerHint';
@@ -491,6 +493,7 @@ export const hintFactories = {
   calculation: (s) => getCalculationHint(s as CalculationResponse),
   sirtommy: (s) => getSirTommyHint(s as SirTommyResponse),
   bisley: (s) => getBisleyHint(s as BisleyResponse),
+  napoleonssquare: (s) => getNapoleonsSquareHint(s as NapoleonsSquareResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   sheepshead: (s) => getSheepsheadHint(s as SheepsheadResponse),
   doppelkopf: (s) => getDoppelkopfHint(s as DoppelkopfResponse),

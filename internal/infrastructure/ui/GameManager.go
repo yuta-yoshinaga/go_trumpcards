@@ -1312,6 +1312,26 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "napoleonssquare", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewNapoleonsSquareCuiController(usecase.NewNapoleonsSquareInteractor(
+				domain.NewDefaultNapoleonsSquare(), new(presenter.NapoleonsSquareCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "napoleonssquare.helpTitle",
+				CommandKeys: []string{
+					"napoleonssquare.helpDraw",
+					"napoleonssquare.helpMoveWF",
+					"napoleonssquare.helpMoveWT",
+					"napoleonssquare.helpMoveTF",
+					"napoleonssquare.helpMoveTT",
+					"napoleonssquare.helpGiveUp",
+					"napoleonssquare.helpHint",
+					"napoleonssquare.helpAutoComplete",
+					"napoleonssquare.helpUndo",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "spiteandmalice", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSpiteAndMaliceCuiController(usecase.NewSpiteAndMaliceInteractor(

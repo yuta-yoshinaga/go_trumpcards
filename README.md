@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した221種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した222種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -111,6 +111,7 @@ Go + Clean Architecture で実装した221種類のトランプゲーム。CLI �
 | カルキュレーション (Calculation) | `calculation` | [CUI](docs/manual/cui/calculation.md) / [Web](docs/manual/web/calculation.md) |
 | サー・トミー (Sir Tommy) | `sirtommy` | [CUI](docs/manual/cui/sirtommy.md) / [Web](docs/manual/web/sirtommy.md) |
 | ビズリー (Bisley) | `bisley` | [CUI](docs/manual/cui/bisley.md) / [Web](docs/manual/web/bisley.md) |
+| ナポレオンズ・スクエア (Napoleon's Square) | `napoleonssquare` | [CUI](docs/manual/cui/napoleonssquare.md) / [Web](docs/manual/web/napoleonssquare.md) |
 | スパイト・アンド・マリス (Spite and Malice) | `spiteandmalice` | [CUI](docs/manual/cui/spiteandmalice.md) / [Web](docs/manual/web/spiteandmalice.md) |
 | スカート (Skat) | `skat` | [CUI](docs/manual/cui/skat.md) / [Web](docs/manual/web/skat.md) |
 | シットヘッド / カーマ (Shithead) | `shithead` | [CUI](docs/manual/cui/shithead.md) / [Web](docs/manual/web/shithead.md) |
