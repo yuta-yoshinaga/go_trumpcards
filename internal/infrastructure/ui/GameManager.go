@@ -1414,6 +1414,28 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "americantoad", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewAmericanToadCuiController(usecase.NewAmericanToadInteractor(
+				domain.NewDefaultAmericanToad(), new(presenter.AmericanToadCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "americantoad.helpTitle",
+				CommandKeys: []string{
+					"americantoad.helpDraw",
+					"americantoad.helpMoveRF",
+					"americantoad.helpMoveRT",
+					"americantoad.helpMoveWF",
+					"americantoad.helpMoveWT",
+					"americantoad.helpMoveTF",
+					"americantoad.helpMoveTT",
+					"americantoad.helpGiveUp",
+					"americantoad.helpHint",
+					"americantoad.helpAutoComplete",
+					"americantoad.helpUndo",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "spiteandmalice", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSpiteAndMaliceCuiController(usecase.NewSpiteAndMaliceInteractor(
