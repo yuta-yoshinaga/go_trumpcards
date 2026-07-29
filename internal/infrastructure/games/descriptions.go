@@ -101,6 +101,7 @@ var gameDescriptions = map[string]string{
 	"braid":               "ブレイド（三つ編みリザーブの2デッキソリティア）",
 	"pontoon":             "ポンツーン（英国式ブラックジャック・親交代制）",
 	"settemezzo":          "セッテ・エ・メッツォ（7.5を目指すイタリアのバンキングゲーム）",
+	"niuniu":              "闘牛（5枚から3枚で10の倍数を作る中国のギャンブル）",
 	"spiteandmalice":      "Spite and Malice (スパイト・アンド・マリス)",
 	"skat":                "Skat (スカート)",
 	"shithead":            "Shithead / Karma (シットヘッド)",

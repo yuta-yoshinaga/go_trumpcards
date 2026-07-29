@@ -19,7 +19,7 @@ describe('TutorialProgressPanel', () => {
   it('renders progress summary with 0 completed', () => {
     renderPanel();
     expect(screen.getByText(/0/)).toBeInTheDocument();
-    expect(screen.getByText(/232/)).toBeInTheDocument();
+    expect(screen.getByText(/233/)).toBeInTheDocument();
   });
 
   it('shows correct completed count', () => {
@@ -33,7 +33,7 @@ describe('TutorialProgressPanel', () => {
   it('renders game links as icons', () => {
     renderPanel();
     const links = screen.getAllByRole('link');
-    expect(links.length).toBe(232);
+    expect(links.length).toBe(233);
   });
 
   it('shows checkmark for completed games', () => {
@@ -46,7 +46,7 @@ describe('TutorialProgressPanel', () => {
   it('shows circle for incomplete games', () => {
     renderPanel();
     const incompleteMarkers = screen.getAllByText('○');
-    expect(incompleteMarkers.length).toBe(232);
+    expect(incompleteMarkers.length).toBe(233);
   });
 
   it('renders as details/summary collapsible', () => {

@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した232種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した233種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -122,6 +122,7 @@ Go + Clean Architecture で実装した232種類のトランプゲーム。CLI �
 | ブレイド (Braid) | `braid` | [CUI](docs/manual/cui/braid.md) / [Web](docs/manual/web/braid.md) |
 | ポンツーン (Pontoon) | `pontoon` | [CUI](docs/manual/cui/pontoon.md) / [Web](docs/manual/web/pontoon.md) |
 | セッテ・エ・メッツォ (Sette e Mezzo) | `settemezzo` | [CUI](docs/manual/cui/settemezzo.md) / [Web](docs/manual/web/settemezzo.md) |
+| 闘牛 (Niu Niu) | `niuniu` | [CUI](docs/manual/cui/niuniu.md) / [Web](docs/manual/web/niuniu.md) |
 | スパイト・アンド・マリス (Spite and Malice) | `spiteandmalice` | [CUI](docs/manual/cui/spiteandmalice.md) / [Web](docs/manual/web/spiteandmalice.md) |
 | スカート (Skat) | `skat` | [CUI](docs/manual/cui/skat.md) / [Web](docs/manual/web/skat.md) |
 | シットヘッド / カーマ (Shithead) | `shithead` | [CUI](docs/manual/cui/shithead.md) / [Web](docs/manual/web/shithead.md) |

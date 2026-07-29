@@ -221,4 +221,12 @@ func init() {
 			return usecase.RestoreSheepsheadInteractor(data, new(presenter.SheepsheadWebPresenter))
 		},
 		controller.NewSheepsheadWebControllerWithProvider)
+	games.RegisterKVGame("niuniu", games.CategoryExtra3,
+		func() usecase.NiuNiuInteractorIF {
+			return usecase.NewNiuNiuInteractor(domain.NewDefaultNiuNiu(), new(presenter.NiuNiuWebPresenter))
+		},
+		func(data []byte) (usecase.NiuNiuInteractorIF, error) {
+			return usecase.RestoreNiuNiuInteractor(data, new(presenter.NiuNiuWebPresenter))
+		},
+		controller.NewNiuNiuWebControllerWithProvider)
 }
