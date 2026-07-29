@@ -10,7 +10,7 @@ import (
 var errBlackHole = errors.New("blackhole: invalid state")
 
 // blackHoleJSON は BlackHole の JSON ワイヤ形式。配り切ると trumpCards は空になるため
-// 保存しない。history も永続化対象外。
+// 保存しない。
 type blackHoleJSON struct {
 	Fans      [][]*Card         `json:"fn"`
 	BlackHole []*Card           `json:"bh"`

@@ -10,7 +10,7 @@ import (
 var errLaBelleLucie = errors.New("labellelucie: invalid state")
 
 // laBelleLucieJSON は LaBelleLucie の JSON ワイヤ形式。配り切ると trumpCards は空に
-// なるため保存しない。history も永続化対象外。
+// なるため保存しない。
 type laBelleLucieJSON struct {
 	Fans        [][]*Card                          `json:"fn"`
 	Foundation  [LaBelleLucieFoundationCnt][]*Card `json:"fd"`

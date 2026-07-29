@@ -10,7 +10,7 @@ import (
 var errSimpleSimon = errors.New("simplesimon: invalid state")
 
 // simpleSimonJSON は SimpleSimon の JSON ワイヤ形式。配り切ると trumpCards は空に
-// なるため保存しない。history も永続化対象外。
+// なるため保存しない。
 type simpleSimonJSON struct {
 	Columns        [SimpleSimonColCnt][]*Card `json:"co"`
 	CompletedSuits int                        `json:"cs"`

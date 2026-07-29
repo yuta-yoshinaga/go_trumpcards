@@ -638,3 +638,66 @@ func TestUndoPersistenceRespectsMaxSliceLen(t *testing.T) {
 		})
 	}
 }
+
+// TestUndoHistoryGrowsLinearly guards the shape of the undo stack, not just its
+// presence.
+//
+// RussianBank is the only game that snapshots by marshalling a whole wire
+// struct rather than copying named fields. When History joined that wire struct
+// (#4478), each snapshot started embedding every earlier snapshot, so the
+// payload DOUBLED per move: 5.6 KB after move 1, 1.45 MB after move 9. Nothing
+// else would have caught it -- the round-trip test plays one move, and the size
+// caps only fire once a session is already unrestorable.
+//
+// A per-move delta is the right assertion because the absolute size depends on
+// the deal: exponential growth blows the bound within a handful of moves, while
+// linear growth keeps every delta near one board.
+func TestUndoHistoryGrowsLinearly(t *testing.T) {
+	const maxDeltaBytes = 8 * 1024
+
+	// Deals differ in how long the hint keeps finding a move -- some run dry at
+	// move 6 -- so keep dealing until one lasts long enough to be evidence.
+	const wantMoves = 5
+	g := NewDefaultRussianBank()
+	var moves int
+	for range dealAttempts {
+		g.Reset()
+		moves = 0
+		prev := len(mustMarshal(t, g))
+		for moves < 12 {
+			h := g.GetHint()
+			if h == nil {
+				break
+			}
+			src := RussianBankSource{Zone: h.Zone, FromOpponent: h.FromOpponent, Col: h.Col}
+			var err error
+			if h.ToFoundation {
+				err = g.MoveToFoundation(src)
+			} else {
+				err = g.MoveToTableau(src, h.ToCol)
+			}
+			if err != nil {
+				break
+			}
+			moves++
+			size := len(mustMarshal(t, g))
+			require.LessOrEqual(t, size-prev, maxDeltaBytes,
+				"move %d grew the payload by %d bytes; a snapshot is embedding the history",
+				moves, size-prev)
+			prev = size
+		}
+		if moves >= wantMoves {
+			return
+		}
+	}
+	t.Fatalf("no deal in %d lasted %d moves; the probe never got to measure",
+		dealAttempts, wantMoves)
+}
+
+// mustMarshal marshals or fails the test.
+func mustMarshal(t *testing.T, v any) []byte {
+	t.Helper()
+	b, err := json.Marshal(v)
+	require.NoError(t, err)
+	return b
+}

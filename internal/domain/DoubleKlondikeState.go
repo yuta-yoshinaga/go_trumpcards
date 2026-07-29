@@ -10,7 +10,7 @@ import (
 var errDoubleKlondike = errors.New("doubleklondike: invalid state")
 
 // doubleKlondikeJSON は DoubleKlondike の JSON ワイヤ形式。配り切ると trumpCards は
-// 空になるため保存しない。history も永続化対象外。
+// 空になるため保存しない。
 type doubleKlondikeJSON struct {
 	Tableau    [DoubleKlondikeTableauCnt][]*DoubleKlondikeTableauCard `json:"tb"`
 	Stock      []*Card                                                `json:"st"`

@@ -18,7 +18,12 @@ func (g *RussianBank) takeSnapshot() {
 	if g.current != 0 || g.phase != RussianBankPhasePlaying {
 		return
 	}
-	b, err := json.Marshal(g)
+	// boardJSON, NOT MarshalJSON. MarshalJSON now carries the undo history, so
+	// snapshotting through it would embed every earlier snapshot inside the new
+	// one and double the payload on every move: measured 5.6 KB after move 1,
+	// 1.45 MB after move 9. Past ~1 MiB the snapshot codec rejects it and the
+	// whole session stops restoring from KV.
+	b, err := json.Marshal(g.boardJSON())
 	if err != nil {
 		return
 	}
@@ -137,9 +142,10 @@ type russianBankJSON struct {
 	History []*russianBankSnapshot `json:"hi,omitempty"`
 }
 
-// MarshalJSON implements json.Marshaler.
-func (g *RussianBank) MarshalJSON() ([]byte, error) {
-	return json.Marshal(russianBankJSON{
+// boardJSON projects the board into the wire struct WITHOUT the undo history.
+// takeSnapshot marshals this; MarshalJSON adds the history on top.
+func (g *RussianBank) boardJSON() russianBankJSON {
+	return russianBankJSON{
 		Players:     g.players,
 		Tableau:     g.tableau,
 		Foundations: g.foundations,
@@ -151,8 +157,14 @@ func (g *RussianBank) MarshalJSON() ([]byte, error) {
 		PassStreak:  g.passStreak,
 		StopPoints:  g.stopPoints,
 		ActionLog:   g.actionLog,
-		History:     g.history,
-	})
+	}
+}
+
+// MarshalJSON implements json.Marshaler.
+func (g *RussianBank) MarshalJSON() ([]byte, error) {
+	j := g.boardJSON()
+	j.History = g.history
+	return json.Marshal(j)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
