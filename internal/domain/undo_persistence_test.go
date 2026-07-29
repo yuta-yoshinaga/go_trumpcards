@@ -32,6 +32,10 @@ type undoRoundTripCase struct {
 	play func(t *testing.T) (game any, canUndo func() bool, undo func() error)
 }
 
+// dealAttempts caps the reshuffles a case may take while looking for a deal it
+// can play. A game that needs more than this is not "unlucky" -- it is broken.
+const dealAttempts = 100
+
 func TestUndoSurvivesAKVRoundTrip(t *testing.T) {
 	cases := []undoRoundTripCase{
 		{"SirTommy", func(t *testing.T) (any, func() bool, func() error) {
@@ -41,11 +45,28 @@ func TestUndoSurvivesAKVRoundTrip(t *testing.T) {
 			return g, g.CanUndo, g.Undo
 		}},
 		{"Bisley", func(t *testing.T) (any, func() bool, func() error) {
+			// Bisley opens with the four Aces up, but the card that continues a
+			// foundation still has to be at the head of a column, so a fresh deal
+			// is NOT guaranteed to have a move -- an earlier revision of this case
+			// called AutoComplete and reddened develop on roughly 1 deal in 40.
+			// Deal until there is something to play, then play what the game says.
 			g := NewDefaultBisley()
-			g.Reset()
-			// Bisley opens with the four Aces already up, so a foundation move
-			// always exists on a fresh deal.
-			require.NoError(t, g.AutoComplete())
+			var hint *BisleyHint
+			for range dealAttempts {
+				g.Reset()
+				if hint = g.GetHint(); hint != nil {
+					break
+				}
+			}
+			require.NotNil(t, hint, "no deal in %d had a legal move", dealAttempts)
+			switch hint.ToZone {
+			case "ace":
+				require.NoError(t, g.MoveTableauToAceFoundation(hint.FromCol))
+			case "king":
+				require.NoError(t, g.MoveTableauToKingFoundation(hint.FromCol))
+			default:
+				require.NoError(t, g.MoveTableauToTableau(hint.FromCol, hint.ToIdx))
+			}
 			return g, g.CanUndo, g.Undo
 		}},
 		{"NapoleonsSquare", func(t *testing.T) (any, func() bool, func() error) {
@@ -55,11 +76,18 @@ func TestUndoSurvivesAKVRoundTrip(t *testing.T) {
 			return g, g.CanUndo, g.Undo
 		}},
 		{"GrandfathersClock", func(t *testing.T) (any, func() bool, func() error) {
+			// Same shuffle hazard as Bisley: the first hint is only a foundation
+			// move on most deals, not all of them.
 			g := NewDefaultGrandfathersClock()
-			g.Reset()
-			h := g.GetHint()
-			require.NotNil(t, h, "a fresh clock always has a move")
-			require.Equal(t, "foundation", h.ToZone, "the first hint sends a card up")
+			var h *GrandfathersClockHint
+			for range dealAttempts {
+				g.Reset()
+				if h = g.GetHint(); h != nil && h.ToZone == "foundation" {
+					break
+				}
+				h = nil
+			}
+			require.NotNil(t, h, "no deal in %d opened with a foundation move", dealAttempts)
 			require.NoError(t, g.MoveTableauToFoundation(h.FromCol, h.ToIdx))
 			return g, g.CanUndo, g.Undo
 		}},

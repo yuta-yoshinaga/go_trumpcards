@@ -35,6 +35,7 @@ export * from './games/blackjack';
 export * from './games/blackjackswitch';
 export * from './games/bouillotte';
 export * from './games/bourre';
+export * from './games/braid';
 export * from './games/bridge';
 export * from './games/briscola';
 export * from './games/bristol';
@@ -323,6 +324,7 @@ export const games = [
   'americantoad',
   'congress',
   'terrace',
+  'braid',
   'missmilligan',
   'canfield',
   'osmosis',

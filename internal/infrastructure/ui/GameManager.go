@@ -1514,6 +1514,28 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "braid", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBraidCuiController(usecase.NewBraidInteractor(
+				domain.NewDefaultBraid(), new(presenter.BraidCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "braid.helpTitle",
+				CommandKeys: []string{
+					"braid.helpDraw",
+					"braid.helpDirection",
+					"braid.helpMoveBrF",
+					"braid.helpMoveFdF",
+					"braid.helpMoveHpF",
+					"braid.helpMoveWF",
+					"braid.helpMoveWHp",
+					"braid.helpGiveUp",
+					"braid.helpHint",
+					"braid.helpAutoComplete",
+					"braid.helpUndo",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "shithead", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShitheadCuiController(usecase.NewShitheadInteractor(
