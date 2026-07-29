@@ -480,6 +480,11 @@ func init() {
 			return usecase.NewPontoonInteractor(domain.NewDefaultPontoon(), new(presenter.PontoonWebPresenter))
 		},
 		controller.NewPontoonWebController)
+	BindWebControllerFor("settemezzo",
+		func() usecase.SetteEMezzoInteractorIF {
+			return usecase.NewSetteEMezzoInteractor(domain.NewDefaultSetteEMezzo(), new(presenter.SetteEMezzoWebPresenter))
+		},
+		controller.NewSetteEMezzoWebController)
 	BindWebControllerFor("shithead",
 		func() usecase.ShitheadInteractorIF {
 			return usecase.NewShitheadInteractor(domain.NewDefaultShithead(), new(presenter.ShitheadWebPresenter))
