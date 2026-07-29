@@ -1536,6 +1536,25 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "pontoon", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPontoonCuiController(usecase.NewPontoonInteractor(
+				domain.NewDefaultPontoon(), new(presenter.PontoonCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "pontoon.helpTitle",
+				CommandKeys: []string{
+					"pontoon.helpBet",
+					"pontoon.helpDeal",
+					"pontoon.helpStick",
+					"pontoon.helpTwist",
+					"pontoon.helpBuy",
+					"pontoon.helpSplit",
+					"pontoon.helpBankerTwist",
+					"pontoon.helpBankerStay",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "shithead", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShitheadCuiController(usecase.NewShitheadInteractor(

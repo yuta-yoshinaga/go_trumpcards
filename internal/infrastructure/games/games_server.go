@@ -475,6 +475,11 @@ func init() {
 			return usecase.NewBraidInteractor(domain.NewDefaultBraid(), new(presenter.BraidWebPresenter))
 		},
 		controller.NewBraidWebController)
+	BindWebControllerFor("pontoon",
+		func() usecase.PontoonInteractorIF {
+			return usecase.NewPontoonInteractor(domain.NewDefaultPontoon(), new(presenter.PontoonWebPresenter))
+		},
+		controller.NewPontoonWebController)
 	BindWebControllerFor("shithead",
 		func() usecase.ShitheadInteractorIF {
 			return usecase.NewShitheadInteractor(domain.NewDefaultShithead(), new(presenter.ShitheadWebPresenter))
