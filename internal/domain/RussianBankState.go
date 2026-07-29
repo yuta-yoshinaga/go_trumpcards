@@ -131,9 +131,13 @@ type russianBankJSON struct {
 	PassStreak  int                               `json:"ks"`
 	StopPoints  [RussianBankPlayerCnt]int         `json:"sp"`
 	ActionLog   []*ActionLogEntry                 `json:"al"`
+	// History must round-trip: the Cloudflare Worker is stateless per request
+	// and rebuilds the game from KV every call, so an unpersisted undo stack
+	// means Undo/UndoN/UndoToEscape silently never work in production (#4478).
+	History []*russianBankSnapshot `json:"hi,omitempty"`
 }
 
-// MarshalJSON implements json.Marshaler. history は永続化対象外。
+// MarshalJSON implements json.Marshaler.
 func (g *RussianBank) MarshalJSON() ([]byte, error) {
 	return json.Marshal(russianBankJSON{
 		Players:     g.players,
@@ -147,6 +151,7 @@ func (g *RussianBank) MarshalJSON() ([]byte, error) {
 		PassStreak:  g.passStreak,
 		StopPoints:  g.stopPoints,
 		ActionLog:   g.actionLog,
+		History:     g.history,
 	})
 }
 
@@ -183,7 +188,45 @@ func (g *RussianBank) UnmarshalJSON(data []byte) error {
 	g.moveCount = j.MoveCount
 	g.passStreak = j.PassStreak
 	g.stopPoints = j.StopPoints
+	if len(j.History) > russianBankMaxSliceLen {
+		return errors.New("russianbank: history exceeds maximum allowed size")
+	}
 	g.actionLog = j.ActionLog
-	g.history = nil
+	g.history = j.History
+	return nil
+}
+
+// russianBankSnapshotMaxBytes bounds one embedded snapshot document. A full
+// two-player board is a few KB, so 1 MiB is far above any legitimate value and
+// exists only to stop a hostile KV entry from being expanded.
+const russianBankSnapshotMaxBytes = 1 << 20
+
+// russianBankSnapshotJSON is the wire format for a single undo snapshot.
+// russianBankSnapshot holds one unexported field, so marshalling it directly
+// would emit `[{},{}]` -- the undo depth would survive but every snapshot would
+// be blank, and Undo would wipe the board instead of rewinding it (#4478).
+//
+// The field is already a JSON document, so it rides as json.RawMessage rather
+// than a []byte: a []byte would be re-encoded as base64 on every save, which
+// costs a third more bytes per snapshot in KV for no benefit.
+type russianBankSnapshotJSON struct {
+	State json.RawMessage `json:"st"`
+}
+
+// MarshalJSON implements json.Marshaler for russianBankSnapshot.
+func (s *russianBankSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(russianBankSnapshotJSON{State: s.stateJSON})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for russianBankSnapshot.
+func (s *russianBankSnapshot) UnmarshalJSON(data []byte) error {
+	var j russianBankSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.State) > russianBankSnapshotMaxBytes {
+		return errors.New("russianbank: snapshot state exceeds maximum allowed size")
+	}
+	s.stateJSON = j.State
 	return nil
 }
