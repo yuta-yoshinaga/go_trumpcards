@@ -77,8 +77,13 @@ func (c *BuraWebConfig) ToConfig() domain.BuraConfig {
 }
 
 // ToConfig builds a BuraConfig from the input, falling back to defaults when absent.
+//
+// Must go through configOrDefault: `config` is optional on the wire, so a plain
+// reset arrives with a nil *BuraWebConfig, and calling the method on it
+// dereferences nil. Reaching straight for i.Config.ToConfig() panicked on every
+// reset -- a 500 on the request that starts the game.
 func (i BuraWebInput) ToConfig() domain.BuraConfig {
-	return i.Config.ToConfig()
+	return configOrDefault(i.Config, (*BuraWebConfig).ToConfig, domain.DefaultBuraConfig())
 }
 
 // BuraWebController ブラWebコントローラ

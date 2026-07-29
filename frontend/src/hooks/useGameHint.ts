@@ -22,6 +22,7 @@ import type {
   BouillotteResponse,
   BraidResponse,
   BristolResponse,
+  BuraResponse,
   BurracoResponse,
   CalabresellaResponse,
   CalculationResponse,
@@ -209,6 +210,7 @@ import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getBouillotteHint } from '../utils/hints/bouillotteHint';
 import { getBraidHint } from '../utils/hints/braidHint';
 import { getBristolHint } from '../utils/hints/bristolHint';
+import { getBuraHint } from '../utils/hints/buraHint';
 import { getBurracoHint } from '../utils/hints/burracoHint';
 import { getCalabresellaHint } from '../utils/hints/calabresellaHint';
 import { getCalculationHint } from '../utils/hints/calculationHint';
@@ -584,6 +586,7 @@ export const hintFactories = {
   allfours: (s) => getAllFoursHint(s as AllFoursResponse),
   guts: (s) => getGutsHint(s as GutsResponse),
   anaconda: (s) => getAnacondaHint(s as AnacondaResponse),
+  bura: (s) => getBuraHint(s as BuraResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),

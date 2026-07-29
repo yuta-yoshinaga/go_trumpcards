@@ -45,6 +45,18 @@ func (p *BuraWebPresenter) buildBase(b interfaces.BuraGame) *controller.BuraWebO
 		resObj.CurrentLead = append(resObj.CurrentLead, cardToOutput(c))
 	}
 	resObj.Players = p.buildPlayersOutput(b)
+
+	// Populate the hint on every response, not only on the `hint` command.
+	//
+	// The other games set Hint exclusively in HintOutput, which no page calls:
+	// the frontend reads it off the ordinary state response, so their hint
+	// toggles have nothing to show and silently do nothing. Computing it here
+	// is a pure call over a three-card hand. The toggle stays client-side --
+	// this is the player's own suggestion, not hidden information.
+	if !b.GetGameEndFlag() && b.GetCurrentPlayerIdx() == 0 {
+		indices, reason := buraHint(b)
+		resObj.Hint = &controller.BuraWebOutputHint{CardIndices: indices, Reason: reason}
+	}
 	return resObj
 }
 
