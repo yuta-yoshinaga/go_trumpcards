@@ -16,6 +16,8 @@ type NiuNiuGame interface {
 	GetPhase() int
 	// GetChips 人間のチップを取得する
 	GetChips() int
+	// GetMaxMultiplier 最大の配当倍率を取得する
+	GetMaxMultiplier() int
 	// GetSeats 全席を取得する
 	GetSeats() []*domain.NiuNiuSeat
 	// GetBankerIdx 親の席番号を取得する

@@ -42,6 +42,7 @@ function makeState(overrides?: Partial<NiuNiuResponse>): NiuNiuResponse {
     bankerHand: hiddenHand(0),
     bankerIdx: 3,
     chips: 900,
+    maxMultiplier: 3,
     lastResult: '',
     phase: 1,
     message: '',
@@ -110,11 +111,16 @@ describe('NiuNiuPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100));
   });
 
-  it('disables a stake above the stack', async () => {
+  // The cap is the WORST CASE, not the stake: a banker's Niu Niu takes three
+  // times what you put down, so 50 chips cannot cover a stake of 50.
+  it('disables a stake the stack cannot cover three times over', async () => {
     mockExec.mockResolvedValue(makeState({ chips: 50 }));
     renderWithProviders(<NiuNiuPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '500' })).toBeDisabled());
-    expect(screen.getByRole('button', { name: '10' })).toBeEnabled();
+    // 10 x 3 = 30 <= 50, so the minimum is playable.
+    await waitFor(() => expect(screen.getByRole('button', { name: '10' })).toBeEnabled());
+    // 50 x 3 = 150 > 50 -- a stake equal to the whole stack is NOT affordable.
+    expect(screen.getByRole('button', { name: '50' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '500' })).toBeDisabled();
   });
 
   // The round settles at the bet, so the stake buttons go away entirely.

@@ -201,7 +201,9 @@ function NiuNiuPageContent() {
                       type="button"
                       className={btnPrimary}
                       onClick={() => game.handleBet(amount)}
-                      disabled={loading || amount > state.chips}
+                      // The loss can be `maxMultiplier` times the stake, so the
+                      // stack has to cover that, not just the stake itself.
+                      disabled={loading || amount * state.maxMultiplier > state.chips}
                     >
                       {t('betAmount', { amount })}
                     </button>

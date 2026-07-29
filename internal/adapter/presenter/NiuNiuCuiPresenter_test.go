@@ -17,6 +17,7 @@ import (
 func setupNiuNiuCuiMockDefaults(g *interfaces.MockNiuNiuGame) {
 	g.On("GetPhase").Return(domain.NiuNiuPhaseBet).Maybe()
 	g.On("GetChips").Return(900).Maybe()
+	g.On("GetMaxMultiplier").Return(domain.NiuNiuMaxMultiplier).Maybe()
 	g.On("GetBankerIdx").Return(3).Maybe()
 	g.On("GetLastResult").Return("親: 牛牛").Maybe()
 	g.On("GetGameEndFlag").Return(false).Maybe()

@@ -34,6 +34,13 @@ const (
 	niuNiuMaxSliceLen = 1000
 )
 
+// NiuNiuMaxMultiplier 最大の配当倍率（牛牛の 3 倍）。
+//
+// 賭け金の検査に使う。このゲームは**賭けた額より多く取られる**（親が牛牛なら
+// 3 倍）ので、賭け金だけを残高と比べても足りない。最悪の負けを賄えない額は
+// 賭けさせない。
+const NiuNiuMaxMultiplier = 3
+
 // NiuNiuRank 手の格。数値が大きいほど強い。
 //
 // 無牛 (0) < 牛1 (1) < ... < 牛9 (9) < 牛牛 (10)。残り 2 枚の下 1 桁がそのまま
@@ -145,7 +152,10 @@ func NewDefaultNiuNiu() *NiuNiu {
 
 // Reset 新しい局を始める。
 func (n *NiuNiu) Reset() {
-	if n.chips.GetChips() < NiuNiuMinBet {
+	// 最低額を賭けても最悪の負けを賄えない残高は、そもそも遊べない。最低額×最大
+	// 倍率を下回ったら積み増す。ここを NiuNiuMinBet だけで見ていると、25 チップの
+	// ような「賭けられるが払えない」残高で止まる。
+	if n.chips.GetChips() < NiuNiuMinBet*NiuNiuMaxMultiplier {
 		n.chips.SetChips(NiuNiuDefaultChips)
 	}
 	if n.seats == nil {
@@ -186,8 +196,11 @@ func (n *NiuNiu) PlaceBet(bet int) error {
 	if bet < NiuNiuMinBet || bet > NiuNiuMaxBet {
 		return fmt.Errorf("niuniu: bet must be between %d and %d", NiuNiuMinBet, NiuNiuMaxBet)
 	}
-	if bet > n.chips.GetChips() {
-		return errors.New("niuniu: not enough chips")
+	// 賭け金ではなく**最悪の負け**を残高と比べる。親が牛牛なら 3 倍取られるので、
+	// bet だけ見ていると残高が負になる（chips=25 で 10 を賭け、親が牛牛だと -5）。
+	if bet*NiuNiuMaxMultiplier > n.chips.GetChips() {
+		return fmt.Errorf("niuniu: a stake of %d needs %d chips to cover the worst case",
+			bet, bet*NiuNiuMaxMultiplier)
 	}
 	n.chips.SetChips(n.chips.GetChips() - bet)
 	n.deal(bet)
@@ -387,6 +400,9 @@ func (n *NiuNiu) GetPhase() int { return n.phase }
 
 // GetChips 人間のチップ
 func (n *NiuNiu) GetChips() int { return n.chips.GetChips() }
+
+// GetMaxMultiplier 最大の配当倍率。賭けられる上限は残高をこれで割った額になる。
+func (n *NiuNiu) GetMaxMultiplier() int { return NiuNiuMaxMultiplier }
 
 // GetSeats 全席を取得する
 func (n *NiuNiu) GetSeats() []*NiuNiuSeat { return n.seats }

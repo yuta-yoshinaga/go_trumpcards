@@ -464,6 +464,80 @@ func TestNiuNiu_PlaceBet(t *testing.T) {
 	}
 }
 
+// The stake is not what the player risks: a banker's Niu Niu takes THREE times
+// it. Checking the stake alone against the stack let the balance go negative --
+// 25 chips, a legal 10 stake, and a banker Niu Niu left -5 on screen.
+func TestNiuNiu_ChipsNeverGoNegative(t *testing.T) {
+	for range 500 {
+		n := NewDefaultNiuNiu()
+		n.Reset()
+		// 最悪の負けをちょうど賄える最小の残高。
+		n.chips.SetChips(NiuNiuMinBet * NiuNiuMaxMultiplier)
+		if err := n.PlaceBet(NiuNiuMinBet); err != nil {
+			t.Fatalf("PlaceBet: %v", err)
+		}
+		if n.GetChips() < 0 {
+			t.Fatalf("chips = %d after a banker %s", n.GetChips(),
+				NiuNiuRankLabel(n.GetBankerHand().GetRank()))
+		}
+	}
+}
+
+// A stake the stack cannot cover three times over is refused, because the loss
+// can be three times the stake.
+func TestNiuNiu_RejectsAStakeItCannotCover(t *testing.T) {
+	n := NewDefaultNiuNiu()
+	n.Reset()
+
+	// 25 チップでは合法な賭け金が一つも無い。最低額 10 でも最悪 30 取られる。
+	// **この行き止まりがあるからこそ** Reset の積み増し閾値は最低額ではなく
+	// 最低額×最大倍率になっている。
+	n.chips.SetChips(25)
+	if err := n.PlaceBet(NiuNiuMinBet); err == nil {
+		t.Error("a stake whose worst case exceeds the stack should be rejected")
+	}
+
+	// ちょうど賄える残高なら通る。
+	n.chips.SetChips(NiuNiuMinBet * NiuNiuMaxMultiplier)
+	if err := n.PlaceBet(NiuNiuMinBet); err != nil {
+		t.Errorf("a coverable stake was rejected: %v", err)
+	}
+}
+
+// Reset must top up below MIN*MAX, not below MIN. Topping up only below the
+// minimum leaves balances like 25 that can be bet but not paid, and the player
+// would be stuck refusing every legal stake.
+func TestNiuNiu_ResetTopsUpWhenTheWorstCaseIsUncoverable(t *testing.T) {
+	n := NewDefaultNiuNiu()
+	n.Reset()
+	n.chips.SetChips(25) // >= NiuNiuMinBet, but < NiuNiuMinBet*NiuNiuMaxMultiplier
+	n.Reset()
+
+	if n.GetChips() != NiuNiuDefaultChips {
+		t.Errorf("chips = %d, want a fresh stack", n.GetChips())
+	}
+	if err := n.PlaceBet(NiuNiuMinBet); err != nil {
+		t.Errorf("the minimum stake should be playable after a top-up: %v", err)
+	}
+}
+
+func TestNiuNiu_MaxMultiplierMatchesTheTable(t *testing.T) {
+	// 表と定数がずれると、賄えない賭けを通してしまう。
+	best := 0
+	for r := NiuNiuRankNone; r <= NiuNiuRankNiuNiu; r++ {
+		if m := niuNiuMultiplier(r); m > best {
+			best = m
+		}
+	}
+	if best != NiuNiuMaxMultiplier {
+		t.Errorf("the payout table peaks at x%d but NiuNiuMaxMultiplier is %d",
+			best, NiuNiuMaxMultiplier)
+	}
+	if n := NewDefaultNiuNiu(); n.GetMaxMultiplier() != NiuNiuMaxMultiplier {
+		t.Error("GetMaxMultiplier should mirror the constant")
+	}
+}
+
 func TestNiuNiu_PlaceBetRejectedOutOfPhase(t *testing.T) {
 	n := newTestNiuNiu()
 	n.phase = NiuNiuPhaseEnd
@@ -675,7 +749,9 @@ func TestNiuNiu_EveryDealtHandIsSelfConsistent(t *testing.T) {
 	n := newTestNiuNiu()
 	for range 300 {
 		n.Reset()
-		if err := n.PlaceBet(100); err != nil {
+		// 最低額で賭ける。大きく賭けると負けが込んだときに残高が最悪の負けを
+		// 賄えなくなり、PlaceBet が（正しく）弾いてループが止まる。
+		if err := n.PlaceBet(NiuNiuMinBet); err != nil {
 			t.Fatalf("PlaceBet: %v", err)
 		}
 		hands := []*NiuNiuHand{n.GetBankerHand()}

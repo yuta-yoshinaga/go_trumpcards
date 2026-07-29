@@ -29,6 +29,7 @@ function makeState(overrides?: Partial<NiuNiuResponse>): NiuNiuResponse {
     bankerHand: hand({ bet: 0 }),
     bankerIdx: 3,
     chips: 900,
+    maxMultiplier: 3,
     lastResult: '',
     phase: 1,
     message: '',

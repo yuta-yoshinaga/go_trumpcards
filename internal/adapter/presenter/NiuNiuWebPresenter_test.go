@@ -40,6 +40,7 @@ const nnFiveCards = `[{"d":1,"v":10,"f":true},{"d":2,"v":10,"f":true},{"d":3,"v"
 func setupNiuNiuWebMockDefaults(g *interfaces.MockNiuNiuGame) {
 	g.On("GetPhase").Return(domain.NiuNiuPhaseBet).Maybe()
 	g.On("GetChips").Return(900).Maybe()
+	g.On("GetMaxMultiplier").Return(domain.NiuNiuMaxMultiplier).Maybe()
 	g.On("GetBankerIdx").Return(3).Maybe()
 	g.On("GetLastResult").Return("").Maybe()
 	g.On("GetGameEndFlag").Return(false).Maybe()
@@ -74,6 +75,17 @@ func TestNiuNiuWebPresenter_Output(t *testing.T) {
 		assert.Len(t, result.Seats, 4)
 		assert.Equal(t, 3, result.BankerIdx)
 		assert.Equal(t, "niuniu.placeBet", result.MessageCode)
+	})
+
+	// The client caps its stake buttons at chips / maxMultiplier, so the figure
+	// has to come from the server rather than being hardcoded twice.
+	t.Run("the worst-case multiplier rides the wire", func(t *testing.T) {
+		g := new(interfaces.MockNiuNiuGame)
+		setupNiuNiuWebMockDefaults(g)
+
+		result := parseNiuNiuOutput(t, new(NiuNiuWebPresenter).Output(g, nil))
+		assert.Equal(t, domain.NiuNiuMaxMultiplier, result.MaxMultiplier)
+		assert.Equal(t, 3, result.MaxMultiplier)
 	})
 
 	// A hidden hand must not reach the wire.

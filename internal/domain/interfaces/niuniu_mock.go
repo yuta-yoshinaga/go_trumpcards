@@ -39,6 +39,11 @@ func (_m *MockNiuNiuGame) GetSeats() []*domain.NiuNiuSeat {
 	return v.([]*domain.NiuNiuSeat)
 }
 
+func (_m *MockNiuNiuGame) GetMaxMultiplier() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 func (_m *MockNiuNiuGame) GetBankerIdx() int {
 	ret := _m.Called()
 	return ret.Int(0)

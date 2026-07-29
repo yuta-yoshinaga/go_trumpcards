@@ -71,6 +71,7 @@ func (np *NiuNiuWebPresenter) Output(n interfaces.NiuNiuGame, lastErr error) str
 	resObj.BankerHand = niuNiuHandOutput(n, n.GetBankerHand(), ended)
 	resObj.BankerIdx = n.GetBankerIdx()
 	resObj.Chips = n.GetChips()
+	resObj.MaxMultiplier = n.GetMaxMultiplier()
 	resObj.LastResult = n.GetLastResult()
 	resObj.Phase = n.GetPhase()
 

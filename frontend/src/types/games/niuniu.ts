@@ -42,6 +42,13 @@ export interface NiuNiuResponse extends BaseGameResponse {
   bankerHand?: NiuNiuHand;
   bankerIdx: number;
   chips: number;
+  /**
+   * Largest payout multiplier in the table. A stake is only legal if the stack
+   * covers `stake * maxMultiplier`, because a banker's Niu Niu takes three
+   * times the stake -- so the cap on what may be bet is chips / this, not
+   * chips. Sent so the figure is not written down twice.
+   */
+  maxMultiplier: number;
   lastResult: string;
   phase: number;
 }
