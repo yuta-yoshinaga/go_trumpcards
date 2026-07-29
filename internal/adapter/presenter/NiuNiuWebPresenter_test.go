@@ -76,8 +76,12 @@ func TestNiuNiuWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "niuniu.placeBet", result.MessageCode)
 	})
 
-	// A hidden hand must not reach the wire -- the same hole Pontoon had before
-	// #4485. The banker's hand is the one that decides the round.
+	// A hidden hand must not reach the wire.
+	//
+	// This drives the presenter through a state the DOMAIN cannot currently
+	// produce -- `deal` settles in the same call, so a hand never coexists with
+	// an unfinished round. The mock builds it anyway, because the guard exists
+	// so the presenter does not depend on that invariant holding forever.
 	t.Run("a hidden hand carries no cards, rank or combo", func(t *testing.T) {
 		g := new(interfaces.MockNiuNiuGame)
 		setupNiuNiuWebMockDefaults(g)

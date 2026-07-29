@@ -6,8 +6,9 @@ test.describe('Niu Niu E2E', () => {
     await navigateTo(page, '/niuniu');
 
     await expect(page.getByText(/チップ/)).toBeVisible();
-    // The banker's hand is withheld until the round settles.
-    await expect(page.getByLabel('親の手は伏せられています')).toBeVisible();
+    // No hand exists before the deal, and the deal settles the round in the
+    // same call -- so there is no mid-round state to observe here.
+    await expect(page.getByRole('button', { name: '100', exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: '100', exact: true }).click();
     await waitForLoaded(page);
