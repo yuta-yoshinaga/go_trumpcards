@@ -2,7 +2,21 @@ import { describe, expect, it } from 'vitest';
 import type { BuraResponse } from '../../types/card';
 import { getBuraHint } from './buraHint';
 
-const base = { players: [], phase: 0, trickNumber: 0, currentPlayerIdx: 0, leadPlayerIdx: 0, currentLead: [], trumpSuit: 2, stockRemaining: 0, winThreshold: 31, gameEndFlag: false, winnerIdx: -1, isDraw: false, message: '' };
+const base = {
+  players: [],
+  phase: 0,
+  trickNumber: 0,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  currentLead: [],
+  trumpSuit: 2,
+  stockRemaining: 0,
+  winThreshold: 31,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isDraw: false,
+  message: '',
+};
 
 const state = (reason?: string, cardIndices?: number[]): BuraResponse =>
   ({ ...base, hint: reason ? { reason, cardIndices } : undefined }) as BuraResponse;
