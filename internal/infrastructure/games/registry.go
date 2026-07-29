@@ -218,6 +218,9 @@ var registry = []*Game{
 	{Name: "spiteandmalice", Category: CategoryExtra2},
 	// Skat is a trick-taking game.
 	{Name: "skat", Category: CategoryExtra3},
+	// Congress deals one card to each of eight piles and keeps the other 96 as
+	// the stock; empty piles can only be refilled from the stock or the waste.
+	{Name: "congress", Category: CategoryExtra3},
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},

@@ -96,6 +96,7 @@ var gameDescriptions = map[string]string{
 	"duchess":             "ダッチェス（開始ランクを選ぶリザーブ扇のソリティア）",
 	"windmill":            "ウィンドミル（十字に並べる2デッキのソリティア）",
 	"americantoad":        "アメリカン・トード（2デッキのカンフィールド系ソリティア）",
+	"congress":            "コングレス（8つの山と8つの基礎札の2デッキソリティア）",
 	"spiteandmalice":      "Spite and Malice (スパイト・アンド・マリス)",
 	"skat":                "Skat (スカート)",
 	"shithead":            "Shithead / Karma (シットヘッド)",

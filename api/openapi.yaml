@@ -203,6 +203,8 @@ tags:
     description: Windmill (Propeller) game - two-deck cross solitaire whose centre climbs A-K four times over while four corner foundations run King down to Ace
   - name: americantoad
     description: American Toad game - the two-deck Canfield, with a 20-card reserve that auto-fills empty columns and foundations that wrap round from the deal-chosen base rank
+  - name: congress
+    description: Congress game - eight single-card piles flanking eight foundations; the tableau builds down ignoring suit one card at a time, and an empty pile takes only a stock or waste card
   - name: spiteandmalice
     description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
   - name: skat
@@ -11098,6 +11100,128 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AmericanToadResponse'
+  /congress/exec:
+    post:
+      tags:
+        - congress
+      summary: Execute a Congress game command
+      description: |
+        Send a command to advance the Congress (コングレス) game session
+        identified by `sessionId`. It is a two-deck (104-card) solitaire from
+        England.
+
+        **Eight tableau piles are dealt ONE card each** -- four either side of
+        the foundations -- and the remaining 96 form the stock, turned one at a
+        time to a waste with **no redeal**. #4419 deals all 96 into the tableau,
+        which leaves the stock empty and contradicts its own rule 5.
+
+        The **eight foundations start empty** and take Aces as they turn up,
+        building up in suit to the King, 13 cards each -- 8 x 13 = 104. #4419
+        pre-loads all eight Aces, which would mean searching the deck for them,
+        and says "up to 8 per suit", which comes to 32.
+
+        The tableau builds **down ignoring suit and colour** and does not wrap,
+        so an Ace ends its pile. **Cards move one at a time**; there is no
+        run-carrying.
+
+        An **empty pile may only be filled from the stock or the waste**, never
+        from another pile, which would let the eight piles be reordered freely.
+        #4419 omits the rule. A `stock` source with a `tableau` destination is a
+        move in its own right because routing a gap-fill through the waste would
+        spend a stock card early, and the single pass makes that expensive.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All eight foundations reached the King |
+        | GameOver   | `2`   | Player gave up |
+
+        | Command        | Aliases     | Description |
+        |----------------|-------------|-------------|
+        | `reset`        | `r`         | Start / restart a game |
+        | `draw`         | `d`         | Turn one card from the stock |
+        | `move`         | `m`         | Move a card (requires `from` and `to`) |
+        | `giveup`       | `g`         | Give up the current game |
+        | `hint`         | `h`         | Foundation, else tableau, else "draw" |
+        | `autocomplete` | `ac`        | Send every legal card to the foundations |
+        | `undo`         | `u`         | Undo the last action |
+        | `undo_n`       | -           | Undo the last `n` actions |
+        | `log`          | `l`         | View action log |
+
+        Move zones:
+        * `from`: `{zone: "tableau", col: 0..7}`, `{zone: "waste"}`, or `{zone: "stock"}`
+        * `to`: `{zone: "tableau", col: 0..7}` or `{zone: "foundation"}`
+        * A `stock` source is only valid with a `tableau` destination.
+
+      operationId: congressExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/CongressMoveZone'
+                to:
+                  $ref: '#/components/schemas/CongressMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Turn one card from the stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              tableauToFoundation:
+                summary: Send the top of pile 1 to its foundation
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 1
+                  to:
+                    zone: foundation
+              stockFillsAGap:
+                summary: Fill empty pile 3 straight from the stock
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: stock
+                  to:
+                    zone: tableau
+                    col: 3
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CongressResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CongressResponse'
   /spiteandmalice/exec:
     post:
       tags:
@@ -20551,6 +20675,90 @@ components:
           additionalProperties:
             type: string
 
+    CongressMoveZone:
+      type: object
+      description: Source or target zone for a Congress card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier
+          enum: [tableau, waste, stock, foundation]
+        col:
+          type: integer
+          description: |
+            Tableau pile (0..7). Required for a `tableau` source and destination;
+            ignored for `waste`, `stock`, and for a `foundation` destination the
+            server picks the pile from the card's suit.
+    CongressHint:
+      type: object
+      description: Suggested next move for Congress
+      properties:
+        fromZone:
+          type: string
+          enum: [tableau, waste, stock]
+        fromIdx:
+          type: integer
+          description: Source pile, or -1 when the source is the waste or the stock
+        toZone:
+          type: string
+          description: "`waste` means: turn a card from the stock."
+          enum: [foundation, tableau, waste]
+        toIdx:
+          type: integer
+          description: Destination index, or -1 for a draw, which targets no single pile
+    CongressResponse:
+      type: object
+      description: Response payload for /congress/exec
+      properties:
+        tableau:
+          type: array
+          description: |
+            Eight piles, dealt one card each at the start. Only the top card of a
+            pile is playable, and an empty pile can only be refilled from the
+            stock or the waste.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: Eight suit-pinned foundations, two per suit, opened by Aces and built up to Kings.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        stockCount:
+          type: integer
+          description: Cards left in the stock. Only ever decreases -- there is no redeal.
+        waste:
+          type: array
+          description: Turned cards. Only the last is available.
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
+        hint:
+          $ref: '#/components/schemas/CongressHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     AmericanToadMoveZone:
       type: object
       description: Source or target zone for an American Toad card move

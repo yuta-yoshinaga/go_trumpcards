@@ -1657,6 +1657,13 @@ export const GrandfathersClockPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Congress phase constants (sync: internal/domain/Congress.go). */
+export const CongressPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** American Toad phase constants (sync: internal/domain/AmericanToad.go). */
 export const AmericanToadPhase = {
   PLAYING: 0,

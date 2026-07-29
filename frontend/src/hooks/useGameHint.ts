@@ -35,6 +35,7 @@ import type {
   CegoResponse,
   CinchResponse,
   ClockSolitaireResponse,
+  CongressResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
   CribbageResponse,
@@ -219,6 +220,7 @@ import { getCatchTenHint } from '../utils/hints/catchtenHint';
 import { getCegoHint } from '../utils/hints/cegoHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
+import { getCongressHint } from '../utils/hints/congressHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
@@ -508,6 +510,7 @@ export const hintFactories = {
   duchess: (s) => getDuchessHint(s as DuchessResponse),
   windmill: (s) => getWindmillHint(s as WindmillResponse),
   americantoad: (s) => getAmericanToadHint(s as AmericanToadResponse),
+  congress: (s) => getCongressHint(s as CongressResponse),
   missmilligan: (s) => getMissMilliganHint(s as MissMilliganResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   sheepshead: (s) => getSheepsheadHint(s as SheepsheadResponse),

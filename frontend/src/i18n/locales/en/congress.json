@@ -1,0 +1,53 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "stock": "Stock",
+  "waste": "Waste",
+  "draw": "Draw",
+  "moveCount": "Moves",
+  "giveup": "Give up",
+  "empty": "Empty",
+  "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}}, starts at the Ace)",
+  "emptyPileAriaLabel": "Empty pile {{pile}} (stock or waste only)",
+  "stockAriaLabel": "Stock, {{count}} cards left",
+  "emptyStockAriaLabel": "The stock is empty (there is no redeal)",
+  "emptyWasteAriaLabel": "The waste is empty",
+  "stockOrWaste": "S/W",
+  "landscapeBanner": "Landscape orientation is recommended",
+  "hint": "Hint",
+  "autoComplete": "Auto-complete",
+  "autoCompleteNotReady": "Available once a card can reach a foundation",
+  "undo": "Undo",
+  "stalemate": "No moves left",
+  "playing": "Move a card",
+  "gameClear": "Game clear! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "gameOverSummary": "Reached {{count}}/104 cards on the foundations ({{percent}}%)",
+  "hintAvailable": "A hint is available",
+  "noHint": "No hint available",
+  "tutorial": {
+    "foundation": "There are eight foundations, two per suit. They **start empty**: an Ace goes up when one appears, and each then builds A-K in suit, 13 cards. All eight -- 8 x 13 = 104 -- wins the game.",
+    "tableau": "Eight tableau piles, dealt **one card each** (the other 96 are the stock). Build down **ignoring suit and colour**, but **only one card moves at a time**.",
+    "emptyPile": "When a pile empties it can be refilled **only from the stock or the waste**. A tableau card can never move into a gap, so an empty pile is not a tool for rearranging the board -- it is an outlet for the stock.",
+    "stock": "Turn the stock one card at a time onto the waste. **There is no redeal -- one pass only.** When a pile is empty you can place straight from the stock without spending a turn on the waste.",
+    "controls": "Draw, hint, undo, auto-complete, and the other controls."
+  },
+  "frontendHint": {
+    "tableau": "pile {{pile}}",
+    "foundation": "foundation {{idx}}",
+    "waste": "the waste",
+    "stock": "stock"
+  },
+  "hintReason": {
+    "toFoundation": "Sending this card to a foundation frees up the board",
+    "toTableau": "Take the suggested tableau move to dig out the pile",
+    "fillGap": "Fill the empty pile straight from the stock and save a waste card",
+    "draw": "Nothing can move, so turn a card from the stock"
+  }
+}

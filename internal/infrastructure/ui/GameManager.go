@@ -1472,6 +1472,27 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"skat.helpSetDifficulty", "skat.helpSetTarget"},
 			})
 	}},
+	{Name: "congress", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCongressCuiController(usecase.NewCongressInteractor(
+				domain.NewDefaultCongress(), new(presenter.CongressCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "congress.helpTitle",
+				CommandKeys: []string{
+					"congress.helpDraw",
+					"congress.helpMoveTF",
+					"congress.helpMoveTT",
+					"congress.helpMoveWF",
+					"congress.helpMoveWT",
+					"congress.helpMoveST",
+					"congress.helpGiveUp",
+					"congress.helpHint",
+					"congress.helpAutoComplete",
+					"congress.helpUndo",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "shithead", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShitheadCuiController(usecase.NewShitheadInteractor(
