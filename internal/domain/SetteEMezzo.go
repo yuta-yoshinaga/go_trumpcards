@@ -129,9 +129,21 @@ type SetteEMezzo struct {
 	actionLog  []*ActionLogEntry
 }
 
+// setteEMezzoOpeningBanker 最初の局の親。
+//
+// 人間 (seat 0) にしないのは、そこから始めると新規セッションがいきなり「あなたが
+// 配ってください」で開き、このゲームの主要な流れ — 賭けて引く — に入れないため。
+// 誰が最初に持つかは規則が定めていないので、遊びやすい方を選ぶ。
+const setteEMezzoOpeningBanker = 1
+
 // NewSetteEMezzo コンストラクタ
 func NewSetteEMezzo(trumpCards *TrumpCards) *SetteEMezzo {
-	s := &SetteEMezzo{trumpCards: trumpCards, phase: SetteEMezzoPhaseBet, nextBanker: -1}
+	s := &SetteEMezzo{
+		trumpCards: trumpCards,
+		phase:      SetteEMezzoPhaseBet,
+		banker:     setteEMezzoOpeningBanker,
+		nextBanker: -1,
+	}
 	s.chips.SetChips(SetteEMezzoDefaultChips)
 	return s
 }

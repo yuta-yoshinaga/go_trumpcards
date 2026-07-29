@@ -8,7 +8,9 @@ test.describe('Sette e Mezzo E2E', () => {
     await expect(page.getByText(/チップ/)).toBeVisible();
     await expect(page.getByText(/目標: 7\.5/)).toBeVisible();
 
-    // A CPU banks by default; if the human banks, deal instead.
+    // A CPU banks the opening round, so the stake buttons are what appears --
+    // but the bank moves to whoever lands exactly 7.5, and a resumed session can
+    // land on either, so handle both.
     const betButton = page.getByRole('button', { name: '100', exact: true });
     const dealButton = page.getByRole('button', { name: '配る', exact: true });
     if (await betButton.isVisible()) {

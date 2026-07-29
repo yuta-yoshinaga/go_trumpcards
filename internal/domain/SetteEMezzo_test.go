@@ -53,6 +53,25 @@ func TestSetteEMezzo_Reset(t *testing.T) {
 	}
 }
 
+// A brand-new session must open on the ordinary flow -- place a bet -- rather
+// than on "you deal". The zero value of `banker` is the human seat, so leaving
+// it unset would put every new player in the banker's chair before they had
+// seen a card.
+func TestSetteEMezzo_AFreshGameDoesNotOpenWithTheHumanBanking(t *testing.T) {
+	s := NewDefaultSetteEMezzo()
+	if s.IsHumanBanker() {
+		t.Error("a brand-new game should not start with the human banking")
+	}
+	s.Reset()
+	if s.IsHumanBanker() {
+		t.Error("the first Reset should not hand the human the bank either")
+	}
+	// そして通常どおり賭けられる。
+	if err := s.PlaceBet(100); err != nil {
+		t.Errorf("PlaceBet on a fresh game: %v", err)
+	}
+}
+
 // The deck is the 40-card Italian-style one: 8, 9 and 10 are absent.
 func TestSetteEMezzo_DeckHasFortyCardsWithoutEightNineTen(t *testing.T) {
 	s := NewDefaultSetteEMezzo()
