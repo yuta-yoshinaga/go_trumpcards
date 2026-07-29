@@ -1,6 +1,6 @@
 # Cloudflare Workers (WASM)
 
-Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. **Six** workers split games into size buckets to keep each binary under the free-tier 1 MB gzipped limit. The fourth, **`extra`**, was added in [ADR-0032](adr/0032-fourth-worker-capacity.md) once the original three approached the limit; it is an overflow bucket that games are rebalanced into. Like the others, the `Category` is purely a binary-size bucket, **not** a user-facing taxonomy.
+Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. **Six** workers split games into size buckets to keep each binary under the free-tier 1 MB gzipped limit. The fourth, **`extra`**, was added in [ADR-0032](adr/0032-fourth-worker-capacity.md) once the original three approached the limit, and **`extra2`/`extra3`** in [ADR-0036](adr/0036-fifth-sixth-worker-capacity.md). Like the others, the `Category` is purely a binary-size bucket, **not** a user-facing taxonomy. **No bucket is *the* overflow one:** a new game goes into whichever worker currently has the most gzip headroom, measured rather than assumed.
 
 Each row lists the games' **registry keys** verbatim, so the table can be checked
 mechanically -- `TestDocsMatchRegistry` in `internal/infrastructure/games` fails if

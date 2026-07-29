@@ -1,9 +1,12 @@
 package games_test
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -112,6 +115,41 @@ func TestArchitectureDocEndpointsMatchRegistry(t *testing.T) {
 	}
 }
 
+// archEndpointCountRe captures the endpoint totals stated in
+// docs/architecture.md -- the summary bullet and the table's own header line.
+var archEndpointCountRe = regexp.MustCompile(`(?:\*\*Web API\*\*: |-- \*\*)(\d+)(?:\*\* in total| endpoints, one per game)`)
+
+// TestArchitectureDocEndpointCountMatchesRegistry guards the endpoint totals
+// written in prose.
+//
+// Until #4470 that number was spelled out in words ("Two hundred and thirty-two
+// endpoints") inside a single paragraph that also held every endpoint, and
+// nothing checked it: TestArchitectureDocEndpointsMatchRegistry only counts
+// `POST /<name>/exec` occurrences, so the prose could say anything. Every game
+// added this session updated it by hand on trust.
+func TestArchitectureDocEndpointCountMatchesRegistry(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join(repoRoot, "docs/architecture.md"))
+	if err != nil {
+		t.Fatalf("read docs/architecture.md: %v", err)
+	}
+
+	matches := archEndpointCountRe.FindAllSubmatch(data, -1)
+	if len(matches) == 0 {
+		t.Fatal("docs/architecture.md states no endpoint count -- update the regex if the wording moved")
+	}
+
+	want := len(games.All())
+	for _, m := range matches {
+		got, err := strconv.Atoi(string(m[1]))
+		if err != nil {
+			t.Fatalf("unparsable endpoint count %q: %v", m[1], err)
+		}
+		if got != want {
+			t.Errorf("docs/architecture.md states %d endpoints, registry has %d — update the doc", got, want)
+		}
+	}
+}
+
 // TestPerGameManualsMatchRegistry asserts a strict 1:1 mapping between
 // registered games and the per-game manuals under docs/manual/{cui,web}. It
 // catches both a missing manual for a freshly added game and an orphan manual
@@ -149,5 +187,109 @@ func TestPerGameManualsMatchRegistry(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// bucketEnumRe matches a brace enumeration such as
+// `{casino,classic,solo,extra,extra2,extra3}` as used in build commands and
+// path globs throughout the docs.
+var bucketEnumRe = regexp.MustCompile(`\{([a-z0-9]+(?:,[a-z0-9]+)+)\}`)
+
+// workerPathRe matches a per-worker entry point path, one per table row in the
+// worker list.
+var workerPathRe = regexp.MustCompile(`cmd/workers/([a-z0-9]+)/main\.go`)
+
+// docsExemptFromBucketEnum are the docs whose bucket lists are deliberately
+// frozen. ADRs record what was true when the decision was made -- ADR-0031
+// names `{casino,classic,solo}` because there were three workers then, and
+// rewriting that to six would falsify the record. Nothing else belongs here:
+// an exemption for a live doc is the drift this guard exists to catch.
+var docsExemptFromBucketEnum = []string{"docs/adr/"}
+
+// TestDocsEnumerateEveryWorkerBucket asserts that a doc which enumerates worker
+// buckets enumerates ALL of them.
+//
+// Two rounds of #4474 missed sites because I searched for the *wording* I
+// remembered writing ("four Cloudflare Workers", "overflow bucket") instead of
+// for the *enumeration*. A list spelling out `{casino,classic,solo}` contains
+// neither the old count nor the new one, so no phrase search could ever reach
+// it: docs/architecture.md still described three workers and 93 of 233 games
+// two ADRs after that stopped being true, and docs/new-game-checklist.md:15
+// still named four. Both are mechanical to check, so check them mechanically.
+//
+// The rule is deliberately narrow -- it fires only on lists that already name
+// at least two buckets, so `docs/manual/{cui,web}` and friends are untouched.
+func TestDocsEnumerateEveryWorkerBucket(t *testing.T) {
+	all := make(map[string]bool, len(games.AllCategories()))
+	var want []string
+	for _, c := range games.AllCategories() {
+		all[c.String()] = true
+		want = append(want, c.String())
+	}
+	sort.Strings(want)
+
+	// requireComplete reports whether names -- a set of bucket-ish tokens found
+	// in one place in one file -- is either bucket-free, or the full set.
+	requireComplete := func(t *testing.T, path, context string, names []string) {
+		t.Helper()
+		var found []string
+		for _, n := range names {
+			if all[n] {
+				found = append(found, n)
+			}
+		}
+		if len(found) < 2 {
+			return // not a bucket enumeration
+		}
+		sort.Strings(found)
+		found = slices.Compact(found)
+		if !slices.Equal(found, want) {
+			t.Errorf("%s: %s enumerates buckets %v, registry has %v -- a partial list is how this doc drifted before",
+				path, context, found, want)
+		}
+	}
+
+	// Walk docs/ rather than globbing it: `docs/*.md` does not cross a `/`, so
+	// it would silently skip every subdirectory -- including docs/adr, which
+	// would leave the exemption below guarding nothing while reading as though
+	// it were load-bearing.
+	docs := []string{filepath.Join(repoRoot, "CLAUDE.md"), filepath.Join(repoRoot, "internal/CLAUDE.md")}
+	if err := filepath.WalkDir(filepath.Join(repoRoot, "docs"), func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() && strings.HasSuffix(path, ".md") {
+			docs = append(docs, path)
+		}
+		return nil
+	}); err != nil {
+		t.Fatalf("walk docs: %v", err)
+	}
+
+	for _, doc := range docs {
+		rel, err := filepath.Rel(repoRoot, doc)
+		if err != nil {
+			t.Fatalf("rel %s: %v", doc, err)
+		}
+		rel = filepath.ToSlash(rel)
+		if slices.ContainsFunc(docsExemptFromBucketEnum, func(p string) bool { return strings.HasPrefix(rel, p) }) {
+			continue
+		}
+		data, err := os.ReadFile(filepath.Clean(doc))
+		if err != nil {
+			t.Fatalf("read %s: %v", rel, err)
+		}
+
+		for _, m := range bucketEnumRe.FindAllStringSubmatch(string(data), -1) {
+			requireComplete(t, rel, "brace list "+m[0], strings.Split(m[1], ","))
+		}
+
+		// A per-worker table names one entry point per row, so the set of
+		// referenced entry points is itself an enumeration.
+		var paths []string
+		for _, m := range workerPathRe.FindAllStringSubmatch(string(data), -1) {
+			paths = append(paths, m[1])
+		}
+		requireComplete(t, rel, "cmd/workers/* references", paths)
 	}
 }
