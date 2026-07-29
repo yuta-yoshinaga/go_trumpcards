@@ -372,6 +372,14 @@ func TestEveryUndoStackIsPersisted(t *testing.T) {
 			"with a json tag to the wire struct -- see AmericanToad or Canfield, and #4478")
 }
 
+// bigDocument returns a JSON array literal longer than n bytes, for the two
+// games whose snapshot holds a document and is bounded by size rather than by
+// element count.
+func bigDocument(n int) json.RawMessage {
+	body := strings.Repeat("0,", n/2+2)
+	return json.RawMessage("[" + body + "0]")
+}
+
 // bigCards returns a slice long enough to trip a MaxSliceLen guard.
 func bigCards(n int) []*Card {
 	out := make([]*Card, n)
@@ -396,6 +404,8 @@ func bigLog(n int) []*ActionLogEntry {
 // them (#4478).
 func TestUndoPersistenceRespectsMaxSliceLen(t *testing.T) {
 	const over = 1001
+	// bigOver clears the 10000-element caps the older games use.
+	const bigOver = 10001
 
 	cases := []struct {
 		name string
@@ -511,6 +521,95 @@ func TestUndoPersistenceRespectsMaxSliceLen(t *testing.T) {
 			},
 			restore:         func(b []byte) error { return NewDefaultWindmill().UnmarshalJSON(b) },
 			restoreSnapshot: func(b []byte) error { return new(windmillSnapshot).UnmarshalJSON(b) },
+		},
+		// The six below cap at 10000 rather than 1000, so they need their own
+		// oversize figure. Nertz and RussianBank bound their snapshots by BYTES,
+		// not by element count, because the snapshot holds a JSON document.
+		{
+			name: "BlackHole",
+			tooManySnapshots: func() ([]byte, error) {
+				return json.Marshal(&blackHoleJSON{History: make([]*blackHoleSnapshot, bigOver)})
+			},
+			tooLongLog: func() ([]byte, error) {
+				return json.Marshal(&blackHoleJSON{ActionLog: bigLog(bigOver)})
+			},
+			bloatedSnapshot: func() ([]byte, error) {
+				return json.Marshal(&blackHoleSnapshotJSON{BlackHole: bigCards(bigOver)})
+			},
+			restore:         func(b []byte) error { return NewDefaultBlackHole().UnmarshalJSON(b) },
+			restoreSnapshot: func(b []byte) error { return new(blackHoleSnapshot).UnmarshalJSON(b) },
+		},
+		{
+			name: "SimpleSimon",
+			tooManySnapshots: func() ([]byte, error) {
+				return json.Marshal(&simpleSimonJSON{History: make([]*simpleSimonSnapshot, bigOver)})
+			},
+			tooLongLog: func() ([]byte, error) {
+				return json.Marshal(&simpleSimonJSON{ActionLog: bigLog(bigOver)})
+			},
+			bloatedSnapshot: func() ([]byte, error) {
+				return json.Marshal(&simpleSimonSnapshotJSON{
+					Columns: [SimpleSimonColCnt][]*Card{bigCards(bigOver)},
+				})
+			},
+			restore:         func(b []byte) error { return NewDefaultSimpleSimon().UnmarshalJSON(b) },
+			restoreSnapshot: func(b []byte) error { return new(simpleSimonSnapshot).UnmarshalJSON(b) },
+		},
+		{
+			name: "LaBelleLucie",
+			tooManySnapshots: func() ([]byte, error) {
+				return json.Marshal(&laBelleLucieJSON{History: make([]*laBelleLucieSnapshot, bigOver)})
+			},
+			tooLongLog: func() ([]byte, error) {
+				return json.Marshal(&laBelleLucieJSON{ActionLog: bigLog(bigOver)})
+			},
+			bloatedSnapshot: func() ([]byte, error) {
+				return json.Marshal(&laBelleLucieSnapshotJSON{Fans: [][]*Card{bigCards(bigOver)}})
+			},
+			restore:         func(b []byte) error { return NewDefaultLaBelleLucie().UnmarshalJSON(b) },
+			restoreSnapshot: func(b []byte) error { return new(laBelleLucieSnapshot).UnmarshalJSON(b) },
+		},
+		{
+			name: "DoubleKlondike",
+			tooManySnapshots: func() ([]byte, error) {
+				return json.Marshal(&doubleKlondikeJSON{History: make([]*doubleKlondikeSnapshot, bigOver)})
+			},
+			tooLongLog: func() ([]byte, error) {
+				return json.Marshal(&doubleKlondikeJSON{ActionLog: bigLog(bigOver)})
+			},
+			bloatedSnapshot: func() ([]byte, error) {
+				return json.Marshal(&doubleKlondikeSnapshotJSON{Stock: bigCards(bigOver)})
+			},
+			restore:         func(b []byte) error { return NewDefaultDoubleKlondike().UnmarshalJSON(b) },
+			restoreSnapshot: func(b []byte) error { return new(doubleKlondikeSnapshot).UnmarshalJSON(b) },
+		},
+		{
+			name: "Nertz",
+			tooManySnapshots: func() ([]byte, error) {
+				return json.Marshal(&nertzJSON{History: make([]*nertzSnapshot, bigOver)})
+			},
+			tooLongLog: func() ([]byte, error) {
+				return json.Marshal(&nertzJSON{ActionLog: bigLog(bigOver)})
+			},
+			bloatedSnapshot: func() ([]byte, error) {
+				return json.Marshal(&nertzSnapshotJSON{Players: bigDocument(nertzSnapshotMaxBytes)})
+			},
+			restore:         func(b []byte) error { return NewDefaultNertz().UnmarshalJSON(b) },
+			restoreSnapshot: func(b []byte) error { return new(nertzSnapshot).UnmarshalJSON(b) },
+		},
+		{
+			name: "RussianBank",
+			tooManySnapshots: func() ([]byte, error) {
+				return json.Marshal(&russianBankJSON{History: make([]*russianBankSnapshot, bigOver)})
+			},
+			tooLongLog: func() ([]byte, error) {
+				return json.Marshal(&russianBankJSON{ActionLog: bigLog(bigOver)})
+			},
+			bloatedSnapshot: func() ([]byte, error) {
+				return json.Marshal(&russianBankSnapshotJSON{State: bigDocument(russianBankSnapshotMaxBytes)})
+			},
+			restore:         func(b []byte) error { return NewDefaultRussianBank().UnmarshalJSON(b) },
+			restoreSnapshot: func(b []byte) error { return new(russianBankSnapshot).UnmarshalJSON(b) },
 		},
 	}
 
