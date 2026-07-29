@@ -1,0 +1,60 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "stock": "Stock",
+  "waived": "Waived",
+  "deal": "Deal",
+  "waive": "Waive",
+  "waiveReady": "ready",
+  "moveCount": "Moves",
+  "giveup": "Give Up",
+  "empty": "Empty",
+  "kingsOnly": "K only",
+  "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}})",
+  "emptyColumnAriaLabel": "Empty tableau column {{col}} (Kings only)",
+  "stockAriaLabel": "Stock, {{count}} cards left",
+  "waivedAriaLabel": "Waived cards, {{count}}",
+  "emptyWaivedAriaLabel": "Nothing is waived",
+  "waiveReadyAriaLabel": "Waived slot is empty; the stock is gone so waiving is available",
+  "waiveColumnAriaLabel": "Waive a run from tableau column {{col}}",
+  "dealBlockedByWaive": "Return the waived cards before dealing",
+  "landscapeBanner": "Landscape mode recommended",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available once an Ace reaches a foundation",
+  "undo": "Undo",
+  "stalemate": "Stalemate",
+  "playing": "Move cards to build the foundations",
+  "waiving": "Put the waived cards back on the tableau",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "gameOverSummary": "Reached {{count}}/104 cards on the foundations ({{percent}}%)",
+  "hintAvailable": "Hint available",
+  "noHint": "No hint available",
+  "tutorial": {
+    "foundation": "There are eight foundations, two per suit. An Ace opens one, and each builds up A to K by suit. Completing all eight wins.",
+    "stock": "The stock is not turned one card at a time — you deal **eight at once**, one onto every column. There is no waste pile.",
+    "tableau": "Eight columns. Cards stack down in alternating colour and a run moves as a unit. **An empty column takes only a King** (or a run headed by one).",
+    "waive": "Once the stock is exhausted you may waive: lift one run aside, free the cards underneath, then put it back. Dealing and a second waive are both barred while you hold it.",
+    "controls": "Use the deal, hint, undo, and auto-complete buttons."
+  },
+  "frontendHint": {
+    "tableau": "Tableau column {{col}}",
+    "foundation": "Foundation {{idx}}",
+    "waived": "The waived cards",
+    "stock": "Stock",
+    "deal": "deal a row"
+  },
+  "hintReason": {
+    "toFoundation": "Send this card to a foundation to free up the board.",
+    "toTableau": "Apply the suggested tableau move to dig out the cards underneath.",
+    "returnWaived": "Nothing else can move until the waived cards are back on the tableau.",
+    "deal": "Nothing on the board can move, so deal a card onto every column."
+  }
+}

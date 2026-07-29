@@ -207,6 +207,7 @@ export type GameKey =
   | 'bisley'
   | 'napoleonssquare'
   | 'grandfathersclock'
+  | 'missmilligan'
   | 'crescent'
   // Counting/Rummy
   | 'ginrummy'
@@ -663,6 +664,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   bisley: CASINO,
   napoleonssquare: CASINO,
   grandfathersclock: CASINO,
+  missmilligan: CASINO,
   crescent: CASINO,
   // Counting/Rummy
   ginrummy: BLUE,

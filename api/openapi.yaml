@@ -195,6 +195,8 @@ tags:
     description: Napoleon's Square game - two-deck square solitaire; eight foundations seeded with the Aces, twelve columns of four, and same-suit runs that move as one unit
   - name: grandfathersclock
     description: Grandfather's Clock game - twelve clock faces, each finishing on the rank of the hour it occupies; no stock, all 52 cards dealt at the start
+  - name: missmilligan
+    description: Miss Milligan game - two-deck solitaire dealt eight at a time onto every column, with a "waiving" rescue that holds one run aside once the stock is gone
   - name: spiteandmalice
     description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
   - name: skat
@@ -10564,6 +10566,137 @@ paths:
               schema:
                 $ref: '#/components/schemas/GrandfathersClockResponse'
 
+  /missmilligan/exec:
+    post:
+      tags:
+        - missmilligan
+      summary: Execute a Miss Milligan game command
+      description: |
+        Send a command to advance the Miss Milligan (ミス・ミリガン) game session
+        identified by `sessionId`. It is a two-deck (104-card) solitaire, widely
+        considered one of the hardest.
+
+        One card is dealt to each of **eight columns** to start; the other 96 form
+        the stock, which is dealt **eight at a time, one onto every column**.
+        There is **no waste pile** -- #4407's rule 5 describes turning the stock a
+        card at a time into one, which is not how this game works.
+
+        Eight foundations (two per suit) build up A->K by suit. The tableau builds
+        **down in alternating colour** and a run moves as a unit. **An empty column
+        takes only a King** or a King-headed run; #4407 omits that rule, but
+        without it an empty column becomes a universal parking space.
+
+        **Waiving** is the rescue rule. Once the stock is exhausted the player may
+        lift one run aside (`waive`), free the cards underneath, then put it back
+        through the ordinary move API with `from: {zone: "waived"}`. Dealing and a
+        second waive are both refused while cards are held, and only a lone held
+        card may go to a foundation. Because waiving is a rescue, `isStalemate`
+        stays false while one remains available.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All eight foundations reached the King |
+        | GameOver   | `2`   | Player gave up |
+
+        | Command        | Aliases     | Description |
+        |----------------|-------------|-------------|
+        | `reset`        | `r`         | Start / restart a game |
+        | `deal`         | `d`         | Deal one card onto every column |
+        | `move`         | `m`         | Move a card or run (requires `from` and `to`) |
+        | `waive`        | `wv`        | Lift a run aside (requires `from.col`) |
+        | `giveup`       | `g`         | Give up the current game |
+        | `hint`         | `h`         | Foundation, else tableau, else "deal a row" |
+        | `autocomplete` | `ac`        | Send every legal card to the foundations |
+        | `undo`         | `u`         | Undo the last action |
+        | `undo_n`       | -           | Undo the last `n` actions |
+        | `log`          | `l`         | View action log |
+
+        Move zones:
+        * `from`: `{zone: "tableau", col: 0..7, cardIndex?: n}` or `{zone: "waived"}`
+        * `to`: `{zone: "tableau", col: 0..7}` or `{zone: "foundation"}`
+
+      operationId: missmilliganExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, deal, d, move, m, waive, wv, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/MissMilliganMoveZone'
+                to:
+                  $ref: '#/components/schemas/MissMilliganMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              deal:
+                summary: Deal one card onto every column
+                value:
+                  command: deal
+                  sessionId: my-session-001
+              moveRunBetweenColumns:
+                summary: Carry the run starting at index 2 of column 0 onto column 5
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 0
+                    cardIndex: 2
+                  to:
+                    zone: tableau
+                    col: 5
+              waive:
+                summary: Lift the run starting at index 1 of column 3 aside
+                value:
+                  command: waive
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 3
+                    cardIndex: 1
+              returnWaived:
+                summary: Put the held cards back on column 6
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: waived
+                  to:
+                    zone: tableau
+                    col: 6
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissMilliganResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissMilliganResponse'
+
   /spiteandmalice/exec:
     post:
       tags:
@@ -20008,6 +20141,116 @@ components:
           description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
         hint:
           $ref: '#/components/schemas/GrandfathersClockHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    MissMilliganMoveZone:
+      type: object
+      description: Source or target zone for a Miss Milligan card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier
+          enum: [tableau, waived, foundation]
+        col:
+          type: integer
+          description: |
+            Tableau column (0..7). Required for a `tableau` source and for a
+            `tableau` destination; ignored for `waived`, and for a `foundation`
+            destination the server picks the pile from the card's suit.
+        cardIndex:
+          type: integer
+          description: |
+            Head of the alternating-colour run to carry, for a `tableau` source.
+            Omit to move only the top card (the server then uses -1, which it
+            resolves to the top of the column). Also used by the `waive` command
+            to choose how much of a column to lift aside.
+    MissMilliganTableauCard:
+      type: object
+      description: A single tableau card. Every card is face-up by rule, but the flag is surfaced rather than assumed.
+      properties:
+        card:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+        faceUp:
+          type: boolean
+    MissMilliganHint:
+      type: object
+      description: Suggested next move for Miss Milligan
+      properties:
+        fromZone:
+          type: string
+          description: "`stock` means: deal a row onto every column."
+          enum: [tableau, waived, stock]
+        fromCol:
+          type: integer
+          description: Source column, or -1 when the source is the waived set or the stock
+        cardIndex:
+          type: integer
+          description: Head of the run to carry, or -1 when the source is not the tableau
+        toZone:
+          type: string
+          enum: [foundation, tableau]
+        toIdx:
+          type: integer
+          description: Destination index, or -1 for a deal, which targets no single column
+    MissMilliganResponse:
+      type: object
+      description: Response payload for /missmilligan/exec
+      properties:
+        tableau:
+          type: array
+          description: Eight columns, dealt one card each at the start.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/MissMilliganTableauCard'
+        stockCount:
+          type: integer
+          description: Cards left in the stock. Only ever decreases, eight at a time.
+        foundation:
+          type: array
+          description: Eight foundations, two per suit, opened by Aces.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        waived:
+          type: array
+          description: Cards held aside by waiving. While this is non-empty, dealing and a second waive are both refused.
+          items:
+            $ref: '#/components/schemas/Card'
+        canWaive:
+          type: boolean
+          description: |
+            Whether waiving is available: the stock is exhausted and nothing is
+            currently held. Sent so the client does not recompute the condition.
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+          description: |
+            False while a waive is still available, even when no ordinary move
+            exists -- waiving is a rescue, so the board is not yet dead.
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
+        hint:
+          $ref: '#/components/schemas/MissMilliganHint'
         message:
           type: string
         messageCode:

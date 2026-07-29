@@ -90,6 +90,7 @@ import type {
   MichiganResponse,
   MightyResponse,
   MississippiStudResponse,
+  MissMilliganResponse,
   MonteCarloResponse,
   MusResponse,
   NapoleonResponse,
@@ -274,6 +275,7 @@ import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getMichiganHint } from '../utils/hints/michiganHint';
 import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
+import { getMissMilliganHint } from '../utils/hints/missmilliganHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getMusHint } from '../utils/hints/musHint';
 import { getNapHint } from '../utils/hints/napHint';
@@ -497,6 +499,7 @@ export const hintFactories = {
   bisley: (s) => getBisleyHint(s as BisleyResponse),
   napoleonssquare: (s) => getNapoleonsSquareHint(s as NapoleonsSquareResponse),
   grandfathersclock: (s) => getGrandfathersClockHint(s as GrandfathersClockResponse),
+  missmilligan: (s) => getMissMilliganHint(s as MissMilliganResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   sheepshead: (s) => getSheepsheadHint(s as SheepsheadResponse),
   doppelkopf: (s) => getDoppelkopfHint(s as DoppelkopfResponse),
