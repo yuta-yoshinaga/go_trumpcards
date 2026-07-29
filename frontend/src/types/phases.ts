@@ -1650,6 +1650,13 @@ export const NapoleonsSquarePhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Grandfather's Clock phase constants (sync: internal/domain/GrandfathersClock.go). */
+export const GrandfathersClockPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Streets and Alleys phase constants (sync: internal/domain/StreetsAndAlleys.go). */
 export const StreetsAndAlleysPhase = {
   PLAYING: 0,
