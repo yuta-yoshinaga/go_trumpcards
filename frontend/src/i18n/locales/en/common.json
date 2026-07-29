@@ -249,7 +249,8 @@
     "americantoad": "American Toad",
     "congress": "Congress",
     "terrace": "Terrace",
-    "braid": "Braid"
+    "braid": "Braid",
+    "pontoon": "Pontoon"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1333,7 +1334,10 @@
       "stay": "Stay",
       "surrender": "Surrender",
       "truco": "Call Truco",
-      "undo": "Undo one move"
+      "undo": "Undo one move",
+      "stick": "Stick",
+      "twist": "Twist",
+      "buy": "Buy"
     }
   }
 }

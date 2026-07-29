@@ -1,0 +1,60 @@
+{
+  "phase": {
+    "bet": "Betting",
+    "playerTurn": "Your turn",
+    "bankerTurn": "Banker's turn",
+    "end": "Settled"
+  },
+  "chips": "Chips",
+  "banker": "Banker",
+  "bankerIsYou": "you",
+  "bankerHand": "Banker's hand",
+  "bet": "Bet",
+  "total": "Total",
+  "moveCount": "Moves",
+  "faceDown": "face down",
+  "rank": {
+    "pontoon": "Pontoon",
+    "fiveCard": "Five card trick",
+    "bust": "Bust",
+    "points": ""
+  },
+  "actions": {
+    "stick": "Stick",
+    "twist": "Twist",
+    "buy": "Buy",
+    "split": "Split",
+    "bankerTwist": "Draw",
+    "bankerStay": "Stop",
+    "deal": "Deal",
+    "nextRound": "Next round"
+  },
+  "hint": {
+    "stick": "Only on a total of 15 or more",
+    "twist": "Draw one; the stake does not change",
+    "buy": "Raise and draw; closed once the hand has twisted",
+    "split": "Split two cards of equal rank"
+  },
+  "betLabel": "Choose your stake",
+  "betAmount": "{{amount}}",
+  "dealAsBanker": "You are the banker — deal the round",
+  "placeBet": "Choose your stake",
+  "yourTurn": "Choose a declaration",
+  "bankerTurn": "Draw or stop as the banker",
+  "roundOver": "{{result}}",
+  "bankPasses": "A pontoon takes the bank",
+  "payout": "{{payout}}",
+  "landscapeBanner": "Landscape orientation is recommended",
+  "seatAriaLabel": "{{name}}'s hand, total {{total}}",
+  "hiddenHandAriaLabel": "{{name}}'s hand is face down",
+  "bankerHandAriaLabel": "Banker's hand, total {{total}}",
+  "hiddenBankerHandAriaLabel": "The banker's hand is face down",
+  "tutorial": {
+    "faceDown": "In Pontoon **every hand is dealt face down, including the banker's**. Unlike blackjack there is no up-card to read.",
+    "rank": "Strength is not just a total: **a Pontoon (ace + ten-value, two cards) beats a five card trick (exactly five cards, 21 or less) beats any points**. The top two pay double.",
+    "stick": "**You cannot stick below 15.** Below that you must keep drawing, which makes 12–14 the worst place to be.",
+    "buy": "**Buy raises and draws, but is dead once the hand has twisted.** Choosing how to take the first card is the real decision.",
+    "banker": "**A player who makes a Pontoon takes the bank next deal.** When you bank you place no stake and decide the draw at the end.",
+    "controls": "Buttons for the declarations and the next round."
+  }
+}

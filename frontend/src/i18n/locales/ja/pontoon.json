@@ -1,0 +1,60 @@
+{
+  "phase": {
+    "bet": "ベット",
+    "playerTurn": "あなたの手番",
+    "bankerTurn": "親の手番",
+    "end": "精算"
+  },
+  "chips": "チップ",
+  "banker": "親",
+  "bankerIsYou": "あなた",
+  "bankerHand": "親の手",
+  "bet": "賭け金",
+  "total": "合計",
+  "moveCount": "手数",
+  "faceDown": "伏せ札",
+  "rank": {
+    "pontoon": "ポンツーン",
+    "fiveCard": "ファイブカード・トリック",
+    "bust": "バースト",
+    "points": ""
+  },
+  "actions": {
+    "stick": "スティック",
+    "twist": "ツイスト",
+    "buy": "バイ",
+    "split": "スプリット",
+    "bankerTwist": "引く",
+    "bankerStay": "止める",
+    "deal": "配る",
+    "nextRound": "次の局へ"
+  },
+  "hint": {
+    "stick": "合計15以上でのみ宣言できます",
+    "twist": "1枚引きます。賭け金は増えません",
+    "buy": "賭け金を足して1枚引きます。ツイストのあとは使えません",
+    "split": "同じランクの2枚を分けます"
+  },
+  "betLabel": "賭け金を選んでください",
+  "betAmount": "{{amount}}",
+  "dealAsBanker": "あなたが親です。配ってください",
+  "placeBet": "賭け金を選んでください",
+  "yourTurn": "宣言を選んでください",
+  "bankerTurn": "親として引くか止めるかを決めてください",
+  "roundOver": "{{result}}",
+  "bankPasses": "ポンツーンで親が移りました",
+  "payout": "{{payout}}",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "seatAriaLabel": "{{name}} の手 合計{{total}}",
+  "hiddenHandAriaLabel": "{{name}} の手は伏せられています",
+  "bankerHandAriaLabel": "親の手 合計{{total}}",
+  "hiddenBankerHandAriaLabel": "親の手は伏せられています",
+  "tutorial": {
+    "faceDown": "ポンツーンは**親を含む全員が2枚とも裏向き**で受け取ります。ブラックジャックと違い、親のアップカードがありません。",
+    "rank": "強さは点数だけでは決まりません。**ポンツーン（A＋10点札の2枚）> ファイブカード・トリック（ちょうど5枚で21以下）> 点数**の順で、上位2つは2倍配当です。",
+    "stick": "**スティックは合計15以上でないと宣言できません。** 14以下は引くしかないので、12〜14が最も苦しい形です。",
+    "buy": "**バイは賭け金を足して1枚引く手ですが、一度ツイストすると二度と使えません。** 最初の1枚をどちらで引くかがこのゲームの読みどころです。",
+    "banker": "**ポンツーンを出したプレイヤーが次の局の親になります。** 自分が親の局は賭けずに全員の賭けを受け、最後に引き止めを決めます。",
+    "controls": "宣言・次の局などの操作ボタンです。"
+  }
+}
