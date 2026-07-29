@@ -176,6 +176,7 @@ import type {
   WaspResponse,
   WattenResponse,
   WhistResponse,
+  WindmillResponse,
   WizardResponse,
   YanivResponse,
   YukonResponse,
@@ -363,6 +364,7 @@ import { getWarHint } from '../utils/hints/warHint';
 import { getWaspHint } from '../utils/hints/waspHint';
 import { getWattenHint } from '../utils/hints/wattenHint';
 import { getWhistHint } from '../utils/hints/whistHint';
+import { getWindmillHint } from '../utils/hints/windmillHint';
 import { getWizardHint } from '../utils/hints/wizardHint';
 import { getYanivHint } from '../utils/hints/yanivHint';
 import { getYukonHint } from '../utils/hints/yukonHint';
@@ -502,6 +504,7 @@ export const hintFactories = {
   napoleonssquare: (s) => getNapoleonsSquareHint(s as NapoleonsSquareResponse),
   grandfathersclock: (s) => getGrandfathersClockHint(s as GrandfathersClockResponse),
   duchess: (s) => getDuchessHint(s as DuchessResponse),
+  windmill: (s) => getWindmillHint(s as WindmillResponse),
   missmilligan: (s) => getMissMilliganHint(s as MissMilliganResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   sheepshead: (s) => getSheepsheadHint(s as SheepsheadResponse),

@@ -94,6 +94,7 @@ var gameDescriptions = map[string]string{
 	"grandfathersclock":   "グランドファーザーズ・クロック（時計盤ソリティア）",
 	"missmilligan":        "ミス・ミリガン（2デッキの高難度ソリティア）",
 	"duchess":             "ダッチェス（開始ランクを選ぶリザーブ扇のソリティア）",
+	"windmill":            "ウィンドミル（十字に並べる2デッキのソリティア）",
 	"spiteandmalice":      "Spite and Malice (スパイト・アンド・マリス)",
 	"skat":                "Skat (スカート)",
 	"shithead":            "Shithead / Karma (シットヘッド)",

@@ -1657,6 +1657,13 @@ export const GrandfathersClockPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Windmill phase constants (sync: internal/domain/Windmill.go). */
+export const WindmillPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Duchess phase constants (sync: internal/domain/Duchess.go). */
 export const DuchessPhase = {
   PLAYING: 0,

@@ -199,6 +199,8 @@ tags:
     description: Miss Milligan game - two-deck solitaire dealt eight at a time onto every column, with a "waiving" rescue that holds one run aside once the stock is gone
   - name: duchess
     description: Duchess (Glenwood) game - Canfield-family solitaire where the player picks the foundations' starting rank off a reserve fan, and empty columns stay locked to the reserve
+  - name: windmill
+    description: Windmill (Propeller) game - two-deck cross solitaire whose centre climbs A-K four times over while four corner foundations run King down to Ace
   - name: spiteandmalice
     description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
   - name: skat
@@ -10830,6 +10832,145 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DuchessResponse'
+  /windmill/exec:
+    post:
+      tags:
+        - windmill
+      summary: Execute a Windmill game command
+      description: |
+        Send a command to advance the Windmill (ウィンドミル) game session
+        identified by `sessionId`. It is a two-deck (104-card) solitaire, also
+        known as Propeller.
+
+        An Ace opens the centre and **eight cards** are laid around it as a cross
+        -- the "sails", two per arm. The remaining 95 form the stock, turned one
+        at a time to a waste with **no redeal**. #4416 describes a four-card
+        cross; the real layout is eight.
+
+        The four corner slots **start empty** and take a King as one turns up.
+        #4416 deals them at the start, which would open four foundations for
+        free.
+
+        The **centre foundation builds up ignoring suit, wrapping King round to
+        Ace, for 52 cards** -- A-K four times through. #4416 describes a single
+        A-K run, and its "up to 8 per rank" is also wrong: two decks give 8 of
+        each rank, but 4 go to the centre and 4 across the corners. Each corner
+        builds **down ignoring suit, King to Ace, 13 cards**, so 52 + 13*4 = 104
+        exactly.
+
+        A vacated sail is refilled **immediately** from the waste, or from the
+        stock if the waste is empty, so a hole only persists once both are gone.
+
+        The one rescue is **pulling a corner top back onto the centre**, and it
+        runs one way only (#4416 calls it bidirectional). After using it, the
+        next card played to the centre must come from a sail or the waste;
+        `transferBlocked` reports that state so the client does not have to
+        remember the previous move. Auto-complete deliberately never performs the
+        transfer -- dismantling a corner is a strategic judgement.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | Centre reached 52 and every corner reached 13 |
+        | GameOver   | `2`   | Player gave up |
+
+        | Command        | Aliases     | Description |
+        |----------------|-------------|-------------|
+        | `reset`        | `r`         | Start / restart a game |
+        | `draw`         | `d`         | Turn one card from the stock |
+        | `move`         | `m`         | Move a card (requires `from` and `to`) |
+        | `giveup`       | `g`         | Give up the current game |
+        | `hint`         | `h`         | Foundation, else the pull-back, else "draw" |
+        | `autocomplete` | `ac`        | Send every legal sail/waste card to the foundations |
+        | `undo`         | `u`         | Undo the last action |
+        | `undo_n`       | -           | Undo the last `n` actions |
+        | `log`          | `l`         | View action log |
+
+        Move zones:
+        * `from`: `{zone: "sail", col: 0..7}`, `{zone: "waste"}`, or `{zone: "corner", col: 0..3}`
+        * `to`: `{zone: "center"}` or `{zone: "corner", col: 0..3}`
+        * A `corner` source is only valid with a `center` destination.
+
+      operationId: windmillExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/WindmillMoveZone'
+                to:
+                  $ref: '#/components/schemas/WindmillMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Turn one card from the stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              sailToCenter:
+                summary: Send the card in sail 3 to the centre foundation
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: sail
+                    col: 3
+                  to:
+                    zone: center
+              sailToCorner:
+                summary: Open corner 1 with a King from sail 0
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: sail
+                    col: 0
+                  to:
+                    zone: corner
+                    col: 1
+              pullBack:
+                summary: Pull the top of corner 2 back onto the centre
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: corner
+                    col: 2
+                  to:
+                    zone: center
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WindmillResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WindmillResponse'
   /spiteandmalice/exec:
     post:
       tags:
@@ -20283,6 +20424,101 @@ components:
           additionalProperties:
             type: string
 
+    WindmillMoveZone:
+      type: object
+      description: Source or target zone for a Windmill card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier
+          enum: [sail, waste, corner, center]
+        col:
+          type: integer
+          description: |
+            Sail index (0..7) for a `sail` source, or corner index (0..3) for a
+            `corner` source and destination. Ignored for `waste` and `center`.
+    WindmillHint:
+      type: object
+      description: Suggested next move for Windmill
+      properties:
+        fromZone:
+          type: string
+          description: "`stock` means: turn a card to the waste."
+          enum: [sail, waste, corner, stock]
+        fromIdx:
+          type: integer
+          description: Sail or corner index, or -1 when the source is the waste or the stock
+        toZone:
+          type: string
+          enum: [center, corner, waste]
+        toIdx:
+          type: integer
+          description: Corner index, or -1 when the destination is not a corner
+    WindmillResponse:
+      type: object
+      description: Response payload for /windmill/exec
+      properties:
+        sails:
+          type: array
+          description: |
+            Eight fixed slots. A slot is refilled the moment it empties, so a
+            null only appears once both the waste and the stock are exhausted --
+            it is sent as null rather than compacted away so the cross keeps its
+            shape.
+          items:
+            nullable: true
+            allOf:
+              - $ref: '#/components/schemas/Card'
+        center:
+          type: array
+          description: The centre foundation. 52 cards when complete (A-K four times through).
+          items:
+            $ref: '#/components/schemas/Card'
+        corners:
+          type: array
+          description: Four corner foundations, each King down to Ace (13 cards).
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        stockCount:
+          type: integer
+          description: Cards left in the stock. Only ever decreases -- there is no redeal.
+        waste:
+          type: array
+          description: Turned cards. Only the last is available.
+          items:
+            $ref: '#/components/schemas/Card'
+        transferBlocked:
+          type: boolean
+          description: |
+            True right after a corner card was pulled back onto the centre. While
+            true another pull-back is refused; the next centre card must come from
+            a sail or the waste.
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
+        hint:
+          $ref: '#/components/schemas/WindmillHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     DuchessMoveZone:
       type: object
       description: Source or target zone for a Duchess card move
