@@ -465,6 +465,11 @@ func init() {
 			return usecase.NewCongressInteractor(domain.NewDefaultCongress(), new(presenter.CongressWebPresenter))
 		},
 		controller.NewCongressWebController)
+	BindWebControllerFor("terrace",
+		func() usecase.TerraceInteractorIF {
+			return usecase.NewTerraceInteractor(domain.NewDefaultTerrace(), new(presenter.TerraceWebPresenter))
+		},
+		controller.NewTerraceWebController)
 	BindWebControllerFor("shithead",
 		func() usecase.ShitheadInteractorIF {
 			return usecase.NewShitheadInteractor(domain.NewDefaultShithead(), new(presenter.ShitheadWebPresenter))

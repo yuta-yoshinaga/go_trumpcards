@@ -208,6 +208,7 @@ export * from './games/sultan';
 export * from './games/tablanet';
 export * from './games/tarneeb';
 export * from './games/teenpatti';
+export * from './games/terrace';
 export * from './games/texasholdembonus';
 export * from './games/thirtyone';
 export * from './games/threecard';
@@ -321,6 +322,7 @@ export const games = [
   'windmill',
   'americantoad',
   'congress',
+  'terrace',
   'missmilligan',
   'canfield',
   'osmosis',

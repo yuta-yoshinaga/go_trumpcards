@@ -1493,6 +1493,27 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "terrace", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTerraceCuiController(usecase.NewTerraceInteractor(
+				domain.NewDefaultTerrace(), new(presenter.TerraceCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "terrace.helpTitle",
+				CommandKeys: []string{
+					"terrace.helpDraw",
+					"terrace.helpMoveRF",
+					"terrace.helpMoveWF",
+					"terrace.helpMoveWT",
+					"terrace.helpMoveTF",
+					"terrace.helpMoveTT",
+					"terrace.helpGiveUp",
+					"terrace.helpHint",
+					"terrace.helpAutoComplete",
+					"terrace.helpUndo",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "shithead", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShitheadCuiController(usecase.NewShitheadInteractor(

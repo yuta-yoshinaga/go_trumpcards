@@ -205,6 +205,8 @@ tags:
     description: American Toad game - the two-deck Canfield, with a 20-card reserve that auto-fills empty columns and foundations that wrap round from the deal-chosen base rank
   - name: congress
     description: Congress game - eight single-card piles flanking eight foundations; the tableau builds down ignoring suit one card at a time, and an empty pile takes only a stock or waste card
+  - name: terrace
+    description: Terrace (Queen of Italy) game - the foundations build up in alternating colour from a player-chosen base rank, and the 11-card terrace feeds them and nothing else
   - name: spiteandmalice
     description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
   - name: skat
@@ -11222,6 +11224,129 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CongressResponse'
+  /terrace/exec:
+    post:
+      tags:
+        - terrace
+      summary: Execute a Terrace game command
+      description: |
+        Send a command to advance the Terrace (テラス) game session identified by
+        `sessionId`. It is a two-deck (104-card) solitaire, also known as Queen of
+        Italy.
+
+        An **11-card terrace** is laid out face up, one card is dealt to each of
+        **nine tableau piles**, and the remaining 84 form the stock, turned one at
+        a time to a waste with **no redeal**.
+
+        Two signature rules:
+
+        * The **eight foundations build up in ALTERNATING COLOUR, not by suit**,
+          13 cards each, wrapping King round to Ace. The base rank is not dealt:
+          the first card the player sends to a foundation fixes it, and
+          `awaitingBaseRank` reports that state. #4381 describes "same suit
+          ascending", which would be a different game.
+        * **The terrace top can only go to a foundation, never to the tableau.**
+          It is a feed, not a parking space, and it is never refilled. #4381 says
+          the top card of the terrace and the tableau may both move, which would
+          defuse the central tension.
+
+        The tableau also builds down in alternating colour, wrapping Ace round to
+        King, **one card at a time**. An empty tableau pile refills
+        **automatically** from the waste, else the stock, so there is no move that
+        fills one by hand.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All eight foundations reached 13 cards |
+        | GameOver   | `2`   | Player gave up |
+
+        | Command        | Aliases     | Description |
+        |----------------|-------------|-------------|
+        | `reset`        | `r`         | Start / restart a game |
+        | `draw`         | `d`         | Turn one card from the stock |
+        | `move`         | `m`         | Move a card (requires `from` and `to`) |
+        | `giveup`       | `g`         | Give up the current game |
+        | `hint`         | `h`         | Terrace, else foundation, else tableau, else "draw" |
+        | `autocomplete` | `ac`        | Send every legal card to the foundations |
+        | `undo`         | `u`         | Undo the last action |
+        | `undo_n`       | -           | Undo the last `n` actions |
+        | `log`          | `l`         | View action log |
+
+        Move zones:
+        * `from`: `{zone: "reserve"}` (the terrace), `{zone: "waste"}`, or `{zone: "tableau", col: 0..8}`
+        * `to`: `{zone: "foundation"}` or `{zone: "tableau", col: 0..8}`
+        * A `reserve` source is only valid with a `foundation` destination.
+
+      operationId: terraceExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/TerraceMoveZone'
+                to:
+                  $ref: '#/components/schemas/TerraceMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              terraceToFoundation:
+                summary: Send the terrace top up, fixing the base rank on the first move
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: reserve
+                  to:
+                    zone: foundation
+              betweenPiles:
+                summary: Move one card from pile 0 onto pile 5
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 0
+                  to:
+                    zone: tableau
+                    col: 5
+              draw:
+                summary: Turn one card from the stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TerraceResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TerraceResponse'
   /spiteandmalice/exec:
     post:
       tags:
@@ -20675,6 +20800,104 @@ components:
           additionalProperties:
             type: string
 
+    TerraceMoveZone:
+      type: object
+      description: Source or target zone for a Terrace card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: "`reserve` is the terrace; it is only ever a source, and only for a foundation."
+          enum: [reserve, waste, tableau, foundation]
+        col:
+          type: integer
+          description: |
+            Tableau pile (0..8). Required for a `tableau` source and destination;
+            ignored for `reserve` and `waste`, and for a `foundation` destination
+            the server picks the pile itself.
+    TerraceHint:
+      type: object
+      description: Suggested next move for Terrace
+      properties:
+        fromZone:
+          type: string
+          description: "`reserve` is the terrace; `stock` means: turn a card to the waste."
+          enum: [reserve, waste, tableau, stock]
+        fromIdx:
+          type: integer
+          description: Source pile, or -1 when the source is not the tableau
+        toZone:
+          type: string
+          enum: [foundation, tableau, waste]
+        toIdx:
+          type: integer
+          description: Destination index, or -1 for a draw, which targets no single pile
+    TerraceResponse:
+      type: object
+      description: Response payload for /terrace/exec
+      properties:
+        reserve:
+          type: array
+          description: |
+            The 11-card terrace. Only the last element is playable, its only
+            destination is a foundation, and it is never refilled -- so its depth
+            is the number that decides the game.
+          items:
+            $ref: '#/components/schemas/Card'
+        tableau:
+          type: array
+          description: Nine piles, dealt one card each at the start. An empty pile refills itself.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: Eight foundations built up in ALTERNATING COLOUR from `baseRank`, 13 cards each.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        stockCount:
+          type: integer
+          description: Cards left in the stock. Only ever decreases -- there is no redeal.
+        waste:
+          type: array
+          description: Turned cards. Only the last is available.
+          items:
+            $ref: '#/components/schemas/Card'
+        baseRank:
+          type: integer
+          description: The rank all eight foundations start from. 0 means it has not been fixed yet.
+        awaitingBaseRank:
+          type: boolean
+          description: |
+            While true, the next card sent to a foundation fixes the base rank.
+            Sent alongside `baseRank` so the client never has to encode the
+            "0 means unchosen" convention itself.
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
+        hint:
+          $ref: '#/components/schemas/TerraceHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     CongressMoveZone:
       type: object
       description: Source or target zone for a Congress card move
