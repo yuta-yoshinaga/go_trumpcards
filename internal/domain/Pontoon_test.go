@@ -53,6 +53,28 @@ func TestPontoon_Reset(t *testing.T) {
 	}
 }
 
+// A brand-new session must open on the ordinary flow -- place a bet -- rather
+// than on "you deal". Two zero values conspire here: `banker`'s is seat 0, and
+// `nextBanker`'s is 0 too, which Reset applies with `>= 0`. Fixing only the
+// first would be undone by the second.
+func TestPontoon_AFreshGameDoesNotOpenWithTheHumanBanking(t *testing.T) {
+	p := NewDefaultPontoon()
+	if p.IsHumanBanker() {
+		t.Error("a brand-new game should not start with the human banking")
+	}
+	if p.GetNextBanker() != -1 {
+		t.Errorf("nextBanker = %d, want -1 -- a zero would hand seat 0 the bank at Reset",
+			p.GetNextBanker())
+	}
+	p.Reset()
+	if p.IsHumanBanker() {
+		t.Error("the first Reset should not hand the human the bank either")
+	}
+	if err := p.PlaceBet(100); err != nil {
+		t.Errorf("PlaceBet on a fresh game: %v", err)
+	}
+}
+
 func TestPontoon_Total(t *testing.T) {
 	tests := []struct {
 		name string

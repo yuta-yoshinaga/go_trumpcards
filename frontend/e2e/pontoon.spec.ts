@@ -8,8 +8,9 @@ test.describe('Pontoon E2E', () => {
     await expect(page.getByText(/チップ/)).toBeVisible();
     await expect(page.getByText(/親/).first()).toBeVisible();
 
-    // The stake buttons are only offered when a CPU banks; if the human banks
-    // the first round, deal instead.
+    // A CPU banks the opening round, so the stake buttons are what appears --
+    // but the bank moves to whoever makes a pontoon, and a resumed session can
+    // land on either, so handle both.
     const betButton = page.getByRole('button', { name: '100', exact: true });
     const dealButton = page.getByRole('button', { name: '配る', exact: true });
     if (await betButton.isVisible()) {

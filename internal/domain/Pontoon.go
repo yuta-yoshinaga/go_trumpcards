@@ -148,9 +148,25 @@ type Pontoon struct {
 	actionLog  []*ActionLogEntry
 }
 
+// pontoonOpeningBanker 最初の局の親。
+//
+// 人間 (seat 0) にしないのは、そこから始めると新規セッションがいきなり
+// 「あなたが配ってください」で開き、このゲームの主要な流れ — 賭けて Stick /
+// Twist / Buy を選ぶ — に入れないため。最初に誰が親を持つかは規則が定めて
+// いないので (以後はポンツーンを出した者が取る)、遊びやすい方を選ぶ。
+const pontoonOpeningBanker = 1
+
 // NewPontoon コンストラクタ
 func NewPontoon(trumpCards *TrumpCards) *Pontoon {
-	p := &Pontoon{trumpCards: trumpCards, phase: PontoonPhaseBet}
+	p := &Pontoon{
+		trumpCards: trumpCards,
+		phase:      PontoonPhaseBet,
+		banker:     pontoonOpeningBanker,
+		// nextBanker must start at -1, not at its zero value. Reset applies it
+		// with `>= 0`, so a zero would hand seat 0 -- the human -- the bank on
+		// the very first deal and undo the line above.
+		nextBanker: -1,
+	}
 	p.chips.SetChips(PontoonDefaultChips)
 	return p
 }
