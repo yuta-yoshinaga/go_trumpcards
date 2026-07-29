@@ -1657,6 +1657,14 @@ export const GrandfathersClockPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Sette e Mezzo phase constants (sync: internal/domain/SetteEMezzo.go). */
+export const SetteEMezzoPhase = {
+  BET: 1,
+  PLAYER_TURN: 2,
+  BANKER_TURN: 3,
+  END: 4,
+} as const;
+
 /** Pontoon phase constants (sync: internal/domain/Pontoon.go). */
 export const PontoonPhase = {
   BET: 1,
