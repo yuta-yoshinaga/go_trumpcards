@@ -1657,6 +1657,12 @@ export const GrandfathersClockPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Niu Niu phase constants (sync: internal/domain/NiuNiu.go). */
+export const NiuNiuPhase = {
+  BET: 1,
+  END: 2,
+} as const;
+
 /** Sette e Mezzo phase constants (sync: internal/domain/SetteEMezzo.go). */
 export const SetteEMezzoPhase = {
   BET: 1,

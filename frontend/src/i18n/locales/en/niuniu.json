@@ -1,0 +1,26 @@
+{
+  "phase": { "bet": "Betting", "end": "Settled" },
+  "chips": "Chips",
+  "banker": "Banker",
+  "bankerHand": "Banker's hand",
+  "bet": "Bet",
+  "multiplier": "x{{mult}}",
+  "betLabel": "Choose your stake",
+  "betAmount": "{{amount}}",
+  "placeBet": "Choose your stake",
+  "roundOver": "{{result}}",
+  "nextRound": "Next round",
+  "comboHint": "The three cards marked ★ sum to a multiple of ten",
+  "landscapeBanner": "Landscape orientation is recommended",
+  "seatAriaLabel": "{{name}}'s hand, {{rank}}",
+  "hiddenHandAriaLabel": "{{name}}'s hand is face down",
+  "bankerHandAriaLabel": "Banker's hand, {{rank}}",
+  "hiddenBankerHandAriaLabel": "The banker's hand is face down",
+  "tutorial": {
+    "combo": "Look for **three of the five cards summing to a multiple of ten**. Find one and you have a bull — the **three cards marked ★**.",
+    "rank": "**The remaining pair's last digit** is the rank. **Zero is Niu Niu**, the strongest; 1–9 are niu 1 through niu 9. No such triple at all is a **no-bull**, the weakest.",
+    "multiplier": "The payout follows the rank: **Niu Niu triples, niu 7–9 doubles**, the rest pays even. The **winner's** multiplier applies, so a banker's Niu Niu takes three times your stake.",
+    "noChoice": "There are **no decisions to make**. The five cards you are dealt determine the best hand, so the round resolves the moment you bet.",
+    "controls": "Buttons for the stake and the next round."
+  }
+}

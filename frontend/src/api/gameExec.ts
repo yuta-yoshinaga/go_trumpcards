@@ -77,6 +77,7 @@ export const workerUrl: Record<string, string> = {
   braid: WORKER_EXTRA2,
   pontoon: WORKER_EXTRA2,
   settemezzo: WORKER_EXTRA2,
+  niuniu: WORKER_EXTRA3,
   missmilligan: WORKER_EXTRA2,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
