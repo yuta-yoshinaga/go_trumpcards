@@ -20,6 +20,7 @@ import type {
   BlackJackResponse,
   BlackJackSwitchResponse,
   BouillotteResponse,
+  BraidResponse,
   BristolResponse,
   BurracoResponse,
   CalabresellaResponse,
@@ -206,6 +207,7 @@ import { getBisleyHint } from '../utils/hints/bisleyHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getBouillotteHint } from '../utils/hints/bouillotteHint';
+import { getBraidHint } from '../utils/hints/braidHint';
 import { getBristolHint } from '../utils/hints/bristolHint';
 import { getBurracoHint } from '../utils/hints/burracoHint';
 import { getCalabresellaHint } from '../utils/hints/calabresellaHint';
@@ -514,6 +516,7 @@ export const hintFactories = {
   americantoad: (s) => getAmericanToadHint(s as AmericanToadResponse),
   congress: (s) => getCongressHint(s as CongressResponse),
   terrace: (s) => getTerraceHint(s as TerraceResponse),
+  braid: (s) => getBraidHint(s as BraidResponse),
   missmilligan: (s) => getMissMilliganHint(s as MissMilliganResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   sheepshead: (s) => getSheepsheadHint(s as SheepsheadResponse),

@@ -224,6 +224,9 @@ var registry = []*Game{
 	// Terrace builds its foundations up in ALTERNATING COLOUR from a
 	// player-chosen base rank; the 11-card terrace feeds them and nothing else.
 	{Name: "terrace", Category: CategoryExtra3},
+	// Braid's four braid fields refill from the braid's tail and are the only
+	// thing that consumes it; the eight helper fields refill from the waste only.
+	{Name: "braid", Category: CategoryExtra2},
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},

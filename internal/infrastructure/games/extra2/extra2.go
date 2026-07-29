@@ -261,4 +261,12 @@ func init() {
 			return usecase.RestoreAmericanToadInteractor(data, new(presenter.AmericanToadWebPresenter))
 		},
 		controller.NewAmericanToadWebControllerWithProvider)
+	games.RegisterKVGame("braid", games.CategoryExtra2,
+		func() usecase.BraidInteractorIF {
+			return usecase.NewBraidInteractor(domain.NewDefaultBraid(), new(presenter.BraidWebPresenter))
+		},
+		func(data []byte) (usecase.BraidInteractorIF, error) {
+			return usecase.RestoreBraidInteractor(data, new(presenter.BraidWebPresenter))
+		},
+		controller.NewBraidWebControllerWithProvider)
 }

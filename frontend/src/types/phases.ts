@@ -1657,6 +1657,13 @@ export const GrandfathersClockPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Braid phase constants (sync: internal/domain/Braid.go). */
+export const BraidPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Terrace phase constants (sync: internal/domain/Terrace.go). */
 export const TerracePhase = {
   PLAYING: 0,

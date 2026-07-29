@@ -470,6 +470,11 @@ func init() {
 			return usecase.NewTerraceInteractor(domain.NewDefaultTerrace(), new(presenter.TerraceWebPresenter))
 		},
 		controller.NewTerraceWebController)
+	BindWebControllerFor("braid",
+		func() usecase.BraidInteractorIF {
+			return usecase.NewBraidInteractor(domain.NewDefaultBraid(), new(presenter.BraidWebPresenter))
+		},
+		controller.NewBraidWebController)
 	BindWebControllerFor("shithead",
 		func() usecase.ShitheadInteractorIF {
 			return usecase.NewShitheadInteractor(domain.NewDefaultShithead(), new(presenter.ShitheadWebPresenter))
