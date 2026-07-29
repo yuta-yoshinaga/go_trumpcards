@@ -221,4 +221,12 @@ func init() {
 			return usecase.RestoreNapoleonsSquareInteractor(data, new(presenter.NapoleonsSquareWebPresenter))
 		},
 		controller.NewNapoleonsSquareWebControllerWithProvider)
+	games.RegisterKVGame("grandfathersclock", games.CategoryExtra2,
+		func() usecase.GrandfathersClockInteractorIF {
+			return usecase.NewGrandfathersClockInteractor(domain.NewDefaultGrandfathersClock(), new(presenter.GrandfathersClockWebPresenter))
+		},
+		func(data []byte) (usecase.GrandfathersClockInteractorIF, error) {
+			return usecase.RestoreGrandfathersClockInteractor(data, new(presenter.GrandfathersClockWebPresenter))
+		},
+		controller.NewGrandfathersClockWebControllerWithProvider)
 }

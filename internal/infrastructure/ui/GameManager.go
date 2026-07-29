@@ -1332,6 +1332,23 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "grandfathersclock", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewGrandfathersClockCuiController(usecase.NewGrandfathersClockInteractor(
+				domain.NewDefaultGrandfathersClock(), new(presenter.GrandfathersClockCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "grandfathersclock.helpTitle",
+				CommandKeys: []string{
+					"grandfathersclock.helpMoveTF",
+					"grandfathersclock.helpMoveTT",
+					"grandfathersclock.helpGiveUp",
+					"grandfathersclock.helpHint",
+					"grandfathersclock.helpAutoComplete",
+					"grandfathersclock.helpUndo",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "spiteandmalice", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSpiteAndMaliceCuiController(usecase.NewSpiteAndMaliceInteractor(
