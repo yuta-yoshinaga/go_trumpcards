@@ -93,6 +93,7 @@ var gameDescriptions = map[string]string{
 	"napoleonssquare":     "ナポレオンズ・スクエア（2デッキの正方形ソリティア）",
 	"grandfathersclock":   "グランドファーザーズ・クロック（時計盤ソリティア）",
 	"missmilligan":        "ミス・ミリガン（2デッキの高難度ソリティア）",
+	"duchess":             "ダッチェス（開始ランクを選ぶリザーブ扇のソリティア）",
 	"spiteandmalice":      "Spite and Malice (スパイト・アンド・マリス)",
 	"skat":                "Skat (スカート)",
 	"shithead":            "Shithead / Karma (シットヘッド)",

@@ -44,6 +44,7 @@ import type {
   DoubtResponse,
   DoudizhuResponse,
   DragonTigerResponse,
+  DuchessResponse,
   DurakResponse,
   EasthavenResponse,
   EcarteResponse,
@@ -227,6 +228,7 @@ import { getDoppelkopfHint } from '../utils/hints/doppelkopfHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getDoudizhuHint } from '../utils/hints/doudizhuHint';
 import { getDragontigerHint } from '../utils/hints/dragontigerHint';
+import { getDuchessHint } from '../utils/hints/duchessHint';
 import { getDurakHint } from '../utils/hints/durakHint';
 import { getEasthavenHint } from '../utils/hints/easthavenHint';
 import { getEcarteHint } from '../utils/hints/ecarteHint';
@@ -499,6 +501,7 @@ export const hintFactories = {
   bisley: (s) => getBisleyHint(s as BisleyResponse),
   napoleonssquare: (s) => getNapoleonsSquareHint(s as NapoleonsSquareResponse),
   grandfathersclock: (s) => getGrandfathersClockHint(s as GrandfathersClockResponse),
+  duchess: (s) => getDuchessHint(s as DuchessResponse),
   missmilligan: (s) => getMissMilliganHint(s as MissMilliganResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   sheepshead: (s) => getSheepsheadHint(s as SheepsheadResponse),

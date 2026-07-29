@@ -205,6 +205,10 @@ var registry = []*Game{
 	// Miss Milligan deals eight at a time onto every column and lets a stuck
 	// player hold one run aside ("waiving") once the stock is gone.
 	{Name: "missmilligan", Category: CategoryExtra2},
+	// Duchess (Glenwood) lets the player pick the foundation's starting rank from
+	// the top of a reserve fan; empty columns may only be filled from the reserve
+	// while any of it remains.
+	{Name: "duchess", Category: CategoryExtra2},
 	{Name: "spiteandmalice", Category: CategoryExtra2},
 	// Skat is a trick-taking game.
 	{Name: "skat", Category: CategoryExtra3},

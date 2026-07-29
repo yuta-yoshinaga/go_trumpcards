@@ -1370,6 +1370,29 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "duchess", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewDuchessCuiController(usecase.NewDuchessInteractor(
+				domain.NewDefaultDuchess(), new(presenter.DuchessCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "duchess.helpTitle",
+				CommandKeys: []string{
+					"duchess.helpBase",
+					"duchess.helpDraw",
+					"duchess.helpMoveRF",
+					"duchess.helpMoveRT",
+					"duchess.helpMoveWF",
+					"duchess.helpMoveWT",
+					"duchess.helpMoveTF",
+					"duchess.helpMoveTT",
+					"duchess.helpGiveUp",
+					"duchess.helpHint",
+					"duchess.helpAutoComplete",
+					"duchess.helpUndo",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "spiteandmalice", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSpiteAndMaliceCuiController(usecase.NewSpiteAndMaliceInteractor(
