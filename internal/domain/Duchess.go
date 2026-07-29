@@ -832,6 +832,77 @@ func (d *Duchess) appendLog(actionType, detail string, cards []*Card) {
 	})
 }
 
+// duchessMaxSliceLen caps slice sizes during deserialisation.
+const duchessMaxSliceLen = 1000
+
+// duchessSnapshotJSON is the wire format for a single undo snapshot.
+// duchessSnapshot uses unexported fields, so marshalling it directly would emit
+// `[{},{}]` -- the undo depth would survive but every snapshot would be blank,
+// and Undo would wipe the board instead of rewinding it (#4478).
+type duchessSnapshotJSON struct {
+	Reserve     [DuchessReserveCnt][]*Card               `json:"rs"`
+	Tableau     [DuchessTableauCnt][]*DuchessTableauCard `json:"tb"`
+	Foundation  [DuchessFoundationCnt][]*Card            `json:"fd"`
+	Stock       []*Card                                  `json:"st"`
+	Waste       []*Card                                  `json:"wa"`
+	BaseRank    int                                      `json:"br"`
+	Phase       DuchessPhase                             `json:"ps"`
+	MoveCount   int                                      `json:"mc"`
+	IsStalemate bool                                     `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for duchessSnapshot.
+func (s *duchessSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(duchessSnapshotJSON{
+		Reserve:     s.reserve,
+		Tableau:     s.tableau,
+		Foundation:  s.foundation,
+		Stock:       s.stock,
+		Waste:       s.waste,
+		BaseRank:    s.baseRank,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for duchessSnapshot.
+func (s *duchessSnapshot) UnmarshalJSON(data []byte) error {
+	var j duchessSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > duchessMaxSliceLen ||
+		len(j.Waste) > duchessMaxSliceLen {
+		return errors.New("duchess: snapshot array exceeds maximum allowed size")
+	}
+	for _, pile := range j.Reserve {
+		if len(pile) > duchessMaxSliceLen {
+			return errors.New("duchess: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Tableau {
+		if len(pile) > duchessMaxSliceLen {
+			return errors.New("duchess: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > duchessMaxSliceLen {
+			return errors.New("duchess: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	s.reserve = j.Reserve
+	s.tableau = j.Tableau
+	s.foundation = j.Foundation
+	s.stock = j.Stock
+	s.waste = j.Waste
+	s.baseRank = j.BaseRank
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
+}
+
 // duchessJSON is the JSON wire format for Duchess.
 type duchessJSON struct {
 	TrumpCards  *TrumpCards                              `json:"tc"`
@@ -845,6 +916,10 @@ type duchessJSON struct {
 	MoveCount   int                                      `json:"mc"`
 	ActionLog   []*ActionLogEntry                        `json:"al"`
 	IsStalemate bool                                     `json:"sl"`
+	// History must round-trip: the Cloudflare Worker is stateless per request
+	// and rebuilds the game from KV every call, so an unpersisted undo stack
+	// means Undo/UndoN/UndoToEscape silently never work in production (#4478).
+	History []*duchessSnapshot `json:"hi,omitempty"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -861,6 +936,7 @@ func (d *Duchess) MarshalJSON() ([]byte, error) {
 		MoveCount:   d.moveCount,
 		ActionLog:   d.actionLog,
 		IsStalemate: d.isStalemate,
+		History:     d.history,
 	})
 }
 
@@ -870,6 +946,9 @@ func (d *Duchess) UnmarshalJSON(data []byte) error {
 	var j duchessJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	if len(j.ActionLog) > duchessMaxSliceLen || len(j.History) > duchessMaxSliceLen {
+		return errors.New("duchess: input array exceeds maximum allowed size")
 	}
 	if j.Phase < DuchessPhasePlaying || j.Phase > DuchessPhaseGameOver {
 		return fmt.Errorf("invalid phase: %d", j.Phase)
@@ -912,5 +991,6 @@ func (d *Duchess) UnmarshalJSON(data []byte) error {
 	d.moveCount = j.MoveCount
 	d.actionLog = j.ActionLog
 	d.isStalemate = j.IsStalemate
+	d.history = j.History
 	return nil
 }

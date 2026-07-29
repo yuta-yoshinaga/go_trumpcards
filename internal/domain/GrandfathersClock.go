@@ -537,6 +537,56 @@ func (gc *GrandfathersClock) appendLog(actionType, detail string, cards []*Card)
 	})
 }
 
+// grandfathersClockMaxSliceLen caps slice sizes during deserialisation.
+const grandfathersClockMaxSliceLen = 1000
+
+// grandfathersClockSnapshotJSON is the wire format for a single undo snapshot.
+// grandfathersClockSnapshot uses unexported fields, so marshalling it directly would emit
+// `[{},{}]` -- the undo depth would survive but every snapshot would be blank,
+// and Undo would wipe the board instead of rewinding it (#4478).
+type grandfathersClockSnapshotJSON struct {
+	Foundation  [GrandfathersClockFoundationCnt][]*Card                      `json:"fd"`
+	Tableau     [GrandfathersClockTableauCnt][]*GrandfathersClockTableauCard `json:"tb"`
+	Phase       GrandfathersClockPhase                                       `json:"ps"`
+	MoveCount   int                                                          `json:"mc"`
+	IsStalemate bool                                                         `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for grandfathersClockSnapshot.
+func (s *grandfathersClockSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(grandfathersClockSnapshotJSON{
+		Foundation:  s.foundation,
+		Tableau:     s.tableau,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for grandfathersClockSnapshot.
+func (s *grandfathersClockSnapshot) UnmarshalJSON(data []byte) error {
+	var j grandfathersClockSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > grandfathersClockMaxSliceLen {
+			return errors.New("grandfathersclock: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Tableau {
+		if len(pile) > grandfathersClockMaxSliceLen {
+			return errors.New("grandfathersclock: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	s.foundation = j.Foundation
+	s.tableau = j.Tableau
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
+}
+
 // grandfathersClockJSON is the JSON wire format for GrandfathersClock.
 type grandfathersClockJSON struct {
 	TrumpCards  *TrumpCards                                                  `json:"tc"`
@@ -546,6 +596,10 @@ type grandfathersClockJSON struct {
 	MoveCount   int                                                          `json:"mc"`
 	ActionLog   []*ActionLogEntry                                            `json:"al"`
 	IsStalemate bool                                                         `json:"sl"`
+	// History must round-trip: the Cloudflare Worker is stateless per request
+	// and rebuilds the game from KV every call, so an unpersisted undo stack
+	// means Undo/UndoN/UndoToEscape silently never work in production (#4478).
+	History []*grandfathersClockSnapshot `json:"hi,omitempty"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -558,6 +612,7 @@ func (gc *GrandfathersClock) MarshalJSON() ([]byte, error) {
 		MoveCount:   gc.moveCount,
 		ActionLog:   gc.actionLog,
 		IsStalemate: gc.isStalemate,
+		History:     gc.history,
 	})
 }
 
@@ -567,6 +622,9 @@ func (gc *GrandfathersClock) UnmarshalJSON(data []byte) error {
 	var j grandfathersClockJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	if len(j.ActionLog) > grandfathersClockMaxSliceLen || len(j.History) > grandfathersClockMaxSliceLen {
+		return errors.New("grandfathersclock: input array exceeds maximum allowed size")
 	}
 	if j.Phase < GrandfathersClockPhasePlaying || j.Phase > GrandfathersClockPhaseGameOver {
 		return fmt.Errorf("invalid phase: %d", j.Phase)
@@ -593,5 +651,6 @@ func (gc *GrandfathersClock) UnmarshalJSON(data []byte) error {
 	gc.moveCount = j.MoveCount
 	gc.actionLog = j.ActionLog
 	gc.isStalemate = j.IsStalemate
+	gc.history = j.History
 	return nil
 }

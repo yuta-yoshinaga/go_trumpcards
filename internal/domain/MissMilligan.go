@@ -697,6 +697,66 @@ func (mm *MissMilligan) appendLog(actionType, detail string, cards []*Card) {
 	})
 }
 
+// missMilliganMaxSliceLen caps slice sizes during deserialisation.
+const missMilliganMaxSliceLen = 1000
+
+// missMilliganSnapshotJSON is the wire format for a single undo snapshot.
+// missMilliganSnapshot uses unexported fields, so marshalling it directly would emit
+// `[{},{}]` -- the undo depth would survive but every snapshot would be blank,
+// and Undo would wipe the board instead of rewinding it (#4478).
+type missMilliganSnapshotJSON struct {
+	Tableau     [MissMilliganTableauCnt][]*MissMilliganTableauCard `json:"tb"`
+	Stock       []*Card                                            `json:"st"`
+	Foundation  [MissMilliganFoundationCnt][]*Card                 `json:"fd"`
+	Waived      []*Card                                            `json:"wv"`
+	Phase       MissMilliganPhase                                  `json:"ps"`
+	MoveCount   int                                                `json:"mc"`
+	IsStalemate bool                                               `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for missMilliganSnapshot.
+func (s *missMilliganSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(missMilliganSnapshotJSON{
+		Tableau:     s.tableau,
+		Stock:       s.stock,
+		Foundation:  s.foundation,
+		Waived:      s.waived,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for missMilliganSnapshot.
+func (s *missMilliganSnapshot) UnmarshalJSON(data []byte) error {
+	var j missMilliganSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > missMilliganMaxSliceLen ||
+		len(j.Waived) > missMilliganMaxSliceLen {
+		return errors.New("missmilligan: snapshot array exceeds maximum allowed size")
+	}
+	for _, pile := range j.Tableau {
+		if len(pile) > missMilliganMaxSliceLen {
+			return errors.New("missmilligan: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > missMilliganMaxSliceLen {
+			return errors.New("missmilligan: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	s.tableau = j.Tableau
+	s.stock = j.Stock
+	s.foundation = j.Foundation
+	s.waived = j.Waived
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
+}
+
 // missMilliganJSON is the JSON wire format for MissMilligan.
 type missMilliganJSON struct {
 	TrumpCards  *TrumpCards                                        `json:"tc"`
@@ -708,6 +768,10 @@ type missMilliganJSON struct {
 	MoveCount   int                                                `json:"mc"`
 	ActionLog   []*ActionLogEntry                                  `json:"al"`
 	IsStalemate bool                                               `json:"sl"`
+	// History must round-trip: the Cloudflare Worker is stateless per request
+	// and rebuilds the game from KV every call, so an unpersisted undo stack
+	// means Undo/UndoN/UndoToEscape silently never work in production (#4478).
+	History []*missMilliganSnapshot `json:"hi,omitempty"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -722,6 +786,7 @@ func (mm *MissMilligan) MarshalJSON() ([]byte, error) {
 		MoveCount:   mm.moveCount,
 		ActionLog:   mm.actionLog,
 		IsStalemate: mm.isStalemate,
+		History:     mm.history,
 	})
 }
 
@@ -734,6 +799,9 @@ func (mm *MissMilligan) UnmarshalJSON(data []byte) error {
 	var j missMilliganJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	if len(j.ActionLog) > missMilliganMaxSliceLen || len(j.History) > missMilliganMaxSliceLen {
+		return errors.New("missmilligan: input array exceeds maximum allowed size")
 	}
 	if j.Phase < MissMilliganPhasePlaying || j.Phase > MissMilliganPhaseGameOver {
 		return fmt.Errorf("invalid phase: %d", j.Phase)
@@ -768,5 +836,6 @@ func (mm *MissMilligan) UnmarshalJSON(data []byte) error {
 	mm.moveCount = j.MoveCount
 	mm.actionLog = j.ActionLog
 	mm.isStalemate = j.IsStalemate
+	mm.history = j.History
 	return nil
 }

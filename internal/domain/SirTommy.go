@@ -411,6 +411,62 @@ func (s *SirTommy) appendLog(actionType, detail string, cards []*Card) {
 	})
 }
 
+// sirTommyMaxSliceLen caps slice sizes during deserialisation.
+const sirTommyMaxSliceLen = 1000
+
+// sirTommySnapshotJSON is the wire format for a single undo snapshot.
+// sirTommySnapshot uses unexported fields, so marshalling it directly would emit
+// `[{},{}]` -- the undo depth would survive but every snapshot would be blank,
+// and Undo would wipe the board instead of rewinding it (#4478).
+type sirTommySnapshotJSON struct {
+	Foundations [SirTommyFoundationCnt][]*Card `json:"fs"`
+	Wastes      [SirTommyWasteCnt][]*Card      `json:"ws"`
+	Stock       []*Card                        `json:"st"`
+	Phase       SirTommyPhase                  `json:"ps"`
+	MoveCount   int                            `json:"mc"`
+	IsStalemate bool                           `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for sirTommySnapshot.
+func (s *sirTommySnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(sirTommySnapshotJSON{
+		Foundations: s.foundations,
+		Wastes:      s.wastes,
+		Stock:       s.stock,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for sirTommySnapshot.
+func (s *sirTommySnapshot) UnmarshalJSON(data []byte) error {
+	var j sirTommySnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > sirTommyMaxSliceLen {
+		return errors.New("sirtommy: snapshot array exceeds maximum allowed size")
+	}
+	for _, pile := range j.Foundations {
+		if len(pile) > sirTommyMaxSliceLen {
+			return errors.New("sirtommy: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Wastes {
+		if len(pile) > sirTommyMaxSliceLen {
+			return errors.New("sirtommy: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	s.foundations = j.Foundations
+	s.wastes = j.Wastes
+	s.stock = j.Stock
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
+}
+
 // sirTommyJSON is the JSON wire format for SirTommy.
 type sirTommyJSON struct {
 	TrumpCards  *TrumpCards                    `json:"tc"`
@@ -421,6 +477,10 @@ type sirTommyJSON struct {
 	MoveCount   int                            `json:"mc"`
 	ActionLog   []*ActionLogEntry              `json:"al"`
 	IsStalemate bool                           `json:"sl"`
+	// History must round-trip: the Cloudflare Worker is stateless per request
+	// and rebuilds the game from KV every call, so an unpersisted undo stack
+	// means Undo/UndoN/UndoToEscape silently never work in production (#4478).
+	History []*sirTommySnapshot `json:"hi,omitempty"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -434,6 +494,7 @@ func (s *SirTommy) MarshalJSON() ([]byte, error) {
 		MoveCount:   s.moveCount,
 		ActionLog:   s.actionLog,
 		IsStalemate: s.isStalemate,
+		History:     s.history,
 	})
 }
 
@@ -444,6 +505,9 @@ func (s *SirTommy) UnmarshalJSON(data []byte) error {
 	var j sirTommyJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	if len(j.ActionLog) > sirTommyMaxSliceLen || len(j.History) > sirTommyMaxSliceLen {
+		return errors.New("sirtommy: input array exceeds maximum allowed size")
 	}
 	if j.Phase < SirTommyPhasePlaying || j.Phase > SirTommyPhaseGameOver {
 		return fmt.Errorf("invalid phase: %d", j.Phase)
@@ -466,5 +530,6 @@ func (s *SirTommy) UnmarshalJSON(data []byte) error {
 	s.moveCount = j.MoveCount
 	s.actionLog = j.ActionLog
 	s.isStalemate = j.IsStalemate
+	s.history = j.History
 	return nil
 }
