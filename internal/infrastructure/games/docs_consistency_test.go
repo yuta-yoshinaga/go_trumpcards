@@ -112,6 +112,41 @@ func TestArchitectureDocEndpointsMatchRegistry(t *testing.T) {
 	}
 }
 
+// archEndpointCountRe captures the endpoint totals stated in
+// docs/architecture.md -- the summary bullet and the table's own header line.
+var archEndpointCountRe = regexp.MustCompile(`(?:\*\*Web API\*\*: |-- \*\*)(\d+)(?:\*\* in total| endpoints, one per game)`)
+
+// TestArchitectureDocEndpointCountMatchesRegistry guards the endpoint totals
+// written in prose.
+//
+// Until #4470 that number was spelled out in words ("Two hundred and thirty-two
+// endpoints") inside a single paragraph that also held every endpoint, and
+// nothing checked it: TestArchitectureDocEndpointsMatchRegistry only counts
+// `POST /<name>/exec` occurrences, so the prose could say anything. Every game
+// added this session updated it by hand on trust.
+func TestArchitectureDocEndpointCountMatchesRegistry(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join(repoRoot, "docs/architecture.md"))
+	if err != nil {
+		t.Fatalf("read docs/architecture.md: %v", err)
+	}
+
+	matches := archEndpointCountRe.FindAllSubmatch(data, -1)
+	if len(matches) == 0 {
+		t.Fatal("docs/architecture.md states no endpoint count -- update the regex if the wording moved")
+	}
+
+	want := len(games.All())
+	for _, m := range matches {
+		got, err := strconv.Atoi(string(m[1]))
+		if err != nil {
+			t.Fatalf("unparsable endpoint count %q: %v", m[1], err)
+		}
+		if got != want {
+			t.Errorf("docs/architecture.md states %d endpoints, registry has %d — update the doc", got, want)
+		}
+	}
+}
+
 // TestPerGameManualsMatchRegistry asserts a strict 1:1 mapping between
 // registered games and the per-game manuals under docs/manual/{cui,web}. It
 // catches both a missing manual for a freshly added game and an orphan manual
