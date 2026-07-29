@@ -156,6 +156,7 @@ import type {
   TablanetResponse,
   TarneebResponse,
   TeenPattiResponse,
+  TerraceResponse,
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
   ThreeCardBragResponse,
@@ -346,6 +347,7 @@ import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getTablanetHint } from '../utils/hints/tablanetHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTeenPattiHint } from '../utils/hints/teenPattiHint';
+import { getTerraceHint } from '../utils/hints/terraceHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
 import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
 import { getThreeCardBragHint } from '../utils/hints/threeCardBragHint';
@@ -511,6 +513,7 @@ export const hintFactories = {
   windmill: (s) => getWindmillHint(s as WindmillResponse),
   americantoad: (s) => getAmericanToadHint(s as AmericanToadResponse),
   congress: (s) => getCongressHint(s as CongressResponse),
+  terrace: (s) => getTerraceHint(s as TerraceResponse),
   missmilligan: (s) => getMissMilliganHint(s as MissMilliganResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   sheepshead: (s) => getSheepsheadHint(s as SheepsheadResponse),

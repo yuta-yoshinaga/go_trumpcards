@@ -221,6 +221,9 @@ var registry = []*Game{
 	// Congress deals one card to each of eight piles and keeps the other 96 as
 	// the stock; empty piles can only be refilled from the stock or the waste.
 	{Name: "congress", Category: CategoryExtra3},
+	// Terrace builds its foundations up in ALTERNATING COLOUR from a
+	// player-chosen base rank; the 11-card terrace feeds them and nothing else.
+	{Name: "terrace", Category: CategoryExtra3},
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},
