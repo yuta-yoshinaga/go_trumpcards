@@ -25,6 +25,9 @@ type PontoonWebOutputHand struct {
 	Twisted bool `json:"twisted"`
 	Stuck   bool `json:"stuck"`
 	Payout  int  `json:"payout"`
+	// Hidden が真のとき、Cards の要素は null、Total と Rank は 0 で意味を持たない。
+	// 伏せ札の中身をレスポンスに載せないための印で、枚数だけが残る。
+	Hidden bool `json:"hidden"`
 }
 
 // PontoonWebOutputSeat 1 席の出力

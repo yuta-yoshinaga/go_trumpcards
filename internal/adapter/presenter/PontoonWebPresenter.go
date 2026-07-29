@@ -13,10 +13,18 @@ import (
 // PontoonWebPresenter ポンツーン Web プレゼンタークラス
 type PontoonWebPresenter struct{}
 
-// pontoonHandOutput 1 つの手を出力形に落とす。合計と格をサーバー側で計算して
-// 渡すのは、A の 1/11 とファイブカード・トリックの判定をクライアントに
-// 再実装させないため。
-func pontoonHandOutput(p interfaces.PontoonGame, h *domain.PontoonHand) *controller.PontoonWebOutputHand {
+// pontoonHandOutput 1 つの手を出力形に落とす。
+//
+// **reveal が false の手は、中身をワイヤに載せない。** 画面で裏面を描くだけでは
+// レスポンスを覗けば読めてしまい、「親の手が読めない」というこのゲームの前提が
+// 成立しない。カードは nil に、合計と格も伏せる。
+//
+// ただし**枚数だけは残す**。Twist と Buy で手札の枚数が局中に変わるので、そこは
+// 隠すと盤面が描けなくなるうえ、実際のテーブルでも見えている情報になる。
+//
+// 見せる側では合計と格をサーバーが計算して渡す。A の 1/11 とファイブカード・
+// トリックの判定をクライアントに再実装させないため。
+func pontoonHandOutput(p interfaces.PontoonGame, h *domain.PontoonHand, reveal bool) *controller.PontoonWebOutputHand {
 	if h == nil {
 		return nil
 	}
@@ -24,12 +32,17 @@ func pontoonHandOutput(p interfaces.PontoonGame, h *domain.PontoonHand) *control
 	out := &controller.PontoonWebOutputHand{
 		Cards:   make([]*controller.WebOutputCard, len(cards)),
 		Bet:     h.GetBet(),
-		Total:   p.GetHandTotal(cards),
-		Rank:    int(p.GetHandRank(cards)),
 		Twisted: h.IsTwisted(),
 		Stuck:   h.IsStuck(),
 		Payout:  h.GetPayout(),
+		Hidden:  !reveal,
 	}
+	if !reveal {
+		// Cards は長さだけの nil スライス。Total/Rank はゼロ値のまま伏せる。
+		return out
+	}
+	out.Total = p.GetHandTotal(cards)
+	out.Rank = int(p.GetHandRank(cards))
 	for i, c := range cards {
 		out.Cards[i] = cardToOutput(c)
 	}
@@ -40,6 +53,8 @@ func pontoonHandOutput(p interfaces.PontoonGame, h *domain.PontoonHand) *control
 func (pp *PontoonWebPresenter) Output(p interfaces.PontoonGame, lastErr error) string {
 	resObj := new(controller.PontoonWebOutput)
 
+	// 局が終わるまでは自分の手しか見えない。終われば全員ぶん開く。
+	ended := p.GetGameEndFlag()
 	seats := p.GetSeats()
 	resObj.Seats = make([]*controller.PontoonWebOutputSeat, len(seats))
 	for i, s := range seats {
@@ -48,13 +63,15 @@ func (pp *PontoonWebPresenter) Output(p interfaces.PontoonGame, lastErr error) s
 			IsCPU: s.IsCPU(),
 			Hands: make([]*controller.PontoonWebOutputHand, 0, len(s.GetHands())),
 		}
+		reveal := ended || !s.IsCPU()
 		for _, h := range s.GetHands() {
-			out.Hands = append(out.Hands, pontoonHandOutput(p, h))
+			out.Hands = append(out.Hands, pontoonHandOutput(p, h, reveal))
 		}
 		resObj.Seats[i] = out
 	}
 
-	resObj.BankerHand = pontoonHandOutput(p, p.GetBankerHand())
+	// 親の手は、自分が親なら自分の手なので見えてよい。
+	resObj.BankerHand = pontoonHandOutput(p, p.GetBankerHand(), ended || p.IsHumanBanker())
 	resObj.BankerIdx = p.GetBankerIdx()
 	resObj.IsHumanBanker = p.IsHumanBanker()
 	resObj.Chips = p.GetChips()

@@ -13,6 +13,7 @@ function hand(overrides?: Partial<PontoonHand>): PontoonHand {
     twisted: false,
     stuck: false,
     payout: 0,
+    hidden: false,
     ...overrides,
   };
 }
@@ -50,11 +51,15 @@ describe('formatPontoonState', () => {
     expect(result).toContain('banker: CPU1');
   });
 
-  // The hidden hands are the point of the game; the formatter must not leak
-  // them mid-round.
-  it('hides the banker and the CPU hands while the round is live', () => {
-    const result = formatPontoonState(makeState());
-    expect(result).toContain('[??]');
+  // The server marks a hand hidden and sends null cards; the formatter shows
+  // its size and nothing else.
+  it('renders a hidden hand as backs only', () => {
+    const result = formatPontoonState(
+      makeState({
+        bankerHand: hand({ hidden: true, cards: [null, null], total: 0, rank: 0 }),
+      }),
+    );
+    expect(result).toContain('banker hand: [??] [??]');
     expect(result).toContain('> あなた bet 100');
   });
 

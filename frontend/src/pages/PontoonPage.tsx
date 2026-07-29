@@ -106,7 +106,10 @@ function PontoonPageContent() {
    * banker's hand is the one you cannot read, and leaking it here would defeat
    * the game.
    */
-  const renderHand = (hand: PontoonHand, hide: boolean, label: string, keyPrefix: string) => {
+  const renderHand = (hand: PontoonHand, label: string, keyPrefix: string) => {
+    // The server decides what may be seen and says so with `hidden`; the page
+    // never infers it, so there is one place that can be wrong instead of two.
+    const hide = hand.hidden;
     const rankKey = rankLabelKey(hand.rank);
     return (
       <div key={keyPrefix} className="text-center">
@@ -116,7 +119,7 @@ function PontoonPageContent() {
           aria-label={hide ? label : t('seatAriaLabel', { name: label, total: hand.total })}
         >
           {hand.cards.map((card, i) =>
-            hide ? (
+            hide || !card ? (
               <CardBack key={`${keyPrefix}-c${i.toString()}`} width={cardWidth} />
             ) : (
               <AnimatedCard key={`${keyPrefix}-c${i.toString()}`} card={card} width={cardWidth} draggable={false} />
@@ -176,10 +179,9 @@ function PontoonPageContent() {
               {state.bankerHand ? (
                 renderHand(
                   state.bankerHand,
-                  !ended && !state.isHumanBanker,
-                  ended || state.isHumanBanker
-                    ? t('bankerHandAriaLabel', { total: state.bankerHand.total })
-                    : t('hiddenBankerHandAriaLabel'),
+                  state.bankerHand.hidden
+                    ? t('hiddenBankerHandAriaLabel')
+                    : t('bankerHandAriaLabel', { total: state.bankerHand.total }),
                   'banker',
                 )
               ) : (
@@ -203,8 +205,7 @@ function PontoonPageContent() {
                           >
                             {renderHand(
                               hand,
-                              !ended && seat.isCpu,
-                              !ended && seat.isCpu ? t('hiddenHandAriaLabel', { name: seat.name }) : seat.name,
+                              hand.hidden ? t('hiddenHandAriaLabel', { name: seat.name }) : seat.name,
                               `s${seatIdx.toString()}h${handIdx.toString()}`,
                             )}
                             <div className="text-game-text-muted text-xs mt-1">

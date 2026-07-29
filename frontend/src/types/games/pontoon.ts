@@ -5,12 +5,20 @@ import type { BaseGameResponse, Card } from '../common';
 
 /** One Pontoon hand. A seat holds several once it splits. */
 export interface PontoonHand {
-  cards: Card[];
+  /**
+   * Null entries while {@link PontoonHand.hidden} is true. The server does not
+   * send the cards of a hand the player may not see, so reading the response
+   * cannot reveal the banker's hole cards; only the COUNT survives, because
+   * Twist and Buy change the hand size in view of the table.
+   */
+  cards: (Card | null)[];
   bet: number;
-  /** Server-computed total, with the ace already resolved to 1 or 11. */
+  /** Server-computed total, with the ace already resolved to 1 or 11. 0 while hidden. */
   total: number;
-  /** 0 = bust, 1 = points, 2 = five card trick, 3 = pontoon. */
+  /** 0 = bust, 1 = points, 2 = five card trick, 3 = pontoon. 0 while hidden. */
   rank: number;
+  /** While true the hand's cards, total and rank are withheld by the server. */
+  hidden: boolean;
   /** Once true the hand can no longer buy. */
   twisted: boolean;
   stuck: boolean;

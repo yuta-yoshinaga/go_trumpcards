@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -94,6 +95,71 @@ func TestPontoonWebPresenter_Output(t *testing.T) {
 		assert.True(t, result.CanTwist)
 		assert.False(t, result.CanBuy)
 		assert.False(t, result.CanSplit)
+	})
+
+	// A hidden hand must not reach the wire at all. Rendering backs on the page
+	// is not enough: anyone reading the response would see the banker's hole
+	// cards, which is the one thing this game is built on not being visible.
+	t.Run("a hidden hand carries no cards, total or rank", func(t *testing.T) {
+		g := new(interfaces.MockPontoonGame)
+		setupPontoonWebMockDefaults(g)
+
+		result := parsePontoonOutput(t, new(PontoonWebPresenter).Output(g, nil))
+
+		require.NotNil(t, result.BankerHand)
+		assert.True(t, result.BankerHand.Hidden)
+		assert.Zero(t, result.BankerHand.Total)
+		assert.Zero(t, result.BankerHand.Rank)
+		for i, c := range result.BankerHand.Cards {
+			assert.Nil(t, c, "banker card %d leaked", i)
+		}
+		// The COUNT survives -- Twist and Buy change the hand size in view of
+		// the table, and the page needs it to draw the backs.
+		assert.Len(t, result.BankerHand.Cards, 2)
+
+		cpu := result.Seats[2].Hands[0]
+		assert.True(t, cpu.Hidden)
+		for i, c := range cpu.Cards {
+			assert.Nil(t, c, "cpu card %d leaked", i)
+		}
+	})
+
+	// The human's own hand is theirs to see, at every phase.
+	t.Run("the human's own hand is never hidden", func(t *testing.T) {
+		g := new(interfaces.MockPontoonGame)
+		setupPontoonWebMockDefaults(g)
+
+		result := parsePontoonOutput(t, new(PontoonWebPresenter).Output(g, nil))
+		own := result.Seats[0].Hands[0]
+		assert.False(t, own.Hidden)
+		assert.NotNil(t, own.Cards[0])
+		assert.Equal(t, 18, own.Total)
+	})
+
+	t.Run("a settled round reveals every hand", func(t *testing.T) {
+		g := new(interfaces.MockPontoonGame)
+		setupPontoonWebMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetGameEndFlag")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
+		g.On("GetGameEndFlag").Return(true)
+		g.On("GetPhase").Return(domain.PontoonPhaseEnd)
+
+		result := parsePontoonOutput(t, new(PontoonWebPresenter).Output(g, nil))
+		assert.False(t, result.BankerHand.Hidden)
+		assert.NotNil(t, result.BankerHand.Cards[0])
+		assert.False(t, result.Seats[2].Hands[0].Hidden)
+	})
+
+	// When the human banks, the banker's hand IS the human's hand.
+	t.Run("the human banker sees their own hand", func(t *testing.T) {
+		g := new(interfaces.MockPontoonGame)
+		setupPontoonWebMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsHumanBanker")
+		g.On("IsHumanBanker").Return(true)
+
+		result := parsePontoonOutput(t, new(PontoonWebPresenter).Output(g, nil))
+		assert.False(t, result.BankerHand.Hidden)
+		assert.NotNil(t, result.BankerHand.Cards[0])
 	})
 
 	// The total and the rank are computed server-side so the client never has to

@@ -24,6 +24,7 @@ function hand(overrides?: Partial<PontoonHand>): PontoonHand {
     twisted: false,
     stuck: false,
     payout: 0,
+    hidden: false,
     ...overrides,
   };
 }
@@ -74,13 +75,28 @@ describe('PontoonPage', () => {
     expect(screen.getByText(/親: CPU1/)).toBeInTheDocument();
   });
 
-  // Face-down hands are the difference from blackjack, so the board must not
-  // show the banker's or the CPUs' cards mid-round.
-  it('hides the banker and CPU hands while the round is live', async () => {
-    mockExec.mockResolvedValue(makeState());
+  // The server withholds a hidden hand's cards entirely, so the page renders
+  // backs from `hidden` rather than deciding for itself what may be seen.
+  it('renders a hand the server marked hidden as backs', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        bankerHand: hand({ hidden: true, cards: [null, null], total: 0, rank: 0 }),
+        seats: [
+          { name: 'あなた', isCpu: false, hands: [hand()] },
+          { name: 'CPU1', isCpu: true, hands: [] },
+          {
+            name: 'CPU2',
+            isCpu: true,
+            hands: [hand({ hidden: true, cards: [null, null], total: 0, rank: 0, bet: 20 })],
+          },
+        ],
+      }),
+    );
     renderWithProviders(<PontoonPage />);
     await waitFor(() => expect(screen.getByLabelText('親の手は伏せられています')).toBeInTheDocument());
     expect(screen.getByLabelText('CPU2 の手は伏せられています')).toBeInTheDocument();
+    // A hidden hand must not print a total, which is what a leak would look like.
+    expect(screen.queryByText(/合計: 0/)).not.toBeInTheDocument();
   });
 
   it('reveals every hand once the round settles', async () => {

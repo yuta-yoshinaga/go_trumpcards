@@ -13,7 +13,7 @@ function rankLabel(rank: number): string {
 /** Render one hand, hiding the cards while they are still face down. */
 function formatHand(hand: PontoonHand, hide: boolean): string {
   if (hide) return hand.cards.map(() => '[??]').join(' ');
-  const cards = hand.cards.map(formatCard).join(' ');
+  const cards = hand.cards.map((c) => (c ? formatCard(c) : '[??]')).join(' ');
   return `${cards} (${hand.total})${rankLabel(hand.rank)}`;
 }
 
