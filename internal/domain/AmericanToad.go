@@ -838,6 +838,79 @@ type americanToadJSON struct {
 	MoveCount   int                                                `json:"mc"`
 	ActionLog   []*ActionLogEntry                                  `json:"al"`
 	IsStalemate bool                                               `json:"sl"`
+	// History must round-trip: the Cloudflare Worker is stateless per request
+	// and rebuilds the game from KV every call, so an unpersisted undo stack
+	// means Undo/UndoN/UndoToEscape silently never work in production.
+	History []*americanToadSnapshot `json:"hi,omitempty"`
+}
+
+// americanToadMaxSliceLen caps slice sizes during deserialisation.
+const americanToadMaxSliceLen = 1000
+
+// americanToadSnapshotJSON is the wire format for a single undo snapshot.
+// americanToadSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// americanToadJSON's short keys to keep the KV payload compact.
+type americanToadSnapshotJSON struct {
+	Reserve     []*Card                                            `json:"rs"`
+	Tableau     [AmericanToadTableauCnt][]*AmericanToadTableauCard `json:"tb"`
+	Foundation  [AmericanToadFoundationCnt][]*Card                 `json:"fd"`
+	Stock       []*Card                                            `json:"st"`
+	Waste       []*Card                                            `json:"ws"`
+	BaseRank    int                                                `json:"br"`
+	PassesUsed  int                                                `json:"pu"`
+	Phase       AmericanToadPhase                                  `json:"ps"`
+	MoveCount   int                                                `json:"mc"`
+	IsStalemate bool                                               `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for americanToadSnapshot.
+func (s *americanToadSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(americanToadSnapshotJSON{
+		Reserve:     s.reserve,
+		Tableau:     s.tableau,
+		Foundation:  s.foundation,
+		Stock:       s.stock,
+		Waste:       s.waste,
+		BaseRank:    s.baseRank,
+		PassesUsed:  s.passesUsed,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for americanToadSnapshot.
+func (s *americanToadSnapshot) UnmarshalJSON(data []byte) error {
+	var j americanToadSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Reserve) > americanToadMaxSliceLen || len(j.Stock) > americanToadMaxSliceLen ||
+		len(j.Waste) > americanToadMaxSliceLen {
+		return errors.New("americantoad: snapshot array exceeds maximum allowed size")
+	}
+	for _, col := range j.Tableau {
+		if len(col) > americanToadMaxSliceLen {
+			return errors.New("americantoad: snapshot tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > americanToadMaxSliceLen {
+			return errors.New("americantoad: snapshot foundation exceeds maximum allowed size")
+		}
+	}
+	s.reserve = j.Reserve
+	s.tableau = j.Tableau
+	s.foundation = j.Foundation
+	s.stock = j.Stock
+	s.waste = j.Waste
+	s.baseRank = j.BaseRank
+	s.passesUsed = j.PassesUsed
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -855,6 +928,7 @@ func (at *AmericanToad) MarshalJSON() ([]byte, error) {
 		MoveCount:   at.moveCount,
 		ActionLog:   at.actionLog,
 		IsStalemate: at.isStalemate,
+		History:     at.history,
 	})
 }
 
@@ -883,6 +957,9 @@ func (at *AmericanToad) UnmarshalJSON(data []byte) error {
 	if len(j.Stock) > AmericanToadTotalCards || len(j.Waste) > AmericanToadTotalCards {
 		return fmt.Errorf("stock/waste too large: %d/%d", len(j.Stock), len(j.Waste))
 	}
+	if len(j.ActionLog) > americanToadMaxSliceLen || len(j.History) > americanToadMaxSliceLen {
+		return errors.New("americantoad: input array exceeds maximum allowed size")
+	}
 	for i := range AmericanToadFoundationCnt {
 		if len(j.Foundation[i]) > AmericanToadFoundationTarget {
 			return fmt.Errorf("foundation %d holds %d cards", i, len(j.Foundation[i]))
@@ -907,5 +984,6 @@ func (at *AmericanToad) UnmarshalJSON(data []byte) error {
 	at.moveCount = j.MoveCount
 	at.actionLog = j.ActionLog
 	at.isStalemate = j.IsStalemate
+	at.history = j.History
 	return nil
 }

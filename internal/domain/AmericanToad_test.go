@@ -782,6 +782,99 @@ func TestAmericanToad_ActionLog(t *testing.T) {
 	}, details)
 }
 
+// The Cloudflare Worker is stateless per request and rebuilds the game from KV
+// on every call, so an undo stack that does not round-trip means Undo, UndoN and
+// the whole stalemate-escape flow silently never work in production. Asserting
+// only on the restored field counts would not catch it -- the test has to undo.
+func TestAmericanToad_UndoSurvivesAKVRoundTrip(t *testing.T) {
+	at := newTestAmericanToad()
+	clearAmericanToadBoard(at)
+	fillAmericanToadColumns(at)
+	at.baseRank = 5
+	at.reserve = []*Card{NewCard(CardDesignHeart, 5, true), NewCard(CardDesignSpade, 5, true)}
+
+	require.NoError(t, at.MoveReserveToFoundation())
+	require.NoError(t, at.MoveReserveToFoundation())
+	require.True(t, at.CanUndo())
+
+	data, err := json.Marshal(at)
+	require.NoError(t, err)
+
+	restored := NewDefaultAmericanToad()
+	require.NoError(t, json.Unmarshal(data, restored))
+	require.True(t, restored.CanUndo(), "the undo stack must survive KV")
+
+	require.NoError(t, restored.UndoN(2))
+	assert.Len(t, restored.GetReserve(), 2, "both cards came back")
+	assert.Empty(t, restored.GetFoundation()[0])
+	assert.Empty(t, restored.GetFoundation()[2])
+	assert.Equal(t, 0, restored.GetMoveCount())
+}
+
+// A snapshot restored from KV must carry the whole position, not just its shape:
+// a blank snapshot would let Undo wipe the board instead of rewinding it.
+func TestAmericanToad_SnapshotRoundTripKeepsItsContents(t *testing.T) {
+	at := newTestAmericanToad()
+	require.NoError(t, at.Draw())
+	require.NoError(t, at.Draw())
+	before := at.history[0]
+
+	data, err := json.Marshal(at)
+	require.NoError(t, err)
+	restored := NewDefaultAmericanToad()
+	require.NoError(t, json.Unmarshal(data, restored))
+
+	require.Len(t, restored.history, 2)
+	after := restored.history[0]
+	assert.Len(t, after.reserve, len(before.reserve))
+	assert.Len(t, after.stock, len(before.stock))
+	assert.Len(t, after.waste, len(before.waste))
+	assert.Equal(t, before.baseRank, after.baseRank)
+	assert.Equal(t, before.passesUsed, after.passesUsed)
+	assert.Equal(t, before.moveCount, after.moveCount)
+	for i := range AmericanToadTableauCnt {
+		assert.Len(t, after.tableau[i], len(before.tableau[i]), "column %d", i)
+	}
+}
+
+// A hostile or corrupt KV payload must not be able to make the game allocate
+// without bound, and a snapshot is just as reachable as the top-level state.
+func TestAmericanToad_HistoryRespectsMaxSliceLen(t *testing.T) {
+	t.Run("too many snapshots", func(t *testing.T) {
+		history := make([]*americanToadSnapshot, americanToadMaxSliceLen+1)
+		for i := range history {
+			history[i] = &americanToadSnapshot{}
+		}
+		data, err := json.Marshal(&americanToadJSON{BaseRank: 5, History: history})
+		require.NoError(t, err)
+		assert.Error(t, NewDefaultAmericanToad().UnmarshalJSON(data))
+	})
+
+	t.Run("too long an action log", func(t *testing.T) {
+		log := make([]*ActionLogEntry, americanToadMaxSliceLen+1)
+		for i := range log {
+			log[i] = &ActionLogEntry{}
+		}
+		data, err := json.Marshal(&americanToadJSON{BaseRank: 5, ActionLog: log})
+		require.NoError(t, err)
+		assert.Error(t, NewDefaultAmericanToad().UnmarshalJSON(data))
+	})
+
+	t.Run("an oversized pile inside a snapshot", func(t *testing.T) {
+		huge := make([]*Card, americanToadMaxSliceLen+1)
+		for i := range huge {
+			huge[i] = NewCard(CardDesignSpade, 1, true)
+		}
+		data, err := json.Marshal(&americanToadSnapshotJSON{Stock: huge})
+		require.NoError(t, err)
+		assert.Error(t, new(americanToadSnapshot).UnmarshalJSON(data))
+	})
+
+	t.Run("malformed snapshot json", func(t *testing.T) {
+		assert.Error(t, new(americanToadSnapshot).UnmarshalJSON([]byte("not json")))
+	})
+}
+
 func TestAmericanToad_JSONRoundTrip(t *testing.T) {
 	at := newTestAmericanToad()
 	require.NoError(t, at.Draw())
