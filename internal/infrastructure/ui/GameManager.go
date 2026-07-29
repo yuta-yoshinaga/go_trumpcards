@@ -1349,6 +1349,27 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "missmilligan", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMissMilliganCuiController(usecase.NewMissMilliganInteractor(
+				domain.NewDefaultMissMilligan(), new(presenter.MissMilliganCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "missmilligan.helpTitle",
+				CommandKeys: []string{
+					"missmilligan.helpDeal",
+					"missmilligan.helpMoveTF",
+					"missmilligan.helpMoveTT",
+					"missmilligan.helpWaive",
+					"missmilligan.helpMoveWT",
+					"missmilligan.helpMoveWF",
+					"missmilligan.helpGiveUp",
+					"missmilligan.helpHint",
+					"missmilligan.helpAutoComplete",
+					"missmilligan.helpUndo",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "spiteandmalice", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSpiteAndMaliceCuiController(usecase.NewSpiteAndMaliceInteractor(

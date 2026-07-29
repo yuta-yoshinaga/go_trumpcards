@@ -229,4 +229,12 @@ func init() {
 			return usecase.RestoreGrandfathersClockInteractor(data, new(presenter.GrandfathersClockWebPresenter))
 		},
 		controller.NewGrandfathersClockWebControllerWithProvider)
+	games.RegisterKVGame("missmilligan", games.CategoryExtra2,
+		func() usecase.MissMilliganInteractorIF {
+			return usecase.NewMissMilliganInteractor(domain.NewDefaultMissMilligan(), new(presenter.MissMilliganWebPresenter))
+		},
+		func(data []byte) (usecase.MissMilliganInteractorIF, error) {
+			return usecase.RestoreMissMilliganInteractor(data, new(presenter.MissMilliganWebPresenter))
+		},
+		controller.NewMissMilliganWebControllerWithProvider)
 }
