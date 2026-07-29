@@ -1164,6 +1164,10 @@ type nertzJSON struct {
 	MatchWinner int                `json:"mw"`
 	MoveCount   int                `json:"mc"`
 	ActionLog   []*ActionLogEntry  `json:"al"`
+	// History must round-trip: the Cloudflare Worker is stateless per request
+	// and rebuilds the game from KV every call, so an unpersisted undo stack
+	// means Undo/UndoN/UndoToEscape silently never work in production (#4478).
+	History []*nertzSnapshot `json:"hi,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1179,6 +1183,7 @@ func (g *Nertz) MarshalJSON() ([]byte, error) {
 		MatchWinner: g.matchWinner,
 		MoveCount:   g.moveCount,
 		ActionLog:   g.actionLog,
+		History:     g.history,
 	})
 }
 
@@ -1201,7 +1206,59 @@ func (g *Nertz) UnmarshalJSON(data []byte) error {
 	g.winnerIdx = j.WinnerIdx
 	g.matchWinner = j.MatchWinner
 	g.moveCount = j.MoveCount
+	if len(j.History) > nertzMaxSliceLen {
+		return errors.New("nertz: history exceeds maximum allowed size")
+	}
 	g.actionLog = j.ActionLog
-	g.history = nil
+	g.history = j.History
+	return nil
+}
+
+// nertzSnapshotMaxBytes bounds one embedded snapshot document. A full table is
+// a few KB, so 1 MiB is far above any legitimate value and exists only to stop
+// a hostile KV entry from being expanded.
+const nertzSnapshotMaxBytes = 1 << 20
+
+// nertzSnapshotJSON is the wire format for a single undo snapshot.
+// nertzSnapshot uses unexported fields, so marshalling it directly would emit
+// `[{},{}]` -- the undo depth would survive but every snapshot would be blank,
+// and Undo would wipe the board instead of rewinding it (#4478).
+//
+// The two document fields ride as json.RawMessage rather than []byte: a []byte
+// would be re-encoded as base64 on every save, which costs a third more bytes
+// per snapshot in KV for no benefit.
+type nertzSnapshotJSON struct {
+	Players     json.RawMessage `json:"pl"`
+	Foundations json.RawMessage `json:"fd"`
+	Phase       NertzPhase      `json:"ph"`
+	MoveCount   int             `json:"mc"`
+	WinnerIdx   int             `json:"wi"`
+}
+
+// MarshalJSON implements json.Marshaler for nertzSnapshot.
+func (s *nertzSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(nertzSnapshotJSON{
+		Players:     s.playersJSON,
+		Foundations: s.foundationsJSON,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		WinnerIdx:   s.winnerIdx,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for nertzSnapshot.
+func (s *nertzSnapshot) UnmarshalJSON(data []byte) error {
+	var j nertzSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > nertzSnapshotMaxBytes || len(j.Foundations) > nertzSnapshotMaxBytes {
+		return errors.New("nertz: snapshot document exceeds maximum allowed size")
+	}
+	s.playersJSON = j.Players
+	s.foundationsJSON = j.Foundations
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.winnerIdx = j.WinnerIdx
 	return nil
 }
