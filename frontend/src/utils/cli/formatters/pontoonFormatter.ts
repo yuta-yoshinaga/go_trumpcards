@@ -10,9 +10,13 @@ function rankLabel(rank: number): string {
   return '';
 }
 
-/** Render one hand, hiding the cards while they are still face down. */
-function formatHand(hand: PontoonHand, hide: boolean): string {
-  if (hide) return hand.cards.map(() => '[??]').join(' ');
+/**
+ * Render one hand. Visibility comes from the server's `hidden` flag, never from
+ * re-deriving it here: a hidden hand arrives with null cards, so a second
+ * opinion about what may be shown could only ever disagree with the data.
+ */
+function formatHand(hand: PontoonHand): string {
+  if (hand.hidden) return hand.cards.map(() => '[??]').join(' ');
   const cards = hand.cards.map((c) => (c ? formatCard(c) : '[??]')).join(' ');
   return `${cards} (${hand.total})${rankLabel(hand.rank)}`;
 }
@@ -28,9 +32,7 @@ export function formatPontoonState(state: PontoonResponse): string {
   lines.push(`banker: ${bankerName}`);
 
   if (state.bankerHand) {
-    // The banker's cards are the ones you cannot see -- that is the difference
-    // from blackjack, so they stay hidden until the round settles.
-    lines.push(`banker hand: ${formatHand(state.bankerHand, !ended && !state.isHumanBanker)}`);
+    lines.push(`banker hand: ${formatHand(state.bankerHand)}`);
   }
   lines.push('----------');
 
@@ -41,7 +43,7 @@ export function formatPontoonState(state: PontoonResponse): string {
         state.phase === PontoonPhase.PLAYER_TURN && seatIdx === state.activeSeat && handIdx === state.activeHand;
       const marker = onTurn ? '> ' : '  ';
       const payout = ended && hand.payout !== 0 ? ` -> ${hand.payout}` : '';
-      lines.push(`${marker}${seat.name} bet ${hand.bet} ${formatHand(hand, !ended && seat.isCpu)}${payout}`);
+      lines.push(`${marker}${seat.name} bet ${hand.bet} ${formatHand(hand)}${payout}`);
     });
   });
   lines.push('----------');

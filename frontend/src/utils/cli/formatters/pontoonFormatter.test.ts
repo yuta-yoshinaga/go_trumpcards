@@ -53,13 +53,25 @@ describe('formatPontoonState', () => {
 
   // The server marks a hand hidden and sends null cards; the formatter shows
   // its size and nothing else.
-  it('renders a hidden hand as backs only', () => {
+  // Visibility must come from the server's flag, not from phase and seat. The
+  // round here is SETTLED, so a formatter that re-derived "hide" from the phase
+  // would print the cards; only reading `hidden` produces backs.
+  it('renders a hand as backs purely because the server marked it hidden', () => {
     const result = formatPontoonState(
       makeState({
+        phase: 4,
+        lastResult: '親は 18',
         bankerHand: hand({ hidden: true, cards: [null, null], total: 0, rank: 0 }),
       }),
     );
     expect(result).toContain('banker hand: [??] [??]');
+  });
+
+  // The mirror: a hand the server did NOT mark hidden shows even mid-round,
+  // which a formatter guessing from `seat.isCpu` would get wrong.
+  it('shows a hand the server did not mark hidden even mid-round', () => {
+    const result = formatPontoonState(makeState());
+    expect(result).not.toContain('[??]');
     expect(result).toContain('> あなた bet 100');
   });
 
