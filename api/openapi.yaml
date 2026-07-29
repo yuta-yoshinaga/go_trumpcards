@@ -193,6 +193,8 @@ tags:
     description: Bisley (ビズリー) game - fully open solitaire with two foundation sets, four ascending (A→K, dealt with the Aces) and four descending (K→A, opened by playing a King)
   - name: napoleonssquare
     description: Napoleon's Square game - two-deck square solitaire; eight foundations seeded with the Aces, twelve columns of four, and same-suit runs that move as one unit
+  - name: grandfathersclock
+    description: Grandfather's Clock game - twelve clock faces, each finishing on the rank of the hour it occupies; no stock, all 52 cards dealt at the start
   - name: spiteandmalice
     description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
   - name: skat
@@ -10445,6 +10447,123 @@ paths:
               schema:
                 $ref: '#/components/schemas/NapoleonsSquareResponse'
 
+  /grandfathersclock/exec:
+    post:
+      tags:
+        - grandfathersclock
+      summary: Execute a Grandfather's Clock game command
+      description: |
+        Send a command to advance the Grandfather's Clock (グランドファーザーズ・
+        クロック) game session identified by `sessionId`.
+
+        Twelve **fixed** cards are placed as a clock face and the remaining 40 are
+        dealt face-up into **eight columns of five**. There is **no stock**:
+        12 + 8x5 = 52 accounts for every card, so the whole game is ordering the
+        moves already on the table. (#4399's rule 5 mentions a stock running out;
+        that cannot happen because none exists.)
+
+        Each face builds **up by suit, wrapping King round to Ace**, and must
+        finish on the rank of the hour it occupies — one o'clock on an Ace through
+        twelve o'clock on a Queen. A face that reaches its target is **complete and
+        accepts nothing more**; without that rule the wraparound would let it lap
+        the whole suit. The starters are fixed rather than dealt because each then
+        needs exactly 3 or 4 further cards, totalling the 40 in the tableau.
+
+        The tableau builds **down by one ignoring suit**, one card at a time, and
+        an empty column accepts any card.
+
+        **The destination face index is required** on a move to `foundation`.
+        Twelve faces can hold the same suit, so unlike the one-per-suit solitaires
+        it cannot be derived from the card.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All twelve faces reached their hour |
+        | GameOver   | `2`   | Player gave up |
+
+        | Command        | Aliases     | Description |
+        |----------------|-------------|-------------|
+        | `reset`        | `r`         | Start / restart a game |
+        | `move`         | `m`         | Move a card (requires `from` and `to`) |
+        | `giveup`       | `g`         | Give up the current game |
+        | `hint`         | `h`         | A clock-face move if there is one, else a tableau move |
+        | `autocomplete` | `ac`        | Send every legal card to the clock faces |
+        | `undo`         | `u`         | Undo the last action |
+        | `undo_n`       | -           | Undo the last `n` actions |
+        | `log`          | `l`         | View action log |
+
+        Move zones:
+        * `from`: `{zone: "tableau", col: 0..7}`
+        * `to`: `{zone: "tableau", col: 0..7}` or `{zone: "foundation", col: 0..11}`
+
+      operationId: grandfathersclockExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/GrandfathersClockMoveZone'
+                to:
+                  $ref: '#/components/schemas/GrandfathersClockMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              moveTableauToClockFace:
+                summary: Send column 2's top card to the five o'clock face
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 2
+                  to:
+                    zone: foundation
+                    col: 4
+              moveTableauToTableau:
+                summary: Stack column 0's top card onto column 5
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 0
+                  to:
+                    zone: tableau
+                    col: 5
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrandfathersClockResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrandfathersClockResponse'
+
   /spiteandmalice/exec:
     post:
       tags:
@@ -19791,6 +19910,104 @@ components:
           description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
         hint:
           $ref: '#/components/schemas/NapoleonsSquareHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    GrandfathersClockMoveZone:
+      type: object
+      description: Source or target zone for a Grandfather's Clock card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier
+          enum: [tableau, foundation]
+        col:
+          type: integer
+          description: |
+            Tableau column (0..7) for `tableau`, or the clock face index (0..11)
+            for `foundation`. **Required in both cases.** Unlike the one-per-suit
+            solitaires, twelve faces can hold the same suit, so the destination
+            face cannot be derived from the card being moved.
+    GrandfathersClockTableauCard:
+      type: object
+      description: A single tableau card. Every card is face-up by rule, but the flag is surfaced rather than assumed.
+      properties:
+        card:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+        faceUp:
+          type: boolean
+    GrandfathersClockFoundation:
+      type: object
+      description: One clock face, with the rank it has to end on.
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        targetRank:
+          type: integer
+          description: |
+            The rank this face must finish on: 1 (Ace) at one o'clock through 12
+            (Queen) at twelve. Sent so the client never recomputes the clock
+            ordering and drifts from the server.
+          minimum: 1
+          maximum: 12
+        complete:
+          type: boolean
+          description: Whether the face has reached `targetRank`. A complete face accepts no further cards.
+    GrandfathersClockHint:
+      type: object
+      description: Suggested next move for Grandfather's Clock
+      properties:
+        fromCol:
+          type: integer
+          description: Source tableau column (0..7)
+        toZone:
+          type: string
+          enum: [foundation, tableau]
+        toIdx:
+          type: integer
+          description: Destination clock face (0..11) or tableau column (0..7)
+    GrandfathersClockResponse:
+      type: object
+      description: Response payload for /grandfathersclock/exec
+      properties:
+        tableau:
+          type: array
+          description: Eight columns, dealt five cards each.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/GrandfathersClockTableauCard'
+        foundation:
+          type: array
+          description: Twelve clock faces, index 0 at one o'clock through index 11 at twelve.
+          items:
+            $ref: '#/components/schemas/GrandfathersClockFoundation'
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
+        hint:
+          $ref: '#/components/schemas/GrandfathersClockHint'
         message:
           type: string
         messageCode:

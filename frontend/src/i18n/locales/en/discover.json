@@ -307,7 +307,8 @@
     "zheng": "Zheng Shangyou (争上游). The traditional Chinese climbing game that fathered Daifugo and Big Two. Four players split a 54-card deck (jokers included) and race to shed their hands, beating the table with singles, pairs, triples, straights, and pair runs — or passing. Strength runs 3<4<…<K<A<2<small joker<big joker, and suits never matter. A four-of-a-kind bomb tops any normal play, and the two-joker bomb beats everything. Finish order sets ranks 1st through 4th.",
     "sirtommy": "One of the oldest recorded patiences: deal the stock into four wastes and build A-K foundations.",
     "bisley": "An open solitaire with all 52 cards face-up: the Aces start on the board and the King foundations open as you play them.",
-    "napoleonssquare": "A large two-deck solitaire laid out as a square; same-suit runs move as one unit."
+    "napoleonssquare": "A large two-deck solitaire laid out as a square; same-suit runs move as one unit.",
+    "grandfathersclock": "A clock-shaped solitaire: finish each of the twelve faces on the rank of the hour it sits at. No stock, everything visible."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -531,6 +532,7 @@
     "zheng": "The Chinese ancestor of Daifugo — suits never matter, and bombs or the joker bomb can flip the table.",
     "sirtommy": "Once a card is placed it cannot be moved. Every decision is where to discard it - nothing else.",
     "bisley": "Build ascending and descending foundations at once. Everything is visible, and it is still hard.",
-    "napoleonssquare": "Eight foundations to grow at once. How you bundle the runs decides the endgame."
+    "napoleonssquare": "Eight foundations to grow at once. How you bundle the runs decides the endgame.",
+    "grandfathersclock": "One o'clock ends on an Ace, twelve on a Queen. The layout is the goal."
   }
 }

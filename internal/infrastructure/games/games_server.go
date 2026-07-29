@@ -425,6 +425,11 @@ func init() {
 			return usecase.NewNapoleonsSquareInteractor(domain.NewDefaultNapoleonsSquare(), new(presenter.NapoleonsSquareWebPresenter))
 		},
 		controller.NewNapoleonsSquareWebController)
+	BindWebControllerFor("grandfathersclock",
+		func() usecase.GrandfathersClockInteractorIF {
+			return usecase.NewGrandfathersClockInteractor(domain.NewDefaultGrandfathersClock(), new(presenter.GrandfathersClockWebPresenter))
+		},
+		controller.NewGrandfathersClockWebController)
 	BindWebControllerFor("spiteandmalice",
 		func() usecase.SpiteAndMaliceInteractorIF {
 			return usecase.NewSpiteAndMaliceInteractor(domain.NewDefaultSpiteAndMalice(), new(presenter.SpiteAndMaliceWebPresenter))

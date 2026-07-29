@@ -199,6 +199,9 @@ var registry = []*Game{
 	// Napoleon's Square is a two-deck square tableau whose same-suit runs move as
 	// a unit; eight foundations sit in the middle, two per suit.
 	{Name: "napoleonssquare", Category: CategoryExtra2},
+	// Grandfather's Clock builds twelve suit-ordered faces up to the rank of the
+	// hour they sit at, wrapping King to Ace; the tableau is a plain down-by-one.
+	{Name: "grandfathersclock", Category: CategoryExtra2},
 	{Name: "spiteandmalice", Category: CategoryExtra2},
 	// Skat is a trick-taking game.
 	{Name: "skat", Category: CategoryExtra3},

@@ -64,6 +64,7 @@ import type {
   GolfResponse,
   GongZhuResponse,
   GoStopResponse,
+  GrandfathersClockResponse,
   GutsResponse,
   HachiHachiResponse,
   HeartsResponse,
@@ -245,6 +246,7 @@ import { getGoFishHint } from '../utils/hints/gofishHint';
 import { getGolfHint } from '../utils/hints/golfHint';
 import { getGongZhuHint } from '../utils/hints/gongzhuHint';
 import { getGoStopHint } from '../utils/hints/gostopHint';
+import { getGrandfathersClockHint } from '../utils/hints/grandfathersclockHint';
 import { getGutsHint } from '../utils/hints/gutsHint';
 import { getHachiHachiHint } from '../utils/hints/hachihachiHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
@@ -494,6 +496,7 @@ export const hintFactories = {
   sirtommy: (s) => getSirTommyHint(s as SirTommyResponse),
   bisley: (s) => getBisleyHint(s as BisleyResponse),
   napoleonssquare: (s) => getNapoleonsSquareHint(s as NapoleonsSquareResponse),
+  grandfathersclock: (s) => getGrandfathersClockHint(s as GrandfathersClockResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   sheepshead: (s) => getSheepsheadHint(s as SheepsheadResponse),
   doppelkopf: (s) => getDoppelkopfHint(s as DoppelkopfResponse),

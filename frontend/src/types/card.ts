@@ -90,6 +90,7 @@ export * from './games/gofish';
 export * from './games/golf';
 export * from './games/gongzhu';
 export * from './games/gostop';
+export * from './games/grandfathersclock';
 export * from './games/guts';
 export * from './games/hachihachi';
 export * from './games/handandfoot';

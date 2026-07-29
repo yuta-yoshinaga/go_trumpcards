@@ -1,0 +1,43 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "foundation": "文字盤",
+  "tableau": "場札",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "empty": "空",
+  "hourLabel": "{{hour}}時",
+  "facesComplete": "完成 {{count}}/{{total}}",
+  "faceAriaLabel": "文字盤{{idx}} ({{hour}}時) 目標{{target}} {{count}}枚",
+  "emptyFaceAriaLabel": "空の文字盤{{idx}} ({{hour}}時)",
+  "emptyColumnAriaLabel": "空のタブロー列 {{col}}",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "文字盤を配り札より先へ進めると有効になります",
+  "undo": "元に戻す",
+  "stalemate": "手詰まりです",
+  "playing": "カードを移動してください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "gameOverSummary": "文字盤 {{count}}/{{total}} 個を完成",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "tutorial": {
+    "clock": "中央上段が12個の文字盤です。それぞれ最初から1枚置かれていて、同じスートで昇順（Kの次はAに折り返す）に積み上げます。",
+    "targets": "各文字盤の下の「→数字」がその文字盤の目標ランクです。1時はA、12時はQ。目標に達した文字盤は完成印が付き、以後カードを受け付けません。",
+    "tableau": "場札は8列×5枚。スートを無視して1つ下のランクに1枚ずつ重ねられ、空いた列には任意のカードを置けます。山札はありません（52枚すべてが最初から場に出ています）。",
+    "controls": "ヒント・元に戻す・自動完成などの操作ボタンです。"
+  },
+  "frontendHint": {
+    "tableau": "タブロー列{{col}}",
+    "foundation": "文字盤{{idx}}"
+  },
+  "hintReason": {
+    "toFoundation": "このカードを文字盤に上げると場が1枚軽くなります",
+    "toTableau": "示唆された場札への移動で下のカードを掘り出しましょう"
+  }
+}
