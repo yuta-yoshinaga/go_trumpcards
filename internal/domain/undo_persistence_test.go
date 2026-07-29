@@ -220,3 +220,171 @@ func TestEveryUndoStackIsPersisted(t *testing.T) {
 			"snapshot type its own MarshalJSON/UnmarshalJSON and add a History field "+
 			"with a json tag to the wire struct -- see AmericanToad or Canfield, and #4478")
 }
+
+// bigCards returns a slice long enough to trip a MaxSliceLen guard.
+func bigCards(n int) []*Card {
+	out := make([]*Card, n)
+	for i := range out {
+		out[i] = NewCard(CardDesignSpade, 1, true)
+	}
+	return out
+}
+
+// bigLog returns an action log long enough to trip a MaxSliceLen guard.
+func bigLog(n int) []*ActionLogEntry {
+	out := make([]*ActionLogEntry, n)
+	for i := range out {
+		out[i] = &ActionLogEntry{}
+	}
+	return out
+}
+
+// KV holds whatever an earlier version -- or a tampering client -- wrote, and a
+// snapshot is just as reachable as the top-level state. Both layers need bounds,
+// and the guards added with the History field are only real if something trips
+// them (#4478).
+func TestUndoPersistenceRespectsMaxSliceLen(t *testing.T) {
+	const over = 1001
+
+	cases := []struct {
+		name string
+		// tooManySnapshots marshals a wire payload whose History is oversized.
+		tooManySnapshots func() ([]byte, error)
+		// tooLongLog marshals a wire payload whose ActionLog is oversized.
+		tooLongLog func() ([]byte, error)
+		// bloatedSnapshot marshals a single snapshot with an oversized pile.
+		bloatedSnapshot func() ([]byte, error)
+		// restore feeds bytes to the game's UnmarshalJSON.
+		restore func([]byte) error
+		// restoreSnapshot feeds bytes to the snapshot's UnmarshalJSON.
+		restoreSnapshot func([]byte) error
+	}{
+		{
+			name: "SirTommy",
+			tooManySnapshots: func() ([]byte, error) {
+				return json.Marshal(&sirTommyJSON{History: make([]*sirTommySnapshot, over)})
+			},
+			tooLongLog: func() ([]byte, error) {
+				return json.Marshal(&sirTommyJSON{ActionLog: bigLog(over)})
+			},
+			bloatedSnapshot: func() ([]byte, error) {
+				return json.Marshal(&sirTommySnapshotJSON{Stock: bigCards(over)})
+			},
+			restore:         func(b []byte) error { return NewDefaultSirTommy().UnmarshalJSON(b) },
+			restoreSnapshot: func(b []byte) error { return new(sirTommySnapshot).UnmarshalJSON(b) },
+		},
+		{
+			name: "Bisley",
+			tooManySnapshots: func() ([]byte, error) {
+				return json.Marshal(&bisleyJSON{History: make([]*bisleySnapshot, over)})
+			},
+			tooLongLog: func() ([]byte, error) {
+				return json.Marshal(&bisleyJSON{ActionLog: bigLog(over)})
+			},
+			bloatedSnapshot: func() ([]byte, error) {
+				return json.Marshal(&bisleySnapshotJSON{
+					AceFoundations: [BisleyFoundationCnt][]*Card{bigCards(over)},
+				})
+			},
+			restore:         func(b []byte) error { return NewDefaultBisley().UnmarshalJSON(b) },
+			restoreSnapshot: func(b []byte) error { return new(bisleySnapshot).UnmarshalJSON(b) },
+		},
+		{
+			name: "NapoleonsSquare",
+			tooManySnapshots: func() ([]byte, error) {
+				return json.Marshal(&napoleonsSquareJSON{History: make([]*napoleonsSquareSnapshot, over)})
+			},
+			tooLongLog: func() ([]byte, error) {
+				return json.Marshal(&napoleonsSquareJSON{ActionLog: bigLog(over)})
+			},
+			bloatedSnapshot: func() ([]byte, error) {
+				return json.Marshal(&napoleonsSquareSnapshotJSON{Stock: bigCards(over)})
+			},
+			restore:         func(b []byte) error { return NewDefaultNapoleonsSquare().UnmarshalJSON(b) },
+			restoreSnapshot: func(b []byte) error { return new(napoleonsSquareSnapshot).UnmarshalJSON(b) },
+		},
+		{
+			name: "GrandfathersClock",
+			tooManySnapshots: func() ([]byte, error) {
+				return json.Marshal(&grandfathersClockJSON{History: make([]*grandfathersClockSnapshot, over)})
+			},
+			tooLongLog: func() ([]byte, error) {
+				return json.Marshal(&grandfathersClockJSON{ActionLog: bigLog(over)})
+			},
+			bloatedSnapshot: func() ([]byte, error) {
+				return json.Marshal(&grandfathersClockSnapshotJSON{
+					Foundation: [GrandfathersClockFoundationCnt][]*Card{bigCards(over)},
+				})
+			},
+			restore:         func(b []byte) error { return NewDefaultGrandfathersClock().UnmarshalJSON(b) },
+			restoreSnapshot: func(b []byte) error { return new(grandfathersClockSnapshot).UnmarshalJSON(b) },
+		},
+		{
+			name: "MissMilligan",
+			tooManySnapshots: func() ([]byte, error) {
+				return json.Marshal(&missMilliganJSON{History: make([]*missMilliganSnapshot, over)})
+			},
+			tooLongLog: func() ([]byte, error) {
+				return json.Marshal(&missMilliganJSON{ActionLog: bigLog(over)})
+			},
+			bloatedSnapshot: func() ([]byte, error) {
+				return json.Marshal(&missMilliganSnapshotJSON{Stock: bigCards(over)})
+			},
+			restore:         func(b []byte) error { return NewDefaultMissMilligan().UnmarshalJSON(b) },
+			restoreSnapshot: func(b []byte) error { return new(missMilliganSnapshot).UnmarshalJSON(b) },
+		},
+		{
+			name: "Duchess",
+			tooManySnapshots: func() ([]byte, error) {
+				return json.Marshal(&duchessJSON{History: make([]*duchessSnapshot, over)})
+			},
+			tooLongLog: func() ([]byte, error) {
+				return json.Marshal(&duchessJSON{ActionLog: bigLog(over)})
+			},
+			bloatedSnapshot: func() ([]byte, error) {
+				return json.Marshal(&duchessSnapshotJSON{Stock: bigCards(over)})
+			},
+			restore:         func(b []byte) error { return NewDefaultDuchess().UnmarshalJSON(b) },
+			restoreSnapshot: func(b []byte) error { return new(duchessSnapshot).UnmarshalJSON(b) },
+		},
+		{
+			name: "Windmill",
+			tooManySnapshots: func() ([]byte, error) {
+				return json.Marshal(&windmillJSON{History: make([]*windmillSnapshot, over)})
+			},
+			tooLongLog: func() ([]byte, error) {
+				return json.Marshal(&windmillJSON{ActionLog: bigLog(over)})
+			},
+			bloatedSnapshot: func() ([]byte, error) {
+				return json.Marshal(&windmillSnapshotJSON{Stock: bigCards(over)})
+			},
+			restore:         func(b []byte) error { return NewDefaultWindmill().UnmarshalJSON(b) },
+			restoreSnapshot: func(b []byte) error { return new(windmillSnapshot).UnmarshalJSON(b) },
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			for name, build := range map[string]func() ([]byte, error){
+				"too many snapshots":     tc.tooManySnapshots,
+				"too long an action log": tc.tooLongLog,
+			} {
+				t.Run(name, func(t *testing.T) {
+					data, err := build()
+					require.NoError(t, err)
+					assert.Error(t, tc.restore(data))
+				})
+			}
+
+			t.Run("an oversized pile inside a snapshot", func(t *testing.T) {
+				data, err := tc.bloatedSnapshot()
+				require.NoError(t, err)
+				assert.Error(t, tc.restoreSnapshot(data))
+			})
+
+			t.Run("malformed snapshot json", func(t *testing.T) {
+				assert.Error(t, tc.restoreSnapshot([]byte("not json")))
+			})
+		})
+	}
+}
