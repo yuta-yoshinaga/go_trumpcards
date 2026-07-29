@@ -420,6 +420,49 @@ func TestMissMilligan_NotStalemateWhileWaivingIsStillAvailable(t *testing.T) {
 	assert.Equal(t, -1, mm.UndoToEscape(), "no history to rewind into")
 }
 
+// Reshuffling the tableau to *make* a landing spot is the whole point of the
+// rescue rule, so holding cards must not silence the hint or trip the stalemate
+// check while such a move remains (review finding on #4472).
+func TestMissMilligan_HoldingStillLooksForMovesThatOpenALandingSpot(t *testing.T) {
+	mm := newTestMissMilligan()
+	var f [MissMilliganFoundationCnt][]*Card
+	// ♠6/♥5 fit nowhere right now, but ♣3 onto ♥4 exposes ♦7, which takes ♠6.
+	setMMBoard(mm, f, [][]*Card{
+		{NewCard(CardDesignDiamond, 7, true), NewCard(CardDesignClover, 3, true)},
+		{NewCard(CardDesignHeart, 4, true)},
+	}, nil, []*Card{NewCard(CardDesignSpade, 6, true), NewCard(CardDesignHeart, 5, true)})
+
+	h := mm.GetHint()
+	require.NotNil(t, h, "the hint must not go silent while a productive move remains")
+	assert.Equal(t, "tableau", h.FromZone, "it should suggest the shuffle, not the held cards")
+	require.NoError(t, mm.MoveTableauToTableau(h.FromCol, h.CardIndex, h.ToIdx))
+
+	mm.checkStalemate()
+	assert.False(t, mm.IsStalemate())
+
+	// The shuffle opened the spot, so now the hint switches to putting them back.
+	h = mm.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, "waived", h.FromZone)
+	require.NoError(t, mm.PlaceWaived(h.ToIdx))
+	assert.Empty(t, mm.GetWaived())
+}
+
+// Putting the held cards back still outranks a shuffle when both are possible.
+func TestMissMilligan_HoldingPrefersPuttingThemBack(t *testing.T) {
+	mm := newTestMissMilligan()
+	var f [MissMilliganFoundationCnt][]*Card
+	setMMBoard(mm, f, [][]*Card{
+		{NewCard(CardDesignDiamond, 7, true)},
+		{NewCard(CardDesignHeart, 4, true)},
+		{NewCard(CardDesignSpade, 3, true)},
+	}, nil, []*Card{NewCard(CardDesignSpade, 6, true)})
+
+	h := mm.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, "waived", h.FromZone, "♠6 fits ♦7 straight away")
+	assert.Equal(t, 0, h.ToIdx)
+}
 func TestMissMilligan_AutoCompleteOnlyFeedsFoundations(t *testing.T) {
 	mm := newTestMissMilligan()
 	var f [MissMilliganFoundationCnt][]*Card

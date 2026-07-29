@@ -54,7 +54,7 @@
   "hintReason": {
     "toFoundation": "Send this card to a foundation to free up the board.",
     "toTableau": "Apply the suggested tableau move to dig out the cards underneath.",
-    "returnWaived": "Nothing else can move until the waived cards are back on the tableau.",
+    "returnWaived": "Put the waived cards back — dealing and a second waive are barred until you do.",
     "deal": "Nothing on the board can move, so deal a card onto every column."
   }
 }

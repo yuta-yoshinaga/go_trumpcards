@@ -374,8 +374,13 @@ func (mm *MissMilligan) foundationHint() *MissMilliganHint {
 
 // tableauHint タブローへ置ける手を 1 つ返す。
 //
-// 保持中の札を戻す手を最優先する — 保持したままでは配り足しもウェイブもできず、
-// 実質的に手が止まるため。
+// 保持中の札を戻す手があればそれを最優先する — 保持したままでは配り足しも
+// 2 度目のウェイブもできないため。
+//
+// ただし戻せないときに探索を打ち切ってはいけない。**盤面をかき混ぜて戻す先を
+// 作ること自体がウェイブの目的**であり、MoveTableauToTableau と
+// MoveTableauToFoundation は保持中でも禁止していない。ここで nil を返すと、
+// 手が残っているのに手詰まりと判定されてしまう（#4472 のレビュー指摘）。
 func (mm *MissMilligan) tableauHint() *MissMilliganHint {
 	if mm.phase != MissMilliganPhasePlaying {
 		return nil
@@ -386,8 +391,7 @@ func (mm *MissMilligan) tableauHint() *MissMilliganHint {
 				return &MissMilliganHint{FromZone: "waived", FromCol: -1, CardIndex: -1, ToZone: "tableau", ToIdx: col}
 			}
 		}
-		// 保持中は他の手を勧めない。まず戻す先を作る必要がある。
-		return nil
+		// 戻せないので、戻す先を作る手を下の通常探索で探す。
 	}
 	for from := range MissMilliganTableauCnt {
 		pile := mm.tableau[from]
@@ -638,7 +642,8 @@ func (mm *MissMilligan) checkGameClear() {
 // GetHint は基礎札・タブロー・山札のすべてを見るので、「ヒントが無い」と
 // 「手詰まり」は同じ条件になる。二重に持つと片方だけ直したときに食い違う。
 //
-// ウェイブは救済手段なので、まだ使えるうちは手詰まりとしない。
+// ウェイブは救済手段なので、まだ使えるうちは手詰まりとしない。保持中の場合は
+// GetHint が「戻す手」と「戻す先を作る手」の両方を見ているので、そちらで尽きる。
 func (mm *MissMilligan) checkStalemate() {
 	if mm.phase != MissMilliganPhasePlaying {
 		return
