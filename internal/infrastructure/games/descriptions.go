@@ -99,6 +99,7 @@ var gameDescriptions = map[string]string{
 	"congress":            "コングレス（8つの山と8つの基礎札の2デッキソリティア）",
 	"terrace":             "テラス（色違いで積む2デッキのソリティア）",
 	"braid":               "ブレイド（三つ編みリザーブの2デッキソリティア）",
+	"pontoon":             "ポンツーン（英国式ブラックジャック・親交代制）",
 	"spiteandmalice":      "Spite and Malice (スパイト・アンド・マリス)",
 	"skat":                "Skat (スカート)",
 	"shithead":            "Shithead / Karma (シットヘッド)",

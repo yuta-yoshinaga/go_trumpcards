@@ -315,7 +315,8 @@
     "americantoad": "Two-deck Canfield with a 20-card reserve: foundations circle round from whatever rank the deal turns up.",
     "congress": "Eight piles flank eight foundations in this two-deck game: build down ignoring suit, one card at a time.",
     "terrace": "Also called Queen of Italy: the foundations build up in alternating colour, from a rank you pick yourself.",
-    "braid": "A two-deck solitaire built around a twenty-card braid. You choose once, at the start, whether the foundations build up or down."
+    "braid": "A two-deck solitaire built around a twenty-card braid. You choose once, at the start, whether the foundations build up or down.",
+    "pontoon": "British blackjack, where every hand is dealt face down — the banker's included, so there is no up-card to read."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -547,6 +548,7 @@
     "americantoad": "Empty columns refill from the reserve automatically, and once it is gone only the waste can fill them. One redeal, and that is all.",
     "congress": "An empty pile can only be filled from the stock or the waste, and there is no redeal — one pass is all you get.",
     "terrace": "The eleven-card terrace feeds the foundations and nothing else, and never refills. Stall it and the game is over.",
-    "braid": "Only the four braid fields consume the braid, and the eight helpers can only be filled from the waste — never emptied back. Both roads run one way."
+    "braid": "Only the four braid fields consume the braid, and the eight helpers can only be filled from the waste — never emptied back. Both roads run one way.",
+    "pontoon": "You cannot stick below 15, and buying is dead once you twist. Make a pontoon and you take the bank."
   }
 }

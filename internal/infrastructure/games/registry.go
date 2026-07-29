@@ -227,6 +227,9 @@ var registry = []*Game{
 	// Braid's four braid fields refill from the braid's tail and are the only
 	// thing that consumes it; the eight helper fields refill from the waste only.
 	{Name: "braid", Category: CategoryExtra2},
+	// Pontoon deals every hand face down, including the banker's, and ranks a
+	// two-card 21 above a five-card trick above any total.
+	{Name: "pontoon", Category: CategoryExtra2},
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},

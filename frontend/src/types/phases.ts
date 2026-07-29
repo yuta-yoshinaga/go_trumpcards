@@ -1657,6 +1657,22 @@ export const GrandfathersClockPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Pontoon phase constants (sync: internal/domain/Pontoon.go). */
+export const PontoonPhase = {
+  BET: 1,
+  PLAYER_TURN: 2,
+  BANKER_TURN: 3,
+  END: 4,
+} as const;
+
+/** Pontoon hand ranks (sync: internal/domain/Pontoon.go). */
+export const PontoonRank = {
+  BUST: 0,
+  POINTS: 1,
+  FIVE_CARD: 2,
+  PONTOON: 3,
+} as const;
+
 /** Braid phase constants (sync: internal/domain/Braid.go). */
 export const BraidPhase = {
   PLAYING: 0,

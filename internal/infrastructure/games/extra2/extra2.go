@@ -269,4 +269,12 @@ func init() {
 			return usecase.RestoreBraidInteractor(data, new(presenter.BraidWebPresenter))
 		},
 		controller.NewBraidWebControllerWithProvider)
+	games.RegisterKVGame("pontoon", games.CategoryExtra2,
+		func() usecase.PontoonInteractorIF {
+			return usecase.NewPontoonInteractor(domain.NewDefaultPontoon(), new(presenter.PontoonWebPresenter))
+		},
+		func(data []byte) (usecase.PontoonInteractorIF, error) {
+			return usecase.RestorePontoonInteractor(data, new(presenter.PontoonWebPresenter))
+		},
+		controller.NewPontoonWebControllerWithProvider)
 }
