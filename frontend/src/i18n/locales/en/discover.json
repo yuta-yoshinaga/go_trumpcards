@@ -309,7 +309,8 @@
     "bisley": "An open solitaire with all 52 cards face-up: the Aces start on the board and the King foundations open as you play them.",
     "napoleonssquare": "A large two-deck solitaire laid out as a square; same-suit runs move as one unit.",
     "grandfathersclock": "A clock-shaped solitaire: finish each of the twelve faces on the rank of the hour it sits at. No stock, everything visible.",
-    "missmilligan": "A hard two-deck solitaire: when you run dry, deal eight more at once — one onto every column."
+    "missmilligan": "A hard two-deck solitaire: when you run dry, deal eight more at once — one onto every column.",
+    "duchess": "You choose the rank the foundations start from: pick one of four fans, then build round from King to Ace."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -535,6 +536,7 @@
     "bisley": "Build ascending and descending foundations at once. Everything is visible, and it is still hard.",
     "napoleonssquare": "Eight foundations to grow at once. How you bundle the runs decides the endgame.",
     "grandfathersclock": "One o'clock ends on an Ace, twelve on a Queen. The layout is the goal.",
-    "missmilligan": "Empty columns take only Kings, and once the stock is gone your only escape is holding a run aside."
+    "missmilligan": "Empty columns take only Kings, and once the stock is gone your only escape is holding a run aside.",
+    "duchess": "While any reserve remains, an empty column can only be filled from it — a hole is the reserve's exit, not a digging tool."
   }
 }

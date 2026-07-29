@@ -1657,6 +1657,13 @@ export const GrandfathersClockPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Duchess phase constants (sync: internal/domain/Duchess.go). */
+export const DuchessPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Miss Milligan phase constants (sync: internal/domain/MissMilligan.go). */
 export const MissMilliganPhase = {
   PLAYING: 0,

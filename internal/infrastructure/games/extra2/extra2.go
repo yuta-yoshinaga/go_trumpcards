@@ -237,4 +237,12 @@ func init() {
 			return usecase.RestoreMissMilliganInteractor(data, new(presenter.MissMilliganWebPresenter))
 		},
 		controller.NewMissMilliganWebControllerWithProvider)
+	games.RegisterKVGame("duchess", games.CategoryExtra2,
+		func() usecase.DuchessInteractorIF {
+			return usecase.NewDuchessInteractor(domain.NewDefaultDuchess(), new(presenter.DuchessWebPresenter))
+		},
+		func(data []byte) (usecase.DuchessInteractorIF, error) {
+			return usecase.RestoreDuchessInteractor(data, new(presenter.DuchessWebPresenter))
+		},
+		controller.NewDuchessWebControllerWithProvider)
 }

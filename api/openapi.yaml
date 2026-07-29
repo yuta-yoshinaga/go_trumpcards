@@ -197,6 +197,8 @@ tags:
     description: Grandfather's Clock game - twelve clock faces, each finishing on the rank of the hour it occupies; no stock, all 52 cards dealt at the start
   - name: missmilligan
     description: Miss Milligan game - two-deck solitaire dealt eight at a time onto every column, with a "waiving" rescue that holds one run aside once the stock is gone
+  - name: duchess
+    description: Duchess (Glenwood) game - Canfield-family solitaire where the player picks the foundations' starting rank off a reserve fan, and empty columns stay locked to the reserve
   - name: spiteandmalice
     description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
   - name: skat
@@ -10697,6 +10699,137 @@ paths:
               schema:
                 $ref: '#/components/schemas/MissMilliganResponse'
 
+  /duchess/exec:
+    post:
+      tags:
+        - duchess
+      summary: Execute a Duchess game command
+      description: |
+        Send a command to advance the Duchess (ダッチェス) game session
+        identified by `sessionId`. It is a Canfield-family solitaire on a single
+        52-card deck, also known as Glenwood.
+
+        **Four reserve fans of three cards (twelve in total)** are dealt, one card
+        onto each of **four tableau columns**, and the remaining 36 form the stock,
+        turned one at a time to a waste with **no redeal**. Only the top card of
+        each fan is available. #4408 deals "four cards per fan, sixteen in total";
+        Duchess deals three per fan, so the real game was followed.
+
+        The distinguishing rule is that **the player picks the starting rank**. The
+        first action must be `base`, choosing the top card of one reserve fan; that
+        rank opens all four suit-pinned foundations. Until then `awaitingBaseRank`
+        is true and every other command is refused. Foundations then build up in
+        suit, wrapping King round to Ace, until each has come full circle.
+
+        The tableau builds **down in alternating colour**, also wrapping Ace round
+        to King, and a run moves as a unit. **While any reserve card remains, an
+        empty column may only be filled from the reserve** -- #4408 omits this, but
+        it is the family's core rule and without it there is no reason to spend the
+        reserve.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All four foundations came full circle |
+        | GameOver   | `2`   | Player gave up |
+
+        | Command        | Aliases       | Description |
+        |----------------|---------------|-------------|
+        | `reset`        | `r`           | Start / restart a game |
+        | `base`         | `choosebase`  | Fix the starting rank (requires `from.col`) |
+        | `draw`         | `d`           | Turn one card from the stock |
+        | `move`         | `m`           | Move a card or run (requires `from` and `to`) |
+        | `giveup`       | `g`           | Give up the current game |
+        | `hint`         | `h`           | Foundation, else tableau, else "turn a card" |
+        | `autocomplete` | `ac`          | Send every legal card to the foundations |
+        | `undo`         | `u`           | Undo the last action |
+        | `undo_n`       | -             | Undo the last `n` actions |
+        | `log`          | `l`           | View action log |
+
+        Move zones:
+        * `from`: `{zone: "reserve", col: 0..3}`, `{zone: "waste"}`, or `{zone: "tableau", col: 0..3, cardIndex?: n}`
+        * `to`: `{zone: "tableau", col: 0..3}` or `{zone: "foundation"}`
+
+      operationId: duchessExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, base, choosebase, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/DuchessMoveZone'
+                to:
+                  $ref: '#/components/schemas/DuchessMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              chooseBaseRank:
+                summary: Take the starting rank off reserve fan 2
+                value:
+                  command: base
+                  sessionId: my-session-001
+                  from:
+                    zone: reserve
+                    col: 2
+              draw:
+                summary: Turn one card from the stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              reserveToTableau:
+                summary: Move the top of reserve fan 1 onto column 3
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: reserve
+                    col: 1
+                  to:
+                    zone: tableau
+                    col: 3
+              moveRunBetweenColumns:
+                summary: Carry the run starting at index 2 of column 0 onto column 3
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 0
+                    cardIndex: 2
+                  to:
+                    zone: tableau
+                    col: 3
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuchessResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuchessResponse'
   /spiteandmalice/exec:
     post:
       tags:
@@ -20150,6 +20283,123 @@ components:
           additionalProperties:
             type: string
 
+    DuchessMoveZone:
+      type: object
+      description: Source or target zone for a Duchess card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier
+          enum: [reserve, waste, tableau, foundation]
+        col:
+          type: integer
+          description: |
+            Reserve fan (0..3) for a `reserve` source, or tableau column (0..3)
+            for a `tableau` source and destination. Ignored for `waste`, and for
+            a `foundation` destination the server picks the pile from the card's
+            suit. Also carries the fan index for the `base` command.
+        cardIndex:
+          type: integer
+          description: |
+            Head of the alternating-colour run to carry, for a `tableau` source.
+            Omit to move only the top card (the server then uses -1, which it
+            resolves to the top of the column).
+    DuchessTableauCard:
+      type: object
+      description: A single tableau card. Every card is face-up by rule, but the flag is surfaced rather than assumed.
+      properties:
+        card:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+        faceUp:
+          type: boolean
+    DuchessHint:
+      type: object
+      description: Suggested next move for Duchess
+      properties:
+        fromZone:
+          type: string
+          description: "`stock` means: turn a card to the waste."
+          enum: [reserve, waste, tableau, stock]
+        fromIdx:
+          type: integer
+          description: Reserve fan or tableau column, or -1 when the source is the waste or the stock
+        cardIndex:
+          type: integer
+          description: Head of the run to carry, or -1 when the source is not the tableau
+        toZone:
+          type: string
+          enum: [foundation, tableau, waste]
+        toIdx:
+          type: integer
+          description: Destination index, or -1 for a draw, which targets no single pile
+    DuchessResponse:
+      type: object
+      description: Response payload for /duchess/exec
+      properties:
+        reserve:
+          type: array
+          description: Four fans of three cards. Only the last element of each is available.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        tableau:
+          type: array
+          description: Four columns, dealt one card each at the start.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/DuchessTableauCard'
+        foundation:
+          type: array
+          description: Four suit-pinned foundations, all opened at `baseRank`.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        stockCount:
+          type: integer
+          description: Cards left in the stock. Only ever decreases -- there is no redeal.
+        waste:
+          type: array
+          description: Turned cards. Only the last is available.
+          items:
+            $ref: '#/components/schemas/Card'
+        baseRank:
+          type: integer
+          description: The rank all four foundations start from. 0 means it has not been chosen yet.
+        awaitingBaseRank:
+          type: boolean
+          description: |
+            While true, `base` is the only command that will be accepted. Sent
+            alongside `baseRank` so the client never has to encode the
+            "0 means unchosen" convention itself.
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
+        hint:
+          $ref: '#/components/schemas/DuchessHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     MissMilliganMoveZone:
       type: object
       description: Source or target zone for a Miss Milligan card move
