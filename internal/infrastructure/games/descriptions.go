@@ -92,6 +92,7 @@ var gameDescriptions = map[string]string{
 	"bisley":              "ビズリー（昇降2組の基礎札ソリティア）",
 	"napoleonssquare":     "ナポレオンズ・スクエア（2デッキの正方形ソリティア）",
 	"grandfathersclock":   "グランドファーザーズ・クロック（時計盤ソリティア）",
+	"missmilligan":        "ミス・ミリガン（2デッキの高難度ソリティア）",
 	"spiteandmalice":      "Spite and Malice (スパイト・アンド・マリス)",
 	"skat":                "Skat (スカート)",
 	"shithead":            "Shithead / Karma (シットヘッド)",

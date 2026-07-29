@@ -202,6 +202,9 @@ var registry = []*Game{
 	// Grandfather's Clock builds twelve suit-ordered faces up to the rank of the
 	// hour they sit at, wrapping King to Ace; the tableau is a plain down-by-one.
 	{Name: "grandfathersclock", Category: CategoryExtra2},
+	// Miss Milligan deals eight at a time onto every column and lets a stuck
+	// player hold one run aside ("waiving") once the stock is gone.
+	{Name: "missmilligan", Category: CategoryExtra2},
 	{Name: "spiteandmalice", Category: CategoryExtra2},
 	// Skat is a trick-taking game.
 	{Name: "skat", Category: CategoryExtra3},

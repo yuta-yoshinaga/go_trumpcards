@@ -130,6 +130,7 @@ export * from './games/memory';
 export * from './games/michigan';
 export * from './games/mighty';
 export * from './games/mississippistud';
+export * from './games/missmilligan';
 export * from './games/montecarlo';
 export * from './games/mus';
 export * from './games/nap';
@@ -312,6 +313,7 @@ export const games = [
   'bisley',
   'napoleonssquare',
   'grandfathersclock',
+  'missmilligan',
   'canfield',
   'osmosis',
   'fivehundred',
