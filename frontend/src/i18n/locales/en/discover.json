@@ -312,7 +312,8 @@
     "missmilligan": "A hard two-deck solitaire: when you run dry, deal eight more at once — one onto every column.",
     "duchess": "You choose the rank the foundations start from: pick one of four fans, then build round from King to Ace.",
     "windmill": "A two-deck cross: the centre climbs A-K four times over, while the four corners run King down to Ace.",
-    "americantoad": "Two-deck Canfield with a 20-card reserve: foundations circle round from whatever rank the deal turns up."
+    "americantoad": "Two-deck Canfield with a 20-card reserve: foundations circle round from whatever rank the deal turns up.",
+    "congress": "Eight piles flank eight foundations in this two-deck game: build down ignoring suit, one card at a time."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -541,6 +542,7 @@
     "missmilligan": "Empty columns take only Kings, and once the stock is gone your only escape is holding a run aside.",
     "duchess": "While any reserve remains, an empty column can only be filled from it — a hole is the reserve's exit, not a digging tool.",
     "windmill": "There is one rescue — pull a corner card back to the centre — and after using it you must play a sail or waste card before you can use it again.",
-    "americantoad": "Empty columns refill from the reserve automatically, and once it is gone only the waste can fill them. One redeal, and that is all."
+    "americantoad": "Empty columns refill from the reserve automatically, and once it is gone only the waste can fill them. One redeal, and that is all.",
+    "congress": "An empty pile can only be filled from the stock or the waste, and there is no redeal — one pass is all you get."
   }
 }
