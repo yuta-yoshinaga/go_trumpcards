@@ -277,4 +277,12 @@ func init() {
 			return usecase.RestorePontoonInteractor(data, new(presenter.PontoonWebPresenter))
 		},
 		controller.NewPontoonWebControllerWithProvider)
+	games.RegisterKVGame("settemezzo", games.CategoryExtra2,
+		func() usecase.SetteEMezzoInteractorIF {
+			return usecase.NewSetteEMezzoInteractor(domain.NewDefaultSetteEMezzo(), new(presenter.SetteEMezzoWebPresenter))
+		},
+		func(data []byte) (usecase.SetteEMezzoInteractorIF, error) {
+			return usecase.RestoreSetteEMezzoInteractor(data, new(presenter.SetteEMezzoWebPresenter))
+		},
+		controller.NewSetteEMezzoWebControllerWithProvider)
 }

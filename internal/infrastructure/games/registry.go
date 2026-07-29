@@ -230,6 +230,9 @@ var registry = []*Game{
 	// Pontoon deals every hand face down, including the banker's, and ranks a
 	// two-card 21 above a five-card trick above any total.
 	{Name: "pontoon", Category: CategoryExtra2},
+	// Sette e Mezzo plays to 7.5 on a 40-card deck where face cards are worth
+	// half a point, and the king of coins is wild for 0.5 or 1-7.
+	{Name: "settemezzo", Category: CategoryExtra2},
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},

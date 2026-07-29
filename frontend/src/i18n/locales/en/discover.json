@@ -316,7 +316,8 @@
     "congress": "Eight piles flank eight foundations in this two-deck game: build down ignoring suit, one card at a time.",
     "terrace": "Also called Queen of Italy: the foundations build up in alternating colour, from a rank you pick yourself.",
     "braid": "A two-deck solitaire built around a twenty-card braid. You choose once, at the start, whether the foundations build up or down.",
-    "pontoon": "British blackjack, where every hand is dealt face down — the banker's included, so there is no up-card to read."
+    "pontoon": "British blackjack, where every hand is dealt face down — the banker's included, so there is no up-card to read.",
+    "setteemezzo": "The Italian seven-and-a-half. Face cards are worth half a point, so drawing one on seven lands you exactly on target."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -549,6 +550,7 @@
     "congress": "An empty pile can only be filled from the stock or the waste, and there is no redeal — one pass is all you get.",
     "terrace": "The eleven-card terrace feeds the foundations and nothing else, and never refills. Stall it and the game is over.",
     "braid": "Only the four braid fields consume the braid, and the eight helpers can only be filled from the waste — never emptied back. Both roads run one way.",
-    "pontoon": "You cannot stick below 15, and buying is dead once you twist. Make a pontoon and you take the bank."
+    "pontoon": "You cannot stick below 15, and buying is dead once you twist. Make a pontoon and you take the bank.",
+    "setteemezzo": "The king of coins is wild for 0.5 to 7, and you can keep changing it until you stand. Land exactly on 7.5 and you take the bank."
   }
 }

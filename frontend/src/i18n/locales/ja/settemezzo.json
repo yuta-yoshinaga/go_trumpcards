@@ -1,0 +1,46 @@
+{
+  "phase": {
+    "bet": "ベット",
+    "playerTurn": "あなたの手番",
+    "bankerTurn": "親の手番",
+    "end": "精算"
+  },
+  "chips": "チップ",
+  "banker": "親",
+  "bankerIsYou": "あなた",
+  "bankerHand": "親の手",
+  "bet": "賭け金",
+  "total": "合計",
+  "target": "目標",
+  "matta": "マッタ",
+  "mattaValue": "マッタ = {{value}}",
+  "actions": {
+    "hit": "引く",
+    "stand": "止める",
+    "bankerHit": "親として引く",
+    "bankerStand": "親として止める",
+    "deal": "配る",
+    "nextRound": "次の局へ"
+  },
+  "mattaLabel": "マッタを何点にしますか",
+  "betLabel": "賭け金を選んでください",
+  "betAmount": "{{amount}}",
+  "dealAsBanker": "あなたが親です。配ってください",
+  "placeBet": "賭け金を選んでください",
+  "yourTurn": "引くか止めるかを選んでください",
+  "bankerTurn": "親として引くか止めるかを決めてください",
+  "roundOver": "{{result}}",
+  "bankPasses": "ちょうど7.5で親が移りました",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "seatAriaLabel": "{{name}} の手 合計{{total}}",
+  "hiddenHandAriaLabel": "{{name}} の手は伏せられています",
+  "bankerHandAriaLabel": "親の手 合計{{total}}",
+  "hiddenBankerHandAriaLabel": "親の手は伏せられています",
+  "tutorial": {
+    "halfPoints": "**絵札は0.5点**です。7点から絵札を引いてもバーストせず、ちょうど7.5になります。「もう1枚で必ず大きく動く」ことがないのがこのゲームの手触りです。",
+    "matta": "**コインのK（マッタ）はワイルド**で、0.5点または1〜7点のどれにでもできます。**引いた瞬間に決まるのではなく、止めるまで何度でも付け替えられます。**",
+    "target": "目標は**7.5**。超えたらバーストです。**同点は親の勝ち**なので、親と同じ点で止まっても負けます。",
+    "banker": "**ちょうど7.5を出したプレイヤーが次の局の親になります。** 毎局まわるのではありません。",
+    "controls": "引く・止める・次の局などの操作ボタンです。"
+  }
+}

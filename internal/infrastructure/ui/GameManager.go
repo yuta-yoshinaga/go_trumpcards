@@ -1555,6 +1555,24 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "settemezzo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSetteEMezzoCuiController(usecase.NewSetteEMezzoInteractor(
+				domain.NewDefaultSetteEMezzo(), new(presenter.SetteEMezzoCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "settemezzo.helpTitle",
+				CommandKeys: []string{
+					"settemezzo.helpBet",
+					"settemezzo.helpDeal",
+					"settemezzo.helpHit",
+					"settemezzo.helpStand",
+					"settemezzo.helpMatta",
+					"settemezzo.helpBankerHit",
+					"settemezzo.helpBankerStand",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "shithead", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShitheadCuiController(usecase.NewShitheadInteractor(
