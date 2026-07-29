@@ -3,6 +3,7 @@ import type {
   AccordionResponse,
   AgnesResponse,
   AllFoursResponse,
+  AmericanToadResponse,
   AnacondaResponse,
   BaccaratResponse,
   BadugiResponse,
@@ -186,6 +187,7 @@ import type { HintResult } from '../types/hint';
 import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getAgnesHint } from '../utils/hints/agnesHint';
 import { getAllFoursHint } from '../utils/hints/allfoursHint';
+import { getAmericanToadHint } from '../utils/hints/americantoadHint';
 import { getAnacondaHint } from '../utils/hints/anacondaHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
@@ -505,6 +507,7 @@ export const hintFactories = {
   grandfathersclock: (s) => getGrandfathersClockHint(s as GrandfathersClockResponse),
   duchess: (s) => getDuchessHint(s as DuchessResponse),
   windmill: (s) => getWindmillHint(s as WindmillResponse),
+  americantoad: (s) => getAmericanToadHint(s as AmericanToadResponse),
   missmilligan: (s) => getMissMilliganHint(s as MissMilliganResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   sheepshead: (s) => getSheepsheadHint(s as SheepsheadResponse),

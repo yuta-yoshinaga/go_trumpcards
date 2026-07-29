@@ -445,6 +445,11 @@ func init() {
 			return usecase.NewWindmillInteractor(domain.NewDefaultWindmill(), new(presenter.WindmillWebPresenter))
 		},
 		controller.NewWindmillWebController)
+	BindWebControllerFor("americantoad",
+		func() usecase.AmericanToadInteractorIF {
+			return usecase.NewAmericanToadInteractor(domain.NewDefaultAmericanToad(), new(presenter.AmericanToadWebPresenter))
+		},
+		controller.NewAmericanToadWebController)
 	BindWebControllerFor("spiteandmalice",
 		func() usecase.SpiteAndMaliceInteractorIF {
 			return usecase.NewSpiteAndMaliceInteractor(domain.NewDefaultSpiteAndMalice(), new(presenter.SpiteAndMaliceWebPresenter))

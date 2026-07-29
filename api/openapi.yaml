@@ -201,6 +201,8 @@ tags:
     description: Duchess (Glenwood) game - Canfield-family solitaire where the player picks the foundations' starting rank off a reserve fan, and empty columns stay locked to the reserve
   - name: windmill
     description: Windmill (Propeller) game - two-deck cross solitaire whose centre climbs A-K four times over while four corner foundations run King down to Ace
+  - name: americantoad
+    description: American Toad game - the two-deck Canfield, with a 20-card reserve that auto-fills empty columns and foundations that wrap round from the deal-chosen base rank
   - name: spiteandmalice
     description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
   - name: skat
@@ -10971,6 +10973,131 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WindmillResponse'
+  /americantoad/exec:
+    post:
+      tags:
+        - americantoad
+      summary: Execute an American Toad game command
+      description: |
+        Send a command to advance the American Toad (アメリカン・トード) game
+        session identified by `sessionId`. It is the two-deck (104-card) Canfield.
+
+        A **20-card reserve**, one card onto each of **eight tableau columns**,
+        one starter card that fixes the base rank, and the remaining 75 form the
+        stock, turned one at a time to a waste with **one redeal** -- two passes
+        in all, which #4417 does not mention. Sending `draw` with an empty stock
+        performs that redeal.
+
+        **Eight foundations, two per suit, build up in suit from the base rank,
+        wrapping King round to Ace, 13 cards each** -- 8 x 13 = 104. #4417 says
+        "up to 8 per suit", which comes to 32 and cannot absorb the two decks.
+
+        The tableau builds **down in suit, wrapping Ace round to King**, and runs
+        move as a unit (both omitted by #4417).
+
+        The empty column is the heart of the game and has two regimes:
+        while the reserve holds cards a gap is **refilled from it automatically**,
+        so a manual placement into an empty column is refused; once the reserve is
+        exhausted, **only the waste** may fill a gap. A tableau card can never
+        move into an empty column, which would let the player rearrange columns
+        freely. #4417 calls empty columns reserve-only, which would strand them.
+
+        Auto-complete only sends cards to the foundations and never rearranges the
+        tableau. An available redeal counts as a move, so a board with a
+        recyclable waste is not reported as a dead end.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All eight foundations reached 13 cards |
+        | GameOver   | `2`   | Player gave up |
+
+        | Command        | Aliases     | Description |
+        |----------------|-------------|-------------|
+        | `reset`        | `r`         | Start / restart a game |
+        | `draw`         | `d`         | Turn one card, or redeal the waste once |
+        | `move`         | `m`         | Move a card or run (requires `from` and `to`) |
+        | `giveup`       | `g`         | Give up the current game |
+        | `hint`         | `h`         | Foundation, else tableau, else "draw" |
+        | `autocomplete` | `ac`        | Send every legal card to the foundations |
+        | `undo`         | `u`         | Undo the last action |
+        | `undo_n`       | -           | Undo the last `n` actions |
+        | `log`          | `l`         | View action log |
+
+        Move zones:
+        * `from`: `{zone: "reserve"}`, `{zone: "waste"}`, or `{zone: "tableau", col: 0..7, cardIndex?: n}`
+        * `to`: `{zone: "tableau", col: 0..7}` or `{zone: "foundation"}`
+
+      operationId: americantoadExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/AmericanToadMoveZone'
+                to:
+                  $ref: '#/components/schemas/AmericanToadMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Turn one card (or redeal when the stock is out)
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              reserveToFoundation:
+                summary: Send the reserve top to its foundation
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: reserve
+                  to:
+                    zone: foundation
+              moveRunBetweenColumns:
+                summary: Carry the run starting at index 2 of column 0 onto column 5
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 0
+                    cardIndex: 2
+                  to:
+                    zone: tableau
+                    col: 5
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmericanToadResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmericanToadResponse'
   /spiteandmalice/exec:
     post:
       tags:
@@ -20424,6 +20551,127 @@ components:
           additionalProperties:
             type: string
 
+    AmericanToadMoveZone:
+      type: object
+      description: Source or target zone for an American Toad card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier
+          enum: [reserve, waste, tableau, foundation]
+        col:
+          type: integer
+          description: |
+            Tableau column (0..7). Required for a `tableau` source and for a
+            `tableau` destination; ignored for `reserve` and `waste`, and for a
+            `foundation` destination the server picks the pile from the card's suit.
+        cardIndex:
+          type: integer
+          description: |
+            Head of the same-suit descending run to carry, for a `tableau` source.
+            Omit to move only the top card (the server then uses -1, which it
+            resolves to the top of the column).
+    AmericanToadTableauCard:
+      type: object
+      description: A single tableau card. Every card is face-up by rule, but the flag is surfaced rather than assumed.
+      properties:
+        card:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+        faceUp:
+          type: boolean
+    AmericanToadHint:
+      type: object
+      description: Suggested next move for American Toad
+      properties:
+        fromZone:
+          type: string
+          description: "`stock` means: turn a card to the waste (or redeal)."
+          enum: [reserve, waste, tableau, stock]
+        fromIdx:
+          type: integer
+          description: Source column, or -1 when the source is not the tableau
+        cardIndex:
+          type: integer
+          description: Head of the run to carry, or -1 when the source is not the tableau
+        toZone:
+          type: string
+          enum: [foundation, tableau, waste]
+        toIdx:
+          type: integer
+          description: Destination index, or -1 for a draw, which targets no single pile
+    AmericanToadResponse:
+      type: object
+      description: Response payload for /americantoad/exec
+      properties:
+        reserve:
+          type: array
+          description: |
+            The 20-card reserve. Only the last element is playable, but the depth
+            matters: while it is non-empty, empty columns refill from it
+            automatically and cannot be filled by hand.
+          items:
+            $ref: '#/components/schemas/Card'
+        tableau:
+          type: array
+          description: Eight columns, dealt one card each at the start.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/AmericanToadTableauCard'
+        foundation:
+          type: array
+          description: Eight suit-pinned foundations, two per suit, all opened at `baseRank`.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        stockCount:
+          type: integer
+          description: Cards left in the stock.
+        waste:
+          type: array
+          description: Turned cards. Only the last is available.
+          items:
+            $ref: '#/components/schemas/Card'
+        baseRank:
+          type: integer
+          description: The rank all eight foundations start from, fixed by the deal.
+        passesUsed:
+          type: integer
+          description: How many times the stock has been recycled. Two passes are allowed in all.
+        canRedeal:
+          type: boolean
+          description: |
+            Whether `draw` would recycle the waste into the stock: the stock is
+            empty, the waste is not, and the single redeal is unspent. Sent so the
+            client does not recompute the condition.
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+          description: False while a redeal is still available, since that is itself a move.
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
+        hint:
+          $ref: '#/components/schemas/AmericanToadHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     WindmillMoveZone:
       type: object
       description: Source or target zone for a Windmill card move

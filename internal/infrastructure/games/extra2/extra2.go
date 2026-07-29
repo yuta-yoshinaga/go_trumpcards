@@ -253,4 +253,12 @@ func init() {
 			return usecase.RestoreWindmillInteractor(data, new(presenter.WindmillWebPresenter))
 		},
 		controller.NewWindmillWebControllerWithProvider)
+	games.RegisterKVGame("americantoad", games.CategoryExtra2,
+		func() usecase.AmericanToadInteractorIF {
+			return usecase.NewAmericanToadInteractor(domain.NewDefaultAmericanToad(), new(presenter.AmericanToadWebPresenter))
+		},
+		func(data []byte) (usecase.AmericanToadInteractorIF, error) {
+			return usecase.RestoreAmericanToadInteractor(data, new(presenter.AmericanToadWebPresenter))
+		},
+		controller.NewAmericanToadWebControllerWithProvider)
 }

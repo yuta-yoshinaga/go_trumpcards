@@ -212,6 +212,9 @@ var registry = []*Game{
 	// Windmill builds a cross: one centre foundation running A-K four times
 	// through, and four corner foundations running King down to Ace.
 	{Name: "windmill", Category: CategoryExtra2},
+	// American Toad is the two-deck Canfield: a 20-card reserve, eight columns,
+	// and eight foundations that wrap from a player-independent base rank.
+	{Name: "americantoad", Category: CategoryExtra2},
 	{Name: "spiteandmalice", Category: CategoryExtra2},
 	// Skat is a trick-taking game.
 	{Name: "skat", Category: CategoryExtra3},

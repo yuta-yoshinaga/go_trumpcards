@@ -11,6 +11,7 @@ export * from './games/accordion';
 export * from './games/acesup';
 export * from './games/agnes';
 export * from './games/allfours';
+export * from './games/americantoad';
 export * from './games/anaconda';
 export * from './games/baccarat';
 export * from './games/badugi';

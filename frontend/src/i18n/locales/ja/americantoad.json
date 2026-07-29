@@ -1,0 +1,63 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "foundation": "組札",
+  "tableau": "場札",
+  "reserve": "リザーブ",
+  "stock": "山札",
+  "waste": "捨て札",
+  "draw": "めくる",
+  "redeal": "めくり直す",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "empty": "空",
+  "baseRankLabel": "開始ランク",
+  "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}})",
+  "emptyColumnAriaLabel": "空のタブロー列 {{col}} (捨て札から埋められます)",
+  "reservedColumnAriaLabel": "空のタブロー列 {{col}} (リザーブから自動で埋まります)",
+  "reserveAriaLabel": "リザーブ 残り{{count}}枚",
+  "emptyReserveAriaLabel": "リザーブは空です",
+  "stockAriaLabel": "山札 残り{{count}}枚",
+  "redealAriaLabel": "捨て札を山札に戻す（残り1回）",
+  "emptyStockAriaLabel": "山札は空で、めくり直しも使い切りました",
+  "emptyWasteAriaLabel": "捨て札は空です",
+  "redealAvailable": "山札が尽きました。めくり直しはあと1回使えます",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "組札へ送れる札があると有効になります",
+  "undo": "元に戻す",
+  "stalemate": "手詰まりです",
+  "playing": "カードを移動してください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "gameOverSummary": "組札 {{count}}/104 枚（{{percent}}%）まで到達",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "tutorial": {
+    "reserve": "左のリザーブは20枚。使えるのは一番上の1枚だけですが、**空いた列はリザーブから自動的に埋まります**。リザーブを減らすことが盤面を動かす鍵です。",
+    "foundation": "組札は8つ（スートごとに2つ）。配り札で決まった開始ランクから同スートで昇順に積み、**K の次は A に戻って**13枚で1つ完成。8×13＝104枚すべてでクリアです。",
+    "tableau": "場札は8列。**同じスートで**1つ下のランクにのみ重ねられ、A の下には K を置けます。連番はまとめて動かせます。",
+    "emptyColumn": "このゲームの要は空き列です。**リザーブが残っているうちは自動でリザーブから埋まり、リザーブを使い切ったあとは捨て札からしか埋められません。** 場札から空き列へ動かすことはできません。",
+    "stock": "山札は1枚ずつ捨て札へ。**めくり直しは1回だけ**なので、2巡目に入るタイミングは慎重に。",
+    "controls": "めくる・ヒント・元に戻す・自動完成などの操作ボタンです。"
+  },
+  "frontendHint": {
+    "tableau": "タブロー列{{col}}",
+    "foundation": "組札{{idx}}",
+    "reserve": "リザーブ",
+    "waste": "捨て札",
+    "stock": "山札"
+  },
+  "hintReason": {
+    "toFoundation": "このカードを組札に上げると場が1枚軽くなります",
+    "toTableau": "示唆された場札への移動で下のカードを掘り出しましょう",
+    "fromReserve": "リザーブを減らさないと空き列が自由になりません",
+    "draw": "動かせる札が無いので、山札をめくって手を増やしましょう",
+    "redeal": "手が尽きました。めくり直しは1回きりなので、使う前に見落としが無いか確認しましょう"
+  }
+}
