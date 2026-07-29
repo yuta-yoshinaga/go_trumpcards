@@ -14,7 +14,8 @@ import (
 
 // TestWorkerRegistrationsCoverAllGames asserts that every game in
 // games.ByCategory(c) has a matching games.RegisterKVGame call in the
-// corresponding worker sub-package (casino, classic, solo, extra) — and conversely,
+// corresponding worker sub-package (casino, classic, solo, extra, extra2, extra3) —
+// and conversely,
 // that no sub-package registers a name absent from the registry.
 //
 // The worker init functions live under `//go:build js && wasm`, so a normal
