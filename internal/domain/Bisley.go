@@ -493,6 +493,64 @@ func (b *Bisley) appendLog(actionType, detail string, cards []*Card) {
 	})
 }
 
+// bisleyMaxSliceLen caps slice sizes during deserialisation.
+const bisleyMaxSliceLen = 1000
+
+// bisleySnapshotJSON is the wire format for a single undo snapshot.
+// bisleySnapshot uses unexported fields, so marshalling it directly would emit
+// `[{},{}]` -- the undo depth would survive but every snapshot would be blank,
+// and Undo would wipe the board instead of rewinding it (#4478).
+type bisleySnapshotJSON struct {
+	AceFoundations  [BisleyFoundationCnt][]*Card           `json:"af"`
+	KingFoundations [BisleyFoundationCnt][]*Card           `json:"kf"`
+	Tableau         [BisleyTableauCnt][]*BisleyTableauCard `json:"tb"`
+	Phase           BisleyPhase                            `json:"ps"`
+	MoveCount       int                                    `json:"mc"`
+	IsStalemate     bool                                   `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for bisleySnapshot.
+func (s *bisleySnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(bisleySnapshotJSON{
+		AceFoundations:  s.aceFoundations,
+		KingFoundations: s.kingFoundations,
+		Tableau:         s.tableau,
+		Phase:           s.phase,
+		MoveCount:       s.moveCount,
+		IsStalemate:     s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for bisleySnapshot.
+func (s *bisleySnapshot) UnmarshalJSON(data []byte) error {
+	var j bisleySnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	for _, pile := range j.AceFoundations {
+		if len(pile) > bisleyMaxSliceLen {
+			return errors.New("bisley: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.KingFoundations {
+		if len(pile) > bisleyMaxSliceLen {
+			return errors.New("bisley: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Tableau {
+		if len(pile) > bisleyMaxSliceLen {
+			return errors.New("bisley: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	s.aceFoundations = j.AceFoundations
+	s.kingFoundations = j.KingFoundations
+	s.tableau = j.Tableau
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
+}
+
 // bisleyJSON is the JSON wire format for Bisley.
 type bisleyJSON struct {
 	TrumpCards      *TrumpCards                            `json:"tc"`
@@ -503,6 +561,10 @@ type bisleyJSON struct {
 	MoveCount       int                                    `json:"mc"`
 	ActionLog       []*ActionLogEntry                      `json:"al"`
 	IsStalemate     bool                                   `json:"sl"`
+	// History must round-trip: the Cloudflare Worker is stateless per request
+	// and rebuilds the game from KV every call, so an unpersisted undo stack
+	// means Undo/UndoN/UndoToEscape silently never work in production (#4478).
+	History []*bisleySnapshot `json:"hi,omitempty"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -516,6 +578,7 @@ func (b *Bisley) MarshalJSON() ([]byte, error) {
 		MoveCount:       b.moveCount,
 		ActionLog:       b.actionLog,
 		IsStalemate:     b.isStalemate,
+		History:         b.history,
 	})
 }
 
@@ -525,6 +588,9 @@ func (b *Bisley) UnmarshalJSON(data []byte) error {
 	var j bisleyJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	if len(j.ActionLog) > bisleyMaxSliceLen || len(j.History) > bisleyMaxSliceLen {
+		return errors.New("bisley: input array exceeds maximum allowed size")
 	}
 	if j.Phase < BisleyPhasePlaying || j.Phase > BisleyPhaseGameOver {
 		return fmt.Errorf("invalid phase: %d", j.Phase)
@@ -547,5 +613,6 @@ func (b *Bisley) UnmarshalJSON(data []byte) error {
 	b.moveCount = j.MoveCount
 	b.actionLog = j.ActionLog
 	b.isStalemate = j.IsStalemate
+	b.history = j.History
 	return nil
 }

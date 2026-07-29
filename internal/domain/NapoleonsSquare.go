@@ -618,6 +618,66 @@ func (ns *NapoleonsSquare) appendLog(actionType, detail string, cards []*Card) {
 	})
 }
 
+// napoleonsSquareMaxSliceLen caps slice sizes during deserialisation.
+const napoleonsSquareMaxSliceLen = 1000
+
+// napoleonsSquareSnapshotJSON is the wire format for a single undo snapshot.
+// napoleonsSquareSnapshot uses unexported fields, so marshalling it directly would emit
+// `[{},{}]` -- the undo depth would survive but every snapshot would be blank,
+// and Undo would wipe the board instead of rewinding it (#4478).
+type napoleonsSquareSnapshotJSON struct {
+	Tableau     [NapoleonsSquareTableauCnt][]*NapoleonsSquareTableauCard `json:"tb"`
+	Stock       []*Card                                                  `json:"st"`
+	Waste       []*Card                                                  `json:"wa"`
+	Foundation  [NapoleonsSquareFoundationCnt][]*Card                    `json:"fd"`
+	Phase       NapoleonsSquarePhase                                     `json:"ps"`
+	MoveCount   int                                                      `json:"mc"`
+	IsStalemate bool                                                     `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for napoleonsSquareSnapshot.
+func (s *napoleonsSquareSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(napoleonsSquareSnapshotJSON{
+		Tableau:     s.tableau,
+		Stock:       s.stock,
+		Waste:       s.waste,
+		Foundation:  s.foundation,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for napoleonsSquareSnapshot.
+func (s *napoleonsSquareSnapshot) UnmarshalJSON(data []byte) error {
+	var j napoleonsSquareSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > napoleonsSquareMaxSliceLen ||
+		len(j.Waste) > napoleonsSquareMaxSliceLen {
+		return errors.New("napoleonssquare: snapshot array exceeds maximum allowed size")
+	}
+	for _, pile := range j.Tableau {
+		if len(pile) > napoleonsSquareMaxSliceLen {
+			return errors.New("napoleonssquare: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > napoleonsSquareMaxSliceLen {
+			return errors.New("napoleonssquare: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	s.tableau = j.Tableau
+	s.stock = j.Stock
+	s.waste = j.Waste
+	s.foundation = j.Foundation
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
+}
+
 // napoleonsSquareJSON is the JSON wire format for NapoleonsSquare.
 type napoleonsSquareJSON struct {
 	TrumpCards  *TrumpCards                                              `json:"tc"`
@@ -629,6 +689,10 @@ type napoleonsSquareJSON struct {
 	MoveCount   int                                                      `json:"mc"`
 	ActionLog   []*ActionLogEntry                                        `json:"al"`
 	IsStalemate bool                                                     `json:"sl"`
+	// History must round-trip: the Cloudflare Worker is stateless per request
+	// and rebuilds the game from KV every call, so an unpersisted undo stack
+	// means Undo/UndoN/UndoToEscape silently never work in production (#4478).
+	History []*napoleonsSquareSnapshot `json:"hi,omitempty"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -643,6 +707,7 @@ func (ns *NapoleonsSquare) MarshalJSON() ([]byte, error) {
 		MoveCount:   ns.moveCount,
 		ActionLog:   ns.actionLog,
 		IsStalemate: ns.isStalemate,
+		History:     ns.history,
 	})
 }
 
@@ -655,6 +720,9 @@ func (ns *NapoleonsSquare) UnmarshalJSON(data []byte) error {
 	var j napoleonsSquareJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	if len(j.ActionLog) > napoleonsSquareMaxSliceLen || len(j.History) > napoleonsSquareMaxSliceLen {
+		return errors.New("napoleonssquare: input array exceeds maximum allowed size")
 	}
 	if j.Phase < NapoleonsSquarePhasePlaying || j.Phase > NapoleonsSquarePhaseGameOver {
 		return fmt.Errorf("invalid phase: %d", j.Phase)
@@ -686,5 +754,6 @@ func (ns *NapoleonsSquare) UnmarshalJSON(data []byte) error {
 	ns.moveCount = j.MoveCount
 	ns.actionLog = j.ActionLog
 	ns.isStalemate = j.IsStalemate
+	ns.history = j.History
 	return nil
 }

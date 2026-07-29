@@ -652,6 +652,68 @@ func (w *Windmill) appendLog(actionType, detail string, cards []*Card) {
 	})
 }
 
+// windmillMaxSliceLen caps slice sizes during deserialisation.
+const windmillMaxSliceLen = 1000
+
+// windmillSnapshotJSON is the wire format for a single undo snapshot.
+// windmillSnapshot uses unexported fields, so marshalling it directly would emit
+// `[{},{}]` -- the undo depth would survive but every snapshot would be blank,
+// and Undo would wipe the board instead of rewinding it (#4478).
+type windmillSnapshotJSON struct {
+	Center          []*Card                    `json:"ce"`
+	Corners         [WindmillCornerCnt][]*Card `json:"co"`
+	Sails           [WindmillSailCnt]*Card     `json:"sa"`
+	Stock           []*Card                    `json:"st"`
+	Waste           []*Card                    `json:"wa"`
+	TransferBlocked bool                       `json:"tf"`
+	Phase           WindmillPhase              `json:"ps"`
+	MoveCount       int                        `json:"mc"`
+	IsStalemate     bool                       `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for windmillSnapshot.
+func (s *windmillSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(windmillSnapshotJSON{
+		Center:          s.center,
+		Corners:         s.corners,
+		Sails:           s.sails,
+		Stock:           s.stock,
+		Waste:           s.waste,
+		TransferBlocked: s.transferBlocked,
+		Phase:           s.phase,
+		MoveCount:       s.moveCount,
+		IsStalemate:     s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for windmillSnapshot.
+func (s *windmillSnapshot) UnmarshalJSON(data []byte) error {
+	var j windmillSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Center) > windmillMaxSliceLen ||
+		len(j.Stock) > windmillMaxSliceLen ||
+		len(j.Waste) > windmillMaxSliceLen {
+		return errors.New("windmill: snapshot array exceeds maximum allowed size")
+	}
+	for _, pile := range j.Corners {
+		if len(pile) > windmillMaxSliceLen {
+			return errors.New("windmill: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	s.center = j.Center
+	s.corners = j.Corners
+	s.sails = j.Sails
+	s.stock = j.Stock
+	s.waste = j.Waste
+	s.transferBlocked = j.TransferBlocked
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
+}
+
 // windmillJSON is the JSON wire format for Windmill.
 type windmillJSON struct {
 	TrumpCards      *TrumpCards                `json:"tc"`
@@ -665,6 +727,10 @@ type windmillJSON struct {
 	MoveCount       int                        `json:"mc"`
 	ActionLog       []*ActionLogEntry          `json:"al"`
 	IsStalemate     bool                       `json:"sl"`
+	// History must round-trip: the Cloudflare Worker is stateless per request
+	// and rebuilds the game from KV every call, so an unpersisted undo stack
+	// means Undo/UndoN/UndoToEscape silently never work in production (#4478).
+	History []*windmillSnapshot `json:"hi,omitempty"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -681,6 +747,7 @@ func (w *Windmill) MarshalJSON() ([]byte, error) {
 		MoveCount:       w.moveCount,
 		ActionLog:       w.actionLog,
 		IsStalemate:     w.isStalemate,
+		History:         w.history,
 	})
 }
 
@@ -690,6 +757,9 @@ func (w *Windmill) UnmarshalJSON(data []byte) error {
 	var j windmillJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	if len(j.ActionLog) > windmillMaxSliceLen || len(j.History) > windmillMaxSliceLen {
+		return errors.New("windmill: input array exceeds maximum allowed size")
 	}
 	if j.Phase < WindmillPhasePlaying || j.Phase > WindmillPhaseGameOver {
 		return fmt.Errorf("invalid phase: %d", j.Phase)
@@ -721,5 +791,6 @@ func (w *Windmill) UnmarshalJSON(data []byte) error {
 	w.moveCount = j.MoveCount
 	w.actionLog = j.ActionLog
 	w.isStalemate = j.IsStalemate
+	w.history = j.History
 	return nil
 }
