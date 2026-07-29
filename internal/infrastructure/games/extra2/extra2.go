@@ -245,4 +245,12 @@ func init() {
 			return usecase.RestoreDuchessInteractor(data, new(presenter.DuchessWebPresenter))
 		},
 		controller.NewDuchessWebControllerWithProvider)
+	games.RegisterKVGame("windmill", games.CategoryExtra2,
+		func() usecase.WindmillInteractorIF {
+			return usecase.NewWindmillInteractor(domain.NewDefaultWindmill(), new(presenter.WindmillWebPresenter))
+		},
+		func(data []byte) (usecase.WindmillInteractorIF, error) {
+			return usecase.RestoreWindmillInteractor(data, new(presenter.WindmillWebPresenter))
+		},
+		controller.NewWindmillWebControllerWithProvider)
 }

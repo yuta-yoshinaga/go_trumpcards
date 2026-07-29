@@ -209,6 +209,9 @@ var registry = []*Game{
 	// the top of a reserve fan; empty columns may only be filled from the reserve
 	// while any of it remains.
 	{Name: "duchess", Category: CategoryExtra2},
+	// Windmill builds a cross: one centre foundation running A-K four times
+	// through, and four corner foundations running King down to Ace.
+	{Name: "windmill", Category: CategoryExtra2},
 	{Name: "spiteandmalice", Category: CategoryExtra2},
 	// Skat is a trick-taking game.
 	{Name: "skat", Category: CategoryExtra3},

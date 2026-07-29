@@ -1393,6 +1393,27 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "windmill", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewWindmillCuiController(usecase.NewWindmillInteractor(
+				domain.NewDefaultWindmill(), new(presenter.WindmillCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "windmill.helpTitle",
+				CommandKeys: []string{
+					"windmill.helpDraw",
+					"windmill.helpMoveSC",
+					"windmill.helpMoveSK",
+					"windmill.helpMoveWC",
+					"windmill.helpMoveWK",
+					"windmill.helpMoveKC",
+					"windmill.helpGiveUp",
+					"windmill.helpHint",
+					"windmill.helpAutoComplete",
+					"windmill.helpUndo",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "spiteandmalice", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSpiteAndMaliceCuiController(usecase.NewSpiteAndMaliceInteractor(

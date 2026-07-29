@@ -1,0 +1,58 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "center": "Centre",
+  "corners": "Corners",
+  "sails": "Sails",
+  "stock": "Stock",
+  "waste": "Waste",
+  "draw": "Draw",
+  "moveCount": "Moves",
+  "giveup": "Give up",
+  "empty": "Empty",
+  "centerAriaLabel": "Centre foundation, {{count}} of 52",
+  "emptyCenterAriaLabel": "The centre foundation is empty",
+  "cornerAriaLabel": "Corner foundation {{idx}}, {{count}} of 13",
+  "emptyCornerAriaLabel": "Empty corner foundation {{idx}} (Kings only)",
+  "emptySailAriaLabel": "Sail {{idx}} is empty",
+  "stockAriaLabel": "Stock, {{count}} cards left",
+  "emptyWasteAriaLabel": "The waste is empty",
+  "kingsOnly": "K only",
+  "transferBlocked": "You have just pulled a card back. The next centre card must come from a sail or the waste",
+  "landscapeBanner": "Landscape orientation is recommended",
+  "hint": "Hint",
+  "autoComplete": "Auto-complete",
+  "autoCompleteNotReady": "Available once a sail or the waste can reach a foundation",
+  "undo": "Undo",
+  "stalemate": "No moves left",
+  "playing": "Move a card",
+  "gameClear": "Game clear! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "gameOverSummary": "Reached {{count}}/104 cards on the foundations ({{percent}}%)",
+  "hintAvailable": "A hint is available",
+  "noHint": "No hint available",
+  "tutorial": {
+    "center": "The centre foundation builds up from the Ace, and **after the King it starts again at the Ace** -- four circuits, 52 cards in all. Suits do not matter.",
+    "corners": "The corner slots start empty. **When a King turns up** it goes to a corner, and that pile builds down K-Q-...-A, thirteen cards. Fill all four, and with the centre that is all 104 cards.",
+    "sails": "The cross around the centre is the sails: two on each arm, eight in all. Whenever a sail card leaves, its slot is refilled **immediately** from the waste, or from the stock if the waste is empty.",
+    "stock": "Turn the stock one card at a time onto the waste. There is no redeal -- one pass only.",
+    "transfer": "There is exactly one rescue: pull the top of a corner back onto the centre. But **right after doing so you cannot do it again until the next centre card comes from a sail or the waste.**",
+    "controls": "Draw, hint, undo, auto-complete, and the other controls."
+  },
+  "frontendHint": {
+    "center": "the centre foundation",
+    "corner": "corner foundation {{idx}}",
+    "sail": "sail {{idx}}",
+    "waste": "the waste",
+    "stock": "stock"
+  },
+  "hintReason": {
+    "toCenter": "Advance the centre foundation by one",
+    "toCorner": "Extend a corner pile to free up a sail",
+    "pullBack": "Nothing else is left: break a corner to advance the centre (the next centre card must then come from a sail or the waste)",
+    "draw": "Nothing can move, so turn a card from the stock"
+  }
+}

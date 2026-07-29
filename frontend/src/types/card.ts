@@ -219,6 +219,7 @@ export * from './games/war';
 export * from './games/wasp';
 export * from './games/watten';
 export * from './games/whist';
+export * from './games/windmill';
 export * from './games/wizard';
 export * from './games/yaniv';
 export * from './games/yukon';
