@@ -1573,6 +1573,16 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "niuniu", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewNiuNiuCuiController(usecase.NewNiuNiuInteractor(
+				domain.NewDefaultNiuNiu(), new(presenter.NiuNiuCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "niuniu.helpTitle",
+				CommandKeys:       []string{"niuniu.helpBet"},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "shithead", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShitheadCuiController(usecase.NewShitheadInteractor(

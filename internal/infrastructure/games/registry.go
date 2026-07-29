@@ -233,6 +233,9 @@ var registry = []*Game{
 	// Sette e Mezzo plays to 7.5 on a 40-card deck where face cards are worth
 	// half a point, and the king of coins is wild for 0.5 or 1-7.
 	{Name: "settemezzo", Category: CategoryExtra2},
+	// Niu Niu finds three of five cards summing to a multiple of ten; the
+	// remaining pair's last digit is the rank, and the multiplier follows it.
+	{Name: "niuniu", Category: CategoryExtra3},
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},
