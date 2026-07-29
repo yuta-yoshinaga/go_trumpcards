@@ -1,6 +1,7 @@
 package games_test
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -248,11 +249,22 @@ func TestDocsEnumerateEveryWorkerBucket(t *testing.T) {
 		}
 	}
 
-	docs, err := filepath.Glob(filepath.Join(repoRoot, "docs/*.md"))
-	if err != nil {
-		t.Fatalf("glob docs: %v", err)
+	// Walk docs/ rather than globbing it: `docs/*.md` does not cross a `/`, so
+	// it would silently skip every subdirectory -- including docs/adr, which
+	// would leave the exemption below guarding nothing while reading as though
+	// it were load-bearing.
+	docs := []string{filepath.Join(repoRoot, "CLAUDE.md"), filepath.Join(repoRoot, "internal/CLAUDE.md")}
+	if err := filepath.WalkDir(filepath.Join(repoRoot, "docs"), func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() && strings.HasSuffix(path, ".md") {
+			docs = append(docs, path)
+		}
+		return nil
+	}); err != nil {
+		t.Fatalf("walk docs: %v", err)
 	}
-	docs = append(docs, filepath.Join(repoRoot, "CLAUDE.md"), filepath.Join(repoRoot, "internal/CLAUDE.md"))
 
 	for _, doc := range docs {
 		rel, err := filepath.Rel(repoRoot, doc)
