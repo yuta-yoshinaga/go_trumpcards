@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -184,5 +186,98 @@ func TestPerGameManualsMatchRegistry(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// bucketEnumRe matches a brace enumeration such as
+// `{casino,classic,solo,extra,extra2,extra3}` as used in build commands and
+// path globs throughout the docs.
+var bucketEnumRe = regexp.MustCompile(`\{([a-z0-9]+(?:,[a-z0-9]+)+)\}`)
+
+// workerPathRe matches a per-worker entry point path, one per table row in the
+// worker list.
+var workerPathRe = regexp.MustCompile(`cmd/workers/([a-z0-9]+)/main\.go`)
+
+// docsExemptFromBucketEnum are the docs whose bucket lists are deliberately
+// frozen. ADRs record what was true when the decision was made -- ADR-0031
+// names `{casino,classic,solo}` because there were three workers then, and
+// rewriting that to six would falsify the record. Nothing else belongs here:
+// an exemption for a live doc is the drift this guard exists to catch.
+var docsExemptFromBucketEnum = []string{"docs/adr/"}
+
+// TestDocsEnumerateEveryWorkerBucket asserts that a doc which enumerates worker
+// buckets enumerates ALL of them.
+//
+// Two rounds of #4474 missed sites because I searched for the *wording* I
+// remembered writing ("four Cloudflare Workers", "overflow bucket") instead of
+// for the *enumeration*. A list spelling out `{casino,classic,solo}` contains
+// neither the old count nor the new one, so no phrase search could ever reach
+// it: docs/architecture.md still described three workers and 93 of 233 games
+// two ADRs after that stopped being true, and docs/new-game-checklist.md:15
+// still named four. Both are mechanical to check, so check them mechanically.
+//
+// The rule is deliberately narrow -- it fires only on lists that already name
+// at least two buckets, so `docs/manual/{cui,web}` and friends are untouched.
+func TestDocsEnumerateEveryWorkerBucket(t *testing.T) {
+	all := make(map[string]bool, len(games.AllCategories()))
+	var want []string
+	for _, c := range games.AllCategories() {
+		all[c.String()] = true
+		want = append(want, c.String())
+	}
+	sort.Strings(want)
+
+	// requireComplete reports whether names -- a set of bucket-ish tokens found
+	// in one place in one file -- is either bucket-free, or the full set.
+	requireComplete := func(t *testing.T, path, context string, names []string) {
+		t.Helper()
+		var found []string
+		for _, n := range names {
+			if all[n] {
+				found = append(found, n)
+			}
+		}
+		if len(found) < 2 {
+			return // not a bucket enumeration
+		}
+		sort.Strings(found)
+		found = slices.Compact(found)
+		if !slices.Equal(found, want) {
+			t.Errorf("%s: %s enumerates buckets %v, registry has %v -- a partial list is how this doc drifted before",
+				path, context, found, want)
+		}
+	}
+
+	docs, err := filepath.Glob(filepath.Join(repoRoot, "docs/*.md"))
+	if err != nil {
+		t.Fatalf("glob docs: %v", err)
+	}
+	docs = append(docs, filepath.Join(repoRoot, "CLAUDE.md"), filepath.Join(repoRoot, "internal/CLAUDE.md"))
+
+	for _, doc := range docs {
+		rel, err := filepath.Rel(repoRoot, doc)
+		if err != nil {
+			t.Fatalf("rel %s: %v", doc, err)
+		}
+		rel = filepath.ToSlash(rel)
+		if slices.ContainsFunc(docsExemptFromBucketEnum, func(p string) bool { return strings.HasPrefix(rel, p) }) {
+			continue
+		}
+		data, err := os.ReadFile(filepath.Clean(doc))
+		if err != nil {
+			t.Fatalf("read %s: %v", rel, err)
+		}
+
+		for _, m := range bucketEnumRe.FindAllStringSubmatch(string(data), -1) {
+			requireComplete(t, rel, "brace list "+m[0], strings.Split(m[1], ","))
+		}
+
+		// A per-worker table names one entry point per row, so the set of
+		// referenced entry points is itself an enumeration.
+		var paths []string
+		for _, m := range workerPathRe.FindAllStringSubmatch(string(data), -1) {
+			paths = append(paths, m[1])
+		}
+		requireComplete(t, rel, "cmd/workers/* references", paths)
 	}
 }

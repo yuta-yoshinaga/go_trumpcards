@@ -67,17 +67,21 @@ Go source (//go:build js && wasm)
   → wrangler deploy (Cloudflare Workers)
 ```
 
-Build commands: `make build-worker-{solo,casino,classic}` or `make build-workers`.
+Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3}` or `make build-workers`.
 
-### 3-Worker split
+### Size buckets
 
-Games are distributed across three Workers to stay under the 1MB gzip size limit per Worker:
+Games are distributed across **six** Workers to stay under the 1 MB gzip size limit per Worker
+(`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`; see [ADR-0032](adr/0032-fourth-worker-capacity.md)
+and [ADR-0036](adr/0036-fifth-sixth-worker-capacity.md)). A `Category` is purely a binary-size
+bucket, **not** a user-facing taxonomy, and games move between buckets whenever one nears the
+limit.
 
-| Worker | Category | Entry point | Games |
-|--------|----------|-------------|-------|
-| **casino** | Table & poker | `cmd/workers/casino/main.go` | blackjack, baccarat, poker, holdem, omaha, omahahilo, bigo, bigohilo, shortdeck, pineapple, crazypineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, fourcardpoker, caribbeanstud, texasholdembonus, ultimatetexasholdem, mississippistud, sevencardstud, paigow, letitride, reddog, razz, badugi, deucetoseven, spanish21, casinowar, dragontiger, blackjackswitch, highcardflush |
-| **classic** | Trick-taking & matching | `cmd/workers/classic/main.go` | hearts, spades, euchre, napoleon, mighty, oldmaid, doubt, daifugo, bigtwo, sevens, crazyeights, ohhell, ninetynine, bridge, speed, gofish, pinochle, pigtail, twotenjack, war, durak, fiftyone, whist, trash, spiteandmalice, skat, shithead, nertz, slapjack, belote, sixcardgolf |
-| **solo** | Solitaire & rummy | `cmd/workers/solo/main.go` | klondike, freecell, cruel, spider, spiderette, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, russiansolitaire, scorpion, wasp, accordion, pokersquares, crescent, bakersdozen, beleagueredcastle, gaps, rummy500, eightoff, penguin, acesup |
+**The per-worker game lists live in [`docs/cloudflare-workers.md`](cloudflare-workers.md), and
+only there.** That table is checked against the registry by `TestDocsMatchRegistry`; this file
+deliberately does not repeat it. A second hand-maintained copy is how this section came to
+describe three workers and 93 of 233 games long after the other three shipped -- the duplicate,
+not the wording, was the defect.
 
 The frontend routes requests to the correct Worker via `workerUrl` mapping in `frontend/src/api/gameApi.ts`. When `VITE_WORKER_*_URL` env vars are unset, requests fall back to relative URLs (Docker deployment).
 
@@ -90,18 +94,22 @@ Workers are stateless, so game sessions are persisted in **Cloudflare KV** (`GAM
 
 ### Adding a game to Workers
 
-When adding a new game, register it in the appropriate Worker entry point using `registerKV`:
+Worker entry points (`cmd/workers/<worker>/main.go`) are thin shells: they blank-import their
+category sub-package and call `games.RegisterCategory`. A new game is registered in that
+sub-package with the `games.RegisterKVGame` helper, not in the entry point:
 
 ```go
-// cmd/workers/<worker>/main.go
-registerKV(mux, "/<game>/exec", "<game>:",
-    func() usecase.<Game>InteractorIF { ... },      // factory
+// internal/infrastructure/games/<category>/<category>.go  (//go:build js && wasm)
+games.RegisterKVGame("<game>", games.Category<Bucket>,
+    func() usecase.<Game>InteractorIF { ... },                     // factory
     func(data []byte) (usecase.<Game>InteractorIF, error) { ... }, // restore
-    func(p controller.SessionProvider[usecase.<Game>InteractorIF], f func() usecase.<Game>InteractorIF) interface { ... } { ... }, // controller
+    ...,                                                           // controller
 )
 ```
 
-Also ensure `frontend/src/api/gameApi.ts` `workerUrl` maps the game to the correct `WORKER_*` constant.
+The bucket named here must match the game's `Category` in `registry.go` and the `WORKER_*`
+constant in `frontend/src/api/gameApi.ts`. For the full set of registration points, see
+[`docs/new-game-checklist.md`](new-game-checklist.md).
 
 ### TinyGo constraints
 
