@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { sevenCardStudApi } from '../api/gameApi';
+import { sevenCardStudApi, sevenCardStudHiLoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
@@ -18,6 +18,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { RoundResults } from '../components/RoundResults';
+import { StudHiLoSplit } from '../components/StudHiLoSplit';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -87,23 +88,36 @@ const SCS_PHASE_KEYS: Readonly<Record<number, string>> = {
   [SevenCardStudPhase.REBUY]: 'rebuy',
 };
 
+/** The two games that share this page. Hi-Lo differs only at the showdown, so
+ * a second ~600-line copy would be duplication, not a feature. */
+export type StudPageGameKey = 'sevencardstud' | 'sevencardstudhilo';
+
 /** Renders the Seven Card Stud game page with door cards, betting, and showdown. */
-export const SevenCardStudPage = withTutorial(SevenCardStudPageContent, 'sevencardstud', SCS_TUTORIAL_STEPS);
-/** Inner content of the Seven Card Stud page, wrapped by TutorialProvider. */
-function SevenCardStudPageContent() {
+export const SevenCardStudPage = withTutorial(
+  () => <SevenCardStudPageContent gameKey="sevencardstud" />,
+  'sevencardstud',
+  SCS_TUTORIAL_STEPS,
+);
+/** Inner content of the Seven Card Stud page, wrapped by TutorialProvider.
+ *
+ * Shared with Seven Card Stud Hi-Lo: the deal, the streets and the betting are
+ * identical, and only the showdown splits. Exported so the Hi-Lo page reuses
+ * this rather than copying it. */
+export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey }) {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('sevencardstud');
-  const phaseNames = usePhaseNames('sevencardstud', SCS_PHASE_KEYS);
+    useGamePageSetup(gameKey);
+  const phaseNames = usePhaseNames(gameKey, SCS_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const isMobile = useIsMobile();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(sevenCardStudApi.exec);
+  const api = gameKey === 'sevencardstudhilo' ? sevenCardStudHiLoApi : sevenCardStudApi;
+  const { state, loading, error, exec: execApi, retry } = useGameApi(api.exec);
 
   // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('sevencardstud');
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(gameKey);
   type ScsArgs = Parameters<typeof sevenCardStudApi.exec>;
   const cliConfig: CliGameConfig<SevenCardStudResponse, ScsArgs> = useMemo(
     () => ({
-      gameName: 'sevencardstud',
+      gameName: gameKey,
       parseCommand: (input: string): CliParseResult<ScsArgs> => {
         const parts = input.trim().split(/\s+/);
         const cmd = parts[0]?.toLowerCase() ?? '';
@@ -159,13 +173,13 @@ function SevenCardStudPageContent() {
         'r/reset     - Reset game',
       ],
     }),
-    [phaseNames],
+    [phaseNames, gameKey],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const [betAmount, setBetAmount] = useState(20);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
-  const { hint, hintEnabled, setHintEnabled } = useGameHint('sevencardstud', state);
+  const { hint, hintEnabled, setHintEnabled } = useGameHint(gameKey, state);
   const turnStartRef = useRef(0);
 
   useMountReset(execApi);
@@ -261,18 +275,18 @@ function SevenCardStudPageContent() {
   if (!state)
     return (
       <GameSkeleton
-        gameKey="sevencardstud"
+        gameKey={gameKey}
         layout={{ kind: 'community-poker', community: 5, opponents: 3, opponentCards: 2, footerHandSize: 2 }}
       />
     );
 
   return (
     <GamePageShell
-      title={tc('nav.sevencardstud')}
-      gameThemeBg={gameTheme.sevencardstud.bg}
+      title={tc(`nav.${gameKey}`)}
+      gameThemeBg={gameTheme[gameKey].bg}
       phaseName={phaseNames[phase] ?? t('phase.init')}
       isHumanTurn={canAct}
-      gamePath="/sevencardstud"
+      gamePath={`/${gameKey}`}
       gameEndFlag={phase === SevenCardStudPhase.SHOWDOWN || phase === SevenCardStudPhase.END}
       winShow={phase === SevenCardStudPhase.END}
       loading={loading}
@@ -371,6 +385,12 @@ function SevenCardStudPageContent() {
             {/* Round results */}
             {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
 
+            {/* Hi/Lo split breakdown. Without it the pot silently halves and
+                nothing on screen says why. Only rendered for Hi-Lo, which the
+                server marks with isHiLo rather than the page guessing from the
+                route. */}
+            {isShowdown && state.isHiLo && <StudHiLoSplit results={state.roundResults} players={state.players ?? []} />}
+
             {/* Action log */}
             <ActionLogSection
               isEndPhase={!!state?.gameEndFlag}
@@ -400,7 +420,7 @@ function SevenCardStudPageContent() {
           />
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.sevencardstud.footer} px-5 py-3`}>
+          <GameFooter className={`${gameTheme[gameKey].footer} px-5 py-3`}>
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="scs-player-hand">

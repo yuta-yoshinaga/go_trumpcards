@@ -38,8 +38,18 @@ export interface SevenCardStudResult {
   handName: string;
   kickers: string;
   bestHand: Card[];
+  /** High and low winnings combined, so the chips on screen always add up. */
   wonAmount: number;
   mucked: boolean;
+  /** Hi-Lo only. Whether this seat made a qualifying eight-or-better low. */
+  lowQualifies?: boolean;
+  /** Hi-Lo only. The five cards forming the low. */
+  lowBestHand?: Card[];
+  /**
+   * Hi-Lo only. Chips won as the low half. The high half is
+   * {@link SevenCardStudResult.wonAmount} minus this.
+   */
+  wonLow?: number;
 }
 
 /** Side pot in Seven Card Stud with eligible players. */
@@ -57,6 +67,11 @@ export interface SevenCardStudResponse extends BaseGameResponse {
   dealerIdx: number;
   currentTurn: number;
   phase: number;
+  /**
+   * Whether this session is the Hi-Lo (8 or Better) split. Sent so the page
+   * renders the low breakdown without inferring the variant from the route.
+   */
+  isHiLo?: boolean;
   gameEndFlag: boolean;
   lastBet: number;
   minRaise: number;
