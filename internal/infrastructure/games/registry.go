@@ -240,6 +240,10 @@ var registry = []*Game{
 	// Bura leads up to three cards of one suit at a time and is won by
 	// claiming 31 card points, not by reaching them.
 	{Name: "bura", Category: CategoryExtra3},
+
+	// Mushi is hanafuda on 40 cards -- June and July are out -- and is a
+	// hana-awase game: no koi-koi stop, the round runs to the last card.
+	{Name: "mushi", Category: CategoryExtra2},
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},

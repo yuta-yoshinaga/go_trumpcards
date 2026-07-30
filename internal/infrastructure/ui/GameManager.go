@@ -1597,6 +1597,20 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "mushi", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMushiCuiController(usecase.NewMushiInteractor(
+				domain.NewDefaultMushi(), new(presenter.MushiCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "mushi.helpTitle",
+				CommandKeys: []string{
+					"mushi.helpPlay",
+					"mushi.helpSelect",
+					"mushi.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "shithead", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShitheadCuiController(usecase.NewShitheadInteractor(
