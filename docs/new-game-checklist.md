@@ -36,8 +36,12 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 19. **`docs/games.md`**: Add game entity description
 20. **`docs/architecture.md`**: Update endpoint count and list
 21. **`api/openapi.yaml`**: Add endpoint path, tag definition, and request/response schemas in components.
-    Guarded by `TestOpenAPIMatchesRegistry` (one `POST /<game>/exec` per registered game, no orphans) and
-    `TestOpenAPIHasNoDanglingSchemaRefs` (every `$ref` resolves). Both live in `internal/infrastructure/games`.
+    Guarded by three tests in `internal/infrastructure/games`: `TestOpenAPIMatchesRegistry` (one
+    `POST /<game>/exec` per registered game, no orphans), `TestOpenAPIHasNoDanglingSchemaRefs` (every `$ref`
+    resolves), and `TestOpenAPIErrorResponseMatchesTheSuccessSchema` (a path's `400` documents the same schema
+    as its `200` -- every endpoint returns the game's own payload on both branches, an error being a normal
+    response carrying a `message`). The three check different things: that the path exists, that its refs point
+    at something, and that they point at the RIGHT something.
     **The file is CRLF** -- anything that rewrites it must preserve the line endings or the diff becomes every line.
 22. **`docs/manual/cui/<game>.md`** and **`docs/manual/web/<game>.md`**: Create from the templates below and **include every required section**:
     - CUI (`docs/manual/cui_template.md`): `## ゲーム概要` / `## 起動方法` / `## ルール` / `## ゲームの流れ` (Mermaid flowchart — **mandatory**) / `## コマンド一覧` / `## 画面の見方` / `## 遊び方のコツ`
