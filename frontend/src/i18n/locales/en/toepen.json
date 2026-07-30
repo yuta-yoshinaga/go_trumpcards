@@ -27,5 +27,6 @@
   "tutorial.follow": "You must follow the led suit if you hold it. Cards you cannot legally play are not selectable.",
   "tutorial.lastTrick": "Everyone who does NOT take the final trick pays. Winning an early trick is worth nothing.",
   "tutorial.toep": "A toep raises the stake by one. Opponents stay in or fold, and folding costs the stake BEFORE the raise.",
-  "tutorial.controls": "Ten lives lost and you are out. The last player standing wins."
+  "tutorial.controls": "Ten lives lost and you are out. The last player standing wins.",
+  "redeal": "Redeal (poverty)"
 }

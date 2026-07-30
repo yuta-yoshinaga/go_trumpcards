@@ -5,7 +5,7 @@ import type { ToepenResponse } from '../../types/card';
 import { gameExec } from '../gameExec';
 
 /** Commands the /toepen/exec endpoint accepts. */
-export type ToepenCommand = 'reset' | 'play' | 'toep' | 'answer' | 'next' | 'hint' | 'log';
+export type ToepenCommand = 'reset' | 'play' | 'toep' | 'answer' | 'redeal' | 'next' | 'hint' | 'log';
 
 /**
  * API client for the Toepen /toepen/exec endpoint.

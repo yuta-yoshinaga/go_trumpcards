@@ -15,6 +15,10 @@ type ToepenGame interface {
 	Toep(player int) error
 	// Respond toep に追随(true)か降参(false)かを答える
 	Respond(player int, stay bool) error
+	// Redeal 貧民の手札を捨てて配り直す
+	Redeal(player int) error
+	// CanRedeal 配り直しを要求できるかを返す
+	CanRedeal(player int) bool
 	// NextHand 次のハンドを開始する
 	NextHand() error
 	// ToepenCpuDecide CPU が取る手を決める

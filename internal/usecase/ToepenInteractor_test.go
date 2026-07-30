@@ -200,3 +200,30 @@ func TestRestoreToepenInteractor(t *testing.T) {
 	_, err = usecase.RestoreToepenInteractor([]byte("{"), new(presenter.MockToepenPresenter))
 	assert.Error(t, err)
 }
+
+func TestToepenInteractor_RedealUsesTheHumanSeatAndSurfacesRejection(t *testing.T) {
+	g, tp := toepenMocks()
+	g.On("Redeal", 0).Return(nil)
+	usecase.NewToepenInteractor(g, tp).Redeal()
+	g.AssertCalled(t, "Redeal", 0)
+
+	g2 := new(interfaces.MockToepenGame)
+	tp2 := new(presenter.MockToepenPresenter)
+	wantErr := errors.New("a redeal needs a hand of nothing but A, K, Q and J")
+	g2.On("GetGameEndFlag").Return(false)
+	g2.On("Redeal", 0).Return(wantErr)
+	tp2.On("Output", mock.Anything, wantErr).Return(toepenOut)
+
+	usecase.NewToepenInteractor(g2, tp2).Redeal()
+	tp2.AssertCalled(t, "Output", mock.Anything, wantErr)
+}
+
+func TestToepenInteractor_RedealIsInertOnceTheGameIsOver(t *testing.T) {
+	g := new(interfaces.MockToepenGame)
+	tp := new(presenter.MockToepenPresenter)
+	g.On("GetGameEndFlag").Return(true)
+	tp.On("Output", mock.Anything, mock.Anything).Return(toepenOut)
+
+	usecase.NewToepenInteractor(g, tp).Redeal()
+	g.AssertNotCalled(t, "Redeal", mock.Anything)
+}

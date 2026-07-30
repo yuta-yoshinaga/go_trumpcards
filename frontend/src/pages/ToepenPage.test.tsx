@@ -61,6 +61,7 @@ function makeState(overrides?: Partial<ToepenResponse>): ToepenResponse {
     lastTrickWinner: -1,
     maxLives: 10,
     validPlayIndices: [0, 1, 2],
+    canRedeal: false,
     gameEndFlag: false,
     winnerIdx: -1,
     message: '',
@@ -164,5 +165,28 @@ describe('ToepenPage', () => {
     renderWithProviders(<ToepenPage />);
     await waitFor(() => expect(screen.getByText('あなたの勝ちです')).toBeInTheDocument());
     expect(screen.getByText('10/10')).toBeInTheDocument();
+  });
+});
+
+describe('ToepenPage redeal', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('offers the redeal only when the server says it is available', async () => {
+    // Whether a hand qualifies, and whether the window is still open, are both
+    // the server's call -- the page must not count ranks itself.
+    mockExec.mockResolvedValue(makeState({ canRedeal: false }));
+    renderWithProviders(<ToepenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByRole('button', { name: '配り直し（貧民）' })).not.toBeInTheDocument();
+
+    mockExec.mockResolvedValue(makeState({ canRedeal: true }));
+    renderWithProviders(<ToepenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '配り直し（貧民）' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '配り直し（貧民）' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('redeal'));
   });
 });

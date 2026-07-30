@@ -64,6 +64,12 @@ export interface ToepenResponse extends BaseGameResponse {
    * obligation, so the page never re-derives it.
    */
   validPlayIndices: number[];
+  /**
+   * Whether the human may throw in a poverty hand (nothing but A/K/Q/J) right
+   * now. Decided by the server so the client does not count ranks a second
+   * time — and so the "before any card is played" window has one owner.
+   */
+  canRedeal: boolean;
   gameEndFlag: boolean;
   winnerIdx: number;
   hint?: ToepenHintPayload;

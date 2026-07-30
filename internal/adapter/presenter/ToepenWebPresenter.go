@@ -42,6 +42,7 @@ func (p *ToepenWebPresenter) buildBase(t interfaces.ToepenGame) *controller.Toep
 	valid := t.GetValidPlayIndices(0)
 	resObj.ValidPlayIndices = make([]int, 0, len(valid))
 	resObj.ValidPlayIndices = append(resObj.ValidPlayIndices, valid...)
+	resObj.CanRedeal = t.CanRedeal(0)
 
 	cfg := t.GetConfig()
 	resObj.Config = controller.ToepenWebOutputConfig{

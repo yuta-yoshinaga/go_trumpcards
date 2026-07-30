@@ -18,6 +18,7 @@ const base = {
   lastTrickWinner: -1,
   maxLives: 10,
   validPlayIndices: [],
+  canRedeal: false,
   gameEndFlag: false,
   winnerIdx: -1,
   message: '',

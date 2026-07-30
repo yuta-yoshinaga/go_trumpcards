@@ -25,6 +25,10 @@ func (_m *MockToepenGame) Respond(player int, stay bool) error {
 	return _m.Called(player, stay).Error(0)
 }
 
+func (_m *MockToepenGame) Redeal(player int) error { return _m.Called(player).Error(0) }
+
+func (_m *MockToepenGame) CanRedeal(player int) bool { return _m.Called(player).Bool(0) }
+
 func (_m *MockToepenGame) NextHand() error { return _m.Called().Error(0) }
 
 func (_m *MockToepenGame) ToepenCpuDecide(idx int) domain.ToepenCpuAction {

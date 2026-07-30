@@ -29,6 +29,8 @@ func (_m *MockToepenInteractor) Respond(stay bool) string {
 	return _m.Called(stay).Get(0).(string)
 }
 
+func (_m *MockToepenInteractor) Redeal() string { return _m.Called().Get(0).(string) }
+
 func (_m *MockToepenInteractor) NextHand() string { return _m.Called().Get(0).(string) }
 
 func (_m *MockToepenInteractor) GetConfig() domain.ToepenConfig {

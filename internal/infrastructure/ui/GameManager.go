@@ -1622,6 +1622,7 @@ var gameRegistry = []GameRegistryEntry{
 					"toepen.helpToep",
 					"toepen.helpStay",
 					"toepen.helpFold",
+					"toepen.helpRedeal",
 					"toepen.helpNext",
 				},
 				ExtraCommandLines: []string{"  l                        action log"},

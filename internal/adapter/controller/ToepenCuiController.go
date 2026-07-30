@@ -26,6 +26,7 @@ func NewToepenCuiController(ti usecase.ToepenInteractorIF) *ToepenCuiController 
 //	t / toep     → 賭け点を吊り上げる
 //	s / stay     → toep に追随する
 //	f / fold     → toep に降りる
+//	d / redeal   → 貧民 (A/K/Q/J のみ) の手札を捨てて配り直す
 //	n / next     → 次のハンドへ
 //	h / hint     → ヒント表示
 //	log / l      → 棋譜表示
@@ -37,7 +38,7 @@ func (c *ToepenCuiController) Exec(command string) string {
 			return c.ti.ResetWithConfig(cfg)
 		},
 		[]string{
-			"p", "play", "t", "toep", "s", "stay", "f", "fold", "n", "next", "h", "hint", "log", "l",
+			"p", "play", "t", "toep", "s", "stay", "f", "fold", "d", "redeal", "n", "next", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -49,6 +50,8 @@ func (c *ToepenCuiController) Exec(command string) string {
 				return c.ti.Respond(true), true
 			case "f", "fold":
 				return c.ti.Respond(false), true
+			case "d", "redeal":
+				return c.ti.Redeal(), true
 			case "n", "next":
 				return c.ti.NextHand(), true
 			default:

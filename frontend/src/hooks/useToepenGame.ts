@@ -40,6 +40,11 @@ export function useToepenGame() {
     [runApi],
   );
 
+  /** Throw in a poverty hand. Only offered while the server says `canRedeal`. */
+  const handleRedeal = useCallback(() => {
+    runApi('redeal');
+  }, [runApi]);
+
   const handleNextHand = useCallback(() => {
     runApi('next');
   }, [runApi]);
@@ -53,6 +58,7 @@ export function useToepenGame() {
     handlePlay,
     handleToep,
     handleRespond,
+    handleRedeal,
     handleNextHand,
     retry,
   };

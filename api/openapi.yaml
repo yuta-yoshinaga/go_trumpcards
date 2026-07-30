@@ -11552,7 +11552,14 @@ paths:
 
         Two more points differ from #4411: the game takes **3-8 players** (not
         3-5), and a hand of nothing but A/K/Q/J -- the four weakest ranks -- may
-        be thrown in for a redeal.
+        be thrown in for a redeal with the `redeal` command, before any card is
+        played. `canRedeal` reports whether that is available right now.
+
+        At the table a redeal may be challenged, and the loser of the challenge
+        pays a life. **There is no challenge here.** It exists because players
+        cannot check each other's claims; the server holds the hands and simply
+        verifies, so a false claim is rejected rather than contested. Keeping
+        the challenge would leave a button that can only ever be wrong.
 
         Following suit is compulsory when possible. `validPlayIndices` reports
         what the human may legally play, so the client does not re-implement a
@@ -11579,6 +11586,7 @@ paths:
         | `play`   | `p`     | Play the hand card at `cardIndex` |
         | `toep`   | `t`     | Raise the stake by one |
         | `answer` | `a`     | Answer a toep: `stay` true to stay in, false to fold |
+        | `redeal` | `d`     | Throw in a poverty hand (A/K/Q/J only) before any card is played |
         | `next`   | `n`     | Start the next hand |
         | `hint`   | `h`     | Suggested move for the human seat |
         | `log`    | `l`     | Action-log transcript |
@@ -11595,7 +11603,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, play, p, toep, t, answer, a, next, n, hint, h, log, l]
+                  enum: [reset, r, play, p, toep, t, answer, a, redeal, d, next, n, hint, h, log, l]
                 sessionId:
                   type: string
                 cardIndex:
@@ -21819,6 +21827,11 @@ components:
             obligation, so the client never re-derives it.
           items:
             type: integer
+        canRedeal:
+          type: boolean
+          description: |
+            Whether the human may throw in a poverty hand right now. Decided
+            here so the client does not count card ranks a second time.
         gameEndFlag:
           type: boolean
         winnerIdx:

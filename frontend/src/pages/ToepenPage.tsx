@@ -244,6 +244,12 @@ function ToepenPageContent() {
                 </>
               )}
 
+              {state.canRedeal && (
+                <button type="button" className={btnSecondary} onClick={game.handleRedeal} disabled={loading}>
+                  {t('redeal')}
+                </button>
+              )}
+
               {canToep && (
                 <button type="button" className={btnSecondary} onClick={game.handleToep} disabled={loading}>
                   {t('toep')}

@@ -45,6 +45,9 @@ export function parseToepenCommand(input: string): CliParseResult<ToepenArgs> {
     case 'f':
     case 'fold':
       return { args: ['answer', undefined, false] };
+    case 'd':
+    case 'redeal':
+      return { args: ['redeal'] };
     case 'n':
     case 'next':
       return { args: ['next'] };
@@ -67,6 +70,7 @@ export const TOEPEN_HELP: string[] = [
   't/toep          - Raise the stake by one',
   's/stay          - Stay in after a toep',
   'f/fold          - Fold to a toep',
+  'd/redeal       - Throw in a poverty hand (A/K/Q/J only)',
   'n/next          - Start the next hand',
   'log             - Show action log',
   'r/reset         - New game',

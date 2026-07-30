@@ -79,6 +79,9 @@ func (p *ToepenCuiPresenter) Output(t interfaces.ToepenGame, lastErr error) stri
 			sb.WriteString(i18n.Tf("toepen.promptCurrentPlayer",
 				"name", cuiPlayerName(t.GetPlayer(t.GetCurrentPlayerIdx()), t.GetCurrentPlayerIdx())) + "\n")
 			sb.WriteString(i18n.T("toepen.promptPlay") + "\n")
+			if t.CanRedeal(0) {
+				sb.WriteString(i18n.T("toepen.promptRedeal") + "\n")
+			}
 		}
 	})
 }

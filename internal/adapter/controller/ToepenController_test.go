@@ -59,6 +59,7 @@ func TestToepenWebController_Dispatch(t *testing.T) {
 	tiMock.On("Toep").Return(mockOutput)
 	tiMock.On("Respond", true).Return(mockOutput)
 	tiMock.On("Respond", false).Return(mockOutput)
+	tiMock.On("Redeal").Return(mockOutput)
 	tiMock.On("NextHand").Return(mockOutput)
 	tiMock.On("Hint").Return(mockOutput)
 	tiMock.On("ActionLog").Return(mockOutput)
@@ -85,6 +86,11 @@ func TestToepenWebController_Dispatch(t *testing.T) {
 		exec(t, `{"command":"n","sessionId":"t1"}`).CodeIs(http.StatusOK)
 		tiMock.AssertCalled(t, "Play", 2)
 		tiMock.AssertCalled(t, "Toep")
+	})
+
+	t.Run("redeal", func(t *testing.T) {
+		exec(t, `{"command":"d","sessionId":"t1"}`).CodeIs(http.StatusOK)
+		tiMock.AssertCalled(t, "Redeal")
 	})
 
 	t.Run("answer carries the decision both ways", func(t *testing.T) {
@@ -130,6 +136,7 @@ func TestToepenCuiController_Commands(t *testing.T) {
 	ti.On("Toep").Return("toeped")
 	ti.On("Respond", true).Return("stayed")
 	ti.On("Respond", false).Return("folded")
+	ti.On("Redeal").Return("redealt")
 	ti.On("NextHand").Return("next")
 	ti.On("Hint").Return("hint")
 	ti.On("ActionLog").Return("log")
@@ -140,6 +147,8 @@ func TestToepenCuiController_Commands(t *testing.T) {
 	// stay and fold are distinct words so a mistyped boolean cannot invert them.
 	assert.Equal(t, "stayed", c.Exec("s"))
 	assert.Equal(t, "folded", c.Exec("f"))
+	assert.Equal(t, "redealt", c.Exec("d"))
+	assert.Equal(t, "redealt", c.Exec("redeal"))
 	assert.Equal(t, "next", c.Exec("n"))
 	assert.Equal(t, "hint", c.Exec("h"))
 	assert.Equal(t, "log", c.Exec("log"))

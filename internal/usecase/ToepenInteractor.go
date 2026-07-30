@@ -22,6 +22,8 @@ type ToepenInteractorIF interface {
 	Toep() string
 	// Respond toep に追随か降参かを答える
 	Respond(stay bool) string
+	// Redeal 貧民の手札を捨てて配り直す
+	Redeal() string
 	// NextHand 次のハンドへ進む
 	NextHand() string
 	// GetConfig 現在の設定を取得
@@ -93,6 +95,18 @@ func (ti *ToepenInteractor) Respond(stay bool) string {
 		return ti.tp.Output(ti.Game, nil)
 	}
 	if err := ti.Game.Respond(toepenHumanIdx, stay); err != nil {
+		return ti.tp.Output(ti.Game, err)
+	}
+	ti.runCpuTurns()
+	return ti.tp.Output(ti.Game, nil)
+}
+
+// Redeal 貧民の手札を捨てて配り直す
+func (ti *ToepenInteractor) Redeal() string {
+	if ti.Game.GetGameEndFlag() {
+		return ti.tp.Output(ti.Game, nil)
+	}
+	if err := ti.Game.Redeal(toepenHumanIdx); err != nil {
 		return ti.tp.Output(ti.Game, err)
 	}
 	ti.runCpuTurns()

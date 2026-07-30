@@ -66,10 +66,13 @@ type ToepenWebOutput struct {
 	MaxLives          int `json:"maxLives"`
 	// ValidPlayIndices は人間が出せる手札の添字。フォロー義務の判定を
 	// クライアントに再実装させないために送る。
-	ValidPlayIndices []int                `json:"validPlayIndices"`
-	GameEndFlag      bool                 `json:"gameEndFlag"`
-	WinnerIdx        int                  `json:"winnerIdx"`
-	Hint             *ToepenWebOutputHint `json:"hint,omitempty"`
+	ValidPlayIndices []int `json:"validPlayIndices"`
+	// CanRedeal は人間が貧民 (A/K/Q/J のみ) の配り直しを要求できるか。
+	// 判定はサーバーが持つので、クライアントは札種を数え直さない。
+	CanRedeal   bool                 `json:"canRedeal"`
+	GameEndFlag bool                 `json:"gameEndFlag"`
+	WinnerIdx   int                  `json:"winnerIdx"`
+	Hint        *ToepenWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config ToepenWebOutputConfig `json:"config"`
 }
@@ -141,6 +144,8 @@ func toepenDispatch(bc *baseController, w http.ResponseWriter, ti usecase.Toepen
 			return true
 		}
 		bc.writePresenterResponse(w, ti.Respond(*param.Stay))
+	case "d", "redeal":
+		bc.writePresenterResponse(w, ti.Redeal())
 	case "n", "next":
 		bc.writePresenterResponse(w, ti.NextHand())
 	default:

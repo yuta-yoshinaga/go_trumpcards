@@ -57,6 +57,7 @@ func toepenStub(phase domain.ToepenPhase, winner int, gameEnd bool) *interfaces.
 	g.On("IsFolded", mock.Anything).Return(false)
 	g.On("IsEliminated", mock.Anything).Return(false)
 	g.On("GetValidPlayIndices", mock.Anything).Return([]int{})
+	g.On("CanRedeal", mock.Anything).Return(false)
 	g.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	g.On("ToepenCpuDecide", mock.Anything).Return(domain.ToepenCpuAction{HandIdx: 0})
 	return g
@@ -168,6 +169,7 @@ func TestToepenWebPresenter_HintCoversEveryBranch(t *testing.T) {
 		gg.On("IsFolded", mock.Anything).Return(false)
 		gg.On("IsEliminated", mock.Anything).Return(false)
 		gg.On("GetValidPlayIndices", mock.Anything).Return([]int{})
+		gg.On("CanRedeal", mock.Anything).Return(false)
 
 		out := toepenDecode(t, p.HintOutput(gg))
 		assert.Equal(t, "toepen.hint.not_your_turn", out["hint"].(map[string]any)["reason"])
@@ -196,6 +198,7 @@ func TestToepenWebPresenter_HintCoversEveryBranch(t *testing.T) {
 		g.On("IsFolded", mock.Anything).Return(false)
 		g.On("IsEliminated", mock.Anything).Return(false)
 		g.On("GetValidPlayIndices", mock.Anything).Return([]int{})
+		g.On("CanRedeal", mock.Anything).Return(false)
 		// An empty hand makes the CPU return -1; shipping that index would have
 		// the page highlight card "-1".
 		g.On("ToepenCpuDecide", 0).Return(domain.ToepenCpuAction{HandIdx: -1})
@@ -238,6 +241,7 @@ func TestToepenWebPresenter_HintCoversEveryBranch(t *testing.T) {
 				g.On("IsFolded", mock.Anything).Return(false)
 				g.On("IsEliminated", mock.Anything).Return(false)
 				g.On("GetValidPlayIndices", mock.Anything).Return([]int{})
+				g.On("CanRedeal", mock.Anything).Return(false)
 				g.On("ToepenCpuDecide", 0).Return(domain.ToepenCpuAction{HandIdx: -1, Fold: tc.fold})
 
 				out := toepenDecode(t, p.HintOutput(g))
@@ -270,6 +274,7 @@ func TestToepenWebPresenter_SkipsANilSeatAndRendersTheLog(t *testing.T) {
 	g.On("IsFolded", mock.Anything).Return(false)
 	g.On("IsEliminated", mock.Anything).Return(false)
 	g.On("GetValidPlayIndices", mock.Anything).Return([]int{})
+	g.On("CanRedeal", mock.Anything).Return(false)
 	g.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	g.On("ToepenCpuDecide", mock.Anything).Return(domain.ToepenCpuAction{HandIdx: -1})
 
@@ -346,4 +351,25 @@ func TestToepenCuiPresenter_HintPrintsAnIndexOnlyWhenThereIsOne(t *testing.T) {
 	}
 	require.Equal(t, 0, tp.GetCurrentPlayerIdx())
 	assert.Contains(t, p.HintOutput(tp), "手札[")
+}
+
+func TestToepenWebPresenter_ShipsCanRedeal(t *testing.T) {
+	// Whether a poverty hand may be thrown in is the server's call: it depends
+	// on the ranks held AND on nothing having been played yet. Sending it means
+	// the client never re-derives either half.
+	tp := toepenTestGame(t)
+	p := tp.GetPlayer(0)
+	p.Reset()
+	for _, v := range []int{1, 13, 12, 11} {
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, v, true))
+	}
+	out := toepenDecode(t, new(ToepenWebPresenter).Output(tp, nil))
+	assert.Equal(t, true, out["canRedeal"])
+
+	p.Reset()
+	for _, v := range []int{10, 13, 12, 11} {
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, v, true))
+	}
+	out = toepenDecode(t, new(ToepenWebPresenter).Output(tp, nil))
+	assert.Equal(t, false, out["canRedeal"], "a ten is not poverty")
 }

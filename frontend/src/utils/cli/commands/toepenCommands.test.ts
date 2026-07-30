@@ -48,3 +48,14 @@ describe('parseToepenCommand', () => {
     }
   });
 });
+
+describe('parseToepenCommand redeal', () => {
+  it('parses redeal with its alias', () => {
+    expect(parseToepenCommand('d')).toEqual({ args: ['redeal'] });
+    expect(parseToepenCommand('redeal')).toEqual({ args: ['redeal'] });
+  });
+
+  it('documents it', () => {
+    expect(TOEPEN_HELP.join('\n')).toContain('d/redeal');
+  });
+});

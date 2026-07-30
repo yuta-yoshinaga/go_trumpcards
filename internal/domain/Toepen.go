@@ -25,9 +25,13 @@
 // # 貧民 (armoede) の配り直し
 //
 // 手札が A・K・Q・J だけ、つまり**最弱の 4 枚しか無い**場合、捨てて配り直しを
-// 要求できる。他家はこれに異議を唱えられ、異議が正しければ (= 実際にはより強い
-// 札を持っていれば) 宣言者がライフを 1 失う。外れれば異議側が失う。
-// issue はこのルールに触れていない。
+// 要求できる (Redeal)。issue はこのルールに触れていない。
+//
+// 卓上のルールでは他家が異議を唱えられ、外れた側がライフを失う。**本実装に異議の
+// 手続きは無い。** 異議が存在するのは、人間同士では宣言が本当かどうか確かめようが
+// ないからで、サーバーが手札を持っている以上そこは検証で済む。Redeal は貧民の
+// ときだけ通り、嘘の宣言はそもそも成立しない。異議を残すと「必ず外れる異議」を
+// 押せるだけのボタンになる。
 package domain
 
 import (
@@ -374,6 +378,53 @@ func (t *Toepen) handExhausted() bool {
 	return false
 }
 
+// Redeal は貧民 (最弱 4 種のみの手札) の player が手札を捨てて配り直しを要求する。
+//
+// サーバーが手札を検証するので、卓上ルールの「異議」は不要 —— 嘘の宣言は
+// そもそも通らない。賭け点と親はそのままで、同じハンドを配り直す。
+func (t *Toepen) Redeal(player int) error {
+	if t.gameEndFlag || t.phase != ToepenPhasePlay {
+		return fmt.Errorf("cannot ask for a redeal right now")
+	}
+	if t.trickNumber > 0 || len(t.trick) > 0 {
+		return fmt.Errorf("a redeal must be asked for before any card is played")
+	}
+	p := t.GetPlayer(player)
+	if p == nil || t.eliminated[player] || t.folded[player] {
+		return fmt.Errorf("player %d is not in this hand", player)
+	}
+	hand := make([]*Card, 0, p.GetCardsSize())
+	for i := range p.GetCardsSize() {
+		hand = append(hand, p.GetCard(i))
+	}
+	if !ToepenIsPoverty(hand) {
+		return fmt.Errorf("a redeal needs a hand of nothing but A, K, Q and J")
+	}
+
+	t.addLog(player, "redeal", "asks for a redeal on a poverty hand", nil)
+	// 同じ親でハンド番号も据え置いたまま配り直す。startHand は番号を進めるので
+	// 戻しておく -- 配り直しは新しいハンドではない。
+	t.handNumber--
+	t.startHand()
+	return nil
+}
+
+// CanRedeal は player が配り直しを要求できるかを返す。
+func (t *Toepen) CanRedeal(player int) bool {
+	if t.gameEndFlag || t.phase != ToepenPhasePlay || t.trickNumber > 0 || len(t.trick) > 0 {
+		return false
+	}
+	p := t.GetPlayer(player)
+	if p == nil || t.eliminated[player] || t.folded[player] {
+		return false
+	}
+	hand := make([]*Card, 0, p.GetCardsSize())
+	for i := range p.GetCardsSize() {
+		hand = append(hand, p.GetCard(i))
+	}
+	return ToepenIsPoverty(hand)
+}
+
 // Toep は player が賭け点を吊り上げる。
 //
 // 宣言者以外の参加者は追随か降参かを選ぶ。連続でノックできないよう、応答が
@@ -454,17 +505,22 @@ func (t *Toepen) nextRespondent(player int) int {
 
 // finishHand はハンドを精算する。
 //
-// 最後まで残った者は賭け点ぶん失点するが、**最終トリックを取った者だけは免れる**。
+// 免れるのは**そのハンドの勝者**ひとりだけ。通常は最終トリックを取った者だが、
+// **toep で全員が降りてハンドが終わった場合は、残った 1 人が勝者**である。
+// lastTrickWin だけを見ると、この場合それは -1 のままなので誰も免れず、生き残った
+// 側まで賭け点を払うことになる。それでは「相手を降ろして勝つ」ことと「負ける」ことが
+// 同コストになり、toep を打つ理由そのものが消える。
 func (t *Toepen) finishHand() {
 	t.phase = ToepenPhaseHandEnd
 	t.pendingIdx = -1
 	t.knockerIdx = -1
 
+	winner := t.handWinner()
 	for i := range t.players {
 		if t.eliminated[i] || t.folded[i] {
 			continue
 		}
-		if i == t.lastTrickWin {
+		if i == winner {
 			continue
 		}
 		t.loseLives(i, t.stake)
@@ -485,6 +541,27 @@ func (t *Toepen) finishHand() {
 		t.winnerIdx = last
 		t.addLog(-1, "game", "game over", nil)
 	}
+}
+
+// handWinner はこのハンドで失点を免れる者を返す。
+//
+// 最終トリックを取った者。トリックが一度も成立しないまま (全員が降りて) ハンドが
+// 終わったときは、残っている唯一のプレイヤー。どちらでもなければ -1。
+func (t *Toepen) handWinner() int {
+	if t.lastTrickWin >= 0 {
+		return t.lastTrickWin
+	}
+	survivor := -1
+	for i := range t.players {
+		if t.eliminated[i] || t.folded[i] {
+			continue
+		}
+		if survivor >= 0 {
+			return -1 // 2 人以上残っているなら勝者は未確定
+		}
+		survivor = i
+	}
+	return survivor
 }
 
 // loseLives は player の失点を加算し、上限に達したら脱落させる。

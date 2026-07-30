@@ -43,6 +43,7 @@ function makeState(overrides?: Partial<ToepenResponse>): ToepenResponse {
     lastTrickWinner: -1,
     maxLives: 10,
     validPlayIndices: [0, 1],
+    canRedeal: false,
     gameEndFlag: false,
     winnerIdx: -1,
     message: '',

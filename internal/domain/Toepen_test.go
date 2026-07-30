@@ -537,3 +537,82 @@ func TestToepen_HasStrongCardIsFalseForAWeakHand(t *testing.T) {
 	assert.True(t, tp.hasStrongCard(1), "a ten is the strongest card there is")
 	assert.False(t, tp.hasStrongCard(99), "out of range is not a strong hand")
 }
+
+func TestToepen_WinningByForcingEveryoneOutCostsNothing(t *testing.T) {
+	// Toep, everyone folds, no trick is ever played. The survivor won the hand
+	// by making the raise stick -- charging them the stake would make
+	// intimidating the table cost exactly as much as losing to it, which
+	// removes the point of toeping at all.
+	tp := NewDefaultToepen()
+	tp.Reset()
+	require.NoError(t, tp.Toep(0))
+
+	for i := 1; i < ToepenPlayerCnt; i++ {
+		require.NoError(t, tp.Respond(i, false))
+	}
+	require.Equal(t, ToepenPhaseHandEnd, tp.GetPhase(), "the hand ends when only one is left")
+	require.Equal(t, -1, tp.GetLastTrickWinner(), "no trick was ever played")
+
+	assert.Equal(t, 0, tp.GetLives(0), "the survivor pays nothing")
+	for i := 1; i < ToepenPlayerCnt; i++ {
+		assert.Equal(t, 1, tp.GetLives(i), "seat %d folded to the first knock", i)
+	}
+}
+
+func TestToepen_RedealNeedsAPovertyHand(t *testing.T) {
+	tp := NewDefaultToepen()
+	tp.Reset()
+	p := tp.GetPlayer(0)
+
+	// An ordinary hand cannot ask for one.
+	p.Reset()
+	for _, v := range []int{10, 9, 1, 13} {
+		p.AddCard(toepenCard(CardDesignSpade, v))
+	}
+	assert.False(t, tp.CanRedeal(0))
+	assert.ErrorContains(t, tp.Redeal(0), "nothing but A, K, Q and J")
+
+	// Nothing but the four weakest ranks can.
+	p.Reset()
+	for _, v := range []int{1, 13, 12, 11} {
+		p.AddCard(toepenCard(CardDesignSpade, v))
+	}
+	assert.True(t, tp.CanRedeal(0))
+
+	hand := tp.GetHandNumber()
+	require.NoError(t, tp.Redeal(0))
+	assert.Equal(t, hand, tp.GetHandNumber(), "a redeal is the same hand, not the next one")
+	assert.Equal(t, ToepenHandSize, tp.GetPlayer(0).GetCardsSize())
+	assert.Equal(t, 1, tp.GetStake(), "the stake is unchanged")
+	for i := range tp.GetPlayers() {
+		assert.Equal(t, 0, tp.GetLives(i), "nobody pays for a redeal")
+	}
+}
+
+func TestToepen_RedealIsRefusedOncePlayHasStarted(t *testing.T) {
+	// The hand is only thrown in before anyone commits a card; afterwards the
+	// information is out and a redeal would erase it.
+	tp := NewDefaultToepen()
+	tp.Reset()
+	lead := tp.GetCurrentPlayerIdx()
+	require.NoError(t, tp.PlayCard(lead, tp.GetValidPlayIndices(lead)[0]))
+
+	p := tp.GetPlayer(0)
+	p.Reset()
+	for _, v := range []int{1, 13, 12, 11} {
+		p.AddCard(toepenCard(CardDesignSpade, v))
+	}
+	assert.False(t, tp.CanRedeal(0))
+	assert.ErrorContains(t, tp.Redeal(0), "before any card is played")
+}
+
+func TestToepen_RedealRejectsOtherIllegalStates(t *testing.T) {
+	tp := NewDefaultToepen()
+	tp.Reset()
+	assert.False(t, tp.CanRedeal(99))
+	assert.Error(t, tp.Redeal(99))
+
+	require.NoError(t, tp.Toep(0))
+	assert.False(t, tp.CanRedeal(0), "not while a toep is outstanding")
+	assert.Error(t, tp.Redeal(0))
+}

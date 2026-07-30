@@ -24,5 +24,7 @@
   "hintReasonNotYourTurn": "あなたの手番ではありません",
   "hintReasonStay": "強い札が残っています。追随して構いません",
   "hintReasonFold": "強い札が残っていません。降りた方が安く済みます",
-  "hintReasonPlay": "この札が最も安く取りに行けます"
+  "hintReasonPlay": "この札が最も安く取りに行けます",
+  "helpRedeal": "  d                        貧民（A/K/Q/J のみ）の手札を捨てて配り直す",
+  "promptRedeal": "手札が A/K/Q/J だけです。d で配り直しを要求できます"
 }

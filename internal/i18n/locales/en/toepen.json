@@ -24,5 +24,7 @@
   "hintReasonNotYourTurn": "it is not your turn",
   "hintReasonStay": "you still hold something strong -- staying in is fine",
   "hintReasonFold": "nothing strong left; folding costs less than losing",
-  "hintReasonPlay": "this is the cheapest card that still takes the trick"
+  "hintReasonPlay": "this is the cheapest card that still takes the trick",
+  "helpRedeal": "  d                        throw in a poverty hand (only A/K/Q/J) for a redeal",
+  "promptRedeal": "your hand is nothing but A/K/Q/J -- d asks for a redeal"
 }
