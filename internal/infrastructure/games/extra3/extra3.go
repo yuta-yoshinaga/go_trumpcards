@@ -245,4 +245,12 @@ func init() {
 			return usecase.RestoreBuraInteractor(data, new(presenter.BuraWebPresenter))
 		},
 		controller.NewBuraWebControllerWithProvider)
+	games.RegisterKVGame("skitgubbe", games.CategoryExtra3,
+		func() usecase.SkitgubbeInteractorIF {
+			return usecase.NewSkitgubbeInteractor(domain.NewDefaultSkitgubbe(), new(presenter.SkitgubbeWebPresenter))
+		},
+		func(data []byte) (usecase.SkitgubbeInteractorIF, error) {
+			return usecase.RestoreSkitgubbeInteractor(data, new(presenter.SkitgubbeWebPresenter))
+		},
+		controller.NewSkitgubbeWebControllerWithProvider)
 }
