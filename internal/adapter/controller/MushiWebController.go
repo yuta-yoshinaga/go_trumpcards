@@ -158,3 +158,7 @@ func mushiDispatch(bc *baseController, w http.ResponseWriter, mi usecase.MushiIn
 	}
 	return true
 }
+
+// NewMushiDefaultOutputForTest exposes the default-output builder to the
+// external controller_test package, which cannot reach the unexported one.
+func NewMushiDefaultOutputForTest(msg string) *MushiWebOutput { return newMushiDefaultOutput(msg) }

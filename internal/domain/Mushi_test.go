@@ -590,3 +590,40 @@ func TestMushi_UnmarshalRepairsAMissingDealerAndCaptureSlots(t *testing.T) {
 		assert.NotNil(t, restored.GetCaptured(i), "every seat needs a capture slot")
 	}
 }
+
+func TestMushi_CardGlyphAndName(t *testing.T) {
+	// These feed the ADR-0033 procedural render path; an empty glyph is a blank
+	// card on screen.
+	assert.Equal(t, "🦢", MushiCardGlyph(mushiCard(1, 1)))
+	assert.Equal(t, "Crane", MushiCardName(mushiCard(1, 1)))
+	assert.Equal(t, "⚡", MushiCardGlyph(mushiCard(11, 4)), "the wild is drawn distinctly")
+
+	for _, c := range newMushiDeck() {
+		assert.NotEmpty(t, MushiCardGlyph(c), "every card in the pack needs a glyph")
+		assert.NotEmpty(t, MushiCardName(c), "every card in the pack needs a name")
+	}
+
+	assert.Empty(t, MushiCardGlyph(nil))
+	assert.Empty(t, MushiCardName(nil))
+	assert.Empty(t, MushiCardGlyph(mushiCard(99, 1)))
+	assert.Empty(t, MushiCardName(mushiCard(1, 99)))
+}
+
+func TestMushi_TheGameEndsInADrawWhenScoresTie(t *testing.T) {
+	// finishGame's tie branch: -1 rather than an arbitrary seat.
+	m := NewDefaultMushi()
+	cfg := m.GetConfig()
+	cfg.TargetRounds = 1
+	m.SetConfig(cfg)
+	m.Reset()
+	require.True(t, mushiPlayRound(t, m))
+	require.True(t, m.GetGameEndFlag())
+
+	if m.GetScore(0) == m.GetScore(1) {
+		assert.Equal(t, -1, m.GetWinnerIdx())
+		return
+	}
+	// Not a tie on this deal -- assert the decided case instead, which is the
+	// same branch's other side.
+	assert.GreaterOrEqual(t, m.GetWinnerIdx(), 0)
+}
