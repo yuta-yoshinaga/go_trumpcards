@@ -244,6 +244,10 @@ var registry = []*Game{
 	// Mushi is hanafuda on 40 cards -- June and July are out -- and is a
 	// hana-awase game: no koi-koi stop, the round runs to the last card.
 	{Name: "mushi", Category: CategoryExtra2},
+
+	// Toepen's ranking is the standard order inverted -- 10 high, jack low --
+	// and only the winner of the final trick escapes the penalty.
+	{Name: "toepen", Category: CategoryExtra3},
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},

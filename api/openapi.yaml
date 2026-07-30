@@ -213,6 +213,8 @@ tags:
     description: Sette e Mezzo game - the Italian 7.5 game on a 40-card deck; totals are carried in HALVES so the half-point cards compare exactly
   - name: niuniu
     description: Niu Niu game - the Chinese bull game where three of five cards must sum to a multiple of ten, and the remaining pair's last digit is the rank
+  - name: toepen
+    description: Toepen game - a Dutch bluffing trick game whose ranking is the standard order inverted (10 high, jack low), where only the winner of the final trick escapes the penalty
   - name: mushi
     description: Mushi game - hanafuda on 40 cards with June and July removed; a hana-awase game with no koi-koi stop, and November's lightning card is wild
   - name: bura
@@ -11529,6 +11531,101 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SetteEMezzoResponse'
+  /toepen/exec:
+    post:
+      tags:
+        - toepen
+      summary: Execute a Toepen game command
+      description: |
+        Send a command to advance the Toepen (トゥーペン) game session identified
+        by `sessionId`. It is a Dutch pub trick game: 32 cards, four to a hand,
+        no trumps.
+
+        **The ranking is the game, and it is the standard order inverted:**
+
+            10 > 9 > 8 > 7 > A > K > Q > J
+
+        The pip cards beat the ace and the court cards are weakest. #4411 calls
+        the jack "the second highest"; it is the LOWEST, and the ten is the
+        highest. Getting this backwards makes the game unplayable rather than
+        merely wrong.
+
+        Two more points differ from #4411: the game takes **3-8 players** (not
+        3-5), and a hand of nothing but A/K/Q/J -- the four weakest ranks -- may
+        be thrown in for a redeal.
+
+        Following suit is compulsory when possible. `validPlayIndices` reports
+        what the human may legally play, so the client does not re-implement a
+        rule the server already enforces.
+
+        **Only the winner of the final trick escapes the penalty**; everyone
+        else still in the hand loses `stake` lives. `stake` starts at 1 and
+        rises by one per toep. **Folding costs the stake BEFORE the raise being
+        declined** -- one life to the first toep, two to the second -- so
+        declining is cheaper than losing to it.
+
+        Ten lives lost eliminates a player; the last one standing wins.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Play     | `0`   | Waiting for a card |
+        | Respond  | `1`   | A toep is outstanding; stay or fold |
+        | HandEnd  | `2`   | Hand settled |
+        | GameEnd  | `3`   | One player left |
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart a game |
+        | `play`   | `p`     | Play the hand card at `cardIndex` |
+        | `toep`   | `t`     | Raise the stake by one |
+        | `answer` | `a`     | Answer a toep: `stay` true to stay in, false to fold |
+        | `next`   | `n`     | Start the next hand |
+        | `hint`   | `h`     | Suggested move for the human seat |
+        | `log`    | `l`     | Action-log transcript |
+      operationId: toepenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, toep, t, answer, a, next, n, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                stay:
+                  type: boolean
+                  description: Required for `answer`. True stays in, false folds.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+                    playerCnt:
+                      type: integer
+                      description: Seats, 3-8.
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToepenResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToepenResponse'
   /mushi/exec:
     post:
       tags:
@@ -21640,6 +21737,111 @@ components:
           type: string
         messageCode:
           type: string
+    ToepenResponse:
+      type: object
+      description: Response payload for /toepen/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: Hand size. Always sent, including while hidden.
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/Card'
+              lives:
+                type: integer
+                description: Lives lost so far. `maxLives` ends the player's game.
+              folded:
+                type: boolean
+                description: Out of THIS hand, having declined a toep.
+              eliminated:
+                type: boolean
+                description: Out of the game.
+              hidden:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Play, 1=Respond, 2=HandEnd, 3=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          description: Cards played into the trick so far, in play order.
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        leadSuit:
+          type: integer
+          description: "-1 before anything is led"
+        trickNumber:
+          type: integer
+        handNumber:
+          type: integer
+        stake:
+          type: integer
+          description: |
+            Lives this hand now costs. Starts at 1 and rises by one per toep.
+            Folding costs `stake - 1`, the value BEFORE the raise being declined.
+        knockerIdx:
+          type: integer
+          description: "Who toeped; -1 outside a response phase"
+        pendingRespondent:
+          type: integer
+          description: "Whose answer is awaited; -1 when none"
+        lastTrickWinner:
+          type: integer
+          description: The only seat that escapes the penalty when the hand settles.
+        maxLives:
+          type: integer
+          description: Lives that eliminate a player. Sent so the figure is not written down twice.
+        validPlayIndices:
+          type: array
+          description: |
+            Hand indices the human may legally play. Carries the follow-suit
+            obligation, so the client never re-derives it.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 while undecided"
+        hint:
+          type: object
+          description: Suggested move, sent on every response while the round is live.
+          properties:
+            cardIndex:
+              type: integer
+            fold:
+              type: boolean
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     MushiCard:
       allOf:
         - $ref: '#/components/schemas/Card'
