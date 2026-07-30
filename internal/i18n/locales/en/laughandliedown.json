@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Laugh and Lie Down",
+  "helpPlay": "  p <i> [n]                capture with the hand card at i (n=3 takes three)",
+  "header": "pot {{pot}} · dealer is seat {{dealer}}",
+  "ruleLine": "capture table cards of the same rank (one OR three) / when you cannot, your whole hand goes to the table and you are out",
+  "layoutLine": "Table (face up): {{cards}}",
+  "playerLine": "{{name}}: {{cards}} card(s) in hand ({{won}} won)",
+  "laidDownMark": "-- lay down",
+  "promptPlay": "p <i> takes one, p <i> 3 takes three",
+  "lastInLine": "{{name}} was last in and takes {{amount}}",
+  "settleLine": "{{name}}: {{won}} card(s) won -> {{score}}",
+  "gameEndWin": "You finished ahead!",
+  "gameEndLose": "You finished behind",
+  "gameEndEven": "You broke even",
+  "hintPlay": "Suggested: hand[{{idx}}], taking {{take}} -- {{reason}}",
+  "hintNone": "No hint available",
+  "hintReasonGameEnd": "this game is already over",
+  "hintReasonNotYourTurn": "it is not your turn",
+  "hintReasonMustLieDown": "nothing matches, so your hand goes to the table and you are out",
+  "hintReasonTakeOne": "this captures a table card of the same rank",
+  "hintReasonTakeThree": "three of that rank are on the table, so take them all"
+}

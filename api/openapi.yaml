@@ -229,6 +229,8 @@ tags:
     description: Skat (スカート) game - Germany's national 3-player trick-taking game with a 32-card deck, ladder auction, and three game types (Suit / Grand / Null)
   - name: skitgubbe
     description: Skitgubbe
+  - name: laughandliedown
+    description: Laugh and Lie Down
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -12439,6 +12441,106 @@ paths:
               schema:
                 $ref: '#/components/schemas/SkitgubbeResponse'
 
+  /laughandliedown/exec:
+    post:
+      tags:
+        - laughandliedown
+      summary: Execute a Laugh and Lie Down game command
+      description: |
+        Send a command to advance the Laugh and Lie Down game session identified
+        by `sessionId`. It is a 16th-17th century English fishing game for five
+        players on 52 cards, following David Parlett's reconstruction (the one
+        pagat.com points to).
+
+        #4396 gets the fishing mechanism itself wrong, so the source is used.
+
+        * The issue calls the undealt cards a **stock pile** in the middle.
+          There is no face-down stock: eight cards go to each player and the
+          remaining **twelve are spread face up**. Seeing how many of each rank
+          are left is what makes the three-card take a decision.
+        * The issue matches against **the top card of the pile**. A play matches
+          **any** table card of the same rank.
+        * The issue has no three-card take. One hand card captures **one or
+          three** table cards of a rank -- never two, never four.
+        * The issue says a player who cannot capture **draws from the stock and
+          is then eliminated**. There is no draw. A player who cannot capture
+          **adds their whole hand to the table**, where it becomes everyone
+          else's prey, and is out. Reducing that to plain elimination removes
+          what the game is about.
+        * The issue says the last player to shed their cards **takes the whole
+          pot**. In fact whoever was **last in** (still holding cards when
+          everyone else has finished) takes 5, and the rest settles on each
+          player's captured count against eight.
+
+        **The pot arithmetic is what verifies the settlement.** The pot is
+        `3 + 2*4 = 11`. All 52 cards end in somebody's won pile, so the
+        over/short total is always `(52 - 8*5) / 2 = 6`, and `5 + 6` is exactly
+        11. A winner-takes-the-pot reading produces no such agreement.
+
+        At the end, the last player's hand and whatever is left on the table go
+        to the **dealer** -- the dealer staked one more than everyone else, so
+        this is the source's compensation, and it is also what guarantees the 6
+        above.
+
+        `validIndices` carries the match rule and `threeTakeIndices` the
+        three-card option, so the client never recounts the table.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Play    | `0`   | Waiting for a capture |
+        | GameEnd | `1`   | Only one player was left holding cards |
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart a game |
+        | `play`   | `p`     | Capture with the hand card at `cardIndex` |
+        | `hint`   | `h`     | Suggested move for the human seat |
+        | `log`    | `l`     | Action-log transcript |
+      operationId: laughAndLieDownExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                takeCount:
+                  type: integer
+                  description: |
+                    Table cards to capture: 1 or 3. Optional, defaulting to 1 --
+                    an ordinary single capture needs no extra field. Anything
+                    else is rejected.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LaughAndLieDownResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LaughAndLieDownResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -22118,6 +22220,99 @@ components:
               type: integer
             pickUp:
               type: boolean
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    LaughAndLieDownResponse:
+      type: object
+      description: Response payload for /laughandliedown/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: Hand size. Always sent, including while hidden.
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/Card'
+              wonCount:
+                type: integer
+                description: |
+                  Cards captured. Public for every seat: the difference from
+                  eight IS the settlement.
+              laidDown:
+                type: boolean
+                description: Could not capture, so their whole hand went to the table.
+              score:
+                type: integer
+                description: Net chips. Zero until the game ends.
+              hidden:
+                type: boolean
+                description: Whether this seat's HAND is withheld.
+        layout:
+          type: array
+          description: |
+            The face-up table. Starts at twelve and grows with the hands of
+            players who lay down. There is no face-down stock.
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "0=Play, 1=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        validIndices:
+          type: array
+          description: |
+            Hand indices that match some table card by rank. Empty unless it is
+            the human's turn.
+          items:
+            type: integer
+        threeTakeIndices:
+          type: array
+          description: |
+            Subset of `validIndices` whose rank has three or more cards on the
+            table, so the three-card take is offered. Sent so the client never
+            recounts the table.
+          items:
+            type: integer
+        dealerIdx:
+          type: integer
+          description: Stakes one more than the others, and sweeps the leftovers.
+        lastInIdx:
+          type: integer
+          description: "Last seat still holding cards; -1 while undecided"
+        pot:
+          type: integer
+          description: |
+            Total staked. Equals the last-in award plus the over/short total,
+            which is what verifies the settlement table.
+        gameEndFlag:
+          type: boolean
+        hint:
+          type: object
+          description: Suggested move, sent on every response while it is the human's turn.
+          properties:
+            cardIndex:
+              type: integer
+            takeCount:
+              type: integer
             reason:
               type: string
         message:
