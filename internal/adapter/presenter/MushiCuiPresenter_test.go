@@ -176,3 +176,55 @@ func TestMushiCuiPresenter_HintRendersEachShape(t *testing.T) {
 		assert.NotContains(t, out, "mushi.hint.")
 	})
 }
+
+func TestMushiCuiPresenter_EveryOutcomeAndTheRoundEndPrompt(t *testing.T) {
+	// The round-end prompt runs after EVERY round, so it is the opposite of
+	// dead -- it stayed uncovered only because the earlier test used a
+	// one-round game where RoundEnd rolls straight into GameEnd.
+	for _, tc := range []struct {
+		name    string
+		phase   domain.MushiPhase
+		winner  int
+		gameEnd bool
+	}{
+		{"human wins", domain.MushiPhaseGameEnd, 0, true},
+		{"draw", domain.MushiPhaseGameEnd, -1, true},
+		{"cpu wins", domain.MushiPhaseGameEnd, 1, true},
+		{"round end", domain.MushiPhaseRoundEnd, -1, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			out := new(MushiCuiPresenter).Output(mushiStubGame(tc.phase, tc.winner, tc.gameEnd), nil)
+			assert.NotEmpty(t, strings.TrimSpace(out))
+			assert.NotContains(t, out, "mushi.", "every key must resolve")
+		})
+	}
+}
+
+func TestMushiCuiPresenter_HintFallsBackOnAnUnmappedReason(t *testing.T) {
+	// mushiHintReasonKeys is a hand-written map; a reason added on the Web side
+	// and forgotten here must print the generic line, not the raw identifier.
+	assert.Equal(t, "", mushiHintReasonKeys["mushi.hint.unmapped"],
+		"guard the premise: this reason really is unmapped")
+	g := mushiStubGame(domain.MushiPhaseGameEnd, -1, true)
+	out := new(MushiCuiPresenter).HintOutput(g)
+	assert.NotContains(t, out, "mushi.hint.")
+}
+
+func TestMushiCuiPresenter_EveryReasonTheHintCanReturnIsMapped(t *testing.T) {
+	// The CUI resolves a reason through a hand-written map and falls back to a
+	// generic line when it misses. That fallback is unreachable TODAY, and this
+	// is what makes that true: every identifier mushiHint can produce has an
+	// entry. Adding a reason on the Web side without one turns this red rather
+	// than printing `mushi.hint.x` at a player.
+	for _, reason := range []string{
+		"mushi.hint.game_end",
+		"mushi.hint.round_end",
+		"mushi.hint.not_your_turn",
+		"mushi.hint.select",
+		"mushi.hint.play",
+		"mushi.hint.none",
+	} {
+		assert.NotEmpty(t, mushiHintReasonKeys[reason], "reason %q has no i18n key", reason)
+	}
+	assert.Len(t, mushiHintReasonKeys, 6, "a new reason needs an entry here too")
+}

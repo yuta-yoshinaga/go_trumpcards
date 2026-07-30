@@ -7,9 +7,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func mushiTestGame(t *testing.T) *domain.Mushi {
@@ -265,4 +267,162 @@ func TestMushiWebPresenter_HintCoversEveryTerminalState(t *testing.T) {
 		}
 		t.Skip("no human selection phase occurred")
 	})
+}
+
+// mushiStubGame wires a MockMushiGame with every accessor the presenters touch,
+// so a test can pin an exact phase/winner instead of shuffling until one turns
+// up. The outcome branches are reachable in play but not reachable ON DEMAND
+// from a real game, which is how they stayed uncovered.
+func mushiStubGame(phase domain.MushiPhase, winner int, gameEnd bool) *interfaces.MockMushiGame {
+	g := new(interfaces.MockMushiGame)
+	g.On("GetPhase").Return(phase)
+	g.On("GetWinnerIdx").Return(winner)
+	g.On("GetGameEndFlag").Return(gameEnd)
+	g.On("GetCurrentPlayerIdx").Return(0)
+	g.On("GetDealerIdx").Return(0)
+	g.On("GetRoundNumber").Return(1)
+	g.On("GetStockCount").Return(0)
+	g.On("GetField").Return([]*domain.Card{})
+	g.On("GetPendingCard").Return((*domain.Card)(nil))
+	g.On("GetSelectableIndices").Return([]int{})
+	g.On("GetConfig").Return(domain.DefaultMushiConfig())
+	g.On("GetPlayers").Return([]*domain.MushiPlayer{domain.NewMushiPlayer(true), domain.NewMushiPlayer(false)})
+	g.On("GetCaptured", mock.Anything).Return([]*domain.Card{})
+	g.On("GetScore", mock.Anything).Return(0)
+	g.On("GetRoundResult", mock.Anything).Return(0)
+	g.On("GetActionLog").Return([]*domain.ActionLogEntry{})
+	g.On("MushiCpuDecide", mock.Anything).Return(domain.MushiCpuAction{HandIdx: 0, FieldIdx: 0})
+	return g
+}
+
+func TestMushiWebPresenter_EveryOutcomeHasItsOwnCode(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		winner int
+		want   string
+	}{
+		{"human wins", 0, "mushi.win"},
+		{"draw", -1, "mushi.draw"},
+		{"cpu wins", 1, "mushi.lose"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			out := mushiDecode(t, new(MushiWebPresenter).Output(mushiStubGame(domain.MushiPhaseGameEnd, tc.winner, true), nil))
+			assert.Equal(t, tc.want, out["messageCode"])
+		})
+	}
+}
+
+func TestMushiWebPresenter_HintDeclinesOnTheOpponentsSelectionTurn(t *testing.T) {
+	// A selection phase belonging to the CPU: the human has nothing to choose,
+	// and suggesting a field card would invite a click that cannot land.
+	g := new(interfaces.MockMushiGame)
+	g.On("GetPhase").Return(domain.MushiPhaseSelect)
+	g.On("GetGameEndFlag").Return(false)
+	g.On("GetCurrentPlayerIdx").Return(1)
+	g.On("GetWinnerIdx").Return(-1)
+	g.On("GetDealerIdx").Return(0)
+	g.On("GetRoundNumber").Return(1)
+	g.On("GetStockCount").Return(0)
+	g.On("GetField").Return([]*domain.Card{})
+	g.On("GetPendingCard").Return((*domain.Card)(nil))
+	g.On("GetSelectableIndices").Return([]int{})
+	g.On("GetConfig").Return(domain.DefaultMushiConfig())
+	g.On("GetPlayers").Return([]*domain.MushiPlayer{domain.NewMushiPlayer(true), domain.NewMushiPlayer(false)})
+	g.On("GetCaptured", mock.Anything).Return([]*domain.Card{})
+	g.On("GetScore", mock.Anything).Return(0)
+	g.On("GetRoundResult", mock.Anything).Return(0)
+
+	out := mushiDecode(t, new(MushiWebPresenter).HintOutput(g))
+	assert.Equal(t, "mushi.hint.not_your_turn", out["hint"].(map[string]any)["reason"])
+}
+
+func TestMushiWebPresenter_HintReportsNoneWhenTheCpuHasNothingToOffer(t *testing.T) {
+	// An empty hand makes MushiCpuDecide return -1; the hint must say so rather
+	// than ship an index of -1 the page would happily highlight.
+	for _, tc := range []struct {
+		name   string
+		phase  domain.MushiPhase
+		action domain.MushiCpuAction
+	}{
+		{"nothing to play", domain.MushiPhasePlay, domain.MushiCpuAction{HandIdx: -1, FieldIdx: -1}},
+		{"nothing to select", domain.MushiPhaseSelect, domain.MushiCpuAction{HandIdx: -1, FieldIdx: -1}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := mushiStubGame(tc.phase, -1, false)
+			g.ExpectedCalls = nil
+			g.On("GetPhase").Return(tc.phase)
+			g.On("GetGameEndFlag").Return(false)
+			g.On("GetCurrentPlayerIdx").Return(0)
+			g.On("GetWinnerIdx").Return(-1)
+			g.On("GetDealerIdx").Return(0)
+			g.On("GetRoundNumber").Return(1)
+			g.On("GetStockCount").Return(0)
+			g.On("GetField").Return([]*domain.Card{})
+			g.On("GetPendingCard").Return((*domain.Card)(nil))
+			g.On("GetSelectableIndices").Return([]int{})
+			g.On("GetConfig").Return(domain.DefaultMushiConfig())
+			g.On("GetPlayers").Return([]*domain.MushiPlayer{domain.NewMushiPlayer(true), domain.NewMushiPlayer(false)})
+			g.On("GetCaptured", mock.Anything).Return([]*domain.Card{})
+			g.On("GetScore", mock.Anything).Return(0)
+			g.On("GetRoundResult", mock.Anything).Return(0)
+			g.On("MushiCpuDecide", 0).Return(tc.action)
+
+			out := mushiDecode(t, new(MushiWebPresenter).HintOutput(g))
+			hint := out["hint"].(map[string]any)
+			assert.Equal(t, "mushi.hint.none", hint["reason"])
+			assert.NotContains(t, hint, "cardIndex")
+			assert.NotContains(t, hint, "fieldIndex")
+		})
+	}
+}
+
+func TestMushiWebPresenter_SkipsANilSeat(t *testing.T) {
+	// A corrupted snapshot could leave a nil player; the presenter must drop it
+	// rather than dereference it on the way to the browser.
+	g := mushiStubGame(domain.MushiPhasePlay, -1, false)
+	g.ExpectedCalls = nil
+	g.On("GetPhase").Return(domain.MushiPhasePlay)
+	g.On("GetGameEndFlag").Return(false)
+	g.On("GetCurrentPlayerIdx").Return(-1)
+	g.On("GetWinnerIdx").Return(-1)
+	g.On("GetDealerIdx").Return(0)
+	g.On("GetRoundNumber").Return(1)
+	g.On("GetStockCount").Return(0)
+	g.On("GetField").Return([]*domain.Card{})
+	g.On("GetPendingCard").Return((*domain.Card)(nil))
+	g.On("GetSelectableIndices").Return([]int{})
+	g.On("GetConfig").Return(domain.DefaultMushiConfig())
+	g.On("GetPlayers").Return([]*domain.MushiPlayer{domain.NewMushiPlayer(true), nil})
+	g.On("GetCaptured", mock.Anything).Return([]*domain.Card{})
+	g.On("GetScore", mock.Anything).Return(0)
+	g.On("GetRoundResult", mock.Anything).Return(0)
+
+	out := mushiDecode(t, new(MushiWebPresenter).Output(g, nil))
+	assert.Len(t, out["players"], 1, "the nil seat is dropped, not rendered")
+}
+
+func TestMushiWebPresenter_HintNamesTheFieldCardOnTheHumansSelectionTurn(t *testing.T) {
+	g := mushiStubGame(domain.MushiPhaseSelect, -1, false)
+	g.ExpectedCalls = nil
+	g.On("GetPhase").Return(domain.MushiPhaseSelect)
+	g.On("GetGameEndFlag").Return(false)
+	g.On("GetCurrentPlayerIdx").Return(0)
+	g.On("GetWinnerIdx").Return(-1)
+	g.On("GetDealerIdx").Return(0)
+	g.On("GetRoundNumber").Return(1)
+	g.On("GetStockCount").Return(0)
+	g.On("GetField").Return([]*domain.Card{})
+	g.On("GetPendingCard").Return((*domain.Card)(nil))
+	g.On("GetSelectableIndices").Return([]int{2})
+	g.On("GetConfig").Return(domain.DefaultMushiConfig())
+	g.On("GetPlayers").Return([]*domain.MushiPlayer{domain.NewMushiPlayer(true), domain.NewMushiPlayer(false)})
+	g.On("GetCaptured", mock.Anything).Return([]*domain.Card{})
+	g.On("GetScore", mock.Anything).Return(0)
+	g.On("GetRoundResult", mock.Anything).Return(0)
+	g.On("MushiCpuDecide", 0).Return(domain.MushiCpuAction{HandIdx: -1, FieldIdx: 2})
+
+	out := mushiDecode(t, new(MushiWebPresenter).HintOutput(g))
+	hint := out["hint"].(map[string]any)
+	assert.Equal(t, "mushi.hint.select", hint["reason"])
+	assert.Equal(t, float64(2), hint["fieldIndex"])
 }
