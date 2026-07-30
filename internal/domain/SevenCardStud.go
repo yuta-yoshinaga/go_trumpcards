@@ -39,6 +39,12 @@ type SevenCardStudResult struct {
 	Kickers   []int   // キッカーカード値
 	WonAmount int     // 獲得チップ
 	Mucked    bool    // マックしたかどうか
+	// LowQualifies は 8-or-better のローが成立したか (Hi-Lo のみ)。
+	LowQualifies bool
+	// LowBestHand はローのベスト5枚 (Hi-Lo のみ)。
+	LowBestHand []*Card
+	// WonLow はローとして獲得したチップ (Hi-Lo のみ)。WonAmount はハイとローの合計。
+	WonLow int
 }
 
 // SevenCardStudCpuAction CPU行動記録
@@ -85,6 +91,7 @@ type SevenCardStud struct {
 	lastHumanPlayMs  int
 	bringInPlayerIdx int  // ブリングインプレイヤーインデックス
 	lowball          bool // ローボール (Razz) モード
+	hiLo             bool // Hi-Lo (8 or Better) スプリットモード
 }
 
 // NewSevenCardStud コンストラクタ
@@ -116,6 +123,26 @@ func NewRazz(trumpCards *TrumpCards, players []*SevenCardStudPlayer, config Seve
 	return s
 }
 
+// NewSevenCardStudHiLo は Seven Card Stud Hi-Lo (8 or Better) を生成する。
+//
+// ハイは通常のスタッドと同じ。ローは **8 以下 5 枚・ペア無し** が成立した人の
+// あいだで争い、成立者が 1 人もいなければハイがポットを総取りする。既存の
+// Razz エンジンではなく通常のハイ評価に乗せているのは、Hi-Lo の主役があくまで
+// ハイで、ローは条件付きの半分だからである。
+func NewSevenCardStudHiLo(trumpCards *TrumpCards, players []*SevenCardStudPlayer, config SevenCardStudConfig) *SevenCardStud {
+	s := NewSevenCardStud(trumpCards, players, config)
+	s.hiLo = true
+	return s
+}
+
+// NewDefaultSevenCardStudHiLo returns Seven Card Stud Hi-Lo (8 or Better) with
+// the default table size. Used as the single source of truth for CUI, Web, and
+// Worker construction sites.
+func NewDefaultSevenCardStudHiLo() *SevenCardStud {
+	cfg := DefaultSevenCardStudConfig()
+	return NewSevenCardStudHiLo(NewTrumpCards(0), NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+}
+
 // NewDefaultSevenCardStud returns SevenCardStud with the default table size and
 // DefaultSevenCardStudConfig. Used as the single source of truth for CUI, Web,
 // and Worker construction sites.
@@ -134,6 +161,9 @@ func NewDefaultRazz() *SevenCardStud {
 
 // GetIsLowball ローボールモードかどうか
 func (s *SevenCardStud) GetIsLowball() bool { return s.lowball }
+
+// GetIsHiLo は Hi-Lo (8 or Better) スプリットかどうかを返す。
+func (s *SevenCardStud) GetIsHiLo() bool { return s.hiLo }
 
 // Reset ゲーム初期化
 func (s *SevenCardStud) Reset() error {
@@ -710,6 +740,11 @@ func (s *SevenCardStud) resolveShowdown() {
 			} else {
 				p.EvalBestHand()
 			}
+			if s.hiLo {
+				// ハイとは独立にローを評価する。ハイのベスト5枚とローの
+				// ベスト5枚は同じ7枚から別々に選んでよい。
+				p.EvalBestLowHandEightOrBetter()
+			}
 			if s.communityCard != nil {
 				// 一時的に追加した共有カードを除去
 				p.holeCards = p.holeCards[:len(p.holeCards)-1]
@@ -720,9 +755,13 @@ func (s *SevenCardStud) resolveShowdown() {
 	bp := s.bettingPlayers()
 	s.sidePots = CalculateSidePots(bp, s.pot, s.startingChips)
 	var wonAmounts map[int]int
-	if s.lowball {
+	var wonLow map[int]int
+	switch {
+	case s.hiLo:
+		wonAmounts, wonLow = s.distributeStudHiLoPots(bp)
+	case s.lowball:
 		wonAmounts = DistributePotsWithWinnerFunc(bp, s.sidePots, FindPotWinnersRazz)
-	} else {
+	default:
 		wonAmounts = DistributePots(bp, s.sidePots)
 	}
 
@@ -744,6 +783,14 @@ func (s *SevenCardStud) resolveShowdown() {
 			Kickers:   ExtractKickers(p.GetBestHand(), p.GetHandRank()),
 			WonAmount: wonAmounts[i],
 		}
+		if s.hiLo {
+			result.LowQualifies = p.GetLowQualifies()
+			result.LowBestHand = p.GetLowBestHand()
+			result.WonLow = wonLow[i]
+			// WonAmount はハイとローの合計にする。片方だけを表示すると
+			// 「勝ったのにチップが合わない」画面になる。
+			result.WonAmount += wonLow[i]
+		}
 		s.roundResults = append(s.roundResults, result)
 		if p.GetIsHuman() && wonAmounts[i] == 0 {
 			humanLost = true
@@ -754,6 +801,66 @@ func (s *SevenCardStud) resolveShowdown() {
 		return
 	}
 	s.finalizeShowdown()
+}
+
+// distributeStudHiLoPots は各サイドポットをハイ/ロー 50:50 で分配する。
+//
+// **qualifying なローが 1 人もいなければハイが全額を取る** —— これが 8 or Better
+// の肝で、ローを取りに行った人が空振りするとポットが丸ごとハイへ行く。
+// 奇数チップはハイ側に寄せる (ポーカー慣例)。
+//
+// 分配そのものは Omaha Hi-Lo と同じ helper (distributeAmongWinners) を通す。
+func (s *SevenCardStud) distributeStudHiLoPots(bp []BettingPlayer) (hi, lo map[int]int) {
+	hi = make(map[int]int)
+	lo = make(map[int]int)
+	for _, sp := range s.sidePots {
+		hiWinners := FindPotWinners(bp, sp.EligiblePlayers)
+		if len(hiWinners) == 0 {
+			continue
+		}
+		loWinners := s.findStudLowWinners(sp.EligiblePlayers)
+
+		hiPot := sp.Amount
+		loPot := 0
+		if len(loWinners) > 0 {
+			loPot = sp.Amount / 2
+			hiPot = sp.Amount - loPot // 奇数チップは Hi 側に寄せる
+		}
+
+		distributeAmongWinners(bp, hiWinners, hiPot, hi)
+		distributeAmongWinners(bp, loWinners, loPot, lo)
+	}
+	return hi, lo
+}
+
+// findStudLowWinners は対象プレイヤーのうち有効なロー (8 or Better) を持つ
+// 最良の人を返す。1 人もいなければ nil。同点はスプリット。
+func (s *SevenCardStud) findStudLowWinners(eligible []int) []int {
+	var winners []int
+	var bestCards []*Card
+	for _, idx := range eligible {
+		if idx < 0 || idx >= len(s.players) {
+			continue
+		}
+		p := s.players[idx]
+		if p.GetFolded() || !p.GetLowQualifies() {
+			continue
+		}
+		cards := p.GetLowBestHand()
+		if bestCards == nil {
+			bestCards = cards
+			winners = []int{idx}
+			continue
+		}
+		switch cmp := compareRazzCards(cards, bestCards); {
+		case cmp < 0:
+			bestCards = cards
+			winners = []int{idx}
+		case cmp == 0:
+			winners = append(winners, idx)
+		}
+	}
+	return winners
 }
 
 // finalizeShowdown ショーダウンを完了しENDフェーズに遷移する
@@ -1028,6 +1135,7 @@ type sevenCardStudJSON struct {
 	LastHumanPlayMs  int                      `json:"hm"`
 	BringInPlayerIdx int                      `json:"bi"`
 	Lowball          bool                     `json:"lw,omitempty"`
+	HiLo             bool                     `json:"hl,omitempty"`
 }
 
 const sevenCardStudMaxSliceLen = 1000
@@ -1063,6 +1171,7 @@ func (s *SevenCardStud) MarshalJSON() ([]byte, error) {
 		LastHumanPlayMs:  s.lastHumanPlayMs,
 		BringInPlayerIdx: s.bringInPlayerIdx,
 		Lowball:          s.lowball,
+		HiLo:             s.hiLo,
 	}
 	if s.humanProfile != nil {
 		d := s.humanProfile.Export()
@@ -1150,6 +1259,7 @@ func (s *SevenCardStud) UnmarshalJSON(data []byte) error {
 	s.lastHumanPlayMs = j.LastHumanPlayMs
 	s.bringInPlayerIdx = j.BringInPlayerIdx
 	s.lowball = j.Lowball
+	s.hiLo = j.HiLo
 	if j.Profile != nil {
 		s.humanProfile = &BettingHumanProfile{}
 		s.humanProfile.Import(*j.Profile)
