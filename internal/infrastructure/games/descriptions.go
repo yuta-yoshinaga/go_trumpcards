@@ -79,6 +79,7 @@ var gameDescriptions = map[string]string{
 	"badugi":              "Badugi (バドゥーギ)",
 	"deucetoseven":        "2-7 Triple Draw (デューストゥセブン)",
 	"razz":                "Razz (ラズ)",
+	"sevencardstudhilo":   "セブンカードスタッド・ハイロー（8以下5枚のローが成立すればポットを折半、不成立ならハイの総取り）",
 	"scorpion":            "Scorpion (スコーピオン)",
 	"wasp":                "Wasp (ワスプ)",
 	"accordion":           "Accordion (アコーディオン)",

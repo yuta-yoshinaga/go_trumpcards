@@ -14,7 +14,7 @@ import (
 // not a build failure. Only expectedTotal is invariant; the rest move whenever
 // games are rebucketed for size (ADR-0036).
 const (
-	expectedCasino  = 54
+	expectedCasino  = 55
 	expectedClassic = 41
 	expectedSolo    = 45
 	expectedExtra   = 34

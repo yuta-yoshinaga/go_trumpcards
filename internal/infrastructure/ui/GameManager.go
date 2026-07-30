@@ -1117,6 +1117,25 @@ var gameRegistry = []GameRegistryEntry{
 				}, studAnteKeys...),
 			})
 	}},
+	{Name: "sevencardstudhilo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSevenCardStudCuiController(usecase.NewSevenCardStudInteractor(
+				domain.NewDefaultSevenCardStudHiLo(), new(presenter.SevenCardStudCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sevencardstudhilo.helpTitle",
+				CommandKeys: append([]string{
+					"sevencardstud.helpFold",
+					"sevencardstud.helpCheck",
+					"sevencardstud.helpCall",
+					"sevencardstud.helpBet",
+					"sevencardstud.helpRaise",
+					"sevencardstud.helpAllIn",
+				}, tournamentRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"sevencardstud.helpBettingLimit", "sevencardstud.helpTournament",
+				}, studAnteKeys...),
+			})
+	}},
 	{Name: "scorpion", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewScorpionCuiController(usecase.NewScorpionInteractor(

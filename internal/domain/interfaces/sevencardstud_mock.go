@@ -252,3 +252,8 @@ func (_m *MockSevenCardStudGame) GetIsLowball() bool {
 	ret := _m.Called()
 	return ret.Bool(0)
 }
+
+func (_m *MockSevenCardStudGame) GetIsHiLo() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}

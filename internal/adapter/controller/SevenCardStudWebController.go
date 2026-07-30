@@ -63,6 +63,12 @@ type SevenCardStudWebOutputResult struct {
 	BestHand  []*WebOutputCard `json:"bestHand"`
 	WonAmount int              `json:"wonAmount"`
 	Mucked    bool             `json:"mucked"`
+	// LowQualifies は 8-or-better のローが成立したか (Hi-Lo のみ)。
+	LowQualifies bool `json:"lowQualifies,omitempty"`
+	// LowBestHand はローのベスト5枚 (Hi-Lo のみ)。
+	LowBestHand []*WebOutputCard `json:"lowBestHand,omitempty"`
+	// WonLow はローとして獲得したチップ (Hi-Lo のみ)。WonAmount はハイとローの合計。
+	WonLow int `json:"wonLow,omitempty"`
 }
 
 // SevenCardStudWebOutputSidePot セブンカードスタッドサイドポット
@@ -82,13 +88,16 @@ type SevenCardStudWebOutputMetaAI struct {
 
 // SevenCardStudWebOutput セブンカードスタッドWebアウトプット
 type SevenCardStudWebOutput struct {
-	Players          []*SevenCardStudWebOutputPlayer    `json:"players"`
-	CommunityCard    *WebOutputCard                     `json:"communityCard"`
-	Pot              int                                `json:"pot"`
-	SidePots         []*SevenCardStudWebOutputSidePot   `json:"sidePots"`
-	DealerIdx        int                                `json:"dealerIdx"`
-	CurrentTurn      int                                `json:"currentTurn"`
-	Phase            int                                `json:"phase"`
+	Players       []*SevenCardStudWebOutputPlayer  `json:"players"`
+	CommunityCard *WebOutputCard                   `json:"communityCard"`
+	Pot           int                              `json:"pot"`
+	SidePots      []*SevenCardStudWebOutputSidePot `json:"sidePots"`
+	DealerIdx     int                              `json:"dealerIdx"`
+	CurrentTurn   int                              `json:"currentTurn"`
+	Phase         int                              `json:"phase"`
+	// IsHiLo は 8-or-better のスプリットかどうか。ページがルート名から推測
+	// しなくて済むように送る。
+	IsHiLo           bool                               `json:"isHiLo,omitempty"`
 	GameEndFlag      bool                               `json:"gameEndFlag"`
 	LastBet          int                                `json:"lastBet"`
 	MinRaise         int                                `json:"minRaise"`
