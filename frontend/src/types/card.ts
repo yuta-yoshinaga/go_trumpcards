@@ -50,6 +50,7 @@ export * from './games/catchten';
 export * from './games/cego';
 export * from './games/chinchon';
 export * from './games/chinesepoker';
+export * from './games/chineseten';
 export * from './games/cinch';
 export * from './games/clocksolitaire';
 export * from './games/congress';

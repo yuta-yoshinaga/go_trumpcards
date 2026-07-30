@@ -81,6 +81,7 @@ export const workerUrl: Record<string, string> = {
   bura: WORKER_EXTRA3,
   mushi: WORKER_EXTRA2,
   toepen: WORKER_EXTRA3,
+  chineseten: WORKER_EXTRA2,
   missmilligan: WORKER_EXTRA2,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,

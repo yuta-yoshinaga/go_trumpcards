@@ -255,7 +255,8 @@
     "niuniu": "Niu Niu",
     "bura": "Bura",
     "mushi": "Mushi",
-    "toepen": "Toepen"
+    "toepen": "Toepen",
+    "chineseten": "Chinese Ten"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1262,7 +1263,10 @@
     "mushi.round_end": "The round is over",
     "toepen.win": "You win",
     "toepen.lose": "You lose",
-    "toepen.hand_end": "The hand is over"
+    "toepen.hand_end": "The hand is over",
+    "chineseten.win": "You win",
+    "chineseten.lose": "You lose",
+    "chineseten.draw": "Draw"
   },
   "manual": {
     "ariaLabel": "Game Manual",

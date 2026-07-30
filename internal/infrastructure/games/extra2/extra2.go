@@ -29,6 +29,14 @@ func init() {
 			return usecase.RestoreMightyInteractor(data, new(presenter.MightyWebPresenter))
 		},
 		controller.NewMightyWebControllerWithProvider)
+	games.RegisterKVGame("chineseten", games.CategoryExtra2,
+		func() usecase.ChineseTenInteractorIF {
+			return usecase.NewChineseTenInteractor(domain.NewDefaultChineseTen(), new(presenter.ChineseTenWebPresenter))
+		},
+		func(data []byte) (usecase.ChineseTenInteractorIF, error) {
+			return usecase.RestoreChineseTenInteractor(data, new(presenter.ChineseTenWebPresenter))
+		},
+		controller.NewChineseTenWebControllerWithProvider)
 	games.RegisterKVGame("mushi", games.CategoryExtra2,
 		func() usecase.MushiInteractorIF {
 			return usecase.NewMushiInteractor(domain.NewDefaultMushi(), new(presenter.MushiWebPresenter))

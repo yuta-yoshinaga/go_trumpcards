@@ -105,6 +105,7 @@ var gameDescriptions = map[string]string{
 	"bura":                "ブラ（36枚・同スート複数出しと31点宣言のロシアのトリックゲーム）",
 	"mushi":               "虫（六月七月を抜いた花札40枚・雷札がワイルドの大阪の花合わせ）",
 	"toepen":              "トゥーペン（10が最強・Jが最弱の32枚オランダのブラフゲーム）",
+	"chineseten":          "撿紅點（合計10か同ランクで取り、赤札だけが得点する中国のフィッシング）",
 	"spiteandmalice":      "Spite and Malice (スパイト・アンド・マリス)",
 	"skat":                "Skat (スカート)",
 	"shithead":            "Shithead / Karma (シットヘッド)",

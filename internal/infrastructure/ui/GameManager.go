@@ -1628,6 +1628,19 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "chineseten", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewChineseTenCuiController(usecase.NewChineseTenInteractor(
+				domain.NewDefaultChineseTen(), new(presenter.ChineseTenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "chineseten.helpTitle",
+				CommandKeys: []string{
+					"chineseten.helpPlay",
+					"chineseten.helpSelect",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "shithead", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShitheadCuiController(usecase.NewShitheadInteractor(

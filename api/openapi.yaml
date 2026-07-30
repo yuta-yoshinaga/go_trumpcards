@@ -213,6 +213,8 @@ tags:
     description: Sette e Mezzo game - the Italian 7.5 game on a 40-card deck; totals are carried in HALVES so the half-point cards compare exactly
   - name: niuniu
     description: Niu Niu game - the Chinese bull game where three of five cards must sum to a multiple of ten, and the remaining pair's last digit is the rank
+  - name: chineseten
+    description: Chinese Ten game - a fishing game where A-9 capture by summing to ten and 10-K by rank, and only the red cards score
   - name: toepen
     description: Toepen game - a Dutch bluffing trick game whose ranking is the standard order inverted (10 high, jack low), where only the winner of the final trick escapes the penalty
   - name: mushi
@@ -11531,6 +11533,101 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SetteEMezzoResponse'
+  /chineseten/exec:
+    post:
+      tags:
+        - chineseten
+      summary: Execute a Chinese Ten game command
+      description: |
+        Send a command to advance the Chinese Ten (撿紅點) game session
+        identified by `sessionId`. It is a Chinese fishing game on 52 cards in
+        which **only the red cards score**.
+
+        Capture works two different ways, and they do not overlap:
+
+        * **A through 9** capture a layout card whose value brings the pair to
+          exactly **ten** (A+9, 3+7, 5+5 …). A nine cannot take another nine.
+        * **10, J, Q and K** capture only a card of the **same rank**. A ten
+          cannot take a numeral.
+
+        One played card takes at most **one** layout card.
+
+        **A turn has two steps**, and #4378 documents only the first:
+
+        1. play a card from hand — it captures, or joins the layout;
+        2. **then turn the top card of the stock**, which captures on the same
+           terms or stays in the layout.
+
+        That second step is why there is no redeal: one hand card spends one
+        stock card, so hands and stock empty together. The issue's "deal again
+        until the stock runs out" follows from omitting it.
+
+        Scoring, red cards only: 2-8 face value, 9 through K ten each, ace
+        twenty. That comes to **210** between them, and `tieScore` is 105 —
+        exactly half, which is what verifies the table.
+
+        Captured cards are sent for BOTH seats. Reading what has already gone
+        is how a fishing game is played; only the CPU's HAND is withheld, and
+        its `cardCount` still ships.
+
+        This implementation is **two-player**. At three players the ace of
+        spades also scores and at four both black aces, which changes the 210
+        and the 105 with it.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Play    | `0`   | Waiting for a card |
+        | Select  | `1`   | The played card can take more than one; choose |
+        | GameEnd | `2`   | All cards played |
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart a game |
+        | `play`   | `p`     | Play the hand card at `cardIndex` |
+        | `select` | `s`     | Take the layout card at `layoutIndex` |
+        | `hint`   | `h`     | Suggested move for the human seat |
+        | `log`    | `l`     | Action-log transcript |
+      operationId: chineseTenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, select, s, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                layoutIndex:
+                  type: integer
+                  description: Layout index. Required for `select`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChineseTenResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChineseTenResponse'
   /toepen/exec:
     post:
       tags:
@@ -21745,6 +21842,99 @@ components:
           type: string
         messageCode:
           type: string
+    ChineseTenCard:
+      allOf:
+        - $ref: '#/components/schemas/Card'
+        - type: object
+          properties:
+            points:
+              type: integer
+              description: |
+                What this card is worth. Non-zero only for red cards. Sent so
+                the 52-card scoring table exists in one place.
+            isRed:
+              type: boolean
+              description: Whether the card is a scoring (heart or diamond) card.
+    ChineseTenResponse:
+      type: object
+      description: Response payload for /chineseten/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: Hand size. Always sent, including while hidden.
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/ChineseTenCard'
+              captured:
+                type: array
+                description: |
+                  ALWAYS sent for both seats. Which cards have already gone is
+                  public, and reading it is how a fishing game is played.
+                items:
+                  $ref: '#/components/schemas/ChineseTenCard'
+              score:
+                type: integer
+              hidden:
+                type: boolean
+                description: Whether this seat's HAND is withheld.
+        layout:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChineseTenCard'
+        phase:
+          type: integer
+          description: "0=Play, 1=Select, 2=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        stockCount:
+          type: integer
+        pendingCard:
+          $ref: '#/components/schemas/ChineseTenCard'
+        selectableIndices:
+          type: array
+          description: |
+            Layout indices the pending card may take. Carries both capture
+            rules (sum-to-ten for A-9, same-rank for 10-K) so the client never
+            re-derives them.
+          items:
+            type: integer
+        tieScore:
+          type: integer
+          description: The score that draws the game -- half the red cards' 210.
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 when the totals matched"
+        hint:
+          type: object
+          description: Suggested move, sent on every response while it is the human's turn.
+          properties:
+            cardIndex:
+              type: integer
+            layoutIndex:
+              type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     ToepenResponse:
       type: object
       description: Response payload for /toepen/exec
