@@ -29,6 +29,14 @@ func init() {
 			return usecase.RestoreCegoInteractor(data, new(presenter.CegoWebPresenter))
 		},
 		controller.NewCegoWebControllerWithProvider)
+	games.RegisterKVGame("toepen", games.CategoryExtra3,
+		func() usecase.ToepenInteractorIF {
+			return usecase.NewToepenInteractor(domain.NewDefaultToepen(), new(presenter.ToepenWebPresenter))
+		},
+		func(data []byte) (usecase.ToepenInteractorIF, error) {
+			return usecase.RestoreToepenInteractor(data, new(presenter.ToepenWebPresenter))
+		},
+		controller.NewToepenWebControllerWithProvider)
 	games.RegisterKVGame("ulti", games.CategoryExtra3,
 		func() usecase.UltiInteractorIF {
 			return usecase.NewUltiInteractor(domain.NewDefaultUlti(), new(presenter.UltiWebPresenter))

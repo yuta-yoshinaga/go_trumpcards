@@ -1611,6 +1611,23 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "toepen", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewToepenCuiController(usecase.NewToepenInteractor(
+				domain.NewDefaultToepen(), new(presenter.ToepenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "toepen.helpTitle",
+				CommandKeys: []string{
+					"toepen.helpPlay",
+					"toepen.helpToep",
+					"toepen.helpStay",
+					"toepen.helpFold",
+					"toepen.helpRedeal",
+					"toepen.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "shithead", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShitheadCuiController(usecase.NewShitheadInteractor(

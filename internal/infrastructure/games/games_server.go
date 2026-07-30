@@ -500,6 +500,11 @@ func init() {
 			return usecase.NewMushiInteractor(domain.NewDefaultMushi(), new(presenter.MushiWebPresenter))
 		},
 		controller.NewMushiWebController)
+	BindWebControllerFor("toepen",
+		func() usecase.ToepenInteractorIF {
+			return usecase.NewToepenInteractor(domain.NewDefaultToepen(), new(presenter.ToepenWebPresenter))
+		},
+		controller.NewToepenWebController)
 	BindWebControllerFor("shithead",
 		func() usecase.ShitheadInteractorIF {
 			return usecase.NewShitheadInteractor(domain.NewDefaultShithead(), new(presenter.ShitheadWebPresenter))
