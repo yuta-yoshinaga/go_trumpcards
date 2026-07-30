@@ -171,6 +171,8 @@ tags:
     description: Poker Squares (ポーカー・スクエア) game
   - name: reddog
     description: Red Dog (レッドドッグ) game
+  - name: sevencardstudhilo
+    description: Seven Card Stud Hi-Lo
   - name: razz
     description: Razz (ラズ) game - lowball variant of Seven Card Stud
   - name: badugi
@@ -9240,6 +9242,96 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RedDogResponse'
+
+  /sevencardstudhilo/exec:
+    post:
+      tags:
+        - sevencardstudhilo
+      summary: Execute a Seven Card Stud Hi-Lo game command
+      description: |
+        Send a command to advance the Seven Card Stud Hi-Lo (8 or Better)
+        session identified by `sessionId`. It shares the whole Seven Card Stud
+        stack -- deal, streets, betting and the response schema -- and differs
+        only at the showdown, where the pot splits.
+
+        * The **high** half is ordinary stud poker.
+        * The **low** half needs five ranks of **eight or lower with no pair**
+          (straights and flushes are ignored, the ace is always low). The best
+          low is A-2-3-4-5.
+        * **If nobody makes a qualifying low, the high takes the whole pot.**
+          That is the point of eight-or-better: chasing a low and missing it
+          leaves nothing behind.
+        * High and low are chosen independently from the same seven cards, so
+          one player can scoop both halves.
+        * When the pot does split, the **odd chip goes to the high side** (the
+          usual poker convention).
+
+        Each showdown result carries `lowQualifies`, `lowBestHand` and
+        `wonLow`; `wonAmount` is the high and low winnings combined, so the
+        chips on screen always add up. `isHiLo` is set on the response so the
+        client does not have to infer the variant from the route.
+      operationId: sevenCardStudHiLoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SevenCardStudRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              call:
+                summary: Call
+                value:
+                  command: call
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet of 40
+                value:
+                  command: bet
+                  amount: 40
+                  sessionId: my-session-001
+              allin:
+                summary: Go all-in
+                value:
+                  command: allin
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    pot: 0
+                    sidePots: []
+                    dealerIdx: 0
+                    currentTurn: 0
+                    phase: 0
+                    gameEndFlag: false
+                    lastBet: 0
+                    minRaise: 0
+                    roundResults: []
+                    cpuActions: []
+                    message: param error.
 
   /razz/exec:
     post:
@@ -34337,6 +34429,20 @@ components:
             $ref: '#/components/schemas/Card'
         wonAmount:
           type: integer
+        lowQualifies:
+          type: boolean
+          description: |
+            Hi-Lo only. Whether this seat made a qualifying eight-or-better low.
+        lowBestHand:
+          type: array
+          description: Hi-Lo only. The five cards forming the low.
+          items:
+            $ref: '#/components/schemas/Card'
+        wonLow:
+          type: integer
+          description: |
+            Hi-Lo only. Chips won as the low half. `wonAmount` is the high and
+            low winnings combined.
           description: Chips won from the pot
           example: 40
         mucked:
@@ -34419,6 +34525,12 @@ components:
             - `8` — Rebuy/Addon
           enum: [0, 1, 2, 3, 4, 5, 6, 7, 8]
           example: 1
+        isHiLo:
+          type: boolean
+          description: |
+            Whether this session is the Hi-Lo (8 or Better) split. Sent so the
+            client renders the low column without inferring the variant from the
+            route.
         gameEndFlag:
           type: boolean
           description: Whether the round has ended

@@ -1,0 +1,82 @@
+{
+  "phase": {
+    "thirdStreet": "Third Street",
+    "fourthStreet": "Fourth Street",
+    "fifthStreet": "Fifth Street",
+    "sixthStreet": "Sixth Street",
+    "seventhStreet": "Seventh Street",
+    "showdown": "Showdown",
+    "end": "Result",
+    "init": "Initializing",
+    "rebuy": "Rebuy/Addon"
+  },
+  "doorCards": "Door Cards",
+  "holeCards": "Hole Cards",
+  "yourHand": "Your Hand",
+  "currentHand": "Current Hand",
+  "anteBringIn": "Ante/Bring-in",
+  "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
+  "rebuy": {
+    "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
+    "accept": "Rebuy",
+    "skip": "Skip"
+  },
+  "addon": {
+    "prompt": "Addon? ({{chips}} chips)",
+    "accept": "Addon",
+    "skip": "Skip"
+  },
+  "muck": {
+    "prompt": "Muck or show your hand.",
+    "muck": "Muck",
+    "show": "Show"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP (Voluntarily Put In Pot): % of hands where player voluntarily put chips in the pot",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR (Pre-Flop Raise): % of hands where player raised in the first round",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet: % of hands where player re-raised an opponent's raise",
+    "af": "AF",
+    "afTooltip": "AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)"
+  },
+  "settings": {
+    "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+  },
+  "tutorial": {
+    "playerHand": "Your hole cards and door cards. Make the best 5-card hand from 7 cards.",
+    "actionButtons": "Choose your action: Bet, Call, Raise, Fold, or All In.",
+    "potDisplay": "Shows the current pot size and ante levels.",
+    "cpuArea": "CPU opponent information. Cards are revealed at showdown.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "strongHandRank": "Strong hand — raise recommended",
+    "decentHandRank": "Decent hand — call recommended",
+    "weakHandRank": "Weak hand — fold recommended"
+  },
+  "hand": {
+    "highCard": "High Card",
+    "onePair": "One Pair",
+    "twoPair": "Two Pair",
+    "threeOfAKind": "Three of a Kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full House",
+    "fourOfAKind": "Four of a Kind",
+    "straightFlush": "Straight Flush",
+    "royalFlush": "Royal Flush"
+  },
+  "hiLo": {
+    "title": "Hi / Lo split",
+    "hi": "Hi",
+    "lo": "Lo",
+    "winner": "{{name}} +{{amount}}",
+    "scoop": "Scoop! {{name}} takes both, +{{total}}",
+    "hiTakesAll": "Nobody made an eight-or-better low, so the high takes the whole pot"
+  },
+  "tutorial.low": "A low needs five ranks of eight or lower with no pair. Straights and flushes are ignored and the ace is always low.",
+  "tutorial.split": "When someone makes a low, the pot splits between the high and the low. The odd chip goes to the high side.",
+  "tutorial.scoop": "If nobody makes a low, the high takes it all. High and low are chosen independently from the same seven cards, so one player can scoop both."
+}

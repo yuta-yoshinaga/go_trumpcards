@@ -52,6 +52,7 @@ export const workerUrl: Record<string, string> = {
   sevencardstud: WORKER_CASINO,
   fivecardstud: WORKER_CASINO,
   razz: WORKER_CASINO,
+  sevencardstudhilo: WORKER_CASINO,
   badugi: WORKER_CASINO,
   deucetoseven: WORKER_CASINO,
   ecarte: WORKER_CASINO,

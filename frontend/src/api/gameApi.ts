@@ -192,6 +192,7 @@ export * from './games/sedma';
 export * from './games/settemezzo';
 export * from './games/sevenbridge';
 export * from './games/sevencardstud';
+export * from './games/sevencardstudhilo';
 export * from './games/sevens';
 export * from './games/sheepshead';
 export * from './games/shithead';
@@ -272,6 +273,7 @@ export const games = [
   'sevencardstud',
   'fivecardstud',
   'razz',
+  'sevencardstudhilo',
   'badugi',
   'deucetoseven',
   'hearts',

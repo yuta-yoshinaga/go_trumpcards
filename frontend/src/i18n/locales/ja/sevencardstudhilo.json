@@ -1,0 +1,82 @@
+{
+  "phase": {
+    "thirdStreet": "サードストリート",
+    "fourthStreet": "フォースストリート",
+    "fifthStreet": "フィフスストリート",
+    "sixthStreet": "シックスストリート",
+    "seventhStreet": "セブンスストリート",
+    "showdown": "ショーダウン",
+    "end": "結果",
+    "init": "初期化中",
+    "rebuy": "リバイ/アドオン"
+  },
+  "doorCards": "ドアカード",
+  "holeCards": "ホールカード",
+  "yourHand": "あなたの手札",
+  "currentHand": "現在の役",
+  "anteBringIn": "アンティ/ブリングイン",
+  "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
+  "rebuy": {
+    "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
+    "accept": "リバイ",
+    "skip": "スキップ"
+  },
+  "addon": {
+    "prompt": "アドオンしますか? ({{chips}}チップ)",
+    "accept": "アドオン",
+    "skip": "スキップ"
+  },
+  "muck": {
+    "prompt": "マックしますか?",
+    "muck": "マック",
+    "show": "ショー"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP（ボランタリー・プット・イン・ポット）: 自発的にポットに参加した割合",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR（プリフロップレイズ）: 最初のラウンドでレイズした割合",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet（スリーベット）: 相手のレイズに対して再レイズした割合",
+    "af": "AF",
+    "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
+  },
+  "settings": {
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+  },
+  "tutorial": {
+    "playerHand": "あなたのホールカードとドアカードです。7枚のカードから最強の5枚を作ります。",
+    "actionButtons": "ベット・コール・レイズ・フォールドなどのアクションを選びます。",
+    "potDisplay": "現在のポットとアンテレベルが表示されます。",
+    "cpuArea": "CPU対戦相手の情報です。ショーダウン時にカードが公開されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "strongHandRank": "強いハンド — レイズ推奨",
+    "decentHandRank": "まずまずのハンド — コール推奨",
+    "weakHandRank": "弱いハンド — フォールド推奨"
+  },
+  "hand": {
+    "highCard": "ハイカード",
+    "onePair": "ワンペア",
+    "twoPair": "ツーペア",
+    "threeOfAKind": "スリーカード",
+    "straight": "ストレート",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "fourOfAKind": "フォーカード",
+    "straightFlush": "ストレートフラッシュ",
+    "royalFlush": "ロイヤルフラッシュ"
+  },
+  "hiLo": {
+    "title": "ハイ／ローの内訳",
+    "hi": "ハイ",
+    "lo": "ロー",
+    "winner": "{{name}} +{{amount}}",
+    "scoop": "スクープ！ {{name}} が両取り +{{total}}",
+    "hiTakesAll": "8以下のローが誰にも成立しなかったので、ハイの総取りです"
+  },
+  "tutorial.low": "ローは「8以下のランクが5種類、重複なし」で成立します。ストレートとフラッシュは無視、エースは常にローです",
+  "tutorial.split": "ローが成立した人がいれば、ポットはハイとローで折半されます。奇数チップはハイ側に付きます",
+  "tutorial.scoop": "**ローが誰にも成立しなければハイの総取り**です。ハイとローは同じ7枚から別々に選べるので、両方取る（スクープ）ことも狙えます"
+}
