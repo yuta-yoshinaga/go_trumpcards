@@ -180,6 +180,11 @@ var registry = []*Game{
 	{Name: "badugi", Category: CategoryCasino},
 	{Name: "deucetoseven", Category: CategoryCasino},
 	{Name: "razz", Category: CategoryCasino},
+
+	// Seven Card Stud Hi-Lo splits the pot with an eight-or-better low. It shares
+	// the whole stud stack -- only the showdown differs -- so it must sit in the
+	// same bucket as the poker evaluator it reuses.
+	{Name: "sevencardstudhilo", Category: CategoryCasino},
 	{Name: "scorpion", Category: CategorySolo},
 	{Name: "wasp", Category: CategorySolo},
 	{Name: "accordion", Category: CategorySolo},

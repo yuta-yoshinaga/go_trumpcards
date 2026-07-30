@@ -66,4 +66,6 @@ type SevenCardStudGame interface {
 	GetBringInPlayerIdx() int
 	// GetIsLowball ローボール(Razz)モードかどうかを返す
 	GetIsLowball() bool
+	// GetIsHiLo Hi-Lo (8 or Better) スプリットかどうかを取得する
+	GetIsHiLo() bool
 }
