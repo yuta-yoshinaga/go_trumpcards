@@ -257,7 +257,8 @@
     "mushi": "虫",
     "toepen": "トゥーペン",
     "chineseten": "撿紅點",
-    "skitgubbe": "シートグッベ"
+    "skitgubbe": "シートグッベ",
+    "laughandliedown": "ラフ・アンド・ライダウン"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1269,7 +1270,10 @@
     "chineseten.lose": "あなたの負けです",
     "chineseten.draw": "引き分けです",
     "skitgubbe.win": "手札を出し切りました",
-    "skitgubbe.lose": "あなたが Skitgubbe です"
+    "skitgubbe.lose": "あなたが Skitgubbe です",
+    "laughandliedown.win": "勝ち越しました",
+    "laughandliedown.even": "収支ゼロでした",
+    "laughandliedown.lose": "負け越しました"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
