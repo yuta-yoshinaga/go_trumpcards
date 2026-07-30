@@ -322,7 +322,8 @@
     "bura": "A Russian 36-card trick game: lead up to three cards of one suit at a time, and win by claiming 31 card points yourself.",
     "mushi": "An Osaka hanafuda game on 40 cards -- June and July are out -- where the willow lightning card is wild and takes any card you like.",
     "toepen": "A Dutch bluffing game on 32 cards, four to a hand, whose ranking is the standard order inverted: the ten is highest and the jack lowest.",
-    "chineseten": "A Chinese fishing game: A-9 capture by summing to ten, 10-K by rank, one card at a time, and only the red cards score."
+    "chineseten": "A Chinese fishing game: A-9 capture by summing to ten, 10-K by rank, one card at a time, and only the red cards score.",
+    "skitgubbe": "Two phases, two different games: duel for cards first, then shed the cards you won. The last one holding cards is the dirty old man."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -561,6 +562,7 @@
     "bura": "Points never win on their own -- you must claim, and claiming short loses on the spot. There is no obligation to follow suit, so discarding a card you cannot win with is a real move.",
     "mushi": "Unlike koi-koi there is no stop decision: you play the hand out. The score is your margin over an even split of the pack's 230 points.",
     "toepen": "Everyone who misses the final trick pays. A toep raises the stake at any moment, and folding costs the stake before the raise. Ten lives lost and you are out.",
-    "chineseten": "Every play also turns a card from the stock, which captures on the same terms. The reds are worth 210 between them, so 105 draws."
+    "chineseten": "Every play also turns a card from the stock, which captures on the same terms. The reds are worth 210 between them, so 105 draws.",
+    "skitgubbe": "What you collect becomes your next hand, so winning too much hurts. Equal ranks leave the cards on the table until someone settles it."
   }
 }

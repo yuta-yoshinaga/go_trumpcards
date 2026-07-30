@@ -1641,6 +1641,19 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "skitgubbe", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSkitgubbeCuiController(usecase.NewSkitgubbeInteractor(
+				domain.NewDefaultSkitgubbe(), new(presenter.SkitgubbeCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "skitgubbe.helpTitle",
+				CommandKeys: []string{
+					"skitgubbe.helpPlay",
+					"skitgubbe.helpPickUp",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "shithead", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShitheadCuiController(usecase.NewShitheadInteractor(

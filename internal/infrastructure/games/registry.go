@@ -252,6 +252,10 @@ var registry = []*Game{
 	// Chinese Ten captures by summing to ten (A-9) or by rank (10-K), and only
 	// the RED cards score.
 	{Name: "chineseten", Category: CategoryExtra2},
+
+	// Skitgubbe's two phases are different games: a two-player duel that
+	// collects cards, then a durak-style beat-or-pick-up shed.
+	{Name: "skitgubbe", Category: CategoryExtra3},
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},

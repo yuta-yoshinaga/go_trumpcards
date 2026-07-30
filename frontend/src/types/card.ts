@@ -189,6 +189,7 @@ export * from './games/simplesimon';
 export * from './games/sirtommy';
 export * from './games/sixcardgolf';
 export * from './games/skat';
+export * from './games/skitgubbe';
 export * from './games/slapjack';
 export * from './games/solowhist';
 export * from './games/spades';

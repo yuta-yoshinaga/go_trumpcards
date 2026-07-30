@@ -510,6 +510,11 @@ func init() {
 			return usecase.NewChineseTenInteractor(domain.NewDefaultChineseTen(), new(presenter.ChineseTenWebPresenter))
 		},
 		controller.NewChineseTenWebController)
+	BindWebControllerFor("skitgubbe",
+		func() usecase.SkitgubbeInteractorIF {
+			return usecase.NewSkitgubbeInteractor(domain.NewDefaultSkitgubbe(), new(presenter.SkitgubbeWebPresenter))
+		},
+		controller.NewSkitgubbeWebController)
 	BindWebControllerFor("shithead",
 		func() usecase.ShitheadInteractorIF {
 			return usecase.NewShitheadInteractor(domain.NewDefaultShithead(), new(presenter.ShitheadWebPresenter))

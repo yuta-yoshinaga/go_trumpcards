@@ -227,6 +227,8 @@ tags:
     description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
   - name: skat
     description: Skat (スカート) game - Germany's national 3-player trick-taking game with a 32-card deck, ladder auction, and three game types (Suit / Grand / Null)
+  - name: skitgubbe
+    description: Skitgubbe
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -12343,6 +12345,100 @@ paths:
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
 
+  /skitgubbe/exec:
+    post:
+      tags:
+        - skitgubbe
+      summary: Execute a Skitgubbe game command
+      description: |
+        Send a command to advance the Skitgubbe game session identified by
+        `sessionId`. It is a Swedish 3-player game on 52 cards made of **two
+        phases that are different games**, and the last player left holding
+        cards is the *Skitgubbe*.
+
+        #4404 describes both phases wrongly, so pagat.com's rules are used.
+
+        **Phase 1 (collect), `phase: 0`.** It is **always a two-player duel**
+        between the leader and the seat to the leader's left, and **suit is
+        irrelevant** -- the higher card simply takes both, and its owner leads
+        next. The issue's "the other players respond with the same suit or
+        higher" is neither the seating nor the rule.
+
+        * **stunsa**, which the issue omits: on equal ranks the cards **stay on
+          the table**, both players draw, and the **same player leads again**.
+          Whoever eventually wins takes everything that piled up.
+        * Both duellists then draw back up to three -- not "the winner draws
+          one".
+        * The **last card drawn from the stock fixes the trump suit**, which
+          the issue never mentions and which phase two depends on. `trumpSuit`
+          is `-1` until then.
+        * The phase ends when the stock is exhausted and **either side of the
+          next duel** has run out. Waiting for every hand to empty would hang
+          forever: with three seats, the player who never entered a duel keeps
+          their cards.
+
+        **Phase 2 (shed), `phase: 1`.** The cards collected in phase one --
+        plus anything still in hand -- become the hand. A play must **beat**
+        the card on the pile: a higher card of the **same suit**, or any
+        **trump**. It is never lawful to duck, so the issue's "play in
+        ascending order" is a different game. A player who cannot beat the pile
+        **picks it up** (`canPickUp`) rather than being eliminated.
+
+        `validIndices` carries the beat rule and `canPickUp` its negation, so
+        the client re-implements neither.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Collect | `0`   | Two-player duels; collect cards |
+        | Shed    | `1`   | Beat the pile or pick it up |
+        | GameEnd | `2`   | One player is left holding cards |
+
+        | Command  | Aliases  | Description |
+        |----------|----------|-------------|
+        | `reset`  | `r`      | Start / restart a game |
+        | `play`   | `p`      | Play the hand card at `cardIndex` |
+        | `pickup` | `u`      | Take the pile; refused while anything beats it |
+        | `hint`   | `h`      | Suggested move for the human seat |
+        | `log`    | `l`      | Action-log transcript |
+      operationId: skitgubbeExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, pickup, u, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkitgubbeResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkitgubbeResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -21925,6 +22021,103 @@ components:
               type: integer
             layoutIndex:
               type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    SkitgubbeResponse:
+      type: object
+      description: Response payload for /skitgubbe/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: Hand size. Always sent, including while hidden.
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/Card'
+              collectedCount:
+                type: integer
+                description: |
+                  Cards taken in phase one. Public, and worth reading: they
+                  become this seat's phase-two hand, so collecting too much is
+                  a liability.
+              finished:
+                type: boolean
+                description: Out of cards in phase two.
+              hidden:
+                type: boolean
+                description: Whether this seat's HAND is withheld.
+        phase:
+          type: integer
+          description: "0=Collect, 1=Shed, 2=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        stockCount:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: |
+            Fixed by the LAST card drawn from the stock, so it is `-1` for most
+            of phase one.
+        duel:
+          type: array
+          description: |
+            Phase-one cards on the table. Grows in pairs while stunsa (equal
+            ranks) keeps bouncing.
+          items:
+            $ref: '#/components/schemas/Card'
+        duelLeader:
+          type: integer
+          description: Seat leading the current duel; its opponent is the next seat.
+        pile:
+          type: array
+          description: Phase-two cards on the table. The last one is what must be beaten.
+          items:
+            $ref: '#/components/schemas/Card'
+        validIndices:
+          type: array
+          description: |
+            Hand indices that may be played. Carries the beat rule (higher of
+            the same suit, or a trump) so the client never re-derives it. Empty
+            unless it is the human's turn.
+          items:
+            type: integer
+        canPickUp:
+          type: boolean
+          description: |
+            True only in phase two, with a non-empty pile and no playable card.
+            Ducking is never lawful, so this is exactly the negation of
+            `validIndices` being non-empty.
+        gameEndFlag:
+          type: boolean
+        loserIdx:
+          type: integer
+          description: "The Skitgubbe -- the last seat holding cards; -1 while undecided"
+        hint:
+          type: object
+          description: Suggested move, sent on every response while it is the human's turn.
+          properties:
+            cardIndex:
+              type: integer
+            pickUp:
+              type: boolean
             reason:
               type: string
         message:
