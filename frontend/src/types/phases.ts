@@ -1686,6 +1686,13 @@ export const ToepenPhase = {
   GAME_END: 3,
 } as const;
 
+/** Chinese Ten phase constants (sync: internal/domain/ChineseTen.go). */
+export const ChineseTenPhase = {
+  PLAY: 0,
+  SELECT: 1,
+  GAME_END: 2,
+} as const;
+
 /** Sette e Mezzo phase constants (sync: internal/domain/SetteEMezzo.go). */
 export const SetteEMezzoPhase = {
   BET: 1,

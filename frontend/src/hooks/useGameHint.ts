@@ -35,6 +35,7 @@ import type {
   CassinoResponse,
   CatchTenResponse,
   CegoResponse,
+  ChineseTenResponse,
   CinchResponse,
   ClockSolitaireResponse,
   CongressResponse,
@@ -225,6 +226,7 @@ import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getCatchTenHint } from '../utils/hints/catchtenHint';
 import { getCegoHint } from '../utils/hints/cegoHint';
+import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCongressHint } from '../utils/hints/congressHint';
@@ -593,6 +595,7 @@ export const hintFactories = {
   bura: (s) => getBuraHint(s as BuraResponse),
   mushi: (s) => getMushiHint(s as MushiResponse),
   toepen: (s) => getToepenHint(s as ToepenResponse),
+  chineseten: (s) => getChineseTenHint(s as ChineseTenResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),
