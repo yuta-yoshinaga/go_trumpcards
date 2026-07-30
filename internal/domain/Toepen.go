@@ -545,23 +545,27 @@ func (t *Toepen) finishHand() {
 
 // handWinner はこのハンドで失点を免れる者を返す。
 //
-// 最終トリックを取った者。トリックが一度も成立しないまま (全員が降りて) ハンドが
-// 終わったときは、残っている唯一のプレイヤー。どちらでもなければ -1。
+// **1 人しか残っていなければ、その 1 人がハンドの勝者**である。他は全員降りたので、
+// 何トリック目で起きたかは関係ない。そうでなければ最終トリックを取った者。
+//
+// 「lastTrickWin が未設定なら fold-out」という判定にしてはいけない。トリックが
+// 1 つでも成立していると lastTrickWin はその勝者を指したままで、その者が後から
+// 降りていても免除がそちらへ渡ってしまう。降りた者に免除を使い、実際に相手を
+// 降ろした側が賭け点を払う —— fold-out の最初の修正はこの場合を落としていた。
 func (t *Toepen) handWinner() int {
-	if t.lastTrickWin >= 0 {
-		return t.lastTrickWin
-	}
 	survivor := -1
+	active := 0
 	for i := range t.players {
 		if t.eliminated[i] || t.folded[i] {
 			continue
 		}
-		if survivor >= 0 {
-			return -1 // 2 人以上残っているなら勝者は未確定
-		}
+		active++
 		survivor = i
 	}
-	return survivor
+	if active == 1 {
+		return survivor
+	}
+	return t.lastTrickWin
 }
 
 // loseLives は player の失点を加算し、上限に達したら脱落させる。

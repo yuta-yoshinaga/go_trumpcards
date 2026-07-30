@@ -616,3 +616,39 @@ func TestToepen_RedealRejectsOtherIllegalStates(t *testing.T) {
 	assert.False(t, tp.CanRedeal(0), "not while a toep is outstanding")
 	assert.Error(t, tp.Redeal(0))
 }
+
+func TestToepen_ForcingEveryoneOutAfterATrickAlsoCostsNothing(t *testing.T) {
+	// The same win, one trick later. My first fix read the exemption off
+	// lastTrickWin whenever it was set, so once a trick had completed the
+	// exemption went to THAT trick's winner -- who may since have folded --
+	// and the survivor who actually forced the fold-out paid anyway.
+	tp := NewDefaultToepen()
+	tp.Reset()
+
+	// Play one complete trick so lastTrickWin is a real seat.
+	for range ToepenPlayerCnt {
+		idx := tp.GetCurrentPlayerIdx()
+		require.NoError(t, tp.PlayCard(idx, tp.GetValidPlayIndices(idx)[0]))
+	}
+	require.Equal(t, 1, tp.GetTrickNumber())
+	trickWinner := tp.GetLastTrickWinner()
+	require.GreaterOrEqual(t, trickWinner, 0)
+
+	// Now someone toeps and everyone else folds -- including the trick winner.
+	knocker := (trickWinner + 1) % ToepenPlayerCnt
+	require.NoError(t, tp.Toep(knocker))
+	for i := 1; i < ToepenPlayerCnt; i++ {
+		seat := (knocker + i) % ToepenPlayerCnt
+		require.NoError(t, tp.Respond(seat, false))
+	}
+	require.Equal(t, ToepenPhaseHandEnd, tp.GetPhase())
+
+	assert.Equal(t, 0, tp.GetLives(knocker),
+		"the seat left standing wins the hand, whatever happened in earlier tricks")
+	for i := range tp.GetPlayers() {
+		if i == knocker {
+			continue
+		}
+		assert.Positive(t, tp.GetLives(i), "seat %d folded and pays", i)
+	}
+}
