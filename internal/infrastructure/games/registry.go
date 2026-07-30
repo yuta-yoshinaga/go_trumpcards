@@ -248,6 +248,10 @@ var registry = []*Game{
 	// Toepen's ranking is the standard order inverted -- 10 high, jack low --
 	// and only the winner of the final trick escapes the penalty.
 	{Name: "toepen", Category: CategoryExtra3},
+
+	// Chinese Ten captures by summing to ten (A-9) or by rank (10-K), and only
+	// the RED cards score.
+	{Name: "chineseten", Category: CategoryExtra2},
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},

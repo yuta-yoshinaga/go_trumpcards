@@ -1,0 +1,23 @@
+{
+  "helpTitle": "撿紅點 (チャイニーズ・テン)",
+  "helpPlay": "  p <i>                    手札の札を出す",
+  "helpSelect": "  s <i>                    取れる場札が複数のとき、どれを取るか選ぶ",
+  "header": "山札{{stock}}枚 · 引き分け点{{tie}}",
+  "ruleLine": "捕獲: A〜9は合計10、10〜Kは同ランク／得点は赤札(♥♦)のみ",
+  "layoutLine": "場: {{cards}}",
+  "playerLine": "{{name}}: {{score}}点 (手札{{cards}}枚)",
+  "capturedLine": "取り札: {{cards}}",
+  "pendingLine": "出した札: {{card}}",
+  "promptPlay": "p <i> で札を出す（出した後、山札からも1枚めくれます）",
+  "promptSelect": "s <i> で取る場札を選ぶ",
+  "gameEndWin": "あなたの勝ち！",
+  "gameEndLose": "あなたの負け",
+  "gameEndDraw": "引き分け",
+  "hintPlay": "推奨: 手札[{{idx}}] — {{reason}}",
+  "hintSelect": "推奨: 場札[{{idx}}] — {{reason}}",
+  "hintNone": "ヒントはありません",
+  "hintReasonGameEnd": "この対局は終わっています",
+  "hintReasonNotYourTurn": "あなたの手番ではありません",
+  "hintReasonSelect": "最も点の高い札を取れます",
+  "hintReasonPlay": "この札が最も多くの点を取れます"
+}
