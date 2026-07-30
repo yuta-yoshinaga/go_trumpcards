@@ -222,6 +222,7 @@ export * from './games/threecardbrag';
 export * from './games/threethirteen';
 export * from './games/tichu';
 export * from './games/tienlen';
+export * from './games/toepen';
 export * from './games/tonk';
 export * from './games/trash';
 export * from './games/trenteetquarante';
@@ -335,6 +336,7 @@ export const games = [
   'niuniu',
   'bura',
   'mushi',
+  'toepen',
   'missmilligan',
   'canfield',
   'osmosis',

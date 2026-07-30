@@ -254,7 +254,8 @@
     "settemezzo": "Sette e Mezzo",
     "niuniu": "Niu Niu",
     "bura": "Bura",
-    "mushi": "Mushi"
+    "mushi": "Mushi",
+    "toepen": "Toepen"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1258,7 +1259,10 @@
     "mushi.win": "You win",
     "mushi.lose": "You lose",
     "mushi.draw": "Draw",
-    "mushi.round_end": "The round is over"
+    "mushi.round_end": "The round is over",
+    "toepen.win": "You win",
+    "toepen.lose": "You lose",
+    "toepen.hand_end": "The hand is over"
   },
   "manual": {
     "ariaLabel": "Game Manual",

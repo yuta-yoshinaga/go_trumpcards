@@ -104,6 +104,7 @@ var gameDescriptions = map[string]string{
 	"niuniu":              "闘牛（5枚から3枚で10の倍数を作る中国のギャンブル）",
 	"bura":                "ブラ（36枚・同スート複数出しと31点宣言のロシアのトリックゲーム）",
 	"mushi":               "虫（六月七月を抜いた花札40枚・雷札がワイルドの大阪の花合わせ）",
+	"toepen":              "トゥーペン（10が最強・Jが最弱の32枚オランダのブラフゲーム）",
 	"spiteandmalice":      "Spite and Malice (スパイト・アンド・マリス)",
 	"skat":                "Skat (スカート)",
 	"shithead":            "Shithead / Karma (シットヘッド)",

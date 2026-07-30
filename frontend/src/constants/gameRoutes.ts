@@ -1390,6 +1390,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 2, 4, 3], skill: [3, 4, 3, 3], social: [4, 3, 1, 3, 3], theme: [2, 3, 1, 1, 5, 3] },
       },
       {
+        path: '/toepen',
+        labelKey: 'nav.toepen',
+        icon: '🍺',
+        page: 'Toepen',
+        profile: { mood: [5, 4, 2, 5], skill: [2, 3, 4, 4], social: [5, 2, 0, 4, 4], theme: [3, 2, 1, 1, 4, 2] },
+      },
+      {
         path: '/congress',
         labelKey: 'nav.congress',
         icon: '🏛️',
