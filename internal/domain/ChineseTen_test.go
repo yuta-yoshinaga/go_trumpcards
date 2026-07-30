@@ -429,3 +429,34 @@ func ctPlayOut(t *testing.T, c *ChineseTen) bool {
 	}
 	return false
 }
+
+func TestChineseTen_TheTurnedCardAlsoOffersAChoice(t *testing.T) {
+	// The flip is the second half of the SAME player's turn, so when the turned
+	// card can take more than one layout card, that player chooses -- exactly
+	// as they do for the card from hand. Auto-picking here left `pendingFlip`
+	// permanently false and disagreed with Mushi, the sibling fishing game.
+	c := NewDefaultChineseTen()
+	c.Reset()
+	c.SetLayoutForTest([]*Card{
+		ctCard(CardDesignSpade, 13), // the hand card takes this one
+		ctCard(CardDesignHeart, 5),
+		ctCard(CardDesignDiamond, 5),
+	})
+	c.SetStockForTest([]*Card{ctCard(CardDesignClover, 5)}) // a five: two matches
+	p := c.GetPlayer(0)
+	p.Reset()
+	p.AddCard(ctCard(CardDesignClover, 13))
+	c.SetCurrentPlayerForTest(0)
+
+	require.NoError(t, c.PlayCard(0, 0))
+	// The hand card took the king outright; the flip found two fives and asks.
+	require.Equal(t, ChineseTenPhaseSelect, c.GetPhase(), "the turned five offers a choice")
+	require.Len(t, c.GetSelectableIndices(), 2)
+
+	require.NoError(t, c.SelectCapture(0, c.GetSelectableIndices()[0]))
+	// Four cards: the king pair from the hand, the five pair from the flip.
+	assert.Len(t, c.GetCaptured(0), 4)
+	// Resolving a FLIP's choice must not turn another card.
+	assert.Zero(t, c.GetStockCount(), "the stock had one card and it has been used")
+	assert.Equal(t, 1, c.GetCurrentPlayerIdx(), "the turn passes once the flip resolves")
+}

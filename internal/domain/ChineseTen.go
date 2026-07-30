@@ -231,19 +231,23 @@ func (c *ChineseTen) PlayCard(player, handIdx int) error {
 // resolve は 1 枚出した (またはめくった) 結果を場へ反映する。
 func (c *ChineseTen) resolve(player int, card *Card, fromFlip bool) {
 	matches := c.matchIndices(card)
-	switch {
-	case len(matches) == 0:
+	switch len(matches) {
+	case 0:
 		c.layout = append(c.layout, card)
 		c.addLog(player, "place", "no capture; the card joins the layout", []*Card{card})
-	case len(matches) == 1:
+	case 1:
 		c.capture(player, card, matches[0])
-	case fromFlip:
-		// めくりは自動処理なので、ここで選ばせると相手の手番中に入力待ちになる。
-		// 自分の手番でのめくりなので、最も点の高い札を取る。
-		c.capture(player, card, c.bestMatch(matches))
 	default:
+		// **めくった札にも選択させる。** めくりは手番の後半であって別の誰かの
+		// 手番ではないので、選ぶのは同じプレイヤーである。CPU の番なら CPU が
+		// 解決するので入力待ちにはならない。
+		//
+		// 自動で最高点を取る実装にしていたが、それだと pendingFlip が常に false
+		// になり、姉妹ゲームの Mushi (同じフィッシング系) とも挙動が食い違って
+		// いた。出典はめくりの選択者を明示していないが、卓上では出した本人が
+		// 選ぶし、選ばせない理由も無い。
 		c.pending = card
-		c.pendingFlip = false
+		c.pendingFlip = fromFlip
 		c.phase = ChineseTenPhaseSelect
 		return
 	}
