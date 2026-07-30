@@ -86,6 +86,7 @@ import type {
   KnockoutWhistResponse,
   KoenigrufenResponse,
   KoiKoiResponse,
+  LaughAndLieDownResponse,
   LetItRideResponse,
   LooResponse,
   MacauResponse,
@@ -282,6 +283,7 @@ import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getKnockoutWhistHint } from '../utils/hints/knockoutWhistHint';
 import { getKoenigrufenHint } from '../utils/hints/koenigrufenHint';
 import { getKoiKoiHint } from '../utils/hints/koikoiHint';
+import { getLaughAndLieDownHint } from '../utils/hints/laughandliedownHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getLooHint } from '../utils/hints/looHint';
 import { getMacauHint } from '../utils/hints/macauHint';
@@ -599,6 +601,7 @@ export const hintFactories = {
   toepen: (s) => getToepenHint(s as ToepenResponse),
   chineseten: (s) => getChineseTenHint(s as ChineseTenResponse),
   skitgubbe: (s) => getSkitgubbeHint(s as SkitgubbeResponse),
+  laughandliedown: (s) => getLaughAndLieDownHint(s as LaughAndLieDownResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),

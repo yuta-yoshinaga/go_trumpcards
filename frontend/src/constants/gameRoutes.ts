@@ -1397,6 +1397,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 4, 2, 5], skill: [2, 3, 4, 4], social: [5, 2, 0, 4, 4], theme: [3, 2, 1, 1, 4, 2] },
       },
       {
+        path: '/laughandliedown',
+        labelKey: 'nav.laughandliedown',
+        icon: '🎣',
+        page: 'LaughAndLieDown',
+        profile: { mood: [4, 2, 4, 3], skill: [2, 3, 3, 2], social: [5, 3, 1, 4, 3], theme: [2, 2, 1, 1, 5, 2] },
+      },
+      {
         path: '/skitgubbe',
         labelKey: 'nav.skitgubbe',
         icon: '🃏',

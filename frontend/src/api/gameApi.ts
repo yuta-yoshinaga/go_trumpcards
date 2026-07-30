@@ -125,6 +125,7 @@ export * from './games/knockoutwhist';
 export * from './games/koenigrufen';
 export * from './games/koikoi';
 export * from './games/labellelucie';
+export * from './games/laughandliedown';
 export * from './games/letitride';
 export * from './games/loo';
 export * from './games/macau';
@@ -341,6 +342,7 @@ export const games = [
   'toepen',
   'chineseten',
   'skitgubbe',
+  'laughandliedown',
   'missmilligan',
   'canfield',
   'osmosis',

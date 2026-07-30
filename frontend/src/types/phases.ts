@@ -1700,6 +1700,12 @@ export const SkitgubbePhase = {
   GAME_END: 2,
 } as const;
 
+/** Laugh and Lie Down phase constants (sync: internal/domain/LaughAndLieDown.go). */
+export const LaughAndLieDownPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
 /** Sette e Mezzo phase constants (sync: internal/domain/SetteEMezzo.go). */
 export const SetteEMezzoPhase = {
   BET: 1,

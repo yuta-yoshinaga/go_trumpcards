@@ -221,6 +221,7 @@ export type GameKey =
   | 'toepen'
   | 'chineseten'
   | 'skitgubbe'
+  | 'laughandliedown'
   | 'missmilligan'
   | 'crescent'
   // Counting/Rummy
@@ -692,6 +693,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   toepen: BLUE,
   chineseten: GREEN,
   skitgubbe: GREEN,
+  laughandliedown: GREEN,
   missmilligan: CASINO,
   crescent: CASINO,
   // Counting/Rummy

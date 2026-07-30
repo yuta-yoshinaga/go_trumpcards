@@ -257,7 +257,8 @@
     "mushi": "Mushi",
     "toepen": "Toepen",
     "chineseten": "Chinese Ten",
-    "skitgubbe": "Skitgubbe"
+    "skitgubbe": "Skitgubbe",
+    "laughandliedown": "Laugh and Lie Down"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1269,7 +1270,10 @@
     "chineseten.lose": "You lose",
     "chineseten.draw": "Draw",
     "skitgubbe.win": "You got rid of all your cards",
-    "skitgubbe.lose": "You are the Skitgubbe"
+    "skitgubbe.lose": "You are the Skitgubbe",
+    "laughandliedown.win": "You finished ahead",
+    "laughandliedown.even": "You broke even",
+    "laughandliedown.lose": "You finished behind"
   },
   "manual": {
     "ariaLabel": "Game Manual",
