@@ -221,3 +221,22 @@ func TestRestoreBuraInteractor(t *testing.T) {
 	_, err = usecase.RestoreBuraInteractor([]byte("{"), new(presenter.MockBuraPresenter))
 	assert.Error(t, err)
 }
+
+func TestBuraInteractor_CpuLoopStopsWhenAPlayIsRejected(t *testing.T) {
+	// The Declare and Claim branches' error paths are covered above; this is
+	// the default branch, which is the one that actually runs on almost every
+	// turn. Without the short-circuit a domain that keeps rejecting the CPU's
+	// choice would spin to buraCpuTurnCap on every request.
+	gameMock := new(interfaces.MockBuraGame)
+	bpMock := new(presenter.MockBuraPresenter)
+	bpMock.On("Output", mock.Anything, mock.Anything).Return(buraOut)
+	gameMock.On("Reset").Return()
+	gameMock.On("GetGameEndFlag").Return(false)
+	gameMock.On("GetCurrentPlayerIdx").Return(1)
+	gameMock.On("BuraCpuDecide", 1).Return(domain.BuraCpuAction{Indices: []int{0}})
+	gameMock.On("PlayCards", 1, []int{0}).Return(errors.New("illegal"))
+
+	usecase.NewBuraInteractor(gameMock, bpMock).Reset()
+
+	gameMock.AssertNumberOfCalls(t, "PlayCards", 1)
+}
