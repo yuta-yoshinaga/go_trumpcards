@@ -205,6 +205,8 @@ tags:
     description: American Toad game - the two-deck Canfield, with a 20-card reserve that auto-fills empty columns and foundations that wrap round from the deal-chosen base rank
   - name: congress
     description: Congress game - eight single-card piles flanking eight foundations; the tableau builds down ignoring suit one card at a time, and an empty pile takes only a stock or waste card
+  - name: bura
+    description: Bura game - a 36-card Russian trick game where up to three cards of one suit are led together and 31 card points must be CLAIMED, not merely reached
   - name: terrace
     description: Terrace (Queen of Italy) game - the foundations build up in alternating colour from a player-chosen base rank, and the 11-card terrace feeds them and nothing else
   - name: spiteandmalice
@@ -11224,6 +11226,97 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CongressResponse'
+  /bura/exec:
+    post:
+      tags:
+        - bura
+      summary: Execute a Bura game command
+      description: |
+        Send a command to advance the Bura (ブラ) game session identified by
+        `sessionId`. It is a Russian ace-ten trick game on the 36-card short deck
+        (A, 6-10, J, Q, K), played by one human against one CPU.
+
+        Card points are A=11, 10=10, K=4, Q=3, J=2 and 0 for the rest, so the deck
+        holds 120. Ranks run A > 10 > K > Q > J > 9 > 8 > 7 > 6 -- the ten
+        outranking the court cards is the ace-ten family's defining quirk.
+
+        Three rules differ from the description in #4402, which does not match the
+        game as documented by pagat.com. The implementation follows the rules:
+
+        * **There is no obligation to follow suit.** Any cards may be played; the
+          "higher card of the led suit, or a trump" condition is what WINS a
+          trick, not what makes a play legal. Discarding a card you cannot win
+          with, to keep a strong one, is the centre of the game's bluffing.
+        * **31 points is claimed, not detected.** Reaching it wins nothing. The
+          `claim` command declares it -- and claiming while short forfeits the
+          round to the opponent.
+        * **An unclaimed round with an empty stock is a draw**, reported by
+          `isDraw`, not a settlement on points.
+
+        A lead is one to three cards of a SINGLE suit, sent in `cardIndices`. A
+        response must contain the same NUMBER of cards, and takes the trick only
+        if every led card is beaten by a distinct card of the response.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Play      | `0`   | Round in progress |
+        | GameEnd   | `1`   | Someone claimed or declared, or the round was drawn |
+
+        | Command   | Aliases | Description |
+        |-----------|---------|-------------|
+        | `reset`   | `r`     | Start / restart a round |
+        | `play`    | `p`     | Play the cards in `cardIndices` |
+        | `claim`   | `c`     | Claim 31 card points; claiming short forfeits |
+        | `declare` | `d`     | Declare a hand combination (bura / Moscow / little Moscow / molodka) |
+        | `hint`    | `h`     | Suggested play for the human seat |
+        | `log`     | `l`     | Action-log transcript |
+      operationId: buraExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, claim, c, declare, d, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndices:
+                  type: array
+                  description: |
+                    Hand indices to play. A LEAD may hold one to three cards, all
+                    of the same suit; a RESPONSE must hold exactly as many cards
+                    as the lead. Required for `play`.
+                  items:
+                    type: integer
+                  minItems: 1
+                  maxItems: 3
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuraResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /terrace/exec:
     post:
       tags:
@@ -20833,6 +20926,92 @@ components:
         toIdx:
           type: integer
           description: Destination index, or -1 for a draw, which targets no single pile
+    BuraResponse:
+      type: object
+      description: Response payload for /bura/exec
+      properties:
+        players:
+          type: array
+          description: |
+            Both seats. A seat with `hidden` true carries NO cards -- only
+            `cardCount`, because how many cards someone holds is public while
+            which cards they are is not.
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: Always sent, including while the hand is hidden.
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/Card'
+              points:
+                type: integer
+                description: Card points taken in tricks so far.
+              hidden:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Play, 1=GameEnd"
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+          description: Seat to act; -1 once the round is over.
+        leadPlayerIdx:
+          type: integer
+        currentLead:
+          type: array
+          description: Cards led this trick, one to three of a single suit. Empty between tricks.
+          items:
+            $ref: '#/components/schemas/Card'
+        trumpSuit:
+          type: integer
+        trumpCard:
+          $ref: '#/components/schemas/Card'
+        stockRemaining:
+          type: integer
+          description: Excludes the face-up trump indicator, which is drawn last.
+        winThreshold:
+          type: integer
+          description: |
+            Card points needed to claim a win (31). Sent rather than left for the
+            client to hardcode, so the figure is not written down twice.
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 when undecided or drawn"
+        isDraw:
+          type: boolean
+          description: |
+            True when the stock and both hands emptied with nobody claiming.
+            Nobody wins -- points alone never decide a Bura round.
+        hint:
+          type: object
+          description: Suggested play for the human seat, sent on every response while it is their turn.
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+              description: "Reason identifier, e.g. bura.hint.lead"
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     TerraceResponse:
       type: object
       description: Response payload for /terrace/exec

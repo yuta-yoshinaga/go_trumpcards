@@ -1583,6 +1583,20 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "bura", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBuraCuiController(usecase.NewBuraInteractor(
+				domain.NewDefaultBura(), new(presenter.BuraCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "bura.helpTitle",
+				CommandKeys: []string{
+					"bura.helpPlay",
+					"bura.helpClaim",
+					"bura.helpDeclare",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "shithead", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShitheadCuiController(usecase.NewShitheadInteractor(

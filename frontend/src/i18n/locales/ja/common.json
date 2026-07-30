@@ -252,7 +252,8 @@
     "braid": "ブレイド",
     "pontoon": "ポンツーン",
     "settemezzo": "セッテ・エ・メッツォ",
-    "niuniu": "闘牛"
+    "niuniu": "闘牛",
+    "bura": "ブラ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1243,7 +1244,16 @@
     "schnapsen.result.tie": "ゲーム終了！ 引き分けです（{{p0}}-{{p1}}）。",
     "threecardbrag.roundEndCpuWin": "CPU{{player}}がポットを獲得しました。",
     "ulti.result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
-    "briscola.result.tie": "ゲーム終了！ 引き分けです（{{p0}}-{{p1}}）。"
+    "briscola.result.tie": "ゲーム終了！ 引き分けです（{{p0}}-{{p1}}）。",
+    "bura.draw": "流局 — 誰も宣言しませんでした",
+    "bura.win": "あなたの勝ちです",
+    "bura.lose": "あなたの負けです",
+    "bura.hint.game_end": "この局は終わっています",
+    "bura.hint.not_your_turn": "あなたの手番ではありません",
+    "bura.hint.declare": "手札に役が揃っています。宣言すれば即勝ちです",
+    "bura.hint.claim": "31点に到達しています。宣言してください",
+    "bura.hint.respond": "この組み合わせなら受けきれます",
+    "bura.hint.lead": "まとめて出せば一度に多くの点を取れます"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

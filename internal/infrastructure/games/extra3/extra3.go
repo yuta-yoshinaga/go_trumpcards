@@ -229,4 +229,12 @@ func init() {
 			return usecase.RestoreNiuNiuInteractor(data, new(presenter.NiuNiuWebPresenter))
 		},
 		controller.NewNiuNiuWebControllerWithProvider)
+	games.RegisterKVGame("bura", games.CategoryExtra3,
+		func() usecase.BuraInteractorIF {
+			return usecase.NewBuraInteractor(domain.NewDefaultBura(), new(presenter.BuraWebPresenter))
+		},
+		func(data []byte) (usecase.BuraInteractorIF, error) {
+			return usecase.RestoreBuraInteractor(data, new(presenter.BuraWebPresenter))
+		},
+		controller.NewBuraWebControllerWithProvider)
 }

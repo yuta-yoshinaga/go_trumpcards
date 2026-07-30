@@ -39,6 +39,7 @@ export * from './games/braid';
 export * from './games/bridge';
 export * from './games/briscola';
 export * from './games/bristol';
+export * from './games/bura';
 export * from './games/burraco';
 export * from './games/calabresella';
 export * from './games/calculation';
@@ -331,6 +332,7 @@ export const games = [
   'pontoon',
   'settemezzo',
   'niuniu',
+  'bura',
   'missmilligan',
   'canfield',
   'osmosis',

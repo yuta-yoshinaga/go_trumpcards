@@ -252,7 +252,8 @@
     "braid": "Braid",
     "pontoon": "Pontoon",
     "settemezzo": "Sette e Mezzo",
-    "niuniu": "Niu Niu"
+    "niuniu": "Niu Niu",
+    "bura": "Bura"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1243,7 +1244,16 @@
     "schnapsen.result.tie": "Game over! It's a draw ({{p0}}-{{p1}}).",
     "threecardbrag.roundEndCpuWin": "CPU {{player}} took the pot.",
     "ulti.result.cpuWin": "Game over! Player {{player}} wins!",
-    "briscola.result.tie": "Game over! It's a draw ({{p0}}-{{p1}})."
+    "briscola.result.tie": "Game over! It's a draw ({{p0}}-{{p1}}).",
+    "bura.draw": "Draw -- nobody claimed",
+    "bura.win": "You win",
+    "bura.lose": "You lose",
+    "bura.hint.game_end": "This round is over",
+    "bura.hint.not_your_turn": "It is not your turn",
+    "bura.hint.declare": "Your hand is a winning combination -- declare it and win now",
+    "bura.hint.claim": "You have reached 31 -- claim it",
+    "bura.hint.respond": "This combination covers the lead",
+    "bura.hint.lead": "Leading these together collects more points at once"
   },
   "manual": {
     "ariaLabel": "Game Manual",

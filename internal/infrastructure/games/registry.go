@@ -236,6 +236,10 @@ var registry = []*Game{
 	// Niu Niu finds three of five cards summing to a multiple of ten; the
 	// remaining pair's last digit is the rank, and the multiplier follows it.
 	{Name: "niuniu", Category: CategoryExtra3},
+
+	// Bura leads up to three cards of one suit at a time and is won by
+	// claiming 31 card points, not by reaching them.
+	{Name: "bura", Category: CategoryExtra3},
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},

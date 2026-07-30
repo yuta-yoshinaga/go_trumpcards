@@ -1663,6 +1663,12 @@ export const NiuNiuPhase = {
   END: 2,
 } as const;
 
+/** Bura phase constants (sync: internal/domain/Bura.go). */
+export const BuraPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
 /** Sette e Mezzo phase constants (sync: internal/domain/SetteEMezzo.go). */
 export const SetteEMezzoPhase = {
   BET: 1,
