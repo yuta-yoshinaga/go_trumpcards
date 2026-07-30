@@ -293,3 +293,114 @@ func TestDocsEnumerateEveryWorkerBucket(t *testing.T) {
 		requireComplete(t, rel, "cmd/workers/* references", paths)
 	}
 }
+
+// openapiPathRe matches one `  /<game>/exec:` key in the OpenAPI spec.
+var openapiPathRe = regexp.MustCompile(`(?m)^  /([a-z0-9]+)/exec:`)
+
+// TestOpenAPIMatchesRegistry asserts that api/openapi.yaml documents exactly
+// the games the registry holds -- one POST /<game>/exec per game, no more.
+//
+// This is the last per-game file that nothing checked. docs/cloudflare-workers.md,
+// docs/architecture.md, docs/manual/{cui,web} and frontend/src/api/gameExec.ts
+// all have guards; openapi.yaml had only a line in the new-game checklist, and
+// it drifted by four games (braid, pontoon, settemezzo, niuniu) before anyone
+// looked. A rule that is only written down is a rule that gets skipped -- that
+// is the whole reason the other guards exist.
+//
+// api/openapi.yaml is CRLF. The regex tolerates that because `$` in Go's
+// multiline mode stops before the \r, but anything that rewrites the file must
+// preserve the line endings or the diff becomes every line.
+func TestOpenAPIMatchesRegistry(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join(repoRoot, "api/openapi.yaml"))
+	if err != nil {
+		t.Fatalf("read api/openapi.yaml: %v", err)
+	}
+
+	documented := map[string]bool{}
+	for _, m := range openapiPathRe.FindAllSubmatch(data, -1) {
+		documented[string(m[1])] = true
+	}
+	if len(documented) == 0 {
+		t.Fatal("no /<game>/exec paths parsed from api/openapi.yaml -- the format changed; update openapiPathRe")
+	}
+
+	registered := map[string]bool{}
+	for _, g := range games.All() {
+		registered[g.Name] = true
+	}
+
+	var missing, orphaned []string
+	for name := range registered {
+		if !documented[name] {
+			missing = append(missing, name)
+		}
+	}
+	for name := range documented {
+		if !registered[name] {
+			orphaned = append(orphaned, name)
+		}
+	}
+	sort.Strings(missing)
+	sort.Strings(orphaned)
+
+	if len(missing) > 0 {
+		t.Errorf("registered games with no OpenAPI path: %v -- add POST /<game>/exec to api/openapi.yaml", missing)
+	}
+	if len(orphaned) > 0 {
+		t.Errorf("OpenAPI paths for games that are not registered: %v -- a rename or removal left them behind", orphaned)
+	}
+}
+
+// openapiRefRe matches a `$ref: '#/components/schemas/X'` pointer, and
+// openapiSchemaRe a schema definition at the fixed four-space indent the file
+// uses under components.schemas.
+var (
+	openapiRefRe = regexp.MustCompile(`\$ref: '#/components/schemas/([A-Za-z0-9]+)'`)
+	// The trailing \r? is load-bearing: api/openapi.yaml is CRLF, so `$` sits
+	// after the carriage return and an anchored pattern matches nothing --
+	// which reads as "every reference is dangling" rather than as a broken
+	// regex.
+	openapiSchemaRe = regexp.MustCompile(`(?m)^    ([A-Za-z0-9]+):\r?$`)
+)
+
+// TestOpenAPIHasNoDanglingSchemaRefs asserts that every $ref points at a schema
+// that exists.
+//
+// Two of these were already in the file. `SirTommyHint` was referenced by the
+// Sir Tommy response and never defined; `ErrorResponse` I invented myself in
+// the Bura change -- I wrote the 400 branch from memory instead of copying the
+// convention, which is that a 400 carries the game's own response payload with
+// a message. A spec that points at a schema which is not there generates
+// broken clients, and neither reference cost anything to add unnoticed.
+func TestOpenAPIHasNoDanglingSchemaRefs(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join(repoRoot, "api/openapi.yaml"))
+	if err != nil {
+		t.Fatalf("read api/openapi.yaml: %v", err)
+	}
+	text := string(data)
+
+	defined := map[string]bool{}
+	// Only the components.schemas block defines schemas; the four-space indent
+	// is unique to it in this file, but confirm the section exists so a
+	// restructure fails loudly instead of silently matching nothing.
+	if !strings.Contains(text, "\n  schemas:\n") && !strings.Contains(text, "\r\n  schemas:\r\n") {
+		t.Fatal("no components.schemas block found -- the file structure changed")
+	}
+	for _, m := range openapiSchemaRe.FindAllStringSubmatch(text, -1) {
+		defined[m[1]] = true
+	}
+
+	var dangling []string
+	seen := map[string]bool{}
+	for _, m := range openapiRefRe.FindAllStringSubmatch(text, -1) {
+		if !defined[m[1]] && !seen[m[1]] {
+			seen[m[1]] = true
+			dangling = append(dangling, m[1])
+		}
+	}
+	sort.Strings(dangling)
+
+	if len(dangling) > 0 {
+		t.Errorf("api/openapi.yaml references schemas that are not defined: %v", dangling)
+	}
+}
