@@ -253,7 +253,8 @@
     "pontoon": "Pontoon",
     "settemezzo": "Sette e Mezzo",
     "niuniu": "Niu Niu",
-    "bura": "Bura"
+    "bura": "Bura",
+    "mushi": "Mushi"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1253,7 +1254,11 @@
     "bura.hint.declare": "Your hand is a winning combination -- declare it and win now",
     "bura.hint.claim": "You have reached 31 -- claim it",
     "bura.hint.respond": "This combination covers the lead",
-    "bura.hint.lead": "Leading these together collects more points at once"
+    "bura.hint.lead": "Leading these together collects more points at once",
+    "mushi.win": "You win",
+    "mushi.lose": "You lose",
+    "mushi.draw": "Draw",
+    "mushi.round_end": "The round is over"
   },
   "manual": {
     "ariaLabel": "Game Manual",

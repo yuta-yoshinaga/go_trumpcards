@@ -138,6 +138,7 @@ export * from './games/mississippistud';
 export * from './games/missmilligan';
 export * from './games/montecarlo';
 export * from './games/mus';
+export * from './games/mushi';
 export * from './games/nap';
 export * from './games/napoleon';
 export * from './games/napoleonssquare';
@@ -333,6 +334,7 @@ export const games = [
   'settemezzo',
   'niuniu',
   'bura',
+  'mushi',
   'missmilligan',
   'canfield',
   'osmosis',

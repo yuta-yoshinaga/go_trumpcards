@@ -1669,6 +1669,15 @@ export const BuraPhase = {
   GAME_END: 1,
 } as const;
 
+/** Mushi phase constants (sync: internal/domain/Mushi.go). */
+export const MushiPhase = {
+  PLAY: 0,
+  SELECT: 1,
+  WILD_SELECT: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Sette e Mezzo phase constants (sync: internal/domain/SetteEMezzo.go). */
 export const SetteEMezzoPhase = {
   BET: 1,

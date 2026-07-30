@@ -213,6 +213,8 @@ tags:
     description: Sette e Mezzo game - the Italian 7.5 game on a 40-card deck; totals are carried in HALVES so the half-point cards compare exactly
   - name: niuniu
     description: Niu Niu game - the Chinese bull game where three of five cards must sum to a multiple of ten, and the remaining pair's last digit is the rank
+  - name: mushi
+    description: Mushi game - hanafuda on 40 cards with June and July removed; a hana-awase game with no koi-koi stop, and November's lightning card is wild
   - name: bura
     description: Bura game - a 36-card Russian trick game where up to three cards of one suit are led together and 31 card points must be CLAIMED, not merely reached
   - name: terrace
@@ -11527,6 +11529,103 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SetteEMezzoResponse'
+  /mushi/exec:
+    post:
+      tags:
+        - mushi
+      summary: Execute a Mushi game command
+      description: |
+        Send a command to advance the Mushi (虫) game session identified by
+        `sessionId`. It is an Osaka hanafuda fishing game for two players.
+
+        Four points differ from the description in #4418, which does not match
+        the game as documented (Hanafuda Hub / Fuda Wiki). The implementation
+        follows the rules:
+
+        * The pack drops **June (peony) and July (bush clover)**, not August and
+          September. The arithmetic settles it: the round score subtracts 115,
+          which is half the pack only if the 40 cards are worth 230 — 5 brights
+          (100) + 7 animals (70) + 8 ribbons (40) + 20 chaff (20). Dropping
+          August would remove a 20-point bright and break that.
+        * The deal is **8 to each hand and 4 to the field**, not 6 and 6.
+        * **There is no koi-koi style stop decision.** Mushi is a hana-awase
+          game: the round runs until the hands are empty.
+        * **Two players.**
+
+        November's lightning card (month 11, index 4) is **wild**: played from
+        the hand it takes any single field card except another willow, and the
+        dealer must claim it if it lands in the opening field.
+        `selectableIndices` reports what may be taken, so the client does not
+        re-implement that rule.
+
+        Captured cards are public for BOTH seats — reading what the opponent is
+        collecting is how the game is played. Only the CPU's HAND is withheld,
+        and its `cardCount` still ships.
+
+        Leftovers are unscored: 16 turns consume only 16 of the 20 stock cards,
+        so a few stock and field cards go begging each round. The sources do not
+        say what becomes of them, so nobody scores them.
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Play       | `0`   | Waiting for a card |
+        | Select     | `1`   | Two same-month cards on the field; choose one |
+        | WildSelect | `2`   | The lightning card was played; choose its target |
+        | RoundEnd   | `3`   | Round settled |
+        | GameEnd    | `4`   | Final round settled |
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart a game |
+        | `play`   | `p`     | Play the hand card at `cardIndex` |
+        | `select` | `s`     | Take the field card at `fieldIndex` |
+        | `next`   | `n`     | Start the next round |
+        | `hint`   | `h`     | Suggested move for the human seat |
+        | `log`    | `l`     | Action-log transcript |
+      operationId: mushiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, select, s, next, n, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                fieldIndex:
+                  type: integer
+                  description: Field index. Required for `select`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+                    targetRounds:
+                      type: integer
+                      description: Rounds per game, 1-12. Mushi is normally 12.
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MushiResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MushiResponse'
   /bura/exec:
     post:
       tags:
@@ -21541,6 +21640,111 @@ components:
           type: string
         messageCode:
           type: string
+    MushiCard:
+      allOf:
+        - $ref: '#/components/schemas/Card'
+        - type: object
+          properties:
+            category:
+              type: integer
+              description: "0=chaff, 1=ribbon, 2=animal, 3=bright"
+            points:
+              type: integer
+              description: |
+                Card value (20/10/5/1). Sent so the 40-card identity table is
+                not carried a second time in the client.
+            isWild:
+              type: boolean
+              description: True only for November's lightning card.
+    MushiResponse:
+      type: object
+      description: Response payload for /mushi/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: Hand size. Always sent, including while hidden.
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/MushiCard'
+              captured:
+                type: array
+                description: |
+                  ALWAYS sent for both seats. Captured cards are public in
+                  hanafuda -- hiding them would remove the read on what the
+                  opponent is collecting.
+                items:
+                  $ref: '#/components/schemas/MushiCard'
+              capturedPoints:
+                type: integer
+              score:
+                type: integer
+                description: Cumulative score across rounds.
+              roundResult:
+                type: integer
+                description: The change from the round just settled.
+              hidden:
+                type: boolean
+                description: Whether this seat's HAND is withheld.
+        field:
+          type: array
+          items:
+            $ref: '#/components/schemas/MushiCard'
+        phase:
+          type: integer
+          description: "0=Play, 1=Select, 2=WildSelect, 3=RoundEnd, 4=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        roundNumber:
+          type: integer
+        targetRounds:
+          type: integer
+        stockCount:
+          type: integer
+        pendingCard:
+          $ref: '#/components/schemas/MushiCard'
+        selectableIndices:
+          type: array
+          description: |
+            Field indices that may be taken right now. Carries the wild's
+            "not another willow" restriction so the client need not re-derive it.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 when undecided or tied"
+        hint:
+          type: object
+          description: Suggested move, sent on every response while it is the human's turn.
+          properties:
+            cardIndex:
+              type: integer
+            fieldIndex:
+              type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     BuraResponse:
       type: object
       description: Response payload for /bura/exec
