@@ -320,7 +320,8 @@
     "setteemezzo": "The Italian seven-and-a-half. Face cards are worth half a point, so drawing one on seven lands you exactly on target.",
     "niuniu": "A Chinese banking game: find three of your five cards summing to a multiple of ten, and the remaining pair's last digit is your hand.",
     "bura": "A Russian 36-card trick game: lead up to three cards of one suit at a time, and win by claiming 31 card points yourself.",
-    "mushi": "An Osaka hanafuda game on 40 cards -- June and July are out -- where the willow lightning card is wild and takes any card you like."
+    "mushi": "An Osaka hanafuda game on 40 cards -- June and July are out -- where the willow lightning card is wild and takes any card you like.",
+    "toepen": "A Dutch bluffing game on 32 cards, four to a hand, whose ranking is the standard order inverted: the ten is highest and the jack lowest."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -557,6 +558,7 @@
     "setteemezzo": "The king of coins is wild for 0.5 to 7, and you can keep changing it until you stand. Land exactly on 7.5 and you take the bank.",
     "niuniu": "A last digit of zero is Niu Niu and pays triple; no valid triple at all is a no-bull, the weakest. There is nothing to decide — the bet settles the round.",
     "bura": "Points never win on their own -- you must claim, and claiming short loses on the spot. There is no obligation to follow suit, so discarding a card you cannot win with is a real move.",
-    "mushi": "Unlike koi-koi there is no stop decision: you play the hand out. The score is your margin over an even split of the pack's 230 points."
+    "mushi": "Unlike koi-koi there is no stop decision: you play the hand out. The score is your margin over an even split of the pack's 230 points.",
+    "toepen": "Everyone who misses the final trick pays. A toep raises the stake at any moment, and folding costs the stake before the raise. Ten lives lost and you are out."
   }
 }

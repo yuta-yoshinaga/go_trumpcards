@@ -1678,6 +1678,14 @@ export const MushiPhase = {
   GAME_END: 4,
 } as const;
 
+/** Toepen phase constants (sync: internal/domain/Toepen.go). */
+export const ToepenPhase = {
+  PLAY: 0,
+  RESPOND: 1,
+  HAND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Sette e Mezzo phase constants (sync: internal/domain/SetteEMezzo.go). */
 export const SetteEMezzoPhase = {
   BET: 1,

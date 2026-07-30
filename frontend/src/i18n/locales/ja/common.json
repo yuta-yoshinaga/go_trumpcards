@@ -254,7 +254,8 @@
     "settemezzo": "セッテ・エ・メッツォ",
     "niuniu": "闘牛",
     "bura": "ブラ",
-    "mushi": "虫"
+    "mushi": "虫",
+    "toepen": "トゥーペン"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1258,7 +1259,10 @@
     "mushi.win": "あなたの勝ちです",
     "mushi.lose": "あなたの負けです",
     "mushi.draw": "引き分けです",
-    "mushi.round_end": "このラウンドが終了しました"
+    "mushi.round_end": "このラウンドが終了しました",
+    "toepen.win": "あなたの勝ちです",
+    "toepen.lose": "あなたの負けです",
+    "toepen.hand_end": "このハンドが終了しました"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

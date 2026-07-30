@@ -166,6 +166,7 @@ import type {
   ThreeCardResponse,
   TichuResponse,
   TienLenResponse,
+  ToepenResponse,
   TrashResponse,
   TrenteEtQuaranteResponse,
   TressetteResponse,
@@ -360,6 +361,7 @@ import { getThreeCardBragHint } from '../utils/hints/threeCardBragHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getTichuHint } from '../utils/hints/tichuHint';
 import { getTienLenHint } from '../utils/hints/tienlenHint';
+import { getToepenHint } from '../utils/hints/toepenHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTrenteEtQuaranteHint } from '../utils/hints/trenteetquaranteHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
@@ -590,6 +592,7 @@ export const hintFactories = {
   anaconda: (s) => getAnacondaHint(s as AnacondaResponse),
   bura: (s) => getBuraHint(s as BuraResponse),
   mushi: (s) => getMushiHint(s as MushiResponse),
+  toepen: (s) => getToepenHint(s as ToepenResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),
