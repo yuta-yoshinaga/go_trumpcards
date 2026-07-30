@@ -293,3 +293,185 @@ func TestDocsEnumerateEveryWorkerBucket(t *testing.T) {
 		requireComplete(t, rel, "cmd/workers/* references", paths)
 	}
 }
+
+// openapiPathRe matches one `  /<game>/exec:` key in the OpenAPI spec.
+var openapiPathRe = regexp.MustCompile(`(?m)^  /([a-z0-9]+)/exec:`)
+
+// TestOpenAPIMatchesRegistry asserts that api/openapi.yaml documents exactly
+// the games the registry holds -- one POST /<game>/exec per game, no more.
+//
+// This is the last per-game file that nothing checked. docs/cloudflare-workers.md,
+// docs/architecture.md, docs/manual/{cui,web} and frontend/src/api/gameExec.ts
+// all have guards; openapi.yaml had only a line in the new-game checklist, and
+// it drifted by four games (braid, pontoon, settemezzo, niuniu) before anyone
+// looked. A rule that is only written down is a rule that gets skipped -- that
+// is the whole reason the other guards exist.
+//
+// api/openapi.yaml is CRLF. The regex tolerates that because `$` in Go's
+// multiline mode stops before the \r, but anything that rewrites the file must
+// preserve the line endings or the diff becomes every line.
+func TestOpenAPIMatchesRegistry(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join(repoRoot, "api/openapi.yaml"))
+	if err != nil {
+		t.Fatalf("read api/openapi.yaml: %v", err)
+	}
+
+	documented := map[string]bool{}
+	for _, m := range openapiPathRe.FindAllSubmatch(data, -1) {
+		documented[string(m[1])] = true
+	}
+	if len(documented) == 0 {
+		t.Fatal("no /<game>/exec paths parsed from api/openapi.yaml -- the format changed; update openapiPathRe")
+	}
+
+	registered := map[string]bool{}
+	for _, g := range games.All() {
+		registered[g.Name] = true
+	}
+
+	var missing, orphaned []string
+	for name := range registered {
+		if !documented[name] {
+			missing = append(missing, name)
+		}
+	}
+	for name := range documented {
+		if !registered[name] {
+			orphaned = append(orphaned, name)
+		}
+	}
+	sort.Strings(missing)
+	sort.Strings(orphaned)
+
+	if len(missing) > 0 {
+		t.Errorf("registered games with no OpenAPI path: %v -- add POST /<game>/exec to api/openapi.yaml", missing)
+	}
+	if len(orphaned) > 0 {
+		t.Errorf("OpenAPI paths for games that are not registered: %v -- a rename or removal left them behind", orphaned)
+	}
+}
+
+// openapiRefRe matches a `$ref: '#/components/schemas/X'` pointer, and
+// openapiSchemaRe a schema definition at the fixed four-space indent the file
+// uses under components.schemas.
+var (
+	openapiRefRe = regexp.MustCompile(`\$ref: '#/components/schemas/([A-Za-z0-9]+)'`)
+	// The trailing \r? is load-bearing: api/openapi.yaml is CRLF, so `$` sits
+	// after the carriage return and an anchored pattern matches nothing --
+	// which reads as "every reference is dangling" rather than as a broken
+	// regex.
+	openapiSchemaRe = regexp.MustCompile(`(?m)^    ([A-Za-z0-9]+):\r?$`)
+)
+
+// TestOpenAPIHasNoDanglingSchemaRefs asserts that every $ref points at a schema
+// that exists.
+//
+// Two of these were already in the file. `SirTommyHint` was referenced by the
+// Sir Tommy response and never defined; `ErrorResponse` I invented myself in
+// the Bura change -- I wrote the 400 branch from memory instead of copying the
+// convention, which is that a 400 carries the game's own response payload with
+// a message. A spec that points at a schema which is not there generates
+// broken clients, and neither reference cost anything to add unnoticed.
+func TestOpenAPIHasNoDanglingSchemaRefs(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join(repoRoot, "api/openapi.yaml"))
+	if err != nil {
+		t.Fatalf("read api/openapi.yaml: %v", err)
+	}
+	text := string(data)
+
+	defined := map[string]bool{}
+	// Only the components.schemas block defines schemas; the four-space indent
+	// is unique to it in this file, but confirm the section exists so a
+	// restructure fails loudly instead of silently matching nothing.
+	if !strings.Contains(text, "\n  schemas:\n") && !strings.Contains(text, "\r\n  schemas:\r\n") {
+		t.Fatal("no components.schemas block found -- the file structure changed")
+	}
+	for _, m := range openapiSchemaRe.FindAllStringSubmatch(text, -1) {
+		defined[m[1]] = true
+	}
+
+	var dangling []string
+	seen := map[string]bool{}
+	for _, m := range openapiRefRe.FindAllStringSubmatch(text, -1) {
+		if !defined[m[1]] && !seen[m[1]] {
+			seen[m[1]] = true
+			dangling = append(dangling, m[1])
+		}
+	}
+	sort.Strings(dangling)
+
+	if len(dangling) > 0 {
+		t.Errorf("api/openapi.yaml references schemas that are not defined: %v", dangling)
+	}
+}
+
+// openapiExecKeyRe matches the start of one `  /<game>/exec:` path key. The
+// blocks are cut by splitting on these rather than by matching a block whose
+// terminator is the NEXT key: RE2 has no lookahead, so a block pattern
+// consumes the following key and silently skips every other path. That is not
+// hypothetical -- the first version of this guard checked 72 of 234 paths and
+// reported one of the three real mismatches.
+var openapiExecKeyRe = regexp.MustCompile(`(?m)^  /([a-z0-9]+)/exec:\r?$`)
+
+// openapiStatusRefRe captures a status code and the schema its response body
+// references, e.g. ('200', 'BuraResponse').
+var openapiStatusRefRe = regexp.MustCompile(`'(\d{3})':(?s:.*?)\$ref: '#/components/schemas/([A-Za-z0-9]+)'`)
+
+// TestOpenAPIErrorResponseMatchesTheSuccessSchema asserts that a path's 400
+// documents the same schema as its 200.
+//
+// Every endpoint here returns the game's own payload on both branches -- an
+// error arrives as a normal response carrying a `message`, not as a separate
+// error type. So the two refs must agree, and when they do not the spec
+// describes some other game's shape to anyone generating a client.
+//
+// This exists because I broke exactly that. Fixing the invented `ErrorResponse`
+// ref, I replaced "the first remaining occurrence" once per game while
+// iterating the games in a different order than they appear in the file, so
+// three of the five 400s landed on a sibling's schema. Two were right by
+// coincidence, which is what made it survive a read-through.
+//
+// TestOpenAPIHasNoDanglingSchemaRefs cannot catch this: every one of those
+// names is defined, just not the right one for its path.
+func TestOpenAPIErrorResponseMatchesTheSuccessSchema(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join(repoRoot, "api/openapi.yaml"))
+	if err != nil {
+		t.Fatalf("read api/openapi.yaml: %v", err)
+	}
+
+	text := string(data)
+	locs := openapiExecKeyRe.FindAllStringSubmatchIndex(text, -1)
+	if len(locs) == 0 {
+		t.Fatal("no /<game>/exec keys parsed -- the file structure changed; update openapiExecKeyRe")
+	}
+
+	checked := 0
+	for i, loc := range locs {
+		game := text[loc[2]:loc[3]]
+		end := len(text)
+		if i+1 < len(locs) {
+			end = locs[i+1][0]
+		}
+		body := text[loc[1]:end]
+		refs := map[string]string{}
+		for _, m := range openapiStatusRefRe.FindAllStringSubmatch(body, -1) {
+			if _, seen := refs[m[1]]; !seen {
+				refs[m[1]] = m[2]
+			}
+		}
+		ok, bad := refs["200"], refs["400"]
+		if ok == "" || bad == "" {
+			continue // a path documenting only one branch is not this test's business
+		}
+		checked++
+		if ok != bad {
+			t.Errorf("/%s/exec: 200 documents %s but 400 documents %s -- the 400 must carry the same game's payload",
+				game, ok, bad)
+		}
+	}
+
+	if checked == 0 {
+		t.Fatal("no path documented both a 200 and a 400 -- the parse found nothing to check")
+	}
+	t.Logf("checked %d paths", checked)
+}

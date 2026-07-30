@@ -205,6 +205,14 @@ tags:
     description: American Toad game - the two-deck Canfield, with a 20-card reserve that auto-fills empty columns and foundations that wrap round from the deal-chosen base rank
   - name: congress
     description: Congress game - eight single-card piles flanking eight foundations; the tableau builds down ignoring suit one card at a time, and an empty pile takes only a stock or waste card
+  - name: braid
+    description: Braid game - a two-deck solitaire whose eight foundations build in ONE player-chosen direction, with a 20-card braid that only feeds them
+  - name: pontoon
+    description: Pontoon game - the British ancestor of blackjack; the banker's hand is face down, a five-card trick beats 21, and the banker keeps the bank while winning
+  - name: settemezzo
+    description: Sette e Mezzo game - the Italian 7.5 game on a 40-card deck; totals are carried in HALVES so the half-point cards compare exactly
+  - name: niuniu
+    description: Niu Niu game - the Chinese bull game where three of five cards must sum to a multiple of ten, and the remaining pair's last digit is the rank
   - name: bura
     description: Bura game - a 36-card Russian trick game where up to three cards of one suit are led together and 31 card points must be CLAIMED, not merely reached
   - name: terrace
@@ -11226,6 +11234,299 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CongressResponse'
+  /braid/exec:
+    post:
+      tags:
+        - braid
+      summary: Execute a Braid game command
+      description: |
+        Send a command to advance the Braid (ブレイド) game session identified by
+        `sessionId`. It is a two-deck (104-card) solitaire.
+
+        A 20-card **braid** is laid out in a plait, eight **fields** and eight
+        **helpers** surround it, and the rest forms the stock.
+
+        The signature rule: **all eight foundations build in ONE direction**,
+        chosen once by the player. `awaitingDirection` is true until that choice
+        is made and no foundation can be touched before it; `direction` then
+        reports 1 for ascending or 2 for descending. The braid itself only ever
+        feeds a foundation.
+
+        Two redeals are allowed; `redealsLeft` and `canRedeal` report them.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All eight foundations complete |
+        | GameOver  | `2`   | Player gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `draw`         | `d`     | Turn a card from the stock |
+        | `direction`    | `dir`   | Fix the foundation direction (`ascending`) |
+        | `move`         | `m`     | Move a card (requires `from` and `to`) |
+        | `autocomplete` | `ac`    | Send every card that can go up |
+        | `undo`         | `u`     | Undo one move |
+        | `undo_n`       |         | Undo `n` moves |
+        | `giveup`       | `g`     | Concede |
+        | `hint`         | `h`     | Suggested move |
+        | `log`          | `l`     | Action-log transcript |
+      operationId: braidExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, direction, dir, move, m, autocomplete, ac, undo, u, undo_n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/BraidZone'
+                to:
+                  $ref: '#/components/schemas/BraidZone'
+                ascending:
+                  type: boolean
+                  description: Direction for the `direction` command. True builds up.
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n`)
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BraidResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BraidResponse'
+  /niuniu/exec:
+    post:
+      tags:
+        - niuniu
+      summary: Execute a Niu Niu game command
+      description: |
+        Send a command to advance the Niu Niu (闘牛) game session identified by
+        `sessionId`. It is a Chinese banking game on a 52-card deck.
+
+        Each seat gets five cards. **Three of them must sum to a multiple of
+        ten**; the last digit of the remaining two is the rank, 0 through 9,
+        with a last digit of 0 being the top hand (niu niu). `comboIdx` reports
+        which three made the bull so the client need not redo the search.
+
+        **There is no turn.** `bet` deals and settles in one call -- the game
+        offers no decision after the stake.
+
+        `maxMultiplier` matters for the client: a banker's niu niu takes THREE
+        times the stake, so what may legally be bet is `chips / maxMultiplier`,
+        not `chips`. Betting the whole stack would leave the player unable to
+        pay.
+
+        | Phase | Value | Description |
+        |-------|-------|-------------|
+        | Bet   | `1`   | Waiting for a stake |
+        | End   | `2`   | Round settled |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Next round |
+        | `bet`   | `b`     | Bet, deal and settle (`amount`) |
+        | `log`   | `l`     | Action-log transcript |
+      operationId: niuNiuExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bet, b, log, l]
+                sessionId:
+                  type: string
+                amount:
+                  type: integer
+                  description: |
+                    Stake. Must satisfy `amount * maxMultiplier <= chips`,
+                    because the worst case loses that much.
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiuNiuResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiuNiuResponse'
+  /pontoon/exec:
+    post:
+      tags:
+        - pontoon
+      summary: Execute a Pontoon game command
+      description: |
+        Send a command to advance the Pontoon (ポンツーン) game session identified
+        by `sessionId`. It is the British ancestor of blackjack.
+
+        What separates it from blackjack:
+
+        * **The banker's hand stays face down** until the round settles. While
+          `bankerHand.hidden` is true the server sends NO cards and a zero total
+          -- only the count survives.
+        * A **five-card trick** (five cards without busting) beats any 21, and a
+          two-card 21 is a **pontoon**, which beats that.
+        * **`buy`** doubles the stake for one extra card, and is only legal
+          before any `twist`.
+        * The banker **keeps the bank while winning**; `nextBanker` reports who
+          holds it next, or -1 while that is undecided.
+
+        `canStick` / `canTwist` / `canBuy` / `canSplit` are computed by the
+        server rather than re-derived by the client, because the rules that gate
+        them (no sticking under 15, no buying after a twist) are easy to get
+        subtly wrong twice.
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | Bet         | `1`   | Waiting for a stake |
+        | PlayerTurn  | `2`   | Player acting |
+        | BankerTurn  | `3`   | Banker acting |
+        | End         | `4`   | Round settled |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Next round |
+        | `bet`         | `b`     | Place a stake (`amount`) |
+        | `deal`        |         | Deal the round |
+        | `stick`       | `s`     | Stand |
+        | `twist`       | `t`     | Take a card at no extra stake |
+        | `buy`         |         | Double the stake for one card (`amount`) |
+        | `split`       | `sp`    | Split a pair |
+        | `bankertwist` | `bt`    | Banker takes a card (human banker) |
+        | `bankerstay`  | `bs`    | Banker stands (human banker) |
+        | `log`         | `l`     | Action-log transcript |
+      operationId: pontoonExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bet, b, deal, stick, s, twist, t, buy, split, sp, bankertwist, bt, bankerstay, bs, log, l]
+                sessionId:
+                  type: string
+                amount:
+                  type: integer
+                  description: Stake for `bet`, extra stake for `buy`.
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PontoonResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PontoonResponse'
+  /settemezzo/exec:
+    post:
+      tags:
+        - settemezzo
+      summary: Execute a Sette e Mezzo game command
+      description: |
+        Send a command to advance the Sette e Mezzo (セッテ・エ・メッツォ) game
+        session identified by `sessionId`. It is the Italian 7.5 game on a
+        40-card deck (8, 9 and 10 removed).
+
+        **Totals travel in HALVES, never as decimals.** Court cards are worth
+        half a point, so a total of 7.5 is sent as `totalHalves: 15` against
+        `targetHalves: 15`. Exact equality decides the round, and a float would
+        make that a rounding question.
+
+        The **matta** (the king of diamonds) is a wild card whose value the
+        player fixes, in halves, with the `matta` command.
+
+        The banker's hand is face down until the round settles; while hidden the
+        server sends no cards and a zero total.
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | Bet         | `1`   | Waiting for a stake |
+        | PlayerTurn  | `2`   | Player acting |
+        | BankerTurn  | `3`   | Banker acting |
+        | End         | `4`   | Round settled |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Next round |
+        | `bet`         | `b`     | Place a stake (`amount`) |
+        | `deal`        |         | Deal the round |
+        | `hit`         | `h`     | Take a card |
+        | `stand`       | `s`     | Stand |
+        | `matta`       |         | Fix the matta's value in HALVES (`amount`) |
+        | `bankerhit`   | `bh`    | Banker takes a card (human banker) |
+        | `bankerstand` | `bs`    | Banker stands (human banker) |
+        | `log`         | `l`     | Action-log transcript |
+      operationId: setteEMezzoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bet, b, deal, hit, h, stand, s, matta, bankerhit, bh, bankerstand, bs, log, l]
+                sessionId:
+                  type: string
+                amount:
+                  type: integer
+                  description: |
+                    Stake for `bet`. For `matta` it is the chosen value in
+                    HALVES, so 1 means half a point.
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetteEMezzoResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetteEMezzoResponse'
   /bura/exec:
     post:
       tags:
@@ -11312,11 +11613,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/BuraResponse'
         '400':
-          description: Invalid request
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/BuraResponse'
   /terrace/exec:
     post:
       tags:
@@ -20926,6 +21227,320 @@ components:
         toIdx:
           type: integer
           description: Destination index, or -1 for a draw, which targets no single pile
+    SirTommyHint:
+      type: object
+      description: |
+        Suggested move for Sir Tommy. Defined here because the response schema
+        already referenced it and nothing did -- see the dangling-reference
+        guard in internal/infrastructure/games.
+      properties:
+        from:
+          type: string
+          description: Source zone, e.g. `stock` or `waste`.
+        to:
+          type: string
+          description: Destination zone, e.g. `foundation` or `tableau`.
+        col:
+          type: integer
+          description: Destination pile index where the zone has more than one.
+        reason:
+          type: string
+          description: Reason identifier for the suggestion.
+    BraidZone:
+      type: object
+      description: A source or destination for a Braid move.
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          enum: [braid, field, helper, waste, foundation]
+        col:
+          type: integer
+          description: |
+            Slot number for `field` (0-3) and `helper` (0-7). Not used by
+            `braid`, `waste` or `foundation`.
+    BraidResponse:
+      type: object
+      description: Response payload for /braid/exec
+      properties:
+        braid:
+          type: array
+          description: The 20-card plait. Only the last card is playable, and only to a foundation.
+          items:
+            $ref: '#/components/schemas/Card'
+        fields:
+          type: array
+          description: |
+            Four field slots. An EMPTY slot is sent as null rather than omitted:
+            closing the gaps would shift every later index and the hint's slot
+            number would then point at the wrong card on screen.
+          items:
+            $ref: '#/components/schemas/Card'
+            nullable: true
+        helpers:
+          type: array
+          description: Eight helper slots, null for empty, on the same reasoning as `fields`.
+          items:
+            $ref: '#/components/schemas/Card'
+            nullable: true
+        foundation:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        stockCount:
+          type: integer
+        waste:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        baseRank:
+          type: integer
+          description: The rank all eight foundations start from, fixed by the deal.
+        direction:
+          type: integer
+          description: "0=not chosen yet, 1=ascending, 2=descending"
+        awaitingDirection:
+          type: boolean
+          description: |
+            While true the player has not fixed the build direction, and no
+            foundation can be touched. All eight then share that one direction.
+        redealsLeft:
+          type: integer
+        canRedeal:
+          type: boolean
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            from:
+              $ref: '#/components/schemas/BraidZone'
+            to:
+              $ref: '#/components/schemas/BraidZone'
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+    PontoonHand:
+      type: object
+      description: |
+        One Pontoon hand. While `hidden` is true the server sends NO cards and a
+        zero total -- only the count of nulls survives, so the client can draw
+        the right number of backs without learning what they are.
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+            nullable: true
+        bet:
+          type: integer
+        total:
+          type: integer
+          description: 0 while hidden.
+        rank:
+          type: integer
+          description: "0=bust, 1=point total, 2=five-card trick, 3=pontoon. 0 while hidden."
+        hidden:
+          type: boolean
+    PontoonResponse:
+      type: object
+      description: Response payload for /pontoon/exec
+      properties:
+        seats:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              isCpu:
+                type: boolean
+              hands:
+                type: array
+                description: More than one after a split.
+                items:
+                  $ref: '#/components/schemas/PontoonHand'
+        bankerHand:
+          $ref: '#/components/schemas/PontoonHand'
+        bankerIdx:
+          type: integer
+        isHumanBanker:
+          type: boolean
+          description: |
+            When true the human holds the bank, does not stake, and decides last.
+        chips:
+          type: integer
+        activeSeat:
+          type: integer
+        activeHand:
+          type: integer
+        nextBanker:
+          type: integer
+          description: "Who holds the bank next; -1 while undecided."
+        lastResult:
+          type: string
+        phase:
+          type: integer
+          description: "1=Bet, 2=PlayerTurn, 3=BankerTurn, 4=End"
+        canStick:
+          type: boolean
+          description: |
+            Decided by the server, not re-derived by the client. The gates are
+            fiddly -- no sticking under 15, no buying after a twist -- and
+            implementing them twice means getting them subtly different twice.
+        canTwist:
+          type: boolean
+        canBuy:
+          type: boolean
+        canSplit:
+          type: boolean
+        message:
+          type: string
+        messageCode:
+          type: string
+    SetteEMezzoHand:
+      type: object
+      description: One Sette e Mezzo hand. Hidden hands carry null cards and a zero total.
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+            nullable: true
+        bet:
+          type: integer
+        totalHalves:
+          type: integer
+          description: |
+            The total in HALVES, never as a decimal. Court cards are worth half
+            a point and exact equality decides the round, so 7.5 travels as 15
+            rather than as a float whose comparison is a rounding question.
+        hidden:
+          type: boolean
+    SetteEMezzoResponse:
+      type: object
+      description: Response payload for /settemezzo/exec
+      properties:
+        seats:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              isCpu:
+                type: boolean
+              hand:
+                $ref: '#/components/schemas/SetteEMezzoHand'
+        bankerHand:
+          $ref: '#/components/schemas/SetteEMezzoHand'
+        bankerIdx:
+          type: integer
+        isHumanBanker:
+          type: boolean
+        chips:
+          type: integer
+        activeSeat:
+          type: integer
+        nextBanker:
+          type: integer
+        lastResult:
+          type: string
+        phase:
+          type: integer
+          description: "1=Bet, 2=PlayerTurn, 3=BankerTurn, 4=End"
+        targetHalves:
+          type: integer
+          description: The target (7.5) in halves, so 15. Sent so the figure is not written down twice.
+        canHit:
+          type: boolean
+        canStand:
+          type: boolean
+        canSetMatta:
+          type: boolean
+          description: True while the king of diamonds is in hand and its value is unset.
+        message:
+          type: string
+        messageCode:
+          type: string
+    NiuNiuHand:
+      type: object
+      description: One Niu Niu hand. Hidden hands carry null cards and no rank.
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+            nullable: true
+        bet:
+          type: integer
+        comboIdx:
+          type: array
+          description: |
+            Positions of the three cards that summed to a multiple of ten. Empty
+            for a no-bull and while hidden. Sent so the client need not redo the
+            combination search to highlight them.
+          items:
+            type: integer
+        rank:
+          type: integer
+          description: "0=no bull, 1-9=niu 1 through niu 9, 10=niu niu. 0 while hidden."
+        rankLabel:
+          type: string
+        multiplier:
+          type: integer
+        payout:
+          type: integer
+        hidden:
+          type: boolean
+    NiuNiuResponse:
+      type: object
+      description: Response payload for /niuniu/exec
+      properties:
+        seats:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              isCpu:
+                type: boolean
+              hand:
+                $ref: '#/components/schemas/NiuNiuHand'
+        bankerHand:
+          $ref: '#/components/schemas/NiuNiuHand'
+        bankerIdx:
+          type: integer
+        chips:
+          type: integer
+        maxMultiplier:
+          type: integer
+          description: |
+            Largest payout multiplier in the table. The cap on a legal stake is
+            `chips / maxMultiplier`, NOT `chips` -- a banker's niu niu takes
+            three times the stake, so betting the whole stack leaves the player
+            unable to pay. Sent so that division is not reinvented client-side.
+        lastResult:
+          type: string
+        phase:
+          type: integer
+          description: "1=Bet, 2=End"
+        message:
+          type: string
+        messageCode:
+          type: string
     BuraResponse:
       type: object
       description: Response payload for /bura/exec
