@@ -147,6 +147,7 @@ import type {
   SirTommyResponse,
   SixCardGolfResponse,
   SkatResponse,
+  SkitgubbeResponse,
   SlapjackResponse,
   SoloWhistResponse,
   SpadesResponse,
@@ -343,6 +344,7 @@ import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSirTommyHint } from '../utils/hints/sirtommyHint';
 import { getSixcardgolfHint } from '../utils/hints/sixcardgolfHint';
 import { getSkatHint } from '../utils/hints/skatHint';
+import { getSkitgubbeHint } from '../utils/hints/skitgubbeHint';
 import { getSlapjackHint } from '../utils/hints/slapjackHint';
 import { getSoloWhistHint } from '../utils/hints/soloWhistHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
@@ -596,6 +598,7 @@ export const hintFactories = {
   mushi: (s) => getMushiHint(s as MushiResponse),
   toepen: (s) => getToepenHint(s as ToepenResponse),
   chineseten: (s) => getChineseTenHint(s as ChineseTenResponse),
+  skitgubbe: (s) => getSkitgubbeHint(s as SkitgubbeResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),

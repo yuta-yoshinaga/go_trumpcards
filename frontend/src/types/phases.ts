@@ -1693,6 +1693,13 @@ export const ChineseTenPhase = {
   GAME_END: 2,
 } as const;
 
+/** Skitgubbe phase constants (sync: internal/domain/Skitgubbe.go). */
+export const SkitgubbePhase = {
+  COLLECT: 0,
+  SHED: 1,
+  GAME_END: 2,
+} as const;
+
 /** Sette e Mezzo phase constants (sync: internal/domain/SetteEMezzo.go). */
 export const SetteEMezzoPhase = {
   BET: 1,

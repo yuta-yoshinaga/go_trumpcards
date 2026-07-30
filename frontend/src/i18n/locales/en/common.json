@@ -256,7 +256,8 @@
     "bura": "Bura",
     "mushi": "Mushi",
     "toepen": "Toepen",
-    "chineseten": "Chinese Ten"
+    "chineseten": "Chinese Ten",
+    "skitgubbe": "Skitgubbe"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1266,7 +1267,9 @@
     "toepen.hand_end": "The hand is over",
     "chineseten.win": "You win",
     "chineseten.lose": "You lose",
-    "chineseten.draw": "Draw"
+    "chineseten.draw": "Draw",
+    "skitgubbe.win": "You got rid of all your cards",
+    "skitgubbe.lose": "You are the Skitgubbe"
   },
   "manual": {
     "ariaLabel": "Game Manual",
