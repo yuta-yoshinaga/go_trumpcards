@@ -11310,7 +11310,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BuraResponse'
+                $ref: '#/components/schemas/BraidResponse'
   /niuniu/exec:
     post:
       tags:
@@ -11376,7 +11376,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BraidResponse'
+                $ref: '#/components/schemas/NiuNiuResponse'
   /pontoon/exec:
     post:
       tags:
@@ -11617,7 +11617,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NiuNiuResponse'
+                $ref: '#/components/schemas/BuraResponse'
   /terrace/exec:
     post:
       tags:

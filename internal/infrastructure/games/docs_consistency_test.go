@@ -404,3 +404,74 @@ func TestOpenAPIHasNoDanglingSchemaRefs(t *testing.T) {
 		t.Errorf("api/openapi.yaml references schemas that are not defined: %v", dangling)
 	}
 }
+
+// openapiExecKeyRe matches the start of one `  /<game>/exec:` path key. The
+// blocks are cut by splitting on these rather than by matching a block whose
+// terminator is the NEXT key: RE2 has no lookahead, so a block pattern
+// consumes the following key and silently skips every other path. That is not
+// hypothetical -- the first version of this guard checked 72 of 234 paths and
+// reported one of the three real mismatches.
+var openapiExecKeyRe = regexp.MustCompile(`(?m)^  /([a-z0-9]+)/exec:\r?$`)
+
+// openapiStatusRefRe captures a status code and the schema its response body
+// references, e.g. ('200', 'BuraResponse').
+var openapiStatusRefRe = regexp.MustCompile(`'(\d{3})':(?s:.*?)\$ref: '#/components/schemas/([A-Za-z0-9]+)'`)
+
+// TestOpenAPIErrorResponseMatchesTheSuccessSchema asserts that a path's 400
+// documents the same schema as its 200.
+//
+// Every endpoint here returns the game's own payload on both branches -- an
+// error arrives as a normal response carrying a `message`, not as a separate
+// error type. So the two refs must agree, and when they do not the spec
+// describes some other game's shape to anyone generating a client.
+//
+// This exists because I broke exactly that. Fixing the invented `ErrorResponse`
+// ref, I replaced "the first remaining occurrence" once per game while
+// iterating the games in a different order than they appear in the file, so
+// three of the five 400s landed on a sibling's schema. Two were right by
+// coincidence, which is what made it survive a read-through.
+//
+// TestOpenAPIHasNoDanglingSchemaRefs cannot catch this: every one of those
+// names is defined, just not the right one for its path.
+func TestOpenAPIErrorResponseMatchesTheSuccessSchema(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join(repoRoot, "api/openapi.yaml"))
+	if err != nil {
+		t.Fatalf("read api/openapi.yaml: %v", err)
+	}
+
+	text := string(data)
+	locs := openapiExecKeyRe.FindAllStringSubmatchIndex(text, -1)
+	if len(locs) == 0 {
+		t.Fatal("no /<game>/exec keys parsed -- the file structure changed; update openapiExecKeyRe")
+	}
+
+	checked := 0
+	for i, loc := range locs {
+		game := text[loc[2]:loc[3]]
+		end := len(text)
+		if i+1 < len(locs) {
+			end = locs[i+1][0]
+		}
+		body := text[loc[1]:end]
+		refs := map[string]string{}
+		for _, m := range openapiStatusRefRe.FindAllStringSubmatch(body, -1) {
+			if _, seen := refs[m[1]]; !seen {
+				refs[m[1]] = m[2]
+			}
+		}
+		ok, bad := refs["200"], refs["400"]
+		if ok == "" || bad == "" {
+			continue // a path documenting only one branch is not this test's business
+		}
+		checked++
+		if ok != bad {
+			t.Errorf("/%s/exec: 200 documents %s but 400 documents %s -- the 400 must carry the same game's payload",
+				game, ok, bad)
+		}
+	}
+
+	if checked == 0 {
+		t.Fatal("no path documented both a 200 and a 400 -- the parse found nothing to check")
+	}
+	t.Logf("checked %d paths", checked)
+}
