@@ -1383,6 +1383,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 3, 3, 4], skill: [3, 3, 4, 3], social: [4, 3, 1, 3, 3], theme: [3, 2, 1, 1, 4, 2] },
       },
       {
+        path: '/mushi',
+        labelKey: 'nav.mushi',
+        icon: '🎴',
+        page: 'Mushi',
+        profile: { mood: [4, 2, 4, 3], skill: [3, 4, 3, 3], social: [4, 3, 1, 3, 3], theme: [2, 3, 1, 1, 5, 3] },
+      },
+      {
         path: '/congress',
         labelKey: 'nav.congress',
         icon: '🏛️',

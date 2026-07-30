@@ -935,3 +935,27 @@ func mushiClampSeat(idx, n int) int {
 	}
 	return idx
 }
+
+// MushiCardGlyph は手続き描画用の絵文字を返す (ADR-0033)。
+func MushiCardGlyph(c *Card) string {
+	if c == nil {
+		return ""
+	}
+	m, i := c.GetDesign(), c.GetValue()
+	if m < 1 || m > 12 || i < 1 || i > MushiCardsPerMonth {
+		return ""
+	}
+	return mushiCardTable[m][i].glyph
+}
+
+// MushiCardName は札の短い識別名を返す。
+func MushiCardName(c *Card) string {
+	if c == nil {
+		return ""
+	}
+	m, i := c.GetDesign(), c.GetValue()
+	if m < 1 || m > 12 || i < 1 || i > MushiCardsPerMonth {
+		return ""
+	}
+	return mushiCardTable[m][i].name
+}

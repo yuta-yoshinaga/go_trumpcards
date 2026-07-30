@@ -11,6 +11,37 @@ import (
 // MushiWebPresenter 虫Webプレゼンタークラス
 type MushiWebPresenter struct{}
 
+// mushiFace は花札 1 枚を手続き描画するための自己記述子を返す (ADR-0033)。
+//
+// 花札には専用 PNG が無く、design は**スートではなく月**なので、標準の
+// cardToOutput をそのまま使うと design が "CLOVER"/"JOKER" に化けて描画パスが
+// 壊れる。deck:"hanafuda" を付けてフロントを手続き描画へ切り替える。
+func mushiFace(card *domain.Card) *CardFace {
+	if card == nil {
+		return nil
+	}
+	var color string
+	switch domain.MushiCardCategory(card) {
+	case domain.MushiBright:
+		color = "gold"
+	case domain.MushiAnimal:
+		color = "purple"
+	case domain.MushiRibbon:
+		color = "red"
+	default:
+		color = "black"
+	}
+	if domain.MushiIsWild(card) {
+		color = "gold" // 雷札はカスだが役割が特別なので目立たせる
+	}
+	return &CardFace{
+		Glyph: domain.MushiCardGlyph(card),
+		Label: domain.MushiCardName(card),
+		Color: color,
+		Deck:  "hanafuda",
+	}
+}
+
 // mushiCardOutput は 1 枚を、種別・点・ワイルドかどうかまで含めて出力する。
 // 点はサーバーが計算して渡す -- 40 枚の札種表をクライアントにもう一部持たせない。
 func mushiCardOutput(c *domain.Card) *controller.MushiWebOutputCard {
@@ -18,7 +49,9 @@ func mushiCardOutput(c *domain.Card) *controller.MushiWebOutputCard {
 		return nil
 	}
 	return &controller.MushiWebOutputCard{
-		WebOutputCard: cardToOutput(c),
+		WebOutputCard: cardToOutputWithFace(c, mushiFace),
+		Month:         c.GetDesign(),
+		Index:         c.GetValue(),
 		Category:      int(domain.MushiCardCategory(c)),
 		Points:        domain.MushiCardPoints(c),
 		IsWild:        domain.MushiIsWild(c),

@@ -27,6 +27,12 @@ type MushiWebConfig struct {
 // MushiWebOutputCard 場札・取り札 1 枚の出力。
 type MushiWebOutputCard struct {
 	*WebOutputCard
+	// Month は札の月 (1..12、6 と 7 は無い)。design は花札では月を表すが、
+	// ワイヤ上はスート名 ("CLOVER" 等) に変換されてしまうため、月を別に送る。
+	// クライアントにスート名から月を復号させるのは筋が悪い。
+	Month int `json:"month"`
+	// Index は月内の番号 (1..4)。
+	Index int `json:"index"`
 	// Category は 0=カス / 1=短冊 / 2=種 / 3=光。得点計算をクライアントに
 	// やり直させないために送る。
 	Category int `json:"category"`

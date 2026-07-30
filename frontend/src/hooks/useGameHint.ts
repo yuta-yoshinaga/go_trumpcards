@@ -97,6 +97,7 @@ import type {
   MississippiStudResponse,
   MissMilliganResponse,
   MonteCarloResponse,
+  MushiResponse,
   MusResponse,
   NapoleonResponse,
   NapoleonsSquareResponse,
@@ -290,6 +291,7 @@ import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMissMilliganHint } from '../utils/hints/missmilliganHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getMusHint } from '../utils/hints/musHint';
+import { getMushiHint } from '../utils/hints/mushiHint';
 import { getNapHint } from '../utils/hints/napHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNapoleonsSquareHint } from '../utils/hints/napoleonssquareHint';
@@ -587,6 +589,7 @@ export const hintFactories = {
   guts: (s) => getGutsHint(s as GutsResponse),
   anaconda: (s) => getAnacondaHint(s as AnacondaResponse),
   bura: (s) => getBuraHint(s as BuraResponse),
+  mushi: (s) => getMushiHint(s as MushiResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),
