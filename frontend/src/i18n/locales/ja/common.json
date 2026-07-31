@@ -271,7 +271,8 @@
     "kille": "キッレ",
     "klaberjass": "クラバーヤス",
     "kaiser": "カイザー",
-    "boston": "ボストン"
+    "boston": "ボストン",
+    "vint": "ヴィント"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1326,7 +1327,13 @@
     "boston.handMade": "宣言達成。落札側が各相手から受け取ります",
     "boston.handFailed": "宣言失敗。落札側が各相手に払います",
     "kaiser.result.humanWin": "あなたのチームの勝ちです",
-    "kaiser.result.cpuWin": "相手チームの勝ちです"
+    "kaiser.result.cpuWin": "相手チームの勝ちです",
+    "vint.bidPhase": "宣言フェーズ — ♠が最弱でNTが最強です（ブリッジとは逆）",
+    "vint.playPhase": "プレイ中 — 追随は強制です",
+    "vint.handMade": "宣言達成。【両チームとも】取ったトリックを線下に得点します",
+    "vint.handSet": "宣言失敗。不足数 × レベル × 500 が相手の線上へ",
+    "vint.result.humanWin": "あなたのチームがラバーを取りました",
+    "vint.result.cpuWin": "相手チームがラバーを取りました"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
