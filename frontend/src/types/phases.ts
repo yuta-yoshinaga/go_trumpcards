@@ -1722,6 +1722,13 @@ export const LobaPhase = {
   GAME_END: 3,
 } as const;
 
+/** Zwicker phase constants (sync: internal/domain/Zwicker.go). */
+export const ZwickerPhase = {
+  PLAY: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;
+
 /** Desmoche phase constants (sync: internal/domain/Desmoche.go). */
 export const DesmochePhase = {
   DRAW: 0,

@@ -195,6 +195,7 @@ import type {
   YanivResponse,
   YukonResponse,
   ZhengResponse,
+  ZwickerResponse,
 } from '../types/card';
 import type { HintResult } from '../types/hint';
 import { getAccordionHint } from '../utils/hints/accordionHint';
@@ -397,6 +398,7 @@ import { getWizardHint } from '../utils/hints/wizardHint';
 import { getYanivHint } from '../utils/hints/yanivHint';
 import { getYukonHint } from '../utils/hints/yukonHint';
 import { getZhengHint } from '../utils/hints/zhengHint';
+import { getZwickerHint } from '../utils/hints/zwickerHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
 
 /** Hint function that takes game state and returns a hint result or null. */
@@ -616,6 +618,7 @@ export const hintFactories = {
   trex: (s) => getTrexHint(s as TrexResponse),
   loba: (s) => getLobaHint(s as LobaResponse),
   desmoche: (s) => getDesmocheHint(s as DesmocheResponse),
+  zwicker: (s) => getZwickerHint(s as ZwickerResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),

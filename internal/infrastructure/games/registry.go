@@ -714,6 +714,12 @@ var registry = []*Game{
 	// resemblance, and "desmoche" itself is the move of reusing a card from one of
 	// your own face-up melds in another.
 	{Name: "desmoche", Category: CategoryExtra3},
+	// Zwicker is a north-German fishing game on 55 cards (52 + three jokers worth a
+	// fixed 15/20/25). Unlike Cassino, aces and court cards each carry TWO matching
+	// values chosen by the player, and they join sums -- which is why it cannot reuse
+	// the Cassino engine. "Zwick" is the bonus for clearing the table, not the name
+	// for a multi-group capture.
+	{Name: "zwicker", Category: CategoryExtra2},
 }
 
 // All returns a value-level copy of the registry in canonical order.

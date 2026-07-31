@@ -9,7 +9,7 @@ describe('useTutorialProgress', () => {
 
   it('returns all games with 0 completed by default', () => {
     const { result } = renderHook(() => useTutorialProgress());
-    expect(result.current.totalCount).toBe(244);
+    expect(result.current.totalCount).toBe(245);
     expect(result.current.completedCount).toBe(0);
     expect(result.current.games.every((g) => !g.completed)).toBe(true);
   });

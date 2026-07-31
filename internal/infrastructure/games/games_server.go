@@ -1235,4 +1235,9 @@ func init() {
 			return usecase.NewDesmocheInteractor(domain.NewDefaultDesmoche(), new(presenter.DesmocheWebPresenter))
 		},
 		controller.NewDesmocheWebController)
+	BindWebControllerFor("zwicker",
+		func() usecase.ZwickerInteractorIF {
+			return usecase.NewZwickerInteractor(domain.NewDefaultZwicker(), new(presenter.ZwickerWebPresenter))
+		},
+		controller.NewZwickerWebController)
 }

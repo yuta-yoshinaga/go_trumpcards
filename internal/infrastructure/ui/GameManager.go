@@ -3882,6 +3882,21 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "zwicker", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewZwickerCuiController(usecase.NewZwickerInteractor(
+				domain.NewDefaultZwicker(), new(presenter.ZwickerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "zwicker.helpTitle",
+				CommandKeys: []string{
+					"zwicker.helpTake",
+					"zwicker.helpBuild",
+					"zwicker.helpTrail",
+					"zwicker.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -241,6 +241,8 @@ tags:
     description: Loba
   - name: desmoche
     description: Desmoche
+  - name: zwicker
+    description: Zwicker
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -13057,6 +13059,121 @@ paths:
               schema:
                 $ref: '#/components/schemas/DesmocheResponse'
 
+  /zwicker/exec:
+    post:
+      tags:
+        - zwicker
+      summary: Execute a Zwicker game command
+      description: |
+        Send a command to advance the Zwicker session identified by `sessionId`.
+        Zwicker is the north-German (Schleswig) fishing game of the Cassino
+        family, played by **four in two fixed partnerships** on **55 cards**
+        (52 plus three jokers).
+
+        **Neither headline mechanic in #4387 exists.**
+
+        * The issue has a player **declaring any value for a joker**, making it
+          wild. Jokers are not wild: the three carry a **fixed 15, 20 and 25**.
+          What does carry a choice is the **aces and court cards** — A is 1 *or*
+          11, J is 2 *or* 12, Q is 3 *or* 13, K is 4 *or* 14, and the player
+          decides which. They also take part in sums, which is precisely why
+          this cannot reuse the Cassino engine: there a court card matches by
+          rank alone.
+        * The issue treats **"Zwick"** as the name for capturing several groups
+          at once. It is the bonus for **clearing the table**, worth 1. Taking
+          several groups in one play is ordinary Cassino-family capture.
+        * Three jokers, not two. The deal — 3 to the table, then 4 + 4 + 5 each
+          — exhausts the pack only at 55: 55 − 3 = 52 divides by four, 54 − 3 =
+          51 does not.
+
+        Scoring, which comes to **exactly 30** plus one per Zwick: large joker
+        7, middle 6, small 5, ♦10 3, ♠10 1, ♠2 1, each ace 1, majority of cards
+        3. A tie on card count leaves the majority three unawarded.
+
+        Documented convention, not from the source: when the deal runs out, any
+        cards left on the table go to the **last player who captured**. That
+        moves the three-point majority, so it is stated rather than hidden.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Play     | `0`   | Capture, build or trail |
+        | RoundEnd | `1`   | The deal is scored; `next` deals again |
+        | GameEnd  | `2`   | A team reached the target |
+
+        | Command   | Aliases | Description |
+        |-----------|---------|-------------|
+        | `reset`   | `r`     | Start / restart a game |
+        | `take`    | `t`     | Play `cardIndex` as `playedValue` and capture `tableIndices` / `buildIndices` |
+        | `build`   | `b`     | Build `declaredValue` from `cardIndex` and `tableIndices` |
+        | `trail`   | `tr`    | Put `cardIndex` on the table |
+        | `next`    | `n`     | Deal the next hand |
+        | `hint`    | `h`     | Suggested move for the human seat |
+        | `log`     | `l`     | Action-log transcript |
+
+        `trail` is aliased `tr`, not `l`: `l` is the action log.
+      operationId: zwickerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, take, t, build, b, trail, tr, next, n, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `take`, `build` and `trail`.
+                playedValue:
+                  type: integer
+                  description: |
+                    Which matching value the played card is used as. Required for
+                    `take`. An ace or court card has two; a number card and a
+                    joker have one.
+                tableIndices:
+                  type: array
+                  description: Table-card indices to capture, or to fold into a build.
+                  items:
+                    type: integer
+                buildIndices:
+                  type: array
+                  description: Indices into `builds` to capture. A build is taken only at its exact declared value.
+                  items:
+                    type: integer
+                declaredValue:
+                  type: integer
+                  description: |
+                    Value of the build being made. Required for `build`. You must
+                    keep a card able to make that value, or the build is refused.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+                    targetScore:
+                      type: integer
+                      description: Points that win the game (default 61).
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZwickerResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZwickerResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -23300,6 +23417,142 @@ components:
               type: integer
             drawStock:
               type: boolean
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    ZwickerCard:
+      type: object
+      description: |
+        A card together with every matching value it can take. Sent so the client
+        never re-derives the value table: aces and court cards have two values
+        each and the jokers are 15/20/25, and a client-side copy would drift from
+        the server's capture check.
+      allOf:
+        - $ref: '#/components/schemas/Card'
+        - type: object
+          properties:
+            values:
+              type: array
+              items:
+                type: integer
+    ZwickerResponse:
+      type: object
+      description: Response payload for /zwicker/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              team:
+                type: integer
+                description: "0 or 1. Seats across the table are partners."
+              cardCount:
+                type: integer
+                description: Hand size. Always sent, including while hidden.
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/ZwickerCard'
+              capturedCount:
+                type: integer
+                description: |
+                  Cards taken this deal. Public for every seat: the majority of
+                  cards is worth three, so the count is what the decision is made
+                  against.
+              zwicks:
+                type: integer
+                description: Times this seat cleared the table. One point each.
+              hidden:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Play, 1=RoundEnd, 2=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        stockCount:
+          type: integer
+        tableCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/ZwickerCard'
+        builds:
+          type: array
+          items:
+            type: object
+            properties:
+              owner:
+                type: integer
+              value:
+                type: integer
+                description: Declared value. A build is captured only at exactly this value.
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        teamScores:
+          type: array
+          description: Running totals, indexed by team.
+          items:
+            type: integer
+        targetScore:
+          type: integer
+          description: Points that win the game.
+        lastRound:
+          type: object
+          description: Breakdown of the deal just scored; absent until one is.
+          properties:
+            cardPoints:
+              type: array
+              items:
+                type: integer
+            cards:
+              type: array
+              items:
+                type: integer
+            majorityTeam:
+              type: integer
+              description: "Team with more cards; -1 when the counts were level, in which case nobody takes the three"
+            zwicks:
+              type: array
+              items:
+                type: integer
+            total:
+              type: array
+              items:
+                type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "Winning team; -1 while the game is live"
+        hint:
+          type: object
+          description: Suggested move, sent on every response while it is the human's turn.
+          properties:
+            take:
+              type: boolean
+              description: True to capture, false to trail.
+            cardIndex:
+              type: integer
+            value:
+              type: integer
+            tableIndices:
+              type: array
+              items:
+                type: integer
             reason:
               type: string
         message:
