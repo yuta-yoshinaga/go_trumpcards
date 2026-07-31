@@ -265,7 +265,12 @@ var registry = []*Game{
 	// Laugh and Lie Down is a 17th-century fishing game: one card takes one or
 	// three of a rank, and a player who cannot capture feeds their whole hand
 	// to the table.
+	// Sjavs has six permanent trumps (both black queens and all four jacks), so
+	// a "trump" is not the same thing as "a card of the trump suit".
+	{Name: "sjavs", Category: CategoryExtra2},
+
 	{Name: "laughandliedown", Category: CategoryExtra2},
+
 	{Name: "shithead", Category: CategoryClassic},
 	{Name: "nertz", Category: CategoryExtra2},
 	{Name: "slapjack", Category: CategoryClassic},

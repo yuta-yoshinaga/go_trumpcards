@@ -941,7 +941,8 @@ type sjavsJSON struct {
 func (s *Sjavs) MarshalJSON() ([]byte, error) {
 	trick := make([]sjavsTrickCardJSON, 0, len(s.trick))
 	for _, tc := range s.trick {
-		trick = append(trick, sjavsTrickCardJSON{PlayerIdx: tc.PlayerIdx, Card: tc.Card})
+		// タグ以外は同一のフィールドなので変換で足りる (staticcheck S1016)。
+		trick = append(trick, sjavsTrickCardJSON(tc))
 	}
 	return json.Marshal(sjavsJSON{
 		Players: s.players, Config: s.config, Phase: s.phase, Dealer: s.dealerIdx,
@@ -1016,7 +1017,7 @@ func (s *Sjavs) UnmarshalJSON(data []byte) error {
 		if tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= len(s.players) {
 			continue
 		}
-		s.trick = append(s.trick, SjavsTrickCard{PlayerIdx: tc.PlayerIdx, Card: tc.Card})
+		s.trick = append(s.trick, SjavsTrickCard(tc))
 	}
 	return nil
 }

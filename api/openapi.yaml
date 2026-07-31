@@ -233,6 +233,8 @@ tags:
     description: Skitgubbe
   - name: laughandliedown
     description: Laugh and Lie Down
+  - name: sjavs
+    description: Sjavs
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -12633,6 +12635,112 @@ paths:
               schema:
                 $ref: '#/components/schemas/LaughAndLieDownResponse'
 
+  /sjavs/exec:
+    post:
+      tags:
+        - sjavs
+      summary: Execute a Sjavs game command
+      description: |
+        Send a command to advance the Sjavs session identified by `sessionId`.
+        It is the Faroese national card game: 32 cards, four players in two
+        fixed partnerships (seats 0+2 against 1+3), Schafkopf-style permanent
+        trumps, and a rubber counted DOWN from 24.
+
+        #4403 gets three things wrong, so pagat.com is followed.
+
+        * The issue lists **two** permanent trumps. There are **six**, in a
+          fixed order: `CQ > SQ > CJ > SJ > HJ > DJ`, followed by the trump
+          suit's own `A, K, (Q), 10, 9, 8, 7`. **The count checks this**: a red
+          trump suit yields 6+7 = 13 trumps and a black one 6+6 = 12, matching
+          the source. Two permanent trumps would give 9 and 8.
+        * The issue bids **a target score**. A bid is the **length of your
+          longest trump suit**, minimum five; if nobody reaches five the hand is
+          redealt. Longer beats shorter and, at equal length, clubs beats
+          everything — so a player whose longest suits include clubs must bid it
+          as clubs.
+        * The issue erases **one cross per hand**. A rubber is **24 points
+          counted down**; the side first reaching zero or below wins it, and a
+          cross records that rubber win.
+
+        Trumps form their own suit when following: with hearts trump the club
+        jack is a trump, so a club lead does not oblige it.
+
+        Card points: A 11, 10 ten, K 4, Q 3, J 2 — **120 in the pack**.
+        Settlement, doubled when clubs are trumps EXCEPT for the slam:
+
+        | Declarers took | Declarers | In clubs |
+        |----------------|-----------|----------|
+        | all tricks     | 12        | **16** (not 24) |
+        | 90-120         | 4         | 8 |
+        | 61-89          | 2         | 4 |
+        | 60-60          | nothing; the next game is worth two more | same |
+        | 31-59          | opponents 4 | opponents 8 |
+        | 0-30           | opponents 8 | opponents 16 |
+        | no tricks      | **opponents 16, whatever the suit** | 16 |
+
+        `trumpCount` ships the 13-or-12 so the client never recounts, and
+        `validIndices` carries the following rule including the permanent
+        trumps.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Bid     | `0`   | Bidding a trump-suit length |
+        | Play    | `1`   | Playing tricks |
+        | HandEnd | `2`   | The hand is settled; `next` deals again |
+        | GameEnd | `3`   | The rubber is decided |
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart a rubber |
+        | `bid`    | `b`     | Bid `bidLength` cards; 0 passes |
+        | `play`   | `p`     | Play the hand card at `cardIndex` |
+        | `next`   | `n`     | Deal the next hand |
+        | `hint`   | `h`     | Suggested move for the human seat |
+        | `log`    | `l`     | Action-log transcript |
+      operationId: sjavsExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, play, p, next, n, hint, h, log, l]
+                sessionId:
+                  type: string
+                bidLength:
+                  type: integer
+                  description: |
+                    Trump-suit length to bid. Required for `bid`. **Zero passes**
+                    -- it is a real value, not an omission.
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SjavsResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SjavsResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -22404,6 +22512,149 @@ components:
             cardIndex:
               type: integer
             takeCount:
+              type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    SjavsResponse:
+      type: object
+      description: Response payload for /sjavs/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              team:
+                type: integer
+                description: "0 or 1; seats across the table are partners"
+              cardCount:
+                type: integer
+                description: Hand size. Always sent, including while hidden.
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+                description: |
+                  This seat's bid, 0 for a pass or no bid yet. Public -- a bid is
+                  spoken at the table, and what your partner holds is the read.
+              hidden:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Bid, 1=Play, 2=HandEnd, 3=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "-1 until bidding ends"
+        trumpCount:
+          type: integer
+          description: |
+            Trumps in the declared suit: 13 for a red suit, 12 for a black one,
+            counting the six permanent trumps. Zero while undecided. Sent so the
+            client never recounts -- counting only the trump suit always falls
+            short.
+        bidderIdx:
+          type: integer
+          description: "Seat that declared trumps; -1 while undecided"
+        bidLength:
+          type: integer
+        minBid:
+          type: integer
+          description: Shortest biddable trump suit. Below this you must pass.
+        myLongest:
+          type: integer
+          description: The human's longest trump suit, which caps their bid.
+        trick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        trickNo:
+          type: integer
+        validIndices:
+          type: array
+          description: |
+            Hand indices that may be played. Carries the following rule,
+            including that trumps form their own suit. Empty outside the human's
+            turn in the play phase.
+          items:
+            type: integer
+        teamPoints:
+          type: array
+          description: Card points this hand, per team. Always sums to 120.
+          items:
+            type: integer
+        remaining:
+          type: array
+          description: |
+            Each team's distance from winning the rubber, counted DOWN from 24.
+            Zero or below wins.
+          items:
+            type: integer
+        crosses:
+          type: array
+          description: |
+            Rubbers won, per team. A cross records a rubber, not a hand.
+          items:
+            type: integer
+        carryOver:
+          type: integer
+          description: Extra points a 60-60 hand added to the next game.
+        handResult:
+          type: object
+          description: Present once a hand has been settled.
+          properties:
+            declarerTeam:
+              type: integer
+            declarerPoints:
+              type: integer
+            scoringTeam:
+              type: integer
+              description: "-1 when the hand tied 60-60 and nobody scored"
+            amount:
+              type: integer
+            vol:
+              type: boolean
+              description: All eight tricks.
+            trumpWasClubs:
+              type: boolean
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "-1 while the rubber is undecided"
+        doubleVictory:
+          type: boolean
+          description: The losers never left 24.
+        hint:
+          type: object
+          description: Suggested move, sent on every response while it is the human's turn.
+          properties:
+            cardIndex:
+              type: integer
+            bidLength:
               type: integer
             reason:
               type: string
