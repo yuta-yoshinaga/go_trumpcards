@@ -1688,6 +1688,23 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "loba", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewLobaCuiController(usecase.NewLobaInteractor(
+				domain.NewDefaultLoba(), new(presenter.LobaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "loba.helpTitle",
+				CommandKeys: []string{
+					"loba.helpDrawStock",
+					"loba.helpDrawDiscard",
+					"loba.helpMeld",
+					"loba.helpLayOff",
+					"loba.helpDiscard",
+					"loba.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "sjavs", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSjavsCuiController(usecase.NewSjavsInteractor(

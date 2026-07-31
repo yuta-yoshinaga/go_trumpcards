@@ -237,6 +237,8 @@ tags:
     description: Sjavs
   - name: trex
     description: Trex
+  - name: loba
+    description: Loba
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -12843,6 +12845,111 @@ paths:
               schema:
                 $ref: '#/components/schemas/TrexResponse'
 
+  /loba/exec:
+    post:
+      tags:
+        - loba
+      summary: Execute a Loba game command
+      description: |
+        Send a command to advance the Loba session identified by `sessionId`.
+        It is the Argentine rummy played with **108 cards** (two packs plus four
+        jokers): nine each, and a player is knocked out on reaching **101**
+        penalty points. This implements **Loba de Menos**, the negative-scoring
+        form.
+
+        **#4414's central premise does not hold: Loba is not a contract rummy.**
+        The issue has "a contract per hand, played in order" and awards the game
+        to the lowest total once every contract is done. pagat.com states
+        plainly that there is *no fixed contract* — that structure belongs to
+        Carioca / Contract Rummy. Loba knocks players out at 101 and the **last
+        player standing wins**. The issue also says 3-6 players; it is 2-5.
+
+        Rules the issue does not mention, which are what make it Loba:
+
+        * A **pierna** is one rank in **three DIFFERENT suits**. With two packs
+          the same suit turns up twice, and that does not make a meld. Cards
+          laid off later must stay within those three suits.
+        * **Jokers are not wild.** They go only in an *escalera* (a suit run),
+          at most one per run, never in a pierna — and they normally **cannot be
+          discarded** (only when a joker is the last card in hand).
+        * In an escalera the ace is high **or** low, never both, so K-A-2 is not
+          a run.
+        * Going out **without having melded earlier in the round** takes **10
+          off** your score.
+        * Cards left in hand: numerals at face value, **joker, K, Q, J and A ten
+          each**.
+        * Laying off is allowed onto **any** player's meld once you have melded
+          something of your own.
+
+        Not implemented: the buy-back ("reengancharse"). The source has it as
+        optional and does not say who decides or when, so against CPUs there is
+        no owner for that decision.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Draw     | `0`   | Take from the stock or the discard |
+        | Act      | `1`   | Meld, lay off, then discard |
+        | RoundEnd | `2`   | The round is settled; `next` deals again |
+        | GameEnd  | `3`   | One player is left |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a game |
+        | `drawstock`   | `ds`    | Draw from the stock |
+        | `drawdiscard` | `dd`    | Take the top discard |
+        | `meld`        | `m`     | Put down `cardIndices` as a meld |
+        | `layoff`      | `o`     | Add `cardIndex` to `meldIndex` |
+        | `discard`     | `d`     | Discard `cardIndex` |
+        | `next`        | `n`     | Deal the next round |
+        | `hint`        | `h`     | Suggested move for the human seat |
+        | `log`         | `l`     | Action-log transcript |
+      operationId: lobaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, layoff, o, discard, d, next, n, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `discard` and `layoff`.
+                cardIndices:
+                  type: array
+                  description: Hand indices forming the meld. Required for `meld`.
+                  items:
+                    type: integer
+                meldIndex:
+                  type: integer
+                  description: Index into `melds`. Required for `layoff`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LobaResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LobaResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -22886,6 +22993,104 @@ components:
             contract:
               type: integer
             pass:
+              type: boolean
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    LobaResponse:
+      type: object
+      description: Response payload for /loba/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: Hand size. Always sent, including while hidden.
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/Card'
+              score:
+                type: integer
+                description: |
+                  Penalty total. Public for every seat: 101 knocks a player out,
+                  so how close each one is drives every decision.
+              eliminated:
+                type: boolean
+              hasMelded:
+                type: boolean
+                description: |
+                  Whether this seat has melded this round, which is what allows
+                  laying off.
+              hidden:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Draw, 1=Act, 2=RoundEnd, 3=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        stockCount:
+          type: integer
+        discardTop:
+          $ref: '#/components/schemas/Card'
+        melds:
+          type: array
+          items:
+            type: object
+            properties:
+              owner:
+                type: integer
+              kind:
+                type: integer
+                description: "0=pierna (one rank, three different suits), 1=escalera (a suit run)"
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        roundNo:
+          type: integer
+        knockOut:
+          type: integer
+          description: Penalty total that eliminates a player (101).
+        roundWinner:
+          type: integer
+          description: "Seat that went out last round; -1 when none"
+        roundClean:
+          type: boolean
+          description: |
+            That seat went out without having melded earlier in the round, which
+            is what takes ten off.
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "Last player standing; -1 while the game is live"
+        hint:
+          type: object
+          description: Suggested move, sent on every response while it is the human's turn.
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            cardIndex:
+              type: integer
+            drawStock:
               type: boolean
             reason:
               type: string

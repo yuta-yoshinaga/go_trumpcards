@@ -269,6 +269,8 @@ var registry = []*Game{
 	// to the table.
 	// Sjavs has six permanent trumps (both black queens and all four jacks), so
 	// a "trump" is not the same thing as "a card of the trump suit".
+	{Name: "loba", Category: CategoryExtra2},
+
 	{Name: "sjavs", Category: CategoryExtra2},
 
 	{Name: "laughandliedown", Category: CategoryExtra2},
