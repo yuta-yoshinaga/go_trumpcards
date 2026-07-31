@@ -259,7 +259,8 @@
     "toepen": "Toepen",
     "chineseten": "Chinese Ten",
     "skitgubbe": "Skitgubbe",
-    "laughandliedown": "Laugh and Lie Down"
+    "laughandliedown": "Laugh and Lie Down",
+    "sjavs": "Sjavs"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1274,7 +1275,11 @@
     "skitgubbe.lose": "You are the Skitgubbe",
     "laughandliedown.win": "You finished ahead",
     "laughandliedown.even": "You broke even",
-    "laughandliedown.lose": "You finished behind"
+    "laughandliedown.lose": "You finished behind",
+    "sjavs.win": "You won the rubber",
+    "sjavs.winDouble": "You won the rubber with a double victory",
+    "sjavs.lose": "You lost the rubber",
+    "sjavs.loseDouble": "You lost the rubber to a double victory"
   },
   "manual": {
     "ariaLabel": "Game Manual",

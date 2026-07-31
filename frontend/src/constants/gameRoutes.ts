@@ -1404,6 +1404,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 4, 2, 5], skill: [2, 3, 4, 4], social: [5, 2, 0, 4, 4], theme: [3, 2, 1, 1, 4, 2] },
       },
       {
+        path: '/sjavs',
+        labelKey: 'nav.sjavs',
+        icon: '🇫🇴',
+        page: 'Sjavs',
+        profile: { mood: [3, 4, 3, 3], skill: [4, 4, 3, 4], social: [2, 4, 2, 5, 4], theme: [3, 2, 2, 1, 3, 3] },
+      },
+      {
         path: '/laughandliedown',
         labelKey: 'nav.laughandliedown',
         icon: '🎣',

@@ -301,6 +301,14 @@ func init() {
 			return usecase.RestoreSetteEMezzoInteractor(data, new(presenter.SetteEMezzoWebPresenter))
 		},
 		controller.NewSetteEMezzoWebControllerWithProvider)
+	games.RegisterKVGame("sjavs", games.CategoryExtra2,
+		func() usecase.SjavsInteractorIF {
+			return usecase.NewSjavsInteractor(domain.NewDefaultSjavs(), new(presenter.SjavsWebPresenter))
+		},
+		func(data []byte) (usecase.SjavsInteractorIF, error) {
+			return usecase.RestoreSjavsInteractor(data, new(presenter.SjavsWebPresenter))
+		},
+		controller.NewSjavsWebControllerWithProvider)
 	games.RegisterKVGame("laughandliedown", games.CategoryExtra2,
 		func() usecase.LaughAndLieDownInteractorIF {
 			return usecase.NewLaughAndLieDownInteractor(domain.NewDefaultLaughAndLieDown(), new(presenter.LaughAndLieDownWebPresenter))

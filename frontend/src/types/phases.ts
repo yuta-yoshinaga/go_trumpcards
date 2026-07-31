@@ -1706,6 +1706,14 @@ export const LaughAndLieDownPhase = {
   GAME_END: 1,
 } as const;
 
+/** Sjavs phase constants (sync: internal/domain/Sjavs.go). */
+export const SjavsPhase = {
+  BID: 0,
+  PLAY: 1,
+  HAND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Sette e Mezzo phase constants (sync: internal/domain/SetteEMezzo.go). */
 export const SetteEMezzoPhase = {
   BET: 1,
