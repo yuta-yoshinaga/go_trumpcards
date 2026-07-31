@@ -113,6 +113,7 @@ export * from './games/kemps';
 export * from './games/kille';
 export * from './games/king';
 export * from './games/kingalbert';
+export * from './games/klaberjass';
 export * from './games/klaverjas';
 export * from './games/klondike';
 export * from './games/knockoutwhist';

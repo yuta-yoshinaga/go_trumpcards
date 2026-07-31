@@ -1260,4 +1260,9 @@ func init() {
 			return usecase.NewKilleInteractor(domain.NewDefaultKille(), new(presenter.KilleWebPresenter))
 		},
 		controller.NewKilleWebController)
+	BindWebControllerFor("klaberjass",
+		func() usecase.KlaberjassInteractorIF {
+			return usecase.NewKlaberjassInteractor(domain.NewDefaultKlaberjass(), new(presenter.KlaberjassWebPresenter))
+		},
+		controller.NewKlaberjassWebController)
 }
