@@ -656,6 +656,13 @@ func TestKlaberjassDixExchangesTheTrumpSeven(t *testing.T) {
 	k.Reset()
 	turnUp := kjCard(CardDesignSpade, 1)
 	k.SetTurnUpForTest(turnUp)
+	// **相手の手札も固定する。**applyDix は全席を走査するので、配りっぱなしの
+	// 席がたまたま切札の 7 を持っていると、そちらが交換してしまう。
+	k.SetHandForTest(0, []*Card{
+		kjCard(CardDesignClover, 8), kjCard(CardDesignClover, 9),
+		kjCard(CardDesignClover, 10), kjCard(CardDesignClover, 11),
+		kjCard(CardDesignDiamond, 12), kjCard(CardDesignDiamond, 13),
+	})
 	k.SetHandForTest(1, []*Card{
 		kjCard(CardDesignSpade, 7), kjCard(CardDesignHeart, 8),
 		kjCard(CardDesignHeart, 9), kjCard(CardDesignHeart, 10),
@@ -687,6 +694,12 @@ func TestKlaberjassDixOnlyWhenTheTurnUpSuitIsTrump(t *testing.T) {
 	k := NewDefaultKlaberjass()
 	k.Reset()
 	k.SetTurnUpForTest(kjCard(CardDesignSpade, 1))
+	// 両席とも固定する。どちらかに ♠7 が残っていると交換が起きてしまう。
+	k.SetHandForTest(0, []*Card{
+		kjCard(CardDesignClover, 8), kjCard(CardDesignClover, 9),
+		kjCard(CardDesignClover, 10), kjCard(CardDesignClover, 11),
+		kjCard(CardDesignDiamond, 12), kjCard(CardDesignDiamond, 13),
+	})
 	k.SetHandForTest(1, []*Card{
 		kjCard(CardDesignHeart, 7), kjCard(CardDesignHeart, 8),
 		kjCard(CardDesignHeart, 9), kjCard(CardDesignHeart, 10),
@@ -872,13 +885,35 @@ func TestKlaberjassCpuDrivesAFullDeal(t *testing.T) {
 	for attempt := range 30 {
 		k := NewDefaultKlaberjass()
 		k.Reset()
-		// 人間席も CPU 扱いにして全自動で回す。
-		k.GetPlayer(0).SetIsHuman(false)
+		// 人間席の手も CPU の判断で埋めて、全自動で 1 ディール回し切る。
 		for step := 0; step < 400; step++ {
 			if k.GetPhase() == KlaberjassPhaseHandEnd || k.GetGameEndFlag() {
 				break
 			}
-			k.CpuPlay()
+			if !k.IsHumanTurn() {
+				k.CpuPlay()
+				continue
+			}
+			switch k.GetPhase() {
+			case KlaberjassPhaseBidTurnUp, KlaberjassPhaseBidFree:
+				idx := k.GetBidPlayerIdx()
+				action, suit := k.KlaberjassCpuBid(idx)
+				switch action {
+				case "accept":
+					_ = k.AcceptTrump(idx)
+				case "call":
+					_ = k.CallTrump(idx, suit)
+				default:
+					_ = k.Pass(idx)
+				}
+			case KlaberjassPhaseSchmeiss:
+				_ = k.AnswerSchmeiss(k.GetBidPlayerIdx(), true)
+			case KlaberjassPhasePlay:
+				idx := k.GetCurrentPlayerIdx()
+				if i := k.KlaberjassCpuPlay(idx); i >= 0 {
+					_ = k.PlayCard(idx, i)
+				}
+			}
 		}
 		if k.GetPhase() != KlaberjassPhaseHandEnd && !k.GetGameEndFlag() {
 			t.Fatalf("attempt %d: the deal never finished (phase %v)", attempt, k.GetPhase())
