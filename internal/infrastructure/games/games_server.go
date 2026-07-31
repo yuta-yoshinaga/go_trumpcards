@@ -1285,4 +1285,9 @@ func init() {
 			return usecase.NewBidEuchreInteractor(domain.NewDefaultBidEuchre(), new(presenter.BidEuchreWebPresenter))
 		},
 		controller.NewBidEuchreWebController)
+	BindWebControllerFor("sixbidsolo",
+		func() usecase.SixBidSoloInteractorIF {
+			return usecase.NewSixBidSoloInteractor(domain.NewDefaultSixBidSolo(), new(presenter.SixBidSoloWebPresenter))
+		},
+		controller.NewSixBidSoloWebController)
 }

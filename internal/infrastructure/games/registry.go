@@ -775,6 +775,15 @@ var registry = []*Game{
 	// declaring side its BID (not the tricks it took), while the defenders still
 	// score theirs. First side to 32 wins.
 	{Name: "bideuchre", Category: CategoryExtra2},
+	// sixbidsolo -- Six-Bid Solo. A 3-player American descendant of skat on a
+	// 36-card pack where the ten outranks the king. ELEVEN cards each plus a
+	// THREE-CARD WIDOW (11 x 3 + 3 = 36), and the widow is credited to the
+	// declarer at the end -- except at either misere. Six bids ascend and swap
+	// the target and the payment together: a plain bid must EXCEED 60 (so 61)
+	// and settles on the difference from 60, while a misere asks for zero card
+	// POINTS rather than zero tricks. A call solo also names a card whose
+	// holder must exchange it.
+	{Name: "sixbidsolo", Category: CategoryExtra2},
 }
 
 // All returns a value-level copy of the registry in canonical order.
