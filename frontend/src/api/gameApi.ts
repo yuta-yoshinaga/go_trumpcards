@@ -168,6 +168,7 @@ export * from './games/pinochle';
 export * from './games/piquet';
 export * from './games/pishti';
 export * from './games/pitch';
+export * from './games/poch';
 export * from './games/poker';
 export * from './games/pokersquares';
 export * from './games/pontoon';
@@ -355,6 +356,7 @@ export const games = [
   'loba',
   'desmoche',
   'zwicker',
+  'poch',
   'missmilligan',
   'canfield',
   'osmosis',

@@ -122,6 +122,7 @@ import type {
   PineappleResponse,
   PinochleResponse,
   PitchResponse,
+  PochResponse,
   PokerResponse,
   PokerSquaresResponse,
   PreferenceResponse,
@@ -325,6 +326,7 @@ import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
 import { getPitchHint } from '../utils/hints/pitchHint';
+import { getPochHint } from '../utils/hints/pochHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
 import { getPreferenceHint } from '../utils/hints/preferenceHint';
@@ -619,6 +621,7 @@ export const hintFactories = {
   loba: (s) => getLobaHint(s as LobaResponse),
   desmoche: (s) => getDesmocheHint(s as DesmocheResponse),
   zwicker: (s) => getZwickerHint(s as ZwickerResponse),
+  poch: (s) => getPochHint(s as PochResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),

@@ -243,6 +243,8 @@ tags:
     description: Desmoche
   - name: zwicker
     description: Zwicker
+  - name: poch
+    description: Poch
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -13174,6 +13176,100 @@ paths:
               schema:
                 $ref: '#/components/schemas/ZwickerResponse'
 
+  /poch/exec:
+    post:
+      tags:
+        - poch
+      summary: Execute a Poch game command
+      description: |
+        Send a command to advance the Poch session identified by `sessionId`.
+        Poch is a 15th-century German three-stage game for **3-6** players on a
+        **32-card** pack (A-K-Q-J-10-9-8-7) and a board of **nine pools**.
+
+        **The three-stage skeleton in #4415 is right; all three stages are not.**
+
+        * The issue deals leftover cards **onto** the board compartments. No
+          cards go on the board. Before every deal each player puts **one chip
+          into each of the nine pools**, and the single leftover card is turned
+          face up -- its suit is the **pay suit**.
+        * The issue pays a pool to anyone holding "the relevant **rank**". Rank
+          alone pays nothing: you need that card **in the pay suit**. Marriage
+          needs the pay-suit K *and* Q in one hand; Sequence needs its 7-8-9.
+        * The issue makes stage two a **bluff**: declare "I hold N of a rank",
+          bet, and whoever's declaration stands takes the pot. There is no
+          declaration and no bluff. It is a **comparison of same-rank sets** --
+          four of a kind beats three, three beats a pair -- among those who did
+          not fold. "Pocher" is one of the nine pools, not a move.
+        * The issue ends stage three at "you cannot play, so your turn ends".
+          The play is a **suit sequence upwards**: each card must be the next
+          higher card of the same suit. When nobody holds the next one the run
+          is **stopped**, and whoever played the last and highest card starts
+          again with any card.
+
+        Two things the issue omits, both load-bearing: going out collects the
+        **centre pot plus one chip from every other player for each card they
+        still hold**, and **pools nobody claims carry over** — everyone antes
+        again next deal, so Marriage and Sequence build up.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Staking  | `0`   | Stage 1; resolves itself the moment cards are dealt |
+        | Pochen   | `1`   | Stage 2; bet or fold |
+        | Stops    | `2`   | Stage 3; play up the suit |
+        | DealEnd  | `3`   | The deal is settled; `next` deals again |
+        | GameEnd  | `4`   | The last deal is done |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Put in one unit (call or raise) |
+        | `fold`  | `f`     | Drop out of the pochen |
+        | `play`  | `p`     | Play `cardIndex` |
+        | `next`  | `n`     | Deal the next hand |
+        | `hint`  | `h`     | Suggested move for the human seat |
+        | `log`   | `l`     | Action-log transcript |
+      operationId: pochExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bet, b, fold, f, play, p, next, n, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+                    targetDeals:
+                      type: integer
+                      description: Deals played before the game is decided (default 5).
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PochResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PochResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -23553,6 +23649,128 @@ components:
               type: array
               items:
                 type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    PochResponse:
+      type: object
+      description: Response payload for /poch/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: |
+                  Hand size. Public for every seat, including while hidden: whoever
+                  goes out is paid one chip per card still held, so this is a
+                  running liability.
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/Card'
+              chips:
+                type: integer
+              bet:
+                type: integer
+                description: Staked in the current pochen round.
+              folded:
+                type: boolean
+              hidden:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Staking, 1=Pochen, 2=Stops, 3=DealEnd, 4=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        pools:
+          type: array
+          description: |
+            All nine, always. Chips nobody claims stay put and everyone antes
+            again next deal, so what is sitting on each pool is the motivation
+            for the deal to come.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: "ace | king | queen | jack | ten | marriage | sequence | pocher | centre"
+              chips:
+                type: integer
+        paySuit:
+          type: integer
+          description: Suit of the turn-up. Stage one pays only on this suit.
+        turnUp:
+          $ref: '#/components/schemas/Card'
+        stakingAwards:
+          type: array
+          description: |
+            What stage one paid out. It resolves the instant the cards are dealt,
+            so without this record the player cannot tell what happened.
+          items:
+            type: object
+            properties:
+              pool:
+                type: string
+              player:
+                type: integer
+              chips:
+                type: integer
+        betTarget:
+          type: integer
+          description: Amount each surviving player must have staked for the round to close.
+        pochenWinner:
+          type: integer
+          description: "Seat whose set won the comparison; -1 until it is settled"
+        pochenPot:
+          type: integer
+        playedPile:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        stopsSuit:
+          type: integer
+          description: |
+            Suit of the run in progress. **-1 means the run is stopped** and any
+            card may be led -- do not collapse it to 0, which reads as spades.
+        stopsRank:
+          type: integer
+          description: Highest rank played in the current run (ace counts 14).
+        dealNo:
+          type: integer
+        targetDeals:
+          type: integer
+        dealWinner:
+          type: integer
+          description: "Seat that went out; -1 when the deal is still live"
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "Seat with the most chips; -1 while the game is live"
+        hint:
+          type: object
+          description: Suggested move, sent on every response while it is the human's turn.
+          properties:
+            action:
+              type: string
+              description: "bet | fold | play"
+            cardIndex:
+              type: integer
             reason:
               type: string
         message:

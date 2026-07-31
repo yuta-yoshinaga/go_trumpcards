@@ -1722,6 +1722,15 @@ export const LobaPhase = {
   GAME_END: 3,
 } as const;
 
+/** Poch phase constants (sync: internal/domain/Poch.go). */
+export const PochPhase = {
+  STAKING: 0,
+  POCHEN: 1,
+  STOPS: 2,
+  DEAL_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Zwicker phase constants (sync: internal/domain/Zwicker.go). */
 export const ZwickerPhase = {
   PLAY: 0,

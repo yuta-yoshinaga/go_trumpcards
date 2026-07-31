@@ -1240,4 +1240,9 @@ func init() {
 			return usecase.NewZwickerInteractor(domain.NewDefaultZwicker(), new(presenter.ZwickerWebPresenter))
 		},
 		controller.NewZwickerWebController)
+	BindWebControllerFor("poch",
+		func() usecase.PochInteractorIF {
+			return usecase.NewPochInteractor(domain.NewDefaultPoch(), new(presenter.PochWebPresenter))
+		},
+		controller.NewPochWebController)
 }
