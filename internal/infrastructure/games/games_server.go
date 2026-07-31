@@ -1250,4 +1250,9 @@ func init() {
 			return usecase.NewPopeJoanInteractor(domain.NewDefaultPopeJoan(), new(presenter.PopeJoanWebPresenter))
 		},
 		controller.NewPopeJoanWebController)
+	BindWebControllerFor("nainjaune",
+		func() usecase.NainJauneInteractorIF {
+			return usecase.NewNainJauneInteractor(domain.NewDefaultNainJaune(), new(presenter.NainJauneWebPresenter))
+		},
+		controller.NewNainJauneWebController)
 }

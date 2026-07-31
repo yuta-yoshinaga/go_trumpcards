@@ -730,6 +730,11 @@ var registry = []*Game{
 	// whose last card turns for trump. Compartments pay only on the trump suit, and
 	// whoever holds the Pope (9D) is excused the per-card payment at the end.
 	{Name: "popejoan", Category: CategoryExtra3},
+	// Le Nain Jaune is the French stops game on a board of five boxes (D10, CJ, SQ,
+	// HK and D7 -- the yellow dwarf itself). Unlike Pope Joan the run IGNORES SUIT and
+	// simply climbs by rank, ending on a king; and the loser pays the winner in card
+	// POINTS, not in cards.
+	{Name: "nainjaune", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.

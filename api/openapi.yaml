@@ -247,6 +247,8 @@ tags:
     description: Poch
   - name: popejoan
     description: Pope Joan
+  - name: nainjaune
+    description: Le Nain Jaune
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -13363,6 +13365,94 @@ paths:
               schema:
                 $ref: '#/components/schemas/PopeJoanResponse'
 
+  /nainjaune/exec:
+    post:
+      tags:
+        - nainjaune
+      summary: Execute a Le Nain Jaune game command
+      description: |
+        Send a command to advance the Le Nain Jaune session identified by
+        `sessionId`. The French stops game for **3-8** on a **52-card** pack and
+        a board of **five boxes**.
+
+        **#4380 gets the boxes, the stake, the run and the settlement wrong.**
+
+        * The issue lists the boxes as "♦7, **♠10**, **♥Q**, ♣J, **sequence**".
+          They are **♦10, ♣J, ♠Q, ♥K and ♦7** (the yellow dwarf, in the centre).
+          Two suits are wrong, the **♥K is missing**, and **there is no
+          "sequence" box** at all.
+        * The issue says players "place an ante on the five boxes". The amount is
+          fixed per box: **1 on ♦10, 2 on ♣J, 3 on ♠Q, 4 on ♥K and 5 on ♦7** —
+          fifteen from each player.
+        * The issue assigns the nonexistent sequence box to "whoever plays the
+          last card of a suit (a king)". A king simply **ends the run**, and its
+          player leads again with anything.
+        * The issue plays "consecutive cards starting from the lowest". The lead
+          is **any card**, and from there the run climbs by rank **ignoring suit
+          entirely** — the decisive difference from Pope Joan.
+        * The issue pays the winner "the number of cards" left in each hand. It
+          is the **points**: ace 1, pip cards face value, **J/Q/K ten each**.
+        * Not mentioned: a **talon** (undealt remainder) is set aside, and boxes
+          nobody claims **carry over**.
+
+        A box pays only on its **exact card, suit included** — an off-suit seven
+        does not claim the dwarf.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Play    | `0`   | Lead or continue the run |
+        | DealEnd | `1`   | The deal is settled; `next` deals again |
+        | GameEnd | `2`   | The last deal is done |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `play`  | `p`     | Play `cardIndex` |
+        | `next`  | `n`     | Deal the next hand |
+        | `hint`  | `h`     | Suggested move for the human seat |
+        | `log`   | `l`     | Action-log transcript |
+      operationId: nainjauneExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, next, n, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+                    targetDeals:
+                      type: integer
+                      description: Deals played before the game is decided (default 5).
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NainJauneResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NainJauneResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -23958,6 +24048,113 @@ components:
         runRank:
           type: integer
           description: Highest rank played in the current run (ace counts 14).
+        dealNo:
+          type: integer
+        targetDeals:
+          type: integer
+        dealWinner:
+          type: integer
+          description: "Seat that went out; -1 while the deal is still live"
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "Seat with the most chips; -1 while the game is live"
+        hint:
+          type: object
+          description: Suggested move, sent on every response while it is the human's turn.
+          properties:
+            cardIndex:
+              type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    NainJauneResponse:
+      type: object
+      description: Response payload for /nainjaune/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/Card'
+              chips:
+                type: integer
+              points:
+                type: integer
+                description: |
+                  What the hand is worth if the deal ends now. Public for every
+                  seat, because settlement is in points rather than cards -- the
+                  card count alone does not say what a hand owes.
+              hidden:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Play, 1=DealEnd, 2=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        boxes:
+          type: array
+          description: |
+            All five, always. Chips nobody claims stay put and everyone antes
+            again next deal, so the dwarf builds up fastest.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: "ten | jack | queen | king | dwarf"
+              chips:
+                type: integer
+              card:
+                allOf:
+                  - $ref: '#/components/schemas/Card'
+                description: |
+                  The exact card that claims this box. Sent rather than derived,
+                  because the suit is part of it -- an off-suit seven does not
+                  claim the dwarf.
+        talonCount:
+          type: integer
+          description: Cards set aside undealt. Nobody uses them.
+        awards:
+          type: array
+          items:
+            type: object
+            properties:
+              box:
+                type: string
+              player:
+                type: integer
+              chips:
+                type: integer
+        playedPile:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        runRank:
+          type: integer
+          description: |
+            Highest rank played in the current run. **0 means the run is
+            stopped** and any card may be led. There is no suit here: the run
+            ignores suit entirely.
         dealNo:
           type: integer
         targetDeals:

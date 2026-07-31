@@ -103,6 +103,7 @@ import type {
   MonteCarloResponse,
   MushiResponse,
   MusResponse,
+  NainJauneResponse,
   NapoleonResponse,
   NapoleonsSquareResponse,
   NapResponse,
@@ -307,6 +308,7 @@ import { getMissMilliganHint } from '../utils/hints/missmilliganHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getMusHint } from '../utils/hints/musHint';
 import { getMushiHint } from '../utils/hints/mushiHint';
+import { getNainJauneHint } from '../utils/hints/nainjauneHint';
 import { getNapHint } from '../utils/hints/napHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNapoleonsSquareHint } from '../utils/hints/napoleonssquareHint';
@@ -625,6 +627,7 @@ export const hintFactories = {
   zwicker: (s) => getZwickerHint(s as ZwickerResponse),
   poch: (s) => getPochHint(s as PochResponse),
   popejoan: (s) => getPopeJoanHint(s as PopeJoanResponse),
+  nainjaune: (s) => getNainJauneHint(s as NainJauneResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),
