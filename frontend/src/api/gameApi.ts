@@ -26,6 +26,7 @@ export * from './games/beleagueredcastle';
 export * from './games/belote';
 export * from './games/bezique';
 export * from './games/bideuchre';
+export * from './games/karnoffel';
 export * from './games/bidwhist';
 export * from './games/bigo';
 export * from './games/bigohilo';
@@ -373,6 +374,7 @@ export const games = [
   'boston',
   'vint',
   'bideuchre',
+  'karnoffel',
   'missmilligan',
   'canfield',
   'osmosis',

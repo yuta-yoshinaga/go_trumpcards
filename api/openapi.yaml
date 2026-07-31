@@ -261,6 +261,8 @@ tags:
     description: Vint
   - name: bideuchre
     description: Bid Euchre
+  - name: karnoffel
+    description: Karnöffel
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -14080,6 +14082,100 @@ paths:
               schema:
                 $ref: '#/components/schemas/BidEuchreResponse'
 
+  /karnoffel/exec:
+    post:
+      tags:
+        - karnoffel
+      summary: Execute a Karnöffel game command
+      description: |
+        Send a command to advance the Karnöffel session identified by
+        `sessionId`. Karnöffel is the oldest card game known by name, attested
+        in 1426: four players in two partnerships on a **48-card pack with the
+        ACES removed**.
+
+        **#4376 is wrong on the deal, the top card and the deck, and it
+        contradicts itself.**
+
+        * The issue says twelve cards each with the last one turned up. **48 / 4
+          = 12 consumes the pack**, leaving nothing to turn up. It is **five
+          each**, dealt with the FIRST card face up in front of each player, and
+          **the lowest of those four face-up cards picks the chosen suit**. The
+          issue's own "3 of 5 tricks wins" agrees with five, not twelve.
+        * The issue says the **Karnöffel is the six**. It is the **JACK**; the
+          six is the Pope.
+        * The issue reduces the devil to "Devil/Pope etc. apply". The **seven is
+          the devil and beats everything but the Karnöffel ONLY WHEN LED** —
+          played in follow it loses to every card, and it **cannot lead the
+          first trick** at all.
+        * The issue omits the **partial trumps**: the **3 loses to kings**, the
+          **4 to kings and queens**, and the **5 to every face card**, so "the
+          chosen suit nullifies plain cards" is false for three of its own
+          cards.
+        * The issue says the pack removes the **eights**. It removes the
+          **aces** — the plain ranking (K > Q > J > 10 > 9 > 8 > 7 > 6 > 5 > 4 >
+          3 > 2) presumes there are none.
+
+        The issue is right that there are four players in two partnerships,
+        that **following suit is not required**, and that three of five tricks
+        takes the hand.
+
+        Full ranking in the chosen suit: **J > 7 (led only) > 6 > 2 > 3 > 4 > 5
+        > K > Q > 10 > 9 > 8**.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Play    | `0`   | Up to five tricks; three takes the hand |
+        | HandEnd | `1`   | The hand is over; `next` deals again |
+        | GameEnd | `2`   | A team reached the configured number of hands |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `play`  | `p`     | Play `cardIndex` |
+        | `next`  | `n`     | Deal the next hand |
+        | `log`   | `l`     | Action-log transcript |
+      operationId: karnoffelExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, next, n, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Hand index (0-4). Required for `play`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+                    targetHands:
+                      type: integer
+                      description: Hands needed to win the game (1-10).
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KarnoffelResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KarnoffelResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -25636,6 +25732,120 @@ components:
               type: integer
             allowNoTrump:
               type: boolean
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    KarnoffelResponse:
+      type: object
+      description: Response payload for /karnoffel/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              team:
+                type: integer
+                description: "0 for seats 0 and 2, 1 for seats 1 and 3"
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                description: Populated for the human seat, and for every seat once the hand is over.
+                items:
+                  $ref: '#/components/schemas/Card'
+              upCard:
+                nullable: true
+                allOf:
+                  - $ref: '#/components/schemas/Card'
+                description: |
+                  The single card dealt face up in front of this seat. THE
+                  LOWEST OF THE FOUR decides the chosen suit, so every seat's is
+                  public from the start.
+              tricksWon:
+                type: integer
+              isDealer:
+                type: boolean
+              isCurrentTurn:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Play, 1=HandEnd, 2=GameEnd"
+        handNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        chosenSuit:
+          type: integer
+          description: "1=Spade, 2=Clover, 3=Heart, 4=Diamond"
+        trick:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        validPlays:
+          type: array
+          items:
+            type: integer
+          description: |
+            Hand indexes the human may play. There is NO obligation to follow
+            suit; this narrows only to keep the devil out of the opening lead,
+            which depends on the chosen suit.
+        trickLeaderIdx:
+          type: integer
+        trickNumber:
+          type: integer
+        teamTricks:
+          type: array
+          items:
+            type: integer
+        handsWon:
+          type: array
+          items:
+            type: integer
+        lastResult:
+          type: object
+          nullable: true
+          properties:
+            winnerTeam:
+              type: integer
+              description: "The team that took the hand; -1 if neither reached three tricks"
+            tricks:
+              type: array
+              items:
+                type: integer
+            chosenSuit:
+              type: integer
+        tricksToWin:
+          type: integer
+          description: Tricks that take a hand (three).
+        handSize:
+          type: integer
+          description: Cards per hand -- FIVE, not twelve.
+        targetHands:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "Winning team; -1 while the game is live"
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetHands:
+              type: integer
         message:
           type: string
         messageCode:

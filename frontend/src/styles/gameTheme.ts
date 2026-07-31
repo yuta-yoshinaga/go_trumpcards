@@ -237,6 +237,7 @@ export type GameKey =
   | 'boston'
   | 'vint'
   | 'bideuchre'
+  | 'karnoffel'
   | 'missmilligan'
   | 'crescent'
   // Counting/Rummy
@@ -724,6 +725,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   boston: CASINO,
   vint: CASINO,
   bideuchre: CASINO,
+  karnoffel: GREEN,
   missmilligan: CASINO,
   crescent: CASINO,
   // Counting/Rummy

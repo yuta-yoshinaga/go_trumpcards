@@ -1740,6 +1740,13 @@ export const BidEuchrePhase = {
   GAME_END: 4,
 } as const;
 
+/** Karnöffel phase constants (sync: internal/domain/Karnoffel.go). */
+export const KarnoffelPhase = {
+  PLAY: 0,
+  HAND_END: 1,
+  GAME_END: 2,
+} as const;
+
 /** Boston phase constants (sync: internal/domain/Boston.go). */
 export const BostonPhase = {
   BID: 0,
