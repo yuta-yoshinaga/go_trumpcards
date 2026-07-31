@@ -1275,4 +1275,9 @@ func init() {
 			return usecase.NewBostonInteractor(domain.NewDefaultBoston(), new(presenter.BostonWebPresenter))
 		},
 		controller.NewBostonWebController)
+	BindWebControllerFor("vint",
+		func() usecase.VintInteractorIF {
+			return usecase.NewVintInteractor(domain.NewDefaultVint(), new(presenter.VintWebPresenter))
+		},
+		controller.NewVintWebController)
 }

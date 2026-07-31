@@ -759,6 +759,12 @@ var registry = []*Game{
 	// EXACTLY one trick. Trick bids may call a partner (two against two); the
 	// miseres, Piccolissimo and the slams are played alone against three.
 	{Name: "boston", Category: CategoryExtra3},
+	// Vint is the Russian ancestor of contract bridge, played WITHOUT a dummy.
+	// Both sides score below the line for every trick they take, whether or not
+	// the contract was made; the trick value depends on the level as well as the
+	// denomination; and the bidding order is spades < clubs < diamonds < hearts <
+	// no trump -- the reverse of bridge, with spades LOWEST.
+	{Name: "vint", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.
