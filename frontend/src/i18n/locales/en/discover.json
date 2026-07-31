@@ -336,7 +336,8 @@
     "nainjaune": "The French stops game. The run never looks at suit -- it climbs by rank and ends on a king.",
     "kille": "The Swedish Cuckoo game on its own 42-card pack. You hold a single card and trade with your neighbour to avoid ending up lowest.",
     "klaberjass": "The two-player ancestor of Belote and Pinochle. In trumps the jack scores 20 and the nine 14, both outranking the ace.",
-    "kaiser": "The Canadian partnership bidding game. The five of hearts is worth +5 and the three of spades -3, together weighing as much as all eight tricks."
+    "kaiser": "The Canadian partnership bidding game. The five of hearts is worth +5 and the three of spades -3, together weighing as much as all eight tricks.",
+    "boston": "The 18th-century Whist derivative. Fifteen bids from five tricks up to a slam, with the misere contracts slotted in between them."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -589,6 +590,7 @@
     "nainjaune": "The yellow dwarf in the centre takes five chips a deal. You settle in points rather than cards, so every court card left is a ten-point debt.",
     "kille": "Challenge the Cuckoo and the round ends on the spot; challenge the Hussar and you are the one who goes out. A Harlequin handed to you in an exchange is the lowest card, not the highest.",
     "klaberjass": "Only the better sequence scores -- but it scores every run its holder has. Fail to beat your opponent as maker and the whole hand goes to them.",
-    "kaiser": "Only the winning bidder sees the two-card kitty -- but neither scoring card may be discarded, so a three of spades has to be forced onto somebody."
+    "kaiser": "Only the winning bidder sees the two-card kitty -- but neither scoring card may be discarded, so a three of spades has to be forced onto somebody.",
+    "boston": "Piccolissimo asks for EXACTLY one trick -- taking none fails it. On a trick bid you may call a partner and turn it into two against two."
   }
 }

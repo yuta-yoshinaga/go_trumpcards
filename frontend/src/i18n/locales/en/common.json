@@ -270,7 +270,8 @@
     "nainjaune": "Le Nain Jaune",
     "kille": "Kille",
     "klaberjass": "Klaberjass",
-    "kaiser": "Kaiser"
+    "kaiser": "Kaiser",
+    "boston": "Boston"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1319,6 +1320,11 @@
     "kaiser.playPhase": "In play -- following suit is compulsory",
     "kaiser.handMade": "The declaring side made its bid; both sides keep what they took",
     "kaiser.handSet": "Set -- the declaring side fell short, so the bid comes straight off its score",
+    "boston.bidPhase": "Bidding -- the misere bids sit BETWEEN the trick bids",
+    "boston.callPartner": "You may call a partner (two against two); otherwise it is one against three",
+    "boston.playPhase": "In play -- following suit is compulsory",
+    "boston.handMade": "Contract made; the declaring side collects from each opponent",
+    "boston.handFailed": "Contract failed; the declaring side pays each opponent",
     "kaiser.result.humanWin": "Your team wins",
     "kaiser.result.cpuWin": "The other team wins"
   },
