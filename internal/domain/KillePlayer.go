@@ -75,13 +75,23 @@ func (p *KillePlayer) IsSatisfied() bool { return p.satisfied }
 func (p *KillePlayer) SetSatisfied(v bool) { p.satisfied = v }
 
 // ResetRound はラウンド開始時に手札と一時状態を初期化する。収支は残す。
+//
+// **退場済みの席は戻さない。**買い戻しを 3 回使い切って落ちた席まで out を
+// 解除すると、次のラウンドで何事も無かったように復帰してしまう。IsFinished は
+// ラウンドをまたいで残る唯一の状態である。
 func (p *KillePlayer) ResetRound() {
+	finished := p.GetIsFinished()
 	p.Reset()
+	p.harlequinSwapped = false
+	p.satisfied = false
+	if finished {
+		p.SetIsFinished(true)
+		p.out = true
+		return
+	}
 	p.SetIsFinished(false)
 	p.out = false
 	p.knockedBy = ""
-	p.harlequinSwapped = false
-	p.satisfied = false
 }
 
 // killePlayerJSON is the JSON wire format for KillePlayer.

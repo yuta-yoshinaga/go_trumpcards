@@ -128,21 +128,37 @@ func (k *Kille) dealRound() {
 		p.ResetRound()
 	}
 
-	// 全員が掛け金を出す。
+	// **退場した席は配りにも精算にも入らない。**掛け金を取られ続けたり
+	// 札が配られたりすると、落ちたはずの席が卓に残ってしまう。
 	for _, p := range k.players {
+		if p.GetIsFinished() {
+			continue
+		}
 		p.AddChips(-k.config.Stake)
 		k.pot += k.config.Stake
 	}
 
 	deck := newKilleDeck()
 	killeShuffle(deck)
-	for i, p := range k.players {
-		p.AddCard(deck[i])
+	dealt := 0
+	for _, p := range k.players {
+		if p.GetIsFinished() {
+			continue
+		}
+		p.AddCard(deck[dealt])
+		dealt++
 	}
-	k.stock = append([]*Card(nil), deck[len(k.players):]...)
+	k.stock = append([]*Card(nil), deck[dealt:]...)
 
-	// **ディーラーは最後。**先手はその左隣。
-	k.currentIdx = (k.dealerIdx + 1) % len(k.players)
+	// **ディーラーは最後。**先手はその左隣の、まだ残っている席。
+	k.currentIdx = k.dealerIdx
+	for i := 1; i <= len(k.players); i++ {
+		n := (k.dealerIdx + i) % len(k.players)
+		if !k.players[n].GetIsFinished() {
+			k.currentIdx = n
+			break
+		}
+	}
 	k.phase = KillePhaseExchange
 	k.addLog(-1, "deal", fmt.Sprintf("one card each, pot is %d", k.pot), nil)
 }
@@ -220,10 +236,20 @@ func (k *Kille) exchangeWithNeighbour(player, target, hops int) error {
 	case KillePig:
 		// **«Pig bites back!»** 交換は取り消され、その札に関わる過去の交換も
 		// すべて巻き戻り、**元の持ち主**が落ちる。
-		k.revertSwapsInvolving(target)
-		tp.SetOut(KilleKnockPig)
-		k.events = append(k.events, &KilleEvent{Kind: "pig", Actor: player, Target: target})
-		k.addLog(target, "pig", "the Pig bites back; its holder is out", nil)
+		//
+		// **落ちるのは巻き戻した先の席であって、今仕掛けられた席ではない。**
+		// Pig が過去の交換で移動していれば、巻き戻した結果それを最初に配られた
+		// 席へ帰る。target のまま落とすと、巻き添えの無関係な席が消えて
+		// 本来の持ち主が生き残ってしまう。
+		owner := k.revertSwapsInvolving(target)
+		op := k.GetPlayer(owner)
+		if op == nil {
+			op = tp
+			owner = target
+		}
+		op.SetOut(KilleKnockPig)
+		k.events = append(k.events, &KilleEvent{Kind: "pig", Actor: player, Target: owner})
+		k.addLog(owner, "pig", "the Pig bites back; its original holder is out", nil)
 		k.advance()
 		return nil
 	case KilleCavalier, KilleInn:
@@ -273,7 +299,7 @@ func (k *Kille) swap(a, b int) {
 
 // revertSwapsInvolving は seat の札に関わった交換を、記録を逆順にたどって
 // 巻き戻す。**Pig の «bites back» はここまでやる。**
-func (k *Kille) revertSwapsInvolving(seat int) {
+func (k *Kille) revertSwapsInvolving(seat int) int {
 	for i := len(k.events) - 1; i >= 0; i-- {
 		e := k.events[i]
 		if e.Kind != "swap" {
@@ -292,6 +318,7 @@ func (k *Kille) revertSwapsInvolving(seat int) {
 			seat = e.Actor
 		}
 	}
+	return seat
 }
 
 // checkTurn は動ける状態かを確かめる。
@@ -459,7 +486,15 @@ func (k *Kille) NextRound() error {
 			p.SetIsFinished(true)
 		}
 	}
-	k.dealerIdx = (k.dealerIdx + 1) % len(k.players)
+	// **親も退場席を飛ばす。**卓から降りた席に親番が回ると、その席を基準に
+	// 回している手番送りが噛み合わなくなる。
+	for i := 1; i <= len(k.players); i++ {
+		n := (k.dealerIdx + i) % len(k.players)
+		if !k.players[n].GetIsFinished() {
+			k.dealerIdx = n
+			break
+		}
+	}
 	k.dealRound()
 	return nil
 }

@@ -866,3 +866,123 @@ func TestKilleAccessors(t *testing.T) {
 		t.Error("an out-of-range seat must be nil, not a panic")
 	}
 }
+
+// TestKillePigKnocksItsOriginalHolderAfterATransfer は、Pig が過去の交換で
+// 移動していた場合に**巻き戻した先の席**が落ちることを確かめる。
+//
+// 巻き添えの席を落として本来の持ち主が生き残るのが、レビューで見つかった不具合。
+func TestKillePigKnocksItsOriginalHolderAfterATransfer(t *testing.T) {
+	k := kiReady(t, 0)
+	// 0 が Pig を持ち、1 は Cavalier なので交換は 2 へ回される。
+	k.SetHandForTest(0, KillePig)
+	k.SetHandForTest(1, KilleCavalier)
+	k.SetHandForTest(2, KilleNum5)
+
+	if err := k.Exchange(0); err != nil {
+		t.Fatalf("first Exchange: %v", err)
+	}
+	// Pig は 2 へ渡っている。
+	if got := KilleRankOf(k.GetPlayer(2).GetCard(0)); got != KillePig {
+		t.Fatalf("seat 2 holds %s, want the Pig to have travelled there", KilleRankName(got))
+	}
+
+	// 1 が 2 に仕掛ける。Pig が噛む。
+	k.SetCurrentPlayerForTest(1)
+	if err := k.Exchange(1); err != nil {
+		t.Fatalf("second Exchange: %v", err)
+	}
+
+	// **落ちるのは元の持ち主 0。**今仕掛けられた 2 ではない。
+	if !k.GetPlayer(0).IsOut() {
+		t.Error("the Pig's original holder must be the one to go out")
+	}
+	if got := k.GetPlayer(0).GetKnockedBy(); got != KilleKnockPig {
+		t.Errorf("seat 0 knocked by %q, want %q", got, KilleKnockPig)
+	}
+	if k.GetPlayer(2).IsOut() {
+		t.Error("the seat the Pig merely travelled to is an innocent bystander")
+	}
+	if k.GetPlayer(1).IsOut() {
+		t.Error("the challenger survives a Pig")
+	}
+	// 巻き戻ったので Pig は 0 の手に戻っている。
+	if got := KilleRankOf(k.GetPlayer(0).GetCard(0)); got != KillePig {
+		t.Errorf("seat 0 holds %s, want the Pig back", KilleRankName(got))
+	}
+}
+
+// TestKilleExhaustedSeatStaysOut は、買い戻しを使い切った席が次のラウンドで
+// 復活しないことを確かめる。
+//
+// ResetRound が IsFinished を消していたので、3 回制限が丸ごと効いていなかった。
+func TestKilleExhaustedSeatStaysOut(t *testing.T) {
+	k := NewDefaultKille()
+	k.Reset()
+	k.SetPhaseForTest(KillePhaseShowdown)
+
+	dead := k.GetPlayer(1)
+	for range KilleMaxReentries {
+		dead.AddReentry()
+	}
+	dead.SetOut(KilleKnockLowest)
+	if dead.CanReenter() {
+		t.Fatal("three buy-backs is the limit")
+	}
+	chipsBefore := dead.GetChips()
+	potBefore := k.GetPot()
+
+	if err := k.NextRound(); err != nil {
+		t.Fatalf("NextRound: %v", err)
+	}
+
+	if !dead.GetIsFinished() {
+		t.Error("a seat with no buy-backs left is out for good")
+	}
+	if !dead.IsOut() {
+		t.Error("an eliminated seat must stay out, not be revived by the deal")
+	}
+	// **札も掛け金も回ってこない。**
+	if got := dead.GetCardsSize(); got != 0 {
+		t.Errorf("the eliminated seat was dealt %d cards, want 0", got)
+	}
+	if got := dead.GetChips(); got != chipsBefore {
+		t.Errorf("the eliminated seat was charged: chips %d, want %d", got, chipsBefore)
+	}
+	// 残り 3 人ぶんだけポットが増える。
+	if got := k.GetPot() - potBefore; got != (KillePlayerCnt-1)*k.GetConfig().Stake {
+		t.Errorf("pot grew by %d, want %d", got, (KillePlayerCnt-1)*k.GetConfig().Stake)
+	}
+	// 手番も回ってこない。
+	if k.GetCurrentPlayerIdx() == 1 {
+		t.Error("an eliminated seat must not get a turn")
+	}
+}
+
+// 退場席がディーラーの左隣でも、手番はその先へ飛ぶ。
+func TestKilleTurnSkipsAnEliminatedNeighbour(t *testing.T) {
+	k := NewDefaultKille()
+	k.Reset()
+	k.SetPhaseForTest(KillePhaseShowdown)
+	k.SetDealerForTest(0)
+
+	dead := k.GetPlayer(1)
+	for range KilleMaxReentries {
+		dead.AddReentry()
+	}
+	dead.SetOut(KilleKnockLowest)
+
+	if err := k.NextRound(); err != nil {
+		t.Fatalf("NextRound: %v", err)
+	}
+	// **退場席は親にも先手にもならない。**親が卓を降りた席に回ると、
+	// 親を基準に回している手番送りが噛み合わなくなる。
+	if got := k.GetDealerIdx(); got == 1 {
+		t.Error("the dealer button must skip an eliminated seat")
+	}
+	if got := k.GetCurrentPlayerIdx(); got == 1 {
+		t.Error("an eliminated seat must not lead")
+	}
+	if got := k.GetCurrentPlayerIdx(); got != (k.GetDealerIdx()+1)%KillePlayerCnt {
+		t.Errorf("first to act = %d, want the dealer's left (%d)", got, (k.GetDealerIdx()+1)%KillePlayerCnt)
+	}
+}
