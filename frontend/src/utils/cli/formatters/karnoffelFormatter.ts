@@ -38,7 +38,9 @@ export function formatKarnoffelState(state: KarnoffelResponse): string {
 
   if (state.phase === 0 && state.currentPlayerIdx === 0 && !state.gameEndFlag) {
     // **悪魔だけ位置が特殊。**表で見せないと「なぜ負けたのか」が分からない。
-    lines.push('ranking: J (Karnöffel) > 7 (devil, ONLY WHEN LED) > 6 (Pope) > 2 (Kaiser) > 3 > 4 > 5 > K > Q > 10 > 9 > 8');
+    lines.push(
+      'ranking: J (Karnöffel) > 7 (devil, ONLY WHEN LED) > 6 (Pope) > 2 (Kaiser) > 3 > 4 > 5 > K > Q > 10 > 9 > 8',
+    );
     lines.push('  the 3 loses to kings, the 4 to kings and queens, the 5 to every face card');
     lines.push(`playable: ${state.validPlays.join(' ') || '-'}`);
     lines.push('(your turn — play with "p <i>"; no need to follow suit, but the devil cannot lead the first trick)');

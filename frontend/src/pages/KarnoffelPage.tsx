@@ -173,8 +173,9 @@ function KarnoffelPageContent() {
             {/* Score sheet */}
             <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="karnoffel-scores">
               <div>
-                {t('team', { n: 0 })}: {t('handsWon', { n: state.handsWon[0] })} ({t('tricksWon', { n: state.teamTricks[0] })}) /{' '}
-                {t('team', { n: 1 })}: {t('handsWon', { n: state.handsWon[1] })} ({t('tricksWon', { n: state.teamTricks[1] })})
+                {t('team', { n: 0 })}: {t('handsWon', { n: state.handsWon[0] })} (
+                {t('tricksWon', { n: state.teamTricks[0] })}) / {t('team', { n: 1 })}:{' '}
+                {t('handsWon', { n: state.handsWon[1] })} ({t('tricksWon', { n: state.teamTricks[1] })})
               </div>
               <div className="text-xs text-ds-text-muted">
                 {t('targetNote', { n: state.targetHands, need: state.tricksToWin })}
@@ -197,8 +198,7 @@ function KarnoffelPageContent() {
                   {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
                   {/* **表向きの札は全員ぶん見える。**切札の根拠がここにある。 */}
                   <span className="flex items-center gap-1">
-                    {t('upCard')}:
-                    {p.upCard ? <CardImage card={p.upCard} width={cardWidth} /> : <span>-</span>}
+                    {t('upCard')}:{p.upCard ? <CardImage card={p.upCard} width={cardWidth} /> : <span>-</span>}
                   </span>
                   <span>{t('tricksWon', { n: p.tricksWon })}</span>
                   {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}

@@ -1350,7 +1350,12 @@
     "sixbidsolo.handMade": "Contract made. The three widow cards are credited to the declarer too (except at either misere)",
     "sixbidsolo.handSet": "Contract set. The declarer pays each opponent",
     "sixbidsolo.result.humanWin": "The hands are done and you are ahead",
-    "sixbidsolo.result.cpuWin": "The hands are done and a CPU is ahead"
+    "sixbidsolo.result.cpuWin": "The hands are done and a CPU is ahead",
+    "karnoffel.playPhase": "Playing — THERE IS NO OBLIGATION TO FOLLOW SUIT, but the devil cannot lead the first trick",
+    "karnoffel.handEnd": "Hand over. Whoever took three tricks took the hand",
+    "karnoffel.handDrawn": "Hand over. Neither side reached three tricks, so nobody took it",
+    "karnoffel.result.humanWin": "The target is reached and your team wins",
+    "karnoffel.result.cpuWin": "The target is reached and the other team wins"
   },
   "manual": {
     "ariaLabel": "Game Manual",

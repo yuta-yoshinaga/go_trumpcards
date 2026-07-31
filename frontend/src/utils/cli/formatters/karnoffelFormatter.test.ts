@@ -88,9 +88,7 @@ describe('formatKarnoffelState', () => {
     const won = formatKarnoffelState(makeState({ phase: 1, lastResult: result() }));
     expect(won).toContain('team 0 took the hand 3-1');
 
-    const drawn = formatKarnoffelState(
-      makeState({ phase: 1, lastResult: result({ winnerTeam: -1, tricks: [2, 2] }) }),
-    );
+    const drawn = formatKarnoffelState(makeState({ phase: 1, lastResult: result({ winnerTeam: -1, tricks: [2, 2] }) }));
     expect(drawn).toContain('neither side reached three tricks 2-2');
   });
 

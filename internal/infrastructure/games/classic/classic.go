@@ -348,4 +348,12 @@ func init() {
 		},
 		controller.NewPrsiWebControllerWithProvider)
 
+	games.RegisterKVGame("karnoffel", games.CategoryClassic,
+		func() usecase.KarnoffelInteractorIF {
+			return usecase.NewKarnoffelInteractor(domain.NewDefaultKarnoffel(), new(presenter.KarnoffelWebPresenter))
+		},
+		func(data []byte) (usecase.KarnoffelInteractorIF, error) {
+			return usecase.RestoreKarnoffelInteractor(data, new(presenter.KarnoffelWebPresenter))
+		},
+		controller.NewKarnoffelWebControllerWithProvider)
 }

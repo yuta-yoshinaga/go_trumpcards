@@ -19,9 +19,9 @@ test.describe('Karnöffel E2E', () => {
     // The hand must progress rather than hang.
     const play = page.getByRole('button', { name: '出す' });
     const next = page.getByRole('button', { name: '次の局へ' });
-    expect(
-      (await isVisibleWithin(play, TIMEOUT_GAME_LOOP)) || (await isVisibleWithin(next, TIMEOUT_GAME_LOOP)),
-    ).toBe(true);
+    expect((await isVisibleWithin(play, TIMEOUT_GAME_LOOP)) || (await isVisibleWithin(next, TIMEOUT_GAME_LOOP))).toBe(
+      true,
+    );
   });
 
   test('can be reset mid-game', async ({ page }) => {

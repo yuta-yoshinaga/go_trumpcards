@@ -784,6 +784,17 @@ var registry = []*Game{
 	// POINTS rather than zero tricks. A call solo also names a card whose
 	// holder must exchange it.
 	{Name: "sixbidsolo", Category: CategoryExtra2},
+	// karnoffel -- Karnoffel, the oldest card game known by name (1426).
+	// Four players in two partnerships on a 48-card pack with the ACES
+	// removed. FIVE cards each, dealt with the first card face up in front
+	// of each player; THE LOWEST of those four face-up cards picks the
+	// chosen suit. Inside it the JACK is the Karnoffel and beats everything,
+	// the SEVEN is the devil and beats all but the Karnoffel ONLY WHEN LED
+	// (losing to every card otherwise, and barred from the opening lead),
+	// then 6 (Pope) and 2 (Kaiser); the 3, 4 and 5 are partial trumps that
+	// still lose to kings, to kings and queens, and to every face card.
+	// Following suit is not required. Three of five tricks takes the hand.
+	{Name: "karnoffel", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.
