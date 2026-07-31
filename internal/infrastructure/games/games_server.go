@@ -1270,4 +1270,9 @@ func init() {
 			return usecase.NewKaiserInteractor(domain.NewDefaultKaiser(), new(presenter.KaiserWebPresenter))
 		},
 		controller.NewKaiserWebController)
+	BindWebControllerFor("boston",
+		func() usecase.BostonInteractorIF {
+			return usecase.NewBostonInteractor(domain.NewDefaultBoston(), new(presenter.BostonWebPresenter))
+		},
+		controller.NewBostonWebController)
 }

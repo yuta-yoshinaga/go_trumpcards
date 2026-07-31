@@ -317,4 +317,12 @@ func init() {
 			return usecase.RestoreKaiserInteractor(data, new(presenter.KaiserWebPresenter))
 		},
 		controller.NewKaiserWebControllerWithProvider)
+	games.RegisterKVGame("boston", games.CategoryExtra3,
+		func() usecase.BostonInteractorIF {
+			return usecase.NewBostonInteractor(domain.NewDefaultBoston(), new(presenter.BostonWebPresenter))
+		},
+		func(data []byte) (usecase.BostonInteractorIF, error) {
+			return usecase.RestoreBostonInteractor(data, new(presenter.BostonWebPresenter))
+		},
+		controller.NewBostonWebControllerWithProvider)
 }
