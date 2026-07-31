@@ -272,7 +272,8 @@
     "klaberjass": "クラバーヤス",
     "kaiser": "カイザー",
     "boston": "ボストン",
-    "vint": "ヴィント"
+    "vint": "ヴィント",
+    "bideuchre": "ビッド・ユーカー"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1333,7 +1334,14 @@
     "vint.handMade": "宣言達成。【両チームとも】取ったトリックを線下に得点します",
     "vint.handSet": "宣言失敗。不足数 × レベル × 500 が相手の線上へ",
     "vint.result.humanWin": "あなたのチームがラバーを取りました",
-    "vint.result.cpuWin": "相手チームがラバーを取りました"
+    "vint.result.cpuWin": "相手チームがラバーを取りました",
+    "bideuchre.bidPhase": "宣言フェーズ — 最低3トリック。【親だけは同額でも奪えます】",
+    "bideuchre.trumpPhase": "切札指定フェーズ — 【NTローでは序列が逆転し9が最強】になります",
+    "bideuchre.playPhase": "プレイ中 — 追随は強制。【左ボワーは切札スートの札】です",
+    "bideuchre.handMade": "宣言達成。両チームが取ったトリック数を得点します",
+    "bideuchre.handSet": "宣言失敗。【取った数ではなく宣言額】を失います（守備側は取った分を得点）",
+    "bideuchre.result.humanWin": "あなたのチームが32点に到達しました",
+    "bideuchre.result.cpuWin": "相手チームが32点に到達しました"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

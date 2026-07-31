@@ -4025,6 +4025,22 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "bideuchre", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBidEuchreCuiController(usecase.NewBidEuchreInteractor(
+				domain.NewDefaultBidEuchre(), new(presenter.BidEuchreCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "bideuchre.helpTitle",
+				CommandKeys: []string{
+					"bideuchre.helpBid",
+					"bideuchre.helpPass",
+					"bideuchre.helpTrump",
+					"bideuchre.helpPlay",
+					"bideuchre.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

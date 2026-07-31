@@ -272,7 +272,8 @@
     "klaberjass": "Klaberjass",
     "kaiser": "Kaiser",
     "boston": "Boston",
-    "vint": "Vint"
+    "vint": "Vint",
+    "bideuchre": "Bid Euchre"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1333,7 +1334,14 @@
     "vint.handMade": "Contract made. BOTH sides score below the line for the tricks they took",
     "vint.handSet": "Contract failed; undertricks x level x 500 go above the opponents line",
     "vint.result.humanWin": "Your team takes the rubber",
-    "vint.result.cpuWin": "The other team takes the rubber"
+    "vint.result.cpuWin": "The other team takes the rubber",
+    "bideuchre.bidPhase": "Bidding — three tricks is the floor, and THE DEALER ALONE MAY EQUAL the standing bid",
+    "bideuchre.trumpPhase": "Naming trump — AT NO TRUMP LOW THE RANKING REVERSES and the nine is highest",
+    "bideuchre.playPhase": "Playing — following suit is compulsory, and THE LEFT BOWER COUNTS AS A TRUMP",
+    "bideuchre.handMade": "Contract made. Each side scores its own tricks",
+    "bideuchre.handSet": "Contract set. YOU LOSE THE BID, not the tricks you took (the defenders still score theirs)",
+    "bideuchre.result.humanWin": "Your team reached 32 points",
+    "bideuchre.result.cpuWin": "The other team reached 32 points"
   },
   "manual": {
     "ariaLabel": "Game Manual",

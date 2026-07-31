@@ -259,6 +259,8 @@ tags:
     description: Boston
   - name: vint
     description: Vint
+  - name: bideuchre
+    description: Bid Euchre
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -13982,6 +13984,102 @@ paths:
               schema:
                 $ref: '#/components/schemas/VintResponse'
 
+  /bideuchre/exec:
+    post:
+      tags:
+        - bideuchre
+      summary: Execute a Bid Euchre game command
+      description: |
+        Send a command to advance the Bid Euchre session identified by
+        `sessionId`. Bid Euchre is a 24-card partnership euchre variant
+        (A K Q J 10 9 in each suit) for 4 players in two partnerships.
+
+        **#4386 is wrong on the deal and omits four rules.**
+
+        * The issue says the remainder forms a kitty. **24 / 4 = 6 exactly, so
+          the whole pack is dealt out and there is NO kitty** and no turn-up.
+        * The issue gives no minimum bid. It is **three tricks**.
+        * The issue says each bid must beat the last. It must — **except the
+          DEALER, who may take the contract by equalling the standing bid**.
+        * The issue names only suit trumps. There are **two no-trump forms**:
+          no trump high (the usual ranking) and **no trump LOW, where the
+          ranking reverses and the nine is highest**.
+        * The issue names no target. The first side to **32 points** wins.
+
+        Within a suit contract the trump jack (right bower) is highest, then the
+        same-colour jack (left bower), which **counts as a trump for every
+        purpose including following suit**. Following suit is compulsory, so the
+        server sends `validPlays`.
+
+        Scoring: a made contract scores **each side its own tricks**. A set
+        costs the declaring side **its BID, not the tricks it took**, while the
+        defenders still score theirs.
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | Bid         | `0`   | Bid a trick count, or pass |
+        | ChooseTrump | `1`   | The declarer names a suit or a no-trump form |
+        | Play        | `2`   | Six tricks |
+        | HandEnd     | `3`   | The hand is settled; `next` deals again |
+        | GameEnd     | `4`   | Someone reached 32 |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bid`   | `b`     | Bid `value` tricks (3-6) |
+        | `pass`  | `ps`    | Pass |
+        | `trump` | `t`     | Name `trump` (0=S 1=C 2=D 3=H 4=NT high 5=NT low) |
+        | `play`  | `p`     | Play `cardIndex` |
+        | `next`  | `n`     | Deal the next hand |
+        | `log`   | `l`     | Action-log transcript |
+      operationId: bidEuchreExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pass, ps, trump, t, play, p, next, n, log, l]
+                sessionId:
+                  type: string
+                value:
+                  type: integer
+                  description: "Bid in tricks, 3-6. Three is the floor. Required for `bid`."
+                trump:
+                  type: integer
+                  description: "0=Spade, 1=Club, 2=Diamond, 3=Heart, 4=NoTrump high, 5=NoTrump LOW (nine highest). Required for `trump`."
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+                    allowNoTrump:
+                      type: boolean
+                      description: Whether the declarer may name a no-trump form.
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BidEuchreResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BidEuchreResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -25386,6 +25484,158 @@ components:
         winnerTeam:
           type: integer
           description: "Team that took the rubber; -1 while it is live"
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    BidEuchreResponse:
+      type: object
+      description: Response payload for /bideuchre/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              team:
+                type: integer
+                description: "0 for seats 0 and 2, 1 for seats 1 and 3"
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                description: |
+                  Populated for the human seat, and for every seat once the hand
+                  is settled. There is no kitty and no dummy, so no other hand is
+                  ever visible during play.
+                items:
+                  $ref: '#/components/schemas/Card'
+              tricksWon:
+                type: integer
+              isDealer:
+                type: boolean
+              isDeclarer:
+                type: boolean
+              isCurrentTurn:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Bid, 1=ChooseTrump, 2=Play, 3=HandEnd, 4=GameEnd"
+        handNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+          description: The dealer alone may take the contract by EQUALLING the standing bid.
+        bids:
+          type: array
+          items:
+            type: object
+            properties:
+              player:
+                type: integer
+              value:
+                type: integer
+                description: Tricks bid; 0 for a pass.
+        highBid:
+          type: object
+          nullable: true
+          properties:
+            player:
+              type: integer
+            value:
+              type: integer
+        declarerIdx:
+          type: integer
+          description: "-1 until the auction settles"
+        trump:
+          type: integer
+          description: |
+            The declaration itself: 0=Spade, 1=Club, 2=Diamond, 3=Heart,
+            4=NoTrump high, 5=NoTrump LOW. `trumpSuit` alone cannot tell the two
+            no-trump forms apart.
+        trumpSuit:
+          type: integer
+          description: "Trump suit, or 0 at either no trump"
+        trumpChosen:
+          type: boolean
+        trick:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        validPlays:
+          type: array
+          items:
+            type: integer
+          description: |
+            Hand indexes the human may play. Following suit is compulsory and the
+            left bower counts as a trump, so the server decides this.
+        trickLeaderIdx:
+          type: integer
+        trickNumber:
+          type: integer
+        teamTricks:
+          type: array
+          items:
+            type: integer
+        scores:
+          type: array
+          items:
+            type: integer
+        lastResult:
+          type: object
+          nullable: true
+          properties:
+            points:
+              type: array
+              items:
+                type: integer
+              description: |
+                What each team scored. A set costs the declaring side its BID,
+                not the tricks it took; the defenders score their own tricks
+                either way.
+            tricks:
+              type: array
+              items:
+                type: integer
+            made:
+              type: boolean
+            bid:
+              type: integer
+        gameTarget:
+          type: integer
+          description: Points needed to win (32).
+        minBid:
+          type: integer
+          description: The floor, three tricks.
+        maxBid:
+          type: integer
+        handSize:
+          type: integer
+          description: Six -- the whole 24-card pack is dealt out, leaving no kitty.
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "Winning team; -1 while the game is live"
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            allowNoTrump:
+              type: boolean
         message:
           type: string
         messageCode:
