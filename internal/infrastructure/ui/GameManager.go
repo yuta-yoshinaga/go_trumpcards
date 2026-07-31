@@ -3864,6 +3864,24 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"zheng.helpSetDifficulty"},
 			})
 	}},
+	{Name: "desmoche", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewDesmocheCuiController(usecase.NewDesmocheInteractor(
+				domain.NewDefaultDesmoche(), new(presenter.DesmocheCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "desmoche.helpTitle",
+				CommandKeys: []string{
+					"desmoche.helpDrawStock",
+					"desmoche.helpDrawDiscard",
+					"desmoche.helpMeld",
+					"desmoche.helpLayOff",
+					"desmoche.helpDesmoche",
+					"desmoche.helpDiscard",
+					"desmoche.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

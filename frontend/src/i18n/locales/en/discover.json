@@ -328,7 +328,8 @@
     "laughandliedown": "A five-handed English fishing game from the 1600s: take one or three of a rank from twelve face-up cards, or lay your whole hand down and go out.",
     "sjavs": "The Faroese national game. Both black queens and all four jacks are trumps whatever the trump suit, played four-handed in fixed partnerships.",
     "trex": "A Middle Eastern contract game: each player takes a turn as king, choosing from five contracts until everyone has played all five.",
-    "loba": "An Argentine rummy on 108 cards. A set needs three DIFFERENT suits, and jokers go only into runs."
+    "loba": "An Argentine rummy on 108 cards. A set needs three DIFFERENT suits, and jokers go only into runs.",
+    "desmoche": "A Nicaraguan rummy dealt nine. Going out takes exactly ten cards, not the nine you were dealt."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -573,6 +574,7 @@
     "laughandliedown": "A hand laid down becomes everyone else prey. You settle on captured cards against eight, so one more card is worth chasing.",
     "sjavs": "You bid the LENGTH of your trump suit, not a target score. A rubber counts down from 24 and the first side to reach zero takes it.",
     "trex": "Four contracts punish and the dominoes pay. The 500 in penalties and the 500 paid out cancel, so every game sums to zero.",
-    "loba": "A knockout: reach 101 penalty points and you are out. Going out in one go without melding first takes ten off."
+    "loba": "A knockout: reach 101 penalty points and you are out. Going out in one go without melding first takes ten off.",
+    "desmoche": "Despite the name, poker rankings play no part. A deal nobody wins leaves the pot standing, so it grows."
   }
 }

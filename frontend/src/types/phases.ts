@@ -1722,6 +1722,14 @@ export const LobaPhase = {
   GAME_END: 3,
 } as const;
 
+/** Desmoche phase constants (sync: internal/domain/Desmoche.go). */
+export const DesmochePhase = {
+  DRAW: 0,
+  ACT: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Trex phase constants (sync: internal/domain/Trex.go). */
 export const TrexPhase = {
   CHOOSE: 0,
