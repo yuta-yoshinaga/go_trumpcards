@@ -88,6 +88,7 @@ import type {
   KoiKoiResponse,
   LaughAndLieDownResponse,
   LetItRideResponse,
+  LobaResponse,
   LooResponse,
   MacauResponse,
   MachiavelliResponse,
@@ -287,6 +288,7 @@ import { getKoenigrufenHint } from '../utils/hints/koenigrufenHint';
 import { getKoiKoiHint } from '../utils/hints/koikoiHint';
 import { getLaughAndLieDownHint } from '../utils/hints/laughandliedownHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
+import { getLobaHint } from '../utils/hints/lobaHint';
 import { getLooHint } from '../utils/hints/looHint';
 import { getMacauHint } from '../utils/hints/macauHint';
 import { getMachiavelliHint } from '../utils/hints/machiavelliHint';
@@ -610,6 +612,7 @@ export const hintFactories = {
   laughandliedown: (s) => getLaughAndLieDownHint(s as LaughAndLieDownResponse),
   sjavs: (s) => getSjavsHint(s as SjavsResponse),
   trex: (s) => getTrexHint(s as TrexResponse),
+  loba: (s) => getLobaHint(s as LobaResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),

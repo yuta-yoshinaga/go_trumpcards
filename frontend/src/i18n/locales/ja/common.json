@@ -261,7 +261,8 @@
     "skitgubbe": "シートグッベ",
     "laughandliedown": "ラフ・アンド・ライダウン",
     "sjavs": "シャウス",
-    "trex": "トリックス"
+    "trex": "トリックス",
+    "loba": "ロバ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1282,7 +1283,9 @@
     "sjavs.lose": "ラバーを取られました",
     "sjavs.loseDouble": "ダブル負けでラバーを取られました",
     "trex.win": "勝ちました",
-    "trex.lose": "負けました"
+    "trex.lose": "負けました",
+    "loba.win": "最後まで残りました",
+    "loba.lose": "脱落しました"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

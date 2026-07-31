@@ -1714,6 +1714,14 @@ export const SjavsPhase = {
   GAME_END: 3,
 } as const;
 
+/** Loba phase constants (sync: internal/domain/Loba.go). */
+export const LobaPhase = {
+  DRAW: 0,
+  ACT: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Trex phase constants (sync: internal/domain/Trex.go). */
 export const TrexPhase = {
   CHOOSE: 0,
