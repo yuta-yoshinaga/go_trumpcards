@@ -277,4 +277,12 @@ func init() {
 			return usecase.RestorePochInteractor(data, new(presenter.PochWebPresenter))
 		},
 		controller.NewPochWebControllerWithProvider)
+	games.RegisterKVGame("popejoan", games.CategoryExtra3,
+		func() usecase.PopeJoanInteractorIF {
+			return usecase.NewPopeJoanInteractor(domain.NewDefaultPopeJoan(), new(presenter.PopeJoanWebPresenter))
+		},
+		func(data []byte) (usecase.PopeJoanInteractorIF, error) {
+			return usecase.RestorePopeJoanInteractor(data, new(presenter.PopeJoanWebPresenter))
+		},
+		controller.NewPopeJoanWebControllerWithProvider)
 }

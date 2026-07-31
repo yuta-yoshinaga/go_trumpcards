@@ -1722,6 +1722,13 @@ export const LobaPhase = {
   GAME_END: 3,
 } as const;
 
+/** Pope Joan phase constants (sync: internal/domain/PopeJoan.go). */
+export const PopeJoanPhase = {
+  PLAY: 0,
+  DEAL_END: 1,
+  GAME_END: 2,
+} as const;
+
 /** Poch phase constants (sync: internal/domain/Poch.go). */
 export const PochPhase = {
   STAKING: 0,

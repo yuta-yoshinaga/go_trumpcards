@@ -125,6 +125,7 @@ import type {
   PochResponse,
   PokerResponse,
   PokerSquaresResponse,
+  PopeJoanResponse,
   PreferenceResponse,
   PresidentResponse,
   PrimeroResponse,
@@ -329,6 +330,7 @@ import { getPitchHint } from '../utils/hints/pitchHint';
 import { getPochHint } from '../utils/hints/pochHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
+import { getPopeJoanHint } from '../utils/hints/popejoanHint';
 import { getPreferenceHint } from '../utils/hints/preferenceHint';
 import { getPresidentHint } from '../utils/hints/presidentHint';
 import { getPrimeroHint } from '../utils/hints/primeroHint';
@@ -622,6 +624,7 @@ export const hintFactories = {
   desmoche: (s) => getDesmocheHint(s as DesmocheResponse),
   zwicker: (s) => getZwickerHint(s as ZwickerResponse),
   poch: (s) => getPochHint(s as PochResponse),
+  popejoan: (s) => getPopeJoanHint(s as PopeJoanResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),
