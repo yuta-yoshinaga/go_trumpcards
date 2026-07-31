@@ -268,7 +268,8 @@
     "poch": "Poch",
     "popejoan": "Pope Joan",
     "nainjaune": "Le Nain Jaune",
-    "kille": "Kille"
+    "kille": "Kille",
+    "klaberjass": "Klaberjass"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1304,7 +1305,13 @@
     "nainjaune.lose": "You finish behind",
     "kille.exchangePhase": "Exchange round -- challenge your left neighbour, or keep your card",
     "kille.dealerTurn": "Dealer's turn -- you swap with the stock, not a neighbour",
-    "kille.showdown": "Showdown -- the lowest hand goes out"
+    "kille.showdown": "Showdown -- the lowest hand goes out",
+    "klaberjass.bidTurnUp": "Decide whether to take the turn-up suit as trump",
+    "klaberjass.bidFree": "Name any suit but the turn-up suit you both refused",
+    "klaberjass.schmeissPending": "Waiting on the answer to a schmeiss",
+    "klaberjass.playPhase": "In play -- following, trumping and overtrumping are compulsory",
+    "klaberjass.handEnd": "Hand over. The maker scored more than the opponent",
+    "klaberjass.bete": "Bete -- the maker failed to score more, so the whole hand goes to the opponent"
   },
   "manual": {
     "ariaLabel": "Game Manual",

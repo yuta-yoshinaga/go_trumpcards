@@ -268,7 +268,8 @@
     "poch": "ポッホ",
     "popejoan": "ポープ・ジョーン",
     "nainjaune": "ル・ナン・ジョーヌ",
-    "kille": "キッレ"
+    "kille": "キッレ",
+    "klaberjass": "クラバーヤス"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1304,7 +1305,13 @@
     "nainjaune.lose": "及びませんでした",
     "kille.exchangePhase": "交換フェーズ — 左隣と交換するか、そのまま残すかを選びます",
     "kille.dealerTurn": "親の手番 — 交換相手は左隣ではなく山札です",
-    "kille.showdown": "公開 — 最も弱い1人が脱落します"
+    "kille.showdown": "公開 — 最も弱い1人が脱落します",
+    "klaberjass.bidTurnUp": "表向きのスートを切札にするか決めてください",
+    "klaberjass.bidFree": "好きなスートを指名できます（表向きのスートは選べません）",
+    "klaberjass.schmeissPending": "投げの提案に返事待ちです",
+    "klaberjass.playPhase": "プレイ中 — 追随・切札・上乗せは強制です",
+    "klaberjass.handEnd": "ディール終了。宣言側が相手を上回りました",
+    "klaberjass.bete": "ベート — 宣言側が相手を上回れず、得点は全部相手のものになりました"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

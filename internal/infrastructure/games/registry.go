@@ -741,6 +741,12 @@ var registry = []*Game{
 	// challenger, the Pig unwinds the swap and bites its own holder, and the
 	// Cavalier and Inn pass the challenge along to the next seat.
 	{Name: "kille", Category: CategoryExtra3},
+	// Klaberjass is the two-player ancestor of the Jass family, on a 32-card pack
+	// of which only 18 cards are dealt. The trump jack (20) and nine (14) outrank
+	// the ace, sequences are contested so that only the better holder scores, and
+	// a maker who fails to score MORE than the opponent goes bete and hands over
+	// the whole hand.
+	{Name: "klaberjass", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.
