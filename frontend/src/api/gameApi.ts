@@ -70,6 +70,7 @@ export * from './games/cruel';
 export * from './games/cuarenta';
 export * from './games/cuckoo';
 export * from './games/daifugo';
+export * from './games/desmoche';
 export * from './games/deuceswild';
 export * from './games/deucetoseven';
 export * from './games/doppelkopf';
@@ -351,6 +352,7 @@ export const games = [
   'sjavs',
   'trex',
   'loba',
+  'desmoche',
   'missmilligan',
   'canfield',
   'osmosis',

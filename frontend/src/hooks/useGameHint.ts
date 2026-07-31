@@ -44,6 +44,7 @@ import type {
   CribbageResponse,
   CruelResponse,
   DaifugoResponse,
+  DesmocheResponse,
   DeuceToSevenResponse,
   DoppelkopfResponse,
   DoubtResponse,
@@ -241,6 +242,7 @@ import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getCruelHint } from '../utils/hints/cruelHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
+import { getDesmocheHint } from '../utils/hints/desmocheHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDeuceToSevenHint } from '../utils/hints/deuceToSevenHint';
 import { getDoppelkopfHint } from '../utils/hints/doppelkopfHint';
@@ -613,6 +615,7 @@ export const hintFactories = {
   sjavs: (s) => getSjavsHint(s as SjavsResponse),
   trex: (s) => getTrexHint(s as TrexResponse),
   loba: (s) => getLobaHint(s as LobaResponse),
+  desmoche: (s) => getDesmocheHint(s as DesmocheResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),

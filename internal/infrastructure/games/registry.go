@@ -709,6 +709,11 @@ var registry = []*Game{
 	// Zheng Shangyou is a Chinese climbing/shedding game (ancestor of Big Two / Daifugo)
 	// on a 54-card deck (52 + 2 jokers); suits are irrelevant to rank strength.
 	{Name: "zheng", Category: CategorySolo},
+	// Desmoche is a Nicaraguan rummy: nine dealt, and the pot goes to whoever melds
+	// exactly ten cards. Poker hand rankings play no part despite the family
+	// resemblance, and "desmoche" itself is the move of reusing a card from one of
+	// your own face-up melds in another.
+	{Name: "desmoche", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.

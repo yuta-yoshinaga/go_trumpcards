@@ -239,6 +239,8 @@ tags:
     description: Trex
   - name: loba
     description: Loba
+  - name: desmoche
+    description: Desmoche
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -12950,6 +12952,111 @@ paths:
               schema:
                 $ref: '#/components/schemas/LobaResponse'
 
+  /desmoche/exec:
+    post:
+      tags:
+        - desmoche
+      summary: Execute a Desmoche game command
+      description: |
+        Send a command to advance the Desmoche session identified by `sessionId`.
+        Desmoche is a Nicaraguan rummy for **2-4** players: nine cards each, and
+        the pot goes to whoever gets **exactly ten** cards (the nine dealt plus
+        one drawn) down in melds of three or more.
+
+        **Two of #4405's headline mechanics do not exist.**
+
+        * The issue has players "compare hand strength using the **poker hand
+          rankings**", with the strongest taking the pot. **Poker rankings play
+          no part.** Desmoche is a rummy in the Conquian/gin family and the only
+          question is who gets down first.
+        * The issue treats **desmoche** as the declaration you make on going out.
+          It is not a declaration at all — it is the move of *taking a card from
+          one of your own face-up melds to use in another*, allowed as long as
+          the meld you took from is still valid.
+        * You put down **ten** cards, not nine, so the winning turn ends with no
+          discard.
+        * 2-4 players, not 2-5.
+
+        The issue also omits the ending that gives the game its shape: **if the
+        stock runs out with nobody down to ten, there is no winner** and the pot
+        carries over into the next deal, on top of fresh antes.
+
+        Aces are high **or** low in a run, never both, so K-A-2 is not a run.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Draw     | `0`   | Take from the stock or the discard |
+        | Act      | `1`   | Meld, lay off, rearrange, then discard |
+        | RoundEnd | `2`   | The round is settled; `next` deals again |
+        | GameEnd  | `3`   | Five rounds are done |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a game |
+        | `drawstock`   | `ds`    | Draw from the stock |
+        | `drawdiscard` | `dd`    | Take the top discard |
+        | `meld`        | `m`     | Put down `cardIndices` as a meld |
+        | `layoff`      | `o`     | Add `cardIndex` to `meldIndex` |
+        | `desmoche`    | `x`     | Move card `cardIndex` of `fromMeldIndex` into `toMeldIndex` |
+        | `discard`     | `d`     | Discard `cardIndex` |
+        | `next`        | `n`     | Deal the next round |
+        | `hint`        | `h`     | Suggested move for the human seat |
+        | `log`         | `l`     | Action-log transcript |
+      operationId: desmocheExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, layoff, o, desmoche, x, discard, d, next, n, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: |
+                    Hand index for `discard` and `layoff`; for `desmoche` it is
+                    the index *within* `fromMeldIndex`, not a hand index.
+                cardIndices:
+                  type: array
+                  description: Hand indices forming the meld. Required for `meld`.
+                  items:
+                    type: integer
+                meldIndex:
+                  type: integer
+                  description: Index into `melds`. Required for `layoff`.
+                fromMeldIndex:
+                  type: integer
+                  description: Meld to take a card from. Required for `desmoche`.
+                toMeldIndex:
+                  type: integer
+                  description: Meld to move the card into. Required for `desmoche`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DesmocheResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DesmocheResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -23080,6 +23187,107 @@ components:
         winnerIdx:
           type: integer
           description: "Last player standing; -1 while the game is live"
+        hint:
+          type: object
+          description: Suggested move, sent on every response while it is the human's turn.
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            cardIndex:
+              type: integer
+            drawStock:
+              type: boolean
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    DesmocheResponse:
+      type: object
+      description: Response payload for /desmoche/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: Hand size. Always sent, including while hidden.
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/Card'
+              score:
+                type: integer
+                description: Chip balance. Antes subtract, winning the pot adds.
+              meldedCount:
+                type: integer
+                description: |
+                  How many cards this seat has face up. Public for every seat --
+                  melds are laid down face up, and this is the only progress
+                  indicator toward the ten needed to go out.
+              hidden:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Draw, 1=Act, 2=RoundEnd, 3=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        stockCount:
+          type: integer
+        discardTop:
+          $ref: '#/components/schemas/Card'
+        melds:
+          type: array
+          items:
+            type: object
+            properties:
+              owner:
+                type: integer
+              kind:
+                type: integer
+                description: "0=set (one rank), 1=run (consecutive, one suit)"
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        roundNo:
+          type: integer
+        pot:
+          type: integer
+          description: |
+            Chips in the middle. A round that ends with no winner leaves this
+            standing, so it grows across deals -- the client must not recompute
+            it from the ante.
+        goOutSize:
+          type: integer
+          description: Cards that must be melded to take the pot (10).
+        roundWinner:
+          type: integer
+          description: "Seat that got down to ten last round; -1 when nobody did"
+        roundExhausted:
+          type: boolean
+          description: |
+            The stock ran out with nobody down to ten, which is why the pot
+            carried over.
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "Seat with the most chips after the last round; -1 while live"
         hint:
           type: object
           description: Suggested move, sent on every response while it is the human's turn.

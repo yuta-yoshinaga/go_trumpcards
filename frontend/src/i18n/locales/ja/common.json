@@ -262,7 +262,8 @@
     "laughandliedown": "ラフ・アンド・ライダウン",
     "sjavs": "シャウス",
     "trex": "トリックス",
-    "loba": "ロバ"
+    "loba": "ロバ",
+    "desmoche": "デスモチェ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1285,7 +1286,9 @@
     "trex.win": "勝ちました",
     "trex.lose": "負けました",
     "loba.win": "最後まで残りました",
-    "loba.lose": "脱落しました"
+    "loba.lose": "脱落しました",
+    "desmoche.win": "最も多く稼ぎました",
+    "desmoche.lose": "及びませんでした"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

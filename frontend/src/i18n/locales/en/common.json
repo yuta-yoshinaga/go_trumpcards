@@ -262,7 +262,8 @@
     "laughandliedown": "Laugh and Lie Down",
     "sjavs": "Sjavs",
     "trex": "Trex",
-    "loba": "Loba"
+    "loba": "Loba",
+    "desmoche": "Desmoche"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1285,7 +1286,9 @@
     "trex.win": "You win",
     "trex.lose": "You lose",
     "loba.win": "You are the last one standing",
-    "loba.lose": "You were knocked out"
+    "loba.lose": "You were knocked out",
+    "desmoche.win": "You finish ahead",
+    "desmoche.lose": "You finish behind"
   },
   "manual": {
     "ariaLabel": "Game Manual",

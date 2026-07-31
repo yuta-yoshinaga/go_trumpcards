@@ -253,6 +253,7 @@ var gameDescriptions = map[string]string{
 	"scarto":              "Scarto (スカルト)",
 	"cego":                "Cego (チェゴ)",
 	"zheng":               "Zheng Shangyou (ジェンシャンヨウ)",
+	"desmoche":            "デスモチェ（9枚配りのニカラグア式ラミー。ちょうど10枚を組めた者がポットを取り、誰も組めなければ持ち越し）",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

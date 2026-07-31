@@ -261,4 +261,12 @@ func init() {
 			return usecase.RestoreSkitgubbeInteractor(data, new(presenter.SkitgubbeWebPresenter))
 		},
 		controller.NewSkitgubbeWebControllerWithProvider)
+	games.RegisterKVGame("desmoche", games.CategoryExtra3,
+		func() usecase.DesmocheInteractorIF {
+			return usecase.NewDesmocheInteractor(domain.NewDefaultDesmoche(), new(presenter.DesmocheWebPresenter))
+		},
+		func(data []byte) (usecase.DesmocheInteractorIF, error) {
+			return usecase.RestoreDesmocheInteractor(data, new(presenter.DesmocheWebPresenter))
+		},
+		controller.NewDesmocheWebControllerWithProvider)
 }
