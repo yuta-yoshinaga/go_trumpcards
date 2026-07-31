@@ -506,7 +506,11 @@ func (n *NainJaune) UnmarshalJSON(data []byte) error {
 	}
 	// **runRank が範囲外だと出せる札が無くなって固まる。**0 は「好きな札で
 	// 始められる」という意味を持つので潰さない。
-	if raw.RunRank < 0 || raw.RunRank > 13 {
+	//
+	// 上限は 13 ではなく **12**。K (13) を出した瞬間に Play が runRank を 0 へ
+	// 戻すので、13 は対局中に観測されない値である。復元でだけ入り込むと 14 の
+	// 札は存在しないため playable() が全員永久に偽になり、そのディールが詰む。
+	if raw.RunRank < 0 || raw.RunRank > 12 {
 		return fmt.Errorf("bad run rank: %d", raw.RunRank)
 	}
 

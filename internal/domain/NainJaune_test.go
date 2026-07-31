@@ -521,6 +521,9 @@ func TestNainJauneUnmarshalRejectsGarbage(t *testing.T) {
 		{"unknown phase", `{"pl":[{},{},{},{}],"cfg":{"cd":0,"td":5},"ph":9}`},
 		// **runRank が範囲外だと出せる札が無くなって固まる。**
 		{"run rank too high", `{"pl":[{},{},{},{}],"cfg":{"cd":0,"td":5},"ph":0,"rr":99}`},
+		// K を出した瞬間に 0 へ戻るので 13 は対局中に観測されない。復元でだけ
+		// 入り込むと 14 の札が無く全員が出せなくなって詰む。
+		{"a king rank cannot be restored", `{"pl":[{},{},{},{}],"cfg":{"cd":0,"td":5},"ph":0,"rr":13}`},
 		{"negative run rank", `{"pl":[{},{},{},{}],"cfg":{"cd":0,"td":5},"ph":0,"rr":-1}`},
 	}
 	for _, tt := range tests {
