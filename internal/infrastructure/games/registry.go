@@ -765,6 +765,16 @@ var registry = []*Game{
 	// denomination; and the bidding order is spades < clubs < diamonds < hearts <
 	// no trump -- the reverse of bridge, with spades LOWEST.
 	{Name: "vint", Category: CategoryExtra3},
+	// bideuchre -- Bid Euchre. A 24-card euchre variant played in partnerships
+	// where the whole pack is dealt out (24 / 4 = 6 each), so unlike classic
+	// euchre there is NO kitty and no turn-up. Bidding starts at three tricks and
+	// each bid must beat the last -- except the DEALER, who may take the contract
+	// by equalling it. The declarer then names a trump suit or one of two
+	// no-trump forms; at no trump LOW the ranking reverses and the nine is
+	// highest. A made contract scores each side its own tricks; a set costs the
+	// declaring side its BID (not the tricks it took), while the defenders still
+	// score theirs. First side to 32 wins.
+	{Name: "bideuchre", Category: CategoryExtra2},
 }
 
 // All returns a value-level copy of the registry in canonical order.

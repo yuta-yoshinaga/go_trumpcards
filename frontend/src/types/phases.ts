@@ -1731,6 +1731,15 @@ export const VintPhase = {
   GAME_END: 3,
 } as const;
 
+/** Bid Euchre phase constants (sync: internal/domain/BidEuchre.go). */
+export const BidEuchrePhase = {
+  BID: 0,
+  CHOOSE_TRUMP: 1,
+  PLAY: 2,
+  HAND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Boston phase constants (sync: internal/domain/Boston.go). */
 export const BostonPhase = {
   BID: 0,

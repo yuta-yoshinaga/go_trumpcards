@@ -95,6 +95,7 @@ export const workerUrl: Record<string, string> = {
   kaiser: WORKER_EXTRA3,
   boston: WORKER_EXTRA3,
   vint: WORKER_EXTRA3,
+  bideuchre: WORKER_EXTRA2,
   sjavs: WORKER_EXTRA2,
   skitgubbe: WORKER_EXTRA3,
   trex: WORKER_EXTRA3,
