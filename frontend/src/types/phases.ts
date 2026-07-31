@@ -1723,6 +1723,16 @@ export const LobaPhase = {
 } as const;
 
 /** Le Nain Jaune phase constants (sync: internal/domain/NainJaune.go). */
+/** Klaberjass phase constants (sync: internal/domain/Klaberjass.go). */
+export const KlaberjassPhase = {
+  BID_TURN_UP: 0,
+  BID_FREE: 1,
+  SCHMEISS: 2,
+  PLAY: 3,
+  HAND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Kille phase constants (sync: internal/domain/Kille.go). */
 export const KillePhase = {
   EXCHANGE: 0,

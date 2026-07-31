@@ -334,7 +334,8 @@
     "poch": "A 15th-century German game in three stages. Chips go onto a nine-pool board and are claimed with cards of the turn-up's suit.",
     "popejoan": "The ancestor of the stops family. The eight of diamonds is out of the pack, so a run always dies at the seven.",
     "nainjaune": "The French stops game. The run never looks at suit -- it climbs by rank and ends on a king.",
-    "kille": "The Swedish Cuckoo game on its own 42-card pack. You hold a single card and trade with your neighbour to avoid ending up lowest."
+    "kille": "The Swedish Cuckoo game on its own 42-card pack. You hold a single card and trade with your neighbour to avoid ending up lowest.",
+    "klaberjass": "The two-player ancestor of Belote and Pinochle. In trumps the jack scores 20 and the nine 14, both outranking the ace."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -585,6 +586,7 @@
     "poch": "Pools nobody claims carry over and swell. The last stage runs each suit upwards, and going out collects from every hand still holding cards.",
     "popejoan": "The dealer dresses eight compartments with fifteen chips and a turn-up sets trumps. Holding the Pope excuses you from paying when someone goes out.",
     "nainjaune": "The yellow dwarf in the centre takes five chips a deal. You settle in points rather than cards, so every court card left is a ten-point debt.",
-    "kille": "Challenge the Cuckoo and the round ends on the spot; challenge the Hussar and you are the one who goes out. A Harlequin handed to you in an exchange is the lowest card, not the highest."
+    "kille": "Challenge the Cuckoo and the round ends on the spot; challenge the Hussar and you are the one who goes out. A Harlequin handed to you in an exchange is the lowest card, not the highest.",
+    "klaberjass": "Only the better sequence scores -- but it scores every run its holder has. Fail to beat your opponent as maker and the whole hand goes to them."
   }
 }
