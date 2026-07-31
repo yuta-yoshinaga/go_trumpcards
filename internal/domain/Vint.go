@@ -42,7 +42,16 @@ const VintTeamCnt = 2
 const VintHandSize = 13
 
 // VintTeamOf は席のチームを返す (0/2 が team 0、1/3 が team 1)。
-func VintTeamOf(seat int) int { return seat % VintTeamCnt }
+//
+// **範囲外は -1。**Go の剰余は負の被除数で負を返すので、declarerIdx が未確定の
+// -1 をそのまま渡すと -1 が返る。チーム添字として使う側が弾けるよう、範囲外は
+// 明示的に -1 に揃える。
+func VintTeamOf(seat int) int {
+	if seat < 0 || seat >= VintPlayerCnt {
+		return -1
+	}
+	return seat % VintTeamCnt
+}
 
 // VintPhase はゲームフェーズ。
 type VintPhase int

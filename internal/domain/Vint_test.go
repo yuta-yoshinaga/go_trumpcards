@@ -768,3 +768,45 @@ func TestVintRejectsBadJSON(t *testing.T) {
 		})
 	}
 }
+
+// TestVintAccessorsBeforeTheAuctionSettles は落札前に公開アクセサを呼んでも
+// 落ちないことを確かめる。
+//
+// **declarerIdx は競りが決まるまで -1。**プレゼンターは宣言フェーズでも状態を
+// 送るので、素で添字にする経路があると最初の応答で panic する。
+func TestVintAccessorsBeforeTheAuctionSettles(t *testing.T) {
+	v := NewDefaultVint()
+	v.Reset()
+	if got := v.GetDeclarerIdx(); got != -1 {
+		t.Fatalf("declarer = %d, want -1 during the auction", got)
+	}
+	// **範囲外の席は -1 を返す。**Go の剰余は -1 % 2 = -1 なので素通しは危険。
+	if got := VintTeamOf(-1); got != -1 {
+		t.Errorf("VintTeamOf(-1) = %d, want -1", got)
+	}
+	if got := VintTeamOf(99); got != -1 {
+		t.Errorf("VintTeamOf(99) = %d, want -1", got)
+	}
+	// 落札前でも全部のアクセサが落ちずに既定値を返す。
+	for _, get := range []func() int{
+		func() int { return v.VintTeamTricks(VintTeamOf(v.GetDeclarerIdx())) },
+		func() int { return v.GetBelow(VintTeamOf(v.GetDeclarerIdx())) },
+		func() int { return v.GetAbove(VintTeamOf(v.GetDeclarerIdx())) },
+		func() int { return v.GetGamesWon(VintTeamOf(v.GetDeclarerIdx())) },
+		func() int { return v.GetTricksWon(v.GetDeclarerIdx()) },
+	} {
+		if got := get(); got != 0 {
+			t.Errorf("an accessor returned %d before the auction settles, want 0", got)
+		}
+	}
+}
+
+func TestVintPlayerTeam(t *testing.T) {
+	p := NewVintPlayer(true)
+	if p.GetTeam(0) != p.GetTeam(2) {
+		t.Error("seats 0 and 2 are partners")
+	}
+	if p.GetTeam(0) == p.GetTeam(1) {
+		t.Error("seats 0 and 1 are opponents")
+	}
+}
