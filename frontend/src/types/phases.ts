@@ -1723,6 +1723,15 @@ export const LobaPhase = {
 } as const;
 
 /** Le Nain Jaune phase constants (sync: internal/domain/NainJaune.go). */
+/** Boston phase constants (sync: internal/domain/Boston.go). */
+export const BostonPhase = {
+  BID: 0,
+  CALL_PARTNER: 1,
+  PLAY: 2,
+  HAND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Kaiser phase constants (sync: internal/domain/Kaiser.go). */
 export const KaiserPhase = {
   BID: 0,

@@ -270,7 +270,8 @@
     "nainjaune": "ル・ナン・ジョーヌ",
     "kille": "キッレ",
     "klaberjass": "クラバーヤス",
-    "kaiser": "カイザー"
+    "kaiser": "カイザー",
+    "boston": "ボストン"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1319,6 +1320,11 @@
     "kaiser.playPhase": "プレイ中 — 追随は強制です",
     "kaiser.handMade": "宣言側が達成しました。両チームとも取った点を加算します",
     "kaiser.handSet": "ベート — 宣言側が未達なので、宣言額がそのままマイナスになります",
+    "boston.bidPhase": "宣言フェーズ — ミゼールはトリック宣言の【間に】挟まります",
+    "boston.callPartner": "パートナーを指名できます（2対2）。しなければ1対3です",
+    "boston.playPhase": "プレイ中 — 追随は強制です",
+    "boston.handMade": "宣言達成。落札側が各相手から受け取ります",
+    "boston.handFailed": "宣言失敗。落札側が各相手に払います",
     "kaiser.result.humanWin": "あなたのチームの勝ちです",
     "kaiser.result.cpuWin": "相手チームの勝ちです"
   },
