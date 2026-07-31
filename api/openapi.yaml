@@ -255,6 +255,8 @@ tags:
     description: Klaberjass
   - name: kaiser
     description: Kaiser
+  - name: boston
+    description: Boston
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -13775,6 +13777,112 @@ paths:
               schema:
                 $ref: '#/components/schemas/KaiserResponse'
 
+  /boston/exec:
+    post:
+      tags:
+        - boston
+      summary: Execute a Boston game command
+      description: |
+        Send a command to advance the Boston session identified by `sessionId`.
+        Boston is the 18th-century Whist derivative for **4 players** on a
+        52-card pack, dealt **4-4-5** to thirteen cards each.
+
+        **#4394 gets the auction ladder structurally wrong and omits three rules.**
+
+        * The issue reads as though the trick bids run first and the miseres
+          follow. **They interleave.** Little Misere ranks **below seven
+          tricks**; Grand Misere ranks **below nine**. Flattening the ladder
+          changes what the auction means.
+        * The issue omits **Piccolissimo** — a bid to take **exactly one**
+          trick, sitting between seven and eight. **Zero tricks fails it**, so
+          it is neither a trick bid nor a misere.
+        * The issue calls the exposed hand an option ("open-hand in some
+          cases"). **On the Table is a separate, higher bid**, and the hand is
+          exposed after the **first trick**.
+        * The issue says every player plays for themselves. **Trick bids (5-10)
+          may call a partner**, making it two against two; only the miseres,
+          Piccolissimo and the slams are played alone against three.
+        * The issue omits the deal pattern: **4 cards, 4 cards, then 5**.
+
+        The full ladder, lowest first, is: 5 tricks, 6 tricks, **Little
+        Misere**, 7 tricks, **Piccolissimo**, 8 tricks, **Grand Misere**, 9
+        tricks, **Little Misere on the Table**, 10 tricks, **Grand Misere on
+        the Table**, 11 tricks, 12 tricks, **Chelem**, **Chelem on the Table**.
+        `bidOptions` sends this table so the client never has to rebuild it.
+
+        Following suit is compulsory; trumping is not. The lead belongs to the
+        **dealer's left**, not the declarer.
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | Bid         | `0`   | Bid a ladder step or pass |
+        | CallPartner | `1`   | Trick bids only: call a partner or go alone |
+        | Play        | `2`   | Thirteen tricks |
+        | HandEnd     | `3`   | The hand is settled; `next` deals again |
+        | GameEnd     | `4`   | The target hand count is reached |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a game |
+        | `bid`         | `b`     | Bid ladder step `level` with optional `suit` |
+        | `pass`        | `ps`    | Pass |
+        | `callpartner` | `cp`    | Call `partner` (-1 to play alone) |
+        | `play`        | `p`     | Play `cardIndex` |
+        | `next`        | `n`     | Deal the next hand |
+        | `log`         | `l`     | Action-log transcript |
+      operationId: bostonExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pass, ps, callpartner, cp, play, p, next, n, log, l]
+                sessionId:
+                  type: string
+                level:
+                  type: integer
+                  description: |
+                    Ladder step, 1-15. Required for `bid`. **Not a number of
+                    tricks** -- the miseres occupy steps of their own.
+                suit:
+                  type: integer
+                  description: "Trump suit for a trick bid: 1=Spade, 2=Clover, 3=Heart, 4=Diamond. Ignored by no-trump bids."
+                partner:
+                  type: integer
+                  description: Seat to partner, or -1 to play alone. Required for `callpartner`.
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+                    targetHands:
+                      type: integer
+                      description: Hands played before the game is decided (1-30, default 8).
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BostonResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BostonResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -24854,6 +24962,156 @@ components:
         winnerTeam:
           type: integer
           description: "Winning team; -1 while the game is live"
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    BostonResponse:
+      type: object
+      description: Response payload for /boston/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                description: |
+                  Your own hand; also the declarer's under an "on the Table"
+                  contract once the first trick is done, and everyone's at the
+                  settlement.
+                items:
+                  $ref: '#/components/schemas/Card'
+              tricksWon:
+                type: integer
+              chips:
+                type: integer
+              isDealer:
+                type: boolean
+              isDeclarer:
+                type: boolean
+              isPartner:
+                type: boolean
+              isDeclarerSide:
+                type: boolean
+                description: True for the declarer and, when one was called, the partner.
+              isCurrentTurn:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Bid, 1=CallPartner, 2=Play, 3=HandEnd, 4=GameEnd"
+        handNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        bids:
+          type: array
+          description: This hand's auction, in order. A pass is recorded with `level` 0.
+          items:
+            type: object
+            properties:
+              player:
+                type: integer
+              level:
+                type: integer
+              name:
+                type: string
+              suit:
+                type: integer
+        highBid:
+          type: object
+          description: The standing bid, or null while nobody has bid.
+          properties:
+            player:
+              type: integer
+            level:
+              type: integer
+            name:
+              type: string
+            suit:
+              type: integer
+        bidOptions:
+          type: array
+          description: |
+            The whole ladder in rank order, sent by the server. The miseres sit
+            BETWEEN the trick bids, so a client that rebuilds this list from
+            trick counts alone will get the order wrong.
+          items:
+            type: object
+            properties:
+              level:
+                type: integer
+              name:
+                type: string
+              kind:
+                type: integer
+                description: "1=trick count, 2=misere, 3=piccolissimo"
+              tricks:
+                type: integer
+                description: Target trick count -- 0 for a misere, 1 for Piccolissimo.
+              needsTrump:
+                type: boolean
+              exposed:
+                type: boolean
+                description: Whether the declarer's hand is shown after the first trick.
+              canCallPartner:
+                type: boolean
+              payout:
+                type: integer
+        declarerIdx:
+          type: integer
+          description: "Seat that won the auction; -1 while undecided"
+        partnerIdx:
+          type: integer
+          description: "Seat called as partner; -1 when the declarer plays alone"
+        trumpSuit:
+          type: integer
+          description: "1=Spade, 2=Clover, 3=Heart, 4=Diamond; 0 for a no-trump contract"
+        exposed:
+          type: boolean
+        trick:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        validPlays:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (following suit is compulsory).
+        trickLeaderIdx:
+          type: integer
+        trickNumber:
+          type: integer
+        declarerTricks:
+          type: integer
+          description: |
+            Tricks the declaring side has taken -- the declarer's plus the
+            partner's, since a called partner's tricks count toward the contract.
+        bidMade:
+          type: boolean
+        handSize:
+          type: integer
+        targetHands:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
         message:
           type: string
         messageCode:

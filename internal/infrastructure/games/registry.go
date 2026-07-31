@@ -753,6 +753,12 @@ var registry = []*Game{
 	// declarer takes the kitty and discards two, but may never discard either
 	// scoring card.
 	{Name: "kaiser", Category: CategoryExtra3},
+	// Boston is the 18th-century Whist derivative whose auction ladder INTERLEAVES
+	// the misere bids with the trick bids -- Little Misere ranks below seven
+	// tricks, Grand Misere below nine -- and adds Piccolissimo, which wants
+	// EXACTLY one trick. Trick bids may call a partner (two against two); the
+	// miseres, Piccolissimo and the slams are played alone against three.
+	{Name: "boston", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.
