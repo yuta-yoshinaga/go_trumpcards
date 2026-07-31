@@ -805,3 +805,47 @@ func TestKaiserRejectsBadJSON(t *testing.T) {
 		})
 	}
 }
+
+func TestKaiserBidHistoryAndConfigAccessors(t *testing.T) {
+	k := NewDefaultKaiser()
+	k.Reset()
+	if got := len(k.GetBids()); got != 0 {
+		t.Errorf("the bid history starts empty, got %d", got)
+	}
+	if err := k.Bid(1, 8, KaiserContractTrump); err != nil {
+		t.Fatalf("Bid: %v", err)
+	}
+	if err := k.PassBid(2); err != nil {
+		t.Fatalf("PassBid: %v", err)
+	}
+	bids := k.GetBids()
+	if len(bids) != 2 {
+		t.Fatalf("the history holds %d entries, want 2", len(bids))
+	}
+	if bids[0].Value != 8 || bids[0].Player != 1 {
+		t.Errorf("first entry = %+v, want seat 1 bidding 8", bids[0])
+	}
+	// **パスも 0 として記録する。**誰が降りたかは以後の読みに要る。
+	if bids[1].Value != 0 || bids[1].Player != 2 {
+		t.Errorf("a pass is recorded as %+v, want seat 2 with 0", bids[1])
+	}
+
+	cfg := k.GetConfig()
+	if !cfg.AllowNoTrump {
+		t.Error("no-trump bids are allowed by default")
+	}
+	cfg.AllowNoTrump = false
+	k.SetConfig(cfg)
+	if k.GetConfig().AllowNoTrump {
+		t.Error("SetConfig must take effect")
+	}
+
+	// パートナーは向かい合わせ。
+	p := k.GetPlayer(0)
+	if p.GetTeam(0) != p.GetTeam(2) {
+		t.Error("seats 0 and 2 are partners")
+	}
+	if p.GetTeam(0) == p.GetTeam(1) {
+		t.Error("seats 0 and 1 are opponents")
+	}
+}
