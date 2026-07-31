@@ -127,6 +127,7 @@ export * from './games/koikoi';
 export * from './games/labellelucie';
 export * from './games/laughandliedown';
 export * from './games/letitride';
+export * from './games/loba';
 export * from './games/loo';
 export * from './games/macau';
 export * from './games/machiavelli';
@@ -349,6 +350,7 @@ export const games = [
   'laughandliedown',
   'sjavs',
   'trex',
+  'loba',
   'missmilligan',
   'canfield',
   'osmosis',

@@ -301,6 +301,14 @@ func init() {
 			return usecase.RestoreSetteEMezzoInteractor(data, new(presenter.SetteEMezzoWebPresenter))
 		},
 		controller.NewSetteEMezzoWebControllerWithProvider)
+	games.RegisterKVGame("loba", games.CategoryExtra2,
+		func() usecase.LobaInteractorIF {
+			return usecase.NewLobaInteractor(domain.NewDefaultLoba(), new(presenter.LobaWebPresenter))
+		},
+		func(data []byte) (usecase.LobaInteractorIF, error) {
+			return usecase.RestoreLobaInteractor(data, new(presenter.LobaWebPresenter))
+		},
+		controller.NewLobaWebControllerWithProvider)
 	games.RegisterKVGame("sjavs", games.CategoryExtra2,
 		func() usecase.SjavsInteractorIF {
 			return usecase.NewSjavsInteractor(domain.NewDefaultSjavs(), new(presenter.SjavsWebPresenter))
