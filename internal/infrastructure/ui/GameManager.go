@@ -3938,6 +3938,24 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "kille", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKilleCuiController(usecase.NewKilleInteractor(
+				domain.NewDefaultKille(), new(presenter.KilleCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "kille.helpTitle",
+				CommandKeys: []string{
+					"kille.helpExchange",
+					"kille.helpSatisfied",
+					"kille.helpReenter",
+					"kille.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+				SettingKeys: []string{
+					"kille.helpSetStake",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

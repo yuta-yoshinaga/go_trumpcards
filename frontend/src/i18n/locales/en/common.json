@@ -267,7 +267,8 @@
     "zwicker": "Zwicker",
     "poch": "Poch",
     "popejoan": "Pope Joan",
-    "nainjaune": "Le Nain Jaune"
+    "nainjaune": "Le Nain Jaune",
+    "kille": "Kille"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1300,7 +1301,10 @@
     "popejoan.win": "You finish with the most chips",
     "popejoan.lose": "You finish behind",
     "nainjaune.win": "You finish with the most chips",
-    "nainjaune.lose": "You finish behind"
+    "nainjaune.lose": "You finish behind",
+    "kille.exchangePhase": "Exchange round -- challenge your left neighbour, or keep your card",
+    "kille.dealerTurn": "Dealer's turn -- you swap with the stock, not a neighbour",
+    "kille.showdown": "Showdown -- the lowest hand goes out"
   },
   "manual": {
     "ariaLabel": "Game Manual",

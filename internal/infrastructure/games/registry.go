@@ -735,6 +735,12 @@ var registry = []*Game{
 	// simply climbs by rank, ending on a king; and the loser pays the winner in card
 	// POINTS, not in cards.
 	{Name: "nainjaune", Category: CategoryExtra3},
+	// Kille is the Swedish Cuckoo game played with its own 42-card pack (21
+	// denominations twice over, a single suit). Five of the picture cards break the
+	// exchange: the Cuckoo ends the round on the spot, the Hussar cuts down the
+	// challenger, the Pig unwinds the swap and bites its own holder, and the
+	// Cavalier and Inn pass the challenge along to the next seat.
+	{Name: "kille", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.

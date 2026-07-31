@@ -110,6 +110,7 @@ export * from './games/irishpoker';
 export * from './games/jass';
 export * from './games/kalooki';
 export * from './games/kemps';
+export * from './games/kille';
 export * from './games/king';
 export * from './games/kingalbert';
 export * from './games/klaverjas';

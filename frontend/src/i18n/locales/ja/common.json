@@ -267,7 +267,8 @@
     "zwicker": "ツヴィッカー",
     "poch": "ポッホ",
     "popejoan": "ポープ・ジョーン",
-    "nainjaune": "ル・ナン・ジョーヌ"
+    "nainjaune": "ル・ナン・ジョーヌ",
+    "kille": "キッレ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1300,7 +1301,10 @@
     "popejoan.win": "最も多く稼ぎました",
     "popejoan.lose": "及びませんでした",
     "nainjaune.win": "最も多く稼ぎました",
-    "nainjaune.lose": "及びませんでした"
+    "nainjaune.lose": "及びませんでした",
+    "kille.exchangePhase": "交換フェーズ — 左隣と交換するか、そのまま残すかを選びます",
+    "kille.dealerTurn": "親の手番 — 交換相手は左隣ではなく山札です",
+    "kille.showdown": "公開 — 最も弱い1人が脱落します"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
