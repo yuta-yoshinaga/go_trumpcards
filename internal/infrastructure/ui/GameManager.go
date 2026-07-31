@@ -4010,6 +4010,21 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "vint", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewVintCuiController(usecase.NewVintInteractor(
+				domain.NewDefaultVint(), new(presenter.VintCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "vint.helpTitle",
+				CommandKeys: []string{
+					"vint.helpBid",
+					"vint.helpPass",
+					"vint.helpPlay",
+					"vint.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

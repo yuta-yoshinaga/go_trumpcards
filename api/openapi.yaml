@@ -257,6 +257,8 @@ tags:
     description: Kaiser
   - name: boston
     description: Boston
+  - name: vint
+    description: Vint
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -13883,6 +13885,103 @@ paths:
               schema:
                 $ref: '#/components/schemas/BostonResponse'
 
+  /vint/exec:
+    post:
+      tags:
+        - vint
+      summary: Execute a Vint game command
+      description: |
+        Send a command to advance the Vint session identified by `sessionId`.
+        Vint is the Russian ancestor of contract bridge: 4 players in two
+        partnerships on a 52-card pack, thirteen cards each, and **no dummy** —
+        every hand stays concealed to the end.
+
+        **#4385 gets the scoring fundamentally wrong and omits four rules.**
+
+        * The issue says to total "**the declaring side's tricks** and the
+          overtricks above seven". **Both teams score below the line for every
+          trick they take, irrespective of whether the contract was made.** The
+          defenders' tricks count too, and nothing is measured "above seven".
+        * The issue gives no trick values. They depend on **both the
+          denomination and the level**: spades 4, clubs 6, diamonds 8, hearts
+          10, no trump 12 at level 1, **plus 10 for each level above**.
+        * The issue gives no bidding order. It is **spades < clubs < diamonds <
+          hearts < no trump** — the reverse of bridge, with **spades LOWEST**.
+        * The issue says honours score "according to how many you hold". They
+          score from **three or more**: 20x, 30x or 40x the trick value. Two or
+          fewer score nothing, and a no-trump contract has no trump honours at
+          all.
+        * The issue omits the **aces** entirely. They are scored separately
+          from honours: the side holding the majority takes **10x the trick
+          value per ace**, and on a 2-2 split the side with more tricks takes
+          all four.
+        * The issue names no target. A game is **500 below the line**; the
+          first game is worth 500 above it and the rubber 1000.
+        * The issue omits the penalty: **undertricks x level x 500**.
+
+        A bid of level N contracts for **6 + N tricks**. Following suit is
+        compulsory, so the server sends `validPlays`.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Bid     | `0`   | Bid a level and denomination, or pass |
+        | Play    | `1`   | Thirteen tricks, no dummy |
+        | HandEnd | `2`   | The hand is settled; `next` deals again |
+        | GameEnd | `3`   | The rubber is over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bid`   | `b`     | Bid `level` of `denom` |
+        | `pass`  | `ps`    | Pass |
+        | `play`  | `p`     | Play `cardIndex` |
+        | `next`  | `n`     | Deal the next hand |
+        | `log`   | `l`     | Action-log transcript |
+      operationId: vintExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pass, ps, play, p, next, n, log, l]
+                sessionId:
+                  type: string
+                level:
+                  type: integer
+                  description: Bid level 1-7, contracting for 6 + level tricks. Required for `bid`.
+                denom:
+                  type: integer
+                  description: "0=Spade, 1=Club, 2=Diamond, 3=Heart, 4=NoTrump -- spades are LOWEST. Required for `bid`."
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VintResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VintResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -25112,6 +25211,181 @@ components:
           type: boolean
         winnerIdx:
           type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    VintResponse:
+      type: object
+      description: Response payload for /vint/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              team:
+                type: integer
+                description: "0 for seats 0 and 2, 1 for seats 1 and 3"
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                description: |
+                  Your own hand only until the settlement. **There is no dummy**
+                  -- unlike bridge, even your partner's hand stays concealed.
+                items:
+                  $ref: '#/components/schemas/Card'
+              tricksWon:
+                type: integer
+              isDealer:
+                type: boolean
+              isDeclarer:
+                type: boolean
+              isCurrentTurn:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Bid, 1=Play, 2=HandEnd, 3=GameEnd"
+        handNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        bids:
+          type: array
+          description: This hand's auction, in order. A pass is recorded with `level` 0.
+          items:
+            type: object
+            properties:
+              player:
+                type: integer
+              level:
+                type: integer
+              denom:
+                type: integer
+                description: "0=Spade, 1=Club, 2=Diamond, 3=Heart, 4=NoTrump -- spades LOWEST"
+              trickValue:
+                type: integer
+        highBid:
+          type: object
+          description: The standing bid, or null while nobody has bid.
+          properties:
+            player:
+              type: integer
+            level:
+              type: integer
+            denom:
+              type: integer
+            trickValue:
+              type: integer
+        declarerIdx:
+          type: integer
+          description: "Seat that won the auction; -1 while undecided"
+        trumpSuit:
+          type: integer
+          description: "1=Spade, 2=Clover, 3=Heart, 4=Diamond; 0 at no trump"
+        trick:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        validPlays:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (following suit is compulsory).
+        trickLeaderIdx:
+          type: integer
+        trickNumber:
+          type: integer
+        teamTricks:
+          type: array
+          items:
+            type: integer
+          description: Tricks each team has taken this hand.
+        below:
+          type: array
+          items:
+            type: integer
+          description: |
+            Below-the-line totals by team. **Both teams score here for the
+            tricks they took**, whether or not the contract was made. Reset to
+            zero whenever a team reaches 500 and takes a game.
+        above:
+          type: array
+          items:
+            type: integer
+          description: Above-the-line totals by team -- honours, aces, penalties and game bonuses.
+        gamesWon:
+          type: array
+          items:
+            type: integer
+          description: Games each team has taken. Two takes the rubber.
+        lastResult:
+          type: object
+          description: Breakdown of the most recent settlement, or null before the first one.
+          properties:
+            trickPoints:
+              type: array
+              items:
+                type: integer
+              description: What each team scored below the line for its own tricks.
+            honourPoints:
+              type: array
+              items:
+                type: integer
+              description: |
+                Trump A K Q J 10. Scores only from **three or more** (20x / 30x
+                / 40x the trick value); a no-trump contract has none.
+            acePoints:
+              type: array
+              items:
+                type: integer
+              description: |
+                Scored separately from honours. The side with the majority takes
+                10x the trick value per ace; a 2-2 split goes to the side with
+                more tricks.
+            penalty:
+              type: array
+              items:
+                type: integer
+              description: "Undertricks x level x 500, scored above the opponents' line"
+            made:
+              type: boolean
+            declarerTricks:
+              type: integer
+            trickValue:
+              type: integer
+        trickValues:
+          type: array
+          items:
+            type: integer
+          description: |
+            Level-1 trick value per denomination, indexed by denom (spades 4,
+            clubs 6, diamonds 8, hearts 10, no trump 12). Each level above adds 10.
+        gameTarget:
+          type: integer
+          description: Below-the-line points needed for a game (500).
+        minLevel:
+          type: integer
+        maxLevel:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "Team that took the rubber; -1 while it is live"
         message:
           type: string
         messageCode:

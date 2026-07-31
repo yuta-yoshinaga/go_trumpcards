@@ -251,6 +251,7 @@ export * from './games/tysiac';
 export * from './games/ulti';
 export * from './games/ultimatetexasholdem';
 export * from './games/videopoker';
+export * from './games/vint';
 export * from './games/war';
 export * from './games/wasp';
 export * from './games/watten';
@@ -369,6 +370,7 @@ export const games = [
   'klaberjass',
   'kaiser',
   'boston',
+  'vint',
   'missmilligan',
   'canfield',
   'osmosis',

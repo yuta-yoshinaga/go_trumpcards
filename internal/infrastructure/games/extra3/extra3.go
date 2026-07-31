@@ -325,4 +325,12 @@ func init() {
 			return usecase.RestoreBostonInteractor(data, new(presenter.BostonWebPresenter))
 		},
 		controller.NewBostonWebControllerWithProvider)
+	games.RegisterKVGame("vint", games.CategoryExtra3,
+		func() usecase.VintInteractorIF {
+			return usecase.NewVintInteractor(domain.NewDefaultVint(), new(presenter.VintWebPresenter))
+		},
+		func(data []byte) (usecase.VintInteractorIF, error) {
+			return usecase.RestoreVintInteractor(data, new(presenter.VintWebPresenter))
+		},
+		controller.NewVintWebControllerWithProvider)
 }

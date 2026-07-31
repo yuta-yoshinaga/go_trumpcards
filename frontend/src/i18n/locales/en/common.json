@@ -271,7 +271,8 @@
     "kille": "Kille",
     "klaberjass": "Klaberjass",
     "kaiser": "Kaiser",
-    "boston": "Boston"
+    "boston": "Boston",
+    "vint": "Vint"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1326,7 +1327,13 @@
     "boston.handMade": "Contract made; the declaring side collects from each opponent",
     "boston.handFailed": "Contract failed; the declaring side pays each opponent",
     "kaiser.result.humanWin": "Your team wins",
-    "kaiser.result.cpuWin": "The other team wins"
+    "kaiser.result.cpuWin": "The other team wins",
+    "vint.bidPhase": "Bidding -- spades are the LOWEST and no trump the highest, the reverse of bridge",
+    "vint.playPhase": "In play -- following suit is compulsory",
+    "vint.handMade": "Contract made. BOTH sides score below the line for the tricks they took",
+    "vint.handSet": "Contract failed; undertricks x level x 500 go above the opponents line",
+    "vint.result.humanWin": "Your team takes the rubber",
+    "vint.result.cpuWin": "The other team takes the rubber"
   },
   "manual": {
     "ariaLabel": "Game Manual",

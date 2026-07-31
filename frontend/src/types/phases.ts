@@ -1723,6 +1723,14 @@ export const LobaPhase = {
 } as const;
 
 /** Le Nain Jaune phase constants (sync: internal/domain/NainJaune.go). */
+/** Vint phase constants (sync: internal/domain/Vint.go). */
+export const VintPhase = {
+  BID: 0,
+  PLAY: 1,
+  HAND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Boston phase constants (sync: internal/domain/Boston.go). */
 export const BostonPhase = {
   BID: 0,
