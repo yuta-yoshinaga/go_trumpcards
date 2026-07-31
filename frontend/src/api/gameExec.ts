@@ -92,6 +92,7 @@ export const workerUrl: Record<string, string> = {
   nainjaune: WORKER_EXTRA3,
   kille: WORKER_EXTRA3,
   klaberjass: WORKER_EXTRA3,
+  kaiser: WORKER_EXTRA3,
   sjavs: WORKER_EXTRA2,
   skitgubbe: WORKER_EXTRA3,
   trex: WORKER_EXTRA3,

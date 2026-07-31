@@ -108,6 +108,7 @@ export * from './games/indianpoker';
 export * from './games/indianrummy';
 export * from './games/irishpoker';
 export * from './games/jass';
+export * from './games/kaiser';
 export * from './games/kalooki';
 export * from './games/kemps';
 export * from './games/kille';

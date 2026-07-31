@@ -269,7 +269,8 @@
     "popejoan": "ポープ・ジョーン",
     "nainjaune": "ル・ナン・ジョーヌ",
     "kille": "キッレ",
-    "klaberjass": "クラバーヤス"
+    "klaberjass": "クラバーヤス",
+    "kaiser": "カイザー"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1311,7 +1312,15 @@
     "klaberjass.schmeissPending": "投げの提案に返事待ちです",
     "klaberjass.playPhase": "プレイ中 — 追随・切札・上乗せは強制です",
     "klaberjass.handEnd": "ディール終了。宣言側が相手を上回りました",
-    "klaberjass.bete": "ベート — 宣言側が相手を上回れず、得点は全部相手のものになりました"
+    "klaberjass.bete": "ベート — 宣言側が相手を上回れず、得点は全部相手のものになりました",
+    "kaiser.bidPhase": "ビッド — 宣言するのは【点数】です（最低7、トリック数ではありません）",
+    "kaiser.nameTrump": "落札しました。切札を指定してください",
+    "kaiser.discardPhase": "キティを取り込みました。2枚捨ててください（♥5と♠3は捨てられません）",
+    "kaiser.playPhase": "プレイ中 — 追随は強制です",
+    "kaiser.handMade": "宣言側が達成しました。両チームとも取った点を加算します",
+    "kaiser.handSet": "ベート — 宣言側が未達なので、宣言額がそのままマイナスになります",
+    "kaiser.result.humanWin": "あなたのチームの勝ちです",
+    "kaiser.result.cpuWin": "相手チームの勝ちです"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

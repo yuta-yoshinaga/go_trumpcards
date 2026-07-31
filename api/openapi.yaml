@@ -253,6 +253,8 @@ tags:
     description: Kille
   - name: klaberjass
     description: Klaberjass
+  - name: kaiser
+    description: Kaiser
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -13660,6 +13662,119 @@ paths:
               schema:
                 $ref: '#/components/schemas/KlaberjassResponse'
 
+  /kaiser/exec:
+    post:
+      tags:
+        - kaiser
+      summary: Execute a Kaiser game command
+      description: |
+        Send a command to advance the Kaiser session identified by `sessionId`.
+        Kaiser is the Saskatchewan partnership bidding game for **4 players in
+        two fixed teams** (seats 0/2 against 1/3).
+
+        **#4393 is self-contradictory about the deck, and omits four rules.**
+
+        * The issue asks for **32 cards, "excluding ranks 2-6"** — but that
+          removes the **five of hearts and three of spades**, the two cards the
+          game is named for and scores on. The pack is **34 cards**:
+          A-K-Q-J-10-9-8-7 in each suit **plus the heart five and spade three**.
+          The arithmetic confirms it: 4 seats x 8 cards = 32, plus a **two-card
+          kitty** = 34.
+        * The issue omits the **kitty**. Two cards go face down; the winning
+          bidder takes them into hand and discards two — but **may never
+          discard the heart five or the spade three**.
+        * The issue says players bid a **number of tricks**. They bid
+          **points** — there are only 8 tricks but the heart five is worth 5.
+          The range is **7-12**, and the floor is 7 rather than 6 precisely
+          because the kitty is such an advantage.
+        * The issue omits **no trump** and **low no trump**. In low no trump
+          the ranking **reverses**, so the seven is the highest card. A bid of
+          the same number ranks trump < no trump < low no trump.
+        * The issue names no target. It is **52 points**, raised to **62** once
+          any no-trump bid succeeds. A side on **45 or more cannot score
+          further unless it bids**.
+
+        The issue is right that one hand is worth **10 points** (8 tricks + 5
+        for the heart five - 3 for the spade three) and that a failed bid comes
+        straight off the declaring side's score.
+
+        Following suit is compulsory; trumping is not. The server therefore
+        sends `validPlays` rather than leaving the client to re-derive them.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Bid     | `0`   | Bid points or pass |
+        | Discard | `1`   | Declarer names trump, then discards two |
+        | Play    | `2`   | Eight tricks |
+        | HandEnd | `3`   | The hand is settled; `next` deals again |
+        | GameEnd | `4`   | A team reached the target |
+
+        | Command   | Aliases | Description |
+        |-----------|---------|-------------|
+        | `reset`   | `r`     | Start / restart a game |
+        | `bid`     | `b`     | Bid `bid` points with optional `contract` |
+        | `pass`    | `ps`    | Pass |
+        | `trump`   | `t`     | Name `suit` as trump |
+        | `discard` | `d`     | Discard the two hand `indices` |
+        | `play`    | `p`     | Play `cardIndex` |
+        | `next`    | `n`     | Deal the next hand |
+        | `log`     | `l`     | Action-log transcript |
+      operationId: kaiserExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pass, ps, trump, t, discard, d, play, p, next, n, log, l]
+                sessionId:
+                  type: string
+                bid:
+                  type: integer
+                  description: Points bid (7-12). Required for `bid`.
+                contract:
+                  type: integer
+                  description: "0=with trump, 1=no trump, 2=low no trump. Defaults to 0."
+                suit:
+                  type: integer
+                  description: "Trump suit for `trump`: 1=Spade, 2=Clover, 3=Heart, 4=Diamond."
+                indices:
+                  type: array
+                  items:
+                    type: integer
+                  description: The two hand indices to discard. Required for `discard`.
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+                    allowNoTrump:
+                      type: boolean
+                      description: Whether no-trump bids are offered (default true).
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KaiserResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KaiserResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -24602,6 +24717,143 @@ components:
           type: boolean
         winnerIdx:
           type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    KaiserResponse:
+      type: object
+      description: Response payload for /kaiser/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              team:
+                type: integer
+                description: "0 for seats 0 and 2, 1 for seats 1 and 3"
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                description: Your own hand only; the opponents' are empty until the settlement.
+                items:
+                  $ref: '#/components/schemas/Card'
+              isDealer:
+                type: boolean
+              isDeclarer:
+                type: boolean
+              isCurrentTurn:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Bid, 1=Discard, 2=Play, 3=HandEnd, 4=GameEnd"
+        handNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        bids:
+          type: array
+          description: This hand's bidding, in order. A pass is recorded with `value` 0.
+          items:
+            type: object
+            properties:
+              player:
+                type: integer
+              value:
+                type: integer
+                description: Points bid -- NOT a number of tricks.
+              contract:
+                type: integer
+                description: "0=with trump, 1=no trump, 2=low no trump"
+        highBid:
+          type: object
+          description: The standing bid, or null while nobody has bid.
+          properties:
+            player:
+              type: integer
+            value:
+              type: integer
+            contract:
+              type: integer
+        declarerIdx:
+          type: integer
+          description: "Seat that won the auction; -1 while undecided"
+        trumpSuit:
+          type: integer
+          description: "1=Spade, 2=Clover, 3=Heart, 4=Diamond; 0 for a no-trump contract or before it is named"
+        contract:
+          type: integer
+          description: "0=with trump, 1=no trump, 2=low no trump (the ranking reverses, seven high)"
+        kittySize:
+          type: integer
+          description: |
+            Cards still face down in the kitty. Two at the deal, zero once the
+            declarer takes them. A 32-card pack could not produce one at all.
+        trick:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        trickLeaderIdx:
+          type: integer
+        trickNumber:
+          type: integer
+        validPlays:
+          type: array
+          items:
+            type: integer
+          description: |
+            Hand indices the human may legally play. Sent because following suit
+            is compulsory (trumping is not).
+        teamHandPoints:
+          type: array
+          items:
+            type: integer
+          description: |
+            Points each team took this hand, indexed by team. The two always sum
+            to 10 -- 8 tricks plus 5 for the heart five minus 3 for the spade three.
+        teamScores:
+          type: array
+          items:
+            type: integer
+          description: Running game scores by team.
+        heartFiveBy:
+          type: integer
+          description: "Seat that took the +5 heart five; -1 while it is unplayed"
+        spadeThreeBy:
+          type: integer
+          description: "Seat that took the -3 spade three; -1 while it is unplayed"
+        bidMade:
+          type: boolean
+          description: |
+            Whether the declaring side reached its bid. When false the side
+            loses the **bid amount** rather than scoring what it took.
+        targetScore:
+          type: integer
+          description: "52, raised to 62 once any no-trump bid succeeds"
+        minBid:
+          type: integer
+          description: "7 -- the floor is raised from 6 because the kitty is such an advantage"
+        maxBid:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "Winning team; -1 while the game is live"
         message:
           type: string
         messageCode:

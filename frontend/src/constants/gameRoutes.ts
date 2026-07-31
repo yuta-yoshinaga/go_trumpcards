@@ -1411,6 +1411,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 4, 3, 4], skill: [3, 4, 4, 3], social: [3, 4, 2, 4, 4], theme: [3, 2, 2, 1, 4, 3] },
       },
       {
+        path: '/kaiser',
+        labelKey: 'nav.kaiser',
+        icon: '👑',
+        page: 'Kaiser',
+        profile: { mood: [4, 4, 3, 4], skill: [4, 4, 4, 3], social: [4, 4, 3, 4, 4], theme: [3, 2, 2, 1, 4, 3] },
+      },
+      {
         path: '/klaberjass',
         labelKey: 'nav.klaberjass',
         icon: '🎴',
