@@ -200,6 +200,7 @@ export * from './games/shortdeck';
 export * from './games/simplesimon';
 export * from './games/sirtommy';
 export * from './games/sixcardgolf';
+export * from './games/sjavs';
 export * from './games/skat';
 export * from './games/skitgubbe';
 export * from './games/slapjack';
@@ -345,6 +346,7 @@ export const games = [
   'chineseten',
   'skitgubbe',
   'laughandliedown',
+  'sjavs',
   'missmilligan',
   'canfield',
   'osmosis',

@@ -1673,6 +1673,20 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "sjavs", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSjavsCuiController(usecase.NewSjavsInteractor(
+				domain.NewDefaultSjavs(), new(presenter.SjavsCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sjavs.helpTitle",
+				CommandKeys: []string{
+					"sjavs.helpBid",
+					"sjavs.helpPlay",
+					"sjavs.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "laughandliedown", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewLaughAndLieDownCuiController(usecase.NewLaughAndLieDownInteractor(
