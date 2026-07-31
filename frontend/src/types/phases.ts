@@ -1714,6 +1714,24 @@ export const SjavsPhase = {
   GAME_END: 3,
 } as const;
 
+/** Trex phase constants (sync: internal/domain/Trex.go). */
+export const TrexPhase = {
+  CHOOSE: 0,
+  PLAY: 1,
+  DEAL_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Trex contract constants (sync: internal/domain/Trex.go). */
+export const TrexContract = {
+  KING_OF_HEARTS: 0,
+  DIAMONDS: 1,
+  QUEENS: 2,
+  TRICKS: 3,
+  DOMINOES: 4,
+  NONE: 5,
+} as const;
+
 /** Sette e Mezzo phase constants (sync: internal/domain/SetteEMezzo.go). */
 export const SetteEMezzoPhase = {
   BET: 1,

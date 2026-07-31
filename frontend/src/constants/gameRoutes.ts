@@ -1404,6 +1404,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 4, 2, 5], skill: [2, 3, 4, 4], social: [5, 2, 0, 4, 4], theme: [3, 2, 1, 1, 4, 2] },
       },
       {
+        path: '/trex',
+        labelKey: 'nav.trex',
+        icon: '🕌',
+        page: 'Trex',
+        profile: { mood: [4, 4, 3, 4], skill: [3, 4, 4, 3], social: [3, 4, 2, 4, 4], theme: [3, 2, 2, 1, 4, 3] },
+      },
+      {
         path: '/sjavs',
         labelKey: 'nav.sjavs',
         icon: '🇫🇴',

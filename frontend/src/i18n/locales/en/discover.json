@@ -326,7 +326,8 @@
     "chineseten": "A Chinese fishing game: A-9 capture by summing to ten, 10-K by rank, one card at a time, and only the red cards score.",
     "skitgubbe": "Two phases, two different games: duel for cards first, then shed the cards you won. The last one holding cards is the dirty old man.",
     "laughandliedown": "A five-handed English fishing game from the 1600s: take one or three of a rank from twelve face-up cards, or lay your whole hand down and go out.",
-    "sjavs": "The Faroese national game. Both black queens and all four jacks are trumps whatever the trump suit, played four-handed in fixed partnerships."
+    "sjavs": "The Faroese national game. Both black queens and all four jacks are trumps whatever the trump suit, played four-handed in fixed partnerships.",
+    "trex": "A Middle Eastern contract game: each player takes a turn as king, choosing from five contracts until everyone has played all five."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -569,6 +570,7 @@
     "chineseten": "Every play also turns a card from the stock, which captures on the same terms. The reds are worth 210 between them, so 105 draws.",
     "skitgubbe": "What you collect becomes your next hand, so winning too much hurts. Equal ranks leave the cards on the table until someone settles it.",
     "laughandliedown": "A hand laid down becomes everyone else prey. You settle on captured cards against eight, so one more card is worth chasing.",
-    "sjavs": "You bid the LENGTH of your trump suit, not a target score. A rubber counts down from 24 and the first side to reach zero takes it."
+    "sjavs": "You bid the LENGTH of your trump suit, not a target score. A rubber counts down from 24 and the first side to reach zero takes it.",
+    "trex": "Four contracts punish and the dominoes pay. The 500 in penalties and the 500 paid out cancel, so every game sums to zero."
   }
 }
