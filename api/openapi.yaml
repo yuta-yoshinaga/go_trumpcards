@@ -251,6 +251,8 @@ tags:
     description: Le Nain Jaune
   - name: kille
     description: Kille
+  - name: klaberjass
+    description: Klaberjass
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -13547,6 +13549,117 @@ paths:
               schema:
                 $ref: '#/components/schemas/KilleResponse'
 
+  /klaberjass/exec:
+    post:
+      tags:
+        - klaberjass
+      summary: Execute a Klaberjass game command
+      description: |
+        Send a command to advance the Klaberjass (Clobyosh / Bela) session
+        identified by `sessionId`. Klaberjass is the **two-player ancestor** of
+        the Jass family, played on a 32-card pack of which **only 18 cards are
+        dealt**.
+
+        **#4395 is wrong on five counts.**
+
+        * The issue says "**163 points** are contested". Wrong twice over: the
+          pack holds **162** (152 in cards plus 10 for the last trick), and
+          since only 18 of 32 cards reach a hand there is **no fixed total** to
+          contest — it varies with the deal.
+        * The issue omits the **dix**: when the turn-up suit becomes trump, the
+          holder of the **trump seven** may exchange it for the turn-up. No
+          exchange is allowed once a different suit is named.
+        * The issue omits the **schmeiss**: a player may offer to throw the deal
+          in, and if the opponent **refuses**, the *thrower* becomes the maker
+          with the turn-up suit as trump.
+        * The issue gives no sequence values. Three cards score **20**, four or
+          more score **50** — and **only the better holder scores, but scores
+          all of their sequences**; an exact tie scores for nobody. Sequences
+          run in **natural rank order** (7-8-9-10-J-Q-K-A), *not* point order.
+        * The issue says the bela needs trump K and Q played **consecutively**.
+          It does not — each is announced as it is played.
+        * The issue names no target score. It is **501**.
+
+        In trumps the **jack (Jass) scores 20** and the **nine (Menel) 14**,
+        both outranking the ace. Following suit, trumping when void and
+        **overtrumping a trump lead** are all compulsory, so the server sends
+        `validPlays` rather than leaving the client to re-derive them.
+
+        At the showdown the maker must score **strictly more** than the
+        opponent. A tie is **bete**: the maker scores nothing and the opponent
+        takes **both** totals.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | BidTurnUp | `0`   | Take the turn-up suit, pass, or schmeiss |
+        | BidFree   | `1`   | Name any suit but the refused turn-up, or pass |
+        | Schmeiss  | `2`   | Answer a pending throw |
+        | Play      | `3`   | Nine tricks |
+        | HandEnd   | `4`   | The hand is settled; `next` deals again |
+        | GameEnd   | `5`   | Somebody reached the target |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `accept`         | `a`     | Take the turn-up suit as trump |
+        | `call`           | `c`     | Name `suit` as trump (1=S 2=C 3=H 4=D) |
+        | `pass`           | `ps`    | Pass |
+        | `schmeiss`       | `sm`    | Offer to throw the deal in |
+        | `answerschmeiss` | `as`    | Answer with `accept` |
+        | `play`           | `p`     | Play `cardIndex` |
+        | `next`           | `n`     | Deal the next hand |
+        | `log`            | `l`     | Action-log transcript |
+      operationId: klaberjassExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, accept, a, call, c, pass, ps, schmeiss, sm, answerschmeiss, as, play, p, next, n, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                suit:
+                  type: integer
+                  description: "Trump suit for `call`: 1=Spade, 2=Clover, 3=Heart, 4=Diamond."
+                accept:
+                  type: boolean
+                  description: Required for `answerschmeiss`. `false` makes the thrower the maker.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+                    targetScore:
+                      type: integer
+                      description: Points needed to win (100-1000, default 501).
+                    allowSchmeiss:
+                      type: boolean
+                      description: Whether the schmeiss option is offered (default true).
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KlaberjassResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KlaberjassResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -24367,6 +24480,128 @@ components:
         winnerIdx:
           type: integer
           description: "Last player standing; -1 while the game is live"
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    KlaberjassResponse:
+      type: object
+      description: Response payload for /klaberjass/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                description: Your own hand only; the opponent's is empty until the showdown.
+                items:
+                  $ref: '#/components/schemas/Card'
+              sequences:
+                type: array
+                description: |
+                  Empty until the hand is settled -- seeing the opponent's runs
+                  during play would give the contest away.
+                items:
+                  type: object
+                  properties:
+                    suit:
+                      type: integer
+                    topValue:
+                      type: integer
+                      description: Top card of the run, with the ace as 14.
+                    length:
+                      type: integer
+                    points:
+                      type: integer
+                      description: 20 for three cards, 50 for four or more.
+              handPoints:
+                type: integer
+                description: Points taken this deal, melds and bela included.
+              score:
+                type: integer
+              isMaker:
+                type: boolean
+              isDealer:
+                type: boolean
+              isCurrentTurn:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=BidTurnUp, 1=BidFree, 2=Schmeiss, 3=Play, 4=HandEnd, 5=GameEnd"
+        dealNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "1=Spade, 2=Clover, 3=Heart, 4=Diamond; 0 while undecided"
+        turnUpCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: |
+            The card turned up to propose trump. It is **not dealt to anyone** --
+            it only enters play if it is swapped for the trump seven.
+        makerIdx:
+          type: integer
+          description: "Seat that fixed trump; -1 while undecided"
+        trick:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        trickLeaderIdx:
+          type: integer
+        trickNumber:
+          type: integer
+        validPlays:
+          type: array
+          items:
+            type: integer
+          description: |
+            Hand indices the human may legally play. Sent because following
+            suit, trumping when void and **overtrumping a trump lead** are all
+            compulsory -- re-deriving that on the client always drifts.
+        sequenceWinner:
+          type: integer
+          description: "Seat that won the sequence contest; -1 when nobody scored"
+        belaHolder:
+          type: integer
+          description: "Seat holding trump K+Q; -1 when neither does"
+        belaScored:
+          type: boolean
+        dixUsed:
+          type: boolean
+          description: Whether the trump seven was exchanged for the turn-up.
+        bete:
+          type: boolean
+          description: |
+            Whether the maker failed. The maker must score **strictly more**
+            than the opponent -- a tie is bete, and the opponent takes both
+            totals.
+        schmeissBy:
+          type: integer
+          description: "Seat offering to throw the deal in; -1 when none"
+        targetScore:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
         message:
           type: string
         messageCode:

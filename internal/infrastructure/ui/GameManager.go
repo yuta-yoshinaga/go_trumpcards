@@ -3956,6 +3956,27 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "klaberjass", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKlaberjassCuiController(usecase.NewKlaberjassInteractor(
+				domain.NewDefaultKlaberjass(), new(presenter.KlaberjassCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "klaberjass.helpTitle",
+				CommandKeys: []string{
+					"klaberjass.helpAccept",
+					"klaberjass.helpCall",
+					"klaberjass.helpPass",
+					"klaberjass.helpSchmeiss",
+					"klaberjass.helpAnswer",
+					"klaberjass.helpPlay",
+					"klaberjass.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+				SettingKeys: []string{
+					"klaberjass.helpSetTarget",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

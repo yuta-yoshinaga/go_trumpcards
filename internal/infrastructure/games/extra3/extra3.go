@@ -301,4 +301,12 @@ func init() {
 			return usecase.RestoreKilleInteractor(data, new(presenter.KilleWebPresenter))
 		},
 		controller.NewKilleWebControllerWithProvider)
+	games.RegisterKVGame("klaberjass", games.CategoryExtra3,
+		func() usecase.KlaberjassInteractorIF {
+			return usecase.NewKlaberjassInteractor(domain.NewDefaultKlaberjass(), new(presenter.KlaberjassWebPresenter))
+		},
+		func(data []byte) (usecase.KlaberjassInteractorIF, error) {
+			return usecase.RestoreKlaberjassInteractor(data, new(presenter.KlaberjassWebPresenter))
+		},
+		controller.NewKlaberjassWebControllerWithProvider)
 }
