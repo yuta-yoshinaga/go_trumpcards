@@ -521,6 +521,11 @@ func (s *SixBidSolo) Declare(player, suit int, called *Card) error {
 		if called == nil {
 			return errors.New("a call solo must name a card")
 		}
+		// **この卓に無い札は指名できない。**A-10-K-Q-J-9-8-7-6 の 36 枚しか
+		// 存在しないので、範囲外を通すと「ウィドウにある」と黙って扱われる。
+		if !sixBidSoloInPack(called) {
+			return errors.New("that card is not in this pack")
+		}
 		if err := s.applyCalledCard(called); err != nil {
 			return err
 		}
@@ -580,6 +585,20 @@ func (s *SixBidSolo) pickDiscard(p *SixBidSoloPlayer) int {
 		}
 	}
 	return best
+}
+
+// sixBidSoloInPack は札がこの 36 枚に含まれるかを返す。
+//
+// **A-10-K-Q-J-9-8-7-6 だけ。**2 から 5 はそもそも配られていない。
+func sixBidSoloInPack(c *Card) bool {
+	if c == nil || c.GetDesign() < CardDesignSpade || c.GetDesign() > CardDesignDiamond {
+		return false
+	}
+	switch c.GetValue() {
+	case 1, 10, 13, 12, 11, 9, 8, 7, 6:
+		return true
+	}
+	return false
 }
 
 // sixBidSoloIndexOf は手札の中の札の位置を返す (無ければ -1)。
@@ -662,8 +681,11 @@ func (s *SixBidSolo) PlayCard(player, idx int) error {
 	s.trick = append(s.trick, c)
 	s.addLog(player, "play", "", []*Card{c})
 
-	// **スプレッド・ミゼールは他の 2 人が 1 枚ずつ出したら公開する。**
-	if s.highBid != nil && s.highBid.Kind == SixBidSoloBidSpreadMisere && !s.spreadOpen && len(s.trick) >= 2 {
+	// **公開の条件は「他の 2 人が 1 枚ずつ出したら」。**単に 2 枚出たら、
+	// ではない。落札者がリードする配席もあるので、宣言者以外が何人打ったかを
+	// 数える必要がある。
+	if s.highBid != nil && s.highBid.Kind == SixBidSoloBidSpreadMisere && !s.spreadOpen &&
+		s.opponentsPlayedInTrick() >= SixBidSoloPlayerCnt-1 {
 		s.spreadOpen = true
 	}
 
@@ -673,6 +695,18 @@ func (s *SixBidSolo) PlayCard(player, idx int) error {
 	}
 	s.resolveTrick()
 	return nil
+}
+
+// opponentsPlayedInTrick は今のトリックで宣言者以外が何枚出したかを返す。
+func (s *SixBidSolo) opponentsPlayedInTrick() int {
+	n := 0
+	for j := range len(s.trick) {
+		seat := (s.trickLeader + j) % SixBidSoloPlayerCnt
+		if seat != s.declarerIdx {
+			n++
+		}
+	}
+	return n
 }
 
 // resolveTrick はトリックの勝者を決める。
@@ -909,9 +943,6 @@ func (s *SixBidSolo) highestAllowed(idx int, want SixBidSoloBidKind) SixBidSoloB
 		}
 	}
 	// 立っている宣言を上回れないならパス。
-	if s.SixBidSoloCanBid(idx, want) {
-		return want
-	}
 	return SixBidSoloBidPass
 }
 

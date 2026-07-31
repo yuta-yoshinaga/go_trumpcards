@@ -613,6 +613,44 @@ func TestSixBidSoloCallSoloNoExchangeWhenTheCardIsInTheWidow(t *testing.T) {
 	}
 }
 
+// **この卓に無い札は指名できない。**A-10-K-Q-J-9-8-7-6 の 36 枚しか存在しない。
+// 通してしまうと「ウィドウにある」と黙って扱われ、交換が起きないまま成立する。
+func TestSixBidSoloCallSoloRejectsACardOutsideThePack(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		card *Card
+	}{
+		{"a five is not dealt", sbsCard(CardDesignSpade, 5)},
+		{"nor a two", sbsCard(CardDesignSpade, 2)},
+		{"nor a bad suit", NewCard(9, 1, true)},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := NewDefaultSixBidSolo()
+			s.Reset()
+			s.SetPhaseForTest(SixBidSoloPhaseDeclare)
+			s.SetContractForTest(0, SixBidSoloBidCall, 0)
+			if err := s.Declare(0, CardDesignSpade, tc.card); err == nil {
+				t.Error("a card outside the 36-card pack must be refused")
+			}
+		})
+	}
+
+	// 卓にある札はすべて通る。
+	for _, v := range []int{1, 10, 13, 12, 11, 9, 8, 7, 6} {
+		if !sixBidSoloInPack(sbsCard(CardDesignHeart, v)) {
+			t.Errorf("rank %d is in the pack", v)
+		}
+	}
+	for _, v := range []int{2, 3, 4, 5} {
+		if sixBidSoloInPack(sbsCard(CardDesignHeart, v)) {
+			t.Errorf("rank %d is not in the pack", v)
+		}
+	}
+	if sixBidSoloInPack(nil) {
+		t.Error("a nil card is not in the pack")
+	}
+}
+
 // 自分が既に持っている札は指名できない。
 func TestSixBidSoloCallSoloCannotNameAHeldCard(t *testing.T) {
 	s := NewDefaultSixBidSolo()
@@ -713,35 +751,79 @@ func TestSixBidSoloPlayGuards(t *testing.T) {
 	}
 }
 
-// **スプレッド・ミゼールは他の 2 人が 1 枚ずつ出したら公開する。**
-func TestSixBidSoloSpreadMisereOpensAfterTwoCards(t *testing.T) {
-	s := sbsPlaying(t, 1, SixBidSoloBidSpreadMisere, 0)
-	s.SetHandForTest(0, []*Card{sbsCard(CardDesignHeart, 6)})
-	s.SetHandForTest(1, []*Card{sbsCard(CardDesignHeart, 7)})
-	s.SetHandForTest(2, []*Card{sbsCard(CardDesignHeart, 8)})
+// **公開の条件は「他の 2 人が 1 枚ずつ出したら」。**単に 2 枚出たら、ではない。
+//
+// 落札者がリードする配席もあるので、宣言者自身の 1 枚を数えてしまうと 1 手早く
+// 開いてしまう。
+func TestSixBidSoloSpreadMisereOpensAfterBothOpponentsHavePlayed(t *testing.T) {
+	t.Run("the declarer is not the leader", func(t *testing.T) {
+		s := sbsPlaying(t, 1, SixBidSoloBidSpreadMisere, 0)
+		s.SetHandForTest(0, []*Card{sbsCard(CardDesignHeart, 6)})
+		s.SetHandForTest(1, []*Card{sbsCard(CardDesignHeart, 7)})
+		s.SetHandForTest(2, []*Card{sbsCard(CardDesignHeart, 8)})
 
-	if s.IsSpreadOpen() {
-		t.Fatal("the hand starts concealed")
-	}
-	if err := s.PlayCard(0, 0); err != nil {
-		t.Fatalf("PlayCard: %v", err)
-	}
-	if s.IsSpreadOpen() {
-		t.Error("one card is not enough to open the hand")
-	}
-	if err := s.PlayCard(1, 0); err != nil {
-		t.Fatalf("PlayCard: %v", err)
-	}
-	if !s.IsSpreadOpen() {
-		t.Error("the declarer's hand must be exposed after the second card")
-	}
+		if s.IsSpreadOpen() {
+			t.Fatal("the hand starts concealed")
+		}
+		// 席 0 は対戦者。1 人ぶんでは足りない。
+		if err := s.PlayCard(0, 0); err != nil {
+			t.Fatalf("PlayCard: %v", err)
+		}
+		if s.IsSpreadOpen() {
+			t.Error("one opponent is not enough to open the hand")
+		}
+		// 席 1 は宣言者本人。**自分の 1 枚は数に入らない。**
+		if err := s.PlayCard(1, 0); err != nil {
+			t.Fatalf("PlayCard: %v", err)
+		}
+		if s.IsSpreadOpen() {
+			t.Error("the declarer's own card must not count toward the reveal")
+		}
+		// 席 2 が 2 人目の対戦者。ここで開く。
+		if err := s.PlayCard(2, 0); err != nil {
+			t.Fatalf("PlayCard: %v", err)
+		}
+		if !s.IsSpreadOpen() {
+			t.Error("the hand must be exposed once BOTH opponents have played")
+		}
+	})
+
+	// **落札者がリードする配席でも同じ条件で開く。**
+	t.Run("the declarer leads", func(t *testing.T) {
+		s := sbsPlaying(t, 0, SixBidSoloBidSpreadMisere, 0)
+		s.SetHandForTest(0, []*Card{sbsCard(CardDesignHeart, 6)})
+		s.SetHandForTest(1, []*Card{sbsCard(CardDesignHeart, 7)})
+		s.SetHandForTest(2, []*Card{sbsCard(CardDesignHeart, 8)})
+
+		// 宣言者のリードは数に入らない。
+		if err := s.PlayCard(0, 0); err != nil {
+			t.Fatalf("PlayCard: %v", err)
+		}
+		if s.IsSpreadOpen() {
+			t.Error("the declarer's lead must not count")
+		}
+		if err := s.PlayCard(1, 0); err != nil {
+			t.Fatalf("PlayCard: %v", err)
+		}
+		if s.IsSpreadOpen() {
+			t.Error("one opponent is not enough")
+		}
+		if err := s.PlayCard(2, 0); err != nil {
+			t.Fatalf("PlayCard: %v", err)
+		}
+		if !s.IsSpreadOpen() {
+			t.Error("both opponents have now played")
+		}
+	})
 
 	// 通常ビッドでは公開されない。
 	plain := sbsPlaying(t, 0, SixBidSoloBidSolo, CardDesignSpade)
 	plain.SetHandForTest(0, []*Card{sbsCard(CardDesignHeart, 6)})
 	plain.SetHandForTest(1, []*Card{sbsCard(CardDesignHeart, 7)})
-	_ = plain.PlayCard(0, 0)
-	_ = plain.PlayCard(1, 0)
+	plain.SetHandForTest(2, []*Card{sbsCard(CardDesignHeart, 8)})
+	for _, seat := range []int{0, 1, 2} {
+		_ = plain.PlayCard(seat, 0)
+	}
 	if plain.IsSpreadOpen() {
 		t.Error("only a spread misère exposes the hand")
 	}
