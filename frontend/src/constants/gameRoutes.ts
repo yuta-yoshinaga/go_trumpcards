@@ -1411,6 +1411,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 4, 3, 4], skill: [3, 4, 4, 3], social: [3, 4, 2, 4, 4], theme: [3, 2, 2, 1, 4, 3] },
       },
       {
+        path: '/nainjaune',
+        labelKey: 'nav.nainjaune',
+        icon: '🟡',
+        page: 'NainJaune',
+        profile: { mood: [4, 3, 3, 4], skill: [3, 3, 3, 3], social: [3, 4, 2, 4, 4], theme: [3, 2, 2, 1, 3, 3] },
+      },
+      {
         path: '/popejoan',
         labelKey: 'nav.popejoan',
         icon: '👑',

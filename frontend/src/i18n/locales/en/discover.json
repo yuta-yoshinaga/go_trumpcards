@@ -332,7 +332,8 @@
     "desmoche": "A Nicaraguan rummy dealt nine. Going out takes exactly ten cards, not the nine you were dealt.",
     "zwicker": "A north-German fishing game on 55 cards. Aces and court cards each carry two values and you pick which.",
     "poch": "A 15th-century German game in three stages. Chips go onto a nine-pool board and are claimed with cards of the turn-up's suit.",
-    "popejoan": "The ancestor of the stops family. The eight of diamonds is out of the pack, so a run always dies at the seven."
+    "popejoan": "The ancestor of the stops family. The eight of diamonds is out of the pack, so a run always dies at the seven.",
+    "nainjaune": "The French stops game. The run never looks at suit -- it climbs by rank and ends on a king."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -581,6 +582,7 @@
     "desmoche": "Despite the name, poker rankings play no part. A deal nobody wins leaves the pot standing, so it grows.",
     "zwicker": "Clearing the table is a \"Zwick\", worth 1. A deal pays exactly 30, and level card counts leave the majority three unawarded.",
     "poch": "Pools nobody claims carry over and swell. The last stage runs each suit upwards, and going out collects from every hand still holding cards.",
-    "popejoan": "The dealer dresses eight compartments with fifteen chips and a turn-up sets trumps. Holding the Pope excuses you from paying when someone goes out."
+    "popejoan": "The dealer dresses eight compartments with fifteen chips and a turn-up sets trumps. Holding the Pope excuses you from paying when someone goes out.",
+    "nainjaune": "The yellow dwarf in the centre takes five chips a deal. You settle in points rather than cards, so every court card left is a ten-point debt."
   }
 }

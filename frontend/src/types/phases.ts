@@ -1722,6 +1722,13 @@ export const LobaPhase = {
   GAME_END: 3,
 } as const;
 
+/** Le Nain Jaune phase constants (sync: internal/domain/NainJaune.go). */
+export const NainJaunePhase = {
+  PLAY: 0,
+  DEAL_END: 1,
+  GAME_END: 2,
+} as const;
+
 /** Pope Joan phase constants (sync: internal/domain/PopeJoan.go). */
 export const PopeJoanPhase = {
   PLAY: 0,

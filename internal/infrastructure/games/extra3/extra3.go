@@ -285,4 +285,12 @@ func init() {
 			return usecase.RestorePopeJoanInteractor(data, new(presenter.PopeJoanWebPresenter))
 		},
 		controller.NewPopeJoanWebControllerWithProvider)
+	games.RegisterKVGame("nainjaune", games.CategoryExtra3,
+		func() usecase.NainJauneInteractorIF {
+			return usecase.NewNainJauneInteractor(domain.NewDefaultNainJaune(), new(presenter.NainJauneWebPresenter))
+		},
+		func(data []byte) (usecase.NainJauneInteractorIF, error) {
+			return usecase.RestoreNainJauneInteractor(data, new(presenter.NainJauneWebPresenter))
+		},
+		controller.NewNainJauneWebControllerWithProvider)
 }

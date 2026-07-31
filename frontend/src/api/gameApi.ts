@@ -143,6 +143,7 @@ export * from './games/missmilligan';
 export * from './games/montecarlo';
 export * from './games/mus';
 export * from './games/mushi';
+export * from './games/nainjaune';
 export * from './games/nap';
 export * from './games/napoleon';
 export * from './games/napoleonssquare';
@@ -359,6 +360,7 @@ export const games = [
   'zwicker',
   'poch',
   'popejoan',
+  'nainjaune',
   'missmilligan',
   'canfield',
   'osmosis',

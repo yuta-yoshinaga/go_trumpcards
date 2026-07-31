@@ -266,7 +266,8 @@
     "desmoche": "Desmoche",
     "zwicker": "Zwicker",
     "poch": "Poch",
-    "popejoan": "Pope Joan"
+    "popejoan": "Pope Joan",
+    "nainjaune": "Le Nain Jaune"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1297,7 +1298,9 @@
     "poch.win": "You finish with the most chips",
     "poch.lose": "You finish behind",
     "popejoan.win": "You finish with the most chips",
-    "popejoan.lose": "You finish behind"
+    "popejoan.lose": "You finish behind",
+    "nainjaune.win": "You finish with the most chips",
+    "nainjaune.lose": "You finish behind"
   },
   "manual": {
     "ariaLabel": "Game Manual",

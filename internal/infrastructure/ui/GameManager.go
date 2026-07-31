@@ -3925,6 +3925,19 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "nainjaune", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewNainJauneCuiController(usecase.NewNainJauneInteractor(
+				domain.NewDefaultNainJaune(), new(presenter.NainJauneCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "nainjaune.helpTitle",
+				CommandKeys: []string{
+					"nainjaune.helpPlay",
+					"nainjaune.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

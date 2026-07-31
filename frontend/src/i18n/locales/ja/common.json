@@ -266,7 +266,8 @@
     "desmoche": "デスモチェ",
     "zwicker": "ツヴィッカー",
     "poch": "ポッホ",
-    "popejoan": "ポープ・ジョーン"
+    "popejoan": "ポープ・ジョーン",
+    "nainjaune": "ル・ナン・ジョーヌ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1297,7 +1298,9 @@
     "poch.win": "最も多く稼ぎました",
     "poch.lose": "及びませんでした",
     "popejoan.win": "最も多く稼ぎました",
-    "popejoan.lose": "及びませんでした"
+    "popejoan.lose": "及びませんでした",
+    "nainjaune.win": "最も多く稼ぎました",
+    "nainjaune.lose": "及びませんでした"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
