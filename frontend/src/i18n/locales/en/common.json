@@ -261,7 +261,8 @@
     "skitgubbe": "Skitgubbe",
     "laughandliedown": "Laugh and Lie Down",
     "sjavs": "Sjavs",
-    "trex": "Trex"
+    "trex": "Trex",
+    "loba": "Loba"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1282,7 +1283,9 @@
     "sjavs.lose": "You lost the rubber",
     "sjavs.loseDouble": "You lost the rubber to a double victory",
     "trex.win": "You win",
-    "trex.lose": "You lose"
+    "trex.lose": "You lose",
+    "loba.win": "You are the last one standing",
+    "loba.lose": "You were knocked out"
   },
   "manual": {
     "ariaLabel": "Game Manual",
