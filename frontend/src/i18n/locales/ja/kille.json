@@ -1,0 +1,60 @@
+{
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "round": "ラウンド {{n}}",
+  "dealer": "親",
+  "pot": "ポット: {{count}}",
+  "stock": "山札: {{count}}枚",
+  "playersTitle": "プレイヤー",
+  "chips": "収支 {{n}}",
+  "yourCard": "あなたのカード",
+  "hidden": "？",
+  "out": "脱落",
+  "outHussar": "軽騎兵に返り討ち",
+  "outPig": "豚に噛まれた",
+  "outLowest": "最弱で脱落",
+  "eliminated": "退場",
+  "satisfied": "交換しない",
+  "reentriesUsed": "買い戻し {{used}}/{{max}}",
+  "turnNotice": "あなたの番です — 左隣と交換するか、そのまま残すかを選んでください。",
+  "dealerNotice": "あなたは親です — 交換相手は左隣ではなく山札です。誰にも仕掛けられません。",
+  "exchangeButton": "交換する",
+  "exchangeDealerButton": "山札と交換",
+  "satisfiedButton": "交換しない",
+  "reenterButton": "買い戻す（{{cost}}）",
+  "reenterExhausted": "買い戻しは3回までです。",
+  "nextRound": "次のラウンドへ",
+  "showdownTitle": "公開",
+  "loserLine": "{{name}} が脱落しました（{{reason}}）",
+  "eventsTitle": "このラウンドの交換",
+  "event": {
+    "swap": "{{actor}} が {{target}} と交換しました",
+    "satisfied": "{{actor}} は交換しませんでした",
+    "cuckoo": "{{target}} のカッコウ — 交換は成立せず、その場でラウンド終了",
+    "hussar": "{{target}} の軽騎兵 — 仕掛けた {{actor}} が脱落",
+    "pig": "{{target}} の豚 — 交換は巻き戻り、{{target}} 自身が脱落",
+    "pass": "{{actor}} の交換は次の席へ回されました",
+    "stock": "{{actor}} が山札と交換しました"
+  },
+  "deckTitle": "デッキ早見（強い順）",
+  "deckNote": "専用42枚（21種×2枚、スートは1つだけ）。効果を持つ5種は色で見分けられます。",
+  "rulesNote": "交換で受け取った道化（Harlequin）は【最強ではなく最弱】になります。",
+  "settings": {
+    "title": "設定",
+    "stake": "1ラウンドの掛け金"
+  },
+  "phase": {
+    "exchange": "交換",
+    "showdown": "公開",
+    "gameEnd": "ゲーム終了"
+  },
+  "win": "あなたの勝利です！",
+  "lose": "{{name}} の勝利です。",
+  "tutorial": {
+    "info": "ラウンド数・ポット・山札の枚数がここに表示されます。",
+    "players": "各プレイヤーの収支と買い戻し回数です。他家のカードは公開まで伏せられます。",
+    "card": "あなたの1枚です。公開時に最も弱いと脱落します。",
+    "actions": "あなたの番では「交換する」か「交換しない」を選びます。親のときは山札と交換します。",
+    "resetButton": "このボタンでいつでもゲームをリセットできます。"
+  }
+}

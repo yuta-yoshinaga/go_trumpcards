@@ -293,4 +293,12 @@ func init() {
 			return usecase.RestoreNainJauneInteractor(data, new(presenter.NainJauneWebPresenter))
 		},
 		controller.NewNainJauneWebControllerWithProvider)
+	games.RegisterKVGame("kille", games.CategoryExtra3,
+		func() usecase.KilleInteractorIF {
+			return usecase.NewKilleInteractor(domain.NewDefaultKille(), new(presenter.KilleWebPresenter))
+		},
+		func(data []byte) (usecase.KilleInteractorIF, error) {
+			return usecase.RestoreKilleInteractor(data, new(presenter.KilleWebPresenter))
+		},
+		controller.NewKilleWebControllerWithProvider)
 }

@@ -1255,4 +1255,9 @@ func init() {
 			return usecase.NewNainJauneInteractor(domain.NewDefaultNainJaune(), new(presenter.NainJauneWebPresenter))
 		},
 		controller.NewNainJauneWebController)
+	BindWebControllerFor("kille",
+		func() usecase.KilleInteractorIF {
+			return usecase.NewKilleInteractor(domain.NewDefaultKille(), new(presenter.KilleWebPresenter))
+		},
+		controller.NewKilleWebController)
 }
