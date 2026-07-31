@@ -260,7 +260,8 @@
     "chineseten": "撿紅點",
     "skitgubbe": "シートグッベ",
     "laughandliedown": "ラフ・アンド・ライダウン",
-    "sjavs": "シャウス"
+    "sjavs": "シャウス",
+    "trex": "トリックス"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1279,7 +1280,9 @@
     "sjavs.win": "ラバーを取りました",
     "sjavs.winDouble": "ダブル勝ちでラバーを取りました",
     "sjavs.lose": "ラバーを取られました",
-    "sjavs.loseDouble": "ダブル負けでラバーを取られました"
+    "sjavs.loseDouble": "ダブル負けでラバーを取られました",
+    "trex.win": "勝ちました",
+    "trex.lose": "負けました"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

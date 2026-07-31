@@ -235,6 +235,8 @@ tags:
     description: Laugh and Lie Down
   - name: sjavs
     description: Sjavs
+  - name: trex
+    description: Trex
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -12741,6 +12743,106 @@ paths:
               schema:
                 $ref: '#/components/schemas/SjavsResponse'
 
+  /trex/exec:
+    post:
+      tags:
+        - trex
+      summary: Execute a Trex game command
+      description: |
+        Send a command to advance the Trex (Trix) session identified by
+        `sessionId`. It is the Middle Eastern contract-selection game: 52 cards,
+        four players scoring individually, **twenty deals** made of four
+        kingdoms of five contracts each.
+
+        #4410 gets two of the five contracts wrong, so pagat.com is followed.
+
+        | Value | Contract | Scoring |
+        |-------|----------|---------|
+        | `0` | King of Hearts | **-75** to whoever takes the trick with it |
+        | `1` | Diamonds | **-10** per diamond taken (the issue says *hearts*) |
+        | `2` | Queens | **-25** per queen taken |
+        | `3` | Tricks | **-15** per trick taken |
+        | `4` | Dominoes | **+200 / +150 / +100 / +50** by finishing order |
+        | `5` | *(none)* | No contract chosen yet |
+
+        * The issue lists a **"no kings"** contract. Only the **king of hearts**
+          costs anything; the other three kings are free.
+        * The issue starts the dominoes **from the seven**. They build out from
+          the **JACK**: a legal play is any jack, or a card one rank above or
+          below one already played in that suit. Each suit is its own run, and
+          the ace sits above the king.
+        * The issue treats every contract as a penalty and awards the game to
+          the **smallest** total. The dominoes contract **pays out**, so the
+          winner is whoever finishes **highest** and scores can be positive.
+
+        **The table is verified by its arithmetic**: the four penalty contracts
+        total `75 + 130 + 100 + 195 = 500`, and the dominoes hand out
+        `200 + 150 + 100 + 50 = 500`. One kingdom is exactly zero-sum, so all
+        four scores sum to zero after twenty deals. Change any single value and
+        that agreement disappears.
+
+        The player dealt the **seven of hearts** owns the first kingdom, and a
+        king may never choose the same contract twice — `availableContracts`
+        carries what is left.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Choose  | `0`   | The king picks a contract |
+        | Play    | `1`   | Playing the contract |
+        | DealEnd | `2`   | The deal is settled; `next` deals again |
+        | GameEnd | `3`   | Twenty deals played |
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart a game |
+        | `choose` | `c`     | Choose `contract` (king only) |
+        | `play`   | `p`     | Play the hand card at `cardIndex` |
+        | `pass`   | `s`     | Pass in the dominoes; refused with a legal play |
+        | `next`   | `n`     | Deal the next hand |
+        | `hint`   | `h`     | Suggested move for the human seat |
+        | `log`    | `l`     | Action-log transcript |
+      operationId: trexExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, choose, c, play, p, pass, s, next, n, hint, h, log, l]
+                sessionId:
+                  type: string
+                contract:
+                  type: integer
+                  description: Contract to play, 0-4. Required for `choose`.
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrexResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrexResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -22656,6 +22758,135 @@ components:
               type: integer
             bidLength:
               type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    TrexResponse:
+      type: object
+      description: Response payload for /trex/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: Hand size. Always sent, including while hidden.
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/Card'
+              score:
+                type: integer
+                description: |
+                  Running total. Public for every seat -- who is down and by how
+                  much is what a king weighs when choosing. Can be positive,
+                  because the dominoes pay out.
+              dealScore:
+                type: integer
+              tricksWon:
+                type: integer
+              hidden:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Choose, 1=Play, 2=DealEnd, 3=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        kingIdx:
+          type: integer
+          description: Seat choosing the contract for this deal.
+        contract:
+          type: integer
+          description: "0=KingOfHearts, 1=Diamonds, 2=Queens, 3=Tricks, 4=Dominoes, 5=none"
+        availableContracts:
+          type: array
+          description: |
+            Contracts this king has not played yet. A contract is played once
+            per kingdom, so the client never has to track what is spent.
+          items:
+            type: integer
+        isTrix:
+          type: boolean
+          description: The dominoes contract, which builds runs instead of tricks.
+        dealNo:
+          type: integer
+        totalDeals:
+          type: integer
+          description: Twenty -- four kingdoms of five contracts.
+        trick:
+          type: array
+          description: Empty during the dominoes contract.
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        trickNo:
+          type: integer
+        runs:
+          type: array
+          description: |
+            The four dominoes runs, one per suit. `low`/`high` span what is on
+            the table with the ace as 14, so the jack that starts a run is 11.
+          items:
+            type: object
+            properties:
+              suit:
+                type: integer
+              started:
+                type: boolean
+              low:
+                type: integer
+              high:
+                type: integer
+        finishOrder:
+          type: array
+          description: Seats in the order they went out during the dominoes.
+          items:
+            type: integer
+        validIndices:
+          type: array
+          description: |
+            Hand indices that may be played. Each contract follows a different
+            rule, so this is computed once server-side.
+          items:
+            type: integer
+        canPass:
+          type: boolean
+          description: |
+            True only in the dominoes with no legal play. Trick contracts have
+            no pass at all.
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "Highest final score; -1 before the twentieth deal"
+        hint:
+          type: object
+          description: Suggested move, sent on every response while the game is live.
+          properties:
+            cardIndex:
+              type: integer
+            contract:
+              type: integer
+            pass:
+              type: boolean
             reason:
               type: string
         message:

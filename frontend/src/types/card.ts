@@ -220,6 +220,7 @@ export * from './games/tonk';
 export * from './games/trash';
 export * from './games/trenteetquarante';
 export * from './games/tressette';
+export * from './games/trex';
 export * from './games/tripeaks';
 export * from './games/truco';
 export * from './games/tute';
