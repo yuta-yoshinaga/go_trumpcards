@@ -89,14 +89,6 @@ func (b *PopeJoanBoard) Take(c PopeJoanCompartment) int {
 	return n
 }
 
-// Add は区画にチップを足す。
-func (b *PopeJoanBoard) Add(c PopeJoanCompartment, n int) {
-	if c < 0 || c >= PopeJoanCompartmentCount || n <= 0 {
-		return
-	}
-	b.Chips[c] += n
-}
-
 // Get は区画の残高を返す。
 //
 // **値レシーバ。**GetBoard() が値のコピーを返すので、ポインタメソッドだと

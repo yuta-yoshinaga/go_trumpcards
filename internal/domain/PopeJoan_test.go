@@ -91,8 +91,6 @@ func TestPopeJoanDressIsFixedAtFifteen(t *testing.T) {
 	}
 
 	// 範囲外はどれも無害に振る舞う。
-	b.Add(PopeJoanCompartment(-1), 5)
-	b.Add(PopeJoanAce, -5)
 	if got := b.Take(PopeJoanCompartment(99)); got != 0 {
 		t.Errorf("Take of an unknown compartment = %d, want 0", got)
 	}
@@ -699,5 +697,107 @@ func TestPopeJoanUnmarshalKeepsALiveRun(t *testing.T) {
 	}
 	if got := live.GetRunRank(); got != 8 {
 		t.Errorf("runRank = %d, want 8", got)
+	}
+}
+
+// TestPopeJoanDealRotatesTheOddCard covers the fairness bug the review caught:
+// 51 cards over 5 hands leaves one seat with an extra card, and dealing always
+// from seat 0 would park that on the human every single deal.
+//
+// **Holding more cards is a pure disadvantage here** -- going out first
+// collects from everyone else, and every card left costs a chip.
+func TestPopeJoanDealRotatesTheOddCard(t *testing.T) {
+	p := NewDefaultPopeJoan()
+	p.Reset()
+
+	longest := func() int {
+		seat, best := -1, -1
+		for i, pl := range p.GetPlayers() {
+			if pl.GetCardsSize() > best {
+				seat, best = i, pl.GetCardsSize()
+			}
+		}
+		return seat
+	}
+
+	seen := map[int]bool{}
+	for range PopeJoanPlayerCnt {
+		seen[longest()] = true
+		p.SetPhaseForTest(PopeJoanPhaseDealEnd)
+		if err := p.NextDeal(); err != nil {
+			t.Fatalf("NextDeal: %v", err)
+		}
+	}
+	if len(seen) < 2 {
+		t.Fatalf("the extra card landed on seat %v every deal; it must rotate", seen)
+	}
+	if len(seen) == 1 && seen[0] {
+		t.Fatal("the human seat took the extra card every deal")
+	}
+}
+
+// TestPopeJoanIntrigueScoresInEitherOrder covers the second review finding.
+//
+// **A run only ever climbs**, so J (11) is played before Q (12) in the natural
+// case. Checking only "queen already played" meant the common order never paid.
+func TestPopeJoanIntrigueScoresInEitherOrder(t *testing.T) {
+	for name, jackFirst := range map[string]bool{
+		"jack then queen": true,
+		"queen then jack": false,
+	} {
+		t.Run(name, func(t *testing.T) {
+			p := pjReady(t, 0)
+			p.SetTrumpSuitForTest(CardDesignSpade)
+			p.SetBoardForTest(pjBoard())
+			for i := 1; i < PopeJoanPlayerCnt; i++ {
+				setPjHand(p, i, []*Card{pjCard(CardDesignHeart, 4)})
+			}
+
+			first, second := 11, 12
+			if !jackFirst {
+				first, second = 12, 11
+			}
+			setPjHand(p, 0, []*Card{pjCard(CardDesignSpade, first), pjCard(CardDesignSpade, second)})
+
+			p.SetRunForTest(CardDesignSpade, first-1)
+			if err := p.Play(0, 0); err != nil {
+				t.Fatalf("play the first court card: %v", err)
+			}
+			p.SetCurrentPlayerForTest(0)
+			p.SetRunForTest(CardDesignSpade, second-1)
+			if err := p.Play(0, 0); err != nil {
+				t.Fatalf("play the second court card: %v", err)
+			}
+
+			if got := p.GetBoard().Get(PopeJoanIntrigue); got != 0 {
+				t.Errorf("intrigue = %d, want it taken in the %s order", got, name)
+			}
+		})
+	}
+}
+
+// TestPopeJoanIntrigueNeedsBothFromOneHand は逆方向 -- 別の人が出したら払わない。
+func TestPopeJoanIntrigueNeedsBothFromOneHand(t *testing.T) {
+	p := pjReady(t, 0)
+	p.SetTrumpSuitForTest(CardDesignSpade)
+	p.SetBoardForTest(pjBoard())
+	// 席 0 に 2 枚持たせる。1 枚だと出した瞬間に上がってディールが終わる。
+	setPjHand(p, 0, []*Card{pjCard(CardDesignSpade, 11), pjCard(CardDesignHeart, 2)})
+	setPjHand(p, 1, []*Card{pjCard(CardDesignSpade, 12), pjCard(CardDesignHeart, 3)})
+	for i := 2; i < PopeJoanPlayerCnt; i++ {
+		setPjHand(p, i, []*Card{pjCard(CardDesignHeart, 4)})
+	}
+
+	p.SetRunForTest(CardDesignSpade, 10)
+	if err := p.Play(0, 0); err != nil {
+		t.Fatalf("Play ♠J: %v", err)
+	}
+	p.SetCurrentPlayerForTest(1)
+	p.SetRunForTest(CardDesignSpade, 11)
+	if err := p.Play(1, 0); err != nil {
+		t.Fatalf("Play ♠Q: %v", err)
+	}
+	if got := p.GetBoard().Get(PopeJoanIntrigue); got != 2 {
+		t.Errorf("intrigue = %d, want it left standing when J and Q come from different hands", got)
 	}
 }
