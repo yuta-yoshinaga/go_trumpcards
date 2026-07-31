@@ -415,9 +415,10 @@ func (b *BidEuchre) PassBid(player int) error {
 // advanceBid は次の宣言手番へ進め、決着していれば切札指定へ移る。
 func (b *BidEuchre) advanceBid() {
 	// **ディーラーまで一周したら終わり。**同額落札の特権があるので、
-	// ディーラーが動いた時点で競りは閉じる。
-	last := b.bidIdx == b.dealerIdx
-	if b.highBid != nil && (last || b.passCount >= BidEuchrePlayerCnt-1) {
+	// ディーラーが動いた時点で競りは閉じる。競りは必ず 4 手ちょうどで、
+	// bidIdx は dealer+1 から 1 手ずつ進むため、ここが真になるのは
+	// 全員が 1 度ずつ動いたときだけである。
+	if b.highBid != nil && b.bidIdx == b.dealerIdx {
 		b.settleBid()
 		return
 	}
@@ -452,6 +453,10 @@ func (b *BidEuchre) ChooseTrump(player int, t BidEuchreTrump) error {
 	}
 	if t < BidEuchreTrumpSpade || t >= BidEuchreTrumpCount {
 		return fmt.Errorf("bad trump declaration: %d", t)
+	}
+	// **設定でノートランプを切れる。**読まないと config が黙って効かなくなる。
+	if !b.config.AllowNoTrump && BidEuchreIsNoTrump(t) {
+		return fmt.Errorf("no-trump declarations are switched off")
 	}
 	b.trump = t
 	b.trumpSuit = BidEuchreTrumpSuit(t)

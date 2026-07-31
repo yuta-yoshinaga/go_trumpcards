@@ -68,6 +68,7 @@ function makeState(overrides?: Partial<BidEuchreResponse>): BidEuchreResponse {
     handSize: 6,
     gameEndFlag: false,
     winnerTeam: -1,
+    config: { cpuDifficulty: 0, allowNoTrump: true },
     message: '',
     ...overrides,
   };
@@ -149,6 +150,59 @@ describe('BidEuchrePage', () => {
 
     const select = screen.getByLabelText(/宣言/) as HTMLSelectElement;
     expect(Array.from(select.options).map((o) => o.value)).toEqual(['3', '4', '5', '6']);
+  });
+
+  // **上回る宣言だけが通るので、通らない値は出さない。**
+  it('offers only bids that can actually stand', async () => {
+    // 人間は親ではない (dealerIdx=3)。立っている 4 を上回る 5-6 だけ。
+    mockExec.mockResolvedValue(
+      makeState({ phase: BidEuchrePhase.BID, highBid: { player: 1, value: 4 }, declarerIdx: -1, dealerIdx: 3 }),
+    );
+    renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(screen.getByLabelText(/宣言/)).toBeInTheDocument());
+    expect(Array.from((screen.getByLabelText(/宣言/) as HTMLSelectElement).options).map((o) => o.value)).toEqual([
+      '5',
+      '6',
+    ]);
+  });
+
+  // **親だけは同額でも奪えるので、同額も出す。**
+  it('lets the dealer pick the equal bid', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: BidEuchrePhase.BID, highBid: { player: 1, value: 4 }, declarerIdx: -1, dealerIdx: 0 }),
+    );
+    renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(screen.getByLabelText(/宣言/)).toBeInTheDocument());
+    expect(Array.from((screen.getByLabelText(/宣言/) as HTMLSelectElement).options).map((o) => o.value)).toEqual([
+      '4',
+      '5',
+      '6',
+    ]);
+
+    // 既定の 3 は選べないので、出せる最小値へ寄せて送る。
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '宣言する' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { value: 4 }));
+  });
+
+  // **ノートランプは設定で切れる。**サーバーが弾く選択肢は出さない。
+  it('hides the no-trump forms when the config switches them off', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BidEuchrePhase.CHOOSE_TRUMP,
+        declarerIdx: 0,
+        trumpChosen: false,
+        config: { cpuDifficulty: 0, allowNoTrump: false },
+      }),
+    );
+    renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(screen.getByLabelText(/切札/)).toBeInTheDocument());
+    expect(Array.from((screen.getByLabelText(/切札/) as HTMLSelectElement).options).map((o) => o.textContent)).toEqual([
+      '♠',
+      '♣',
+      '♦',
+      '♥',
+    ]);
   });
 
   // **親だけは同額でも奪える。**入札画面で読めること。

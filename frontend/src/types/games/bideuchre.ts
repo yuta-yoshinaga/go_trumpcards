@@ -86,4 +86,12 @@ export interface BidEuchreResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   /** Winning team; -1 while the game is live. */
   winnerTeam: number;
+  config: BidEuchreConfigOutput;
+}
+
+/** Settings echoed back with the game state. */
+export interface BidEuchreConfigOutput {
+  cpuDifficulty: number;
+  /** Whether the declarer may name a no-trump form. */
+  allowNoTrump: boolean;
 }

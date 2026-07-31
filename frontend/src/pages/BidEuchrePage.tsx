@@ -31,6 +31,9 @@ import type { CliGameConfig } from '../utils/cli/types';
 /** Declarations, in menu order. **Two of them are no-trump forms.** */
 const TRUMPS = [0, 1, 2, 3, 4, 5];
 
+/** The two no-trump declarations, which `allowNoTrump` can switch off. */
+const NO_TRUMPS = [4, 5];
+
 /** Bid Euchre tutorial step definitions. */
 const BIDEUCHRE_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -129,11 +132,21 @@ function BidEuchrePageContent() {
 
   const canPlay = (i: number) => state.validPlays.includes(i);
 
+  // **立っている宣言を上回るものだけ出す。ただし親は同額でも奪える。**
+  // 上限だけ出していると、非ディーラーが必ず弾かれる値を選べてしまう。
+  const humanIsDealer = state.dealerIdx === 0;
+  const floor = state.highBid === null ? state.minBid : humanIsDealer ? state.highBid.value : state.highBid.value + 1;
   const bids: number[] = [];
-  for (let v = state.minBid; v <= state.maxBid; v++) bids.push(v);
+  for (let v = Math.max(state.minBid, floor); v <= state.maxBid; v++) bids.push(v);
+
+  // **ノートランプは設定で切れる。**サーバーが弾く選択肢は出さない。
+  const trumpOptions = state.config?.allowNoTrump === false ? TRUMPS.filter((tr) => !NO_TRUMPS.includes(tr)) : TRUMPS;
+
+  // **床が上がると 3 は選べなくなる。**選択値を出せる範囲へ寄せる。
+  const selectedBid = bids.length > 0 && !bids.includes(bidValue) ? bids[0] : bidValue;
 
   const handleBid = () => {
-    exec('bid', { value: bidValue });
+    exec('bid', { value: selectedBid });
   };
 
   const handleTrump = () => {
@@ -316,7 +329,7 @@ function BidEuchrePageContent() {
                     <select
                       id="bideuchre-bid-select"
                       className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                      value={bidValue}
+                      value={selectedBid}
                       onChange={(e) => setBidValue(Number(e.target.value))}
                     >
                       {bids.map((v) => (
@@ -348,7 +361,7 @@ function BidEuchrePageContent() {
                       value={trumpChoice}
                       onChange={(e) => setTrumpChoice(Number(e.target.value))}
                     >
-                      {TRUMPS.map((tr) => (
+                      {trumpOptions.map((tr) => (
                         <option key={tr} value={tr}>
                           {trumpLabel(tr)}
                         </option>

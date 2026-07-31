@@ -439,6 +439,24 @@ func TestBidEuchreChooseTrump(t *testing.T) {
 		}
 	})
 
+	// **設定でノートランプを切れる。**読まなければ config が黙って効かない。
+	t.Run("no trump can be switched off", func(t *testing.T) {
+		b := setup(t)
+		cfg := b.GetConfig()
+		cfg.AllowNoTrump = false
+		b.SetConfig(cfg)
+
+		for _, t2 := range []BidEuchreTrump{BidEuchreTrumpNoHigh, BidEuchreTrumpNoLow} {
+			if err := b.ChooseTrump(1, t2); err == nil {
+				t.Errorf("%v must be refused when allowNoTrump is off", t2)
+			}
+		}
+		// スート宣言はそのまま通る。
+		if err := b.ChooseTrump(1, BidEuchreTrumpSpade); err != nil {
+			t.Errorf("a suit declaration must still be accepted: %v", err)
+		}
+	})
+
 	t.Run("bad input is refused", func(t *testing.T) {
 		b := setup(t)
 		if err := b.ChooseTrump(2, BidEuchreTrumpHeart); err == nil {
