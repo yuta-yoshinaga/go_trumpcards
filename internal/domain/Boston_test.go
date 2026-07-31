@@ -870,3 +870,25 @@ func TestBostonTrumpAndConfigAccessors(t *testing.T) {
 		t.Errorf("SetConfig did not take effect, got %d", got)
 	}
 }
+
+// TestBostonDeclarerTricksBeforeTheAuctionSettles は落札前の呼び出しで
+// 落ちないことを確かめる。
+//
+// **declarerIdx は競りが決まるまで -1。**プレゼンターは宣言フェーズでも
+// これを呼ぶので、素で添字にすると index out of range で panic する。
+func TestBostonDeclarerTricksBeforeTheAuctionSettles(t *testing.T) {
+	b := NewDefaultBoston()
+	b.Reset()
+	if got := b.GetDeclarerIdx(); got != -1 {
+		t.Fatalf("declarer = %d, want -1 during the auction", got)
+	}
+	if got := b.BostonDeclarerTricks(); got != 0 {
+		t.Errorf("the declaring side took %d before there is a declarer, want 0", got)
+	}
+	// 落札側の判定も落ちない。
+	for i := range BostonPlayerCnt {
+		if b.BostonIsDeclarerSide(i) {
+			t.Errorf("seat %d cannot be on the declaring side before the auction settles", i)
+		}
+	}
+}

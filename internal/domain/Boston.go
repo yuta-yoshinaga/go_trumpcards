@@ -425,9 +425,15 @@ func (b *Boston) resolveTrick() {
 }
 
 // BostonDeclarerTricks は落札側が取ったトリック数を返す。
+//
+// **落札前は 0。**declarerIdx は競りが決まるまで -1 なので、素で添字にすると
+// 落ちる。プレゼンターは宣言フェーズでもこれを呼ぶ。
 func (b *Boston) BostonDeclarerTricks() int {
+	if b.declarerIdx < 0 || b.declarerIdx >= BostonPlayerCnt {
+		return 0
+	}
 	total := b.tricksWon[b.declarerIdx]
-	if b.partnerIdx >= 0 {
+	if b.partnerIdx >= 0 && b.partnerIdx < BostonPlayerCnt {
 		total += b.tricksWon[b.partnerIdx]
 	}
 	return total
