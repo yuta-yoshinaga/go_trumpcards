@@ -339,7 +339,8 @@
     "kaiser": "The Canadian partnership bidding game. The five of hearts is worth +5 and the three of spades -3, together weighing as much as all eight tricks.",
     "boston": "The 18th-century Whist derivative. Fifteen bids from five tricks up to a slam, with the misere contracts slotted in between them.",
     "vint": "Russian bridge, played without a dummy -- all four hands stay concealed to the very last trick.",
-    "bideuchre": "An auction euchre where the whole 24-card pack is dealt out, so there is no kitty. The dealer alone may take the contract by equalling the bid."
+    "bideuchre": "An auction euchre where the whole 24-card pack is dealt out, so there is no kitty. The dealer alone may take the contract by equalling the bid.",
+    "sixbidsolo": "A three-hander dealing eleven cards each from a 36-card pack, with three more face down as a widow. Six bids swap the target and the payment together."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -595,6 +596,7 @@
     "kaiser": "Only the winning bidder sees the two-card kitty -- but neither scoring card may be discarded, so a three of spades has to be forced onto somebody.",
     "boston": "Piccolissimo asks for EXACTLY one trick -- taking none fails it. On a trick bid you may call a partner and turn it into two against two.",
     "vint": "Defenders score for every trick they take, so points accrue even when you cannot beat the contract. Spades are the LOWEST denomination, the reverse of bridge.",
-    "bideuchre": "A set costs you your BID, not the tricks you took, and the defenders score theirs either way. Naming no trump LOW reverses the ranking so the nine is highest -- a way out with a weak hand."
+    "bideuchre": "A set costs you your BID, not the tricks you took, and the defenders score theirs either way. Naming no trump LOW reverses the ranking so the nine is highest -- a way out with a weak hand.",
+    "sixbidsolo": "A misere asks for zero card POINTS, not zero tricks -- a trick of nines and lower is harmless. A plain bid must exceed 60, so 61, and the payment is the difference from 60 rather than a flat win."
   }
 }

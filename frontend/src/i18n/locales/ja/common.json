@@ -273,7 +273,8 @@
     "kaiser": "カイザー",
     "boston": "ボストン",
     "vint": "ヴィント",
-    "bideuchre": "ビッド・ユーカー"
+    "bideuchre": "ビッド・ユーカー",
+    "sixbidsolo": "シックスビッド・ソロ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1341,7 +1342,14 @@
     "bideuchre.handMade": "宣言達成。両チームが取ったトリック数を得点します",
     "bideuchre.handSet": "宣言失敗。【取った数ではなく宣言額】を失います（守備側は取った分を得点）",
     "bideuchre.result.humanWin": "あなたのチームが32点に到達しました",
-    "bideuchre.result.cpuWin": "相手チームが32点に到達しました"
+    "bideuchre.result.cpuWin": "相手チームが32点に到達しました",
+    "sixbidsolo.bidPhase": "宣言フェーズ — 上回る宣言だけが通ります。【通常ビッドは61点以上】が要ります",
+    "sixbidsolo.declarePhase": "切札指定フェーズ — 【コール・ソロは交換を求める札も指名】します",
+    "sixbidsolo.playPhase": "プレイ中 — 追随は強制です",
+    "sixbidsolo.handMade": "宣言達成。ウィドウの3枚も宣言者に加算されます（ミゼール系を除く）",
+    "sixbidsolo.handSet": "宣言失敗。宣言者が各対戦者へ支払います",
+    "sixbidsolo.result.humanWin": "規定局数を終えて、あなたが首位です",
+    "sixbidsolo.result.cpuWin": "規定局数を終えて、CPUが首位です"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

@@ -341,4 +341,12 @@ func init() {
 			return usecase.RestoreBidEuchreInteractor(data, new(presenter.BidEuchreWebPresenter))
 		},
 		controller.NewBidEuchreWebControllerWithProvider)
+	games.RegisterKVGame("sixbidsolo", games.CategoryExtra2,
+		func() usecase.SixBidSoloInteractorIF {
+			return usecase.NewSixBidSoloInteractor(domain.NewDefaultSixBidSolo(), new(presenter.SixBidSoloWebPresenter))
+		},
+		func(data []byte) (usecase.SixBidSoloInteractorIF, error) {
+			return usecase.RestoreSixBidSoloInteractor(data, new(presenter.SixBidSoloWebPresenter))
+		},
+		controller.NewSixBidSoloWebControllerWithProvider)
 }

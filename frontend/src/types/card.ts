@@ -198,6 +198,7 @@ export * from './games/shithead';
 export * from './games/shortdeck';
 export * from './games/simplesimon';
 export * from './games/sirtommy';
+export * from './games/sixbidsolo';
 export * from './games/sixcardgolf';
 export * from './games/sjavs';
 export * from './games/skat';

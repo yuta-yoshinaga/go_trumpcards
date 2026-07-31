@@ -4041,6 +4041,22 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "sixbidsolo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSixBidSoloCuiController(usecase.NewSixBidSoloInteractor(
+				domain.NewDefaultSixBidSolo(), new(presenter.SixBidSoloCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sixbidsolo.helpTitle",
+				CommandKeys: []string{
+					"sixbidsolo.helpBid",
+					"sixbidsolo.helpPass",
+					"sixbidsolo.helpDeclare",
+					"sixbidsolo.helpPlay",
+					"sixbidsolo.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
