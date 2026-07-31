@@ -276,8 +276,11 @@ func (z *Zwicker) Take(player, handIdx, playedValue int, tableIdxs, buildIdxs []
 	return nil
 }
 
-// Build は手札 1 枚と場の札を積んで宣言値のビルドを作る (既存ビルドへの
-// 追加も同じ経路)。宣言値と同じ値で取れる札を手札に残していなければならない。
+// Build は手札 1 枚と場の札を積んで宣言値のビルドを**新しく**作る。
+//
+// 既存ビルドへの合流は無い。同じ宣言値のビルドが 2 つ並ぶことはあるが、Take は
+// 一致する値のビルドを複数まとめて取れるので困らない。宣言値と同じ値で取れる札
+// を手札に残していなければならない。
 func (z *Zwicker) Build(player, handIdx int, tableIdxs []int, declaredValue int) error {
 	card, err := z.checkPlay(player, handIdx)
 	if err != nil {

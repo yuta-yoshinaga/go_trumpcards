@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+	"time"
 )
 
 func zwCard(design, value int) *Card { return NewCard(design, value, true) }
@@ -731,5 +732,40 @@ func TestZwickerUnmarshalClampsIndices(t *testing.T) {
 	}
 	if z.GetStockCount() == 0 {
 		t.Error("a missing pack should be rebuilt, not left nil")
+	}
+}
+
+// TestZwickerCaptureSearchIsBounded は、細工した大きな tableIndices が探索を
+// 爆発させないことを確かめる。/zwicker/exec からは任意の添字集合を送れるので、
+// 素直な指数探索だと Worker のリクエスト時間を食い潰せてしまう。
+//
+// **意図的に「ほぼ割り切れる」形にしてある。**41 枚の A (1 として使える) を 4
+// ずつの組に分けようとすると、10 組できて 1 枚余る。どの組み合わせを試しても
+// 最後に必ず失敗するので、枝刈りだけでは全通りを舐めることになる。
+func TestZwickerCaptureSearchIsBounded(t *testing.T) {
+	z := zwReady(t, 0)
+	table := make([]*Card, 0, 41)
+	for range 41 {
+		table = append(table, zwCard(CardDesignHeart, 1))
+	}
+	z.SetTableCardsForTest(table)
+	setZwHand(z, 0, []*Card{zwCard(CardDesignSpade, 4)})
+
+	idxs := make([]int, 0, len(table))
+	for i := range table {
+		idxs = append(idxs, i)
+	}
+	done := make(chan error, 1)
+	go func() { done <- z.Take(0, 0, 4, idxs, nil) }()
+	select {
+	case err := <-done:
+		if err == nil {
+			t.Fatal("41 cards cannot split into groups of four; it must be rejected")
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("the capture search did not terminate; the budget is not being applied")
+	}
+	if got := len(z.GetTableCards()); got != len(table) {
+		t.Errorf("table = %d, want it untouched at %d", got, len(table))
 	}
 }

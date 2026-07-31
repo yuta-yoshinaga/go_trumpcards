@@ -98,29 +98,45 @@ func ZwickerScoreOfCard(c *Card) int {
 	}
 }
 
+// zwickerPartitionBudget は分割探索に許す再帰の回数。
+//
+// **これは入力の上限ではなく、探索の上限である。**捕獲は最悪で指数時間になり、
+// 場札の枚数に上限はない (Trail で増える一方) 一方、Take の tableIndices は
+// /zwicker/exec から任意に送れる。素直に書くと、細工したリクエスト 1 本で
+// Worker のリクエスト時間を食い潰せてしまう。予算を切らしたら「その組み合わせ
+// では取れない」として扱う -- 実際の対局で届く手はここに遠く及ばない。
+const zwickerPartitionBudget = 200000
+
 // zwickerCanPartition は cards を「それぞれ合計が target になる 1 つ以上の
 // グループ」に余りなく分けられるかを返す。
 //
 // 各札は 2 つの値を持ちうるので、値の選び方まで含めて探索する。**1 グループに
 // 限らないのが要点**で、10 を出して 7+3 と 6+4 を同時に取るのが Zwicker の
 // 気持ちよさそのものである。
+//
+// 探索量は [[zwickerPartitionBudget]] で頭打ちにしてある。
 func zwickerCanPartition(cards []*Card, target int) bool {
 	if len(cards) == 0 || target <= 0 {
 		return false
 	}
 	used := make([]bool, len(cards))
-	return zwickerFillGroup(cards, used, target, target, len(cards))
+	budget := zwickerPartitionBudget
+	return zwickerFillGroup(cards, used, target, target, len(cards), &budget)
 }
 
 // zwickerFillGroup は「今のグループの残り remaining」を埋めながら再帰する。
-// left は未使用の枚数。
-func zwickerFillGroup(cards []*Card, used []bool, remaining, target, left int) bool {
+// left は未使用の枚数。budget は残りの探索回数で、0 になったら打ち切る。
+func zwickerFillGroup(cards []*Card, used []bool, remaining, target, left int, budget *int) bool {
+	if *budget <= 0 {
+		return false
+	}
+	*budget--
 	if remaining == 0 {
 		if left == 0 {
 			return true
 		}
 		// グループが 1 つ埋まった。次のグループを始める。
-		return zwickerFillGroup(cards, used, target, target, left)
+		return zwickerFillGroup(cards, used, target, target, left, budget)
 	}
 	if left == 0 {
 		return false
@@ -155,7 +171,7 @@ func zwickerFillGroup(cards []*Card, used []bool, remaining, target, left int) b
 				continue
 			}
 			used[i] = true
-			if zwickerFillGroup(cards, used, remaining-v, target, left-1) {
+			if zwickerFillGroup(cards, used, remaining-v, target, left-1, budget) {
 				used[i] = false
 				return true
 			}
