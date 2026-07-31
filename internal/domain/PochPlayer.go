@@ -7,7 +7,12 @@ import "encoding/json"
 // PochPlayer はポッホのプレイヤークラス。
 type PochPlayer struct {
 	*GamePlayer
-	// chips は通算のチップ残高。マイナスにもなる。
+	// chips は通算のチップ残高。**マイナスに落ちても止めない。**
+	//
+	// Anaconda や Bouillotte のような「所持が足りなければ降ろす」判定は入れて
+	// いない。この game の長さは TargetDeals で決まっていて脱落の概念が無く、
+	// 原典にもテーブルステークスの規定が無いため、資金切れで座を外す自然な
+	// 区切りが存在しない。収支そのものが順位になる。
 	chips int
 	// betThisRound はこの pochen ラウンドで出した額。
 	betThisRound int
