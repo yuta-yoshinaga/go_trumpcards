@@ -136,6 +136,7 @@ type PopeJoan struct {
 	// 途中経過。トランプの K を出した席、Q を出した席を覚えておく。
 	trumpKingBy  int
 	trumpQueenBy int
+	trumpJackBy  int
 
 	dealWinner  int
 	gameEndFlag bool
@@ -152,6 +153,7 @@ func NewPopeJoan(players []*PopeJoanPlayer, config PopeJoanConfig) *PopeJoan {
 		runSuit:      -1,
 		trumpKingBy:  -1,
 		trumpQueenBy: -1,
+		trumpJackBy:  -1,
 		dealWinner:   -1,
 		winnerIdx:    -1,
 	}
@@ -192,6 +194,7 @@ func (p *PopeJoan) dealRound() {
 	p.playedPile = nil
 	p.trumpKingBy = -1
 	p.trumpQueenBy = -1
+	p.trumpJackBy = -1
 	p.dealWinner = -1
 
 	// **ディーラーが固定の内訳で置く。**プレイヤーが配分するのではない。
@@ -204,10 +207,16 @@ func (p *PopeJoan) dealRound() {
 
 	// **プレイヤー数より 1 つ多く配る。**余った 1 人分が dead hand で、その
 	// 最後の 1 枚を表にしてトランプを決める。
+	//
+	// **配り始めはディーラーの左隣から。**51 枚を 5 つの手 (4 人 + dead hand)
+	// に配ると 1 枚余り、先頭の席だけ 1 枚多くなる。i%hands で始めると余りが
+	// 毎回席 0 = 人間に落ち、**ディールを重ねるほど人間だけが不利**になる
+	// (先に出し切ると他家から取り立て、抱えた札は 1 枚 1 チップの負債になる
+	// ため、枚数が多いことは純粋な不利)。他のゲームと同様に回す。
 	hands := len(p.players) + 1
 	p.deadHand = nil
 	for i, c := range deck {
-		seat := i % hands
+		seat := (p.dealerIdx + 1 + i) % hands
 		if seat == len(p.players) {
 			p.deadHand = append(p.deadHand, c)
 			continue
@@ -343,6 +352,9 @@ func (p *PopeJoan) payForCard(player int, card *Card) {
 	if comp, ok := PopeJoanCompartmentForRank(card.GetValue()); ok {
 		p.award(comp, player, false)
 	}
+	// **両方向を見る。**並びは必ず上がっていく (J=11 < Q=12 < K=13) ので、
+	// 片方向しか見ないと自然な順序のほうが落ちる。Intrigue を「Q を出した
+	// あとに J」だけで判定すると、J→Q という普通の順序で永久に払われない。
 	switch card.GetValue() {
 	case 13:
 		p.trumpKingBy = player
@@ -354,7 +366,11 @@ func (p *PopeJoan) payForCard(player int, card *Card) {
 		if p.trumpKingBy == player {
 			p.award(PopeJoanMatrimony, player, false)
 		}
+		if p.trumpJackBy == player {
+			p.award(PopeJoanIntrigue, player, false)
+		}
 	case 11:
+		p.trumpJackBy = player
 		if p.trumpQueenBy == player {
 			p.award(PopeJoanIntrigue, player, false)
 		}
@@ -611,6 +627,7 @@ type popeJoanJSON struct {
 	PlayedPile []*Card           `json:"pi"`
 	KingBy     int               `json:"kb"`
 	QueenBy    int               `json:"qb"`
+	JackBy     int               `json:"jb"`
 	DealWinner int               `json:"dw"`
 	GameEnd    bool              `json:"ge"`
 	WinnerIdx  int               `json:"wi"`
@@ -624,7 +641,7 @@ func (p *PopeJoan) MarshalJSON() ([]byte, error) {
 		TrumpSuit: p.trumpSuit, TurnUp: p.turnUp, DeadHand: p.deadHand, Awards: p.awards,
 		Current: p.currentIdx, Dealer: p.dealerIdx, DealNo: p.dealNo,
 		RunSuit: p.runSuit, RunRank: p.runRank, PlayedPile: p.playedPile,
-		KingBy: p.trumpKingBy, QueenBy: p.trumpQueenBy,
+		KingBy: p.trumpKingBy, QueenBy: p.trumpQueenBy, JackBy: p.trumpJackBy,
 		DealWinner: p.dealWinner, GameEnd: p.gameEndFlag, WinnerIdx: p.winnerIdx,
 		ActionLog: p.actionLog,
 	})
@@ -653,7 +670,12 @@ func (p *PopeJoan) UnmarshalJSON(data []byte) error {
 	p.config = raw.Config
 	p.phase = raw.Phase
 	p.board = raw.Board
+	// 他のフィールドと同じく境界を見る。比較にしか使わないので実害は無いが、
+	// 「KV から戻る生バイト列は信用しない」という方針に合わせる。
 	p.trumpSuit = raw.TrumpSuit
+	if p.trumpSuit < CardDesignJoker || p.trumpSuit > CardDesignDiamond {
+		p.trumpSuit = -1
+	}
 	p.turnUp = raw.TurnUp
 	p.deadHand = raw.DeadHand
 	p.dealNo = raw.DealNo
@@ -666,6 +688,7 @@ func (p *PopeJoan) UnmarshalJSON(data []byte) error {
 	p.dealerIdx = clampPopeJoanIdx(raw.Dealer, len(p.players))
 	p.trumpKingBy = clampPopeJoanSeatOrNone(raw.KingBy, len(p.players))
 	p.trumpQueenBy = clampPopeJoanSeatOrNone(raw.QueenBy, len(p.players))
+	p.trumpJackBy = clampPopeJoanSeatOrNone(raw.JackBy, len(p.players))
 	p.dealWinner = clampPopeJoanSeatOrNone(raw.DealWinner, len(p.players))
 	p.winnerIdx = clampPopeJoanSeatOrNone(raw.WinnerIdx, len(p.players))
 
