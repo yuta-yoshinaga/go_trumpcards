@@ -228,6 +228,63 @@ func TestLoba_GoingOutInOneGoTakesTenOff(t *testing.T) {
 	assert.Equal(t, LobaPhaseRoundEnd, l.GetPhase())
 }
 
+// TestLoba_ThreeMeldsInOneTurnIsStillClean は、9 枚を 3+3+3 で一気に出す
+// **最も普通の一気上がり**が -10 を取れることを確かめる。メルドの数で判定して
+// いると、この形が丸ごと弾かれる。
+func TestLoba_ThreeMeldsInOneTurnIsStillClean(t *testing.T) {
+	l := lbReady(t, 0)
+	for i := range l.GetPlayers() {
+		l.GetPlayer(i).Reset()
+	}
+	p := l.GetPlayer(0)
+	for _, c := range []*Card{
+		lbCard(CardDesignSpade, 7), lbCard(CardDesignHeart, 7), lbCard(CardDesignClover, 7),
+		lbCard(CardDesignDiamond, 4), lbCard(CardDesignDiamond, 5), lbCard(CardDesignDiamond, 6),
+		lbCard(CardDesignClover, 9), lbCard(CardDesignClover, 10), lbCard(CardDesignClover, 11),
+	} {
+		p.AddCard(c)
+	}
+	l.GetPlayer(1).AddCard(lbCard(CardDesignSpade, 13))
+
+	require.NoError(t, l.Meld(0, []int{0, 1, 2}))
+	require.NoError(t, l.Meld(0, []int{0, 1, 2}))
+	require.NoError(t, l.Meld(0, []int{0, 1, 2}))
+
+	assert.True(t, l.IsRoundClean(), "3+3+3 laid down in one turn is a clean go-out")
+	assert.Equal(t, -LobaGoOutCleanBonus, l.GetScore(0))
+}
+
+// TestLoba_MeldingOnAnEarlierTurnIsNotClean は逆方向 — 前の手番で出しておいて
+// 残りをレイオフで捌いた人に -10 を与えないことを確かめる。所有メルドは 1 つ
+// のままなので、数で判定していると通ってしまう。
+func TestLoba_MeldingOnAnEarlierTurnIsNotClean(t *testing.T) {
+	l := lbReady(t, 0)
+	for i := range l.GetPlayers() {
+		l.GetPlayer(i).Reset()
+	}
+	p := l.GetPlayer(0)
+	for _, c := range []*Card{
+		lbCard(CardDesignSpade, 7), lbCard(CardDesignHeart, 7), lbCard(CardDesignClover, 7),
+		lbCard(CardDesignSpade, 7), // 2 組デッキなので同じ札が 2 枚ある
+	} {
+		p.AddCard(c)
+	}
+	l.GetPlayer(1).AddCard(lbCard(CardDesignSpade, 13))
+	require.NoError(t, l.Meld(0, []int{0, 1, 2}), "this is an earlier turn")
+	require.False(t, l.GetGameEndFlag())
+
+	// 次の手番。引いた時点で「もう出している」が控えられる。
+	l.SetPhaseForTest(LobaPhaseDraw)
+	l.SetStockForTest([]*Card{lbCard(CardDesignHeart, 7)})
+	require.NoError(t, l.DrawFromStock(0))
+	require.NoError(t, l.LayOff(0, 0, 0))
+	require.NoError(t, l.LayOff(0, 0, 0))
+
+	assert.Equal(t, 0, l.GetRoundWinner())
+	assert.False(t, l.IsRoundClean(), "the melding happened on an earlier turn")
+	assert.Equal(t, 0, l.GetScore(0), "no bonus")
+}
+
 func TestLoba_ReachingAHundredAndOneEliminates(t *testing.T) {
 	l := lbReady(t, 0)
 	for i := range l.GetPlayers() {

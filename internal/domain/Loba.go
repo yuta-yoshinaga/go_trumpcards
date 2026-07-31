@@ -228,6 +228,9 @@ type Loba struct {
 	melds   []*LobaMeld
 	// hasMelded[i] はこのラウンドで i が既に何か出したか。レイオフの前提。
 	hasMelded []bool
+	// meldedBefore[i] は i の**今の手番が始まった時点で**既に出していたか。
+	// 「一度も出さずに一気に上がった」(-10) の判定にはこちらを使う。
+	meldedBefore []bool
 
 	currentIdx int
 	dealerIdx  int
@@ -249,13 +252,14 @@ type Loba struct {
 // NewLoba はコンストラクタ。
 func NewLoba(players []*LobaPlayer, config LobaConfig) *Loba {
 	return &Loba{
-		players:     players,
-		config:      config,
-		scores:      make([]int, len(players)),
-		eliminated:  make([]bool, len(players)),
-		hasMelded:   make([]bool, len(players)),
-		roundWinner: -1,
-		winnerIdx:   -1,
+		players:      players,
+		config:       config,
+		scores:       make([]int, len(players)),
+		eliminated:   make([]bool, len(players)),
+		hasMelded:    make([]bool, len(players)),
+		meldedBefore: make([]bool, len(players)),
+		roundWinner:  -1,
+		winnerIdx:    -1,
 	}
 }
 
@@ -314,6 +318,7 @@ func (l *Loba) Reset() {
 func (l *Loba) dealRound() {
 	l.melds = nil
 	l.hasMelded = make([]bool, len(l.players))
+	l.meldedBefore = make([]bool, len(l.players))
 	l.roundWinner = -1
 	l.roundClean = false
 	for _, p := range l.players {
@@ -366,7 +371,7 @@ func (l *Loba) DrawFromStock(player int) error {
 	card := l.stock[0]
 	l.stock = l.stock[1:]
 	l.GetPlayer(player).AddCard(card)
-	l.phase = LobaPhaseAct
+	l.beginAct(player)
 	l.addLog(player, "draw", "draws from the stock", nil)
 	return nil
 }
@@ -382,9 +387,21 @@ func (l *Loba) DrawFromDiscard(player int) error {
 	card := l.discard[len(l.discard)-1]
 	l.discard = l.discard[:len(l.discard)-1]
 	l.GetPlayer(player).AddCard(card)
-	l.phase = LobaPhaseAct
+	l.beginAct(player)
 	l.addLog(player, "draw", "takes the discard", []*Card{card})
 	return nil
+}
+
+// beginAct は引いた直後に呼ばれ、その手番が始まった時点で player が既に場に
+// 出していたかを控える。
+//
+// **これを控えておかないと「一気に上がった」判定ができない。**Meld した瞬間に
+// hasMelded が立つので、上がった後に見ても常に true になってしまう。
+func (l *Loba) beginAct(player int) {
+	l.phase = LobaPhaseAct
+	if player >= 0 && player < len(l.meldedBefore) {
+		l.meldedBefore[player] = l.hasMelded[player]
+	}
 }
 
 // checkDraw は引ける状態かを確かめる。
@@ -576,10 +593,7 @@ func (l *Loba) checkGoneOut(player int) {
 // finishRound はラウンドを精算する。
 func (l *Loba) finishRound(winner int) {
 	l.roundWinner = winner
-	// **一度も出さずに一気に上がると -10。**メルドを出した瞬間に hasMelded が
-	// 立つので、「上がった時点で場に出したメルドが 1 つだけ」かどうかではなく、
-	// 「上がる前に出していたか」で判定する必要がある。ここでは上がりの瞬間まで
-	// 出していなかった場合を clean とする。
+	// **一度も出さずに一気に上がると -10。**
 	l.roundClean = l.wentOutInOneGo(winner)
 	if l.roundClean {
 		l.scores[winner] -= LobaGoOutCleanBonus
@@ -611,18 +625,16 @@ func (l *Loba) finishRound(winner int) {
 }
 
 // wentOutInOneGo は winner が上がりの手番で初めて場に出したかを返す。
+//
+// **メルドの「数」で数えてはいけない。**9 枚を一気に出す形は 3+3+3 が普通で、
+// 1 手番で 3 つのメルドになる。数で見ると最も典型的な一気上がりが弾かれ、逆に
+// 前の手番で 1 つ出しておいて残りを他人のメルドへレイオフした人が通ってしまう。
+// 見るべきは手番が始まった時点で出していたかどうかだけである。
 func (l *Loba) wentOutInOneGo(winner int) bool {
-	first := true
-	for _, m := range l.melds {
-		if m.Owner == winner {
-			if !first {
-				return false
-			}
-			first = false
-		}
+	if winner < 0 || winner >= len(l.meldedBefore) {
+		return false
 	}
-	// メルドが 1 つだけ (もしくは 0) なら、その手番で出したものとみなす。
-	return true
+	return !l.meldedBefore[winner]
 }
 
 // checkGameEnd は残り 1 人になっていれば決着させる。
@@ -883,30 +895,33 @@ func (l *Loba) addLog(playerIdx int, actionType, detail string, cards []*Card) {
 
 // lobaJSON is the JSON wire format for Loba.
 type lobaJSON struct {
-	Players     []*LobaPlayer     `json:"pl"`
-	Config      LobaConfig        `json:"cfg"`
-	Phase       LobaPhase         `json:"ph"`
-	Stock       []*Card           `json:"st"`
-	Discard     []*Card           `json:"di"`
-	Melds       []*LobaMeld       `json:"me"`
-	HasMelded   []bool            `json:"hm"`
-	Current     int               `json:"cur"`
-	Dealer      int               `json:"dl"`
-	RoundNo     int               `json:"rn"`
-	Scores      []int             `json:"sc"`
-	Eliminated  []bool            `json:"el"`
-	RoundWinner int               `json:"rw"`
-	RoundClean  bool              `json:"rc"`
-	GameEnd     bool              `json:"ge"`
-	WinnerIdx   int               `json:"wi"`
-	ActionLog   []*ActionLogEntry `json:"al"`
+	Players   []*LobaPlayer `json:"pl"`
+	Config    LobaConfig    `json:"cfg"`
+	Phase     LobaPhase     `json:"ph"`
+	Stock     []*Card       `json:"st"`
+	Discard   []*Card       `json:"di"`
+	Melds     []*LobaMeld   `json:"me"`
+	HasMelded []bool        `json:"hm"`
+	// MeldedBefore は Worker で手番をまたいでも -10 判定が壊れないように残す。
+	MeldedBefore []bool            `json:"mb"`
+	Current      int               `json:"cur"`
+	Dealer       int               `json:"dl"`
+	RoundNo      int               `json:"rn"`
+	Scores       []int             `json:"sc"`
+	Eliminated   []bool            `json:"el"`
+	RoundWinner  int               `json:"rw"`
+	RoundClean   bool              `json:"rc"`
+	GameEnd      bool              `json:"ge"`
+	WinnerIdx    int               `json:"wi"`
+	ActionLog    []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (l *Loba) MarshalJSON() ([]byte, error) {
 	return json.Marshal(lobaJSON{
 		Players: l.players, Config: l.config, Phase: l.phase, Stock: l.stock,
-		Discard: l.discard, Melds: l.melds, HasMelded: l.hasMelded, Current: l.currentIdx,
+		Discard: l.discard, Melds: l.melds, HasMelded: l.hasMelded,
+		MeldedBefore: l.meldedBefore, Current: l.currentIdx,
 		Dealer: l.dealerIdx, RoundNo: l.roundNo, Scores: l.scores, Eliminated: l.eliminated,
 		RoundWinner: l.roundWinner, RoundClean: l.roundClean, GameEnd: l.gameEndFlag,
 		WinnerIdx: l.winnerIdx, ActionLog: l.actionLog,
@@ -959,6 +974,8 @@ func (l *Loba) UnmarshalJSON(data []byte) error {
 	copy(l.eliminated, raw.Eliminated)
 	l.hasMelded = make([]bool, len(l.players))
 	copy(l.hasMelded, raw.HasMelded)
+	l.meldedBefore = make([]bool, len(l.players))
+	copy(l.meldedBefore, raw.MeldedBefore)
 
 	l.melds = make([]*LobaMeld, 0, len(raw.Melds))
 	for _, m := range raw.Melds {
