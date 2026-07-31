@@ -3977,6 +3977,23 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "kaiser", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKaiserCuiController(usecase.NewKaiserInteractor(
+				domain.NewDefaultKaiser(), new(presenter.KaiserCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "kaiser.helpTitle",
+				CommandKeys: []string{
+					"kaiser.helpBid",
+					"kaiser.helpPass",
+					"kaiser.helpTrump",
+					"kaiser.helpDiscard",
+					"kaiser.helpPlay",
+					"kaiser.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

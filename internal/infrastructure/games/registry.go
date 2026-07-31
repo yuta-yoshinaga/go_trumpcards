@@ -747,6 +747,12 @@ var registry = []*Game{
 	// a maker who fails to score MORE than the opponent goes bete and hands over
 	// the whole hand.
 	{Name: "klaberjass", Category: CategoryExtra3},
+	// Kaiser is the Saskatchewan partnership bidding game on a 34-card pack: the
+	// usual A-K-Q-J-10-9-8-7 in each suit PLUS the five of hearts (+5) and the
+	// three of spades (-3), which is why 4x8 cards leave a two-card kitty. The
+	// declarer takes the kitty and discards two, but may never discard either
+	// scoring card.
+	{Name: "kaiser", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.
