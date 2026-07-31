@@ -245,6 +245,14 @@ func init() {
 			return usecase.RestoreBuraInteractor(data, new(presenter.BuraWebPresenter))
 		},
 		controller.NewBuraWebControllerWithProvider)
+	games.RegisterKVGame("trex", games.CategoryExtra3,
+		func() usecase.TrexInteractorIF {
+			return usecase.NewTrexInteractor(domain.NewDefaultTrex(), new(presenter.TrexWebPresenter))
+		},
+		func(data []byte) (usecase.TrexInteractorIF, error) {
+			return usecase.RestoreTrexInteractor(data, new(presenter.TrexWebPresenter))
+		},
+		controller.NewTrexWebControllerWithProvider)
 	games.RegisterKVGame("skitgubbe", games.CategoryExtra3,
 		func() usecase.SkitgubbeInteractorIF {
 			return usecase.NewSkitgubbeInteractor(domain.NewDefaultSkitgubbe(), new(presenter.SkitgubbeWebPresenter))

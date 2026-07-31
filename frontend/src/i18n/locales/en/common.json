@@ -260,7 +260,8 @@
     "chineseten": "Chinese Ten",
     "skitgubbe": "Skitgubbe",
     "laughandliedown": "Laugh and Lie Down",
-    "sjavs": "Sjavs"
+    "sjavs": "Sjavs",
+    "trex": "Trex"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1279,7 +1280,9 @@
     "sjavs.win": "You won the rubber",
     "sjavs.winDouble": "You won the rubber with a double victory",
     "sjavs.lose": "You lost the rubber",
-    "sjavs.loseDouble": "You lost the rubber to a double victory"
+    "sjavs.loseDouble": "You lost the rubber to a double victory",
+    "trex.win": "You win",
+    "trex.lose": "You lose"
   },
   "manual": {
     "ariaLabel": "Game Manual",

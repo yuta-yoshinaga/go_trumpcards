@@ -1660,6 +1660,21 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "trex", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTrexCuiController(usecase.NewTrexInteractor(
+				domain.NewDefaultTrex(), new(presenter.TrexCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "trex.helpTitle",
+				CommandKeys: []string{
+					"trex.helpChoose",
+					"trex.helpPlay",
+					"trex.helpPass",
+					"trex.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "skitgubbe", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSkitgubbeCuiController(usecase.NewSkitgubbeInteractor(

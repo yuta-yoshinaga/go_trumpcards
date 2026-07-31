@@ -174,6 +174,7 @@ import type {
   TrashResponse,
   TrenteEtQuaranteResponse,
   TressetteResponse,
+  TrexResponse,
   TriPeaksResponse,
   TrucoResponse,
   TuteResponse,
@@ -373,6 +374,7 @@ import { getToepenHint } from '../utils/hints/toepenHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTrenteEtQuaranteHint } from '../utils/hints/trenteetquaranteHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
+import { getTrexHint } from '../utils/hints/trexHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getTrucoHint } from '../utils/hints/trucoHint';
 import { getTuteHint } from '../utils/hints/tuteHint';
@@ -607,6 +609,7 @@ export const hintFactories = {
   skitgubbe: (s) => getSkitgubbeHint(s as SkitgubbeResponse),
   laughandliedown: (s) => getLaughAndLieDownHint(s as LaughAndLieDownResponse),
   sjavs: (s) => getSjavsHint(s as SjavsResponse),
+  trex: (s) => getTrexHint(s as TrexResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),

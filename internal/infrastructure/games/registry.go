@@ -260,6 +260,8 @@ var registry = []*Game{
 
 	// Skitgubbe's two phases are different games: a two-player duel that
 	// collects cards, then a durak-style beat-or-pick-up shed.
+	{Name: "trex", Category: CategoryExtra3},
+
 	{Name: "skitgubbe", Category: CategoryExtra3},
 
 	// Laugh and Lie Down is a 17th-century fishing game: one card takes one or
