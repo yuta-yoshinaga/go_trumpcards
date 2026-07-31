@@ -330,7 +330,8 @@
     "trex": "A Middle Eastern contract game: each player takes a turn as king, choosing from five contracts until everyone has played all five.",
     "loba": "An Argentine rummy on 108 cards. A set needs three DIFFERENT suits, and jokers go only into runs.",
     "desmoche": "A Nicaraguan rummy dealt nine. Going out takes exactly ten cards, not the nine you were dealt.",
-    "zwicker": "A north-German fishing game on 55 cards. Aces and court cards each carry two values and you pick which."
+    "zwicker": "A north-German fishing game on 55 cards. Aces and court cards each carry two values and you pick which.",
+    "poch": "A 15th-century German game in three stages. Chips go onto a nine-pool board and are claimed with cards of the turn-up's suit."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -577,6 +578,7 @@
     "trex": "Four contracts punish and the dominoes pay. The 500 in penalties and the 500 paid out cancel, so every game sums to zero.",
     "loba": "A knockout: reach 101 penalty points and you are out. Going out in one go without melding first takes ten off.",
     "desmoche": "Despite the name, poker rankings play no part. A deal nobody wins leaves the pot standing, so it grows.",
-    "zwicker": "Clearing the table is a \"Zwick\", worth 1. A deal pays exactly 30, and level card counts leave the majority three unawarded."
+    "zwicker": "Clearing the table is a \"Zwick\", worth 1. A deal pays exactly 30, and level card counts leave the majority three unawarded.",
+    "poch": "Pools nobody claims carry over and swell. The last stage runs each suit upwards, and going out collects from every hand still holding cards."
   }
 }

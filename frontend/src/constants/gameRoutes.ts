@@ -1411,6 +1411,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 4, 3, 4], skill: [3, 4, 4, 3], social: [3, 4, 2, 4, 4], theme: [3, 2, 2, 1, 4, 3] },
       },
       {
+        path: '/poch',
+        labelKey: 'nav.poch',
+        icon: '🎰',
+        page: 'Poch',
+        profile: { mood: [4, 3, 3, 4], skill: [3, 4, 3, 3], social: [3, 4, 2, 4, 4], theme: [3, 2, 2, 1, 3, 3] },
+      },
+      {
         path: '/zwicker',
         labelKey: 'nav.zwicker',
         icon: '🎣',

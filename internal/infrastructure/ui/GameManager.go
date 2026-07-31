@@ -3897,6 +3897,21 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "poch", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPochCuiController(usecase.NewPochInteractor(
+				domain.NewDefaultPoch(), new(presenter.PochCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "poch.helpTitle",
+				CommandKeys: []string{
+					"poch.helpBet",
+					"poch.helpFold",
+					"poch.helpPlay",
+					"poch.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

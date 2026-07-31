@@ -264,7 +264,8 @@
     "trex": "トリックス",
     "loba": "ロバ",
     "desmoche": "デスモチェ",
-    "zwicker": "ツヴィッカー"
+    "zwicker": "ツヴィッカー",
+    "poch": "ポッホ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1291,7 +1292,9 @@
     "desmoche.win": "最も多く稼ぎました",
     "desmoche.lose": "及びませんでした",
     "zwicker.win": "勝ちました",
-    "zwicker.lose": "負けました"
+    "zwicker.lose": "負けました",
+    "poch.win": "最も多く稼ぎました",
+    "poch.lose": "及びませんでした"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

@@ -720,6 +720,11 @@ var registry = []*Game{
 	// the Cassino engine. "Zwick" is the bonus for clearing the table, not the name
 	// for a multi-group capture.
 	{Name: "zwicker", Category: CategoryExtra2},
+	// Poch is a 15th-century German three-stage game on 32 cards with a nine-pool
+	// board. Pools that go unclaimed carry over, which is what the game runs on.
+	// The middle stage compares same-rank sets (4 > 3 > 2) -- there is no bluff and
+	// no declaration -- and "Pocher" is one of the nine pools, not a move.
+	{Name: "poch", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.

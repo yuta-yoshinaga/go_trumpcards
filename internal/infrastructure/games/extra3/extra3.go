@@ -269,4 +269,12 @@ func init() {
 			return usecase.RestoreDesmocheInteractor(data, new(presenter.DesmocheWebPresenter))
 		},
 		controller.NewDesmocheWebControllerWithProvider)
+	games.RegisterKVGame("poch", games.CategoryExtra3,
+		func() usecase.PochInteractorIF {
+			return usecase.NewPochInteractor(domain.NewDefaultPoch(), new(presenter.PochWebPresenter))
+		},
+		func(data []byte) (usecase.PochInteractorIF, error) {
+			return usecase.RestorePochInteractor(data, new(presenter.PochWebPresenter))
+		},
+		controller.NewPochWebControllerWithProvider)
 }

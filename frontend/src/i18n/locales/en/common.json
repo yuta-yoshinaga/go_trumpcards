@@ -264,7 +264,8 @@
     "trex": "Trex",
     "loba": "Loba",
     "desmoche": "Desmoche",
-    "zwicker": "Zwicker"
+    "zwicker": "Zwicker",
+    "poch": "Poch"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1291,7 +1292,9 @@
     "desmoche.win": "You finish ahead",
     "desmoche.lose": "You finish behind",
     "zwicker.win": "Your team wins",
-    "zwicker.lose": "The other team wins"
+    "zwicker.lose": "The other team wins",
+    "poch.win": "You finish with the most chips",
+    "poch.lose": "You finish behind"
   },
   "manual": {
     "ariaLabel": "Game Manual",
