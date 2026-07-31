@@ -227,6 +227,7 @@ export type GameKey =
   | 'trex'
   | 'loba'
   | 'desmoche'
+  | 'zwicker'
   | 'missmilligan'
   | 'crescent'
   // Counting/Rummy
@@ -704,6 +705,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   trex: BLUE,
   loba: GREEN,
   desmoche: GREEN,
+  zwicker: BLUE,
   missmilligan: CASINO,
   crescent: CASINO,
   // Counting/Rummy

@@ -329,7 +329,8 @@
     "sjavs": "The Faroese national game. Both black queens and all four jacks are trumps whatever the trump suit, played four-handed in fixed partnerships.",
     "trex": "A Middle Eastern contract game: each player takes a turn as king, choosing from five contracts until everyone has played all five.",
     "loba": "An Argentine rummy on 108 cards. A set needs three DIFFERENT suits, and jokers go only into runs.",
-    "desmoche": "A Nicaraguan rummy dealt nine. Going out takes exactly ten cards, not the nine you were dealt."
+    "desmoche": "A Nicaraguan rummy dealt nine. Going out takes exactly ten cards, not the nine you were dealt.",
+    "zwicker": "A north-German fishing game on 55 cards. Aces and court cards each carry two values and you pick which."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -575,6 +576,7 @@
     "sjavs": "You bid the LENGTH of your trump suit, not a target score. A rubber counts down from 24 and the first side to reach zero takes it.",
     "trex": "Four contracts punish and the dominoes pay. The 500 in penalties and the 500 paid out cancel, so every game sums to zero.",
     "loba": "A knockout: reach 101 penalty points and you are out. Going out in one go without melding first takes ten off.",
-    "desmoche": "Despite the name, poker rankings play no part. A deal nobody wins leaves the pot standing, so it grows."
+    "desmoche": "Despite the name, poker rankings play no part. A deal nobody wins leaves the pot standing, so it grows.",
+    "zwicker": "Clearing the table is a \"Zwick\", worth 1. A deal pays exactly 30, and level card counts leave the majority three unawarded."
   }
 }

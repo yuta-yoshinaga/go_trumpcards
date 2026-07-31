@@ -263,7 +263,8 @@
     "sjavs": "シャウス",
     "trex": "トリックス",
     "loba": "ロバ",
-    "desmoche": "デスモチェ"
+    "desmoche": "デスモチェ",
+    "zwicker": "ツヴィッカー"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1288,7 +1289,9 @@
     "loba.win": "最後まで残りました",
     "loba.lose": "脱落しました",
     "desmoche.win": "最も多く稼ぎました",
-    "desmoche.lose": "及びませんでした"
+    "desmoche.lose": "及びませんでした",
+    "zwicker.win": "勝ちました",
+    "zwicker.lose": "負けました"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

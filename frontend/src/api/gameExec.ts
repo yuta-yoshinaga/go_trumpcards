@@ -86,6 +86,7 @@ export const workerUrl: Record<string, string> = {
   laughandliedown: WORKER_EXTRA2,
   loba: WORKER_EXTRA2,
   desmoche: WORKER_EXTRA3,
+  zwicker: WORKER_EXTRA2,
   sjavs: WORKER_EXTRA2,
   skitgubbe: WORKER_EXTRA3,
   trex: WORKER_EXTRA3,

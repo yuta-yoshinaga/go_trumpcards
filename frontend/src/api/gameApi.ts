@@ -253,6 +253,7 @@ export * from './games/wizard';
 export * from './games/yaniv';
 export * from './games/yukon';
 export * from './games/zheng';
+export * from './games/zwicker';
 
 /** Every registered game name — the SSoT the {@link Game} union is derived from. */
 export const games = [
@@ -353,6 +354,7 @@ export const games = [
   'trex',
   'loba',
   'desmoche',
+  'zwicker',
   'missmilligan',
   'canfield',
   'osmosis',
