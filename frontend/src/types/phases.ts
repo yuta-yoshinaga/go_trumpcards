@@ -1723,6 +1723,13 @@ export const LobaPhase = {
 } as const;
 
 /** Le Nain Jaune phase constants (sync: internal/domain/NainJaune.go). */
+/** Kille phase constants (sync: internal/domain/Kille.go). */
+export const KillePhase = {
+  EXCHANGE: 0,
+  SHOWDOWN: 1,
+  GAME_END: 2,
+} as const;
+
 export const NainJaunePhase = {
   PLAY: 0,
   DEAL_END: 1,

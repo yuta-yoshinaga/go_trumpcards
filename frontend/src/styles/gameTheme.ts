@@ -231,6 +231,7 @@ export type GameKey =
   | 'poch'
   | 'popejoan'
   | 'nainjaune'
+  | 'kille'
   | 'missmilligan'
   | 'crescent'
   // Counting/Rummy
@@ -712,6 +713,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   poch: CASINO,
   popejoan: CASINO,
   nainjaune: CASINO,
+  kille: CASINO,
   missmilligan: CASINO,
   crescent: CASINO,
   // Counting/Rummy

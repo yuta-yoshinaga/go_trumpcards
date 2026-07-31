@@ -249,6 +249,8 @@ tags:
     description: Pope Joan
   - name: nainjaune
     description: Le Nain Jaune
+  - name: kille
+    description: Kille
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -13453,6 +13455,98 @@ paths:
               schema:
                 $ref: '#/components/schemas/NainJauneResponse'
 
+  /kille/exec:
+    post:
+      tags:
+        - kille
+      summary: Execute a Kille game command
+      description: |
+        Send a command to advance the Kille session identified by `sessionId`.
+        Kille is the Swedish Cuckoo game played with its **own 42-card pack**:
+        **21 denominations in two copies, a single suit**. Each player holds
+        exactly one card and tries not to be left holding the lowest.
+
+        **#4383 has both named picture-card effects backwards, and misses three
+        more.**
+
+        * The issue says the **Harlekin (Harlequin) may refuse an exchange**. It
+          may not. The Harlequin is exchanged **face up**, and its strength
+          **inverts with how it arrived**: dealt or drawn from the stock it is
+          the **highest** card in the pack, received in an exchange it is the
+          **lowest**.
+        * The issue says the **Kuckuck (Cuckoo) forces an exchange**. The
+          opposite -- *"no one swaps the Cuckoo"*. The exchange is refused and
+          the **round ends on the spot** with everyone revealing.
+        * Three more picture cards break the exchange and the issue names none
+          of them: the **Hussar** cuts down the **challenger**, the **Pig**
+          unwinds the swap and knocks out **its own holder**, and the
+          **Cavalier** and **Inn** pass the challenge **along to the next
+          seat**.
+        * The issue calls it a **life system with 3 lives**. It is not. Players
+          **ante a stake**, the loser of a round is out, and may **buy back in
+          at most three times** -- one stake, then **half the pot**, then the
+          **whole pot**.
+        * The issue says the lowest card loses. It is the lowest **excluding a
+          dealt Harlequin**, and anyone knocked out by the Hussar or the Pig
+          goes with them.
+        * The issue says 3-6 players. The original is **3-12**.
+
+        The deck is not the French 52, so cards carry `glyph` / `label` /
+        `color` / `deck` and are drawn procedurally (ADR-0033).
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Exchange | `0`   | Each seat in turn challenges or stands pat |
+        | Showdown | `1`   | Hands are revealed and the round is settled |
+        | GameEnd  | `2`   | One player is left standing |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `exchange`  | `e`     | Challenge your left neighbour (the dealer swaps with the stock) |
+        | `satisfied` | `s`     | Keep your card |
+        | `reenter`   | `re`    | Pay to buy back in after going out |
+        | `nextround` | `nr`    | Deal the next round |
+        | `log`       | `l`     | Action-log transcript |
+      operationId: killeExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, exchange, e, satisfied, s, reenter, re, nextround, nr, log, l]
+                sessionId:
+                  type: string
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+                    stake:
+                      type: integer
+                      description: Stake each player antes per round (1-100, default 1).
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KilleResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KilleResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -24175,6 +24269,104 @@ components:
               type: integer
             reason:
               type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    KilleResponse:
+      type: object
+      description: Response payload for /kille/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              card:
+                allOf:
+                  - $ref: '#/components/schemas/Card'
+                description: |
+                  The seat's single card, or null while it is face down. Carries
+                  `glyph` / `label` / `color` / `deck` because the Kille pack is
+                  not the French 52 (ADR-0033).
+              strength:
+                type: integer
+                description: |
+                  Effective rank, `0` while the card is face down. **Not the
+                  same as the card's denomination**: a Harlequin received in an
+                  exchange scores 0 rather than 21.
+              chips:
+                type: integer
+              reentries:
+                type: integer
+                description: Buy-backs used so far, out of three.
+              reentryCost:
+                type: integer
+                description: |
+                  What the next buy-back costs -- one stake, then half the pot,
+                  then the whole pot. `0` once all three are spent.
+              canReenter:
+                type: boolean
+              isOut:
+                type: boolean
+              knockedBy:
+                type: string
+                description: '"hussar" | "pig" | "" (went out as the lowest)'
+              isSatisfied:
+                type: boolean
+              isFinished:
+                type: boolean
+                description: Out for good -- eliminated and no buy-backs left.
+              isCurrentTurn:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Exchange, 1=Showdown, 2=GameEnd"
+        roundNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+          description: |
+            The dealer acts last and swaps with the **stock** rather than a
+            neighbour, so it is the one seat that cannot be challenged.
+        stockCount:
+          type: integer
+        pot:
+          type: integer
+        events:
+          type: array
+          description: What happened in this round's exchanges, in order.
+          items:
+            type: object
+            properties:
+              kind:
+                type: string
+                description: '"swap" | "satisfied" | "cuckoo" | "hussar" | "pig" | "pass" | "stock"'
+              actor:
+                type: integer
+              target:
+                type: integer
+                description: "Seat challenged; -1 for a swap with the stock"
+        loserIdxs:
+          type: array
+          items:
+            type: integer
+          description: Seats that went out this round -- more than one when a Hussar or Pig fired.
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "Last player standing; -1 while the game is live"
         message:
           type: string
         messageCode:

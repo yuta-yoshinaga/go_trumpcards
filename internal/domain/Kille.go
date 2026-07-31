@@ -486,6 +486,45 @@ func (k *Kille) KilleCpuDecide(idx int) KilleCpuAction {
 	return KilleCpuAction{Type: "satisfied"}
 }
 
+// KilleCpuReenterDecide は脱落した CPU が買い戻すかを決める。
+//
+// **1 口とポット半分までは買い戻し、ポット全額 (3 回目) は降りる。**
+// 常に買い戻すと 4 人 × 3 回で決着が遠のくし、全額はこのゲームで最も高い賭けなので
+// 機械的に払うのは不自然である。
+func (k *Kille) KilleCpuReenterDecide(seat int) bool {
+	p := k.GetPlayer(seat)
+	if p == nil || !p.IsOut() || !p.CanReenter() {
+		return false
+	}
+	return p.GetReentries() < KilleMaxReentries-1
+}
+
+// IsHumanTurn は今が人間の手番かを返す。
+func (k *Kille) IsHumanTurn() bool {
+	if k.gameEndFlag || k.phase != KillePhaseExchange {
+		return false
+	}
+	p := k.GetPlayer(k.currentIdx)
+	return p != nil && p.GetIsHuman() && !p.IsOut()
+}
+
+// CpuPlay は今の手番の CPU に 1 手打たせる。
+func (k *Kille) CpuPlay() {
+	if k.gameEndFlag || k.phase != KillePhaseExchange {
+		return
+	}
+	idx := k.currentIdx
+	p := k.GetPlayer(idx)
+	if p == nil || p.GetIsHuman() {
+		return
+	}
+	if k.KilleCpuDecide(idx).Type == "exchange" {
+		_ = k.Exchange(idx)
+		return
+	}
+	_ = k.Satisfied(idx)
+}
+
 // ---- 公開アクセサ ----
 
 // GetPlayers は全プレイヤーを返す。

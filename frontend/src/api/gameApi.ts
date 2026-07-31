@@ -118,6 +118,7 @@ export * from './games/jass';
 export * from './games/jokerpoker';
 export * from './games/kalooki';
 export * from './games/kemps';
+export * from './games/kille';
 export * from './games/king';
 export * from './games/kingalbert';
 export * from './games/klaverjas';
@@ -361,6 +362,7 @@ export const games = [
   'poch',
   'popejoan',
   'nainjaune',
+  'kille',
   'missmilligan',
   'canfield',
   'osmosis',

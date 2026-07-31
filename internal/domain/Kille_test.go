@@ -766,3 +766,103 @@ func TestKilleUnmarshalClampsIndices(t *testing.T) {
 		t.Errorf("reentries = %d, want it capped at %d", got, KilleMaxReentries)
 	}
 }
+
+func TestKilleIsHumanTurn(t *testing.T) {
+	k := kiReady(t, 0)
+	if !k.IsHumanTurn() {
+		t.Error("seat 0 is the human and it is its turn")
+	}
+	k.SetCurrentPlayerForTest(1)
+	if k.IsHumanTurn() {
+		t.Error("seat 1 is a CPU")
+	}
+	// 脱落中の席は手番にならない。
+	k.SetCurrentPlayerForTest(0)
+	k.GetPlayer(0).SetOut(KilleKnockPig)
+	if k.IsHumanTurn() {
+		t.Error("an eliminated seat has no turn")
+	}
+	k.GetPlayer(0).ResetRound()
+	k.SetPhaseForTest(KillePhaseShowdown)
+	if k.IsHumanTurn() {
+		t.Error("the showdown is nobody's turn")
+	}
+}
+
+func TestKilleCpuPlay(t *testing.T) {
+	// 弱い札なら仕掛ける。
+	k := kiReady(t, 1)
+	k.SetHandForTest(1, KilleNum2)
+	k.SetHandForTest(2, KilleNum9)
+	k.CpuPlay()
+	if got := KilleRankOf(k.GetPlayer(1).GetCard(0)); got != KilleNum9 {
+		t.Errorf("seat 1 holds %s, want it to have exchanged a weak card away", KilleRankName(got))
+	}
+
+	// 強い札なら満足する。
+	k2 := kiReady(t, 1)
+	k2.SetHandForTest(1, KilleNum12)
+	k2.SetHandForTest(2, KilleNum9)
+	k2.CpuPlay()
+	if !k2.GetPlayer(1).IsSatisfied() {
+		t.Error("a strong card should stand pat")
+	}
+	if got := KilleRankOf(k2.GetPlayer(1).GetCard(0)); got != KilleNum12 {
+		t.Errorf("seat 1 holds %s, want it to have kept the 12", KilleRankName(got))
+	}
+
+	// 人間の手番では何もしない。
+	k3 := kiReady(t, 0)
+	k3.CpuPlay()
+	if k3.GetCurrentPlayerIdx() != 0 {
+		t.Error("CpuPlay must not act on the human's turn")
+	}
+}
+
+func TestKilleCpuReenterDecide(t *testing.T) {
+	k := kiReady(t, 0)
+	k.SetPhaseForTest(KillePhaseShowdown)
+	p := k.GetPlayer(1)
+	p.SetOut(KilleKnockLowest)
+
+	if !k.KilleCpuReenterDecide(1) {
+		t.Error("the first buy-back is one stake; a CPU takes it")
+	}
+	p.AddReentry()
+	if !k.KilleCpuReenterDecide(1) {
+		t.Error("the second buy-back is half the pot; a CPU takes it")
+	}
+	p.AddReentry()
+	// **3 回目はポット全額。**降りる。
+	if k.KilleCpuReenterDecide(1) {
+		t.Error("a CPU must not pay the whole pot to buy back")
+	}
+	// 脱落していない席は対象外。
+	if k.KilleCpuReenterDecide(0) {
+		t.Error("a seat that is still in has nothing to buy back")
+	}
+}
+
+func TestKilleAccessors(t *testing.T) {
+	k := NewDefaultKille()
+	k.Reset()
+	// ディーラーは 0 から始まり、ラウンドごとに 1 つ進む。
+	if got := k.GetDealerIdx(); got != 0 {
+		t.Errorf("dealer = %d, want 0 on the first round", got)
+	}
+	if got := k.GetConfig().Stake; got != 1 {
+		t.Errorf("stake = %d, want 1", got)
+	}
+	if k.GetGameEndFlag() {
+		t.Error("a fresh game is not over")
+	}
+	if got := k.GetWinnerIdx(); got != -1 {
+		t.Errorf("winner = %d, want -1 while the game is live", got)
+	}
+	if got := len(k.GetPlayers()); got != KillePlayerCnt {
+		t.Errorf("%d seats, want %d", got, KillePlayerCnt)
+	}
+	if k.GetPlayer(-1) != nil || k.GetPlayer(99) != nil {
+		t.Error("an out-of-range seat must be nil, not a panic")
+	}
+}
