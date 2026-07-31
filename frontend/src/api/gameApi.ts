@@ -26,7 +26,6 @@ export * from './games/beleagueredcastle';
 export * from './games/belote';
 export * from './games/bezique';
 export * from './games/bideuchre';
-export * from './games/karnoffel';
 export * from './games/bidwhist';
 export * from './games/bigo';
 export * from './games/bigohilo';
@@ -210,6 +209,8 @@ export * from './games/shithead';
 export * from './games/shortdeck';
 export * from './games/simplesimon';
 export * from './games/sirtommy';
+export * from './games/karnoffel';
+export * from './games/sixbidsolo';
 export * from './games/sixcardgolf';
 export * from './games/sjavs';
 export * from './games/skat';
@@ -374,6 +375,7 @@ export const games = [
   'boston',
   'vint',
   'bideuchre',
+  'sixbidsolo',
   'karnoffel',
   'missmilligan',
   'canfield',

@@ -1425,6 +1425,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 4, 3, 4], skill: [3, 4, 4, 3], social: [3, 4, 3, 4, 4], theme: [3, 2, 3, 1, 3, 3] },
       },
       {
+        path: '/sixbidsolo',
+        labelKey: 'nav.sixbidsolo',
+        icon: '🎰',
+        page: 'SixBidSolo',
+        profile: { mood: [4, 3, 4, 3], skill: [3, 4, 5, 3], social: [3, 5, 2, 3, 5], theme: [3, 3, 4, 1, 2, 4] },
+      },
+      {
         path: '/karnoffel',
         labelKey: 'nav.karnoffel',
         icon: '🏰',

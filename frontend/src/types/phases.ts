@@ -1747,6 +1747,15 @@ export const KarnoffelPhase = {
   GAME_END: 2,
 } as const;
 
+/** Six-Bid Solo phase constants (sync: internal/domain/SixBidSolo.go). */
+export const SixBidSoloPhase = {
+  BID: 0,
+  DECLARE: 1,
+  PLAY: 2,
+  HAND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Boston phase constants (sync: internal/domain/Boston.go). */
 export const BostonPhase = {
   BID: 0,

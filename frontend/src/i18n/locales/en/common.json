@@ -274,6 +274,7 @@
     "boston": "Boston",
     "vint": "Vint",
     "bideuchre": "Bid Euchre",
+    "sixbidsolo": "Six-Bid Solo",
     "karnoffel": "Karnöffel"
   },
   "sound": {
@@ -1342,7 +1343,14 @@
     "bideuchre.handMade": "Contract made. Each side scores its own tricks",
     "bideuchre.handSet": "Contract set. YOU LOSE THE BID, not the tricks you took (the defenders still score theirs)",
     "bideuchre.result.humanWin": "Your team reached 32 points",
-    "bideuchre.result.cpuWin": "The other team reached 32 points"
+    "bideuchre.result.cpuWin": "The other team reached 32 points",
+    "sixbidsolo.bidPhase": "Bidding — only a higher bid stands, and A PLAIN BID NEEDS 61 POINTS",
+    "sixbidsolo.declarePhase": "Naming trump — A CALL SOLO ALSO NAMES the card it wants exchanged",
+    "sixbidsolo.playPhase": "Playing — following suit is compulsory",
+    "sixbidsolo.handMade": "Contract made. The three widow cards are credited to the declarer too (except at either misere)",
+    "sixbidsolo.handSet": "Contract set. The declarer pays each opponent",
+    "sixbidsolo.result.humanWin": "The hands are done and you are ahead",
+    "sixbidsolo.result.cpuWin": "The hands are done and a CPU is ahead"
   },
   "manual": {
     "ariaLabel": "Game Manual",

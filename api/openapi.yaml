@@ -261,6 +261,8 @@ tags:
     description: Vint
   - name: bideuchre
     description: Bid Euchre
+  - name: sixbidsolo
+    description: Six-Bid Solo
   - name: karnoffel
     description: Karnöffel
   - name: shithead
@@ -14082,6 +14084,118 @@ paths:
               schema:
                 $ref: '#/components/schemas/BidEuchreResponse'
 
+  /sixbidsolo/exec:
+    post:
+      tags:
+        - sixbidsolo
+      summary: Execute a Six-Bid Solo game command
+      description: |
+        Send a command to advance the Six-Bid Solo session identified by
+        `sessionId`. Six-Bid Solo is a 3-player American descendant of skat
+        played with a 36-card pack (A-10-K-Q-J-9-8-7-6, so the **ten outranks
+        the king**).
+
+        **#4377 gets the deal wrong twice and the misere condition wrong.**
+
+        * The issue says "12 cards each, no skat". It is **eleven each plus a
+          three-card widow**, dealt 4 - 3 - widow 3 - 4. The arithmetic settles
+          it: **11 x 3 + 3 = 36**, and 12 x 3 leaves no room for the widow.
+        * The widow is not decoration: it is **credited to the declarer at the
+          end**, except at either misere.
+        * The issue says a plain bid wins at "60 points". The target is **more
+          than 60, so 61**, and the settlement is the **difference from 60**
+          times a multiplier rather than a flat win or loss.
+        * The issue says a misere wins by taking **no tricks**. It wins by
+          taking **no card POINTS** -- a trick of nines and lower is harmless.
+        * The issue gives no card values (A 11, 10 10, K 4, Q 3, J 2; **120 in
+          total**), no guarantee targets (**74 at hearts, 80 elsewhere**), no
+          bid values, and omits the **call solo card exchange** entirely.
+
+        The six bids ascend: Solo (difference x2), Heart Solo (difference x3),
+        Misere (30), Guarantee Solo (40), Spread Misere (60), Call Solo (100, or
+        150 at hearts). Only a **higher** bid stands; there is no equalling
+        privilege. Following suit is compulsory, so the server sends
+        `validPlays`.
+
+        A call solo also **names a card, and whoever holds it must exchange it**
+        for one of the declarer's -- unless it is in the widow, in which case no
+        exchange happens.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Bid     | `0`   | Bid one of six levels, or pass |
+        | Declare | `1`   | The declarer names a suit (and a card at a call solo) |
+        | Play    | `2`   | Eleven tricks |
+        | HandEnd | `3`   | The hand is settled; `next` deals again |
+        | GameEnd | `4`   | The configured number of hands is done |
+
+        | Command   | Aliases | Description |
+        |-----------|---------|-------------|
+        | `reset`   | `r`     | Start / restart a game |
+        | `bid`     | `b`     | Bid `bid` (1-6) |
+        | `pass`    | `ps`    | Pass |
+        | `declare` | `d`     | Name `suit`, plus `calledSuit`/`calledValue` at a call solo |
+        | `play`    | `p`     | Play `cardIndex` |
+        | `next`    | `n`     | Deal the next hand |
+        | `log`     | `l`     | Action-log transcript |
+
+        Note: pagat and Wikipedia disagree on the misere value (30 vs 40).
+        Wikipedia also puts guarantee at 40, which would tie the two and break
+        the ladder, so this implementation uses pagat's **30**.
+      operationId: sixBidSoloExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pass, ps, declare, d, play, p, next, n, log, l]
+                sessionId:
+                  type: string
+                bid:
+                  type: integer
+                  description: "1=Solo, 2=Heart Solo, 3=Misere, 4=Guarantee Solo, 5=Spread Misere, 6=Call Solo. Required for `bid`."
+                suit:
+                  type: integer
+                  description: "1=Spade, 2=Clover, 3=Heart, 4=Diamond. Required for `declare`."
+                calledSuit:
+                  type: integer
+                  description: Suit of the card a call solo names. Must be given together with `calledValue`.
+                calledValue:
+                  type: integer
+                  description: Rank of the card a call solo names. Must be given together with `calledSuit`.
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+                    targetHands:
+                      type: integer
+                      description: Hands in a game (3-12).
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SixBidSoloResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SixBidSoloResponse'
+
   /karnoffel/exec:
     post:
       tags:
@@ -25732,6 +25846,175 @@ components:
               type: integer
             allowNoTrump:
               type: boolean
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    SixBidSoloResponse:
+      type: object
+      description: Response payload for /sixbidsolo/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                description: |
+                  Populated for the human seat, for every seat once the hand is
+                  settled, and for the declarer while a spread misere has its
+                  hand laid down.
+                items:
+                  $ref: '#/components/schemas/Card'
+              points:
+                type: integer
+                description: Card points taken this hand.
+              tricksWon:
+                type: integer
+              score:
+                type: integer
+                description: Running total across hands.
+              isDealer:
+                type: boolean
+              isDeclarer:
+                type: boolean
+              isCurrentTurn:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Bid, 1=Declare, 2=Play, 3=HandEnd, 4=GameEnd"
+        handNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        bids:
+          type: array
+          items:
+            type: object
+            properties:
+              player:
+                type: integer
+              kind:
+                type: integer
+                description: "0=pass, then the six bids in ascending order"
+        highBid:
+          type: object
+          nullable: true
+          properties:
+            player:
+              type: integer
+            kind:
+              type: integer
+        declarerIdx:
+          type: integer
+          description: "-1 until the auction settles"
+        trumpSuit:
+          type: integer
+          description: "Trump suit, or 0 at either misere"
+        declared:
+          type: boolean
+        calledCard:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The card a call solo named; its holder had to exchange it.
+        spreadOpen:
+          type: boolean
+          description: Whether a spread misere has laid the declarer's hand face up.
+        widow:
+          type: array
+          description: |
+            The three face-down cards, sent only once the hand settles. They are
+            CREDITED TO THE DECLARER at the end, except at either misere.
+          items:
+            $ref: '#/components/schemas/Card'
+        widowSize:
+          type: integer
+          description: How many cards are face down (three), sent even while concealed.
+        trick:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        validPlays:
+          type: array
+          items:
+            type: integer
+          description: Hand indexes the human may play; following suit is compulsory.
+        trickLeaderIdx:
+          type: integer
+        trickNumber:
+          type: integer
+        lastResult:
+          type: object
+          nullable: true
+          properties:
+            kind:
+              type: integer
+            declarer:
+              type: integer
+            declarerPoints:
+              type: integer
+              description: Card points the declarer took, INCLUDING the widow.
+            widowPoints:
+              type: integer
+              description: What the widow added. ZERO at either misere.
+            target:
+              type: integer
+            made:
+              type: boolean
+            value:
+              type: integer
+              description: What each opponent pays or receives.
+            deltas:
+              type: array
+              items:
+                type: integer
+        bidTargets:
+          type: array
+          items:
+            type: integer
+          description: |
+            Target card points per bid, indexed by kind. A plain bid needs 61,
+            not 60, and guarantee solo depends on the trump suit (74 at hearts,
+            80 elsewhere), so the resolved table is sent.
+        totalPoints:
+          type: integer
+          description: Card points in play (120).
+        baseTarget:
+          type: integer
+          description: The base a plain bid must EXCEED (60).
+        handSize:
+          type: integer
+          description: Cards per hand -- eleven, with three more in the widow.
+        targetHands:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "Winning seat; -1 while the game is live"
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetHands:
+              type: integer
         message:
           type: string
         messageCode:

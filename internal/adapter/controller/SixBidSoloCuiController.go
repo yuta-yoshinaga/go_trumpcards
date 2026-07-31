@@ -1,0 +1,85 @@
+//go:build !js || !wasm || extra2
+
+package controller
+
+import (
+	"strconv"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
+// SixBidSoloCuiController シックスビッド・ソロ (Six-Bid Solo) CUIコントローラークラス
+type SixBidSoloCuiController struct {
+	si usecase.SixBidSoloInteractorIF
+}
+
+// NewSixBidSoloCuiController コンストラクタ
+func NewSixBidSoloCuiController(si usecase.SixBidSoloInteractorIF) *SixBidSoloCuiController {
+	return &SixBidSoloCuiController{si: si}
+}
+
+// Exec コマンド実行
+func (c *SixBidSoloCuiController) Exec(command string) string {
+	return execCuiCommand(
+		command,
+		func(_ []string) string {
+			cfg := c.si.GetConfig()
+			return c.si.ResetWithConfig(cfg)
+		},
+		[]string{"b", "bid", "ps", "pass", "d", "declare", "p", "play", "n", "next", "log", "l"},
+		func(cmd string, args []string) (string, bool) {
+			switch cmd {
+			case "b", "bid":
+				// **1=ソロ 2=ハートソロ 3=ミゼール 4=ギャランティー 5=スプレッド 6=コール。**
+				return cuiutil.WithParsedInt(args,
+					"Bid is required (1=solo 2=heart solo 3=misere 4=guarantee 5=spread misere 6=call solo).",
+					"Invalid bid: %s.", int(domain.SixBidSoloMinBid), int(domain.SixBidSoloMaxBid), func(v int) string {
+						return c.si.Bid(v)
+					})
+			case "ps", "pass":
+				return c.si.PassBid(), true
+			case "d", "declare":
+				return sixBidSoloParseDeclare(args, c.si)
+			case "p", "play":
+				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.",
+					0, domain.SixBidSoloHandSize-1, func(v int) string {
+						return c.si.PlayCard(v)
+					})
+			case "n", "next":
+				return c.si.NextHand(), true
+			default:
+				return handleCuiLog(cmd, c.si.ActionLog)
+			}
+		},
+	)
+}
+
+// sixBidSoloParseDeclare は `d <suit> [calledSuit calledValue]` を解釈する。
+//
+// **指名札はコール・ソロのときだけ要る。**スートは 1=♠ 2=♣ 3=♥ 4=♦。
+func sixBidSoloParseDeclare(args []string, si usecase.SixBidSoloInteractorIF) (string, bool) {
+	if len(args) < 1 {
+		return "Trump suit is required (1=S 2=C 3=H 4=D).", true
+	}
+	suit, err := strconv.Atoi(args[0])
+	if err != nil || suit < domain.CardDesignSpade || suit > domain.CardDesignDiamond {
+		return "Invalid suit: " + args[0] + ". Please enter 1-4 (1=S 2=C 3=H 4=D).", true
+	}
+	if len(args) == 1 {
+		return si.Declare(suit, 0, 0), true
+	}
+	if len(args) < 3 {
+		return "A call solo needs both the called suit and its value (e.g. d 1 1 1).", true
+	}
+	calledSuit, err := strconv.Atoi(args[1])
+	if err != nil || calledSuit < domain.CardDesignSpade || calledSuit > domain.CardDesignDiamond {
+		return "Invalid called suit: " + args[1] + ". Please enter 1-4.", true
+	}
+	calledValue, err := strconv.Atoi(args[2])
+	if err != nil || calledValue < 1 || calledValue > 13 {
+		return "Invalid called value: " + args[2] + ". Please enter 1-13.", true
+	}
+	return si.Declare(suit, calledSuit, calledValue), true
+}
