@@ -269,7 +269,8 @@
     "popejoan": "Pope Joan",
     "nainjaune": "Le Nain Jaune",
     "kille": "Kille",
-    "klaberjass": "Klaberjass"
+    "klaberjass": "Klaberjass",
+    "kaiser": "Kaiser"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1311,7 +1312,15 @@
     "klaberjass.schmeissPending": "Waiting on the answer to a schmeiss",
     "klaberjass.playPhase": "In play -- following, trumping and overtrumping are compulsory",
     "klaberjass.handEnd": "Hand over. The maker scored more than the opponent",
-    "klaberjass.bete": "Bete -- the maker failed to score more, so the whole hand goes to the opponent"
+    "klaberjass.bete": "Bete -- the maker failed to score more, so the whole hand goes to the opponent",
+    "kaiser.bidPhase": "Bidding -- you bid POINTS (minimum 7), not a number of tricks",
+    "kaiser.nameTrump": "You won the auction. Name the trump suit",
+    "kaiser.discardPhase": "You took the kitty. Discard two -- the heart five and spade three may not go",
+    "kaiser.playPhase": "In play -- following suit is compulsory",
+    "kaiser.handMade": "The declaring side made its bid; both sides keep what they took",
+    "kaiser.handSet": "Set -- the declaring side fell short, so the bid comes straight off its score",
+    "kaiser.result.humanWin": "Your team wins",
+    "kaiser.result.cpuWin": "The other team wins"
   },
   "manual": {
     "ariaLabel": "Game Manual",

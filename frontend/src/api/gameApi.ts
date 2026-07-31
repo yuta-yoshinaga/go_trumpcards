@@ -116,6 +116,7 @@ export * from './games/indianrummy';
 export * from './games/irishpoker';
 export * from './games/jass';
 export * from './games/jokerpoker';
+export * from './games/kaiser';
 export * from './games/kalooki';
 export * from './games/kemps';
 export * from './games/kille';
@@ -365,6 +366,7 @@ export const games = [
   'nainjaune',
   'kille',
   'klaberjass',
+  'kaiser',
   'missmilligan',
   'canfield',
   'osmosis',

@@ -1265,4 +1265,9 @@ func init() {
 			return usecase.NewKlaberjassInteractor(domain.NewDefaultKlaberjass(), new(presenter.KlaberjassWebPresenter))
 		},
 		controller.NewKlaberjassWebController)
+	BindWebControllerFor("kaiser",
+		func() usecase.KaiserInteractorIF {
+			return usecase.NewKaiserInteractor(domain.NewDefaultKaiser(), new(presenter.KaiserWebPresenter))
+		},
+		controller.NewKaiserWebController)
 }
