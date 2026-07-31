@@ -259,7 +259,8 @@
     "toepen": "トゥーペン",
     "chineseten": "撿紅點",
     "skitgubbe": "シートグッベ",
-    "laughandliedown": "ラフ・アンド・ライダウン"
+    "laughandliedown": "ラフ・アンド・ライダウン",
+    "sjavs": "シャウス"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1274,7 +1275,11 @@
     "skitgubbe.lose": "あなたが Skitgubbe です",
     "laughandliedown.win": "勝ち越しました",
     "laughandliedown.even": "収支ゼロでした",
-    "laughandliedown.lose": "負け越しました"
+    "laughandliedown.lose": "負け越しました",
+    "sjavs.win": "ラバーを取りました",
+    "sjavs.winDouble": "ダブル勝ちでラバーを取りました",
+    "sjavs.lose": "ラバーを取られました",
+    "sjavs.loseDouble": "ダブル負けでラバーを取られました"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
