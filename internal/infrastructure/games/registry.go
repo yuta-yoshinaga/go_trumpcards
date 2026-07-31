@@ -725,6 +725,11 @@ var registry = []*Game{
 	// The middle stage compares same-rank sets (4 > 3 > 2) -- there is no bluff and
 	// no declaration -- and "Pocher" is one of the nine pools, not a move.
 	{Name: "poch", Category: CategoryExtra3},
+	// Pope Joan is the ancestor of the stops family: 51 cards (the 8D is removed so a
+	// run always dies at the 7D), a board of eight named compartments, and a dead hand
+	// whose last card turns for trump. Compartments pay only on the trump suit, and
+	// whoever holds the Pope (9D) is excused the per-card payment at the end.
+	{Name: "popejoan", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.

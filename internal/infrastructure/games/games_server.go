@@ -1245,4 +1245,9 @@ func init() {
 			return usecase.NewPochInteractor(domain.NewDefaultPoch(), new(presenter.PochWebPresenter))
 		},
 		controller.NewPochWebController)
+	BindWebControllerFor("popejoan",
+		func() usecase.PopeJoanInteractorIF {
+			return usecase.NewPopeJoanInteractor(domain.NewDefaultPopeJoan(), new(presenter.PopeJoanWebPresenter))
+		},
+		controller.NewPopeJoanWebController)
 }

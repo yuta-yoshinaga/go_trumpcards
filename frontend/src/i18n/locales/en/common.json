@@ -265,7 +265,8 @@
     "loba": "Loba",
     "desmoche": "Desmoche",
     "zwicker": "Zwicker",
-    "poch": "Poch"
+    "poch": "Poch",
+    "popejoan": "Pope Joan"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1294,7 +1295,9 @@
     "zwicker.win": "Your team wins",
     "zwicker.lose": "The other team wins",
     "poch.win": "You finish with the most chips",
-    "poch.lose": "You finish behind"
+    "poch.lose": "You finish behind",
+    "popejoan.win": "You finish with the most chips",
+    "popejoan.lose": "You finish behind"
   },
   "manual": {
     "ariaLabel": "Game Manual",

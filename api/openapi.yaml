@@ -245,6 +245,8 @@ tags:
     description: Zwicker
   - name: poch
     description: Poch
+  - name: popejoan
+    description: Pope Joan
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -13270,6 +13272,97 @@ paths:
               schema:
                 $ref: '#/components/schemas/PochResponse'
 
+  /popejoan/exec:
+    post:
+      tags:
+        - popejoan
+      summary: Execute a Pope Joan game command
+      description: |
+        Send a command to advance the Pope Joan session identified by `sessionId`.
+        Pope Joan is the ancestor of the stops family, played by **3-8** on **51
+        cards** (a standard pack with the **8 of diamonds removed**) over a board
+        of **eight named compartments**.
+
+        **#4389 gets the board, the deal and the settlement wrong, and omits
+        three rules.**
+
+        * The issue calls the compartments "the eight court cards plus the Pope".
+          They are **Ace, King, Queen, Jack, Game, Pope (9D), Matrimony (the
+          trump K-Q) and Intrigue (the trump Q-J)** — Game, Matrimony and
+          Intrigue correspond to no single card.
+        * The issue has players **distributing** an ante. The split is fixed and
+          it is the **dealer's**: six to Pope, two each to Matrimony and
+          Intrigue, one to each of the other five — **fifteen** in all.
+        * The issue leads "the lowest card of a run". The lead is **any suit, so
+          long as it is your lowest card**.
+        * The issue pays a compartment to whoever plays "the matching K, Q, J or
+          Pope". Only **trumps** pay. The Pope is the exception: it is the 9 of
+          diamonds whatever the trump suit.
+        * Omitted: a hand is dealt to a **dead hand** as well, and its last card
+          is **turned for trump**. If that card is the Pope, an Ace, King, Queen
+          or Jack, the **dealer takes that compartment outright**.
+        * Omitted: a run also stops on a **King** — nothing outranks it — not
+          only at the 7 of diamonds. Whoever played the stopping card leads
+          again.
+        * Omitted: at the end, the player holding the **Pope is excused** the
+          one-chip-per-card payment.
+        * Omitted: a compartment nobody claims **carries over** to the next deal.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Play    | `0`   | Lead or follow |
+        | DealEnd | `1`   | The deal is settled; `next` deals again |
+        | GameEnd | `2`   | The last deal is done |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `play`  | `p`     | Play `cardIndex` |
+        | `next`  | `n`     | Deal the next hand |
+        | `hint`  | `h`     | Suggested move for the human seat |
+        | `log`   | `l`     | Action-log transcript |
+      operationId: popejoanExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, next, n, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Hand index. Required for `play`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+                    targetDeals:
+                      type: integer
+                      description: Deals played before the game is decided (default 5).
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PopeJoanResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PopeJoanResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -23769,6 +23862,118 @@ components:
             action:
               type: string
               description: "bet | fold | play"
+            cardIndex:
+              type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    PopeJoanResponse:
+      type: object
+      description: Response payload for /popejoan/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: |
+                  Hand size. Public for every seat: going out is paid one chip per
+                  card left in each other hand.
+              cards:
+                type: array
+                description: Empty while `hidden` is true.
+                items:
+                  $ref: '#/components/schemas/Card'
+              chips:
+                type: integer
+              holdsPope:
+                type: boolean
+                description: |
+                  Public even while the hand is hidden — the Pope's holder is
+                  excused the per-card payment, so hiding it would make the
+                  settlement unreadable.
+              hidden:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Play, 1=DealEnd, 2=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        compartments:
+          type: array
+          description: |
+            All eight, always. Chips nobody claims stay put and the dealer dresses
+            the board again next deal, so Pope and Matrimony build up.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: "ace | king | queen | jack | game | pope | matrimony | intrigue"
+              chips:
+                type: integer
+        trumpSuit:
+          type: integer
+          description: Set by the dead hand's last card. Compartments pay only on this suit.
+        turnUp:
+          $ref: '#/components/schemas/Card'
+        awards:
+          type: array
+          description: What the board paid out this deal.
+          items:
+            type: object
+            properties:
+              compartment:
+                type: string
+              player:
+                type: integer
+              chips:
+                type: integer
+              byTurnUp:
+                type: boolean
+                description: The dealer took it outright because the turn-up matched.
+        playedPile:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        runSuit:
+          type: integer
+          description: |
+            Suit of the run in progress. **-1 means the run is stopped** and the
+            next player leads their lowest card of any suit — do not collapse it
+            to 0, which reads as spades.
+        runRank:
+          type: integer
+          description: Highest rank played in the current run (ace counts 14).
+        dealNo:
+          type: integer
+        targetDeals:
+          type: integer
+        dealWinner:
+          type: integer
+          description: "Seat that went out; -1 while the deal is still live"
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "Seat with the most chips; -1 while the game is live"
+        hint:
+          type: object
+          description: Suggested move, sent on every response while it is the human's turn.
+          properties:
             cardIndex:
               type: integer
             reason:

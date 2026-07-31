@@ -3912,6 +3912,19 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "popejoan", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPopeJoanCuiController(usecase.NewPopeJoanInteractor(
+				domain.NewDefaultPopeJoan(), new(presenter.PopeJoanCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "popejoan.helpTitle",
+				CommandKeys: []string{
+					"popejoan.helpPlay",
+					"popejoan.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

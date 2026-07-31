@@ -265,7 +265,8 @@
     "loba": "ロバ",
     "desmoche": "デスモチェ",
     "zwicker": "ツヴィッカー",
-    "poch": "ポッホ"
+    "poch": "ポッホ",
+    "popejoan": "ポープ・ジョーン"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1294,7 +1295,9 @@
     "zwicker.win": "勝ちました",
     "zwicker.lose": "負けました",
     "poch.win": "最も多く稼ぎました",
-    "poch.lose": "及びませんでした"
+    "poch.lose": "及びませんでした",
+    "popejoan.win": "最も多く稼ぎました",
+    "popejoan.lose": "及びませんでした"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
