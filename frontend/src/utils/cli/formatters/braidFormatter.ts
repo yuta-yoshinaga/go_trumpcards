@@ -1,5 +1,5 @@
 import type { BraidResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Render one row of single-card slots, keeping empty slots in place. */
 function formatSlots(label: string, slots: (Card | null)[]): string {
@@ -39,7 +39,7 @@ export function formatBraidState(state: BraidResponse): string {
 
   lines.push(`moves: ${state.moveCount}  undo:${state.canUndo ? 'yes' : 'no'}`);
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const from = state.hint.fromIdx >= 0 ? `${state.hint.fromZone}${state.hint.fromIdx}` : state.hint.fromZone;
     const to = state.hint.toIdx >= 0 ? `${state.hint.toZone}${state.hint.toIdx}` : state.hint.toZone;
     lines.push(`HINT: ${from} → ${to}`);

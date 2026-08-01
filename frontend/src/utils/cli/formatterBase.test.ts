@@ -7,6 +7,7 @@ import {
   formatIndexedCards,
   formatPlayerName,
   formatSeparator,
+  isRequestedHint,
 } from './formatterBase';
 
 const S = '\u2660'; // spade
@@ -103,5 +104,28 @@ describe('formatPlayerName', () => {
 
   it('returns CPU label with given index', () => {
     expect(formatPlayerName(3, false)).toBe('CPU 3');
+  });
+});
+
+describe('isRequestedHint', () => {
+  // **頼んでいないヒントは CLI に出さない。**#4483 以降 Output() もヒントを載せる
+  // ので、state.hint だけを見ると毎手 HINT が印字される。要求への応答だけが
+  // hintAvailable を持つので、そこで区別する。
+  it('is true only for a hint command response', () => {
+    expect(isRequestedHint({ messageCode: 'braid.hintAvailable' })).toBe(true);
+    expect(isRequestedHint({ messageCode: 'braid.playing' })).toBe(false);
+    expect(isRequestedHint({ messageCode: 'braid.noHint' })).toBe(false);
+  });
+
+  // messageCode が無いレスポンスもある。undefined で落ちないこと。
+  it('is false when the response carries no message code', () => {
+    expect(isRequestedHint({})).toBe(false);
+    expect(isRequestedHint({ messageCode: undefined })).toBe(false);
+  });
+
+  // 別ゲームの接尾辞でも同じ規則で効くこと。
+  it('works for any game prefix', () => {
+    expect(isRequestedHint({ messageCode: 'terrace.hintAvailable' })).toBe(true);
+    expect(isRequestedHint({ messageCode: 'americantoad.hintAvailable' })).toBe(true);
   });
 });
