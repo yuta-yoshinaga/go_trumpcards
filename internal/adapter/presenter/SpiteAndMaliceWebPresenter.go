@@ -14,6 +14,21 @@ type SpiteAndMaliceWebPresenter struct{}
 // Output ゲーム状態を JSON 出力
 func (p *SpiteAndMaliceWebPresenter) Output(g interfaces.SpiteAndMaliceGame, lastErr error) string {
 	resObj := p.buildBase(g)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	// このゲームは手詰まり判定を持たないので、ゲートは進行中かどうかだけ。
+	if g.GetPhase() == domain.SpiteAndMalicePhasePlaying {
+		if hint := g.GetHint(); hint != nil {
+			resObj.Hint = &controller.SpiteAndMaliceWebHint{
+				Source:        sourceToString(hint.Source),
+				Index:         hint.Index,
+				FoundationIdx: hint.FoundationIdx,
+				Discard:       hint.Discard,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

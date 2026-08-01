@@ -47,10 +47,18 @@ func decodeSpiteAndMaliceWebOutput(t *testing.T, raw string) *controller.SpiteAn
 	return &out
 }
 
+// setupSpiteAndMaliceOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupSpiteAndMaliceOutputMock(g *interfaces.MockSpiteAndMaliceGame) {
+	setupSpiteAndMaliceWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 	t.Run("playing", func(t *testing.T) {
 		g := new(interfaces.MockSpiteAndMaliceGame)
-		setupSpiteAndMaliceWebMockDefaults(g)
+		setupSpiteAndMaliceOutputMock(g)
 		raw := new(SpiteAndMaliceWebPresenter).Output(g, nil)
 		out := decodeSpiteAndMaliceWebOutput(t, raw)
 		assert.Equal(t, "spiteandmalice.playing", out.MessageCode)
@@ -60,7 +68,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		g := new(interfaces.MockSpiteAndMaliceGame)
-		setupSpiteAndMaliceWebMockDefaults(g)
+		setupSpiteAndMaliceOutputMock(g)
 		raw := new(SpiteAndMaliceWebPresenter).Output(g, assert.AnError)
 		out := decodeSpiteAndMaliceWebOutput(t, raw)
 		assert.Equal(t, assert.AnError.Error(), out.Message)
@@ -83,6 +91,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 		}
 		g.On("GetPlayer", 0).Return(domain.NewSpiteAndMalicePlayer(false)).Maybe()
 		g.On("GetPlayer", 1).Return(domain.NewSpiteAndMalicePlayer(true)).Maybe()
+		g.On("GetHint").Return(nil).Maybe()
 		raw := new(SpiteAndMaliceWebPresenter).Output(g, nil)
 		out := decodeSpiteAndMaliceWebOutput(t, raw)
 		assert.Equal(t, "spiteandmalice.win", out.MessageCode)
@@ -106,6 +115,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 		}
 		g.On("GetPlayer", 0).Return(domain.NewSpiteAndMalicePlayer(false)).Maybe()
 		g.On("GetPlayer", 1).Return(domain.NewSpiteAndMalicePlayer(true)).Maybe()
+		g.On("GetHint").Return(nil).Maybe()
 		raw := new(SpiteAndMaliceWebPresenter).Output(g, nil)
 		out := decodeSpiteAndMaliceWebOutput(t, raw)
 		assert.Equal(t, "spiteandmalice.lose", out.MessageCode)
@@ -137,6 +147,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 			cpu.AddToHand(domain.NewCard(domain.CardDesignHeart, 9, false))
 			g.On("GetPlayer", 0).Return(human).Maybe()
 			g.On("GetPlayer", 1).Return(cpu).Maybe()
+			g.On("GetHint").Return(nil).Maybe()
 			raw := new(SpiteAndMaliceWebPresenter).Output(g, nil)
 			out := decodeSpiteAndMaliceWebOutput(t, raw)
 			// 人間の手札は常に公開
@@ -168,9 +179,34 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 		}
 		g.On("GetPlayer", 0).Return((*domain.SpiteAndMalicePlayer)(nil)).Maybe()
 		g.On("GetPlayer", 1).Return((*domain.SpiteAndMalicePlayer)(nil)).Maybe()
+		g.On("GetHint").Return(nil).Maybe()
 		raw := new(SpiteAndMaliceWebPresenter).Output(g, nil)
 		out := decodeSpiteAndMaliceWebOutput(t, raw)
 		assert.Nil(t, out.Players[0].Hand)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestSpiteAndMaliceWebPresenterOutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		smg := new(interfaces.MockSpiteAndMaliceGame)
+		setupSpiteAndMaliceWebMockDefaults(smg)
+		smg.On("GetHint").Return(&domain.SpiteAndMaliceHint{Source: domain.SpiteAndMaliceSourceHand, Index: 0, FoundationIdx: 1, Discard: false}).Maybe()
+
+		result := new(SpiteAndMaliceWebPresenter).Output(smg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	t.Run("not once the game is over", func(t *testing.T) {
+		smg := new(interfaces.MockSpiteAndMaliceGame)
+		setupSpiteAndMaliceWebMockDefaults(smg)
+		smg.ExpectedCalls = filterCalls(smg.ExpectedCalls, "GetPhase")
+		smg.On("GetPhase").Return(domain.SpiteAndMalicePhaseGameOver)
+		smg.On("GetHint").Return(&domain.SpiteAndMaliceHint{Source: domain.SpiteAndMaliceSourceHand, Index: 0, FoundationIdx: 1, Discard: false}).Maybe()
+
+		result := new(SpiteAndMaliceWebPresenter).Output(smg, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 
