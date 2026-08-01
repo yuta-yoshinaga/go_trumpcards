@@ -93,5 +93,7 @@
     "trumpWithCard": "切り札を使うチャンス",
     "dumpJester": "ジェスターを捨てる好機",
     "discardLowest": "最も低いカードを捨てることを推奨"
-  }
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }
