@@ -68,5 +68,7 @@
     "playButton": "Once a card is selected, play it with this button. Holding both K+Q of a suit lets you 'declare a marriage' for bonus points; four Kings or four Queens lets you 'declare Tute' for an instant win.",
     "info": "A=11, 3=10, K=4, Q=3, J=2. Team A (seats 0 & 2) vs Team B (seats 1 & 3) fight for points; the first team to reach the target wins.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

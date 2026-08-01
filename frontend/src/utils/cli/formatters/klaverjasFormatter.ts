@@ -1,5 +1,12 @@
 import type { KlaverjasResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
 const SUIT_SYMBOLS = ['?', '♠', '♣', '♥', '♦'];
@@ -38,7 +45,7 @@ export function formatKlaverjasState(state: KlaverjasResponse): string {
     lines.push(`roem: A=${state.roundRoem[0] ?? 0} B=${state.roundRoem[1] ?? 0}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const indices = state.hint.cardIndices ?? [];
     lines.push(`HINT: card indices [${indices.join(', ')}] (${state.hint.reason})`);
   }

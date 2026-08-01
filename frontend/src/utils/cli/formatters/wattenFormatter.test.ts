@@ -54,13 +54,20 @@ describe('formatWattenState', () => {
   });
 
   it('renders a hint with the action, card index and reason', () => {
-    const out = formatWattenState(makeWattenState({ hint: { action: 'play', cardIndex: 2, reason: 'lead_trump' } }));
+    const out = formatWattenState(
+      makeWattenState({
+        hint: { action: 'play', cardIndex: 2, reason: 'lead_trump' },
+        messageCode: 'watten.hintRequested',
+      }),
+    );
     expect(out).toContain('HINT: play [2]');
     expect(out).toContain('lead_trump');
   });
 
   it('renders a declare hint without a card index', () => {
-    const out = formatWattenState(makeWattenState({ hint: { action: 'declare', reason: 'declare_strong' } }));
+    const out = formatWattenState(
+      makeWattenState({ hint: { action: 'declare', reason: 'declare_strong' }, messageCode: 'watten.hintRequested' }),
+    );
     expect(out).toContain('HINT: declare');
     expect(out).toContain('declare_strong');
   });
@@ -73,5 +80,13 @@ describe('formatWattenState', () => {
   it('renders an explicit message when present', () => {
     const out = formatWattenState(makeWattenState({ message: 'hello world' }));
     expect(out).toContain('hello world');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { action: 'play', cardIndex: 2, reason: 'lead_trump' };
+    expect(formatWattenState(makeWattenState({ hint, messageCode: 'watten.hintRequested' }))).toContain('HINT');
+    expect(formatWattenState(makeWattenState({ hint, messageCode: 'watten.playing' }))).not.toContain('HINT');
   });
 });

@@ -34,6 +34,10 @@ func setupKlaverjasWebMock() *interfaces.MockKlaverjasGame {
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultKlaverjasConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -171,6 +175,7 @@ func TestKlaverjasWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint with card indices", func(t *testing.T) {
 		m, _ := setupKlaverjasWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.KlaverjasHint{CardIndices: []int{2}, Reason: "follow_win"})
 		result := p.HintOutput(m)
 		var resObj controller.KlaverjasWebOutput
@@ -182,6 +187,7 @@ func TestKlaverjasWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupKlaverjasWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.KlaverjasHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.KlaverjasWebOutput
@@ -199,4 +205,30 @@ func TestKlaverjasWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestKlaverjasWebPresenterOutputCarriesTheHint(t *testing.T) {
+	kvg, _ := setupKlaverjasWebMockWithPlayers()
+	kvg.ExpectedCalls = removeMockCall(kvg.ExpectedCalls, "GetHint")
+	kvg.On("GetHint").Return(&domain.KlaverjasHint{CardIndices: []int{0}, Reason: "follow_suit"})
+
+	result := new(presenter.KlaverjasWebPresenter).Output(kvg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "klaverjas.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestKlaverjasWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	kvg, _ := setupKlaverjasWebMockWithPlayers()
+	kvg.ExpectedCalls = removeMockCall(kvg.ExpectedCalls, "GetHint")
+	kvg.On("GetHint").Return(&domain.KlaverjasHint{CardIndices: []int{0}, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.KlaverjasWebPresenter).HintOutput(kvg), "klaverjas.hintRequested")
+
+	none, _ := setupKlaverjasWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.KlaverjasHint)(nil))
+	assert.Contains(t, new(presenter.KlaverjasWebPresenter).HintOutput(none), "klaverjas.noHint")
 }

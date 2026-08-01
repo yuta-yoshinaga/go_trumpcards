@@ -1,5 +1,12 @@
 import type { WattenResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Declare', 'Play', 'Respond', 'TrickEnd', 'RoundEnd', 'GameEnd'];
 const SUIT_NAMES = ['-', 'spade', 'club', 'heart', 'diamond'];
@@ -50,7 +57,7 @@ export function formatWattenState(state: WattenResponse): string {
     lines.push(`trick: ${trickParts.join(', ')}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const target = state.hint.cardIndex !== undefined ? ` [${state.hint.cardIndex}]` : '';
     lines.push(`HINT: ${state.hint.action}${target} (${state.hint.reason})`);
   }
