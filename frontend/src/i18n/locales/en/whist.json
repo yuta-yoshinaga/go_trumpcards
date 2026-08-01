@@ -71,5 +71,7 @@
     "confirm": "Play the selected card",
     "clear": "Clear the card selection",
     "advance": "Advance to the next trick / round"
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }
