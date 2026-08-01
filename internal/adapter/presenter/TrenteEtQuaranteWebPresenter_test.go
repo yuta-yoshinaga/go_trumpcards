@@ -72,3 +72,19 @@ func TestTrenteEtQuaranteWebPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.TrenteEtQuaranteWebPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// Output 側にゲートは置きません。TrenteEtQuarante.GetHint() が「人間の手番で、かつ
+// 行動を選べる状態か」を自分で確かめて nil を返します。
+func TestTrenteEtQuaranteWebPresenterOutputCarriesTheHint(t *testing.T) {
+	g := domain.NewDefaultTrenteEtQuarante()
+	g.Reset()
+	if g.GetHint() == nil {
+		t.Fatal("fixture must actually produce a hint")
+	}
+
+	result := new(presenter.TrenteEtQuaranteWebPresenter).Output(g, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+}
