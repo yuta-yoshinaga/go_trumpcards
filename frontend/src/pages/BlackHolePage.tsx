@@ -2,15 +2,18 @@ import { useEffect, useRef, useState } from 'react';
 import { blackholeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -19,6 +22,7 @@ import { BlackHolePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Black Hole tutorial step definitions. */
 const BH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -74,6 +78,12 @@ function BlackHolePageContent() {
     setShowLegalHint(false);
   }, [moveCount]);
   useEffect(() => () => window.clearTimeout(hintTimerRef.current ?? undefined), []);
+
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('blackhole', state);
 
   if (!state) return <GameSkeleton gameKey="blackhole" layout={{ kind: 'tableau', topRow: 1, tableau: 9 }} />;
 
@@ -274,6 +284,13 @@ function BlackHolePageContent() {
         {canAct && <div className="mt-2 text-ds-text-primary text-xs">{t('selectSource')}</div>}
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+        <SettingsPanel
+          title={tc('settings.title')}
+          groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+        />
+
         <ActionLogSection
           isEndPhase={isEnd}
           actionLog={actionLog}

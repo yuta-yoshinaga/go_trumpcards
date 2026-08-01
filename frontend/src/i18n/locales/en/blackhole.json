@@ -34,5 +34,8 @@
   "hintNoLegal": "No playable card",
   "acceptableRanks": "Playable ranks: {{ranks}}",
   "acceptableRanksNone": "Playable ranks: none",
-  "legalMoveCount": "Legal moves: {{count}}"
+  "legalMoveCount": "Legal moves: {{count}}",
+  "frontendHint": {
+    "blackholePlayFan": "The top card of this fan can go into the hole"
+  }
 }
