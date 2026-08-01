@@ -102,7 +102,6 @@ const BACKLOG = new Set([
 const UNWIRED_BACKLOG = new Set([
   'bigo',
   'bigohilo',
-  'blackjack',
   'blackjackswitch',
   'carioca',
   'contractrummy',
@@ -161,7 +160,12 @@ async function wiredPages() {
   for (const file of await readdir(PAGES)) {
     if (!file.endsWith('Page.tsx')) continue;
     const src = await readFile(join(PAGES, file), 'utf8');
+    const slug = file.slice(0, -'Page.tsx'.length).toLowerCase();
     for (const m of src.matchAll(/useGameHint\(\s*'([a-z0-9]+)'/g)) names.add(m[1]);
+    // BlackJack calls getBlackjackHint directly instead of going through the
+    // hook, and its hint banner works. Counting only the hook reported it as
+    // unwired, which is the false positive this line removes.
+    if (/from '\.\.\/utils\/hints\//.test(src)) names.add(slug);
   }
   return names;
 }
