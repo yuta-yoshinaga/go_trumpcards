@@ -39,9 +39,16 @@ func parseGapsOutput(t *testing.T, s string) *controller.GapsWebOutput {
 	return &out
 }
 
+// setupGapsOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**
+// ようになった (#4483) ので GetHint を呼べるようにする。
+func setupGapsOutputMock(g *interfaces.MockGapsGame) {
+	setupGapsWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestGapsWebPresenter_Output_Playing(t *testing.T) {
 	g := new(interfaces.MockGapsGame)
-	setupGapsWebMockDefaults(g)
+	setupGapsOutputMock(g)
 	p := &GapsWebPresenter{}
 	out := parseGapsOutput(t, p.Output(g, nil))
 	assert.Equal(t, "gaps.playing", out.MessageCode)
@@ -51,7 +58,7 @@ func TestGapsWebPresenter_Output_Playing(t *testing.T) {
 
 func TestGapsWebPresenter_Output_Stalemate(t *testing.T) {
 	g := new(interfaces.MockGapsGame)
-	setupGapsWebMockDefaults(g)
+	setupGapsOutputMock(g)
 	g.ExpectedCalls = nil
 	g.On("GetPhase").Return(domain.GapsPhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
@@ -69,7 +76,7 @@ func TestGapsWebPresenter_Output_Stalemate(t *testing.T) {
 
 func TestGapsWebPresenter_Output_GameClear(t *testing.T) {
 	g := new(interfaces.MockGapsGame)
-	setupGapsWebMockDefaults(g)
+	setupGapsOutputMock(g)
 	g.ExpectedCalls = nil
 	g.On("GetPhase").Return(domain.GapsPhaseGameClear).Maybe()
 	g.On("GetMoveCount").Return(42).Maybe()
@@ -88,7 +95,7 @@ func TestGapsWebPresenter_Output_GameClear(t *testing.T) {
 
 func TestGapsWebPresenter_Output_GameOver(t *testing.T) {
 	g := new(interfaces.MockGapsGame)
-	setupGapsWebMockDefaults(g)
+	setupGapsOutputMock(g)
 	g.ExpectedCalls = nil
 	g.On("GetPhase").Return(domain.GapsPhaseGameOver).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
@@ -106,10 +113,23 @@ func TestGapsWebPresenter_Output_GameOver(t *testing.T) {
 
 func TestGapsWebPresenter_Output_Error(t *testing.T) {
 	g := new(interfaces.MockGapsGame)
-	setupGapsWebMockDefaults(g)
+	setupGapsOutputMock(g)
 	p := &GapsWebPresenter{}
 	out := parseGapsOutput(t, p.Output(g, errors.New("oops")))
 	assert.Equal(t, "oops", out.Message)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestGapsWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.GapsHint{FromRow: 1, FromCol: 2, ToRow: 0, ToCol: 3}
+
+	g := new(interfaces.MockGapsGame)
+	setupGapsWebMockDefaults(g)
+	g.On("GetHint").Return(hint).Maybe()
+
+	result := new(GapsWebPresenter).Output(g, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }
 
 func TestGapsWebPresenter_HintOutput_None(t *testing.T) {

@@ -54,10 +54,17 @@ func parseFlowerGardenOutput(t *testing.T, jsonStr string) *controller.FlowerGar
 	return &out
 }
 
+// setupFlowerGardenOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**
+// ようになった (#4483) ので GetHint を呼べるようにする。
+func setupFlowerGardenOutputMock(g *interfaces.MockFlowerGardenGame) {
+	setupFlowerGardenWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestFlowerGardenWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		bg := new(interfaces.MockFlowerGardenGame)
-		setupFlowerGardenWebMockDefaults(bg)
+		setupFlowerGardenOutputMock(bg)
 		p := new(FlowerGardenWebPresenter)
 
 		result := parseFlowerGardenOutput(t, p.Output(bg, nil))
@@ -71,7 +78,7 @@ func TestFlowerGardenWebPresenter_Output(t *testing.T) {
 
 	t.Run("all face up", func(t *testing.T) {
 		bg := new(interfaces.MockFlowerGardenGame)
-		setupFlowerGardenWebMockDefaults(bg)
+		setupFlowerGardenOutputMock(bg)
 		p := new(FlowerGardenWebPresenter)
 
 		result := parseFlowerGardenOutput(t, p.Output(bg, nil))
@@ -85,7 +92,7 @@ func TestFlowerGardenWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		bg := new(interfaces.MockFlowerGardenGame)
-		setupFlowerGardenWebMockDefaults(bg)
+		setupFlowerGardenOutputMock(bg)
 		p := new(FlowerGardenWebPresenter)
 
 		result := parseFlowerGardenOutput(t, p.Output(bg, errors.New("test error")))
@@ -94,7 +101,7 @@ func TestFlowerGardenWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		bg := new(interfaces.MockFlowerGardenGame)
-		setupFlowerGardenWebMockDefaults(bg)
+		setupFlowerGardenOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.FlowerGardenPhaseGameClear)
 
@@ -105,7 +112,7 @@ func TestFlowerGardenWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		bg := new(interfaces.MockFlowerGardenGame)
-		setupFlowerGardenWebMockDefaults(bg)
+		setupFlowerGardenOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.FlowerGardenPhaseGameOver)
 
@@ -116,7 +123,7 @@ func TestFlowerGardenWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		bg := new(interfaces.MockFlowerGardenGame)
-		setupFlowerGardenWebMockDefaults(bg)
+		setupFlowerGardenOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
 		bg.On("IsStalemate").Return(true)
 
@@ -127,7 +134,7 @@ func TestFlowerGardenWebPresenter_Output(t *testing.T) {
 
 	t.Run("depleted reserve cell serialises null", func(t *testing.T) {
 		bg := new(interfaces.MockFlowerGardenGame)
-		setupFlowerGardenWebMockDefaults(bg)
+		setupFlowerGardenOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetReserve")
 		bg.On("GetReserve").Return([]*domain.Card{nil, domain.NewCard(domain.CardDesignSpade, 5, false)})
 
@@ -137,6 +144,22 @@ func TestFlowerGardenWebPresenter_Output(t *testing.T) {
 		assert.Nil(t, result.Reserve[0])
 		assert.NotNil(t, result.Reserve[1])
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestFlowerGardenWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.FlowerGardenHint{FromZone: "tableau", FromCol: 2, CardIndex: 1, ToZone: "foundation", ToCol: 0}
+
+	bg := new(interfaces.MockFlowerGardenGame)
+	setupFlowerGardenWebMockDefaults(bg)
+	bg.On("GetHint").Return(hint).Maybe()
+
+	result := parseFlowerGardenOutput(t, new(FlowerGardenWebPresenter).Output(bg, nil))
+	if result.Hint == nil {
+		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+	}
+	assert.Equal(t, 2, result.Hint.FromCol)
 }
 
 func TestFlowerGardenWebPresenter_HintOutput(t *testing.T) {

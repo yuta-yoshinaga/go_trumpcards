@@ -39,10 +39,17 @@ func parseEasthavenOutput(t *testing.T, jsonStr string) *controller.EasthavenWeb
 	return &out
 }
 
+// setupEasthavenOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**
+// ようになった (#4483) ので GetHint を呼べるようにする。
+func setupEasthavenOutputMock(g *interfaces.MockEasthavenGame) {
+	setupEasthavenWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestEasthavenWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		eg := new(interfaces.MockEasthavenGame)
-		setupEasthavenWebMockDefaults(eg)
+		setupEasthavenOutputMock(eg)
 		p := new(EasthavenWebPresenter)
 
 		result := parseEasthavenOutput(t, p.Output(eg, nil))
@@ -53,7 +60,7 @@ func TestEasthavenWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate with escape", func(t *testing.T) {
 		eg := new(interfaces.MockEasthavenGame)
-		setupEasthavenWebMockDefaults(eg)
+		setupEasthavenOutputMock(eg)
 		eg.ExpectedCalls = nil
 		eg.On("GetPhase").Return(domain.EasthavenPhasePlaying).Maybe()
 		eg.On("GetMoveCount").Return(5).Maybe()
@@ -74,7 +81,7 @@ func TestEasthavenWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate without escape", func(t *testing.T) {
 		eg := new(interfaces.MockEasthavenGame)
-		setupEasthavenWebMockDefaults(eg)
+		setupEasthavenOutputMock(eg)
 		eg.ExpectedCalls = nil
 		eg.On("GetPhase").Return(domain.EasthavenPhasePlaying).Maybe()
 		eg.On("GetMoveCount").Return(5).Maybe()
@@ -94,7 +101,7 @@ func TestEasthavenWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		eg := new(interfaces.MockEasthavenGame)
-		setupEasthavenWebMockDefaults(eg)
+		setupEasthavenOutputMock(eg)
 		eg.ExpectedCalls = nil
 		eg.On("GetPhase").Return(domain.EasthavenPhaseGameClear).Maybe()
 		eg.On("GetMoveCount").Return(42).Maybe()
@@ -114,7 +121,7 @@ func TestEasthavenWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		eg := new(interfaces.MockEasthavenGame)
-		setupEasthavenWebMockDefaults(eg)
+		setupEasthavenOutputMock(eg)
 		eg.ExpectedCalls = nil
 		eg.On("GetPhase").Return(domain.EasthavenPhaseGameOver).Maybe()
 		eg.On("GetMoveCount").Return(10).Maybe()
@@ -134,12 +141,28 @@ func TestEasthavenWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		eg := new(interfaces.MockEasthavenGame)
-		setupEasthavenWebMockDefaults(eg)
+		setupEasthavenOutputMock(eg)
 		p := new(EasthavenWebPresenter)
 
 		result := parseEasthavenOutput(t, p.Output(eg, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestEasthavenWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.EasthavenHint{FromCol: 2, CardIndex: 1, ToZone: "foundation", ToCol: 0}
+
+	eg := new(interfaces.MockEasthavenGame)
+	setupEasthavenWebMockDefaults(eg)
+	eg.On("GetHint").Return(hint).Maybe()
+
+	result := parseEasthavenOutput(t, new(EasthavenWebPresenter).Output(eg, nil))
+	if result.Hint == nil {
+		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+	}
+	assert.Equal(t, 2, result.Hint.FromCol)
 }
 
 func TestEasthavenWebPresenter_HintOutput(t *testing.T) {
