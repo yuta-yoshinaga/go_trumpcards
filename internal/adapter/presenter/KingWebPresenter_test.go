@@ -116,3 +116,34 @@ func TestKingWebPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.KingWebPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestKingWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// 既存の HintOutput テストと同じ状態。人間の手番のプレイフェーズ。
+	g := domain.NewDefaultKing()
+	g.Reset()
+	g.SetCurrentContract(domain.KingContractNoTricks)
+	g.SetTrumpSuit(-1)
+	g.SetPhase(domain.KingPhasePlay)
+	g.SetCurrentTurn(0)
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.KingWebPresenter).Output(g, nil)), &decoded))
+	assert.Contains(t, decoded, "hint", "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotEqual(t, "king.hintRequested", decoded["messageCode"])
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestKingWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultKing()
+	g.Reset()
+	g.SetCurrentContract(domain.KingContractNoTricks)
+	g.SetTrumpSuit(-1)
+	g.SetPhase(domain.KingPhasePlay)
+	g.SetCurrentTurn(0)
+
+	assert.Contains(t, new(presenter.KingWebPresenter).HintOutput(g), "king.hintRequested")
+}
