@@ -1,5 +1,5 @@
 import type { WindmillResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 const CENTER_TARGET = 52;
 const CORNER_TARGET = 13;
@@ -32,7 +32,7 @@ export function formatWindmillState(state: WindmillResponse): string {
   // The block is invisible in the layout, so it has to be stated.
   if (state.transferBlocked) lines.push('The next centre card must come from a sail or the waste');
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const from = state.hint.fromIdx >= 0 ? `${state.hint.fromZone}${state.hint.fromIdx}` : state.hint.fromZone;
     const to = state.hint.toIdx >= 0 ? `${state.hint.toZone}${state.hint.toIdx}` : state.hint.toZone;
     lines.push(`HINT: ${from} → ${to}`);
