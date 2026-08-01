@@ -81,14 +81,20 @@ describe('formatBristolState', () => {
 
   it('shows tableau-to-foundation hint', () => {
     const output = formatBristolState(
-      makeState({ hint: { fromZone: 'tableau', fromCol: 2, toZone: 'foundation', toCol: 0 } }),
+      makeState({
+        hint: { fromZone: 'tableau', fromCol: 2, toZone: 'foundation', toCol: 0 },
+        messageCode: 'bristol.hintAvailable',
+      }),
     );
     expect(output).toContain('HINT: tableau2 → foundation0');
   });
 
   it('shows fan-to-tableau hint', () => {
     const output = formatBristolState(
-      makeState({ hint: { fromZone: 'fan', fromCol: 1, toZone: 'tableau', toCol: 3 } }),
+      makeState({
+        hint: { fromZone: 'fan', fromCol: 1, toZone: 'tableau', toCol: 3 },
+        messageCode: 'bristol.hintAvailable',
+      }),
     );
     expect(output).toContain('HINT: fan1 → tableau3');
   });

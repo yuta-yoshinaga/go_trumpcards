@@ -47,13 +47,17 @@ describe('formatBisleyState', () => {
   });
 
   it('shows a tableau hint', () => {
-    const result = formatBisleyState(makeState({ hint: { fromCol: 0, toZone: 'tableau', toIdx: 2 } }));
+    const result = formatBisleyState(
+      makeState({ hint: { fromCol: 0, toZone: 'tableau', toIdx: 2 }, messageCode: 'bisley.hintAvailable' }),
+    );
     expect(result).toContain('HINT');
     expect(result).toContain('t2');
   });
 
   it('shows a foundation hint', () => {
-    const result = formatBisleyState(makeState({ hint: { fromCol: 3, toZone: 'king', toIdx: 1 } }));
+    const result = formatBisleyState(
+      makeState({ hint: { fromCol: 3, toZone: 'king', toIdx: 1 }, messageCode: 'bisley.hintAvailable' }),
+    );
     expect(result).toContain('HINT');
     expect(result).toContain('king1');
   });

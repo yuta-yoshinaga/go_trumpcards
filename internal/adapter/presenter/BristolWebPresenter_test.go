@@ -32,10 +32,18 @@ func setupBristolWebMockDefaults(bg *interfaces.MockBristolGame) {
 	bg.On("GetFoundation").Return(foundation).Maybe()
 }
 
+// setupBristolOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**
+// ようになった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと
+// 先に登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupBristolOutputMock(g *interfaces.MockBristolGame) {
+	setupBristolWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestBristolWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		bg := new(interfaces.MockBristolGame)
-		setupBristolWebMockDefaults(bg)
+		setupBristolOutputMock(bg)
 		p := new(BristolWebPresenter)
 		result := p.Output(bg, nil)
 		assert.Contains(t, result, `"stockCount":28`)
@@ -47,7 +55,7 @@ func TestBristolWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		bg := new(interfaces.MockBristolGame)
-		setupBristolWebMockDefaults(bg)
+		setupBristolOutputMock(bg)
 		p := new(BristolWebPresenter)
 		result := p.Output(bg, assert.AnError)
 		assert.Contains(t, result, assert.AnError.Error())
@@ -55,7 +63,7 @@ func TestBristolWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		bg := new(interfaces.MockBristolGame)
-		setupBristolWebMockDefaults(bg)
+		setupBristolOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.BristolPhaseGameClear)
 		p := new(BristolWebPresenter)
@@ -65,13 +73,28 @@ func TestBristolWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		bg := new(interfaces.MockBristolGame)
-		setupBristolWebMockDefaults(bg)
+		setupBristolOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.BristolPhaseGameOver)
 		p := new(BristolWebPresenter)
 		result := p.Output(bg, nil)
 		assert.Contains(t, result, "bristol.gameOver")
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestBristolWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.BristolHint{FromZone: "tableau", FromCol: 2, ToZone: "foundation", ToCol: 0}
+
+	bg := new(interfaces.MockBristolGame)
+	setupBristolWebMockDefaults(bg)
+	bg.On("GetHint").Return(hint).Maybe()
+
+	result := new(BristolWebPresenter).Output(bg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }
 
 func TestBristolWebPresenter_HintOutput(t *testing.T) {

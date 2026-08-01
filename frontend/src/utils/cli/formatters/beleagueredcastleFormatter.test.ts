@@ -45,6 +45,7 @@ describe('formatBeleagueredCastleState', () => {
     const result = formatBeleagueredCastleState(
       makeState({
         hint: { fromCol: 0, cardIndex: 1, toZone: 'tableau', toCol: 2 },
+        messageCode: 'beleagueredcastle.hintAvailable',
       }),
     );
     expect(result).toContain('HINT');

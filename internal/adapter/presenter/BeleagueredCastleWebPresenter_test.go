@@ -48,10 +48,18 @@ func parseBeleagueredCastleOutput(t *testing.T, jsonStr string) *controller.Bele
 	return &out
 }
 
+// setupBeleagueredCastleOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**
+// ようになった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと
+// 先に登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupBeleagueredCastleOutputMock(g *interfaces.MockBeleagueredCastleGame) {
+	setupBeleagueredCastleWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestBeleagueredCastleWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		bg := new(interfaces.MockBeleagueredCastleGame)
-		setupBeleagueredCastleWebMockDefaults(bg)
+		setupBeleagueredCastleOutputMock(bg)
 		p := new(BeleagueredCastleWebPresenter)
 
 		result := parseBeleagueredCastleOutput(t, p.Output(bg, nil))
@@ -64,7 +72,7 @@ func TestBeleagueredCastleWebPresenter_Output(t *testing.T) {
 
 	t.Run("all face up", func(t *testing.T) {
 		bg := new(interfaces.MockBeleagueredCastleGame)
-		setupBeleagueredCastleWebMockDefaults(bg)
+		setupBeleagueredCastleOutputMock(bg)
 		p := new(BeleagueredCastleWebPresenter)
 
 		result := parseBeleagueredCastleOutput(t, p.Output(bg, nil))
@@ -78,7 +86,7 @@ func TestBeleagueredCastleWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		bg := new(interfaces.MockBeleagueredCastleGame)
-		setupBeleagueredCastleWebMockDefaults(bg)
+		setupBeleagueredCastleOutputMock(bg)
 		p := new(BeleagueredCastleWebPresenter)
 
 		result := parseBeleagueredCastleOutput(t, p.Output(bg, errors.New("test error")))
@@ -87,7 +95,7 @@ func TestBeleagueredCastleWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		bg := new(interfaces.MockBeleagueredCastleGame)
-		setupBeleagueredCastleWebMockDefaults(bg)
+		setupBeleagueredCastleOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.BeleagueredCastlePhaseGameClear)
 
@@ -98,7 +106,7 @@ func TestBeleagueredCastleWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		bg := new(interfaces.MockBeleagueredCastleGame)
-		setupBeleagueredCastleWebMockDefaults(bg)
+		setupBeleagueredCastleOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.BeleagueredCastlePhaseGameOver)
 
@@ -109,7 +117,7 @@ func TestBeleagueredCastleWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		bg := new(interfaces.MockBeleagueredCastleGame)
-		setupBeleagueredCastleWebMockDefaults(bg)
+		setupBeleagueredCastleOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
 		bg.On("IsStalemate").Return(true)
 
@@ -117,6 +125,22 @@ func TestBeleagueredCastleWebPresenter_Output(t *testing.T) {
 		result := parseBeleagueredCastleOutput(t, p.Output(bg, nil))
 		assert.Equal(t, "beleagueredcastle.stalemate", result.MessageCode)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestBeleagueredCastleWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.BeleagueredCastleHint{FromCol: 2, CardIndex: 2, ToZone: "tableau", ToCol: 2}
+
+	bg := new(interfaces.MockBeleagueredCastleGame)
+	setupBeleagueredCastleWebMockDefaults(bg)
+	bg.On("GetHint").Return(hint).Maybe()
+
+	result := parseBeleagueredCastleOutput(t, new(BeleagueredCastleWebPresenter).Output(bg, nil))
+	if result.Hint == nil {
+		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+	}
+	assert.Equal(t, 2, result.Hint.FromCol)
 }
 
 func TestBeleagueredCastleWebPresenter_HintOutput(t *testing.T) {
