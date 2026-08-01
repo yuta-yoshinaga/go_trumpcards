@@ -156,7 +156,7 @@ if (missing.length > 0 || stale.length > 0 || redundant.length > 0) {
   process.exit(1);
 }
 
-console.error(
+console.log(
   `hint-coverage: OK (${hinted.size} of ${games.size} games hinted; ` +
     `${ALLOWED.size} need none; ${BACKLOG.size} still owed, see #4520).`,
 );
