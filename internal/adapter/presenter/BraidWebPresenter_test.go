@@ -199,9 +199,11 @@ func TestBraidWebPresenter_OutputCarriesTheHint(t *testing.T) {
 	// **助言する手が無い局面では探索を走らせない。**
 	t.Run("not while awaiting the direction", func(t *testing.T) {
 		g := new(interfaces.MockBraidGame)
-		// 期待は先に登録したものが勝つので、ヘルパーより前に置く。
-		g.On("IsAwaitingDirection").Return(true).Maybe()
 		setupBraidWebMockDefaults(g)
+		// **既定を外してから差し替える。**testify は先に登録した期待が勝つので、
+		// 上書きのつもりで後ろに足しても効かない。この file の他の箇所と同じ形。
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsAwaitingDirection")
+		g.On("IsAwaitingDirection").Return(true).Maybe()
 		g.On("GetHint").Return(hint).Maybe()
 
 		result := parseBraidOutput(t, new(BraidWebPresenter).Output(g, nil))
