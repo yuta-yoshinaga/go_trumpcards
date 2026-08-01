@@ -78,5 +78,7 @@
     "playButton": "Once a card is selected, play it with this button. In the Bid phase choose chiamo/solo/pass; the Soloist takes the monte and discards four cards.",
     "info": "Calabresella (Terziglio) is a Calabrian/Italian 3-player 40-card trick-taker. First a Bid phase (pass / chiamo / solo) decides the Soloist, who takes the 4-card monte and discards four cards down to twelve. There is no trump; you must follow the led suit. The Soloist wins the round by capturing more than half of the 33 thirds (18+). Stakes are transferred and the first player to reach the target (default 21) wins.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

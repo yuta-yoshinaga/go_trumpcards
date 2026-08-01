@@ -36,6 +36,10 @@ func setupCalabresellaWebMock() *interfaces.MockCalabresellaGame {
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultCalabresellaConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -237,6 +241,7 @@ func TestCalabresellaWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint with card indices", func(t *testing.T) {
 		m, _ := setupCalabresellaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.CalabresellaHint{CardIndices: []int{2}, Reason: "follow_win"})
 		result := p.HintOutput(m)
 		var resObj controller.CalabresellaWebOutput
@@ -248,6 +253,7 @@ func TestCalabresellaWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupCalabresellaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.CalabresellaHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.CalabresellaWebOutput
@@ -265,4 +271,30 @@ func TestCalabresellaWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestCalabresellaWebPresenterOutputCarriesTheHint(t *testing.T) {
+	cbg, _ := setupCalabresellaWebMockWithPlayers()
+	cbg.ExpectedCalls = removeMockCall(cbg.ExpectedCalls, "GetHint")
+	cbg.On("GetHint").Return(&domain.CalabresellaHint{CardIndices: []int{0}, Reason: "follow_suit"})
+
+	result := new(presenter.CalabresellaWebPresenter).Output(cbg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "calabresella.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestCalabresellaWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	cbg, _ := setupCalabresellaWebMockWithPlayers()
+	cbg.ExpectedCalls = removeMockCall(cbg.ExpectedCalls, "GetHint")
+	cbg.On("GetHint").Return(&domain.CalabresellaHint{CardIndices: []int{0}, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.CalabresellaWebPresenter).HintOutput(cbg), "calabresella.hintRequested")
+
+	none, _ := setupCalabresellaWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.CalabresellaHint)(nil))
+	assert.Contains(t, new(presenter.CalabresellaWebPresenter).HintOutput(none), "calabresella.noHint")
 }

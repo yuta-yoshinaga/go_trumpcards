@@ -70,5 +70,7 @@
     "team": "Team",
     "total": "Total score",
     "round": "Round score"
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

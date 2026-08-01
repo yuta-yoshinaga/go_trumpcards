@@ -29,6 +29,10 @@ func setupCatchTenWebMock() *interfaces.MockCatchTenGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultCatchTenConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -171,6 +175,7 @@ func TestCatchTenWebPresenter_HintOutput(t *testing.T) {
 	t.Run("with hint", func(t *testing.T) {
 		m, _ := setupCatchTenWebMockWithPlayers()
 		cardIdx := 3
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.CatchTenHint{CardIndex: &cardIdx, Reason: "follow_suit"})
 		result := p.HintOutput(m)
 		var resObj controller.CatchTenWebOutput
@@ -181,6 +186,7 @@ func TestCatchTenWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupCatchTenWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.CatchTenHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.CatchTenWebOutput
@@ -196,4 +202,32 @@ func TestCatchTenWebPresenter_ActionLogOutput(t *testing.T) {
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "test"},
 	})
 	assert.NotEmpty(t, p.ActionLogOutput(m))
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestCatchTenWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	ctg, _ := setupCatchTenWebMockWithPlayers()
+	ctg.ExpectedCalls = removeMockCall(ctg.ExpectedCalls, "GetHint")
+	ctg.On("GetHint").Return(&domain.CatchTenHint{CardIndex: &idx, Reason: "follow_suit"})
+
+	result := new(presenter.CatchTenWebPresenter).Output(ctg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "catchten.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestCatchTenWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	ctg, _ := setupCatchTenWebMockWithPlayers()
+	ctg.ExpectedCalls = removeMockCall(ctg.ExpectedCalls, "GetHint")
+	ctg.On("GetHint").Return(&domain.CatchTenHint{CardIndex: &idx, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.CatchTenWebPresenter).HintOutput(ctg), "catchten.hintRequested")
+
+	none, _ := setupCatchTenWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.CatchTenHint)(nil))
+	assert.Contains(t, new(presenter.CatchTenWebPresenter).HintOutput(none), "catchten.noHint")
 }
