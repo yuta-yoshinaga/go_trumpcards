@@ -15,6 +15,20 @@ type BriscolaWebPresenter struct{}
 func (p *BriscolaWebPresenter) Output(b interfaces.BriscolaGame, lastErr error) string {
 	resObj := p.buildBase(b)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(b, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**Briscola.GetHint() が自分で
+	// 「プレイ中かつ人間の手番」を確かめて nil を返す。ソリティア側のゲートを
+	// 持ち込むと、ドメインが既に持つ判定を二重に書くことになる。
+	if hint := b.GetHint(); hint != nil {
+		resObj.Hint = &controller.BriscolaWebOutputHint{
+			CardIndex: hint.CardIndex,
+			Reason:    hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
