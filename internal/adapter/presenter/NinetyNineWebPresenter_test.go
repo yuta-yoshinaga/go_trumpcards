@@ -40,6 +40,10 @@ func setupNinetyNineWebMock() *interfaces.MockNinetyNineGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultNinetyNineConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -150,6 +154,7 @@ func TestNinetyNineWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("with bury hint", func(t *testing.T) {
 		m, _ := setupNinetyNineWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.NinetyNineHint{BuryIndices: []int{0, 1, 2}, Reason: "strategic_bury"})
 		result := p.HintOutput(m)
 		var resObj controller.NinetyNineWebOutput
@@ -160,6 +165,7 @@ func TestNinetyNineWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("nil hint", func(t *testing.T) {
 		m, _ := setupNinetyNineWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.NinetyNineHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.NinetyNineWebOutput
@@ -175,4 +181,31 @@ func TestNinetyNineWebPresenter_ActionLogOutput(t *testing.T) {
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "test"},
 	})
 	assert.NotEmpty(t, p.ActionLogOutput(m))
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestNinetyNineWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	nng, _ := setupNinetyNineWebMockWithPlayers()
+	nng.ExpectedCalls = removeMockCall(nng.ExpectedCalls, "GetHint")
+	nng.On("GetHint").Return(&domain.NinetyNineHint{CardIndex: &idx, Reason: "follow_suit"})
+
+	result := new(presenter.NinetyNineWebPresenter).Output(nng, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	assert.NotContains(t, result, "ninetynine.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestNinetyNineWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	nng, _ := setupNinetyNineWebMockWithPlayers()
+	nng.ExpectedCalls = removeMockCall(nng.ExpectedCalls, "GetHint")
+	nng.On("GetHint").Return(&domain.NinetyNineHint{CardIndex: &idx, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.NinetyNineWebPresenter).HintOutput(nng), "ninetynine.hintRequested")
+
+	none, _ := setupNinetyNineWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.NinetyNineHint)(nil))
+	assert.Contains(t, new(presenter.NinetyNineWebPresenter).HintOutput(none), "ninetynine.noHint")
 }
