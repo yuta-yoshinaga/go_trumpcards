@@ -49,10 +49,18 @@ func parseKlondikeOutput(t *testing.T, jsonStr string) *controller.KlondikeWebOu
 	return &out
 }
 
+// setupKlondikeOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupKlondikeOutputMock(g *interfaces.MockKlondikeGame) {
+	setupKlondikeWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestKlondikeWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
-		setupKlondikeWebMockDefaults(kg)
+		setupKlondikeOutputMock(kg)
 		p := new(KlondikeWebPresenter)
 
 		result := parseKlondikeOutput(t, p.Output(kg, nil))
@@ -67,7 +75,7 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 
 	t.Run("waste with cards", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
-		setupKlondikeWebMockDefaults(kg)
+		setupKlondikeOutputMock(kg)
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetWaste")
 		kg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
 
@@ -80,7 +88,7 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 
 	t.Run("face down card hides data", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
-		setupKlondikeWebMockDefaults(kg)
+		setupKlondikeOutputMock(kg)
 		p := new(KlondikeWebPresenter)
 
 		result := parseKlondikeOutput(t, p.Output(kg, nil))
@@ -94,7 +102,7 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 
 	t.Run("foundation with cards", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
-		setupKlondikeWebMockDefaults(kg)
+		setupKlondikeOutputMock(kg)
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetFoundation")
 		var f [domain.KlondikeFoundationCnt][]*domain.Card
 		f[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
@@ -108,7 +116,7 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
-		setupKlondikeWebMockDefaults(kg)
+		setupKlondikeOutputMock(kg)
 		p := new(KlondikeWebPresenter)
 
 		result := parseKlondikeOutput(t, p.Output(kg, assert.AnError))
@@ -117,7 +125,7 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
-		setupKlondikeWebMockDefaults(kg)
+		setupKlondikeOutputMock(kg)
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetPhase")
 		kg.On("GetPhase").Return(domain.KlondikePhaseGameClear)
 
@@ -130,7 +138,7 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
-		setupKlondikeWebMockDefaults(kg)
+		setupKlondikeOutputMock(kg)
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetPhase")
 		kg.On("GetPhase").Return(domain.KlondikePhaseGameOver)
 
@@ -144,7 +152,7 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 func TestKlondikeWebPresenter_Output_Stalemate(t *testing.T) {
 	t.Run("no escape available", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
-		setupKlondikeWebMockDefaults(kg)
+		setupKlondikeOutputMock(kg)
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "IsStalemate")
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "UndoToEscape")
 		kg.On("IsStalemate").Return(true)
@@ -159,7 +167,7 @@ func TestKlondikeWebPresenter_Output_Stalemate(t *testing.T) {
 
 	t.Run("escape available with positive count", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
-		setupKlondikeWebMockDefaults(kg)
+		setupKlondikeOutputMock(kg)
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "IsStalemate")
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "UndoToEscape")
 		kg.On("IsStalemate").Return(true)
@@ -170,6 +178,31 @@ func TestKlondikeWebPresenter_Output_Stalemate(t *testing.T) {
 		assert.True(t, result.IsStalemate)
 		assert.Equal(t, "klondike.stalemateWithEscape", result.MessageCode)
 		assert.Equal(t, "3", result.MessageParams["count"])
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestKlondikeWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeWebMockDefaults(kg)
+		kg.On("GetHint").Return(&domain.KlondikeHint{FromZone: "tableau", FromCol: 2, CardIndex: 0, ToZone: "foundation", ToCol: 1}).Maybe()
+
+		result := new(KlondikeWebPresenter).Output(kg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeWebMockDefaults(kg)
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "IsStalemate")
+		kg.On("IsStalemate").Return(true)
+		kg.On("GetHint").Return(&domain.KlondikeHint{FromZone: "tableau", FromCol: 2, CardIndex: 0, ToZone: "foundation", ToCol: 1}).Maybe()
+
+		result := new(KlondikeWebPresenter).Output(kg, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 
@@ -225,7 +258,7 @@ func TestKlondikeWebPresenter_HintOutput(t *testing.T) {
 
 func TestKlondikeWebPresenter_Output_DrawCount(t *testing.T) {
 	kg := new(interfaces.MockKlondikeGame)
-	setupKlondikeWebMockDefaults(kg)
+	setupKlondikeOutputMock(kg)
 	kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetDrawCount")
 	kg.On("GetDrawCount").Return(3)
 
@@ -236,7 +269,7 @@ func TestKlondikeWebPresenter_Output_DrawCount(t *testing.T) {
 
 func TestKlondikeWebPresenter_Output_CanUndo(t *testing.T) {
 	kg := new(interfaces.MockKlondikeGame)
-	setupKlondikeWebMockDefaults(kg)
+	setupKlondikeOutputMock(kg)
 	kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "CanUndo")
 	kg.On("CanUndo").Return(true)
 
@@ -247,7 +280,7 @@ func TestKlondikeWebPresenter_Output_CanUndo(t *testing.T) {
 
 func TestKlondikeWebPresenter_Output_Score(t *testing.T) {
 	kg := new(interfaces.MockKlondikeGame)
-	setupKlondikeWebMockDefaults(kg)
+	setupKlondikeOutputMock(kg)
 	kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetScore")
 	kg.On("GetScore").Return(100)
 
@@ -258,7 +291,7 @@ func TestKlondikeWebPresenter_Output_Score(t *testing.T) {
 
 func TestKlondikeWebPresenter_Output_ScoringMode(t *testing.T) {
 	kg := new(interfaces.MockKlondikeGame)
-	setupKlondikeWebMockDefaults(kg)
+	setupKlondikeOutputMock(kg)
 	kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetScoringMode")
 	kg.On("GetScoringMode").Return(domain.KlondikeScoringVegas)
 
