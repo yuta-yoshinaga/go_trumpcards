@@ -70,7 +70,6 @@ const BACKLOG = new Set([
   'kemps',
   'kille',
   'klaberjass',
-  'labellelucie',
   'literature',
   'mao',
   'niuniu',

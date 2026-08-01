@@ -31,5 +31,9 @@
     "redeal": "詰まったら残り札を集めてシャッフルし配り直せます（最大3回）。",
     "actionButtons": "ヒント・自動完成・元に戻すなどの操作ボタンです。",
     "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "frontendHint": {
+    "labellelucieToFoundation": "この扇の札を台札へ上げられます",
+    "labellelucieToFan": "この扇の札を別の扇へ移せます"
   }
 }

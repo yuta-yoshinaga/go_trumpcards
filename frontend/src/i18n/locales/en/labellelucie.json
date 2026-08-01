@@ -31,5 +31,9 @@
     "redeal": "When stuck, gather the remaining cards, shuffle and redeal — up to 3 times.",
     "actionButtons": "Hint, auto-complete and undo controls.",
     "resetButton": "Start a new game."
+  },
+  "frontendHint": {
+    "labellelucieToFoundation": "This fan's card can go to a foundation",
+    "labellelucieToFan": "This fan's card can move to another fan"
   }
 }
