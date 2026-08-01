@@ -36,6 +36,9 @@ func setupGaigelWebMock() *interfaces.MockGaigelGame {
 	m.On("GetMarriageIndices", 0).Return([]int(nil))
 	m.On("GetConfig").Return(domain.DefaultGaigelConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -123,6 +126,7 @@ func TestGaigelWebPresenter_HintOutput(t *testing.T) {
 	m, players := setupGaigelWebMockWithPlayers()
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
 	idx := 0
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return(&domain.GaigelHint{CardIndex: &idx, Reason: "follow_win"})
 	result := p.HintOutput(m)
 	var resObj controller.GaigelWebOutput
@@ -134,6 +138,7 @@ func TestGaigelWebPresenter_HintOutput(t *testing.T) {
 func TestGaigelWebPresenter_HintOutput_Nil(t *testing.T) {
 	p := new(presenter.GaigelWebPresenter)
 	m, _ := setupGaigelWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return((*domain.GaigelHint)(nil))
 	result := p.HintOutput(m)
 	var resObj controller.GaigelWebOutput
@@ -145,4 +150,19 @@ func TestGaigelWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.GaigelWebPresenter)
 	m := setupGaigelWebMock()
 	assert.NotNil(t, p.ActionLogOutput(m))
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// トリックテイキング系は Output 側にゲートを置きません。Gaigel.GetHint() が
+// 「人間の手番で、かつ行動を選べる状態か」を自分で確かめて nil を返します。
+func TestGaigelWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	ggg, _ := setupGaigelWebMockWithPlayers()
+	ggg.ExpectedCalls = removeMockCall(ggg.ExpectedCalls, "GetHint")
+	ggg.On("GetHint").Return(&domain.GaigelHint{CardIndex: &idx, Reason: "lead_low"})
+
+	result := new(presenter.GaigelWebPresenter).Output(ggg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }

@@ -40,6 +40,9 @@ func setupJassWebMock() *interfaces.MockJassGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultJassConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -180,6 +183,7 @@ func TestJassWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.JassWebPresenter)
 	m, _ := setupJassWebMockWithPlayers()
 	suit := 2
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return(&domain.JassHint{Suit: &suit, Reason: "strategic_trump"})
 	result := p.HintOutput(m)
 	var resObj controller.JassWebOutput
@@ -191,6 +195,7 @@ func TestJassWebPresenter_HintOutput(t *testing.T) {
 func TestJassWebPresenter_HintOutput_Nil(t *testing.T) {
 	p := new(presenter.JassWebPresenter)
 	m, _ := setupJassWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return((*domain.JassHint)(nil))
 	result := p.HintOutput(m)
 	var resObj controller.JassWebOutput
@@ -202,4 +207,19 @@ func TestJassWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.JassWebPresenter)
 	m := setupJassWebMock()
 	assert.NotNil(t, p.ActionLogOutput(m))
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// トリックテイキング系は Output 側にゲートを置きません。Jass.GetHint() が
+// 「人間の手番で、かつ行動を選べる状態か」を自分で確かめて nil を返します。
+func TestJassWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	jsg, _ := setupJassWebMockWithPlayers()
+	jsg.ExpectedCalls = removeMockCall(jsg.ExpectedCalls, "GetHint")
+	jsg.On("GetHint").Return(&domain.JassHint{CardIndex: &idx, Reason: "follow_suit"})
+
+	result := new(presenter.JassWebPresenter).Output(jsg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }
