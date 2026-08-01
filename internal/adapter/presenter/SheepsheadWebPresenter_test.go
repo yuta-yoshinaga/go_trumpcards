@@ -41,6 +41,10 @@ func setupSheepsheadWebMock() *interfaces.MockSheepsheadGame {
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetConfig").Return(domain.DefaultSheepsheadConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -238,6 +242,7 @@ func TestSheepsheadWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint with card indices", func(t *testing.T) {
 		m, _ := setupSheepsheadWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.SheepsheadHint{CardIndices: []int{2}, Suit: 0, Pick: false, Reason: "follow_win"})
 		result := p.HintOutput(m)
 		var resObj controller.SheepsheadWebOutput
@@ -249,6 +254,7 @@ func TestSheepsheadWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("pick hint", func(t *testing.T) {
 		m, _ := setupSheepsheadWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.SheepsheadHint{Pick: true, Reason: "pick_take"})
 		result := p.HintOutput(m)
 		var resObj controller.SheepsheadWebOutput
@@ -260,6 +266,7 @@ func TestSheepsheadWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupSheepsheadWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.SheepsheadHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.SheepsheadWebOutput
@@ -277,4 +284,30 @@ func TestSheepsheadWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"pick"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestSheepsheadWebPresenterOutputCarriesTheHint(t *testing.T) {
+	shg, _ := setupSheepsheadWebMockWithPlayers()
+	shg.ExpectedCalls = removeMockCall(shg.ExpectedCalls, "GetHint")
+	shg.On("GetHint").Return(&domain.SheepsheadHint{CardIndices: []int{0}, Suit: 1, Pick: false, Reason: "follow_suit"})
+
+	result := new(presenter.SheepsheadWebPresenter).Output(shg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "sheepshead.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestSheepsheadWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	shg, _ := setupSheepsheadWebMockWithPlayers()
+	shg.ExpectedCalls = removeMockCall(shg.ExpectedCalls, "GetHint")
+	shg.On("GetHint").Return(&domain.SheepsheadHint{CardIndices: []int{0}, Suit: 1, Pick: false, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.SheepsheadWebPresenter).HintOutput(shg), "sheepshead.hintRequested")
+
+	none, _ := setupSheepsheadWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.SheepsheadHint)(nil))
+	assert.Contains(t, new(presenter.SheepsheadWebPresenter).HintOutput(none), "sheepshead.noHint")
 }

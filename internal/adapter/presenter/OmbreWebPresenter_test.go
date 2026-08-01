@@ -39,6 +39,10 @@ func setupOmbreWebMock() *interfaces.MockOmbreGame {
 	m.On("IsHumanBidTurn").Return(false)
 	m.On("GetConfig").Return(domain.DefaultOmbreConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -202,6 +206,7 @@ func TestOmbreWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint with card indices", func(t *testing.T) {
 		m, _ := setupOmbreWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.OmbreHint{CardIndices: []int{2}, Reason: "follow_win"})
 		result := p.HintOutput(m)
 		var resObj controller.OmbreWebOutput
@@ -213,6 +218,7 @@ func TestOmbreWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupOmbreWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.OmbreHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.OmbreWebOutput
@@ -230,4 +236,30 @@ func TestOmbreWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestOmbreWebPresenterOutputCarriesTheHint(t *testing.T) {
+	obg, _ := setupOmbreWebMockWithPlayers()
+	obg.ExpectedCalls = removeMockCall(obg.ExpectedCalls, "GetHint")
+	obg.On("GetHint").Return(&domain.OmbreHint{CardIndices: []int{0}, Reason: "follow_suit"})
+
+	result := new(presenter.OmbreWebPresenter).Output(obg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "ombre.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestOmbreWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	obg, _ := setupOmbreWebMockWithPlayers()
+	obg.ExpectedCalls = removeMockCall(obg.ExpectedCalls, "GetHint")
+	obg.On("GetHint").Return(&domain.OmbreHint{CardIndices: []int{0}, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.OmbreWebPresenter).HintOutput(obg), "ombre.hintRequested")
+
+	none, _ := setupOmbreWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.OmbreHint)(nil))
+	assert.Contains(t, new(presenter.OmbreWebPresenter).HintOutput(none), "ombre.noHint")
 }

@@ -1,5 +1,12 @@
 import type { OmbreResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Bid', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
 const BID_NAMES = ['pass', 'entrar', 'solo'];
@@ -41,7 +48,7 @@ export function formatOmbreState(state: OmbreResponse): string {
     lines.push(`round result: ${OUTCOME_NAMES[state.outcome] ?? state.outcome}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const indices = state.hint.cardIndices ?? [];
     lines.push(`HINT: card indices [${indices.join(', ')}] (${state.hint.reason})`);
   }
