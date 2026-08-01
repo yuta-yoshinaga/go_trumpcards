@@ -33,6 +33,10 @@ func setupBeziqueWebMock(trumpCard *domain.Card) *interfaces.MockBeziqueGame {
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetConfig").Return(domain.DefaultBeziqueConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -158,6 +162,7 @@ func TestBeziqueWebPresenter_HintOutput_Card(t *testing.T) {
 	m, players := setupBeziqueWebMockWithPlayers(trump)
 	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 	idx := 0
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return(&domain.BeziqueHint{CardIndex: &idx, Reason: "lead_low"})
 
 	got := p.HintOutput(m)
@@ -171,6 +176,7 @@ func TestBeziqueWebPresenter_HintOutput_Card(t *testing.T) {
 func TestBeziqueWebPresenter_HintOutput_None(t *testing.T) {
 	p := new(presenter.BeziqueWebPresenter)
 	m, _ := setupBeziqueWebMockWithPlayers(nil)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return((*domain.BeziqueHint)(nil))
 	got := p.HintOutput(m)
 	var out controller.BeziqueWebOutput
@@ -183,4 +189,33 @@ func TestBeziqueWebPresenter_ActionLogOutput(t *testing.T) {
 	m, _ := setupBeziqueWebMockWithPlayers(nil)
 	got := p.ActionLogOutput(m)
 	assert.NotEmpty(t, got)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestBeziqueWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	bzg, _ := setupBeziqueWebMockWithPlayers(domain.NewCard(domain.CardDesignSpade, 13, false))
+	bzg.ExpectedCalls = removeMockCall(bzg.ExpectedCalls, "GetHint")
+	bzg.On("GetHint").Return(&domain.BeziqueHint{CardIndex: &idx, Reason: "lead_low"})
+
+	result := new(presenter.BeziqueWebPresenter).Output(bzg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "bezique.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**このゲーム群の
+// hintAvailable は画面のラベルとして埋まっているので別キーを使う (#4483)。
+func TestBeziqueWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	bzg, _ := setupBeziqueWebMockWithPlayers(domain.NewCard(domain.CardDesignSpade, 13, false))
+	bzg.ExpectedCalls = removeMockCall(bzg.ExpectedCalls, "GetHint")
+	bzg.On("GetHint").Return(&domain.BeziqueHint{CardIndex: &idx, Reason: "lead_low"})
+	assert.Contains(t, new(presenter.BeziqueWebPresenter).HintOutput(bzg), "bezique.hintRequested")
+
+	none, _ := setupBeziqueWebMockWithPlayers(domain.NewCard(domain.CardDesignSpade, 13, false))
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.BeziqueHint)(nil))
+	assert.Contains(t, new(presenter.BeziqueWebPresenter).HintOutput(none), "bezique.noHint")
 }
