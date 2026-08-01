@@ -27,7 +27,9 @@ describe('formatTressetteState', () => {
   });
 
   it('renders hint line when present', () => {
-    const out = formatTressetteState(makeTressetteState({ hint: { cardIndices: [1], reason: 'follow_win' } }));
+    const out = formatTressetteState(
+      makeTressetteState({ hint: { cardIndices: [1], reason: 'follow_win' }, messageCode: 'tressette.hintRequested' }),
+    );
     expect(out).toContain('HINT:');
     expect(out).toContain('follow_win');
   });
@@ -36,5 +38,15 @@ describe('formatTressetteState', () => {
     const out = formatTressetteState(makeTressetteState({ gameEndFlag: true, winnerTeam: 1 }));
     expect(out).toContain('Game Over!');
     expect(out).toContain('Team B');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [1], reason: 'follow_win' };
+    expect(formatTressetteState(makeTressetteState({ hint, messageCode: 'tressette.hintRequested' }))).toContain(
+      'HINT',
+    );
+    expect(formatTressetteState(makeTressetteState({ hint, messageCode: 'tressette.playing' }))).not.toContain('HINT');
   });
 });

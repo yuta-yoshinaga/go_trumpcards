@@ -70,5 +70,7 @@
     "lastTrick": "Last trick (ultima)",
     "lastTrickValue": "+1/3 pt",
     "note": "Each round totals 11 points. First team to reach the target (default 21) wins."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

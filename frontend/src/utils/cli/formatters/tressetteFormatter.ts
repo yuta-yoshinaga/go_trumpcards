@@ -1,5 +1,12 @@
 import type { TressetteResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 /** Format a Tressette game state as terminal text. */
 export function formatTressetteState(state: TressetteResponse): string {
@@ -30,7 +37,7 @@ export function formatTressetteState(state: TressetteResponse): string {
     lines.push(`trick: ${trickParts.join(', ')}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const indices = state.hint.cardIndices ?? [];
     lines.push(`HINT: card indices [${indices.join(', ')}] (${state.hint.reason})`);
   }
