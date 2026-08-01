@@ -4,7 +4,7 @@
 // docs/new-game-checklist.md item 14 asks each new game for a hint factory
 // registered in `hintFactories`. Nothing enforced it, and two games in a row
 // shipped without one (Literature #257, Guandan #258) before a reviewer
-// noticed — see issue #4520. Neither game's absence was visible anywhere:
+// noticed — see issue #4557. Neither game's absence was visible anywhere:
 //
 //   - `useGameHint` looks the name up with `hintFactories[gameName]?.(state)`,
 //     so a missing factory yields `null` rather than throwing. The page renders
@@ -40,7 +40,7 @@ const ALLOWED = new Map();
  *
  * This is a RATCHET, not an exemption list: the guard fails if a game outside
  * both maps is missing a hint, so the set can shrink but never grow. Delete a
- * name from here when you write its factory. Filed as issue #4520.
+ * name from here when you write its factory. Filed as issue #4557.
  *
  * The count was 39 when the guard went in, which is the point. The reviewer on
  * PR #4519 saw two consecutive games skip checklist item 14 and read it as a
@@ -158,5 +158,5 @@ if (missing.length > 0 || stale.length > 0 || redundant.length > 0) {
 
 console.log(
   `hint-coverage: OK (${hinted.size} of ${games.size} games hinted; ` +
-    `${ALLOWED.size} need none; ${BACKLOG.size} still owed, see #4520).`,
+    `${ALLOWED.size} need none; ${BACKLOG.size} still owed, see #4557).`,
 );
