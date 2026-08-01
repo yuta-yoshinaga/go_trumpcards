@@ -117,15 +117,30 @@ func TestMichiganWebPresenter_ResultHumanWin(t *testing.T) {
 	assert.Equal(t, float64(0), b0["chips"])
 }
 
+// **配り方に依存させない。**PlaceHumanBet は配ってから CPU を回すので、人間が
+// 一度も出せない配りを引くと、プレゼンターに渡る前にラウンドが終わってしまい
+// michigan.roundEndHumanLose になる (#4506)。プレイフェーズに入った局だけを
+// 対象にし、それが一度も起きなければ落とす。
 func TestMichiganWebPresenter_PlayPhase(t *testing.T) {
-	g := domain.NewDefaultMichigan()
-	require.NoError(t, g.PlaceHumanBet(michiganWebEvenBet(g.GetBetBudget())))
+	const attempts = 50
 	p := new(presenter.MichiganWebPresenter)
-	out := p.Output(g, nil)
-	var decoded map[string]any
-	require.NoError(t, json.Unmarshal([]byte(out), &decoded))
-	assert.Equal(t, float64(domain.MichiganPhasePlay), decoded["phase"])
-	assert.Equal(t, "michigan.playPhase", decoded["messageCode"])
+
+	for i := 0; i < attempts; i++ {
+		g := domain.NewDefaultMichigan()
+		require.NoError(t, g.PlaceHumanBet(michiganWebEvenBet(g.GetBetBudget())))
+		if g.GetPhase() != domain.MichiganPhasePlay {
+			// この配りは人間の手番を迎えずにラウンドが終わった。配り直す。
+			continue
+		}
+
+		out := p.Output(g, nil)
+		var decoded map[string]any
+		require.NoError(t, json.Unmarshal([]byte(out), &decoded))
+		assert.Equal(t, float64(domain.MichiganPhasePlay), decoded["phase"])
+		assert.Equal(t, "michigan.playPhase", decoded["messageCode"])
+		return
+	}
+	t.Fatalf("no deal out of %d reached the play phase — the CPU drive may never be yielding", attempts)
 }
 
 // michiganWebEvenBet は budget を 4 分割した賭けスライスを返す。
