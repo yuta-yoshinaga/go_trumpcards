@@ -1,5 +1,5 @@
 import type { Card, CrescentResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 const ASCENDING_COUNT = 4;
 
@@ -33,7 +33,7 @@ export function formatCrescentState(state: CrescentResponse): string {
 
   lines.push(`moves: ${state.moveCount} | redeals: ${state.redealsRemaining} | undo:${state.canUndo ? 'yes' : 'no'}`);
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     if (state.hint.redeal) {
       lines.push('HINT: redeal (d)');
     } else {

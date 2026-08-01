@@ -24,6 +24,21 @@ func (p *DoubleKlondikeWebPresenter) Output(g interfaces.DoubleKlondikeGame, las
 		resObj.Foundation[i] = cardsToOutputOrEmpty(f)
 	}
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if g.GetPhase() == domain.DoubleKlondikePhasePlaying && !g.IsStalemate() {
+		if hint := g.GetHint(); hint != nil {
+			resObj.Hint = &controller.DoubleKlondikeWebOutputHint{
+				FromZone:  hint.FromZone,
+				FromCol:   hint.FromCol,
+				CardIndex: hint.CardIndex,
+				ToZone:    hint.ToZone,
+				ToCol:     hint.ToCol,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {
