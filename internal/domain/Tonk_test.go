@@ -640,8 +640,14 @@ func TestTonk_ScoreRound_NoOp(t *testing.T) {
 
 func TestTonk_GameEnd(t *testing.T) {
 	g := newTestTonk()
-	g.SetConfig(domain.TonkConfig{CpuDifficulty: domain.TonkCpuDifficultyNormal, PointLimit: 1})
+	// **配牌を固定してから点数上限を下げる。**上限 1 のまま素の Reset を通すと、
+	// 配牌 Tonk (50 ボーナス + 50 点 = 100) を引いた局でその場で試合が終わり、
+	// ノック前にゲーム終了になったり、勝者が配牌 Tonk を引いた側になったりする。
+	// seed 1 が配牌 Tonk にならないことは TestTonk_ResetTwice が使っている。
+	g.SetRand(rand.New(rand.NewSource(1)))
 	g.Reset()
+	require.Equal(t, domain.TonkPhaseDraw, g.GetPhase(), "seed 1 should deal without a Tonk")
+	g.SetConfig(domain.TonkConfig{CpuDifficulty: domain.TonkCpuDifficultyNormal, PointLimit: 1})
 	giveHand(g.GetPlayer(0), []*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 1, false),
 		domain.NewCard(domain.CardDesignHeart, 1, false),
