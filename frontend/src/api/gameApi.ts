@@ -120,6 +120,7 @@ export * from './games/jass';
 export * from './games/jokerpoker';
 export * from './games/kaiser';
 export * from './games/kalooki';
+export * from './games/karnoffel';
 export * from './games/kemps';
 export * from './games/kille';
 export * from './games/king';
@@ -375,6 +376,7 @@ export const games = [
   'vint',
   'bideuchre',
   'sixbidsolo',
+  'karnoffel',
   'missmilligan',
   'canfield',
   'osmosis',

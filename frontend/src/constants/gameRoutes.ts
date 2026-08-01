@@ -1432,6 +1432,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 3, 4, 3], skill: [3, 4, 5, 3], social: [3, 5, 2, 3, 5], theme: [3, 3, 4, 1, 2, 4] },
       },
       {
+        path: '/karnoffel',
+        labelKey: 'nav.karnoffel',
+        icon: '🏰',
+        page: 'Karnoffel',
+        profile: { mood: [4, 4, 4, 4], skill: [3, 4, 4, 4], social: [3, 4, 3, 4, 3], theme: [1, 5, 2, 1, 2, 5] },
+      },
+      {
         path: '/boston',
         labelKey: 'nav.boston',
         icon: '🎩',

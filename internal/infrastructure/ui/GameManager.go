@@ -4057,6 +4057,19 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "karnoffel", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKarnoffelCuiController(usecase.NewKarnoffelInteractor(
+				domain.NewDefaultKarnoffel(), new(presenter.KarnoffelCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "karnoffel.helpTitle",
+				CommandKeys: []string{
+					"karnoffel.helpPlay",
+					"karnoffel.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

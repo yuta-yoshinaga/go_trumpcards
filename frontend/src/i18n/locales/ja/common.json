@@ -274,7 +274,8 @@
     "boston": "ボストン",
     "vint": "ヴィント",
     "bideuchre": "ビッド・ユーカー",
-    "sixbidsolo": "シックスビッド・ソロ"
+    "sixbidsolo": "シックスビッド・ソロ",
+    "karnoffel": "カルニッフェル"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1349,7 +1350,12 @@
     "sixbidsolo.handMade": "宣言達成。ウィドウの3枚も宣言者に加算されます（ミゼール系を除く）",
     "sixbidsolo.handSet": "宣言失敗。宣言者が各対戦者へ支払います",
     "sixbidsolo.result.humanWin": "規定局数を終えて、あなたが首位です",
-    "sixbidsolo.result.cpuWin": "規定局数を終えて、CPUが首位です"
+    "sixbidsolo.result.cpuWin": "規定局数を終えて、CPUが首位です",
+    "karnoffel.playPhase": "プレイ中 — 【追随の義務はありません】。第1トリックのリードに悪魔は使えません",
+    "karnoffel.handEnd": "局終了。3トリック先取したチームがこの局を取りました",
+    "karnoffel.handDrawn": "局終了。どちらも3トリックに届かず、この局は誰も取っていません",
+    "karnoffel.result.humanWin": "規定局数に達しました。あなたのチームの勝ちです",
+    "karnoffel.result.cpuWin": "規定局数に達しました。相手チームの勝ちです"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
