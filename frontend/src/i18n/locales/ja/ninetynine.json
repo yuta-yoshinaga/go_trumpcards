@@ -87,5 +87,7 @@
     "followSuit": "リードスートに従いましょう",
     "trumpWithCard": "切り札で取りましょう",
     "discardLowest": "一番低いカードを捨てましょう"
-  }
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }
