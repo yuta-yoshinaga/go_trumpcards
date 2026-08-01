@@ -17,6 +17,20 @@ type SchnapsenWebPresenter struct{}
 func (p *SchnapsenWebPresenter) Output(s interfaces.SchnapsenGame, lastErr error) string {
 	resObj := p.buildBase(s)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(s, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**Schnapsen.GetHint() が自分で
+	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
+	if hint := s.GetHint(); hint != nil {
+		resObj.Hint = &controller.SchnapsenWebOutputHint{
+			CardIndex:  hint.CardIndex,
+			Reason:     hint.Reason,
+			IsMarriage: hint.IsMarriage,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
