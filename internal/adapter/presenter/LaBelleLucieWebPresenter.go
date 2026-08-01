@@ -20,6 +20,20 @@ func (p *LaBelleLucieWebPresenter) Output(g interfaces.LaBelleLucieGame, lastErr
 	foundation := g.GetFoundation()
 	resObj.Foundation = pilesToOutput(foundation[:])
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	// このゲームは手詰まり判定を持たないので、ゲートは進行中かどうかだけ。
+	if g.GetPhase() == domain.LaBelleLuciePhasePlaying {
+		if hint := g.GetHint(); hint != nil {
+			resObj.Hint = &controller.LaBelleLucieWebOutputHint{
+				FromFan:      hint.FromFan,
+				ToFan:        hint.ToFan,
+				ToFoundation: hint.ToFoundation,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

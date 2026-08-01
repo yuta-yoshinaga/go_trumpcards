@@ -35,6 +35,16 @@ func TestSimpleSimonWebPresenter_Output(t *testing.T) {
 		assert.Contains(t, p.Output(ssState(t, `{"ph":2}`), nil), "simplesimon.gameOver")
 	})
 
+	// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+	// レスポンスで、ページの state にはマージされない (#4483)。
+	t.Run("output carries the hint", func(t *testing.T) {
+		// 9 の上に 8 を重ねられる並び。同スートなので合法手になる。
+		js := `{"co":[[{"d":1,"v":9,"w":true}],[{"d":1,"v":8,"w":true}]],"ph":0}`
+		assert.Contains(t, p.Output(ssState(t, js), nil), `"hint"`,
+			"Output must carry the hint -- the frontend reads state.hint")
+		assert.NotContains(t, p.Output(ssState(t, `{"ph":2}`), nil), `"hint"`)
+	})
+
 	t.Run("hint output", func(t *testing.T) {
 		js := `{"co":[[{"d":1,"v":9,"w":true}],[{"d":1,"v":8,"w":true}]],"ph":0}`
 		assert.Contains(t, p.HintOutput(ssState(t, js)), "simplesimon.hintAvailable")

@@ -1,5 +1,5 @@
 import type { OsmosisResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format an Osmosis game state as terminal text. */
 export function formatOsmosisState(state: OsmosisResponse): string {
@@ -30,7 +30,7 @@ export function formatOsmosisState(state: OsmosisResponse): string {
 
   lines.push(`moves: ${state.moveCount}  undo:${state.canUndo ? 'yes' : 'no'}`);
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const from = state.hint.fromZone === 'reserve' ? `reserve${state.hint.fromCol}` : 'waste';
     lines.push(`HINT: ${from} → foundation${state.hint.toCol}`);
   }
