@@ -275,7 +275,8 @@
     "vint": "ヴィント",
     "bideuchre": "ビッド・ユーカー",
     "sixbidsolo": "シックスビッド・ソロ",
-    "karnoffel": "カルニッフェル"
+    "karnoffel": "カルニッフェル",
+    "literature": "リテラチャー"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1355,7 +1356,16 @@
     "karnoffel.handEnd": "局終了。3トリック先取したチームがこの局を取りました",
     "karnoffel.handDrawn": "局終了。どちらも3トリックに届かず、この局は誰も取っていません",
     "karnoffel.result.humanWin": "規定局数に達しました。あなたのチームの勝ちです",
-    "karnoffel.result.cpuWin": "規定局数に達しました。相手チームの勝ちです"
+    "karnoffel.result.cpuWin": "規定局数に達しました。相手チームの勝ちです",
+    "literature.playPhase": "進行中 — 【相手チームにのみ】要求できます",
+    "literature.askHit": "要求が通りました。手番は続きます",
+    "literature.askMiss": "空振りです。手番は要求先へ移ります",
+    "literature.claimWon": "宣言成功。ハーフスートを獲得しました",
+    "literature.claimCancelled": "【無効】。6枚とも自チームにありましたが所在の申告が誤りでした。相手には渡りません",
+    "literature.claimLost": "相手が1枚以上持っていたので、相手チームの獲得になりました",
+    "literature.result.humanWin": "あなたのチームが過半数の5組に届きました",
+    "literature.result.cpuWin": "相手チームが過半数の5組に届きました",
+    "literature.result.draw": "同数で終わりました。勝者なしです"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

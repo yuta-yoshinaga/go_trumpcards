@@ -1740,6 +1740,12 @@ export const BidEuchrePhase = {
   GAME_END: 4,
 } as const;
 
+/** Literature phase constants (sync: internal/domain/Literature.go). */
+export const LiteraturePhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
 /** Karnöffel phase constants (sync: internal/domain/Karnoffel.go). */
 export const KarnoffelPhase = {
   PLAY: 0,

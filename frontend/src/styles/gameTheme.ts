@@ -239,6 +239,7 @@ export type GameKey =
   | 'bideuchre'
   | 'sixbidsolo'
   | 'karnoffel'
+  | 'literature'
   | 'missmilligan'
   | 'crescent'
   // Counting/Rummy
@@ -728,6 +729,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   bideuchre: CASINO,
   sixbidsolo: CASINO,
   karnoffel: GREEN,
+  literature: BLUE,
   missmilligan: CASINO,
   crescent: CASINO,
   // Counting/Rummy

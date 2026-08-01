@@ -275,7 +275,8 @@
     "vint": "Vint",
     "bideuchre": "Bid Euchre",
     "sixbidsolo": "Six-Bid Solo",
-    "karnoffel": "Karnöffel"
+    "karnoffel": "Karnöffel",
+    "literature": "Literature"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1355,7 +1356,16 @@
     "karnoffel.handEnd": "Hand over. Whoever took three tricks took the hand",
     "karnoffel.handDrawn": "Hand over. Neither side reached three tricks, so nobody took it",
     "karnoffel.result.humanWin": "The target is reached and your team wins",
-    "karnoffel.result.cpuWin": "The target is reached and the other team wins"
+    "karnoffel.result.cpuWin": "The target is reached and the other team wins",
+    "literature.playPhase": "In progress — you may ask AN OPPONENT ONLY",
+    "literature.askHit": "The ask succeeded. You keep the turn",
+    "literature.askMiss": "A miss. The turn passes to the player you asked",
+    "literature.claimWon": "Claim made. Your team takes the half-suit",
+    "literature.claimCancelled": "CANCELLED. All six were with your team but you misplaced them. It does NOT go to the opponents",
+    "literature.claimLost": "An opponent held at least one, so the half-suit goes to them",
+    "literature.result.humanWin": "Your team reached five, a majority of eight",
+    "literature.result.cpuWin": "The other team reached five, a majority of eight",
+    "literature.result.draw": "It ended level, so nobody wins"
   },
   "manual": {
     "ariaLabel": "Game Manual",

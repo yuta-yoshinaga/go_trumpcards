@@ -265,6 +265,8 @@ tags:
     description: Six-Bid Solo
   - name: karnoffel
     description: Karnöffel
+  - name: literature
+    description: Literature
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -14290,6 +14292,108 @@ paths:
               schema:
                 $ref: '#/components/schemas/KarnoffelResponse'
 
+  /literature/exec:
+    post:
+      tags:
+        - literature
+      summary: Execute a Literature game command
+      description: |
+        Send a command to advance the Literature session identified by
+        `sessionId`. Literature is a deduction fishing game for **six players in
+        two teams of three, seated alternately**, on a 48-card pack with the
+        **eights removed**. It contests **eight half-suits** of six cards each:
+        low (2-7) and high (9-A) in every suit.
+
+        **#4401 is wrong about how the game is won and about a failed claim.**
+
+        * The issue says the first team to **four half-suits (half)** wins.
+          **Four decides nothing** — the other side can reach four too. A
+          majority of eight is **FIVE**. It is also not a race: a claim can be
+          **cancelled**, so the two totals need not add to eight, and when
+          nobody reaches five the side with more takes it.
+        * The issue says a wrong claim hands the half-suit to the opponents.
+          There are **three** outcomes. If your team holds all six but you
+          **name the wrong teammate**, the half-suit is **CANCELLED** — it goes
+          to nobody. It goes to the opponents only if they actually hold one of
+          the six. That distinction is the reason to hesitate before claiming.
+        * The issue states only that you must hold the half-suit. You must also
+          ask **an opponent, never a teammate**, ask for a card you do **not**
+          hold, and the target must still have cards.
+        * The issue omits the **alternating seating** (which is what makes
+          "opponents only" meaningful), the rule that a player who runs out
+          mid-turn **passes to a teammate**, and that a claim may also be made
+          by laying all six down yourself.
+
+        The issue is right about the deck, the half-suit shape, the eight cards
+        each, and that a hit keeps the turn while a miss passes it.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Play    | `0`   | Asking and claiming |
+        | GameEnd | `1`   | A team reached five, or every half-suit is settled |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `ask`   | `a`     | Ask `target` for `suit`/`value` |
+        | `claim` | `c`     | Claim `halfSuit`, placing all six in `holders` |
+        | `log`   | `l`     | Action-log transcript |
+      operationId: literatureExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, ask, a, claim, c, log, l]
+                sessionId:
+                  type: string
+                target:
+                  type: integer
+                  description: "Seat to ask (0-5). MUST BE AN OPPONENT. Required for `ask`."
+                suit:
+                  type: integer
+                  description: "1=Spade, 2=Clover, 3=Heart, 4=Diamond. Required for `ask`."
+                value:
+                  type: integer
+                  description: Rank (1-13). Required for `ask`.
+                halfSuit:
+                  type: integer
+                  description: Half-suit index (0-7). Required for `claim`.
+                holders:
+                  type: array
+                  items:
+                    type: integer
+                  description: |
+                    Where each of the six cards is, in `halfSuitCards` order.
+                    ALL SIX are required -- naming the wrong teammate cancels
+                    the half-suit rather than handing it over.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiteratureResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiteratureResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -26128,6 +26232,122 @@ components:
             cpuDifficulty:
               type: integer
             targetHands:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    LiteratureResponse:
+      type: object
+      description: Response payload for /literature/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              team:
+                type: integer
+                description: "0 for seats 0/2/4, 1 for seats 1/3/5 -- seating alternates"
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                description: |
+                  The human's own hand only, until the game ends. EVEN A
+                  TEAMMATE'S HAND IS HIDDEN -- deducing where the cards are is
+                  the game.
+                items:
+                  $ref: '#/components/schemas/Card'
+              isCurrentTurn:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Play, 1=GameEnd"
+        currentPlayerIdx:
+          type: integer
+        halfSuits:
+          type: array
+          items:
+            type: integer
+          description: "Per half-suit: 0=open, 1=team 0, 2=team 1, 3=CANCELLED"
+        halfSuitCards:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+          description: The six cards of each half-suit, so the client can offer them.
+        asks:
+          type: array
+          description: The ask history. PUBLIC INFORMATION -- this is what deduction runs on.
+          items:
+            type: object
+            properties:
+              from:
+                type: integer
+              to:
+                type: integer
+              card:
+                nullable: true
+                allOf:
+                  - $ref: '#/components/schemas/Card'
+              success:
+                type: boolean
+        claims:
+          type: array
+          items:
+            type: object
+            properties:
+              player:
+                type: integer
+              halfSuit:
+                type: integer
+              outcome:
+                type: integer
+                description: "0=won, 1=CANCELLED, 2=lost to the opponents"
+              awardedTeam:
+                type: integer
+                description: "The team that took it; -1 when cancelled"
+        lastAsk:
+          type: object
+          nullable: true
+        lastClaim:
+          type: object
+          nullable: true
+        teamHalfSuits:
+          type: array
+          items:
+            type: integer
+        cancelledCount:
+          type: integer
+          description: |
+            Cancelled half-suits belong to nobody, so the two team totals need
+            not add to eight.
+        openCount:
+          type: integer
+        winThreshold:
+          type: integer
+          description: Half-suits needed to win -- FIVE, a majority of eight, not four.
+        halfSuitCnt:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "Winning team; -1 while live, and also -1 if it ends level"
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
               type: integer
         message:
           type: string
