@@ -55,9 +55,17 @@ func parseTriPeaksOutput(t *testing.T, jsonStr string) *controller.TriPeaksWebOu
 	return &out
 }
 
+// setupTriPeaksOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupTriPeaksOutputMock(g *interfaces.MockTriPeaksGame) {
+	setupTriPeaksWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestTriPeaksWebPresenterOutput_Playing(t *testing.T) {
 	tg := new(interfaces.MockTriPeaksGame)
-	setupTriPeaksWebMockDefaults(tg)
+	setupTriPeaksOutputMock(tg)
 	p := &TriPeaksWebPresenter{}
 
 	result := p.Output(tg, nil)
@@ -71,7 +79,7 @@ func TestTriPeaksWebPresenterOutput_Playing(t *testing.T) {
 
 func TestTriPeaksWebPresenterOutput_Error(t *testing.T) {
 	tg := new(interfaces.MockTriPeaksGame)
-	setupTriPeaksWebMockDefaults(tg)
+	setupTriPeaksOutputMock(tg)
 	p := &TriPeaksWebPresenter{}
 
 	result := p.Output(tg, errors.New("test error"))
@@ -82,7 +90,7 @@ func TestTriPeaksWebPresenterOutput_Error(t *testing.T) {
 
 func TestTriPeaksWebPresenterOutput_Stalemate(t *testing.T) {
 	tg := new(interfaces.MockTriPeaksGame)
-	setupTriPeaksWebMockDefaults(tg)
+	setupTriPeaksOutputMock(tg)
 	tg.ExpectedCalls = nil
 	tg.On("GetPhase").Return(domain.TriPeaksPhasePlaying).Maybe()
 	tg.On("GetMoveCount").Return(5).Maybe()
@@ -108,7 +116,7 @@ func TestTriPeaksWebPresenterOutput_Stalemate(t *testing.T) {
 
 func TestTriPeaksWebPresenterOutput_GameClear(t *testing.T) {
 	tg := new(interfaces.MockTriPeaksGame)
-	setupTriPeaksWebMockDefaults(tg)
+	setupTriPeaksOutputMock(tg)
 	tg.ExpectedCalls = nil
 	tg.On("GetPhase").Return(domain.TriPeaksPhaseGameClear).Maybe()
 	tg.On("GetMoveCount").Return(10).Maybe()
@@ -135,7 +143,7 @@ func TestTriPeaksWebPresenterOutput_GameClear(t *testing.T) {
 
 func TestTriPeaksWebPresenterOutput_GameOver(t *testing.T) {
 	tg := new(interfaces.MockTriPeaksGame)
-	setupTriPeaksWebMockDefaults(tg)
+	setupTriPeaksOutputMock(tg)
 	tg.ExpectedCalls = nil
 	tg.On("GetPhase").Return(domain.TriPeaksPhaseGameOver).Maybe()
 	tg.On("GetMoveCount").Return(5).Maybe()
@@ -157,6 +165,31 @@ func TestTriPeaksWebPresenterOutput_GameOver(t *testing.T) {
 	out := parseTriPeaksOutput(t, result)
 
 	assert.Equal(t, "tripeaks.gameOver", out.MessageCode)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestTriPeaksWebPresenterOutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		tpg := new(interfaces.MockTriPeaksGame)
+		setupTriPeaksWebMockDefaults(tpg)
+		tpg.On("GetHint").Return(&domain.TriPeaksHint{Type: "remove", Row: 2, Col: 3}).Maybe()
+
+		result := new(TriPeaksWebPresenter).Output(tpg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		tpg := new(interfaces.MockTriPeaksGame)
+		setupTriPeaksWebMockDefaults(tpg)
+		tpg.ExpectedCalls = filterCalls(tpg.ExpectedCalls, "IsStalemate")
+		tpg.On("IsStalemate").Return(true)
+		tpg.On("GetHint").Return(&domain.TriPeaksHint{Type: "remove", Row: 2, Col: 3}).Maybe()
+
+		result := new(TriPeaksWebPresenter).Output(tpg, nil)
+		assert.NotContains(t, result, `"hint"`)
+	})
 }
 
 func TestTriPeaksWebPresenterHintOutput(t *testing.T) {

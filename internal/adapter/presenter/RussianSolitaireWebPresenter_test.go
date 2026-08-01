@@ -39,10 +39,18 @@ func parseRussianSolitaireOutput(t *testing.T, jsonStr string) *controller.Russi
 	return &out
 }
 
+// setupRussianSolitaireOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupRussianSolitaireOutputMock(g *interfaces.MockRussianSolitaireGame) {
+	setupRussianSolitaireWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestRussianSolitaireWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		rg := new(interfaces.MockRussianSolitaireGame)
-		setupRussianSolitaireWebMockDefaults(rg)
+		setupRussianSolitaireOutputMock(rg)
 		p := new(RussianSolitaireWebPresenter)
 
 		result := parseRussianSolitaireOutput(t, p.Output(rg, nil))
@@ -53,7 +61,7 @@ func TestRussianSolitaireWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate with escape available", func(t *testing.T) {
 		rg := new(interfaces.MockRussianSolitaireGame)
-		setupRussianSolitaireWebMockDefaults(rg)
+		setupRussianSolitaireOutputMock(rg)
 		rg.ExpectedCalls = nil
 		rg.On("GetPhase").Return(domain.RussianSolitairePhasePlaying).Maybe()
 		rg.On("GetMoveCount").Return(5).Maybe()
@@ -74,7 +82,7 @@ func TestRussianSolitaireWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate without escape available", func(t *testing.T) {
 		rg := new(interfaces.MockRussianSolitaireGame)
-		setupRussianSolitaireWebMockDefaults(rg)
+		setupRussianSolitaireOutputMock(rg)
 		rg.ExpectedCalls = nil
 		rg.On("GetPhase").Return(domain.RussianSolitairePhasePlaying).Maybe()
 		rg.On("GetMoveCount").Return(5).Maybe()
@@ -95,7 +103,7 @@ func TestRussianSolitaireWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		rg := new(interfaces.MockRussianSolitaireGame)
-		setupRussianSolitaireWebMockDefaults(rg)
+		setupRussianSolitaireOutputMock(rg)
 		rg.ExpectedCalls = nil
 		rg.On("GetPhase").Return(domain.RussianSolitairePhaseGameClear).Maybe()
 		rg.On("GetMoveCount").Return(42).Maybe()
@@ -114,7 +122,7 @@ func TestRussianSolitaireWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		rg := new(interfaces.MockRussianSolitaireGame)
-		setupRussianSolitaireWebMockDefaults(rg)
+		setupRussianSolitaireOutputMock(rg)
 		rg.ExpectedCalls = nil
 		rg.On("GetPhase").Return(domain.RussianSolitairePhaseGameOver).Maybe()
 		rg.On("GetMoveCount").Return(10).Maybe()
@@ -133,11 +141,36 @@ func TestRussianSolitaireWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		rg := new(interfaces.MockRussianSolitaireGame)
-		setupRussianSolitaireWebMockDefaults(rg)
+		setupRussianSolitaireOutputMock(rg)
 		p := new(RussianSolitaireWebPresenter)
 
 		result := parseRussianSolitaireOutput(t, p.Output(rg, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestRussianSolitaireWebPresenterOutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		rsg := new(interfaces.MockRussianSolitaireGame)
+		setupRussianSolitaireWebMockDefaults(rsg)
+		rsg.On("GetHint").Return(&domain.RussianSolitaireHint{FromCol: 2, CardIndex: 0, ToZone: "foundation", ToCol: 1}).Maybe()
+
+		result := new(RussianSolitaireWebPresenter).Output(rsg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		rsg := new(interfaces.MockRussianSolitaireGame)
+		setupRussianSolitaireWebMockDefaults(rsg)
+		rsg.ExpectedCalls = filterCalls(rsg.ExpectedCalls, "IsStalemate")
+		rsg.On("IsStalemate").Return(true)
+		rsg.On("GetHint").Return(&domain.RussianSolitaireHint{FromCol: 2, CardIndex: 0, ToZone: "foundation", ToCol: 1}).Maybe()
+
+		result := new(RussianSolitaireWebPresenter).Output(rsg, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 

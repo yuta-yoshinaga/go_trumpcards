@@ -17,6 +17,19 @@ type SirTommyWebPresenter struct{}
 func (p *SirTommyWebPresenter) Output(g interfaces.SirTommyGame, lastErr error) string {
 	resObj := p.buildBase(g)
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if g.GetPhase() == domain.SirTommyPhasePlaying && !g.IsStalemate() {
+		if hint := g.GetHint(); hint != nil {
+			resObj.Hint = &controller.SirTommyWebOutputHint{
+				FromZone:      hint.FromZone,
+				WasteIdx:      hint.WasteIdx,
+				FoundationIdx: hint.FoundationIdx,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

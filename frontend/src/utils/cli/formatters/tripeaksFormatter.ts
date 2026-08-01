@@ -1,5 +1,5 @@
 import type { TriPeaksResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a TriPeaks game state as terminal text. */
 export function formatTripeaksState(state: TriPeaksResponse): string {
@@ -24,7 +24,7 @@ export function formatTripeaksState(state: TriPeaksResponse): string {
   lines.push(`moves: ${state.moveCount}`);
 
   if (state.isStalemate) lines.push('Stalemate - no more moves possible');
-  if (state.hint) lines.push(`HINT: (${state.hint.row},${state.hint.col})`);
+  if (state.hint && isRequestedHint(state)) lines.push(`HINT: (${state.hint.row},${state.hint.col})`);
   if (state.message) lines.push(state.message);
   if (state.phase === 1) lines.push('Congratulations! You win!');
 

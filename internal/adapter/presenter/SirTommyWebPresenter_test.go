@@ -41,10 +41,18 @@ func parseSirTommyOutput(t *testing.T, jsonStr string) *controller.SirTommyWebOu
 	return &out
 }
 
+// setupSirTommyOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupSirTommyOutputMock(g *interfaces.MockSirTommyGame) {
+	setupSirTommyWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestSirTommyWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		g := new(interfaces.MockSirTommyGame)
-		setupSirTommyWebMockDefaults(g)
+		setupSirTommyOutputMock(g)
 		result := parseSirTommyOutput(t, new(SirTommyWebPresenter).Output(g, nil))
 		assert.Equal(t, 0, result.Phase)
 		assert.Equal(t, "sirtommy.playing", result.MessageCode)
@@ -109,9 +117,34 @@ func TestSirTommyWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		g := new(interfaces.MockSirTommyGame)
-		setupSirTommyWebMockDefaults(g)
+		setupSirTommyOutputMock(g)
 		result := parseSirTommyOutput(t, new(SirTommyWebPresenter).Output(g, errors.New("boom")))
 		assert.Equal(t, "boom", result.Message)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestSirTommyWebPresenterOutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		stg := new(interfaces.MockSirTommyGame)
+		setupSirTommyWebMockDefaults(stg)
+		stg.On("GetHint").Return(&domain.SirTommyHint{FromZone: "waste", WasteIdx: 1, FoundationIdx: 2}).Maybe()
+
+		result := new(SirTommyWebPresenter).Output(stg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		stg := new(interfaces.MockSirTommyGame)
+		setupSirTommyWebMockDefaults(stg)
+		stg.ExpectedCalls = filterCalls(stg.ExpectedCalls, "IsStalemate")
+		stg.On("IsStalemate").Return(true)
+		stg.On("GetHint").Return(&domain.SirTommyHint{FromZone: "waste", WasteIdx: 1, FoundationIdx: 2}).Maybe()
+
+		result := new(SirTommyWebPresenter).Output(stg, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 
