@@ -36,4 +36,10 @@ describe('getAcesUpHint', () => {
   it('returns null once the game has ended', () => {
     expect(getAcesUpHint(makeState({ phase: 1, hint: { type: 'remove', col: 0 } }))).toBeNull();
   });
+
+  // **知らない type は無視する。**バックエンドが新しい手を返しても、
+  // 対応するボタンが無いうちは何も出さない。
+  it('returns null for an action it does not know', () => {
+    expect(getAcesUpHint(makeState({ hint: { type: 'teleport' as never, col: 0 } }))).toBeNull();
+  });
 });
