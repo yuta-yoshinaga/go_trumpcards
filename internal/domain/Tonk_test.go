@@ -640,10 +640,13 @@ func TestTonk_ScoreRound_NoOp(t *testing.T) {
 
 func TestTonk_GameEnd(t *testing.T) {
 	g := newTestTonk()
-	// **配牌を固定してから点数上限を下げる。**上限 1 のまま素の Reset を通すと、
-	// 配牌 Tonk (50 ボーナス + 50 点 = 100) を引いた局でその場で試合が終わり、
-	// ノック前にゲーム終了になったり、勝者が配牌 Tonk を引いた側になったりする。
-	// seed 1 が配牌 Tonk にならないことは TestTonk_ResetTwice が使っている。
+	// Pin the deal BEFORE lowering the point limit. Running Reset() with the
+	// limit already at 1 lets a Tonk-on-deal (50 bonus + 50 hand = 100) end the
+	// match on the spot, so the knock below reports "game has ended"; ordering
+	// it the other way still banks those 100 points for whoever drew the Tonk,
+	// which flips the winner assertion. Seed 1 is known to deal without a Tonk
+	// (TestTonk_ResetTwice relies on the same seed), and the assertion below
+	// checks that rather than assuming it.
 	g.SetRand(rand.New(rand.NewSource(1)))
 	g.Reset()
 	require.Equal(t, domain.TonkPhaseDraw, g.GetPhase(), "seed 1 should deal without a Tonk")
