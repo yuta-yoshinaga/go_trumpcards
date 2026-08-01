@@ -119,6 +119,36 @@ func TestSeahavenTowersWebPresenterOutputError(t *testing.T) {
 	assert.Contains(t, out.Message, "test error")
 }
 
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestSeahavenTowersWebPresenterOutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		s := domain.NewSeahavenTowers(domain.NewTrumpCards(0))
+		s.Reset()
+		s.SetPhase(domain.SeahavenTowersPhasePlaying)
+
+		// **配りに依存させない。**SetTableau で場を丸ごと置き換えるので、
+		// 動かせる札が 1 枚だけ残り、ヒントが必ず出る。
+		var tableau [domain.SeahavenTowersTableauCnt][]*domain.Card
+		tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+		s.SetTableau(tableau)
+
+		var out controller.SeahavenTowersWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(new(SeahavenTowersWebPresenter).Output(s, nil)), &out))
+		assert.NotNil(t, out.Hint, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	t.Run("not while cleared", func(t *testing.T) {
+		s := domain.NewSeahavenTowers(domain.NewTrumpCards(0))
+		s.Reset()
+		s.SetPhase(domain.SeahavenTowersPhaseGameClear)
+
+		var out controller.SeahavenTowersWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(new(SeahavenTowersWebPresenter).Output(s, nil)), &out))
+		assert.Nil(t, out.Hint)
+	})
+}
+
 func TestSeahavenTowersWebPresenterHintOutputWithHint(t *testing.T) {
 	p := new(SeahavenTowersWebPresenter)
 	s := domain.NewSeahavenTowers(domain.NewTrumpCards(0))

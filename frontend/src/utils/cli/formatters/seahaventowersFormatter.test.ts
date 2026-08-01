@@ -73,6 +73,7 @@ describe('formatSeahavenTowersState', () => {
     const result = formatSeahavenTowersState(
       makeState({
         hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 1, toZone: 'tableau', toCol: 2 },
+        messageCode: 'seahaventowers.hintAvailable',
       }),
     );
     expect(result).toContain('HINT');
@@ -83,6 +84,7 @@ describe('formatSeahavenTowersState', () => {
     const result = formatSeahavenTowersState(
       makeState({
         hint: { fromZone: 'reserved', fromCol: -1, cardIndex: -1, toZone: 'foundation', toCol: -1 },
+        messageCode: 'seahaventowers.hintAvailable',
       }),
     );
     expect(result).toContain('HINT');
@@ -108,5 +110,17 @@ describe('formatSeahavenTowersState', () => {
   it('omits congrats on playing phase', () => {
     const result = formatSeahavenTowersState(makeState({ phase: 0 }));
     expect(result).not.toContain('Congratulations');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 1 };
+    expect(formatSeahavenTowersState(makeState({ hint, messageCode: 'seahaventowers.hintAvailable' }))).toContain(
+      'HINT:',
+    );
+    expect(formatSeahavenTowersState(makeState({ hint, messageCode: 'seahaventowers.playing' }))).not.toContain(
+      'HINT:',
+    );
   });
 });

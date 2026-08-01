@@ -78,6 +78,7 @@ describe('formatPenguinState', () => {
     const result = formatPenguinState(
       makeState({
         hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: -1 },
+        messageCode: 'penguin.hintAvailable',
       }),
     );
     expect(result).toContain('HINT');
@@ -101,5 +102,13 @@ describe('formatPenguinState', () => {
   it('shows message when present', () => {
     const result = formatPenguinState(makeState({ message: 'test message' }));
     expect(result).toContain('test message');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 1 };
+    expect(formatPenguinState(makeState({ hint, messageCode: 'penguin.hintAvailable' }))).toContain('HINT:');
+    expect(formatPenguinState(makeState({ hint, messageCode: 'penguin.playing' }))).not.toContain('HINT:');
   });
 });
