@@ -17,6 +17,20 @@ type GaigelWebPresenter struct{}
 func (p *GaigelWebPresenter) Output(g interfaces.GaigelGame, lastErr error) string {
 	resObj := p.buildBase(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, g.GetCurrentTrick(), lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**Gaigel.GetHint() が自分で
+	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.GaigelWebOutputHint{
+			CardIndex:  hint.CardIndex,
+			Reason:     hint.Reason,
+			IsMarriage: hint.IsMarriage,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
