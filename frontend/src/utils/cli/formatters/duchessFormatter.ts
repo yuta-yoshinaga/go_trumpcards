@@ -1,5 +1,5 @@
 import type { DuchessResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a Duchess game state as terminal text. */
 export function formatDuchessState(state: DuchessResponse): string {
@@ -35,7 +35,7 @@ export function formatDuchessState(state: DuchessResponse): string {
 
   lines.push(`moves: ${state.moveCount}  undo:${state.canUndo ? 'yes' : 'no'}`);
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const from =
       state.hint.fromZone === 'tableau' ? `t${state.hint.fromIdx}[${state.hint.cardIndex}]` : state.hint.fromZone;
     const to = state.hint.toIdx >= 0 ? `${state.hint.toZone}${state.hint.toIdx}` : 'draw';
