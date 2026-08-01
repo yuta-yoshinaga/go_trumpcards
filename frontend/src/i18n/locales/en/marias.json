@@ -61,5 +61,7 @@
     "playButton": "Once a card is selected, play it with this button. Mariáš has no declarations — the only action is playing a card.",
     "info": "Each round a rotating Soloist (★) plays alone against the 2 Defenders. Trump is the Soloist's longest suit, chosen automatically. Points: A=11, 10=10, K=4, Q=3, J=2 (120 total). Winning the final 10th trick scores +10. The Soloist wins the round if their side outscores the 2 Defenders; on a Soloist loss each Defender scores double. The first player to reach the target points (default 10) wins the match.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

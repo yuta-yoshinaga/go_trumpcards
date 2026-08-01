@@ -54,7 +54,9 @@ describe('formatOmbreState', () => {
   });
 
   it('renders a hint with card indices', () => {
-    const out = formatOmbreState(makeOmbreState({ hint: { cardIndices: [1, 2], reason: 'follow_win' } }));
+    const out = formatOmbreState(
+      makeOmbreState({ hint: { cardIndices: [1, 2], reason: 'follow_win' }, messageCode: 'ombre.hintRequested' }),
+    );
     expect(out).toContain('HINT: card indices [1, 2]');
     expect(out).toContain('follow_win');
   });
@@ -67,5 +69,13 @@ describe('formatOmbreState', () => {
   it('renders an explicit message when present', () => {
     const out = formatOmbreState(makeOmbreState({ message: 'hello world' }));
     expect(out).toContain('hello world');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [1, 2], reason: 'follow_win' };
+    expect(formatOmbreState(makeOmbreState({ hint, messageCode: 'ombre.hintRequested' }))).toContain('HINT');
+    expect(formatOmbreState(makeOmbreState({ hint, messageCode: 'ombre.playing' }))).not.toContain('HINT');
   });
 });

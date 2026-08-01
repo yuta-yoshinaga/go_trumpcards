@@ -78,5 +78,7 @@
     "info": "得点はA=11, 10=10, K=4, Q=3, J=2。合計120点のうち、ピッカー側が61点以上取れば勝ちです。チップは勝敗で移動します。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "callButtonAriaLabel": "{{suit}}を呼ぶ（パートナー指定）"
+  "callButtonAriaLabel": "{{suit}}を呼ぶ（パートナー指定）",
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }

@@ -46,7 +46,9 @@ describe('formatMariasState', () => {
   });
 
   it('renders a hint with card indices', () => {
-    const out = formatMariasState(makeMariasState({ hint: { cardIndices: [1, 2], reason: 'follow_win' } }));
+    const out = formatMariasState(
+      makeMariasState({ hint: { cardIndices: [1, 2], reason: 'follow_win' }, messageCode: 'marias.hintRequested' }),
+    );
     expect(out).toContain('HINT: card indices [1, 2]');
     expect(out).toContain('follow_win');
   });
@@ -59,5 +61,13 @@ describe('formatMariasState', () => {
   it('renders an explicit message when present', () => {
     const out = formatMariasState(makeMariasState({ message: 'hello world' }));
     expect(out).toContain('hello world');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [1, 2], reason: 'follow_win' };
+    expect(formatMariasState(makeMariasState({ hint, messageCode: 'marias.hintRequested' }))).toContain('HINT');
+    expect(formatMariasState(makeMariasState({ hint, messageCode: 'marias.playing' }))).not.toContain('HINT');
   });
 });
