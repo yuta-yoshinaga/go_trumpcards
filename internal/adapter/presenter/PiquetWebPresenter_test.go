@@ -196,29 +196,52 @@ func TestPiquetWebPresenter_HintOutput_WithHint(t *testing.T) {
 // Piquet の GetHint は現在手番を引数に取るので、呼び出し式ごと HintOutput から
 // 写しています。
 func TestPiquetWebPresenterOutputCarriesTheHint(t *testing.T) {
-	players := []*domain.PiquetPlayer{
-		domain.NewPiquetPlayer(false),
-		domain.NewPiquetPlayer(false),
-	}
-	g := domain.NewPiquet(domain.NewTrumpCardsBelote(), players,
-		domain.PiquetConfig{DealsPerPartie: 1, CpuDifficulty: domain.PiquetCpuDifficultyNormal})
-	g.Reset()
-	for g.GetPhase() == domain.PiquetPhaseExchange {
-		g.CpuPlay()
-	}
-	for g.GetPhase() == domain.PiquetPhaseDeclaration {
-		_, _ = g.ResolveDeclaration()
-	}
-	if g.GetHint(g.GetCurrentPlayerIdx()) == nil {
-		t.Fatal("fixture must actually produce a hint")
+	// **人間席のあるフィクスチャで組む。**前のテストは両席とも CPU で作っていて、
+	// 「CPU の手番でも CPU の手札のヒントが出る」という本題を検出できなかった
+	// (#4554 のレビュー指摘)。
+	//
+	// フェーズは進めない。人間席があると `for phase == Exchange { CpuPlay() }` は
+	// 止まらない（CpuPlay は人間席では何もしない）。配り終えた交換フェーズで
+	// エルダーに捨て札ヒントが出るので、席の是非だけをここで確かめられる。
+	newGame := func(humanSeat int) *domain.Piquet {
+		players := []*domain.PiquetPlayer{
+			domain.NewPiquetPlayer(humanSeat == 0),
+			domain.NewPiquetPlayer(humanSeat == 1),
+		}
+		g := domain.NewPiquet(domain.NewTrumpCardsBelote(), players,
+			domain.PiquetConfig{DealsPerPartie: 1, CpuDifficulty: domain.PiquetCpuDifficultyNormal})
+		g.Reset()
+		return g
 	}
 
-	result := new(PiquetWebPresenter).Output(g, nil)
-	var parsed map[string]any
-	if err := json.Unmarshal([]byte(result), &parsed); err != nil {
-		t.Fatalf("invalid JSON: %v", err)
-	}
-	if parsed["hint"] == nil {
-		t.Error("Output must carry the hint -- the frontend reads state.hint")
-	}
+	t.Run("carries the hint on the human's turn", func(t *testing.T) {
+		g := newGame(newGame(0).GetCurrentPlayerIdx())
+		if g.GetHint(g.GetCurrentPlayerIdx()) == nil {
+			t.Fatal("fixture must actually produce a hint")
+		}
+
+		var parsed map[string]any
+		if err := json.Unmarshal([]byte(new(PiquetWebPresenter).Output(g, nil)), &parsed); err != nil {
+			t.Fatalf("invalid JSON: %v", err)
+		}
+		if parsed["hint"] == nil {
+			t.Error("Output must carry the hint -- the frontend reads state.hint")
+		}
+	})
+
+	// **相手の席のヒントは出さない。**出すと CPU の手札を説明する行が人間に見える。
+	t.Run("stays silent for a CPU seat", func(t *testing.T) {
+		g := newGame(1 - newGame(0).GetCurrentPlayerIdx())
+		if g.GetHint(g.GetCurrentPlayerIdx()) != nil {
+			t.Error("GetHint must not describe a CPU seat's hand")
+		}
+
+		var parsed map[string]any
+		if err := json.Unmarshal([]byte(new(PiquetWebPresenter).Output(g, nil)), &parsed); err != nil {
+			t.Fatalf("invalid JSON: %v", err)
+		}
+		if parsed["hint"] != nil {
+			t.Error("Output must not leak a hint for the CPU's hand")
+		}
+	})
 }
