@@ -70,5 +70,7 @@
     "dumpPig": "A chance to dump the ♠Q (pig)",
     "dumpHearts": "A chance to discard hearts",
     "playHighest": "Play your highest card"
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

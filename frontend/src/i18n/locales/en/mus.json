@@ -90,5 +90,7 @@
     "juegoBest": "31 ★ (best)",
     "juegoYes": "{{points}} (has Juego)",
     "juegoPunto": "Punto {{points}} (no Juego)"
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

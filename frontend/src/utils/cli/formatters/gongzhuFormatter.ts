@@ -1,5 +1,12 @@
 import type { GongZhuResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 /** Build the exposure summary line (e.g. "♠Q, ♦J" or "none"). */
 function exposureSummary(state: GongZhuResponse): string {
@@ -40,7 +47,7 @@ export function formatGongZhuState(state: GongZhuResponse): string {
     lines.push('Exposure phase: expose [i...] to reveal point cards (doubles their value)');
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const indices = state.hint.cardIndices ?? [];
     lines.push(`HINT: card indices [${indices.join(', ')}] (${state.hint.reason})`);
   }

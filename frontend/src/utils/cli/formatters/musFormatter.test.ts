@@ -64,6 +64,7 @@ describe('formatMusState', () => {
   it('renders a hint with indices and reason', () => {
     const out = formatMusState(
       makeMusState({
+        messageCode: 'mus.hintRequested',
         hint: { mus: false, action: 1, amount: 2, indices: [0, 1], reason: 'strong_hand' },
       }),
     );
@@ -75,6 +76,7 @@ describe('formatMusState', () => {
   it('renders a hint without indices', () => {
     const out = formatMusState(
       makeMusState({
+        messageCode: 'mus.hintRequested',
         hint: { mus: true, action: 0, amount: 0, indices: [], reason: 'weak_hand' },
       }),
     );
@@ -96,5 +98,13 @@ describe('formatMusState', () => {
   it('omits the game over banner when there is no winner', () => {
     const out = formatMusState(makeMusState({ gameEndFlag: true, winnerTeam: -1 }));
     expect(out).not.toContain('Game Over');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { mus: false, action: 1, amount: 2, indices: [0, 1], reason: 'strong_hand' };
+    expect(formatMusState(makeMusState({ hint, messageCode: 'mus.hintRequested' }))).toContain('HINT');
+    expect(formatMusState(makeMusState({ hint, messageCode: 'mus.playing' }))).not.toContain('HINT');
   });
 });

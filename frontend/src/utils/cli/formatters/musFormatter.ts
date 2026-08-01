@@ -1,5 +1,5 @@
 import type { MusResponse } from '../../../types/card';
-import { formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import { formatHeader, formatIndexedCards, formatPlayerName, formatSeparator, isRequestedHint } from '../formatterBase';
 
 const PHASE_NAMES = ['Mus', 'Discard', 'Grande', 'Chica', 'Pares', 'Juego', 'Showdown', 'RoundEnd', 'GameEnd'];
 const ROUND_NAMES = ['Grande', 'Chica', 'Pares', 'Juego'];
@@ -32,7 +32,7 @@ export function formatMusState(state: MusResponse): string {
     lines.push(`results: ${resultParts.join(', ')}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const ind = state.hint.indices ?? [];
     const indStr = ind.length > 0 ? ` indices [${ind.join(', ')}]` : '';
     lines.push(`HINT: action=${state.hint.action}${indStr} (${state.hint.reason})`);
