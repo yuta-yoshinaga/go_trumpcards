@@ -52,10 +52,18 @@ func parseCrescentOutput(t *testing.T, jsonStr string) *controller.CrescentWebOu
 	return &out
 }
 
+// setupCrescentOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupCrescentOutputMock(g *interfaces.MockCrescentGame) {
+	setupCrescentWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestCrescentWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		cg := new(interfaces.MockCrescentGame)
-		setupCrescentWebMockDefaults(cg)
+		setupCrescentOutputMock(cg)
 		p := new(CrescentWebPresenter)
 
 		result := parseCrescentOutput(t, p.Output(cg, nil))
@@ -68,7 +76,7 @@ func TestCrescentWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		cg := new(interfaces.MockCrescentGame)
-		setupCrescentWebMockDefaults(cg)
+		setupCrescentOutputMock(cg)
 		p := new(CrescentWebPresenter)
 		result := parseCrescentOutput(t, p.Output(cg, errors.New("boom")))
 		assert.Equal(t, "boom", result.Message)
@@ -76,7 +84,7 @@ func TestCrescentWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		cg := new(interfaces.MockCrescentGame)
-		setupCrescentWebMockDefaults(cg)
+		setupCrescentOutputMock(cg)
 		cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "GetPhase")
 		cg.On("GetPhase").Return(domain.CrescentPhaseGameClear)
 		p := new(CrescentWebPresenter)
@@ -86,7 +94,7 @@ func TestCrescentWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		cg := new(interfaces.MockCrescentGame)
-		setupCrescentWebMockDefaults(cg)
+		setupCrescentOutputMock(cg)
 		cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "GetPhase")
 		cg.On("GetPhase").Return(domain.CrescentPhaseGameOver)
 		p := new(CrescentWebPresenter)
@@ -96,12 +104,37 @@ func TestCrescentWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		cg := new(interfaces.MockCrescentGame)
-		setupCrescentWebMockDefaults(cg)
+		setupCrescentOutputMock(cg)
 		cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "IsStalemate")
 		cg.On("IsStalemate").Return(true)
 		p := new(CrescentWebPresenter)
 		result := parseCrescentOutput(t, p.Output(cg, nil))
 		assert.Equal(t, "crescent.stalemate", result.MessageCode)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestCrescentWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		cg := new(interfaces.MockCrescentGame)
+		setupCrescentWebMockDefaults(cg)
+		cg.On("GetHint").Return(&domain.CrescentHint{FromCol: 2, ToZone: "foundation", ToCol: 1, Redeal: false}).Maybe()
+
+		result := new(CrescentWebPresenter).Output(cg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		cg := new(interfaces.MockCrescentGame)
+		setupCrescentWebMockDefaults(cg)
+		cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "IsStalemate")
+		cg.On("IsStalemate").Return(true)
+		cg.On("GetHint").Return(&domain.CrescentHint{FromCol: 2, ToZone: "foundation", ToCol: 1, Redeal: false}).Maybe()
+
+		result := new(CrescentWebPresenter).Output(cg, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 

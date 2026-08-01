@@ -40,17 +40,30 @@ describe('formatCrescentState', () => {
     const out = formatCrescentState({
       ...baseState,
       hint: { fromCol: 2, toZone: 'foundation', toCol: 4, redeal: false },
+      messageCode: 'crescent.hintAvailable',
     });
     expect(out).toContain('HINT: t2 → foundation4');
   });
 
   it('renders a redeal hint', () => {
-    const out = formatCrescentState({ ...baseState, hint: { fromCol: -1, toZone: '', toCol: -1, redeal: true } });
+    const out = formatCrescentState({
+      ...baseState,
+      hint: { fromCol: -1, toZone: '', toCol: -1, redeal: true },
+      messageCode: 'crescent.hintAvailable',
+    });
     expect(out).toContain('HINT: redeal');
   });
 
   it('renders stalemate and win banners', () => {
     expect(formatCrescentState({ ...baseState, isStalemate: true })).toContain('Stalemate');
     expect(formatCrescentState({ ...baseState, phase: 1 })).toContain('Congratulations');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { fromCol: 2, toZone: 'foundation', toCol: 4, redeal: false };
+    expect(formatCrescentState({ ...baseState, hint, messageCode: 'crescent.hintAvailable' })).toContain('HINT:');
+    expect(formatCrescentState({ ...baseState, hint, messageCode: 'crescent.playing' })).not.toContain('HINT:');
   });
 });
