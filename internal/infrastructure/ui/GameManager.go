@@ -4083,6 +4083,21 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "guandan", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewGuandanCuiController(usecase.NewGuandanInteractor(
+				domain.NewDefaultGuandan(), new(presenter.GuandanCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "guandan.helpTitle",
+				CommandKeys: []string{
+					"guandan.helpPlay",
+					"guandan.helpPass",
+					"guandan.helpTribute",
+					"guandan.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

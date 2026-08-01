@@ -349,4 +349,12 @@ func init() {
 			return usecase.RestoreSixBidSoloInteractor(data, new(presenter.SixBidSoloWebPresenter))
 		},
 		controller.NewSixBidSoloWebControllerWithProvider)
+	games.RegisterKVGame("guandan", games.CategoryExtra2,
+		func() usecase.GuandanInteractorIF {
+			return usecase.NewGuandanInteractor(domain.NewDefaultGuandan(), new(presenter.GuandanWebPresenter))
+		},
+		func(data []byte) (usecase.GuandanInteractorIF, error) {
+			return usecase.RestoreGuandanInteractor(data, new(presenter.GuandanWebPresenter))
+		},
+		controller.NewGuandanWebControllerWithProvider)
 }

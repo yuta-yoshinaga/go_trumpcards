@@ -276,7 +276,8 @@
     "bideuchre": "Bid Euchre",
     "sixbidsolo": "Six-Bid Solo",
     "karnoffel": "Karnöffel",
-    "literature": "Literature"
+    "literature": "Literature",
+    "guandan": "Guandan"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1365,7 +1366,14 @@
     "literature.claimLost": "An opponent held at least one, so the half-suit goes to them",
     "literature.result.humanWin": "Your team reached five, a majority of eight",
     "literature.result.cpuWin": "The other team reached five, a majority of eight",
-    "literature.result.draw": "It ended level, so nobody wins"
+    "literature.result.draw": "It ended level, so nobody wins",
+    "guandan.tributePhase": "Tribute — hand one card back in exchange",
+    "guandan.playPhase": "In play — only a combination that beats the table",
+    "guandan.tributeCancelled": "Tribute is off: a payer held both red jokers",
+    "guandan.handEnd": "The hand is over. Deal the next one.",
+    "guandan.handFirstSecond": "First AND second — four levels at once",
+    "guandan.result.humanWin": "Your team climbed past the ace",
+    "guandan.result.cpuWin": "The other team climbed past the ace"
   },
   "manual": {
     "ariaLabel": "Game Manual",

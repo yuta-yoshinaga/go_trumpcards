@@ -1300,4 +1300,9 @@ func init() {
 			return usecase.NewLiteratureInteractor(domain.NewDefaultLiterature(), new(presenter.LiteratureWebPresenter))
 		},
 		controller.NewLiteratureWebController)
+	BindWebControllerFor("guandan",
+		func() usecase.GuandanInteractorIF {
+			return usecase.NewGuandanInteractor(domain.NewDefaultGuandan(), new(presenter.GuandanWebPresenter))
+		},
+		controller.NewGuandanWebController)
 }
