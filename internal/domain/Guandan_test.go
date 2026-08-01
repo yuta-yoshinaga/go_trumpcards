@@ -928,6 +928,43 @@ func TestGuandanCpuHandlesTheTributePhase(t *testing.T) {
 	}
 }
 
+// **連続役には連続役で応じる。**爆弾しか返せないと、爆弾を無駄に失う。
+func TestGuandanCpuAnswersARunInKind(t *testing.T) {
+	const level = 5
+	g := gdFresh(t, level)
+	g.SetCurrentPlayerForTest(1)
+
+	// 席 1 に 7-8-9 の連続ペアだけを持たせる。爆弾は持たせない。
+	g.SetHandForTest(1, []*Card{
+		gdCard(CardDesignSpade, 7), gdCard(CardDesignClover, 7),
+		gdCard(CardDesignSpade, 8), gdCard(CardDesignClover, 8),
+		gdCard(CardDesignSpade, 9), gdCard(CardDesignClover, 9),
+	})
+	// 場は 4-5-6 のチューブ。**レベル札をまたぐ連続役。**
+	g.SetHandForTest(0, []*Card{
+		gdCard(CardDesignSpade, 4), gdCard(CardDesignClover, 4),
+		gdCard(CardDesignSpade, level), gdCard(CardDesignClover, level),
+		gdCard(CardDesignSpade, 6), gdCard(CardDesignClover, 6),
+	})
+	g.SetCurrentPlayerForTest(0)
+	if err := g.PlayCards(0, []int{0, 1, 2, 3, 4, 5}); err != nil {
+		t.Fatalf("the lead was rejected: %v", err)
+	}
+
+	idxs := g.GuandanCpuPlay(1)
+	if len(idxs) != 6 {
+		t.Fatalf("the CPU offered %d cards, want a 6-card tube", len(idxs))
+	}
+	cards := make([]*Card, 0, len(idxs))
+	for _, i := range idxs {
+		cards = append(cards, g.GetPlayer(1).GetCard(i))
+	}
+	c := GuandanEvaluate(cards, level)
+	if c == nil || c.Kind != GuandanComboTube {
+		t.Fatalf("the CPU played %v, want a tube", c)
+	}
+}
+
 func TestGuandanCpuEdges(t *testing.T) {
 	g := gdFresh(t, GuandanMinLevel)
 	if got := g.GuandanCpuPlay(99); got != nil {

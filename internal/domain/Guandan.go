@@ -1042,6 +1042,14 @@ func (g *Guandan) guandanFindBeating(seat int, order []int) []int {
 		}
 	}
 
+	// **連続役には連続役で応じる。**同ランクの塊しか見ないと、チューブや
+	// プレートには爆弾を切るしかなくなり、爆弾を無駄に失う。
+	if k := g.lastCombo.Kind; k == GuandanComboTube || k == GuandanComboPlate {
+		if idxs := g.guandanFindRunBeating(seat, order, k); idxs != nil {
+			return idxs
+		}
+	}
+
 	// 爆弾で流す手があるなら使う。
 	for _, r := range ranks {
 		group := byRank[r]
@@ -1054,6 +1062,48 @@ func (g *Guandan) guandanFindBeating(seat int, order []int) []int {
 		}
 		if combo := GuandanEvaluate(cards, g.level); GuandanBeats(combo, g.lastCombo) {
 			return append([]int(nil), group...)
+		}
+	}
+	return nil
+}
+
+// guandanFindRunBeating は連続役 (チューブ・プレート) で場を越える手を探す。
+//
+// **連続の判定は自然位置。**レベル札も本来のランクで数える。
+func (g *Guandan) guandanFindRunBeating(seat int, order []int, kind GuandanComboKind) []int {
+	p := g.GetPlayer(seat)
+	each, groups := 2, 3
+	if kind == GuandanComboPlate {
+		each, groups = 3, 2
+	}
+	byNatural := map[int][]int{}
+	for _, i := range order {
+		c := p.GetCard(i)
+		if GuandanIsWild(c, g.level) {
+			continue
+		}
+		r := guandanNaturalRank(c)
+		byNatural[r] = append(byNatural[r], i)
+	}
+	for start := GuandanMinLevel; start+groups-1 <= 14; start++ {
+		idxs := make([]int, 0, each*groups)
+		for k := range groups {
+			group := byNatural[start+k]
+			if len(group) < each {
+				idxs = nil
+				break
+			}
+			idxs = append(idxs, group[:each]...)
+		}
+		if idxs == nil {
+			continue
+		}
+		cards := make([]*Card, 0, len(idxs))
+		for _, i := range idxs {
+			cards = append(cards, p.GetCard(i))
+		}
+		if combo := GuandanEvaluate(cards, g.level); GuandanBeats(combo, g.lastCombo) {
+			return idxs
 		}
 	}
 	return nil
