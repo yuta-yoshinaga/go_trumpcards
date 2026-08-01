@@ -460,16 +460,29 @@ func (k *Karnoffel) PlayCard(player, idx int) error {
 	return nil
 }
 
-// resolveTrick はトリックの勝者を決める。
-func (k *Karnoffel) resolveTrick() {
-	lead := k.trick[0]
-	winOffset, best := 0, k.trick[0]
-	for i := 1; i < len(k.trick); i++ {
-		// **位置が強さを変える。**リードされた悪魔だけが特権を持つ。
-		if KarnoffelBeats(k.trick[i], best, lead, k.chosenSuit, false, winOffset == 0) {
-			winOffset, best = i, k.trick[i]
+// karnoffelLeadingCard は場の札のうち現在勝っているものを返す。
+//
+// **位置が強さを変える**ので、単に強さで畳み込むことができない。リードされた
+// 悪魔だけが特権を持つため、勝者が第 1 打かどうかを持ち回る必要がある。
+// 途中経過の判定 (CPU の読み) と最終判定 (トリック確定) で同じ規則を使うので、
+// 片方だけ直して食い違うことがないよう 1 箇所にまとめてある。
+func karnoffelLeadingCard(trick []*Card, chosenSuit int) (int, *Card) {
+	if len(trick) == 0 {
+		return 0, nil
+	}
+	lead := trick[0]
+	winOffset, best := 0, trick[0]
+	for i := 1; i < len(trick); i++ {
+		if KarnoffelBeats(trick[i], best, lead, chosenSuit, false, winOffset == 0) {
+			winOffset, best = i, trick[i]
 		}
 	}
+	return winOffset, best
+}
+
+// resolveTrick はトリックの勝者を決める。
+func (k *Karnoffel) resolveTrick() {
+	winOffset, _ := karnoffelLeadingCard(k.trick, k.chosenSuit)
 	winner := (k.trickLeader + winOffset) % KarnoffelPlayerCnt
 	k.tricksWon[winner]++
 	k.addLog(winner, "trickWin", "", k.trick)
@@ -580,13 +593,8 @@ func (k *Karnoffel) KarnoffelCpuPlay(idx int) int {
 		return karnoffelStrongest(p, valid, k.chosenSuit)
 	}
 	lead := k.trick[0]
-	best := k.trick[0]
-	bestIsLead := true
-	for _, c := range k.trick[1:] {
-		if KarnoffelBeats(c, best, lead, k.chosenSuit, false, bestIsLead) {
-			best, bestIsLead = c, false
-		}
-	}
+	winOffset, best := karnoffelLeadingCard(k.trick, k.chosenSuit)
+	bestIsLead := winOffset == 0
 	// 勝てる中でいちばん弱い札を出す。
 	win, winRank := -1, 1<<30
 	for _, i := range valid {

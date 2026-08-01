@@ -331,6 +331,47 @@ func TestKarnoffelPlainRanking(t *testing.T) {
 	}
 }
 
+// **勝者判定は 1 箇所に集約されている。**途中経過 (CPU の読み) と最終判定で
+// 同じ規則を使うので、片方だけ直して食い違うことがない。
+func TestKarnoffelLeadingCardIsSharedBetweenReadAndResolve(t *testing.T) {
+	const chosen = CardDesignHeart
+	// リードされた悪魔は、あとから出たどの札にも抜かれない。
+	trick := []*Card{
+		knCard(chosen, KarnoffelDevil),
+		knCard(chosen, KarnoffelPope),
+		knCard(CardDesignSpade, 13),
+	}
+	off, best := karnoffelLeadingCard(trick, chosen)
+	if off != 0 || best != trick[0] {
+		t.Errorf("offset = %d, want the led devil to still be winning", off)
+	}
+
+	// 追随して出した悪魔は逆に勝てない。
+	trick2 := []*Card{
+		knCard(CardDesignSpade, 2),
+		knCard(chosen, KarnoffelDevil),
+	}
+	off2, _ := karnoffelLeadingCard(trick2, chosen)
+	if off2 != 0 {
+		t.Errorf("offset = %d, want the plain lead to hold — a followed devil loses to everything", off2)
+	}
+
+	// カルニッフェルはリードされた悪魔をも抜く。
+	trick3 := []*Card{
+		knCard(chosen, KarnoffelDevil),
+		knCard(chosen, KarnoffelKarnoffel),
+	}
+	off3, _ := karnoffelLeadingCard(trick3, chosen)
+	if off3 != 1 {
+		t.Errorf("offset = %d, want the Karnöffel to beat even a led devil", off3)
+	}
+
+	// 空のトリックでも落ちない。
+	if off, best := karnoffelLeadingCard(nil, chosen); off != 0 || best != nil {
+		t.Error("an empty trick has no leader")
+	}
+}
+
 // 平札どうしはリードスートに追随したものだけが争う。
 func TestKarnoffelPlainTrickResolution(t *testing.T) {
 	k := knPlaying(t, CardDesignHeart)
