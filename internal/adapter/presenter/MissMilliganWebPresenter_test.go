@@ -43,10 +43,17 @@ func parseMissMilliganOutput(t *testing.T, jsonStr string) *controller.MissMilli
 	return &out
 }
 
+// setupMissMilliganOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**
+// ようになった (#4483) ので GetHint を呼べるようにする。
+func setupMissMilliganOutputMock(g *interfaces.MockMissMilliganGame) {
+	setupMissMilliganWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestMissMilliganWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		g := new(interfaces.MockMissMilliganGame)
-		setupMissMilliganWebMockDefaults(g)
+		setupMissMilliganOutputMock(g)
 
 		result := parseMissMilliganOutput(t, new(MissMilliganWebPresenter).Output(g, nil))
 		assert.Equal(t, 0, result.Phase)
@@ -62,7 +69,7 @@ func TestMissMilliganWebPresenter_Output(t *testing.T) {
 	// client must not have to recompute it.
 	t.Run("canWaive is surfaced", func(t *testing.T) {
 		g := new(interfaces.MockMissMilliganGame)
-		setupMissMilliganWebMockDefaults(g)
+		setupMissMilliganOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "CanWaive")
 		g.On("CanWaive").Return(true)
 
@@ -74,7 +81,7 @@ func TestMissMilliganWebPresenter_Output(t *testing.T) {
 	// gets its own message rather than looking like ordinary play.
 	t.Run("waiving has its own message", func(t *testing.T) {
 		g := new(interfaces.MockMissMilliganGame)
-		setupMissMilliganWebMockDefaults(g)
+		setupMissMilliganOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetWaived")
 		g.On("GetWaived").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 8, true)})
 
@@ -85,7 +92,7 @@ func TestMissMilliganWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate outranks waiving", func(t *testing.T) {
 		g := new(interfaces.MockMissMilliganGame)
-		setupMissMilliganWebMockDefaults(g)
+		setupMissMilliganOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetWaived")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsStalemate")
 		g.On("GetWaived").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 8, true)})
@@ -97,7 +104,7 @@ func TestMissMilliganWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		g := new(interfaces.MockMissMilliganGame)
-		setupMissMilliganWebMockDefaults(g)
+		setupMissMilliganOutputMock(g)
 
 		result := parseMissMilliganOutput(t, new(MissMilliganWebPresenter).Output(g, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
@@ -113,7 +120,7 @@ func TestMissMilliganWebPresenter_Output(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			g := new(interfaces.MockMissMilliganGame)
-			setupMissMilliganWebMockDefaults(g)
+			setupMissMilliganOutputMock(g)
 			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 			g.On("GetPhase").Return(tc.val)
 
@@ -121,6 +128,22 @@ func TestMissMilliganWebPresenter_Output(t *testing.T) {
 			assert.Equal(t, tc.code, result.MessageCode)
 		})
 	}
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestMissMilliganWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.MissMilliganHint{FromZone: "tableau", FromCol: 2, CardIndex: 1, ToZone: "foundation", ToIdx: 0}
+
+	g := new(interfaces.MockMissMilliganGame)
+	setupMissMilliganWebMockDefaults(g)
+	g.On("GetHint").Return(hint).Maybe()
+
+	result := parseMissMilliganOutput(t, new(MissMilliganWebPresenter).Output(g, nil))
+	if result.Hint == nil {
+		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+	}
+	assert.Equal(t, 2, result.Hint.FromCol)
 }
 
 func TestMissMilliganWebPresenter_HintOutput(t *testing.T) {

@@ -51,13 +51,28 @@ describe('formatGrandfathersClockState', () => {
   });
 
   it('shows a clock-face hint', () => {
-    const result = formatGrandfathersClockState(makeState({ hint: { fromCol: 3, toZone: 'foundation', toIdx: 7 } }));
+    const result = formatGrandfathersClockState(
+      makeState({
+        hint: { fromCol: 3, toZone: 'foundation', toIdx: 7 },
+        messageCode: 'grandfathersclock.hintAvailable',
+      }),
+    );
     expect(result).toContain('HINT');
     expect(result).toContain('f7');
   });
 
+  // **頼んでいないヒントは CLI に出さない。**#4483 以降 Output() もヒントを載せる。
+  it('does not print a passive hint carried on an ordinary response', () => {
+    const result = formatGrandfathersClockState(
+      makeState({ hint: { fromCol: 3, toZone: 'foundation', toIdx: 7 }, messageCode: 'grandfathersclock.playing' }),
+    );
+    expect(result).not.toContain('HINT');
+  });
+
   it('shows a tableau hint', () => {
-    const result = formatGrandfathersClockState(makeState({ hint: { fromCol: 3, toZone: 'tableau', toIdx: 5 } }));
+    const result = formatGrandfathersClockState(
+      makeState({ hint: { fromCol: 3, toZone: 'tableau', toIdx: 5 }, messageCode: 'grandfathersclock.hintAvailable' }),
+    );
     expect(result).toContain('t5');
   });
 

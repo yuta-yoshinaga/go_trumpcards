@@ -55,6 +55,21 @@ func (p *MissMilliganWebPresenter) Output(mm interfaces.MissMilliganGame, lastEr
 	resObj.CanWaive = mm.CanWaive()
 
 	// メッセージ
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if mm.GetPhase() == domain.MissMilliganPhasePlaying && !mm.IsStalemate() {
+		if hint := mm.GetHint(); hint != nil {
+			resObj.Hint = &controller.MissMilliganWebOutputHint{
+				FromZone:  hint.FromZone,
+				FromCol:   hint.FromCol,
+				CardIndex: hint.CardIndex,
+				ToZone:    hint.ToZone,
+				ToIdx:     hint.ToIdx,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

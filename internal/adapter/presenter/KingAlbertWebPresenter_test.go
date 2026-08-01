@@ -54,10 +54,17 @@ func parseKingAlbertOutput(t *testing.T, jsonStr string) *controller.KingAlbertW
 	return &out
 }
 
+// setupKingAlbertOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**
+// ようになった (#4483) ので GetHint を呼べるようにする。
+func setupKingAlbertOutputMock(g *interfaces.MockKingAlbertGame) {
+	setupKingAlbertWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestKingAlbertWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		bg := new(interfaces.MockKingAlbertGame)
-		setupKingAlbertWebMockDefaults(bg)
+		setupKingAlbertOutputMock(bg)
 		p := new(KingAlbertWebPresenter)
 
 		result := parseKingAlbertOutput(t, p.Output(bg, nil))
@@ -71,7 +78,7 @@ func TestKingAlbertWebPresenter_Output(t *testing.T) {
 
 	t.Run("all face up", func(t *testing.T) {
 		bg := new(interfaces.MockKingAlbertGame)
-		setupKingAlbertWebMockDefaults(bg)
+		setupKingAlbertOutputMock(bg)
 		p := new(KingAlbertWebPresenter)
 
 		result := parseKingAlbertOutput(t, p.Output(bg, nil))
@@ -85,7 +92,7 @@ func TestKingAlbertWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		bg := new(interfaces.MockKingAlbertGame)
-		setupKingAlbertWebMockDefaults(bg)
+		setupKingAlbertOutputMock(bg)
 		p := new(KingAlbertWebPresenter)
 
 		result := parseKingAlbertOutput(t, p.Output(bg, errors.New("test error")))
@@ -94,7 +101,7 @@ func TestKingAlbertWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		bg := new(interfaces.MockKingAlbertGame)
-		setupKingAlbertWebMockDefaults(bg)
+		setupKingAlbertOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.KingAlbertPhaseGameClear)
 
@@ -105,7 +112,7 @@ func TestKingAlbertWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		bg := new(interfaces.MockKingAlbertGame)
-		setupKingAlbertWebMockDefaults(bg)
+		setupKingAlbertOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.KingAlbertPhaseGameOver)
 
@@ -116,7 +123,7 @@ func TestKingAlbertWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		bg := new(interfaces.MockKingAlbertGame)
-		setupKingAlbertWebMockDefaults(bg)
+		setupKingAlbertOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
 		bg.On("IsStalemate").Return(true)
 
@@ -127,7 +134,7 @@ func TestKingAlbertWebPresenter_Output(t *testing.T) {
 
 	t.Run("depleted reserve cell serialises null", func(t *testing.T) {
 		bg := new(interfaces.MockKingAlbertGame)
-		setupKingAlbertWebMockDefaults(bg)
+		setupKingAlbertOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetReserve")
 		bg.On("GetReserve").Return([]*domain.Card{nil, domain.NewCard(domain.CardDesignSpade, 5, false)})
 
@@ -137,6 +144,22 @@ func TestKingAlbertWebPresenter_Output(t *testing.T) {
 		assert.Nil(t, result.Reserve[0])
 		assert.NotNil(t, result.Reserve[1])
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestKingAlbertWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.KingAlbertHint{FromZone: "tableau", FromCol: 2, CardIndex: 1, ToZone: "foundation", ToCol: 0}
+
+	bg := new(interfaces.MockKingAlbertGame)
+	setupKingAlbertWebMockDefaults(bg)
+	bg.On("GetHint").Return(hint).Maybe()
+
+	result := parseKingAlbertOutput(t, new(KingAlbertWebPresenter).Output(bg, nil))
+	if result.Hint == nil {
+		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+	}
+	assert.Equal(t, 2, result.Hint.FromCol)
 }
 
 func TestKingAlbertWebPresenter_HintOutput(t *testing.T) {

@@ -49,10 +49,17 @@ func parseGrandfathersClockOutput(t *testing.T, jsonStr string) *controller.Gran
 	return &out
 }
 
+// setupGrandfathersClockOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**
+// ようになった (#4483) ので GetHint を呼べるようにする。
+func setupGrandfathersClockOutputMock(g *interfaces.MockGrandfathersClockGame) {
+	setupGrandfathersClockWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestGrandfathersClockWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
-		setupGrandfathersClockWebMockDefaults(g)
+		setupGrandfathersClockOutputMock(g)
 
 		result := parseGrandfathersClockOutput(t, new(GrandfathersClockWebPresenter).Output(g, nil))
 		assert.Equal(t, 0, result.Phase)
@@ -65,7 +72,7 @@ func TestGrandfathersClockWebPresenter_Output(t *testing.T) {
 	// clock ordering and drift from the domain.
 	t.Run("each face carries its target rank", func(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
-		setupGrandfathersClockWebMockDefaults(g)
+		setupGrandfathersClockOutputMock(g)
 
 		result := parseGrandfathersClockOutput(t, new(GrandfathersClockWebPresenter).Output(g, nil))
 		for i, f := range result.Foundation {
@@ -78,7 +85,7 @@ func TestGrandfathersClockWebPresenter_Output(t *testing.T) {
 
 	t.Run("completed faces are flagged", func(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
-		setupGrandfathersClockWebMockDefaults(g)
+		setupGrandfathersClockOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsFoundationComplete")
 		g.On("IsFoundationComplete", mock.AnythingOfType("int")).Return(true)
 
@@ -90,7 +97,7 @@ func TestGrandfathersClockWebPresenter_Output(t *testing.T) {
 
 	t.Run("all face up", func(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
-		setupGrandfathersClockWebMockDefaults(g)
+		setupGrandfathersClockOutputMock(g)
 
 		result := parseGrandfathersClockOutput(t, new(GrandfathersClockWebPresenter).Output(g, nil))
 		for _, col := range result.Tableau {
@@ -103,7 +110,7 @@ func TestGrandfathersClockWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
-		setupGrandfathersClockWebMockDefaults(g)
+		setupGrandfathersClockOutputMock(g)
 
 		result := parseGrandfathersClockOutput(t, new(GrandfathersClockWebPresenter).Output(g, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
@@ -119,7 +126,7 @@ func TestGrandfathersClockWebPresenter_Output(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			g := new(interfaces.MockGrandfathersClockGame)
-			setupGrandfathersClockWebMockDefaults(g)
+			setupGrandfathersClockOutputMock(g)
 			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 			g.On("GetPhase").Return(tc.val)
 
@@ -130,13 +137,29 @@ func TestGrandfathersClockWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
-		setupGrandfathersClockWebMockDefaults(g)
+		setupGrandfathersClockOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsStalemate")
 		g.On("IsStalemate").Return(true)
 
 		result := parseGrandfathersClockOutput(t, new(GrandfathersClockWebPresenter).Output(g, nil))
 		assert.Equal(t, "grandfathersclock.stalemate", result.MessageCode)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestGrandfathersClockWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.GrandfathersClockHint{FromCol: 2, ToZone: "foundation", ToIdx: 0}
+
+	g := new(interfaces.MockGrandfathersClockGame)
+	setupGrandfathersClockWebMockDefaults(g)
+	g.On("GetHint").Return(hint).Maybe()
+
+	result := parseGrandfathersClockOutput(t, new(GrandfathersClockWebPresenter).Output(g, nil))
+	if result.Hint == nil {
+		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+	}
+	assert.Equal(t, 2, result.Hint.FromCol)
 }
 
 func TestGrandfathersClockWebPresenter_HintOutput(t *testing.T) {

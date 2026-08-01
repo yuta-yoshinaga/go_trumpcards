@@ -1,5 +1,5 @@
 import type { GrandfathersClockResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a Grandfather's Clock game state as terminal text. */
 export function formatGrandfathersClockState(state: GrandfathersClockResponse): string {
@@ -28,7 +28,7 @@ export function formatGrandfathersClockState(state: GrandfathersClockResponse): 
 
   lines.push(`moves: ${state.moveCount}  undo:${state.canUndo ? 'yes' : 'no'}`);
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const to = state.hint.toZone === 'foundation' ? `f${state.hint.toIdx}` : `t${state.hint.toIdx}`;
     lines.push(`HINT: t${state.hint.fromCol} → ${to}`);
   }
