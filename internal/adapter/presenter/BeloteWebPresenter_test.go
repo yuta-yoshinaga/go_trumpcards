@@ -37,6 +37,9 @@ func setupBeloteWebMock() *interfaces.MockBeloteGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultBeloteConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -132,6 +135,7 @@ func TestBeloteWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("nil hint", func(t *testing.T) {
 		m, _ := setupBeloteWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.BeloteHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.BeloteWebOutput
@@ -142,6 +146,7 @@ func TestBeloteWebPresenter_HintOutput(t *testing.T) {
 	t.Run("with hint", func(t *testing.T) {
 		m, _ := setupBeloteWebMockWithPlayers()
 		ok := true
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.BeloteHint{OrderUp: &ok, Reason: "strategic_pickup"})
 
 		result := p.HintOutput(m)
@@ -158,4 +163,19 @@ func TestBeloteWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.BeloteWebPresenter)
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// トリックテイキング系は Output 側にゲートを置きません。Belote.GetHint() が
+// 「人間の手番で、かつ行動を選べる状態か」を自分で確かめて nil を返します。
+func TestBeloteWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	blg, _ := setupBeloteWebMockWithPlayers()
+	blg.ExpectedCalls = removeMockCall(blg.ExpectedCalls, "GetHint")
+	blg.On("GetHint").Return(&domain.BeloteHint{CardIndex: &idx, Reason: "follow_suit"})
+
+	result := new(presenter.BeloteWebPresenter).Output(blg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }
