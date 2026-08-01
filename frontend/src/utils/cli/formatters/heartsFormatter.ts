@@ -1,5 +1,12 @@
 import type { HeartsResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PASS_DIRECTIONS: Record<number, string> = {
   0: 'Left',
@@ -43,7 +50,7 @@ export function formatHeartsState(state: HeartsResponse): string {
   }
 
   // Hint
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const indices = state.hint.cardIndices ?? [];
     lines.push(`HINT: card indices [${indices.join(', ')}] (${state.hint.reason})`);
   }

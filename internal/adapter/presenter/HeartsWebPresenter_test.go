@@ -29,6 +29,10 @@ func setupHeartsWebMock() *interfaces.MockHeartsGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultHeartsConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -445,6 +449,7 @@ func TestHeartsWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint available", func(t *testing.T) {
 		m, _ := setupHeartsWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.HeartsHint{
 			CardIndices: []int{2},
 			Reason:      "follow_suit",
@@ -457,11 +462,12 @@ func TestHeartsWebPresenter_HintOutput(t *testing.T) {
 		assert.NotNil(t, resObj.Hint)
 		assert.Equal(t, []int{2}, resObj.Hint.CardIndices)
 		assert.Equal(t, "follow_suit", resObj.Hint.Reason)
-		assert.Empty(t, resObj.MessageCode)
+		assert.Equal(t, "hearts.hintRequested", resObj.MessageCode)
 	})
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupHeartsWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.HeartsHint)(nil))
 
 		result := p.HintOutput(m)
@@ -469,6 +475,32 @@ func TestHeartsWebPresenter_HintOutput(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Nil(t, resObj.Hint)
-		assert.Empty(t, resObj.MessageCode)
+		assert.Equal(t, "hearts.noHint", resObj.MessageCode)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestHeartsWebPresenterOutputCarriesTheHint(t *testing.T) {
+	htg, _ := setupHeartsWebMockWithPlayers()
+	htg.ExpectedCalls = removeMockCall(htg.ExpectedCalls, "GetHint")
+	htg.On("GetHint").Return(&domain.HeartsHint{CardIndices: []int{0}, Reason: "follow_suit"})
+
+	result := new(presenter.HeartsWebPresenter).Output(htg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "hearts.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestHeartsWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	htg, _ := setupHeartsWebMockWithPlayers()
+	htg.ExpectedCalls = removeMockCall(htg.ExpectedCalls, "GetHint")
+	htg.On("GetHint").Return(&domain.HeartsHint{CardIndices: []int{0}, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.HeartsWebPresenter).HintOutput(htg), "hearts.hintRequested")
+
+	none, _ := setupHeartsWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.HeartsHint)(nil))
+	assert.Contains(t, new(presenter.HeartsWebPresenter).HintOutput(none), "hearts.noHint")
 }

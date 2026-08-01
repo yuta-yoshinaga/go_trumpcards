@@ -81,5 +81,7 @@
     "dumpQueenOfSpades": "Dump the Queen of Spades",
     "dumpHearts": "Dump hearts cards",
     "playHighest": "Play your highest card"
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

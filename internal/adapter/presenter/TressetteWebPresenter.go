@@ -17,6 +17,19 @@ type TressetteWebPresenter struct{}
 func (p *TressetteWebPresenter) Output(g interfaces.TressetteGame, lastErr error) string {
 	resObj := p.buildBase(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**Tressette.GetHint() が自分で
+	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.WebOutputCardHint{
+			CardIndices: hint.CardIndices,
+			Reason:      hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -179,6 +192,13 @@ func (p *TressetteWebPresenter) HintOutput(g interfaces.TressetteGame) string {
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}
+	}
+	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。
+	if hint != nil {
+		resObj.MessageCode = "tressette.hintRequested"
+	} else {
+		resObj.MessageCode = "tressette.noHint"
 	}
 	return marshalOrError(resObj)
 }
