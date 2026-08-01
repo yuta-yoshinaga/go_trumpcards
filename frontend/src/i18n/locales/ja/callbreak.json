@@ -79,5 +79,7 @@
     "mustTrumpWithSpade": "ボイドなのでスペードで切らなければなりません",
     "discardLowest": "最も低いカードを捨てることを推奨"
   },
-  "bidSelected": "選択中のビッド: {{n}}"
+  "bidSelected": "選択中のビッド: {{n}}",
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }

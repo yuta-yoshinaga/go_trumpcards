@@ -63,5 +63,7 @@
     "title": "Trump ranking",
     "caption": "strong → weak",
     "badgeTitle": "Trump"
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

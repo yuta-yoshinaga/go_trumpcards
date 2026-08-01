@@ -63,6 +63,7 @@ describe('formatCallBreakState', () => {
   it('renders bid hint when hint.bid is present', () => {
     const out = formatCallBreakState(
       makeCallBreakState({
+        messageCode: 'callbreak.hintRequested',
         hint: { bid: 4, reason: 'strategic_bid' },
       }),
     );
@@ -72,6 +73,7 @@ describe('formatCallBreakState', () => {
   it('renders play hint when hint.cardIndex is present', () => {
     const out = formatCallBreakState(
       makeCallBreakState({
+        messageCode: 'callbreak.hintRequested',
         hint: { cardIndex: 2, reason: 'follow_suit' },
       }),
     );
@@ -95,5 +97,15 @@ describe('formatCallBreakState', () => {
       currentTrick: [{ playerIdx: 99, card: { design: 'HEART', value: 5 } }],
     });
     expect(() => formatCallBreakState(state)).not.toThrow();
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { bid: 4, reason: 'strategic_bid' };
+    expect(formatCallBreakState(makeCallBreakState({ hint, messageCode: 'callbreak.hintRequested' }))).toContain(
+      'HINT',
+    );
+    expect(formatCallBreakState(makeCallBreakState({ hint, messageCode: 'callbreak.playing' }))).not.toContain('HINT');
   });
 });
