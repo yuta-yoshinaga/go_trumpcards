@@ -38,6 +38,10 @@ func setupTysiacWebMock() *interfaces.MockTysiacGame {
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultTysiacConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -197,6 +201,7 @@ func TestTysiacWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint with card indices", func(t *testing.T) {
 		m, _ := setupTysiacWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.TysiacHint{CardIndices: []int{2}, Reason: "follow_win"})
 		result := p.HintOutput(m)
 		var resObj controller.TysiacWebOutput
@@ -208,6 +213,7 @@ func TestTysiacWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupTysiacWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.TysiacHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.TysiacWebOutput
@@ -225,4 +231,30 @@ func TestTysiacWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestTysiacWebPresenterOutputCarriesTheHint(t *testing.T) {
+	tsg, _ := setupTysiacWebMockWithPlayers()
+	tsg.ExpectedCalls = removeMockCall(tsg.ExpectedCalls, "GetHint")
+	tsg.On("GetHint").Return(&domain.TysiacHint{CardIndices: []int{0}, Reason: "follow_suit"})
+
+	result := new(presenter.TysiacWebPresenter).Output(tsg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "tysiac.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestTysiacWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	tsg, _ := setupTysiacWebMockWithPlayers()
+	tsg.ExpectedCalls = removeMockCall(tsg.ExpectedCalls, "GetHint")
+	tsg.On("GetHint").Return(&domain.TysiacHint{CardIndices: []int{0}, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.TysiacWebPresenter).HintOutput(tsg), "tysiac.hintRequested")
+
+	none, _ := setupTysiacWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.TysiacHint)(nil))
+	assert.Contains(t, new(presenter.TysiacWebPresenter).HintOutput(none), "tysiac.noHint")
 }

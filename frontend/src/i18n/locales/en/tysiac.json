@@ -89,5 +89,7 @@
     "playButton": "Once a card is selected, play it with this button. Leading a King or Queen of a marriage declares trump.",
     "info": "Tysiąc (Thousand) is a Polish 3-player 24-card trick-taker. First a Bid phase (raise +10 or pass) decides the Declarer, who exchanges via the Talon (give one card to each opponent) and must meet the contract. Marriages (K+Q) set trump and score 40/60/80/100 by suit. The first player to reach the target (default 1000) wins.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }
