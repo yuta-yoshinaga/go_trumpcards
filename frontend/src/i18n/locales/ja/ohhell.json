@@ -92,5 +92,7 @@
     "trumpWithCard": "切り札を使うチャンス",
     "discardLowest": "最も低いカードを捨てることを推奨"
   },
-  "restrictedBidAria": "{{n}} をビッド（ディーラー制約により選択できません）"
+  "restrictedBidAria": "{{n}} をビッド（ディーラー制約により選択できません）",
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }

@@ -43,6 +43,10 @@ func setupOhHellWebMock() *interfaces.MockOhHellGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultOhHellConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -168,6 +172,7 @@ func TestOhHellWebPresenter_HintOutput(t *testing.T) {
 	t.Run("with hint", func(t *testing.T) {
 		m, _ := setupOhHellWebMockWithPlayers()
 		bid := 3
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.OhHellHint{Bid: &bid, Reason: "strategic_bid"})
 
 		result := p.HintOutput(m)
@@ -180,6 +185,7 @@ func TestOhHellWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("nil hint", func(t *testing.T) {
 		m, _ := setupOhHellWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.OhHellHint)(nil))
 
 		result := p.HintOutput(m)
@@ -198,4 +204,31 @@ func TestOhHellWebPresenter_ActionLogOutput(t *testing.T) {
 
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestOhHellWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	ohg, _ := setupOhHellWebMockWithPlayers()
+	ohg.ExpectedCalls = removeMockCall(ohg.ExpectedCalls, "GetHint")
+	ohg.On("GetHint").Return(&domain.OhHellHint{CardIndex: &idx, Reason: "follow_suit"})
+
+	result := new(presenter.OhHellWebPresenter).Output(ohg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	assert.NotContains(t, result, "ohhell.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestOhHellWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	ohg, _ := setupOhHellWebMockWithPlayers()
+	ohg.ExpectedCalls = removeMockCall(ohg.ExpectedCalls, "GetHint")
+	ohg.On("GetHint").Return(&domain.OhHellHint{CardIndex: &idx, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.OhHellWebPresenter).HintOutput(ohg), "ohhell.hintRequested")
+
+	none, _ := setupOhHellWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.OhHellHint)(nil))
+	assert.Contains(t, new(presenter.OhHellWebPresenter).HintOutput(none), "ohhell.noHint")
 }
