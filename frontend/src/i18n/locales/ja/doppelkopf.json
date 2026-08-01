@@ -63,5 +63,7 @@
     "title": "切り札序列",
     "caption": "強い → 弱い",
     "badgeTitle": "切り札"
-  }
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }

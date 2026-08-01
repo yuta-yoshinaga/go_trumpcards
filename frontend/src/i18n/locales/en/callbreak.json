@@ -79,5 +79,7 @@
     "mustTrumpWithSpade": "Void: must trump with a spade",
     "discardLowest": "Discard your lowest card"
   },
-  "bidSelected": "Selected bid: {{n}}"
+  "bidSelected": "Selected bid: {{n}}",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }
