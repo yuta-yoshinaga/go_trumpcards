@@ -78,6 +78,7 @@ describe('formatNertzState', () => {
     const result = formatNertzState(
       makeState({
         hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 1, toZone: 'foundation', toCol: 2 },
+        messageCode: 'nertz.hintAvailable',
       }),
     );
     expect(result).toContain('HINT');
@@ -179,5 +180,13 @@ describe('formatNertzState', () => {
   it('renders message when present', () => {
     const result = formatNertzState(makeState({ message: 'You drew a card' }));
     expect(result).toContain('You drew a card');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { fromZone: 'tableau', fromCol: 0, cardIndex: 1, toZone: 'foundation', toCol: 2 };
+    expect(formatNertzState(makeState({ hint, messageCode: 'nertz.hintAvailable' }))).toContain('HINT');
+    expect(formatNertzState(makeState({ hint, messageCode: 'nertz.playing' }))).not.toContain('HINT');
   });
 });

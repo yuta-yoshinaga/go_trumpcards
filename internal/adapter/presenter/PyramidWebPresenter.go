@@ -49,6 +49,21 @@ func (pr *PyramidWebPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 	}
 
 	// メッセージ
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if p.GetPhase() == domain.PyramidPhasePlaying && !p.IsStalemate() {
+		if hint := p.GetHint(); hint != nil {
+			resObj.Hint = &controller.PyramidWebOutputHint{
+				Type: hint.Type,
+				Row1: hint.Row1,
+				Col1: hint.Col1,
+				Row2: hint.Row2,
+				Col2: hint.Col2,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {
