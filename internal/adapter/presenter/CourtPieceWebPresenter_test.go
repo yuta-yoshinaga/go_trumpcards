@@ -158,3 +158,17 @@ func TestCourtPieceWebPresenter_ActionLogOutput(t *testing.T) {
 	out := p.ActionLogOutput(cp)
 	assert.NotEmpty(t, out)
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// Output 側にゲートは置きません。CourtPiece.GetHint() が「人間の手番で、かつ
+// 行動を選べる状態か」を自分で確かめて nil を返します。
+func TestCourtPieceWebPresenterOutputCarriesTheHint(t *testing.T) {
+	cp := newCourtPieceForWebTest()
+	cp.SetPhase(domain.CourtPiecePhaseTrumpDeclaration)
+	cp.SetCallerIdx(0)
+
+	result := new(presenter.CourtPieceWebPresenter).Output(cp, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+}

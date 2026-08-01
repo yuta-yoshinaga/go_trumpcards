@@ -17,6 +17,20 @@ type CourtPieceWebPresenter struct{}
 func (p *CourtPieceWebPresenter) Output(t interfaces.CourtPieceGame, lastErr error) string {
 	resObj := p.buildBase(t)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(t, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**CourtPiece.GetHint() が自分で
+	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
+	if hint := t.GetHint(); hint != nil {
+		resObj.Hint = &controller.CourtPieceWebOutputHint{
+			CardIndex: hint.CardIndex,
+			TrumpSuit: hint.TrumpSuit,
+			Reason:    hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
