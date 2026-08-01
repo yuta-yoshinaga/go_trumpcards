@@ -395,4 +395,12 @@ func init() {
 			return usecase.RestoreYanivInteractor(data, new(presenter.YanivWebPresenter))
 		},
 		controller.NewYanivWebControllerWithProvider)
+	games.RegisterKVGame("literature", games.CategorySolo,
+		func() usecase.LiteratureInteractorIF {
+			return usecase.NewLiteratureInteractor(domain.NewDefaultLiterature(), new(presenter.LiteratureWebPresenter))
+		},
+		func(data []byte) (usecase.LiteratureInteractorIF, error) {
+			return usecase.RestoreLiteratureInteractor(data, new(presenter.LiteratureWebPresenter))
+		},
+		controller.NewLiteratureWebControllerWithProvider)
 }

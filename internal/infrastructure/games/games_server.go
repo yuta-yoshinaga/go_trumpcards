@@ -1295,4 +1295,9 @@ func init() {
 			return usecase.NewKarnoffelInteractor(domain.NewDefaultKarnoffel(), new(presenter.KarnoffelWebPresenter))
 		},
 		controller.NewKarnoffelWebController)
+	BindWebControllerFor("literature",
+		func() usecase.LiteratureInteractorIF {
+			return usecase.NewLiteratureInteractor(domain.NewDefaultLiterature(), new(presenter.LiteratureWebPresenter))
+		},
+		controller.NewLiteratureWebController)
 }

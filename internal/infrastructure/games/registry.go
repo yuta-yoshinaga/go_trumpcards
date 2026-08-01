@@ -795,6 +795,17 @@ var registry = []*Game{
 	// still lose to kings, to kings and queens, and to every face card.
 	// Following suit is not required. Three of five tricks takes the hand.
 	{Name: "karnoffel", Category: CategoryClassic},
+	// literature -- Literature, a deduction fishing game for six players in
+	// two teams of three, SEATED ALTERNATELY, on a 48-card pack with the
+	// EIGHTS removed. Eight half-suits of six: low (2-7) and high (9-A) per
+	// suit. You may ask AN OPPONENT ONLY, for a half-suit you already hold,
+	// and only for a card you do NOT hold. Claiming has THREE outcomes: all
+	// six with your team placed right wins it; all six with your team but
+	// MISPLACED CANCELS it, so it goes to nobody; an opponent holding one
+	// gives it to them. Winning takes FIVE half-suits -- a majority of eight
+	// -- and because cancellations belong to neither side the totals need not
+	// add to eight.
+	{Name: "literature", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.
