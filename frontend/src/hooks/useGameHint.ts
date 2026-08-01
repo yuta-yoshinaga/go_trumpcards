@@ -148,6 +148,7 @@ import type {
   SevenCardStudResponse,
   SevensResponse,
   SheepsheadResponse,
+  ShengJiResponse,
   ShitheadResponse,
   ShortDeckResponse,
   SirTommyResponse,
@@ -354,6 +355,7 @@ import { getSedmaHint } from '../utils/hints/sedmaHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
+import { getShengJiHint } from '../utils/hints/shengjiHint';
 import { getShitheadHint } from '../utils/hints/shitheadHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSirTommyHint } from '../utils/hints/sirtommyHint';
@@ -586,6 +588,7 @@ export const hintFactories = {
   ombre: (s) => getOmbreHint(s as OmbreResponse),
   ulti: (s) => getUltiHint(s as UltiResponse),
   scarto: (s) => getScartoHint(s as ScartoResponse),
+  shengji: (s) => getShengJiHint(s as ShengJiResponse),
   cego: (s) => getCegoHint(s as CegoResponse),
   frenchtarot: (s) => getFrenchTarotHint(s as FrenchTarotResponse),
   koenigrufen: (s) => getKoenigrufenHint(s as KoenigrufenResponse),

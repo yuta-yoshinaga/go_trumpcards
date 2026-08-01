@@ -50,5 +50,12 @@
     "hand": "Your hand. Select a single, a pair, or a tractor (consecutive pairs) and play it.",
     "actions": "You must follow the led suit while you hold it. The trump group counts as one suit.",
     "resetButton": "Reset the game at any time with this button."
+  },
+  "hint": {
+    "shengji_declare": "You hold a level card, so you can name the trump suit. Showing a pair overrides a single showing.",
+    "shengji_pass": "You hold no level card, so you cannot declare. Passing is fine — if everyone passes there is no trump suit.",
+    "shengji_bury": "Keep the 5s, 10s, kings and your trumps out of the kitty. If the defenders take the last trick its points reach them multiplied.",
+    "shengji_hold": "You are declaring. Do not chase points — keep the tricks carrying them away from the defenders.",
+    "shengji_collect": "You are defending, and defenders are the side that scores. Collect the 5s, 10s and kings; 80 takes the deal."
   }
 }
