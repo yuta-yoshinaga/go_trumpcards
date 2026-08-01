@@ -35,6 +35,16 @@ func TestBlackHoleWebPresenter_Output(t *testing.T) {
 		assert.Contains(t, p.Output(bhState(t, `{"ph":2}`), nil), "blackhole.gameOver")
 	})
 
+	// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+	// レスポンスで、ページの state にはマージされない (#4483)。
+	t.Run("output carries the hint", func(t *testing.T) {
+		// 穴の一番上が 5、fan0 の一番上が 6（±1）なので fan 0 が勧められる。
+		js := `{"bh":[{"d":1,"v":5,"w":true}],"fn":[[{"d":2,"v":6,"w":true}]],"ph":0}`
+		assert.Contains(t, p.Output(bhState(t, js), nil), `"hint"`,
+			"Output must carry the hint -- the frontend reads state.hint")
+		assert.NotContains(t, p.Output(bhState(t, `{"ph":2}`), nil), `"hint"`)
+	})
+
 	t.Run("hint output carries recommended fan and full board", func(t *testing.T) {
 		// Hole top 5, fan0 top 6 (±1) -> the domain recommends fan 0.
 		js := `{"bh":[{"d":1,"v":5,"w":true}],"fn":[[{"d":2,"v":6,"w":true}]],"ph":0}`

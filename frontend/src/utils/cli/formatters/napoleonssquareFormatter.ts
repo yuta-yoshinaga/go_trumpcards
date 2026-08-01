@@ -1,5 +1,5 @@
 import type { NapoleonsSquareResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a Napoleon's Square game state as terminal text. */
 export function formatNapoleonsSquareState(state: NapoleonsSquareResponse): string {
@@ -27,7 +27,7 @@ export function formatNapoleonsSquareState(state: NapoleonsSquareResponse): stri
 
   lines.push(`moves: ${state.moveCount}  undo:${state.canUndo ? 'yes' : 'no'}`);
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const from =
       state.hint.fromZone === 'tableau' ? `t${state.hint.fromCol}[${state.hint.cardIndex}]` : state.hint.fromZone;
     const to = state.hint.toCol >= 0 ? `${state.hint.toZone}${state.hint.toCol}` : state.hint.toZone;

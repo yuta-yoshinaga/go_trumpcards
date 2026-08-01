@@ -46,10 +46,18 @@ func parseSultanOutput(t *testing.T, jsonStr string) *controller.SultanWebOutput
 	return &out
 }
 
+// setupSultanOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupSultanOutputMock(g *interfaces.MockSultanGame) {
+	setupSultanWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestSultanWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		sg := new(interfaces.MockSultanGame)
-		setupSultanWebMockDefaults(sg)
+		setupSultanOutputMock(sg)
 		p := new(SultanWebPresenter)
 
 		result := parseSultanOutput(t, p.Output(sg, nil))
@@ -65,7 +73,7 @@ func TestSultanWebPresenter_Output(t *testing.T) {
 
 	t.Run("waste with cards", func(t *testing.T) {
 		sg := new(interfaces.MockSultanGame)
-		setupSultanWebMockDefaults(sg)
+		setupSultanOutputMock(sg)
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "GetWaste")
 		sg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
 
@@ -78,7 +86,7 @@ func TestSultanWebPresenter_Output(t *testing.T) {
 
 	t.Run("nil divan slot serialised as null", func(t *testing.T) {
 		sg := new(interfaces.MockSultanGame)
-		setupSultanWebMockDefaults(sg)
+		setupSultanOutputMock(sg)
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "GetDivan")
 		divan := make([]*domain.Card, domain.SultanDivanCnt) // all nil
 		sg.On("GetDivan").Return(divan)
@@ -91,7 +99,7 @@ func TestSultanWebPresenter_Output(t *testing.T) {
 
 	t.Run("redeal available", func(t *testing.T) {
 		sg := new(interfaces.MockSultanGame)
-		setupSultanWebMockDefaults(sg)
+		setupSultanOutputMock(sg)
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "CanRedeal")
 		sg.On("CanRedeal").Return(true)
 
@@ -102,7 +110,7 @@ func TestSultanWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		sg := new(interfaces.MockSultanGame)
-		setupSultanWebMockDefaults(sg)
+		setupSultanOutputMock(sg)
 		p := new(SultanWebPresenter)
 
 		result := parseSultanOutput(t, p.Output(sg, errors.New("test error")))
@@ -111,7 +119,7 @@ func TestSultanWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		sg := new(interfaces.MockSultanGame)
-		setupSultanWebMockDefaults(sg)
+		setupSultanOutputMock(sg)
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "GetPhase")
 		sg.On("GetPhase").Return(domain.SultanPhaseGameClear)
 
@@ -122,7 +130,7 @@ func TestSultanWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		sg := new(interfaces.MockSultanGame)
-		setupSultanWebMockDefaults(sg)
+		setupSultanOutputMock(sg)
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "GetPhase")
 		sg.On("GetPhase").Return(domain.SultanPhaseGameOver)
 
@@ -133,13 +141,38 @@ func TestSultanWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		sg := new(interfaces.MockSultanGame)
-		setupSultanWebMockDefaults(sg)
+		setupSultanOutputMock(sg)
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
 		sg.On("IsStalemate").Return(true)
 
 		p := new(SultanWebPresenter)
 		result := parseSultanOutput(t, p.Output(sg, nil))
 		assert.Equal(t, "sultan.stalemate", result.MessageCode)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestSultanWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		sug := new(interfaces.MockSultanGame)
+		setupSultanWebMockDefaults(sug)
+		sug.On("GetHint").Return(&domain.SultanHint{FromZone: "divan", FromIdx: 3, ToFoundation: 1}).Maybe()
+
+		result := new(SultanWebPresenter).Output(sug, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		sug := new(interfaces.MockSultanGame)
+		setupSultanWebMockDefaults(sug)
+		sug.ExpectedCalls = filterCalls(sug.ExpectedCalls, "IsStalemate")
+		sug.On("IsStalemate").Return(true)
+		sug.On("GetHint").Return(&domain.SultanHint{FromZone: "divan", FromIdx: 3, ToFoundation: 1}).Maybe()
+
+		result := new(SultanWebPresenter).Output(sug, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 
