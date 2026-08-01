@@ -216,7 +216,9 @@ describe('formatMightyState', () => {
   });
 
   it('renders a hint line when hint is present', () => {
-    const out = formatMightyState(makeState({ hint: { reason: 'strategic_bid' } }));
+    const out = formatMightyState(
+      makeState({ hint: { reason: 'strategic_bid' }, messageCode: 'mighty.hintRequested' }),
+    );
     expect(out).toContain('HINT: strategic_bid');
   });
 
@@ -234,5 +236,14 @@ describe('formatMightyState', () => {
   it('always emits a trailing separator', () => {
     const out = formatMightyState(makeState());
     expect(out.split('\n').filter((l) => l.length > 0).length).toBeGreaterThan(0);
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  // このフォーマッタは波括弧なしの 1 行形式で書かれている。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { reason: 'strategic_bid' };
+    expect(formatMightyState(makeState({ hint, messageCode: 'mighty.hintRequested' }))).toContain('HINT');
+    expect(formatMightyState(makeState({ hint, messageCode: 'mighty.playing' }))).not.toContain('HINT');
   });
 });

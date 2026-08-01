@@ -39,6 +39,10 @@ func setupMightyWebMock() *interfaces.MockMightyGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultMightyConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -323,6 +327,7 @@ func TestMightyWebPresenter_HintOutput(t *testing.T) {
 		}
 		for _, c := range cases {
 			m, _ := setupMightyWebMockWithPlayers()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 			m.On("GetHint").Return(c.hint)
 			result := p.HintOutput(m)
 			var resObj controller.MightyWebOutput
@@ -334,6 +339,7 @@ func TestMightyWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint returns base output with nil hint", func(t *testing.T) {
 		m, _ := setupMightyWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.MightyHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.MightyWebOutput
@@ -363,4 +369,32 @@ func TestMightyWebPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, `"entries":[]`)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestMightyWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	mgg, _ := setupMightyWebMockWithPlayers()
+	mgg.ExpectedCalls = removeMockCall(mgg.ExpectedCalls, "GetHint")
+	mgg.On("GetHint").Return(&domain.MightyHint{CardIndex: &idx})
+
+	result := new(presenter.MightyWebPresenter).Output(mgg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "mighty.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestMightyWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	mgg, _ := setupMightyWebMockWithPlayers()
+	mgg.ExpectedCalls = removeMockCall(mgg.ExpectedCalls, "GetHint")
+	mgg.On("GetHint").Return(&domain.MightyHint{CardIndex: &idx})
+	assert.Contains(t, new(presenter.MightyWebPresenter).HintOutput(mgg), "mighty.hintRequested")
+
+	none, _ := setupMightyWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.MightyHint)(nil))
+	assert.Contains(t, new(presenter.MightyWebPresenter).HintOutput(none), "mighty.noHint")
 }

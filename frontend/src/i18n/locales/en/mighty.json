@@ -130,5 +130,7 @@
     "playerHand": "Your hand. To lead the Joker, use the 'Lead Joker' button.",
     "scoreTable": "Score table. Declarer side (declarer + partner) and Opposition shown separately.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }
