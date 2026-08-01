@@ -1,5 +1,5 @@
 import type { BakersDozenResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a Baker's Dozen game state as terminal text. */
 export function formatBakersDozenState(state: BakersDozenResponse): string {
@@ -26,7 +26,7 @@ export function formatBakersDozenState(state: BakersDozenResponse): string {
 
   lines.push(`moves: ${state.moveCount}  undo:${state.canUndo ? 'yes' : 'no'}`);
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const target = state.hint.toCol >= 0 ? `${state.hint.toZone}${state.hint.toCol}` : state.hint.toZone;
     lines.push(`HINT: t${state.hint.fromCol}[${state.hint.cardIndex}] → ${target}`);
   }

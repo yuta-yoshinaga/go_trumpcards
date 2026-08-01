@@ -45,6 +45,7 @@ describe('formatBakersDozenState', () => {
     const result = formatBakersDozenState(
       makeState({
         hint: { fromCol: 0, cardIndex: 1, toZone: 'tableau', toCol: 2 },
+        messageCode: 'bakersdozen.hintAvailable',
       }),
     );
     expect(result).toContain('HINT');
