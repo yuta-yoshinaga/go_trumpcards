@@ -153,6 +153,7 @@ import type {
   ShengJiResponse,
   ShitheadResponse,
   ShortDeckResponse,
+  SimpleSimonResponse,
   SirTommyResponse,
   SixCardGolfResponse,
   SjavsResponse,
@@ -362,6 +363,7 @@ import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
 import { getShengJiHint } from '../utils/hints/shengjiHint';
 import { getShitheadHint } from '../utils/hints/shitheadHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
+import { getSimpleSimonHint } from '../utils/hints/simplesimonHint';
 import { getSirTommyHint } from '../utils/hints/sirtommyHint';
 import { getSixcardgolfHint } from '../utils/hints/sixcardgolfHint';
 import { getSjavsHint } from '../utils/hints/sjavsHint';
@@ -544,6 +546,7 @@ export const hintFactories = {
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   acesup: (s) => getAcesUpHint(s as AcesUpResponse),
   blackhole: (s) => getBlackHoleHint(s as BlackHoleResponse),
+  simplesimon: (s) => getSimpleSimonHint(s as SimpleSimonResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
   sirtommy: (s) => getSirTommyHint(s as SirTommyResponse),
   bisley: (s) => getBisleyHint(s as BisleyResponse),

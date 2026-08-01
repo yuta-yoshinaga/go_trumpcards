@@ -81,7 +81,6 @@ const BACKLOG = new Set([
   'russianbank',
   'scopone',
   'settemezzo',
-  'simplesimon',
   'sixbidsolo',
   'spoons',
   'threethirteen',
