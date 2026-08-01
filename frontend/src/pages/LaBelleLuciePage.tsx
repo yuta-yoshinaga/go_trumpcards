@@ -2,15 +2,18 @@ import { useEffect, useRef, useState } from 'react';
 import { labellelucieApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
@@ -19,6 +22,7 @@ import type { Card } from '../types/card';
 import { LaBelleLuciePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { labelleLucieHasLegalMove } from '../utils/labelleLucieLegalMove';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** La Belle Lucie tutorial step definitions. */
 const LL_TUTORIAL_STEPS: TutorialStep[] = [
@@ -81,6 +85,12 @@ function LaBelleLuciePageContent() {
   const phaseNames = usePhaseNames('labellelucie', LL_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const w = Math.round(cardWidth * 0.6);
+
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('labellelucie', state);
 
   if (!state) return <GameSkeleton gameKey="labellelucie" layout={{ kind: 'tableau', topRow: 4, tableau: 9 }} />;
 
@@ -262,6 +272,13 @@ function LaBelleLuciePageContent() {
         )}
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+        <SettingsPanel
+          title={tc('settings.title')}
+          groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+        />
+
         <ActionLogSection
           isEndPhase={isEnd}
           actionLog={actionLog}
