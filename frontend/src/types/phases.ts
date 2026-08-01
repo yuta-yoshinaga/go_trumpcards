@@ -1746,6 +1746,14 @@ export const LiteraturePhase = {
   GAME_END: 1,
 } as const;
 
+/** Guandan phase constants (sync: internal/domain/Guandan.go). */
+export const GuandanPhase = {
+  TRIBUTE: 0,
+  PLAY: 1,
+  HAND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Karnöffel phase constants (sync: internal/domain/Karnoffel.go). */
 export const KarnoffelPhase = {
   PLAY: 0,

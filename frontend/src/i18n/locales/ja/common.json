@@ -276,7 +276,8 @@
     "bideuchre": "ビッド・ユーカー",
     "sixbidsolo": "シックスビッド・ソロ",
     "karnoffel": "カルニッフェル",
-    "literature": "リテラチャー"
+    "literature": "リテラチャー",
+    "guandan": "掼蛋"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1365,7 +1366,14 @@
     "literature.claimLost": "相手が1枚以上持っていたので、相手チームの獲得になりました",
     "literature.result.humanWin": "あなたのチームが過半数の5組に届きました",
     "literature.result.cpuWin": "相手チームが過半数の5組に届きました",
-    "literature.result.draw": "同数で終わりました。勝者なしです"
+    "literature.result.draw": "同数で終わりました。勝者なしです",
+    "guandan.tributePhase": "進貢・還貢 — 受け取った札の代わりに1枚返します",
+    "guandan.playPhase": "進行中 — 場より強い役だけ出せます",
+    "guandan.tributeCancelled": "【抗貢】赤ジョーカー2枚のため、この局の貢は流れました",
+    "guandan.handEnd": "局が終わりました。次の局へ進めます",
+    "guandan.handFirstSecond": "【1着2着の独占】4段階昇級です",
+    "guandan.result.humanWin": "あなたのチームがAを上がりきりました",
+    "guandan.result.cpuWin": "相手チームがAを上がりきりました"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

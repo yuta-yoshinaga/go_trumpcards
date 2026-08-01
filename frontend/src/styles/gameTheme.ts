@@ -240,6 +240,7 @@ export type GameKey =
   | 'sixbidsolo'
   | 'karnoffel'
   | 'literature'
+  | 'guandan'
   | 'missmilligan'
   | 'crescent'
   // Counting/Rummy
@@ -730,6 +731,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   sixbidsolo: CASINO,
   karnoffel: GREEN,
   literature: BLUE,
+  guandan: GREEN,
   missmilligan: CASINO,
   crescent: CASINO,
   // Counting/Rummy

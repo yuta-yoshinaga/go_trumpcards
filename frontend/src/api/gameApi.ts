@@ -107,6 +107,7 @@ export * from './games/golf';
 export * from './games/gongzhu';
 export * from './games/gostop';
 export * from './games/grandfathersclock';
+export * from './games/guandan';
 export * from './games/guts';
 export * from './games/hachihachi';
 export * from './games/handandfoot';
@@ -379,6 +380,7 @@ export const games = [
   'sixbidsolo',
   'karnoffel',
   'literature',
+  'guandan',
   'missmilligan',
   'canfield',
   'osmosis',
