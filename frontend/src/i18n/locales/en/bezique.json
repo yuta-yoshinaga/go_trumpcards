@@ -69,5 +69,7 @@
     "trick": "Cards played to the current trick appear here. In phase 1 (while the stock remains) you may follow freely, but in phase 2 (after the stock empties) play is strict must-follow. Trumps beat plain cards.",
     "hand": "This is your hand. During play, click a card and press Play.",
     "actions": "When you win a trick (phase 1 only) you enter the Meld phase, where you may declare ONE meld — marriage (20), royal marriage (40), Bezique (40), four aces (100), kings (80), queens (60), or jacks (40) — or choose Skip meld. Both players then draw a card. Press Next Deal between deals and games."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

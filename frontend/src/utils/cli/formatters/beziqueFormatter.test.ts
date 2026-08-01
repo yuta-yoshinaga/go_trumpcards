@@ -60,19 +60,25 @@ describe('formatBeziqueState', () => {
   });
 
   it('renders a play hint with the card index', () => {
-    const out = formatBeziqueState(makeBeziqueState({ hint: { cardIndex: 2, reason: 'follow_cut' } }));
+    const out = formatBeziqueState(
+      makeBeziqueState({ hint: { cardIndex: 2, reason: 'follow_cut' }, messageCode: 'bezique.hintRequested' }),
+    );
     expect(out).toContain('HINT: play card index [2]');
     expect(out).toContain('follow_cut');
   });
 
   it('renders a meld-declare hint with the meld index', () => {
-    const out = formatBeziqueState(makeBeziqueState({ hint: { meldIndex: 1, reason: 'meld_declare' } }));
+    const out = formatBeziqueState(
+      makeBeziqueState({ hint: { meldIndex: 1, reason: 'meld_declare' }, messageCode: 'bezique.hintRequested' }),
+    );
     expect(out).toContain('HINT: declare meld index [1]');
     expect(out).toContain('meld_declare');
   });
 
   it('renders a meld-skip hint', () => {
-    const out = formatBeziqueState(makeBeziqueState({ hint: { meldIndex: -1, reason: 'meld_skip' } }));
+    const out = formatBeziqueState(
+      makeBeziqueState({ hint: { meldIndex: -1, reason: 'meld_skip' }, messageCode: 'bezique.hintRequested' }),
+    );
     expect(out).toContain('HINT: skip the meld');
     expect(out).toContain('meld_skip');
   });
@@ -85,5 +91,14 @@ describe('formatBeziqueState', () => {
   it('renders an explicit message when present', () => {
     const out = formatBeziqueState(makeBeziqueState({ message: 'hello world' }));
     expect(out).toContain('hello world');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  // このゲーム群は hintAvailable がラベルとして埋まっているため hintRequested。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndex: 2, reason: 'follow_cut' };
+    expect(formatBeziqueState(makeBeziqueState({ hint, messageCode: 'bezique.hintRequested' }))).toContain('HINT');
+    expect(formatBeziqueState(makeBeziqueState({ hint, messageCode: 'bezique.playing' }))).not.toContain('HINT');
   });
 });

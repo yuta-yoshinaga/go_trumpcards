@@ -50,13 +50,17 @@ describe('formatEcarteState', () => {
   });
 
   it('renders a play hint with the card index', () => {
-    const out = formatEcarteState(makeEcarteState({ phase: 1, hint: { cardIndex: 2, reason: 'follow_cut' } }));
+    const out = formatEcarteState(
+      makeEcarteState({ phase: 1, hint: { cardIndex: 2, reason: 'follow_cut' }, messageCode: 'ecarte.hintRequested' }),
+    );
     expect(out).toContain('HINT: play card index [2]');
     expect(out).toContain('follow_cut');
   });
 
   it('renders an exchange-action hint', () => {
-    const out = formatEcarteState(makeEcarteState({ hint: { action: 'propose', reason: 'propose' } }));
+    const out = formatEcarteState(
+      makeEcarteState({ hint: { action: 'propose', reason: 'propose' }, messageCode: 'ecarte.hintRequested' }),
+    );
     expect(out).toContain('HINT: propose');
   });
 
@@ -68,5 +72,16 @@ describe('formatEcarteState', () => {
   it('renders an explicit message when present', () => {
     const out = formatEcarteState(makeEcarteState({ message: 'hello world' }));
     expect(out).toContain('hello world');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  // このゲーム群は hintAvailable がラベルとして埋まっているため hintRequested。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndex: 2, reason: 'follow_cut' };
+    expect(formatEcarteState(makeEcarteState({ phase: 1, hint, messageCode: 'ecarte.hintRequested' }))).toContain(
+      'HINT',
+    );
+    expect(formatEcarteState(makeEcarteState({ phase: 1, hint, messageCode: 'ecarte.playing' }))).not.toContain('HINT');
   });
 });

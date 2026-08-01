@@ -77,5 +77,7 @@
     "trick": "Cards played to the current trick appear here. During play it is strict must-follow (follow suit and win if able, otherwise trump). The rank order is K>Q>J>A>10>9>8>7.",
     "hand": "This is your hand. During play, click a card and press Play. In the Exchange phase, select the cards you want to discard and press Exchange.",
     "actions": "In the Exchange phase the elder (non-dealer) chooses Propose or Stand; if proposed, the dealer Accepts or Refuses. After accepting, each player discards any number of cards and draws replacements, repeating until the stock empties. Then 5 tricks are played: 3+ tricks scores 1 point, all 5 (Vole) scores 2. Press Next Deal between deals and games."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

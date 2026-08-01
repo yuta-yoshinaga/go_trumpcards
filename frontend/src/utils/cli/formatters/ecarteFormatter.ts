@@ -1,5 +1,12 @@
 import type { EcarteResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Exchange', 'Play', 'RoundEnd', 'GameEnd'];
 const NEG_STEP_NAMES = ['ElderDecide', 'DealerRespond', 'ElderDiscard', 'DealerDiscard'];
@@ -41,7 +48,7 @@ export function formatEcarteState(state: EcarteResponse): string {
     lines.push(`trick: ${trickParts.join(', ')}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     if (state.hint.cardIndex != null) {
       lines.push(`HINT: play card index [${state.hint.cardIndex}] (${state.hint.reason})`);
     } else if (state.hint.action) {
