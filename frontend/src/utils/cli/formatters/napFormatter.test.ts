@@ -64,7 +64,9 @@ describe('formatNapState', () => {
   });
 
   it('renders a hint with card indices', () => {
-    const out = formatNapState(makeNapState({ hint: { cardIndices: [1, 2], reason: 'follow_win' } }));
+    const out = formatNapState(
+      makeNapState({ messageCode: 'nap.hintRequested', hint: { cardIndices: [1, 2], reason: 'follow_win' } }),
+    );
     expect(out).toContain('HINT: card indices [1, 2]');
     expect(out).toContain('follow_win');
   });
@@ -77,5 +79,13 @@ describe('formatNapState', () => {
   it('renders an explicit message when present', () => {
     const out = formatNapState(makeNapState({ message: 'hello world' }));
     expect(out).toContain('hello world');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [1, 2], reason: 'follow_win' };
+    expect(formatNapState(makeNapState({ hint, messageCode: 'nap.hintRequested' }))).toContain('HINT');
+    expect(formatNapState(makeNapState({ hint, messageCode: 'nap.playing' }))).not.toContain('HINT');
   });
 });

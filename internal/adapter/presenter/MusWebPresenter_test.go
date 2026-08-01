@@ -35,6 +35,10 @@ func setupMusWebMock() *interfaces.MockMusGame {
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultMusConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -228,6 +232,7 @@ func TestMusWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint with indices", func(t *testing.T) {
 		m, _ := setupMusWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.MusHint{Indices: []int{1, 3}, Reason: "discard_low"})
 		result := p.HintOutput(m)
 		var resObj controller.MusWebOutput
@@ -239,6 +244,7 @@ func TestMusWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("mus hint", func(t *testing.T) {
 		m, _ := setupMusWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.MusHint{Mus: true, Reason: "mus_exchange"})
 		result := p.HintOutput(m)
 		var resObj controller.MusWebOutput
@@ -249,6 +255,7 @@ func TestMusWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupMusWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.MusHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.MusWebOutput
@@ -266,4 +273,30 @@ func TestMusWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"mus"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestMusWebPresenterOutputCarriesTheHint(t *testing.T) {
+	msg, _ := setupMusWebMockWithPlayers()
+	msg.ExpectedCalls = removeMockCall(msg.ExpectedCalls, "GetHint")
+	msg.On("GetHint").Return(&domain.MusHint{Mus: false, Action: 0, Amount: 0, Indices: []int{0}, Reason: "follow_suit"})
+
+	result := new(presenter.MusWebPresenter).Output(msg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "mus.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestMusWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	msg, _ := setupMusWebMockWithPlayers()
+	msg.ExpectedCalls = removeMockCall(msg.ExpectedCalls, "GetHint")
+	msg.On("GetHint").Return(&domain.MusHint{Mus: false, Action: 0, Amount: 0, Indices: []int{0}, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.MusWebPresenter).HintOutput(msg), "mus.hintRequested")
+
+	none, _ := setupMusWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.MusHint)(nil))
+	assert.Contains(t, new(presenter.MusWebPresenter).HintOutput(none), "mus.noHint")
 }

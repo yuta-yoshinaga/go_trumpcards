@@ -98,6 +98,7 @@ describe('formatGongZhuState', () => {
     const out = formatGongZhuState(
       makeState({
         hint: { cardIndices: [0], reason: 'discard_pig' },
+        messageCode: 'gongzhu.hintRequested',
         gameEndFlag: true,
         winnerIdx: 1,
         message: 'done',
@@ -106,5 +107,13 @@ describe('formatGongZhuState', () => {
     expect(out).toContain('HINT');
     expect(out).toContain('Game Over');
     expect(out).toContain('done');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [0], reason: 'discard_pig' };
+    expect(formatGongZhuState(makeState({ hint, messageCode: 'gongzhu.hintRequested' }))).toContain('HINT');
+    expect(formatGongZhuState(makeState({ hint, messageCode: 'gongzhu.playing' }))).not.toContain('HINT');
   });
 });

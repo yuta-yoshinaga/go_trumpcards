@@ -90,5 +90,7 @@
     "juegoBest": "31点 ★（最強）",
     "juegoYes": "{{points}}点（フエゴあり）",
     "juegoPunto": "プント {{points}}点（フエゴなし）"
-  }
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }
