@@ -38,6 +38,10 @@ func setupNapoleonWebMock() *interfaces.MockNapoleonGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultNapoleonConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -469,6 +473,7 @@ func TestNapoleonWebPresenter_HintOutput(t *testing.T) {
 	t.Run("hint available with card", func(t *testing.T) {
 		idx := 2
 		m, _ := setupNapoleonWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.NapoleonHint{
 			CardIndex: &idx,
 			Reason:    "follow_suit",
@@ -481,12 +486,13 @@ func TestNapoleonWebPresenter_HintOutput(t *testing.T) {
 		assert.NotNil(t, resObj.Hint)
 		assert.Equal(t, &idx, resObj.Hint.CardIndex)
 		assert.Equal(t, "follow_suit", resObj.Hint.Reason)
-		assert.Empty(t, resObj.MessageCode)
+		assert.Equal(t, "napoleon.hintRequested", resObj.MessageCode)
 	})
 
 	t.Run("hint available with bid", func(t *testing.T) {
 		bid := 14
 		m, _ := setupNapoleonWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.NapoleonHint{
 			Bid:    &bid,
 			Reason: "strategic_bid",
@@ -499,7 +505,7 @@ func TestNapoleonWebPresenter_HintOutput(t *testing.T) {
 		assert.NotNil(t, resObj.Hint)
 		assert.Equal(t, &bid, resObj.Hint.Bid)
 		assert.Equal(t, "strategic_bid", resObj.Hint.Reason)
-		assert.Empty(t, resObj.MessageCode)
+		assert.Equal(t, "napoleon.hintRequested", resObj.MessageCode)
 	})
 
 	t.Run("hint available with trump suit", func(t *testing.T) {
@@ -507,6 +513,7 @@ func TestNapoleonWebPresenter_HintOutput(t *testing.T) {
 		adjSuit := 3
 		adjVal := 13
 		m, _ := setupNapoleonWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.NapoleonHint{
 			TrumpSuit:     &suit,
 			AdjutantSuit:  &adjSuit,
@@ -528,6 +535,7 @@ func TestNapoleonWebPresenter_HintOutput(t *testing.T) {
 	t.Run("hint available with discard", func(t *testing.T) {
 		idx := 3
 		m, _ := setupNapoleonWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.NapoleonHint{
 			DiscardIndex: &idx,
 			Reason:       "strategic_discard",
@@ -544,6 +552,7 @@ func TestNapoleonWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupNapoleonWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.NapoleonHint)(nil))
 
 		result := p.HintOutput(m)
@@ -551,6 +560,33 @@ func TestNapoleonWebPresenter_HintOutput(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Nil(t, resObj.Hint)
-		assert.Empty(t, resObj.MessageCode)
+		assert.Equal(t, "napoleon.noHint", resObj.MessageCode)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestNapoleonWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	npg, _ := setupNapoleonWebMockWithPlayers()
+	npg.ExpectedCalls = removeMockCall(npg.ExpectedCalls, "GetHint")
+	npg.On("GetHint").Return(&domain.NapoleonHint{CardIndex: &idx, Reason: "follow_suit"})
+
+	result := new(presenter.NapoleonWebPresenter).Output(npg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	assert.NotContains(t, result, "napoleon.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestNapoleonWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	npg, _ := setupNapoleonWebMockWithPlayers()
+	npg.ExpectedCalls = removeMockCall(npg.ExpectedCalls, "GetHint")
+	npg.On("GetHint").Return(&domain.NapoleonHint{CardIndex: &idx, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.NapoleonWebPresenter).HintOutput(npg), "napoleon.hintRequested")
+
+	none, _ := setupNapoleonWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.NapoleonHint)(nil))
+	assert.Contains(t, new(presenter.NapoleonWebPresenter).HintOutput(none), "napoleon.noHint")
 }
