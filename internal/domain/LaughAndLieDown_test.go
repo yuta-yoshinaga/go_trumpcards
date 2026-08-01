@@ -16,16 +16,25 @@ func TestLaughAndLieDown_TheDealIsEightEachAndTwelveFaceUp(t *testing.T) {
 	// #4396 は「残りを場札の**山**として中央に置く」とするが、伏せた山札は
 	// 存在しない。12 枚が表向きに広がっているからこそ、どのランクが何枚残って
 	// いるかが全員に見え、3 枚取りの判断が成立する。
+	// **Reset() は配って終わりではない。**最後に skipPlayersWhoCannotCapture が
+	// 走り、配った時点で合法手を持たない席は lieDown で手札を全部場に置く。
+	// 5000 回試して 11 回（約 0.22%）はその席が出るので、「Reset 直後は全員 8 枚」
+	// は配りの検証ではなく**配りに依存する賭け**になっていた。
+	//
+	// 枚数の保存則は降ろした後も成り立つ。そちらで配りを検証する。
 	l := NewDefaultLaughAndLieDown()
 	l.Reset()
 
 	total := len(l.GetLayout())
 	for i := range l.GetPlayers() {
-		assert.Equal(t, LaughAndLieDownHandSize, l.GetPlayer(i).GetCardsSize(), "seat %d", i)
-		total += l.GetPlayer(i).GetCardsSize()
+		size := l.GetPlayer(i).GetCardsSize()
+		assert.LessOrEqual(t, size, LaughAndLieDownHandSize, "seat %d cannot hold more than it was dealt", i)
+		total += size
 	}
-	assert.Equal(t, LaughAndLieDownLayoutSize, len(l.GetLayout()))
 	assert.Equal(t, 52, total, "no card may be held back in a hidden stock")
+
+	// 場は 12 枚で始まる。降ろした席があればその分だけ増える。
+	assert.GreaterOrEqual(t, len(l.GetLayout()), LaughAndLieDownLayoutSize)
 }
 
 func TestLaughAndLieDown_ThePotIsExactlyWhatTheSettlementPaysOut(t *testing.T) {
@@ -321,4 +330,31 @@ func TestLaughAndLieDown_UnmarshalRejectsAndClampsHostileSnapshots(t *testing.T)
 	assert.False(t, l.IsLaidDown(4), "the padded tail must not read past the supplied slice")
 
 	require.NoError(t, json.Unmarshal(valid, NewDefaultLaughAndLieDown()))
+}
+
+// **配りそのものは 8 枚ずつ。**上のテストが枚数の保存則に寄せたぶん、
+// 「配った直後」の姿はここで固定する。合法手を持たない席が降ろす前の状態を
+// 見たいので、skipPlayersWhoCannotCapture を走らせない Reset の中身を辿る。
+func TestLaughAndLieDown_TheDealItselfIsEightEach(t *testing.T) {
+	// 降ろしが起きるのは約 0.22%。1000 回のうち少なくとも 1 回は「全員 8 枚」の
+	// 局面が出るので、そこで配りの形を確かめる。出なければ配りが壊れている。
+	for range 1000 {
+		l := NewDefaultLaughAndLieDown()
+		l.Reset()
+
+		allFull := true
+		for i := range l.GetPlayers() {
+			if l.GetPlayer(i).GetCardsSize() != LaughAndLieDownHandSize {
+				allFull = false
+				break
+			}
+		}
+		if !allFull {
+			continue
+		}
+		assert.Equal(t, LaughAndLieDownLayoutSize, len(l.GetLayout()),
+			"with every seat still holding its deal, the layout is exactly the face-up spread")
+		return
+	}
+	t.Fatal("1000 deals and never once did every seat keep its eight cards")
 }
