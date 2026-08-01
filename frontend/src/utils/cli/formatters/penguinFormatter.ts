@@ -1,5 +1,5 @@
 import type { PenguinResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Convert a card value (1-13) to display label. */
 function rankLabel(rank: number): string {
@@ -46,7 +46,7 @@ export function formatPenguinState(state: PenguinResponse): string {
   lines.push(`moves: ${state.moveCount}`);
 
   if (state.isStalemate) lines.push('Stalemate - no more moves possible');
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     lines.push(
       `HINT: ${state.hint.fromZone}${state.hint.fromCol >= 0 ? state.hint.fromCol : ''} → ${state.hint.toZone}${state.hint.toCol >= 0 ? state.hint.toCol : ''}`,
     );
