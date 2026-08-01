@@ -86,5 +86,7 @@
     "playButton": "Press this button to play the selected card. Use the hint button for suggestions.",
     "teamScores": "Team scores. Reaching 100+ below the line wins a game; winning 2 games wins the rubber.",
     "resetButton": "Press the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

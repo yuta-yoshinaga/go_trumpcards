@@ -6,6 +6,7 @@ import {
   formatIndexedCards,
   formatPlayerName,
   formatSeparator,
+  isRequestedHint,
 } from '../formatterBase';
 
 const SUIT_NAMES: Record<number, string> = { 1: 'Clubs', 2: 'Diamonds', 3: 'Hearts', 4: 'Spades', 5: 'NT' };
@@ -60,7 +61,7 @@ export function formatBridgeState(state: BridgeResponse): string {
     lines.push(`trick: ${parts.join(', ')}`);
   }
 
-  if (state.hint) lines.push(`HINT: ${state.hint.reason}`);
+  if (state.hint && isRequestedHint(state)) lines.push(`HINT: ${state.hint.reason}`);
 
   if (state.message) lines.push(state.message);
   if (state.gameEndFlag) lines.push(`Game Over! Winner: Team ${state.winnerTeam}`);
