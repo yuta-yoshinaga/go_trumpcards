@@ -18,7 +18,7 @@
 // below with a reason, so the exemption is a decision someone made rather than
 // an omission nobody saw.
 
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -26,6 +26,7 @@ const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(FRONTEND, '..');
 const ROUTES = join(FRONTEND, 'src/constants/gameRoutes.ts');
 const HOOK = join(FRONTEND, 'src/hooks/useGameHint.ts');
+const PAGES = join(FRONTEND, 'src/pages');
 
 /**
  * Games that genuinely need no hint, each with the reason.
@@ -90,6 +91,38 @@ const BACKLOG = new Set([
   'vint',
 ]);
 
+/**
+ * Games whose factory exists but whose page does not call useGameHint yet.
+ *
+ * A ratchet like BACKLOG: it only shrinks. These were already in this state
+ * when the check was added (#4557) -- the factory was written, and then either
+ * the page wiring was forgotten or the page predates the hook. Their hint UI
+ * shows nothing today.
+ */
+const UNWIRED_BACKLOG = new Set([
+  'bigo',
+  'bigohilo',
+  'blackjack',
+  'blackjackswitch',
+  'carioca',
+  'contractrummy',
+  'crazypineapple',
+  'deuceswild',
+  'dragontiger',
+  'fourcardpoker',
+  'irishpoker',
+  'jokerpoker',
+  'omaha',
+  'omahahilo',
+  'pineapple',
+  'russianpoker',
+  'sevencardstud',
+  'sevencardstudhilo',
+  'shengji',
+  'spanish21',
+  'videopoker',
+]);
+
 /** Game slugs for every registered route, keyed the way useGameHint is called. */
 async function registeredGames() {
   const src = await readFile(ROUTES, 'utf8');
@@ -116,6 +149,23 @@ async function hintedGames() {
   return names;
 }
 
+/**
+ * Game names whose page actually calls useGameHint.
+ *
+ * A factory alone shows the user nothing: the page has to call the hook, and
+ * the ratchet was tightening on games that never did (#4557). Checking only
+ * hintFactories let Aces Up out of BACKLOG while its page still had no hint UI.
+ */
+async function wiredPages() {
+  const names = new Set();
+  for (const file of await readdir(PAGES)) {
+    if (!file.endsWith('Page.tsx')) continue;
+    const src = await readFile(join(PAGES, file), 'utf8');
+    for (const m of src.matchAll(/useGameHint\(\s*'([a-z0-9]+)'/g)) names.add(m[1]);
+  }
+  return names;
+}
+
 const games = await registeredGames();
 if (games.size === 0) {
   console.error(`hint-coverage: found no routes in ${relative(REPO, ROUTES)} — the regex has drifted.`);
@@ -136,8 +186,14 @@ for (const game of games) {
 const stale = [...hinted].filter((game) => !games.has(game));
 // An exemption for a game that now has a hint is stale too, and misleading.
 const redundant = [...ALLOWED.keys(), ...BACKLOG].filter((game) => hinted.has(game));
+// A factory nobody calls is invisible to the user, which is what the ratchet
+// is supposed to prevent (#4557).
+const wired = await wiredPages();
+const unwired = [...hinted].filter((game) => games.has(game) && !wired.has(game) && !UNWIRED_BACKLOG.has(game));
+// An entry that has since been wired is stale and misleading.
+const wiredBacklog = [...UNWIRED_BACKLOG].filter((game) => wired.has(game));
 
-if (missing.length > 0 || stale.length > 0 || redundant.length > 0) {
+if (missing.length > 0 || stale.length > 0 || redundant.length > 0 || unwired.length > 0 || wiredBacklog.length > 0) {
   console.error('\nHint coverage gaps:\n');
   for (const game of missing.sort()) {
     console.error(`  MISSING    ${game}  (no factory in hintFactories)`);
@@ -147,6 +203,14 @@ if (missing.length > 0 || stale.length > 0 || redundant.length > 0) {
   }
   for (const game of redundant.sort()) {
     console.error(`  REDUNDANT  ${game}  (listed in ALLOWED/BACKLOG, but a factory exists — drop the entry)`);
+  }
+  for (const game of unwired.sort()) {
+    console.error(`  UNWIRED    ${game}  (factory exists, but its page never calls useGameHint)`);
+  }
+  for (const game of wiredBacklog.sort()) {
+    console.error(
+      `  REDUNDANT  ${game}  (listed in UNWIRED_BACKLOG, but its page now calls useGameHint — drop the entry)`,
+    );
   }
   console.error(
     `\nEvery game needs a hint factory in ${relative(REPO, HOOK)} (checklist item 14).\n` +
@@ -158,5 +222,5 @@ if (missing.length > 0 || stale.length > 0 || redundant.length > 0) {
 
 console.log(
   `hint-coverage: OK (${hinted.size} of ${games.size} games hinted; ` +
-    `${ALLOWED.size} need none; ${BACKLOG.size} still owed, see #4557).`,
+    `${ALLOWED.size} need none; ${BACKLOG.size} still owed, ${UNWIRED_BACKLOG.size} unwired, see #4557).`,
 );
