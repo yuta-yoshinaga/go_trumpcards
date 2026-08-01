@@ -1,5 +1,5 @@
 import type { AcesUpResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format an Aces Up game state as terminal text. */
 export function formatAcesUpState(state: AcesUpResponse): string {
@@ -25,7 +25,7 @@ export function formatAcesUpState(state: AcesUpResponse): string {
   lines.push(`moves: ${state.moveCount}`);
 
   if (state.isStalemate) lines.push('Stalemate - no more moves possible');
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     lines.push(state.hint.type === 'draw' ? 'HINT: deal' : `HINT: ${state.hint.type} col ${state.hint.col}`);
   }
   if (state.message) lines.push(state.message);
