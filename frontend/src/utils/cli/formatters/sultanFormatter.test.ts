@@ -46,12 +46,16 @@ describe('formatSultanState', () => {
   });
 
   it('renders a divan hint with source index and target', () => {
-    const out = formatSultanState(baseState({ hint: { fromZone: 'divan', fromIdx: 3, toFoundation: 2 } }));
+    const out = formatSultanState(
+      baseState({ hint: { fromZone: 'divan', fromIdx: 3, toFoundation: 2 }, messageCode: 'sultan.hintAvailable' }),
+    );
     expect(out).toContain('HINT: divan[3] → foundation2');
   });
 
   it('renders a waste hint source', () => {
-    const out = formatSultanState(baseState({ hint: { fromZone: 'waste', fromIdx: -1, toFoundation: 4 } }));
+    const out = formatSultanState(
+      baseState({ hint: { fromZone: 'waste', fromIdx: -1, toFoundation: 4 }, messageCode: 'sultan.hintAvailable' }),
+    );
     expect(out).toContain('HINT: waste → foundation4');
   });
 
@@ -60,5 +64,13 @@ describe('formatSultanState', () => {
     expect(out).toContain('Stalemate - no more moves possible');
     expect(out).toContain('stuck');
     expect(out).toContain('Congratulations! You win!');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { fromZone: 'divan', fromIdx: 3, toFoundation: 2 };
+    expect(formatSultanState(baseState({ hint, messageCode: 'sultan.hintAvailable' }))).toContain('HINT');
+    expect(formatSultanState(baseState({ hint, messageCode: 'sultan.playing' }))).not.toContain('HINT');
   });
 });

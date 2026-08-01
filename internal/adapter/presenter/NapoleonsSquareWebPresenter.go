@@ -53,6 +53,21 @@ func (p *NapoleonsSquareWebPresenter) Output(ns interfaces.NapoleonsSquareGame, 
 	}
 
 	// メッセージ
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if ns.GetPhase() == domain.NapoleonsSquarePhasePlaying && !ns.IsStalemate() {
+		if hint := ns.GetHint(); hint != nil {
+			resObj.Hint = &controller.NapoleonsSquareWebOutputHint{
+				FromZone:  hint.FromZone,
+				FromCol:   hint.FromCol,
+				CardIndex: hint.CardIndex,
+				ToZone:    hint.ToZone,
+				ToCol:     hint.ToCol,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

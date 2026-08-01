@@ -49,10 +49,18 @@ func parseNapoleonsSquareOutput(t *testing.T, jsonStr string) *controller.Napole
 	return &out
 }
 
+// setupNapoleonsSquareOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupNapoleonsSquareOutputMock(g *interfaces.MockNapoleonsSquareGame) {
+	setupNapoleonsSquareWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestNapoleonsSquareWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		g := new(interfaces.MockNapoleonsSquareGame)
-		setupNapoleonsSquareWebMockDefaults(g)
+		setupNapoleonsSquareOutputMock(g)
 
 		result := parseNapoleonsSquareOutput(t, new(NapoleonsSquareWebPresenter).Output(g, nil))
 		assert.Equal(t, 0, result.Phase)
@@ -65,7 +73,7 @@ func TestNapoleonsSquareWebPresenter_Output(t *testing.T) {
 
 	t.Run("all face up", func(t *testing.T) {
 		g := new(interfaces.MockNapoleonsSquareGame)
-		setupNapoleonsSquareWebMockDefaults(g)
+		setupNapoleonsSquareOutputMock(g)
 
 		result := parseNapoleonsSquareOutput(t, new(NapoleonsSquareWebPresenter).Output(g, nil))
 		for _, col := range result.Tableau {
@@ -78,7 +86,7 @@ func TestNapoleonsSquareWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		g := new(interfaces.MockNapoleonsSquareGame)
-		setupNapoleonsSquareWebMockDefaults(g)
+		setupNapoleonsSquareOutputMock(g)
 
 		result := parseNapoleonsSquareOutput(t, new(NapoleonsSquareWebPresenter).Output(g, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
@@ -95,7 +103,7 @@ func TestNapoleonsSquareWebPresenter_Output(t *testing.T) {
 	for _, tc := range phases {
 		t.Run(tc.name, func(t *testing.T) {
 			g := new(interfaces.MockNapoleonsSquareGame)
-			setupNapoleonsSquareWebMockDefaults(g)
+			setupNapoleonsSquareOutputMock(g)
 			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 			g.On("GetPhase").Return(tc.val)
 
@@ -106,12 +114,37 @@ func TestNapoleonsSquareWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		g := new(interfaces.MockNapoleonsSquareGame)
-		setupNapoleonsSquareWebMockDefaults(g)
+		setupNapoleonsSquareOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsStalemate")
 		g.On("IsStalemate").Return(true)
 
 		result := parseNapoleonsSquareOutput(t, new(NapoleonsSquareWebPresenter).Output(g, nil))
 		assert.Equal(t, "napoleonssquare.stalemate", result.MessageCode)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestNapoleonsSquareWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		nsg := new(interfaces.MockNapoleonsSquareGame)
+		setupNapoleonsSquareWebMockDefaults(nsg)
+		nsg.On("GetHint").Return(&domain.NapoleonsSquareHint{FromZone: "tableau", FromCol: 1, CardIndex: 0, ToZone: "foundation", ToCol: 2}).Maybe()
+
+		result := new(NapoleonsSquareWebPresenter).Output(nsg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		nsg := new(interfaces.MockNapoleonsSquareGame)
+		setupNapoleonsSquareWebMockDefaults(nsg)
+		nsg.ExpectedCalls = filterCalls(nsg.ExpectedCalls, "IsStalemate")
+		nsg.On("IsStalemate").Return(true)
+		nsg.On("GetHint").Return(&domain.NapoleonsSquareHint{FromZone: "tableau", FromCol: 1, CardIndex: 0, ToZone: "foundation", ToCol: 2}).Maybe()
+
+		result := new(NapoleonsSquareWebPresenter).Output(nsg, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 

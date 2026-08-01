@@ -44,7 +44,10 @@ describe('formatNapoleonsSquareState', () => {
 
   it('shows a tableau hint with the run head', () => {
     const result = formatNapoleonsSquareState(
-      makeState({ hint: { fromZone: 'tableau', fromCol: 3, cardIndex: 1, toZone: 'tableau', toCol: 7 } }),
+      makeState({
+        hint: { fromZone: 'tableau', fromCol: 3, cardIndex: 1, toZone: 'tableau', toCol: 7 },
+        messageCode: 'napoleonssquare.hintAvailable',
+      }),
     );
     expect(result).toContain('HINT');
     expect(result).toContain('t3[1]');
@@ -80,10 +83,25 @@ describe('formatNapoleonsSquareState', () => {
 
   it('renders a waste-to-foundation hint', () => {
     const result = formatNapoleonsSquareState(
-      makeState({ hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'foundation', toCol: 2 } }),
+      makeState({
+        hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'foundation', toCol: 2 },
+        messageCode: 'napoleonssquare.hintAvailable',
+      }),
     );
     expect(result).toContain('HINT');
     expect(result).toContain('waste');
     expect(result).toContain('foundation2');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { fromZone: 'tableau', fromCol: 3, cardIndex: 1, toZone: 'tableau', toCol: 7 };
+    expect(formatNapoleonsSquareState(makeState({ hint, messageCode: 'napoleonssquare.hintAvailable' }))).toContain(
+      'HINT',
+    );
+    expect(formatNapoleonsSquareState(makeState({ hint, messageCode: 'napoleonssquare.playing' }))).not.toContain(
+      'HINT',
+    );
   });
 });

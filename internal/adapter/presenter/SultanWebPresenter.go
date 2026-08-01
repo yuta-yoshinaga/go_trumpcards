@@ -49,6 +49,19 @@ func (p *SultanWebPresenter) Output(su interfaces.SultanGame, lastErr error) str
 	}
 
 	// メッセージ
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if su.GetPhase() == domain.SultanPhasePlaying && !su.IsStalemate() {
+		if hint := su.GetHint(); hint != nil {
+			resObj.Hint = &controller.SultanWebOutputHint{
+				FromZone:     hint.FromZone,
+				FromIdx:      hint.FromIdx,
+				ToFoundation: hint.ToFoundation,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

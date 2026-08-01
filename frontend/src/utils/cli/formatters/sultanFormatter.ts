@@ -1,6 +1,6 @@
 import type { SultanResponse } from '../../../types/card';
 import { SultanPhase } from '../../../types/phases';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a Sultan of Turkey game state as terminal text. */
 export function formatSultanState(state: SultanResponse): string {
@@ -23,7 +23,7 @@ export function formatSultanState(state: SultanResponse): string {
 
   lines.push(`moves: ${state.moveCount}  undo:${state.canUndo ? 'yes' : 'no'}`);
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const from = state.hint.fromZone === 'waste' ? 'waste' : `divan[${state.hint.fromIdx}]`;
     lines.push(`HINT: ${from} → foundation${state.hint.toFoundation}`);
   }

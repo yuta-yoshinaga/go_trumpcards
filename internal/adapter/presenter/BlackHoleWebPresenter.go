@@ -28,6 +28,15 @@ func (p *BlackHoleWebPresenter) Output(g interfaces.BlackHoleGame, lastErr error
 	resObj.Fans = blackHoleFansOutput(g.GetFans())
 	resObj.BlackHole = cardsToOutputOrEmpty(g.GetBlackHole())
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if g.GetPhase() == domain.BlackHolePhasePlaying && !g.IsStalemate() {
+		if hint := g.GetHint(); hint != nil {
+			resObj.Hint = &controller.BlackHoleWebOutputHint{Fan: hint.Fan}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {
