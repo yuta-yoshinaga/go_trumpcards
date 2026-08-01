@@ -269,6 +269,8 @@ tags:
     description: Literature
   - name: guandan
     description: Guandan
+  - name: shengji
+    description: Sheng Ji / Tractor
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
@@ -14487,6 +14489,110 @@ paths:
               schema:
                 $ref: '#/components/schemas/GuandanResponse'
 
+  /shengji/exec:
+    post:
+      tags:
+        - shengji
+      summary: Execute a Sheng Ji game command
+      description: |
+        Send a command to advance the Sheng Ji session identified by
+        `sessionId`. Sheng Ji (升级 / 拖拉机) is a Chinese two-pack point-trick
+        game for **four players in two partnerships sitting opposite**, dealt
+        **25 cards each** from 108 with an **eight-card kitty**.
+
+        **#4384 loses the kitty, inverts who scores, and omits the trump group.**
+
+        * The issue deals all 108 cards to the four players. 108 divides by four
+          exactly, so that leaves **no kitty**. The real deal is 25 each plus an
+          **8-card kitty**, and the kitty matters: the defenders capture it
+          **with a multiplier** (twice the winning play's size) by taking the
+          last trick.
+        * The issue has a **bid** decide the trump suit and the declarer. There
+          is no auction. Trump is **shown** — a player exposes a card of the
+          level rank — and only a **stronger showing** (a pair over a single)
+          overrides. If nobody shows, the hand is played with **no trump suit**.
+          The declaring side is whoever's level is being played.
+        * **Trumps are not just the trump suit.** Every card of the level rank,
+          **in all four suits**, plus all four jokers, is a trump: red joker >
+          black joker > trump-suit level card > off-suit level cards (equal
+          among themselves) > plain trumps. The issue omits this entirely,
+          though it is the whole point of the level mechanic.
+        * The issue reads as though the **declarers** collect points. The
+          **defenders** do. Points are 5 = 5, 10 = 10, K = 10, **200 in the
+          pack**, and the declarers win by holding the defenders under **80**.
+        * The climb is unstated: 3 levels at zero, 2 under 40, 1 under 80; at 80
+          the deal changes hands with **no** climb, and every further 40 is one
+          more level. The climb **stops at the ace**, which must then be held.
+
+        The issue is right about the two packs, the four players in two
+        partnerships, the 5/10/K point cards, the tractor being consecutive
+        same-suit pairs, and climbing from 2 to the ace.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Declare | `0`   | Showing a level card to name trump |
+        | Kitty   | `1`   | The declarer buries eight cards |
+        | Play    | `2`   | Tricks |
+        | HandEnd | `3`   | The hand is settled; deal the next |
+        | GameEnd | `4`   | A team held the deal at the ace |
+
+        | Command   | Aliases | Description |
+        |-----------|---------|-------------|
+        | `reset`   | `r`     | Start / restart a game |
+        | `declare` | `d`     | Declare `suit`; **0 passes** |
+        | `bury`    | `b`     | Bury eight `cardIndexes` into the kitty |
+        | `play`    | `p`     | Play `cardIndexes` as one combination |
+        | `next`    | `n`     | Deal the next hand |
+        | `log`     | `l`     | Action-log transcript |
+      operationId: shengjiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, declare, d, bury, b, play, p, next, n, log, l]
+                sessionId:
+                  type: string
+                suit:
+                  type: integer
+                  description: |
+                    1=Spade, 2=Clover, 3=Heart, 4=Diamond, and **0 PASSES**.
+                    Required for `declare` -- zero is a real choice here, so it
+                    cannot be omitted to mean the same thing.
+                cardIndexes:
+                  type: array
+                  items:
+                    type: integer
+                  description: |
+                    The eight cards to bury, or the cards to play as ONE
+                    combination. Required for `bury` and `play`.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=Normal (the only level in v1)"
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShengJiResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShengJiResponse'
+
   /shithead/exec:
     post:
       tags:
@@ -26334,6 +26440,169 @@ components:
           type: object
           additionalProperties:
             type: string
+    ShengJiResponse:
+      type: object
+      description: Response payload for /shengji/exec
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              team:
+                type: integer
+                description: "0 for seats 0/2, 1 for seats 1/3 -- partners sit opposite"
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                description: The human's own hand only, until the hand is settled.
+                items:
+                  $ref: '#/components/schemas/Card'
+              isDeclarer:
+                type: boolean
+                description: |
+                  True for the side whose level is being played. THE DECLARERS
+                  DO NOT COLLECT POINTS -- they win by holding the defenders
+                  under the target.
+              isCurrentTurn:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Declare, 1=Kitty, 2=Play, 3=HandEnd, 4=GameEnd"
+        handNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        level:
+          type: integer
+          description: |
+            This hand's level rank. EVERY CARD OF THIS RANK, IN ALL FOUR SUITS,
+            IS A TRUMP -- not just the ones in the trump suit.
+        teamLevels:
+          type: array
+          items:
+            type: integer
+        declarerTeam:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "1-4, or 0 for no trump suit (level cards and jokers are still trumps)"
+        declaration:
+          type: object
+          nullable: true
+          properties:
+            seat:
+              type: integer
+            suit:
+              type: integer
+            strength:
+              type: integer
+              description: "1 for a single level card, 2 for a pair. ONLY A STRONGER SHOWING OVERRIDES."
+        declarableSuits:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Suits the human can declare right now, keyed by suit number, valued by strength.
+        kittySize:
+          type: integer
+        kitty:
+          type: array
+          description: The kitty's cards -- EMPTY until the hand is settled.
+          items:
+            $ref: '#/components/schemas/Card'
+        trick:
+          type: array
+          items:
+            type: object
+            properties:
+              seat:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        trickLeader:
+          type: integer
+        leadCombo:
+          type: object
+          nullable: true
+          properties:
+            kind:
+              type: integer
+              description: "0=none, 1=single, 2=pair, 3=tractor (consecutive pairs)"
+            rank:
+              type: integer
+            size:
+              type: integer
+            trump:
+              type: boolean
+            suit:
+              type: integer
+        teamPoints:
+          type: array
+          items:
+            type: integer
+          description: Points each team collected this hand. ONLY THE DEFENDERS' TOTAL COUNTS.
+        trickCount:
+          type: integer
+        lastTrickWinner:
+          type: integer
+        lastResult:
+          type: object
+          nullable: true
+          properties:
+            declarerTeam:
+              type: integer
+            defenderPoints:
+              type: integer
+              description: Points the DEFENDERS collected -- they are the side that scores.
+            kittyPoints:
+              type: integer
+            kittyMultiplier:
+              type: integer
+              description: "Twice the winning play's size; 0 when the declarers took the last trick."
+            declarerHeld:
+              type: boolean
+            advance:
+              type: integer
+            advancingTeam:
+              type: integer
+        minLevel:
+          type: integer
+        maxLevel:
+          type: integer
+        kittySizeMax:
+          type: integer
+        totalPoints:
+          type: integer
+          description: Points in the pack -- 200.
+        defenderTarget:
+          type: integer
+          description: What the defenders need to take the deal -- 80, two fifths of the pack.
+        advanceStep:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
     GuandanResponse:
       type: object
       description: Response payload for /guandan/exec

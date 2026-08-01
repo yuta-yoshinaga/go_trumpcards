@@ -491,6 +491,10 @@ func (s *ShengJi) dealRound() {
 	}
 	s.kitty = make([]*Card, 0, ShengJiKittySize)
 	s.kitty = append(s.kitty, deck[pos:]...)
+	// **25 枚を添字で指定して手を組む**ので、並べ替えておかないと実用に耐えない。
+	for i := range ShengJiPlayerCnt {
+		s.sortHand(i)
+	}
 }
 
 // newShengJiDeck は **52 × 2 + ジョーカー 4 = 108 枚**を作る。
