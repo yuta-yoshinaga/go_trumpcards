@@ -40,10 +40,20 @@ func parseCongressOutput(t *testing.T, jsonStr string) *controller.CongressWebOu
 	return &out
 }
 
+// setupCongressOutputMock は Output 用の既定を組む。
+//
+// **Output() も受動ヒントを埋めるようになった** (#4483) ので、GetHint を
+// 呼べるようにしておく必要がある。共有ヘルパー側に置くと、先に登録された
+// この期待が HintOutput テストの「ヒントあり」を食ってしまう。
+func setupCongressOutputMock(g *interfaces.MockCongressGame) {
+	setupCongressWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestCongressWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		g := new(interfaces.MockCongressGame)
-		setupCongressWebMockDefaults(g)
+		setupCongressOutputMock(g)
 
 		result := parseCongressOutput(t, new(CongressWebPresenter).Output(g, nil))
 		assert.Equal(t, 0, result.Phase)
@@ -56,7 +66,7 @@ func TestCongressWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		g := new(interfaces.MockCongressGame)
-		setupCongressWebMockDefaults(g)
+		setupCongressOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsStalemate")
 		g.On("IsStalemate").Return(true)
 
@@ -66,7 +76,7 @@ func TestCongressWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		g := new(interfaces.MockCongressGame)
-		setupCongressWebMockDefaults(g)
+		setupCongressOutputMock(g)
 
 		result := parseCongressOutput(t, new(CongressWebPresenter).Output(g, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
@@ -82,7 +92,7 @@ func TestCongressWebPresenter_Output(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			g := new(interfaces.MockCongressGame)
-			setupCongressWebMockDefaults(g)
+			setupCongressOutputMock(g)
 			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 			g.On("GetPhase").Return(tc.val)
 
@@ -90,6 +100,26 @@ func TestCongressWebPresenter_Output(t *testing.T) {
 			assert.Equal(t, tc.code, result.MessageCode)
 		})
 	}
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない。ここが埋まっていないと
+// フロントの `state.hint` は常に undefined で、それを読む分岐が全部死ぬ (#4483)。
+func TestCongressWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.CongressHint{FromZone: "tableau", FromIdx: 2, ToZone: "foundation", ToIdx: 1}
+
+	t.Run("while the game is playable", func(t *testing.T) {
+		g := new(interfaces.MockCongressGame)
+		setupCongressWebMockDefaults(g)
+		g.On("GetHint").Return(hint).Maybe()
+
+		result := parseCongressOutput(t, new(CongressWebPresenter).Output(g, nil))
+		if result.Hint == nil {
+			t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+		}
+		assert.Equal(t, "tableau", result.Hint.FromZone)
+		assert.Equal(t, 2, result.Hint.FromIdx)
+	})
 }
 
 func TestCongressWebPresenter_HintOutput(t *testing.T) {
