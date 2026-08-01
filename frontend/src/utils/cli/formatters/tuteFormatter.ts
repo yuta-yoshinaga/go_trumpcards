@@ -1,5 +1,12 @@
 import type { TuteResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
 const SUIT_SYMBOLS = ['?', '♠', '♣', '♥', '♦'];
@@ -37,7 +44,7 @@ export function formatTuteState(state: TuteResponse): string {
     lines.push(`round result: A points=${state.roundTeamPoints[0] ?? 0} B points=${state.roundTeamPoints[1] ?? 0}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const indices = state.hint.cardIndices ?? [];
     const marriage = state.hint.marriage > 0 ? ` marriage=${SUIT_SYMBOLS[state.hint.marriage] ?? '?'}` : '';
     lines.push(`HINT: card indices [${indices.join(', ')}]${marriage} (${state.hint.reason})`);

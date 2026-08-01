@@ -40,6 +40,10 @@ func setupWattenWebMock() *interfaces.MockWattenGame {
 	m.On("GetResult").Return(domain.WattenResultNone)
 	m.On("GetConfig").Return(domain.DefaultWattenConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -110,6 +114,7 @@ func TestWattenWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.WattenWebPresenter)
 	m, _ := setupWattenWebMockWithPlayers()
 	rank, suit := 10, 2
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return(&domain.WattenHint{Action: "declare", Rank: &rank, Suit: &suit, Reason: "declare_strong"})
 	result := p.HintOutput(m)
 	var resObj controller.WattenWebOutput
@@ -121,6 +126,7 @@ func TestWattenWebPresenter_HintOutput(t *testing.T) {
 func TestWattenWebPresenter_HintOutput_Nil(t *testing.T) {
 	p := new(presenter.WattenWebPresenter)
 	m, _ := setupWattenWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return((*domain.WattenHint)(nil))
 	result := p.HintOutput(m)
 	var resObj controller.WattenWebOutput
@@ -132,4 +138,32 @@ func TestWattenWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.WattenWebPresenter)
 	m := setupWattenWebMock()
 	assert.NotNil(t, p.ActionLogOutput(m))
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestWattenWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	wtg, _ := setupWattenWebMockWithPlayers()
+	wtg.ExpectedCalls = removeMockCall(wtg.ExpectedCalls, "GetHint")
+	wtg.On("GetHint").Return(&domain.WattenHint{Action: "play", CardIndex: &idx, Reason: "lead_low"})
+
+	result := new(presenter.WattenWebPresenter).Output(wtg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "watten.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestWattenWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	wtg, _ := setupWattenWebMockWithPlayers()
+	wtg.ExpectedCalls = removeMockCall(wtg.ExpectedCalls, "GetHint")
+	wtg.On("GetHint").Return(&domain.WattenHint{Action: "play", CardIndex: &idx, Reason: "lead_low"})
+	assert.Contains(t, new(presenter.WattenWebPresenter).HintOutput(wtg), "watten.hintRequested")
+
+	none, _ := setupWattenWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.WattenHint)(nil))
+	assert.Contains(t, new(presenter.WattenWebPresenter).HintOutput(none), "watten.noHint")
 }

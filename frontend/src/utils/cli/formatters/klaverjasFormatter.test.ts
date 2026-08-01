@@ -36,7 +36,12 @@ describe('formatKlaverjasState', () => {
   });
 
   it('renders a hint with card indices', () => {
-    const out = formatKlaverjasState(makeKlaverjasState({ hint: { cardIndices: [1, 2], reason: 'follow_win' } }));
+    const out = formatKlaverjasState(
+      makeKlaverjasState({
+        hint: { cardIndices: [1, 2], reason: 'follow_win' },
+        messageCode: 'klaverjas.hintRequested',
+      }),
+    );
     expect(out).toContain('HINT: card indices [1, 2]');
     expect(out).toContain('follow_win');
   });
@@ -49,5 +54,15 @@ describe('formatKlaverjasState', () => {
   it('renders an explicit message when present', () => {
     const out = formatKlaverjasState(makeKlaverjasState({ message: 'hello world' }));
     expect(out).toContain('hello world');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [1, 2], reason: 'follow_win' };
+    expect(formatKlaverjasState(makeKlaverjasState({ hint, messageCode: 'klaverjas.hintRequested' }))).toContain(
+      'HINT',
+    );
+    expect(formatKlaverjasState(makeKlaverjasState({ hint, messageCode: 'klaverjas.playing' }))).not.toContain('HINT');
   });
 });
