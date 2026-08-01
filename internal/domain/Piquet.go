@@ -870,6 +870,14 @@ func (p *Piquet) cpuChoosePlay(playerIdx int) int {
 
 // GetHint プレイ/交換時の推奨を返す
 func (p *Piquet) GetHint(playerIdx int) *PiquetHint {
+	// **CPU の席のヒントは返さない。**返すと、呼び手が現在手番をそのまま渡した
+	// ときに CPU の手札を説明するヒントが出る。Output() は毎レスポンスでこれを
+	// 呼ぶので、相手の手番中に相手の札を指すヒントが人間に見えることになる
+	// (#4554 のレビュー指摘)。CourtPiece.GetHint は自分で人間席を解決していて、
+	// この契約が両者で揃っていなかった。
+	if playerIdx < 0 || playerIdx >= len(p.players) || !p.players[playerIdx].GetIsHuman() {
+		return nil
+	}
 	switch p.phase {
 	case PiquetPhaseExchange:
 		if p.exchangeTurn == PiquetExchangeTurnElder && playerIdx == p.elderIdx {

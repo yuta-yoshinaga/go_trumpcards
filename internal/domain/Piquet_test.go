@@ -19,6 +19,17 @@ func newPiquetForTest() *Piquet {
 	return NewPiquet(NewTrumpCardsBelote(), players, DefaultPiquetConfig())
 }
 
+// newPiquetWithHumanForTest は席 humanSeat を人間にした盤面を返す。
+// **GetHint は人間席にしか答えない**（#4554 のレビュー指摘。CPU 席に答えると
+// 相手の手札を説明するヒントが人間に見える）ので、ヒントのテストは人間席が要る。
+func newPiquetWithHumanForTest(humanSeat int) *Piquet {
+	players := []*PiquetPlayer{
+		NewPiquetPlayer(humanSeat == 0),
+		NewPiquetPlayer(humanSeat == 1),
+	}
+	return NewPiquet(NewTrumpCardsBelote(), players, DefaultPiquetConfig())
+}
+
 // addHand replaces a player's hand with the given cards.
 func addHand(pl *PiquetPlayer, cards ...*Card) {
 	pl.Reset()
@@ -869,6 +880,8 @@ func TestPiquetJSONRoundTrip(t *testing.T) {
 func TestGetHintInExchangePhase(t *testing.T) {
 	p := newPiquetForTest()
 	p.Reset()
+	p = newPiquetWithHumanForTest(p.elderIdx)
+	p.Reset()
 	hint := p.GetHint(p.elderIdx)
 	if hint == nil {
 		t.Fatal("expected hint in exchange phase")
@@ -879,7 +892,7 @@ func TestGetHintInExchangePhase(t *testing.T) {
 }
 
 func TestGetHintInPlayPhase(t *testing.T) {
-	p := newPiquetForTest()
+	p := newPiquetWithHumanForTest(0)
 	p.Reset()
 	p.phase = PiquetPhasePlay
 	p.currentTrick = nil
@@ -887,6 +900,27 @@ func TestGetHintInPlayPhase(t *testing.T) {
 	hint := p.GetHint(0)
 	if hint == nil || hint.CardIndex == nil {
 		t.Fatalf("expected card hint, got %+v", hint)
+	}
+}
+
+// **CPU 席のヒントは返さない。**返すと、現在手番をそのまま渡す呼び手
+// （PiquetWebPresenter.Output）経由で CPU の手札を説明する行が人間に見える。
+func TestGetHintRefusesACpuSeat(t *testing.T) {
+	p := newPiquetWithHumanForTest(0)
+	p.Reset()
+	if hint := p.GetHint(1); hint != nil {
+		t.Errorf("expected no hint for a CPU seat, got %+v", hint)
+	}
+}
+
+// 席の範囲外も nil。落ちないことを固定する。
+func TestGetHintRefusesAnOutOfRangeSeat(t *testing.T) {
+	p := newPiquetWithHumanForTest(0)
+	p.Reset()
+	for _, idx := range []int{-1, 2, 99} {
+		if hint := p.GetHint(idx); hint != nil {
+			t.Errorf("expected no hint for seat %d, got %+v", idx, hint)
+		}
 	}
 }
 
