@@ -1,5 +1,12 @@
 import type { SuecaResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
 const SUIT_SYMBOLS = ['?', '♠', '♣', '♥', '♦'];
@@ -37,7 +44,7 @@ export function formatSuecaState(state: SuecaResponse): string {
     lines.push(`round result: A card pts=${state.roundCardPoints[0] ?? 0} B card pts=${state.roundCardPoints[1] ?? 0}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const indices = state.hint.cardIndices ?? [];
     lines.push(`HINT: card indices [${indices.join(', ')}] (${state.hint.reason})`);
   }

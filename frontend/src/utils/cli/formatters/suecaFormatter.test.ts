@@ -35,7 +35,9 @@ describe('formatSuecaState', () => {
   });
 
   it('renders a hint with card indices', () => {
-    const out = formatSuecaState(makeSuecaState({ hint: { cardIndices: [1, 2], reason: 'follow_win' } }));
+    const out = formatSuecaState(
+      makeSuecaState({ hint: { cardIndices: [1, 2], reason: 'follow_win' }, messageCode: 'sueca.hintRequested' }),
+    );
     expect(out).toContain('HINT: card indices [1, 2]');
     expect(out).toContain('follow_win');
   });
@@ -48,5 +50,14 @@ describe('formatSuecaState', () => {
   it('renders an explicit message when present', () => {
     const out = formatSuecaState(makeSuecaState({ message: 'hello world' }));
     expect(out).toContain('hello world');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  // このゲーム群は hintAvailable がラベルとして埋まっているため hintRequested。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [0], reason: 'follow' };
+    expect(formatSuecaState(makeSuecaState({ hint, messageCode: 'sueca.hintRequested' }))).toContain('HINT');
+    expect(formatSuecaState(makeSuecaState({ hint, messageCode: 'sueca.playing' }))).not.toContain('HINT');
   });
 });
