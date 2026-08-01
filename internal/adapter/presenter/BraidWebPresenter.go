@@ -62,6 +62,23 @@ func (p *BraidWebPresenter) Output(b interfaces.BraidGame, lastErr error) string
 	resObj.RedealsLeft = domain.BraidMaxPasses - 1 - b.GetPassesUsed()
 	resObj.CanRedeal = b.CanRedeal()
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// 手が進められる局面だけで計算する。終局・向き待ち・手詰まりでは助言する手が
+	// 無いので、探索を走らせるだけ無駄になる。
+	if b.GetPhase() == domain.BraidPhasePlaying && !b.IsAwaitingDirection() && !b.IsStalemate() {
+		if hint := b.GetHint(); hint != nil {
+			resObj.Hint = &controller.BraidWebOutputHint{
+				FromZone: hint.FromZone,
+				FromIdx:  hint.FromIdx,
+				ToZone:   hint.ToZone,
+				ToIdx:    hint.ToIdx,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

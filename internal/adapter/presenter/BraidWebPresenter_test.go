@@ -56,10 +56,20 @@ func parseBraidOutput(t *testing.T, jsonStr string) *controller.BraidWebOutput {
 	return &out
 }
 
+// setupBraidOutputMock は Output 用の既定を組む。
+//
+// **Output() も受動ヒントを埋めるようになった** (#4483) ので、GetHint を
+// 呼べるようにしておく必要がある。共有ヘルパー側に置くと、先に登録された
+// この期待が HintOutput テストの「ヒントあり」を食ってしまう。
+func setupBraidOutputMock(g *interfaces.MockBraidGame) {
+	setupBraidWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestBraidWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		g := new(interfaces.MockBraidGame)
-		setupBraidWebMockDefaults(g)
+		setupBraidOutputMock(g)
 
 		result := parseBraidOutput(t, new(BraidWebPresenter).Output(g, nil))
 		assert.Equal(t, 0, result.Phase)
@@ -78,7 +88,7 @@ func TestBraidWebPresenter_Output(t *testing.T) {
 	// 空き枠を詰めるとインデックスがずれ、ヒントの枠番号が画面と食い違う。
 	t.Run("an empty slot stays null instead of being squeezed out", func(t *testing.T) {
 		g := new(interfaces.MockBraidGame)
-		setupBraidWebMockDefaults(g)
+		setupBraidOutputMock(g)
 
 		result := parseBraidOutput(t, new(BraidWebPresenter).Output(g, nil))
 		assert.Len(t, result.Fields, domain.BraidFieldCnt)
@@ -90,7 +100,7 @@ func TestBraidWebPresenter_Output(t *testing.T) {
 	// The client must not have to infer "direction 0 means unchosen".
 	t.Run("awaiting the direction has its own message", func(t *testing.T) {
 		g := new(interfaces.MockBraidGame)
-		setupBraidWebMockDefaults(g)
+		setupBraidOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsAwaitingDirection")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetDirection")
 		g.On("IsAwaitingDirection").Return(true)
@@ -104,7 +114,7 @@ func TestBraidWebPresenter_Output(t *testing.T) {
 
 	t.Run("awaiting the direction outranks stalemate", func(t *testing.T) {
 		g := new(interfaces.MockBraidGame)
-		setupBraidWebMockDefaults(g)
+		setupBraidOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsAwaitingDirection")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsStalemate")
 		g.On("IsAwaitingDirection").Return(true)
@@ -116,7 +126,7 @@ func TestBraidWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		g := new(interfaces.MockBraidGame)
-		setupBraidWebMockDefaults(g)
+		setupBraidOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsStalemate")
 		g.On("IsStalemate").Return(true)
 
@@ -126,7 +136,7 @@ func TestBraidWebPresenter_Output(t *testing.T) {
 
 	t.Run("redeals left counts down with the passes used", func(t *testing.T) {
 		g := new(interfaces.MockBraidGame)
-		setupBraidWebMockDefaults(g)
+		setupBraidOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPassesUsed")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "CanRedeal")
 		g.On("GetPassesUsed").Return(1)
@@ -139,7 +149,7 @@ func TestBraidWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		g := new(interfaces.MockBraidGame)
-		setupBraidWebMockDefaults(g)
+		setupBraidOutputMock(g)
 
 		result := parseBraidOutput(t, new(BraidWebPresenter).Output(g, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
@@ -155,7 +165,7 @@ func TestBraidWebPresenter_Output(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			g := new(interfaces.MockBraidGame)
-			setupBraidWebMockDefaults(g)
+			setupBraidOutputMock(g)
 			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 			g.On("GetPhase").Return(tc.val)
 
@@ -163,6 +173,41 @@ func TestBraidWebPresenter_Output(t *testing.T) {
 			assert.Equal(t, tc.code, result.MessageCode)
 		})
 	}
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない。ここが埋まっていないと
+// フロントの `state.hint` は常に undefined で、それを読む分岐が全部死ぬ (#4483)。
+func TestBraidWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.BraidHint{FromZone: "field", FromIdx: 2, ToZone: "foundation", ToIdx: 1}
+
+	t.Run("while the game is playable", func(t *testing.T) {
+		g := new(interfaces.MockBraidGame)
+		setupBraidWebMockDefaults(g)
+		g.On("GetHint").Return(hint).Maybe()
+
+		result := parseBraidOutput(t, new(BraidWebPresenter).Output(g, nil))
+		if result.Hint == nil {
+			t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+		}
+		assert.Equal(t, "field", result.Hint.FromZone)
+		assert.Equal(t, 2, result.Hint.FromIdx)
+		assert.Equal(t, "foundation", result.Hint.ToZone)
+		assert.Equal(t, 1, result.Hint.ToIdx)
+	})
+
+	// **助言する手が無い局面では探索を走らせない。**
+	t.Run("not while awaiting the direction", func(t *testing.T) {
+		g := new(interfaces.MockBraidGame)
+		// 期待は先に登録したものが勝つので、ヘルパーより前に置く。
+		g.On("IsAwaitingDirection").Return(true).Maybe()
+		setupBraidWebMockDefaults(g)
+		g.On("GetHint").Return(hint).Maybe()
+
+		result := parseBraidOutput(t, new(BraidWebPresenter).Output(g, nil))
+		assert.Nil(t, result.Hint)
+		g.AssertNotCalled(t, "GetHint")
+	})
 }
 
 func TestBraidWebPresenter_HintOutput(t *testing.T) {
