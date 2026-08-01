@@ -45,6 +45,20 @@ func (p *CruelWebPresenter) Output(c interfaces.CruelGame, lastErr error) string
 	}
 
 	// メッセージ
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if c.GetPhase() == domain.CruelPhasePlaying && !c.IsStalemate() {
+		if hint := c.GetHint(); hint != nil {
+			resObj.Hint = &controller.CruelWebOutputHint{
+				FromCol:   hint.FromCol,
+				CardIndex: hint.CardIndex,
+				ToZone:    hint.ToZone,
+				ToCol:     hint.ToCol,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

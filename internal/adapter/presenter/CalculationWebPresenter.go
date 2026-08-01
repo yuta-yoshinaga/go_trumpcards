@@ -17,6 +17,19 @@ type CalculationWebPresenter struct{}
 func (p *CalculationWebPresenter) Output(g interfaces.CalculationGame, lastErr error) string {
 	resObj := p.buildBase(g)
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if g.GetPhase() == domain.CalculationPhasePlaying && !g.IsStalemate() {
+		if hint := g.GetHint(); hint != nil {
+			resObj.Hint = &controller.CalculationWebOutputHint{
+				FromZone:      hint.FromZone,
+				WasteIdx:      hint.WasteIdx,
+				FoundationIdx: hint.FoundationIdx,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {
