@@ -72,16 +72,33 @@ describe('formatAmericanToadState', () => {
 
   it('shows a tableau hint with the run head', () => {
     const result = formatAmericanToadState(
-      makeState({ hint: { fromZone: 'tableau', fromIdx: 3, cardIndex: 1, toZone: 'tableau', toIdx: 7 } }),
+      makeState({
+        hint: { fromZone: 'tableau', fromIdx: 3, cardIndex: 1, toZone: 'tableau', toIdx: 7 },
+        messageCode: 'americantoad.hintAvailable',
+      }),
     );
     expect(result).toContain('HINT');
     expect(result).toContain('t3[1]');
   });
 
+  // **頼んでいないヒントは CLI に出さない。**
+  it('does not print a passive hint carried on an ordinary response', () => {
+    const result = formatAmericanToadState(
+      makeState({
+        hint: { fromZone: 'tableau', fromIdx: 3, cardIndex: 1, toZone: 'tableau', toIdx: 7 },
+        messageCode: 'americantoad.playing',
+      }),
+    );
+    expect(result).not.toContain('HINT:');
+  });
+
   // A draw has no destination index.
   it('renders a draw hint without a destination index', () => {
     const result = formatAmericanToadState(
-      makeState({ hint: { fromZone: 'stock', fromIdx: -1, cardIndex: -1, toZone: 'waste', toIdx: -1 } }),
+      makeState({
+        hint: { fromZone: 'stock', fromIdx: -1, cardIndex: -1, toZone: 'waste', toIdx: -1 },
+        messageCode: 'americantoad.hintAvailable',
+      }),
     );
     expect(result).toContain('stock → waste');
   });

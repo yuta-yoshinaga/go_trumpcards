@@ -58,17 +58,34 @@ describe('formatWindmillState', () => {
 
   it('shows a corner hint with its index', () => {
     const result = formatWindmillState(
-      makeState({ hint: { fromZone: 'sail', fromIdx: 3, toZone: 'corner', toIdx: 1 } }),
+      makeState({
+        hint: { fromZone: 'sail', fromIdx: 3, toZone: 'corner', toIdx: 1 },
+        messageCode: 'windmill.hintAvailable',
+      }),
     );
     expect(result).toContain('HINT');
     expect(result).toContain('sail3');
     expect(result).toContain('corner1');
   });
 
+  // **頼んでいないヒントは CLI に出さない。**
+  it('does not print a passive hint carried on an ordinary response', () => {
+    const result = formatWindmillState(
+      makeState({
+        hint: { fromZone: 'sail', fromIdx: 3, toZone: 'corner', toIdx: 1 },
+        messageCode: 'windmill.playing',
+      }),
+    );
+    expect(result).not.toContain('HINT:');
+  });
+
   // A draw has no source or destination index.
   it('renders a draw hint without indices', () => {
     const result = formatWindmillState(
-      makeState({ hint: { fromZone: 'stock', fromIdx: -1, toZone: 'waste', toIdx: -1 } }),
+      makeState({
+        hint: { fromZone: 'stock', fromIdx: -1, toZone: 'waste', toIdx: -1 },
+        messageCode: 'windmill.hintAvailable',
+      }),
     );
     expect(result).toContain('stock → waste');
   });

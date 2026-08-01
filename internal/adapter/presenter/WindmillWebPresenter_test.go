@@ -42,10 +42,20 @@ func parseWindmillOutput(t *testing.T, jsonStr string) *controller.WindmillWebOu
 	return &out
 }
 
+// setupWindmillOutputMock は Output 用の既定を組む。
+//
+// **Output() も受動ヒントを埋めるようになった** (#4483) ので、GetHint を
+// 呼べるようにしておく必要がある。共有ヘルパー側に置くと、先に登録された
+// この期待が HintOutput テストの「ヒントあり」を食ってしまう。
+func setupWindmillOutputMock(g *interfaces.MockWindmillGame) {
+	setupWindmillWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestWindmillWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		g := new(interfaces.MockWindmillGame)
-		setupWindmillWebMockDefaults(g)
+		setupWindmillOutputMock(g)
 
 		result := parseWindmillOutput(t, new(WindmillWebPresenter).Output(g, nil))
 		assert.Equal(t, 0, result.Phase)
@@ -62,7 +72,7 @@ func TestWindmillWebPresenter_Output(t *testing.T) {
 	// survive the wire as null rather than being compacted away.
 	t.Run("an unrefillable sail is sent as null", func(t *testing.T) {
 		g := new(interfaces.MockWindmillGame)
-		setupWindmillWebMockDefaults(g)
+		setupWindmillOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetSails")
 		var sails [domain.WindmillSailCnt]*domain.Card
 		sails[0] = domain.NewCard(domain.CardDesignSpade, 5, true)
@@ -78,7 +88,7 @@ func TestWindmillWebPresenter_Output(t *testing.T) {
 	// the restriction is the domain's judgement and gets its own field and message.
 	t.Run("the transfer block is surfaced", func(t *testing.T) {
 		g := new(interfaces.MockWindmillGame)
-		setupWindmillWebMockDefaults(g)
+		setupWindmillOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsTransferBlocked")
 		g.On("IsTransferBlocked").Return(true)
 
@@ -89,7 +99,7 @@ func TestWindmillWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate outranks the transfer block", func(t *testing.T) {
 		g := new(interfaces.MockWindmillGame)
-		setupWindmillWebMockDefaults(g)
+		setupWindmillOutputMock(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsTransferBlocked")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsStalemate")
 		g.On("IsTransferBlocked").Return(true)
@@ -101,7 +111,7 @@ func TestWindmillWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		g := new(interfaces.MockWindmillGame)
-		setupWindmillWebMockDefaults(g)
+		setupWindmillOutputMock(g)
 
 		result := parseWindmillOutput(t, new(WindmillWebPresenter).Output(g, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
@@ -117,7 +127,7 @@ func TestWindmillWebPresenter_Output(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			g := new(interfaces.MockWindmillGame)
-			setupWindmillWebMockDefaults(g)
+			setupWindmillOutputMock(g)
 			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 			g.On("GetPhase").Return(tc.val)
 
@@ -125,6 +135,38 @@ func TestWindmillWebPresenter_Output(t *testing.T) {
 			assert.Equal(t, tc.code, result.MessageCode)
 		})
 	}
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない。ここが埋まっていないと
+// フロントの `state.hint` は常に undefined で、それを読む分岐が全部死ぬ (#4483)。
+func TestWindmillWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.WindmillHint{FromZone: "tableau", FromIdx: 2, ToZone: "foundation", ToIdx: 1}
+
+	g := new(interfaces.MockWindmillGame)
+	setupWindmillWebMockDefaults(g)
+	g.On("GetHint").Return(hint).Maybe()
+
+	result := parseWindmillOutput(t, new(WindmillWebPresenter).Output(g, nil))
+	if result.Hint == nil {
+		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+	}
+	assert.Equal(t, "tableau", result.Hint.FromZone)
+	assert.Equal(t, 2, result.Hint.FromIdx)
+
+	// **手詰まりでは探索を走らせない。**ゲートを消したときに CI が捕まえるよう、
+	// 手元の負のコントロールではなくテストとして固定する。
+	t.Run("not while stalemate", func(t *testing.T) {
+		g2 := new(interfaces.MockWindmillGame)
+		setupWindmillWebMockDefaults(g2)
+		g2.ExpectedCalls = filterCalls(g2.ExpectedCalls, "IsStalemate")
+		g2.On("IsStalemate").Return(true).Maybe()
+		g2.On("GetHint").Return(hint).Maybe()
+
+		result := parseWindmillOutput(t, new(WindmillWebPresenter).Output(g2, nil))
+		assert.Nil(t, result.Hint)
+		g2.AssertNotCalled(t, "GetHint")
+	})
 }
 
 func TestWindmillWebPresenter_HintOutput(t *testing.T) {

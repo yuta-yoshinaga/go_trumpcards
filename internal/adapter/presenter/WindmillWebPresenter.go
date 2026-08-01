@@ -50,6 +50,20 @@ func (p *WindmillWebPresenter) Output(w interfaces.WindmillGame, lastErr error) 
 	}
 	resObj.TransferBlocked = w.IsTransferBlocked()
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if w.GetPhase() == domain.WindmillPhasePlaying && !w.IsStalemate() {
+		if hint := w.GetHint(); hint != nil {
+			resObj.Hint = &controller.WindmillWebOutputHint{
+				FromZone: hint.FromZone,
+				FromIdx:  hint.FromIdx,
+				ToZone:   hint.ToZone,
+				ToIdx:    hint.ToIdx,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {
