@@ -1024,11 +1024,32 @@ func TestGuandanDealsASortedHand(t *testing.T) {
 		}
 	}
 
-	// **レベル札は末尾に固まる。**A より強いという序列が並びに出ていること。
-	p := g.GetPlayer(0)
-	last := p.GetCard(p.GetCardsSize() - 1)
-	if !GuandanIsLevelCard(last, g.GetLevel()) && !GuandanIsJoker(last) {
-		t.Errorf("the hand ends with %v, want a level card or a joker", last)
+	// **レベル札が A より上に並ぶことを、配りに依存せずに確かめる。**
+	//
+	// 「手札の末尾はレベル札かジョーカー」と書いていたが、これは配りに依存する。
+	// 108 枚から 27 枚では、レベル札もジョーカーも 1 枚も来ない席が実際に出て、
+	// そのとき末尾は A になる。develop を赤くしたのはこの断定だった。
+	//
+	// 不変なのは「レベル札を持っているなら、それは平札より後ろにある」ほう。
+	for seat := range GuandanPlayerCnt {
+		p := g.GetPlayer(seat)
+		lastPlain, firstLevel := -1, -1
+		for i := range p.GetCardsSize() {
+			c := p.GetCard(i)
+			switch {
+			case GuandanIsJoker(c):
+				// ジョーカーはさらに上。ここでは対象外。
+			case GuandanIsLevelCard(c, g.GetLevel()):
+				if firstLevel < 0 {
+					firstLevel = i
+				}
+			default:
+				lastPlain = i
+			}
+		}
+		if firstLevel >= 0 && lastPlain > firstLevel {
+			t.Errorf("seat %d has a plain card at %d after a level card at %d", seat, lastPlain, firstLevel)
+		}
 	}
 }
 
