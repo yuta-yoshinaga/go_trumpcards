@@ -165,6 +165,19 @@ func TestTerraceWebPresenter_OutputCarriesTheHint(t *testing.T) {
 		assert.Nil(t, result.Hint)
 		g.AssertNotCalled(t, "GetHint")
 	})
+	// **手詰まりでは、フロントが別経路で文言を出すので重ねない。**
+	t.Run("not while stalemate", func(t *testing.T) {
+		g := new(interfaces.MockTerraceGame)
+		setupTerraceWebMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsStalemate")
+		g.On("IsStalemate").Return(true).Maybe()
+		g.On("GetHint").Return(hint).Maybe()
+
+		result := parseTerraceOutput(t, new(TerraceWebPresenter).Output(g, nil))
+		assert.Nil(t, result.Hint)
+		g.AssertNotCalled(t, "GetHint")
+	})
+
 }
 
 func TestTerraceWebPresenter_HintOutput(t *testing.T) {

@@ -70,7 +70,9 @@ func (p *DuchessWebPresenter) Output(d interfaces.DuchessGame, lastErr error) st
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
 	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
-	if d.GetPhase() == domain.DuchessPhasePlaying {
+	// 開始ランク待ちは Terrace と同じ理由で除外する。フロントが
+	// AwaitingBaseRank から別経路で文言を出すので、重ねても二重になるだけ。
+	if d.GetPhase() == domain.DuchessPhasePlaying && !d.IsAwaitingBaseRank() {
 		if hint := d.GetHint(); hint != nil {
 			// **CardIndex まで運ぶ。**HintOutput 側と同じ形にしないと、同じヒント
 			// なのに経路によって欠ける項目が出る。

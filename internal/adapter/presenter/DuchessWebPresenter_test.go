@@ -166,6 +166,19 @@ func TestDuchessWebPresenter_OutputCarriesTheHint(t *testing.T) {
 		// 同じヒントなのに経路によって欠ける項目が出る。
 		assert.Equal(t, 3, result.Hint.CardIndex)
 	})
+	// **開始ランク待ちでは、フロントが別経路で文言を出すので重ねない。**
+	t.Run("not while awaitingbaserank", func(t *testing.T) {
+		g := new(interfaces.MockDuchessGame)
+		setupDuchessWebMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsAwaitingBaseRank")
+		g.On("IsAwaitingBaseRank").Return(true).Maybe()
+		g.On("GetHint").Return(hint).Maybe()
+
+		result := parseDuchessOutput(t, new(DuchessWebPresenter).Output(g, nil))
+		assert.Nil(t, result.Hint)
+		g.AssertNotCalled(t, "GetHint")
+	})
+
 }
 
 func TestDuchessWebPresenter_HintOutput(t *testing.T) {
