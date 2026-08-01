@@ -38,10 +38,18 @@ func parseScorpionOutput(t *testing.T, jsonStr string) *controller.ScorpionWebOu
 	return &out
 }
 
+// setupScorpionOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupScorpionOutputMock(g *interfaces.MockScorpionGame) {
+	setupScorpionWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestScorpionWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		sg := new(interfaces.MockScorpionGame)
-		setupScorpionWebMockDefaults(sg)
+		setupScorpionOutputMock(sg)
 		p := new(ScorpionWebPresenter)
 
 		result := parseScorpionOutput(t, p.Output(sg, nil))
@@ -104,7 +112,7 @@ func TestScorpionWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		sg := new(interfaces.MockScorpionGame)
-		setupScorpionWebMockDefaults(sg)
+		setupScorpionOutputMock(sg)
 		p := new(ScorpionWebPresenter)
 
 		result := parseScorpionOutput(t, p.Output(sg, errors.New("test error")))
@@ -114,13 +122,38 @@ func TestScorpionWebPresenter_Output(t *testing.T) {
 
 func TestScorpionWebPresenter_LegalMovesOutput(t *testing.T) {
 	sg := new(interfaces.MockScorpionGame)
-	setupScorpionWebMockDefaults(sg)
+	setupScorpionOutputMock(sg)
 	p := new(ScorpionWebPresenter)
 
 	// Web delegates legal-move previews to the normal state JSON (targets are
 	// computed client-side), so the output mirrors Output.
 	result := parseScorpionOutput(t, p.LegalMovesOutput(sg, 0))
 	assert.Equal(t, "scorpion.playing", result.MessageCode)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestScorpionWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		sg := new(interfaces.MockScorpionGame)
+		setupScorpionWebMockDefaults(sg)
+		sg.On("GetHint").Return(&domain.ScorpionHint{FromCol: 0, CardIndex: 1, ToCol: 5}).Maybe()
+
+		result := new(ScorpionWebPresenter).Output(sg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		sg := new(interfaces.MockScorpionGame)
+		setupScorpionWebMockDefaults(sg)
+		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
+		sg.On("IsStalemate").Return(true)
+		sg.On("GetHint").Return(&domain.ScorpionHint{FromCol: 0, CardIndex: 1, ToCol: 5}).Maybe()
+
+		result := new(ScorpionWebPresenter).Output(sg, nil)
+		assert.NotContains(t, result, `"hint"`)
+	})
 }
 
 func TestScorpionWebPresenter_HintOutput(t *testing.T) {
