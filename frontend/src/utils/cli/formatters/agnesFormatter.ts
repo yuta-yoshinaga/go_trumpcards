@@ -1,5 +1,5 @@
 import type { AgnesResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format an Agnes Sorel game state as terminal text. */
 export function formatAgnesState(state: AgnesResponse): string {
@@ -29,7 +29,7 @@ export function formatAgnesState(state: AgnesResponse): string {
 
   lines.push(`moves: ${state.moveCount}  undo:${state.canUndo ? 'yes' : 'no'}`);
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const fromCol = state.hint.fromCol >= 0 ? state.hint.fromCol : '';
     const toCol = state.hint.toCol >= 0 ? state.hint.toCol : '';
     lines.push(`HINT: ${state.hint.fromZone}${fromCol}[${state.hint.cardIndex}] → ${state.hint.toZone}${toCol}`);

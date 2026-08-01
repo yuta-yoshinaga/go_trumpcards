@@ -33,10 +33,18 @@ func parseAccordionOutput(t *testing.T, jsonStr string) *controller.AccordionWeb
 	return &out
 }
 
+// setupAccordionOutputMock は Output 用の既定を組む。**Output() も受動ヒントを
+// 埋めるようになった** (#4483) ので GetHint を呼べるようにする。共有ヘルパーに
+// 置くと、先に登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupAccordionOutputMock(g *interfaces.MockAccordionGame) {
+	setupAccordionWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestAccordionWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		ag := new(interfaces.MockAccordionGame)
-		setupAccordionWebMockDefaults(ag)
+		setupAccordionOutputMock(ag)
 		p := new(AccordionWebPresenter)
 
 		result := parseAccordionOutput(t, p.Output(ag, nil))
@@ -92,12 +100,29 @@ func TestAccordionWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		ag := new(interfaces.MockAccordionGame)
-		setupAccordionWebMockDefaults(ag)
+		setupAccordionOutputMock(ag)
 		p := new(AccordionWebPresenter)
 
 		result := parseAccordionOutput(t, p.Output(ag, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない。ここが埋まっていないと
+// フロントの `state.hint` は常に undefined で、それを読む分岐が全部死ぬ (#4483)。
+func TestAccordionWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.AccordionHint{FromIdx: 3, ToIdx: 1}
+
+	ag := new(interfaces.MockAccordionGame)
+	setupAccordionWebMockDefaults(ag)
+	ag.On("GetHint").Return(hint).Maybe()
+
+	result := parseAccordionOutput(t, new(AccordionWebPresenter).Output(ag, nil))
+	if result.Hint == nil {
+		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+	}
+	assert.Equal(t, 3, result.Hint.FromIdx)
 }
 
 func TestAccordionWebPresenter_HintOutput(t *testing.T) {

@@ -1,5 +1,5 @@
 import type { BristolResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a Bristol game state as terminal text. */
 export function formatBristolState(state: BristolResponse): string {
@@ -34,7 +34,7 @@ export function formatBristolState(state: BristolResponse): string {
   lines.push(`stock: ${state.stockCount}`);
   lines.push(`moves: ${state.moveCount}  undo:${state.canUndo ? 'yes' : 'no'}`);
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const from = state.hint.fromZone === 'fan' ? `fan${state.hint.fromCol}` : `tableau${state.hint.fromCol}`;
     const to = state.hint.toZone === 'foundation' ? `foundation${state.hint.toCol}` : `tableau${state.hint.toCol}`;
     lines.push(`HINT: ${from} → ${to}`);

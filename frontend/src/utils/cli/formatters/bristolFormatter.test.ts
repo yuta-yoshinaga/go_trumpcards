@@ -81,14 +81,32 @@ describe('formatBristolState', () => {
 
   it('shows tableau-to-foundation hint', () => {
     const output = formatBristolState(
-      makeState({ hint: { fromZone: 'tableau', fromCol: 2, toZone: 'foundation', toCol: 0 } }),
+      makeState({
+        hint: { fromZone: 'tableau', fromCol: 2, toZone: 'foundation', toCol: 0 },
+        messageCode: 'bristol.hintAvailable',
+      }),
     );
     expect(output).toContain('HINT: tableau2 → foundation0');
   });
 
+  // **頼んでいないヒントは CLI に出さない。**#4483 以降 Output() もヒントを載せる
+  // ので、state.hint だけを見ると毎手 HINT が印字される。
+  it('does not print a passive hint carried on an ordinary response', () => {
+    const result = formatBristolState(
+      makeState({
+        hint: { fromZone: 'tableau', fromCol: 2, toZone: 'foundation', toCol: 0 },
+        messageCode: 'bristol.playing',
+      }),
+    );
+    expect(result).not.toContain('HINT');
+  });
+
   it('shows fan-to-tableau hint', () => {
     const output = formatBristolState(
-      makeState({ hint: { fromZone: 'fan', fromCol: 1, toZone: 'tableau', toCol: 3 } }),
+      makeState({
+        hint: { fromZone: 'fan', fromCol: 1, toZone: 'tableau', toCol: 3 },
+        messageCode: 'bristol.hintAvailable',
+      }),
     );
     expect(output).toContain('HINT: fan1 → tableau3');
   });

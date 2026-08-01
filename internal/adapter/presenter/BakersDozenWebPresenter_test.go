@@ -45,10 +45,18 @@ func parseBakersDozenOutput(t *testing.T, jsonStr string) *controller.BakersDoze
 	return &out
 }
 
+// setupBakersDozenOutputMock は Output 用の既定を組む。**Output() も受動ヒントを
+// 埋めるようになった** (#4483) ので GetHint を呼べるようにする。共有ヘルパーに
+// 置くと、先に登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupBakersDozenOutputMock(g *interfaces.MockBakersDozenGame) {
+	setupBakersDozenWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestBakersDozenWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		bg := new(interfaces.MockBakersDozenGame)
-		setupBakersDozenWebMockDefaults(bg)
+		setupBakersDozenOutputMock(bg)
 		p := new(BakersDozenWebPresenter)
 
 		result := parseBakersDozenOutput(t, p.Output(bg, nil))
@@ -61,7 +69,7 @@ func TestBakersDozenWebPresenter_Output(t *testing.T) {
 
 	t.Run("all face up", func(t *testing.T) {
 		bg := new(interfaces.MockBakersDozenGame)
-		setupBakersDozenWebMockDefaults(bg)
+		setupBakersDozenOutputMock(bg)
 		p := new(BakersDozenWebPresenter)
 
 		result := parseBakersDozenOutput(t, p.Output(bg, nil))
@@ -75,7 +83,7 @@ func TestBakersDozenWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		bg := new(interfaces.MockBakersDozenGame)
-		setupBakersDozenWebMockDefaults(bg)
+		setupBakersDozenOutputMock(bg)
 		p := new(BakersDozenWebPresenter)
 
 		result := parseBakersDozenOutput(t, p.Output(bg, errors.New("test error")))
@@ -84,7 +92,7 @@ func TestBakersDozenWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		bg := new(interfaces.MockBakersDozenGame)
-		setupBakersDozenWebMockDefaults(bg)
+		setupBakersDozenOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.BakersDozenPhaseGameClear)
 
@@ -95,7 +103,7 @@ func TestBakersDozenWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		bg := new(interfaces.MockBakersDozenGame)
-		setupBakersDozenWebMockDefaults(bg)
+		setupBakersDozenOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.BakersDozenPhaseGameOver)
 
@@ -106,7 +114,7 @@ func TestBakersDozenWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		bg := new(interfaces.MockBakersDozenGame)
-		setupBakersDozenWebMockDefaults(bg)
+		setupBakersDozenOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
 		bg.On("IsStalemate").Return(true)
 
@@ -114,6 +122,24 @@ func TestBakersDozenWebPresenter_Output(t *testing.T) {
 		result := parseBakersDozenOutput(t, p.Output(bg, nil))
 		assert.Equal(t, "bakersdozen.stalemate", result.MessageCode)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない。ここが埋まっていないと
+// フロントの `state.hint` は常に undefined で、それを読む分岐が全部死ぬ (#4483)。
+func TestBakersDozenWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.BakersDozenHint{FromCol: 2, CardIndex: 1, ToZone: "foundation", ToCol: 0}
+
+	bg := new(interfaces.MockBakersDozenGame)
+	setupBakersDozenWebMockDefaults(bg)
+	bg.On("GetHint").Return(hint).Maybe()
+
+	result := parseBakersDozenOutput(t, new(BakersDozenWebPresenter).Output(bg, nil))
+	if result.Hint == nil {
+		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+	}
+	assert.Equal(t, 2, result.Hint.FromCol)
+	assert.Equal(t, 1, result.Hint.CardIndex)
 }
 
 func TestBakersDozenWebPresenter_HintOutput(t *testing.T) {

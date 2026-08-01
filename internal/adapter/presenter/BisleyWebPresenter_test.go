@@ -51,10 +51,18 @@ func parseBisleyOutput(t *testing.T, jsonStr string) *controller.BisleyWebOutput
 	return &out
 }
 
+// setupBisleyOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**
+// ようになった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと
+// 先に登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupBisleyOutputMock(g *interfaces.MockBisleyGame) {
+	setupBisleyWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestBisleyWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		bg := new(interfaces.MockBisleyGame)
-		setupBisleyWebMockDefaults(bg)
+		setupBisleyOutputMock(bg)
 		p := new(BisleyWebPresenter)
 
 		result := parseBisleyOutput(t, p.Output(bg, nil))
@@ -68,7 +76,7 @@ func TestBisleyWebPresenter_Output(t *testing.T) {
 
 	t.Run("all face up", func(t *testing.T) {
 		bg := new(interfaces.MockBisleyGame)
-		setupBisleyWebMockDefaults(bg)
+		setupBisleyOutputMock(bg)
 		p := new(BisleyWebPresenter)
 
 		result := parseBisleyOutput(t, p.Output(bg, nil))
@@ -82,7 +90,7 @@ func TestBisleyWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		bg := new(interfaces.MockBisleyGame)
-		setupBisleyWebMockDefaults(bg)
+		setupBisleyOutputMock(bg)
 		p := new(BisleyWebPresenter)
 
 		result := parseBisleyOutput(t, p.Output(bg, errors.New("test error")))
@@ -91,7 +99,7 @@ func TestBisleyWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		bg := new(interfaces.MockBisleyGame)
-		setupBisleyWebMockDefaults(bg)
+		setupBisleyOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.BisleyPhaseGameClear)
 
@@ -103,7 +111,7 @@ func TestBisleyWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		bg := new(interfaces.MockBisleyGame)
-		setupBisleyWebMockDefaults(bg)
+		setupBisleyOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.BisleyPhaseGameOver)
 
@@ -114,7 +122,7 @@ func TestBisleyWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		bg := new(interfaces.MockBisleyGame)
-		setupBisleyWebMockDefaults(bg)
+		setupBisleyOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
 		bg.On("IsStalemate").Return(true)
 
@@ -122,6 +130,22 @@ func TestBisleyWebPresenter_Output(t *testing.T) {
 		result := parseBisleyOutput(t, p.Output(bg, nil))
 		assert.Equal(t, "bisley.stalemate", result.MessageCode)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestBisleyWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.BisleyHint{FromCol: 2, ToZone: "tableau", ToIdx: 2}
+
+	bg := new(interfaces.MockBisleyGame)
+	setupBisleyWebMockDefaults(bg)
+	bg.On("GetHint").Return(hint).Maybe()
+
+	result := parseBisleyOutput(t, new(BisleyWebPresenter).Output(bg, nil))
+	if result.Hint == nil {
+		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+	}
+	assert.Equal(t, 2, result.Hint.FromCol)
 }
 
 func TestBisleyWebPresenter_HintOutput(t *testing.T) {

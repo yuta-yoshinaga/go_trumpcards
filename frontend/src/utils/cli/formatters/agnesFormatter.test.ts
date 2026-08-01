@@ -57,6 +57,7 @@ describe('formatAgnesState', () => {
     const result = formatAgnesState(
       makeState({
         hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 1, toZone: 'foundation', toCol: 2 },
+        messageCode: 'agnes.hintAvailable',
       }),
     );
     expect(result).toContain('HINT');
@@ -67,6 +68,7 @@ describe('formatAgnesState', () => {
     const result = formatAgnesState(
       makeState({
         hint: { fromZone: 'tableau', fromCol: -1, cardIndex: 0, toZone: 'foundation', toCol: -1 },
+        messageCode: 'agnes.hintAvailable',
       }),
     );
     expect(result).toContain('HINT');

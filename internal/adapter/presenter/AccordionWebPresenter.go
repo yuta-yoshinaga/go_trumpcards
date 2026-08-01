@@ -17,6 +17,18 @@ type AccordionWebPresenter struct{}
 func (p *AccordionWebPresenter) Output(a interfaces.AccordionGame, lastErr error) string {
 	resObj := p.buildBase(a)
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if a.GetPhase() == domain.AccordionPhasePlaying && !a.IsStalemate() {
+		if hint := a.GetHint(); hint != nil {
+			resObj.Hint = &controller.AccordionWebOutputHint{
+				FromIdx: hint.FromIdx,
+				ToIdx:   hint.ToIdx,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

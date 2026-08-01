@@ -51,6 +51,20 @@ func (p *BristolWebPresenter) Output(b interfaces.BristolGame, lastErr error) st
 	}
 
 	// メッセージ
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if b.GetPhase() == domain.BristolPhasePlaying {
+		if hint := b.GetHint(); hint != nil {
+			resObj.Hint = &controller.BristolWebOutputHint{
+				FromZone: hint.FromZone,
+				FromCol:  hint.FromCol,
+				ToZone:   hint.ToZone,
+				ToCol:    hint.ToCol,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {
