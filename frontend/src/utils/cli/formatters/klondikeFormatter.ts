@@ -1,5 +1,5 @@
 import type { KlondikeResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a Klondike game state as terminal text. */
 export function formatKlondikeState(state: KlondikeResponse): string {
@@ -32,7 +32,7 @@ export function formatKlondikeState(state: KlondikeResponse): string {
   lines.push(`moves: ${state.moveCount} | score: ${state.score}`);
 
   if (state.isStalemate) lines.push('Stalemate - no more moves possible');
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     lines.push(
       `HINT: ${state.hint.fromZone}${state.hint.fromCol >= 0 ? state.hint.fromCol : ''} \u2192 ${state.hint.toZone}${state.hint.toCol >= 0 ? state.hint.toCol : ''}`,
     );

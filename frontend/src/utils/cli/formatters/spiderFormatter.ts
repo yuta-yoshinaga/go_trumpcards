@@ -1,5 +1,5 @@
 import type { SpiderResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 const DIFF_NAMES: Record<number, string> = { 1: '1 suit', 2: '2 suits', 4: '4 suits' };
 
@@ -27,7 +27,7 @@ export function formatSpiderState(state: SpiderResponse): string {
   lines.push(`moves: ${state.moveCount} | score: ${state.score}`);
 
   if (state.isStalemate) lines.push('Stalemate - no more moves possible');
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     lines.push(`HINT: col${state.hint.fromCol}[${state.hint.cardIndex}] \u2192 col${state.hint.toCol}`);
   }
   if (state.message) lines.push(state.message);
