@@ -1,5 +1,9 @@
 {
-  "phase": { "playing": "Playing", "gameClear": "Game Clear", "gameOver": "Game Over" },
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
   "title": "Double Klondike",
   "stock": "Stock",
   "waste": "Waste",
@@ -27,5 +31,9 @@
     "rules": "Build the tableau down in alternating colours and the foundations up by suit from Ace to King. Move all 104 cards to the foundations to win.",
     "actionButtons": "Buttons for draw, hint, undo, give up and more.",
     "resetButton": "Start a new game."
+  },
+  "frontendHint": {
+    "dklondikeToFoundation": "This card can go to a foundation",
+    "dklondikeToTableau": "This card can move to another column"
   }
 }

@@ -49,6 +49,7 @@ import type {
   DesmocheResponse,
   DeuceToSevenResponse,
   DoppelkopfResponse,
+  DoubleKlondikeResponse,
   DoubtResponse,
   DoudizhuResponse,
   DragonTigerResponse,
@@ -257,6 +258,7 @@ import { getDesmocheHint } from '../utils/hints/desmocheHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDeuceToSevenHint } from '../utils/hints/deuceToSevenHint';
 import { getDoppelkopfHint } from '../utils/hints/doppelkopfHint';
+import { getDoubleKlondikeHint } from '../utils/hints/doubleklondikeHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getDoudizhuHint } from '../utils/hints/doudizhuHint';
 import { getDragontigerHint } from '../utils/hints/dragontigerHint';
@@ -550,6 +552,7 @@ export const hintFactories = {
   blackhole: (s) => getBlackHoleHint(s as BlackHoleResponse),
   simplesimon: (s) => getSimpleSimonHint(s as SimpleSimonResponse),
   labellelucie: (s) => getLaBelleLucieHint(s as LaBelleLucieResponse),
+  doubleklondike: (s) => getDoubleKlondikeHint(s as DoubleKlondikeResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
   sirtommy: (s) => getSirTommyHint(s as SirTommyResponse),
   bisley: (s) => getBisleyHint(s as BisleyResponse),
