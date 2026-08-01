@@ -45,14 +45,18 @@ describe('formatOsmosisState', () => {
   });
 
   it('shows reserve hint when present', () => {
-    const result = formatOsmosisState(makeState({ hint: { fromZone: 'reserve', fromCol: 2, toCol: 1 } }));
+    const result = formatOsmosisState(
+      makeState({ hint: { fromZone: 'reserve', fromCol: 2, toCol: 1 }, messageCode: 'osmosis.hintAvailable' }),
+    );
     expect(result).toContain('HINT');
     expect(result).toContain('reserve2');
     expect(result).toContain('foundation1');
   });
 
   it('shows waste hint when present', () => {
-    const result = formatOsmosisState(makeState({ hint: { fromZone: 'waste', fromCol: -1, toCol: 0 } }));
+    const result = formatOsmosisState(
+      makeState({ hint: { fromZone: 'waste', fromCol: -1, toCol: 0 }, messageCode: 'osmosis.hintAvailable' }),
+    );
     expect(result).toContain('HINT');
     expect(result).toContain('waste');
   });
@@ -63,5 +67,13 @@ describe('formatOsmosisState', () => {
 
   it('renders message when present', () => {
     expect(formatOsmosisState(makeState({ message: 'No moves available' }))).toContain('No moves available');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { fromZone: 'reserve', fromCol: 2, toCol: 1 };
+    expect(formatOsmosisState(makeState({ hint, messageCode: 'osmosis.hintAvailable' }))).toContain('HINT');
+    expect(formatOsmosisState(makeState({ hint, messageCode: 'osmosis.playing' }))).not.toContain('HINT');
   });
 });

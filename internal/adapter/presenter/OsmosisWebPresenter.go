@@ -47,6 +47,20 @@ func (p *OsmosisWebPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 	}
 
 	// メッセージ
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	// このゲームは手詰まり判定を持たないので、ゲートは進行中かどうかだけ。
+	if o.GetPhase() == domain.OsmosisPhasePlaying {
+		if hint := o.GetHint(); hint != nil {
+			resObj.Hint = &controller.OsmosisWebOutputHint{
+				FromZone: hint.FromZone,
+				FromCol:  hint.FromCol,
+				ToCol:    hint.ToCol,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {
