@@ -167,6 +167,30 @@ describe('LiteraturePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('claim', { halfSuit: 0, holders: [2, 0, 0, 0, 0, 0] }));
   });
 
+  // **組を切り替えたら所在の申告はリセットされる。**前の組のために選んだ席を
+  // 持ち越すと、選んでいない配置で宣言してしまう。
+  it('does not carry placements across a change of half-suit', async () => {
+    renderWithProviders(<LiteraturePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '宣言する' })).toBeInTheDocument());
+
+    // ♠ 低位 (組 0) の 1 枚目を席 4 に置く。
+    fireEvent.change(screen.getAllByLabelText(/^♠[0-9]+$/)[0], { target: { value: '4' } });
+    expect((screen.getAllByLabelText(/^♠[0-9]+$/)[0] as HTMLSelectElement).value).toBe('4');
+
+    // 別の組へ切り替える。
+    fireEvent.change(screen.getByLabelText(/^組/), { target: { value: '2' } });
+    const holders = screen.getAllByLabelText(/^♣[0-9]+$/);
+    expect(holders).toHaveLength(6);
+    for (const h of holders) {
+      expect((h as HTMLSelectElement).value).toBe('0');
+    }
+
+    // 送られるのも初期値。
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '宣言する' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('claim', { halfSuit: 2, holders: [0, 0, 0, 0, 0, 0] }));
+  });
+
   // **無効は「相手に渡る」とは違う。**宣言の説明に書く。
   it('explains that misplacing within your own team cancels the claim', async () => {
     renderWithProviders(<LiteraturePage />);

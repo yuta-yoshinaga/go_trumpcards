@@ -87,8 +87,12 @@ function LiteraturePageContent() {
 
   const [askTarget, setAskTarget] = useState(1);
   const [askCard, setAskCard] = useState('');
-  const [claimHalf, setClaimHalf] = useState(0);
-  const [claimHolders, setClaimHolders] = useState<number[]>([0, 0, 0, 0, 0, 0]);
+  // **所在の申告は組とセットで持つ。**別々に持つと、組を切り替えたときに前の組の
+  // ために選んだ席がそのまま残り、選んでいない配置で宣言してしまう。
+  const [claim, setClaim] = useState<{ half: number; holders: number[] }>({
+    half: 0,
+    holders: [0, 0, 0, 0, 0, 0],
+  });
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -140,7 +144,10 @@ function LiteraturePageContent() {
   );
 
   const openHalfSuits = state.halfSuits.flatMap((st, half) => (st === STATE_OPEN ? [half] : []));
-  const selectedHalf = openHalfSuits.includes(claimHalf) ? claimHalf : (openHalfSuits[0] ?? 0);
+  // 選んでいた組が決着したら、開いている組へ寄せる。
+  const selectedHalf = openHalfSuits.includes(claim.half) ? claim.half : (openHalfSuits[0] ?? 0);
+  // **寄せた先の組には、まだ何も申告していない。**前の組の配置を持ち越さない。
+  const claimHolders = claim.half === selectedHalf ? claim.holders : [0, 0, 0, 0, 0, 0];
   const selectedTarget = opponents.includes(askTarget) ? askTarget : (opponents[0] ?? 1);
   const selectedCardKey = askableCards.some((a) => a.key === askCard) ? askCard : (askableCards[0]?.key ?? '');
   const selectedCard = askableCards.find((a) => a.key === selectedCardKey);
@@ -158,7 +165,7 @@ function LiteraturePageContent() {
   };
 
   const setHolder = (i: number, seat: number) => {
-    setClaimHolders((prev) => prev.map((v, j) => (j === i ? seat : v)));
+    setClaim({ half: selectedHalf, holders: claimHolders.map((v, j) => (j === i ? seat : v)) });
   };
 
   const handleManualReset = () => {
@@ -336,7 +343,7 @@ function LiteraturePageContent() {
                       id="literature-half"
                       className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
                       value={selectedHalf}
-                      onChange={(e) => setClaimHalf(Number(e.target.value))}
+                      onChange={(e) => setClaim({ half: Number(e.target.value), holders: [0, 0, 0, 0, 0, 0] })}
                     >
                       {openHalfSuits.map((half) => (
                         <option key={half} value={half}>
