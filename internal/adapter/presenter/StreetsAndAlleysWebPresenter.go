@@ -46,6 +46,20 @@ func (p *StreetsAndAlleysWebPresenter) Output(bc interfaces.StreetsAndAlleysGame
 	}
 
 	// メッセージ
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if bc.GetPhase() == domain.StreetsAndAlleysPhasePlaying && !bc.IsStalemate() {
+		if hint := bc.GetHint(); hint != nil {
+			resObj.Hint = &controller.StreetsAndAlleysWebOutputHint{
+				FromCol:   hint.FromCol,
+				CardIndex: hint.CardIndex,
+				ToZone:    hint.ToZone,
+				ToCol:     hint.ToCol,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

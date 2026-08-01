@@ -39,14 +39,20 @@ describe('formatFortythievesState', () => {
 
   it('renders a tableau hint with source index and target', () => {
     const out = formatFortythievesState(
-      baseState({ hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 1, toZone: 'foundation', toCol: 2 } }),
+      baseState({
+        hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 1, toZone: 'foundation', toCol: 2 },
+        messageCode: 'fortythieves.hintAvailable',
+      }),
     );
     expect(out).toContain('HINT: t0[1] → foundation2');
   });
 
   it('renders a waste hint source', () => {
     const out = formatFortythievesState(
-      baseState({ hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 4 } }),
+      baseState({
+        hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 4 },
+        messageCode: 'fortythieves.hintAvailable',
+      }),
     );
     expect(out).toContain('HINT: waste → tableau4');
   });
@@ -58,5 +64,13 @@ describe('formatFortythievesState', () => {
     expect(out).toContain('Stalemate - no more moves possible');
     expect(out).toContain('stuck');
     expect(out).toContain('Congratulations! You win!');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { fromZone: 'tableau', fromCol: 0, cardIndex: 1, toZone: 'foundation', toCol: 2 };
+    expect(formatFortythievesState(baseState({ hint, messageCode: 'fortythieves.hintAvailable' }))).toContain('HINT:');
+    expect(formatFortythievesState(baseState({ hint, messageCode: 'fortythieves.playing' }))).not.toContain('HINT:');
   });
 });

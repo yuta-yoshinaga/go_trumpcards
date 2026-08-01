@@ -38,10 +38,18 @@ func parseWaspOutput(t *testing.T, jsonStr string) *controller.WaspWebOutput {
 	return &out
 }
 
+// setupWaspOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupWaspOutputMock(g *interfaces.MockWaspGame) {
+	setupWaspWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestWaspWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		sg := new(interfaces.MockWaspGame)
-		setupWaspWebMockDefaults(sg)
+		setupWaspOutputMock(sg)
 		p := new(WaspWebPresenter)
 
 		result := parseWaspOutput(t, p.Output(sg, nil))
@@ -104,11 +112,36 @@ func TestWaspWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		sg := new(interfaces.MockWaspGame)
-		setupWaspWebMockDefaults(sg)
+		setupWaspOutputMock(sg)
 		p := new(WaspWebPresenter)
 
 		result := parseWaspOutput(t, p.Output(sg, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestWaspWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		wg := new(interfaces.MockWaspGame)
+		setupWaspWebMockDefaults(wg)
+		wg.On("GetHint").Return(&domain.WaspHint{FromCol: 1, CardIndex: 0, ToCol: 4}).Maybe()
+
+		result := new(WaspWebPresenter).Output(wg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		wg := new(interfaces.MockWaspGame)
+		setupWaspWebMockDefaults(wg)
+		wg.ExpectedCalls = filterCalls(wg.ExpectedCalls, "IsStalemate")
+		wg.On("IsStalemate").Return(true)
+		wg.On("GetHint").Return(&domain.WaspHint{FromCol: 1, CardIndex: 0, ToCol: 4}).Maybe()
+
+		result := new(WaspWebPresenter).Output(wg, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 
@@ -139,7 +172,7 @@ func TestWaspWebPresenter_HintOutput(t *testing.T) {
 
 func TestWaspWebPresenter_LegalMovesOutput(t *testing.T) {
 	sg := new(interfaces.MockWaspGame)
-	setupWaspWebMockDefaults(sg)
+	setupWaspOutputMock(sg)
 	p := new(WaspWebPresenter)
 
 	// Web delegates legal-move previews to the normal state JSON (targets are
