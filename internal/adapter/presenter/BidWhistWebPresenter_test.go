@@ -193,3 +193,27 @@ func TestBidWhistWebPresenter_PhaseMessages(t *testing.T) {
 		t.Errorf("game-end message missing: %s", out)
 	}
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// Reset 直後は入札フェーズに入っておらず、GetHint は 200 回中 200 回 nil を
+// 返す。フェーズと入札手番を明示して初めてヒントが出る（この状態でも 200/200 で
+// 確認済み）。
+func TestBidWhistWebPresenterOutputCarriesTheHint(t *testing.T) {
+	g := newBidWhistGame()
+	g.Reset()
+	g.SetPhase(domain.BidWhistPhaseBid)
+	g.SetBidPlayerIdx(0)
+	if g.GetHint() == nil {
+		t.Fatal("fixture must actually produce a hint")
+	}
+
+	var parsed controller.BidWhistWebOutput
+	if err := json.Unmarshal([]byte(new(presenter.BidWhistWebPresenter).Output(g, nil)), &parsed); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if parsed.Hint == nil {
+		t.Error("Output must carry the hint -- the frontend reads state.hint")
+	}
+}
