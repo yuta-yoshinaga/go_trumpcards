@@ -128,4 +128,13 @@ describe('isRequestedHint', () => {
     expect(isRequestedHint({ messageCode: 'terrace.hintAvailable' })).toBe(true);
     expect(isRequestedHint({ messageCode: 'americantoad.hintAvailable' })).toBe(true);
   });
+
+  // **hintRequested も「頼んだヒント」。**トリックテイキング系は
+  // hintAvailable がラベルとして埋まっているため別キーを使う (#4483)。
+  it('accepts hintRequested as well as hintAvailable', () => {
+    expect(isRequestedHint({ messageCode: 'sedma.hintRequested' })).toBe(true);
+    expect(isRequestedHint({ messageCode: 'klondike.hintAvailable' })).toBe(true);
+    expect(isRequestedHint({ messageCode: 'sedma.playing' })).toBe(false);
+    expect(isRequestedHint({})).toBe(false);
+  });
 });

@@ -48,5 +48,7 @@
     "playButton": "Once a card is selected, play it with this button. A card captures the trick when its rank matches the lead card or it is a 7 (wild); the last player to capture wins the trick.",
     "info": "Each Ace and each 10 is worth 10 points, and the team that takes the last (8th) trick scores +10. Team A (seats 0 & 2) vs Team B (seats 1 & 3) fight over card points; the first team to reach the target (default 101, cumulative across rounds) wins. Hoard your 7s to steal point-rich tricks.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

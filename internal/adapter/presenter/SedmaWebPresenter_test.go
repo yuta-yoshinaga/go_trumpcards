@@ -32,6 +32,9 @@ func setupSedmaWebMock() *interfaces.MockSedmaGame {
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultSedmaConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -168,6 +171,7 @@ func TestSedmaWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint with card indices", func(t *testing.T) {
 		m, _ := setupSedmaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.SedmaHint{CardIndices: []int{2}, Reason: "capture"})
 		result := p.HintOutput(m)
 		var resObj controller.SedmaWebOutput
@@ -179,6 +183,7 @@ func TestSedmaWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupSedmaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.SedmaHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.SedmaWebOutput
@@ -196,4 +201,31 @@ func TestSedmaWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestSedmaWebPresenterOutputCarriesTheHint(t *testing.T) {
+	sdg, _ := setupSedmaWebMockWithPlayers()
+	sdg.ExpectedCalls = removeMockCall(sdg.ExpectedCalls, "GetHint")
+	sdg.On("GetHint").Return(&domain.SedmaHint{CardIndices: []int{1}, Reason: "capture"})
+
+	result := new(presenter.SedmaWebPresenter).Output(sdg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "sedma.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**このゲーム群の
+// hintAvailable は画面のラベルとして埋まっているので別キーを使う (#4483)。
+func TestSedmaWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	sdg, _ := setupSedmaWebMockWithPlayers()
+	sdg.ExpectedCalls = removeMockCall(sdg.ExpectedCalls, "GetHint")
+	sdg.On("GetHint").Return(&domain.SedmaHint{CardIndices: []int{1}, Reason: "capture"})
+	assert.Contains(t, new(presenter.SedmaWebPresenter).HintOutput(sdg), "sedma.hintRequested")
+
+	none, _ := setupSedmaWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.SedmaHint)(nil))
+	assert.Contains(t, new(presenter.SedmaWebPresenter).HintOutput(none), "sedma.noHint")
 }

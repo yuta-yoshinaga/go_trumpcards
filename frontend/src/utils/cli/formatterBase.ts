@@ -65,5 +65,10 @@ export function formatPlayerName(id: number, isHuman: boolean): string {
  * allows 1,000 writes a day (ADR-0028).
  */
 export function isRequestedHint(state: { messageCode?: string }): boolean {
-  return state.messageCode?.endsWith('.hintAvailable') ?? false;
+  // **2 つある。**ソリティア側は `<game>.hintAvailable` を使うが、
+  // トリックテイキング側ではそのキーが既に**ラベル**（「ヒント」）として
+  // 埋まっていて、メッセージコードに流用すると意味が二重になる (#4483)。
+  // そちらは `<game>.hintRequested` を出す。
+  const code = state.messageCode;
+  return code?.endsWith('.hintAvailable') === true || code?.endsWith('.hintRequested') === true;
 }
