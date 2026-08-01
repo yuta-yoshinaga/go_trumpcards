@@ -30,6 +30,9 @@ func setupBriscolaWebMock(trumpCard *domain.Card) *interfaces.MockBriscolaGame {
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetConfig").Return(domain.DefaultBriscolaConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -151,6 +154,7 @@ func TestBriscolaWebPresenter_HintOutput(t *testing.T) {
 	m, players := setupBriscolaWebMockWithPlayers(trump)
 	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 	idx := 0
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return(&domain.BriscolaHint{CardIndex: &idx, Reason: "lead_low"})
 
 	got := p.HintOutput(m)
@@ -164,6 +168,7 @@ func TestBriscolaWebPresenter_HintOutput(t *testing.T) {
 func TestBriscolaWebPresenter_HintOutput_None(t *testing.T) {
 	p := new(presenter.BriscolaWebPresenter)
 	m, _ := setupBriscolaWebMockWithPlayers(nil)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return((*domain.BriscolaHint)(nil))
 	got := p.HintOutput(m)
 	var out controller.BriscolaWebOutput
@@ -176,4 +181,22 @@ func TestBriscolaWebPresenter_ActionLogOutput(t *testing.T) {
 	m, _ := setupBriscolaWebMockWithPlayers(nil)
 	got := p.ActionLogOutput(m)
 	assert.NotEmpty(t, got)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// トリックテイキング系はソリティア系と違い、**Output 側のゲートが要りません。**
+// Briscola.GetHint() が「プレイ中かつ人間の手番」を自分で確かめて nil を返すので、
+// フェーズ判定を持ち込むとドメインの判定を二重に書くことになります。
+func TestBriscolaWebPresenterOutputCarriesTheHint(t *testing.T) {
+	trump := domain.NewCard(domain.CardDesignSpade, 13, false)
+	brg, players := setupBriscolaWebMockWithPlayers(trump)
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+	idx := 0
+	brg.ExpectedCalls = removeMockCall(brg.ExpectedCalls, "GetHint")
+	brg.On("GetHint").Return(&domain.BriscolaHint{CardIndex: &idx, Reason: "lead_low"})
+
+	result := new(presenter.BriscolaWebPresenter).Output(brg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }
