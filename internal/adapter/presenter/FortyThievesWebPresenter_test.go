@@ -47,10 +47,18 @@ func parseFortyThievesOutput(t *testing.T, jsonStr string) *controller.FortyThie
 	return &out
 }
 
+// setupFortyThievesOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupFortyThievesOutputMock(g *interfaces.MockFortyThievesGame) {
+	setupFortyThievesWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestFortyThievesWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		fg := new(interfaces.MockFortyThievesGame)
-		setupFortyThievesWebMockDefaults(fg)
+		setupFortyThievesOutputMock(fg)
 		p := new(FortyThievesWebPresenter)
 
 		result := parseFortyThievesOutput(t, p.Output(fg, nil))
@@ -65,7 +73,7 @@ func TestFortyThievesWebPresenter_Output(t *testing.T) {
 
 	t.Run("waste with cards", func(t *testing.T) {
 		fg := new(interfaces.MockFortyThievesGame)
-		setupFortyThievesWebMockDefaults(fg)
+		setupFortyThievesOutputMock(fg)
 		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetWaste")
 		fg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
 
@@ -78,7 +86,7 @@ func TestFortyThievesWebPresenter_Output(t *testing.T) {
 
 	t.Run("all face up", func(t *testing.T) {
 		fg := new(interfaces.MockFortyThievesGame)
-		setupFortyThievesWebMockDefaults(fg)
+		setupFortyThievesOutputMock(fg)
 		p := new(FortyThievesWebPresenter)
 
 		result := parseFortyThievesOutput(t, p.Output(fg, nil))
@@ -93,7 +101,7 @@ func TestFortyThievesWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		fg := new(interfaces.MockFortyThievesGame)
-		setupFortyThievesWebMockDefaults(fg)
+		setupFortyThievesOutputMock(fg)
 		p := new(FortyThievesWebPresenter)
 
 		result := parseFortyThievesOutput(t, p.Output(fg, errors.New("test error")))
@@ -102,7 +110,7 @@ func TestFortyThievesWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		fg := new(interfaces.MockFortyThievesGame)
-		setupFortyThievesWebMockDefaults(fg)
+		setupFortyThievesOutputMock(fg)
 		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetPhase")
 		fg.On("GetPhase").Return(domain.FortyThievesPhaseGameClear)
 
@@ -113,7 +121,7 @@ func TestFortyThievesWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		fg := new(interfaces.MockFortyThievesGame)
-		setupFortyThievesWebMockDefaults(fg)
+		setupFortyThievesOutputMock(fg)
 		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetPhase")
 		fg.On("GetPhase").Return(domain.FortyThievesPhaseGameOver)
 
@@ -124,13 +132,38 @@ func TestFortyThievesWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		fg := new(interfaces.MockFortyThievesGame)
-		setupFortyThievesWebMockDefaults(fg)
+		setupFortyThievesOutputMock(fg)
 		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "IsStalemate")
 		fg.On("IsStalemate").Return(true)
 
 		p := new(FortyThievesWebPresenter)
 		result := parseFortyThievesOutput(t, p.Output(fg, nil))
 		assert.Equal(t, "fortythieves.stalemate", result.MessageCode)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestFortyThievesWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		ftg := new(interfaces.MockFortyThievesGame)
+		setupFortyThievesWebMockDefaults(ftg)
+		ftg.On("GetHint").Return(&domain.FortyThievesHint{FromZone: "tableau", FromCol: 2, CardIndex: 0, ToZone: "foundation", ToCol: 1}).Maybe()
+
+		result := new(FortyThievesWebPresenter).Output(ftg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		ftg := new(interfaces.MockFortyThievesGame)
+		setupFortyThievesWebMockDefaults(ftg)
+		ftg.ExpectedCalls = filterCalls(ftg.ExpectedCalls, "IsStalemate")
+		ftg.On("IsStalemate").Return(true)
+		ftg.On("GetHint").Return(&domain.FortyThievesHint{FromZone: "tableau", FromCol: 2, CardIndex: 0, ToZone: "foundation", ToCol: 1}).Maybe()
+
+		result := new(FortyThievesWebPresenter).Output(ftg, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 

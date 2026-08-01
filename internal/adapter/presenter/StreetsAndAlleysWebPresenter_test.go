@@ -48,10 +48,18 @@ func parseStreetsAndAlleysOutput(t *testing.T, jsonStr string) *controller.Stree
 	return &out
 }
 
+// setupStreetsAndAlleysOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupStreetsAndAlleysOutputMock(g *interfaces.MockStreetsAndAlleysGame) {
+	setupStreetsAndAlleysWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestStreetsAndAlleysWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		bg := new(interfaces.MockStreetsAndAlleysGame)
-		setupStreetsAndAlleysWebMockDefaults(bg)
+		setupStreetsAndAlleysOutputMock(bg)
 		p := new(StreetsAndAlleysWebPresenter)
 
 		result := parseStreetsAndAlleysOutput(t, p.Output(bg, nil))
@@ -64,7 +72,7 @@ func TestStreetsAndAlleysWebPresenter_Output(t *testing.T) {
 
 	t.Run("all face up", func(t *testing.T) {
 		bg := new(interfaces.MockStreetsAndAlleysGame)
-		setupStreetsAndAlleysWebMockDefaults(bg)
+		setupStreetsAndAlleysOutputMock(bg)
 		p := new(StreetsAndAlleysWebPresenter)
 
 		result := parseStreetsAndAlleysOutput(t, p.Output(bg, nil))
@@ -78,7 +86,7 @@ func TestStreetsAndAlleysWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		bg := new(interfaces.MockStreetsAndAlleysGame)
-		setupStreetsAndAlleysWebMockDefaults(bg)
+		setupStreetsAndAlleysOutputMock(bg)
 		p := new(StreetsAndAlleysWebPresenter)
 
 		result := parseStreetsAndAlleysOutput(t, p.Output(bg, errors.New("test error")))
@@ -87,7 +95,7 @@ func TestStreetsAndAlleysWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		bg := new(interfaces.MockStreetsAndAlleysGame)
-		setupStreetsAndAlleysWebMockDefaults(bg)
+		setupStreetsAndAlleysOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.StreetsAndAlleysPhaseGameClear)
 
@@ -98,7 +106,7 @@ func TestStreetsAndAlleysWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		bg := new(interfaces.MockStreetsAndAlleysGame)
-		setupStreetsAndAlleysWebMockDefaults(bg)
+		setupStreetsAndAlleysOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
 		bg.On("GetPhase").Return(domain.StreetsAndAlleysPhaseGameOver)
 
@@ -109,13 +117,38 @@ func TestStreetsAndAlleysWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		bg := new(interfaces.MockStreetsAndAlleysGame)
-		setupStreetsAndAlleysWebMockDefaults(bg)
+		setupStreetsAndAlleysOutputMock(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
 		bg.On("IsStalemate").Return(true)
 
 		p := new(StreetsAndAlleysWebPresenter)
 		result := parseStreetsAndAlleysOutput(t, p.Output(bg, nil))
 		assert.Equal(t, "streetsandalleys.stalemate", result.MessageCode)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestStreetsAndAlleysWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		sg := new(interfaces.MockStreetsAndAlleysGame)
+		setupStreetsAndAlleysWebMockDefaults(sg)
+		sg.On("GetHint").Return(&domain.StreetsAndAlleysHint{FromCol: 3, CardIndex: 0, ToZone: "foundation", ToCol: 2}).Maybe()
+
+		result := new(StreetsAndAlleysWebPresenter).Output(sg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		sg := new(interfaces.MockStreetsAndAlleysGame)
+		setupStreetsAndAlleysWebMockDefaults(sg)
+		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
+		sg.On("IsStalemate").Return(true)
+		sg.On("GetHint").Return(&domain.StreetsAndAlleysHint{FromCol: 3, CardIndex: 0, ToZone: "foundation", ToCol: 2}).Maybe()
+
+		result := new(StreetsAndAlleysWebPresenter).Output(sg, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 
