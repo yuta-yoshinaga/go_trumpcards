@@ -830,7 +830,13 @@ func shengJiPairCount(cards []*Card) int {
 }
 
 // inSuit は札がそのスート (切札群を含む) に属するかを返す。
+//
+// **nil を弾いてから GetDesign を呼ぶ。**この file の他の札ヘルパーはすべて
+// nil 安全で、ここだけが例外だと壊れた KV 状態で Play のたびに落ちる。
 func (s *ShengJi) inSuit(c *Card, suit int) bool {
+	if c == nil {
+		return false
+	}
 	if suit == ShengJiNoTrump {
 		return ShengJiIsTrump(c, s.level, s.trumpSuit)
 	}
@@ -1115,9 +1121,14 @@ func (s *ShengJi) CpuPlay() {
 				return
 			}
 		}
-		// 詰み回避。**リードでもフォローでも 1 枚は必ず出せる。**
+		// **詰み回避のフォールバックもリードと同じ枚数で出す。**1 枚固定だと、
+		// 対子がリードされている場面では枚数が合わずに必ず弾かれ、手番が止まる。
 		if p := s.GetPlayer(seat); p != nil && p.GetCardsSize() > 0 {
-			_ = s.Play(seat, []int{0})
+			for _, idxs := range s.shengJiFallbackPlays(seat) {
+				if s.Play(seat, idxs) == nil {
+					return
+				}
+			}
 		}
 	}
 }
@@ -1177,7 +1188,11 @@ func (s *ShengJi) ShengJiCpuPlay(seat int) []int {
 		return nil
 	}
 	if s.leadCombo == nil {
-		// リードは手札のいちばん弱い札から。
+		// **対子を持っていれば対子でリードする。**単張でしかリードしないと、
+		// 相手に対子を割らせる手が一度も出ず、拖拉機も生まれない。
+		if idxs := s.weakestPair(seat); idxs != nil {
+			return idxs
+		}
 		return []int{s.weakestIdx(seat, -1)}
 	}
 	led := s.leadCombo.Suit
@@ -1193,10 +1208,93 @@ func (s *ShengJi) ShengJiCpuPlay(seat int) []int {
 	return idxs[:need]
 }
 
-// pickFromSuit は席がそのスートから出せる添字を弱い順に最大 n 件返す。
-func (s *ShengJi) pickFromSuit(seat, suit, n int) []int {
+// weakestPair は席のいちばん弱い対子の添字を返す (無ければ nil)。
+func (s *ShengJi) weakestPair(seat int) []int {
 	p := s.GetPlayer(seat)
 	if p == nil {
+		return nil
+	}
+	byKey := map[string][]int{}
+	for i := range p.GetCardsSize() {
+		if c := p.GetCard(i); c != nil {
+			byKey[shengJiCardKey(c)] = append(byKey[shengJiCardKey(c)], i)
+		}
+	}
+	best, bestScore := []int(nil), 1<<30
+	for _, k := range shengJiSortedKeys(byKey) {
+		g := byKey[k]
+		if len(g) < 2 {
+			continue
+		}
+		if sc := ShengJiStrength(p.GetCard(g[0]), s.level, s.trumpSuit); sc < bestScore {
+			best, bestScore = []int{g[0], g[1]}, sc
+		}
+	}
+	return best
+}
+
+// shengJiFallbackPlays は CPU が最後に試す手の候補を返す。
+//
+// **どれも通らないと手番が止まる**ので、枚数だけは必ずリードに合わせる。
+// 自分の対子をそのまま出す案を先に置き、次に手札の頭から枚数ぶん取る。
+func (s *ShengJi) shengJiFallbackPlays(seat int) [][]int {
+	p := s.GetPlayer(seat)
+	if p == nil || p.GetCardsSize() == 0 {
+		return nil
+	}
+	need := 1
+	if s.leadCombo != nil {
+		need = s.leadCombo.Size
+	}
+	if need > p.GetCardsSize() {
+		return nil
+	}
+
+	out := make([][]int, 0, 3)
+	// 持っている対子をそのまま出す案 (対子リードのとき checkFollow を満たす)。
+	byKey := map[string][]int{}
+	for i := range p.GetCardsSize() {
+		k := shengJiCardKey(p.GetCard(i))
+		byKey[k] = append(byKey[k], i)
+	}
+	pairs := make([]int, 0, need)
+	for _, k := range shengJiSortedKeys(byKey) {
+		if len(pairs) >= need {
+			break
+		}
+		if g := byKey[k]; len(g) >= 2 {
+			pairs = append(pairs, g[0], g[1])
+		}
+	}
+	if len(pairs) >= need {
+		out = append(out, pairs[:need])
+	}
+	// 手札の頭から枚数ぶん。
+	head := make([]int, 0, need)
+	for i := 0; i < need; i++ {
+		head = append(head, i)
+	}
+	out = append(out, head)
+	return out
+}
+
+// shengJiSortedKeys は map のキーを昇順で返す (手を決定的にするため)。
+func shengJiSortedKeys(m map[string][]int) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// pickFromSuit は席がそのスートから出せる添字を弱い順に最大 n 件返す。
+//
+// **対子がリードされたら対子を先に取る。**checkFollow が対子の温存を禁じるので、
+// 素朴に弱い順で拾うと自分の対子を割った不正な手になり、CPU が手を出せなくなる。
+func (s *ShengJi) pickFromSuit(seat, suit, n int) []int {
+	p := s.GetPlayer(seat)
+	if p == nil || n <= 0 {
 		return nil
 	}
 	type scored struct {
@@ -1209,9 +1307,38 @@ func (s *ShengJi) pickFromSuit(seat, suit, n int) []int {
 		}
 	}
 	sort.SliceStable(all, func(i, j int) bool { return all[i].score < all[j].score })
+
 	out := make([]int, 0, n)
-	for i := 0; i < n && i < len(all); i++ {
-		out = append(out, all[i].idx)
+	used := map[int]bool{}
+	// 対子リードなら、まず弱い対子から詰める。
+	if s.leadCombo != nil && (s.leadCombo.Kind == ShengJiComboPair || s.leadCombo.Kind == ShengJiComboTractor) {
+		byKey := map[string][]int{}
+		for _, a := range all {
+			k := shengJiCardKey(p.GetCard(a.idx))
+			byKey[k] = append(byKey[k], a.idx)
+		}
+		for _, a := range all {
+			if len(out)+1 >= n+1 || len(out) >= n-1 {
+				break
+			}
+			k := shengJiCardKey(p.GetCard(a.idx))
+			g := byKey[k]
+			if used[a.idx] || len(g) < 2 {
+				continue
+			}
+			out = append(out, g[0], g[1])
+			used[g[0]], used[g[1]] = true, true
+		}
+	}
+	// 残りは弱い順に単札で埋める。
+	for _, a := range all {
+		if len(out) >= n {
+			break
+		}
+		if !used[a.idx] {
+			out = append(out, a.idx)
+			used[a.idx] = true
+		}
 	}
 	return out
 }

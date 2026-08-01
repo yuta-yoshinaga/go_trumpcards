@@ -742,6 +742,64 @@ func TestShengJiCpuDrivesAFullHand(t *testing.T) {
 	}
 }
 
+// **CPU が対子リードに応じられないと局が永久に止まる。**checkFollow は対子の
+// 温存を禁じるので、CPU が弱い単札から拾うと自分の対子を割って弾かれる。
+// 単札 1 枚のフォールバックも枚数が合わずに弾かれ、手番が進まなくなる。
+func TestShengJiCpuFollowsAPairWithoutStalling(t *testing.T) {
+	const level, trump = 5, CardDesignSpade
+	s := sjiFresh(t, level, trump)
+
+	// 人間が ♥9 の対子をリードする。
+	s.SetHandForTest(0, []*Card{sjiCard(CardDesignHeart, 9), sjiCard(CardDesignHeart, 9)})
+	// 席 1 は「弱い単札 + 強い対子」。素朴に弱い順で 2 枚拾うと対子が割れる。
+	s.SetHandForTest(1, []*Card{
+		sjiCard(CardDesignHeart, 3), sjiCard(CardDesignHeart, 6), sjiCard(CardDesignHeart, 6),
+	})
+	s.SetHandForTest(2, []*Card{sjiCard(CardDesignHeart, 4), sjiCard(CardDesignHeart, 7)})
+	s.SetHandForTest(3, []*Card{sjiCard(CardDesignHeart, 8), sjiCard(CardDesignHeart, 10)})
+
+	if err := s.Play(0, []int{0, 1}); err != nil {
+		t.Fatalf("the lead was rejected: %v", err)
+	}
+	if s.GetCurrentPlayerIdx() != 1 {
+		t.Fatalf("seat %d is on turn, want seat 1", s.GetCurrentPlayerIdx())
+	}
+
+	before := s.GetPlayer(1).GetCardsSize()
+	s.CpuPlay()
+	if got := s.GetPlayer(1).GetCardsSize(); got == before {
+		t.Fatal("the CPU played nothing -- the seat is stuck and the hand can never finish")
+	}
+	if s.GetCurrentPlayerIdx() == 1 {
+		t.Fatal("the turn did not advance past seat 1")
+	}
+}
+
+// 対子リードに対しては、CPU が持っている対子を割らずに出すこと。
+func TestShengJiCpuKeepsItsPairIntact(t *testing.T) {
+	const level, trump = 5, CardDesignSpade
+	s := sjiFresh(t, level, trump)
+	s.SetHandForTest(0, []*Card{sjiCard(CardDesignHeart, 9), sjiCard(CardDesignHeart, 9)})
+	s.SetHandForTest(1, []*Card{
+		sjiCard(CardDesignHeart, 3), sjiCard(CardDesignHeart, 6), sjiCard(CardDesignHeart, 6),
+	})
+	if err := s.Play(0, []int{0, 1}); err != nil {
+		t.Fatalf("the lead was rejected: %v", err)
+	}
+
+	idxs := s.ShengJiCpuPlay(1)
+	if len(idxs) != 2 {
+		t.Fatalf("the CPU offered %d cards, want 2", len(idxs))
+	}
+	cards := make([]*Card, 0, len(idxs))
+	for _, i := range idxs {
+		cards = append(cards, s.GetPlayer(1).GetCard(i))
+	}
+	if shengJiPairCount(cards) != 1 {
+		t.Errorf("the CPU split its pair: %v", cards)
+	}
+}
+
 func TestShengJiNextHandGuards(t *testing.T) {
 	s := NewDefaultShengJi()
 	s.Reset()
