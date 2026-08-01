@@ -644,6 +644,47 @@ func TestGuandanWildTakesTheStrongestReading(t *testing.T) {
 	})
 }
 
+// **連続の判定ではレベル札も自然位置で数える。**レベルが 5 のとき 4-5-6 の
+// 連続ペアは正当な役で、5 が「A の上」に移るのは単札・対子の強弱の話でしかない。
+func TestGuandanRunsCountLevelCardsAtTheirNaturalRank(t *testing.T) {
+	const level = 5
+
+	t.Run("a tube spanning the level rank", func(t *testing.T) {
+		cards := []*Card{
+			gdCard(CardDesignSpade, 4), gdCard(CardDesignClover, 4),
+			gdCard(CardDesignSpade, level), gdCard(CardDesignClover, level),
+			gdCard(CardDesignSpade, 6), gdCard(CardDesignClover, 6),
+		}
+		c := GuandanEvaluate(cards, level)
+		if c == nil || c.Kind != GuandanComboTube {
+			t.Fatalf("got %v, want a tube -- 4-5-6 is legal even when 5 is the level", c)
+		}
+	})
+
+	t.Run("a plate spanning the level rank", func(t *testing.T) {
+		cards := []*Card{
+			gdCard(CardDesignSpade, level), gdCard(CardDesignClover, level), gdCard(CardDesignDiamond, level),
+			gdCard(CardDesignSpade, 6), gdCard(CardDesignClover, 6), gdCard(CardDesignDiamond, 6),
+		}
+		c := GuandanEvaluate(cards, level)
+		if c == nil || c.Kind != GuandanComboPlate {
+			t.Fatalf("got %v, want a plate -- 5-6 is legal even when 5 is the level", c)
+		}
+	})
+
+	// 強弱のほうは従来どおり。対子の 5 は A の対子より強い。
+	t.Run("a pair of level cards still outranks a pair of aces", func(t *testing.T) {
+		pair := GuandanEvaluate([]*Card{gdCard(CardDesignSpade, level), gdCard(CardDesignClover, level)}, level)
+		aces := GuandanEvaluate([]*Card{gdCard(CardDesignSpade, 1), gdCard(CardDesignClover, 1)}, level)
+		if pair == nil || aces == nil {
+			t.Fatalf("pair=%v aces=%v", pair, aces)
+		}
+		if !GuandanBeats(pair, aces) {
+			t.Error("a pair of level cards must beat a pair of aces")
+		}
+	})
+}
+
 func TestGuandanBombsBeatEverything(t *testing.T) {
 	straight := &GuandanCombo{Kind: GuandanComboStraight, Rank: 14, Size: 5}
 	bomb4 := &GuandanCombo{Kind: GuandanComboBomb, Rank: 3, Size: 4}

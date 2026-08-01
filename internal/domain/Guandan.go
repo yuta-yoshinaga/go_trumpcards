@@ -552,6 +552,13 @@ func GuandanEvaluate(cards []*Card, level int) *GuandanCombo {
 	for _, c := range fixed {
 		counts[GuandanRank(c, level)]++
 	}
+	// **連続の判定だけは自然位置で数える。**レベル札が A の上に移るのは単札と
+	// 対子の強弱の話で、レベルが 5 のとき 4-5-6 の連続ペアは正当な役である。
+	// 序列つきの counts をそのまま渡すと、5 が 15 の枠に入って窓が抜ける。
+	naturalCounts := map[int]int{}
+	for _, c := range fixed {
+		naturalCounts[guandanNaturalRank(c)]++
+	}
 
 	// 同ランクにまとめられるか (ワイルドを足して n 枚)。
 	if len(counts) <= 1 {
@@ -582,7 +589,7 @@ func GuandanEvaluate(cards []*Card, level int) *GuandanCombo {
 	if c := guandanStraight(fixed, wilds, len(cards), level); c != nil {
 		return c
 	}
-	if c := guandanRepeatedRun(counts, wilds, len(cards)); c != nil {
+	if c := guandanRepeatedRun(naturalCounts, wilds, len(cards)); c != nil {
 		return c
 	}
 	return nil
