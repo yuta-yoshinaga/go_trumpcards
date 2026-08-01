@@ -13,6 +13,20 @@ type SpadesWebPresenter struct{}
 func (p *SpadesWebPresenter) Output(s interfaces.SpadesGame, lastErr error) string {
 	resObj := p.buildBase(s)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(s, s.GetCurrentTrick(), lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**Spades.GetHint() が自分で
+	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
+	if hint := s.GetHint(); hint != nil {
+		resObj.Hint = &controller.SpadesWebOutputHint{
+			CardIndex: hint.CardIndex,
+			Bid:       hint.Bid,
+			Reason:    hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -101,6 +115,13 @@ func (p *SpadesWebPresenter) HintOutput(s interfaces.SpadesGame) string {
 			Bid:       hint.Bid,
 			Reason:    hint.Reason,
 		}
+	}
+	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。
+	if hint != nil {
+		resObj.MessageCode = "spades.hintRequested"
+	} else {
+		resObj.MessageCode = "spades.noHint"
 	}
 	return marshalOrError(resObj)
 }

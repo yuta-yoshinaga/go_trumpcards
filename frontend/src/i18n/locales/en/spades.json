@@ -82,5 +82,7 @@
     "followSuit": "Follow the led suit",
     "trumpWithSpade": "Trump with a spade",
     "discardLowest": "Discard your lowest card"
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

@@ -82,5 +82,7 @@
     "followSuit": "リードされたスートに従ってプレイ推奨",
     "trumpWithSpade": "スペードで切り札を使うチャンス",
     "discardLowest": "最も低いカードを捨てることを推奨"
-  }
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }
