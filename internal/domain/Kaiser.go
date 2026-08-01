@@ -329,6 +329,11 @@ func KaiserBidRank(value int, contract KaiserContract) int {
 	return value*3 + int(contract)
 }
 
+// KaiserIsNoTrump は契約がノートランプ系かを返す。
+func KaiserIsNoTrump(contract KaiserContract) bool {
+	return contract == KaiserContractNoTrump || contract == KaiserContractLowNoTrump
+}
+
 // Bid は点数を宣言する。
 func (k *Kaiser) Bid(player, value int, contract KaiserContract) error {
 	if err := k.checkBidTurn(player); err != nil {
@@ -339,6 +344,12 @@ func (k *Kaiser) Bid(player, value int, contract KaiserContract) error {
 	}
 	if contract < KaiserContractTrump || contract > KaiserContractLowNoTrump {
 		return fmt.Errorf("bad contract: %d", contract)
+	}
+	// **設定でノートランプを切れる。**契約はここで決まるので、読まないと
+	// config が黙って効かなくなる。SetTrump は切札契約のスート名指しだけを
+	// 扱うので、そちらでは弾けない。
+	if !k.config.AllowNoTrump && KaiserIsNoTrump(contract) {
+		return fmt.Errorf("no-trump bids are switched off")
 	}
 	if k.highBid != nil && KaiserBidRank(value, contract) <= KaiserBidRank(k.highBid.Value, k.highBid.Contract) {
 		return fmt.Errorf("a bid must beat the standing %d", k.highBid.Value)

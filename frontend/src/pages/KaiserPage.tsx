@@ -132,6 +132,11 @@ function KaiserPageContent() {
   const isHumanDeclarer = isDiscard && state.declarerIdx === 0 && !isGameEnd;
   // **切札を先に決めてからでないと捨てられない。**捨てる札の判断が切札に依る。
   const needsTrump = isHumanDeclarer && state.contract === 0 && state.trumpSuit === 0;
+  // **サーバーが弾く選択肢は出さない。**設定でノートランプを切っていると
+  // Bid が error を返すので、選べてしまうと押した瞬間に必ず失敗する。
+  const availableContracts = state.config.allowNoTrump ? CONTRACTS : CONTRACTS.filter((c) => c.value === 0);
+  // 選択中の契約が落ちたら、残っている先頭へ寄せる。
+  const selectedContract = availableContracts.some((c) => c.value === contract) ? contract : 0;
   const isHumanPlay = isPlay && state.currentPlayerIdx === 0 && !isGameEnd;
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
@@ -349,10 +354,10 @@ function KaiserPageContent() {
                     <select
                       id="kaiser-contract-select"
                       className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                      value={contract}
+                      value={selectedContract}
                       onChange={(e) => setContract(Number(e.target.value))}
                     >
-                      {CONTRACTS.map((c) => (
+                      {availableContracts.map((c) => (
                         <option key={c.value} value={c.value}>
                           {t(c.labelKey)}
                         </option>
@@ -364,7 +369,7 @@ function KaiserPageContent() {
                       key={`bid-${v}`}
                       type="button"
                       className={btnPrimary}
-                      onClick={() => exec('bid', { bid: v, contract })}
+                      onClick={() => exec('bid', { bid: v, contract: selectedContract })}
                       disabled={loading}
                     >
                       {t('bidButton', { n: v })}

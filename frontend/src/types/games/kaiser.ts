@@ -80,4 +80,15 @@ export interface KaiserResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   /** Winning team; -1 while the game is live. */
   winnerTeam: number;
+  config: KaiserConfigOutput;
+}
+
+/** Settings echoed back with the game state. */
+export interface KaiserConfigOutput {
+  cpuDifficulty: number;
+  /**
+   * Whether no-trump and low-no-trump bids are allowed. **The server rejects
+   * them when this is false**, so the contract select must not offer them.
+   */
+  allowNoTrump: boolean;
 }

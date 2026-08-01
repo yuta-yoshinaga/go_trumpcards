@@ -61,6 +61,7 @@ function makeState(overrides?: Partial<KaiserResponse>): KaiserResponse {
     maxBid: 12,
     gameEndFlag: false,
     winnerTeam: -1,
+    config: { cpuDifficulty: 0, allowNoTrump: true },
     message: '',
     ...overrides,
   };
@@ -72,6 +73,36 @@ function handButtons() {
 }
 
 describe('KaiserPage', () => {
+  // **サーバーが弾く選択肢は出さない。**設定でノートランプを切っていると
+  // Bid が error を返すので、選べてしまうと押した瞬間に必ず失敗する。
+  describe('the no-trump setting', () => {
+    const biddingState = (allowNoTrump: boolean) =>
+      makeState({
+        phase: KaiserPhase.BID,
+        highBid: null,
+        declarerIdx: -1,
+        trumpSuit: 0,
+        config: { cpuDifficulty: 0, allowNoTrump },
+      });
+
+    it('offers all three contracts while it is on', async () => {
+      mockExec.mockResolvedValue(biddingState(true));
+      renderWithProviders(<KaiserPage />);
+      await waitFor(() => expect(screen.getByLabelText(/契約/)).toBeInTheDocument());
+      const select = screen.getByLabelText(/契約/) as HTMLSelectElement;
+      expect(select.options).toHaveLength(3);
+    });
+
+    it('offers only the trump contract while it is off', async () => {
+      mockExec.mockResolvedValue(biddingState(false));
+      renderWithProviders(<KaiserPage />);
+      await waitFor(() => expect(screen.getByLabelText(/契約/)).toBeInTheDocument());
+      const select = screen.getByLabelText(/契約/) as HTMLSelectElement;
+      expect(select.options).toHaveLength(1);
+      expect(select.options[0]?.textContent).toBe('切札あり');
+    });
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
