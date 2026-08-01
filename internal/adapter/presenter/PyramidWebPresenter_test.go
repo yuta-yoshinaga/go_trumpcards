@@ -55,9 +55,17 @@ func parsePyramidOutput(t *testing.T, jsonStr string) *controller.PyramidWebOutp
 	return &out
 }
 
+// setupPyramidOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupPyramidOutputMock(g *interfaces.MockPyramidGame) {
+	setupPyramidWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestPyramidWebPresenterOutput_Playing(t *testing.T) {
 	pg := new(interfaces.MockPyramidGame)
-	setupPyramidWebMockDefaults(pg)
+	setupPyramidOutputMock(pg)
 	p := &PyramidWebPresenter{}
 
 	result := p.Output(pg, nil)
@@ -71,7 +79,7 @@ func TestPyramidWebPresenterOutput_Playing(t *testing.T) {
 
 func TestPyramidWebPresenterOutput_Error(t *testing.T) {
 	pg := new(interfaces.MockPyramidGame)
-	setupPyramidWebMockDefaults(pg)
+	setupPyramidOutputMock(pg)
 	p := &PyramidWebPresenter{}
 
 	result := p.Output(pg, errors.New("test error"))
@@ -82,7 +90,7 @@ func TestPyramidWebPresenterOutput_Error(t *testing.T) {
 
 func TestPyramidWebPresenterOutput_GameClear(t *testing.T) {
 	pg := new(interfaces.MockPyramidGame)
-	setupPyramidWebMockDefaults(pg)
+	setupPyramidOutputMock(pg)
 	pg.ExpectedCalls = nil
 	pg.On("GetPhase").Return(domain.PyramidPhaseGameClear).Maybe()
 	pg.On("GetMoveCount").Return(10).Maybe()
@@ -91,6 +99,7 @@ func TestPyramidWebPresenterOutput_GameClear(t *testing.T) {
 	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
 	pg.On("UndoToEscape").Return(0).Maybe()
+	pg.On("GetHint").Return(nil).Maybe()
 
 	var pyramid [domain.PyramidRowCnt][]*domain.PyramidCard
 	for row := range domain.PyramidRowCnt {
@@ -120,7 +129,7 @@ func TestPyramidWebPresenterOutput_GameClear(t *testing.T) {
 
 func TestPyramidWebPresenterOutput_GameOver(t *testing.T) {
 	pg := new(interfaces.MockPyramidGame)
-	setupPyramidWebMockDefaults(pg)
+	setupPyramidOutputMock(pg)
 	pg.ExpectedCalls = nil
 	pg.On("GetPhase").Return(domain.PyramidPhaseGameOver).Maybe()
 	pg.On("GetMoveCount").Return(5).Maybe()
@@ -154,7 +163,7 @@ func TestPyramidWebPresenterOutput_GameOver(t *testing.T) {
 
 func TestPyramidWebPresenterOutput_Stalemate(t *testing.T) {
 	pg := new(interfaces.MockPyramidGame)
-	setupPyramidWebMockDefaults(pg)
+	setupPyramidOutputMock(pg)
 	pg.ExpectedCalls = nil
 	pg.On("GetPhase").Return(domain.PyramidPhasePlaying).Maybe()
 	pg.On("GetMoveCount").Return(5).Maybe()
@@ -183,6 +192,30 @@ func TestPyramidWebPresenterOutput_Stalemate(t *testing.T) {
 	out := parsePyramidOutput(t, result)
 
 	assert.Equal(t, "pyramid.stalemate", out.MessageCode)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestPyramidWebPresenterOutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		pyg := new(interfaces.MockPyramidGame)
+		setupPyramidWebMockDefaults(pyg)
+		pyg.On("GetHint").Return(&domain.PyramidHint{Type: "pair", Row1: 3, Col1: 0, Row2: 3, Col2: 1}).Maybe()
+
+		result := new(PyramidWebPresenter).Output(pyg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	t.Run("not while stalemate", func(t *testing.T) {
+		pyg := new(interfaces.MockPyramidGame)
+		setupPyramidWebMockDefaults(pyg)
+		pyg.ExpectedCalls = filterCalls(pyg.ExpectedCalls, "IsStalemate")
+		pyg.On("IsStalemate").Return(true)
+		pyg.On("GetHint").Return(&domain.PyramidHint{Type: "pair", Row1: 3, Col1: 0, Row2: 3, Col2: 1}).Maybe()
+
+		result := new(PyramidWebPresenter).Output(pyg, nil)
+		assert.NotContains(t, result, `"hint"`)
+	})
 }
 
 func TestPyramidWebPresenterHintOutput_WithHint(t *testing.T) {
