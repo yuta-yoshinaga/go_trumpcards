@@ -35,5 +35,10 @@
     "controls": "操作ボタンです。除去・移動・配るを選べます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "landscapeBanner": "横向きにすると操作しやすくなります"
+  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "frontendHint": {
+    "acesupRemove": "同じスートで数の小さい札を捨てられます",
+    "acesupMove": "空いた列へ動かすと新しい札をめくれます",
+    "acesupDeal": "各列に 1 枚ずつ配れます"
+  }
 }

@@ -49,7 +49,6 @@ const ALLOWED = new Map();
  * It was never recent. Prose alone had never held.
  */
 const BACKLOG = new Set([
-  'acesup',
   'bideuchre',
   'blackhole',
   'boston',

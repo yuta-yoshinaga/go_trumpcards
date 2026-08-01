@@ -11,6 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -23,6 +24,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
@@ -35,6 +37,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { ACESUP_HELP, parseAcesUpCommand } from '../utils/cli/commands/acesupCommands';
 import { formatAcesUpState } from '../utils/cli/formatters/acesupFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Aces Up tutorial step definitions. */
 const ACESUP_TUTORIAL_STEPS: TutorialStep[] = [
@@ -115,6 +118,12 @@ function AcesUpPageContent() {
   const busy = loading || isRemovingAll;
 
   // CLI mode
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('acesup', state);
+
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('acesup');
   const cliConfig: CliGameConfig<AcesUpResponse, Parameters<typeof acesupApi.exec>> = useMemo(
     () => ({
@@ -353,6 +362,8 @@ function AcesUpPageContent() {
               messageParams={state.messageParams}
             />
 
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
             <ActionLogSection
               isEndPhase={isEnded}
               actionLog={actionLog}
@@ -361,7 +372,10 @@ function AcesUpPageContent() {
             />
           </div>
 
-          <SettingsPanel title={tc('settings.title')} groups={[]} />
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+          />
 
           <GameFooter className={`${gameTheme.acesup.footer} px-4 py-2.5`}>
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
