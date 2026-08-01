@@ -288,6 +288,45 @@ func TestShengJiMustFollowTheLedSuit(t *testing.T) {
 	}
 }
 
+// **対子がリードされたら、そのスートの対子を先に出さなければならない。**
+// 枚数だけ合わせて対子を温存できると、拖拉機を出す意味が無くなる。
+func TestShengJiMustPlayPairsWhenAPairIsLed(t *testing.T) {
+	const level, trump = 5, CardDesignSpade
+	s := sjiFresh(t, level, trump)
+	s.SetHandForTest(0, []*Card{sjiCard(CardDesignHeart, 7), sjiCard(CardDesignHeart, 7)})
+	// 席 1 は ♥ の対子と、ばらの ♥ を 2 枚持つ。
+	s.SetHandForTest(1, []*Card{
+		sjiCard(CardDesignHeart, 9), sjiCard(CardDesignHeart, 9),
+		sjiCard(CardDesignHeart, 3), sjiCard(CardDesignHeart, 4),
+	})
+
+	if err := s.Play(0, []int{0, 1}); err != nil {
+		t.Fatalf("the lead was rejected: %v", err)
+	}
+	// ばら 2 枚で枚数だけ合わせるのは不可。
+	if err := s.Play(1, []int{2, 3}); err == nil {
+		t.Error("holding a pair of the led suit, two odd cards must be rejected")
+	}
+	if err := s.Play(1, []int{0, 1}); err != nil {
+		t.Errorf("playing the pair was rejected: %v", err)
+	}
+}
+
+// 対子を持っていなければ、そのスートのばら札で構わない。
+func TestShengJiOddCardsAreFineWithoutAPair(t *testing.T) {
+	const level, trump = 5, CardDesignSpade
+	s := sjiFresh(t, level, trump)
+	s.SetHandForTest(0, []*Card{sjiCard(CardDesignHeart, 7), sjiCard(CardDesignHeart, 7)})
+	s.SetHandForTest(1, []*Card{sjiCard(CardDesignHeart, 3), sjiCard(CardDesignHeart, 4)})
+
+	if err := s.Play(0, []int{0, 1}); err != nil {
+		t.Fatalf("the lead was rejected: %v", err)
+	}
+	if err := s.Play(1, []int{0, 1}); err != nil {
+		t.Errorf("without a pair, odd cards of the led suit must be allowed: %v", err)
+	}
+}
+
 // スートを持っていなければ何を出してもよい。
 func TestShengJiVoidPlayerMayDiscard(t *testing.T) {
 	const level, trump = 5, CardDesignSpade

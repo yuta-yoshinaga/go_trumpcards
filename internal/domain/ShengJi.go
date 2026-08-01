@@ -776,7 +776,53 @@ func (s *ShengJi) checkFollow(seat int, cards []*Card) error {
 	if got < need {
 		return errors.New("you must follow the led suit while you hold it")
 	}
+
+	// **対子がリードされたら、そのスートの対子を先に出さなければならない。**
+	// 枚数だけ合わせて対子を温存できると、拖拉機を出す意味が無くなる。
+	if s.leadCombo.Kind == ShengJiComboPair || s.leadCombo.Kind == ShengJiComboTractor {
+		wantPairs := s.leadCombo.Size / 2
+		if n := min(s.countPairsInSuit(seat, led), wantPairs); shengJiPairCount(cards) < n {
+			return errors.New("you must play your pairs of the led suit")
+		}
+	}
 	return nil
+}
+
+// countPairsInSuit は席がそのスートに持っている対子の数を返す。
+//
+// **対子は同ランクではなく同一の札 2 枚。**2 デッキなので ♠K が 2 枚ある。
+func (s *ShengJi) countPairsInSuit(seat, suit int) int {
+	p := s.GetPlayer(seat)
+	if p == nil {
+		return 0
+	}
+	counts := map[string]int{}
+	for i := range p.GetCardsSize() {
+		c := p.GetCard(i)
+		if s.inSuit(c, suit) {
+			counts[shengJiCardKey(c)]++
+		}
+	}
+	n := 0
+	for _, v := range counts {
+		n += v / 2
+	}
+	return n
+}
+
+// shengJiPairCount は出された札に含まれる対子の数を返す。
+func shengJiPairCount(cards []*Card) int {
+	counts := map[string]int{}
+	for _, c := range cards {
+		if c != nil {
+			counts[shengJiCardKey(c)]++
+		}
+	}
+	n := 0
+	for _, v := range counts {
+		n += v / 2
+	}
+	return n
 }
 
 // inSuit は札がそのスート (切札群を含む) に属するかを返す。
