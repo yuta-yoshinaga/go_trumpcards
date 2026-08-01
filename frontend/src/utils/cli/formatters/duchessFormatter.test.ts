@@ -81,16 +81,34 @@ describe('formatDuchessState', () => {
 
   it('shows a tableau hint with the run head', () => {
     const result = formatDuchessState(
-      makeState({ hint: { fromZone: 'tableau', fromIdx: 3, cardIndex: 1, toZone: 'tableau', toIdx: 2 } }),
+      makeState({
+        hint: { fromZone: 'tableau', fromIdx: 3, cardIndex: 1, toZone: 'tableau', toIdx: 2 },
+        messageCode: 'duchess.hintAvailable',
+      }),
     );
     expect(result).toContain('HINT');
     expect(result).toContain('t3[1]');
   });
 
+  // **頼んでいないヒントは CLI に出さない。**#4483 以降 Output() もヒントを載せる
+  // ので、state.hint だけを見ると毎手 HINT が印字される。
+  it('does not print a passive hint carried on an ordinary response', () => {
+    const result = formatDuchessState(
+      makeState({
+        hint: { fromZone: 'tableau', fromIdx: 3, cardIndex: 1, toZone: 'tableau', toIdx: 2 },
+        messageCode: 'duchess.playing',
+      }),
+    );
+    expect(result).not.toContain('HINT:');
+  });
+
   // A draw has no destination pile index.
   it('renders a draw hint without a destination index', () => {
     const result = formatDuchessState(
-      makeState({ hint: { fromZone: 'stock', fromIdx: -1, cardIndex: -1, toZone: 'waste', toIdx: -1 } }),
+      makeState({
+        hint: { fromZone: 'stock', fromIdx: -1, cardIndex: -1, toZone: 'waste', toIdx: -1 },
+        messageCode: 'duchess.hintAvailable',
+      }),
     );
     expect(result).toContain('stock');
     expect(result).toContain('draw');
