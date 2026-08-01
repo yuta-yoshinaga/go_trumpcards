@@ -41,12 +41,24 @@ describe('formatSpideretteState', () => {
   });
 
   it('renders a hint line when present', () => {
-    const out = formatSpideretteState({ ...baseState, hint: { fromCol: 0, cardIndex: 0, toCol: 2 } });
+    const out = formatSpideretteState({
+      ...baseState,
+      hint: { fromCol: 0, cardIndex: 0, toCol: 2 },
+      messageCode: 'spiderette.hintAvailable',
+    });
     expect(out).toContain('HINT: col0[0] → col2');
   });
 
   it('renders a stalemate notice and a win banner', () => {
     expect(formatSpideretteState({ ...baseState, isStalemate: true })).toContain('Stalemate');
     expect(formatSpideretteState({ ...baseState, phase: 1 })).toContain('Congratulations');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { fromCol: 1, cardIndex: 0, toCol: 3 };
+    expect(formatSpideretteState({ ...baseState, hint, messageCode: 'spiderette.hintAvailable' })).toContain('HINT:');
+    expect(formatSpideretteState({ ...baseState, hint, messageCode: 'spiderette.playing' })).not.toContain('HINT:');
   });
 });

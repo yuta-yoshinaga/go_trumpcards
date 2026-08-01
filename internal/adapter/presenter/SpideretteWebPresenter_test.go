@@ -44,10 +44,18 @@ func parseSpideretteOutput(t *testing.T, jsonStr string) *controller.SpideretteW
 	return &out
 }
 
+// setupSpideretteOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupSpideretteOutputMock(g *interfaces.MockSpideretteGame) {
+	setupSpideretteWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestSpideretteWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		sg := new(interfaces.MockSpideretteGame)
-		setupSpideretteWebMockDefaults(sg)
+		setupSpideretteOutputMock(sg)
 		p := new(SpideretteWebPresenter)
 
 		result := parseSpideretteOutput(t, p.Output(sg, nil))
@@ -62,7 +70,7 @@ func TestSpideretteWebPresenter_Output(t *testing.T) {
 
 	t.Run("face down card hides data", func(t *testing.T) {
 		sg := new(interfaces.MockSpideretteGame)
-		setupSpideretteWebMockDefaults(sg)
+		setupSpideretteOutputMock(sg)
 		p := new(SpideretteWebPresenter)
 
 		result := parseSpideretteOutput(t, p.Output(sg, nil))
@@ -75,7 +83,7 @@ func TestSpideretteWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		sg := new(interfaces.MockSpideretteGame)
-		setupSpideretteWebMockDefaults(sg)
+		setupSpideretteOutputMock(sg)
 		p := new(SpideretteWebPresenter)
 
 		result := parseSpideretteOutput(t, p.Output(sg, assert.AnError))
@@ -84,7 +92,7 @@ func TestSpideretteWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		sg := new(interfaces.MockSpideretteGame)
-		setupSpideretteWebMockDefaults(sg)
+		setupSpideretteOutputMock(sg)
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "GetPhase")
 		sg.On("GetPhase").Return(domain.SpiderettePhaseGameClear)
 
@@ -97,7 +105,7 @@ func TestSpideretteWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		sg := new(interfaces.MockSpideretteGame)
-		setupSpideretteWebMockDefaults(sg)
+		setupSpideretteOutputMock(sg)
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "GetPhase")
 		sg.On("GetPhase").Return(domain.SpiderettePhaseGameOver)
 
@@ -111,7 +119,7 @@ func TestSpideretteWebPresenter_Output(t *testing.T) {
 func TestSpideretteWebPresenter_Output_Stalemate(t *testing.T) {
 	t.Run("no escape available", func(t *testing.T) {
 		sg := new(interfaces.MockSpideretteGame)
-		setupSpideretteWebMockDefaults(sg)
+		setupSpideretteOutputMock(sg)
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "UndoToEscape")
 		sg.On("IsStalemate").Return(true)
@@ -126,7 +134,7 @@ func TestSpideretteWebPresenter_Output_Stalemate(t *testing.T) {
 
 	t.Run("escape available with positive count", func(t *testing.T) {
 		sg := new(interfaces.MockSpideretteGame)
-		setupSpideretteWebMockDefaults(sg)
+		setupSpideretteOutputMock(sg)
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "UndoToEscape")
 		sg.On("IsStalemate").Return(true)
@@ -142,13 +150,38 @@ func TestSpideretteWebPresenter_Output_Stalemate(t *testing.T) {
 
 func TestSpideretteWebPresenter_Output_CanUndo(t *testing.T) {
 	sg := new(interfaces.MockSpideretteGame)
-	setupSpideretteWebMockDefaults(sg)
+	setupSpideretteOutputMock(sg)
 	sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "CanUndo")
 	sg.On("CanUndo").Return(true)
 
 	p := new(SpideretteWebPresenter)
 	result := parseSpideretteOutput(t, p.Output(sg, nil))
 	assert.True(t, result.CanUndo)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestSpideretteWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		sg := new(interfaces.MockSpideretteGame)
+		setupSpideretteWebMockDefaults(sg)
+		sg.On("GetHint").Return(&domain.SpideretteHint{FromCol: 2, CardIndex: 0, ToCol: 4}).Maybe()
+
+		result := new(SpideretteWebPresenter).Output(sg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		sg := new(interfaces.MockSpideretteGame)
+		setupSpideretteWebMockDefaults(sg)
+		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
+		sg.On("IsStalemate").Return(true)
+		sg.On("GetHint").Return(&domain.SpideretteHint{FromCol: 2, CardIndex: 0, ToCol: 4}).Maybe()
+
+		result := new(SpideretteWebPresenter).Output(sg, nil)
+		assert.NotContains(t, result, `"hint"`)
+	})
 }
 
 func TestSpideretteWebPresenter_HintOutput(t *testing.T) {

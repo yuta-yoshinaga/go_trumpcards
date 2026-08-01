@@ -1,5 +1,5 @@
 import type { SpideretteResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a Spiderette game state as terminal text. */
 export function formatSpideretteState(state: SpideretteResponse): string {
@@ -23,7 +23,7 @@ export function formatSpideretteState(state: SpideretteResponse): string {
   lines.push(`moves: ${state.moveCount} | score: ${state.score}`);
 
   if (state.isStalemate) lines.push('Stalemate - no more moves possible');
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     lines.push(`HINT: col${state.hint.fromCol}[${state.hint.cardIndex}] → col${state.hint.toCol}`);
   }
   if (state.message) lines.push(state.message);
