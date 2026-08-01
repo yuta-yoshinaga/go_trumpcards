@@ -52,6 +52,18 @@ describe('formatBeleagueredCastleState', () => {
     expect(result).toContain('tableau2');
   });
 
+  // **頼んでいないヒントは CLI に出さない。**#4483 以降 Output() もヒントを載せる
+  // ので、state.hint だけを見ると毎手 HINT が印字される。
+  it('does not print a passive hint carried on an ordinary response', () => {
+    const result = formatBeleagueredCastleState(
+      makeState({
+        hint: { fromCol: 0, cardIndex: 1, toZone: 'tableau', toCol: 2 },
+        messageCode: 'beleagueredcastle.playing',
+      }),
+    );
+    expect(result).not.toContain('HINT');
+  });
+
   it('shows stalemate message', () => {
     const result = formatBeleagueredCastleState(makeState({ isStalemate: true }));
     expect(result).toContain('Stalemate');

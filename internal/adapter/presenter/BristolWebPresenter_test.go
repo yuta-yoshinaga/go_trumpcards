@@ -84,8 +84,6 @@ func TestBristolWebPresenter_Output(t *testing.T) {
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
 // レスポンスで、ページの state にはマージされない (#4483)。
-// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
-// レスポンスで、ページの state にはマージされない (#4483)。
 func TestBristolWebPresenter_OutputCarriesTheHint(t *testing.T) {
 	hint := &domain.BristolHint{FromZone: "tableau", FromCol: 2, ToZone: "foundation", ToCol: 0}
 
