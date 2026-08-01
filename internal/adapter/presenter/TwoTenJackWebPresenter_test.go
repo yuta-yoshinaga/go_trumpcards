@@ -30,6 +30,10 @@ func setupTTJWebMock() (*interfaces.MockTwoTenJackGame, []*domain.TwoTenJackPlay
 	m.On("GetPlayer", 1).Return(players[1])
 	m.On("GetPlayer", 2).Return(players[2])
 	m.On("GetPlayer", 3).Return(players[3])
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m, players
 }
 
@@ -101,6 +105,7 @@ func TestTwoTenJackWebPresenter_HintOutput(t *testing.T) {
 	t.Run("with hint", func(t *testing.T) {
 		m, _ := setupTTJWebMock()
 		idx := 0
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.TwoTenJackHint{CardIndex: &idx, Reason: "lead"})
 		result := p.HintOutput(m)
 		assert.Contains(t, result, `"hint"`)
@@ -108,6 +113,7 @@ func TestTwoTenJackWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupTTJWebMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.TwoTenJackHint)(nil))
 		result := p.HintOutput(m)
 		assert.NotContains(t, result, `"hint":{`)
@@ -120,4 +126,19 @@ func TestTwoTenJackWebPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetGameEndFlag").Return(false)
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// Output 側にゲートは置きません。TwoTenJack.GetHint() が「人間の手番で、かつ
+// 行動を選べる状態か」を自分で確かめて nil を返します。
+func TestTwoTenJackWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	ttj, _ := setupTTJWebMock()
+	ttj.ExpectedCalls = removeMockCall(ttj.ExpectedCalls, "GetHint")
+	ttj.On("GetHint").Return(&domain.TwoTenJackHint{CardIndex: &idx, Reason: "lead_trump"})
+
+	result := new(presenter.TwoTenJackWebPresenter).Output(ttj, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }

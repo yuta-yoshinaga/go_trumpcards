@@ -34,6 +34,10 @@ func setupOpenFaceChineseWebMock() (*interfaces.MockOpenFaceChineseGame, []*doma
 	m.On("GetPlayerCnt").Return(2)
 	m.On("GetPlayer", 0).Return(human)
 	m.On("GetPlayer", 1).Return(cpu)
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m, players
 }
 
@@ -111,6 +115,7 @@ func TestOpenFaceChineseWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("with hint", func(t *testing.T) {
 		m, _ := setupOpenFaceChineseWebMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.OpenFaceChineseHint{Row: domain.OpenFaceChineseRowBack, Reason: "strong_back"})
 		result := p.HintOutput(m)
 		var out controller.OpenFaceChineseWebOutput
@@ -121,6 +126,7 @@ func TestOpenFaceChineseWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupOpenFaceChineseWebMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.OpenFaceChineseHint)(nil))
 		result := p.HintOutput(m)
 		var out controller.OpenFaceChineseWebOutput
@@ -134,4 +140,18 @@ func TestOpenFaceChineseWebPresenter_ActionLogOutput(t *testing.T) {
 	m, _ := setupOpenFaceChineseWebMock()
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// Output 側にゲートは置きません。OpenFaceChinese.GetHint() が「人間の手番で、かつ
+// 行動を選べる状態か」を自分で確かめて nil を返します。
+func TestOpenFaceChineseWebPresenterOutputCarriesTheHint(t *testing.T) {
+	ofc, _ := setupOpenFaceChineseWebMock()
+	ofc.ExpectedCalls = removeMockCall(ofc.ExpectedCalls, "GetHint")
+	ofc.On("GetHint").Return(&domain.OpenFaceChineseHint{Row: 1, Reason: "balance"})
+
+	result := new(presenter.OpenFaceChineseWebPresenter).Output(ofc, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }
