@@ -6,6 +6,7 @@ import {
   formatIndexedCards,
   formatPlayerName,
   formatSeparator,
+  isRequestedHint,
 } from '../formatterBase';
 
 const SUIT_NAMES: Record<number, string> = { 1: 'Spade', 2: 'Clover', 3: 'Heart', 4: 'Diamond' };
@@ -46,7 +47,7 @@ export function formatNapoleonState(state: NapoleonResponse): string {
     lines.push(`trick: ${parts.join(', ')}`);
   }
 
-  if (state.hint) lines.push(`HINT: ${state.hint.reason}`);
+  if (state.hint && isRequestedHint(state)) lines.push(`HINT: ${state.hint.reason}`);
 
   if (state.message) lines.push(state.message);
   if (state.gameEndFlag) lines.push(`Game Over! Winner: Team ${state.winnerTeam}`);
