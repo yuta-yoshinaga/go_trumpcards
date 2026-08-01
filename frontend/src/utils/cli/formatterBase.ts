@@ -49,3 +49,21 @@ export function formatHeader(title: string): string {
 export function formatPlayerName(id: number, isHuman: boolean): string {
   return isHuman ? i18n.t('player.you') : i18n.t('player.cpu', { id });
 }
+
+/**
+ * True when this response is an answer to an explicit `hint` command.
+ *
+ * Since #4483, `Output()` also carries the hint so the board tooltip can read
+ * `state.hint` (it was permanently undefined before). But `Output()` runs on
+ * every command, so a CLI formatter that keys off `state.hint` alone would
+ * print `HINT:` after every single move, unasked.
+ *
+ * Only the `hint` command's own response sets a `hintAvailable` message code,
+ * so that is what separates "the player asked" from "the tooltip needs data".
+ * Gating on it costs nothing: no extra request, and no extra KV write, which
+ * matters because every request writes the session back and the free tier
+ * allows 1,000 writes a day (ADR-0028).
+ */
+export function isRequestedHint(state: { messageCode?: string }): boolean {
+  return state.messageCode?.endsWith('.hintAvailable') ?? false;
+}
