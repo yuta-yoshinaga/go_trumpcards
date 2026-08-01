@@ -1439,6 +1439,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 4, 4, 4], skill: [3, 4, 4, 4], social: [3, 4, 3, 4, 3], theme: [1, 5, 2, 1, 2, 5] },
       },
       {
+        path: '/shengji',
+        labelKey: 'nav.shengji',
+        icon: '🚜',
+        page: 'ShengJi',
+        profile: { mood: [4, 4, 4, 3], skill: [4, 5, 4, 3], social: [2, 4, 4, 4, 3], theme: [2, 3, 3, 1, 2, 4] },
+      },
+      {
         path: '/guandan',
         labelKey: 'nav.guandan',
         icon: '🧧',

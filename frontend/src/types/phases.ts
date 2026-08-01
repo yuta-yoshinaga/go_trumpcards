@@ -1746,6 +1746,15 @@ export const LiteraturePhase = {
   GAME_END: 1,
 } as const;
 
+/** Sheng Ji phase constants (sync: internal/domain/ShengJi.go). */
+export const ShengJiPhase = {
+  DECLARE: 0,
+  KITTY: 1,
+  PLAY: 2,
+  HAND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Guandan phase constants (sync: internal/domain/Guandan.go). */
 export const GuandanPhase = {
   TRIBUTE: 0,

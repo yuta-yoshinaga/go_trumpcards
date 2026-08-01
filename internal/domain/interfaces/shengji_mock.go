@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build test
 
 package interfaces
 
