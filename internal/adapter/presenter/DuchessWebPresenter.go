@@ -72,11 +72,14 @@ func (p *DuchessWebPresenter) Output(d interfaces.DuchessGame, lastErr error) st
 	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
 	if d.GetPhase() == domain.DuchessPhasePlaying {
 		if hint := d.GetHint(); hint != nil {
+			// **CardIndex まで運ぶ。**HintOutput 側と同じ形にしないと、同じヒント
+			// なのに経路によって欠ける項目が出る。
 			resObj.Hint = &controller.DuchessWebOutputHint{
-				FromZone: hint.FromZone,
-				FromIdx:  hint.FromIdx,
-				ToZone:   hint.ToZone,
-				ToIdx:    hint.ToIdx,
+				FromZone:  hint.FromZone,
+				FromIdx:   hint.FromIdx,
+				CardIndex: hint.CardIndex,
+				ToZone:    hint.ToZone,
+				ToIdx:     hint.ToIdx,
 			}
 		}
 	}

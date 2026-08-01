@@ -149,7 +149,7 @@ func TestDuchessWebPresenter_Output(t *testing.T) {
 // レスポンスで、ページの state にはマージされない。ここが埋まっていないと
 // フロントの `state.hint` は常に undefined で、それを読む分岐が全部死ぬ (#4483)。
 func TestDuchessWebPresenter_OutputCarriesTheHint(t *testing.T) {
-	hint := &domain.DuchessHint{FromZone: "tableau", FromIdx: 2, ToZone: "foundation", ToIdx: 1}
+	hint := &domain.DuchessHint{FromZone: "tableau", FromIdx: 2, CardIndex: 3, ToZone: "foundation", ToIdx: 1}
 
 	t.Run("while the game is playable", func(t *testing.T) {
 		g := new(interfaces.MockDuchessGame)
@@ -162,6 +162,9 @@ func TestDuchessWebPresenter_OutputCarriesTheHint(t *testing.T) {
 		}
 		assert.Equal(t, "tableau", result.Hint.FromZone)
 		assert.Equal(t, 2, result.Hint.FromIdx)
+		// **CardIndex まで運ぶこと。**HintOutput 側にはあるので、ここで落とすと
+		// 同じヒントなのに経路によって欠ける項目が出る。
+		assert.Equal(t, 3, result.Hint.CardIndex)
 	})
 }
 
