@@ -16,6 +16,22 @@ type RussianBankWebPresenter struct{}
 func (p *RussianBankWebPresenter) Output(g interfaces.RussianBankGame, lastErr error) string {
 	resObj := p.buildBase(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**RussianBank.GetHint() が自分で
+	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.RussianBankWebOutputHint{
+			Zone:         int(hint.Zone),
+			FromOpponent: hint.FromOpponent,
+			Col:          hint.Col,
+			ToFoundation: hint.ToFoundation,
+			ToCol:        hint.ToCol,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
