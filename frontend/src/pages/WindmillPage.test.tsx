@@ -180,6 +180,42 @@ describe('WindmillPage', () => {
     await waitFor(() => expect(screen.getByText(/次に中央へ置く札は/)).toBeInTheDocument());
   });
 
+  // **移動先としては塞がない。**四隅は置き場と引き戻し元を兼ねていて、
+  // transferBlocked が禁じるのは引き戻しだけ。ボタンごと無効にすると、
+  // 影響を受けないはずの「四隅へ置く」手まで潰れる。
+  describe('the corner while the transfer is blocked', () => {
+    const cornerName = /四隅基礎札0/;
+
+    it('cannot be picked as a source', async () => {
+      mockExec.mockResolvedValue({ ...playingState, transferBlocked: true });
+      renderWithProviders(<WindmillPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: cornerName })).toBeInTheDocument());
+
+      const corner = screen.getByRole('button', { name: cornerName });
+      expect(corner).toBeDisabled();
+      expect(corner).toHaveAttribute('title', expect.stringContaining('引き戻した直後'));
+    });
+
+    it('is still usable as a target once something is selected', async () => {
+      mockExec.mockResolvedValue({ ...playingState, transferBlocked: true });
+      renderWithProviders(<WindmillPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: cornerName })).toBeInTheDocument());
+
+      // 帆の札を選ぶと、四隅は「置き先」になるので再び押せる。
+      // 帆のボタンは札そのものの名前で引ける (aria-label = cardAlt)。
+      fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
+
+      await waitFor(() => expect(screen.getByRole('button', { name: cornerName })).toBeEnabled());
+    });
+
+    it('stays selectable as a source when nothing is blocked', async () => {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<WindmillPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: cornerName })).toBeEnabled());
+      expect(screen.getByRole('button', { name: cornerName })).not.toHaveAttribute('title');
+    });
+  });
+
   it('renders giveup button when playing and hides it once cleared', async () => {
     mockExec.mockResolvedValue(playingState);
     const { unmount } = renderWithProviders(<WindmillPage />);
