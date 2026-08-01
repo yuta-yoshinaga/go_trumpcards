@@ -188,3 +188,37 @@ func TestPiquetWebPresenter_HintOutput_WithHint(t *testing.T) {
 		t.Errorf("messageCode unexpected: %v", parsed["messageCode"])
 	}
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// 交換と申告を CPU に進めさせた時点でヒントが必ず出ます（100 回中 100 回で確認）。
+// Piquet の GetHint は現在手番を引数に取るので、呼び出し式ごと HintOutput から
+// 写しています。
+func TestPiquetWebPresenterOutputCarriesTheHint(t *testing.T) {
+	players := []*domain.PiquetPlayer{
+		domain.NewPiquetPlayer(false),
+		domain.NewPiquetPlayer(false),
+	}
+	g := domain.NewPiquet(domain.NewTrumpCardsBelote(), players,
+		domain.PiquetConfig{DealsPerPartie: 1, CpuDifficulty: domain.PiquetCpuDifficultyNormal})
+	g.Reset()
+	for g.GetPhase() == domain.PiquetPhaseExchange {
+		g.CpuPlay()
+	}
+	for g.GetPhase() == domain.PiquetPhaseDeclaration {
+		_, _ = g.ResolveDeclaration()
+	}
+	if g.GetHint(g.GetCurrentPlayerIdx()) == nil {
+		t.Fatal("fixture must actually produce a hint")
+	}
+
+	result := new(PiquetWebPresenter).Output(g, nil)
+	var parsed map[string]any
+	if err := json.Unmarshal([]byte(result), &parsed); err != nil {
+		t.Fatalf("invalid JSON: %v", err)
+	}
+	if parsed["hint"] == nil {
+		t.Error("Output must carry the hint -- the frontend reads state.hint")
+	}
+}
