@@ -76,5 +76,7 @@
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
   "bidAmountLabel": "ビッド額（最低 {{min}}）",
-  "bidTooLow": "ビッド額は {{min}} 以上にしてください"
+  "bidTooLow": "ビッド額は {{min}} 以上にしてください",
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }
