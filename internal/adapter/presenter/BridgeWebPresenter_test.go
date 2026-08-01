@@ -47,6 +47,10 @@ func setupBridgeWebMock() *interfaces.MockBridgeGame {
 	m.On("GetDummyHand").Return(([]*domain.Card)(nil))
 	m.On("GetConfig").Return(domain.DefaultBridgeConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -495,6 +499,7 @@ func TestBridgeWebPresenter_HintOutput(t *testing.T) {
 	t.Run("hint available with card", func(t *testing.T) {
 		idx := 2
 		m, _ := setupBridgeWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.BridgeHint{
 			CardIndex: &idx,
 			Reason:    "follow_suit",
@@ -507,7 +512,7 @@ func TestBridgeWebPresenter_HintOutput(t *testing.T) {
 		assert.NotNil(t, resObj.Hint)
 		assert.Equal(t, &idx, resObj.Hint.CardIndex)
 		assert.Equal(t, "follow_suit", resObj.Hint.Reason)
-		assert.Empty(t, resObj.MessageCode)
+		assert.Equal(t, "bridge.hintRequested", resObj.MessageCode)
 	})
 
 	t.Run("hint available with bid", func(t *testing.T) {
@@ -515,6 +520,7 @@ func TestBridgeWebPresenter_HintOutput(t *testing.T) {
 		bidLevel := 2
 		bidSuit := 3
 		m, _ := setupBridgeWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.BridgeHint{
 			BidType:  &bidType,
 			BidLevel: &bidLevel,
@@ -535,6 +541,7 @@ func TestBridgeWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupBridgeWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.BridgeHint)(nil))
 
 		result := p.HintOutput(m)
@@ -542,6 +549,33 @@ func TestBridgeWebPresenter_HintOutput(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Nil(t, resObj.Hint)
-		assert.Empty(t, resObj.MessageCode)
+		assert.Equal(t, "bridge.noHint", resObj.MessageCode)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestBridgeWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	brg, _ := setupBridgeWebMockWithPlayers()
+	brg.ExpectedCalls = removeMockCall(brg.ExpectedCalls, "GetHint")
+	brg.On("GetHint").Return(&domain.BridgeHint{CardIndex: &idx, Reason: "follow_suit"})
+
+	result := new(presenter.BridgeWebPresenter).Output(brg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	assert.NotContains(t, result, "bridge.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestBridgeWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	brg, _ := setupBridgeWebMockWithPlayers()
+	brg.ExpectedCalls = removeMockCall(brg.ExpectedCalls, "GetHint")
+	brg.On("GetHint").Return(&domain.BridgeHint{CardIndex: &idx, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.BridgeWebPresenter).HintOutput(brg), "bridge.hintRequested")
+
+	none, _ := setupBridgeWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.BridgeHint)(nil))
+	assert.Contains(t, new(presenter.BridgeWebPresenter).HintOutput(none), "bridge.noHint")
 }
