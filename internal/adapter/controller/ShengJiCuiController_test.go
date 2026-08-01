@@ -60,6 +60,9 @@ func TestShengJiCuiController_Exec(t *testing.T) {
 		c := controller.NewShengJiCuiController(m)
 		assert.Equal(t, mockOutput, c.Exec("b 0 1 2 3 4 5 6 7"))
 		m.AssertCalled(t, "BuryKitty", []int{0, 1, 2, 3, 4, 5, 6, 7})
+		// **底牌を拾った直後は 25 + 8 枚**あるので、埋め戻しの上限は広い。
+		assert.Equal(t, mockOutput, c.Exec("b 25 26 27 28 29 30 31 32"))
+		assert.Contains(t, c.Exec("b 33 0 1 2 3 4 5 6"), "Invalid card index")
 		assert.Contains(t, c.Exec("b 0 1"), "exactly 8")
 		assert.Contains(t, c.Exec("b"), "Card indexes are required")
 	})
@@ -79,6 +82,9 @@ func TestShengJiCuiController_Exec(t *testing.T) {
 		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
 		assert.Contains(t, c.Exec("p -1"), "Invalid card index")
 		assert.Contains(t, c.Exec("p 99"), "Invalid card index")
+		// **プレイ中の手札は 25 枚。**底牌を拾った直後の上限 (32) を使い回すと緩い。
+		assert.Contains(t, c.Exec("p 25"), "Invalid card index")
+		assert.Equal(t, mockOutput, c.Exec("p 24"))
 		// **同じ札を 2 回数えられない。**通すと 1 枚から対子が作れてしまう。
 		assert.Contains(t, c.Exec("p 1 1"), "twice")
 	})

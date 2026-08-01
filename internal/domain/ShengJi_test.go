@@ -270,6 +270,42 @@ func TestShengJiBeats(t *testing.T) {
 	})
 }
 
+// **同値では勝てない。**Rank は > であって >= ではない。単張だけでなく
+// 対子と拖拉機でも同じでなければ、同じ札を後出しした側が勝ってしまう。
+func TestShengJiEqualCombosDoNotBeat(t *testing.T) {
+	const level, trump = 5, CardDesignSpade
+	pair := func(v int) *ShengJiCombo {
+		return ShengJiEvaluate([]*Card{sjiCard(CardDesignHeart, v), sjiCard(CardDesignHeart, v)}, level, trump)
+	}
+	tractor := func(lo int) *ShengJiCombo {
+		return ShengJiEvaluate([]*Card{
+			sjiCard(CardDesignHeart, lo), sjiCard(CardDesignHeart, lo),
+			sjiCard(CardDesignHeart, lo+1), sjiCard(CardDesignHeart, lo+1),
+		}, level, trump)
+	}
+
+	ledSuit := pair(7).Suit
+	if ShengJiBeats(pair(7), pair(7), ledSuit) {
+		t.Error("an identical pair must not beat the pair already down")
+	}
+	if !ShengJiBeats(pair(9), pair(7), ledSuit) {
+		t.Error("a higher pair must beat a lower one")
+	}
+	if ShengJiBeats(tractor(7), tractor(7), ledSuit) {
+		t.Error("an identical tractor must not beat the tractor already down")
+	}
+	if !ShengJiBeats(tractor(9), tractor(7), ledSuit) {
+		t.Error("a higher tractor must beat a lower one")
+	}
+	// 単張でも同じ。
+	single := func(v int) *ShengJiCombo {
+		return ShengJiEvaluate([]*Card{sjiCard(CardDesignHeart, v)}, level, trump)
+	}
+	if ShengJiBeats(single(7), single(7), ledSuit) {
+		t.Error("an identical single must not beat the single already down")
+	}
+}
+
 // **リードされたスートを持っているなら、そこから出さなければならない。**
 func TestShengJiMustFollowTheLedSuit(t *testing.T) {
 	const level, trump = 5, CardDesignSpade
