@@ -31,6 +31,11 @@ func tcbSetupWebMock() *interfaces.MockThreeCardBragGame {
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultThreeCardBragConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さないので、
+	// wrapper にも入れると HintOutput テストの実物が食われる。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -163,6 +168,7 @@ func TestThreeCardBragWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint present", func(t *testing.T) {
 		m, _ := tcbSetupWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.ThreeCardBragHint{Action: "raise", Reason: "strong_hand"})
 		result := p.HintOutput(m)
 		var resObj controller.ThreeCardBragWebOutput
@@ -174,6 +180,7 @@ func TestThreeCardBragWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := tcbSetupWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.ThreeCardBragHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.ThreeCardBragWebOutput
@@ -191,4 +198,18 @@ func TestThreeCardBragWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"bet"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// ベッティング系も Output 側にゲートを置きません。ThreeCardBrag.GetHint() が
+// 「人間の手番で、かつ行動を選べる状態か」を自分で確かめて nil を返します。
+func TestThreeCardBragWebPresenterOutputCarriesTheHint(t *testing.T) {
+	tcbg, _ := tcbSetupWebMockWithPlayers()
+	tcbg.ExpectedCalls = removeMockCall(tcbg.ExpectedCalls, "GetHint")
+	tcbg.On("GetHint").Return(&domain.ThreeCardBragHint{Action: "call", Reason: "strong_hand"})
+
+	result := new(presenter.ThreeCardBragWebPresenter).Output(tcbg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }
