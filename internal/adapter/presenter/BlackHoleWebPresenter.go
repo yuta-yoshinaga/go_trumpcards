@@ -31,7 +31,11 @@ func (p *BlackHoleWebPresenter) Output(g interfaces.BlackHoleGame, lastErr error
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
 	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
-	if g.GetPhase() == domain.BlackHolePhasePlaying && !g.IsStalemate() {
+	// **手詰まり判定は足さない。**Black Hole の `IsStalemate()` と `GetHint()` は
+	// どちらも `canPlay(i)` を同じ順に回すだけで、手詰まりなら必ずヒントも nil に
+	// なる。`!IsStalemate()` を書くと、決して偽にならない条件のために毎回もう一度
+	// 全扇を走査することになる。他ゲームと形が違うのはこの理由 (#4542 のレビュー指摘)。
+	if g.GetPhase() == domain.BlackHolePhasePlaying {
 		if hint := g.GetHint(); hint != nil {
 			resObj.Hint = &controller.BlackHoleWebOutputHint{Fan: hint.Fan}
 		}
