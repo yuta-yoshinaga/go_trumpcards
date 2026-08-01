@@ -18,6 +18,7 @@ import type {
   BidWhistResponse,
   BigTwoResponse,
   BisleyResponse,
+  BlackHoleResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
   BouillotteResponse,
@@ -221,6 +222,7 @@ import { getBeziqueHint } from '../utils/hints/beziqueHint';
 import { getBidWhistHint } from '../utils/hints/bidwhistHint';
 import { getBigTwoHint } from '../utils/hints/bigtwoHint';
 import { getBisleyHint } from '../utils/hints/bisleyHint';
+import { getBlackHoleHint } from '../utils/hints/blackholeHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getBouillotteHint } from '../utils/hints/bouillotteHint';
@@ -541,6 +543,7 @@ export const hintFactories = {
   easthaven: (s) => getEasthavenHint(s as EasthavenResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   acesup: (s) => getAcesUpHint(s as AcesUpResponse),
+  blackhole: (s) => getBlackHoleHint(s as BlackHoleResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
   sirtommy: (s) => getSirTommyHint(s as SirTommyResponse),
   bisley: (s) => getBisleyHint(s as BisleyResponse),
