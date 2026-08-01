@@ -35,6 +35,10 @@ func setupEuchreWebMock() *interfaces.MockEuchreGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultEuchreConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -424,6 +428,7 @@ func TestEuchreWebPresenter_HintOutput(t *testing.T) {
 	t.Run("hint available with card", func(t *testing.T) {
 		idx := 2
 		m, _ := setupEuchreWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.EuchreHint{
 			CardIndex: &idx,
 			Reason:    "follow_suit",
@@ -436,12 +441,13 @@ func TestEuchreWebPresenter_HintOutput(t *testing.T) {
 		assert.NotNil(t, resObj.Hint)
 		assert.Equal(t, &idx, resObj.Hint.CardIndex)
 		assert.Equal(t, "follow_suit", resObj.Hint.Reason)
-		assert.Empty(t, resObj.MessageCode)
+		assert.Equal(t, "euchre.hintRequested", resObj.MessageCode)
 	})
 
 	t.Run("hint available with orderUp", func(t *testing.T) {
 		orderUp := true
 		m, _ := setupEuchreWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.EuchreHint{
 			OrderUp: &orderUp,
 			Reason:  "strong_hand",
@@ -460,6 +466,7 @@ func TestEuchreWebPresenter_HintOutput(t *testing.T) {
 		suit := 3
 		goAlone := true
 		m, _ := setupEuchreWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.EuchreHint{
 			Suit:    &suit,
 			GoAlone: &goAlone,
@@ -477,6 +484,7 @@ func TestEuchreWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupEuchreWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.EuchreHint)(nil))
 
 		result := p.HintOutput(m)
@@ -484,6 +492,33 @@ func TestEuchreWebPresenter_HintOutput(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Nil(t, resObj.Hint)
-		assert.Empty(t, resObj.MessageCode)
+		assert.Equal(t, "euchre.noHint", resObj.MessageCode)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestEuchreWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	ecg, _ := setupEuchreWebMockWithPlayers()
+	ecg.ExpectedCalls = removeMockCall(ecg.ExpectedCalls, "GetHint")
+	ecg.On("GetHint").Return(&domain.EuchreHint{CardIndex: &idx, Reason: "follow_suit"})
+
+	result := new(presenter.EuchreWebPresenter).Output(ecg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	assert.NotContains(t, result, "euchre.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestEuchreWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	ecg, _ := setupEuchreWebMockWithPlayers()
+	ecg.ExpectedCalls = removeMockCall(ecg.ExpectedCalls, "GetHint")
+	ecg.On("GetHint").Return(&domain.EuchreHint{CardIndex: &idx, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.EuchreWebPresenter).HintOutput(ecg), "euchre.hintRequested")
+
+	none, _ := setupEuchreWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.EuchreHint)(nil))
+	assert.Contains(t, new(presenter.EuchreWebPresenter).HintOutput(none), "euchre.noHint")
 }

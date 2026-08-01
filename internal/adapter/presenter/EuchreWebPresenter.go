@@ -17,6 +17,22 @@ type EuchreWebPresenter struct{}
 func (p *EuchreWebPresenter) Output(e interfaces.EuchreGame, lastErr error) string {
 	resObj := p.buildBase(e)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(e, e.GetCurrentTrick(), lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**Euchre.GetHint() が自分で
+	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
+	if hint := e.GetHint(); hint != nil {
+		resObj.Hint = &controller.EuchreWebOutputHint{
+			CardIndex: hint.CardIndex,
+			OrderUp:   hint.OrderUp,
+			Suit:      hint.Suit,
+			GoAlone:   hint.GoAlone,
+			Reason:    hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -113,6 +129,13 @@ func (p *EuchreWebPresenter) HintOutput(e interfaces.EuchreGame) string {
 			GoAlone:   hint.GoAlone,
 			Reason:    hint.Reason,
 		}
+	}
+	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。
+	if hint != nil {
+		resObj.MessageCode = "euchre.hintRequested"
+	} else {
+		resObj.MessageCode = "euchre.noHint"
 	}
 	return marshalOrError(resObj)
 }
