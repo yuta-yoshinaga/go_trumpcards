@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type {
   AccordionResponse,
+  AcesUpResponse,
   AgnesResponse,
   AllFoursResponse,
   AmericanToadResponse,
@@ -203,6 +204,7 @@ import type {
 } from '../types/card';
 import type { HintResult } from '../types/hint';
 import { getAccordionHint } from '../utils/hints/accordionHint';
+import { getAcesUpHint } from '../utils/hints/acesupHint';
 import { getAgnesHint } from '../utils/hints/agnesHint';
 import { getAllFoursHint } from '../utils/hints/allfoursHint';
 import { getAmericanToadHint } from '../utils/hints/americantoadHint';
@@ -538,6 +540,7 @@ export const hintFactories = {
   wasp: (s) => getWaspHint(s as WaspResponse),
   easthaven: (s) => getEasthavenHint(s as EasthavenResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
+  acesup: (s) => getAcesUpHint(s as AcesUpResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
   sirtommy: (s) => getSirTommyHint(s as SirTommyResponse),
   bisley: (s) => getBisleyHint(s as BisleyResponse),
