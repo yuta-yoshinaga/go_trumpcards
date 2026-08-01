@@ -1067,6 +1067,9 @@ func TestPinochle_NextRound_WrongPhase(t *testing.T) {
 func TestPinochle_Hint_Bid(t *testing.T) {
 	g := newTestPinochle()
 	g.Reset()
+	// **Hint は人間の席にしか答えない (#4585)。**Reset 後の入札手番が人間とは
+	// 限らないので、明示する。
+	g.bidPlayerIdx = g.findHumanIdxForTest()
 	hint := g.Hint()
 	if hint == nil {
 		t.Fatal("expected hint, got nil")
@@ -1264,4 +1267,34 @@ func TestPinochle_NextTrick(t *testing.T) {
 	if g.GetTrickNumber() != 2 {
 		t.Errorf("expected trick number 2, got %d", g.GetTrickNumber())
 	}
+}
+
+// **CPU の席のヒントは返さない。**返すと、Output() が毎レスポンスで呼ぶ以上、
+// CPU の手番に CPU 自身の手が「推奨手」として人間に見える (#4585 のレビュー指摘)。
+func TestPinochleHintRefusesTheCpuTurn(t *testing.T) {
+	p := newTestPinochle()
+	p.Reset()
+
+	// 人間の手番では出る。
+	p.phase = PinochlePhasePlay
+	p.currentPlayerIdx = p.findHumanIdxForTest()
+	if p.Hint() == nil {
+		t.Error("the human's own turn must still get a hint")
+	}
+
+	// CPU の手番では出ない。
+	p.currentPlayerIdx = (p.findHumanIdxForTest() + 1) % PinochlePlayerCnt
+	if got := p.Hint(); got != nil {
+		t.Errorf("Hint must not describe a CPU seat's move, got %+v", got)
+	}
+}
+
+// findHumanIdxForTest は人間の席を返す。
+func (p *Pinochle) findHumanIdxForTest() int {
+	for i, pl := range p.players {
+		if pl.GetIsHuman() {
+			return i
+		}
+	}
+	return -1
 }

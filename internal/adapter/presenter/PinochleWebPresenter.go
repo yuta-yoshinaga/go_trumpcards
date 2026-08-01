@@ -19,8 +19,9 @@ func (p *PinochleWebPresenter) Output(g interfaces.PinochleGame, lastErr error) 
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
 	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
 	//
-	// **フェーズと手番はここでは見ない。**Pinochle.GetHint() が自分で
-	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
+	// **フェーズと手番はここでは見ない。**Pinochle.Hint() が自分で人間の手番かを
+	// 確かめて nil を返す —— ただし**このシリーズでその保証を足したのは #4585 で、
+	// それまでは見ていなかった。**「他ゲームがそうだから」で書かず、1 本ずつ読む。
 	if hint := g.GetHint(); hint != nil {
 		resObj.Hint = &controller.PinochleWebOutputHint{
 			CardIndex: hint.CardIndex,

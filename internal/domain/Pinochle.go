@@ -1235,12 +1235,23 @@ func (p *Pinochle) scoreRound() {
 
 // Hint ヒントを返す
 func (p *Pinochle) Hint() *PinochleHint {
+	// **人間の手番でなければ答えない。**hintBid / hintTrump / hintPlay は
+	// bidPlayerIdx / currentPlayerIdx をそのまま使うので、席が誰かを見ない。
+	// Output() が毎レスポンスでこれを呼ぶようになった以上、ガードが無いと
+	// **CPU の手番に CPU 自身の手を「推奨手」として人間に見せる** (#4585 のレビュー指摘)。
 	switch p.phase {
 	case PinochlePhaseBid:
+		if !p.IsHumanBidTurn() {
+			return nil
+		}
 		return p.hintBid()
-	case PinochlePhaseTrump:
-		return p.hintTrump()
-	case PinochlePhasePlay:
+	case PinochlePhaseTrump, PinochlePhasePlay:
+		if !p.IsHumanTurn() {
+			return nil
+		}
+		if p.phase == PinochlePhaseTrump {
+			return p.hintTrump()
+		}
 		return p.hintPlay()
 	default:
 		return nil

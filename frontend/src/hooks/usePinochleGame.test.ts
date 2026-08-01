@@ -180,7 +180,7 @@ describe('usePinochleGame', () => {
 
     mockExec.mockClear();
     // The hint command returns only the bare hint object (top-level fields).
-    mockExec.mockResolvedValue({ bidAmount: 25, reason: 'hint_bid' } as unknown as PinochleResponse);
+    mockExec.mockResolvedValue({ hint: { bidAmount: 25, reason: 'hint_bid' } } as unknown as PinochleResponse);
     await act(async () => {
       await result.current.handleHint();
     });
@@ -224,7 +224,7 @@ describe('usePinochleGame', () => {
     const { result } = renderHook(() => usePinochleGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
-    mockExec.mockResolvedValue({ suit: 1, reason: 'hint_trump' } as unknown as PinochleResponse);
+    mockExec.mockResolvedValue({ hint: { suit: 1, reason: 'hint_trump' } } as unknown as PinochleResponse);
     await act(async () => {
       await result.current.handleHint();
     });
