@@ -82,6 +82,7 @@ func TestCatchTenCuiPresenter_HintOutput(t *testing.T) {
 		m, players := setupCatchTenWebMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
 		cardIdx := 0
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.CatchTenHint{CardIndex: &cardIdx, Reason: "trump_cut"})
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "HINT")

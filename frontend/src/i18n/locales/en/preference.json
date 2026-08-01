@@ -79,5 +79,7 @@
   "bidNone": "none",
   "bidTooLow": "Must exceed the current highest bid",
   "misereBadge": "Special",
-  "misereDesc": "Misère is a special contract aiming to win no tricks; failing it costs heavily."
+  "misereDesc": "Misère is a special contract aiming to win no tricks; failing it costs heavily.",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }
