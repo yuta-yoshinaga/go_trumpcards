@@ -39,10 +39,17 @@ func parseCruelOutput(t *testing.T, jsonStr string) *controller.CruelWebOutput {
 	return &out
 }
 
+// setupCruelOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**
+// ようになった (#4483) ので GetHint を呼べるようにする。
+func setupCruelOutputMock(g *interfaces.MockCruelGame) {
+	setupCruelWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestCruelWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		cg := new(interfaces.MockCruelGame)
-		setupCruelWebMockDefaults(cg)
+		setupCruelOutputMock(cg)
 		p := new(CruelWebPresenter)
 
 		result := parseCruelOutput(t, p.Output(cg, nil))
@@ -126,12 +133,28 @@ func TestCruelWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		cg := new(interfaces.MockCruelGame)
-		setupCruelWebMockDefaults(cg)
+		setupCruelOutputMock(cg)
 		p := new(CruelWebPresenter)
 
 		result := parseCruelOutput(t, p.Output(cg, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestCruelWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.CruelHint{FromCol: 2, CardIndex: 1, ToZone: "foundation", ToCol: 0}
+
+	cg := new(interfaces.MockCruelGame)
+	setupCruelWebMockDefaults(cg)
+	cg.On("GetHint").Return(hint).Maybe()
+
+	result := parseCruelOutput(t, new(CruelWebPresenter).Output(cg, nil))
+	if result.Hint == nil {
+		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+	}
+	assert.Equal(t, 2, result.Hint.FromCol)
 }
 
 func TestCruelWebPresenter_HintOutput(t *testing.T) {

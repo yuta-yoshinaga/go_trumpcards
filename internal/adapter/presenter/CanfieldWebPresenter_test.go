@@ -30,10 +30,17 @@ func setupCanfieldWebMockDefaults(cg *interfaces.MockCanfieldGame) {
 	cg.On("GetFoundation").Return(foundation).Maybe()
 }
 
+// setupCanfieldOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**
+// ようになった (#4483) ので GetHint を呼べるようにする。
+func setupCanfieldOutputMock(g *interfaces.MockCanfieldGame) {
+	setupCanfieldWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestCanfieldWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		cg := new(interfaces.MockCanfieldGame)
-		setupCanfieldWebMockDefaults(cg)
+		setupCanfieldOutputMock(cg)
 		p := new(CanfieldWebPresenter)
 		result := p.Output(cg, nil)
 		assert.Contains(t, result, `"baseRank":7`)
@@ -43,7 +50,7 @@ func TestCanfieldWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		cg := new(interfaces.MockCanfieldGame)
-		setupCanfieldWebMockDefaults(cg)
+		setupCanfieldOutputMock(cg)
 		p := new(CanfieldWebPresenter)
 		result := p.Output(cg, assert.AnError)
 		assert.Contains(t, result, assert.AnError.Error())
@@ -51,7 +58,7 @@ func TestCanfieldWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		cg := new(interfaces.MockCanfieldGame)
-		setupCanfieldWebMockDefaults(cg)
+		setupCanfieldOutputMock(cg)
 		cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "GetPhase")
 		cg.On("GetPhase").Return(domain.CanfieldPhaseGameClear)
 		p := new(CanfieldWebPresenter)
@@ -61,7 +68,7 @@ func TestCanfieldWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		cg := new(interfaces.MockCanfieldGame)
-		setupCanfieldWebMockDefaults(cg)
+		setupCanfieldOutputMock(cg)
 		cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "GetPhase")
 		cg.On("GetPhase").Return(domain.CanfieldPhaseGameOver)
 		p := new(CanfieldWebPresenter)
@@ -71,7 +78,7 @@ func TestCanfieldWebPresenter_Output(t *testing.T) {
 
 	t.Run("with waste", func(t *testing.T) {
 		cg := new(interfaces.MockCanfieldGame)
-		setupCanfieldWebMockDefaults(cg)
+		setupCanfieldOutputMock(cg)
 		cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "GetWaste")
 		cg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
 		p := new(CanfieldWebPresenter)
@@ -81,7 +88,7 @@ func TestCanfieldWebPresenter_Output(t *testing.T) {
 
 	t.Run("foundation with cards", func(t *testing.T) {
 		cg := new(interfaces.MockCanfieldGame)
-		setupCanfieldWebMockDefaults(cg)
+		setupCanfieldOutputMock(cg)
 		cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "GetFoundation")
 		var f [domain.CanfieldFoundationCnt][]*domain.Card
 		f[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)}
@@ -90,6 +97,19 @@ func TestCanfieldWebPresenter_Output(t *testing.T) {
 		result := p.Output(cg, nil)
 		assert.Contains(t, result, `"foundation"`)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestCanfieldWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.CanfieldHint{FromZone: "tableau", FromCol: 2, CardIndex: 1, ToZone: "foundation", ToCol: 0}
+
+	cg := new(interfaces.MockCanfieldGame)
+	setupCanfieldWebMockDefaults(cg)
+	cg.On("GetHint").Return(hint).Maybe()
+
+	result := new(CanfieldWebPresenter).Output(cg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }
 
 func TestCanfieldWebPresenter_HintOutput(t *testing.T) {

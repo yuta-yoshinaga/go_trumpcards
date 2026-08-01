@@ -41,10 +41,17 @@ func parseCalculationOutput(t *testing.T, jsonStr string) *controller.Calculatio
 	return &out
 }
 
+// setupCalculationOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**
+// ようになった (#4483) ので GetHint を呼べるようにする。
+func setupCalculationOutputMock(g *interfaces.MockCalculationGame) {
+	setupCalculationWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestCalculationWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		g := new(interfaces.MockCalculationGame)
-		setupCalculationWebMockDefaults(g)
+		setupCalculationOutputMock(g)
 		result := parseCalculationOutput(t, new(CalculationWebPresenter).Output(g, nil))
 		assert.Equal(t, 0, result.Phase)
 		assert.Equal(t, "calculation.playing", result.MessageCode)
@@ -109,10 +116,26 @@ func TestCalculationWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		g := new(interfaces.MockCalculationGame)
-		setupCalculationWebMockDefaults(g)
+		setupCalculationOutputMock(g)
 		result := parseCalculationOutput(t, new(CalculationWebPresenter).Output(g, errors.New("boom")))
 		assert.Equal(t, "boom", result.Message)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestCalculationWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	hint := &domain.CalculationHint{FromZone: "waste", WasteIdx: 2, FoundationIdx: 1}
+
+	g := new(interfaces.MockCalculationGame)
+	setupCalculationWebMockDefaults(g)
+	g.On("GetHint").Return(hint).Maybe()
+
+	result := parseCalculationOutput(t, new(CalculationWebPresenter).Output(g, nil))
+	if result.Hint == nil {
+		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
+	}
+	assert.Equal(t, 2, result.Hint.WasteIdx)
 }
 
 func TestCalculationWebPresenter_HintOutput(t *testing.T) {
