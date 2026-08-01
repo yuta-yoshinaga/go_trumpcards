@@ -112,6 +112,49 @@ func TestKaiserMinimumBidIsSeven(t *testing.T) {
 	}
 }
 
+// **設定でノートランプを切れる。**読まないと config が黙って効かなくなる。
+func TestKaiserRespectsAllowNoTrump(t *testing.T) {
+	t.Run("switched off, no-trump bids are refused", func(t *testing.T) {
+		k := NewDefaultKaiser()
+		cfg := k.GetConfig()
+		cfg.AllowNoTrump = false
+		k.SetConfig(cfg)
+		k.Reset()
+
+		if err := k.Bid(1, KaiserMinBid, KaiserContractNoTrump); err == nil {
+			t.Error("a no-trump bid must be refused when the setting is off")
+		}
+		if err := k.Bid(1, KaiserMinBid, KaiserContractLowNoTrump); err == nil {
+			t.Error("a low-no-trump bid must be refused when the setting is off")
+		}
+	})
+
+	// **設定は無トランプだけを切る。**通常の切札宣言はそのまま通ること。
+	t.Run("switched off, a plain trump bid still goes through", func(t *testing.T) {
+		k := NewDefaultKaiser()
+		cfg := k.GetConfig()
+		cfg.AllowNoTrump = false
+		k.SetConfig(cfg)
+		k.Reset()
+
+		if err := k.Bid(1, KaiserMinBid, KaiserContractTrump); err != nil {
+			t.Errorf("a trump bid must still be accepted: %v", err)
+		}
+	})
+
+	t.Run("switched on, no-trump bids are accepted", func(t *testing.T) {
+		k := NewDefaultKaiser()
+		cfg := k.GetConfig()
+		cfg.AllowNoTrump = true
+		k.SetConfig(cfg)
+		k.Reset()
+
+		if err := k.Bid(1, KaiserMinBid, KaiserContractNoTrump); err != nil {
+			t.Errorf("a no-trump bid must be accepted when the setting is on: %v", err)
+		}
+	})
+}
+
 // TestKaiserBidOrdering は同じ数字でもノートランプが上位に来ることを確かめる。
 func TestKaiserBidOrdering(t *testing.T) {
 	if KaiserBidRank(7, KaiserContractNoTrump) <= KaiserBidRank(7, KaiserContractTrump) {
