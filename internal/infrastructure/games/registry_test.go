@@ -15,7 +15,7 @@ import (
 // games are rebucketed for size (ADR-0036).
 const (
 	expectedCasino  = 55
-	expectedClassic = 42
+	expectedClassic = 43
 	expectedSolo    = 46
 	expectedExtra   = 34
 	expectedExtra2  = 42

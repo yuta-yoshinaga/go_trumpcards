@@ -356,4 +356,12 @@ func init() {
 			return usecase.RestoreKarnoffelInteractor(data, new(presenter.KarnoffelWebPresenter))
 		},
 		controller.NewKarnoffelWebControllerWithProvider)
+	games.RegisterKVGame("shengji", games.CategoryClassic,
+		func() usecase.ShengJiInteractorIF {
+			return usecase.NewShengJiInteractor(domain.NewDefaultShengJi(), new(presenter.ShengJiWebPresenter))
+		},
+		func(data []byte) (usecase.ShengJiInteractorIF, error) {
+			return usecase.RestoreShengJiInteractor(data, new(presenter.ShengJiWebPresenter))
+		},
+		controller.NewShengJiWebControllerWithProvider)
 }

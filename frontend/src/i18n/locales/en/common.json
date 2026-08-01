@@ -277,7 +277,8 @@
     "sixbidsolo": "Six-Bid Solo",
     "karnoffel": "Karnöffel",
     "literature": "Literature",
-    "guandan": "Guandan"
+    "guandan": "Guandan",
+    "shengji": "Sheng Ji"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1373,7 +1374,14 @@
     "guandan.handEnd": "The hand is over. Deal the next one.",
     "guandan.handFirstSecond": "First AND second — four levels at once",
     "guandan.result.humanWin": "Your team climbed past the ace",
-    "guandan.result.cpuWin": "The other team climbed past the ace"
+    "guandan.result.cpuWin": "The other team climbed past the ace",
+    "shengji.declarePhase": "Declaring trump -- show a level card to name the suit",
+    "shengji.kittyPhase": "Burying the kitty -- keep your points and trumps out of it",
+    "shengji.playPhase": "In play -- follow the led suit while you hold it",
+    "shengji.handHeld": "The declarers held",
+    "shengji.handTaken": "The defenders reached eighty and took the deal",
+    "shengji.result.humanWin": "Your team held the deal at the ace",
+    "shengji.result.cpuWin": "The other team held the deal at the ace"
   },
   "manual": {
     "ariaLabel": "Game Manual",

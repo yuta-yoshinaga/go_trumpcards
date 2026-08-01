@@ -4098,6 +4098,21 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "shengji", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewShengJiCuiController(usecase.NewShengJiInteractor(
+				domain.NewDefaultShengJi(), new(presenter.ShengJiCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "shengji.helpTitle",
+				CommandKeys: []string{
+					"shengji.helpDeclare",
+					"shengji.helpBury",
+					"shengji.helpPlay",
+					"shengji.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

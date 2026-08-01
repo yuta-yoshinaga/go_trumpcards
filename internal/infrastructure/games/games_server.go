@@ -1305,4 +1305,9 @@ func init() {
 			return usecase.NewGuandanInteractor(domain.NewDefaultGuandan(), new(presenter.GuandanWebPresenter))
 		},
 		controller.NewGuandanWebController)
+	BindWebControllerFor("shengji",
+		func() usecase.ShengJiInteractorIF {
+			return usecase.NewShengJiInteractor(domain.NewDefaultShengJi(), new(presenter.ShengJiWebPresenter))
+		},
+		controller.NewShengJiWebController)
 }

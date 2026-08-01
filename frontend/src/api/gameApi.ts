@@ -208,6 +208,7 @@ export * from './games/sevencardstud';
 export * from './games/sevencardstudhilo';
 export * from './games/sevens';
 export * from './games/sheepshead';
+export * from './games/shengji';
 export * from './games/shithead';
 export * from './games/shortdeck';
 export * from './games/simplesimon';
@@ -381,6 +382,7 @@ export const games = [
   'karnoffel',
   'literature',
   'guandan',
+  'shengji',
   'missmilligan',
   'canfield',
   'osmosis',

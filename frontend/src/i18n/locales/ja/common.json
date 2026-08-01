@@ -277,7 +277,8 @@
     "sixbidsolo": "シックスビッド・ソロ",
     "karnoffel": "カルニッフェル",
     "literature": "リテラチャー",
-    "guandan": "掼蛋"
+    "guandan": "掼蛋",
+    "shengji": "升级"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1373,7 +1374,14 @@
     "guandan.handEnd": "局が終わりました。次の局へ進めます",
     "guandan.handFirstSecond": "【1着2着の独占】4段階昇級です",
     "guandan.result.humanWin": "あなたのチームがAを上がりきりました",
-    "guandan.result.cpuWin": "相手チームがAを上がりきりました"
+    "guandan.result.cpuWin": "相手チームがAを上がりきりました",
+    "shengji.declarePhase": "亮牌 — レベル札を見せて切札スートを宣言します",
+    "shengji.kittyPhase": "底牌の埋め戻し — 得点札と切札は埋めないでください",
+    "shengji.playPhase": "進行中 — リードされたスートを持っていれば、そこから出します",
+    "shengji.handHeld": "宣言側が守りきりました",
+    "shengji.handTaken": "守備側が80点に届き、宣言側が交代しました",
+    "shengji.result.humanWin": "あなたのチームがAを守りきりました",
+    "shengji.result.cpuWin": "相手チームがAを守りきりました"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

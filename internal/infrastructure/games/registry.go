@@ -816,6 +816,17 @@ var registry = []*Game{
 	// payer holds both red jokers, which cancels tribute outright. Climbing
 	// past the ace wins the game.
 	{Name: "guandan", Category: CategoryExtra2},
+	// shengji -- Sheng Ji (Tractor), a two-pack point-trick game for four
+	// players in two partnerships sitting OPPOSITE. 25 cards each from 108,
+	// leaving an EIGHT-CARD KITTY -- 108 divides by four, but dealing 27 each
+	// would leave no kitty, and the kitty is what the defenders capture (with
+	// a multiplier) by taking the last trick. Trumps are NOT just the trump
+	// suit: every card of the hand's LEVEL rank, in all four suits, plus all
+	// four jokers. Trump is declared by SHOWING a level card, not by bidding,
+	// and only a stronger showing overrides. The DEFENDERS collect the 5s,
+	// 10s and kings (200 in the pack); the declarers win by holding them
+	// under 80. Climbing stops at the ace, which must then be held to win.
+	{Name: "shengji", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.
