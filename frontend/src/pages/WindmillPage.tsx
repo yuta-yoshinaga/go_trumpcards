@@ -199,6 +199,10 @@ function WindmillPageContent() {
     const pile = state.corners[idx] ?? [];
     const cornerZone: WindmillMoveZone = { zone: 'corner', col: idx };
     const top = pile.length > 0 ? pile[pile.length - 1] : null;
+    // **移動先としては塞がない。**四隅は「降順に積む置き場」と「中央への引き戻し
+    // 元」を兼ねていて、transferBlocked が禁じるのは後者だけ。ボタンごと無効に
+    // すると、影響を受けないはずの「四隅へ置く」手まで潰れる。
+    const blockedAsSource = selectedSource === null && state.transferBlocked;
     return (
       <div key={`corner-${idx.toString()}`} className="text-center">
         <div className="text-game-text-muted text-xs mb-1" aria-hidden="true">
@@ -216,10 +220,11 @@ function WindmillPageContent() {
               onClick={() =>
                 selectedSource ? game.handleSelectTarget(cornerZone) : game.handleSelectSource(cornerZone)
               }
-              disabled={!isPlaying || loading || isAutoCompleting}
+              disabled={!isPlaying || loading || isAutoCompleting || blockedAsSource}
+              title={blockedAsSource ? t('transferBlocked') : undefined}
               aria-label={t('cornerAriaLabel', { idx, count: pile.length })}
               aria-pressed={isSourceSelected('corner', idx)}
-              draggable={isPlaying && !loading}
+              draggable={isPlaying && !loading && !blockedAsSource}
               onDragStart={dnd.handleDragStart(cornerZone)}
               onDragEnd={dnd.handleDragEnd}
               className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('corner', idx) ? 'ring-2 ring-ds-warning' : ''}`}
