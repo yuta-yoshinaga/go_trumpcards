@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"errors"
 	"math/rand"
 	"sort"
@@ -293,6 +294,22 @@ func ShengJiCardPoints(c *Card) int {
 	return 0
 }
 
+// shengJiSeqPos は連続の判定に使う目盛りを返す。
+//
+// **レベル札はそのスートの平札から抜ける**ので、目盛りを詰めないと隣り合わない。
+// レベルが 5 のとき、4 と 6 は連続した対子として成立する。
+func shengJiSeqPos(c *Card, level, trumpSuit int) int {
+	st := ShengJiStrength(c, level, trumpSuit)
+	if ShengJiIsJoker(c) || ShengJiIsLevelCard(c, level) {
+		// 段そのものが目盛り。レベル札とジョーカーは平札の列に並ばない。
+		return st
+	}
+	if shengJiNaturalRank(c) > level {
+		return st - 1
+	}
+	return st
+}
+
 // shengJiSuitOf は札の所属を返す。**切札群はひとつのスートとして扱う。**
 func shengJiSuitOf(c *Card, level, trumpSuit int) int {
 	if ShengJiIsTrump(c, level, trumpSuit) {
@@ -308,13 +325,16 @@ func ShengJiEvaluate(cards []*Card, level, trumpSuit int) *ShengJiCombo {
 	if len(cards) == 0 {
 		return nil
 	}
-	// **1 手はひとつのスートから。**混ぜた手は形として成立しない。
-	suit := shengJiSuitOf(cards[0], level, trumpSuit)
-	trump := ShengJiIsTrump(cards[0], level, trumpSuit)
+	// **nil はスートを見る前に弾く。**GetCard は範囲外で nil を返す。
 	for _, c := range cards {
 		if c == nil {
 			return nil
 		}
+	}
+	// **1 手はひとつのスートから。**混ぜた手は形として成立しない。
+	suit := shengJiSuitOf(cards[0], level, trumpSuit)
+	trump := ShengJiIsTrump(cards[0], level, trumpSuit)
+	for _, c := range cards {
 		if shengJiSuitOf(c, level, trumpSuit) != suit || ShengJiIsTrump(c, level, trumpSuit) != trump {
 			return nil
 		}
@@ -376,7 +396,7 @@ func shengJiPairsAreConsecutive(cards []*Card, level, trumpSuit int) bool {
 			continue
 		}
 		seen[k] = true
-		strengths = append(strengths, ShengJiStrength(c, level, trumpSuit))
+		strengths = append(strengths, shengJiSeqPos(c, level, trumpSuit))
 	}
 	sort.Ints(strengths)
 	// **同格の札は連続にならない。**他スートのレベル札どうしは強さが等しい。
@@ -860,23 +880,28 @@ func (s *ShengJi) finishHand() {
 		res.DeclarerHeld = true
 		res.Advance = shengJiDeclarerAdvance(pts)
 		res.AdvancingTeam = s.declarerTeam
-		s.levels[s.declarerTeam] += res.Advance
 	} else {
 		// **80 点で宣言側が交代する。**そこから 40 点ごとに守備側が 1 段階。
 		res.Advance = (pts - ShengJiDefenderTarget) / ShengJiAdvanceStep
 		if res.Advance > 0 {
 			res.AdvancingTeam = defenders
-			s.levels[defenders] += res.Advance
 		}
 		s.declarerTeam = defenders
 	}
 
-	if s.levels[res.AdvancingTeam] > ShengJiMaxLevel && res.AdvancingTeam >= 0 {
-		s.levels[res.AdvancingTeam] = ShengJiMaxLevel + 1
-		s.gameEndFlag = true
-		s.winnerTeam = res.AdvancingTeam
-		s.phase = ShengJiPhaseGameEnd
-	} else {
+	// **A は飛び越えられない。**K から 3 段階でも A で止まり、そのうえで A の局を
+	// 守りきって初めて勝ちになる (打A)。
+	if res.AdvancingTeam >= 0 {
+		team := res.AdvancingTeam
+		if s.levels[team] == ShengJiMaxLevel {
+			s.gameEndFlag = true
+			s.winnerTeam = team
+			s.phase = ShengJiPhaseGameEnd
+		} else {
+			s.levels[team] = min(s.levels[team]+res.Advance, ShengJiMaxLevel)
+		}
+	}
+	if !s.gameEndFlag {
 		s.phase = ShengJiPhaseHandEnd
 	}
 	s.lastResult = res
@@ -1169,3 +1194,171 @@ func (s *ShengJi) weakestIdx(seat, suit int, except ...int) int {
 	}
 	return best
 }
+
+// ---- KV 永続化 ----
+
+// shengJiJSON is the KV wire format for ShengJi.
+type shengJiJSON struct {
+	Players         []*ShengJiPlayer    `json:"pl"`
+	Config          ShengJiConfig       `json:"cf"`
+	Phase           ShengJiPhase        `json:"ph"`
+	Levels          [ShengJiTeamCnt]int `json:"lv"`
+	Level           int                 `json:"le"`
+	DeclarerTeam    int                 `json:"dt"`
+	TrumpSuit       int                 `json:"ts"`
+	Declaration     *ShengJiDeclaration `json:"dc"`
+	DeclareSeat     int                 `json:"ds"`
+	Kitty           []*Card             `json:"kt"`
+	CurrentIdx      int                 `json:"ci"`
+	TrickLeader     int                 `json:"tl"`
+	Trick           [][]*Card           `json:"tk"`
+	TeamPoints      [ShengJiTeamCnt]int `json:"tp"`
+	TrickCount      int                 `json:"tc"`
+	LastTrickWinner int                 `json:"lw"`
+	LastTrickCards  int                 `json:"lc"`
+	LastResult      *ShengJiHandResult  `json:"lr"`
+	HandNumber      int                 `json:"hn"`
+	GameEndFlag     bool                `json:"ge"`
+	WinnerTeam      int                 `json:"wt"`
+	ActionLog       []*ActionLogEntry   `json:"al"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (s *ShengJi) MarshalJSON() ([]byte, error) {
+	return json.Marshal(shengJiJSON{
+		Players: s.players, Config: s.config, Phase: s.phase,
+		Levels: s.levels, Level: s.level, DeclarerTeam: s.declarerTeam,
+		TrumpSuit: s.trumpSuit, Declaration: s.declaration, DeclareSeat: s.declareSeat,
+		Kitty: s.kitty, CurrentIdx: s.currentIdx, TrickLeader: s.trickLeader, Trick: s.trick,
+		TeamPoints: s.teamPoints, TrickCount: s.trickCount,
+		LastTrickWinner: s.lastTrickWinner, LastTrickCards: s.lastTrickCards,
+		LastResult: s.lastResult, HandNumber: s.handNumber,
+		GameEndFlag: s.gameEndFlag, WinnerTeam: s.winnerTeam, ActionLog: s.actionLog,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+//
+// **KV から戻る値なので範囲を検査する。**壊れた状態をそのまま受け入れると
+// 添字で落ちる。
+func (s *ShengJi) UnmarshalJSON(data []byte) error {
+	var j shengJiJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) != ShengJiPlayerCnt {
+		return errors.New("sheng ji needs exactly four seats")
+	}
+	if j.Phase < ShengJiPhaseDeclare || j.Phase > ShengJiPhaseGameEnd {
+		return errors.New("unknown phase")
+	}
+	if j.CurrentIdx < 0 || j.CurrentIdx >= ShengJiPlayerCnt {
+		return errors.New("bad current seat")
+	}
+	if j.TrickLeader < 0 || j.TrickLeader >= ShengJiPlayerCnt {
+		return errors.New("bad trick leader")
+	}
+	if j.DeclarerTeam < 0 || j.DeclarerTeam >= ShengJiTeamCnt {
+		return errors.New("bad declarer team")
+	}
+	if j.WinnerTeam < -1 || j.WinnerTeam >= ShengJiTeamCnt {
+		return errors.New("bad winner team")
+	}
+	// **無主も正当な状態。**切札スート無しで進む局がある。
+	if j.TrumpSuit != ShengJiNoTrump && (j.TrumpSuit < CardDesignSpade || j.TrumpSuit > CardDesignDiamond) {
+		return errors.New("bad trump suit")
+	}
+	if j.Level < ShengJiMinLevel || j.Level > ShengJiMaxLevel {
+		return errors.New("bad level")
+	}
+	for _, lv := range j.Levels {
+		if lv < ShengJiMinLevel || lv > ShengJiMaxLevel+1 {
+			return errors.New("bad team level")
+		}
+	}
+	if j.LastTrickWinner < -1 || j.LastTrickWinner >= ShengJiPlayerCnt {
+		return errors.New("bad last trick winner")
+	}
+	if d := j.Declaration; d != nil {
+		if d.Seat < 0 || d.Seat >= ShengJiPlayerCnt {
+			return errors.New("bad declaring seat")
+		}
+		if d.Suit < CardDesignSpade || d.Suit > CardDesignDiamond {
+			return errors.New("bad declared suit")
+		}
+	}
+	if len(j.Kitty) > ShengJiKittySize {
+		return errors.New("the kitty holds at most " + strconv.Itoa(ShengJiKittySize) + " cards")
+	}
+
+	s.players = j.Players
+	s.config = j.Config
+	s.phase = j.Phase
+	s.levels = j.Levels
+	s.level = j.Level
+	s.declarerTeam = j.DeclarerTeam
+	s.trumpSuit = j.TrumpSuit
+	s.declaration = j.Declaration
+	s.declareSeat = j.DeclareSeat
+	s.kitty = j.Kitty
+	s.currentIdx = j.CurrentIdx
+	s.trickLeader = j.TrickLeader
+	s.trick = j.Trick
+	s.teamPoints = j.TeamPoints
+	s.trickCount = j.TrickCount
+	s.lastTrickWinner = j.LastTrickWinner
+	s.lastTrickCards = j.LastTrickCards
+	s.lastResult = j.LastResult
+	s.handNumber = j.HandNumber
+	s.gameEndFlag = j.GameEndFlag
+	s.winnerTeam = j.WinnerTeam
+	s.actionLog = j.ActionLog
+	// **リードの形は札から復元する。**保存すると形と札がずれ得る。
+	if len(s.trick) > 0 {
+		s.leadCombo = ShengJiEvaluate(s.trick[0], s.level, s.trumpSuit)
+	}
+	return nil
+}
+
+// ---- テスト用 ----
+
+// SetPhaseForTest はフェーズを差し替える (テスト専用)。
+func (s *ShengJi) SetPhaseForTest(p ShengJiPhase) { s.phase = p }
+
+// SetHandForTest は手札を差し替える (テスト専用)。
+func (s *ShengJi) SetHandForTest(idx int, cards []*Card) {
+	p := s.GetPlayer(idx)
+	if p == nil {
+		return
+	}
+	p.Reset()
+	for _, c := range cards {
+		p.AddCard(c)
+	}
+}
+
+// SetLevelForTest はこの局のレベルを差し替える (テスト専用)。
+func (s *ShengJi) SetLevelForTest(level int) { s.level = level }
+
+// SetTeamLevelForTest はチームのレベルを差し替える (テスト専用)。
+func (s *ShengJi) SetTeamLevelForTest(team, level int) {
+	if team < 0 || team >= ShengJiTeamCnt {
+		return
+	}
+	s.levels[team] = level
+}
+
+// SetTrumpForTest は切札スートを差し替える (テスト専用)。
+func (s *ShengJi) SetTrumpForTest(suit int) { s.trumpSuit = suit }
+
+// SetCurrentPlayerForTest は手番を差し替える (テスト専用)。
+func (s *ShengJi) SetCurrentPlayerForTest(idx int) {
+	s.currentIdx = idx
+	s.trickLeader = idx
+}
+
+// SetKittyForTest は底牌を差し替える (テスト専用)。
+func (s *ShengJi) SetKittyForTest(cards []*Card) { s.kitty = cards }
+
+// FinishHandForTest は局の精算を走らせる (テスト専用)。
+func (s *ShengJi) FinishHandForTest() { s.finishHand() }
