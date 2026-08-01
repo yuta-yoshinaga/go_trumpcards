@@ -806,6 +806,16 @@ var registry = []*Game{
 	// -- and because cancellations belong to neither side the totals need not
 	// add to eight.
 	{Name: "literature", Category: CategorySolo},
+	// guandan -- Guandan, a two-pack climbing game for four players in two
+	// partnerships sitting OPPOSITE, 27 cards each from 108 (52x2 + 4 jokers).
+	// Each hand is played at a LEVEL: cards of that rank sit ABOVE THE ACE and
+	// below the black joker, and the two HEARTS among them are WILD. Going out
+	// first and second climbs FOUR levels, first and third two, first and
+	// fourth one -- there is no climb of three. Between hands the losers pay
+	// TRIBUTE (highest card, wilds excluded) and receive one back, unless a
+	// payer holds both red jokers, which cancels tribute outright. Climbing
+	// past the ace wins the game.
+	{Name: "guandan", Category: CategoryExtra2},
 }
 
 // All returns a value-level copy of the registry in canonical order.
