@@ -59,16 +59,33 @@ describe('formatMissMilliganState', () => {
 
   it('shows a tableau hint with the run head', () => {
     const result = formatMissMilliganState(
-      makeState({ hint: { fromZone: 'tableau', fromCol: 3, cardIndex: 1, toZone: 'tableau', toIdx: 7 } }),
+      makeState({
+        hint: { fromZone: 'tableau', fromCol: 3, cardIndex: 1, toZone: 'tableau', toIdx: 7 },
+        messageCode: 'missmilligan.hintAvailable',
+      }),
     );
     expect(result).toContain('HINT');
     expect(result).toContain('t3[1]');
   });
 
+  // **頼んでいないヒントは CLI に出さない。**#4483 以降 Output() もヒントを載せる。
+  it('does not print a passive hint carried on an ordinary response', () => {
+    const result = formatMissMilliganState(
+      makeState({
+        hint: { fromZone: 'tableau', fromCol: 3, cardIndex: 1, toZone: 'tableau', toIdx: 7 },
+        messageCode: 'missmilligan.playing',
+      }),
+    );
+    expect(result).not.toContain('HINT');
+  });
+
   // A deal targets every column, so it has no single destination index.
   it('renders a deal hint without a destination index', () => {
     const result = formatMissMilliganState(
-      makeState({ hint: { fromZone: 'stock', fromCol: -1, cardIndex: -1, toZone: 'tableau', toIdx: -1 } }),
+      makeState({
+        hint: { fromZone: 'stock', fromCol: -1, cardIndex: -1, toZone: 'tableau', toIdx: -1 },
+        messageCode: 'missmilligan.hintAvailable',
+      }),
     );
     expect(result).toContain('stock');
     expect(result).toContain('deal');

@@ -1,5 +1,5 @@
 import type { MissMilliganResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a Miss Milligan game state as terminal text. */
 export function formatMissMilliganState(state: MissMilliganResponse): string {
@@ -34,7 +34,7 @@ export function formatMissMilliganState(state: MissMilliganResponse): string {
 
   lines.push(`moves: ${state.moveCount}  undo:${state.canUndo ? 'yes' : 'no'}`);
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const from =
       state.hint.fromZone === 'tableau' ? `t${state.hint.fromCol}[${state.hint.cardIndex}]` : state.hint.fromZone;
     const to = state.hint.toIdx >= 0 ? `${state.hint.toZone}${state.hint.toIdx}` : 'deal';
