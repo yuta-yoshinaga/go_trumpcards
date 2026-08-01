@@ -71,16 +71,35 @@ describe('formatBraidState', () => {
 
   it('renders a hint with slot indices', () => {
     const result = formatBraidState(
-      makeState({ hint: { fromZone: 'field', fromIdx: 2, toZone: 'foundation', toIdx: 1 } }),
+      makeState({
+        hint: { fromZone: 'field', fromIdx: 2, toZone: 'foundation', toIdx: 1 },
+        messageCode: 'braid.hintAvailable',
+      }),
     );
     expect(result).toContain('HINT: field2 → foundation1');
   });
 
   it('renders a hint without indices', () => {
     const result = formatBraidState(
-      makeState({ hint: { fromZone: 'stock', fromIdx: -1, toZone: 'waste', toIdx: -1 } }),
+      makeState({
+        hint: { fromZone: 'stock', fromIdx: -1, toZone: 'waste', toIdx: -1 },
+        messageCode: 'braid.hintAvailable',
+      }),
     );
     expect(result).toContain('HINT: stock → waste');
+  });
+
+  // **頼んでいないヒントは CLI に出さない。**#4483 以降 Output() もヒントを載せる
+  // ので、state.hint だけを見ると毎手 HINT が印字される。要求への応答だけが
+  // hintAvailable を持つので、そこで区別する。
+  it('does not print a passive hint carried on an ordinary response', () => {
+    const result = formatBraidState(
+      makeState({
+        hint: { fromZone: 'field', fromIdx: 2, toZone: 'foundation', toIdx: 1 },
+        messageCode: 'braid.playing',
+      }),
+    );
+    expect(result).not.toContain('HINT:');
   });
 
   it('renders stalemate, message and the win line', () => {
