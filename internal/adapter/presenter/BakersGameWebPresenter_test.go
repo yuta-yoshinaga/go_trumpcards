@@ -109,6 +109,37 @@ func TestBakersGameWebPresenterOutputError(t *testing.T) {
 	assert.Contains(t, out.Message, "test error")
 }
 
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+// **フェーズ定数は FreeCell のもの。**Baker's Game は FreeCell の派生で、
+// 自分の名前のフェーズ定数を持たない。
+func TestBakersGameWebPresenterOutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		f := domain.NewDefaultBakersGame()
+		f.Reset()
+		f.SetPhase(domain.FreeCellPhasePlaying)
+
+		// **配りに依存させない。**SetTableau で場を丸ごと置き換える。
+		var tableau [domain.FreeCellTableauCnt][]*domain.Card
+		tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+		f.SetTableau(tableau)
+
+		var out controller.FreeCellWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(new(BakersGameWebPresenter).Output(f, nil)), &out))
+		assert.NotNil(t, out.Hint, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	t.Run("not while cleared", func(t *testing.T) {
+		f := domain.NewDefaultBakersGame()
+		f.Reset()
+		f.SetPhase(domain.FreeCellPhaseGameClear)
+
+		var out controller.FreeCellWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(new(BakersGameWebPresenter).Output(f, nil)), &out))
+		assert.Nil(t, out.Hint)
+	})
+}
+
 func TestBakersGameWebPresenterHintOutputWithHint(t *testing.T) {
 	p := new(BakersGameWebPresenter)
 	f := domain.NewDefaultBakersGame()

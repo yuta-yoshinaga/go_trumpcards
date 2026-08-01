@@ -22,6 +22,18 @@ func (pr *AcesUpWebPresenter) Output(g interfaces.AcesUpGame, lastErr error) str
 	resObj.DiscardTop = cardToOutput(g.GetDiscardTop())
 	resObj.Columns = acesUpColumns(g)
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if g.GetPhase() == domain.AcesUpPhasePlaying && !g.IsStalemate() {
+		if hint := g.GetHint(); hint != nil {
+			resObj.Hint = &controller.AcesUpWebOutputHint{
+				Type: hint.Type,
+				Col:  hint.Col,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {
