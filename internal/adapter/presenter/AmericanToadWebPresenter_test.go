@@ -144,6 +144,20 @@ func TestAmericanToadWebPresenter_OutputCarriesTheHint(t *testing.T) {
 	assert.Equal(t, "tableau", result.Hint.FromZone)
 	assert.Equal(t, 2, result.Hint.FromIdx)
 	assert.Equal(t, 3, result.Hint.CardIndex)
+
+	// **手詰まりでは探索を走らせない。**ゲートを消したときに CI が捕まえるよう、
+	// 手元の負のコントロールではなくテストとして固定する。
+	t.Run("not while stalemate", func(t *testing.T) {
+		g2 := new(interfaces.MockAmericanToadGame)
+		setupAmericanToadWebMockDefaults(g2)
+		g2.ExpectedCalls = filterCalls(g2.ExpectedCalls, "IsStalemate")
+		g2.On("IsStalemate").Return(true).Maybe()
+		g2.On("GetHint").Return(hint).Maybe()
+
+		result := parseAmericanToadOutput(t, new(AmericanToadWebPresenter).Output(g2, nil))
+		assert.Nil(t, result.Hint)
+		g2.AssertNotCalled(t, "GetHint")
+	})
 }
 
 func TestAmericanToadWebPresenter_HintOutput(t *testing.T) {
