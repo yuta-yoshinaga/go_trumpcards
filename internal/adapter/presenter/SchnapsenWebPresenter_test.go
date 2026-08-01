@@ -33,6 +33,9 @@ func setupSchnapsenWebMock(trumpCard *domain.Card) *interfaces.MockSchnapsenGame
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetConfig").Return(domain.DefaultSchnapsenConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -127,6 +130,7 @@ func TestSchnapsenWebPresenter_HintOutput(t *testing.T) {
 	m, players := setupSchnapsenWebMockWithPlayers(trump)
 	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 	idx := 0
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return(&domain.SchnapsenHint{CardIndex: &idx, Reason: "lead_low"})
 
 	got := p.HintOutput(m)
@@ -140,6 +144,7 @@ func TestSchnapsenWebPresenter_HintOutput(t *testing.T) {
 func TestSchnapsenWebPresenter_HintOutput_None(t *testing.T) {
 	p := new(presenter.SchnapsenWebPresenter)
 	m, _ := setupSchnapsenWebMockWithPlayers(nil)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return((*domain.SchnapsenHint)(nil))
 	got := p.HintOutput(m)
 	var out controller.SchnapsenWebOutput
@@ -152,4 +157,21 @@ func TestSchnapsenWebPresenter_ActionLogOutput(t *testing.T) {
 	m, _ := setupSchnapsenWebMockWithPlayers(nil)
 	got := p.ActionLogOutput(m)
 	assert.NotEmpty(t, got)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// トリックテイキング系は Output 側にゲートを置きません。Schnapsen.GetHint() が
+// 「人間の手番で、かつ行動を選べる状態か」を自分で確かめて nil を返します。
+func TestSchnapsenWebPresenterOutputCarriesTheHint(t *testing.T) {
+	trump := domain.NewCard(domain.CardDesignSpade, 13, false)
+	idx := 0
+	sng, players := setupSchnapsenWebMockWithPlayers(trump)
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+	sng.ExpectedCalls = removeMockCall(sng.ExpectedCalls, "GetHint")
+	sng.On("GetHint").Return(&domain.SchnapsenHint{CardIndex: &idx, Reason: "lead_low"})
+
+	result := new(presenter.SchnapsenWebPresenter).Output(sng, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }

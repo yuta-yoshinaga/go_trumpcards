@@ -182,3 +182,22 @@ func TestRookWebPresenter_PhaseMessages(t *testing.T) {
 		t.Errorf("game-end message missing: %s", out)
 	}
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// Rook のテストは mock ではなく実ドメインを組み立てます。既存の Hint テストと
+// 同じ状態を作るので、配りには依存しません。
+func TestRookWebPresenterOutputCarriesTheHint(t *testing.T) {
+	g := newRookGame()
+	g.SetTrumpColor(1)
+	g.SetDeclarerIdx(0)
+	g.GetPlayer(0).AddCard(domain.NewCard(1, 1, false))
+	g.SetPhase(domain.RookPhasePlay)
+	g.SetCurrentPlayerIdx(0)
+
+	result := new(presenter.RookWebPresenter).Output(g, nil)
+	if !strings.Contains(result, `"hint"`) {
+		t.Error("Output must carry the hint -- the frontend reads state.hint")
+	}
+}

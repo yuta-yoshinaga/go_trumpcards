@@ -46,6 +46,9 @@ func setupSkatWebMock() *interfaces.MockSkatGame {
 		m.On("GetPlayer", i).Return(domain.NewSkatPlayer(i == 0))
 	}
 	m.On("GetPhase").Return(domain.SkatPhaseBid)
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -110,6 +113,7 @@ func TestSkatWebPresenter_OutputRoundEndExposesSkat(t *testing.T) {
 	}
 	m.On("GetPhase").Return(domain.SkatPhaseRoundEnd)
 
+	m.On("GetHint").Return(nil).Maybe()
 	body := p.Output(m, nil)
 	var resObj controller.SkatWebOutput
 	_ = json.Unmarshal([]byte(body), &resObj)
@@ -123,6 +127,7 @@ func TestSkatWebPresenter_HintAndActionLog(t *testing.T) {
 	m := setupSkatWebMock()
 	val := 1
 	hint := &domain.SkatHint{Bid: &val, Reason: "strategic_bid"}
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return(hint)
 	body := p.HintOutput(m)
 	var resObj controller.SkatWebOutput
@@ -132,4 +137,19 @@ func TestSkatWebPresenter_HintAndActionLog(t *testing.T) {
 	assert.NotPanics(t, func() {
 		_ = p.ActionLogOutput(m)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// トリックテイキング系は Output 側にゲートを置きません。Skat.GetHint() が
+// 「人間の手番で、かつ行動を選べる状態か」を自分で確かめて nil を返します。
+func TestSkatWebPresenterOutputCarriesTheHint(t *testing.T) {
+	val := 1
+	skg := setupSkatWebMock()
+	skg.ExpectedCalls = removeMockCall(skg.ExpectedCalls, "GetHint")
+	skg.On("GetHint").Return(&domain.SkatHint{Bid: &val, Reason: "strategic_bid"})
+
+	result := new(presenter.SkatWebPresenter).Output(skg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }
