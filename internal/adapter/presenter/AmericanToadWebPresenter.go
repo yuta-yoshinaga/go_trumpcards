@@ -59,6 +59,23 @@ func (p *AmericanToadWebPresenter) Output(at interfaces.AmericanToadGame, lastEr
 	resObj.PassesUsed = at.GetPassesUsed()
 	resObj.CanRedeal = at.CanRedeal()
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if at.GetPhase() == domain.AmericanToadPhasePlaying && !at.IsStalemate() {
+		if hint := at.GetHint(); hint != nil {
+			// **CardIndex まで運ぶ。**HintOutput 側と同じ形にしないと、
+			// 同じヒントなのに経路によって欠ける項目が出る。
+			resObj.Hint = &controller.AmericanToadWebOutputHint{
+				FromZone:  hint.FromZone,
+				FromIdx:   hint.FromIdx,
+				CardIndex: hint.CardIndex,
+				ToZone:    hint.ToZone,
+				ToIdx:     hint.ToIdx,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

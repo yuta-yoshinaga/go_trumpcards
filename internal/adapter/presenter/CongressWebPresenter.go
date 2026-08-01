@@ -45,6 +45,20 @@ func (p *CongressWebPresenter) Output(c interfaces.CongressGame, lastErr error) 
 		resObj.Waste[i] = cardToOutput(card)
 	}
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if c.GetPhase() == domain.CongressPhasePlaying {
+		if hint := c.GetHint(); hint != nil {
+			resObj.Hint = &controller.CongressWebOutputHint{
+				FromZone: hint.FromZone,
+				FromIdx:  hint.FromIdx,
+				ToZone:   hint.ToZone,
+				ToIdx:    hint.ToIdx,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

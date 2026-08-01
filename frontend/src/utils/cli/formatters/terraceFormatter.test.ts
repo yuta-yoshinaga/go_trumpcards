@@ -63,16 +63,34 @@ describe('formatTerraceState', () => {
 
   it('shows a tableau hint with its pile', () => {
     const result = formatTerraceState(
-      makeState({ hint: { fromZone: 'tableau', fromIdx: 3, toZone: 'foundation', toIdx: 2 } }),
+      makeState({
+        hint: { fromZone: 'tableau', fromIdx: 3, toZone: 'foundation', toIdx: 2 },
+        messageCode: 'terrace.hintAvailable',
+      }),
     );
     expect(result).toContain('HINT');
     expect(result).toContain('t3');
     expect(result).toContain('foundation2');
   });
 
+  // **頼んでいないヒントは CLI に出さない。**#4483 以降 Output() もヒントを載せる
+  // ので、state.hint だけを見ると毎手 HINT が印字される。
+  it('does not print a passive hint carried on an ordinary response', () => {
+    const result = formatTerraceState(
+      makeState({
+        hint: { fromZone: 'tableau', fromIdx: 3, toZone: 'foundation', toIdx: 2 },
+        messageCode: 'terrace.playing',
+      }),
+    );
+    expect(result).not.toContain('HINT:');
+  });
+
   it('renders a draw hint without indices', () => {
     const result = formatTerraceState(
-      makeState({ hint: { fromZone: 'stock', fromIdx: -1, toZone: 'waste', toIdx: -1 } }),
+      makeState({
+        hint: { fromZone: 'stock', fromIdx: -1, toZone: 'waste', toIdx: -1 },
+        messageCode: 'terrace.hintAvailable',
+      }),
     );
     expect(result).toContain('stock → waste');
   });

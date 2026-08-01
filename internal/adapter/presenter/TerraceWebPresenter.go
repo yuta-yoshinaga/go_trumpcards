@@ -55,6 +55,22 @@ func (p *TerraceWebPresenter) Output(t interfaces.TerraceGame, lastErr error) st
 	resObj.BaseRank = t.GetBaseRank()
 	resObj.AwaitingBaseRank = t.IsAwaitingBaseRank()
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	// 開始ランク待ちと手詰まりでは、フロントが別経路 (AwaitingBaseRank /
+	// IsStalemate) で文言を出すので、ここでヒントを重ねる意味が無い。
+	if t.GetPhase() == domain.TerracePhasePlaying && !t.IsAwaitingBaseRank() && !t.IsStalemate() {
+		if hint := t.GetHint(); hint != nil {
+			resObj.Hint = &controller.TerraceWebOutputHint{
+				FromZone: hint.FromZone,
+				FromIdx:  hint.FromIdx,
+				ToZone:   hint.ToZone,
+				ToIdx:    hint.ToIdx,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {
