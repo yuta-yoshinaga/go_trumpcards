@@ -48,6 +48,7 @@ import type {
   CrazyEightsResponse,
   CribbageResponse,
   CruelResponse,
+  CuarentaResponse,
   CuckooResponse,
   DaifugoResponse,
   DesmocheResponse,
@@ -195,6 +196,7 @@ import type {
   ThirtyOneResponse,
   ThreeCardBragResponse,
   ThreeCardResponse,
+  ThreeThirteenResponse,
   TichuResponse,
   TienLenResponse,
   ToepenResponse,
@@ -272,6 +274,7 @@ import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getCruelHint } from '../utils/hints/cruelHint';
+import { getCuarentaHint } from '../utils/hints/cuarentaHint';
 import { getCuckooHint } from '../utils/hints/cuckooHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDesmocheHint } from '../utils/hints/desmocheHint';
@@ -423,6 +426,7 @@ import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
 import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
 import { getThreeCardBragHint } from '../utils/hints/threeCardBragHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
+import { getThreeThirteenHint } from '../utils/hints/threethirteenHint';
 import { getTichuHint } from '../utils/hints/tichuHint';
 import { getTienLenHint } from '../utils/hints/tienlenHint';
 import { getToepenHint } from '../utils/hints/toepenHint';
@@ -491,6 +495,7 @@ export const hintFactories = {
   jass: (s) => getJassHint(s as JassResponse),
   gaigel: (s) => getGaigelHint(s as GaigelResponse),
   bigtwo: (s) => getBigTwoHint(s as BigTwoResponse),
+  threethirteen: (s) => getThreeThirteenHint(s as ThreeThirteenResponse),
   tienlen: (s) => getTienLenHint(s as TienLenResponse),
   zheng: (s) => getZhengHint(s as ZhengResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
@@ -525,6 +530,7 @@ export const hintFactories = {
   ginrummy: (s) => getGinRummyHint(s as GinRummyResponse),
   indianrummy: (s) => getIndianRummyHint(s as IndianRummyResponse),
   machiavelli: (s) => getMachiavelliHint(s as MachiavelliResponse),
+  cuarenta: (s) => getCuarentaHint(s as CuarentaResponse),
   cribbage: (s) => getCribbageHint(s as CribbageResponse),
   cuckoo: (s) => getCuckooHint(s as CuckooResponse),
   gofish: (s) => getGoFishHint(s as GoFishResponse),

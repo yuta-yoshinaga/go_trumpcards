@@ -48,5 +48,10 @@
     "knockButton": "When your whole hand melds, pick the card to discard and knock.",
     "scoreTable": "Player scores are shown here. The lowest cumulative score wins.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "frontendHint": {
+    "threethirteenTakeDiscard": "The discard connects with your hand — take it",
+    "threethirteenDrawStock": "The discard is no use — draw from the stock",
+    "threethirteenDiscardHeavy": "Your heaviest unconnected card, wilds excluded"
   }
 }
