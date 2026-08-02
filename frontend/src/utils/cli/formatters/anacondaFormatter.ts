@@ -1,5 +1,5 @@
 import type { AnacondaResponse } from '../../../types/card';
-import { formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import { formatHeader, formatIndexedCards, formatPlayerName, formatSeparator, isRequestedHint } from '../formatterBase';
 
 const PHASE_NAMES = ['Pass', 'Set', 'Roll', 'Result'];
 
@@ -33,7 +33,7 @@ export function formatAnacondaState(state: AnacondaResponse): string {
   }
   lines.push('----------');
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const idx =
       state.hint.cardIndices && state.hint.cardIndices.length > 0 ? ` [${state.hint.cardIndices.join(' ')}]` : '';
     lines.push(`HINT: ${state.hint.action}${idx} (${state.hint.reason})`);
