@@ -225,4 +225,27 @@ describe('TwentyNinePage', () => {
     renderWithProviders(<TwentyNinePage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたのチームの勝ち！')).toBeInTheDocument());
   });
+
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  it('renders no hint banner when the hint was not requested', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, hint: { cardIndices: [0], reason: 'x' } });
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    // バナーは推奨札の位置を `([0])` の形で含む。トグルのラベル (「ヒント表示」)
+    // と紛れないよう、そこで判定する。
+    expect(screen.queryByText(/\(\[0\]\)/)).not.toBeInTheDocument();
+  });
+
+  // **押したときは出る。**押していない側だけを見ていると、`isRequestedHint` を
+  // 定数 false にしても通ってしまう。真の分岐も踏んでおく。
+  it('renders the hint banner once the hint was requested', async () => {
+    mockExec.mockResolvedValue({
+      ...bidPhaseState,
+      hint: { cardIndices: [0], reason: 'x' },
+      messageCode: 'twentyNine.hintRequested',
+    });
+    renderWithProviders(<TwentyNinePage />);
+    expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
 });

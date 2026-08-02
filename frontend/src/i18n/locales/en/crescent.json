@@ -39,6 +39,8 @@
   "frontendHint": {
     "tableau": "Tableau column {{col}}",
     "foundation": "Foundation {{id}}",
-    "redeal": "Redeal"
+    "redeal": "Redeal",
+    "crescentMove": "This card can move",
+    "crescentRedeal": "No move is available — redeal"
   }
 }

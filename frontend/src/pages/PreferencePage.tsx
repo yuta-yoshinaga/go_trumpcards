@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { PREFERENCE_HELP, parsePreferenceCommand } from '../utils/cli/commands/preferenceCommands';
 import { formatPreferenceState } from '../utils/cli/formatters/preferenceFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -402,7 +403,7 @@ function PreferencePageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndices &&

@@ -252,4 +252,25 @@ describe('CourtPiecePage', () => {
     renderWithProviders(<CourtPiecePage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたのチームの勝ち！')).toBeInTheDocument());
   });
+
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  it('renders no hint banner when the hint was not requested', async () => {
+    mockExec.mockResolvedValue({ ...trumpPhaseState, hint: { cardIndex: 0, reason: 'x' } });
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByText(/\(\[0\]\)/)).not.toBeInTheDocument();
+  });
+
+  // **押したときは出る。**押していない側だけを見ていると、`isRequestedHint` を
+  // 定数 false にしても通ってしまう。真の分岐も踏んでおく。
+  it('renders the hint banner once the hint was requested', async () => {
+    mockExec.mockResolvedValue({
+      ...trumpPhaseState,
+      hint: { cardIndex: 0, reason: 'x' },
+      messageCode: 'courtPiece.hintRequested',
+    });
+    renderWithProviders(<CourtPiecePage />);
+    expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
 });

@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseUltiCommand, ULTI_HELP } from '../utils/cli/commands/ultiCommands';
 import { formatUltiState } from '../utils/cli/formatters/ultiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -414,7 +415,7 @@ function UltiPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndices &&

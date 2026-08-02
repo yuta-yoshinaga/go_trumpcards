@@ -19,6 +19,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { PiquetDeclaration, PiquetPlayerData, PiquetResponse } from '../types/card';
 import { PiquetDeclarationKind, PiquetExchangeTurn, PiquetPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { isRequestedHint } from '../utils/hintRequest';
 import { type DeclarationHighlight, declarationHighlight } from '../utils/piquetDeclarationHighlight';
 
 const HIGHLIGHT_MS = 1500;
@@ -268,7 +269,7 @@ function PiquetPageContent() {
 
       <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-      {state.hint ? (
+      {state.hint && isRequestedHint(state) ? (
         <p className="mt-2 text-sm text-ds-accent" data-testid="piquet-hint">
           {state.hint.cardIndex !== undefined
             ? t('hintPlay', { index: state.hint.cardIndex })
