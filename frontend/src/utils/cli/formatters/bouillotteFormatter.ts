@@ -1,5 +1,12 @@
 import type { BouillotteResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Betting', 'Result'];
 
@@ -26,7 +33,7 @@ export function formatBouillotteState(state: BouillotteResponse): string {
   }
   lines.push('----------');
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     lines.push(`HINT: ${state.hint.action} (${state.hint.reason})`);
   }
 

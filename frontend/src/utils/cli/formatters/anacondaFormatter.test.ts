@@ -100,18 +100,31 @@ describe('formatAnacondaState', () => {
 
   it('renders the backend hint line with card indices', () => {
     const out = formatAnacondaState(
-      makeAnacondaState({ hint: { action: 'pass', cardIndices: [4, 5, 6], reason: 'pass_weakest' } }),
+      makeAnacondaState({
+        messageCode: 'anaconda.hintRequested',
+        hint: { action: 'pass', cardIndices: [4, 5, 6], reason: 'pass_weakest' },
+      }),
     );
     expect(out).toContain('HINT: pass [4 5 6] (pass_weakest)');
   });
 
   it('renders a betting hint line without card indices', () => {
-    const out = formatAnacondaState(makeAnacondaState({ hint: { action: 'raise', reason: 'strong_hand' } }));
+    const out = formatAnacondaState(
+      makeAnacondaState({ hint: { action: 'raise', reason: 'strong_hand' }, messageCode: 'anaconda.hintRequested' }),
+    );
     expect(out).toContain('HINT: raise (strong_hand)');
   });
 
   it('renders the game-over line with the match winner', () => {
     const out = formatAnacondaState(makeAnacondaState({ gameEndFlag: true, matchWinnerIdx: 0, phase: 3 }));
     expect(out).toContain('Game Over!');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { action: 'pass', cardIndices: [4, 5, 6], reason: 'pass_weakest' };
+    expect(formatAnacondaState(makeAnacondaState({ hint, messageCode: 'anaconda.hintRequested' }))).toContain('HINT');
+    expect(formatAnacondaState(makeAnacondaState({ hint, messageCode: 'anaconda.playing' }))).not.toContain('HINT');
   });
 });

@@ -85,5 +85,7 @@
     "followSuit": "リードされたスートに従ってプレイ推奨",
     "trumpCut": "トランプで切る推奨",
     "discardLowest": "最も低いカードを捨てることを推奨"
-  }
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }
