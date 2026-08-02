@@ -65,8 +65,16 @@ export function getSevenCardStudHint(state: SevenCardStudResponse): HintResult |
     return { targetAction: 'raise', reason: 'frontendHint.sevencardstudRaisePair', confidence: 'moderate' };
   }
 
+  // **払う額が無ければ「コール」ボタンは無い。**`lastBet` と `currentBet` は
+  // ストリートごとに 0 に戻る (`advancePhase`, SevenCardStud.go:504) ので、
+  // 5th street 以降で human が先に動く場面は普通にある。そのとき
+  // `BettingControls` が出すのは Bet と Check だけで、Call は描画されない。
+  // 下のハイカード分岐は `owed === 0` を見ているのに、ここだけ抜けていた
+  // (#4643 のレビュー指摘)。
   if (state.isHiLo === true && lowCards(cards) >= LOW_CARDS_NEEDED) {
-    return { targetAction: 'call', reason: 'frontendHint.sevencardstudPlayLow', confidence: 'moderate' };
+    return owed === 0
+      ? { targetAction: 'check', reason: 'frontendHint.sevencardstudCheckLow', confidence: 'moderate' }
+      : { targetAction: 'call', reason: 'frontendHint.sevencardstudPlayLow', confidence: 'moderate' };
   }
 
   if (owed === 0) {

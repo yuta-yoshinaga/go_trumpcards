@@ -85,6 +85,7 @@
     "sevencardstudPlayLow": "8以下が5枚。ハイは苦しいがローで半分を取りにいける",
     "sevencardstudCheckFree": "払う額は無い。ただで次の札を見よう",
     "sevencardstudCallHigh": "高い札がある。コールして様子を見よう",
-    "sevencardstudFoldWeak": "高い札もペアも無い。降りよう"
+    "sevencardstudFoldWeak": "高い札もペアも無い。降りよう",
+    "sevencardstudCheckLow": "8以下が5枚。払う額は無いので、ただで次の札を見よう"
   }
 }

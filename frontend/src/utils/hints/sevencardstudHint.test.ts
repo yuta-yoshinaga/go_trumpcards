@@ -193,4 +193,18 @@ describe('getSevenCardStudHint', () => {
   it('stays quiet without any cards', () => {
     expect(getSevenCardStudHint(base({ hole: [], door: [] }))).toBeNull();
   });
+
+  it('checks rather than calling a low draw when nothing is owed', () => {
+    // `lastBet` はストリートごとに 0 に戻る。先に動く番では Call ボタン自体が
+    // 描画されないので、コールを勧めると押せない操作を指す (#4643 のレビュー指摘)。
+    const s = base({
+      lastBet: 0,
+      isHiLo: true,
+      hole: [card('SPADE', 2), card('HEART', 3)],
+      door: [card('DIAMOND', 5), card('CLOVER', 6), card('SPADE', 7)],
+    });
+    const hint = getSevenCardStudHint(s);
+    expect(hint?.targetAction).toBe('check');
+    expect(hint?.reason).toBe('frontendHint.sevencardstudCheckLow');
+  });
 });
