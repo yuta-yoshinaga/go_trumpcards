@@ -41,6 +41,7 @@ import type {
   CatchTenResponse,
   CegoResponse,
   ChinchonResponse,
+  ChinesePokerResponse,
   ChineseTenResponse,
   CinchResponse,
   ClockSolitaireResponse,
@@ -269,6 +270,7 @@ import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getCatchTenHint } from '../utils/hints/catchtenHint';
 import { getCegoHint } from '../utils/hints/cegoHint';
 import { getChinchonHint } from '../utils/hints/chinchonHint';
+import { getChinesePokerHint } from '../utils/hints/chinesepokerHint';
 import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
@@ -582,7 +584,7 @@ export const hintFactories = {
   yaniv: (s) => getYanivHint(s as YanivResponse),
   tressette: (s) => getTressetteHint(s as TressetteResponse),
   paigow: () => null,
-  chinesepoker: () => null,
+  chinesepoker: (s) => getChinesePokerHint(s as ChinesePokerResponse),
   pageone: (s) => getPageOneHint(s as PageOneResponse),
   pigtail: (s) => getPigstailHint(s as PigsTailResponse),
   pokersquares: (s) => getPokersquaresHint(s as PokerSquaresResponse),
