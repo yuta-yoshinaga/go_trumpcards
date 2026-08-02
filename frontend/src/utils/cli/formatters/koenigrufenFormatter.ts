@@ -1,5 +1,12 @@
 import type { KoenigrufenResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Bid', 'Call', 'Talon', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
 const CONTRACT_NAMES = ['-', 'Rufer'];
@@ -49,7 +56,7 @@ export function formatKoenigrufenState(state: KoenigrufenResponse): string {
     lines.push(`deal result: ${OUTCOME_NAMES[state.outcome] ?? state.outcome}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const indices = state.hint.cardIndices ?? [];
     lines.push(`HINT: card indices [${indices.join(', ')}] (${state.hint.reason})`);
   }

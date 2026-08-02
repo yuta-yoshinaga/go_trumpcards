@@ -267,3 +267,34 @@ func TestKoenigrufenWebPresenter_WinnerMessages(t *testing.T) {
 		})
 	}
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestKoenigrufenWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// 既存の HintOutput テストと同じ状態。
+	g := newKoenigrufenGame()
+	g.Reset()
+	g.SetBidPlayerIdx(0)
+	if g.GetHint() == nil {
+		t.Fatal("fixture must actually produce a hint")
+	}
+
+	out := new(presenter.KoenigrufenWebPresenter).Output(g, nil)
+	if !strings.Contains(out, `"hint"`) {
+		t.Error("Output must carry the hint -- the frontend reads state.hint")
+	}
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	if strings.Contains(out, "koenigrufen.hintRequested") {
+		t.Error("Output must not mark the response as a requested hint")
+	}
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestKoenigrufenWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := newKoenigrufenGame()
+	g.Reset()
+	g.SetBidPlayerIdx(0)
+	if !strings.Contains(new(presenter.KoenigrufenWebPresenter).HintOutput(g), "koenigrufen.hintRequested") {
+		t.Error("HintOutput must mark the response as a requested hint")
+	}
+}
