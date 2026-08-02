@@ -41,7 +41,7 @@ describe('getPiquetHint', () => {
 
   it('returns play.card hint in play phase', () => {
     const result = getPiquetHint(base({ hint: { cardIndex: 3, reason: 'lowest' } }));
-    expect(result).toEqual({ targetAction: 'play.card', reason: 'piquet.hint.play', confidence: 'moderate' });
+    expect(result).toEqual({ targetAction: 'play', reason: 'frontendHint.piquetPlayLowest', confidence: 'moderate' });
   });
 
   it('returns play.exchange hint in exchange phase', () => {
@@ -49,14 +49,31 @@ describe('getPiquetHint', () => {
       base({ phase: PiquetPhase.EXCHANGE, hint: { discardIndices: [0, 1, 2], reason: 'lowest' } }),
     );
     expect(result).toEqual({
-      targetAction: 'play.exchange',
-      reason: 'piquet.hint.discard',
+      targetAction: 'discard',
+      reason: 'frontendHint.piquetExchangeLowest',
       confidence: 'moderate',
     });
   });
 
   it('returns null when hint is empty', () => {
     const result = getPiquetHint(base({ hint: { reason: 'none' } }));
+    expect(result).toBeNull();
+  });
+
+  // **札 0 は正当な手。**cardIndex を真偽値で見ると、手札の先頭を出せという
+  // ヒントだけが消える。
+  it('keeps a hint that points at card index 0', () => {
+    expect(getPiquetHint(base({ hint: { cardIndex: 0, reason: 'lowest' } }))?.targetAction).toBe('play');
+  });
+
+  // 交換フェーズなのに discardIndices が無い形（`?? 0` の側）。
+  it('returns null when the exchange hint omits the discard list', () => {
+    const result = getPiquetHint(base({ phase: PiquetPhase.EXCHANGE, hint: { reason: 'lowest' } }));
+    expect(result).toBeNull();
+  });
+
+  it('returns null when the exchange hint names no card', () => {
+    const result = getPiquetHint(base({ phase: PiquetPhase.EXCHANGE, hint: { discardIndices: [], reason: 'lowest' } }));
     expect(result).toBeNull();
   });
 });

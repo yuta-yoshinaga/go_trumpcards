@@ -47,5 +47,13 @@
     "card": "Your card. If you hold the lowest card you lose a life.",
     "actions": "On your turn, choose Keep or Swap. If you hold a King you can Refuse an incoming swap.",
     "resetButton": "Use this button to reset the game at any time."
+  },
+  "frontendHint": {
+    "cuckooSwapLow": "A weak card — swap it onto your neighbour",
+    "cuckooSwapStock": "A weak card — as dealer you may swap with the stock",
+    "cuckooKeepHigh": "High enough to survive the round — keep it",
+    "cuckooKeepKing": "A King is unbeatable and can refuse a swap. Always keep it",
+    "cuckooRefuseKing": "Show the King to block the swap and keep the best card",
+    "cuckooAcceptNoKing": "Without a King you cannot refuse — accept the swap"
   }
 }

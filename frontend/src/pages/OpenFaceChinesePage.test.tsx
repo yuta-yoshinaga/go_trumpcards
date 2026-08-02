@@ -279,4 +279,27 @@ describe('isOfcRowFull', () => {
     expect(isOfcRowFull(p([], [], [c, c, c, c, c]), 2)).toBe(true);
     expect(isOfcRowFull(p([], [c, c, c, c], []), 1)).toBe(false);
   });
+
+  // **ヒント経路はページ側からも踏む。**ファクトリ単体テストだけだと
+  // `hintFactories` の登録行と、ページのトグル／ツールチップが一度も
+  // 実行されない（codecov が #4600 でその 3 ファイルを未到達と報告した）。
+  it('turns the frontend hint on from the checkbox', async () => {
+    localStorage.removeItem('hint_enabled_openfacechinese');
+    mockExec.mockResolvedValue(makeState({ hint: { row: 2, reason: 'strong_back' } }));
+    renderWithProviders(<OpenFaceChinesePage />);
+
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+
+  it('shows the hint tooltip when the toggle is already on', async () => {
+    localStorage.setItem('hint_enabled_openfacechinese', 'true');
+    mockExec.mockResolvedValue(makeState({ hint: { row: 0, reason: 'weak_front' } }));
+    renderWithProviders(<OpenFaceChinesePage />);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+    localStorage.removeItem('hint_enabled_openfacechinese');
+  });
 });
