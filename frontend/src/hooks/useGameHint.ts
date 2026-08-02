@@ -46,6 +46,7 @@ import type {
   CrazyEightsResponse,
   CribbageResponse,
   CruelResponse,
+  CuckooResponse,
   DaifugoResponse,
   DesmocheResponse,
   DeuceToSevenResponse,
@@ -258,6 +259,7 @@ import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getCruelHint } from '../utils/hints/cruelHint';
+import { getCuckooHint } from '../utils/hints/cuckooHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDesmocheHint } from '../utils/hints/desmocheHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
@@ -497,6 +499,7 @@ export const hintFactories = {
   indianrummy: (s) => getIndianRummyHint(s as IndianRummyResponse),
   machiavelli: (s) => getMachiavelliHint(s as MachiavelliResponse),
   cribbage: (s) => getCribbageHint(s as CribbageResponse),
+  cuckoo: (s) => getCuckooHint(s as CuckooResponse),
   gofish: (s) => getGoFishHint(s as GoFishResponse),
   golf: (s) => getGolfHint(s as GolfResponse),
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),

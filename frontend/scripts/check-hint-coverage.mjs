@@ -56,7 +56,6 @@ const BACKLOG = new Set([
   'chinchon',
   'conquian',
   'cuarenta',
-  'cuckoo',
   'escoba',
   'faro',
   'fivecardstud',
