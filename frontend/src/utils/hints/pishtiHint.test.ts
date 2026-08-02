@@ -101,4 +101,49 @@ describe('getPishtiHint', () => {
   it('stays quiet without a visible hand', () => {
     expect(getPishtiHint(base({ hand: [] }))).toBeNull();
   });
+
+  it('plays a jack onto a lone jack, the biggest score on the board', () => {
+    // +20 (`PishtiBonusJackOnJack`)。同ランク一致でもあるが、専用の文言を出す。
+    const s = base({
+      hand: [card('SPADE', 3), card('HEART', 11)],
+      pileTop: card('CLOVER', 11),
+      pileCount: 1,
+    });
+    const hint = getPishtiHint(s);
+    expect(hint?.targetAction).toBe('card-1');
+    expect(hint?.reason).toBe('frontendHint.pishtiJackOnJack');
+  });
+
+  it('takes a lone card with a jack when no rank match is held', () => {
+    // **ジャックを 1 枚の場に出すのも Pişti** (+10)。ただの掃除ではない。
+    const s = base({
+      hand: [card('SPADE', 3), card('HEART', 11)],
+      pileTop: card('CLOVER', 9),
+      pileCount: 1,
+    });
+    const hint = getPishtiHint(s);
+    expect(hint?.targetAction).toBe('card-1');
+    expect(hint?.reason).toBe('frontendHint.pishtiJackPisti');
+  });
+
+  it('prefers the rank match over the jack on a lone card', () => {
+    // どちらも +10。札を消費する順として、ジャックは残す方がよい。
+    const s = base({
+      hand: [card('SPADE', 9), card('HEART', 11)],
+      pileTop: card('CLOVER', 9),
+      pileCount: 1,
+    });
+    expect(getPishtiHint(s)?.reason).toBe('frontendHint.pishtiPisti');
+  });
+
+  it('calls a jack onto a multi-card pile an ordinary sweep, with no bonus', () => {
+    const s = base({
+      hand: [card('SPADE', 3), card('HEART', 11)],
+      pileTop: card('CLOVER', 9),
+      pileCount: 4,
+    });
+    const hint = getPishtiHint(s);
+    expect(hint?.reason).toBe('frontendHint.pishtiJackSweep');
+    expect(hint?.confidence).toBe('moderate');
+  });
 });
