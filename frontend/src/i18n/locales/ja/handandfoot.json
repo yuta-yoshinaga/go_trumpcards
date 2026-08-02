@@ -70,5 +70,13 @@
     "playerHand": "あなたの手札です。メルドやディスカードするカードを選びます。",
     "meldArea": "メルドエリアです。チームのメルドがここに表示されます。",
     "actionButtons": "アクションボタンです。フェーズに応じた操作ができます。"
+  },
+  "frontendHint": {
+    "handandfootTakeDiscard": "捨て札が手札と繋がります。拾いましょう",
+    "handandfootDrawStock": "捨て札は使えません。山から引きましょう",
+    "handandfootTakeFrozen": "凍結中ですが、同じ数字を 2 枚持っているので取れます",
+    "handandfootFrozenBlocked": "凍結中は同じ数字が 2 枚必要です。山から引きましょう",
+    "handandfootReachFoot": "まだフットを取っていません。手札を減らしてフットへ進みましょう",
+    "handandfootDiscardHeavy": "繋がっていない札のうち一番重い札です"
   }
 }
