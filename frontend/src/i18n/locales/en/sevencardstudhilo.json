@@ -78,5 +78,14 @@
   },
   "tutorial.low": "A low needs five ranks of eight or lower with no pair. Straights and flushes are ignored and the ace is always low.",
   "tutorial.split": "When someone makes a low, the pot splits between the high and the low. The odd chip goes to the high side.",
-  "tutorial.scoop": "If nobody makes a low, the high takes it all. High and low are chosen independently from the same seven cards, so one player can scoop both."
+  "tutorial.scoop": "If nobody makes a low, the high takes it all. High and low are chosen independently from the same seven cards, so one player can scoop both.",
+  "frontendHint": {
+    "sevencardstudBringIn": "You are forced in on the lowest door card — that is not a strong hand",
+    "sevencardstudRaisePair": "You have a pair — raise",
+    "sevencardstudPlayLow": "Five cards of eight or lower — weak for high, but live for half the pot",
+    "sevencardstudCheckFree": "Nothing to call — take the next card for free",
+    "sevencardstudCallHigh": "You hold a high card — call and see the next street",
+    "sevencardstudFoldWeak": "No pair and no high card — fold",
+    "sevencardstudCheckLow": "Five cards of eight or lower and nothing to call — take the next card for free"
+  }
 }
