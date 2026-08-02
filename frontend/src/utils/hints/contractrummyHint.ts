@@ -5,6 +5,9 @@ import type { HintResult } from '../../types/hint';
 const PHASE_DRAW = 0;
 const PHASE_PLAY = 1;
 
+/** A(1) と K(13) の差。ランの端では隣り合う。 */
+const ACE_TO_KING_GAP = 12;
+
 /**
  * Returns a frontend {@link HintResult} for Contract Rummy, or null when no
  * suggestion is available.
@@ -43,9 +46,23 @@ export function getContractRummyHint(state: ContractRummyResponse): HintResult |
   return { targetAction: `card-${idx}`, reason: 'frontendHint.contractrummyDiscardHeavy', confidence: 'moderate' };
 }
 
-/** 同じランクがあるか、同じスートで隣のランクがあるか。メルドの証明ではない。 */
+/**
+ * 同じランクがあるか、同じスートで隣のランクがあるか。メルドの証明ではない。
+ *
+ * **A は 2 の隣であると同時に K の隣でもある。**`isRun`
+ * (`internal/domain/ContractRummy.go:930`) は A-2-3 と J-Q-K-A の両方を認める
+ * (同じランの中でのラップアラウンド K-A-2 だけが不可)。生の値で引き算すると
+ * A(1) と K(13) が 12 離れているように見え、A を抱えている手で K を拾う理由を
+ * 見落とす。Chinchón (#4614) で 7 と J が隣接するのを見落としたのと同じ形。
+ */
 function connects(c: Card, hand: Card[]): boolean {
-  return hand.some((o) => o.value === c.value || (o.design === c.design && Math.abs(o.value - c.value) === 1));
+  return hand.some((o) => o.value === c.value || (o.design === c.design && adjacent(o.value, c.value)));
+}
+
+/** 隣のランクか。A(1) は 2 の隣であると同時に K(13) の隣でもある。 */
+function adjacent(a: number, b: number): boolean {
+  const gap = Math.abs(a - b);
+  return gap === 1 || gap === ACE_TO_KING_GAP;
 }
 
 /** 繋がっていない札のうち一番重いものの位置。全部繋がっていれば一番重い札。 */

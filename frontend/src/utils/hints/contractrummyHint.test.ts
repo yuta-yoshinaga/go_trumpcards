@@ -116,4 +116,24 @@ describe('getContractRummyHint', () => {
   it('stays quiet without a visible hand', () => {
     expect(getContractRummyHint(base({ hand: [] }))).toBeNull();
   });
+
+  it('treats the ace as adjacent to the king, not only to the two', () => {
+    // `isRun` は J-Q-K-A を認める。生の値で引くと A(1) と K(13) が 12 離れて
+    // 見えるので、K を拾う理由を見落とす。
+    const s = base({
+      phase: 0,
+      hand: [card('SPADE', 1), card('HEART', 5)],
+      discardTop: card('SPADE', 13),
+    });
+    expect(getContractRummyHint(s)?.targetAction).toBe('takeDiscard');
+  });
+
+  it('still requires the same suit for an ace-king neighbour', () => {
+    const s = base({
+      phase: 0,
+      hand: [card('SPADE', 1), card('HEART', 5)],
+      discardTop: card('CLOVER', 13),
+    });
+    expect(getContractRummyHint(s)?.targetAction).toBe('drawStock');
+  });
 });
