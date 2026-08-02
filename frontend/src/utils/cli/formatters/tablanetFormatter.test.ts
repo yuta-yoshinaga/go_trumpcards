@@ -46,7 +46,10 @@ describe('formatTablanetState', () => {
 
   it('renders a hint line when a hint is present', () => {
     const out = formatTablanetState(
-      makeTablanetState({ hint: { cardIndices: [0], tableIndices: [0], reason: 'tabla_sweep' } }),
+      makeTablanetState({
+        messageCode: 'tablanet.hintRequested',
+        hint: { cardIndices: [0], tableIndices: [0], reason: 'tabla_sweep' },
+      }),
     );
     expect(out).toContain('HINT:');
     expect(out).toContain('tabla_sweep');
@@ -55,5 +58,13 @@ describe('formatTablanetState', () => {
   it('appends the server message when present', () => {
     const out = formatTablanetState(makeTablanetState({ message: 'Game over.' }));
     expect(out).toContain('Game over.');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [0], tableIndices: [0], reason: 'tabla_sweep' };
+    expect(formatTablanetState(makeTablanetState({ hint, messageCode: 'tablanet.hintRequested' }))).toContain('HINT');
+    expect(formatTablanetState(makeTablanetState({ hint, messageCode: 'tablanet.playing' }))).not.toContain('HINT');
   });
 });

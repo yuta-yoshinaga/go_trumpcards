@@ -54,7 +54,9 @@ describe('formatMichiganState', () => {
   });
 
   it('renders the playable indices and the backend hint line', () => {
-    const out = formatMichiganState(makeMichiganState({ hint: { cardIndex: 2, reason: 'claim_boodle' } }));
+    const out = formatMichiganState(
+      makeMichiganState({ messageCode: 'michigan.hintRequested', hint: { cardIndex: 2, reason: 'claim_boodle' } }),
+    );
     expect(out).toContain('playable:');
     expect(out).toContain('HINT: play 2 (claim_boodle)');
   });
@@ -62,5 +64,13 @@ describe('formatMichiganState', () => {
   it('renders the game-over line with the match winner', () => {
     const out = formatMichiganState(makeMichiganState({ gameEndFlag: true, matchWinnerIdx: 0, phase: 2 }));
     expect(out).toContain('Game Over!');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndex: 2, reason: 'claim_boodle' };
+    expect(formatMichiganState(makeMichiganState({ hint, messageCode: 'michigan.hintRequested' }))).toContain('HINT');
+    expect(formatMichiganState(makeMichiganState({ hint, messageCode: 'michigan.playing' }))).not.toContain('HINT');
   });
 });

@@ -75,3 +75,33 @@ func TestTablanetWebPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.TablanetWebPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestTablanetWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// 既存の HintOutput テストと同じ組み立て。場と手札を固定するので配りに依存しない。
+	g := domain.NewDefaultTablanet()
+	g.Reset()
+	g.SetCurrentTurn(0)
+	g.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+	g.GetPlayer(0).Reset()
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.TablanetWebPresenter).Output(g, nil)), &decoded))
+	assert.Contains(t, decoded, "hint", "Output must carry the hint -- the frontend reads state.hint")
+	assert.NotEqual(t, "tablanet.hintRequested", decoded["messageCode"])
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestTablanetWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultTablanet()
+	g.Reset()
+	g.SetCurrentTurn(0)
+	g.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+	g.GetPlayer(0).Reset()
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+
+	assert.Contains(t, new(presenter.TablanetWebPresenter).HintOutput(g), "tablanet.hintRequested")
+}

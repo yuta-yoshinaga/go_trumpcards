@@ -1,5 +1,5 @@
 import type { TablanetResponse } from '../../../types/card';
-import { formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import { formatHeader, formatIndexedCards, formatPlayerName, formatSeparator, isRequestedHint } from '../formatterBase';
 
 const PHASE_NAMES = ['Play', 'GameEnd'];
 
@@ -36,7 +36,7 @@ export function formatTablanetState(state: TablanetResponse): string {
     }
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const cards = state.hint.cardIndices ?? [];
     const targets = state.hint.tableIndices ?? [];
     lines.push(`HINT: play [${cards.join(', ')}] capture [${targets.join(', ')}] (${state.hint.reason})`);

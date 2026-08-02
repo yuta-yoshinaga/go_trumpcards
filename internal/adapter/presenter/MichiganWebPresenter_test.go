@@ -195,3 +195,39 @@ func TestMichiganWebPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.MichiganWebPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestMichiganWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// **配りに依存させない。**ベット直後にヒントが出ない配りが 300 回中 1 回ある
+	// ので、出る配りを引くまで回す。1000 回引けなければヒントが壊れている。
+	for range 1000 {
+		g := domain.NewDefaultMichigan()
+		require.NoError(t, g.PlaceHumanBet(michiganWebEvenBet(g.GetBetBudget())))
+		if g.GetHint() == nil {
+			continue
+		}
+
+		var decoded map[string]any
+		require.NoError(t, json.Unmarshal([]byte(new(presenter.MichiganWebPresenter).Output(g, nil)), &decoded))
+		assert.Contains(t, decoded, "hint", "Output must carry the hint -- the frontend reads state.hint")
+		// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+		assert.NotEqual(t, "michigan.hintRequested", decoded["messageCode"])
+		return
+	}
+	t.Fatal("1000 deals and never once did a hint come back")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestMichiganWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	for range 1000 {
+		g := domain.NewDefaultMichigan()
+		require.NoError(t, g.PlaceHumanBet(michiganWebEvenBet(g.GetBetBudget())))
+		if g.GetHint() == nil {
+			continue
+		}
+		assert.Contains(t, new(presenter.MichiganWebPresenter).HintOutput(g), "michigan.hintRequested")
+		return
+	}
+	t.Fatal("1000 deals and never once did a hint come back")
+}
