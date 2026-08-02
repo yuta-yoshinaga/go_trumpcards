@@ -33,5 +33,11 @@
     "contract": "Each round has a fixed set of melds you must lay down before you can go out. Watch the contract banner at the top.",
     "hand": "Pick cards from your hand and add them to slots that match the contract. A card can only fill one slot.",
     "actions": "Each turn: draw a card → meet the contract / lay melds / lay off → discard one card to end your turn."
+  },
+  "frontendHint": {
+    "contractrummyTakeDiscard": "The discard connects with your hand — take it",
+    "contractrummyDrawStock": "The discard is no use — draw from the stock",
+    "contractrummyMeetContract": "The contract is not met yet — even heavy cards are material",
+    "contractrummyDiscardHeavy": "Your heaviest unconnected card"
   }
 }
