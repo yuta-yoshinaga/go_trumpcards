@@ -1,5 +1,12 @@
 import type { ScartoResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Scarto', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
 const OUTCOME_NAMES = ['-', 'Above average', 'Below average'];
@@ -38,7 +45,7 @@ export function formatScartoState(state: ScartoResponse): string {
     lines.push(`deal settlement: ${state.dealScores.map((s, i) => `P${i}=${s > 0 ? `+${s}` : s}`).join('  ')}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const indices = state.hint.cardIndices ?? [];
     lines.push(`HINT: card indices [${indices.join(', ')}] (${state.hint.reason})`);
   }
