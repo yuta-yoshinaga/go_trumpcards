@@ -66,7 +66,6 @@ const BACKLOG = new Set([
   'pishti',
   'sixbidsolo',
   'threethirteen',
-  'vint',
 ]);
 
 /** Game slugs for every registered route, keyed the way useGameHint is called. */
