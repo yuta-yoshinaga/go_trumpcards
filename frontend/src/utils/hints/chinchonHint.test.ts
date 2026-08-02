@@ -24,7 +24,7 @@ function base({ hand = [card('SPADE', 3), card('HEART', 11)], ...overrides }: Pa
     phase: ChinchonPhase.DISCARD,
     roundNumber: 1,
     currentPlayerIdx: 0,
-    discardTop: card('CLOVER', 9),
+    discardTop: card('CLOVER', 12),
     drawPileCount: 20,
     gameEndFlag: false,
     winnerIdx: -1,
@@ -51,8 +51,8 @@ describe('getChinchonHint', () => {
 
   // **同じランクが手札にあれば拾う。**セットに近づく。
   it('takes a discard that matches a rank in hand', () => {
-    const hand = [card('SPADE', 9), card('HEART', 2)];
-    const s = base({ phase: ChinchonPhase.DRAW, hand, discardTop: card('CLOVER', 9) });
+    const hand = [card('SPADE', 7), card('HEART', 2)];
+    const s = base({ phase: ChinchonPhase.DRAW, hand, discardTop: card('CLOVER', 7) });
     expect(getChinchonHint(s)).toEqual({
       targetAction: 'takeDiscard',
       reason: 'frontendHint.chinchonTakeDiscard',
@@ -62,14 +62,28 @@ describe('getChinchonHint', () => {
 
   // **同じスートで隣り合っていれば拾う。**ランに近づく。
   it('takes a discard that sits next to a card of the same suit', () => {
-    const hand = [card('CLOVER', 8), card('HEART', 2)];
-    const s = base({ phase: ChinchonPhase.DRAW, hand, discardTop: card('CLOVER', 9) });
+    const hand = [card('CLOVER', 6), card('HEART', 2)];
+    const s = base({ phase: ChinchonPhase.DRAW, hand, discardTop: card('CLOVER', 7) });
     expect(getChinchonHint(s)?.targetAction).toBe('takeDiscard');
+  });
+
+  // **8/9/10 を抜いた 40 枚デッキなので、7 と J は隣接する。**生の value を
+  // 引き算すると 4 離れて見え、繋がっていないと誤判定する (#4614)。
+  it('treats a same-suit seven and jack as adjacent', () => {
+    const hand = [card('CLOVER', 7), card('HEART', 2)];
+    const s = base({ phase: ChinchonPhase.DRAW, hand, discardTop: card('CLOVER', 11) });
+    expect(getChinchonHint(s)?.targetAction).toBe('takeDiscard');
+  });
+
+  it('does not treat a same-suit six and jack as adjacent', () => {
+    const hand = [card('CLOVER', 6), card('HEART', 2)];
+    const s = base({ phase: ChinchonPhase.DRAW, hand, discardTop: card('CLOVER', 11) });
+    expect(getChinchonHint(s)?.targetAction).toBe('drawStock');
   });
 
   it('draws from the stock when the discard connects with nothing', () => {
     const hand = [card('SPADE', 2), card('HEART', 5)];
-    const s = base({ phase: ChinchonPhase.DRAW, hand, discardTop: card('CLOVER', 9) });
+    const s = base({ phase: ChinchonPhase.DRAW, hand, discardTop: card('CLOVER', 12) });
     expect(getChinchonHint(s)).toEqual({
       targetAction: 'drawStock',
       reason: 'frontendHint.chinchonDrawStock',
@@ -84,7 +98,7 @@ describe('getChinchonHint', () => {
 
   // **繋がっていない札のうち一番重いものを捨てる。**点は残った札の合計。
   it('discards the heaviest card that connects with nothing', () => {
-    const hand = [card('SPADE', 3), card('SPADE', 4), card('HEART', 11), card('DIAMOND', 2)];
+    const hand = [card('SPADE', 3), card('SPADE', 4), card('HEART', 13), card('DIAMOND', 2)];
     expect(getChinchonHint(base({ hand }))).toEqual({
       targetAction: 'card-2',
       reason: 'frontendHint.chinchonDiscardHeavy',
@@ -94,7 +108,7 @@ describe('getChinchonHint', () => {
 
   // **札 0 も捨て札になりうる。**真偽値で見ると先頭だけ落ちる。
   it('keeps a discard suggestion on card index 0', () => {
-    const hand = [card('HEART', 12), card('SPADE', 3), card('SPADE', 4)];
+    const hand = [card('HEART', 13), card('SPADE', 3), card('SPADE', 4)];
     expect(getChinchonHint(base({ hand }))?.targetAction).toBe('card-0');
   });
 
@@ -102,6 +116,14 @@ describe('getChinchonHint', () => {
   it('falls back to the heaviest card when everything connects', () => {
     const hand = [card('SPADE', 3), card('SPADE', 4), card('SPADE', 5)];
     expect(getChinchonHint(base({ hand }))?.targetAction).toBe('card-2');
+  });
+
+  // **8/9/10 はこのデッキに無い。**万一届いても隣接扱いしないことを固定する。
+  // ドメインの chinchonRankPosition も同じく 0 を返す。
+  it('never treats a rank outside the forty-card deck as adjacent', () => {
+    const hand = [card('CLOVER', 9), card('HEART', 2)];
+    const s = base({ phase: ChinchonPhase.DRAW, hand, discardTop: card('CLOVER', 10) });
+    expect(getChinchonHint(s)?.targetAction).toBe('drawStock');
   });
 
   it('stays quiet without a visible hand', () => {
