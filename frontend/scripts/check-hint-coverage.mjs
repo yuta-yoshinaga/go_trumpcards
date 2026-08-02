@@ -50,7 +50,6 @@ const ALLOWED = new Map();
  */
 const BACKLOG = new Set([
   'bideuchre',
-  'boston',
   'briscola',
   'chinchon',
   'conquian',

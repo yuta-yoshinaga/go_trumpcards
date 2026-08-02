@@ -21,6 +21,7 @@ import type {
   BlackHoleResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
+  BostonResponse,
   BouillotteResponse,
   BourreResponse,
   BraidResponse,
@@ -242,6 +243,7 @@ import { getBisleyHint } from '../utils/hints/bisleyHint';
 import { getBlackHoleHint } from '../utils/hints/blackholeHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
+import { getBostonHint } from '../utils/hints/bostonHint';
 import { getBouillotteHint } from '../utils/hints/bouillotteHint';
 import { getBourreHint } from '../utils/hints/bourreHint';
 import { getBraidHint } from '../utils/hints/braidHint';
@@ -533,6 +535,7 @@ export const hintFactories = {
   durak: (s) => getDurakHint(s as DurakResponse),
   canasta: (s) => getCanastaHint(s as CanastaResponse),
   samba: (s) => getSambaHint(s as SambaResponse),
+  boston: (s) => getBostonHint(s as BostonResponse),
   bourre: (s) => getBourreHint(s as BourreResponse),
   bridge: (s) => getBridgeHint(s as BridgeResponse),
   bristol: (s) => getBristolHint(s as BristolResponse),
