@@ -23,6 +23,7 @@ import type {
   BlackJackSwitchResponse,
   BouillotteResponse,
   BraidResponse,
+  BriscolaResponse,
   BristolResponse,
   BuraResponse,
   BurracoResponse,
@@ -230,6 +231,7 @@ import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getBouillotteHint } from '../utils/hints/bouillotteHint';
 import { getBraidHint } from '../utils/hints/braidHint';
+import { getBriscolaHint } from '../utils/hints/briscolaHint';
 import { getBristolHint } from '../utils/hints/bristolHint';
 import { getBuraHint } from '../utils/hints/buraHint';
 import { getBurracoHint } from '../utils/hints/burracoHint';
@@ -548,6 +550,7 @@ export const hintFactories = {
   wasp: (s) => getWaspHint(s as WaspResponse),
   easthaven: (s) => getEasthavenHint(s as EasthavenResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
+  briscola: (s) => getBriscolaHint(s as BriscolaResponse),
   acesup: (s) => getAcesUpHint(s as AcesUpResponse),
   blackhole: (s) => getBlackHoleHint(s as BlackHoleResponse),
   simplesimon: (s) => getSimpleSimonHint(s as SimpleSimonResponse),
