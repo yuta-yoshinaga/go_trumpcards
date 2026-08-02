@@ -273,10 +273,11 @@ describe('CalculationPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromZone: 'stock', wasteIdx: -1, foundationIdx: 2 },
+      messageCode: 'calculation.hintAvailable',
     });
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument();
+    // messageCode を付けるとメッセージ枠にも同じ文が出るので、バナー側だけを見る。
     // Hint uses localized zone names + index, not raw F/W symbols.
     expect(screen.getByText(/ストック → ファンデーション 2/)).toBeInTheDocument();
   });
@@ -286,6 +287,7 @@ describe('CalculationPage', () => {
       ...playingState,
       wastes: [[card('SPADE', 5)], [], [], []],
       hint: { fromZone: 'waste', wasteIdx: 0, foundationIdx: 1 },
+      messageCode: 'calculation.hintAvailable',
     });
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

@@ -38,6 +38,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { cruelHelp, parseCruelCommand } from '../utils/cli/commands/cruelCommands';
 import { formatCruelState } from '../utils/cli/formatters/cruelFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -475,7 +476,7 @@ function CruelPageContent() {
               </div>
             )}
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div
                 className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
                 role="status"

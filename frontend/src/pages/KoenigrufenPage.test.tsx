@@ -516,7 +516,12 @@ describe('KoenigrufenPage', () => {
   });
 
   it('renders the backend hint banner with its card indices', async () => {
-    mockExec.mockResolvedValue(makeKoenigrufenState({ hint: { cardIndices: [0, 2], reason: 'lead_high' } }));
+    mockExec.mockResolvedValue(
+      makeKoenigrufenState({
+        hint: { cardIndices: [0, 2], reason: 'lead_high' },
+        messageCode: 'koenigrufen.hintRequested',
+      }),
+    );
     renderWithProviders(<KoenigrufenPage />);
     await waitFor(() => expect(screen.getByText(/\[0\], \[2\]/)).toBeInTheDocument());
   });

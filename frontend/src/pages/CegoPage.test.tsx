@@ -346,7 +346,9 @@ describe('CegoPage', () => {
   });
 
   it('renders the backend hint banner with its card indices', async () => {
-    mockExec.mockResolvedValue(makeCegoState({ hint: { cardIndices: [0, 2], reason: 'lead_high' } }));
+    mockExec.mockResolvedValue(
+      makeCegoState({ hint: { cardIndices: [0, 2], reason: 'lead_high' }, messageCode: 'cego.hintRequested' }),
+    );
     renderWithProviders(<CegoPage />);
     await waitFor(() => expect(screen.getByText(/\[0\], \[2\]/)).toBeInTheDocument());
   });

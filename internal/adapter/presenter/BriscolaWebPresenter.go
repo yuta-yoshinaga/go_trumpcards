@@ -118,6 +118,15 @@ func (p *BriscolaWebPresenter) HintOutput(b interfaces.BriscolaGame) string {
 			Reason:    hint.Reason,
 		}
 	}
+	// **「頼んだヒント」だと分かる印を付ける。**#4483 以降 Output() も hint を
+	// 載せるので、これが無いとフロントは「押されたのか毎回来ているのか」を
+	// 見分けられず、押していない人にも出てしまう (#4605)。
+	if resObj.Hint != nil {
+		resObj.MessageCode = "briscola.hintRequested"
+	} else {
+		resObj.MessageCode = "briscola.noHint"
+	}
+
 	return marshalOrError(resObj)
 }
 

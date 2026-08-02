@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseSpoilFiveCommand, SPOIL_FIVE_HELP } from '../utils/cli/commands/spoilFiveCommands';
 import { formatSpoilFiveState } from '../utils/cli/formatters/spoilFiveFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -368,7 +369,7 @@ function SpoilFivePageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndices &&

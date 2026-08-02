@@ -34,6 +34,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { accordionLegalOffsets, accordionLegalTargets, accordionNextAutoMove } from '../utils/accordionUtils';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Upper bound on autocomplete merges (a 52-card deck needs at most 51) — loop guard (#3192). */
@@ -485,7 +486,7 @@ function AccordionPageContent() {
               </div>
             )}
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div
                 className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
                 role="status"

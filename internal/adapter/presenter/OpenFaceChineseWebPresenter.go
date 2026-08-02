@@ -131,6 +131,15 @@ func (p *OpenFaceChineseWebPresenter) HintOutput(g interfaces.OpenFaceChineseGam
 			Reason: hint.Reason,
 		}
 	}
+	// **「頼んだヒント」だと分かる印を付ける。**#4483 以降 Output() も hint を
+	// 載せるので、これが無いとフロントは「押されたのか毎回来ているのか」を
+	// 見分けられず、押していない人にも出てしまう (#4605)。
+	if resObj.Hint != nil {
+		resObj.MessageCode = "openfacechinese.hintRequested"
+	} else {
+		resObj.MessageCode = "openfacechinese.noHint"
+	}
+
 	return marshalOrError(resObj)
 }
 

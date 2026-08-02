@@ -273,6 +273,7 @@ describe('SirTommyPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromZone: 'stock', wasteIdx: -1, foundationIdx: 2 },
+      messageCode: 'sirtommy.hintAvailable',
     });
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -286,6 +287,7 @@ describe('SirTommyPage', () => {
       ...playingState,
       wastes: [[card('SPADE', 5)], [], [], []],
       hint: { fromZone: 'waste', wasteIdx: 0, foundationIdx: 1 },
+      messageCode: 'sirtommy.hintAvailable',
     });
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

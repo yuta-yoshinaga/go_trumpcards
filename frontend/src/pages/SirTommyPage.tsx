@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_CNT = 4;
@@ -542,7 +543,7 @@ function SirTommyPageContent() {
                 messageParams={state.messageParams}
               />
 
-              {state.hint && (
+              {state.hint && isRequestedHint(state) && (
                 <div
                   className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
                   role="status"

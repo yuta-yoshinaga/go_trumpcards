@@ -228,7 +228,9 @@ describe('BriscolaPage', () => {
   });
 
   it('renders the server hint text with the translated reason when present', async () => {
-    mockExec.mockResolvedValue(makeState({ hint: { cardIndex: 2, reason: 'lead_trump' } }));
+    mockExec.mockResolvedValue(
+      makeState({ hint: { cardIndex: 2, reason: 'lead_trump' }, messageCode: 'briscola.hintRequested' }),
+    );
     renderWithProviders(<BriscolaPage />);
     const hint = await screen.findByTestId('briscola-hint');
     expect(hint).toHaveTextContent('切り札でリードして主導権を握りましょう');

@@ -36,6 +36,7 @@ import { ScorpionPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { scorpionLegalTargets } from '../utils/scorpionUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -483,7 +484,7 @@ function ScorpionPageContent() {
 
             {error && <ErrorAlert message={error} onRetry={retry} />}
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div
                 className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
                 role="status"

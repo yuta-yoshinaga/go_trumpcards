@@ -36,6 +36,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseYukonCommand, YUKON_HELP } from '../utils/cli/commands/yukonCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isInMoveBlock, isTableauAllFaceUp } from '../utils/solitaireUtils';
 
@@ -498,7 +499,7 @@ function YukonPageContent() {
             {error && <ErrorAlert message={error} onRetry={retry} />}
 
             {/* Visually hidden so the hint costs no footer space, but still announced to AT. */}
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="sr-only" role="status" aria-live="polite">
                 {t('hintAnnouncement', { card: hintCardName, dest: hintDest })}
               </div>

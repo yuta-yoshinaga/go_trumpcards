@@ -336,7 +336,12 @@ describe('FrenchTarotPage', () => {
   });
 
   it('renders the backend hint banner with its card indices', async () => {
-    mockExec.mockResolvedValue(makeFrenchTarotState({ hint: { cardIndices: [0, 2], reason: 'lead_high' } }));
+    mockExec.mockResolvedValue(
+      makeFrenchTarotState({
+        hint: { cardIndices: [0, 2], reason: 'lead_high' },
+        messageCode: 'frenchtarot.hintRequested',
+      }),
+    );
     renderWithProviders(<FrenchTarotPage />);
     await waitFor(() => expect(screen.getByText(/\[0\], \[2\]/)).toBeInTheDocument());
   });

@@ -203,7 +203,9 @@ describe('OpenFaceChinesePage', () => {
   });
 
   it('renders the suggested row and reason when a hint is present', async () => {
-    mockExec.mockResolvedValue(makeState({ hint: { row: 2, reason: 'strong_back' } }));
+    mockExec.mockResolvedValue(
+      makeState({ hint: { row: 2, reason: 'strong_back' }, messageCode: 'openfacechinese.hintRequested' }),
+    );
     renderWithProviders(<OpenFaceChinesePage />);
     const hint = await screen.findByTestId('ofc-hint');
     expect(hint).toHaveTextContent('強い組み合わせはボトムに寄せましょう');

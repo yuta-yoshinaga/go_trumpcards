@@ -132,6 +132,7 @@ describe('RussianSolitairePage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromCol: 1, cardIndex: 1, toZone: 'tableau', toCol: 4 },
+      messageCode: 'russiansolitaire.hintAvailable',
     });
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -152,6 +153,7 @@ describe('RussianSolitairePage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 },
+      messageCode: 'russiansolitaire.hintAvailable',
     });
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() =>

@@ -100,6 +100,7 @@ describe('YukonPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromCol: 1, cardIndex: 1, toZone: 'tableau', toCol: 4 },
+      messageCode: 'yukon.hintAvailable',
     });
     renderWithProviders(<YukonPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -120,6 +121,7 @@ describe('YukonPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 },
+      messageCode: 'yukon.hintAvailable',
     });
     renderWithProviders(<YukonPage />);
     await waitFor(() =>

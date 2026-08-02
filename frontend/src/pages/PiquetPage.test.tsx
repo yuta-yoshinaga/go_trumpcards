@@ -264,14 +264,22 @@ describe('PiquetPage', () => {
   });
 
   it('renders the play hint text when a card suggestion is present', async () => {
-    mockExec.mockResolvedValue(makeState({ phase: PiquetPhase.PLAY, hint: { cardIndex: 3, reason: 'lowest' } }));
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PiquetPhase.PLAY,
+        hint: { cardIndex: 3, reason: 'lowest' },
+        messageCode: 'piquet.hintAvailable',
+      }),
+    );
     renderWithProviders(<PiquetPage />);
     const hint = await screen.findByTestId('piquet-hint');
     expect(hint).toHaveTextContent('[3]');
   });
 
   it('renders the discard hint text when discard indices are suggested', async () => {
-    mockExec.mockResolvedValue(makeState({ hint: { discardIndices: [1, 2], reason: 'lowest' } }));
+    mockExec.mockResolvedValue(
+      makeState({ hint: { discardIndices: [1, 2], reason: 'lowest' }, messageCode: 'piquet.hintAvailable' }),
+    );
     renderWithProviders(<PiquetPage />);
     const hint = await screen.findByTestId('piquet-hint');
     expect(hint).toHaveTextContent('1, 2');
