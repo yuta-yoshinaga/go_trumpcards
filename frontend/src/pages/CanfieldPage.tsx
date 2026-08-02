@@ -34,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { CANFIELD_HELP, parseCanfieldCommand } from '../utils/cli/commands/canfieldCommands';
 import { formatCanfieldState } from '../utils/cli/formatters/canfieldFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Ring styling applied to the hinted source / target cards (mirrors Yukon / Forty Thieves). */
@@ -207,7 +208,9 @@ function CanfieldPageContent() {
   // regular responses omit the field). Resolve the hinted card + destination so
   // the move can be highlighted with a ring and announced to screen readers,
   // matching Yukon / Forty Thieves. The click handler itself needs no change.
-  const hint = state.hint ?? null;
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+  const hint = (isRequestedHint(state) ? state.hint : undefined) ?? null;
   const hintCard = hint
     ? hint.fromZone === 'reserve'
       ? topReserve

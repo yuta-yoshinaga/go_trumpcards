@@ -70,6 +70,7 @@ import type {
   EightOffResponse,
   EscobaResponse,
   EuchreResponse,
+  FaroResponse,
   FiftyOneResponse,
   FiveCardStudResponse,
   FiveHundredResponse,
@@ -147,6 +148,7 @@ import type {
   PineappleResponse,
   PinochleResponse,
   PiquetResponse,
+  PishtiResponse,
   PitchResponse,
   PochResponse,
   PokerResponse,
@@ -182,6 +184,7 @@ import type {
   ShortDeckResponse,
   SimpleSimonResponse,
   SirTommyResponse,
+  SixBidSoloResponse,
   SixCardGolfResponse,
   SjavsResponse,
   SkatResponse,
@@ -308,6 +311,7 @@ import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEightOffHint } from '../utils/hints/eightoffHint';
 import { getEscobaHint } from '../utils/hints/escobaHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
+import { getFaroHint } from '../utils/hints/faroHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFiveCardStudHint } from '../utils/hints/fivecardstudHint';
 import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
@@ -388,6 +392,7 @@ import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
 import { getPiquetHint } from '../utils/hints/piquetHint';
+import { getPishtiHint } from '../utils/hints/pishtiHint';
 import { getPitchHint } from '../utils/hints/pitchHint';
 import { getPochHint } from '../utils/hints/pochHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
@@ -424,6 +429,7 @@ import { getShitheadHint } from '../utils/hints/shitheadHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSimpleSimonHint } from '../utils/hints/simplesimonHint';
 import { getSirTommyHint } from '../utils/hints/sirtommyHint';
+import { getSixBidSoloHint } from '../utils/hints/sixbidsoloHint';
 import { getSixcardgolfHint } from '../utils/hints/sixcardgolfHint';
 import { getSjavsHint } from '../utils/hints/sjavsHint';
 import { getSkatHint } from '../utils/hints/skatHint';
@@ -491,9 +497,11 @@ export const hintFactories = {
   hearts: (s) => getHeartsHint(s as HeartsResponse),
   gongzhu: (s) => getGongZhuHint(s as GongZhuResponse),
   spoons: (s) => getSpoonsHint(s as SpoonsResponse),
+  sixbidsolo: (s) => getSixBidSoloHint(s as SixBidSoloResponse),
   spades: (s) => getSpadesHint(s as SpadesResponse),
   callbreak: (s) => getCallBreakHint(s as CallBreakResponse),
   tarneeb: (s) => getTarneebHint(s as TarneebResponse),
+  pishti: (s) => getPishtiHint(s as PishtiResponse),
   piquet: (s) => getPiquetHint(s as PiquetResponse),
   pitch: (s) => getPitchHint(s as PitchResponse),
   holdem: (s) => getHoldemHint(s as HoldemResponse),
@@ -525,6 +533,7 @@ export const hintFactories = {
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),
+  faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
   mighty: (s) => getMightyHint(s as MightyResponse),

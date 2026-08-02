@@ -132,6 +132,7 @@ describe('RussianSolitairePage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromCol: 1, cardIndex: 1, toZone: 'tableau', toCol: 4 },
+      messageCode: 'russiansolitaire.hintAvailable',
     });
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -148,10 +149,31 @@ describe('RussianSolitairePage', () => {
     expect(liveRegion).toHaveTextContent('♥ 8');
   });
 
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  it('hides the hint when it was not requested', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 1, cardIndex: 1, toZone: 'tableau', toCol: 4 },
+    });
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // The source (♥8) and target (♠3) cards carry the hint in their aria-labels.
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByRole('button', { name: /ヒント: このカードを場札 4へ移動/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /ヒント: 移動先/ })).not.toBeInTheDocument();
+    // The hint live region survives for screen readers but is visually hidden,
+    // so it no longer squeezes the footer on mobile. It names the card since
+    // "this card" is ambiguous when announced without focus context.
+    // 頼んでいないので live region ごと出ない。
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
   it('labels the hint source with the foundation destination', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 },
+      messageCode: 'russiansolitaire.hintAvailable',
     });
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() =>

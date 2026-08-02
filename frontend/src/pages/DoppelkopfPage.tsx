@@ -31,6 +31,7 @@ import { DOPPELKOPF_HELP, parseDoppelkopfCommand } from '../utils/cli/commands/d
 import { formatDoppelkopfState } from '../utils/cli/formatters/doppelkopfFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { DOPPELKOPF_TRUMP_ORDER, isDoppelkopfTrump } from '../utils/doppelkopfTrump';
+import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -328,7 +329,7 @@ function DoppelkopfPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndices.length > 0 && ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
