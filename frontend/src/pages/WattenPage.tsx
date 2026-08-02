@@ -32,6 +32,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseWattenCommand, WATTEN_HELP } from '../utils/cli/commands/wattenCommands';
 import { formatWattenState } from '../utils/cli/formatters/wattenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { buildWattenStakeHistory, WATTEN_BASE_STAKE } from '../utils/wattenStakeHistory';
@@ -442,7 +443,7 @@ function WattenPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndex !== undefined && ` ([${state.hint.cardIndex}])`}

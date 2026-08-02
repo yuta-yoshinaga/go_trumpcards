@@ -138,6 +138,7 @@ describe('CanfieldPage', () => {
     mockExec.mockResolvedValueOnce({
       ...playingState,
       hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 2 },
+      messageCode: 'canfield.hintAvailable',
     });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     const display = await screen.findByTestId('cf-hint-display');
@@ -154,6 +155,7 @@ describe('CanfieldPage', () => {
     mockExec.mockResolvedValueOnce({
       ...playingState,
       hint: { fromZone: 'reserve', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 1 },
+      messageCode: 'canfield.hintAvailable',
     });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     const display = await screen.findByTestId('cf-hint-display');
@@ -169,6 +171,7 @@ describe('CanfieldPage', () => {
     mockExec.mockResolvedValueOnce({
       ...playingState,
       hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'foundation', toCol: 0 },
+      messageCode: 'canfield.hintAvailable',
     });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(screen.getByTestId('cf-hint-display')).toHaveTextContent('ヒントがあります'));

@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { FORTY_FIVES_HELP, parseFortyFivesCommand } from '../utils/cli/commands/fortyFivesCommands';
 import { formatFortyFivesState } from '../utils/cli/formatters/fortyFivesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -362,7 +363,7 @@ function FortyFivesPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndices &&

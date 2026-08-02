@@ -51,14 +51,11 @@ const ALLOWED = new Map();
 const BACKLOG = new Set([
   'briscola',
   'conquian',
-  'faro',
   'guandan',
   'handandfoot',
   'kaiser',
   'kille',
   'literature',
-  'pishti',
-  'sixbidsolo',
 ]);
 
 /** Game slugs for every registered route, keyed the way useGameHint is called. */

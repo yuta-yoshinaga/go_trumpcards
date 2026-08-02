@@ -30,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseTuteCommand, TUTE_HELP } from '../utils/cli/commands/tuteCommands';
 import { formatTuteState } from '../utils/cli/formatters/tuteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -314,7 +315,7 @@ function TutePageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndices &&

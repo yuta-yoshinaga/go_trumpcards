@@ -368,6 +368,7 @@ describe('WaspPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromCol: 0, cardIndex: 1, toCol: 3 },
+      messageCode: 'wasp.hintAvailable',
     });
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -380,6 +381,7 @@ describe('WaspPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromCol: -1, cardIndex: -1, toCol: -1 },
+      messageCode: 'wasp.hintAvailable',
     });
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

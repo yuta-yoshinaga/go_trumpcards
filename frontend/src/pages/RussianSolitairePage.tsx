@@ -37,6 +37,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseRussianSolitaireCommand, RS_HELP } from '../utils/cli/commands/russiansolitaireCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
@@ -279,12 +280,18 @@ function RussianSolitairePageContent() {
   const isGameOver = state.phase === RussianSolitairePhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
   const autoCompleteReady = isTableauAllFaceUp(state.tableau);
-  const hintDest = state.hint
-    ? state.hint.toZone === 'foundation'
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+  // **門番はここ。**以降 `requestedHint` を見る箇所で再チェックしない ——
+  // 二重に書くと、ゲートされていない別の変数に貼り付けても安全に見えてしまう
+  // (#4608 のレビュー指摘)。
+  const requestedHint = isRequestedHint(state) ? state.hint : undefined;
+  const hintDest = requestedHint
+    ? requestedHint.toZone === 'foundation'
       ? t('foundation')
-      : `${t('tableau')} ${state.hint.toCol}`
+      : `${t('tableau')} ${requestedHint.toCol}`
     : '';
-  const hintCard = state.hint ? state.tableau[state.hint.fromCol]?.[state.hint.cardIndex]?.card : null;
+  const hintCard = requestedHint ? state.tableau[requestedHint.fromCol]?.[requestedHint.cardIndex]?.card : null;
   const hintCardName = hintCard ? cardAlt(hintCard) : '';
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
@@ -428,9 +435,12 @@ function RussianSolitairePageContent() {
 
                         // Hint highlight (announced via the card aria-labels, no visible text panel)
                         const hintFrom =
-                          state.hint && state.hint.fromCol === colIdx && state.hint.cardIndex === cardIdx;
+                          requestedHint && requestedHint.fromCol === colIdx && requestedHint.cardIndex === cardIdx;
                         const hintTo =
-                          state.hint && state.hint.toZone === 'tableau' && state.hint.toCol === colIdx && isLast;
+                          requestedHint &&
+                          requestedHint.toZone === 'tableau' &&
+                          requestedHint.toCol === colIdx &&
+                          isLast;
                         const hintAria = hintFrom
                           ? ` ${t('hintFromAria', { dest: hintDest })}`
                           : hintTo
@@ -517,7 +527,7 @@ function RussianSolitairePageContent() {
             {error && <ErrorAlert message={error} onRetry={retry} />}
 
             {/* Visually hidden so the hint costs no footer space, but still announced to AT. */}
-            {state.hint && (
+            {requestedHint && (
               <div className="sr-only" role="status" aria-live="polite">
                 {t('hintAnnouncement', { card: hintCardName, dest: hintDest })}
               </div>
