@@ -35,6 +35,7 @@
   "result.you": "あなた",
   "result.cpu": "CPU {{id}}",
   "hint.take.points": "得点札を含む取りを狙いましょう",
+  "hint.take.sweep": "場を空にできます。スイープのボーナスを取りましょう",
   "hint.take.cards": "枚数を増やすために取りましょう",
   "hint.trail.safe": "無難な札を場に置きましょう",
   "tutorial.cpuArea": "CPU3人の手札枚数と累計得点がここに表示されます。",
