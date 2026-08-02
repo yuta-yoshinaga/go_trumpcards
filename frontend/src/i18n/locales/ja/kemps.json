@@ -55,5 +55,12 @@
   "selectHandCardAria": "{{card}} を選択",
   "swapCardAria": "{{card}} と交換",
   "swapCardRankMatchAria": "{{card}} と交換（選択中の手札と同じランク）",
-  "swapPending": "手札のカードを選択済みです。交換する場のカードを選んでください。"
+  "swapPending": "手札のカードを選択済みです。交換する場のカードを選んでください。",
+  "frontendHint": {
+    "kempsPartnerSignalled": "相方が合図しています。すぐ Kemps を宣言しましょう",
+    "kempsOpponentSignalled": "相手が動いています。カウンターを狙えますが、外すと −1 です",
+    "kempsNoSignal": "合図はまだありません。ここは見送りましょう",
+    "kempsSignalNow": "4 枚揃いました。交換をやめて相方に合図しましょう",
+    "kempsSwapOdd": "揃っていない札です。場と入れ替えましょう"
+  }
 }
