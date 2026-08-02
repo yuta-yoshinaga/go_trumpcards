@@ -47,6 +47,7 @@ import type {
   CinchResponse,
   ClockSolitaireResponse,
   CongressResponse,
+  ContractRummyResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
   CribbageResponse,
@@ -280,6 +281,7 @@ import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCongressHint } from '../utils/hints/congressHint';
+import { getContractRummyHint } from '../utils/hints/contractrummyHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
@@ -652,6 +654,8 @@ export const hintFactories = {
   nertz: (s) => getNertzHint(s as NertzResponse),
   slapjack: (s) => getSlapjackHint(s as SlapjackResponse),
   egyptianratscrew: (s) => getEgyptianRatscrewHint(s as EgyptianRatscrewResponse),
+  contractrummy: (s) => getContractRummyHint(s as ContractRummyResponse),
+  carioca: () => null,
   contractrummy: () => null,
   carioca: (s) => getCariocaHint(s as CariocaResponse),
   crescent: () => null,
