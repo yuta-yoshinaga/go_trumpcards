@@ -23,15 +23,17 @@ describe('getRussianBankHint', () => {
     expect(hint?.confidence).toBe('moderate');
   });
 
-  // **リザーブと廃札は 1 山なので列が無い。**col を付けると reserve--1 になる。
+  // **リザーブと廃札は 1 山なので列が無い。**バックエンドは Col を Go の
+  // ゼロ値 0 のまま送るので、col では区別できない。無条件に付けると
+  // `reserve-0` という存在しない列になる。
   it('names a single pile without a column', () => {
     const reserve = getRussianBankHint(
-      makeState({ hint: { zone: 0, fromOpponent: false, col: -1, toFoundation: true, toCol: -1 } }),
+      makeState({ hint: { zone: 0, fromOpponent: false, col: 0, toFoundation: true, toCol: -1 } }),
     );
     expect(reserve?.targetAction).toBe('reserve');
 
     const waste = getRussianBankHint(
-      makeState({ hint: { zone: 1, fromOpponent: false, col: -1, toFoundation: false, toCol: 2 } }),
+      makeState({ hint: { zone: 1, fromOpponent: false, col: 0, toFoundation: false, toCol: 2 } }),
     );
     expect(waste?.targetAction).toBe('waste');
   });
