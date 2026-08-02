@@ -17,6 +17,21 @@ type TarneebWebPresenter struct{}
 func (p *TarneebWebPresenter) Output(t interfaces.TarneebGame, lastErr error) string {
 	resObj := p.buildBase(t)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(t, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **Tarneeb.GetHint() の各フェーズを読んで、bidPlayerIdx / currentPlayerIdx を人間席と突き合わせていることを確認した。**
+	// 他ゲームがそうだから、で済ませない —— Pinochle は見ていなかった (#4585)。
+	if hint := t.GetHint(); hint != nil {
+		resObj.Hint = &controller.TarneebWebOutputHint{
+			CardIndex: hint.CardIndex,
+			Bid:       hint.Bid,
+			TrumpSuit: hint.TrumpSuit,
+			Reason:    hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -119,6 +134,13 @@ func (p *TarneebWebPresenter) HintOutput(t interfaces.TarneebGame) string {
 			TrumpSuit: hint.TrumpSuit,
 			Reason:    hint.Reason,
 		}
+	}
+	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。
+	if t.GetHint() != nil {
+		resObj.MessageCode = "tarneeb.hintRequested"
+	} else {
+		resObj.MessageCode = "tarneeb.noHint"
 	}
 	return marshalOrError(resObj)
 }

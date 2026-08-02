@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { RoadmapTrendBar } from '../components/RoadmapTrendBar';
@@ -19,6 +20,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
@@ -30,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { DRAGONTIGER_CLI_HELP, parseDragonTigerCommand } from '../utils/cli/commands/dragontigerCommands';
 import { formatDragonTigerState } from '../utils/cli/formatters/dragontigerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const DT_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -104,6 +107,14 @@ function DragonTigerPageContent() {
     [execApi, handleBet, handleRebet, isBetPhase, isEndPhase, canRebet],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('dragontiger', state);
 
   if (!state) {
     return (
@@ -264,7 +275,11 @@ function DragonTigerPageContent() {
 
           <GameFooter className={`${gameTheme.dragontiger.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel title={tc('settings.title')} groups={[]} />
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="dt-bet-controls">
                 <ChipBetInput

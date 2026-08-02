@@ -45,7 +45,10 @@ describe('formatBasraState', () => {
 
   it('renders a hint line when a hint is present', () => {
     const out = formatBasraState(
-      makeBasraState({ hint: { cardIndices: [0], tableIndices: [0], reason: 'basra_sweep' } }),
+      makeBasraState({
+        messageCode: 'basra.hintRequested',
+        hint: { cardIndices: [0], tableIndices: [0], reason: 'basra_sweep' },
+      }),
     );
     expect(out).toContain('HINT:');
     expect(out).toContain('basra_sweep');
@@ -54,5 +57,13 @@ describe('formatBasraState', () => {
   it('appends the server message when present', () => {
     const out = formatBasraState(makeBasraState({ message: 'Game over.' }));
     expect(out).toContain('Game over.');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [0], tableIndices: [0], reason: 'basra_sweep' };
+    expect(formatBasraState(makeBasraState({ hint, messageCode: 'basra.hintRequested' }))).toContain('HINT');
+    expect(formatBasraState(makeBasraState({ hint, messageCode: 'basra.playing' }))).not.toContain('HINT');
   });
 });

@@ -1,5 +1,5 @@
 import type { GutsResponse } from '../../../types/card';
-import { formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import { formatHeader, formatIndexedCards, formatPlayerName, formatSeparator, isRequestedHint } from '../formatterBase';
 
 const PHASE_NAMES = ['Declare', 'Result'];
 
@@ -23,7 +23,7 @@ export function formatGutsState(state: GutsResponse): string {
   }
   lines.push('----------');
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const call = state.hint.declaration === 1 ? 'in' : 'out';
     lines.push(`HINT: ${call} (${state.hint.reason})`);
   }

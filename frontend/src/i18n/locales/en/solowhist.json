@@ -74,5 +74,7 @@
     "trick": "Cards played to the current trick appear here. You must follow the led suit, ace high. The highest card wins the trick.",
     "hand": "This is your hand. During play, click a playable card and press Play.",
     "actions": "In the bidding phase, buttons appear for Pass / Solo (win 8 tricks alone) / Misère (win 0 tricks, no trump) / Abundance (win 9 tricks alone). Only a bid higher than the current highest is selectable. The highest bidder becomes the declarer and plays against the other 3 defenders."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

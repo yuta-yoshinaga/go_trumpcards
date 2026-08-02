@@ -163,6 +163,15 @@ func (p *FortyFivesWebPresenter) HintOutput(g interfaces.FortyFivesGame) string 
 			Reason:      hint.Reason,
 		}
 	}
+	// **「頼んだヒントか」をフロントが見分けられるようにする。**ページは
+	// `isRequestedHint` でこのコードを見てからバナーを出すので (#4605)、
+	// 付けないと押しても何も出ない。`hintAvailable` は画面のラベルとして
+	// 既に使われているため別キーにする (#4483)。
+	if hint != nil {
+		resObj.MessageCode = "fortyfives.hintRequested"
+	} else {
+		resObj.MessageCode = "fortyfives.noHint"
+	}
 	return marshalOrError(resObj)
 }
 

@@ -53,6 +53,20 @@ type AnacondaWebPresenter struct{}
 func (p *AnacondaWebPresenter) Output(g interfaces.AnacondaGame, lastErr error) string {
 	resObj := p.buildBase(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **Anaconda.GetHint() は席 0（NewAnacondaPlayer(i == 0) で常に人間）に限る。パス／セットは全員同時なので手番の概念が無く、ロールのみ currentPlayer を見る。**
+	// 他ゲームがそうだから、で済ませない —— Pinochle は見ていなかった (#4585)。
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.AnacondaWebOutputHint{
+			Action:      hint.Action,
+			CardIndices: hint.CardIndices,
+			Reason:      hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -174,6 +188,13 @@ func (p *AnacondaWebPresenter) HintOutput(g interfaces.AnacondaGame) string {
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}
+	}
+	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。
+	if g.GetHint() != nil {
+		resObj.MessageCode = "anaconda.hintRequested"
+	} else {
+		resObj.MessageCode = "anaconda.noHint"
 	}
 	return marshalOrError(resObj)
 }
