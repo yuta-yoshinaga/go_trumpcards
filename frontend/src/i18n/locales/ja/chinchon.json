@@ -55,5 +55,10 @@
     "knockButton": "デッドウッドが上限以下なら、捨てるカードを選んでノックできます。",
     "scoreTable": "各プレイヤーのスコアが表示されます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "frontendHint": {
+    "chinchonTakeDiscard": "捨て札が手札と繋がります。拾いましょう",
+    "chinchonDrawStock": "捨て札は手札と繋がりません。山から引きましょう",
+    "chinchonDiscardHeavy": "繋がっていない札のうち一番重い札です。点は手に残った札の合計です"
   }
 }
