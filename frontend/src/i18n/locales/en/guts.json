@@ -60,5 +60,7 @@
     "hand": "Your two cards. Hands rank Pair > High card; the best hand among the players who stayed wins the pot.",
     "actions": "Choose In (stay) to vie for the pot — if you lose you must match the pot. Choose Out (fold) to sit the round out.",
     "resetButton": "Reset the game and start over."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

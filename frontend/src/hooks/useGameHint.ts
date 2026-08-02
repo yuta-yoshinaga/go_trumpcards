@@ -41,10 +41,12 @@ import type {
   CatchTenResponse,
   CegoResponse,
   ChinchonResponse,
+  ChinesePokerResponse,
   ChineseTenResponse,
   CinchResponse,
   ClockSolitaireResponse,
   CongressResponse,
+  ContractRummyResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
   CribbageResponse,
@@ -68,6 +70,7 @@ import type {
   EscobaResponse,
   EuchreResponse,
   FiftyOneResponse,
+  FiveCardStudResponse,
   FiveHundredResponse,
   FlowerGardenResponse,
   FortyFivesResponse,
@@ -125,6 +128,7 @@ import type {
   NapResponse,
   NertzResponse,
   NinetyNineResponse,
+  NiuNiuResponse,
   OasisPokerResponse,
   OhHellResponse,
   OichoKabuResponse,
@@ -202,6 +206,7 @@ import type {
   TichuResponse,
   TienLenResponse,
   ToepenResponse,
+  TonkResponse,
   TrashResponse,
   TrenteEtQuaranteResponse,
   TressetteResponse,
@@ -269,10 +274,12 @@ import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getCatchTenHint } from '../utils/hints/catchtenHint';
 import { getCegoHint } from '../utils/hints/cegoHint';
 import { getChinchonHint } from '../utils/hints/chinchonHint';
+import { getChinesePokerHint } from '../utils/hints/chinesepokerHint';
 import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCongressHint } from '../utils/hints/congressHint';
+import { getContractRummyHint } from '../utils/hints/contractrummyHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
@@ -298,6 +305,7 @@ import { getEightOffHint } from '../utils/hints/eightoffHint';
 import { getEscobaHint } from '../utils/hints/escobaHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
+import { getFiveCardStudHint } from '../utils/hints/fivecardstudHint';
 import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
 import { getFlowergardenHint } from '../utils/hints/flowergardenHint';
 import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
@@ -357,6 +365,7 @@ import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNapoleonsSquareHint } from '../utils/hints/napoleonssquareHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getNinetyNineHint } from '../utils/hints/ninetynineHint';
+import { getNiuNiuHint } from '../utils/hints/niuniuHint';
 import { getOasisPokerHint } from '../utils/hints/oasispokerHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOichokabuHint } from '../utils/hints/oichokabuHint';
@@ -435,6 +444,7 @@ import { getThreeThirteenHint } from '../utils/hints/threethirteenHint';
 import { getTichuHint } from '../utils/hints/tichuHint';
 import { getTienLenHint } from '../utils/hints/tienlenHint';
 import { getToepenHint } from '../utils/hints/toepenHint';
+import { getTonkHint } from '../utils/hints/tonkHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTrenteEtQuaranteHint } from '../utils/hints/trenteetquaranteHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
@@ -504,6 +514,7 @@ export const hintFactories = {
   threethirteen: (s) => getThreeThirteenHint(s as ThreeThirteenResponse),
   tienlen: (s) => getTienLenHint(s as TienLenResponse),
   zheng: (s) => getZhengHint(s as ZhengResponse),
+  fivecardstud: (s) => getFiveCardStudHint(s as FiveCardStudResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),
@@ -512,6 +523,7 @@ export const hintFactories = {
   mighty: (s) => getMightyHint(s as MightyResponse),
   ohhell: (s) => getOhHellHint(s as OhHellResponse),
   wizard: (s) => getWizardHint(s as WizardResponse),
+  niuniu: (s) => getNiuNiuHint(s as NiuNiuResponse),
   ninetynine: (s) => getNinetyNineHint(s as NinetyNineResponse),
   oldmaid: (s) => getOldMaidHint(s as OldMaidResponse),
   doubt: (s) => getDoubtHint(s as DoubtResponse),
@@ -577,12 +589,12 @@ export const hintFactories = {
   karnoffel: (s) => getKarnoffelHint(s as KarnoffelResponse),
   king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
-  tonk: () => null,
+  tonk: (s) => getTonkHint(s as TonkResponse),
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
   yaniv: (s) => getYanivHint(s as YanivResponse),
   tressette: (s) => getTressetteHint(s as TressetteResponse),
   paigow: () => null,
-  chinesepoker: () => null,
+  chinesepoker: (s) => getChinesePokerHint(s as ChinesePokerResponse),
   pageone: (s) => getPageOneHint(s as PageOneResponse),
   pigtail: (s) => getPigstailHint(s as PigsTailResponse),
   pokersquares: (s) => getPokersquaresHint(s as PokerSquaresResponse),
@@ -640,7 +652,7 @@ export const hintFactories = {
   nertz: (s) => getNertzHint(s as NertzResponse),
   slapjack: (s) => getSlapjackHint(s as SlapjackResponse),
   egyptianratscrew: (s) => getEgyptianRatscrewHint(s as EgyptianRatscrewResponse),
-  contractrummy: () => null,
+  contractrummy: (s) => getContractRummyHint(s as ContractRummyResponse),
   carioca: () => null,
   crescent: () => null,
   spiderette: (s) => getSpideretteHint(s as SpideretteResponse),

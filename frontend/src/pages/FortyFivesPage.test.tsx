@@ -230,7 +230,8 @@ describe('FortyFivesPage', () => {
   it('renders the hint banner once the hint was requested', async () => {
     mockExec.mockResolvedValue({
       ...bidPhaseState,
-      hint: { cardIndex: 0, reason: 'x' },
+      // このページのバナーは `cardIndices` を並べる。`cardIndex` は型に無い。
+      hint: { cardIndices: [0], reason: 'x' },
       messageCode: 'fortyFives.hintRequested',
     });
     renderWithProviders(<FortyFivesPage />);
