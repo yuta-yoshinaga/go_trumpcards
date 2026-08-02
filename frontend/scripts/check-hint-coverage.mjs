@@ -68,7 +68,6 @@ const BACKLOG = new Set([
   'pishti',
   'scopone',
   'sixbidsolo',
-  'threethirteen',
   'vint',
 ]);
 
