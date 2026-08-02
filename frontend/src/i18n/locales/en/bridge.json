@@ -70,12 +70,12 @@
   },
   "hintPlay": "Recommended card",
   "hintReason": {
+    "discard_weak": "This trick is out of reach — throw a weak card",
     "follow_suit": "Follow the lead suit",
+    "lead_strong": "Lead a strong card to keep the initiative",
     "lead_trump": "Lead with trump",
-    "lead_off_suit": "Lead with off-suit",
-    "trump_cut": "Cut with trump",
-    "bid_strong": "Bid with strong hand",
-    "pass_weak": "Pass with weak hand"
+    "strategic_bid": "A bid that matches the strength of your hand",
+    "trump_cut": "Cut with trump"
   },
   "tutorial": {
     "bidControls": "In the bid phase, choose a level and suit to bid. You can also pass, double, or redouble.",
