@@ -47,5 +47,11 @@
     "draw": "If you play, you may discard unwanted cards and draw replacements, just like draw poker.",
     "play": "Follow the led suit if you can; if void, you must play trump. You must also beat the trick whenever able. Win the most of five tricks to take the pot."
   },
-  "landscapeBanner": "Rotate to landscape for easier play"
+  "landscapeBanner": "Rotate to landscape for easier play",
+  "frontendHint": {
+    "bourreForced": "This is the only legal card — following and winning are both compulsory",
+    "bourreChoose": "Several cards are legal — pick from the highlighted ones",
+    "bourreStay": "Enough trumps to take a trick — stay in",
+    "bourreFold": "Too few trumps — folding is safer"
+  }
 }
