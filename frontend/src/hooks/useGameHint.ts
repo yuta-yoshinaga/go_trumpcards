@@ -15,6 +15,7 @@ import type {
   BeleagueredCastleResponse,
   BeloteResponse,
   BeziqueResponse,
+  BidEuchreResponse,
   BidWhistResponse,
   BigTwoResponse,
   BisleyResponse,
@@ -26,6 +27,7 @@ import type {
   BourreResponse,
   BraidResponse,
   BridgeResponse,
+  BriscolaResponse,
   BristolResponse,
   BuraResponse,
   BurracoResponse,
@@ -47,6 +49,7 @@ import type {
   CinchResponse,
   ClockSolitaireResponse,
   CongressResponse,
+  ConquianResponse,
   ContractRummyResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
@@ -90,17 +93,21 @@ import type {
   GongZhuResponse,
   GoStopResponse,
   GrandfathersClockResponse,
+  GuandanResponse,
   GutsResponse,
   HachiHachiResponse,
+  HandAndFootResponse,
   HeartsResponse,
   HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
   IndianRummyResponse,
   JassResponse,
+  KaiserResponse,
   KalookiResponse,
   KarnoffelResponse,
   KempsResponse,
+  KilleResponse,
   KingAlbertResponse,
   KingResponse,
   KlaberjassResponse,
@@ -112,6 +119,7 @@ import type {
   LaBelleLucieResponse,
   LaughAndLieDownResponse,
   LetItRideResponse,
+  LiteratureResponse,
   LobaResponse,
   LooResponse,
   MacauResponse,
@@ -257,6 +265,7 @@ import { getBeggarMyNeighbourHint } from '../utils/hints/beggarmyneighbourHint';
 import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
 import { getBeloteHint } from '../utils/hints/beloteHint';
 import { getBeziqueHint } from '../utils/hints/beziqueHint';
+import { getBidEuchreHint } from '../utils/hints/bideuchreHint';
 import { getBidWhistHint } from '../utils/hints/bidwhistHint';
 import { getBigTwoHint } from '../utils/hints/bigtwoHint';
 import { getBisleyHint } from '../utils/hints/bisleyHint';
@@ -268,6 +277,7 @@ import { getBouillotteHint } from '../utils/hints/bouillotteHint';
 import { getBourreHint } from '../utils/hints/bourreHint';
 import { getBraidHint } from '../utils/hints/braidHint';
 import { getBridgeHint } from '../utils/hints/bridgeHint';
+import { getBriscolaHint } from '../utils/hints/briscolaHint';
 import { getBristolHint } from '../utils/hints/bristolHint';
 import { getBuraHint } from '../utils/hints/buraHint';
 import { getBurracoHint } from '../utils/hints/burracoHint';
@@ -289,6 +299,7 @@ import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCongressHint } from '../utils/hints/congressHint';
+import { getConquianHint } from '../utils/hints/conquianHint';
 import { getContractRummyHint } from '../utils/hints/contractrummyHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
@@ -334,8 +345,10 @@ import { getGolfHint } from '../utils/hints/golfHint';
 import { getGongZhuHint } from '../utils/hints/gongzhuHint';
 import { getGoStopHint } from '../utils/hints/gostopHint';
 import { getGrandfathersClockHint } from '../utils/hints/grandfathersclockHint';
+import { getGuandanHint } from '../utils/hints/guandanHint';
 import { getGutsHint } from '../utils/hints/gutsHint';
 import { getHachiHachiHint } from '../utils/hints/hachihachiHint';
+import { getHandAndFootHint } from '../utils/hints/handandfootHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
@@ -344,9 +357,11 @@ import { getIndianRummyHint } from '../utils/hints/indianRummyHint';
 import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getJassHint } from '../utils/hints/jassHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
+import { getKaiserHint } from '../utils/hints/kaiserHint';
 import { getKalookiHint } from '../utils/hints/kalookiHint';
 import { getKarnoffelHint } from '../utils/hints/karnoffelHint';
 import { getKempsHint } from '../utils/hints/kempsHint';
+import { getKilleHint } from '../utils/hints/killeHint';
 import { getKingalbertHint } from '../utils/hints/kingalbertHint';
 import { getKingHint } from '../utils/hints/kingHint';
 import { getKlaberjassHint } from '../utils/hints/klaberjassHint';
@@ -358,6 +373,7 @@ import { getKoiKoiHint } from '../utils/hints/koikoiHint';
 import { getLaBelleLucieHint } from '../utils/hints/labellelucieHint';
 import { getLaughAndLieDownHint } from '../utils/hints/laughandliedownHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
+import { getLiteratureHint } from '../utils/hints/literatureHint';
 import { getLobaHint } from '../utils/hints/lobaHint';
 import { getLooHint } from '../utils/hints/looHint';
 import { getMacauHint } from '../utils/hints/macauHint';
@@ -496,10 +512,12 @@ type HintFn = (state: unknown) => HintResult | null;
 /** Registry mapping game names to their hint functions. */
 export const hintFactories = {
   baccarat: (s) => getBaccaratHint(s as BaccaratResponse),
+  bideuchre: (s) => getBidEuchreHint(s as BidEuchreResponse),
   blackjack: (s) => getBlackjackHint(s as BlackJackResponse),
   spanish21: (s) => getBlackjackHint(s as BlackJackResponse),
   pontoon: (s) => getPontoonHint(s as PontoonResponse),
   poker: (s) => getPokerHint(s as PokerResponse),
+  handandfoot: (s) => getHandAndFootHint(s as HandAndFootResponse),
   hearts: (s) => getHeartsHint(s as HeartsResponse),
   gongzhu: (s) => getGongZhuHint(s as GongZhuResponse),
   spoons: (s) => getSpoonsHint(s as SpoonsResponse),
@@ -552,6 +570,7 @@ export const hintFactories = {
   daifugo: (s) => getDaifugoHint(s as DaifugoResponse),
   settemezzo: (s) => getSetteEMezzoHint(s as SetteEMezzoResponse),
   sevens: (s) => getSevensHint(s as SevensResponse),
+  conquian: (s) => getConquianHint(s as ConquianResponse),
   chinchon: (s) => getChinchonHint(s as ChinchonResponse),
   crazyeights: (s) => getCrazyEightsHint(s as CrazyEightsResponse),
   prsi: (s) => getPrsiHint(s as PrsiResponse),
@@ -574,6 +593,7 @@ export const hintFactories = {
   cribbage: (s) => getCribbageHint(s as CribbageResponse),
   cuckoo: (s) => getCuckooHint(s as CuckooResponse),
   gofish: (s) => getGoFishHint(s as GoFishResponse),
+  guandan: (s) => getGuandanHint(s as GuandanResponse),
   golf: (s) => getGolfHint(s as GolfResponse),
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
   oasispoker: (s) => getOasisPokerHint(s as OasisPokerResponse),
@@ -607,6 +627,7 @@ export const hintFactories = {
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   streetsandalleys: (s) => getStreetsandalleysHint(s as StreetsAndAlleysResponse),
+  kille: (s) => getKilleHint(s as KilleResponse),
   kingalbert: (s) => getKingalbertHint(s as KingAlbertResponse),
   karnoffel: (s) => getKarnoffelHint(s as KarnoffelResponse),
   king: (s) => getKingHint(s as KingResponse),
@@ -641,9 +662,11 @@ export const hintFactories = {
   easthaven: (s) => getEasthavenHint(s as EasthavenResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   russianbank: (s) => getRussianBankHint(s as RussianBankResponse),
+  briscola: (s) => getBriscolaHint(s as BriscolaResponse),
   acesup: (s) => getAcesUpHint(s as AcesUpResponse),
   blackhole: (s) => getBlackHoleHint(s as BlackHoleResponse),
   simplesimon: (s) => getSimpleSimonHint(s as SimpleSimonResponse),
+  literature: (s) => getLiteratureHint(s as LiteratureResponse),
   labellelucie: (s) => getLaBelleLucieHint(s as LaBelleLucieResponse),
   doubleklondike: (s) => getDoubleKlondikeHint(s as DoubleKlondikeResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
@@ -688,6 +711,7 @@ export const hintFactories = {
   mus: (s) => getMusHint(s as MusResponse),
   tute: (s) => getTuteHint(s as TuteResponse),
   sueca: (s) => getSuecaHint(s as SuecaResponse),
+  kaiser: (s) => getKaiserHint(s as KaiserResponse),
   kalooki: (s) => getKalookiHint(s as KalookiResponse),
   kemps: (s) => getKempsHint(s as KempsResponse),
   klaberjass: (s) => getKlaberjassHint(s as KlaberjassResponse),

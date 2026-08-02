@@ -62,5 +62,10 @@
     "hand": "Your hand. Following suit is compulsory, so illegal cards cannot be chosen.",
     "actions": "Bid a number of points (7-12). If you win the auction you discard two from the kitty, but never the ♥5 or ♠3.",
     "resetButton": "Reset the game at any time with this button."
+  },
+  "frontendHint": {
+    "kaiserForced": "This is the only legal card — following suit is compulsory",
+    "kaiserChoose": "Several cards are legal — pick from the highlighted ones",
+    "kaiserDumpSpadeThree": "The ♠3 costs 3 points — shed it while you still have a choice"
   }
 }

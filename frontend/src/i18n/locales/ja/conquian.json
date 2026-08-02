@@ -50,5 +50,10 @@
   "kbd": {
     "stock": "S",
     "discard": "D"
+  },
+  "frontendHint": {
+    "conquianTakeDiscard": "捨て札が手札と繋がります。拾いましょう",
+    "conquianDrawStock": "捨て札は手札と繋がりません。山から引きましょう",
+    "conquianDiscardHeavy": "繋がっていない札のうち一番重い札です"
   }
 }
