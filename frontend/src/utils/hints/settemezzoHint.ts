@@ -27,18 +27,20 @@ export function getSetteEMezzoHint(state: SetteEMezzoResponse): HintResult | nul
   // 伏せられている手は totalHalves が 0 で届く。読んで助言すると嘘になる。
   if (!seat || seat.isCpu || !hand || hand.hidden) return null;
 
-  // **マッタは値を選べる。**7.5 に合わせられるかどうかがこの一手で決まる。
-  if (state.canSetMatta && hand.hasMatta) {
-    return { targetAction: 'matta', reason: 'frontendHint.settemezzoSetMatta', confidence: 'strong' };
-  }
-
   const remaining = state.targetHalves - hand.totalHalves;
 
-  // ちょうど 7.5。バンクが動くのはこの目だけで、引く理由がない。
+  // **ちょうど 7.5 が最優先。**マッタは手を止めるまで付け替えられる
+  // (SetteEMezzo.go:355-371) ので、合わせ終えた後も canSetMatta は立ったまま。
+  // マッタを先に見ると「7.5 に合わせましょう」と言い続ける (#4612 のレビュー指摘)。
   if (remaining === 0) {
     return state.canStand
       ? { targetAction: 'stand', reason: 'frontendHint.settemezzoExact', confidence: 'strong' }
       : null;
+  }
+
+  // まだ届いていないなら、マッタの値でどこまで行けるかがこの一手を決める。
+  if (state.canSetMatta && hand.hasMatta) {
+    return { targetAction: 'matta', reason: 'frontendHint.settemezzoSetMatta', confidence: 'strong' };
   }
 
   if (remaining >= DRAW_WHILE_BEHIND_BY) {

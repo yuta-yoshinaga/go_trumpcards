@@ -98,6 +98,13 @@ describe('getSetteEMezzoHint', () => {
     });
   });
 
+  // **マッタは合わせ終えても付け替えられる。**`canSetMatta` は立ったままなので、
+  // マッタを先に見ると 7.5 ちょうどでも「合わせましょう」と言い続ける。
+  it('stands on an exact total even while the matta is still adjustable', () => {
+    const s = base({ totalHalves: 15, canSetMatta: true, hasMatta: true });
+    expect(s && getSetteEMezzoHint(s)?.reason).toBe('frontendHint.settemezzoExact');
+  });
+
   // **押せない手を勧めない。**
   it('does not tell the player to hit when hitting is closed', () => {
     expect(getSetteEMezzoHint(base({ totalHalves: 8, canHit: false }))).toBeNull();
