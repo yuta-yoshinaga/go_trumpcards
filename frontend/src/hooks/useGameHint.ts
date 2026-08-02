@@ -183,6 +183,7 @@ import type {
   ShortDeckResponse,
   SimpleSimonResponse,
   SirTommyResponse,
+  SixBidSoloResponse,
   SixCardGolfResponse,
   SjavsResponse,
   SkatResponse,
@@ -426,6 +427,7 @@ import { getShitheadHint } from '../utils/hints/shitheadHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSimpleSimonHint } from '../utils/hints/simplesimonHint';
 import { getSirTommyHint } from '../utils/hints/sirtommyHint';
+import { getSixBidSoloHint } from '../utils/hints/sixbidsoloHint';
 import { getSixcardgolfHint } from '../utils/hints/sixcardgolfHint';
 import { getSjavsHint } from '../utils/hints/sjavsHint';
 import { getSkatHint } from '../utils/hints/skatHint';
@@ -493,6 +495,7 @@ export const hintFactories = {
   hearts: (s) => getHeartsHint(s as HeartsResponse),
   gongzhu: (s) => getGongZhuHint(s as GongZhuResponse),
   spoons: (s) => getSpoonsHint(s as SpoonsResponse),
+  sixbidsolo: (s) => getSixBidSoloHint(s as SixBidSoloResponse),
   spades: (s) => getSpadesHint(s as SpadesResponse),
   callbreak: (s) => getCallBreakHint(s as CallBreakResponse),
   tarneeb: (s) => getTarneebHint(s as TarneebResponse),

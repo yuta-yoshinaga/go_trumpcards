@@ -57,7 +57,6 @@ const BACKLOG = new Set([
   'kaiser',
   'kille',
   'literature',
-  'sixbidsolo',
 ]);
 
 /** Game slugs for every registered route, keyed the way useGameHint is called. */
