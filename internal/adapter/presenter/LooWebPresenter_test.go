@@ -134,3 +134,20 @@ func TestLooWebPresenterHintOutputMarksTheRequest(t *testing.T) {
 	g.SetDecidePlayerIdx(0)
 	assert.Contains(t, new(presenter.LooWebPresenter).HintOutput(g), "loo.hintRequested")
 }
+
+// **ヒントが無いときの分岐も見る。**Output() の受動ヒントは nil のとき
+// `hint` キーごと落ちる。HintOutput() は noHint を返す。codecov が
+// PR #4591 でこの 2 本を未到達として報告した。
+func TestLooWebPresenterWithoutAHint(t *testing.T) {
+	g := domain.NewDefaultLoo()
+	g.Reset()
+	g.SetDecidePlayerIdx(1) // 人間は席 0。他人の判断待ちなので助言することがない
+	require.Nil(t, g.GetHint(), "fixture must actually produce no hint")
+
+	p := new(presenter.LooWebPresenter)
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	assert.NotContains(t, decoded, "hint")
+
+	assert.Contains(t, p.HintOutput(g), "loo.noHint")
+}

@@ -173,3 +173,18 @@ func TestGutsWebPresenterHintOutputMarksTheRequest(t *testing.T) {
 	g.Reset()
 	assert.Contains(t, new(presenter.GutsWebPresenter).HintOutput(g), "guts.hintRequested")
 }
+
+// **ヒントが無いときの分岐も見る。**Output() の受動ヒントは nil のとき
+// `hint` キーごと落ちる。HintOutput() は noHint を返す。codecov が
+// PR #4591 でこの 2 本を未到達として報告した。
+func TestGutsWebPresenterWithoutAHint(t *testing.T) {
+	g := gutsWebResultGame() // 結果フェーズ = 宣言フェーズではないので GetHint は nil
+	require.Nil(t, g.GetHint(), "fixture must actually produce no hint")
+
+	p := new(presenter.GutsWebPresenter)
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	assert.NotContains(t, decoded, "hint")
+
+	assert.Contains(t, p.HintOutput(g), "guts.noHint")
+}
