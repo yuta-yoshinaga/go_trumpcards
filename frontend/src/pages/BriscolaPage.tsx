@@ -2,9 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { briscolaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -13,6 +15,7 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -21,6 +24,7 @@ import { BriscolaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { isRequestedHint } from '../utils/hintRequest';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Tutorial steps for the Briscola page. */
 const BRISCOLA_TUTORIAL_STEPS: TutorialStep[] = [
@@ -104,6 +108,12 @@ function BriscolaPageContent() {
     onClear: clearSelect,
     enabled: !!isHumanTurnForKbd && !loading,
   });
+
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('briscola', state);
 
   if (!state) {
     return <GameSkeleton gameKey="briscola" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 3 }} />;
@@ -286,6 +296,13 @@ function BriscolaPageContent() {
           </button>
         </div>
       </div>
+
+      <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+      <SettingsPanel
+        title={tc('settings.title')}
+        groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+      />
 
       <ActionLogSection
         isEndPhase={isGameEnd}
