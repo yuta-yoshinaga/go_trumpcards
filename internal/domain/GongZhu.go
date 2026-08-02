@@ -249,6 +249,12 @@ func (g *GongZhu) CpuPlay() {
 	player := g.players[g.currentPlayerIdx]
 	cardIdx := g.cpuSelectPlayCard(g.currentPlayerIdx)
 	played := player.RemoveCard(cardIdx)
+	// **出せる札が無ければ何もしない。**cpuSelectPlayCard は候補ゼロのとき 0 を
+	// 返し、手札が空なら RemoveCard(0) は nil を返す。それを playCard に渡すと
+	// GetDesign() で nil デリファレンスになり、HTTP ハンドラごと落ちる。
+	if played == nil {
+		return
+	}
 	g.playCard(g.currentPlayerIdx, played)
 }
 
@@ -831,6 +837,7 @@ func (g *GongZhu) playHintReason(playerIdx, chosenIdx int) string {
 func (g *GongZhu) cpuSelectPlayCard(playerIdx int) int {
 	validIndices := g.getValidPlayIndices(playerIdx)
 	if len(validIndices) == 0 {
+		// 手札が空のときも 0 が返る。呼び出し側が nil を受ける前提であること。
 		return 0
 	}
 	if len(validIndices) == 1 {

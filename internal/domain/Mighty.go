@@ -442,6 +442,12 @@ func (m *Mighty) CpuPlay() {
 		if jokerIdx >= 0 && m.shouldCpuLeadJoker(m.round.currentPlayerIdx) {
 			demandSuit := m.cpuSelectJokerLeadDemandSuit(m.round.currentPlayerIdx)
 			played := player.RemoveCard(jokerIdx)
+			// **出せる札が無ければ何もしない。**セレクタは候補ゼロのとき 0 を返し、
+			// 手札が空なら RemoveCard(0) は nil を返す。それを playCard に渡すと
+			// nil デリファレンスで HTTP ハンドラごと落ちる (#4606)。
+			if played == nil {
+				return
+			}
 			m.playCard(m.round.currentPlayerIdx, played, true, demandSuit)
 			return
 		}
@@ -449,6 +455,12 @@ func (m *Mighty) CpuPlay() {
 
 	cardIdx := m.cpuSelectPlayCard(m.round.currentPlayerIdx)
 	played := player.RemoveCard(cardIdx)
+	// **出せる札が無ければ何もしない。**セレクタは候補ゼロのとき 0 を返し、
+	// 手札が空なら RemoveCard(0) は nil を返す。それを playCard に渡すと
+	// nil デリファレンスで HTTP ハンドラごと落ちる (#4606)。
+	if played == nil {
+		return
+	}
 	m.playCard(m.round.currentPlayerIdx, played, false, 0)
 }
 
