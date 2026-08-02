@@ -6,10 +6,13 @@ on:
   pull_request:
     branches: [ develop ]
 
-# **同じ ref の古い run を打ち切る。**1 回の CI は 17 ジョブに展開される
-# (FE 8 シャード + E2E 5 シャード + backend test/lint + typecheck + build) ので、
-# PR を押し直すたびに 17 スロットが二重に埋まる。並行 PR が増えると新しい run が
+# **同じ ref の古い run を打ち切る。**1 回の CI は 10 ジョブに展開される
+# (FE 4 シャード + E2E 3 シャード + backend test/lint + frontend static) ので、
+# PR を押し直すたびに 10 スロットが二重に埋まる。並行 PR が増えると新しい run が
 # start すらできず、待ち時間の大半がジョブの実行ではなくキュー待ちになっていた。
+#
+# この数字はジョブ構成を変えるたびに古くなる。導入時は 17 ジョブ (FE 8 + E2E 5 +
+# lint/typecheck 別建て) で、同じ PR でシャードを減らして 10 になった。
 #
 # `deploy-*.yml` も同じ group を持つが、あちらは `cancel-in-progress: false` ——
 # デプロイを途中で切ると危険なため。検証は切ってよいので true にする。
