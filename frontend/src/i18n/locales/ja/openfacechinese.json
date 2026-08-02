@@ -50,5 +50,7 @@
   "placeRowAria": "{{label}} に置く",
   "rowAriaEmpty": "{{label}} {{count}}枚",
   "rowAriaFilled": "{{label}} {{count}}枚: {{cards}}",
-  "pendingAnnounce": "配置待ち: {{card}}"
+  "pendingAnnounce": "配置待ち: {{card}}",
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }

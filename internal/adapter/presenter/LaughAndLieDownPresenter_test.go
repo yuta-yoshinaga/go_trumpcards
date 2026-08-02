@@ -61,7 +61,15 @@ func lldStub(valid []int, canThree bool, gameEnd bool, score int) *interfaces.Mo
 
 func TestLaughAndLieDownWebPresenter_HidesTheCpuHandButNeverItsWonCount(t *testing.T) {
 	// 取り札の枚数は 8 との差がそのまま収支なので、隠すと精算が読めなくなる。
-	out := lldDecode(t, new(LaughAndLieDownWebPresenter).Output(lldTestGame(t), nil))
+	//
+	// **CPU の手札が 0 枚で配り終わることがある。**Reset() は最後に
+	// skipPlayersWhoCannotCapture() を呼び、取れる札が無い席の手札を場に置く。
+	// そのため `cardCount > 0` を主張すると配り次第で落ちる —— 隣の
+	// SendsTheWholeFaceUpTable が #4626 で直したのと同じ形が、この 1 件に
+	// 残っていた (#4650 の CI で再発)。見たいのは「隠した手札の枚数だけは
+	// 送っているか」なので、ゲームが持つ枚数そのものと比べる。
+	g := lldTestGame(t)
+	out := lldDecode(t, new(LaughAndLieDownWebPresenter).Output(g, nil))
 	players, ok := out["players"].([]any)
 	require.True(t, ok)
 	require.Len(t, players, domain.LaughAndLieDownPlayerCnt)
@@ -73,7 +81,7 @@ func TestLaughAndLieDownWebPresenter_HidesTheCpuHandButNeverItsWonCount(t *testi
 	cpu, _ := players[1].(map[string]any)
 	assert.True(t, cpu["hidden"].(bool))
 	assert.Empty(t, cpu["cards"], "the opponent's hand must not reach the browser")
-	assert.Positive(t, cpu["cardCount"], "but its size is public")
+	assert.Equal(t, float64(g.GetPlayer(1).GetCardsSize()), cpu["cardCount"], "but its size is public")
 	assert.NotNil(t, cpu["wonCount"], "and so is what it has captured")
 }
 

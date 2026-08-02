@@ -15,6 +15,9 @@ import { ThreeThirteenPhase } from '../../types/phases';
  * substitutes for anything, so it is never the card to throw even when nothing
  * in hand happens to touch it.
  */
+/** A(1) と K(13) の差。ランの端では隣り合う。 */
+const ACE_TO_KING_GAP = 12;
+
 export function getThreeThirteenHint(state: ThreeThirteenResponse): HintResult | null {
   if (state.gameEndFlag) return null;
 
@@ -36,9 +39,21 @@ export function getThreeThirteenHint(state: ThreeThirteenResponse): HintResult |
   return { targetAction: `card-${idx}`, reason: 'frontendHint.threethirteenDiscardHeavy', confidence: 'moderate' };
 }
 
-/** 同じランクがあるか、同じスートで隣のランクがあるか。メルドの証明ではない。 */
+/**
+ * 同じランクがあるか、同じスートで隣のランクがあるか。メルドの証明ではない。
+ *
+ * **A は 2 の隣であると同時に K の隣でもある** (internal/domain/ThreeThirteen.go:719)。生の値で
+ * 引き算すると A(1) と K(13) が 12 離れて見え、A を持っている手で K を拾う
+ * 理由を見落とす。
+ */
 function connects(c: Card, hand: Card[]): boolean {
-  return hand.some((o) => o.value === c.value || (o.design === c.design && Math.abs(o.value - c.value) === 1));
+  return hand.some((o) => o.value === c.value || (o.design === c.design && adjacent(o.value, c.value)));
+}
+
+/** 隣のランクか。A(1) は 2 の隣であると同時に K(13) の隣でもある。 */
+function adjacent(a: number, b: number): boolean {
+  const gap = Math.abs(a - b);
+  return gap === 1 || gap === ACE_TO_KING_GAP;
 }
 
 /**
