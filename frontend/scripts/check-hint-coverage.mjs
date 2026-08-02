@@ -21,6 +21,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { splitRegistrations, stubbedFactoryNames } from '../src/utils/hintStubs.ts';
 
 const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(FRONTEND, '..');
@@ -120,33 +121,12 @@ async function registeredGames() {
 }
 
 /**
- * Names of exported factories whose whole body is `return null;`.
- *
- * These exist because checklist item 14 asks for a registration and a stub
- * satisfies the letter of it. Counting them as hints is what let the reported
- * figure drift 22 games above the truth (#4602).
- */
-async function stubbedFactories() {
-  const stubs = new Set();
-  for (const file of await readdir(HINTS)) {
-    if (!file.endsWith('Hint.ts') || file.endsWith('.test.ts')) continue;
-    const src = await readFile(join(HINTS, file), 'utf8');
-    // The signature is not always `get<Game>Hint` — chinesepokerHint has no
-    // prefix, and assuming one is how the first count of this missed it.
-    for (const m of src.matchAll(/^export function (\w+)\([^)]*\)\s*:\s*HintResult \| null \{\n([\s\S]*?)\n\}/gm)) {
-      if (m[2].trim() === 'return null;') stubs.add(m[1]);
-    }
-  }
-  return stubs;
-}
-
-/**
  * Games registered in hintFactories that can actually produce a hint.
  *
- * A registration counts only if it might return something. Two ways it cannot:
- * the value is written inline as `() => null`, or it delegates to a factory
- * whose body is `return null;`. Both are registrations without an
- * implementation, and the guard exists to measure implementations.
+ * A registration counts only if it might return something. The judgement of
+ * "might" lives in `src/utils/hintStubs.ts` because the doc-count test needs
+ * the identical rule, and two hand-synced copies of it would drift the same way
+ * the registration count drifted from the implementation count (#4602).
  */
 async function hintedGames() {
   const src = await readFile(HOOK, 'utf8');
@@ -156,21 +136,14 @@ async function hintedGames() {
   // wrong place swept up `hint:` from the hook's return interface below.
   const end = src.indexOf('\n} satisfies', start);
   if (end < 0) return null;
-  const body = src.slice(start, end);
 
-  const stubs = await stubbedFactories();
-  const names = new Set();
-  const stubbed = new Set();
-  for (const m of body.matchAll(/^ {2}([a-z0-9]+): (.+),$/gm)) {
-    const [, game, expr] = m;
-    const delegate = expr.match(/(\w+)\(s as/)?.[1];
-    if (/^\(_?\w*\)\s*=>\s*null$/.test(expr) || (delegate && stubs.has(delegate))) {
-      stubbed.add(game);
-      continue;
-    }
-    names.add(game);
+  const sources = {};
+  for (const file of await readdir(HINTS)) {
+    if (!file.endsWith('Hint.ts')) continue;
+    sources[file] = await readFile(join(HINTS, file), 'utf8');
   }
-  return { names, stubbed };
+  const { hinted, stubbed } = splitRegistrations(src.slice(start, end), stubbedFactoryNames(sources));
+  return { names: hinted, stubbed };
 }
 
 const games = await registeredGames();

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { splitRegistrations, stubbedFactoryNames } from '../utils/hintStubs';
 
 /**
  * Raw-source imports via Vite's `?raw` glob — mirrors the approach in
@@ -45,37 +46,14 @@ function countHintFactories(src: string): number {
   return matches ? matches.length : 0;
 }
 
-/**
- * Names of factories whose whole body is `return null;`.
- *
- * The signature is not always `get<Game>Hint` — `chinesepokerHint` has no
- * prefix — so this matches on the return type rather than the name.
- */
-function stubbedFactoryNames(): Set<string> {
-  const stubs = new Set<string>();
-  for (const [path, src] of Object.entries(hintFactorySources)) {
-    if (path.endsWith('.test.ts')) continue;
-    for (const m of src.matchAll(/^export function (\w+)\([^)]*\)\s*:\s*HintResult \| null \{\n([\s\S]*?)\n\}/gm)) {
-      if (m[2].trim() === 'return null;') stubs.add(m[1]);
-    }
-  }
-  return stubs;
-}
-
 /** Count registrations that can actually produce a hint. */
 function countImplemented(src: string): number {
   const start = src.indexOf('const hintFactories = {');
   const end = src.indexOf('} satisfies Record<string, HintFn>;', start);
-  const block = src.slice(start, end);
-  const stubs = stubbedFactoryNames();
-  let n = 0;
-  for (const m of block.matchAll(/^ {2}[a-z0-9]+: (.+),$/gm)) {
-    const expr = m[1];
-    const delegate = expr.match(/(\w+)\(s as/)?.[1];
-    if (/^\(_?\w*\)\s*=>\s*null$/.test(expr) || (delegate && stubs.has(delegate))) continue;
-    n += 1;
-  }
-  return n;
+  // 判定は `utils/hintStubs.ts` に 1 つだけ置く。こことビルドガードで
+  // 同じ正規表現を持ち合うと、片方だけ直したときに黙って食い違う (#4602 のレビュー指摘)。
+  const stubs = stubbedFactoryNames(hintFactorySources);
+  return splitRegistrations(src.slice(start, end), stubs).hinted.size;
 }
 
 describe('frontend/CLAUDE.md hint-count claim', () => {
