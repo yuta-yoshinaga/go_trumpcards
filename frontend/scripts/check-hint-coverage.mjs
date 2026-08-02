@@ -18,14 +18,16 @@
 // below with a reason, so the exemption is a decision someone made rather than
 // an omission nobody saw.
 
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { splitRegistrations, stubbedFactoryNames } from '../src/utils/hintStubs.ts';
 
 const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(FRONTEND, '..');
 const ROUTES = join(FRONTEND, 'src/constants/gameRoutes.ts');
 const HOOK = join(FRONTEND, 'src/hooks/useGameHint.ts');
+const HINTS = join(FRONTEND, 'src/utils/hints');
 
 /**
  * Games that genuinely need no hint, each with the reason.
@@ -48,7 +50,7 @@ const ALLOWED = new Map();
  * games missing (Six-Bid Solo, Karnöffel, Literature, Guandan) and 39 overall.
  * It was never recent. Prose alone had never held.
  */
-const BACKLOG = new Set([]);
+const BACKLOG = new Set(['bigtwo', 'blackjackswitch', 'fourcardpoker', 'president', 'tienlen', 'trash']);
 
 /** Game slugs for every registered route, keyed the way useGameHint is called. */
 async function registeredGames() {
@@ -61,7 +63,14 @@ async function registeredGames() {
   return names;
 }
 
-/** Game names registered in the hintFactories map. */
+/**
+ * Games registered in hintFactories that can actually produce a hint.
+ *
+ * A registration counts only if it might return something. The judgement of
+ * "might" lives in `src/utils/hintStubs.ts` because the doc-count test needs
+ * the identical rule, and two hand-synced copies of it would drift the same way
+ * the registration count drifted from the implementation count (#4602).
+ */
 async function hintedGames() {
   const src = await readFile(HOOK, 'utf8');
   const start = src.indexOf('export const hintFactories');
@@ -70,10 +79,14 @@ async function hintedGames() {
   // wrong place swept up `hint:` from the hook's return interface below.
   const end = src.indexOf('\n} satisfies', start);
   if (end < 0) return null;
-  const body = src.slice(start, end);
-  const names = new Set();
-  for (const m of body.matchAll(/^\s{2}([a-z0-9]+):/gm)) names.add(m[1]);
-  return names;
+
+  const sources = {};
+  for (const file of await readdir(HINTS)) {
+    if (!file.endsWith('Hint.ts')) continue;
+    sources[file] = await readFile(join(HINTS, file), 'utf8');
+  }
+  const { hinted, stubbed } = splitRegistrations(src.slice(start, end), stubbedFactoryNames(sources));
+  return { names: hinted, stubbed };
 }
 
 const games = await registeredGames();
@@ -82,22 +95,27 @@ if (games.size === 0) {
   process.exit(1);
 }
 
-const hinted = await hintedGames();
-if (hinted === null || hinted.size === 0) {
+const result = await hintedGames();
+if (result === null || result.names.size === 0) {
   console.error(`hint-coverage: found no factories in ${relative(REPO, HOOK)} — the regex has drifted.`);
   process.exit(1);
 }
+const { names: hinted, stubbed } = result;
 
 const missing = [];
 for (const game of games) {
+  if (stubbed.has(game)) continue; // reported as STUBBED below, not twice
   if (!hinted.has(game) && !ALLOWED.has(game) && !BACKLOG.has(game)) missing.push(game);
 }
 // A factory with no matching route is dead weight, usually a rename.
 const stale = [...hinted].filter((game) => !games.has(game));
 // An exemption for a game that now has a hint is stale too, and misleading.
 const redundant = [...ALLOWED.keys(), ...BACKLOG].filter((game) => hinted.has(game));
+// A registration that always returns null is owed like any other, so it has to
+// be named in BACKLOG rather than hiding behind the registration (#4602).
+const unlisted = [...stubbed].filter((game) => !BACKLOG.has(game) && !ALLOWED.has(game));
 
-if (missing.length > 0 || stale.length > 0 || redundant.length > 0) {
+if (missing.length > 0 || stale.length > 0 || redundant.length > 0 || unlisted.length > 0) {
   console.error('\nHint coverage gaps:\n');
   for (const game of missing.sort()) {
     console.error(`  MISSING    ${game}  (no factory in hintFactories)`);
@@ -107,6 +125,9 @@ if (missing.length > 0 || stale.length > 0 || redundant.length > 0) {
   }
   for (const game of redundant.sort()) {
     console.error(`  REDUNDANT  ${game}  (listed in ALLOWED/BACKLOG, but a factory exists — drop the entry)`);
+  }
+  for (const game of unlisted.sort()) {
+    console.error(`  STUBBED    ${game}  (registered, but the factory always returns null — list it in BACKLOG)`);
   }
   console.error(
     `\nEvery game needs a hint factory in ${relative(REPO, HOOK)} (checklist item 14).\n` +
@@ -118,5 +139,5 @@ if (missing.length > 0 || stale.length > 0 || redundant.length > 0) {
 
 console.log(
   `hint-coverage: OK (${hinted.size} of ${games.size} games hinted; ` +
-    `${ALLOWED.size} need none; ${BACKLOG.size} still owed, see #4557).`,
+    `${ALLOWED.size} need none; ${BACKLOG.size} still owed, of which ${stubbed.size} are stubs, see #4557).`,
 );
