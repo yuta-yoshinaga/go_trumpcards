@@ -80,6 +80,7 @@ import type {
   GongZhuResponse,
   GoStopResponse,
   GrandfathersClockResponse,
+  GuandanResponse,
   GutsResponse,
   HachiHachiResponse,
   HeartsResponse,
@@ -306,6 +307,7 @@ import { getGolfHint } from '../utils/hints/golfHint';
 import { getGongZhuHint } from '../utils/hints/gongzhuHint';
 import { getGoStopHint } from '../utils/hints/gostopHint';
 import { getGrandfathersClockHint } from '../utils/hints/grandfathersclockHint';
+import { getGuandanHint } from '../utils/hints/guandanHint';
 import { getGutsHint } from '../utils/hints/gutsHint';
 import { getHachiHachiHint } from '../utils/hints/hachihachiHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
@@ -531,6 +533,7 @@ export const hintFactories = {
   cribbage: (s) => getCribbageHint(s as CribbageResponse),
   cuckoo: (s) => getCuckooHint(s as CuckooResponse),
   gofish: (s) => getGoFishHint(s as GoFishResponse),
+  guandan: (s) => getGuandanHint(s as GuandanResponse),
   golf: (s) => getGolfHint(s as GolfResponse),
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
   oasispoker: (s) => getOasisPokerHint(s as OasisPokerResponse),
