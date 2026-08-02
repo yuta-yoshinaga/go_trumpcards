@@ -12,13 +12,14 @@ import (
 //
 // 各ゲームの CPU セレクタは「出せる札が無い」とき 0 を返し、Player.RemoveCard は
 // 範囲外で nil を返す (Player.go:89-96)。この 2 つが噛み合うと playCard が nil を
-// 触り、**HTTP ハンドラごとパニックする**。E2E が GongZhu で実際にサーバを落とし
-// (#4606)、同じ形が 52 ゲームにあった。
+// 触り、**HTTP ハンドラごとパニックする**。E2E が GongZhu で実際にサーバを落とした
+// のが発端 (#4606)。
 //
-// **代表を選ばず全件を通す。**「同じ形だから同じはず」で括ったせいで探索が 3 回とも
-// 少なく数えたのがこの修正の経緯で、実際 4 件だけ見ていた版では Briscola と Tysiac が
-// **まだ落ちるのを見逃していた**。あの 2 つは CpuPlay ではなくセレクタの内部で
-// 落ちていて、呼び出し側のガードでは届かない。
+// **代表を選ばず全件を通す。**「同じ形だから同じはず」で括ったせいで、探索が
+// 4 回とも少なく数えた。4 件だけ見ていた版では Briscola と Tysiac を見逃し
+// （セレクタ内部と GetCard の順序）、さらにレビューが Cinch と Sheepshead を
+// 指摘した（switch の中でインデントが 1 段深く、正規表現が \t 1 個を決め打ち
+// していた）——最後の走査で同型は 60 件あった。
 func TestCpuPlayWithEmptyHandDoesNotPanic(t *testing.T) {
 	cases := []struct {
 		name  string
@@ -134,10 +135,32 @@ func TestCpuPlayWithEmptyHandDoesNotPanic(t *testing.T) {
 			g.SetCurrentPlayerIdx(1)
 			g.CpuPlay()
 		}},
+		{"Cinch", func() {
+			g := domain.NewDefaultCinch()
+			g.Reset()
+			g.SetPhase(domain.CinchPhasePlay)
+			p := g.GetPlayer(1)
+			for p.GetCardsSize() > 0 {
+				p.RemoveCard(0)
+			}
+			g.SetCurrentTurn(1)
+			g.CpuPlay()
+		}},
 		{"CourtPiece", func() {
 			g := domain.NewDefaultCourtPiece()
 			g.Reset()
 			g.SetPhase(domain.CourtPiecePhasePlay)
+			p := g.GetPlayer(1)
+			for p.GetCardsSize() > 0 {
+				p.RemoveCard(0)
+			}
+			g.SetCurrentPlayerIdx(1)
+			g.CpuPlay()
+		}},
+		{"CrazyEights", func() {
+			g := domain.NewDefaultCrazyEights()
+			g.Reset()
+			g.SetPhase(domain.CrazyEightsPhasePlay)
 			p := g.GetPlayer(1)
 			for p.GetCardsSize() > 0 {
 				p.RemoveCard(0)
@@ -277,10 +300,43 @@ func TestCpuPlayWithEmptyHandDoesNotPanic(t *testing.T) {
 			g.SetCurrentPlayerIdx(1)
 			g.CpuPlay()
 		}},
+		{"Loo", func() {
+			g := domain.NewDefaultLoo()
+			g.Reset()
+			g.SetPhase(domain.LooPhasePlay)
+			p := g.GetPlayer(1)
+			for p.GetCardsSize() > 0 {
+				p.RemoveCard(0)
+			}
+			g.SetCurrentTurn(1)
+			g.CpuPlay()
+		}},
+		{"Macau", func() {
+			g := domain.NewDefaultMacau()
+			g.Reset()
+			g.SetPhase(domain.MacauPhasePlay)
+			p := g.GetPlayer(1)
+			for p.GetCardsSize() > 0 {
+				p.RemoveCard(0)
+			}
+			g.SetCurrentPlayerIdx(1)
+			g.CpuPlay()
+		}},
 		{"Manille", func() {
 			g := domain.NewDefaultManille()
 			g.Reset()
 			g.SetPhase(domain.ManillePhasePlay)
+			p := g.GetPlayer(1)
+			for p.GetCardsSize() > 0 {
+				p.RemoveCard(0)
+			}
+			g.SetCurrentPlayerIdx(1)
+			g.CpuPlay()
+		}},
+		{"Mao", func() {
+			g := domain.NewDefaultMao()
+			g.Reset()
+			g.SetPhase(domain.MaoPhasePlay)
 			p := g.GetPlayer(1)
 			for p.GetCardsSize() > 0 {
 				p.RemoveCard(0)
@@ -365,6 +421,17 @@ func TestCpuPlayWithEmptyHandDoesNotPanic(t *testing.T) {
 			g.SetCurrentPlayerIdx(1)
 			g.CpuPlay()
 		}},
+		{"PageOne", func() {
+			g := domain.NewDefaultPageOne()
+			g.Reset()
+			g.SetPhase(domain.PageOnePhasePlay)
+			p := g.GetPlayer(1)
+			for p.GetCardsSize() > 0 {
+				p.RemoveCard(0)
+			}
+			g.SetCurrentPlayerIdx(1)
+			g.CpuPlay()
+		}},
 		{"Pitch", func() {
 			g := domain.NewDefaultPitch()
 			g.Reset()
@@ -380,6 +447,17 @@ func TestCpuPlayWithEmptyHandDoesNotPanic(t *testing.T) {
 			g := domain.NewDefaultPreference()
 			g.Reset()
 			g.SetPhase(domain.PreferencePhasePlay)
+			p := g.GetPlayer(1)
+			for p.GetCardsSize() > 0 {
+				p.RemoveCard(0)
+			}
+			g.SetCurrentPlayerIdx(1)
+			g.CpuPlay()
+		}},
+		{"Prsi", func() {
+			g := domain.NewDefaultPrsi()
+			g.Reset()
+			g.SetPhase(domain.PrsiPhasePlay)
 			p := g.GetPlayer(1)
 			for p.GetCardsSize() > 0 {
 				p.RemoveCard(0)
@@ -424,6 +502,17 @@ func TestCpuPlayWithEmptyHandDoesNotPanic(t *testing.T) {
 			g := domain.NewDefaultSedma()
 			g.Reset()
 			g.SetPhase(domain.SedmaPhasePlay)
+			p := g.GetPlayer(1)
+			for p.GetCardsSize() > 0 {
+				p.RemoveCard(0)
+			}
+			g.SetCurrentPlayerIdx(1)
+			g.CpuPlay()
+		}},
+		{"Sheepshead", func() {
+			g := domain.NewDefaultSheepshead()
+			g.Reset()
+			g.SetPhase(domain.SheepsheadPhasePlay)
 			p := g.GetPlayer(1)
 			for p.GetCardsSize() > 0 {
 				p.RemoveCard(0)
