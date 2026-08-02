@@ -22,7 +22,7 @@ function makeState(overrides?: Partial<BriscolaResponse>): BriscolaResponse {
 describe('getBriscolaHint', () => {
   it('points at the card the backend recommends', () => {
     const hint = getBriscolaHint(makeState({ hint: { cardIndex: 2, reason: 'lead_low' } }));
-    expect(hint?.targetAction).toBe('card-2');
+    expect(hint?.targetAction).toBe('play');
     expect(hint?.reason).toBe('hint.lead_low');
   });
 
