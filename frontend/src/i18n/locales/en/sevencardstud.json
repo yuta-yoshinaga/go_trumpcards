@@ -67,5 +67,14 @@
     "fourOfAKind": "Four of a Kind",
     "straightFlush": "Straight Flush",
     "royalFlush": "Royal Flush"
+  },
+  "frontendHint": {
+    "sevencardstudBringIn": "You are forced in on the lowest door card — that is not a strong hand",
+    "sevencardstudRaisePair": "You have a pair — raise",
+    "sevencardstudPlayLow": "Five cards of eight or lower — weak for high, but live for half the pot",
+    "sevencardstudCheckFree": "Nothing to call — take the next card for free",
+    "sevencardstudCallHigh": "You hold a high card — call and see the next street",
+    "sevencardstudFoldWeak": "No pair and no high card — fold",
+    "sevencardstudCheckLow": "Five cards of eight or lower and nothing to call — take the next card for free"
   }
 }
