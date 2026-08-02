@@ -17,6 +17,15 @@ on:
       - 'Makefile'
       - 'internal/**'
 
+# **同じ ref の古いビルドを打ち切る。**このワークフローは `internal/**` の変更で
+# 発火し、6 つの Worker を TinyGo でビルドする —— CI の中で最も 1 ジョブが重い。
+# バックエンドを触る PR は押すたびに 6 ジョブを二重に積んでいた。
+#
+# サイズ検査が目的で成果物を配布しないので、途中で切っても失われるものはない。
+concurrency:
+  group: workers-build-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 

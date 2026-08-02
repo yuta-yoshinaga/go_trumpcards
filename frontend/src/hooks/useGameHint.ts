@@ -47,6 +47,7 @@ import type {
   CinchResponse,
   ClockSolitaireResponse,
   CongressResponse,
+  ContractRummyResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
   CribbageResponse,
@@ -206,6 +207,7 @@ import type {
   TichuResponse,
   TienLenResponse,
   ToepenResponse,
+  TonkResponse,
   TrashResponse,
   TrenteEtQuaranteResponse,
   TressetteResponse,
@@ -279,6 +281,7 @@ import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCongressHint } from '../utils/hints/congressHint';
+import { getContractRummyHint } from '../utils/hints/contractrummyHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
@@ -443,6 +446,7 @@ import { getThreeThirteenHint } from '../utils/hints/threethirteenHint';
 import { getTichuHint } from '../utils/hints/tichuHint';
 import { getTienLenHint } from '../utils/hints/tienlenHint';
 import { getToepenHint } from '../utils/hints/toepenHint';
+import { getTonkHint } from '../utils/hints/tonkHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTrenteEtQuaranteHint } from '../utils/hints/trenteetquaranteHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
@@ -588,7 +592,7 @@ export const hintFactories = {
   karnoffel: (s) => getKarnoffelHint(s as KarnoffelResponse),
   king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
-  tonk: () => null,
+  tonk: (s) => getTonkHint(s as TonkResponse),
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
   yaniv: (s) => getYanivHint(s as YanivResponse),
   tressette: (s) => getTressetteHint(s as TressetteResponse),
@@ -651,7 +655,7 @@ export const hintFactories = {
   nertz: (s) => getNertzHint(s as NertzResponse),
   slapjack: (s) => getSlapjackHint(s as SlapjackResponse),
   egyptianratscrew: (s) => getEgyptianRatscrewHint(s as EgyptianRatscrewResponse),
-  contractrummy: () => null,
+  contractrummy: (s) => getContractRummyHint(s as ContractRummyResponse),
   carioca: () => null,
   crescent: () => null,
   spiderette: (s) => getSpideretteHint(s as SpideretteResponse),
