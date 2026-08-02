@@ -53,5 +53,11 @@
     "strongHandRank": "強いハンド — レイズ推奨",
     "decentHandRank": "まずまずのハンド — コール推奨",
     "weakHandRank": "弱いハンド — フォールド推奨"
+  },
+  "frontendHint": {
+    "fivecardstudRaisePair": "ペアができています。攻めましょう",
+    "fivecardstudCallHigh": "高い札があります。見に行く価値があります",
+    "fivecardstudCheckFree": "まだ役がありません。ただで見られるならチェックしましょう",
+    "fivecardstudFoldWeak": "役も高い札もなく、払う必要があります。降りるほうが無難です"
   }
 }
