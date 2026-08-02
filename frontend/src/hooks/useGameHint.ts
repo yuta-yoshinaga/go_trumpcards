@@ -91,6 +91,7 @@ import type {
   JassResponse,
   KalookiResponse,
   KempsResponse,
+  KilleResponse,
   KingAlbertResponse,
   KingResponse,
   KlaberjassResponse,
@@ -320,6 +321,7 @@ import { getJassHint } from '../utils/hints/jassHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKalookiHint } from '../utils/hints/kalookiHint';
 import { getKempsHint } from '../utils/hints/kempsHint';
+import { getKilleHint } from '../utils/hints/killeHint';
 import { getKingalbertHint } from '../utils/hints/kingalbertHint';
 import { getKingHint } from '../utils/hints/kingHint';
 import { getKlaberjassHint } from '../utils/hints/klaberjassHint';
@@ -566,6 +568,7 @@ export const hintFactories = {
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   streetsandalleys: (s) => getStreetsandalleysHint(s as StreetsAndAlleysResponse),
+  kille: (s) => getKilleHint(s as KilleResponse),
   kingalbert: (s) => getKingalbertHint(s as KingAlbertResponse),
   king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
