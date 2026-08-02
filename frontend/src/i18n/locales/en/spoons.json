@@ -45,5 +45,10 @@
     "grab": "When someone gets four of a kind, everyone races to grab a spoon from here. Whoever misses out gains a letter.",
     "resetButton": "Use this button to reset the game at any time."
   },
-  "passCardAria": "Pass {{card}}"
+  "passCardAria": "Pass {{card}}",
+  "frontendHint": {
+    "spoonsGrabNow": "The race is on — take a spoon now",
+    "spoonsFourOfAKind": "Four of a kind. Start the race yourself",
+    "spoonsPassOdd": "The card that does not match — pass it on"
+  }
 }

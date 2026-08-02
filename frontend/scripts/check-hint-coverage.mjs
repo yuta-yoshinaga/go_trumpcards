@@ -73,7 +73,6 @@ const BACKLOG = new Set([
   'scopone',
   'settemezzo',
   'sixbidsolo',
-  'spoons',
   'threethirteen',
   'vint',
 ]);
