@@ -51,5 +51,9 @@
     "hand": "Your hand. You may only ask for a card from a half-suit you hold, and only one you do not hold yourself.",
     "actions": "You may ask opponents only. A claim places all six cards, and misnaming a teammate cancels it.",
     "resetButton": "Reset the game at any time with this button."
+  },
+  "frontendHint": {
+    "literatureAskHeldSuit": "You may only ask for a half-suit you already hold a card of",
+    "literatureMustClaim": "Every half-suit you hold is settled — a claim is all that is left"
   }
 }
