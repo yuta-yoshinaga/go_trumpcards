@@ -50,5 +50,7 @@
     "resetButton": "Use the reset button to start a new game."
   },
   "tableCandidateAria": "{{card}}, capturable",
-  "tableSelectedAria": "{{card}}, selected"
+  "tableSelectedAria": "{{card}}, selected",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

@@ -53,12 +53,10 @@ const BACKLOG = new Set([
   'briscola',
   'conquian',
   'faro',
-  'fivecardstud',
   'guandan',
   'handandfoot',
   'kaiser',
   'literature',
-  'niuniu',
   'pishti',
   'sixbidsolo',
 ]);
