@@ -139,6 +139,7 @@ import type {
   RedDogResponse,
   RookResponse,
   Rummy500Response,
+  RussianBankResponse,
   RussianPokerResponse,
   RussianSolitaireResponse,
   SambaResponse,
@@ -352,6 +353,7 @@ import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getRookHint } from '../utils/hints/rookHint';
 import { getRummy500Hint } from '../utils/hints/rummy500Hint';
+import { getRussianBankHint } from '../utils/hints/russianbankHint';
 import { getRussianPokerHint } from '../utils/hints/russianpokerHint';
 import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
 import { getSambaHint } from '../utils/hints/sambaHint';
@@ -548,6 +550,7 @@ export const hintFactories = {
   wasp: (s) => getWaspHint(s as WaspResponse),
   easthaven: (s) => getEasthavenHint(s as EasthavenResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
+  russianbank: (s) => getRussianBankHint(s as RussianBankResponse),
   acesup: (s) => getAcesUpHint(s as AcesUpResponse),
   blackhole: (s) => getBlackHoleHint(s as BlackHoleResponse),
   simplesimon: (s) => getSimpleSimonHint(s as SimpleSimonResponse),
