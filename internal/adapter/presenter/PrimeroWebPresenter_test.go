@@ -147,3 +147,24 @@ func TestPrimeroWebPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.PrimeroWebPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestPrimeroWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// 既存の HintOutput テストと同じ状態。
+	g := domain.NewDefaultPrimero()
+	g.Reset()
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+
+	out := new(presenter.PrimeroWebPresenter).Output(g, nil)
+	assert.Contains(t, out, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, out, "primero.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestPrimeroWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultPrimero()
+	g.Reset()
+	assert.Contains(t, new(presenter.PrimeroWebPresenter).HintOutput(g), "primero.hintRequested")
+}
