@@ -75,3 +75,24 @@ func TestBasraWebPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.BasraWebPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestBasraWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// Reset 直後にヒントが出る。300 回試して nil 0 件で確認済み。
+	g := domain.NewDefaultBasra()
+	g.Reset()
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+
+	out := new(presenter.BasraWebPresenter).Output(g, nil)
+	assert.Contains(t, out, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, out, "basra.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestBasraWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultBasra()
+	g.Reset()
+	assert.Contains(t, new(presenter.BasraWebPresenter).HintOutput(g), "basra.hintRequested")
+}
