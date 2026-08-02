@@ -520,11 +520,8 @@ export const hintFactories = {
   daifugo: (s) => getDaifugoHint(s as DaifugoResponse),
   settemezzo: (s) => getSetteEMezzoHint(s as SetteEMezzoResponse),
   sevens: (s) => getSevensHint(s as SevensResponse),
-<<<<<<< HEAD
   conquian: (s) => getConquianHint(s as ConquianResponse),
-=======
   chinchon: (s) => getChinchonHint(s as ChinchonResponse),
->>>>>>> origin/develop
   crazyeights: (s) => getCrazyEightsHint(s as CrazyEightsResponse),
   prsi: (s) => getPrsiHint(s as PrsiResponse),
   speed: (s) => getSpeedHint(s as SpeedResponse),
