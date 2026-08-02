@@ -102,6 +102,7 @@ import type {
   LaBelleLucieResponse,
   LaughAndLieDownResponse,
   LetItRideResponse,
+  LiteratureResponse,
   LobaResponse,
   LooResponse,
   MacauResponse,
@@ -331,6 +332,7 @@ import { getKoiKoiHint } from '../utils/hints/koikoiHint';
 import { getLaBelleLucieHint } from '../utils/hints/labellelucieHint';
 import { getLaughAndLieDownHint } from '../utils/hints/laughandliedownHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
+import { getLiteratureHint } from '../utils/hints/literatureHint';
 import { getLobaHint } from '../utils/hints/lobaHint';
 import { getLooHint } from '../utils/hints/looHint';
 import { getMacauHint } from '../utils/hints/macauHint';
@@ -601,6 +603,7 @@ export const hintFactories = {
   acesup: (s) => getAcesUpHint(s as AcesUpResponse),
   blackhole: (s) => getBlackHoleHint(s as BlackHoleResponse),
   simplesimon: (s) => getSimpleSimonHint(s as SimpleSimonResponse),
+  literature: (s) => getLiteratureHint(s as LiteratureResponse),
   labellelucie: (s) => getLaBelleLucieHint(s as LaBelleLucieResponse),
   doubleklondike: (s) => getDoubleKlondikeHint(s as DoubleKlondikeResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
