@@ -103,6 +103,7 @@ import type {
   IndianPokerResponse,
   IndianRummyResponse,
   JassResponse,
+  KaiserResponse,
   KalookiResponse,
   KarnoffelResponse,
   KempsResponse,
@@ -356,6 +357,7 @@ import { getIndianRummyHint } from '../utils/hints/indianRummyHint';
 import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getJassHint } from '../utils/hints/jassHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
+import { getKaiserHint } from '../utils/hints/kaiserHint';
 import { getKalookiHint } from '../utils/hints/kalookiHint';
 import { getKarnoffelHint } from '../utils/hints/karnoffelHint';
 import { getKempsHint } from '../utils/hints/kempsHint';
@@ -709,6 +711,7 @@ export const hintFactories = {
   mus: (s) => getMusHint(s as MusResponse),
   tute: (s) => getTuteHint(s as TuteResponse),
   sueca: (s) => getSuecaHint(s as SuecaResponse),
+  kaiser: (s) => getKaiserHint(s as KaiserResponse),
   kalooki: (s) => getKalookiHint(s as KalookiResponse),
   kemps: (s) => getKempsHint(s as KempsResponse),
   klaberjass: (s) => getKlaberjassHint(s as KlaberjassResponse),
