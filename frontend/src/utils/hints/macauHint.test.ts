@@ -125,3 +125,70 @@ describe('getMacauHint', () => {
     expect(getMacauHint(state)?.reason).toBe('hint.playMatchingSuit');
   });
 });
+
+// **8 の後は指定スートだけが通る。**ドメインは chosenSuit > 0 のとき
+// `card.GetDesign() == g.chosenSuit` だけを見て、場札のランクは見ない。
+// ランク一致を門番していないと、出せない札を strong で勧める (#4598)。
+describe('getMacauHint with a called suit', () => {
+  const calledDiamond = {
+    chosenSuit: 4,
+    discardTop: card('HEART', 9),
+  };
+
+  it('does not offer a rank match that the called suit forbids', () => {
+    const state = makeState({
+      ...calledDiamond,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 2,
+          cards: [card('SPADE', 9), card('CLOVER', 2)],
+          roundScore: 0,
+          cumulativeScore: 0,
+          hasDeclared: false,
+        },
+        { id: 1, isHuman: false, cardCount: 3, cards: [], roundScore: 0, cumulativeScore: 0, hasDeclared: false },
+      ],
+    });
+    expect(getMacauHint(state)).toEqual({ targetAction: 'draw', reason: 'hint.drawCard', confidence: 'moderate' });
+  });
+
+  it('does not tell the player to save the only card they can play', () => {
+    const state = makeState({
+      ...calledDiamond,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 2,
+          cards: [card('SPADE', 9), card('CLOVER', 8)],
+          roundScore: 0,
+          cumulativeScore: 0,
+          hasDeclared: false,
+        },
+        { id: 1, isHuman: false, cardCount: 3, cards: [], roundScore: 0, cumulativeScore: 0, hasDeclared: false },
+      ],
+    });
+    expect(getMacauHint(state)?.reason).toBe('hint.playEight');
+  });
+
+  it('still offers a card of the called suit', () => {
+    const state = makeState({
+      ...calledDiamond,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 2,
+          cards: [card('DIAMOND', 2), card('SPADE', 3)],
+          roundScore: 0,
+          cumulativeScore: 0,
+          hasDeclared: false,
+        },
+        { id: 1, isHuman: false, cardCount: 3, cards: [], roundScore: 0, cumulativeScore: 0, hasDeclared: false },
+      ],
+    });
+    expect(getMacauHint(state)?.reason).toBe('hint.playMatchingSuit');
+  });
+});

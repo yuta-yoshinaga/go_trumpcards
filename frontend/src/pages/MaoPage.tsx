@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -17,6 +18,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useMaoGame } from '../hooks/useMaoGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -35,6 +37,7 @@ import { formatMaoState } from '../utils/cli/formatters/maoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { appendSayWordAttempt, type MaoSayWordAttempt } from '../utils/maoSayWordHistory';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const MAO_PHASE_KEYS: Readonly<Record<number, string>> = {
   [MaoPhase.PLAY]: 'play',
@@ -212,6 +215,14 @@ function MaoPageContent() {
     prevRulePenaltyRef.current = penalty;
   }, [state?.rulePenalty, playSound]);
 
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('mao', state);
+
   if (!state)
     return (
       <GameSkeleton
@@ -272,6 +283,7 @@ function MaoPageContent() {
                     options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('pointLimit', v),
                   },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -429,6 +441,7 @@ function MaoPageContent() {
                   </span>
                 )}
               </div>
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
               {state.hintUnlocked && state.ruleHint && (
                 <div className="text-ds-accent" data-testid="rule-hint">
                   {t('ruleHintLabel')}: {state.ruleHint}
