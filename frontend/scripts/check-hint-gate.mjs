@@ -94,7 +94,12 @@ for (const file of await readdir(PAGES)) {
   // Checking only the banner let Yukon and Russian Solitaire keep announcing
   // the suggested card in its aria-label to a player who never asked.
   const rendersHint = /\{state\.hint(\?)?[.\s]/.test(src);
-  const derivesHint = /^\s*const \w+ =[^\n]*state\.hint/m.test(src);
+  // **`[\s\S]` で改行をまたぐ。**`[^\n]*` にすると、Biome が長い三項を
+  // `isRequestedHint(state)` の後で折り返した瞬間に見落とす。今そう書いている
+  // ページは無いが、この門番の役目は「次のを驚きで捕まえる」ことなので、
+  // 折り返しに強い形にしておく (#4608 のレビュー指摘)。
+  // 宣言 1 つ分に収めるため、次の `;` までで止める。
+  const derivesHint = /^\s*const \w+ =[^;]*state\.hint/m.test(src);
   if (!rendersHint && !derivesHint) continue;
   if (!src.includes('isRequestedHint')) {
     offenders.push(game);

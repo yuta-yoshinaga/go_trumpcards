@@ -325,6 +325,9 @@ function SirTommyPageContent() {
   const isWasteSelected = (idx: number) => source?.kind === 'waste' && source.idx === idx;
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
   // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+  // **門番はここ。**以降 `requestedHint` を見る箇所で再チェックしない ——
+  // 二重に書くと、ゲートされていない別の変数に貼り付けても安全に見えてしまう
+  // (#4608 のレビュー指摘)。
   const requestedHint = isRequestedHint(state) ? state.hint : undefined;
   const hintFoundation = requestedHint ? requestedHint.foundationIdx : -1;
   const hintWaste = requestedHint?.fromZone === 'waste' ? requestedHint.wasteIdx : -1;
@@ -546,7 +549,7 @@ function SirTommyPageContent() {
                 messageParams={state.messageParams}
               />
 
-              {requestedHint && isRequestedHint(state) && (
+              {requestedHint && (
                 <div
                   className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
                   role="status"

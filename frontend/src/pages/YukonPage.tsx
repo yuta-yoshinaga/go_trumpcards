@@ -269,6 +269,9 @@ function YukonPageContent() {
   const autoCompleteReady = isTableauAllFaceUp(state.tableau);
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
   // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+  // **門番はここ。**以降 `requestedHint` を見る箇所で再チェックしない ——
+  // 二重に書くと、ゲートされていない別の変数に貼り付けても安全に見えてしまう
+  // (#4608 のレビュー指摘)。
   const requestedHint = isRequestedHint(state) ? state.hint : undefined;
   const hintDest = requestedHint
     ? requestedHint.toZone === 'foundation'
@@ -505,7 +508,7 @@ function YukonPageContent() {
             {error && <ErrorAlert message={error} onRetry={retry} />}
 
             {/* Visually hidden so the hint costs no footer space, but still announced to AT. */}
-            {requestedHint && isRequestedHint(state) && (
+            {requestedHint && (
               <div className="sr-only" role="status" aria-live="polite">
                 {t('hintAnnouncement', { card: hintCardName, dest: hintDest })}
               </div>
