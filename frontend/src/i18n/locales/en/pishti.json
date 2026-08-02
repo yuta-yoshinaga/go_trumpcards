@@ -42,5 +42,13 @@
     "resetButton": "Use this button to reset the game at any time."
   },
   "playCardAria": "Play {{card}}",
-  "captureHint": "can capture the pile"
+  "captureHint": "can capture the pile",
+  "frontendHint": {
+    "pishtiPisti": "A single card is showing — matching it is a Pişti and scores a bonus",
+    "pishtiCapture": "Matches the top card — you take the pile",
+    "pishtiJackSweep": "A jack sweeps the pile, and the pile is worth taking now",
+    "pishtiLayLow": "Nothing captures — lay your lowest card and keep the jack back",
+    "pishtiJackOnJack": "A jack onto a lone jack is the biggest score on the board",
+    "pishtiJackPisti": "A jack takes a lone card too — that still scores the Pişti bonus"
+  }
 }

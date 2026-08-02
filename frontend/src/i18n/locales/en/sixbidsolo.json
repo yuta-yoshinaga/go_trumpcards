@@ -71,5 +71,11 @@
     "hand": "Your hand of eleven. Following suit is compulsory, so cards you cannot play are disabled.",
     "actions": "Pick one of the six bids. A plain bid needs 61 points; a misere needs zero card points.",
     "resetButton": "Reset the game at any time with this button."
+  },
+  "frontendHint": {
+    "sixbidsoloForced": "The only legal card — following suit is compulsory",
+    "sixbidsoloMisereDuck": "This is a misère: you win by taking no trick at all",
+    "sixbidsoloMisereForce": "The declarer is on a misère — force a trick onto them",
+    "sixbidsoloChoose": "Several cards are legal — pick from the highlighted ones"
   }
 }

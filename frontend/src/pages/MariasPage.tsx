@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { MARIAS_HELP, parseMariasCommand } from '../utils/cli/commands/mariasCommands';
 import { formatMariasState } from '../utils/cli/formatters/mariasFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -382,7 +383,7 @@ function MariasPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndices &&

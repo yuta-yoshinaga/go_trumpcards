@@ -273,6 +273,7 @@ describe('SirTommyPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromZone: 'stock', wasteIdx: -1, foundationIdx: 2 },
+      messageCode: 'sirtommy.hintAvailable',
     });
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -281,11 +282,26 @@ describe('SirTommyPage', () => {
     expect(screen.getByText(/ストック → ファンデーション 2/)).toBeInTheDocument();
   });
 
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  it('hides the hint when it was not requested', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'stock', wasteIdx: -1, foundationIdx: 2 },
+    });
+    renderWithProviders(<SirTommyPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByText(/ヒントがあります/)).not.toBeInTheDocument();
+    // Hint uses localized zone names + index, not raw F/W symbols.
+    expect(screen.queryByText(/ストック → ファンデーション 2/)).not.toBeInTheDocument();
+  });
+
   it('renders the backend hint banner when state.hint is a waste hint', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       wastes: [[card('SPADE', 5)], [], [], []],
       hint: { fromZone: 'waste', wasteIdx: 0, foundationIdx: 1 },
+      messageCode: 'sirtommy.hintAvailable',
     });
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
