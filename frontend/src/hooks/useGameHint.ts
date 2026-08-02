@@ -50,6 +50,7 @@ import type {
   ContractRummyResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
+  CrescentResponse,
   CribbageResponse,
   CruelResponse,
   CuarentaResponse,
@@ -75,7 +76,9 @@ import type {
   FiveCardStudResponse,
   FiveHundredResponse,
   FlowerGardenResponse,
+  FortyAndEightResponse,
   FortyFivesResponse,
+  FortyThievesResponse,
   FourCardPokerResponse,
   FreeCellResponse,
   FrenchTarotResponse,
@@ -199,6 +202,7 @@ import type {
   SpoonsResponse,
   StreetsAndAlleysResponse,
   SuecaResponse,
+  SultanResponse,
   TablanetResponse,
   TarneebResponse,
   TeenPattiResponse,
@@ -289,6 +293,7 @@ import { getContractRummyHint } from '../utils/hints/contractrummyHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
+import { getCrescentHint } from '../utils/hints/crescentHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getCruelHint } from '../utils/hints/cruelHint';
 import { getCuarentaHint } from '../utils/hints/cuarentaHint';
@@ -315,7 +320,9 @@ import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFiveCardStudHint } from '../utils/hints/fivecardstudHint';
 import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
 import { getFlowergardenHint } from '../utils/hints/flowergardenHint';
+import { getFortyAndEightHint } from '../utils/hints/fortyandeightHint';
 import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
+import { getFortyThievesHint } from '../utils/hints/fortythievesHint';
 import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getFrenchTarotHint } from '../utils/hints/frenchtarotHint';
@@ -443,6 +450,7 @@ import { getSpoilFiveHint } from '../utils/hints/spoilFiveHint';
 import { getSpoonsHint } from '../utils/hints/spoonsHint';
 import { getStreetsandalleysHint } from '../utils/hints/streetsandalleysHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
+import { getSultanHint } from '../utils/hints/sultanHint';
 import { getTablanetHint } from '../utils/hints/tablanetHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTeenPattiHint } from '../utils/hints/teenPattiHint';
@@ -593,9 +601,9 @@ export const hintFactories = {
   razz: (s) => getRazzHint(s as SevenCardStudResponse),
   badugi: (s) => getBadugiHint(s as BadugiResponse),
   deucetoseven: (s) => getDeuceToSevenHint(s as DeuceToSevenResponse),
-  fortythieves: () => null,
-  fortyandeight: () => null,
-  sultan: () => null,
+  fortythieves: (s) => getFortyThievesHint(s as FortyThievesResponse),
+  fortyandeight: (s) => getFortyAndEightHint(s as FortyAndEightResponse),
+  sultan: (s) => getSultanHint(s as SultanResponse),
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   streetsandalleys: (s) => getStreetsandalleysHint(s as StreetsAndAlleysResponse),
@@ -668,7 +676,7 @@ export const hintFactories = {
   egyptianratscrew: (s) => getEgyptianRatscrewHint(s as EgyptianRatscrewResponse),
   contractrummy: (s) => getContractRummyHint(s as ContractRummyResponse),
   carioca: (s) => getCariocaHint(s as CariocaResponse),
-  crescent: () => null,
+  crescent: (s) => getCrescentHint(s as CrescentResponse),
   spiderette: (s) => getSpideretteHint(s as SpideretteResponse),
   gaps: (s) => getGapsHint(s as GapsResponse),
   fourcardpoker: (s) => getFourCardPokerHint(s as FourCardPokerResponse),
