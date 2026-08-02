@@ -61,7 +61,6 @@ const BACKLOG = new Set([
   'karnoffel',
   'kille',
   'literature',
-  'niuniu',
   'pishti',
   'sixbidsolo',
   'vint',
