@@ -58,7 +58,6 @@ const BACKLOG = new Set([
   'guandan',
   'handandfoot',
   'kaiser',
-  'karnoffel',
   'kille',
   'niuniu',
   'pishti',

@@ -90,6 +90,7 @@ import type {
   IndianRummyResponse,
   JassResponse,
   KalookiResponse,
+  KarnoffelResponse,
   KempsResponse,
   KingAlbertResponse,
   KingResponse,
@@ -320,6 +321,7 @@ import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getJassHint } from '../utils/hints/jassHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKalookiHint } from '../utils/hints/kalookiHint';
+import { getKarnoffelHint } from '../utils/hints/karnoffelHint';
 import { getKempsHint } from '../utils/hints/kempsHint';
 import { getKingalbertHint } from '../utils/hints/kingalbertHint';
 import { getKingHint } from '../utils/hints/kingHint';
@@ -569,6 +571,7 @@ export const hintFactories = {
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   streetsandalleys: (s) => getStreetsandalleysHint(s as StreetsAndAlleysResponse),
   kingalbert: (s) => getKingalbertHint(s as KingAlbertResponse),
+  karnoffel: (s) => getKarnoffelHint(s as KarnoffelResponse),
   king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
   tonk: () => null,
