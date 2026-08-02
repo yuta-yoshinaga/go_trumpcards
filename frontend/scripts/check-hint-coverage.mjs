@@ -48,15 +48,7 @@ const ALLOWED = new Map();
  * games missing (Six-Bid Solo, Karnöffel, Literature, Guandan) and 39 overall.
  * It was never recent. Prose alone had never held.
  */
-const BACKLOG = new Set([
-  'bideuchre',
-  'briscola',
-  'conquian',
-  'guandan',
-  'handandfoot',
-  'kille',
-  'literature',
-]);
+const BACKLOG = new Set(['bideuchre', 'briscola', 'conquian', 'guandan', 'handandfoot', 'kille', 'literature']);
 
 /** Game slugs for every registered route, keyed the way useGameHint is called. */
 async function registeredGames() {
