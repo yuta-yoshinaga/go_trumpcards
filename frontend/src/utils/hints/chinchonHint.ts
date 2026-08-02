@@ -1,6 +1,7 @@
-import type { Card, ChinchonResponse } from '../../types/card';
+import type { ChinchonResponse } from '../../types/card';
 import type { HintResult } from '../../types/hint';
 import { ChinchonPhase } from '../../types/phases';
+import { heaviestSpare, isMaterial } from './rummyHintShape';
 
 /**
  * Returns a frontend {@link HintResult} for Chinchón, or null when no
@@ -22,7 +23,7 @@ export function getChinchonHint(state: ChinchonResponse): HintResult | null {
 
   if (state.phase === ChinchonPhase.DRAW) {
     const top = state.discardTop;
-    return top && connects(top, human.cards)
+    return top && isMaterial(top, human.cards, chinchonAdjacent)
       ? { targetAction: 'takeDiscard', reason: 'frontendHint.chinchonTakeDiscard', confidence: 'moderate' }
       : { targetAction: 'drawStock', reason: 'frontendHint.chinchonDrawStock', confidence: 'moderate' };
   }
@@ -33,7 +34,7 @@ export function getChinchonHint(state: ChinchonResponse): HintResult | null {
   // 全部繋がっているときも、崩すなら一番重い札。
   // **札 0 も捨て札になりうる。**手札が空でないことは上で確かめてあるので、
   // heaviestLoose は必ず 0 以上を返す。`idx < 0` を書くと到達しない分岐が残る。
-  const idx = heaviestLoose(human.cards);
+  const idx = heaviestSpare(human.cards, chinchonAdjacent);
   return { targetAction: `card-${idx}`, reason: 'frontendHint.chinchonDiscardHeavy', confidence: 'moderate' };
 }
 
@@ -53,31 +54,15 @@ function rankPosition(value: number): number {
   return 0; // 8/9/10/Joker — このデッキには存在しない
 }
 
-/** 同じランクがあるか、同じスートで隣のランクがあるか。メルドの証明ではない。 */
-function connects(c: Card, hand: Card[]): boolean {
-  const pos = rankPosition(c.value);
-  return hand.some(
-    (o) =>
-      o.value === c.value ||
-      (o.design === c.design && pos > 0 && rankPosition(o.value) > 0 && Math.abs(rankPosition(o.value) - pos) === 1),
-  );
-}
-
 /**
- * 繋がっていない札のうち一番重いものの位置。全部繋がっていれば一番重い札。
+ * 40 枚デッキでの隣接判定。
  *
- * 呼び出し側が手札の非空を確かめているので、必ず有効な位置を返す。
+ * `rankPosition` に写してから隣り合うかを見る。**7 と J は隣接する** ——
+ * 生の値では `|11-7| = 4` になり、繋がっていないと誤判定する。
+ * 位置 0 はこのデッキに存在しない札 (8/9/10/Joker) なので繋がらない。
  */
-function heaviestLoose(hand: Card[]): number {
-  const loose: number[] = [];
-  for (let i = 0; i < hand.length; i += 1) {
-    const rest = hand.filter((_, j) => j !== i);
-    if (!connects(hand[i], rest)) loose.push(i);
-  }
-  const pool = loose.length > 0 ? loose : hand.map((_, i) => i);
-  let best = pool[0];
-  for (const i of pool) {
-    if (hand[i].value > hand[best].value) best = i;
-  }
-  return best;
+function chinchonAdjacent(a: number, b: number): boolean {
+  const pa = rankPosition(a);
+  const pb = rankPosition(b);
+  return pa > 0 && pb > 0 && Math.abs(pa - pb) === 1;
 }
