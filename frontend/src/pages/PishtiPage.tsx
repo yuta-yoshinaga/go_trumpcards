@@ -10,12 +10,14 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
 import { btnSuccess } from '../styles/buttonStyles';
@@ -27,6 +29,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { PISHTI_HELP, parsePishtiCommand } from '../utils/cli/commands/pishtiCommands';
 import { formatPishtiState } from '../utils/cli/formatters/pishtiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** CPU difficulty options for the Pişti settings panel. */
 const CPU_DIFFICULTY_OPTIONS = [
@@ -156,6 +159,14 @@ function PishtiPageContent() {
     }
   }, [state, playSound]);
 
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('pishti', state);
+
   if (!state)
     return <GameSkeleton gameKey="pishti" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;
 
@@ -241,6 +252,7 @@ function PishtiPageContent() {
                     options: PLAYER_COUNT_OPTIONS.map((n) => ({ value: n, label: String(n) })),
                     onSelect: handlePlayerCountChange,
                   },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -328,6 +340,8 @@ function PishtiPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.pishti.footer} px-4 py-2.5`}>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
             <div className="mb-2" data-tutorial="pishti-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex flex-wrap gap-2">
