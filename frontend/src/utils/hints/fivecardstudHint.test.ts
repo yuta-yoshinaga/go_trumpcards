@@ -1,15 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import type { FiveCardStudResponse } from '../../types/card';
+import type { Card, FiveCardStudResponse } from '../../types/card';
 import { FiveCardStudPhase } from '../../types/phases';
 import { getFiveCardStudHint } from './fivecardstudHint';
 
-type Extra = { handRank?: number; currentBet?: number; folded?: boolean; chips?: number };
+const card = (design: Card['design'], value: number): Card => ({ design, value });
+
+/** A のカード値。1 で届くので数値だけ見ると一番低い札に見える。 */
+const ACE_VALUE = 1;
+
+type Extra = { hole?: Card[]; door?: Card[]; currentBet?: number; folded?: boolean };
 
 function base({
-  handRank = 0,
+  hole = [card('SPADE', 4)],
+  door = [card('HEART', 7)],
   currentBet = 0,
   folded = false,
-  chips = 200,
   ...overrides
 }: Partial<FiveCardStudResponse> & Extra = {}) {
   return {
@@ -17,13 +22,14 @@ function base({
       {
         id: 0,
         isHuman: true,
-        holeCards: [],
-        doorCards: [],
-        chips,
+        holeCards: hole,
+        doorCards: door,
+        chips: 200,
         currentBet,
         folded,
         allIn: false,
-        handRank,
+        // ショーダウンまで 0 のまま届く。ヒントはこれを読まない (#4622)。
+        handRank: 0,
         handName: '',
         bestHand: [],
         playStyleName: '',
@@ -42,7 +48,8 @@ function base({
     minRaise: 10,
     bettingLimit: 0,
     raiseCount: 0,
-    maxBetAmount: 100,
+    // 固定リミットなので常に 0。ヒントはこれを読まない (#4622)。
+    maxBetAmount: 0,
     roundResults: [],
     cpuActions: [],
     handCount: 1,
@@ -72,56 +79,54 @@ describe('getFiveCardStudHint', () => {
     expect(getFiveCardStudHint(base({ phase: FiveCardStudPhase.SHOWDOWN }))).toBeNull();
   });
 
-  // **ワンペア以上は賭けに行く。**handRank 1 = One Pair。
-  it('raises on a made hand', () => {
-    expect(getFiveCardStudHint(base({ handRank: 1 }))).toEqual({
+  // **ペアは手札から数える。**handRank はショーダウンまで 0 で届くので使えない。
+  it('raises on a pair, with maxBetAmount at its fixed-limit zero', () => {
+    const s = base({ hole: [card('SPADE', 9)], door: [card('HEART', 9)] });
+    expect(getFiveCardStudHint(s)).toEqual({
       targetAction: 'raise',
-      reason: 'frontendHint.fivecardstudRaiseMade',
+      reason: 'frontendHint.fivecardstudRaisePair',
       confidence: 'moderate',
     });
   });
 
-  // ハイカードで、ただで見られるなら見る。
   it('checks a weak hand when nothing is owed', () => {
-    expect(getFiveCardStudHint(base({ handRank: 0, lastBet: 0 }))).toEqual({
+    const s = base({ hole: [card('SPADE', 4)], door: [card('HEART', 7)], lastBet: 0 });
+    expect(getFiveCardStudHint(s)).toEqual({
       targetAction: 'check',
       reason: 'frontendHint.fivecardstudCheckFree',
       confidence: 'moderate',
     });
   });
 
-  // 払う必要があるならハイカードは降りる。
-  it('folds a weak hand facing a bet', () => {
-    expect(getFiveCardStudHint(base({ handRank: 0, lastBet: 20, currentBet: 0 }))).toEqual({
-      targetAction: 'fold',
-      reason: 'frontendHint.fivecardstudFoldWeak',
+  it('folds a low hand facing a bet', () => {
+    const s = base({ hole: [card('SPADE', 4)], door: [card('HEART', 7)], lastBet: 20 });
+    expect(getFiveCardStudHint(s)?.targetAction).toBe('fold');
+  });
+
+  // 高い札があれば見に行く価値がある。
+  it('calls with a high card facing a bet', () => {
+    const s = base({ hole: [card('SPADE', 13)], door: [card('HEART', 7)], lastBet: 20 });
+    expect(getFiveCardStudHint(s)).toEqual({
+      targetAction: 'call',
+      reason: 'frontendHint.fivecardstudCallHigh',
       confidence: 'moderate',
     });
+  });
+
+  // **A は 1 で届く。**数値だけで見ると一番低い札に見える。
+  it('counts an ace as a high card', () => {
+    const s = base({ hole: [card('SPADE', ACE_VALUE)], door: [card('HEART', 7)], lastBet: 20 });
+    expect(getFiveCardStudHint(s)?.targetAction).toBe('call');
   });
 
   // **既に払い込んでいる分は差し引く。**同額まで出していれば負債はない。
   it('treats an already-matched bet as nothing owed', () => {
-    expect(getFiveCardStudHint(base({ handRank: 0, lastBet: 20, currentBet: 20 }))?.targetAction).toBe('check');
+    const s = base({ hole: [card('SPADE', 4)], door: [card('HEART', 7)], lastBet: 20, currentBet: 20 });
+    expect(getFiveCardStudHint(s)?.targetAction).toBe('check');
   });
 
-  // 上限に達していれば上げられない。押せない手を勧めない。
-  it('calls instead of raising when no raise is possible', () => {
-    const s = base({ handRank: 1, lastBet: 20, currentBet: 0, maxBetAmount: 0 });
-    expect(getFiveCardStudHint(s)).toEqual({
-      targetAction: 'call',
-      reason: 'frontendHint.fivecardstudCallMade',
-      confidence: 'moderate',
-    });
-  });
-
-  // 上限に達していて、かつ払う必要もない局面。
-  it('checks a made hand when it can neither raise nor owes anything', () => {
-    const s = base({ handRank: 2, lastBet: 0, maxBetAmount: 0 });
-    expect(getFiveCardStudHint(s)).toEqual({
-      targetAction: 'check',
-      reason: 'frontendHint.fivecardstudCheckMade',
-      confidence: 'moderate',
-    });
+  it('stays quiet before any card is dealt', () => {
+    expect(getFiveCardStudHint(base({ hole: [], door: [] }))).toBeNull();
   });
 
   it('stays quiet without a human seat', () => {

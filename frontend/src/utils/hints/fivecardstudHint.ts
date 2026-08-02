@@ -1,4 +1,4 @@
-import type { FiveCardStudResponse } from '../../types/card';
+import type { Card, FiveCardStudResponse } from '../../types/card';
 import type { HintResult } from '../../types/hint';
 import { FiveCardStudPhase } from '../../types/phases';
 
@@ -10,24 +10,28 @@ const BETTING_STREETS: readonly number[] = [
   FiveCardStudPhase.FIFTH_STREET,
 ];
 
-/**
- * ワンペア以上。`handRank` は `PokerHandNames` の添字で、0 = High Card、
- * 1 = One Pair (poker_hand_rank.go:25)。
- */
-const MADE_HAND_FROM = 1;
+/** 10 以上を「高い札」とみなす (10, J, Q, K, A)。A は 1 で届く。 */
+const HIGH_CARD_FROM = 10;
+const ACE = 1;
 
 /**
  * Returns a frontend {@link HintResult} for Five Card Stud, or null when no
  * suggestion is available.
  *
- * `handRank` is computed by the server for the human's own cards, so the hint
- * does not evaluate a hand here — it only turns that rank plus what is owed
- * into the four actions the page offers. It reads `maxBetAmount` before naming
- * a raise, so it never points at a control the betting limit has closed.
+ * **`handRank` is not used.** The presenter fills it only at showdown
+ * (`FiveCardStudWebPresenter.buildPlayersOutput` gates it on `isShowdown`), and
+ * this hint only runs on a betting street, so reading it would have made the
+ * made-hand branch dead in production while the unit tests — which set the
+ * field directly — went on passing. Found in review on #4622.
  *
- * It deliberately does not read the opponents' door cards. Judging a hand
- * against what is showing is the interesting part of Stud, and a hint that did
- * it badly would be worse than one that leaves it to the player.
+ * So the hand is evaluated here from the cards the human can see, the way
+ * `badugiHint` does. It is a pair check plus a high-card check: enough to
+ * separate "worth paying for" from "not", without pretending to more.
+ *
+ * It also does **not** consult `maxBetAmount`. That is only positive under
+ * Pot-Limit, and Five Card Stud is configured Fixed-Limit
+ * (`FiveCardStudConfig.go:54`), so testing it would have gated the whole
+ * raise branch on a value that is always zero.
  */
 export function getFiveCardStudHint(state: FiveCardStudResponse): HintResult | null {
   if (state.gameEndFlag || !BETTING_STREETS.includes(state.phase)) return null;
@@ -35,20 +39,36 @@ export function getFiveCardStudHint(state: FiveCardStudResponse): HintResult | n
   const human = state.players.find((p) => p.isHuman);
   if (!human || human.folded || human.allIn || state.currentTurn !== human.id) return null;
 
+  const cards = [...human.holeCards, ...human.doorCards];
+  if (cards.length === 0) return null;
+
   // **既に払い込んでいる分は差し引く。**同額まで出していれば負債はない。
   const owed = Math.max(0, state.lastBet - human.currentBet);
 
-  if (human.handRank >= MADE_HAND_FROM) {
-    // 上限に達していれば上げられない。押せない手を勧めない。
-    if (state.maxBetAmount <= 0) {
-      return owed > 0
-        ? { targetAction: 'call', reason: 'frontendHint.fivecardstudCallMade', confidence: 'moderate' }
-        : { targetAction: 'check', reason: 'frontendHint.fivecardstudCheckMade', confidence: 'moderate' };
-    }
-    return { targetAction: 'raise', reason: 'frontendHint.fivecardstudRaiseMade', confidence: 'moderate' };
+  if (hasPair(cards)) {
+    return { targetAction: 'raise', reason: 'frontendHint.fivecardstudRaisePair', confidence: 'moderate' };
   }
 
-  return owed > 0
-    ? { targetAction: 'fold', reason: 'frontendHint.fivecardstudFoldWeak', confidence: 'moderate' }
-    : { targetAction: 'check', reason: 'frontendHint.fivecardstudCheckFree', confidence: 'moderate' };
+  if (owed === 0) {
+    return { targetAction: 'check', reason: 'frontendHint.fivecardstudCheckFree', confidence: 'moderate' };
+  }
+
+  return hasHighCard(cards)
+    ? { targetAction: 'call', reason: 'frontendHint.fivecardstudCallHigh', confidence: 'moderate' }
+    : { targetAction: 'fold', reason: 'frontendHint.fivecardstudFoldWeak', confidence: 'moderate' };
+}
+
+/** 同じランクが 2 枚以上あるか。 */
+function hasPair(cards: Card[]): boolean {
+  const seen = new Set<number>();
+  for (const c of cards) {
+    if (seen.has(c.value)) return true;
+    seen.add(c.value);
+  }
+  return false;
+}
+
+/** 10 以上、または A を持っているか。 */
+function hasHighCard(cards: Card[]): boolean {
+  return cards.some((c) => c.value === ACE || c.value >= HIGH_CARD_FROM);
 }

@@ -55,10 +55,9 @@
     "weakHandRank": "弱いハンド — フォールド推奨"
   },
   "frontendHint": {
-    "fivecardstudRaiseMade": "ワンペア以上ができています。攻めましょう",
-    "fivecardstudCallMade": "ワンペア以上ができています。上限で上げられないのでコールしましょう",
-    "fivecardstudCheckMade": "ワンペア以上ができています。上げられないのでチェックで進めましょう",
+    "fivecardstudRaisePair": "ペアができています。攻めましょう",
+    "fivecardstudCallHigh": "高い札があります。見に行く価値があります",
     "fivecardstudCheckFree": "まだ役がありません。ただで見られるならチェックしましょう",
-    "fivecardstudFoldWeak": "まだ役がなく、払う必要があります。降りるほうが無難です"
+    "fivecardstudFoldWeak": "役も高い札もなく、払う必要があります。降りるほうが無難です"
   }
 }
