@@ -69,7 +69,11 @@
     "raise": "Strong hand — raise the stake to apply pressure",
     "fold": "Weak hand — fold to limit your losses",
     "show": "Force a showdown to settle the deal",
-    "sideshow": "Request a Side Show to privately compare hands with the previous Seen player"
+    "sideshow": "Request a Side Show to privately compare hands with the previous Seen player",
+    "see_first": "Look at your cards before deciding",
+    "strong_hand": "Strong hand — push",
+    "medium_hand": "Middling hand — stay in cheaply",
+    "weak_hand": "Weak hand — fold"
   },
   "tutorial": {
     "info": "Here you'll see the deal number, the pot, the current stake, and each player's chips and status (Blind / Seen / Folded / Out). Teen Patti is the Indian variant of Three Card Brag, a 4-player vying game played with a 52-card deck and 3 cards each.",

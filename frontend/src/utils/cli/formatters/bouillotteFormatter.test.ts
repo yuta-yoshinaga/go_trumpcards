@@ -75,12 +75,26 @@ describe('formatBouillotteState', () => {
   });
 
   it('renders the backend hint line', () => {
-    const out = formatBouillotteState(makeBouillotteState({ hint: { action: 'fold', reason: 'weak_hand' } }));
+    const out = formatBouillotteState(
+      makeBouillotteState({ messageCode: 'bouillotte.hintRequested', hint: { action: 'fold', reason: 'weak_hand' } }),
+    );
     expect(out).toContain('HINT: fold (weak_hand)');
   });
 
   it('renders the game-over line with the match winner', () => {
     const out = formatBouillotteState(makeBouillotteState({ gameEndFlag: true, matchWinnerIdx: 0, phase: 1 }));
     expect(out).toContain('Game Over!');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { action: 'fold', reason: 'weak_hand' };
+    expect(formatBouillotteState(makeBouillotteState({ hint, messageCode: 'bouillotte.hintRequested' }))).toContain(
+      'HINT',
+    );
+    expect(formatBouillotteState(makeBouillotteState({ hint, messageCode: 'bouillotte.playing' }))).not.toContain(
+      'HINT',
+    );
   });
 });

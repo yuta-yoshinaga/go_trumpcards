@@ -70,7 +70,10 @@
     "lead_low": "Lead a low card",
     "follow_cut": "Trump in to capture this trick",
     "follow_win": "Play a card that wins this trick",
-    "follow_dump": "Cannot win — discard a card you don't need"
+    "follow_dump": "Cannot win — discard a card you don't need",
+    "strong_hand": "Strong hand — play it as it stands",
+    "weak_hand": "Weak hand — propose an exchange",
+    "exchange_weak": "Discard your weakest cards and draw again"
   },
   "tutorial": {
     "info": "Deal, trump suit (and the trump card), the stock count, and each player's match / deal score are shown here. Écarté is a 2-player French trick game played with a 32-card deck. The first player to reach the target score (default 5) wins.",

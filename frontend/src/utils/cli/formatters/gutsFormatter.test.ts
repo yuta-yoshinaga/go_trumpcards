@@ -72,12 +72,22 @@ describe('formatGutsState', () => {
   });
 
   it('renders the backend hint line', () => {
-    const out = formatGutsState(makeGutsState({ hint: { declaration: 0, reason: 'weak_hand' } }));
+    const out = formatGutsState(
+      makeGutsState({ hint: { declaration: 0, reason: 'weak_hand' }, messageCode: 'guts.hintRequested' }),
+    );
     expect(out).toContain('HINT: out (weak_hand)');
   });
 
   it('renders the game-over line with the match winner', () => {
     const out = formatGutsState(makeGutsState({ gameEndFlag: true, matchWinnerIdx: 0, phase: 1 }));
     expect(out).toContain('Game Over!');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { declaration: 0, reason: 'weak_hand' };
+    expect(formatGutsState(makeGutsState({ hint, messageCode: 'guts.hintRequested' }))).toContain('HINT');
+    expect(formatGutsState(makeGutsState({ hint, messageCode: 'guts.playing' }))).not.toContain('HINT');
   });
 });

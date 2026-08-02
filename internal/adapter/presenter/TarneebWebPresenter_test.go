@@ -182,3 +182,26 @@ func TestTarneebWebPresenter_ActionLogOutput(t *testing.T) {
 	out := p.ActionLogOutput(tn)
 	assert.NotEmpty(t, out)
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestTarneebWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// 既存の HintOutput テストと同じ状態。
+	g := newTarneebForWebTest()
+	g.SetPhase(domain.TarneebPhaseBid)
+	g.SetBidPlayerIdx(0)
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+
+	out := new(presenter.TarneebWebPresenter).Output(g, nil)
+	assert.Contains(t, out, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, out, "tarneeb.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestTarneebWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := newTarneebForWebTest()
+	g.SetPhase(domain.TarneebPhaseBid)
+	g.SetBidPlayerIdx(0)
+	assert.Contains(t, new(presenter.TarneebWebPresenter).HintOutput(g), "tarneeb.hintRequested")
+}
