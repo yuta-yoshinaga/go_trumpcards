@@ -83,7 +83,6 @@ const BACKLOG = new Set([
   'klaberjass',
   'literature',
   'niuniu',
-  'openfacechinese',
   'paigow',
   'pishti',
   'pontoon',
