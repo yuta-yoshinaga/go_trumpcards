@@ -65,7 +65,6 @@ const BACKLOG = new Set([
   'kalooki',
   'karnoffel',
   'kille',
-  'klaberjass',
   'literature',
   'niuniu',
   'pishti',

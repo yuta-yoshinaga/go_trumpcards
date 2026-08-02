@@ -88,6 +88,7 @@ import type {
   KempsResponse,
   KingAlbertResponse,
   KingResponse,
+  KlaberjassResponse,
   KlaverjasResponse,
   KlondikeResponse,
   KnockoutWhistResponse,
@@ -308,6 +309,7 @@ import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKempsHint } from '../utils/hints/kempsHint';
 import { getKingalbertHint } from '../utils/hints/kingalbertHint';
 import { getKingHint } from '../utils/hints/kingHint';
+import { getKlaberjassHint } from '../utils/hints/klaberjassHint';
 import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getKnockoutWhistHint } from '../utils/hints/knockoutWhistHint';
@@ -621,6 +623,7 @@ export const hintFactories = {
   tute: (s) => getTuteHint(s as TuteResponse),
   sueca: (s) => getSuecaHint(s as SuecaResponse),
   kemps: (s) => getKempsHint(s as KempsResponse),
+  klaberjass: (s) => getKlaberjassHint(s as KlaberjassResponse),
   klaverjas: (s) => getKlaverjasHint(s as KlaverjasResponse),
   manille: (s) => getManilleHint(s as ManilleResponse),
   mao: (s) => getMaoHint(s as MaoResponse),
