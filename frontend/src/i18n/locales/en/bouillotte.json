@@ -62,5 +62,7 @@
     "hand": "Your three cards. A brelan (three cards of the same rank, counting the retourne) is the strongest hand; otherwise hands are compared by high card.",
     "actions": "Call to match the current bet, raise (vie) to increase it, or fold to sit out the round. When betting ends the hands are compared to decide the pot.",
     "resetButton": "Reset the game and start over."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

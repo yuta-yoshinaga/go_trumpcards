@@ -24,6 +24,20 @@ func (p *LooWebPresenter) Output(g interfaces.LooGame, lastErr error) string {
 		resObj.MessageCode = "loo.result.chips"
 		resObj.MessageParams = map[string]string{"chips": p.encodeChipsParam(g)}
 	}
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **Loo.GetHint() の各フェーズを読んで、席を確かめていることを確認した。**
+	// 他ゲームがそうだから、で済ませない —— Pinochle は見ていなかった (#4585)。
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.LooWebOutputHint{
+			CardIndices: hint.CardIndices,
+			Decision:    hint.Decision,
+			Reason:      hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -154,6 +168,13 @@ func (p *LooWebPresenter) HintOutput(g interfaces.LooGame) string {
 			Decision:    hint.Decision,
 			Reason:      hint.Reason,
 		}
+	}
+	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。
+	if g.GetHint() != nil {
+		resObj.MessageCode = "loo.hintRequested"
+	} else {
+		resObj.MessageCode = "loo.noHint"
 	}
 	return marshalOrError(resObj)
 }

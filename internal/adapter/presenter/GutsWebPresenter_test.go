@@ -151,3 +151,40 @@ func TestGutsWebPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.GutsWebPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestGutsWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// 既存の HintOutput テストと同じ状態。300 回試して nil 0 件で確認済み。
+	g := domain.NewDefaultGuts()
+	g.Reset()
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.GutsWebPresenter).Output(g, nil)), &decoded))
+	assert.Contains(t, decoded, "hint", "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotEqual(t, "guts.hintRequested", decoded["messageCode"])
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestGutsWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultGuts()
+	g.Reset()
+	assert.Contains(t, new(presenter.GutsWebPresenter).HintOutput(g), "guts.hintRequested")
+}
+
+// **ヒントが無いときの分岐も見る。**Output() の受動ヒントは nil のとき
+// `hint` キーごと落ちる。HintOutput() は noHint を返す。codecov が
+// PR #4591 でこの 2 本を未到達として報告した。
+func TestGutsWebPresenterWithoutAHint(t *testing.T) {
+	g := gutsWebResultGame() // 結果フェーズ = 宣言フェーズではないので GetHint は nil
+	require.Nil(t, g.GetHint(), "fixture must actually produce no hint")
+
+	p := new(presenter.GutsWebPresenter)
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	assert.NotContains(t, decoded, "hint")
+
+	assert.Contains(t, p.HintOutput(g), "guts.noHint")
+}

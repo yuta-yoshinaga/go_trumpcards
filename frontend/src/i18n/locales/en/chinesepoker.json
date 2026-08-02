@@ -67,5 +67,10 @@
     "betControls": "Select your bet amount to start the game",
     "setHands": "Divide your 13 cards into Front (3), Middle (5), and Back (5). Hands must be arranged so that Back ≧ Middle ≧ Front in strength",
     "results": "Each hand (Front, Middle, Back) is compared against the dealer. Win 2+ hands to win. Winning all 3 earns a scoop bonus"
+  },
+  "frontendHint": {
+    "chinesepokerBet": "Place a bet to be dealt in",
+    "chinesepokerSplit": "Split by rank: strongest five at the back, next five in the middle, lowest three in front",
+    "chinesepokerFoulRisk": "Splitting purely by rank would foul this hand — rearrange so the front row does not beat the middle"
   }
 }

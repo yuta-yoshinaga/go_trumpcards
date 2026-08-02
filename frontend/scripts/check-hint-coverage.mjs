@@ -55,10 +55,8 @@ const BACKLOG = new Set([
   'bidwhist',
   'bigtwo',
   'blackjackswitch',
-  'boston',
   'briscola',
   'carioca',
-  'chinesepoker',
   'conquian',
   'contractrummy',
   'crescent',
@@ -72,10 +70,8 @@ const BACKLOG = new Set([
   'guandan',
   'handandfoot',
   'kaiser',
-  'karnoffel',
   'kille',
   'literature',
-  'niuniu',
   'paigow',
   'pishti',
   'president',
@@ -88,7 +84,6 @@ const BACKLOG = new Set([
   'tienlen',
   'tonk',
   'trash',
-  'vint',
 ]);
 
 /** Game slugs for every registered route, keyed the way useGameHint is called. */
