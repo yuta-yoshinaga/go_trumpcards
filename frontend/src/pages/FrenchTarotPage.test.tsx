@@ -336,8 +336,26 @@ describe('FrenchTarotPage', () => {
   });
 
   it('renders the backend hint banner with its card indices', async () => {
-    mockExec.mockResolvedValue(makeFrenchTarotState({ hint: { cardIndices: [0, 2], reason: 'lead_high' } }));
+    mockExec.mockResolvedValue(
+      makeFrenchTarotState({
+        hint: { cardIndices: [0, 2], reason: 'lead_high' },
+        messageCode: 'frenchtarot.hintRequested',
+      }),
+    );
     renderWithProviders(<FrenchTarotPage />);
     await waitFor(() => expect(screen.getByText(/\[0\], \[2\]/)).toBeInTheDocument());
+  });
+
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  it('hides the hint when it was not requested', async () => {
+    mockExec.mockResolvedValue(
+      makeFrenchTarotState({
+        hint: { cardIndices: [0, 2], reason: 'lead_high' },
+      }),
+    );
+    renderWithProviders(<FrenchTarotPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByText(/\[0\], \[2\]/)).not.toBeInTheDocument();
   });
 });

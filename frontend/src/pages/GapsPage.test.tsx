@@ -59,6 +59,9 @@ const gameOverState: GapsResponse = {
 const withHintState: GapsResponse = {
   ...playingState,
   hint: { fromRow: 1, fromCol: 0, toRow: 0, toCol: 12 },
+  // **頼んだヒントの応答**であることを示す。#4483 以降 Output() も hint を
+  // 載せるので、これが無いとページは押していない状態と区別できない (#4605)。
+  messageCode: 'gaps.hintAvailable',
 };
 
 beforeEach(() => {

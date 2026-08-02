@@ -9,12 +9,14 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
@@ -138,6 +140,14 @@ function FaroPageContent() {
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const { cardWidth } = useCardDimensions();
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('faro', state);
 
   if (!state)
     return <GameSkeleton gameKey="faro" layout={{ kind: 'casino-table', sections: [2], footerStyle: 'bet' }} />;
@@ -354,6 +364,16 @@ function FaroPageContent() {
                 {state.split && <div className="mt-2 text-ds-warning text-sm font-semibold">{t('split')}</div>}
               </div>
             )}
+
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center cursor-pointer min-h-[44px]">
+              <input
+                type="checkbox"
+                checked={frontendHintEnabled}
+                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+              />
+              {tc('hint.toggle', { ns: 'tutorial' })}
+            </label>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {/* Call phase order picker */}
             {isCall && (

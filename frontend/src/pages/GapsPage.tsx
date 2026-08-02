@@ -28,6 +28,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { computeGapsGhostHint } from '../utils/gapsGhostHint';
 import { gapsLockedPrefixLengths } from '../utils/gapsUtils';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SUIT_SYMBOLS: Record<string, string> = {
@@ -203,8 +204,11 @@ function GapsPageContent() {
               <div key={`row-${rIdx.toString()}`} className="flex gap-1">
                 {row.map((cell, cIdx) => {
                   const zone: GapsMoveZone = { zone: 'grid', row: rIdx, col: cIdx };
-                  const isHintFrom = state.hint && state.hint.fromRow === rIdx && state.hint.fromCol === cIdx;
-                  const isHintTo = state.hint && state.hint.toRow === rIdx && state.hint.toCol === cIdx;
+                  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+                  // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+                  const requestedHint = isRequestedHint(state) ? state.hint : undefined;
+                  const isHintFrom = requestedHint && requestedHint.fromRow === rIdx && requestedHint.fromCol === cIdx;
+                  const isHintTo = requestedHint && requestedHint.toRow === rIdx && requestedHint.toCol === cIdx;
                   if (cell === null) {
                     const ghost = computeGapsGhostHint(row, cIdx);
                     // Mirror the (aria-hidden) ghost hint into the cell's label so
