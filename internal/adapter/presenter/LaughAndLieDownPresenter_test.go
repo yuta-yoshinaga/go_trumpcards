@@ -80,10 +80,18 @@ func TestLaughAndLieDownWebPresenter_HidesTheCpuHandButNeverItsWonCount(t *testi
 func TestLaughAndLieDownWebPresenter_SendsTheWholeFaceUpTable(t *testing.T) {
 	// 場は伏せた山ではない。全部送らないと、どのランクが何枚残っているかが
 	// 分からず 3 枚取りの判断ができない。
-	out := lldDecode(t, new(LaughAndLieDownWebPresenter).Output(lldTestGame(t), nil))
+	//
+	// **配った直後の場は LaughAndLieDownLayoutSize とは限らない。**Reset() は
+	// 最後に skipPlayersWhoCannotCapture() を呼び、取れる札が無い席は手札を
+	// そのまま置く。その分だけ場が増えるので、定数と突き合わせると配り次第で
+	// 落ちる (#4578 と同じ形)。ここで見たいのは「場を丸ごと送っているか」なので、
+	// ゲームが持つ場そのものと比べる。
+	g := lldTestGame(t)
+	out := lldDecode(t, new(LaughAndLieDownWebPresenter).Output(g, nil))
 	layout, ok := out["layout"].([]any)
 	require.True(t, ok)
-	assert.Len(t, layout, domain.LaughAndLieDownLayoutSize)
+	assert.Len(t, layout, len(g.GetLayout()))
+	assert.GreaterOrEqual(t, len(layout), domain.LaughAndLieDownLayoutSize)
 	assert.Equal(t, float64(domain.LaughAndLieDownPot), out["pot"])
 }
 

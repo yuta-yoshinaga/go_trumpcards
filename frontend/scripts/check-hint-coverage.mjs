@@ -62,7 +62,6 @@ const BACKLOG = new Set([
   'crescent',
   'dragontiger',
   'faro',
-  'fivecardstud',
   'fivehundred',
   'fortyandeight',
   'fortythieves',

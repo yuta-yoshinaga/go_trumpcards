@@ -69,6 +69,7 @@ import type {
   EscobaResponse,
   EuchreResponse,
   FiftyOneResponse,
+  FiveCardStudResponse,
   FiveHundredResponse,
   FlowerGardenResponse,
   FortyFivesResponse,
@@ -301,6 +302,7 @@ import { getEightOffHint } from '../utils/hints/eightoffHint';
 import { getEscobaHint } from '../utils/hints/escobaHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
+import { getFiveCardStudHint } from '../utils/hints/fivecardstudHint';
 import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
 import { getFlowergardenHint } from '../utils/hints/flowergardenHint';
 import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
@@ -508,6 +510,7 @@ export const hintFactories = {
   threethirteen: (s) => getThreeThirteenHint(s as ThreeThirteenResponse),
   tienlen: (s) => getTienLenHint(s as TienLenResponse),
   zheng: (s) => getZhengHint(s as ZhengResponse),
+  fivecardstud: (s) => getFiveCardStudHint(s as FiveCardStudResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),
