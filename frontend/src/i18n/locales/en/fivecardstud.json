@@ -53,5 +53,12 @@
     "strongHandRank": "Strong hand — raise recommended",
     "decentHandRank": "Decent hand — call recommended",
     "weakHandRank": "Weak hand — fold recommended"
+  },
+  "frontendHint": {
+    "fivecardstudRaiseMade": "You have a pair or better — put money in",
+    "fivecardstudCallMade": "A pair or better, but the limit is reached — just call",
+    "fivecardstudCheckMade": "A pair or better, but you cannot raise — check on",
+    "fivecardstudCheckFree": "Nothing made yet — check while it is free",
+    "fivecardstudFoldWeak": "Nothing made and there is a bet to meet — folding is safer"
   }
 }

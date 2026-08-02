@@ -53,5 +53,12 @@
     "strongHandRank": "強いハンド — レイズ推奨",
     "decentHandRank": "まずまずのハンド — コール推奨",
     "weakHandRank": "弱いハンド — フォールド推奨"
+  },
+  "frontendHint": {
+    "fivecardstudRaiseMade": "ワンペア以上ができています。攻めましょう",
+    "fivecardstudCallMade": "ワンペア以上ができています。上限で上げられないのでコールしましょう",
+    "fivecardstudCheckMade": "ワンペア以上ができています。上げられないのでチェックで進めましょう",
+    "fivecardstudCheckFree": "まだ役がありません。ただで見られるならチェックしましょう",
+    "fivecardstudFoldWeak": "まだ役がなく、払う必要があります。降りるほうが無難です"
   }
 }
