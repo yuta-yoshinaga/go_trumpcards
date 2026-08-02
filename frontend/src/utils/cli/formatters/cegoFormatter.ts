@@ -1,5 +1,12 @@
 import type { CegoResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Bid', 'Contract', 'Exchange', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
 const CONTRACT_TYPE_NAMES = ['-', 'Cego', 'Handspiel'];
@@ -39,7 +46,7 @@ export function formatCegoState(state: CegoResponse): string {
     lines.push(`deal result: ${OUTCOME_NAMES[state.outcome] ?? state.outcome}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const indices = state.hint.cardIndices ?? [];
     lines.push(`HINT: card indices [${indices.join(', ')}] (${state.hint.reason})`);
   }

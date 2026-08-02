@@ -71,6 +71,19 @@ type ScartoWebPresenter struct{}
 func (p *ScartoWebPresenter) Output(g interfaces.ScartoGame, lastErr error) string {
 	resObj := p.buildBase(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **Scarto.GetHint() の各フェーズを読んで、席を確かめていることを確認した。**
+	// 他ゲームがそうだから、で済ませない —— Pinochle は見ていなかった (#4585)。
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.WebOutputCardHint{
+			CardIndices: hint.CardIndices,
+			Reason:      hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -208,6 +221,13 @@ func (p *ScartoWebPresenter) HintOutput(g interfaces.ScartoGame) string {
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}
+	}
+	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。
+	if g.GetHint() != nil {
+		resObj.MessageCode = "scarto.hintRequested"
+	} else {
+		resObj.MessageCode = "scarto.noHint"
 	}
 	return marshalOrError(resObj)
 }

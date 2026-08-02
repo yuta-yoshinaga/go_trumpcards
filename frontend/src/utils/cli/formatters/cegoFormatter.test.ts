@@ -47,13 +47,18 @@ describe('formatCegoState', () => {
   });
 
   it('renders a hint line with its card indices and reason', () => {
-    const out = formatCegoState(makeCegoState({ hint: { cardIndices: [1, 3], reason: 'lead_high' } }));
+    const out = formatCegoState(
+      makeCegoState({ messageCode: 'cego.hintRequested', hint: { cardIndices: [1, 3], reason: 'lead_high' } }),
+    );
     expect(out).toContain('HINT: card indices [1, 3] (lead_high)');
   });
 
   it('renders a hint line even when cardIndices is missing', () => {
     const out = formatCegoState(
-      makeCegoState({ hint: { reason: 'bid_take', cardIndices: undefined as unknown as number[] } }),
+      makeCegoState({
+        hint: { reason: 'bid_take', cardIndices: undefined as unknown as number[] },
+        messageCode: 'cego.hintRequested',
+      }),
     );
     expect(out).toContain('HINT: card indices [] (bid_take)');
   });
@@ -76,5 +81,13 @@ describe('formatCegoState', () => {
     const out = formatCegoState(makeCegoState({ phase: 99 as CegoPhaseValue, contractType: 9 }));
     expect(out).toContain('phase: 99');
     expect(out).toContain('contract: 9');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [1, 3], reason: 'lead_high' };
+    expect(formatCegoState(makeCegoState({ hint, messageCode: 'cego.hintRequested' }))).toContain('HINT');
+    expect(formatCegoState(makeCegoState({ hint, messageCode: 'cego.playing' }))).not.toContain('HINT');
   });
 });
