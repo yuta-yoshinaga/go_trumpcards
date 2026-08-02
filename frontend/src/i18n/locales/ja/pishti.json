@@ -42,5 +42,11 @@
     "resetButton": "このボタンでいつでもゲームをリセットできます。"
   },
   "playCardAria": "{{card}} を出す",
-  "captureHint": "この山を獲得できます"
+  "captureHint": "この山を獲得できます",
+  "frontendHint": {
+    "pishtiPisti": "場が 1 枚です。同じ数字を重ねると Pişti でボーナスが付きます",
+    "pishtiCapture": "場の一番上と同じ数字です。場を取れます",
+    "pishtiJackSweep": "ジャックは場を総取りします。積もっている今が使い時です",
+    "pishtiLayLow": "取れる札がありません。一番小さい札を置きましょう（ジャックは温存）"
+  }
 }
