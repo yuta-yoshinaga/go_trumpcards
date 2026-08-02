@@ -126,6 +126,7 @@ import type {
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
+  PiquetResponse,
   PitchResponse,
   PochResponse,
   PokerResponse,
@@ -338,6 +339,7 @@ import { getPenguinHint } from '../utils/hints/penguinHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
+import { getPiquetHint } from '../utils/hints/piquetHint';
 import { getPitchHint } from '../utils/hints/pitchHint';
 import { getPochHint } from '../utils/hints/pochHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
@@ -433,6 +435,7 @@ export const hintFactories = {
   spades: (s) => getSpadesHint(s as SpadesResponse),
   callbreak: (s) => getCallBreakHint(s as CallBreakResponse),
   tarneeb: (s) => getTarneebHint(s as TarneebResponse),
+  piquet: (s) => getPiquetHint(s as PiquetResponse),
   pitch: (s) => getPitchHint(s as PitchResponse),
   holdem: (s) => getHoldemHint(s as HoldemResponse),
   omaha: (s) => getOmahaHint(s as OmahaResponse),
