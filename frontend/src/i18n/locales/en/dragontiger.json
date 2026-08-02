@@ -44,5 +44,9 @@
     "betControls": "Bet on Dragon, Tiger, or Tie. Dragon and Tiger pay 1:1, while a Tie pays 8:1.",
     "cards": "One card is dealt to Dragon and Tiger each; the higher card wins. Equal ranks are a Tie.",
     "bigRoad": "The Big Road records past results so you can track the Dragon/Tiger trend."
+  },
+  "frontendHint": {
+    "dragontigerTieOdds": "The tie pays 8:1 against roughly a one-in-thirteen chance — it loses over time",
+    "dragontigerEvenMoney": "Dragon and Tiger are an even shot, and a tie only takes half your stake"
   }
 }
