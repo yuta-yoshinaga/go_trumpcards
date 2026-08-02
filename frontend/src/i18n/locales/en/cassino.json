@@ -35,6 +35,7 @@
   "result.you": "You",
   "result.cpu": "CPU {{id}}",
   "hint.take.points": "Take to capture point cards",
+  "hint.take.sweep": "You can clear the table — take it for the sweep bonus",
   "hint.take.cards": "Take to win the most-cards race",
   "hint.trail.safe": "Trail a safe non-point card",
   "tutorial.cpuArea": "CPU players' hand counts and totals show here.",
