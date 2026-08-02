@@ -134,6 +134,7 @@ import type {
   PochResponse,
   PokerResponse,
   PokerSquaresResponse,
+  PontoonResponse,
   PopeJoanResponse,
   PreferenceResponse,
   PresidentResponse,
@@ -351,6 +352,7 @@ import { getPitchHint } from '../utils/hints/pitchHint';
 import { getPochHint } from '../utils/hints/pochHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
+import { getPontoonHint } from '../utils/hints/pontoonHint';
 import { getPopeJoanHint } from '../utils/hints/popejoanHint';
 import { getPreferenceHint } from '../utils/hints/preferenceHint';
 import { getPresidentHint } from '../utils/hints/presidentHint';
@@ -437,6 +439,7 @@ export const hintFactories = {
   baccarat: (s) => getBaccaratHint(s as BaccaratResponse),
   blackjack: (s) => getBlackjackHint(s as BlackJackResponse),
   spanish21: (s) => getBlackjackHint(s as BlackJackResponse),
+  pontoon: (s) => getPontoonHint(s as PontoonResponse),
   poker: (s) => getPokerHint(s as PokerResponse),
   hearts: (s) => getHeartsHint(s as HeartsResponse),
   gongzhu: (s) => getGongZhuHint(s as GongZhuResponse),
