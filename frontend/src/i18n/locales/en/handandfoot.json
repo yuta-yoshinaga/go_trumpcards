@@ -70,5 +70,14 @@
     "playerHand": "Your hand. Select cards to meld or discard.",
     "meldArea": "The meld area. Your team's completed melds are shown here.",
     "actionButtons": "Action buttons. Perform actions based on the current phase."
+  },
+  "frontendHint": {
+    "handandfootTakeDiscard": "The discard connects with your hand — take it",
+    "handandfootDrawStock": "The discard is no use — draw from the stock",
+    "handandfootTakeFrozen": "The pile is frozen, but you hold a natural pair — you can take it",
+    "handandfootReachFoot": "Your foot is still waiting — empty the hand to reach it",
+    "handandfootDiscardHeavy": "Your heaviest unconnected card",
+    "handandfootPileBlocked": "A pile topped by a black three or a wild cannot be taken — draw from the stock",
+    "handandfootNoPair": "Taking the pile needs two natural cards of the top rank — draw from the stock"
   }
 }

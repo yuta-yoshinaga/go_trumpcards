@@ -94,6 +94,7 @@ import type {
   GrandfathersClockResponse,
   GutsResponse,
   HachiHachiResponse,
+  HandAndFootResponse,
   HeartsResponse,
   HighCardFlushResponse,
   HoldemResponse,
@@ -341,6 +342,7 @@ import { getGoStopHint } from '../utils/hints/gostopHint';
 import { getGrandfathersClockHint } from '../utils/hints/grandfathersclockHint';
 import { getGutsHint } from '../utils/hints/gutsHint';
 import { getHachiHachiHint } from '../utils/hints/hachihachiHint';
+import { getHandAndFootHint } from '../utils/hints/handandfootHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
@@ -507,6 +509,7 @@ export const hintFactories = {
   spanish21: (s) => getBlackjackHint(s as BlackJackResponse),
   pontoon: (s) => getPontoonHint(s as PontoonResponse),
   poker: (s) => getPokerHint(s as PokerResponse),
+  handandfoot: (s) => getHandAndFootHint(s as HandAndFootResponse),
   hearts: (s) => getHeartsHint(s as HeartsResponse),
   gongzhu: (s) => getGongZhuHint(s as GongZhuResponse),
   spoons: (s) => getSpoonsHint(s as SpoonsResponse),
