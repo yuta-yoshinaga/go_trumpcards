@@ -45,5 +45,10 @@
     "grab": "フォーオブアカインドが成立するとここからスプーンを奪い合います。乗り遅れた人が文字を獲得します。",
     "resetButton": "このボタンでいつでもゲームをリセットできます。"
   },
-  "passCardAria": "{{card}} を渡す"
+  "passCardAria": "{{card}} を渡す",
+  "frontendHint": {
+    "spoonsGrabNow": "取り合いが始まりました。すぐスプーンを取りましょう",
+    "spoonsFourOfAKind": "4 枚揃いました。自分から取りに行きましょう",
+    "spoonsPassOdd": "揃っていない札です。次の人に回しましょう"
+  }
 }

@@ -523,3 +523,26 @@ func TestGongZhuPlayerJSONRoundTrip(t *testing.T) {
 	assert.Equal(t, -30, p2.GetRoundScore())
 	assert.Equal(t, -90, p2.GetCumulativeScore())
 }
+
+// **手札が尽きた CPU に手番が回ってもパニックしない。**
+// cpuSelectPlayCard は候補が無いとき 0 を返し、RemoveCard(0) は手札が空なら
+// nil を返す。それをそのまま playCard に渡していたため、GetDesign() で
+// nil デリファレンスになりサーバごと落ちていた (E2E で観測、GongZhu.go:592)。
+func TestGongZhuCpuPlayWithNoCards(t *testing.T) {
+	g := domain.NewDefaultGongZhu()
+	g.Reset()
+	g.SetPhase(domain.GongZhuPhasePlay)
+
+	// 席 1 は CPU。手札を空にする。
+	cpu := g.GetPlayer(1)
+	for cpu.GetCardsSize() > 0 {
+		cpu.RemoveCard(0)
+	}
+	g.SetCurrentPlayerIdx(1)
+
+	g.CpuPlay() // パニックしないこと
+
+	if len(g.GetCurrentTrick()) != 0 {
+		t.Errorf("手札の無い席が札を出した: trick=%d", len(g.GetCurrentTrick()))
+	}
+}

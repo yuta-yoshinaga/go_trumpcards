@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -18,6 +19,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePontoonGame } from '../hooks/usePontoonGame';
 import { btnDanger, btnPrimary, btnSuccess } from '../styles/buttonStyles';
@@ -91,6 +93,14 @@ function PontoonPageContent() {
   );
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayerTurn && !loading });
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('pontoon', state);
 
   if (!state) {
     return <GameSkeleton gameKey="pontoon" layout={{ kind: 'tableau', topRow: 2, tableau: 3 }} />;
@@ -265,6 +275,16 @@ function PontoonPageContent() {
                   {t('actions.deal')}
                 </button>
               )}
+
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
+                <input
+                  type="checkbox"
+                  checked={frontendHintEnabled}
+                  onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+                />
+                {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
               {/* Only the legal declarations are rendered. The server decides,
                   so the 15 minimum and the no-buy-after-twist rule live in one
