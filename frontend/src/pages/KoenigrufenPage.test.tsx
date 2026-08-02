@@ -525,4 +525,17 @@ describe('KoenigrufenPage', () => {
     renderWithProviders(<KoenigrufenPage />);
     await waitFor(() => expect(screen.getByText(/\[0\], \[2\]/)).toBeInTheDocument());
   });
+
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  it('hides the hint when it was not requested', async () => {
+    mockExec.mockResolvedValue(
+      makeKoenigrufenState({
+        hint: { cardIndices: [0, 2], reason: 'lead_high' },
+      }),
+    );
+    renderWithProviders(<KoenigrufenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByText(/\[0\], \[2\]/)).not.toBeInTheDocument();
+  });
 });

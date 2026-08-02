@@ -33,6 +33,18 @@ const PAGES = join(FRONTEND, 'src/pages');
  */
 const ALLOWED = new Map([
   [
+    'BlackHole',
+    'showLegalHint という自前のフラグでのみ読む。ヒントボタンが立て、次の手で降ろす。' +
+      ' #4483 の常時表示とは別の経路。',
+  ],
+  ['LaBelleLucie', 'showHint という自前のフラグでのみ読む。ヒントボタンが立て、次の手で降ろす。'],
+  ['RussianBank', 'showHint という自前のフラグでのみ読む。ヒントボタンが立て、次の手で降ろす。'],
+  [
+    'Bura',
+    'Bura の hint は #4492 (ゲーム追加時) から Output に乗っていて、手札のハイライトは' +
+      ' 元からの仕様。#4483 が持ち込んだ常時表示ではない。',
+  ],
+  [
     'Speed',
     'Speed の hint は #1055 (ゲーム追加時) から Output に乗っていて、リアルタイム進行の' +
       ' UI の一部。#4483 が持ち込んだ常時表示ではないので、門番を通すと元からある機能が消える。',
@@ -45,9 +57,17 @@ for (const file of await readdir(PAGES)) {
   const game = file.replace(/Page\.tsx$/, '');
   if (ALLOWED.has(game)) continue;
   const src = await readFile(join(PAGES, file), 'utf8');
-  // Only JSX reads matter: `{state.hint && …}` / `{state.hint?.x && …}` /
-  // `{state.hint ? … : …}`. A read inside a hook argument is not a render.
-  if (!/\{state\.hint(\?)?[.\s]/.test(src)) continue;
+  // Two surfaces leak an unasked hint, and the second was missed at first:
+  //
+  //   1. a JSX banner — `{state.hint && …}` / `{state.hint ? … : …}`;
+  //   2. a derived highlight — `const hintTo = state.hint && …`, which ends up
+  //      as a ring or an aria-label on a card rather than a line of text.
+  //
+  // Checking only the banner let Yukon and Russian Solitaire keep announcing
+  // the suggested card in its aria-label to a player who never asked.
+  const rendersHint = /\{state\.hint(\?)?[.\s]/.test(src);
+  const derivesHint = /^\s*const \w+ =[^\n]*state\.hint/m.test(src);
+  if (!rendersHint && !derivesHint) continue;
   if (src.includes('isRequestedHint')) continue;
   offenders.push(game);
 }

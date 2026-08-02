@@ -394,8 +394,11 @@ function AccordionPageContent() {
                 return state.piles.map((pile, idx) => {
                   const top = pile.cards[0];
                   const isSelected = selectedIdx === idx;
-                  const hintFrom = state.hint?.fromIdx === idx;
-                  const hintTo = state.hint?.toIdx === idx;
+                  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+                  // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+                  const requestedHint = isRequestedHint(state) ? state.hint : undefined;
+                  const hintFrom = requestedHint?.fromIdx === idx;
+                  const hintTo = requestedHint?.toIdx === idx;
                   const isHoverTarget = hoverTargets?.has(idx) ?? false;
                   const isSelectedTarget = selectedTargets?.has(idx) ?? false;
                   // Highlight legal targets whether reached by hover (mouse) or by

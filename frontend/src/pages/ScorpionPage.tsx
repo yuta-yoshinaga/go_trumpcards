@@ -416,7 +416,10 @@ function ScorpionPageContent() {
 
                         const hintFrom =
                           state.hint && state.hint.fromCol === colIdx && state.hint.cardIndex === cardIdx;
-                        const hintTo = state.hint && state.hint.toCol === colIdx && isLast;
+                        // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+                        // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+                        const requestedHint = isRequestedHint(state) ? state.hint : undefined;
+                        const hintTo = requestedHint && requestedHint.toCol === colIdx && isLast;
 
                         return (
                           <div key={cardIdx} className="absolute" style={{ top: cardIdx * sc.co, zIndex: cardIdx }}>

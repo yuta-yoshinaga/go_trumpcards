@@ -267,12 +267,15 @@ function YukonPageContent() {
   const isGameOver = state.phase === YukonPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
   const autoCompleteReady = isTableauAllFaceUp(state.tableau);
-  const hintDest = state.hint
-    ? state.hint.toZone === 'foundation'
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+  const requestedHint = isRequestedHint(state) ? state.hint : undefined;
+  const hintDest = requestedHint
+    ? requestedHint.toZone === 'foundation'
       ? t('foundation')
-      : `${t('tableau')} ${state.hint.toCol}`
+      : `${t('tableau')} ${requestedHint.toCol}`
     : '';
-  const hintCard = state.hint ? state.tableau[state.hint.fromCol]?.[state.hint.cardIndex]?.card : null;
+  const hintCard = requestedHint ? state.tableau[requestedHint.fromCol]?.[requestedHint.cardIndex]?.card : null;
   const hintCardName = hintCard ? cardAlt(hintCard) : '';
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
@@ -403,9 +406,12 @@ function YukonPageContent() {
 
                         // Hint highlight (announced via the card aria-labels, no visible text panel)
                         const hintFrom =
-                          state.hint && state.hint.fromCol === colIdx && state.hint.cardIndex === cardIdx;
+                          requestedHint && requestedHint.fromCol === colIdx && requestedHint.cardIndex === cardIdx;
                         const hintTo =
-                          state.hint && state.hint.toZone === 'tableau' && state.hint.toCol === colIdx && isLast;
+                          requestedHint &&
+                          requestedHint.toZone === 'tableau' &&
+                          requestedHint.toCol === colIdx &&
+                          isLast;
                         const hintAria = hintFrom
                           ? ` ${t('hintFromAria', { dest: hintDest })}`
                           : hintTo
@@ -499,7 +505,7 @@ function YukonPageContent() {
             {error && <ErrorAlert message={error} onRetry={retry} />}
 
             {/* Visually hidden so the hint costs no footer space, but still announced to AT. */}
-            {state.hint && isRequestedHint(state) && (
+            {requestedHint && isRequestedHint(state) && (
               <div className="sr-only" role="status" aria-live="polite">
                 {t('hintAnnouncement', { card: hintCardName, dest: hintDest })}
               </div>
