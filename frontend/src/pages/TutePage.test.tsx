@@ -153,4 +153,13 @@ describe('TutePage', () => {
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
+
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  it('renders no hint banner when the hint was not requested', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, hint: { cardIndices: [0], marriage: 0, reason: 'x' } });
+    renderWithProviders(<TutePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByText(/\(\[0\]\)/)).not.toBeInTheDocument();
+  });
 });

@@ -258,4 +258,15 @@ describe('SoloWhistPage', () => {
     await waitFor(() => expect(screen.getByTestId('solowhist-declarer')).toBeInTheDocument());
     expect(screen.queryByTestId('solowhist-contract-progress')).not.toBeInTheDocument();
   });
+
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  it('renders no hint banner when the hint was not requested', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, hint: { cardIndices: [0], reason: 'x' } });
+    renderWithProviders(<SoloWhistPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    // バナーは推奨札の位置を `([0])` の形で含む。トグルのラベル (「ヒント表示」)
+    // と紛れないよう、そこで判定する。
+    expect(screen.queryByText(/\(\[0\]\)/)).not.toBeInTheDocument();
+  });
 });

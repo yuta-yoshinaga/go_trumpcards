@@ -213,4 +213,13 @@ describe('EcartePage', () => {
     renderWithProviders(<EcartePage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝利です (5-3)！')).toBeInTheDocument());
   });
+
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  it('renders no hint banner when the hint was not requested', async () => {
+    mockExec.mockResolvedValue({ ...elderDecideState, hint: { cardIndex: 0, reason: 'x' } });
+    renderWithProviders(<EcartePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByText(/\(\[0\]\)/)).not.toBeInTheDocument();
+  });
 });
