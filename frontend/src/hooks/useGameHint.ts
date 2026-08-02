@@ -22,6 +22,7 @@ import type {
   BlackJackResponse,
   BlackJackSwitchResponse,
   BouillotteResponse,
+  BourreResponse,
   BraidResponse,
   BridgeResponse,
   BristolResponse,
@@ -62,6 +63,7 @@ import type {
   EcarteResponse,
   EgyptianRatscrewResponse,
   EightOffResponse,
+  EscobaResponse,
   EuchreResponse,
   FiftyOneResponse,
   FiveHundredResponse,
@@ -158,6 +160,7 @@ import type {
   ScorpionResponse,
   SeahavenTowersResponse,
   SedmaResponse,
+  SetteEMezzoResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
@@ -240,6 +243,7 @@ import { getBlackHoleHint } from '../utils/hints/blackholeHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getBouillotteHint } from '../utils/hints/bouillotteHint';
+import { getBourreHint } from '../utils/hints/bourreHint';
 import { getBraidHint } from '../utils/hints/braidHint';
 import { getBridgeHint } from '../utils/hints/bridgeHint';
 import { getBristolHint } from '../utils/hints/bristolHint';
@@ -282,6 +286,7 @@ import { getEasthavenHint } from '../utils/hints/easthavenHint';
 import { getEcarteHint } from '../utils/hints/ecarteHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEightOffHint } from '../utils/hints/eightoffHint';
+import { getEscobaHint } from '../utils/hints/escobaHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
@@ -382,6 +387,7 @@ import { getScopaHint } from '../utils/hints/scopaHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
 import { getSedmaHint } from '../utils/hints/sedmaHint';
+import { getSetteEMezzoHint } from '../utils/hints/settemezzoHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
@@ -475,6 +481,7 @@ export const hintFactories = {
   threecard: (s) => getThreeCardHint(s as ThreeCardResponse),
   tichu: (s) => getTichuHint(s as TichuResponse),
   highcardflush: (s) => getHighCardFlushHint(s as HighCardFlushResponse),
+  escoba: (s) => getEscobaHint(s as EscobaResponse),
   euchre: (s) => getEuchreHint(s as EuchreResponse),
   belote: (s) => getBeloteHint(s as BeloteResponse),
   jass: (s) => getJassHint(s as JassResponse),
@@ -494,6 +501,7 @@ export const hintFactories = {
   oldmaid: (s) => getOldMaidHint(s as OldMaidResponse),
   doubt: (s) => getDoubtHint(s as DoubtResponse),
   daifugo: (s) => getDaifugoHint(s as DaifugoResponse),
+  settemezzo: (s) => getSetteEMezzoHint(s as SetteEMezzoResponse),
   sevens: (s) => getSevensHint(s as SevensResponse),
   crazyeights: (s) => getCrazyEightsHint(s as CrazyEightsResponse),
   prsi: (s) => getPrsiHint(s as PrsiResponse),
@@ -526,6 +534,7 @@ export const hintFactories = {
   durak: (s) => getDurakHint(s as DurakResponse),
   canasta: (s) => getCanastaHint(s as CanastaResponse),
   samba: (s) => getSambaHint(s as SambaResponse),
+  bourre: (s) => getBourreHint(s as BourreResponse),
   bridge: (s) => getBridgeHint(s as BridgeResponse),
   bristol: (s) => getBristolHint(s as BristolResponse),
   burraco: (s) => getBurracoHint(s as BurracoResponse),

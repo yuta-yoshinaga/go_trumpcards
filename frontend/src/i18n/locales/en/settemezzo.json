@@ -42,5 +42,11 @@
     "target": "The target is **7.5**; over that is a bust. **Ties go to the banker**, so matching the banker's total still loses.",
     "banker": "**A player who lands exactly 7.5 takes the bank next deal.** It does not rotate every round.",
     "controls": "Buttons for drawing, standing, and the next round."
+  },
+  "frontendHint": {
+    "settemezzoExact": "Exactly seven and a half — the only total that takes the bank. Stand",
+    "settemezzoHitLow": "Still far from seven and a half — draw another card",
+    "settemezzoStandClose": "Close to seven and a half; drawing busts you more often than not",
+    "settemezzoSetMatta": "You can choose the matta value — set it to reach exactly seven and a half"
   }
 }
