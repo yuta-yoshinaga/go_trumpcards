@@ -8,6 +8,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -15,6 +16,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -221,6 +223,14 @@ function ContractRummyPageContent() {
   const allSlotsSatisfied =
     humanPlayer != null && slotEvaluations.length > 0 && slotEvaluations.every((ev) => ev.satisfied);
 
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('contractrummy', state);
+
   if (!state) {
     return (
       <GameSkeleton
@@ -407,6 +417,16 @@ function ContractRummyPageContent() {
               </section>
             )}
           </div>
+
+          <label className="flex items-center gap-1 text-ds-text-primary text-xs px-4 cursor-pointer min-h-[44px]">
+            <input
+              type="checkbox"
+              checked={frontendHintEnabled}
+              onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+            />
+            {tc('hint.toggle', { ns: 'tutorial' })}
+          </label>
+          <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
           <section className="px-4 py-2 flex flex-wrap gap-2" data-tutorial="cr-actions">
             {isDrawPhase && (
