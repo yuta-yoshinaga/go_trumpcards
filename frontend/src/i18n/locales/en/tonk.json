@@ -52,5 +52,11 @@
     "knockButton": "Knock when your deadwood is 5 or less. If your initial 5 cards total 49 or 50, you instantly win (Tonk).",
     "scoreTable": "Shows each player's score.",
     "resetButton": "Reset to start a new game."
+  },
+  "frontendHint": {
+    "tonkTakeDiscard": "The discard connects with your hand — take it",
+    "tonkDrawStock": "The discard does not help — draw from the stock",
+    "tonkKnock": "Your loose cards are five points or fewer — you can knock",
+    "tonkDiscardHeavy": "Discard the heaviest card that connects with nothing"
   }
 }
