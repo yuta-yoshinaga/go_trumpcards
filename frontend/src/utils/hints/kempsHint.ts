@@ -19,7 +19,15 @@ export function getKempsHint(state: KempsResponse): HintResult | null {
   if (!human || human.hand.length === 0) return null;
 
   if (state.phase === KempsPhase.DECLARE) {
-    // **相方の合図が最優先。**取り損ねると相手にカウンターで持っていかれる。
+    // **`partnerSignaling` は「自チームの誰か」で、自分も含む。**
+    // `IsPartnerSignaling()` は `KempsTeamOf(fourHolderIdx) == KempsTeamOf(0)` を
+    // 見るだけで、チーム 0 は席 {0, 2}。自分が揃えた瞬間も true になるので、
+    // 先に自分の手を見ないと「相方が合図しています」と嘘をつく (#4610 のレビュー指摘)。
+    if (human.hasFourOfAKind) {
+      return { targetAction: 'kemps', reason: 'frontendHint.kempsOwnFour', confidence: 'strong' };
+    }
+
+    // **相方の合図が次点。**取り損ねると相手にカウンターで持っていかれる。
     // 相手も動いていそうな場合でも、外すと −1 のカウンターより確実。
     if (state.partnerSignaling) {
       return { targetAction: 'kemps', reason: 'frontendHint.kempsPartnerSignalled', confidence: 'strong' };

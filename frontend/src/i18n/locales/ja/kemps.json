@@ -61,6 +61,7 @@
     "kempsOpponentSignalled": "相手が動いています。カウンターを狙えますが、外すと −1 です",
     "kempsNoSignal": "合図はまだありません。ここは見送りましょう",
     "kempsSignalNow": "4 枚揃いました。交換をやめて相方に合図しましょう",
-    "kempsSwapOdd": "揃っていない札です。場と入れ替えましょう"
+    "kempsSwapOdd": "揃っていない札です。場と入れ替えましょう",
+    "kempsOwnFour": "自分が 4 枚揃えました。Kemps を宣言できます"
   }
 }

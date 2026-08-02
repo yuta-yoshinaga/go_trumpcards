@@ -61,6 +61,7 @@
     "kempsOpponentSignalled": "An opponent looks ready. A counter is possible, but a wrong one costs a point",
     "kempsNoSignal": "No signal yet — pass this one",
     "kempsSignalNow": "You have four of a kind. Stop swapping and signal your partner",
-    "kempsSwapOdd": "The card that does not match — swap it with the field"
+    "kempsSwapOdd": "The card that does not match — swap it with the field",
+    "kempsOwnFour": "You completed four of a kind — call Kemps"
   }
 }

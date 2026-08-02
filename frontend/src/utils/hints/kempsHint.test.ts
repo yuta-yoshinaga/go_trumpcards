@@ -45,9 +45,9 @@ describe('getKempsHint', () => {
     expect(getKempsHint(base({ phase: KempsPhase.ROUND_END }))).toBeNull();
   });
 
-  // **相方の合図が最優先。**見えたら宣言を急ぐ。取り損ねると相手に取られる。
+  // **相方の合図。**自分は揃えていないので fourHolderIdx は相方の席 2。
   it('calls Kemps when the partner is signalling', () => {
-    const s = base({ phase: KempsPhase.DECLARE, partnerSignaling: true });
+    const s = base({ phase: KempsPhase.DECLARE, partnerSignaling: true, fourHolderIdx: 2 });
     expect(getKempsHint(s)).toEqual({
       targetAction: 'kemps',
       reason: 'frontendHint.kempsPartnerSignalled',
@@ -55,11 +55,17 @@ describe('getKempsHint', () => {
     });
   });
 
-  // **自分が揃えたときは宣言しない。**相方が気づいて宣言する側で、
-  // 自分から言うと合図の意味が消える。
-  it('does not call Kemps on the player own four of a kind', () => {
-    const s = base({ phase: KempsPhase.DECLARE, hasFour: true });
-    expect(getKempsHint(s)?.targetAction).not.toBe('kemps');
+  // **`partnerSignaling` は自分も含む。**`IsPartnerSignaling()` はチームで
+  // 判定するので、自分 (席 0) が揃えたときも true になる。この 2 つは
+  // **相関していて、片方だけ立つ状態はサーバが作らない**。
+  // 旧テストは hasFour だけ立てた実在しない状態を食わせていた (#4610 のレビュー指摘)。
+  it('names the player own four of a kind rather than the partner', () => {
+    const s = base({ phase: KempsPhase.DECLARE, partnerSignaling: true, hasFour: true, fourHolderIdx: 0 });
+    expect(getKempsHint(s)).toEqual({
+      targetAction: 'kemps',
+      reason: 'frontendHint.kempsOwnFour',
+      confidence: 'strong',
+    });
   });
 
   // 相方の合図が無く相手が動いていそうなら、逆に取りに行く。
@@ -75,7 +81,7 @@ describe('getKempsHint', () => {
   // **相方の合図が出ていれば、相手も動いていても宣言が先。**
   // カウンターは外すと −1 で、こちらの点はもう見えている。
   it('prefers calling Kemps over countering when both are signalling', () => {
-    const s = base({ phase: KempsPhase.DECLARE, partnerSignaling: true, opponentSignaling: true });
+    const s = base({ phase: KempsPhase.DECLARE, partnerSignaling: true, opponentSignaling: true, fourHolderIdx: 2 });
     expect(getKempsHint(s)?.targetAction).toBe('kemps');
   });
 
