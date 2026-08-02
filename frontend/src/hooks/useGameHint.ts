@@ -42,6 +42,7 @@ import type {
   CinchResponse,
   ClockSolitaireResponse,
   CongressResponse,
+  ConquianResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
   CribbageResponse,
@@ -261,6 +262,7 @@ import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCongressHint } from '../utils/hints/congressHint';
+import { getConquianHint } from '../utils/hints/conquianHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
@@ -499,6 +501,7 @@ export const hintFactories = {
   daifugo: (s) => getDaifugoHint(s as DaifugoResponse),
   settemezzo: (s) => getSetteEMezzoHint(s as SetteEMezzoResponse),
   sevens: (s) => getSevensHint(s as SevensResponse),
+  conquian: (s) => getConquianHint(s as ConquianResponse),
   crazyeights: (s) => getCrazyEightsHint(s as CrazyEightsResponse),
   prsi: (s) => getPrsiHint(s as PrsiResponse),
   speed: (s) => getSpeedHint(s as SpeedResponse),

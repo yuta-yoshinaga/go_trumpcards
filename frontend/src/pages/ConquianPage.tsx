@@ -9,6 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -19,6 +20,7 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_WINS_OPTIONS, useConquianGame } from '../hooks/useConquianGame';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
@@ -33,6 +35,7 @@ import { CONQUIAN_HELP, parseConquianCommand } from '../utils/cli/commands/conqu
 import { formatConquianState } from '../utils/cli/formatters/conquianFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Total cards a player must lay in table melds to win a Conquian round. */
 const CONQUIAN_MELD_TARGET = 11;
@@ -191,6 +194,14 @@ function ConquianPageContent() {
   );
   useActionKeyboardNav({ bindings: drawBindings, enabled: canDrawForKbd });
 
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('conquian', state);
+
   if (!state) {
     return (
       <GameSkeleton
@@ -242,6 +253,7 @@ function ConquianPageContent() {
                     options: TARGET_WINS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('targetWins', v),
                   },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -256,6 +268,8 @@ function ConquianPageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
               <div>
+                <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
                 {/* Discard pile top */}
                 {state.discardTop && (
                   <div
