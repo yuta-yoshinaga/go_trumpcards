@@ -59,5 +59,10 @@
     "hand": "Your hand. Following suit is compulsory, so cards you cannot play are disabled. The left bower counts as a trump.",
     "actions": "Choose how many tricks to bid (three is the floor). Note that the dealer alone may equal the standing bid.",
     "resetButton": "Reset the game at any time with this button."
+  },
+  "frontendHint": {
+    "bideuchreForced": "The only legal card — following is compulsory and the left bower is a trump",
+    "bideuchreLowRanking": "No-trump low: the ranking reverses and the nine is the highest card",
+    "bideuchreChoose": "Several cards are legal — pick from the highlighted ones"
   }
 }

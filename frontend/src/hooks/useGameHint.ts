@@ -15,6 +15,7 @@ import type {
   BeleagueredCastleResponse,
   BeloteResponse,
   BeziqueResponse,
+  BidEuchreResponse,
   BidWhistResponse,
   BigTwoResponse,
   BisleyResponse,
@@ -259,6 +260,7 @@ import { getBeggarMyNeighbourHint } from '../utils/hints/beggarmyneighbourHint';
 import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
 import { getBeloteHint } from '../utils/hints/beloteHint';
 import { getBeziqueHint } from '../utils/hints/beziqueHint';
+import { getBidEuchreHint } from '../utils/hints/bideuchreHint';
 import { getBidWhistHint } from '../utils/hints/bidwhistHint';
 import { getBigTwoHint } from '../utils/hints/bigtwoHint';
 import { getBisleyHint } from '../utils/hints/bisleyHint';
@@ -500,6 +502,7 @@ type HintFn = (state: unknown) => HintResult | null;
 /** Registry mapping game names to their hint functions. */
 export const hintFactories = {
   baccarat: (s) => getBaccaratHint(s as BaccaratResponse),
+  bideuchre: (s) => getBidEuchreHint(s as BidEuchreResponse),
   blackjack: (s) => getBlackjackHint(s as BlackJackResponse),
   spanish21: (s) => getBlackjackHint(s as BlackJackResponse),
   pontoon: (s) => getPontoonHint(s as PontoonResponse),
