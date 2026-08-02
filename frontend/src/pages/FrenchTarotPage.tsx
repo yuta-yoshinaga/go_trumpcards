@@ -39,6 +39,7 @@ import { formatFrenchTarotState } from '../utils/cli/formatters/frenchtarotForma
 import type { CliGameConfig } from '../utils/cli/types';
 import { frenchTarotTarget, heldBouts } from '../utils/frenchTarotBouts';
 import { frenchTarotUnburiableReason } from '../utils/frenchtarotEcart';
+import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -439,7 +440,7 @@ function FrenchTarotPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndices &&

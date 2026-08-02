@@ -468,4 +468,19 @@ describe('CariocaPage', () => {
     // Reset becomes "Next Game" at game end.
     await waitFor(() => expect(screen.getByRole('button', { name: /Next Game|次のゲーム/ })).toBeInTheDocument());
   });
+
+  // **押すまで出さない。**押して初めて `hintFactories` の登録行とページ側の
+  // 配線が走る。これが無いと「実装したがページに繋いでいない」に気づけない
+  // (#4644 のレビュー指摘がまさにそれ)。
+  it('turns the frontend hint on from the checkbox', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<CariocaPage />);
+
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
 });

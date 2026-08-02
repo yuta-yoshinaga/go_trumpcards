@@ -183,6 +183,7 @@ describe('AccordionPage', () => {
       ],
       pileCount: 4,
       hint: { fromIdx: 0, toIdx: 3 },
+      messageCode: 'accordion.hintAvailable',
     };
     mockExec.mockResolvedValue(hintFromHoverState);
     renderWithProviders(<AccordionPage />);
@@ -331,6 +332,7 @@ describe('AccordionPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromIdx: 3, toIdx: 0 },
+      messageCode: 'accordion.hintAvailable',
     });
     renderWithProviders(<AccordionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

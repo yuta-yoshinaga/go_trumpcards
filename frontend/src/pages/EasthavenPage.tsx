@@ -39,6 +39,7 @@ import { easthavenHelp, parseEasthavenCommand } from '../utils/cli/commands/east
 import { formatEasthavenState } from '../utils/cli/formatters/easthavenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { easthavenFoundationTarget } from '../utils/easthavenFoundationTarget';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
@@ -292,12 +293,18 @@ function EasthavenPageContent() {
   // Compose the hint into a full "move <card> in column N → <dest>" sentence so
   // the aria-live announcement and visible box read completely, even when the
   // ring-flash source card is scrolled out of view (issue #3388).
-  const hintDest = state.hint
-    ? state.hint.toZone === 'foundation'
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+  // **門番はここ。**以降 `requestedHint` を見る箇所で再チェックしない ——
+  // 二重に書くと、ゲートされていない別の変数に貼り付けても安全に見えてしまう
+  // (#4608 のレビュー指摘)。
+  const requestedHint = isRequestedHint(state) ? state.hint : undefined;
+  const hintDest = requestedHint
+    ? requestedHint.toZone === 'foundation'
       ? t('foundation')
-      : `${t('tableau')} ${state.hint.toCol}`
+      : `${t('tableau')} ${requestedHint.toCol}`
     : '';
-  const hintCard = state.hint ? state.tableau[state.hint.fromCol]?.[state.hint.cardIndex]?.card : null;
+  const hintCard = requestedHint ? state.tableau[requestedHint.fromCol]?.[requestedHint.cardIndex]?.card : null;
   const hintCardName = hintCard ? cardAlt(hintCard) : '';
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
@@ -447,9 +454,12 @@ function EasthavenPageContent() {
                         const isLast = cardIdx === col.length - 1;
 
                         const hintFrom =
-                          state.hint && state.hint.fromCol === colIdx && state.hint.cardIndex === cardIdx;
+                          requestedHint && requestedHint.fromCol === colIdx && requestedHint.cardIndex === cardIdx;
                         const hintTo =
-                          state.hint && state.hint.toZone === 'tableau' && state.hint.toCol === colIdx && isLast;
+                          requestedHint &&
+                          requestedHint.toZone === 'tableau' &&
+                          requestedHint.toCol === colIdx &&
+                          isLast;
 
                         return (
                           <div key={cardIdx} className="absolute" style={{ top: cardIdx * eh.co, zIndex: cardIdx }}>
@@ -537,14 +547,14 @@ function EasthavenPageContent() {
 
             {error && <ErrorAlert message={error} onRetry={retry} />}
 
-            {state.hint && (
+            {requestedHint && (
               <div
                 className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
                 role="status"
                 aria-live="polite"
                 data-testid="eh-hint"
               >
-                {t('hintSentence', { fromCol: state.hint.fromCol, card: hintCardName, dest: hintDest })}
+                {t('hintSentence', { fromCol: requestedHint.fromCol, card: hintCardName, dest: hintDest })}
               </div>
             )}
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

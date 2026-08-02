@@ -36,6 +36,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { KOENIGRUFEN_HELP, parseKoenigrufenCommand } from '../utils/cli/commands/koenigrufenCommands';
 import { formatKoenigrufenState } from '../utils/cli/formatters/koenigrufenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -475,7 +476,7 @@ function KoenigrufenPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndices &&

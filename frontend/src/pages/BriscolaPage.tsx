@@ -20,6 +20,7 @@ import type { BriscolaResponse } from '../types/card';
 import { BriscolaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { isRequestedHint } from '../utils/hintRequest';
 
 /** Tutorial steps for the Briscola page. */
 const BRISCOLA_TUTORIAL_STEPS: TutorialStep[] = [
@@ -261,7 +262,7 @@ function BriscolaPageContent() {
         )}
 
         {/* Server hint text (populated by the hint command). */}
-        {state.hint && (
+        {state.hint && isRequestedHint(state) && (
           <p className="mt-3 text-sm text-ds-accent" data-testid="briscola-hint">
             {t('hint.available')}: {t(`hint.${state.hint.reason}`)}
             {state.hint.cardIndex !== undefined && ` ${t('hint.card', { index: state.hint.cardIndex })}`}

@@ -43,5 +43,12 @@
     "contract": "Each round has a fixed contract of melds you must lay down before you can go out. Watch the contract banner at the top.",
     "hand": "Pick cards from your hand and add them to slots that match the contract. A card can only fill one slot. Jokers are wild.",
     "actions": "Each turn: draw a card → meet the contract / lay melds / lay off → discard one card to end your turn."
+  },
+  "frontendHint": {
+    "cariocaTakeDiscard": "That card is material for your hand — take it",
+    "cariocaDrawStock": "The discard is no help — draw from the stock",
+    "cariocaMeetContract": "The contract goes down whole — hold your cards until the sets and runs are there",
+    "cariocaMeetSets": "The contract goes down whole — hold your cards until the three-of-a-kind sets are there",
+    "cariocaDiscardCostly": "Discard the card that connects with nothing and costs the most if it stays"
   }
 }
