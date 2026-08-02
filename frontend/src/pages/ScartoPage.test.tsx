@@ -289,8 +289,20 @@ describe('ScartoPage', () => {
   });
 
   it('renders the backend hint banner with its card indices', async () => {
-    mockExec.mockResolvedValue(makeScartoState({ hint: { cardIndices: [0, 2], reason: 'lead_low' } }));
+    mockExec.mockResolvedValue(
+      makeScartoState({ hint: { cardIndices: [0, 2], reason: 'lead_low' }, messageCode: 'scarto.hintRequested' }),
+    );
     renderWithProviders(<ScartoPage />);
     await waitFor(() => expect(screen.getByText(/\[0\], \[2\]/)).toBeInTheDocument());
+  });
+
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる
+  // (#4605)。このテストは、それを正しいと固定していた旧テストの対。
+  it('hides the hint banner when the hint was not requested', async () => {
+    mockExec.mockResolvedValue(makeScartoState({ hint: { cardIndices: [0, 2], reason: 'lead_low' } }));
+    renderWithProviders(<ScartoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByText(/\[0\], \[2\]/)).not.toBeInTheDocument();
   });
 });

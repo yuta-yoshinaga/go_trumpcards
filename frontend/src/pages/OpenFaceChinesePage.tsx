@@ -28,6 +28,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { OPENFACECHINESE_HELP, parseOpenfacechineseCommand } from '../utils/cli/commands/openfacechineseCommands';
 import { formatOpenfacechineseState } from '../utils/cli/formatters/openfacechineseFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 
 /** Row indices accepted by the backend `place` command. */
 const ROW_FRONT = 0;
@@ -291,7 +292,7 @@ function OpenFaceChinesePageContent() {
                   {tc('hint.toggle', { ns: 'tutorial' })}
                 </label>
                 <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-                {state.hint && (
+                {state.hint && isRequestedHint(state) && (
                   <p className="text-center text-sm text-ds-accent mt-1" data-testid="ofc-hint">
                     {t('hint.text', {
                       row: t(`rows.${rowNames[state.hint.row] ?? 'back'}`),

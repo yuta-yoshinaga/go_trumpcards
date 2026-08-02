@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_CNT = 4;
@@ -337,9 +338,15 @@ function CalculationPageContent() {
 
   const sourceIsStock = source?.kind === 'stock';
   const isWasteSelected = (idx: number) => source?.kind === 'waste' && source.idx === idx;
-  const hintFoundation = state.hint ? state.hint.foundationIdx : -1;
-  const hintWaste = state.hint?.fromZone === 'waste' ? state.hint.wasteIdx : -1;
-  const hintStock = state.hint?.fromZone === 'stock';
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+  // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+  // **門番はここ。**以降 `requestedHint` を見る箇所で再チェックしない ——
+  // 二重に書くと、ゲートされていない別の変数に貼り付けても安全に見えてしまう
+  // (#4608 のレビュー指摘)。
+  const requestedHint = isRequestedHint(state) ? state.hint : undefined;
+  const hintFoundation = requestedHint ? requestedHint.foundationIdx : -1;
+  const hintWaste = requestedHint?.fromZone === 'waste' ? requestedHint.wasteIdx : -1;
+  const hintStock = requestedHint?.fromZone === 'stock';
 
   return (
     <GamePageShell
@@ -559,16 +566,16 @@ function CalculationPageContent() {
                 messageParams={state.messageParams}
               />
 
-              {state.hint && (
+              {requestedHint && (
                 <div
                   className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
                   role="status"
                   aria-live="polite"
                 >
                   {t('hintAvailable')}:{' '}
-                  {state.hint.fromZone === 'stock'
-                    ? `${t('stock')} → ${t('foundation')} ${state.hint.foundationIdx.toString()}`
-                    : `${t('waste')} ${state.hint.wasteIdx.toString()} → ${t('foundation')} ${state.hint.foundationIdx.toString()}`}
+                  {requestedHint.fromZone === 'stock'
+                    ? `${t('stock')} → ${t('foundation')} ${requestedHint.foundationIdx.toString()}`
+                    : `${t('waste')} ${requestedHint.wasteIdx.toString()} → ${t('foundation')} ${requestedHint.foundationIdx.toString()}`}
                 </div>
               )}
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

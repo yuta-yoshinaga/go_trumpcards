@@ -37,6 +37,7 @@ import { COURT_PIECE_HELP, parseCourtPieceCommand } from '../utils/cli/commands/
 import { formatCourtPieceState } from '../utils/cli/formatters/courtPieceFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { courtPieceLegalPlayIndices } from '../utils/courtPieceLegal';
+import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -336,7 +337,7 @@ function CourtPiecePageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndex != null && ` ([${state.hint.cardIndex}])`}
