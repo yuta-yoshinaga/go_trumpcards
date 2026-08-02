@@ -55,5 +55,10 @@
   },
   "tablePlayLabel": "場の役",
   "selectedPlayLabel": "選択中",
-  "invalidCombo": "無効な組み合わせ"
+  "invalidCombo": "無効な組み合わせ",
+  "frontendHint": {
+    "bigtwoLead": "場が空いている。一番弱い札から捌こう",
+    "bigtwoFollow": "場を超える中で一番弱い札を出そう",
+    "bigtwoPass": "場を超える札が無い。パスしよう"
+  }
 }

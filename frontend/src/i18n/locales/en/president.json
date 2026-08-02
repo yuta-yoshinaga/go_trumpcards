@@ -26,5 +26,12 @@
   "tutorial.playerHand": "Your hand. Click cards to select, then press Play to put them down.",
   "tutorial.playPass": "Play to put the selected cards down, or Pass to skip your turn.",
   "tutorial.resetButton": "Reset the game.",
-  "tutorial.welcome": "Welcome to President! Get rid of your cards to become President; be last and you're the Scum."
+  "tutorial.welcome": "Welcome to President! Get rid of your cards to become President; be last and you're the Scum.",
+  "frontendHint": {
+    "presidentLead": "The table is clear — lead your weakest card",
+    "presidentLeadRevolution": "A revolution has inverted the order — lead what is weakest now",
+    "presidentFollow": "Play the weakest card that still beats the table",
+    "presidentFollowRevolution": "The order is inverted — play the weakest card that beats the table now",
+    "presidentPass": "Nothing in hand beats the table — pass"
+  }
 }

@@ -49,5 +49,10 @@
     "straight": "Straight",
     "threePairRun": "Three Consecutive Pairs",
     "fourOfAKind": "Four of a Kind"
+  },
+  "frontendHint": {
+    "tienlenLead": "The table is clear — lead your weakest card",
+    "tienlenFollow": "Play the weakest card that still beats the table",
+    "tienlenPass": "Nothing in hand beats the table — pass"
   }
 }

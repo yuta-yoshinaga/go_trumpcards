@@ -55,5 +55,10 @@
   },
   "tablePlayLabel": "Play",
   "selectedPlayLabel": "Selected",
-  "invalidCombo": "Invalid combination"
+  "invalidCombo": "Invalid combination",
+  "frontendHint": {
+    "bigtwoLead": "The table is clear — lead your weakest card",
+    "bigtwoFollow": "Play the weakest card that still beats the table",
+    "bigtwoPass": "Nothing in hand beats the table — pass"
+  }
 }
