@@ -72,5 +72,7 @@
     "heart": "ハート",
     "diamond": "ダイヤ"
   },
-  "trumpLabel": "切り札"
+  "trumpLabel": "切り札",
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }
