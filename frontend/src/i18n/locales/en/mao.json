@@ -63,5 +63,13 @@
     "magicCards": "Magic cards: 2=draw two (stackable), A=skip, 8=wild.",
     "hiddenRule": "This game has a secret hidden rule. Break it and you get a penalty with no explanation. Comply 3 times correctly to unlock a vague hint. Say a word when you think the rule requires it.",
     "resetButton": "Use the reset button to start a new game."
+  },
+  "frontendHint": {
+    "maoMatchSuit": "You have a card of the same suit as the pile",
+    "maoMatchRank": "You have a card of the same rank as the pile",
+    "maoSaveWild": "An ordinary card works — keep the 8 for when nothing else does",
+    "maoPlayWild": "Nothing ordinary is playable, but an 8 always is",
+    "maoDraw": "Nothing is playable — draw from the stock",
+    "maoChooseSuit": "Call the suit you hold most of, so your next turn has an out"
   }
 }

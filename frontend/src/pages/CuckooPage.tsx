@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -18,6 +19,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
@@ -30,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { CUCKOO_HELP, parseCuckooCommand } from '../utils/cli/commands/cuckooCommands';
 import { formatCuckooState } from '../utils/cli/formatters/cuckooFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** CPU difficulty options for the Cuckoo settings panel. */
 const CPU_DIFFICULTY_OPTIONS = [
@@ -140,6 +143,14 @@ function CuckooPageContent() {
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('cuckoo', state);
+
   if (!state)
     return <GameSkeleton gameKey="cuckoo" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 1 }} />;
 
@@ -199,6 +210,7 @@ function CuckooPageContent() {
                     })),
                     onSelect: handleDifficultyChange,
                   },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -287,6 +299,8 @@ function CuckooPageContent() {
                 {humanHasKing ? t('refuseNoticeKing') : t('refuseNoticeNoKing')}
               </div>
             )}
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="cuckoo-actions">
               {isHumanTurn && (

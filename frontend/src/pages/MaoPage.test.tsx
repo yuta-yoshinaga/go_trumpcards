@@ -327,4 +327,29 @@ describe('MaoPage', () => {
     renderWithProviders(<MaoPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  // **ヒント経路はページ側からも踏む。**ファクトリ単体テストだけだと
+  // `hintFactories` の登録行と、ページのトグル／ツールチップが一度も
+  // 実行されない（codecov が #4596 で同じ 3 ファイルを未到達と報告した）。
+  it('turns the frontend hint on from the settings panel', async () => {
+    localStorage.removeItem('hint_enabled_mao');
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<MaoPage />);
+
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+
+  // 隠しルールに触れないことを、ページ越しにも見る。
+  it('shows no tooltip during the declaration phase', async () => {
+    localStorage.setItem('hint_enabled_mao', 'true');
+    mockExec.mockResolvedValue(mustDeclareState);
+    renderWithProviders(<MaoPage />);
+    await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+    localStorage.removeItem('hint_enabled_mao');
+  });
 });
