@@ -22,6 +22,7 @@ import type {
   BlackJackResponse,
   BlackJackSwitchResponse,
   BouillotteResponse,
+  BourreResponse,
   BraidResponse,
   BridgeResponse,
   BristolResponse,
@@ -155,6 +156,7 @@ import type {
   ScartoResponse,
   SchnapsenResponse,
   ScopaResponse,
+  ScoponeResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
   SedmaResponse,
@@ -241,6 +243,7 @@ import { getBlackHoleHint } from '../utils/hints/blackholeHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getBouillotteHint } from '../utils/hints/bouillotteHint';
+import { getBourreHint } from '../utils/hints/bourreHint';
 import { getBraidHint } from '../utils/hints/braidHint';
 import { getBridgeHint } from '../utils/hints/bridgeHint';
 import { getBristolHint } from '../utils/hints/bristolHint';
@@ -380,6 +383,7 @@ import { getSambaHint } from '../utils/hints/sambaHint';
 import { getScartoHint } from '../utils/hints/scartoHint';
 import { getSchnapsenHint } from '../utils/hints/schnapsenHint';
 import { getScopaHint } from '../utils/hints/scopaHint';
+import { getScoponeHint } from '../utils/hints/scoponeHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
 import { getSedmaHint } from '../utils/hints/sedmaHint';
@@ -529,6 +533,7 @@ export const hintFactories = {
   durak: (s) => getDurakHint(s as DurakResponse),
   canasta: (s) => getCanastaHint(s as CanastaResponse),
   samba: (s) => getSambaHint(s as SambaResponse),
+  bourre: (s) => getBourreHint(s as BourreResponse),
   bridge: (s) => getBridgeHint(s as BridgeResponse),
   bristol: (s) => getBristolHint(s as BristolResponse),
   burraco: (s) => getBurracoHint(s as BurracoResponse),
@@ -576,6 +581,7 @@ export const hintFactories = {
   yukon: (s) => getYukonHint(s as YukonResponse),
   russiansolitaire: (s) => getRussianSolitaireHint(s as RussianSolitaireResponse),
   cruel: (s) => getCruelHint(s as CruelResponse),
+  scopone: (s) => getScoponeHint(s as ScoponeResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
   wasp: (s) => getWaspHint(s as WaspResponse),
   easthaven: (s) => getEasthavenHint(s as EasthavenResponse),
