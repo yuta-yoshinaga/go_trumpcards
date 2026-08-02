@@ -195,6 +195,7 @@ import type {
   ThirtyOneResponse,
   ThreeCardBragResponse,
   ThreeCardResponse,
+  ThreeThirteenResponse,
   TichuResponse,
   TienLenResponse,
   ToepenResponse,
@@ -423,6 +424,7 @@ import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
 import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
 import { getThreeCardBragHint } from '../utils/hints/threeCardBragHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
+import { getThreeThirteenHint } from '../utils/hints/threethirteenHint';
 import { getTichuHint } from '../utils/hints/tichuHint';
 import { getTienLenHint } from '../utils/hints/tienlenHint';
 import { getToepenHint } from '../utils/hints/toepenHint';
@@ -491,6 +493,7 @@ export const hintFactories = {
   jass: (s) => getJassHint(s as JassResponse),
   gaigel: (s) => getGaigelHint(s as GaigelResponse),
   bigtwo: (s) => getBigTwoHint(s as BigTwoResponse),
+  threethirteen: (s) => getThreeThirteenHint(s as ThreeThirteenResponse),
   tienlen: (s) => getTienLenHint(s as TienLenResponse),
   zheng: (s) => getZhengHint(s as ZhengResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
