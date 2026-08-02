@@ -61,6 +61,7 @@ import type {
   EcarteResponse,
   EgyptianRatscrewResponse,
   EightOffResponse,
+  EscobaResponse,
   EuchreResponse,
   FiftyOneResponse,
   FiveHundredResponse,
@@ -279,6 +280,7 @@ import { getEasthavenHint } from '../utils/hints/easthavenHint';
 import { getEcarteHint } from '../utils/hints/ecarteHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEightOffHint } from '../utils/hints/eightoffHint';
+import { getEscobaHint } from '../utils/hints/escobaHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
@@ -471,6 +473,7 @@ export const hintFactories = {
   threecard: (s) => getThreeCardHint(s as ThreeCardResponse),
   tichu: (s) => getTichuHint(s as TichuResponse),
   highcardflush: (s) => getHighCardFlushHint(s as HighCardFlushResponse),
+  escoba: (s) => getEscobaHint(s as EscobaResponse),
   euchre: (s) => getEuchreHint(s as EuchreResponse),
   belote: (s) => getBeloteHint(s as BeloteResponse),
   jass: (s) => getJassHint(s as JassResponse),
