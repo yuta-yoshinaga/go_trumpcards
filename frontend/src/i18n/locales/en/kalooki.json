@@ -43,5 +43,11 @@
     "hand": "Pick cards from your hand to build meld groups. Jokers act as wild cards.",
     "actions": "Draw → meld/lay off → discard one card, in that order."
   },
-  "cardInGroup": "{{card}} (added to group {{group}})"
+  "cardInGroup": "{{card}} (added to group {{group}})",
+  "frontendHint": {
+    "kalookiTakeDiscard": "The discard connects with your hand — take it",
+    "kalookiDrawStock": "The discard connects with nothing — draw from the stock",
+    "kalookiDiscardHeavy": "Your heaviest unconnected card",
+    "kalookiOpenFirst": "You have not opened yet — the threshold has to be met in one go, so keep building"
+  }
 }

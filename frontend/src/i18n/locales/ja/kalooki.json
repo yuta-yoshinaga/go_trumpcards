@@ -43,5 +43,11 @@
     "hand": "手札からカードを選び、メルドのグループに割り当てます。ジョーカーはワイルドカードとして使えます。",
     "actions": "ドロー → メルド/レイオフ → カード1枚を捨てる、の流れで進行します。"
   },
-  "cardInGroup": "{{card}}（グループ{{group}}に追加済み）"
+  "cardInGroup": "{{card}}（グループ{{group}}に追加済み）",
+  "frontendHint": {
+    "kalookiTakeDiscard": "捨て札が手札と繋がります。拾いましょう",
+    "kalookiDrawStock": "捨て札は手札と繋がりません。山から引きましょう",
+    "kalookiDiscardHeavy": "繋がっていない札のうち一番重い札です",
+    "kalookiOpenFirst": "まだ開いていません。規定点を一度に満たす組を作りましょう"
+  }
 }
