@@ -196,4 +196,31 @@ describe('RussianBankPage', () => {
     await waitFor(() => expect(screen.getAllByText('ゲーム終了').length).toBeGreaterThan(0));
     expect(screen.queryByTestId('discard-button')).not.toBeInTheDocument();
   });
+
+  // **ヒント経路はページ側からも踏む。**ファクトリ単体テストだけだと
+  // `hintFactories` の登録行と、ページのトグル／ツールチップが一度も
+  // 実行されない（codecov が #4596 で同じ 3 ファイルを未到達と報告した）。
+  it('turns the frontend hint on from the checkbox', async () => {
+    localStorage.removeItem('hint_enabled_russianbank');
+    mockExec.mockResolvedValue(
+      makeState({ hint: { zone: 2, fromOpponent: false, col: 3, toFoundation: true, toCol: -1 } }),
+    );
+    renderWithProviders(<RussianBankPage />);
+
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+
+  it('shows a single-pile hint when the toggle is already on', async () => {
+    localStorage.setItem('hint_enabled_russianbank', 'true');
+    mockExec.mockResolvedValue(
+      makeState({ hint: { zone: 0, fromOpponent: false, col: 0, toFoundation: false, toCol: 2 } }),
+    );
+    renderWithProviders(<RussianBankPage />);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+    localStorage.removeItem('hint_enabled_russianbank');
+  });
 });
