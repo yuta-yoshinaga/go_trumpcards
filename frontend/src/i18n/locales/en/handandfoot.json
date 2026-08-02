@@ -75,8 +75,9 @@
     "handandfootTakeDiscard": "The discard connects with your hand — take it",
     "handandfootDrawStock": "The discard is no use — draw from the stock",
     "handandfootTakeFrozen": "The pile is frozen, but you hold a natural pair — you can take it",
-    "handandfootFrozenBlocked": "A frozen pile needs a natural pair — draw from the stock",
     "handandfootReachFoot": "Your foot is still waiting — empty the hand to reach it",
-    "handandfootDiscardHeavy": "Your heaviest unconnected card"
+    "handandfootDiscardHeavy": "Your heaviest unconnected card",
+    "handandfootPileBlocked": "A pile topped by a black three or a wild cannot be taken — draw from the stock",
+    "handandfootNoPair": "Taking the pile needs two natural cards of the top rank — draw from the stock"
   }
 }
