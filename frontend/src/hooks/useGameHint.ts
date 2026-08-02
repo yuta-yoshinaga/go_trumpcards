@@ -88,6 +88,7 @@ import type {
   IndianPokerResponse,
   IndianRummyResponse,
   JassResponse,
+  KalookiResponse,
   KempsResponse,
   KingAlbertResponse,
   KingResponse,
@@ -157,6 +158,7 @@ import type {
   ScartoResponse,
   SchnapsenResponse,
   ScopaResponse,
+  ScoponeResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
   SedmaResponse,
@@ -313,6 +315,7 @@ import { getIndianRummyHint } from '../utils/hints/indianRummyHint';
 import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getJassHint } from '../utils/hints/jassHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
+import { getKalookiHint } from '../utils/hints/kalookiHint';
 import { getKempsHint } from '../utils/hints/kempsHint';
 import { getKingalbertHint } from '../utils/hints/kingalbertHint';
 import { getKingHint } from '../utils/hints/kingHint';
@@ -384,6 +387,7 @@ import { getSambaHint } from '../utils/hints/sambaHint';
 import { getScartoHint } from '../utils/hints/scartoHint';
 import { getSchnapsenHint } from '../utils/hints/schnapsenHint';
 import { getScopaHint } from '../utils/hints/scopaHint';
+import { getScoponeHint } from '../utils/hints/scoponeHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
 import { getSedmaHint } from '../utils/hints/sedmaHint';
@@ -582,6 +586,7 @@ export const hintFactories = {
   yukon: (s) => getYukonHint(s as YukonResponse),
   russiansolitaire: (s) => getRussianSolitaireHint(s as RussianSolitaireResponse),
   cruel: (s) => getCruelHint(s as CruelResponse),
+  scopone: (s) => getScoponeHint(s as ScoponeResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
   wasp: (s) => getWaspHint(s as WaspResponse),
   easthaven: (s) => getEasthavenHint(s as EasthavenResponse),
@@ -634,6 +639,7 @@ export const hintFactories = {
   mus: (s) => getMusHint(s as MusResponse),
   tute: (s) => getTuteHint(s as TuteResponse),
   sueca: (s) => getSuecaHint(s as SuecaResponse),
+  kalooki: (s) => getKalookiHint(s as KalookiResponse),
   kemps: (s) => getKempsHint(s as KempsResponse),
   klaberjass: (s) => getKlaberjassHint(s as KlaberjassResponse),
   klaverjas: (s) => getKlaverjasHint(s as KlaverjasResponse),
