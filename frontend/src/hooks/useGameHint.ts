@@ -70,6 +70,7 @@ import type {
   EightOffResponse,
   EscobaResponse,
   EuchreResponse,
+  FaroResponse,
   FiftyOneResponse,
   FiveCardStudResponse,
   FiveHundredResponse,
@@ -308,6 +309,7 @@ import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEightOffHint } from '../utils/hints/eightoffHint';
 import { getEscobaHint } from '../utils/hints/escobaHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
+import { getFaroHint } from '../utils/hints/faroHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFiveCardStudHint } from '../utils/hints/fivecardstudHint';
 import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
@@ -526,6 +528,7 @@ export const hintFactories = {
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),
+  faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
   mighty: (s) => getMightyHint(s as MightyResponse),
