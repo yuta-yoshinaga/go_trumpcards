@@ -96,3 +96,20 @@ func TestBasraWebPresenterHintOutputMarksTheRequest(t *testing.T) {
 	g.Reset()
 	assert.Contains(t, new(presenter.BasraWebPresenter).HintOutput(g), "basra.hintRequested")
 }
+
+// **ヒントが無いときの分岐も見る。**Output() の受動ヒントは nil のとき
+// `hint` キーごと落ちる。HintOutput() は noHint を返す。codecov が
+// PR #4593 でこの 2 本を未到達として報告した。
+func TestBasraWebPresenterWithoutAHint(t *testing.T) {
+	g := domain.NewDefaultBasra()
+	g.Reset()
+	g.SetCurrentTurn(1) // 人間は席 0。他人の手番
+	require.Nil(t, g.GetHint(), "fixture must actually produce no hint")
+
+	p := new(presenter.BasraWebPresenter)
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	assert.NotContains(t, decoded, "hint")
+
+	assert.Contains(t, p.HintOutput(g), "basra.noHint")
+}
