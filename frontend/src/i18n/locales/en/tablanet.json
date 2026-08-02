@@ -50,5 +50,7 @@
   },
   "captureAnnounce": "{{player}} captured cards",
   "tablaAnnounce": "{{player}} scored a tabla (cleared the table)",
-  "listSeparator": ", "
+  "listSeparator": ", ",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

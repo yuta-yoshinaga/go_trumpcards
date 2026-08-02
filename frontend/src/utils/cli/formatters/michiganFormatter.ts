@@ -1,5 +1,12 @@
 import type { MichiganResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Bet', 'Play', 'Result'];
 
@@ -40,7 +47,7 @@ export function formatMichiganState(state: MichiganResponse): string {
     lines.push(`playable: ${state.playableIndices.join(', ')}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     lines.push(`HINT: play ${state.hint.cardIndex} (${state.hint.reason})`);
   }
 

@@ -64,5 +64,7 @@
     "new": "新しいシーケンスを開始できます",
     "nextBadge": "次",
     "leadBadge": "リード"
-  }
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }
