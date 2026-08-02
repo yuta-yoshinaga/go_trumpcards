@@ -59,5 +59,10 @@
     "playerHand": "あなたの手札です。カードを選んでアクションします。",
     "actions": "取る（場札を選択）か、場に置く（場札を選ばない）を選びます。",
     "resetButton": "ゲームをリセットします。"
+  },
+  "frontendHint": {
+    "scoponeScopa": "場の札を全部さらえます。スコパで 1 点です",
+    "scoponeCaptureMost": "一番多く取れる札です",
+    "scoponeLayLow": "取れる組み合わせがありません。一番小さい札を置きましょう"
   }
 }
