@@ -70,12 +70,22 @@ describe('formatPrimeroState', () => {
   });
 
   it('renders the backend hint line', () => {
-    const out = formatPrimeroState(makePrimeroState({ hint: { action: 'fold', reason: 'weak_hand' } }));
+    const out = formatPrimeroState(
+      makePrimeroState({ hint: { action: 'fold', reason: 'weak_hand' }, messageCode: 'primero.hintRequested' }),
+    );
     expect(out).toContain('HINT: fold (weak_hand)');
   });
 
   it('renders the game-over line with the match winner', () => {
     const out = formatPrimeroState(makePrimeroState({ gameEndFlag: true, matchWinnerIdx: 0, phase: 1 }));
     expect(out).toContain('Game Over!');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { action: 'fold', reason: 'weak_hand' };
+    expect(formatPrimeroState(makePrimeroState({ hint, messageCode: 'primero.hintRequested' }))).toContain('HINT');
+    expect(formatPrimeroState(makePrimeroState({ hint, messageCode: 'primero.playing' }))).not.toContain('HINT');
   });
 });
