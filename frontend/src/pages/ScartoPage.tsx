@@ -36,6 +36,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseScartoCommand, SCARTO_HELP } from '../utils/cli/commands/scartoCommands';
 import { formatScartoState } from '../utils/cli/formatters/scartoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { scartoUndiscardableReason } from '../utils/scartoDiscard';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -387,7 +388,7 @@ function ScartoPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndices &&

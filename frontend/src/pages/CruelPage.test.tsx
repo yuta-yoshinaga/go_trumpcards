@@ -128,6 +128,7 @@ describe('CruelPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromCol: 3, cardIndex: 0, toZone: 'foundation', toCol: -1 },
+      messageCode: 'cruel.hintAvailable',
     });
     renderWithProviders(<CruelPage />);
     const hint = await screen.findByTestId('cruel-hint');
@@ -138,6 +139,7 @@ describe('CruelPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromCol: 3, cardIndex: 0, toZone: 'tableau', toCol: 5 },
+      messageCode: 'cruel.hintAvailable',
     });
     renderWithProviders(<CruelPage />);
     const hint = await screen.findByTestId('cruel-hint');

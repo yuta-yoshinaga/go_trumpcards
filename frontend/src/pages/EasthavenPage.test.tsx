@@ -308,7 +308,11 @@ describe('EasthavenPage', () => {
 
   it('renders a full from→to sentence for a to-foundation hint', async () => {
     // tableau[0][1] is ♠ K, so the sentence names the source column, card, and dest.
-    mockExec.mockResolvedValue({ ...playingState, hint: { fromCol: 0, cardIndex: 1, toZone: 'foundation', toCol: 0 } });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 0, cardIndex: 1, toZone: 'foundation', toCol: 0 },
+      messageCode: 'easthaven.hintAvailable',
+    });
     renderWithProviders(<EasthavenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     const hint = await screen.findByTestId('eh-hint');
@@ -317,7 +321,11 @@ describe('EasthavenPage', () => {
 
   it('renders a full from→to sentence for a to-tableau hint', async () => {
     // toZone 'tableau' exercises the dest branch that names the destination column.
-    mockExec.mockResolvedValue({ ...playingState, hint: { fromCol: 1, cardIndex: 0, toZone: 'tableau', toCol: 3 } });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 1, cardIndex: 0, toZone: 'tableau', toCol: 3 },
+      messageCode: 'easthaven.hintAvailable',
+    });
     renderWithProviders(<EasthavenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     const hint = await screen.findByTestId('eh-hint');
@@ -326,7 +334,11 @@ describe('EasthavenPage', () => {
 
   it('renders the hint sentence without a card name when the source card is face-down', async () => {
     // tableau[0][0] is a face-down (card: null) slot, hitting the empty-card-name branch.
-    mockExec.mockResolvedValue({ ...playingState, hint: { fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 } });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 },
+      messageCode: 'easthaven.hintAvailable',
+    });
     renderWithProviders(<EasthavenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     const hint = await screen.findByTestId('eh-hint');
