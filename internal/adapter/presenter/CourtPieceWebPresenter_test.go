@@ -172,3 +172,13 @@ func TestCourtPieceWebPresenterOutputCarriesTheHint(t *testing.T) {
 	result := new(presenter.CourtPieceWebPresenter).Output(cp, nil)
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+// ページは `isRequestedHint` でこのコードを見てからバナーを出すので (#4605)、
+// 付いていないとヒントを押しても画面に何も出ない。
+func TestCourtPieceWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultCourtPiece()
+	g.Reset()
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+	assert.Contains(t, new(presenter.CourtPieceWebPresenter).HintOutput(g), "courtPiece.hintRequested")
+}

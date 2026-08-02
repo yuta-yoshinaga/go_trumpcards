@@ -147,6 +147,15 @@ func (p *SpoilFiveWebPresenter) HintOutput(g interfaces.SpoilFiveGame) string {
 			Reason:      hint.Reason,
 		}
 	}
+	// **「頼んだヒントか」をフロントが見分けられるようにする。**ページは
+	// `isRequestedHint` でこのコードを見てからバナーを出すので (#4605)、
+	// 付けないと押しても何も出ない。`hintAvailable` は画面のラベルとして
+	// 既に使われているため別キーにする (#4483)。
+	if hint != nil {
+		resObj.MessageCode = "spoilfive.hintRequested"
+	} else {
+		resObj.MessageCode = "spoilfive.noHint"
+	}
 	return marshalOrError(resObj)
 }
 
