@@ -71,5 +71,7 @@
     "hand": "Your cards. During the Pass phase tap cards to pass left; during the Set phase tap exactly 5 cards to keep. During the Roll they are revealed one at a time.",
     "actions": "Pass or Keep the selected cards, then during the Roll choose Call/Check, Raise, or Fold. The best 5-card poker hand still in the round wins the pot.",
     "resetButton": "Reset the game and start over."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

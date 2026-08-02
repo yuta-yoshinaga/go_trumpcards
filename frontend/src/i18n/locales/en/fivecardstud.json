@@ -53,5 +53,11 @@
     "strongHandRank": "Strong hand — raise recommended",
     "decentHandRank": "Decent hand — call recommended",
     "weakHandRank": "Weak hand — fold recommended"
+  },
+  "frontendHint": {
+    "fivecardstudRaisePair": "You have a pair — put money in",
+    "fivecardstudCallHigh": "You hold a high card — worth paying to see another",
+    "fivecardstudCheckFree": "Nothing made yet — check while it is free",
+    "fivecardstudFoldWeak": "No pair, no high card, and a bet to meet — folding is safer"
   }
 }
