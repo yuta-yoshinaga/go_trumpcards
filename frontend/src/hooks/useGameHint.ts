@@ -21,6 +21,7 @@ import type {
   BlackHoleResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
+  BostonResponse,
   BouillotteResponse,
   BourreResponse,
   BraidResponse,
@@ -215,6 +216,7 @@ import type {
   UltimateTexasHoldemResponse,
   UltiResponse,
   VideoPokerResponse,
+  VintResponse,
   WarResponse,
   WaspResponse,
   WattenResponse,
@@ -248,6 +250,7 @@ import { getBisleyHint } from '../utils/hints/bisleyHint';
 import { getBlackHoleHint } from '../utils/hints/blackholeHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
+import { getBostonHint } from '../utils/hints/bostonHint';
 import { getBouillotteHint } from '../utils/hints/bouillotteHint';
 import { getBourreHint } from '../utils/hints/bourreHint';
 import { getBraidHint } from '../utils/hints/braidHint';
@@ -447,6 +450,7 @@ import { getTysiacHint } from '../utils/hints/tysiacHint';
 import { getUltiHint } from '../utils/hints/ultiHint';
 import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
+import { getVintHint } from '../utils/hints/vintHint';
 import { getWarHint } from '../utils/hints/warHint';
 import { getWaspHint } from '../utils/hints/waspHint';
 import { getWattenHint } from '../utils/hints/wattenHint';
@@ -549,6 +553,7 @@ export const hintFactories = {
   durak: (s) => getDurakHint(s as DurakResponse),
   canasta: (s) => getCanastaHint(s as CanastaResponse),
   samba: (s) => getSambaHint(s as SambaResponse),
+  boston: (s) => getBostonHint(s as BostonResponse),
   bourre: (s) => getBourreHint(s as BourreResponse),
   bridge: (s) => getBridgeHint(s as BridgeResponse),
   bristol: (s) => getBristolHint(s as BristolResponse),
@@ -592,6 +597,7 @@ export const hintFactories = {
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),
   war: (s) => getWarHint(s as WarResponse),
+  vint: (s) => getVintHint(s as VintResponse),
   watten: (s) => getWattenHint(s as WattenResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
   catchten: (s) => getCatchTenHint(s as CatchTenResponse),
