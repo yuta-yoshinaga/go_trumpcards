@@ -6,10 +6,13 @@ on:
   pull_request:
     branches: [ develop ]
 
-# **同じ ref の古い run を打ち切る。**1 回の CI は 17 ジョブに展開される
-# (FE 8 シャード + E2E 5 シャード + backend test/lint + typecheck + build) ので、
-# PR を押し直すたびに 17 スロットが二重に埋まる。並行 PR が増えると新しい run が
+# **同じ ref の古い run を打ち切る。**1 回の CI は 10 ジョブに展開される
+# (FE 4 シャード + E2E 3 シャード + backend test/lint + frontend static) ので、
+# PR を押し直すたびに 10 スロットが二重に埋まる。並行 PR が増えると新しい run が
 # start すらできず、待ち時間の大半がジョブの実行ではなくキュー待ちになっていた。
+#
+# この数字はジョブ構成を変えるたびに古くなる。導入時は 17 ジョブ (FE 8 + E2E 5 +
+# lint/typecheck 別建て) で、同じ PR でシャードを減らして 10 になった。
 #
 # `deploy-*.yml` も同じ group を持つが、あちらは `cancel-in-progress: false` ——
 # デプロイを途中で切ると危険なため。検証は切ってよいので true にする。
@@ -66,8 +69,20 @@ jobs:
           flags: backend
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  lint-frontend:
-    name: Frontend Lint (Biome)
+  static-frontend:
+    # **Biome と tsc を 1 ジョブにまとめてある。**別々のときは実測で
+    # 「待ち 40-52 分 / 実行 0.3 分」だった —— ランナーを確保するコストが
+    # 仕事の 150 倍で、分けている意味が無い。checkout と bun install も
+    # 二重に払っていた。
+    #
+    # tsc は型エラーを捕まえる唯一のゲート: `bun run check` は Biome だけで、
+    # vitest は型を見ずにトランスパイルする。以前は E2E の `bun run build` の
+    # 副作用としてしか走っておらず、E2E シャードごとに同じ検査を払っていた。
+    #
+    # `bun run typecheck` は `typescript7` エイリアスを使う。素の
+    # `tsc` / `bunx tsc` は TypeScript 5.9 に解決され ~46s かかる
+    # (frontend/CLAUDE.md の "Type checking" 参照)。
+    name: Frontend Static (Biome + tsc)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -85,53 +100,28 @@ jobs:
         working-directory: frontend
         run: bun run check
 
-  typecheck-frontend:
-    # tsc is the only gate that catches type errors: `bun run check` is Biome
-    # only, and vitest transpiles without checking. It used to run solely as a
-    # side effect of the E2E job's `bun run build` (tsc -b && vite build), so
-    # every E2E shard paid ~48s for the same check. Run it once here instead.
-    #
-    # `bun run typecheck` uses the `typescript7` alias, not the `typescript`
-    # dependency — see frontend/CLAUDE.md "Type checking" for why both are
-    # installed. Never substitute a bare `tsc`/`bunx tsc`: that resolves to
-    # TypeScript 5.9 and takes ~46s instead of ~5s.
-    name: Frontend Typecheck (tsc)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.10'
-
-      - name: Install dependencies
-        working-directory: frontend
-        run: bun install --frozen-lockfile
-
       - name: Type-check
         working-directory: frontend
         run: bun run typecheck
 
   test-frontend:
-    # Sharded because this is the slowest job in the pipeline (~20 min
-    # unsharded): 15,984 tests over 1,133 files. Measured on a 16-core box the
-    # run still takes ~11 min WITHOUT coverage, so the cost is the test volume
-    # itself, not the coverage instrumentation — splitting the work is the only
-    # lever that moves it. Each shard uploads its own coverage; Codecov merges
-    # them server-side.
+    # **シャード数は「1 ジョブを短くする」ためではなく「待ちの母数を減らす」
+    # ために決めてある。**実測 (#4650 マージ後、PR 19 本が並走した run):
     #
-    # Eight rather than four: --shard splits by file COUNT, but file runtimes
-    # vary widely, so at 4 the slowest shard ran 435s against a 280s mean (the
-    # whole pipeline waits on that one). Per-shard fixed overhead is only ~16s,
-    # so extra shards are nearly free and each one dilutes the effect of a
-    # single heavy file. At 6 the spread was 199-287s over 1320s of work.
-    name: Frontend Tests (${{ matrix.shard }}/8)
+    #   ジョブ 17 本 → 待ち合計 814 分 / 実行合計 50 分。**待ちが 94%。**
+    #   FE テストは 8 シャードで各 2.3-4.7 分、合計 27.3 分。
+    #
+    # 8 分割は「1 本 4.7 分」を達成しているが、その 1 本が動き出すまでに
+    # 40-52 分待つので意味が無い。4 分割なら 1 本 ~6.8 分、ジョブは 4 本減る。
+    # 待ち行列がある状態では、**分割を増やすほど start が遅れる**。
+    #
+    # 待ちが解消したら 8 に戻す価値はある。そのときはこの実測をやり直すこと。
+    name: Frontend Tests (${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v6
 
@@ -152,7 +142,7 @@ jobs:
         # forked test workers via NODE_OPTIONS.
         env:
           NODE_OPTIONS: --max-old-space-size=8192
-        run: bun run test:coverage -- --shard=${{ matrix.shard }}/8
+        run: bun run test:coverage -- --shard=${{ matrix.shard }}/4
 
       - name: Upload frontend coverage to Codecov
         uses: codecov/codecov-action@v6
@@ -169,16 +159,23 @@ jobs:
     # workers in CI). Each shard boots its own server binary, so shards cannot
     # interfere with each other.
     #
-    # Five shards, not more: ~105s of every shard is setup (frontend build,
-    # browsers, server binary) and does not shrink with the split, so the job
-    # asymptotes there. 3 -> 5 moves the slowest shard ~261s -> ~190s; 8 would
-    # buy another ~20s for three more runners.
-    name: E2E Tests (${{ matrix.shard }}/5)
+    # **5 から 3 に戻した。**5 を選んだときの測定は正しく (3 -> 5 で最遅シャードが
+    # ~261s -> ~190s、~105s のセットアップは分割で縮まないので頭打ち)、そこだけ
+    # 見れば 5 が良い。変わったのは前提の方で、PR が 19 本並走する状況では
+    # ジョブが start するまでに 40-52 分待つ。**シャード 1 本の 70 秒を買うために
+    # ランナー 2 枠を余分に確保するのは、待ち行列がある限り損**になる。
+    #
+    # 実測 (#4650 マージ後): ジョブ 17 本で待ち合計 814 分 / 実行合計 50 分。
+    # E2E は 5 シャードで各 2.4-3.4 分、合計 13.9 分。3 分割で 1 本 ~4.6 分。
+    #
+    # 待ちが解消したら 5 に戻す価値はある。そのときは上の 261s/190s ではなく
+    # 待ち時間の方を測り直すこと。
+    name: E2E Tests (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5]
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v6
 
@@ -240,7 +237,7 @@ jobs:
         working-directory: frontend
         env:
           E2E_SERVER_BIN: /tmp/trumpcards-server
-        run: bunx playwright test --shard=${{ matrix.shard }}/5
+        run: bunx playwright test --shard=${{ matrix.shard }}/3
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v7

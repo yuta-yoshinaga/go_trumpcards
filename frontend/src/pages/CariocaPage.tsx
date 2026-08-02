@@ -6,11 +6,13 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -198,6 +200,14 @@ function CariocaPageContent() {
       return { ev: evaluateCariocaContractSlot(slot, cards), shortfall: describeCariocaSlotShortfall(slot, cards) };
     });
   }, [state, humanPlayer, contractSlots]);
+
+  // **フックは `if (!state)` より前。**後ろに置くとスケルトン中だけフック数が
+  // 変わり、StrictMode でも本番ビルドでも検出できない形で壊れる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('carioca', state);
 
   // humanPlayer gates slotEvaluations population, so checking it here keeps the
   // intent obvious; the length>0 guard prevents `[].every(...)` from vacuously
@@ -458,6 +468,16 @@ function CariocaPageContent() {
 
       <GameFooter className={`${gameTheme.carioca.footer} px-4 py-2.5`}>
         <div className="flex gap-2 items-center flex-wrap">
+          <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
+            <input
+              type="checkbox"
+              checked={frontendHintEnabled}
+              onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+            />
+            {tc('hint.toggle', { ns: 'tutorial' })}
+          </label>
+          <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
           <GameResetButton
             isGameEnd={state.gameEndFlag}
             onReset={handleReset}

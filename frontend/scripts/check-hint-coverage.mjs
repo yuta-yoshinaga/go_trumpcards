@@ -57,7 +57,6 @@ const BACKLOG = new Set([
   'kaiser',
   'kille',
   'literature',
-  'pishti',
   'sixbidsolo',
 ]);
 
