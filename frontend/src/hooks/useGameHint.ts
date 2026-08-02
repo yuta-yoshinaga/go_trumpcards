@@ -35,6 +35,7 @@ import type {
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CariocaResponse,
   CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
@@ -269,6 +270,7 @@ import { getCallBreakHint } from '../utils/hints/callbreakHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
+import { getCariocaHint } from '../utils/hints/cariocaHint';
 import { getCasinoHoldemHint } from '../utils/hints/casinoholdemHint';
 import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
@@ -656,7 +658,7 @@ export const hintFactories = {
   slapjack: (s) => getSlapjackHint(s as SlapjackResponse),
   egyptianratscrew: (s) => getEgyptianRatscrewHint(s as EgyptianRatscrewResponse),
   contractrummy: (s) => getContractRummyHint(s as ContractRummyResponse),
-  carioca: () => null,
+  carioca: (s) => getCariocaHint(s as CariocaResponse),
   crescent: () => null,
   spiderette: (s) => getSpideretteHint(s as SpideretteResponse),
   gaps: (s) => getGapsHint(s as GapsResponse),
