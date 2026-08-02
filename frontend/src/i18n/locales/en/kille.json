@@ -56,5 +56,10 @@
     "card": "Your single card. The lowest hand at the showdown goes out.",
     "actions": "On your turn, exchange with your left neighbour or keep your card. As dealer you swap with the stock instead.",
     "resetButton": "Reset the game at any time with this button."
+  },
+  "frontendHint": {
+    "killeSwapLow": "A weak card — swap with your neighbour",
+    "killeSwapStock": "A weak card — as dealer you swap with the stock, and nobody can refuse",
+    "killeKeepHigh": "Strong enough to stand on — declare satisfied"
   }
 }
