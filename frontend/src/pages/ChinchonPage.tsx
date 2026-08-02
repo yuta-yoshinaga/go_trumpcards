@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -24,6 +25,7 @@ import {
 } from '../hooks/useChinchonGame';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
@@ -44,6 +46,7 @@ import { CHINCHON_HELP, parseChinchonCommand } from '../utils/cli/commands/chinc
 import { formatChinchonState } from '../utils/cli/formatters/chinchonFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const CHINCHON_PHASE_KEYS: Readonly<Record<number, string>> = {
   [ChinchonPhase.DRAW]: 'draw',
@@ -219,6 +222,14 @@ function ChinchonPageContent() {
     return result;
   }, [state, selectedCardIndices]);
 
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('chinchon', state);
+
   if (!state)
     return (
       <GameSkeleton
@@ -295,6 +306,7 @@ function ChinchonPageContent() {
                     onSelect: (v) => handleConfigChange('knockThreshold', v),
                     testId: 'chinchon-knock-threshold-select',
                   },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -309,6 +321,8 @@ function ChinchonPageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
               <div>
+                <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
                 {/* Discard pile top */}
                 {state.discardTop && (
                   <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="ch-draw-area">
