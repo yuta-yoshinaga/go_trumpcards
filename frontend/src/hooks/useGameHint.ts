@@ -85,6 +85,7 @@ import type {
   IndianPokerResponse,
   IndianRummyResponse,
   JassResponse,
+  KempsResponse,
   KingAlbertResponse,
   KingResponse,
   KlaverjasResponse,
@@ -135,6 +136,7 @@ import type {
   PochResponse,
   PokerResponse,
   PokerSquaresResponse,
+  PontoonResponse,
   PopeJoanResponse,
   PreferenceResponse,
   PresidentResponse,
@@ -175,6 +177,7 @@ import type {
   SpiderResponse,
   SpiteAndMaliceResponse,
   SpoilFiveResponse,
+  SpoonsResponse,
   StreetsAndAlleysResponse,
   SuecaResponse,
   TablanetResponse,
@@ -302,6 +305,7 @@ import { getIndianRummyHint } from '../utils/hints/indianRummyHint';
 import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getJassHint } from '../utils/hints/jassHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
+import { getKempsHint } from '../utils/hints/kempsHint';
 import { getKingalbertHint } from '../utils/hints/kingalbertHint';
 import { getKingHint } from '../utils/hints/kingHint';
 import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
@@ -353,6 +357,7 @@ import { getPitchHint } from '../utils/hints/pitchHint';
 import { getPochHint } from '../utils/hints/pochHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
+import { getPontoonHint } from '../utils/hints/pontoonHint';
 import { getPopeJoanHint } from '../utils/hints/popejoanHint';
 import { getPreferenceHint } from '../utils/hints/preferenceHint';
 import { getPresidentHint } from '../utils/hints/presidentHint';
@@ -393,6 +398,7 @@ import { getSpideretteHint } from '../utils/hints/spideretteHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
 import { getSpoilFiveHint } from '../utils/hints/spoilFiveHint';
+import { getSpoonsHint } from '../utils/hints/spoonsHint';
 import { getStreetsandalleysHint } from '../utils/hints/streetsandalleysHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getTablanetHint } from '../utils/hints/tablanetHint';
@@ -439,9 +445,11 @@ export const hintFactories = {
   baccarat: (s) => getBaccaratHint(s as BaccaratResponse),
   blackjack: (s) => getBlackjackHint(s as BlackJackResponse),
   spanish21: (s) => getBlackjackHint(s as BlackJackResponse),
+  pontoon: (s) => getPontoonHint(s as PontoonResponse),
   poker: (s) => getPokerHint(s as PokerResponse),
   hearts: (s) => getHeartsHint(s as HeartsResponse),
   gongzhu: (s) => getGongZhuHint(s as GongZhuResponse),
+  spoons: (s) => getSpoonsHint(s as SpoonsResponse),
   spades: (s) => getSpadesHint(s as SpadesResponse),
   callbreak: (s) => getCallBreakHint(s as CallBreakResponse),
   tarneeb: (s) => getTarneebHint(s as TarneebResponse),
@@ -612,6 +620,7 @@ export const hintFactories = {
   mus: (s) => getMusHint(s as MusResponse),
   tute: (s) => getTuteHint(s as TuteResponse),
   sueca: (s) => getSuecaHint(s as SuecaResponse),
+  kemps: (s) => getKempsHint(s as KempsResponse),
   klaverjas: (s) => getKlaverjasHint(s as KlaverjasResponse),
   manille: (s) => getManilleHint(s as ManilleResponse),
   mao: (s) => getMaoHint(s as MaoResponse),

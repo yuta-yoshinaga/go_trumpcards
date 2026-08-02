@@ -10,12 +10,14 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
@@ -29,6 +31,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { KEMPS_HELP, parseKempsCommand } from '../utils/cli/commands/kempsCommands';
 import { formatKempsState } from '../utils/cli/formatters/kempsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** CPU difficulty options for the Kemps settings panel. */
 const CPU_DIFFICULTY_OPTIONS = [
@@ -141,6 +144,14 @@ function KempsPageContent() {
   const { cardWidth } = useCardDimensions();
   const phaseNames = usePhaseNames('kemps', KEMPS_PHASE_KEYS);
 
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('kemps', state);
+
   if (!state)
     return <GameSkeleton gameKey="kemps" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;
 
@@ -218,6 +229,7 @@ function KempsPageContent() {
                     })),
                     onSelect: handleDifficultyChange,
                   },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -396,6 +408,8 @@ function KempsPageContent() {
                 {t('signalSent', { signal: t(`signal.${SIGNAL_LABEL_BY_TYPE[state.signalType]}`) })}
               </span>
             </div>
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="kemps-declare">
               {canSwap && (
