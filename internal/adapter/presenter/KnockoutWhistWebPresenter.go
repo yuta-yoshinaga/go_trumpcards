@@ -145,6 +145,15 @@ func (p *KnockoutWhistWebPresenter) HintOutput(g interfaces.KnockoutWhistGame) s
 			Reason:      hint.Reason,
 		}
 	}
+	// **「頼んだヒントか」をフロントが見分けられるようにする。**ページは
+	// `isRequestedHint` でこのコードを見てからバナーを出すので (#4605)、
+	// 付けないと押しても何も出ない。`hintAvailable` は画面のラベルとして
+	// 既に使われているため別キーにする (#4483)。
+	if hint != nil {
+		resObj.MessageCode = "knockoutwhist.hintRequested"
+	} else {
+		resObj.MessageCode = "knockoutwhist.noHint"
+	}
 	return marshalOrError(resObj)
 }
 

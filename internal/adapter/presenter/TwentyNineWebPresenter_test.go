@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -245,4 +246,19 @@ func TestTwentyNineWebPresenterOutputCarriesTheHint(t *testing.T) {
 
 	result := new(presenter.TwentyNineWebPresenter).Output(tng, nil)
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+// ページは `isRequestedHint` でこのコードを見てからバナーを出すので (#4605)、
+// 付いていないとヒントを押しても画面に何も出ない。
+func TestTwentyNineWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultTwentyNine()
+	g.Reset()
+	// **Reset 直後は人間の手番とは限らず、フェーズも配り直しのまま。**GetHint は
+	// プレイフェーズかつ人間の手番でなければ nil を返すので、両方そろえないと
+	// このテストは前提で落ちる。
+	g.SetPhase(domain.TwentyNinePhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+	assert.Contains(t, new(presenter.TwentyNineWebPresenter).HintOutput(g), "twentynine.hintRequested")
 }

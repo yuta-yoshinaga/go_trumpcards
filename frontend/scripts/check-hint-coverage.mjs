@@ -52,15 +52,12 @@ const ALLOWED = new Map();
  */
 const BACKLOG = new Set([
   'bideuchre',
-  'bidwhist',
   'bigtwo',
   'blackjackswitch',
   'briscola',
   'carioca',
   'conquian',
-  'contractrummy',
   'crescent',
-  'dragontiger',
   'faro',
   'fivehundred',
   'fortyandeight',
@@ -81,7 +78,6 @@ const BACKLOG = new Set([
   'sixbidsolo',
   'sultan',
   'tienlen',
-  'tonk',
   'trash',
 ]);
 

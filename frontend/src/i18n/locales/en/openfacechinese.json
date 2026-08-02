@@ -50,5 +50,7 @@
   "placeRowAria": "Place on {{label}}",
   "rowAriaEmpty": "{{label}} {{count}} cards",
   "rowAriaFilled": "{{label}} {{count}} cards: {{cards}}",
-  "pendingAnnounce": "To place: {{card}}"
+  "pendingAnnounce": "To place: {{card}}",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }
