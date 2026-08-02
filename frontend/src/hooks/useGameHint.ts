@@ -122,6 +122,7 @@ import type {
   OldMaidResponse,
   OmahaResponse,
   OmbreResponse,
+  OpenFaceChineseResponse,
   OsmosisResponse,
   PageOneResponse,
   PanResponse,
@@ -339,6 +340,7 @@ import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHiLoHint } from '../utils/hints/omahaHiLoHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
 import { getOmbreHint } from '../utils/hints/ombreHint';
+import { getOpenFaceChineseHint } from '../utils/hints/openfacechineseHint';
 import { getOsmosisHint } from '../utils/hints/osmosisHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
 import { getPanHint } from '../utils/hints/panHint';
@@ -516,6 +518,7 @@ export const hintFactories = {
   burraco: (s) => getBurracoHint(s as BurracoResponse),
   canfield: (s) => getCanfieldHint(s as CanfieldResponse),
   agnes: (s) => getAgnesHint(s as AgnesResponse),
+  openfacechinese: (s) => getOpenFaceChineseHint(s as OpenFaceChineseResponse),
   osmosis: (s) => getOsmosisHint(s as OsmosisResponse),
   pinochle: (s) => getPinochleHint(s as PinochleResponse),
   twotenjack: (s) => getTwoTenJackHint(s as TwoTenJackResponse),
