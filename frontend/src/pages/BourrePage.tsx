@@ -9,6 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -17,6 +18,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -25,6 +27,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { isRedSuitDesign, isSuitDesign, suitSymbol } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 type ApiArgs = {
   command: string;
@@ -222,6 +225,14 @@ function BourrePageContent() {
     return `${p.tricks} ${t('label.tricks')}`;
   };
 
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('bourre', state);
+
   if (!state) return <GameSkeleton gameKey="bourre" layout={{ kind: 'card-grid', count: 5, cols: 'grid-cols-5' }} />;
 
   const trick = state.currentTrick.length > 0 ? state.currentTrick : state.lastTrick;
@@ -306,6 +317,8 @@ function BourrePageContent() {
           </div>
 
           {/* Phase-specific controls */}
+          <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
           <div className="flex justify-center gap-2" data-tutorial="bourre-controls">
             {phase === 'decide' && isHumanTurn && (
               <>
@@ -430,6 +443,7 @@ function BourrePageContent() {
                 onSelect: (v: string) => handleDifficultyChange(Number.parseInt(v, 10)),
                 testId: 'bourre-difficulty',
               },
+              hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
             ],
           },
         ]}
