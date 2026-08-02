@@ -35,6 +35,7 @@ import type {
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CariocaResponse,
   CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
@@ -145,6 +146,7 @@ import type {
   PineappleResponse,
   PinochleResponse,
   PiquetResponse,
+  PishtiResponse,
   PitchResponse,
   PochResponse,
   PokerResponse,
@@ -270,6 +272,7 @@ import { getCallBreakHint } from '../utils/hints/callbreakHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
+import { getCariocaHint } from '../utils/hints/cariocaHint';
 import { getCasinoHoldemHint } from '../utils/hints/casinoholdemHint';
 import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
@@ -385,6 +388,7 @@ import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
 import { getPiquetHint } from '../utils/hints/piquetHint';
+import { getPishtiHint } from '../utils/hints/pishtiHint';
 import { getPitchHint } from '../utils/hints/pitchHint';
 import { getPochHint } from '../utils/hints/pochHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
@@ -493,6 +497,7 @@ export const hintFactories = {
   spades: (s) => getSpadesHint(s as SpadesResponse),
   callbreak: (s) => getCallBreakHint(s as CallBreakResponse),
   tarneeb: (s) => getTarneebHint(s as TarneebResponse),
+  pishti: (s) => getPishtiHint(s as PishtiResponse),
   piquet: (s) => getPiquetHint(s as PiquetResponse),
   pitch: (s) => getPitchHint(s as PitchResponse),
   holdem: (s) => getHoldemHint(s as HoldemResponse),
@@ -659,7 +664,7 @@ export const hintFactories = {
   slapjack: (s) => getSlapjackHint(s as SlapjackResponse),
   egyptianratscrew: (s) => getEgyptianRatscrewHint(s as EgyptianRatscrewResponse),
   contractrummy: (s) => getContractRummyHint(s as ContractRummyResponse),
-  carioca: () => null,
+  carioca: (s) => getCariocaHint(s as CariocaResponse),
   crescent: () => null,
   spiderette: (s) => getSpideretteHint(s as SpideretteResponse),
   gaps: (s) => getGapsHint(s as GapsResponse),
