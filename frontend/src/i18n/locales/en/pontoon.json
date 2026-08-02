@@ -56,5 +56,14 @@
     "buy": "**Buy raises and draws, but is dead once the hand has twisted.** Choosing how to take the first card is the real decision.",
     "banker": "**A player who makes a Pontoon takes the bank next deal.** When you bank you place no stake and decide the draw at the end.",
     "controls": "Buttons for the declarations and the next round."
+  },
+  "frontendHint": {
+    "pontoonBuySafe": "At 11 or under no card can bust you — raise and draw",
+    "pontoonDrawSafe": "At 11 or under no card can bust you — draw",
+    "pontoonMustDraw": "Under 15 you cannot stick, so you have to draw",
+    "pontoonStickStrong": "A strong total — stop here",
+    "pontoonStickBorderline": "Borderline, but drawing busts you more often than not",
+    "pontoonFiveCard": "One card from a five-card trick, which beats any points hand",
+    "pontoonSplit": "A pair — split it into two hands"
   }
 }
