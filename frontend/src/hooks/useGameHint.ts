@@ -175,6 +175,7 @@ import type {
   SpiderResponse,
   SpiteAndMaliceResponse,
   SpoilFiveResponse,
+  SpoonsResponse,
   StreetsAndAlleysResponse,
   SuecaResponse,
   TablanetResponse,
@@ -393,6 +394,7 @@ import { getSpideretteHint } from '../utils/hints/spideretteHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
 import { getSpoilFiveHint } from '../utils/hints/spoilFiveHint';
+import { getSpoonsHint } from '../utils/hints/spoonsHint';
 import { getStreetsandalleysHint } from '../utils/hints/streetsandalleysHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getTablanetHint } from '../utils/hints/tablanetHint';
@@ -442,6 +444,7 @@ export const hintFactories = {
   poker: (s) => getPokerHint(s as PokerResponse),
   hearts: (s) => getHeartsHint(s as HeartsResponse),
   gongzhu: (s) => getGongZhuHint(s as GongZhuResponse),
+  spoons: (s) => getSpoonsHint(s as SpoonsResponse),
   spades: (s) => getSpadesHint(s as SpadesResponse),
   callbreak: (s) => getCallBreakHint(s as CallBreakResponse),
   tarneeb: (s) => getTarneebHint(s as TarneebResponse),
