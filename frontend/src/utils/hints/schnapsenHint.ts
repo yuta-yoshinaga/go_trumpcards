@@ -2,13 +2,25 @@ import type { SchnapsenResponse } from '../../types/card';
 import type { HintResult } from '../../types/hint';
 
 /**
- * Returns null — optimal Schnapsen play depends on marriage timing, trump
- * conservation, stock-depletion tracking, and the must-follow second phase that
- * the client does not model. The authoritative hint is computed server-side
- * (see internal/domain/Schnapsen.go GetHint, surfaced via the `hint` command).
- * This explicit stub keeps the game registered in {@link hooks/useGameHint.useGameHint | useGameHint} so the
- * hint-toggle UI stays consistent across the suite.
+ * Returns a frontend {@link HintResult} for Schnapsen, or null when no suggestion is
+ * available.
+ *
+ * The hint is computed by the Go backend and, since #4483, arrives on every
+ * response rather than only the `hint` command's. This was a stub returning
+ * null on the grounds that the reasoning lived server-side — true, and no
+ * longer a reason to discard the answer once the server started sending it.
+ *
+ * The shapes are mutually exclusive, one per decision point, and each is tested
+ * with `!== undefined` because zero is legal for all of them.
  */
-export function getSchnapsenHint(_state: SchnapsenResponse): HintResult | null {
-  return null;
+export function getSchnapsenHint(state: SchnapsenResponse): HintResult | null {
+  const hint = state.hint;
+  if (hint?.cardIndex === undefined) return null;
+
+  // **マリッジ宣言つきの手は別物。**同じ札でも申告するかどうかで点が変わる。
+  return {
+    targetAction: hint.isMarriage ? 'marriage' : `card-${hint.cardIndex}`,
+    reason: `hint.${hint.reason}`,
+    confidence: 'moderate',
+  };
 }

@@ -37,6 +37,7 @@
   "frontendHint": {
     "waste": "Waste",
     "divan": "Divan slot {{idx}}",
-    "foundation": "Foundation {{idx}}"
+    "foundation": "Foundation {{idx}}",
+    "sultanMove": "This card goes onto a foundation"
   }
 }
