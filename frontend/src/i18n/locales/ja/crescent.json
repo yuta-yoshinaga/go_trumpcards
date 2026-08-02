@@ -39,6 +39,8 @@
   "frontendHint": {
     "tableau": "タブロー列{{col}}",
     "foundation": "ファンデーション{{id}}",
-    "redeal": "再配り"
+    "redeal": "再配り",
+    "crescentMove": "この札を動かせます",
+    "crescentRedeal": "動ける手がありません。再配りしましょう"
   }
 }

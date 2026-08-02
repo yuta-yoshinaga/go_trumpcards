@@ -41,5 +41,15 @@
     "trick": "Cards played to the table appear here. The strongest card wins the trick.",
     "hand": "Your hand. To play, select a card then press Play. To exchange, select exactly 3.",
     "actions": "Phase-specific action buttons (bid, exchange, play) appear here."
+  },
+  "hint": {
+    "strategic_bid": "A bid that matches the strength of your hand",
+    "pass_recommended": "A weak hand — pass",
+    "discard_weakest": "Throw your weakest card",
+    "discard_weak": "This trick is out of reach — throw a weak card",
+    "follow_suit": "Follow the suit that was led",
+    "lead_strong": "Lead a strong card to keep the initiative",
+    "lead_trump": "Lead a trump",
+    "trump_cut": "Cut in with a trump"
   }
 }

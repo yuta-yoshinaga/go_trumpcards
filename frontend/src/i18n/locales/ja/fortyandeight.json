@@ -35,6 +35,7 @@
   "frontendHint": {
     "waste": "ウェイスト",
     "tableau": "タブロー列{{col}}",
-    "foundation": "組札"
+    "foundation": "組札",
+    "fortyandeightMove": "この札を動かせます"
   }
 }
