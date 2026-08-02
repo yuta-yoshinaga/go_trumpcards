@@ -139,3 +139,41 @@ func TestBouillotteWebPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.BouillotteWebPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestBouillotteWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// Reset 直後にヒントが出る。300 回試して nil 0 件で確認済み。
+	g := domain.NewDefaultBouillotte()
+	g.Reset()
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+
+	out := new(presenter.BouillotteWebPresenter).Output(g, nil)
+	assert.Contains(t, out, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, out, "bouillotte.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestBouillotteWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultBouillotte()
+	g.Reset()
+	assert.Contains(t, new(presenter.BouillotteWebPresenter).HintOutput(g), "bouillotte.hintRequested")
+}
+
+// **ヒントが無いときの分岐も見る。**Output() の受動ヒントは nil のとき
+// `hint` キーごと落ちる。HintOutput() は noHint を返す。codecov が
+// PR #4593 でこの 2 本を未到達として報告した。
+func TestBouillotteWebPresenterWithoutAHint(t *testing.T) {
+	g := domain.NewDefaultBouillotte()
+	g.SetPhase(domain.BouillottePhaseBetting)
+	g.SetCurrentPlayerIdx(1) // 人間は席 0。他人の手番
+	require.Nil(t, g.GetHint(), "fixture must actually produce no hint")
+
+	p := new(presenter.BouillotteWebPresenter)
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	assert.NotContains(t, decoded, "hint")
+
+	assert.Contains(t, p.HintOutput(g), "bouillotte.noHint")
+}

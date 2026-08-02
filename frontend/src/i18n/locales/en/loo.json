@@ -59,5 +59,7 @@
     "resetButton": "Use the reset button to start a new game."
   },
   "statusAria": "{{name}}: {{status}}",
-  "playRiskTooltip": "If you play and win no trick this round, you pay into the pool"
+  "playRiskTooltip": "If you play and win no trick this round, you pay into the pool",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }
