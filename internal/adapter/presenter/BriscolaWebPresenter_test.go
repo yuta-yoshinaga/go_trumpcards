@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -199,4 +200,17 @@ func TestBriscolaWebPresenterOutputCarriesTheHint(t *testing.T) {
 
 	result := new(presenter.BriscolaWebPresenter).Output(brg, nil)
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+// ページは `isRequestedHint` でこのコードを見てからバナーを出すので (#4605)、
+// 付いていないとヒントを押しても画面に何も出ない。
+func TestBriscolaWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultBriscola()
+	g.Reset()
+	// **Reset 直後は人間の手番とは限らない。**GetHint は手番でなければ nil を
+	// 返すので、席を人間に固定しないとこのテストは前提で落ちる。
+	g.SetCurrentPlayerIdx(0)
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+	assert.Contains(t, new(presenter.BriscolaWebPresenter).HintOutput(g), "briscola.hintRequested")
 }

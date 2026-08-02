@@ -6,6 +6,20 @@ on:
   pull_request:
     branches: [ develop ]
 
+# **同じ ref の古い run を打ち切る。**1 回の CI は 17 ジョブに展開される
+# (FE 8 シャード + E2E 5 シャード + backend test/lint + typecheck + build) ので、
+# PR を押し直すたびに 17 スロットが二重に埋まる。並行 PR が増えると新しい run が
+# start すらできず、待ち時間の大半がジョブの実行ではなくキュー待ちになっていた。
+#
+# `deploy-*.yml` も同じ group を持つが、あちらは `cancel-in-progress: false` ——
+# デプロイを途中で切ると危険なため。検証は切ってよいので true にする。
+#
+# **master だけ除外する。**master への push はバージョン上げとタグ打ちを起動する
+# ので、後続の push でその run を殺すと未タグのコミットが残る。
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 jobs:
   lint-backend:
     name: Backend Lint (golangci-lint)

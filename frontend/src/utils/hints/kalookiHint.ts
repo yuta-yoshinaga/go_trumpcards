@@ -8,6 +8,9 @@ import type { HintResult } from '../../types/hint';
  * 同じ表を持っている。ここから import すると循環するので、同期先を明記して
  * 持ち直している。
  */
+/** A(1) と K(13) の差。ランの端では隣り合う。 */
+const ACE_TO_KING_GAP = 12;
+
 const PHASE_DRAW = 0;
 const PHASE_MELD = 1;
 
@@ -50,9 +53,21 @@ export function getKalookiHint(state: KalookiResponse): HintResult | null {
   return { targetAction: `card-${idx}`, reason: 'frontendHint.kalookiDiscardHeavy', confidence: 'moderate' };
 }
 
-/** 同じランクがあるか、同じスートで隣のランクがあるか。メルドの証明ではない。 */
+/**
+ * 同じランクがあるか、同じスートで隣のランクがあるか。メルドの証明ではない。
+ *
+ * **A は 2 の隣であると同時に K の隣でもある** (internal/domain/Kalooki.go:822)。生の値で
+ * 引き算すると A(1) と K(13) が 12 離れて見え、A を持っている手で K を拾う
+ * 理由を見落とす。
+ */
 function connects(c: Card, hand: Card[]): boolean {
-  return hand.some((o) => o.value === c.value || (o.design === c.design && Math.abs(o.value - c.value) === 1));
+  return hand.some((o) => o.value === c.value || (o.design === c.design && adjacent(o.value, c.value)));
+}
+
+/** 隣のランクか。A(1) は 2 の隣であると同時に K(13) の隣でもある。 */
+function adjacent(a: number, b: number): boolean {
+  const gap = Math.abs(a - b);
+  return gap === 1 || gap === ACE_TO_KING_GAP;
 }
 
 /**
