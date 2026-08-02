@@ -172,7 +172,6 @@ match on the code if you ever script against tsc output.
 | `TutorialOverlay` | `src/components/tutorial/TutorialOverlay.tsx` | Full-screen overlay with SVG mask spotlight |
 | `useTutorial` | `src/hooks/useTutorial.ts` | State management (step progression, localStorage, resume/restart) |
 | `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hints; registry-driven via `hintFactories` (covers most games; currently 248). `frontend/scripts/check-hint-coverage.mjs` fails the build for any new game without one. The supported set is the `HintGameName` union (`keyof typeof hintFactories`) — add a game by registering its factory there || `TutorialSuggestDialog` | `src/components/tutorial/TutorialSuggestDialog.tsx` | First-visit dialog; controlled by `useFirstVisit` hook || `TutorialProgressPanel` | `src/components/tutorial/TutorialProgressPanel.tsx` | Progress overview in NavBar |### Adding a tutorial to a new game
-
 1. Define `TutorialStep[]` array with `target` (CSS selector using `data-tutorial` attributes), `messageKey`, `placement`, and `advanceOn`
 2. Add `data-tutorial="<step-name>"` attributes to the game page's key UI elements
 3. Add tutorial step text to `src/i18n/locales/{ja,en}/<game>.json` under a `tutorial` key
