@@ -56,5 +56,11 @@
     "hand": "Your hand. Select the cards that form a combination, then press Play.",
     "actions": "You may only play a combination that beats the one on the table. When the table is clear you must lead, not pass.",
     "resetButton": "Reset the game at any time with this button."
+  },
+  "frontendHint": {
+    "guandanPartnerOut": "Your partner is out — how far you climb now depends on the finishing order",
+    "guandanLevelCards": "You hold level cards: they beat aces, and the two red ones are wild",
+    "guandanFreeLead": "The table is clear — lead whatever combination you like",
+    "guandanConsiderPass": "A combination is live — passing is a real option"
   }
 }
