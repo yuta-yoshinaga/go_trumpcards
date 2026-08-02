@@ -54,8 +54,8 @@ flowchart TD
 | コマンド | 説明 |
 |---|---|
 | `r` / `reset` | ゲームリセット |
-| `b <amount> <d|t|e>` | ベット（`d`=ドラゴン, `t`=タイガー, `e`=タイ） |
-| `bet <amount> <dragon|tiger|tie>` | 上記の長い形式 |
+| `b <amount> <d\|t\|e>` | ベット（`d`=ドラゴン, `t`=タイガー, `e`=タイ） |
+| `bet <amount> <dragon\|tiger\|tie>` | 上記の長い形式 |
 | `clear` | Big Road（履歴）をクリア |
 | `log` | 棋譜を表示 |
 | `q` / `quit` | 終了 |
