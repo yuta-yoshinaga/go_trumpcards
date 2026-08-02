@@ -58,7 +58,9 @@ describe('formatKingState', () => {
   });
 
   it('renders a hint with card indices', () => {
-    const out = formatKingState(makeKingState({ hint: { cardIndices: [1, 2], reason: 'avoid_low' } }));
+    const out = formatKingState(
+      makeKingState({ hint: { cardIndices: [1, 2], reason: 'avoid_low' }, messageCode: 'king.hintRequested' }),
+    );
     expect(out).toContain('HINT: card indices [1, 2]');
     expect(out).toContain('avoid_low');
   });
@@ -71,5 +73,13 @@ describe('formatKingState', () => {
   it('renders an explicit message when present', () => {
     const out = formatKingState(makeKingState({ message: 'hello world' }));
     expect(out).toContain('hello world');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [1, 2], reason: 'avoid_low' };
+    expect(formatKingState(makeKingState({ hint, messageCode: 'king.hintRequested' }))).toContain('HINT');
+    expect(formatKingState(makeKingState({ hint, messageCode: 'king.playing' }))).not.toContain('HINT');
   });
 });
