@@ -31,6 +31,7 @@ import { cardLabel } from '../utils/cardUtils';
 import { ECARTE_HELP, parseEcarteCommand } from '../utils/cli/commands/ecarteCommands';
 import { formatEcarteState } from '../utils/cli/formatters/ecarteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = undeclared). */
@@ -328,7 +329,7 @@ function EcartePageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndex != null && ` ([${state.hint.cardIndex}])`}
