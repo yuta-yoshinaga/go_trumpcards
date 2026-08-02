@@ -55,5 +55,7 @@
     "playButton": "Once a card is selected, play it with this button. The player who plays the strongest card wins the trick.",
     "info": "Each player starts with one Dogbone token. A player who wins zero tricks in a round must spend a Dogbone to survive; with no Dogbone left, a zero-trick round eliminates them (greyed out). The last player standing wins the match.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }
