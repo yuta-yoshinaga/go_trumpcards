@@ -37,6 +37,7 @@
   "frontendHint": {
     "waste": "ウェイスト",
     "divan": "ディヴァン スロット{{idx}}",
-    "foundation": "組札{{idx}}"
+    "foundation": "組札{{idx}}",
+    "sultanMove": "この札を組み札へ置けます"
   }
 }

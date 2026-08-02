@@ -35,6 +35,7 @@
   "frontendHint": {
     "waste": "捨て札",
     "tableau": "タブロー列{{col}}",
-    "foundation": "組札"
+    "foundation": "組札",
+    "fortythievesMove": "この札を動かせます"
   }
 }

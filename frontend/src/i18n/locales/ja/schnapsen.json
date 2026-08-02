@@ -44,5 +44,14 @@
     "cpuTurn": "CPUの番です…",
     "trickComplete": "トリック完了 — 次へ進んでください",
     "loading": "ロード中…"
+  },
+  "hint": {
+    "follow_cut": "切り札で刈り取ります",
+    "follow_dump": "このトリックは取れません。弱い札を捨てましょう",
+    "follow_win": "この札で取れます",
+    "lead_low": "弱い札でリードして様子を見ます",
+    "lead_trump": "切り札でリードします",
+    "lead_value": "点の高い札でリードします",
+    "marriage": "K と Q が揃っています。宣言すると加点されます"
   }
 }

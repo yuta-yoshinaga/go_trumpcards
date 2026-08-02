@@ -44,5 +44,14 @@
     "cpuTurn": "CPU's turn…",
     "trickComplete": "Trick complete — proceed to the next trick",
     "loading": "Loading…"
+  },
+  "hint": {
+    "follow_cut": "Cut in with a trump",
+    "follow_dump": "This trick is out of reach — throw a weak card",
+    "follow_win": "This card wins the trick",
+    "lead_low": "Lead low and see what comes back",
+    "lead_trump": "Lead a trump",
+    "lead_value": "Lead a high-value card",
+    "marriage": "You hold the K and Q — declaring scores extra"
   }
 }
