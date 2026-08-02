@@ -66,6 +66,12 @@ describe('getPiquetHint', () => {
     expect(getPiquetHint(base({ hint: { cardIndex: 0, reason: 'lowest' } }))?.targetAction).toBe('play');
   });
 
+  // 交換フェーズなのに discardIndices が無い形（`?? 0` の側）。
+  it('returns null when the exchange hint omits the discard list', () => {
+    const result = getPiquetHint(base({ phase: PiquetPhase.EXCHANGE, hint: { reason: 'lowest' } }));
+    expect(result).toBeNull();
+  });
+
   it('returns null when the exchange hint names no card', () => {
     const result = getPiquetHint(base({ phase: PiquetPhase.EXCHANGE, hint: { discardIndices: [], reason: 'lowest' } }));
     expect(result).toBeNull();
