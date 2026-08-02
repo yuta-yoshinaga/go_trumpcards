@@ -49,7 +49,6 @@ const ALLOWED = new Map();
  * It was never recent. Prose alone had never held.
  */
 const BACKLOG = new Set([
-  'boston',
   'briscola',
   'conquian',
   'faro',
@@ -62,7 +61,6 @@ const BACKLOG = new Set([
   'niuniu',
   'pishti',
   'sixbidsolo',
-  'vint',
 ]);
 
 /** Game slugs for every registered route, keyed the way useGameHint is called. */
