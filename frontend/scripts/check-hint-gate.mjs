@@ -51,6 +51,34 @@ const ALLOWED = new Map([
   ],
 ]);
 
+/**
+ * Whether a page's test exercises the gate in **both** directions.
+ *
+ * A test that only asserts "nothing shows when not requested" passes with
+ * `isRequestedHint` stubbed to `false` — it is precisely the assertion that
+ * holds when the feature is broken. 16 of the banner pages were in that state
+ * and got the positive case added.
+ *
+ * The two surfaces need different assertions, so both spellings count:
+ *
+ *   - **banner** pages render a line of text and use the paired
+ *     `renders no hint banner …` / `renders the hint banner once …`;
+ *   - **highlight** pages (the solitaires — Accordion, Yukon, …) put a ring or
+ *     an aria-label on a card instead, so their tests are named for what they
+ *     look at. Requiring the banner wording there would be asking them to test
+ *     something they do not render.
+ *
+ * So a page counts as covered when its test mentions `hintAvailable` or
+ * `hintRequested` at all: that message code is what `isRequestedHint` reads, and
+ * a test that sets it is necessarily driving the true branch.
+ */
+function testsBothSides(src) {
+  const negative = src.includes('renders no hint banner when the hint was not requested');
+  const positive = src.includes('hintAvailable') || src.includes('hintRequested');
+  return positive && (negative || !src.includes('renders no hint banner'));
+}
+
+const oneSided = [];
 const offenders = [];
 for (const file of await readdir(PAGES)) {
   if (!file.endsWith('Page.tsx')) continue;
@@ -68,8 +96,20 @@ for (const file of await readdir(PAGES)) {
   const rendersHint = /\{state\.hint(\?)?[.\s]/.test(src);
   const derivesHint = /^\s*const \w+ =[^\n]*state\.hint/m.test(src);
   if (!rendersHint && !derivesHint) continue;
-  if (src.includes('isRequestedHint')) continue;
-  offenders.push(game);
+  if (!src.includes('isRequestedHint')) {
+    offenders.push(game);
+    continue;
+  }
+
+  // 門番は付いている。**そのテストが両側を踏んでいるか**も見る。
+  let test;
+  try {
+    test = await readFile(join(PAGES, `${game}Page.test.tsx`), 'utf8');
+  } catch {
+    oneSided.push(`${game} (Page.test.tsx が無い)`);
+    continue;
+  }
+  if (!testsBothSides(test)) oneSided.push(game);
 }
 
 if (offenders.length > 0) {
@@ -86,5 +126,21 @@ if (offenders.length > 0) {
   process.exit(1);
 }
 
+if (oneSided.length > 0) {
+  console.error('\nGated, but only one side is tested:\n');
+  for (const game of oneSided.sort()) console.error(`  ONE-SIDED  ${game}`);
+  console.error(
+    `\nA test that only asserts "no banner when not requested" passes with\n` +
+      `isRequestedHint stubbed to false — it holds precisely when the feature is\n` +
+      `broken. Add the other half:\n\n` +
+      `  it('renders the hint banner once the hint was requested', async () => {\n` +
+      `    mockExec.mockResolvedValue({ ...state, hint: {…}, messageCode: '<game>.hintRequested' });\n` +
+      `    renderWithProviders(<XPage />);\n` +
+      `    expect(await screen.findByText(/\\(\\[0\\]\\)/)).toBeInTheDocument();\n` +
+      `  });\n`,
+  );
+  process.exit(1);
+}
+
 const gated = (await readdir(PAGES)).filter((f) => f.endsWith('Page.tsx')).length;
-console.log(`hint-gate: OK (no page renders state.hint unasked; ${gated} pages checked).`);
+console.log(`hint-gate: OK (both sides tested on every gated page; ${gated} pages checked).`);

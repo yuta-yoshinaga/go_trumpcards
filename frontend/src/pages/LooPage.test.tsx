@@ -169,4 +169,16 @@ describe('LooPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByText(/\(\[0\]\)/)).not.toBeInTheDocument();
   });
+
+  // **押したときは出る。**押していない側だけを見ていると、`isRequestedHint` を
+  // 定数 false にしても通ってしまう。真の分岐も踏んでおく。
+  it('renders the hint banner once the hint was requested', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      hint: { cardIndices: [0], decision: null, reason: 'x' },
+      messageCode: 'loo.hintRequested',
+    });
+    renderWithProviders(<LooPage />);
+    expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
 });
