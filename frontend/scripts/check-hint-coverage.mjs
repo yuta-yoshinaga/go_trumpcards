@@ -73,7 +73,6 @@ const BACKLOG = new Set([
   'mao',
   'niuniu',
   'openfacechinese',
-  'piquet',
   'pishti',
   'pontoon',
   'scopone',
