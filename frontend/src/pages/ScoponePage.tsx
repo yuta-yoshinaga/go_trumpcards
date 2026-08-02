@@ -7,6 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -14,6 +15,7 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useScoponeGame } from '../hooks/useScoponeGame';
 import { useSound } from '../providers/SoundProvider';
@@ -27,6 +29,7 @@ import {
   type ScoponeCliArgs,
 } from '../utils/cli/commands/scoponeCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const DIFFICULTY_OPTIONS = [
   { value: '0', label: 'Easy' },
@@ -163,6 +166,13 @@ function ScoponePageContent() {
   // is still null.
   const human = state && state.players.length >= 4 ? state.players.find((p) => p.isHuman) : null;
   const isHumanTurn = !!state && !!human && state.currentTurn === human.id && state.isHumanTurn && !state.gameEndFlag;
+
+  // **フックは早期 return より上。**フック順を崩さないため。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('scopone', state);
 
   if (!state || !human) {
     return (
@@ -381,12 +391,15 @@ function ScoponePageContent() {
                     options: TARGET_SCORE_OPTIONS,
                     onSelect: (v: string) => handleConfigChange('targetScore', Number.parseInt(v, 10)),
                   },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
           />
 
           <GameFooter className={`${gameTheme.scopone.footer} px-4 py-2.5`}>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="sp-actions">
               <button
                 type="button"
