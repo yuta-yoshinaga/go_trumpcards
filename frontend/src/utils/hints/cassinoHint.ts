@@ -50,26 +50,41 @@ export function getCassinoHint(state: CassinoResponse): HintResult | null {
 
   const table = state.tableCards;
 
-  let multiCapture = false;
-  for (const c of human.cards) {
-    const captured = capturableBy(c, table);
-    if (captured.length === 0) continue;
-
-    // 場もビルドも空になるならスイープ。ビルドが残っていれば成立しない。
-    if (state.config.sweepBonusEnabled && captured.length === table.length && state.builds.length === 0) {
-      return { targetAction: 'take', reason: 'hint.take.sweep', confidence: 'strong' };
-    }
-    if (captured.some(isPointCard)) {
-      return { targetAction: 'take', reason: 'hint.take.points', confidence: 'strong' };
-    }
-    if (captured.length >= MULTI_CAPTURE) multiCapture = true;
+  // **優先順位ごとに手札を最後まで見る。**最初に見つけた札で返すと、後ろの札で
+  // スイープできるのに得点札の取りを勧めてしまう。docstring が並べている順序は
+  // 「札の順」ではなく「手の良さの順」なので、段ごとに走査し直す
+  // (#4647 のレビュー指摘。既存テストは手札 1 枚ばかりで気づけなかった)。
+  const captures = human.cards.map((c) => capturableBy(c, table)).filter((got) => got.length > 0);
+  if (captures.length === 0) {
+    return { targetAction: 'trail', reason: 'hint.trail.safe', confidence: 'moderate' };
   }
 
-  if (multiCapture) {
+  if (state.config.sweepBonusEnabled && captures.some((got) => sweeps(got, state))) {
+    return { targetAction: 'take', reason: 'hint.take.sweep', confidence: 'strong' };
+  }
+  if (captures.some((got) => got.some(isPointCard))) {
+    return { targetAction: 'take', reason: 'hint.take.points', confidence: 'strong' };
+  }
+  if (captures.some((got) => got.length >= MULTI_CAPTURE)) {
     return { targetAction: 'take', reason: 'hint.take.cards', confidence: 'moderate' };
   }
-
   return { targetAction: 'trail', reason: 'hint.trail.safe', confidence: 'moderate' };
+}
+
+/**
+ * この取りで場が空になり、かつスイープとして加点されるか。
+ *
+ * `Cassino.go:330` は場とビルドが空になることに加えて **`!lastTakeInRound()`**
+ * を要求する。ラウンド最後の取り（全員の手札が尽き、山札も 0）はスイープに
+ * 数えない。これを落とすと、加点されない手を自信を持って勧めることになる
+ * (#4647 のレビュー指摘)。
+ */
+function sweeps(captured: Card[], state: CassinoResponse): boolean {
+  if (captured.length !== state.tableCards.length || state.builds.length > 0) return false;
+  // この 1 枚を出したあとに誰かの手札が残るなら、ラウンドはまだ続く。
+  const cardsLeftAfterPlay = state.players.reduce((sum, p) => sum + p.cardCount, 0) - 1;
+  const lastTake = cardsLeftAfterPlay === 0 && state.remainingDeck === 0;
+  return !lastTake;
 }
 
 /** 絵札か (11-13)。 */
@@ -100,8 +115,8 @@ function capturableBy(played: Card, table: Card[]): Card[] {
   }
 
   const numeric = table.filter((t) => !isFace(t));
-  const target = played.value === ACE ? ACE : played.value;
-  return bestSumCover(numeric, target);
+  // A は 1 として数える (`CassinoCardValue`)。`value` が既に 1 なので変換は要らない。
+  return bestSumCover(numeric, played.value);
 }
 
 /**
