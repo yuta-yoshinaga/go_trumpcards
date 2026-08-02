@@ -260,4 +260,19 @@ describe('SetteEMezzoPage keyboard shortcuts', () => {
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
+
+  // **ヒント経路はページ側からも踏む。**ファクトリ単体テストだけだと
+  // `hintFactories` の登録行と、ページのトグル／ツールチップが一度も
+  // 実行されない（#4596 / #4600 のレビュー指摘）。
+  it('turns the frontend hint on from the checkbox', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<SetteEMezzoPage />);
+
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
 });
