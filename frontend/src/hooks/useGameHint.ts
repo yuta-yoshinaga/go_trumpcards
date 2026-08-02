@@ -26,6 +26,7 @@ import type {
   BourreResponse,
   BraidResponse,
   BridgeResponse,
+  BriscolaResponse,
   BristolResponse,
   BuraResponse,
   BurracoResponse,
@@ -268,6 +269,7 @@ import { getBouillotteHint } from '../utils/hints/bouillotteHint';
 import { getBourreHint } from '../utils/hints/bourreHint';
 import { getBraidHint } from '../utils/hints/braidHint';
 import { getBridgeHint } from '../utils/hints/bridgeHint';
+import { getBriscolaHint } from '../utils/hints/briscolaHint';
 import { getBristolHint } from '../utils/hints/bristolHint';
 import { getBuraHint } from '../utils/hints/buraHint';
 import { getBurracoHint } from '../utils/hints/burracoHint';
@@ -641,6 +643,7 @@ export const hintFactories = {
   easthaven: (s) => getEasthavenHint(s as EasthavenResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   russianbank: (s) => getRussianBankHint(s as RussianBankResponse),
+  briscola: (s) => getBriscolaHint(s as BriscolaResponse),
   acesup: (s) => getAcesUpHint(s as AcesUpResponse),
   blackhole: (s) => getBlackHoleHint(s as BlackHoleResponse),
   simplesimon: (s) => getSimpleSimonHint(s as SimpleSimonResponse),
