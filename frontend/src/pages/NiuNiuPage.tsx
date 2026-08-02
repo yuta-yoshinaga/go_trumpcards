@@ -9,6 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -16,6 +17,7 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useNiuNiuGame } from '../hooks/useNiuNiuGame';
 import { btnPrimary } from '../styles/buttonStyles';
@@ -58,6 +60,13 @@ function NiuNiuPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth } = useCardDimensions();
+  // **フックは `if (!state)` より前。**後ろに置くとスケルトン中だけフック数が
+  // 変わり、StrictMode でも本番ビルドでも露見しない形で壊れる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('niuniu', state);
 
   if (!state) {
     return <GameSkeleton gameKey="niuniu" layout={{ kind: 'tableau', topRow: 5, tableau: 3 }} />;
@@ -192,6 +201,16 @@ function NiuNiuPageContent() {
           <GameFooter className={`${gameTheme.niuniu.footer} px-4 py-2.5`}>
             <ErrorAlert message={error} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="nn-controls">
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
+                <input
+                  type="checkbox"
+                  checked={frontendHintEnabled}
+                  onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+                />
+                {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
               {isBetting && (
                 <>
                   <span className="text-sm text-ds-text-muted">{t('betLabel')}</span>

@@ -125,6 +125,7 @@ import type {
   NapResponse,
   NertzResponse,
   NinetyNineResponse,
+  NiuNiuResponse,
   OasisPokerResponse,
   OhHellResponse,
   OichoKabuResponse,
@@ -357,6 +358,7 @@ import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNapoleonsSquareHint } from '../utils/hints/napoleonssquareHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getNinetyNineHint } from '../utils/hints/ninetynineHint';
+import { getNiuNiuHint } from '../utils/hints/niuniuHint';
 import { getOasisPokerHint } from '../utils/hints/oasispokerHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOichokabuHint } from '../utils/hints/oichokabuHint';
@@ -513,6 +515,7 @@ export const hintFactories = {
   ohhell: (s) => getOhHellHint(s as OhHellResponse),
   wizard: (s) => getWizardHint(s as WizardResponse),
   ninetynine: (s) => getNinetyNineHint(s as NinetyNineResponse),
+  niuniu: (s) => getNiuNiuHint(s as NiuNiuResponse),
   oldmaid: (s) => getOldMaidHint(s as OldMaidResponse),
   doubt: (s) => getDoubtHint(s as DoubtResponse),
   daifugo: (s) => getDaifugoHint(s as DaifugoResponse),
