@@ -73,5 +73,7 @@
     "trick": "Cards played to the current trick appear here. Follow the led suit. The top trumps (trump 5 > trump J > ♥A > trump A …) are exempt from following (Reneging). The highest card wins the trick.",
     "hand": "This is your hand. During play, click a playable card and press Play.",
     "actions": "In the bidding phase, buttons appear for Pass / 15 / 20 / 25 (Jink). Only a bid higher than the current highest is selectable. The highest bidder's team declares trump and plays five tricks. Each trick is worth 5 points. Make the contract to score, miss it to lose your bid. A 25 Jink wins instantly if you take all five tricks."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

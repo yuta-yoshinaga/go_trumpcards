@@ -110,3 +110,44 @@ func TestLooWebPresenter_TurnUp(t *testing.T) {
 	// turn-up should be present after reset.
 	assert.Contains(t, decoded, "turnUp")
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestLooWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// 既存の HintOutput テストと同じ状態。300 回試して nil 0 件で確認済み。
+	g := domain.NewDefaultLoo()
+	g.Reset()
+	g.SetDecidePlayerIdx(0)
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.LooWebPresenter).Output(g, nil)), &decoded))
+	assert.Contains(t, decoded, "hint", "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotEqual(t, "loo.hintRequested", decoded["messageCode"])
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestLooWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultLoo()
+	g.Reset()
+	g.SetDecidePlayerIdx(0)
+	assert.Contains(t, new(presenter.LooWebPresenter).HintOutput(g), "loo.hintRequested")
+}
+
+// **ヒントが無いときの分岐も見る。**Output() の受動ヒントは nil のとき
+// `hint` キーごと落ちる。HintOutput() は noHint を返す。codecov が
+// PR #4591 でこの 2 本を未到達として報告した。
+func TestLooWebPresenterWithoutAHint(t *testing.T) {
+	g := domain.NewDefaultLoo()
+	g.Reset()
+	g.SetDecidePlayerIdx(1) // 人間は席 0。他人の判断待ちなので助言することがない
+	require.Nil(t, g.GetHint(), "fixture must actually produce no hint")
+
+	p := new(presenter.LooWebPresenter)
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	assert.NotContains(t, decoded, "hint")
+
+	assert.Contains(t, p.HintOutput(g), "loo.noHint")
+}

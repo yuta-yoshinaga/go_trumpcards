@@ -43,6 +43,19 @@ type GutsWebPresenter struct{}
 func (p *GutsWebPresenter) Output(g interfaces.GutsGame, lastErr error) string {
 	resObj := p.buildBase(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **Guts.GetHint() は宣言フェーズかつ席 0（NewGutsPlayer(i == 0) で常に人間）に限る。**
+	// 他ゲームがそうだから、で済ませない —— Pinochle は見ていなかった (#4585)。
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.GutsWebOutputHint{
+			Declaration: int(hint.Declaration),
+			Reason:      hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -165,6 +178,13 @@ func (p *GutsWebPresenter) HintOutput(g interfaces.GutsGame) string {
 			Declaration: int(hint.Declaration),
 			Reason:      hint.Reason,
 		}
+	}
+	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。
+	if g.GetHint() != nil {
+		resObj.MessageCode = "guts.hintRequested"
+	} else {
+		resObj.MessageCode = "guts.noHint"
 	}
 	return marshalOrError(resObj)
 }
