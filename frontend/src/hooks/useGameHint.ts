@@ -138,6 +138,7 @@ import type {
   OpenFaceChineseResponse,
   OsmosisResponse,
   PageOneResponse,
+  PaiGowResponse,
   PanResponse,
   PenguinResponse,
   PigsTailResponse,
@@ -377,6 +378,7 @@ import { getOmbreHint } from '../utils/hints/ombreHint';
 import { getOpenFaceChineseHint } from '../utils/hints/openfacechineseHint';
 import { getOsmosisHint } from '../utils/hints/osmosisHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
+import { getPaiGowHint } from '../utils/hints/paigowHint';
 import { getPanHint } from '../utils/hints/panHint';
 import { getPenguinHint } from '../utils/hints/penguinHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
@@ -412,6 +414,7 @@ import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
 import { getSedmaHint } from '../utils/hints/sedmaHint';
 import { getSetteEMezzoHint } from '../utils/hints/settemezzoHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
+import { getSevenCardStudHint } from '../utils/hints/sevencardstudHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
 import { getShengJiHint } from '../utils/hints/shengjiHint';
@@ -576,9 +579,9 @@ export const hintFactories = {
   osmosis: (s) => getOsmosisHint(s as OsmosisResponse),
   pinochle: (s) => getPinochleHint(s as PinochleResponse),
   twotenjack: (s) => getTwoTenJackHint(s as TwoTenJackResponse),
-  sevencardstud: () => null,
+  sevencardstud: (s) => getSevenCardStudHint(s as SevenCardStudResponse),
   // Hi-Lo shares the stud page and, with it, stud's absence of a frontend hint.
-  sevencardstudhilo: () => null,
+  sevencardstudhilo: (s) => getSevenCardStudHint(s as SevenCardStudResponse),
   razz: (s) => getRazzHint(s as SevenCardStudResponse),
   badugi: (s) => getBadugiHint(s as BadugiResponse),
   deucetoseven: (s) => getDeuceToSevenHint(s as DeuceToSevenResponse),
@@ -596,7 +599,7 @@ export const hintFactories = {
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
   yaniv: (s) => getYanivHint(s as YanivResponse),
   tressette: (s) => getTressetteHint(s as TressetteResponse),
-  paigow: () => null,
+  paigow: (s) => getPaiGowHint(s as PaiGowResponse),
   chinesepoker: (s) => getChinesePokerHint(s as ChinesePokerResponse),
   pageone: (s) => getPageOneHint(s as PageOneResponse),
   pigtail: (s) => getPigstailHint(s as PigsTailResponse),
