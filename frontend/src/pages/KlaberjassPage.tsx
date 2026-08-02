@@ -10,12 +10,14 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
@@ -28,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { KLABERJASS_HELP, parseKlaberjassCommand } from '../utils/cli/commands/klaberjassCommands';
 import { formatKlaberjassState } from '../utils/cli/formatters/klaberjassFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Target-score options for the Klaberjass settings panel. */
 const TARGET_OPTIONS = [301, 501, 1000];
@@ -136,6 +139,14 @@ function KlaberjassPageContent() {
   const { cardWidth } = useCardDimensions();
   const phaseNames = usePhaseNames('klaberjass', KLABERJASS_PHASE_KEYS);
 
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('klaberjass', state);
+
   if (!state)
     return <GameSkeleton gameKey="klaberjass" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 9 }} />;
 
@@ -201,6 +212,7 @@ function KlaberjassPageContent() {
                     options: TARGET_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: handleTargetChange,
                   },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -354,6 +366,8 @@ function KlaberjassPageContent() {
                 {t('playNotice')}
               </div>
             )}
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="klaberjass-actions">
               {isHumanBid && isBidTurnUp && (

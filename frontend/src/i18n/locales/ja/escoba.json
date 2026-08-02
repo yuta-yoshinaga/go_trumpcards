@@ -66,5 +66,10 @@
     "actions": "取る（場札を選択して合計15）か、場に置く（場札を選ばない）を選びます。",
     "resetButton": "ゲームをリセットします。"
   },
-  "sumIndicator": "合計 {{sum}} / {{target}}"
+  "sumIndicator": "合計 {{sum}} / {{target}}",
+  "frontendHint": {
+    "escobaEscoba": "場の札を全部さらえます。エスコバで 1 点です",
+    "escobaCaptureMost": "一番多く取れる札です",
+    "escobaLayLow": "取れる組み合わせがありません。一番小さい札を置きましょう"
+  }
 }

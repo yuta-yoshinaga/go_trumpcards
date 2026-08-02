@@ -9,6 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -16,6 +17,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -28,6 +30,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { KALOOKI_HELP, parseKalookiCommand } from '../utils/cli/commands/kalookiCommands';
 import { formatKalookiState } from '../utils/cli/formatters/kalookiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Phase identifiers for Kalooki (sync: internal/domain/Kalooki.go). */
 const KALOOKI_PHASE = {
@@ -219,6 +222,14 @@ function KalookiPageContent() {
     return phaseNames[state.phase] ?? '';
   }, [phaseNames, state]);
 
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('kalooki', state);
+
   if (!state) {
     return (
       <GameSkeleton gameKey="kalooki" layout={{ kind: 'card-grid', count: 13, cols: 'repeat(13, minmax(0, 1fr))' }} />
@@ -275,6 +286,7 @@ function KalookiPageContent() {
                     options: OPENING_THRESHOLD_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('openingThreshold', v),
                   },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -452,6 +464,8 @@ function KalookiPageContent() {
               </section>
             )}
           </div>
+
+          <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
           <section className="px-4 py-2 flex flex-wrap gap-2" data-tutorial="kalooki-actions">
             {isDrawPhase && (

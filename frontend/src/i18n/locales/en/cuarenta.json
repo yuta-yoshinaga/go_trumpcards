@@ -40,5 +40,10 @@
     "hand": "Your hand. Click a card to play it — capture same-rank cards, or lay it on the table.",
     "resetButton": "Use this button to reset the game at any time."
   },
-  "playCardAria": "Play {{card}}"
+  "playCardAria": "Play {{card}}",
+  "frontendHint": {
+    "cuarentaCaida": "Same rank as the card just played — that is a caída, worth extra",
+    "cuarentaCapture": "Same rank as a table card — you can capture it",
+    "cuarentaLayLow": "Nothing captures — lay off your lowest card"
+  }
 }

@@ -59,5 +59,10 @@
     "playerHand": "Your hand. Select a card to act.",
     "actions": "Choose Take (with table cards selected) or Lay (with none selected).",
     "resetButton": "Reset the game."
+  },
+  "frontendHint": {
+    "scoponeScopa": "This clears the whole table — a scopa, worth a point on its own",
+    "scoponeCaptureMost": "The card that captures the most",
+    "scoponeLayLow": "Nothing captures — lay off your lowest card"
   }
 }

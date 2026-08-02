@@ -70,12 +70,12 @@
   },
   "hintPlay": "推奨カード",
   "hintReason": {
+    "discard_weak": "このトリックは取れません。弱い札を捨てましょう",
     "follow_suit": "リードスートに追随",
+    "lead_strong": "強い札でリードして主導権を取ります",
     "lead_trump": "切り札でリード",
-    "lead_off_suit": "切り札以外でリード",
-    "trump_cut": "切り札でカット",
-    "bid_strong": "強い手札でビッド",
-    "pass_weak": "手札が弱いのでパス"
+    "strategic_bid": "手札の強さに見合ったビッドです",
+    "trump_cut": "切り札でカット"
   },
   "tutorial": {
     "bidControls": "ビッドフェーズではレベルとスートを選んでビッドします。パス・ダブル・リダブルも可能です。",

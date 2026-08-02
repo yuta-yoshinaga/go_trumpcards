@@ -39,5 +39,9 @@
   },
   "slotCardZone": "{{card}} ({{zone}})",
   "slotEmptyZone": "{{zone}} (empty)",
-  "foundationZone": "foundation {{n}}"
+  "foundationZone": "foundation {{n}}",
+  "frontendHint": {
+    "russianbankToFoundation": "This card can go to a foundation",
+    "russianbankToTableau": "This card can move to another column"
+  }
 }

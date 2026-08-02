@@ -48,5 +48,10 @@
     "knockButton": "手札がすべてメルドになったら、捨てるカードを選んでノックできます。",
     "scoreTable": "各プレイヤーのスコアが表示されます。最終的に累計が最少の人が勝ちです。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "frontendHint": {
+    "threethirteenTakeDiscard": "捨て札が手札と繋がります。拾いましょう",
+    "threethirteenDrawStock": "捨て札は使えません。山から引きましょう",
+    "threethirteenDiscardHeavy": "繋がっていない札のうち一番重い札です（ワイルドは残します）"
   }
 }

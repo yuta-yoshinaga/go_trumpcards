@@ -63,13 +63,17 @@ function getPlayHint(cards: Card[], state: MacauResponse): HintResult {
     return { targetAction: 'play', reason: 'hint.playMatchingSuit', confidence: 'moderate' };
   }
 
-  const effectiveSuit = state.chosenSuit > 0 ? SUIT_NUM_TO_DESIGN[state.chosenSuit] : top.design;
+  // **8 の後は指定スートだけが通る。**ドメインは chosenSuit > 0 のとき
+  // `card.GetDesign() == g.chosenSuit` だけを見て、場札のランクは見ない。
+  // ランク一致をここで門番しないと、出せない札を strong で勧める (#4598)。
+  const called = state.chosenSuit > 0 ? SUIT_NUM_TO_DESIGN[state.chosenSuit] : undefined;
+  const effectiveSuit = called ?? top.design;
 
   const eights = cards.filter((c) => c.value === EIGHT);
   const nonEights = cards.filter((c) => c.value !== EIGHT);
 
   const suitMatch = nonEights.some((c) => c.design === effectiveSuit);
-  const valueMatch = nonEights.some((c) => c.value === top.value);
+  const valueMatch = called === undefined && nonEights.some((c) => c.value === top.value);
 
   if ((suitMatch || valueMatch) && eights.length > 0) {
     return { targetAction: 'play', reason: 'hint.saveEight', confidence: 'moderate' };
