@@ -40,5 +40,10 @@
     "hand": "あなたの手札です。カードをクリックすると出せます。同ランクで捕獲、無ければ場に置きます。",
     "resetButton": "このボタンでいつでもゲームをリセットできます。"
   },
-  "playCardAria": "{{card}} を出す"
+  "playCardAria": "{{card}} を出す",
+  "frontendHint": {
+    "cuarentaCaida": "直前に出された札と同じ数字です。カイーダで追加点になります",
+    "cuarentaCapture": "場の札と同じ数字です。取れます",
+    "cuarentaLayLow": "取れる札がありません。一番小さい札を置きましょう"
+  }
 }
