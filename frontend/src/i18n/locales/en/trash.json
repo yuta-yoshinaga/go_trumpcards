@@ -34,5 +34,9 @@
   "tutorial.welcome": "Welcome to Trash! Each player has 10 face-down cards (positions 1-10).",
   "tutorial.draw": "Draw from the stock and place the card at the position matching its rank.",
   "tutorial.wild": "K and Joker are wild — place them anywhere. J or Q ends your turn.",
-  "tutorial.win": "First to flip all 10 slots face-up wins."
+  "tutorial.win": "First to flip all 10 slots face-up wins.",
+  "frontendHint": {
+    "trashDraw": "Draw — a playable card fills its slot on its own",
+    "trashPlaceWildLow": "Put the wild in the lowest empty slot — filling from the bottom keeps later draws useful"
+  }
 }

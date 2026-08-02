@@ -69,5 +69,11 @@
     "betControls": "アンテと任意のエースズアップを設定し、ベットを押してください。",
     "actionButtons": "ディーラーのアップカードを見てプレイ倍率(1〜3倍)を選ぶか、フォールドしてください。",
     "results": "ベスト4枚で勝負した結果と配当を確認してください。"
+  },
+  "frontendHint": {
+    "fourcardpokerBet": "アンティを賭けて配札を受けよう",
+    "fourcardpokerPlayMax": "スリーカード以上。最大倍率で押そう",
+    "fourcardpokerPlayMin": "そこそこの手。最小倍率で様子を見よう",
+    "fourcardpokerFold": "ワンペア以下。ディーラーは1枚多く受け取るので降りよう"
   }
 }

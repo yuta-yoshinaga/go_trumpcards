@@ -836,7 +836,8 @@ describe('useGameHint', () => {
     expect(result.current.hint?.reason).toBe('frontendHint.accordionOffset3');
   });
 
-  it('routes trash through getTrashHint (always null — decisional hints n/a)', () => {
+  // Trash はもうスタブではない。人間の手番なら「引く」を返す (#4557 完了時に実装)。
+  it('routes trash through getTrashHint', () => {
     localStorage.setItem('hint_enabled_trash', 'true');
     const state: TrashResponse = {
       phase: 0,
@@ -852,7 +853,7 @@ describe('useGameHint', () => {
       message: '',
     };
     const { result } = renderHook(() => useGameHint('trash', state));
-    expect(result.current.hint).toBeNull();
+    expect(result.current.hint?.targetAction).toBe('draw');
   });
 
   it('routes slapjack through getSlapjackHint (slap when Jack is on top)', () => {

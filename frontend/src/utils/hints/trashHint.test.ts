@@ -1,33 +1,86 @@
 import { describe, expect, it } from 'vitest';
-import type { TrashResponse } from '../../types/card';
+import type { Card, TrashResponse } from '../../types/card';
+import { TrashPhase } from '../../types/phases';
 import { getTrashHint } from './trashHint';
 
-function fixture(phase: number): TrashResponse {
+const card = (design: Card['design'], value: number): Card => ({ design, value });
+
+/** `faceUp` が true の位置は既に埋まっている。 */
+const slots = (filled: number[]) =>
+  Array.from({ length: 10 }, (_, i) => ({ card: card('SPADE', i + 1), faceUp: filled.includes(i) }));
+
+function base(overrides: Partial<TrashResponse> = {}) {
   return {
-    phase,
+    phase: TrashPhase.PLAYER_TURN,
     current: 0,
     players: [
-      { slots: Array.from({ length: 10 }, () => ({ faceUp: false })), isCpu: false },
-      { slots: Array.from({ length: 10 }, () => ({ faceUp: false })), isCpu: true },
+      { slots: slots([]), isCpu: false },
+      { slots: slots([]), isCpu: true },
     ],
-    stockSize: 34,
-    discardSize: 0,
+    stockSize: 20,
+    discardSize: 3,
     moveCount: 0,
     winner: -1,
-    message: '',
-  };
+    ...overrides,
+  } as TrashResponse;
 }
 
 describe('getTrashHint', () => {
-  it('returns null during player turn', () => {
-    expect(getTrashHint(fixture(0))).toBeNull();
+  it('stays quiet once the game is over', () => {
+    expect(getTrashHint(base({ phase: TrashPhase.GAME_OVER }))).toBeNull();
   });
 
-  it('returns null while awaiting wild placement', () => {
-    expect(getTrashHint(fixture(1))).toBeNull();
+  it("stays quiet on the opponent's turn", () => {
+    expect(getTrashHint(base({ current: 1 }))).toBeNull();
   });
 
-  it('returns null after game over', () => {
-    expect(getTrashHint(fixture(2))).toBeNull();
+  it('suggests drawing on an ordinary turn', () => {
+    expect(getTrashHint(base())?.targetAction).toBe('draw');
+  });
+
+  it('places a wild in the lowest empty slot', () => {
+    // 0-2 は埋まっている。次に空くのは 3。
+    const s = base({
+      phase: TrashPhase.AWAIT_WILD,
+      players: [
+        { slots: slots([0, 1, 2]), isCpu: false },
+        { slots: slots([]), isCpu: true },
+      ],
+    });
+    expect(getTrashHint(s)?.targetAction).toBe('slot-3');
+  });
+
+  it('keeps slot 0 as a valid answer', () => {
+    // **位置 0 も正当。**真偽値で見ると先頭だけ落ちる。
+    const s = base({
+      phase: TrashPhase.AWAIT_WILD,
+      players: [
+        { slots: slots([1, 2, 3]), isCpu: false },
+        { slots: slots([]), isCpu: true },
+      ],
+    });
+    expect(getTrashHint(s)?.targetAction).toBe('slot-0');
+  });
+
+  it('skips a filled low slot to reach the first gap', () => {
+    const s = base({
+      phase: TrashPhase.AWAIT_WILD,
+      players: [
+        { slots: slots([0, 1, 2, 3, 4, 6]), isCpu: false },
+        { slots: slots([]), isCpu: true },
+      ],
+    });
+    expect(getTrashHint(s)?.targetAction).toBe('slot-5');
+  });
+
+  it('says nothing when every slot is already filled', () => {
+    const s = base({
+      phase: TrashPhase.AWAIT_WILD,
+      players: [
+        { slots: slots([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), isCpu: false },
+        { slots: slots([]), isCpu: true },
+      ],
+    });
+    expect(getTrashHint(s)).toBeNull();
   });
 });
