@@ -49,5 +49,7 @@
     "trick": "Cards played to the table. Win with a higher card of the same suit, or any trump (no must-follow).",
     "hand": "Your hand — click a card to play it. Briscola scores differently: A = 11, 3 = 10.",
     "score": "Tricks, stock left, and points. The deck totals 120 points; reach 61 to win."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }
