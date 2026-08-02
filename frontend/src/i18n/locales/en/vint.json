@@ -60,5 +60,10 @@
     "hand": "Your hand. Following suit is compulsory, so illegal cards cannot be chosen.",
     "actions": "Pick a level and a denomination to bid. Note that spades are LOWEST and no trump highest.",
     "resetButton": "Reset the game at any time with this button."
+  },
+  "frontendHint": {
+    "vintForced": "This is the only legal card — following suit is compulsory",
+    "vintDeclaring": "You are on the declaring side — every trick you take scores",
+    "vintDefending": "You are defending, and in Vint defenders score for the tricks they take too"
   }
 }
