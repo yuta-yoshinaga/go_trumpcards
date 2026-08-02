@@ -408,4 +408,19 @@ describe('ContractRummyPage', () => {
     // Reset becomes "Next Game" at game end.
     await waitFor(() => expect(screen.getByRole('button', { name: /Next Game|次のゲーム/ })).toBeInTheDocument());
   });
+
+  // **ヒント経路はページ側からも踏む。**ファクトリ単体テストだけだと
+  // `hintFactories` の登録行と、ページのトグル／ツールチップが一度も
+  // 実行されない（#4596 / #4600 のレビュー指摘）。
+  it('turns the frontend hint on from the checkbox', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<ContractRummyPage />);
+
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
 });

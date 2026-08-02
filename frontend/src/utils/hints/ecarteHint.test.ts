@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import i18n from '../../i18n';
 import { makeEcarteState } from '../../test/stateFactories';
 import { getEcarteHint } from './ecarteHint';
 
@@ -48,5 +49,31 @@ describe('getEcarteHint', () => {
   it('maps a follow_dump hint reason verbatim', () => {
     const state = makeEcarteState({ phase: 1, hint: { cardIndex: 3, reason: 'follow_dump' } });
     expect(getEcarteHint(state)?.reason).toBe('hint.follow_dump');
+  });
+});
+
+// **バックエンドが出す理由キーが訳を持っているか。**持っていないと画面に
+// `hint.strong_hand` のようなキー文字列がそのまま出る。実際 ecarte は
+// GetHint が返す手の強さの理由 3〜4 件に訳が無かった。
+describe('ecarte hint keys', () => {
+  const REASONS = [
+    'strong_hand',
+    'weak_hand',
+    'exchange_weak',
+    'lead_trump',
+    'lead_high',
+    'lead_low',
+    'follow_win',
+    'follow_cut',
+    'follow_dump',
+    'propose',
+    'accept',
+    'refuse',
+    'stand',
+    'discard',
+  ];
+
+  it.each(REASONS)('translates %s', (key) => {
+    expect(i18n.t(`ecarte:hint.${key}`)).not.toBe(`hint.${key}`);
   });
 });
