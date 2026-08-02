@@ -45,32 +45,42 @@ describe('getTonkHint', () => {
     expect(getTonkHint(base({ phase: TonkPhase.ROUND_END }))).toBeNull();
   });
 
-  it('takes the discard when it pairs a card in hand', () => {
-    const state = base({ phase: TonkPhase.DRAW, discardTop: card('CLOVER', 13) });
-    expect(getTonkHint(state)?.targetAction).toBe('takeDiscard');
-  });
-
-  it('takes the discard when it extends a run in the same suit', () => {
+  it('takes the discard when it completes a set', () => {
+    // 5-5 を持っていて 3 枚目の 5 が出ている。ペアだけでは組にならないので、
+    // 3 枚目が来て初めてデッドウッドが減る。
     const state = base({
       phase: TonkPhase.DRAW,
-      hand: [card('SPADE', 5), card('HEART', 12)],
-      discardTop: card('SPADE', 6),
+      hand: [card('SPADE', 5), card('HEART', 5), card('CLOVER', 13)],
+      discardTop: card('DIAMOND', 5),
     });
     expect(getTonkHint(state)?.targetAction).toBe('takeDiscard');
   });
 
-  it('does not take a same-rank-adjacent card of another suit', () => {
-    // 隣のランクでもスートが違えば繋がらない。ここを value だけで見ると拾ってしまう。
+  it('takes the discard when it completes a run', () => {
     const state = base({
       phase: TonkPhase.DRAW,
-      hand: [card('SPADE', 5), card('HEART', 12)],
-      discardTop: card('CLOVER', 6),
+      hand: [card('SPADE', 5), card('SPADE', 6), card('CLOVER', 13)],
+      discardTop: card('SPADE', 7),
+    });
+    expect(getTonkHint(state)?.targetAction).toBe('takeDiscard');
+  });
+
+  it('does not take a card that only makes a pair', () => {
+    // **ペアはメルドではない。**拾ってもデッドウッドは 1 点も減らない。
+    const state = base({
+      phase: TonkPhase.DRAW,
+      hand: [card('SPADE', 5), card('CLOVER', 13)],
+      discardTop: card('DIAMOND', 5),
     });
     expect(getTonkHint(state)?.targetAction).toBe('drawStock');
   });
 
-  it('draws from the stock when the discard connects with nothing', () => {
-    const state = base({ phase: TonkPhase.DRAW, discardTop: card('CLOVER', 2) });
+  it('does not take a same-rank-adjacent card of another suit', () => {
+    const state = base({
+      phase: TonkPhase.DRAW,
+      hand: [card('SPADE', 5), card('SPADE', 6), card('CLOVER', 13)],
+      discardTop: card('DIAMOND', 7),
+    });
     expect(getTonkHint(state)?.targetAction).toBe('drawStock');
   });
 
@@ -78,26 +88,49 @@ describe('getTonkHint', () => {
     expect(getTonkHint(base({ phase: TonkPhase.DRAW, discardTop: null }))?.targetAction).toBe('drawStock');
   });
 
-  it('offers the knock only once the loose cards are within the threshold', () => {
-    // 2 + 3 = 5 点ちょうど。閾値は「以下」なので通る。
-    const at = base({ hand: [card('SPADE', 2), card('HEART', 3)] });
+  it('offers the knock only once the discarded hand is within the threshold', () => {
+    // 3-3-3 のセットに 2 が 1 枚。捨てるべき札を捨てた残りは 0 点。
+    const at = base({ hand: [card('SPADE', 3), card('HEART', 3), card('DIAMOND', 3), card('CLOVER', 2)] });
     expect(getTonkHint(at)?.targetAction).toBe('knock');
 
-    // 2 + 4 = 6 点。1 点超えただけでサーバは拒否する。
-    const over = base({ hand: [card('SPADE', 2), card('HEART', 4)] });
-    expect(over && getTonkHint(over)?.targetAction).not.toBe('knock');
+    // 端札 5 と 2 が残る。どちらを捨てても 5 点を超える…わけではない: 5 を捨てれば 2 点。
+    // 閾値ちょうどを見るため、捨てたあとが 5 点になる手を使う。
+    const edge = base({
+      hand: [card('SPADE', 3), card('HEART', 3), card('DIAMOND', 3), card('CLOVER', 5), card('SPADE', 9)],
+    });
+    expect(getTonkHint(edge)?.targetAction).toBe('knock');
+
+    // 捨てたあとが 6 点。1 点超えただけでサーバは拒否する。
+    const over = base({
+      hand: [card('SPADE', 3), card('HEART', 3), card('DIAMOND', 3), card('CLOVER', 6), card('SPADE', 9)],
+    });
+    expect(getTonkHint(over)?.targetAction).not.toBe('knock');
   });
 
-  it('counts a melded card as costing nothing', () => {
-    // K が 3 枚。生の合計は 30 点だが、繋がっているので端札は 0 点。
-    const state = base({ hand: [card('SPADE', 13), card('HEART', 13), card('CLOVER', 13)] });
-    expect(getTonkHint(state)?.targetAction).toBe('knock');
+  it('does not treat a pair as a meld when deciding to knock', () => {
+    // 2-2-K-K-Q。ペアを組と数えると 0 点に見えてノックを勧めてしまうが、
+    // 実際のデッドウッドは Q を捨てても 24 点で、サーバは ErrInvalidPlay を返す。
+    const state = base({
+      hand: [card('SPADE', 2), card('HEART', 2), card('DIAMOND', 13), card('CLOVER', 13), card('SPADE', 12)],
+    });
+    expect(getTonkHint(state)?.targetAction).not.toBe('knock');
   });
 
-  it('discards the heaviest card that connects with nothing', () => {
-    const state = base({ hand: [card('SPADE', 13), card('HEART', 13), card('CLOVER', 9), card('DIAMOND', 12)] });
-    // K は対で繋がっている。残る 9 と Q のうち重い Q (index 3) を捨てる。
+  it('discards the card that leaves the least deadwood', () => {
+    // 5-5-5 はセット。残る K と 9 のうち重い K (index 3) を捨てると 9 点、
+    // 9 を捨てると 10 点。**5 点は超えているのでノックには行かない。**
+    const state = base({
+      hand: [card('SPADE', 5), card('HEART', 5), card('DIAMOND', 5), card('CLOVER', 13), card('SPADE', 9)],
+    });
     expect(getTonkHint(state)?.targetAction).toBe('card-3');
+  });
+
+  it('scores an ace as a single point', () => {
+    // 4-4-4 のセットに A。K を捨てて残る A が 1 点なのでノックできる。
+    const state = base({
+      hand: [card('SPADE', 4), card('HEART', 4), card('DIAMOND', 4), card('CLOVER', 1), card('SPADE', 13)],
+    });
+    expect(getTonkHint(state)?.targetAction).toBe('knock');
   });
 
   it('returns null when the human has no cards', () => {

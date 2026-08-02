@@ -54,9 +54,9 @@
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
   "frontendHint": {
-    "tonkTakeDiscard": "捨て札は手札と繋がる。拾って組を作ろう",
-    "tonkDrawStock": "捨て札は繋がらない。山札から引こう",
-    "tonkKnock": "端札が5点以下。ノックして勝負できる",
-    "tonkDiscardHeavy": "どこにも繋がらない一番重い札を捨てよう"
+    "tonkTakeDiscard": "その札を拾うと組になり、端札が減る",
+    "tonkDrawStock": "捨て札は組にならない。山札から引こう",
+    "tonkKnock": "1 枚捨てれば端札が5点以下。ノックできる",
+    "tonkDiscardHeavy": "端札が一番減る札を捨てよう"
   }
 }

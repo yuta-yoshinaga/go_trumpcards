@@ -54,9 +54,9 @@
     "resetButton": "Reset to start a new game."
   },
   "frontendHint": {
-    "tonkTakeDiscard": "The discard connects with your hand — take it",
-    "tonkDrawStock": "The discard does not help — draw from the stock",
-    "tonkKnock": "Your loose cards are five points or fewer — you can knock",
-    "tonkDiscardHeavy": "Discard the heaviest card that connects with nothing"
+    "tonkTakeDiscard": "Taking that card completes a meld and cuts your deadwood",
+    "tonkDrawStock": "The discard does not meld — draw from the stock",
+    "tonkKnock": "One discard leaves you at five points or fewer — you can knock",
+    "tonkDiscardHeavy": "Discard the card that leaves the least deadwood"
   }
 }
