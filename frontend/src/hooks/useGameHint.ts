@@ -98,6 +98,7 @@ import type {
   MacauResponse,
   MachiavelliResponse,
   ManilleResponse,
+  MaoResponse,
   MariasResponse,
   MemoryResponse,
   MichiganResponse,
@@ -311,6 +312,7 @@ import { getLooHint } from '../utils/hints/looHint';
 import { getMacauHint } from '../utils/hints/macauHint';
 import { getMachiavelliHint } from '../utils/hints/machiavelliHint';
 import { getManilleHint } from '../utils/hints/manilleHint';
+import { getMaoHint } from '../utils/hints/maoHint';
 import { getMariasHint } from '../utils/hints/mariasHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getMichiganHint } from '../utils/hints/michiganHint';
@@ -603,6 +605,7 @@ export const hintFactories = {
   sueca: (s) => getSuecaHint(s as SuecaResponse),
   klaverjas: (s) => getKlaverjasHint(s as KlaverjasResponse),
   manille: (s) => getManilleHint(s as ManilleResponse),
+  mao: (s) => getMaoHint(s as MaoResponse),
   marias: (s) => getMariasHint(s as MariasResponse),
   tysiac: (s) => getTysiacHint(s as TysiacResponse),
   calabresella: (s) => getCalabresellaHint(s as CalabresellaResponse),
