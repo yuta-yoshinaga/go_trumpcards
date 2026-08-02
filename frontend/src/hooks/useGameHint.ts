@@ -61,6 +61,7 @@ import type {
   EcarteResponse,
   EgyptianRatscrewResponse,
   EightOffResponse,
+  EscobaResponse,
   EuchreResponse,
   FiftyOneResponse,
   FiveHundredResponse,
@@ -88,6 +89,7 @@ import type {
   KempsResponse,
   KingAlbertResponse,
   KingResponse,
+  KlaberjassResponse,
   KlaverjasResponse,
   KlondikeResponse,
   KnockoutWhistResponse,
@@ -156,6 +158,7 @@ import type {
   ScorpionResponse,
   SeahavenTowersResponse,
   SedmaResponse,
+  SetteEMezzoResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
@@ -279,6 +282,7 @@ import { getEasthavenHint } from '../utils/hints/easthavenHint';
 import { getEcarteHint } from '../utils/hints/ecarteHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEightOffHint } from '../utils/hints/eightoffHint';
+import { getEscobaHint } from '../utils/hints/escobaHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
@@ -308,6 +312,7 @@ import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKempsHint } from '../utils/hints/kempsHint';
 import { getKingalbertHint } from '../utils/hints/kingalbertHint';
 import { getKingHint } from '../utils/hints/kingHint';
+import { getKlaberjassHint } from '../utils/hints/klaberjassHint';
 import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getKnockoutWhistHint } from '../utils/hints/knockoutWhistHint';
@@ -378,6 +383,7 @@ import { getScopaHint } from '../utils/hints/scopaHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
 import { getSedmaHint } from '../utils/hints/sedmaHint';
+import { getSetteEMezzoHint } from '../utils/hints/settemezzoHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
@@ -471,6 +477,7 @@ export const hintFactories = {
   threecard: (s) => getThreeCardHint(s as ThreeCardResponse),
   tichu: (s) => getTichuHint(s as TichuResponse),
   highcardflush: (s) => getHighCardFlushHint(s as HighCardFlushResponse),
+  escoba: (s) => getEscobaHint(s as EscobaResponse),
   euchre: (s) => getEuchreHint(s as EuchreResponse),
   belote: (s) => getBeloteHint(s as BeloteResponse),
   jass: (s) => getJassHint(s as JassResponse),
@@ -490,6 +497,7 @@ export const hintFactories = {
   oldmaid: (s) => getOldMaidHint(s as OldMaidResponse),
   doubt: (s) => getDoubtHint(s as DoubtResponse),
   daifugo: (s) => getDaifugoHint(s as DaifugoResponse),
+  settemezzo: (s) => getSetteEMezzoHint(s as SetteEMezzoResponse),
   sevens: (s) => getSevensHint(s as SevensResponse),
   crazyeights: (s) => getCrazyEightsHint(s as CrazyEightsResponse),
   prsi: (s) => getPrsiHint(s as PrsiResponse),
@@ -621,6 +629,7 @@ export const hintFactories = {
   tute: (s) => getTuteHint(s as TuteResponse),
   sueca: (s) => getSuecaHint(s as SuecaResponse),
   kemps: (s) => getKempsHint(s as KempsResponse),
+  klaberjass: (s) => getKlaberjassHint(s as KlaberjassResponse),
   klaverjas: (s) => getKlaverjasHint(s as KlaverjasResponse),
   manille: (s) => getManilleHint(s as ManilleResponse),
   mao: (s) => getMaoHint(s as MaoResponse),

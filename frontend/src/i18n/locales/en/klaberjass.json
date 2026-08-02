@@ -57,5 +57,12 @@
     "hand": "Your hand. Following, trumping and overtrumping are compulsory, so illegal cards cannot be chosen.",
     "actions": "While bidding, take the trump suit or pass. In play, pick a card and press Play.",
     "resetButton": "Reset the game at any time with this button."
+  },
+  "frontendHint": {
+    "klaberjassForced": "This is the only legal card — following, trumping and overtrumping are all compulsory",
+    "klaberjassChoose": "Several cards are legal — pick from the highlighted ones",
+    "klaberjassBela": "You hold the trump K and Q. Declare on the second one for 20 points",
+    "klaberjassTakeTurnUp": "Your hand is strong in the turn-up suit — take it",
+    "klaberjassPassTurnUp": "Your hand is thin in the turn-up suit — pass"
   }
 }

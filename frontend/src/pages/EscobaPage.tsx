@@ -7,6 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -14,6 +15,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useEscobaGame } from '../hooks/useEscobaGame';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, EscobaResponse } from '../types/card';
@@ -25,6 +27,7 @@ import {
   parseEscobaCommand,
 } from '../utils/cli/commands/escobaCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const DIFFICULTY_OPTIONS = [
   { value: '0', label: 'Easy' },
@@ -137,6 +140,13 @@ function EscobaPageContent() {
   // is still null.
   const human = state && state.players.length >= 4 ? state.players.find((p) => p.isHuman) : null;
   const isHumanTurn = !!state && !!human && state.currentTurn === human.id && state.isHumanTurn && !state.gameEndFlag;
+
+  // 早期 return より上。上のコメントが言うとおり、フック順を崩さないため。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('escoba', state);
 
   if (!state || !human) {
     return (
@@ -387,12 +397,15 @@ function EscobaPageContent() {
                     options: TARGET_SCORE_OPTIONS,
                     onSelect: (v: string) => handleConfigChange('targetScore', Number.parseInt(v, 10)),
                   },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
           />
 
           <GameFooter className={`${gameTheme.escoba.footer} px-4 py-2.5`}>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="es-actions">
               <button
                 type="button"
