@@ -44,5 +44,10 @@
     "hand": "Your hand of five. You need not follow suit, but the devil cannot lead the first trick.",
     "actions": "The ranking is unlike an ordinary trick-taker. Note that the devil (7) is only strong when led.",
     "resetButton": "Reset the game at any time with this button."
+  },
+  "frontendHint": {
+    "karnoffelForced": "This is the only legal card",
+    "karnoffelOneAway": "One more trick takes this hand",
+    "karnoffelChoose": "Several cards are legal — pick from the highlighted ones"
   }
 }

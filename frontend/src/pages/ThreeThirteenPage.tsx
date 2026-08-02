@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -17,6 +18,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, PLAYER_COUNT_OPTIONS, useThreeThirteenGame } from '../hooks/useThreeThirteenGame';
@@ -32,6 +34,7 @@ import { parseThreeThirteenCommand, THREETHIRTEEN_HELP } from '../utils/cli/comm
 import { formatThreeThirteenState } from '../utils/cli/formatters/threethirteenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { bestThreeThirteenDeadwoodValue, bestThreeThirteenDiscardValue } from '../utils/threethirteenDeadwood';
 
 const THREETHIRTEEN_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -161,6 +164,14 @@ function ThreeThirteenPageContent() {
     return bestThreeThirteenDiscardValue(cards, state.wildRank);
   }, [state, selectedCardIndices]);
 
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('threethirteen', state);
+
   if (!state)
     return (
       <GameSkeleton
@@ -235,6 +246,7 @@ function ThreeThirteenPageContent() {
                     options: PLAYER_COUNT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('playerCount', v),
                   },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -389,6 +401,8 @@ function ThreeThirteenPageContent() {
                   </button>
                 </div>
               )}
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
               {isDiscardPhase && isHumanTurn && (
                 <>
                   <button

@@ -55,5 +55,10 @@
     "knockButton": "When your deadwood is at or below the limit, pick the card to discard and knock.",
     "scoreTable": "Player scores are shown here.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "frontendHint": {
+    "chinchonTakeDiscard": "The discard connects with your hand — take it",
+    "chinchonDrawStock": "The discard connects with nothing — draw from the stock",
+    "chinchonDiscardHeavy": "Your heaviest unconnected card. You are scored on what stays in hand"
   }
 }
