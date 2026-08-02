@@ -1,5 +1,6 @@
-import type { Card, KalookiResponse } from '../../types/card';
+import type { KalookiResponse } from '../../types/card';
 import type { HintResult } from '../../types/hint';
+import { aceHighAdjacent, heaviestSpare, isMaterial } from './rummyHintShape';
 
 /**
  * フェーズ番号 (sync: internal/domain/Kalooki.go)。
@@ -8,9 +9,6 @@ import type { HintResult } from '../../types/hint';
  * 同じ表を持っている。ここから import すると循環するので、同期先を明記して
  * 持ち直している。
  */
-/** A(1) と K(13) の差。ランの端では隣り合う。 */
-const ACE_TO_KING_GAP = 12;
-
 const PHASE_DRAW = 0;
 const PHASE_MELD = 1;
 
@@ -36,7 +34,7 @@ export function getKalookiHint(state: KalookiResponse): HintResult | null {
 
   if (state.phase === PHASE_DRAW) {
     const top = state.discardTop;
-    return top && connects(top, human.cards)
+    return top && isMaterial(top, human.cards, aceHighAdjacent)
       ? { targetAction: 'takeDiscard', reason: 'frontendHint.kalookiTakeDiscard', confidence: 'moderate' }
       : { targetAction: 'drawStock', reason: 'frontendHint.kalookiDrawStock', confidence: 'moderate' };
   }
@@ -49,42 +47,6 @@ export function getKalookiHint(state: KalookiResponse): HintResult | null {
     return { targetAction: 'meld', reason: 'frontendHint.kalookiOpenFirst', confidence: 'moderate' };
   }
 
-  const idx = heaviestLoose(human.cards);
+  const idx = heaviestSpare(human.cards, aceHighAdjacent);
   return { targetAction: `card-${idx}`, reason: 'frontendHint.kalookiDiscardHeavy', confidence: 'moderate' };
-}
-
-/**
- * 同じランクがあるか、同じスートで隣のランクがあるか。メルドの証明ではない。
- *
- * **A は 2 の隣であると同時に K の隣でもある** (internal/domain/Kalooki.go:822)。生の値で
- * 引き算すると A(1) と K(13) が 12 離れて見え、A を持っている手で K を拾う
- * 理由を見落とす。
- */
-function connects(c: Card, hand: Card[]): boolean {
-  return hand.some((o) => o.value === c.value || (o.design === c.design && adjacent(o.value, c.value)));
-}
-
-/** 隣のランクか。A(1) は 2 の隣であると同時に K(13) の隣でもある。 */
-function adjacent(a: number, b: number): boolean {
-  const gap = Math.abs(a - b);
-  return gap === 1 || gap === ACE_TO_KING_GAP;
-}
-
-/**
- * 繋がっていない札のうち一番重いものの位置。全部繋がっていれば一番重い札。
- *
- * 呼び出し側が手札の非空を確かめているので、必ず有効な位置を返す。
- */
-function heaviestLoose(hand: Card[]): number {
-  const loose: number[] = [];
-  for (let i = 0; i < hand.length; i += 1) {
-    const rest = hand.filter((_, j) => j !== i);
-    if (!connects(hand[i], rest)) loose.push(i);
-  }
-  const pool = loose.length > 0 ? loose : hand.map((_, i) => i);
-  let best = pool[0];
-  for (const i of pool) {
-    if (hand[i].value > hand[best].value) best = i;
-  }
-  return best;
 }
