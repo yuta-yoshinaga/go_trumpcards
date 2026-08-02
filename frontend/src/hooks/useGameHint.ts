@@ -46,8 +46,8 @@ import type {
   CinchResponse,
   ClockSolitaireResponse,
   CongressResponse,
-  ContractRummyResponse,
   ConquianResponse,
+  ContractRummyResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
   CribbageResponse,
@@ -139,6 +139,7 @@ import type {
   OpenFaceChineseResponse,
   OsmosisResponse,
   PageOneResponse,
+  PaiGowResponse,
   PanResponse,
   PenguinResponse,
   PigsTailResponse,
@@ -280,8 +281,8 @@ import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCongressHint } from '../utils/hints/congressHint';
-import { getContractRummyHint } from '../utils/hints/contractrummyHint';
 import { getConquianHint } from '../utils/hints/conquianHint';
+import { getContractRummyHint } from '../utils/hints/contractrummyHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
@@ -378,6 +379,7 @@ import { getOmbreHint } from '../utils/hints/ombreHint';
 import { getOpenFaceChineseHint } from '../utils/hints/openfacechineseHint';
 import { getOsmosisHint } from '../utils/hints/osmosisHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
+import { getPaiGowHint } from '../utils/hints/paigowHint';
 import { getPanHint } from '../utils/hints/panHint';
 import { getPenguinHint } from '../utils/hints/penguinHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
@@ -596,7 +598,7 @@ export const hintFactories = {
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
   yaniv: (s) => getYanivHint(s as YanivResponse),
   tressette: (s) => getTressetteHint(s as TressetteResponse),
-  paigow: () => null,
+  paigow: (s) => getPaiGowHint(s as PaiGowResponse),
   chinesepoker: (s) => getChinesePokerHint(s as ChinesePokerResponse),
   pageone: (s) => getPageOneHint(s as PageOneResponse),
   pigtail: (s) => getPigstailHint(s as PigsTailResponse),
