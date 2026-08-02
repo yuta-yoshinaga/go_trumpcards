@@ -38,6 +38,7 @@ import type {
   CassinoResponse,
   CatchTenResponse,
   CegoResponse,
+  ChinchonResponse,
   ChineseTenResponse,
   CinchResponse,
   ClockSolitaireResponse,
@@ -254,6 +255,7 @@ import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getCatchTenHint } from '../utils/hints/catchtenHint';
 import { getCegoHint } from '../utils/hints/cegoHint';
+import { getChinchonHint } from '../utils/hints/chinchonHint';
 import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
@@ -491,6 +493,7 @@ export const hintFactories = {
   doubt: (s) => getDoubtHint(s as DoubtResponse),
   daifugo: (s) => getDaifugoHint(s as DaifugoResponse),
   sevens: (s) => getSevensHint(s as SevensResponse),
+  chinchon: (s) => getChinchonHint(s as ChinchonResponse),
   crazyeights: (s) => getCrazyEightsHint(s as CrazyEightsResponse),
   prsi: (s) => getPrsiHint(s as PrsiResponse),
   speed: (s) => getSpeedHint(s as SpeedResponse),

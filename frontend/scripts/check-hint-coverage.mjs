@@ -53,7 +53,6 @@ const BACKLOG = new Set([
   'boston',
   'bourre',
   'briscola',
-  'chinchon',
   'conquian',
   'cuarenta',
   'escoba',
