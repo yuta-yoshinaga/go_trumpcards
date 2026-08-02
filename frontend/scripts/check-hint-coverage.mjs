@@ -18,7 +18,7 @@
 // below with a reason, so the exemption is a decision someone made rather than
 // an omission nobody saw.
 
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -26,6 +26,7 @@ const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(FRONTEND, '..');
 const ROUTES = join(FRONTEND, 'src/constants/gameRoutes.ts');
 const HOOK = join(FRONTEND, 'src/hooks/useGameHint.ts');
+const HINTS = join(FRONTEND, 'src/utils/hints');
 
 /**
  * Games that genuinely need no hint, each with the reason.
@@ -50,17 +51,29 @@ const ALLOWED = new Map();
  */
 const BACKLOG = new Set([
   'bideuchre',
+  'bidwhist',
+  'bigtwo',
+  'blackjackswitch',
   'boston',
   'bourre',
   'bridge',
   'briscola',
+  'carioca',
   'chinchon',
+  'chinesepoker',
   'conquian',
+  'contractrummy',
+  'crescent',
   'cuarenta',
   'cuckoo',
+  'dragontiger',
   'escoba',
   'faro',
   'fivecardstud',
+  'fivehundred',
+  'fortyandeight',
+  'fortythieves',
+  'fourcardpoker',
   'guandan',
   'handandfoot',
   'kaiser',
@@ -73,15 +86,25 @@ const BACKLOG = new Set([
   'mao',
   'niuniu',
   'openfacechinese',
+  'paigow',
   'piquet',
   'pishti',
   'pontoon',
+  'president',
+  'rook',
   'russianbank',
+  'schnapsen',
   'scopone',
   'settemezzo',
+  'sevencardstud',
+  'sevencardstudhilo',
   'sixbidsolo',
   'spoons',
+  'sultan',
   'threethirteen',
+  'tienlen',
+  'tonk',
+  'trash',
   'vint',
 ]);
 
@@ -96,7 +119,35 @@ async function registeredGames() {
   return names;
 }
 
-/** Game names registered in the hintFactories map. */
+/**
+ * Names of exported factories whose whole body is `return null;`.
+ *
+ * These exist because checklist item 14 asks for a registration and a stub
+ * satisfies the letter of it. Counting them as hints is what let the reported
+ * figure drift 22 games above the truth (#4602).
+ */
+async function stubbedFactories() {
+  const stubs = new Set();
+  for (const file of await readdir(HINTS)) {
+    if (!file.endsWith('Hint.ts') || file.endsWith('.test.ts')) continue;
+    const src = await readFile(join(HINTS, file), 'utf8');
+    // The signature is not always `get<Game>Hint` — chinesepokerHint has no
+    // prefix, and assuming one is how the first count of this missed it.
+    for (const m of src.matchAll(/^export function (\w+)\([^)]*\)\s*:\s*HintResult \| null \{\n([\s\S]*?)\n\}/gm)) {
+      if (m[2].trim() === 'return null;') stubs.add(m[1]);
+    }
+  }
+  return stubs;
+}
+
+/**
+ * Games registered in hintFactories that can actually produce a hint.
+ *
+ * A registration counts only if it might return something. Two ways it cannot:
+ * the value is written inline as `() => null`, or it delegates to a factory
+ * whose body is `return null;`. Both are registrations without an
+ * implementation, and the guard exists to measure implementations.
+ */
 async function hintedGames() {
   const src = await readFile(HOOK, 'utf8');
   const start = src.indexOf('export const hintFactories');
@@ -106,9 +157,20 @@ async function hintedGames() {
   const end = src.indexOf('\n} satisfies', start);
   if (end < 0) return null;
   const body = src.slice(start, end);
+
+  const stubs = await stubbedFactories();
   const names = new Set();
-  for (const m of body.matchAll(/^\s{2}([a-z0-9]+):/gm)) names.add(m[1]);
-  return names;
+  const stubbed = new Set();
+  for (const m of body.matchAll(/^ {2}([a-z0-9]+): (.+),$/gm)) {
+    const [, game, expr] = m;
+    const delegate = expr.match(/(\w+)\(s as/)?.[1];
+    if (/^\(_?\w*\)\s*=>\s*null$/.test(expr) || (delegate && stubs.has(delegate))) {
+      stubbed.add(game);
+      continue;
+    }
+    names.add(game);
+  }
+  return { names, stubbed };
 }
 
 const games = await registeredGames();
@@ -117,22 +179,27 @@ if (games.size === 0) {
   process.exit(1);
 }
 
-const hinted = await hintedGames();
-if (hinted === null || hinted.size === 0) {
+const result = await hintedGames();
+if (result === null || result.names.size === 0) {
   console.error(`hint-coverage: found no factories in ${relative(REPO, HOOK)} — the regex has drifted.`);
   process.exit(1);
 }
+const { names: hinted, stubbed } = result;
 
 const missing = [];
 for (const game of games) {
+  if (stubbed.has(game)) continue; // reported as STUBBED below, not twice
   if (!hinted.has(game) && !ALLOWED.has(game) && !BACKLOG.has(game)) missing.push(game);
 }
 // A factory with no matching route is dead weight, usually a rename.
 const stale = [...hinted].filter((game) => !games.has(game));
 // An exemption for a game that now has a hint is stale too, and misleading.
 const redundant = [...ALLOWED.keys(), ...BACKLOG].filter((game) => hinted.has(game));
+// A registration that always returns null is owed like any other, so it has to
+// be named in BACKLOG rather than hiding behind the registration (#4602).
+const unlisted = [...stubbed].filter((game) => !BACKLOG.has(game) && !ALLOWED.has(game));
 
-if (missing.length > 0 || stale.length > 0 || redundant.length > 0) {
+if (missing.length > 0 || stale.length > 0 || redundant.length > 0 || unlisted.length > 0) {
   console.error('\nHint coverage gaps:\n');
   for (const game of missing.sort()) {
     console.error(`  MISSING    ${game}  (no factory in hintFactories)`);
@@ -142,6 +209,9 @@ if (missing.length > 0 || stale.length > 0 || redundant.length > 0) {
   }
   for (const game of redundant.sort()) {
     console.error(`  REDUNDANT  ${game}  (listed in ALLOWED/BACKLOG, but a factory exists — drop the entry)`);
+  }
+  for (const game of unlisted.sort()) {
+    console.error(`  STUBBED    ${game}  (registered, but the factory always returns null — list it in BACKLOG)`);
   }
   console.error(
     `\nEvery game needs a hint factory in ${relative(REPO, HOOK)} (checklist item 14).\n` +
@@ -153,5 +223,5 @@ if (missing.length > 0 || stale.length > 0 || redundant.length > 0) {
 
 console.log(
   `hint-coverage: OK (${hinted.size} of ${games.size} games hinted; ` +
-    `${ALLOWED.size} need none; ${BACKLOG.size} still owed, see #4557).`,
+    `${ALLOWED.size} need none; ${BACKLOG.size} still owed, of which ${stubbed.size} are stubs, see #4557).`,
 );
