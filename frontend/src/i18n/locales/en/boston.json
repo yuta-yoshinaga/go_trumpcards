@@ -69,5 +69,10 @@
     "hand": "Your hand. Following suit is compulsory, so illegal cards cannot be chosen.",
     "actions": "Pick a bid from the ladder. Note that the miseres sit between the trick bids.",
     "resetButton": "Reset the game at any time with this button."
+  },
+  "frontendHint": {
+    "bostonForced": "This is the only legal card — following suit is compulsory",
+    "bostonPushContract": "You are on the declaring side — play to make the contract",
+    "bostonBreakContract": "You are defending — play to break the contract"
   }
 }
