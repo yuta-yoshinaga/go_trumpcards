@@ -1,5 +1,12 @@
 import type { LooResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Decide', 'Play', 'TrickEnd', 'RoundEnd'];
 const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'];
@@ -40,7 +47,7 @@ export function formatLooState(state: LooResponse): string {
     if (d.looed.length > 0) lines.push(`looed: ${d.looed.map((i) => `P${i}`).join(', ')}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const indices = state.hint.cardIndices ?? [];
     lines.push(`HINT: card indices [${indices.join(', ')}] (${state.hint.reason})`);
   }

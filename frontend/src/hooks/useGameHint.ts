@@ -21,6 +21,7 @@ import type {
   BlackHoleResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
+  BostonResponse,
   BouillotteResponse,
   BourreResponse,
   BraidResponse,
@@ -40,6 +41,7 @@ import type {
   CatchTenResponse,
   CegoResponse,
   ChinchonResponse,
+  ChinesePokerResponse,
   ChineseTenResponse,
   CinchResponse,
   ClockSolitaireResponse,
@@ -124,6 +126,7 @@ import type {
   NapResponse,
   NertzResponse,
   NinetyNineResponse,
+  NiuNiuResponse,
   OasisPokerResponse,
   OhHellResponse,
   OichoKabuResponse,
@@ -215,6 +218,7 @@ import type {
   UltimateTexasHoldemResponse,
   UltiResponse,
   VideoPokerResponse,
+  VintResponse,
   WarResponse,
   WaspResponse,
   WattenResponse,
@@ -248,6 +252,7 @@ import { getBisleyHint } from '../utils/hints/bisleyHint';
 import { getBlackHoleHint } from '../utils/hints/blackholeHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
+import { getBostonHint } from '../utils/hints/bostonHint';
 import { getBouillotteHint } from '../utils/hints/bouillotteHint';
 import { getBourreHint } from '../utils/hints/bourreHint';
 import { getBraidHint } from '../utils/hints/braidHint';
@@ -267,6 +272,7 @@ import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getCatchTenHint } from '../utils/hints/catchtenHint';
 import { getCegoHint } from '../utils/hints/cegoHint';
 import { getChinchonHint } from '../utils/hints/chinchonHint';
+import { getChinesePokerHint } from '../utils/hints/chinesepokerHint';
 import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
@@ -355,6 +361,7 @@ import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNapoleonsSquareHint } from '../utils/hints/napoleonssquareHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getNinetyNineHint } from '../utils/hints/ninetynineHint';
+import { getNiuNiuHint } from '../utils/hints/niuniuHint';
 import { getOasisPokerHint } from '../utils/hints/oasispokerHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOichokabuHint } from '../utils/hints/oichokabuHint';
@@ -447,6 +454,7 @@ import { getTysiacHint } from '../utils/hints/tysiacHint';
 import { getUltiHint } from '../utils/hints/ultiHint';
 import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
+import { getVintHint } from '../utils/hints/vintHint';
 import { getWarHint } from '../utils/hints/warHint';
 import { getWaspHint } from '../utils/hints/waspHint';
 import { getWattenHint } from '../utils/hints/wattenHint';
@@ -511,6 +519,7 @@ export const hintFactories = {
   mighty: (s) => getMightyHint(s as MightyResponse),
   ohhell: (s) => getOhHellHint(s as OhHellResponse),
   wizard: (s) => getWizardHint(s as WizardResponse),
+  niuniu: (s) => getNiuNiuHint(s as NiuNiuResponse),
   ninetynine: (s) => getNinetyNineHint(s as NinetyNineResponse),
   oldmaid: (s) => getOldMaidHint(s as OldMaidResponse),
   doubt: (s) => getDoubtHint(s as DoubtResponse),
@@ -549,6 +558,7 @@ export const hintFactories = {
   durak: (s) => getDurakHint(s as DurakResponse),
   canasta: (s) => getCanastaHint(s as CanastaResponse),
   samba: (s) => getSambaHint(s as SambaResponse),
+  boston: (s) => getBostonHint(s as BostonResponse),
   bourre: (s) => getBourreHint(s as BourreResponse),
   bridge: (s) => getBridgeHint(s as BridgeResponse),
   bristol: (s) => getBristolHint(s as BristolResponse),
@@ -580,7 +590,7 @@ export const hintFactories = {
   yaniv: (s) => getYanivHint(s as YanivResponse),
   tressette: (s) => getTressetteHint(s as TressetteResponse),
   paigow: () => null,
-  chinesepoker: () => null,
+  chinesepoker: (s) => getChinesePokerHint(s as ChinesePokerResponse),
   pageone: (s) => getPageOneHint(s as PageOneResponse),
   pigtail: (s) => getPigstailHint(s as PigsTailResponse),
   pokersquares: (s) => getPokersquaresHint(s as PokerSquaresResponse),
@@ -592,6 +602,7 @@ export const hintFactories = {
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),
   war: (s) => getWarHint(s as WarResponse),
+  vint: (s) => getVintHint(s as VintResponse),
   watten: (s) => getWattenHint(s as WattenResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
   catchten: (s) => getCatchTenHint(s as CatchTenResponse),

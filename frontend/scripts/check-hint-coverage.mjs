@@ -50,7 +50,6 @@ const ALLOWED = new Map();
  */
 const BACKLOG = new Set([
   'bideuchre',
-  'boston',
   'briscola',
   'conquian',
   'faro',
@@ -60,9 +59,7 @@ const BACKLOG = new Set([
   'kaiser',
   'kille',
   'literature',
-  'niuniu',
   'sixbidsolo',
-  'vint',
 ]);
 
 /** Game slugs for every registered route, keyed the way useGameHint is called. */

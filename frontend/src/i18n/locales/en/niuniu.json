@@ -1,5 +1,8 @@
 {
-  "phase": { "bet": "Betting", "end": "Settled" },
+  "phase": {
+    "bet": "Betting",
+    "end": "Settled"
+  },
   "chips": "Chips",
   "banker": "Banker",
   "bankerHand": "Banker's hand",
@@ -22,5 +25,9 @@
     "multiplier": "The payout follows the rank: **Niu Niu triples, niu 7–9 doubles**, the rest pays even. The **winner's** multiplier applies, so a banker's Niu Niu takes three times your stake.",
     "noChoice": "There are **no decisions to make**. The five cards you are dealt determine the best hand, so the round resolves the moment you bet.",
     "controls": "Buttons for the stake and the next round."
+  },
+  "frontendHint": {
+    "niuniuStakeCap": "Your cap is chips divided by the top multiplier — a banker Niu Niu pays three times",
+    "niuniuStackTooShort": "Your stack cannot cover the top multiplier on any stake"
   }
 }
