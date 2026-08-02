@@ -35,6 +35,7 @@
   "frontendHint": {
     "waste": "Waste",
     "tableau": "Tableau column {{col}}",
-    "foundation": "Foundation"
+    "foundation": "Foundation",
+    "fortythievesMove": "This card can move"
   }
 }
