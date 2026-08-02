@@ -39,5 +39,9 @@
   },
   "slotCardZone": "{{card}}（{{zone}}）",
   "slotEmptyZone": "{{zone}}（空き）",
-  "foundationZone": "ファウンデーション{{n}}"
+  "foundationZone": "ファウンデーション{{n}}",
+  "frontendHint": {
+    "russianbankToFoundation": "この札を台札へ上げられます",
+    "russianbankToTableau": "この札を別の列へ移せます"
+  }
 }

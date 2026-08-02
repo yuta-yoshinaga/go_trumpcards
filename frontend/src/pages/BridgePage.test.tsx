@@ -588,4 +588,30 @@ describe('BridgePage', () => {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
   });
+
+  // **ヒント経路はページ側からも踏む。**ファクトリ単体テストだけだと
+  // `hintFactories` の登録行と、ページのトグル／ツールチップが一度も
+  // 実行されない（codecov が #4596 で同じ 3 ファイルを未到達と報告した）。
+  it('turns the frontend hint on from the settings panel', async () => {
+    localStorage.removeItem('hint_enabled_bridge');
+    mockExec.mockResolvedValue({ ...playPhaseState, hint: { cardIndex: 0, reason: 'follow_suit' } });
+    renderWithProviders(<BridgePage />);
+
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+
+  it('shows the auction hint when the toggle is already on', async () => {
+    localStorage.setItem('hint_enabled_bridge', 'true');
+    mockExec.mockResolvedValue({
+      ...bidPhaseState,
+      hint: { bidType: 0, bidLevel: 3, bidSuit: 2, reason: 'strategic_bid' },
+    });
+    renderWithProviders(<BridgePage />);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+    localStorage.removeItem('hint_enabled_bridge');
+  });
 });
