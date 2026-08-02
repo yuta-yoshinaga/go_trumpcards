@@ -151,3 +151,25 @@ func TestGutsWebPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.GutsWebPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestGutsWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// 既存の HintOutput テストと同じ状態。300 回試して nil 0 件で確認済み。
+	g := domain.NewDefaultGuts()
+	g.Reset()
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.GutsWebPresenter).Output(g, nil)), &decoded))
+	assert.Contains(t, decoded, "hint", "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotEqual(t, "guts.hintRequested", decoded["messageCode"])
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestGutsWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultGuts()
+	g.Reset()
+	assert.Contains(t, new(presenter.GutsWebPresenter).HintOutput(g), "guts.hintRequested")
+}
