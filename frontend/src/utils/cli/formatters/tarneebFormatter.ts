@@ -1,5 +1,12 @@
 import type { TarneebResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 /** Translate trump-suit code (1-4) to a short label. */
 function fmtTrump(suit: number): string {
@@ -48,7 +55,7 @@ export function formatTarneebState(state: TarneebResponse): string {
   if (state.phase === 0) lines.push('Bidding phase (7-13 or 0 to pass)');
   if (state.phase === 1) lines.push('Trump declaration phase (suit 1=♠ 2=♣ 3=♥ 4=♦)');
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     if (state.hint.bid !== undefined) lines.push(`HINT: bid ${state.hint.bid} (${state.hint.reason})`);
     if (state.hint.trumpSuit !== undefined)
       lines.push(`HINT: trump ${fmtTrump(state.hint.trumpSuit)} (${state.hint.reason})`);

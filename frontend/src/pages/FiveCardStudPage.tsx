@@ -14,6 +14,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { RoundResults } from '../components/RoundResults';
@@ -24,6 +25,7 @@ import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -39,6 +41,7 @@ import { FIVECARDSTUD_HELP, parseFiveCardStudCommand } from '../utils/cli/comman
 import { formatFiveCardStudState } from '../utils/cli/formatters/fiveCardStudFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Five Card Stud tutorial step definitions. */
 const FCS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -198,6 +201,14 @@ function FiveCardStudPageContent() {
     enabled: canAct && !loading,
   });
 
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('fivecardstud', state);
+
   if (!state)
     return (
       <GameSkeleton
@@ -340,6 +351,7 @@ function FiveCardStudPageContent() {
                     checked: cpuMetaAI,
                     onToggle: setCpuMetaAI,
                   },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -497,6 +509,8 @@ function FiveCardStudPageContent() {
             {/* Betting controls */}
             {canAct && (
               <div data-tutorial="fcs-action-buttons">
+                <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
                 <BettingControls
                   inputId="fiveCardStudBetAmount"
                   betAmount={betAmount}
