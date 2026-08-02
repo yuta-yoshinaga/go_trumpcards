@@ -330,6 +330,7 @@ describe('ScorpionPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromCol: 0, cardIndex: 1, toCol: 3 },
+      messageCode: 'scorpion.hintAvailable',
     });
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -342,6 +343,7 @@ describe('ScorpionPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       hint: { fromCol: -1, cardIndex: -1, toCol: -1 },
+      messageCode: 'scorpion.hintAvailable',
     });
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

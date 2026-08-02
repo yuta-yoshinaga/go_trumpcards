@@ -30,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { LOO_HELP, parseLooCommand } from '../utils/cli/commands/looCommands';
 import { formatLooState } from '../utils/cli/formatters/looFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { computeLooPotRisk } from '../utils/looPotRisk';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -350,7 +351,7 @@ function LooPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndices &&

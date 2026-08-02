@@ -52,13 +52,10 @@ const BACKLOG = new Set([
   'bideuchre',
   'briscola',
   'conquian',
-  'faro',
   'guandan',
   'handandfoot',
   'kaiser',
   'literature',
-  'pishti',
-  'sixbidsolo',
 ]);
 
 /** Game slugs for every registered route, keyed the way useGameHint is called. */

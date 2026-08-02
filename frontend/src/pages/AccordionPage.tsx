@@ -34,6 +34,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { accordionLegalOffsets, accordionLegalTargets, accordionNextAutoMove } from '../utils/accordionUtils';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Upper bound on autocomplete merges (a 52-card deck needs at most 51) — loop guard (#3192). */
@@ -393,8 +394,11 @@ function AccordionPageContent() {
                 return state.piles.map((pile, idx) => {
                   const top = pile.cards[0];
                   const isSelected = selectedIdx === idx;
-                  const hintFrom = state.hint?.fromIdx === idx;
-                  const hintTo = state.hint?.toIdx === idx;
+                  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+                  // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+                  const requestedHint = isRequestedHint(state) ? state.hint : undefined;
+                  const hintFrom = requestedHint?.fromIdx === idx;
+                  const hintTo = requestedHint?.toIdx === idx;
                   const isHoverTarget = hoverTargets?.has(idx) ?? false;
                   const isSelectedTarget = selectedTargets?.has(idx) ?? false;
                   // Highlight legal targets whether reached by hover (mouse) or by
@@ -485,7 +489,7 @@ function AccordionPageContent() {
               </div>
             )}
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div
                 className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
                 role="status"
