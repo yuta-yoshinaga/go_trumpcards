@@ -157,6 +157,7 @@ import type {
   ScorpionResponse,
   SeahavenTowersResponse,
   SedmaResponse,
+  SetteEMezzoResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
@@ -380,6 +381,7 @@ import { getScopaHint } from '../utils/hints/scopaHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
 import { getSedmaHint } from '../utils/hints/sedmaHint';
+import { getSetteEMezzoHint } from '../utils/hints/settemezzoHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
@@ -492,6 +494,7 @@ export const hintFactories = {
   oldmaid: (s) => getOldMaidHint(s as OldMaidResponse),
   doubt: (s) => getDoubtHint(s as DoubtResponse),
   daifugo: (s) => getDaifugoHint(s as DaifugoResponse),
+  settemezzo: (s) => getSetteEMezzoHint(s as SetteEMezzoResponse),
   sevens: (s) => getSevensHint(s as SevensResponse),
   crazyeights: (s) => getCrazyEightsHint(s as CrazyEightsResponse),
   prsi: (s) => getPrsiHint(s as PrsiResponse),
