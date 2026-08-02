@@ -105,6 +105,7 @@ import type {
   KalookiResponse,
   KarnoffelResponse,
   KempsResponse,
+  KilleResponse,
   KingAlbertResponse,
   KingResponse,
   KlaberjassResponse,
@@ -355,6 +356,7 @@ import { getKaiserHint } from '../utils/hints/kaiserHint';
 import { getKalookiHint } from '../utils/hints/kalookiHint';
 import { getKarnoffelHint } from '../utils/hints/karnoffelHint';
 import { getKempsHint } from '../utils/hints/kempsHint';
+import { getKilleHint } from '../utils/hints/killeHint';
 import { getKingalbertHint } from '../utils/hints/kingalbertHint';
 import { getKingHint } from '../utils/hints/kingHint';
 import { getKlaberjassHint } from '../utils/hints/klaberjassHint';
@@ -617,6 +619,7 @@ export const hintFactories = {
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   streetsandalleys: (s) => getStreetsandalleysHint(s as StreetsAndAlleysResponse),
+  kille: (s) => getKilleHint(s as KilleResponse),
   kingalbert: (s) => getKingalbertHint(s as KingAlbertResponse),
   karnoffel: (s) => getKarnoffelHint(s as KarnoffelResponse),
   king: (s) => getKingHint(s as KingResponse),
