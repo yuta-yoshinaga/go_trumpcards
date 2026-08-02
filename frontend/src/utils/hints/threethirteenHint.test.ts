@@ -103,4 +103,24 @@ describe('getThreeThirteenHint', () => {
   it('stays quiet without a visible hand', () => {
     expect(getThreeThirteenHint(base({ hand: [] }))).toBeNull();
   });
+
+  it('treats the ace as adjacent to the king, not only to the two', () => {
+    // ドメインは Ace-high のランを認める。生の値で引くと A(1) と K(13) が
+    // 12 離れて見えるので、K を拾う理由を見落とす。
+    const s = base({
+      phase: ThreeThirteenPhase.DRAW,
+      hand: [card('SPADE', 1), card('HEART', 5)],
+      discardTop: card('SPADE', 13),
+    });
+    expect(getThreeThirteenHint(s)?.targetAction).toBe('takeDiscard');
+  });
+
+  it('still requires the same suit for an ace-king neighbour', () => {
+    const s = base({
+      phase: ThreeThirteenPhase.DRAW,
+      hand: [card('SPADE', 1), card('HEART', 5)],
+      discardTop: card('CLOVER', 13),
+    });
+    expect(getThreeThirteenHint(s)?.targetAction).toBe('drawStock');
+  });
 });

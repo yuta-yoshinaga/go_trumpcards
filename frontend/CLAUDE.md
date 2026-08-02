@@ -171,8 +171,7 @@ match on the code if you ever script against tsc output.
 | `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; renders overlay (used internally by TutorialWrapper) |
 | `TutorialOverlay` | `src/components/tutorial/TutorialOverlay.tsx` | Full-screen overlay with SVG mask spotlight |
 | `useTutorial` | `src/hooks/useTutorial.ts` | State management (step progression, localStorage, resume/restart) |
-| `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hints; registry-driven via `hintFactories` (covers most games; currently 247). `frontend/scripts/check-hint-coverage.mjs` fails the build for any new game without one. The supported set is the `HintGameName` union (`keyof typeof hintFactories`) — add a game by registering its factory there |
-| `TutorialSuggestDialog` | `src/components/tutorial/TutorialSuggestDialog.tsx` | First-visit dialog; controlled by `useFirstVisit` hook |
+| `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hints; registry-driven via `hintFactories` (covers most games; currently 248). `frontend/scripts/check-hint-coverage.mjs` fails the build for any new game without one, and `check-hint-reasons.mjs` fails it when a server-side hint `Reason` has no ja/en translation (the player would see the key itself). The supported set is the `HintGameName` union (`keyof typeof hintFactories`) — add a game by registering its factory there || `TutorialSuggestDialog` | `src/components/tutorial/TutorialSuggestDialog.tsx` | First-visit dialog; controlled by `useFirstVisit` hook |
 | `TutorialProgressPanel` | `src/components/tutorial/TutorialProgressPanel.tsx` | Progress overview in NavBar |
 
 ### Adding a tutorial to a new game
