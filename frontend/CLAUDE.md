@@ -171,7 +171,7 @@ match on the code if you ever script against tsc output.
 | `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; renders overlay (used internally by TutorialWrapper) |
 | `TutorialOverlay` | `src/components/tutorial/TutorialOverlay.tsx` | Full-screen overlay with SVG mask spotlight |
 | `useTutorial` | `src/hooks/useTutorial.ts` | State management (step progression, localStorage, resume/restart) |
-| `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hints; registry-driven via `hintFactories` (currently 259 registered, of which 259 actually return a hint — no stubs remain, tracked in #4557). `frontend/scripts/check-hint-coverage.mjs` fails the build for any new game without one. The supported set is the `HintGameName` union (`keyof typeof hintFactories`) — add a game by registering its factory there |
+| `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hints; registry-driven via `hintFactories` (one per routed game). `frontend/scripts/check-hint-coverage.mjs` prints the current counts and fails the build for a game with no factory, or with one that only returns null — **read it rather than writing a number here** (#4652). The supported set is the `HintGameName` union (`keyof typeof hintFactories`) — add a game by registering its factory there |
 | `TutorialSuggestDialog` | `src/components/tutorial/TutorialSuggestDialog.tsx` | First-visit dialog; controlled by `useFirstVisit` hook |
 | `TutorialProgressPanel` | `src/components/tutorial/TutorialProgressPanel.tsx` | Progress overview in NavBar |
 
