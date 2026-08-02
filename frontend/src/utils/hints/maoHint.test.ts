@@ -106,6 +106,15 @@ describe('getMaoHint', () => {
     expect(getMaoHint(base({ awaitingWord: true, hintUnlocked: true, ruleHint: 'x' }))).toBeNull();
   });
 
+  // 場に札が無い（最初の 1 手）。何を出しても通るので、スートの話はしない。
+  it('falls back to a soft suggestion on an empty pile', () => {
+    expect(getMaoHint(base({ discardTop: null }, [card('SPADE', 2)]))).toEqual({
+      targetAction: 'play',
+      reason: 'frontendHint.maoMatchSuit',
+      confidence: 'moderate',
+    });
+  });
+
   it('stays quiet with an empty hand', () => {
     expect(getMaoHint(base({}, []))).toBeNull();
   });
