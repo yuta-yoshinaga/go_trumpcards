@@ -66,5 +66,7 @@
     "hand": "Your four cards. Hands rank (low to high): Numerus, Primero (one card of each suit), Supremus, and Fluxus (four of a suit); the strongest hand takes the pot.",
     "actions": "Call to match the current bet, raise (vie) to increase it, or fold to sit out the round. When betting ends the hands are compared to decide the pot.",
     "resetButton": "Reset the game and start over."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }
