@@ -84,5 +84,7 @@
     "info": "Königrufen is a 4-player trick-taker on the 54-card tarock deck. Once the auction settles the declarer, calling a King makes whoever holds it the declarer's secret partner (their identity stays hidden until that King is first played). The declarer merges the 6-card talon into hand, buries 6 cards, and partners up against the other two. The declaring team wins the deal by capturing enough card-points. The player with the highest cumulative score after the set number of deals wins.",
     "resetButton": "Use the reset button to start a new game."
   },
-  "callKingHeldReason": "You already hold this suit's King, so it can't be called"
+  "callKingHeldReason": "You already hold this suit's King, so it can't be called",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

@@ -47,7 +47,11 @@ describe('formatFrenchTarotState', () => {
 
   it('renders a hint line and message', () => {
     const out = formatFrenchTarotState(
-      makeFrenchTarotState({ hint: { cardIndices: [1, 2], reason: 'discard_weak' }, message: 'hello' }),
+      makeFrenchTarotState({
+        messageCode: 'frenchtarot.hintRequested',
+        hint: { cardIndices: [1, 2], reason: 'discard_weak' },
+        message: 'hello',
+      }),
     );
     expect(out).toContain('HINT: card indices [1, 2] (discard_weak)');
     expect(out).toContain('hello');
@@ -77,5 +81,17 @@ describe('formatFrenchTarotState', () => {
       }),
     );
     expect(out).toContain('trick:');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [1, 2], reason: 'discard_weak' };
+    expect(formatFrenchTarotState(makeFrenchTarotState({ hint, messageCode: 'frenchtarot.hintRequested' }))).toContain(
+      'HINT',
+    );
+    expect(formatFrenchTarotState(makeFrenchTarotState({ hint, messageCode: 'frenchtarot.playing' }))).not.toContain(
+      'HINT',
+    );
   });
 });
