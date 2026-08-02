@@ -22,7 +22,7 @@ export function getCuarentaHint(state: CuarentaResponse): HintResult | null {
   if (!human || human.cards.length === 0 || state.currentTurn !== human.id) return null;
 
   // **カイーダは直前に出された札と同じランク。**ふつうの取りより点が高い。
-  const lastPlayed = lastPlayedCard(state);
+  const lastPlayed = lastLaidCard(state);
   if (lastPlayed) {
     const idx = human.cards.findIndex((c) => c.value === lastPlayed.value);
     if (idx >= 0) {
@@ -43,13 +43,19 @@ export function getCuarentaHint(state: CuarentaResponse): HintResult | null {
   };
 }
 
-/** 直前に場へ出された札。誰も出していなければ null。 */
-function lastPlayedCard(state: CuarentaResponse): Card | null {
-  for (let i = state.cpuActions.length - 1; i >= 0; i -= 1) {
-    const played = state.cpuActions[i].playedCard;
-    if (played) return played;
-  }
-  return null;
+/**
+ * 直前に**場へ置かれた**札。カイーダの対象はこれだけ。
+ *
+ * **取った手は対象にならない。**取ると同じランクの場札が全部さらわれるので、
+ * 後から同じランクを出しても取るものが残っていない。ドメインも
+ * `lastLaidCard` を「捕獲時は nil」として同じ扱いをしている
+ * (Cuarenta.go:87, 265, 310) —— `playedCard` だけを見ると、取った直後の
+ * ランクを strong で勧めてしまう (#4616 のレビュー指摘)。
+ */
+function lastLaidCard(state: CuarentaResponse): Card | null {
+  const last = state.cpuActions.at(-1);
+  if (!last || !last.playedCard || last.capturedCards.length > 0) return null;
+  return last.playedCard;
 }
 
 /** 手札で一番小さいランクの位置。 */

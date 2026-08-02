@@ -86,6 +86,56 @@ describe('getCuarentaHint', () => {
     });
   });
 
+  // **取った手はカイーダの対象にならない。**取ると同じランクの場札が全部
+  // さらわれるので、後から同じランクを出しても取るものが残っていない。
+  // ドメインも lastLaidCard を捕獲時 nil にしている (#4616 のレビュー指摘)。
+  it('does not call a caida after the previous play captured', () => {
+    const hand = [card('SPADE', 7), card('HEART', 3)];
+    const s = base({
+      hand,
+      table: [card('CLOVER', 5)],
+      cpuActions: [
+        {
+          playerIdx: 1,
+          playedCard: card('DIAMOND', 7),
+          capturedCards: [card('CLOVER', 7)],
+          isCaida: false,
+          isLimpia: false,
+          rondaBonus: 0,
+        },
+      ],
+    });
+    expect(getCuarentaHint(s)?.reason).toBe('frontendHint.cuarentaLayLow');
+  });
+
+  // 最後の手より前に「置いた」手があっても、直前が取っていれば対象外。
+  it('looks only at the most recent action', () => {
+    const hand = [card('SPADE', 3), card('HEART', 9)];
+    const s = base({
+      hand,
+      table: [card('CLOVER', 5)],
+      cpuActions: [
+        {
+          playerIdx: 1,
+          playedCard: card('DIAMOND', 3),
+          capturedCards: [],
+          isCaida: false,
+          isLimpia: false,
+          rondaBonus: 0,
+        },
+        {
+          playerIdx: 2,
+          playedCard: card('SPADE', 6),
+          capturedCards: [card('HEART', 6)],
+          isCaida: false,
+          isLimpia: false,
+          rondaBonus: 0,
+        },
+      ],
+    });
+    expect(getCuarentaHint(s)?.reason).toBe('frontendHint.cuarentaLayLow');
+  });
+
   it('lays the lowest card when nothing captures', () => {
     const hand = [card('SPADE', 5), card('HEART', 2)];
     expect(getCuarentaHint(base({ hand, table: [card('CLOVER', 7)] }))).toEqual({
