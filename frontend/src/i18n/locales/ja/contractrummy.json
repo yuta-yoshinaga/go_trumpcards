@@ -33,5 +33,11 @@
     "contract": "ラウンドごとに「達成すべきメルドの組み合わせ」が決まっています。画面上部のコントラクト表示を確認しましょう。",
     "hand": "手札からカードを選び、コントラクトの各スロットに割り当てます。同じカードは複数スロットに使えません。",
     "actions": "ドロー → コントラクト達成 → 追加メルド/レイオフ → カード1枚を捨てる、の流れで進行します。"
+  },
+  "frontendHint": {
+    "contractrummyTakeDiscard": "捨て札が手札と繋がります。拾いましょう",
+    "contractrummyDrawStock": "捨て札は使えません。山から引きましょう",
+    "contractrummyMeetContract": "まだ契約を満たしていません。重い札も材料です",
+    "contractrummyDiscardHeavy": "繋がっていない札のうち一番重い札です"
   }
 }

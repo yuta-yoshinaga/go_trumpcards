@@ -54,5 +54,7 @@
     "playButton": "Once a card is selected, play it with this button. The player who plays the strongest card wins the trick.",
     "info": "Five players compete for a pot each round. The first player to win 3 of the 5 tricks takes the pot immediately. If nobody reaches 3 tricks the round is a Spoil (流局) and the pot carries to the next round. The first player to reach the target score (30 by default) wins the match.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

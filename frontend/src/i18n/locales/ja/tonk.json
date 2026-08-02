@@ -52,5 +52,11 @@
     "knockButton": "デッドウッドが5点以下になればノックして勝負できます。配牌時に49点・50点ならTonk即勝利！",
     "scoreTable": "各プレイヤーのスコアが表示されます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "frontendHint": {
+    "tonkTakeDiscard": "その札を拾うと組になり、端札が減る",
+    "tonkDrawStock": "捨て札は組にならない。山札から引こう",
+    "tonkKnock": "1 枚捨てれば端札が5点以下。ノックできる",
+    "tonkDiscardHeavy": "端札が一番減る札を捨てよう"
   }
 }
