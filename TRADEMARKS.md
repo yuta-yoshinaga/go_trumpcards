@@ -48,6 +48,20 @@ time. Verify against the relevant national registry before relying on any row.
 | Oasis Poker | asserted by various operators |
 | Russian Poker | asserted by various operators |
 
+### Side bets
+
+| Name | Reported owner |
+|---|---|
+| 21+3 | **Galaxy Gaming — registered in Japan** (登録6752649 / 6785367, classes 28 and 41) |
+
+This is the only mark in this inventory confirmed to be *registered in Japan*,
+and class 41 covers providing games online. The project therefore no longer
+displays it: the BlackJack / Spanish 21 side bet is labelled by what it does
+(ポーカー役ベット / Poker Hand Bet) rather than by its trade name. Internal
+identifiers (`t3`, `twentyOnePlus3Bet`, `TwentyOnePlus3Payout`) are unchanged.
+
+Perfect Pairs, the other side bet, is unregistered in Japan and is used as-is.
+
 ### Published card games
 
 | Name in this project | Reported owner |
