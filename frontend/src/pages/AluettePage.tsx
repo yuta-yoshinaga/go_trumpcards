@@ -226,7 +226,10 @@ function AluettePageContent() {
 
               <div>
                 {/* Team scores — this is a team game, not an individual one. */}
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="aluette-team-scores">
+                <div
+                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                  data-testid="aluette-team-scores"
+                >
                   {state.teamScores.map((score, team) => (
                     <div
                       key={team}

@@ -1,4 +1,5 @@
 import type {
+  AluetteResponse,
   AnacondaResponse,
   BasraResponse,
   BeziqueResponse,
@@ -2568,6 +2569,68 @@ const baseTeenPattiState: TeenPattiResponse = {
  */
 export function makeTeenPattiState(overrides?: Partial<TeenPattiResponse>): TeenPattiResponse {
   return { ...baseTeenPattiState, ...overrides };
+}
+
+/**
+ * Base Aluette state used as the default for {@link makeAluetteState}.
+ *
+ * A 4-player Breton 2v2 trick-taker on a 48-card Spanish-suited deck. There is
+ * no trump suit and no follow obligation, so `playableIndices` is the whole
+ * hand on a human turn. The `luettes` table is what the backend sends on every
+ * response — the six named cards, strongest first.
+ */
+const baseAluetteState: AluetteResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        // 金貨の3 = Monsieur。同じ 3 でも剣の3 はただの札で、そこが眼目。
+        { design: 'DIAMOND' as const, value: 3 },
+        { design: 'SPADE' as const, value: 3 },
+        { design: 'HEART' as const, value: 9 },
+        { design: 'CLOVER' as const, value: 7 },
+        { design: 'SPADE' as const, value: 12 },
+      ],
+      trickCount: 0,
+      team: 0,
+      isDealer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], trickCount: 0, team: 1, isDealer: false },
+    { id: 2, isHuman: false, cardCount: 5, cards: [], trickCount: 0, team: 0, isDealer: false },
+    { id: 3, isHuman: false, cardCount: 5, cards: [], trickCount: 0, team: 1, isDealer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 1,
+  dealerIdx: 0,
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundTricks: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2, 3, 4],
+  luettes: [
+    { design: 'DIAMOND', value: 3, name: 'Monsieur' },
+    { design: 'HEART', value: 3, name: 'Madame' },
+    { design: 'HEART', value: 2, name: 'Borgne' },
+    { design: 'DIAMOND', value: 2, name: 'Vache' },
+    { design: 'HEART', value: 9, name: 'GrandNeuf' },
+    { design: 'DIAMOND', value: 9, name: 'PetitNeuf' },
+  ],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 5 },
+};
+
+/** Builds an Aluette state for tests, overriding fields of the default human play turn. */
+export function makeAluetteState(overrides?: Partial<AluetteResponse>): AluetteResponse {
+  return { ...baseAluetteState, ...overrides };
 }
 
 /**

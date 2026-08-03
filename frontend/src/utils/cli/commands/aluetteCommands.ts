@@ -5,7 +5,23 @@ import type { CliParseResult } from '../types';
 /** Args tuple accepted by aluetteApi.exec. */
 export type AluetteCliArgs = Parameters<typeof aluetteApi.exec>;
 
-const VALID_COMMANDS = ['p', 'play', 'n', 'next', 'nr', 'nextround', 'sd', 'h', 'hint', 'l', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = [
+  'p',
+  'play',
+  'n',
+  'next',
+  'nr',
+  'nextround',
+  'sd',
+  'h',
+  'hint',
+  'l',
+  'log',
+  'r',
+  'reset',
+  'help',
+  '?',
+];
 
 /**
  * Parses a single CLI command line for Aluette into

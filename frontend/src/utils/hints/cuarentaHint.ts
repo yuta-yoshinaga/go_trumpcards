@@ -54,7 +54,7 @@ export function getCuarentaHint(state: CuarentaResponse): HintResult | null {
  */
 function lastLaidCard(state: CuarentaResponse): Card | null {
   const last = state.cpuActions.at(-1);
-  if (!last || !last.playedCard || last.capturedCards.length > 0) return null;
+  if (!last?.playedCard || last.capturedCards.length > 0) return null;
   return last.playedCard;
 }
 

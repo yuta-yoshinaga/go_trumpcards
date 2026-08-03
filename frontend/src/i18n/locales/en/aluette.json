@@ -1,0 +1,68 @@
+{
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Mene End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetPoints": "Target Points",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "mene": "Mene {{n}}",
+  "trick": "Trick {{n}}",
+  "target": "First to {{points}}",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "trickEmpty": "(no cards yet)",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "team": "Team {{n}}",
+  "teamScore": "Team {{n}}: {{score}}",
+  "dealerBadge": "Dealer",
+  "luetteLegend": "Luettes (strongest first)",
+  "noLuetteInHand": "No luette in hand",
+  "luette": {
+    "Monsieur": "Monsieur",
+    "Madame": "Madame",
+    "Borgne": "Borgne",
+    "Vache": "Vache",
+    "GrandNeuf": "Grand Neuf",
+    "PetitNeuf": "Petit Neuf"
+  },
+  "suit": {
+    "SPADE": "♠",
+    "CLOVER": "♣",
+    "HEART": "♥",
+    "DIAMOND": "♦"
+  },
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Mene",
+  "roundResult": {
+    "title": "Mene Result",
+    "tricks": "{{name}} tricks: {{count}}"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_low": "Lead low and keep your strong cards for later",
+    "play_luette": "Play a luette to take the trick",
+    "partner_winning": "Your partner is winning, so do not spend a strong card",
+    "follow_low": "You cannot win this trick, so throw a low card"
+  },
+  "tutorial": {
+    "info": "Mene, trick and team scores appear here. Opposite seats are fixed partners in a 2v2 game and you sit at seat 0. There is no bidding and no discard.",
+    "luettes": "This is the heart of the game. **Strength is per card, not per rank.** The 3 of diamonds (Monsieur) is the best card in the deck while the 3 of spades is ordinary. These six cards occupy the whole top of the ladder.",
+    "trick": "Cards played into the current trick appear here. **There is no trump suit and no follow obligation** — any card is always legal. When equal ranks meet, the card played **first** wins.",
+    "hand": "Your hand: 5 cards out of 48. Any luette you hold is named above your hand — the card art alone does not tell you it is the strongest card in the deck.",
+    "actions": "A mene is 5 tricks and **taking 3 of them scores 1 point**. You do not need all five. Throw your weakest card on tricks you cannot win and keep the luettes for when they decide one."
+  },
+  "hintRequested": "A hint is available",
+  "noHint": "No hint available"
+}

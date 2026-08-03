@@ -1,11 +1,5 @@
 import { type AluetteResponse, aluetteLuetteName, aluetteTeamOf } from '../../../types/card';
-import {
-  formatCard,
-  formatHeader,
-  formatPlayerName,
-  formatSeparator,
-  isRequestedHint,
-} from '../formatterBase';
+import { formatCard, formatHeader, formatPlayerName, formatSeparator, isRequestedHint } from '../formatterBase';
 
 const PHASE_NAMES = ['Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
 
