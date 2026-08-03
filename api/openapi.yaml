@@ -23101,6 +23101,72 @@ paths:
                 properties:
                   message:
                     type: string
+  /tarocchini/exec:
+    post:
+      tags:
+        - tarocchini
+      summary: Execute a Tarocchini (タロッキーニ) game command
+      description: |
+        Send a command to advance the Tarocchini (タロッキーニ) game session identified by
+        `sessionId`. Tarocchini (Ottocento), a Bolognese four-player tarot trick-taker in fixed 2v2 teams on a
+        62-card pack: 4 suits of 10 (the low pips 2-5 are absent) + 21 trumps + the Matto.
+        15 cards each; 62 does not divide by 4, so the dealer buries the remaining 2 (scarto).
+        **The four papi rank equal and the LATER-played one wins the trick** — a client that
+        resolves with "strictly stronger card wins" gives the trick to whoever played their
+        papa first. The papi are a middle group, not the top trumps: a higher ordinary trump
+        still beats them. Must-follow, then must-trump when void; the Matto is exempt and
+        never takes a trick.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: tarocchiniExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
   /scarto/exec:
     post:
       tags:

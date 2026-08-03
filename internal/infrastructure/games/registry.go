@@ -704,6 +704,10 @@ var registry = []*Game{
 	{Name: "koenigrufen", Category: CategoryExtra},
 	// Scarto is the simplest Italian (Piedmontese) tarocchi trick-taker on the 78-card
 	// tarot deck; procedural render path (ADR-0033).
+	// Tarocchini (タロッキーニ / Ottocento) is a Bolognese 62-card tarot game for 4 in
+	// fixed 2v2 teams. The four papi rank equal and the LATER-played one wins the trick,
+	// which no other game here does; the dealer buries 2 surplus cards (scarto).
+	{Name: "tarocchini", Category: CategorySolo},
 	{Name: "scarto", Category: CategoryExtra3},
 	// Cego is a German (Baden) tarock trick-taker on the 54-card tarock deck with the
 	// signature Cego-blind swap; procedural render path (ADR-0033).

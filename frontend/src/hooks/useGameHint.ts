@@ -214,6 +214,7 @@ import type {
   SultanResponse,
   TablanetResponse,
   TarneebResponse,
+  TarocchiniResponse,
   TeenPattiResponse,
   TerraceResponse,
   TexasHoldemBonusResponse,
@@ -472,6 +473,7 @@ import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getSultanHint } from '../utils/hints/sultanHint';
 import { getTablanetHint } from '../utils/hints/tablanetHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
+import { getTarocchiniHint } from '../utils/hints/tarocchiniHint';
 import { getTeenPattiHint } from '../utils/hints/teenPattiHint';
 import { getTerraceHint } from '../utils/hints/terraceHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
@@ -747,6 +749,7 @@ export const hintFactories = {
   fortyfives: (s) => getFortyFivesHint(s as FortyFivesResponse),
   nap: (s) => getNapHint(s as NapResponse),
   ganjifa: (s) => getGanjifaHint(s as GanjifaResponse),
+  tarocchini: (s) => getTarocchiniHint(s as TarocchiniResponse),
   preference: (s) => getPreferenceHint(s as PreferenceResponse),
   vira: (s) => getViraHint(s as ViraResponse),
   twentynine: (s) => getTwentyNineHint(s as TwentyNineResponse),

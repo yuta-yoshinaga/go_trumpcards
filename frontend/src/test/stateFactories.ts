@@ -45,6 +45,7 @@ import type {
   SpoilFiveResponse,
   SuecaResponse,
   TablanetResponse,
+  TarocchiniResponse,
   TeenPattiResponse,
   ThreeCardBragResponse,
   TrenteEtQuaranteResponse,
@@ -2566,6 +2567,58 @@ const baseTeenPattiState: TeenPattiResponse = {
  */
 export function makeTeenPattiState(overrides?: Partial<TeenPattiResponse>): TeenPattiResponse {
   return { ...baseTeenPattiState, ...overrides };
+}
+
+/**
+ * Base Tarocchini state used as the default for {@link makeTarocchiniState}.
+ * A 4-player Bolognese 2v2 tarot trick-taker; defaults to a human play turn
+ * with the dealer's scarto already done.
+ */
+const baseTarocchiniState: TarocchiniResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 15,
+      cards: [
+        // 62 枚デッキには専用アートが無く、全札が手続き記述子で届く。
+        { design: 'SPADE' as const, value: 14, glyph: '\u2660', label: 'Re', color: 'black', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 20, glyph: '\u2726', label: '20', color: 'purple', deck: 'tarot' },
+        // パパは番号ではなく Papa。色も通常の切札と変える。
+        { design: 'JOKER' as const, value: 2, glyph: '\u2726', label: 'Papa', color: 'green', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      team: 0,
+      isDealer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 15, cards: [], trickCount: 0, team: 1, isDealer: false },
+    { id: 2, isHuman: false, cardCount: 15, cards: [], trickCount: 0, team: 0, isDealer: false },
+    { id: 3, isHuman: false, cardCount: 15, cards: [], trickCount: 0, team: 1, isDealer: false },
+  ],
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 1,
+  dealerIdx: 0,
+  scartoCount: 2,
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundTricks: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  isHumanScarto: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 4 },
+};
+
+/** Builds a Tarocchini state for tests, overriding fields of the default human play turn. */
+export function makeTarocchiniState(overrides?: Partial<TarocchiniResponse>): TarocchiniResponse {
+  return { ...baseTarocchiniState, ...overrides };
 }
 
 /**

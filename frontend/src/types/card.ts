@@ -222,6 +222,7 @@ export * from './games/sueca';
 export * from './games/sultan';
 export * from './games/tablanet';
 export * from './games/tarneeb';
+export * from './games/tarocchini';
 export * from './games/teenpatti';
 export * from './games/terrace';
 export * from './games/texasholdembonus';

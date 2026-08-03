@@ -645,6 +645,20 @@ export const GanjifaPhase = {
   GAME_END: 3,
 } as const;
 
+/**
+ * Tarocchini phase constants (sync: internal/domain/Tarocchini.go).
+ *
+ * **Scarto comes first, not a Bid.** The dealer buries the 2 surplus cards
+ * before any trick is played; there is no bidding phase in this game.
+ */
+export const TarocchiniPhase = {
+  SCARTO: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Préférence phase constants (sync: internal/domain/Preference.go). */
 export const PreferencePhase = {
   BID: 0,

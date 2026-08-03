@@ -1,0 +1,58 @@
+{
+  "phase": {
+    "scarto": "Scarto",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetRounds": "Rounds",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "target": "{{rounds}} rounds total",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "trickEmpty": "(no cards yet)",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "team": "Team {{n}}",
+  "teamScore": "Team {{n}}: {{score}}",
+  "dealerBadge": "dealer",
+  "papiNote": "The four papi rank equal -- if more than one lands in a trick, the later-played wins",
+  "scartoPrompt": "Choose {{count}} cards to bury (trumps and the Matto cannot be chosen)",
+  "scartoButton": "Bury",
+  "scartoDone": "Buried: {{count}} cards",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "roundResult": {
+    "title": "Round Result",
+    "tricks": "{{name}} tricks: {{count}}"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_low": "Lead a low card and hold your strength back",
+    "lead_trump": "Lead a trump to seize the initiative",
+    "play_papa": "Play a papa (four of equal rank -- the later one played wins)",
+    "play_matto": "Play the Matto (it takes no trick but is exempt from following)",
+    "follow_trump": "Follow with a trump to take the trick",
+    "follow_low": "You cannot take it, so follow with a low card"
+  },
+  "tutorial": {
+    "info": "The round, trick and team scores are shown here. Opposite seats are fixed partners in 2v2, and you are seat 0. There is no bidding.",
+    "trick": "Cards played to the table appear here. You must follow the led suit, and must play a trump when void. The Matto alone is exempt and may be played at any time -- though it never takes a trick.",
+    "hand": "Your hand: 15 of the 62 tarot cards. The four marked **Papa** rank equal to each other and are drawn in a different colour from ordinary trumps.",
+    "actions": "The heart of this game is that **the four papi rank equal and the later-played one wins**. If you carry over the usual \"only a strictly stronger card takes the trick\" instinct, you will expect the first papa to win. Note they are a middle group: a higher ordinary trump still beats them. As dealer you also bury 2 surplus cards, and buried cards score for your team."
+  },
+  "hintRequested": "A hint is available",
+  "noHint": "No hint available"
+}

@@ -1165,6 +1165,11 @@ describe('hintFactories wiring', () => {
       state: { hint: { cardIndices: [0], reason: 'lead_high' } },
       reason: 'hint.lead_high',
     },
+    {
+      game: 'tarocchini',
+      state: { hint: { cardIndices: [0], reason: 'play_papa' } },
+      reason: 'hint.play_papa',
+    },
   ] as const;
 
   it.each(CASES)('$game returns a hint rather than the null stub', ({ game, state }) => {

@@ -14,6 +14,14 @@ import (
 )
 
 func init() {
+	games.RegisterKVGame("tarocchini", games.CategorySolo,
+		func() usecase.TarocchiniInteractorIF {
+			return usecase.NewTarocchiniInteractor(domain.NewDefaultTarocchini(), new(presenter.TarocchiniWebPresenter))
+		},
+		func(data []byte) (usecase.TarocchiniInteractorIF, error) {
+			return usecase.RestoreTarocchiniInteractor(data, new(presenter.TarocchiniWebPresenter))
+		},
+		controller.NewTarocchiniWebControllerWithProvider)
 	games.RegisterKVGame("memory", games.CategorySolo,
 		func() usecase.MemoryInteractorIF {
 			return usecase.NewMemoryInteractor(domain.NewDefaultMemory(), new(presenter.MemoryWebPresenter))
