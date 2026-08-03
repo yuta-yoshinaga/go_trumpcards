@@ -96,7 +96,14 @@ describe('parseMinchiateCommand', () => {
 
   it('documents every accepted command in the help text', () => {
     const help = MINCHIATE_HELP.join('\n');
-    for (const cmd of ['scarto <i0> <i1>', 'p <idx>', 'n / next', 'nr / nextround', 'sd <0-2>', 'h / hint']) {
+    for (const cmd of [
+      `scarto <i0> ...  - Bury the ${MINCHIATE_SURPLUS}`,
+      'p <idx>',
+      'n / next',
+      'nr / nextround',
+      'sd <0-2>',
+      'h / hint',
+    ]) {
       expect(help).toContain(cmd);
     }
     // パーサが弾く操作を案内してはならない。

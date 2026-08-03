@@ -365,12 +365,49 @@ func (g *Minchiate) appendLog(playerIdx int, actionType, detail string, cards []
 
 // --- スカルト (ディーラーの捨て札) ---
 
-// minchiateCanDiscard 捨てられる札か。
+// minchiateCanDiscard スート札 (第一候補) か。
 //
-// **切札とマットは捨てられない。**捨札はそのまま獲得札に計上されるので、
+// **切札とマットは原則捨てられない。**捨札はそのまま獲得札に計上されるので、
 // 高位の切札を伏せて確実に取れてしまうとトリックを戦う意味が薄れる。
 func minchiateCanDiscard(c *Card) bool {
 	return c != nil && !minchiateIsTrump(c) && !minchiateIsMatto(c)
+}
+
+// minchiateDiscardable は親が捨ててよい手札位置を弱い順に返す。
+//
+// **スート札だけでは足りない配りが実在する。**親は 97 枚中 34 枚を持ち、その
+// うち捨てられないのは切札 40 + マット 1 の 41 枚。34 枚中スート札が 13 枚に
+// 満たない裾は約 0.3% で起こる —— 「構造上ありえない」は誤りだった (#4665 の
+// レビュー指摘)。そこで足りない分だけ切札を弱い順に開放する。Scarto が
+// 「0.5 点札が足りない稀な場合に限り非ブーの切札を許す」のと同じ形。
+//
+// 捨てずに進める逃げ方は取らない。親の手札が 34 枚のまま 21 トリックを戦うと
+// 13 枚が一度も場に出ず、どちらのチームにも計上されないまま次の配りで消える。
+// 97 = 21x4 + 13 という閉じた勘定が崩れる。
+func minchiateDiscardable(dealer *MinchiatePlayer) []int {
+	var suits, trumps []int
+	for i := 0; i < dealer.GetCardsSize(); i++ {
+		c := dealer.GetCard(i)
+		switch {
+		case minchiateCanDiscard(c):
+			suits = append(suits, i)
+		case minchiateIsTrump(c):
+			trumps = append(trumps, i)
+		}
+	}
+	byValue := func(xs []int) {
+		sort.SliceStable(xs, func(a, b int) bool {
+			return dealer.GetCard(xs[a]).GetValue() < dealer.GetCard(xs[b]).GetValue()
+		})
+	}
+	byValue(suits)
+	if len(suits) >= MinchiateSurplus {
+		return suits
+	}
+	// **マットは最後まで開放しない。**34 枚のうちマットは高々 1 枚なので、
+	// スート札 + 切札で必ず MinchiateSurplus 枚に届く。
+	byValue(trumps)
+	return append(suits, trumps...)
 }
 
 // PlayerScarto 人間のディーラーが余剰札を伏せて捨てる。
@@ -389,6 +426,8 @@ func (g *Minchiate) PlayerScarto(cardIndices []int) error {
 			fmt.Sprintf("捨てる札は %d 枚選んでください", MinchiateSurplus))
 	}
 	dealer := g.players[g.dealerIdx]
+	// **許可集合は毎回計算する。**スート札が足りない配りでは切札も開放される。
+	allowed := minchiateDiscardable(dealer)
 	seen := make(map[int]bool, len(cardIndices))
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= dealer.GetCardsSize() {
@@ -398,7 +437,7 @@ func (g *Minchiate) PlayerScarto(cardIndices []int) error {
 			return NewDomainError(ErrInvalidIndices, "同じ札を 2 回選べません")
 		}
 		seen[idx] = true
-		if !minchiateCanDiscard(dealer.GetCard(idx)) {
+		if !minchiateContainsIdx(allowed, idx) {
 			return NewDomainError(ErrInvalidPlay, "切札とマットは捨てられません")
 		}
 	}
@@ -433,20 +472,11 @@ func (g *Minchiate) CpuScarto() {
 	if dealer.GetIsHuman() {
 		return
 	}
-	order := make([]int, 0, dealer.GetCardsSize())
-	for i := 0; i < dealer.GetCardsSize(); i++ {
-		if minchiateCanDiscard(dealer.GetCard(i)) {
-			order = append(order, i)
-		}
-	}
-	sort.SliceStable(order, func(a, b int) bool {
-		return dealer.GetCard(order[a]).GetValue() < dealer.GetCard(order[b]).GetValue()
-	})
+	order := minchiateDiscardable(dealer)
 	if len(order) < MinchiateSurplus {
-		// **捨てられる札が足りないのは構造上ありえない**が、起きたら捨てずに進める
-		// 方が、手札枚数を壊してトリック数が合わなくなるより安全。
-		g.currentPlayerIdx = g.leadPlayerIdx
-		g.phase = MinchiatePhasePlay
+		// ここに来るのは手札が MinchiateSurplus 枚に満たないときだけ (テストが
+		// 手札を差し替えた場合など)。持っている分だけ捨てて先へ進める。
+		g.applyScarto(order)
 		return
 	}
 	g.applyScarto(order[:MinchiateSurplus])
@@ -547,6 +577,9 @@ func (g *Minchiate) PlayerPlay(cardIndex int) error {
 	g.playCard(g.currentPlayerIdx, player.RemoveCard(cardIndex))
 	return nil
 }
+
+// minchiateContainsIdx 許可集合に位置が含まれるか。
+func minchiateContainsIdx(xs []int, v int) bool { return minchiateContains(xs, v) }
 
 // minchiateContains slice に値が含まれるか。
 func minchiateContains(xs []int, v int) bool {

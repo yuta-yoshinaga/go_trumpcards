@@ -85,7 +85,7 @@ export function parseMinchiateCommand(input: string): CliParseResult<MinchiateCl
 
 /** Help text shown in the CLI terminal for Minchiate. */
 export const MINCHIATE_HELP: string[] = [
-  'scarto <i0> <i1> - Bury the 2 surplus cards (dealer only; no trumps or Matto)',
+  `scarto <i0> ...  - Bury the ${MINCHIATE_SURPLUS} surplus cards (dealer only; suit cards first)`,
   'p <idx>          - Play a card (must follow, or trump when void)',
   'n / next         - Next trick',
   'nr / nextround   - Next round',

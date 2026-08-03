@@ -654,3 +654,82 @@ func TestMinchiate_ALoneLedMattoLeavesTheTrickOpen(t *testing.T) {
 	assert.Equal(t, []int{1}, hint.CardIndices,
 		"the trick is still open, so the strong card should be suggested rather than a duck")
 }
+
+// **スート札が 13 枚に満たない配りは実在する。**親は 97 枚中 34 枚を持ち、
+// 捨てられないのは切札 40 + マット 1 の 41 枚。34 枚中スート札が 13 枚に届かない
+// 裾は約 0.3% で起こる —— 以前ここに「構造上ありえない」と書いて捨てずに進めて
+// いたが、それだと親の 13 枚が一度も場に出ないまま消え、97 = 21x4 + 13 の勘定が
+// 崩れる (#4665 のレビュー指摘)。足りない分は切札を弱い順に開放する。
+func TestMinchiate_ScartoFallsBackToTrumpsWhenSuitCardsAreShort(t *testing.T) {
+	g := newTestMinchiate(t)
+	// **親は CPU 席にする。**席 0 は人間なので CpuScarto は正しく何もしない。
+	g.dealerIdx = 1
+	g.startRound()
+	dealer := g.GetPlayer(g.GetDealerIdx())
+	require.False(t, dealer.GetIsHuman())
+	for dealer.GetCardsSize() > 0 {
+		dealer.RemoveCard(0)
+	}
+	// スート札を 3 枚だけ持たせ、残りは切札で埋める (計 34 枚)。
+	const suitCards = 3
+	for i := 1; i <= suitCards; i++ {
+		dealer.AddCard(NewCard(1, i, false))
+	}
+	for i := 1; i <= MinchiateHandSize+MinchiateSurplus-suitCards; i++ {
+		dealer.AddCard(NewCard(MinchiateTrumpDesign, i, false))
+	}
+	require.Equal(t, MinchiateHandSize+MinchiateSurplus, dealer.GetCardsSize())
+
+	allowed := minchiateDiscardable(dealer)
+	require.GreaterOrEqual(t, len(allowed), MinchiateSurplus,
+		"the allowed set must still reach the surplus by opening up trumps")
+
+	g.CpuScarto()
+	// **枚数の勘定が閉じること。**捨てずに進めると親だけ 34 枚のまま残る。
+	assert.Equal(t, MinchiateHandSize, dealer.GetCardsSize())
+	assert.Equal(t, MinchiateSurplus, g.GetScartoSize())
+	assert.Equal(t, MinchiatePhasePlay, g.GetPhase())
+}
+
+// 開放は必要な分だけ。スート札が足りている通常の配りでは切札は候補に入らない。
+func TestMinchiate_ScartoPrefersSuitCardsWhenThereAreEnough(t *testing.T) {
+	g := newTestMinchiate(t)
+	dealer := g.GetPlayer(g.GetDealerIdx())
+	for dealer.GetCardsSize() > 0 {
+		dealer.RemoveCard(0)
+	}
+	for i := 0; i < MinchiateSurplus; i++ {
+		dealer.AddCard(NewCard(1, (i%MinchiateSuitMax)+1, false))
+	}
+	dealer.AddCard(NewCard(MinchiateTrumpDesign, 40, false))
+
+	for _, idx := range minchiateDiscardable(dealer) {
+		assert.True(t, minchiateCanDiscard(dealer.GetCard(idx)),
+			"a trump must not be offered while suit cards still suffice")
+	}
+}
+
+// 人間の親も同じ許可集合で検証される。スート札が足りていれば切札は拒否される。
+func TestMinchiate_HumanScartoUsesTheSameAllowedSet(t *testing.T) {
+	g := newTestMinchiate(t)
+	dealer := g.GetPlayer(g.GetDealerIdx())
+	require.True(t, dealer.GetIsHuman())
+	for dealer.GetCardsSize() > 0 {
+		dealer.RemoveCard(0)
+	}
+	dealer.AddCard(NewCard(MinchiateTrumpDesign, 40, false)) // 位置 0 = 切札
+	for i := 1; i <= MinchiateSurplus; i++ {
+		dealer.AddCard(NewCard(1, i, false))
+	}
+	withTrump := []int{0}
+	for i := 1; i < MinchiateSurplus; i++ {
+		withTrump = append(withTrump, i)
+	}
+	assert.Error(t, g.PlayerScarto(withTrump), "a trump must be refused while suit cards suffice")
+
+	plain := make([]int, 0, MinchiateSurplus)
+	for i := 1; i <= MinchiateSurplus; i++ {
+		plain = append(plain, i)
+	}
+	assert.NoError(t, g.PlayerScarto(plain))
+}

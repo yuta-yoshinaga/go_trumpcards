@@ -180,7 +180,7 @@ func (p *MinchiateCuiPresenter) HintOutput(g interfaces.MinchiateGame) string {
 
 // minchiateHintReasonKeys maps Minchiate-specific hint-reason identifiers to i18n keys.
 //
-// **Minchiate.playHintReason が返す 6 種と 1 対 1 で対応させる。**外れた理由は
+// **Minchiate.playHintReason が返す 5 種と 1 対 1 で対応させる。**外れた理由は
 // hintReasonStr の既定でキー文字列そのものが画面に出る (#4660 で実際に起きた)。
 var minchiateHintReasonKeys = map[string]string{
 	"lead_low":     "minchiate.hintReasonLeadLow",

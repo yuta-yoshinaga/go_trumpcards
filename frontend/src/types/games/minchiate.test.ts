@@ -16,7 +16,7 @@ describe('minchiateTeamOf', () => {
 });
 
 describe('deck arithmetic', () => {
-  // 62 は 4 で割り切れない。余りが構造として残ることを固定しておく。
+  // 97 は 4 で割り切れる (12 枚ずつ) が全部は配らない。余りが残ることを固定する。
   it('leaves a surplus the dealer must bury', () => {
     const deck = 97;
     const hand = 21;
