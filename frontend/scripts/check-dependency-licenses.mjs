@@ -15,18 +15,19 @@
  * js/wasm-only worker dependencies.
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 /** Root of the installed dependency tree. */
 const NODE_MODULES = new URL('../node_modules', import.meta.url).pathname;
 
 /**
- * Sanity floor for the number of packages inspected. The tree currently holds
- * ~340 top-level entries; anything under this means the walk broke rather than
- * that the tree is clean.
+ * Sanity floor for the number of packages inspected. The recursive walk
+ * currently sees ~477; anything under this means the walk broke rather than
+ * that the tree is clean. Set well below the real count so a dependency
+ * removal does not trip it, but far enough above zero to stay diagnostic.
  */
-const MIN_PACKAGES = 100;
+const MIN_PACKAGES = 300;
 
 /**
  * Licenses that cannot be sublicensed under MIT. LGPL is included because the
@@ -69,6 +70,18 @@ const ALLOWED = [
   'Zlib',
 ];
 
+/**
+ * Packages whose manifest omits `license` but whose real license was read from
+ * the files they ship. Each entry records that evidence, so the exemption can
+ * be re-checked rather than trusted.
+ */
+const UNLICENSED_ALLOWLIST = {
+  // node_modules/khroma/license: "The MIT License (MIT) — Copyright (c)
+  // 2019-present Fabio Spampinato, Andrew Maney". Upstream simply omits the
+  // package.json field. Pulled in by mermaid.
+  khroma: 'MIT, per the bundled license file',
+};
+
 /** Reads a package.json, returning null when it is absent or unparsable. */
 function readManifest(dir) {
   try {
@@ -100,17 +113,37 @@ function isBlocked(expr) {
   return !ALLOWED.some((id) => upper.includes(id.toUpperCase()));
 }
 
-/** Collects every installed package directory, descending into `@scope` dirs. */
-function packageDirs(root) {
+/**
+ * Collects every installed package directory: top level, `@scope/*`, and any
+ * nested `node_modules` a version conflict produced. The nested case is not
+ * hypothetical here — this tree carries 24 such packages, and a top-level-only
+ * walk skipped them while still clearing the floor, so the floor would have
+ * papered over the gap rather than exposing it.
+ */
+function packageDirs(root, seen = new Set()) {
+  // bun leaves a `node_modules/node_modules` symlink pointing at its own
+  // parent, so a naive recursion walks it forever. Skip the name outright and
+  // keep a realpath set, because a package may also be symlinked into more
+  // than one place.
+  const key = realpathSync(root);
+  if (seen.has(key)) return [];
+  seen.add(key);
+
   const dirs = [];
   for (const entry of readdirSync(root)) {
-    if (entry === '.bin' || entry === '.cache') continue;
+    if (entry === '.bin' || entry === '.cache' || entry === 'node_modules') continue;
     const full = join(root, entry);
     if (!statSync(full).isDirectory()) continue;
-    if (entry.startsWith('@')) {
-      for (const scoped of readdirSync(full)) dirs.push(join(full, scoped));
-    } else {
-      dirs.push(full);
+    // A scoped directory is not itself a package; its children are. Either way
+    // each package can carry its own nested tree, so recurse from every one of
+    // them — `@testing-library/dom/node_modules` holds two packages that a
+    // top-level-only pass never sees.
+    const packages = entry.startsWith('@') ? readdirSync(full).map((scoped) => join(full, scoped)) : [full];
+    for (const pkg of packages) {
+      if (!statSync(pkg).isDirectory()) continue;
+      dirs.push(pkg);
+      const nested = join(pkg, 'node_modules');
+      if (existsSync(nested)) dirs.push(...packageDirs(nested, seen));
     }
   }
   return dirs;
@@ -126,7 +159,7 @@ for (const dir of packageDirs(NODE_MODULES)) {
   scanned += 1;
   const license = licenseOf(manifest);
   if (!license) {
-    unknown.push(manifest.name);
+    if (!(manifest.name in UNLICENSED_ALLOWLIST)) unknown.push(manifest.name);
   } else if (isBlocked(license)) {
     blocked.push(`${manifest.name}@${manifest.version ?? '?'}: ${license}`);
   }
@@ -150,7 +183,15 @@ if (blocked.length > 0) {
 }
 
 if (unknown.length > 0) {
-  console.warn(`check-dependency-licenses: ${unknown.length} package(s) declare no license: ${unknown.join(', ')}`);
+  console.error(`check-dependency-licenses: ${unknown.length} package(s) declare no license:`);
+  for (const name of unknown) console.error(`  - ${name}`);
+  console.error(
+    '\nA package with no license metadata is "all rights reserved" by default, which is the' +
+      '\nsame undocumented-provenance risk this repository just spent an audit removing from its' +
+      '\nart. Establish the real license (the package usually ships a LICENSE file even when the' +
+      '\nmanifest omits the field) and add it to UNLICENSED_ALLOWLIST with that evidence.',
+  );
+  process.exit(1);
 }
 
 console.log(`check-dependency-licenses: ${scanned} packages inspected, no incompatible licenses.`);
