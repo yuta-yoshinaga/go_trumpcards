@@ -357,4 +357,12 @@ func init() {
 			return usecase.RestoreGuandanInteractor(data, new(presenter.GuandanWebPresenter))
 		},
 		controller.NewGuandanWebControllerWithProvider)
+	games.RegisterKVGame("aluette", games.CategoryExtra2,
+		func() usecase.AluetteInteractorIF {
+			return usecase.NewAluetteInteractor(domain.NewDefaultAluette(), new(presenter.AluetteWebPresenter))
+		},
+		func(data []byte) (usecase.AluetteInteractorIF, error) {
+			return usecase.RestoreAluetteInteractor(data, new(presenter.AluetteWebPresenter))
+		},
+		controller.NewAluetteWebControllerWithProvider)
 }

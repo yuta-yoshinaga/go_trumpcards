@@ -646,6 +646,22 @@ export const GanjifaPhase = {
 } as const;
 
 /**
+ * Aluette game phases.
+ *
+ * There is no bidding and no discard, so play starts the moment the cards are
+ * dealt — the numbering does not line up with the tarot games it sits beside.
+ */
+export const AluettePhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Union of Aluette phase values. */
+export type AluettePhaseType = (typeof AluettePhase)[keyof typeof AluettePhase];
+
+/**
  * Minchiate phase constants (sync: internal/domain/Minchiate.go).
  *
  * **Scarto comes first, not a Bid.** The dealer buries the 13 surplus cards

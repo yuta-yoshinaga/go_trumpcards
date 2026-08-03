@@ -3864,6 +3864,21 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"koenigrufen.helpSetDifficulty"},
 			})
 	}},
+	{Name: "aluette", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewAluetteCuiController(usecase.NewAluetteInteractor(
+				domain.NewDefaultAluette(), new(presenter.AluetteCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "aluette.helpTitle",
+				CommandKeys: []string{
+					"aluette.helpPlay",
+					"aluette.helpNext",
+					"aluette.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"aluette.helpSetDifficulty"},
+			})
+	}},
 	{Name: "minchiate", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewMinchiateCuiController(usecase.NewMinchiateInteractor(

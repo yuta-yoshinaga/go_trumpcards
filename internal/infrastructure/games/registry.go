@@ -710,6 +710,10 @@ var registry = []*Game{
 	// Minchiate (ミンキアーテ) is a 16th-century Florentine 97-card tarot game for 4 in
 	// fixed 2v2 teams: 4 suits x 14 + 40 trumps + the Matto. The 40-trump ladder (zodiac,
 	// elements, virtues) is the largest in this repo; the dealer buries the 13 surplus.
+	// Aluette (アリュエット) is a Breton 48-card Spanish-suited trick-taker for 4 in
+	// fixed 2v2 teams. It has no trump suit and no follow obligation: strength is
+	// per CARD, not per rank -- six named cards (the luettes) outrank everything.
+	{Name: "aluette", Category: CategoryExtra2},
 	{Name: "minchiate", Category: CategorySolo},
 	{Name: "tarocchini", Category: CategorySolo},
 	{Name: "scarto", Category: CategoryExtra3},

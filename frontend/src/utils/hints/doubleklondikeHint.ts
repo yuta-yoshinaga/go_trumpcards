@@ -14,7 +14,7 @@ const PHASE_PLAYING = 0;
 export function getDoubleKlondikeHint(state: DoubleKlondikeResponse): HintResult | null {
   if (state.phase !== PHASE_PLAYING) return null;
   const hint = state.hint;
-  if (!hint || !hint.fromZone || !hint.toZone) return null;
+  if (!hint?.fromZone || !hint.toZone) return null;
 
   // The waste has no column, so the action names the zone alone.
   const from = hint.fromCol >= 0 ? `${hint.fromZone}-${hint.fromCol}` : hint.fromZone;

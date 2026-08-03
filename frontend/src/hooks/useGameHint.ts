@@ -4,6 +4,7 @@ import type {
   AcesUpResponse,
   AgnesResponse,
   AllFoursResponse,
+  AluetteResponse,
   AmericanToadResponse,
   AnacondaResponse,
   BaccaratResponse,
@@ -258,6 +259,7 @@ import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getAcesUpHint } from '../utils/hints/acesupHint';
 import { getAgnesHint } from '../utils/hints/agnesHint';
 import { getAllFoursHint } from '../utils/hints/allfoursHint';
+import { getAluetteHint } from '../utils/hints/aluetteHint';
 import { getAmericanToadHint } from '../utils/hints/americantoadHint';
 import { getAnacondaHint } from '../utils/hints/anacondaHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
@@ -751,6 +753,7 @@ export const hintFactories = {
   fortyfives: (s) => getFortyFivesHint(s as FortyFivesResponse),
   nap: (s) => getNapHint(s as NapResponse),
   ganjifa: (s) => getGanjifaHint(s as GanjifaResponse),
+  aluette: (s) => getAluetteHint(s as AluetteResponse),
   minchiate: (s) => getMinchiateHint(s as MinchiateResponse),
   tarocchini: (s) => getTarocchiniHint(s as TarocchiniResponse),
   preference: (s) => getPreferenceHint(s as PreferenceResponse),
