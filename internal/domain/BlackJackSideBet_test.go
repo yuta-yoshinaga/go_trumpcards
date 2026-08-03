@@ -15,7 +15,7 @@ func TestBJSideBetResult_BetTypeName(t *testing.T) {
 		expected string
 	}{
 		{"PerfectPairs", BJSideBetPerfectPairs, "Perfect Pairs"},
-		{"21Plus3", BJSideBet21Plus3, "21+3"},
+		{"21Plus3", BJSideBet21Plus3, "Poker Hand Bonus"},
 		{"Unknown", 99, "Unknown"},
 	}
 	for _, tt := range tests {

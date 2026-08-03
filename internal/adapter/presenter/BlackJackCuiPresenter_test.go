@@ -836,10 +836,10 @@ func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
 		output := bjp.Output(bj, nil)
 		results := bj.GetSideBetResults()
 		if len(results) > 0 && results[0].Payout > 0 {
-			assert.Contains(t, output, "サイドベット [21+3]:")
+			assert.Contains(t, output, "サイドベット [Poker Hand Bonus]:")
 			assert.Contains(t, output, "WIN")
 		} else if len(results) > 0 {
-			assert.Contains(t, output, "サイドベット [21+3]:")
+			assert.Contains(t, output, "サイドベット [Poker Hand Bonus]:")
 			assert.Contains(t, output, "LOSE")
 		}
 	})

@@ -1197,17 +1197,17 @@ describe('BlackJackPage', () => {
 
   // --- Side bet tests ---
 
-  it('shows PP and 21+3 inputs in bet phase', async () => {
+  it('shows PP and poker-hand side bet inputs in bet phase', async () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByLabelText('PP (ペアベット):')).toBeInTheDocument());
-    expect(screen.getByLabelText('21+3:')).toBeInTheDocument();
+    expect(screen.getByLabelText('ポーカー役ベット:')).toBeInTheDocument();
   });
 
   it('sends side bets when PP and T3 are set', async () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     fireEvent.change(screen.getByLabelText('PP (ペアベット):'), { target: { value: '10' } });
-    fireEvent.change(screen.getByLabelText('21+3:'), { target: { value: '20' } });
+    fireEvent.change(screen.getByLabelText('ポーカー役ベット:'), { target: { value: '20' } });
     mockExec.mockClear();
     mockExec.mockResolvedValue(actionPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
@@ -1245,7 +1245,7 @@ describe('BlackJackPage', () => {
     };
     mockExec.mockResolvedValue(stateWithSideBets);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/21\+3:.*LOSE -20/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/ポーカー役ボーナス:.*LOSE -20/)).toBeInTheDocument());
   });
 
   it('does not show side bet results when sideBetResults is empty', async () => {
@@ -1253,7 +1253,7 @@ describe('BlackJackPage', () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
     expect(screen.queryByText(/Perfect Pairs:/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/21\+3:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/ポーカー役ボーナス:/)).not.toBeInTheDocument();
   });
 
   // --- Multi-hand tests ---
