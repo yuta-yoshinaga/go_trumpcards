@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"time"
 )
 
 // TonkPlayerCnt Tonkプレイヤー数
@@ -75,7 +74,7 @@ func NewTonk(trumpCards *TrumpCards, players []*TonkPlayer, config TonkConfig) *
 		winnerIdx:   -1,
 		roundNumber: 0,
 		knockerIdx:  -1,
-		rng:         rand.New(rand.NewSource(time.Now().UnixNano())),
+		rng:         rand.New(rand.NewSource(rand.Int63())),
 	}
 }
 
