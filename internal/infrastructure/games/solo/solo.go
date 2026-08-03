@@ -14,6 +14,14 @@ import (
 )
 
 func init() {
+	games.RegisterKVGame("minchiate", games.CategorySolo,
+		func() usecase.MinchiateInteractorIF {
+			return usecase.NewMinchiateInteractor(domain.NewDefaultMinchiate(), new(presenter.MinchiateWebPresenter))
+		},
+		func(data []byte) (usecase.MinchiateInteractorIF, error) {
+			return usecase.RestoreMinchiateInteractor(data, new(presenter.MinchiateWebPresenter))
+		},
+		controller.NewMinchiateWebControllerWithProvider)
 	games.RegisterKVGame("tarocchini", games.CategorySolo,
 		func() usecase.TarocchiniInteractorIF {
 			return usecase.NewTarocchiniInteractor(domain.NewDefaultTarocchini(), new(presenter.TarocchiniWebPresenter))

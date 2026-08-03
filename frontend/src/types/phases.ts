@@ -646,6 +646,20 @@ export const GanjifaPhase = {
 } as const;
 
 /**
+ * Minchiate phase constants (sync: internal/domain/Minchiate.go).
+ *
+ * **Scarto comes first, not a Bid.** The dealer buries the 13 surplus cards
+ * before any trick is played; there is no bidding phase in this game.
+ */
+export const MinchiatePhase = {
+  SCARTO: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
  * Tarocchini phase constants (sync: internal/domain/Tarocchini.go).
  *
  * **Scarto comes first, not a Bid.** The dealer buries the 2 surplus cards

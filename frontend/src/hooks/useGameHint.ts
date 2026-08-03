@@ -131,6 +131,7 @@ import type {
   MemoryResponse,
   MichiganResponse,
   MightyResponse,
+  MinchiateResponse,
   MississippiStudResponse,
   MissMilliganResponse,
   MonteCarloResponse,
@@ -388,6 +389,7 @@ import { getMariasHint } from '../utils/hints/mariasHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getMichiganHint } from '../utils/hints/michiganHint';
 import { getMightyHint } from '../utils/hints/mightyHint';
+import { getMinchiateHint } from '../utils/hints/minchiateHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMissMilliganHint } from '../utils/hints/missmilliganHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
@@ -749,6 +751,7 @@ export const hintFactories = {
   fortyfives: (s) => getFortyFivesHint(s as FortyFivesResponse),
   nap: (s) => getNapHint(s as NapResponse),
   ganjifa: (s) => getGanjifaHint(s as GanjifaResponse),
+  minchiate: (s) => getMinchiateHint(s as MinchiateResponse),
   tarocchini: (s) => getTarocchiniHint(s as TarocchiniResponse),
   preference: (s) => getPreferenceHint(s as PreferenceResponse),
   vira: (s) => getViraHint(s as ViraResponse),

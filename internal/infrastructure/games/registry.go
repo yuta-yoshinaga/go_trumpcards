@@ -707,6 +707,10 @@ var registry = []*Game{
 	// Tarocchini (タロッキーニ / Ottocento) is a Bolognese 62-card tarot game for 4 in
 	// fixed 2v2 teams. The four papi rank equal and the LATER-played one wins the trick,
 	// which no other game here does; the dealer buries 2 surplus cards (scarto).
+	// Minchiate (ミンキアーテ) is a 16th-century Florentine 97-card tarot game for 4 in
+	// fixed 2v2 teams: 4 suits x 14 + 40 trumps + the Matto. The 40-trump ladder (zodiac,
+	// elements, virtues) is the largest in this repo; the dealer buries the 13 surplus.
+	{Name: "minchiate", Category: CategorySolo},
 	{Name: "tarocchini", Category: CategorySolo},
 	{Name: "scarto", Category: CategoryExtra3},
 	// Cego is a German (Baden) tarock trick-taker on the 54-card tarock deck with the
