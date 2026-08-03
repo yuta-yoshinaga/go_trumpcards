@@ -1033,6 +1033,11 @@ func (g *Vira) UnmarshalJSON(data []byte) error {
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerPlayer = j.WinnerPlayer
 	g.actionLog = j.ActionLog
+	// **復元したら必ず乱数源を張り直す。**Cloudflare Worker は毎リクエスト KV から
+	// 組み直すので SetRand は一度も呼ばれない。rng を nil のままにすると、
+	// シャッフル以外で rng を使う経路 (CPU の乱択など) が nil デリファレンスで
+	// 落ちる。呼び出し側ごとにガードするのではなく、ここで構造的に潰す。
+	g.rng = rand.New(rand.NewSource(rand.Int63()))
 	return nil
 }
 
