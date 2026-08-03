@@ -31,7 +31,7 @@ export interface CardFaceProps {
   onDrop?: (e: React.DragEvent) => void;
 }
 
-/** Card aspect ratio (2:3), matching the 200x300 PNG assets. */
+/** Card aspect ratio (2:3), matching the 250x375 PNG assets. */
 const CARD_ASPECT = 1.5;
 
 /** Suppresses iOS Safari long-press callout and text selection. */
