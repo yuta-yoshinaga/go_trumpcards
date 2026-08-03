@@ -38,15 +38,22 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = no trump). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
-/** Contract i18n key suffixes indexed by contract value (0=Pass…4=Eight). */
-const CONTRACT_KEYS = ['pass', 'six', 'misere', 'seven', 'eight'] as const;
+/**
+ * Contract i18n key suffixes indexed by contract value
+ * (0=Pass 1=Gask 2=Solo 3=Misère 4=Vira).
+ *
+ * **Order matters and it is not Préférence's.** Misère sits third here, not
+ * second, so a table copied from that game renders Solo as "Misère" and
+ * silently changes the contract the player thinks they are watching.
+ */
+const CONTRACT_KEYS = ['pass', 'gask', 'solo', 'misere', 'vira'] as const;
 
 /**
  * Target trick count for each contract, indexed by contract value
- * (0=Pass 1=Six 2=Misère 3=Seven 4=Eight). Mirrors the Go domain
- * `viraBidTarget`; Misère targets 0 tricks won.
+ * (0=Pass 1=Gask 2=Solo 3=Misère 4=Vira). Mirrors the Go domain
+ * `ViraBidTarget`; Misère targets 0 tricks won.
  */
-const CONTRACT_TARGET_TRICKS = [0, 6, 0, 7, 8] as const;
+const CONTRACT_TARGET_TRICKS = [0, 7, 8, 0, 10] as const;
 
 /** Whether the declarer has made their contract, failed it, or is still in progress. */
 type ContractStatus = 'made' | 'failed' | 'progress';
@@ -279,7 +286,7 @@ function ViraPageContent() {
               <span>{t('target', { points: state.config.targetRounds })}</span>
             </div>
 
-            <div className="text-ds-text-muted text-center mb-2 text-sm">
+            <div className="text-ds-text-muted text-center mb-2 text-sm" data-testid="vira-declarer-line">
               {state.declarerIdx >= 0
                 ? t('declarerLine', {
                     name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),

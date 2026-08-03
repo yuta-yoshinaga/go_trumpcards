@@ -46,10 +46,10 @@
   },
   "contractName": {
     "pass": "Pass",
-    "six": "Six (6 tricks)",
+    "gask": "Gask (7 tricks)",
+    "solo": "Solo (8 tricks)",
     "misere": "Misère (0 tricks, no trump)",
-    "seven": "Seven (7 tricks)",
-    "eight": "Eight (8 tricks)"
+    "vira": "Vira (10 tricks)"
   },
   "roundResult": {
     "title": "Round Result",

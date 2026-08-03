@@ -39,27 +39,56 @@ func TestVira_ResetTakesAnteFromEveryone(t *testing.T) {
 	}
 }
 
+// **同値も下位も通らない。**通すと席順だけで宣言者が決まり、階梯が意味を失う。
+//
+// 以前ここにあった 2 本は、名前もコメントも「上回らない入札を弾く」と言いながら
+// 実際には下位入札を一度も試していなかった —— 別インスタンスで上位入札が通る
+// ことを確かめていただけで、`applyBid` の拒否分岐は踏んでいない。
 func TestVira_BidMustOutrankTheStanding(t *testing.T) {
-	g := newTestVira(t)
-	g.SetCurrentPlayerIdx(0)
-	require.NoError(t, g.PlayerBid(ViraBidSolo))
+	cases := map[string]struct {
+		standing, attempt ViraBid
+		wantErr           bool
+	}{
+		"lower is refused":       {ViraBidSolo, ViraBidGask, true},
+		"equal is refused":       {ViraBidSolo, ViraBidSolo, true},
+		"higher is accepted":     {ViraBidSolo, ViraBidMisere, false},
+		"pass is always allowed": {ViraBidVira, ViraBidPass, false},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			g := newTestVira(t)
+			g.SetCurrentPlayerIdx(0)
+			require.NoError(t, g.PlayerBid(tc.standing))
 
-	// 同値も下位も通らない。通すと席順だけで宣言者が決まる。
-	g.SetCurrentPlayerIdx(0)
-	g2 := newTestVira(t)
-	g2.SetCurrentPlayerIdx(0)
-	require.NoError(t, g2.PlayerBid(ViraBidVira))
+			// 席 1 に手番を渡してから試す。同じ席では「入札済み」で弾かれ、
+			// 階梯ではなく重複が理由になってしまう。
+			g.SetCurrentPlayerIdx(1)
+			err := g.applyBid(1, tc.attempt)
+			if tc.wantErr {
+				require.Error(t, err, "%v must not stand against %v", tc.attempt, tc.standing)
+				assert.Equal(t, ViraBidPass, g.GetBids()[1], "a refused bid must not be recorded")
+				assert.False(t, g.GetBidDone()[1], "a refused bid must not close the seat")
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.attempt, g.GetBids()[1])
+			assert.True(t, g.GetBidDone()[1])
+		})
+	}
 }
 
-func TestVira_BidLadderRejectsEqualOrLower(t *testing.T) {
-	g := NewDefaultVira()
-	g.SetRand(rand.New(rand.NewSource(7)))
-	g.Reset()
-
-	// 席 0 が Solo。席 1 が Gask (下位) と Solo (同値) を出しても通らない。
-	g.SetCurrentPlayerIdx(0)
-	require.NoError(t, g.PlayerBid(ViraBidSolo))
-	assert.Equal(t, ViraBidSolo, g.GetBids()[0])
+func TestVira_BidGuards(t *testing.T) {
+	t.Run("out of range", func(t *testing.T) {
+		g := newTestVira(t)
+		assert.Error(t, g.applyBid(0, ViraBidPass-1))
+		assert.Error(t, g.applyBid(0, ViraBidVira+1))
+	})
+	t.Run("a seat cannot bid twice", func(t *testing.T) {
+		g := newTestVira(t)
+		g.SetCurrentPlayerIdx(0)
+		require.NoError(t, g.PlayerBid(ViraBidGask))
+		assert.Error(t, g.applyBid(0, ViraBidVira), "the seat has already bid")
+	})
 }
 
 func TestVira_AllPassCarriesThePotForward(t *testing.T) {

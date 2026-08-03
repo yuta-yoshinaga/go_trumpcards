@@ -116,10 +116,13 @@ describe('ViraPage', () => {
   });
 
   it('names the current highest bid once someone has bid', async () => {
+    // **2 は Solo。**Préférence では 2 が Misère だったので、写した表だと
+    // ここが「ミゼール」に見えてしまう。梯子の位置ごと違う。
     mockExec.mockResolvedValue(makeViraState({ bids: [2, 0, 0] }));
     renderWithProviders(<ViraPage />);
     const banner = await screen.findByTestId('vira-highest-bid');
-    expect(banner).toHaveTextContent('ミゼール');
+    expect(banner).toHaveTextContent('ソロ');
+    expect(banner).not.toHaveTextContent('ミゼール');
   });
 
   it('explains via tooltip and aria-label why a too-low bid is disabled', async () => {
@@ -204,32 +207,32 @@ describe('ViraPage', () => {
     });
 
   it('shows in-progress contract progress with the target', async () => {
-    // Six (needs 6), 4 won with 3 tricks left → reachable, still in progress.
+    // Gask (needs 7), 4 won with 3 tricks left → reachable, still in progress.
     mockExec.mockResolvedValue(declarerProgressState(1, 4, 3));
     renderWithProviders(<ViraPage />);
     const readout = await screen.findByTestId('vira-contract-progress');
-    expect(readout).toHaveTextContent('4 / 6');
+    expect(readout).toHaveTextContent('4 / 7');
     expect(readout).toHaveClass('text-ds-warning');
     expect(readout).not.toHaveTextContent('達成');
     expect(readout).not.toHaveTextContent('失敗確定');
   });
 
   it('shows the contract as made once the target is reached', async () => {
-    // Six (needs 6), 6 won with 0 left → made.
-    mockExec.mockResolvedValue(declarerProgressState(1, 6, 0));
+    // Gask (needs 7), 7 won with 0 left → made.
+    mockExec.mockResolvedValue(declarerProgressState(1, 7, 0));
     renderWithProviders(<ViraPage />);
     const readout = await screen.findByTestId('vira-contract-progress');
-    expect(readout).toHaveTextContent('6 / 6');
+    expect(readout).toHaveTextContent('7 / 7');
     expect(readout).toHaveTextContent('達成');
     expect(readout).toHaveClass('text-ds-success');
   });
 
   it('shows failure once the target becomes unreachable', async () => {
-    // Eight (needs 8), 2 won with 3 left → 2+3 < 8, failure certain.
+    // Vira (needs 10), 2 won with 3 left → 2+3 < 10, failure certain.
     mockExec.mockResolvedValue(declarerProgressState(4, 2, 3));
     renderWithProviders(<ViraPage />);
     const readout = await screen.findByTestId('vira-contract-progress');
-    expect(readout).toHaveTextContent('2 / 8');
+    expect(readout).toHaveTextContent('2 / 10');
     expect(readout).toHaveTextContent('失敗確定');
     expect(readout).toHaveClass('text-ds-error');
   });
@@ -320,5 +323,32 @@ describe('ViraPage', () => {
     fireEvent.click(play);
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  // **契約表は Préférence から写せない。**Vira の梯子は Gask(7) < Solo(8) <
+  // Misère(0) < Vira(10) で、Misère の位置も目標数も違う。写した表でも
+  // 「進捗が出る」テストは通ってしまうので、契約ごとの名前と目標を直に見る。
+  it.each([
+    { contract: 1, name: 'ガスク', target: '7' },
+    { contract: 2, name: 'ソロ', target: '8' },
+    { contract: 4, name: 'ヴィーラ', target: '10' },
+  ])('names contract $contract and targets $target tricks', async ({ contract, name, target }) => {
+    mockExec.mockResolvedValue(declarerProgressState(contract, 1, 9));
+    renderWithProviders(<ViraPage />);
+    const readout = await screen.findByTestId('vira-contract-progress');
+    expect(readout).toHaveTextContent(`1 / ${target}`);
+    // ページ見出しも「ヴィーラ」なので、宣言者行に絞って見る。
+    expect(await screen.findByTestId('vira-declarer-line')).toHaveTextContent(name);
+  });
+
+  it('never shows a Préférence contract name', async () => {
+    mockExec.mockResolvedValue(declarerProgressState(2, 1, 9));
+    renderWithProviders(<ViraPage />);
+    await screen.findByTestId('vira-contract-progress');
+    const line = screen.getByTestId('vira-declarer-line');
+    for (const wrong of ['シックス', 'セブン', 'エイト']) {
+      expect(line).not.toHaveTextContent(wrong);
+    }
+    expect(line).toHaveTextContent('ソロ');
   });
 });
