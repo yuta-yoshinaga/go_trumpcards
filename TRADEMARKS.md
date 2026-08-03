@@ -75,6 +75,42 @@ Every other game in the registry is a traditional or folk game whose name is
 generic or historic (Blackjack, Hearts, Skat, Doppelkopf, Koi-Koi, Cego,
 French Tarot, …) and carries no such constraint.
 
+## Terms that must not appear in the UI
+
+The list below is **enforced**, not advisory:
+`frontend/scripts/check-trademark-terms.mjs` parses this section and fails
+`bun run check` if any of these strings reaches a user-visible surface —
+translation values, a Go display string, or a game manual. Internal identifiers
+are deliberately out of scope, so `t3` and `twentyOnePlus3Bet` stay legal.
+
+Add a line here when a term is retired; that is the only place the guard reads.
+
+<!-- forbidden-terms:start -->
+- `21+3` — Galaxy Gaming, registered in Japan (登録6752649 / 6785367). Use the
+  descriptive label instead: ポーカー役ベット / Poker Hand Bet.
+<!-- forbidden-terms:end -->
+
+Everything in the inventory above is *permitted* to appear: those names are used
+descriptively to identify which game an implementation reproduces, and none of
+them is registered in Japan (checked 2026-08-03 — see the re-check procedure
+below). A term moves from that inventory into this list only when we decide to
+stop displaying it.
+
+## Re-checking registrations
+
+Registrations change, and a mark can already be registered years before we add
+the feature that uses it — `21+3` was registered on 2023-11-09 and the side bet
+was implemented on 2026-03-04, so a screening step at add time, not a periodic
+sweep, was the control that was missing.
+
+`scripts/jpo-trademark-search.mjs` re-runs the Japanese search. Run it roughly
+annually, and whenever adding a game or feature named after a commercial product.
+
+**Search the rights holder, not only the mark.** Every mark-name query for the
+casino table games returned nothing; `21+3` was found only by listing Galaxy
+Gaming's own Japanese portfolio. Searching for what you already suspect will not
+find what you do not.
+
 ## Policy for new games
 
 When adding a game, before choosing its display name:

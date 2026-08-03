@@ -32,6 +32,28 @@ Non-52-card decks (tarot, hanafuda, kabu, Wizard, Rook, …) have **no art
 here** — they are drawn procedurally from a self-describing card descriptor by
 `CardFace.tsx`. See [ADR-0033](../../docs/adr/0033-procedural-non52-card-rendering.md).
 
+## Manifest (enforced)
+
+`frontend/scripts/check-asset-provenance.mjs` parses the block below and fails
+`bun run check` if this directory holds a file the manifest does not cover, or
+if the manifest names a file that is gone. That is the check the original card
+set never had to pass: it arrived in the initial commit with no recorded source
+and stayed that way for six years.
+
+Ranges expand numerically, so `c01..c13.png` covers thirteen files.
+
+<!-- asset-manifest:start
+c01..c13.png | Dmitry Fomin — English pattern playing cards | CC0
+d01..d13.png | Dmitry Fomin — English pattern playing cards | CC0
+h01..h13.png | Dmitry Fomin — English pattern playing cards | CC0
+s01..s13.png | Dmitry Fomin — English pattern playing cards | CC0
+x01..x02.png | Byron Knoll — jokers | Public domain
+z01..z01.png | Dmitry Fomin — Atlas deck card back | CC0
+favicon.ico | project-authored, unconfirmed | see "App icons" below
+icon-sm.png | project-authored, unconfirmed | see "App icons" below
+README.md | this file | —
+-->
+
 ## Provenance
 
 ### Faces (52 files) — CC0

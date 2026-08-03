@@ -2,6 +2,16 @@
 
 When adding a new game, follow this checklist to avoid post-feat fix commits. Complete ALL items before creating the PR.
 
+## Before you pick the name
+
+0. **Screen the display name, and every feature name inside it** (side bets, bonus
+   names, bet names). Traditional and folk games are free; a name invented and
+   sold by an identifiable company is not. `scripts/jpo-trademark-search.mjs`
+   runs the Japanese check — **search the rights holder as well as the mark**,
+   since `21+3` was found only from its owner's portfolio and never from the
+   term itself. Record the outcome in [`TRADEMARKS.md`](../TRADEMARKS.md), which
+   `bun run check` enforces. See that file for the full policy.
+
 ## Backend (Go)
 
 1. **Domain**: Create `internal/domain/<Game>.go`, `<Game>Player.go`, `<Game>Config.go` (if configurable)
