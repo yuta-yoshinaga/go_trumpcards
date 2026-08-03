@@ -111,6 +111,29 @@ casino table games returned nothing; `21+3` was found only by listing Galaxy
 Gaming's own Japanese portfolio. Searching for what you already suspect will not
 find what you do not.
 
+### Reading the results: most hits are not problems
+
+A sweep of the game titles returns a lot of Japanese registrations, and nearly
+all of them are irrelevant. Two filters do the work:
+
+**Class.** Only classes 9, 28 and 41 (software / games / entertainment services)
+can reach what this project does. The sole `LET IT RIDE` registration in Japan
+is class 25 apparel and the sole `ティチュー` one is class 01/03 chemicals —
+neither has anything to do with a card game.
+
+**普通名称 (generic name).** Article 26(1)(ii) of the Japanese Trademark Act
+puts the ordinary display of a product's common name outside the reach of a
+trademark right, and the courts apply it (e.g. the ジルコニアバー decision).
+`ブラックジャック` and `大富豪` are registered by several companies in class
+9/28 — but those words *are* the common names of the games themselves, and this
+project uses them plainly as the name of the game it implements. A registration
+covering a generic game name is narrow for exactly the reason it was
+registrable at all.
+
+So a hit is worth acting on when the display name is **not** the game's own
+common name — a coined title, a publisher's product name, or a feature name
+like `21+3`. Otherwise record it and move on.
+
 ## Policy for new games
 
 When adding a game, before choosing its display name:
@@ -123,6 +146,13 @@ When adding a game, before choosing its display name:
 3. Never reproduce the publisher's rulebook wording, logo, card art, or trade
    dress — implement the rules from a neutral description and write the manual in
    your own words.
+4. If the game is a **currently published product** rather than a traditional
+   one, credit its designer and publisher at the top of both manuals, as
+   `docs/manual/*/{tichu,wizard,rook}.md` do. Crediting the original is the
+   norm among free implementations, and it directly contradicts the belief that
+   actually gets litigated — that the implementation is licensed by the
+   publisher. Verify the designer, publisher and year against a source before
+   writing them down; a wrong credit is worse than none.
 
 ## Contact
 
