@@ -100,6 +100,7 @@ export const workerUrl: Record<string, string> = {
   karnoffel: WORKER_CLASSIC,
   literature: WORKER_SOLO,
   guandan: WORKER_EXTRA2,
+  aluette: WORKER_EXTRA2,
   shengji: WORKER_CLASSIC,
   sjavs: WORKER_EXTRA2,
   skitgubbe: WORKER_EXTRA3,

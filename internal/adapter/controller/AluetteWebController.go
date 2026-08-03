@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra2
 
 package controller
 
@@ -54,13 +54,24 @@ type AluetteWebOutput struct {
 	LastTrickWinner  int                          `json:"lastTrickWinner"`
 	PlayableIndices  []int                        `json:"playableIndices"`
 	// Luettes 名前つき最強札 6 枚を**強い順**で返す。ドメインの序列表そのもの。
-	Luettes     []domain.AluetteLuetteInfo `json:"luettes"`
-	GameEndFlag bool                       `json:"gameEndFlag"`
-	WinnerTeam  int                        `json:"winnerTeam"`
-	IsHumanTurn bool                       `json:"isHumanTurn"`
-	Hint        *WebOutputCardHint         `json:"hint,omitempty"`
+	Luettes     []AluetteWebOutputLuette `json:"luettes"`
+	GameEndFlag bool                     `json:"gameEndFlag"`
+	WinnerTeam  int                      `json:"winnerTeam"`
+	IsHumanTurn bool                     `json:"isHumanTurn"`
+	Hint        *WebOutputCardHint       `json:"hint,omitempty"`
 	WebOutputBase
 	Config AluetteWebOutputConfig `json:"config"`
+}
+
+// AluetteWebOutputLuette は名前つき最強札 1 枚の送出形。
+//
+// **スートは札と同じ表記で送る。**盤面の札は design を "DIAMOND" のような
+// 文字列で受け取るので、序列表だけ数値で送ると画面側が両者を突き合わせる
+// ためだけの対応表を持つことになる。
+type AluetteWebOutputLuette struct {
+	Design string `json:"design"`
+	Value  int    `json:"value"`
+	Name   string `json:"name"`
 }
 
 // AluetteWebOutputConfig アリュエットの設定アウトプット
@@ -97,7 +108,9 @@ func newAluetteDefaultOutput(msg string) *AluetteWebOutput {
 		Players:         make([]*AluetteWebOutputPlayer, 0),
 		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
-		Luettes:         domain.AluetteLuetteTable(),
+		// **エラー封筒には盤面が無い。**プレゼンターを通らない経路なので序列表も
+		// 空で送り、null で画面側の find を落とさないことだけ担保する。
+		Luettes:         make([]AluetteWebOutputLuette, 0),
 		LastTrickWinner: -1,
 		WinnerTeam:      -1,
 		WebOutputBase:   WebOutputBase{Message: msg},

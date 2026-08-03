@@ -13,6 +13,7 @@ export * from './games/accordion';
 export * from './games/acesup';
 export * from './games/agnes';
 export * from './games/allfours';
+export * from './games/aluette';
 export * from './games/americantoad';
 export * from './games/anaconda';
 export * from './games/baccarat';
@@ -531,6 +532,7 @@ export const games = [
   'michigan',
   'pan',
   'oichokabu',
+  'aluette',
   'minchiate',
   'tarocchini',
   'scarto',

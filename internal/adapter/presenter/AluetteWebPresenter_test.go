@@ -89,16 +89,26 @@ func TestAluetteWebPresenter_Output(t *testing.T) {
 	// **序列表をレスポンスに載せる。**どの 6 枚がリュエットかを知らずにこの
 	// ゲームは遊べないのに、表をフロントに複製すればいずれドメインとずれる。
 	t.Run("every response carries the luette table in strength order", func(t *testing.T) {
-		m, _ := setupAluetteWebMockWithPlayers()
+		m, players := setupAluetteWebMockWithPlayers()
+		players[0].AddCard(domain.NewCard(4, 3, false)) // Monsieur — 表と同じ札を手札に置く
 		var res controller.AluetteWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &res))
-		assert.Equal(t, domain.AluetteLuetteTable(), res.Luettes)
-		assert.Len(t, res.Luettes, 6)
+		table := domain.AluetteLuetteTable()
+		assert.Len(t, res.Luettes, len(table))
 		assert.Equal(t, "Monsieur", res.Luettes[0].Name)
 
+		// Monsieur は手札に置いた金貨の 3。札側の表記とそのまま突き合う。
+		assert.Equal(t, res.Players[0].Cards[0].Design, res.Luettes[0].Design)
+
 		prev := 1 << 30
-		for _, l := range res.Luettes {
-			r := domain.AluetteRank(domain.NewCard(l.Design, l.Value, true))
+		for i, l := range res.Luettes {
+			assert.Equal(t, table[i].Name, l.Name, "序列がドメインの表とずれている")
+			assert.Equal(t, table[i].Value, l.Value)
+			// **スートは盤面の札と同じ表記。**数値で送ると画面側が対応表を持つ。
+			// リュエットは聖杯(HEART)と金貨(DIAMOND)の 2 スートにしか無い。
+			assert.Contains(t, []string{"HEART", "DIAMOND"}, l.Design,
+				"%s のスートが札と同じ表記で届いていない", l.Name)
+			r := domain.AluetteRank(domain.NewCard(table[i].Design, l.Value, true))
 			assert.Less(t, r, prev, "%s がテーブル順どおりに弱くなっていない", l.Name)
 			prev = r
 		}

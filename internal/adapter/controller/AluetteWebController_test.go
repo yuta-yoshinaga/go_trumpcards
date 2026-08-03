@@ -19,7 +19,7 @@ func mustAluetteOutputJSON(msg string) string {
 		Players:         []*controller.AluetteWebOutputPlayer{},
 		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
-		Luettes:         domain.AluetteLuetteTable(),
+		Luettes:         []controller.AluetteWebOutputLuette{},
 		LastTrickWinner: -1,
 		WinnerTeam:      -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},

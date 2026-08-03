@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra2
 
 package presenter
 
@@ -48,7 +48,7 @@ func (p *AluetteWebPresenter) buildBase(g interfaces.AluetteGame) *controller.Al
 	resObj.WinnerTeam = g.GetWinnerTeam()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.PlayableIndices = p.playableIndices(g)
-	resObj.Luettes = domain.AluetteLuetteTable()
+	resObj.Luettes = aluetteLuetteOutput()
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.AluetteWebOutputConfig{
@@ -59,6 +59,20 @@ func (p *AluetteWebPresenter) buildBase(g interfaces.AluetteGame) *controller.Al
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
+}
+
+// aluetteLuetteOutput はドメインの序列表を送出形へ写す。
+func aluetteLuetteOutput() []controller.AluetteWebOutputLuette {
+	table := domain.AluetteLuetteTable()
+	out := make([]controller.AluetteWebOutputLuette, 0, len(table))
+	for _, l := range table {
+		out = append(out, controller.AluetteWebOutputLuette{
+			Design: cardDesignToString(l.Design),
+			Value:  l.Value,
+			Name:   l.Name,
+		})
+	}
+	return out
 }
 
 // playableIndices 人間プレイヤーがプレイできるカードのインデックスを返す

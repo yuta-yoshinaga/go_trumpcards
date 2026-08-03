@@ -1225,6 +1225,11 @@ func init() {
 			return usecase.NewKoenigrufenInteractor(domain.NewDefaultKoenigrufen(), new(presenter.KoenigrufenWebPresenter))
 		},
 		controller.NewKoenigrufenWebController)
+	BindWebControllerFor("aluette",
+		func() usecase.AluetteInteractorIF {
+			return usecase.NewAluetteInteractor(domain.NewDefaultAluette(), new(presenter.AluetteWebPresenter))
+		},
+		controller.NewAluetteWebController)
 	BindWebControllerFor("minchiate",
 		func() usecase.MinchiateInteractorIF {
 			return usecase.NewMinchiateInteractor(domain.NewDefaultMinchiate(), new(presenter.MinchiateWebPresenter))

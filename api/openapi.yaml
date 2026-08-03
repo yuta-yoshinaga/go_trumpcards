@@ -23101,6 +23101,77 @@ paths:
                 properties:
                   message:
                     type: string
+  /aluette/exec:
+    post:
+      tags:
+        - aluette
+      summary: Execute an Aluette (アリュエット) game command
+      description: |
+        Send a command to advance the Aluette (アリュエット) game session identified by
+        `sessionId`. Aluette is a Breton four-player trick-taker in fixed 2v2 teams on a
+        **48-card Spanish-suited pack** (4 suits x A-9, sota, caballo, rey — the 10 is absent).
+        Three rules set it apart and they depend on each other:
+        **there is no trump suit**, **there is no follow obligation** (any card in hand is
+        always legal, so `playableIndices` is the whole hand on a human turn), and
+        **strength is per CARD, not per rank** — six named cards, the *luettes*, outrank
+        the entire deck: Monsieur (3 of coins) > Madame (3 of cups) > Borgne (2 of cups) >
+        Vache (2 of coins) > Grand Neuf (9 of cups) > Petit Neuf (9 of coins). Every other
+        card ranks 3 > 2 > A > rey > caballo > sota > 9 > 8 > 7 > 6 > 5 > 4 with suit ignored.
+        Because the same value can be the best card in the deck in one suit and ordinary in
+        another, responses carry the full `luettes` table (strongest first) so a client never
+        has to keep its own copy. Equal ranks do not steal: the card played **first** wins.
+        Five tricks are played per mène; three of them take the mène.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: aluetteExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
   /minchiate/exec:
     post:
       tags:
