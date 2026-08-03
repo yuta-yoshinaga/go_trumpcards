@@ -18702,6 +18702,108 @@ paths:
               schema:
                 $ref: '#/components/schemas/PreferenceResponse'
 
+  /vira/exec:
+    post:
+      tags:
+        - vira
+      summary: Execute a Vira game command
+      description: |
+        Send a command to advance a Vira session identified by `sessionId`.
+        Vira is a 3-player (1 human + 2 CPU) Swedish auction trick-taking game on a
+        standard 52-card deck. Each player is dealt 13 cards and 13 tricks are played per
+        round; the remaining 13-card talon is unused (simplified).
+        Rank (strongest to weakest): A > K > Q > J > 10 > 9 > … > 2.
+        Bidding phase: each player bids once choosing from
+        Pass / Gask (≥7 tricks, value 2) / Solo (≥8 tricks, value 4) /
+        Misère (0 tricks, no trump, value 6) / Vira (≥10 tricks, value 8).
+        A non-pass bid must outrank the current highest (Pass < Gask < Solo < Misère < Vira).
+        The historical bid table runs to more than 30 contracts; this implementation keeps the
+        four principal ones (simplified).
+        The highest bidder becomes the Declarer and plays alone against the two Defenders.
+        If everyone passes the round is void — **the pot carries forward rather than being
+        refunded**, which is the point of the pot format.
+        Trump: for Gask, Solo and Vira the Declarer's longest suit is auto-declared as trump
+        (simplified). Misère has no trump.
+        Must-follow: players must follow the led suit if able; otherwise any card may be played.
+        Settlement is by **pot**, which is what separates Vira from Préférence: every player
+        antes 1 into the pot at the start of each round; a Declarer who makes the contract takes
+        the whole pot and collects the contract value from each Defender; one who fails adds the
+        contract value to the pot and pays each Defender the same. The pot therefore grows while
+        contracts keep failing, and the next Declarer stands to win more.
+        Match: after the configured number of rounds (default 6, a multiple of the player count
+        so each player deals equally often) the highest score wins; a tie leaves no winner.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Bidding phase; each player bids once |
+        | Play      | `1`   | Thirteen tricks played under must-follow rules |
+        | TrickEnd  | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `3`   | Round scored; advance with `nextround` |
+        | GameEnd   | `4`   | The configured number of rounds has been played |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `bid`             | —                      | Place a bid (requires `bidType` 0=Pass 1=Gask 2=Solo 3=Misère 4=Vira) |
+        | `pass`            | —                      | Pass the bid (equivalent to `bid` with bidType 0) |
+        | `play`            | —                      | Play a card by `cardIndex` (Play phase) |
+        | `next`            | `n`                    | Advance to the next trick |
+        | `nextround`       | `nr`                   | Score the round and start the next |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `log`             | `l`                    | View action log |
+      operationId: viraExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViraRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid Gask (bidType 1)
+                value:
+                  command: bid
+                  bidType: 1
+                  sessionId: my-session-001
+              pass:
+                summary: Pass the bid
+                value:
+                  command: pass
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick
+                value:
+                  command: next
+                  sessionId: my-session-001
+              nextround:
+                summary: Score the round and continue
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViraResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViraResponse'
   /spoilfive/exec:
     post:
       tags:
@@ -46078,6 +46180,48 @@ components:
           description: Client-generated session identifier (max 256 characters)
           example: my-session-001
 
+    ViraRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bid`, `pass`,
+            `play`, `next` (`n`), `nextround` (`nr`), `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, bid, pass, play, next, n, nextround, nr, setdifficulty, sd, log, l]
+          example: reset
+        bidType:
+          type: integer
+          description: Bid contract type for the `bid` command. 0=Pass, 1=Gask, 2=Solo, 3=Misere, 4=Vira.
+          minimum: 0
+          maximum: 4
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
     SpoilFiveRequest:
       type: object
       required:
@@ -47116,6 +47260,117 @@ components:
             targetScore:
               type: integer
 
+    ViraResponse:
+      type: object
+      description: Current state of the Vira game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              isDeclarer:
+                type: boolean
+                description: True if this player is the Declarer for the current round
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              score:
+                type: integer
+                description: Cumulative game points for this player
+        phase:
+          type: integer
+          description: "Game phase: 0=Bid, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        declarerIdx:
+          type: integer
+          description: Index of the Declarer player for the current round (-1 if not yet determined)
+        contract:
+          type: integer
+          description: "Game contract: 0=None/Pass, 1=Six, 2=Misere, 3=Seven, 4=Eight"
+          enum: [0, 1, 2, 3, 4]
+        trumpSuit:
+          type: integer
+          description: "Current trump suit: 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds (0 for Misere / no trump)"
+          minimum: 0
+          maximum: 4
+        bids:
+          type: array
+          items:
+            type: integer
+          description: Bid placed by each player in seat order (0=Pass, 1=Six, 2=Misere, 3=Seven, 4=Eight; -1=not yet bid)
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        playerScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative game points per player (index = player seat)
+        roundTricks:
+          type: array
+          items:
+            type: integer
+          description: Number of tricks won by each player in the current round (index = player seat)
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+          description: Index of the winning player (-1 if undecided)
+        isHumanTurn:
+          type: boolean
+        isHumanBidTurn:
+          type: boolean
+          description: True when it is the human's turn to bid
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
+              type: integer
     ThreeCardBragRequest:
       type: object
       required:
