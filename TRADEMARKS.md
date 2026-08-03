@@ -134,6 +134,39 @@ So a hit is worth acting on when the display name is **not** the game's own
 common name — a coined title, a publisher's product name, or a feature name
 like `21+3`. Otherwise record it and move on.
 
+### Sweep of 2026-08-04
+
+All 264 Japanese display titles were queried
+(`bun scripts/jpo-trademark-search.mjs --file <titles> --classes 9,28,41`;
+264 queries, 6 canary checks passed, 0 errors).
+
+- **231 titles: no registration at all** in classes 9 / 28 / 41.
+- **31 titles: hits that are the game's own common name** — ゴルフ, キング,
+  プレジデント, ペンギン, 大富豪, ブラックジャック, スパイダー, ピラミッド,
+  スピード, ハーツ, 神経衰弱, ホイスト, ナポレオン and others, held by
+  unrelated companies for unrelated products (Nintendo holds ナポレオン in class
+  9; Tezuka Productions holds ブラックジャック in class 28). Article 26(1)(ii)
+  covers the ordinary display of a game's common name, so these are recorded,
+  not acted on.
+- **2 titles: open questions**, because the word is *not* a generic card-game
+  name. Both are already listed in the inventory above for their publishers, and
+  both additionally collide with an unrelated Japanese registrant:
+
+  | Our title | Registration | Class | Holder |
+  |---|---|---|---|
+  | ウィザード | 登録5721850 | **09, 28** | ユニバーサルエンターテインメント |
+  | ウィザード | 登録5990126 (`WIZARD／ウィザード`) | 28 | リベラル |
+  | ルーク | 登録6065692 | **41** | トヨタアルバルク東京 |
+  | ルーク | 登録6245020 | 09, 14, 16, … | トヨタアルバルク東京 |
+
+  Not yet resolved. **Only the class numbers were checked, not the 指定商品**,
+  so how far each registration actually reaches is unverified — read the
+  designated goods before drawing a conclusion either way.
+
+Limits of this pass: Japanese display titles only. A mark registered in Japan in
+Latin script alone would not be found by it, and no jurisdiction outside Japan
+was searched.
+
 ## Policy for new games
 
 When adding a game, before choosing its display name:
