@@ -70,5 +70,7 @@
     "trick": "Cards played to the current trick appear here. Follow the led suit. Trumps beat plain cards, and within a suit the order is A > K > Q > J > ... > 2.",
     "hand": "This is your hand. During play, click a playable card and press Play.",
     "actions": "In the trump-declaration phase, if you are the caller declare a trump with the ♠♣♥♦ buttons. During play, pick a playable card and press Play, then advance with Next Trick / Next Round between tricks and rounds."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

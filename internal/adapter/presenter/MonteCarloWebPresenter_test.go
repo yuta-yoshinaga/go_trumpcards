@@ -33,9 +33,17 @@ func parseMonteCarloOutput(t *testing.T, s string) *controller.MonteCarloWebOutp
 	return &out
 }
 
+// setupMonteCarloOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので Hint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupMonteCarloOutputMock(g *interfaces.MockMonteCarloGame) {
+	setupMonteCarloWebMockDefaults(g)
+	g.On("Hint").Return(nil).Maybe()
+}
+
 func TestMonteCarloWebPresenter_Output_Playing(t *testing.T) {
 	g := new(interfaces.MockMonteCarloGame)
-	setupMonteCarloWebMockDefaults(g)
+	setupMonteCarloOutputMock(g)
 	p := &MonteCarloWebPresenter{}
 	out := parseMonteCarloOutput(t, p.Output(g, nil))
 
@@ -55,6 +63,7 @@ func TestMonteCarloWebPresenter_Output_PlayingStalemate(t *testing.T) {
 	g.On("IsStalemate").Return(true).Maybe()
 	var board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card
 	g.On("GetBoard").Return(board).Maybe()
+	g.On("Hint").Return(nil).Maybe()
 
 	p := &MonteCarloWebPresenter{}
 	out := parseMonteCarloOutput(t, p.Output(g, nil))
@@ -72,6 +81,7 @@ func TestMonteCarloWebPresenter_Output_GameClear(t *testing.T) {
 	g.On("IsStalemate").Return(false).Maybe()
 	var board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card
 	g.On("GetBoard").Return(board).Maybe()
+	g.On("Hint").Return(nil).Maybe()
 
 	p := &MonteCarloWebPresenter{}
 	out := parseMonteCarloOutput(t, p.Output(g, nil))
@@ -90,6 +100,7 @@ func TestMonteCarloWebPresenter_Output_GameOver(t *testing.T) {
 	g.On("IsStalemate").Return(false).Maybe()
 	var board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card
 	g.On("GetBoard").Return(board).Maybe()
+	g.On("Hint").Return(nil).Maybe()
 
 	p := &MonteCarloWebPresenter{}
 	out := parseMonteCarloOutput(t, p.Output(g, nil))
@@ -98,7 +109,7 @@ func TestMonteCarloWebPresenter_Output_GameOver(t *testing.T) {
 
 func TestMonteCarloWebPresenter_Output_Error(t *testing.T) {
 	g := new(interfaces.MockMonteCarloGame)
-	setupMonteCarloWebMockDefaults(g)
+	setupMonteCarloOutputMock(g)
 	p := &MonteCarloWebPresenter{}
 	out := parseMonteCarloOutput(t, p.Output(g, errors.New("boom")))
 	assert.Equal(t, "boom", out.Message)
@@ -115,11 +126,36 @@ func TestMonteCarloWebPresenter_Output_BoardWithCard(t *testing.T) {
 	var board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card
 	board[0][0] = domain.NewCard(domain.CardDesignSpade, 7, false)
 	g.On("GetBoard").Return(board).Maybe()
+	g.On("Hint").Return(nil).Maybe()
 
 	p := &MonteCarloWebPresenter{}
 	out := parseMonteCarloOutput(t, p.Output(g, nil))
 	assert.NotNil(t, out.Board[0][0].Card)
 	assert.Nil(t, out.Board[0][1].Card)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestMonteCarloWebPresenterOutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		mcg := new(interfaces.MockMonteCarloGame)
+		setupMonteCarloWebMockDefaults(mcg)
+		mcg.On("Hint").Return(&domain.MonteCarloHint{Action: "remove", FromR: 0, FromC: 1, ToR: 1, ToC: 2}).Maybe()
+
+		result := new(MonteCarloWebPresenter).Output(mcg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	t.Run("not while stalemate", func(t *testing.T) {
+		mcg := new(interfaces.MockMonteCarloGame)
+		setupMonteCarloWebMockDefaults(mcg)
+		mcg.ExpectedCalls = filterCalls(mcg.ExpectedCalls, "IsStalemate")
+		mcg.On("IsStalemate").Return(true)
+		mcg.On("Hint").Return(&domain.MonteCarloHint{Action: "remove", FromR: 0, FromC: 1, ToR: 1, ToC: 2}).Maybe()
+
+		result := new(MonteCarloWebPresenter).Output(mcg, nil)
+		assert.NotContains(t, result, `"hint"`)
+	})
 }
 
 func TestMonteCarloWebPresenter_HintOutput_Remove(t *testing.T) {

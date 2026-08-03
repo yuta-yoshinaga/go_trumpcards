@@ -36,6 +36,7 @@ import { WaspPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { waspLegalTargets } from '../utils/waspUtils';
 
@@ -418,7 +419,10 @@ function WaspPageContent() {
 
                         const hintFrom =
                           state.hint && state.hint.fromCol === colIdx && state.hint.cardIndex === cardIdx;
-                        const hintTo = state.hint && state.hint.toCol === colIdx && isLast;
+                        // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+                        // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+                        const requestedHint = isRequestedHint(state) ? state.hint : undefined;
+                        const hintTo = requestedHint && requestedHint.toCol === colIdx && isLast;
 
                         return (
                           <div key={cardIdx} className="absolute" style={{ top: cardIdx * sc.co, zIndex: cardIdx }}>
@@ -488,7 +492,7 @@ function WaspPageContent() {
 
             {error && <ErrorAlert message={error} onRetry={retry} />}
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div
                 className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
                 role="status"

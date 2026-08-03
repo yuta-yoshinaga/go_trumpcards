@@ -29,6 +29,20 @@ type WizardWebPresenter struct{}
 func (p *WizardWebPresenter) Output(o interfaces.WizardGame, lastErr error) string {
 	resObj := p.buildBase(o)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(o, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**Wizard.GetHint() が自分で
+	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
+	if hint := o.GetHint(); hint != nil {
+		resObj.Hint = &controller.WizardWebOutputHint{
+			CardIndex: hint.CardIndex,
+			Bid:       hint.Bid,
+			Reason:    hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -43,6 +57,13 @@ func (p *WizardWebPresenter) HintOutput(o interfaces.WizardGame) string {
 			Bid:       hint.Bid,
 			Reason:    hint.Reason,
 		}
+	}
+	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。
+	if hint != nil {
+		resObj.MessageCode = "wizard.hintRequested"
+	} else {
+		resObj.MessageCode = "wizard.noHint"
 	}
 	return marshalOrError(resObj)
 }

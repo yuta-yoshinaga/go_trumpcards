@@ -1,5 +1,5 @@
 import type { FlowerGardenResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a Flower Garden game state as terminal text. */
 export function formatFlowerGardenState(state: FlowerGardenResponse): string {
@@ -30,7 +30,7 @@ export function formatFlowerGardenState(state: FlowerGardenResponse): string {
 
   lines.push(`moves: ${state.moveCount}  undo:${state.canUndo ? 'yes' : 'no'}`);
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const src =
       state.hint.fromZone === 'reserve' ? `r${state.hint.fromCol}` : `t${state.hint.fromCol}[${state.hint.cardIndex}]`;
     const target = state.hint.toCol >= 0 ? `${state.hint.toZone}${state.hint.toCol}` : state.hint.toZone;

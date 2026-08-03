@@ -45,6 +45,7 @@ describe('formatStreetsAndAlleysState', () => {
     const result = formatStreetsAndAlleysState(
       makeState({
         hint: { fromCol: 0, cardIndex: 1, toZone: 'tableau', toCol: 2 },
+        messageCode: 'streetsandalleys.hintAvailable',
       }),
     );
     expect(result).toContain('HINT');
@@ -59,5 +60,17 @@ describe('formatStreetsAndAlleysState', () => {
   it('shows congrats on win phase', () => {
     const result = formatStreetsAndAlleysState(makeState({ phase: 1 }));
     expect(result).toContain('Congratulations');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { fromCol: 0, cardIndex: 1, toZone: 'tableau', toCol: 2 };
+    expect(formatStreetsAndAlleysState(makeState({ hint, messageCode: 'streetsandalleys.hintAvailable' }))).toContain(
+      'HINT:',
+    );
+    expect(formatStreetsAndAlleysState(makeState({ hint, messageCode: 'streetsandalleys.playing' }))).not.toContain(
+      'HINT:',
+    );
   });
 });

@@ -27,6 +27,10 @@ func setupCallBreakWebMock() *interfaces.MockCallBreakGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultCallBreakConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -155,6 +159,7 @@ func TestCallBreakWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("nil hint", func(t *testing.T) {
 		m, _ := setupCallBreakWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.CallBreakHint)(nil))
 		var resObj controller.CallBreakWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(p.HintOutput(m)), &resObj))
@@ -164,6 +169,7 @@ func TestCallBreakWebPresenter_HintOutput(t *testing.T) {
 	t.Run("bid hint", func(t *testing.T) {
 		m, _ := setupCallBreakWebMockWithPlayers()
 		bid := 4
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.CallBreakHint{Bid: &bid, Reason: "strategic_bid"})
 		var resObj controller.CallBreakWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(p.HintOutput(m)), &resObj))
@@ -183,4 +189,32 @@ func TestCallBreakWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	out := p.ActionLogOutput(m)
 	assert.Contains(t, out, "\"actionType\":\"play\"")
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestCallBreakWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	cbg, _ := setupCallBreakWebMockWithPlayers()
+	cbg.ExpectedCalls = removeMockCall(cbg.ExpectedCalls, "GetHint")
+	cbg.On("GetHint").Return(&domain.CallBreakHint{CardIndex: &idx, Reason: "follow_suit"})
+
+	result := new(presenter.CallBreakWebPresenter).Output(cbg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "callbreak.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestCallBreakWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	cbg, _ := setupCallBreakWebMockWithPlayers()
+	cbg.ExpectedCalls = removeMockCall(cbg.ExpectedCalls, "GetHint")
+	cbg.On("GetHint").Return(&domain.CallBreakHint{CardIndex: &idx, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.CallBreakWebPresenter).HintOutput(cbg), "callbreak.hintRequested")
+
+	none, _ := setupCallBreakWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.CallBreakHint)(nil))
+	assert.Contains(t, new(presenter.CallBreakWebPresenter).HintOutput(none), "callbreak.noHint")
 }

@@ -26,5 +26,12 @@
   "tutorial.playerHand": "あなたの手札です。カードをクリックして選び、[出す] ボタンで場に出します。",
   "tutorial.playPass": "[出す] で選んだカードを場に出し、[パス] で順番をスキップします。",
   "tutorial.resetButton": "ゲームをリセットします。",
-  "tutorial.welcome": "プレジデントへようこそ! 手札を早くなくした順に大統領・副大統領・副スカム・スカムの肩書きが付きます。"
+  "tutorial.welcome": "プレジデントへようこそ! 手札を早くなくした順に大統領・副大統領・副スカム・スカムの肩書きが付きます。",
+  "frontendHint": {
+    "presidentLead": "場が空いている。一番弱い札から捌こう",
+    "presidentLeadRevolution": "革命中なので強さが逆。今の一番弱い札から捌こう",
+    "presidentFollow": "場を超える中で一番弱い札を出そう",
+    "presidentFollowRevolution": "革命中は強さが逆。今の並びで場を超える一番弱い札を出そう",
+    "presidentPass": "場を超える札が無い。パスしよう"
+  }
 }

@@ -122,6 +122,37 @@ func TestPenguinWebPresenterOutputError(t *testing.T) {
 	assert.Contains(t, out.Message, "test error")
 }
 
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestPenguinWebPresenterOutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		g := domain.NewPenguin(domain.NewTrumpCards(0))
+		g.Reset()
+		g.SetPhase(domain.PenguinPhasePlaying)
+
+		// **配りに依存させない。**SetTableau で場を丸ごと置き換えるので、
+		// 動かせる札が 1 枚だけ残り、ヒントが必ず出る。
+		baseRank := g.GetBaseRank()
+		var tableau [domain.PenguinTableauCnt][]*domain.Card
+		tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, baseRank, false)}
+		g.SetTableau(tableau)
+
+		var out controller.PenguinWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(new(PenguinWebPresenter).Output(g, nil)), &out))
+		assert.NotNil(t, out.Hint, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	t.Run("not while cleared", func(t *testing.T) {
+		g := domain.NewPenguin(domain.NewTrumpCards(0))
+		g.Reset()
+		g.SetPhase(domain.PenguinPhaseGameClear)
+
+		var out controller.PenguinWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(new(PenguinWebPresenter).Output(g, nil)), &out))
+		assert.Nil(t, out.Hint)
+	})
+}
+
 func TestPenguinWebPresenterHintOutputWithHint(t *testing.T) {
 	p := new(PenguinWebPresenter)
 	g := domain.NewPenguin(domain.NewTrumpCards(0))

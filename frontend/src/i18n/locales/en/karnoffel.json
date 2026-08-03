@@ -1,0 +1,53 @@
+{
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "hand": "Hand {{n}}",
+  "dealer": "dealer",
+  "team": "Team {{n}}",
+  "chosenSuit": "Chosen suit",
+  "chosenNote": "THE LOWEST of the four face-up cards picks the suit.",
+  "upCard": "up",
+  "playersTitle": "Players",
+  "hiddenHand": "{{count}} hidden",
+  "yourHand": "Your hand",
+  "trick": "Trick",
+  "tricksWon": "tricks {{n}}",
+  "handsWon": "{{n}} hands",
+  "targetNote": "First to {{n}} hands wins. A hand goes to whoever takes {{need}} tricks.",
+  "ladderTitle": "Ranking",
+  "ladderLine": "J (Karnöffel) > 7 (devil, ONLY WHEN LED) > 6 (Pope) > 2 (Kaiser) > 3 > 4 > 5 > K > Q > 10 > 9 > 8",
+  "ladderNote": "THE THREE LOSES TO KINGS, THE FOUR TO KINGS AND QUEENS, THE FIVE TO EVERY FACE CARD. A seven played in follow loses to every card.",
+  "playNotice": "THERE IS NO OBLIGATION TO FOLLOW SUIT. The devil, however, cannot lead the first trick.",
+  "playButton": "Play",
+  "nextHand": "Next hand",
+  "resultTitle": "Hand result",
+  "handWonLine": "Team {{team}} took the hand ({{t0}}-{{t1}})",
+  "handDrawnLine": "Neither side reached three tricks ({{t0}}-{{t1}})",
+  "settings": {
+    "title": "Settings"
+  },
+  "phase": {
+    "play": "Playing",
+    "handEnd": "Hand over",
+    "gameEnd": "Game over"
+  },
+  "win": "Your team wins!",
+  "lose": "The other team wins.",
+  "suitName.0": "-",
+  "suitName.1": "♠",
+  "suitName.2": "♣",
+  "suitName.3": "♥",
+  "suitName.4": "♦",
+  "tutorial": {
+    "info": "The chosen suit and each seat's face-up card appear here.",
+    "players": "Each seat's team and trick count. Every face-up card is public.",
+    "hand": "Your hand of five. You need not follow suit, but the devil cannot lead the first trick.",
+    "actions": "The ranking is unlike an ordinary trick-taker. Note that the devil (7) is only strong when led.",
+    "resetButton": "Reset the game at any time with this button."
+  },
+  "frontendHint": {
+    "karnoffelForced": "This is the only legal card",
+    "karnoffelOneAway": "One more trick takes this hand",
+    "karnoffelChoose": "Several cards are legal — pick from the highlighted ones"
+  }
+}

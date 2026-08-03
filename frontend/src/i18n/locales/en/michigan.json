@@ -64,5 +64,7 @@
     "new": "You can start a new sequence",
     "nextBadge": "Next",
     "leadBadge": "Lead"
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

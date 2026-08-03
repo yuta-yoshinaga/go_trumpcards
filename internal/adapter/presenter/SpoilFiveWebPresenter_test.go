@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -33,6 +34,10 @@ func setupSpoilFiveWebMock() *interfaces.MockSpoilFiveGame {
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultSpoilFiveConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -179,6 +184,7 @@ func TestSpoilFiveWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint with card indices", func(t *testing.T) {
 		m, _ := setupSpoilFiveWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.SpoilFiveHint{CardIndices: []int{2}, Reason: "take_trick"})
 		result := p.HintOutput(m)
 		var resObj controller.SpoilFiveWebOutput
@@ -190,6 +196,7 @@ func TestSpoilFiveWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupSpoilFiveWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.SpoilFiveHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.SpoilFiveWebOutput
@@ -207,4 +214,31 @@ func TestSpoilFiveWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// Output 側にゲートは置きません。SpoilFive.GetHint() が「人間の手番で、かつ
+// 行動を選べる状態か」を自分で確かめて nil を返します。
+func TestSpoilFiveWebPresenterOutputCarriesTheHint(t *testing.T) {
+	sfg, _ := setupSpoilFiveWebMockWithPlayers()
+	sfg.ExpectedCalls = removeMockCall(sfg.ExpectedCalls, "GetHint")
+	sfg.On("GetHint").Return(&domain.SpoilFiveHint{CardIndices: []int{0}, Reason: "follow_suit"})
+
+	result := new(presenter.SpoilFiveWebPresenter).Output(sfg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+// ページは `isRequestedHint` でこのコードを見てからバナーを出すので (#4605)、
+// 付いていないとヒントを押しても画面に何も出ない。
+func TestSpoilFiveWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultSpoilFive()
+	g.Reset()
+	// **Reset 直後は人間の手番とは限らない。**GetHint は手番でなければ nil を
+	// 返すので、席を人間に固定しないとこのテストは前提で落ちる。
+	g.SetCurrentPlayerIdx(0)
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+	assert.Contains(t, new(presenter.SpoilFiveWebPresenter).HintOutput(g), "spoilfive.hintRequested")
 }

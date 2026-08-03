@@ -348,4 +348,20 @@ func init() {
 		},
 		controller.NewPrsiWebControllerWithProvider)
 
+	games.RegisterKVGame("karnoffel", games.CategoryClassic,
+		func() usecase.KarnoffelInteractorIF {
+			return usecase.NewKarnoffelInteractor(domain.NewDefaultKarnoffel(), new(presenter.KarnoffelWebPresenter))
+		},
+		func(data []byte) (usecase.KarnoffelInteractorIF, error) {
+			return usecase.RestoreKarnoffelInteractor(data, new(presenter.KarnoffelWebPresenter))
+		},
+		controller.NewKarnoffelWebControllerWithProvider)
+	games.RegisterKVGame("shengji", games.CategoryClassic,
+		func() usecase.ShengJiInteractorIF {
+			return usecase.NewShengJiInteractor(domain.NewDefaultShengJi(), new(presenter.ShengJiWebPresenter))
+		},
+		func(data []byte) (usecase.ShengJiInteractorIF, error) {
+			return usecase.RestoreShengJiInteractor(data, new(presenter.ShengJiWebPresenter))
+		},
+		controller.NewShengJiWebControllerWithProvider)
 }

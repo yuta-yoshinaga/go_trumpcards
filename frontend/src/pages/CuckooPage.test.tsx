@@ -274,4 +274,30 @@ describe('CuckooPage', () => {
     fireEvent.click(toggle);
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
   });
+
+  // **ヒント経路はページ側からも踏む。**ファクトリ単体テストだけだと
+  // `hintFactories` の登録行と、ページのトグル／ツールチップが一度も
+  // 実行されない（codecov が #4596 で同じ 3 ファイルを未到達と報告した）。
+  it('turns the frontend hint on from the settings panel', async () => {
+    // **CLI モードは localStorage に残る。**このファイルの前のテストが立てた
+    // ままだと設定パネルごと描画されず、「チェックボックスが無い」で落ちる。
+    localStorage.clear();
+    mockExec.mockResolvedValue(turnState);
+    renderWithProviders(<CuckooPage />);
+
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+
+  it('shows the refuse hint when the toggle is already on', async () => {
+    localStorage.clear();
+    localStorage.setItem('hint_enabled_cuckoo', 'true');
+    mockExec.mockResolvedValue(refuseState);
+    renderWithProviders(<CuckooPage />);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+    localStorage.removeItem('hint_enabled_cuckoo');
+  });
 });

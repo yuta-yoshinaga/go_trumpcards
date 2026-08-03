@@ -63,5 +63,7 @@
     "playButton": "Once a card is selected, play it with this button. When you are the dealer, bury three low cards in the scarto phase.",
     "info": "Scarto is a 3-player Piedmontese tarocchi trick-taker. There is no bidding, chien, or partnership. The dealer buries three surplus cards (the scarto), then the three players play out the tricks. Each deal is scored as a zero-sum settlement against the average of the players' captured card-points; the highest cumulative score after the set deals wins.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

@@ -1,5 +1,5 @@
 import type { GolfResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a Golf Solitaire game state as terminal text. */
 export function formatGolfState(state: GolfResponse): string {
@@ -30,7 +30,7 @@ export function formatGolfState(state: GolfResponse): string {
   lines.push(`moves: ${state.moveCount}`);
 
   if (state.isStalemate) lines.push('Stalemate - no more moves possible');
-  if (state.hint) lines.push(`HINT: col ${state.hint.col}`);
+  if (state.hint && isRequestedHint(state)) lines.push(`HINT: col ${state.hint.col}`);
   if (state.message) lines.push(state.message);
   if (state.phase === 1) lines.push('Congratulations! You win!');
 

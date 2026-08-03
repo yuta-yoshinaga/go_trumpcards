@@ -264,14 +264,22 @@ describe('PiquetPage', () => {
   });
 
   it('renders the play hint text when a card suggestion is present', async () => {
-    mockExec.mockResolvedValue(makeState({ phase: PiquetPhase.PLAY, hint: { cardIndex: 3, reason: 'lowest' } }));
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PiquetPhase.PLAY,
+        hint: { cardIndex: 3, reason: 'lowest' },
+        messageCode: 'piquet.hintAvailable',
+      }),
+    );
     renderWithProviders(<PiquetPage />);
     const hint = await screen.findByTestId('piquet-hint');
     expect(hint).toHaveTextContent('[3]');
   });
 
   it('renders the discard hint text when discard indices are suggested', async () => {
-    mockExec.mockResolvedValue(makeState({ hint: { discardIndices: [1, 2], reason: 'lowest' } }));
+    mockExec.mockResolvedValue(
+      makeState({ hint: { discardIndices: [1, 2], reason: 'lowest' }, messageCode: 'piquet.hintAvailable' }),
+    );
     renderWithProviders(<PiquetPage />);
     const hint = await screen.findByTestId('piquet-hint');
     expect(hint).toHaveTextContent('1, 2');
@@ -294,5 +302,36 @@ describe('PiquetPage', () => {
     fireEvent.click(viewBtn);
     await waitFor(() => expect(mockActionLog).toHaveBeenCalled());
     expect(await screen.findByText(/plays a card/)).toBeInTheDocument();
+  });
+
+  // **ヒント経路はページ側からも踏む。**ファクトリ単体テストだけだと
+  // `hintFactories` の登録行と、ページのトグル／ツールチップが一度も実行
+  // されない（codecov が #4596 でその 3 ファイルを未到達として報告した）。
+  it('turns the frontend hint on from the checkbox', async () => {
+    localStorage.removeItem('hint_enabled_piquet');
+    mockExec.mockResolvedValue(makeState({ phase: PiquetPhase.PLAY, hint: { cardIndex: 0, reason: 'lowest' } }));
+    renderWithProviders(<PiquetPage />);
+
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+
+  it('shows the hint tooltip once the toggle is on', async () => {
+    localStorage.setItem('hint_enabled_piquet', 'true');
+    mockExec.mockResolvedValue(makeState({ phase: PiquetPhase.PLAY, hint: { cardIndex: 0, reason: 'lowest' } }));
+    renderWithProviders(<PiquetPage />);
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+
+  it('keeps the tooltip hidden while the toggle is off', async () => {
+    // 直前のテストが立てた localStorage を引き継がない。
+    localStorage.removeItem('hint_enabled_piquet');
+    mockExec.mockResolvedValue(makeState({ phase: PiquetPhase.PLAY, hint: { cardIndex: 0, reason: 'lowest' } }));
+    renderWithProviders(<PiquetPage />);
+    await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
   });
 });

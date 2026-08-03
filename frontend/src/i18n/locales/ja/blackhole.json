@@ -34,5 +34,8 @@
   "hintNoLegal": "置けるカードがありません",
   "acceptableRanks": "受け入れ可能: {{ranks}}",
   "acceptableRanksNone": "受け入れ可能: なし",
-  "legalMoveCount": "合法手: {{count}}"
+  "legalMoveCount": "合法手: {{count}}",
+  "frontendHint": {
+    "blackholePlayFan": "この山の一番上の札を穴へ吸い込めます"
+  }
 }

@@ -1,5 +1,12 @@
 import type { NinetyNineResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 /** Maps numeric trump suit to a display label. */
 const SUIT_LABEL: Readonly<Record<number, string>> = {
@@ -41,7 +48,7 @@ export function formatNinetynineState(state: NinetyNineResponse): string {
     lines.push('Bury phase: bury 3 cards (suit-sum = bid)');
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     if (state.hint.buryIndices !== undefined) {
       lines.push(`HINT: bury [${state.hint.buryIndices.join(', ')}] (${state.hint.reason})`);
     }

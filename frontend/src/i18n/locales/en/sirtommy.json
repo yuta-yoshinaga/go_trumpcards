@@ -1,0 +1,53 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "SirTommy",
+  "stock": "Stock",
+  "waste": "Waste",
+  "foundation": "Foundation",
+  "foundations": "Foundations",
+  "moveCount": "Moves",
+  "stockCount": "Remaining",
+  "stockTop": "Next card",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "autoComplete": "Auto complete",
+  "selectSource": "Select source",
+  "selectTarget": "Select target",
+  "deselect": "Cancel",
+  "draw": "Draw",
+  "empty": "Empty",
+  "nextRankBadge": "Next: {{rank}}",
+  "nextRankAria": "Next required card {{rank}}",
+  "upcomingRanksTooltip": "Upcoming cards: {{sequence}}",
+  "upcomingRanksToggle": "Upcoming ranks",
+  "upcomingRanksDetailAria": "Upcoming ranks for foundation {{idx}}: {{sequence}}",
+  "wasteRanksTooltip": "Waste {{idx}} (top 3): {{ranks}}",
+  "wasteEmptyAria": "Waste {{idx}}: empty",
+  "stockTopAria": "Stock top: {{card}}",
+  "foundationCompleteAria": "Complete",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "stalemate": "Stalemate",
+  "landscapeBanner": "Landscape recommended",
+  "frontendHint": {
+    "sirtommyStock": "The stock card can be played to a foundation",
+    "sirtommyWaste": "A waste pile top can be played to a foundation"
+  },
+  "tutorial": {
+    "foundations": "The four foundations start empty and are opened by an Ace. From there each builds up A-2-3...-K one rank at a time, ignoring suit.",
+    "stockWaste": "Turn the stock one card at a time onto a foundation or one of four wastes. Only a waste’s top card can move later, so where you put it is the whole decision.",
+    "controls": "Control buttons: hints, undo, give up, and more.",
+    "resetButton": "Start a new game."
+  },
+  "nav": {
+    "sirtommy": "SirTommy"
+  }
+}

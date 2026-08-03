@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した219種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した264種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -109,6 +109,20 @@ Go + Clean Architecture で実装した219種類のトランプゲーム。CLI �
 | カッシーノ (Cassino) | `cassino` | [CUI](docs/manual/cui/cassino.md) / [Web](docs/manual/web/cassino.md) |
 | スパニッシュ21 (Spanish 21) | `spanish21` | [CUI](docs/manual/cui/spanish21.md) / [Web](docs/manual/web/spanish21.md) |
 | カルキュレーション (Calculation) | `calculation` | [CUI](docs/manual/cui/calculation.md) / [Web](docs/manual/web/calculation.md) |
+| サー・トミー (Sir Tommy) | `sirtommy` | [CUI](docs/manual/cui/sirtommy.md) / [Web](docs/manual/web/sirtommy.md) |
+| ビズリー (Bisley) | `bisley` | [CUI](docs/manual/cui/bisley.md) / [Web](docs/manual/web/bisley.md) |
+| ナポレオンズ・スクエア (Napoleon's Square) | `napoleonssquare` | [CUI](docs/manual/cui/napoleonssquare.md) / [Web](docs/manual/web/napoleonssquare.md) |
+| グランドファーザーズ・クロック (Grandfather's Clock) | `grandfathersclock` | [CUI](docs/manual/cui/grandfathersclock.md) / [Web](docs/manual/web/grandfathersclock.md) |
+| ミス・ミリガン (Miss Milligan) | `missmilligan` | [CUI](docs/manual/cui/missmilligan.md) / [Web](docs/manual/web/missmilligan.md) |
+| ダッチェス (Duchess) | `duchess` | [CUI](docs/manual/cui/duchess.md) / [Web](docs/manual/web/duchess.md) |
+| ウィンドミル (Windmill) | `windmill` | [CUI](docs/manual/cui/windmill.md) / [Web](docs/manual/web/windmill.md) |
+| アメリカン・トード (American Toad) | `americantoad` | [CUI](docs/manual/cui/americantoad.md) / [Web](docs/manual/web/americantoad.md) |
+| コングレス (Congress) | `congress` | [CUI](docs/manual/cui/congress.md) / [Web](docs/manual/web/congress.md) |
+| テラス (Terrace) | `terrace` | [CUI](docs/manual/cui/terrace.md) / [Web](docs/manual/web/terrace.md) |
+| ブレイド (Braid) | `braid` | [CUI](docs/manual/cui/braid.md) / [Web](docs/manual/web/braid.md) |
+| ポンツーン (Pontoon) | `pontoon` | [CUI](docs/manual/cui/pontoon.md) / [Web](docs/manual/web/pontoon.md) |
+| セッテ・エ・メッツォ (Sette e Mezzo) | `settemezzo` | [CUI](docs/manual/cui/settemezzo.md) / [Web](docs/manual/web/settemezzo.md) |
+| 闘牛 (Niu Niu) | `niuniu` | [CUI](docs/manual/cui/niuniu.md) / [Web](docs/manual/web/niuniu.md) |
 | スパイト・アンド・マリス (Spite and Malice) | `spiteandmalice` | [CUI](docs/manual/cui/spiteandmalice.md) / [Web](docs/manual/web/spiteandmalice.md) |
 | スカート (Skat) | `skat` | [CUI](docs/manual/cui/skat.md) / [Web](docs/manual/web/skat.md) |
 | シットヘッド / カーマ (Shithead) | `shithead` | [CUI](docs/manual/cui/shithead.md) / [Web](docs/manual/web/shithead.md) |
@@ -173,6 +187,7 @@ Go + Clean Architecture で実装した219種類のトランプゲーム。CLI �
 | ノックアウト・ホイスト (Knockout Whist) | `knockoutwhist` | [CUI](docs/manual/cui/knockoutwhist.md) / [Web](docs/manual/web/knockoutwhist.md) |
 | スポイル・ファイブ (Spoil Five / Maw) | `spoilfive` | [CUI](docs/manual/cui/spoilfive.md) / [Web](docs/manual/web/spoilfive.md) |
 | ナップ (Nap / Napoleon) | `nap` | [CUI](docs/manual/cui/nap.md) / [Web](docs/manual/web/nap.md) |
+| ガンジファ (Ganjifa) | `ganjifa` | [CUI](docs/manual/cui/ganjifa.md) / [Web](docs/manual/web/ganjifa.md) |
 | プレフェランス (Préférence) | `preference` | [CUI](docs/manual/cui/preference.md) / [Web](docs/manual/web/preference.md) |
 | フォーティファイブズ (Auction Forty-Fives) | `fortyfives` | [CUI](docs/manual/cui/fortyfives.md) / [Web](docs/manual/web/fortyfives.md) |
 | トゥエンティナイン (Twenty-Nine / 29) | `twentynine` | [CUI](docs/manual/cui/twentynine.md) / [Web](docs/manual/web/twentynine.md) |

@@ -92,5 +92,7 @@
     "trumpWithCard": "Trump with a card",
     "discardLowest": "Discard your lowest card"
   },
-  "restrictedBidAria": "Bid {{n}} (unavailable due to the dealer restriction)"
+  "restrictedBidAria": "Bid {{n}} (unavailable due to the dealer restriction)",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

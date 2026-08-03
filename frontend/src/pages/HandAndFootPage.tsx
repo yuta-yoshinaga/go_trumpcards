@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -17,6 +18,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHandAndFootGame } from '../hooks/useHandAndFootGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -33,6 +35,7 @@ import { HANDANDFOOT_HELP, parseHandAndFootCommand } from '../utils/cli/commands
 import { formatHandAndFootState } from '../utils/cli/formatters/handandfootFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const HANDANDFOOT_PHASE_KEYS: Readonly<Record<number, string>> = {
   [HandAndFootPhase.DRAW]: 'draw',
@@ -172,6 +175,14 @@ function HandAndFootPageContent() {
     enabled: !!isHumanTurn && !loading,
   });
 
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('handandfoot', state);
+
   if (!state) {
     return (
       <GameSkeleton
@@ -223,6 +234,7 @@ function HandAndFootPageContent() {
                     options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('pointLimit', v),
                   },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
             ]}
@@ -240,6 +252,8 @@ function HandAndFootPageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
               <div>
+                <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
                 {/* Discard pile top */}
                 {state.discardTop && (
                   <div

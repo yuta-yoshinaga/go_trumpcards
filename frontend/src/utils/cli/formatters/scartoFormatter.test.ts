@@ -41,7 +41,12 @@ describe('formatScartoState', () => {
 
   it('renders a hint line and the win banner', () => {
     const out = formatScartoState(
-      makeScartoState({ hint: { cardIndices: [1, 2], reason: 'lead_low' }, gameEndFlag: true, winnerPlayer: 0 }),
+      makeScartoState({
+        messageCode: 'scarto.hintRequested',
+        hint: { cardIndices: [1, 2], reason: 'lead_low' },
+        gameEndFlag: true,
+        winnerPlayer: 0,
+      }),
     );
     expect(out).toContain('HINT: card indices [1, 2]');
     expect(out).toContain('Winner: Player 0');
@@ -50,5 +55,13 @@ describe('formatScartoState', () => {
   it('renders a draw banner when there is no winner', () => {
     const out = formatScartoState(makeScartoState({ gameEndFlag: true, winnerPlayer: -1 }));
     expect(out).toContain('Draw!');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [1, 2], reason: 'lead_low' };
+    expect(formatScartoState(makeScartoState({ hint, messageCode: 'scarto.hintRequested' }))).toContain('HINT');
+    expect(formatScartoState(makeScartoState({ hint, messageCode: 'scarto.playing' }))).not.toContain('HINT');
   });
 });

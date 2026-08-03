@@ -54,5 +54,13 @@
     "hit": "H",
     "stand": "T",
     "doubleDown": "D"
+  },
+  "frontendHint": {
+    "blackjackswitchBet": "チップを賭けて2ハンドを受けよう",
+    "blackjackswitchSwitch": "入れ替えると両手が使える形になる。スイッチしよう",
+    "blackjackswitchKeep": "入れ替えても良くならない。このまま進めよう",
+    "blackjackswitchStand": "17以上。ここで止めよう",
+    "blackjackswitchStandPush22": "ディーラーの22はプッシュなので崩れを当てにできない。ここは止めよう",
+    "blackjackswitchHit": "まだ低い。もう1枚引こう"
   }
 }

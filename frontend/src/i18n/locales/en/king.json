@@ -84,5 +84,7 @@
     "playButton": "Once a card is selected, play it with this button.",
     "info": "King is a Greek/Brazilian compendium of trick-avoidance games. Four players share a 52-card deck over exactly seven deals. Each deal the dealer picks one of seven unused contracts, then all seats play thirteen must-follow tricks. After all seven deals, the highest total score (fewest penalties) wins.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

@@ -1,0 +1,63 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "reserve": "Reserve",
+  "stock": "Stock",
+  "waste": "Waste",
+  "draw": "Draw",
+  "chooseBase": "Choose base rank",
+  "moveCount": "Moves",
+  "giveup": "Give up",
+  "empty": "Empty",
+  "baseRankLabel": "Base rank",
+  "baseRankUnset": "not set",
+  "chooseBaseBanner": "Pick the top card of a reserve fan; its rank becomes the starting rank of all four foundations",
+  "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}})",
+  "emptyColumnAriaLabel": "Empty tableau column {{col}}",
+  "reserveOnlyColumnAriaLabel": "Empty tableau column {{col}} (reserve cards only)",
+  "emptyFanAriaLabel": "Reserve fan {{idx}} is empty",
+  "chooseBaseAriaLabel": "Take the base rank from reserve fan {{idx}}",
+  "stockAriaLabel": "Stock, {{count}} cards left",
+  "emptyWasteAriaLabel": "The waste is empty",
+  "reserveOnly": "R only",
+  "landscapeBanner": "Landscape orientation is recommended",
+  "hint": "Hint",
+  "autoComplete": "Auto-complete",
+  "autoCompleteNotReady": "Available once a foundation is past the base rank",
+  "undo": "Undo",
+  "stalemate": "No moves left",
+  "playing": "Move a card",
+  "gameClear": "Game clear! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
+  "hintAvailable": "A hint is available",
+  "noHint": "No hint available",
+  "tutorial": {
+    "reserve": "The reserve on the left is four fans of three cards; only the top of each fan is available. Start by picking one — its rank becomes the starting rank of all four foundations.",
+    "foundation": "There is one foundation per suit. Build up from the base rank, wrapping King round to Ace. Complete all four full circles to win.",
+    "stock": "Turn the stock one card at a time onto the waste. There is no redeal — one pass only.",
+    "tableau": "Four tableau columns. Build down by one in alternating colours, wrapping Ace round to King. Runs move as a unit.",
+    "reserveOnly": "The heart of the game is the empty column. **While any reserve card remains, an empty column can only be filled from the reserve.** An empty column is not a digging tool — it is the reserve's way out.",
+    "controls": "Draw, hint, undo, auto-complete, and the other controls."
+  },
+  "frontendHint": {
+    "tableau": "tableau column {{col}}",
+    "foundation": "foundation {{idx}}",
+    "reserve": "reserve fan {{idx}}",
+    "waste": "the waste",
+    "stock": "stock"
+  },
+  "hintReason": {
+    "chooseBase": "Nothing can move until the base rank is chosen",
+    "toFoundation": "Sending this card to a foundation frees up the board",
+    "toTableau": "Take the suggested tableau move to dig out the card underneath",
+    "fromReserve": "Empty columns stay locked to the reserve until the reserve is gone",
+    "draw": "Nothing can move, so turn a card from the stock"
+  }
+}

@@ -33,13 +33,18 @@ describe('formatAcesUpState', () => {
   });
 
   it('renders stalemate and hint lines', () => {
-    const out = formatAcesUpState({ ...base, isStalemate: true, hint: { type: 'move', col: 2 } });
+    const out = formatAcesUpState({
+      ...base,
+      isStalemate: true,
+      hint: { type: 'move', col: 2 },
+      messageCode: 'acesup.hintAvailable',
+    });
     expect(out).toContain('Stalemate');
     expect(out).toContain('HINT: move col 2');
   });
 
   it('renders draw hint without a column', () => {
-    const out = formatAcesUpState({ ...base, hint: { type: 'draw', col: -1 } });
+    const out = formatAcesUpState({ ...base, hint: { type: 'draw', col: -1 }, messageCode: 'acesup.hintAvailable' });
     expect(out).toContain('HINT: deal');
   });
 
@@ -47,5 +52,13 @@ describe('formatAcesUpState', () => {
     const out = formatAcesUpState({ ...base, phase: 1, message: 'done' });
     expect(out).toContain('Congratulations');
     expect(out).toContain('done');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const state = { ...base, hint: { type: 'move', col: 2 } } satisfies AcesUpResponse;
+    expect(formatAcesUpState({ ...state, messageCode: 'acesup.hintAvailable' })).toContain('HINT:');
+    expect(formatAcesUpState({ ...state, messageCode: 'acesup.playing' })).not.toContain('HINT:');
   });
 });

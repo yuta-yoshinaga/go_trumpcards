@@ -85,5 +85,7 @@
     "followSuit": "Follow the led suit",
     "trumpCut": "Cut with trump",
     "discardLowest": "Discard your lowest card"
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

@@ -37,6 +37,19 @@ func (p *SpiderWebPresenter) Output(s interfaces.SpiderGame, lastErr error) stri
 		}
 	}
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if s.GetPhase() == domain.SpiderPhasePlaying && !s.IsStalemate() {
+		if hint := s.GetHint(); hint != nil {
+			resObj.Hint = &controller.SpiderWebOutputHint{
+				FromCol:   hint.FromCol,
+				CardIndex: hint.CardIndex,
+				ToCol:     hint.ToCol,
+			}
+		}
+	}
+
 	// メッセージ
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()

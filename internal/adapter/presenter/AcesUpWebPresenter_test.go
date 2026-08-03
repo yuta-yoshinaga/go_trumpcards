@@ -49,9 +49,17 @@ func parseAcesUpOutput(t *testing.T, jsonStr string) *controller.AcesUpWebOutput
 	return &out
 }
 
+// setupAcesUpOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupAcesUpOutputMock(g *interfaces.MockAcesUpGame) {
+	setupAcesUpWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestAcesUpWebPresenterOutput_Playing(t *testing.T) {
 	g := new(interfaces.MockAcesUpGame)
-	setupAcesUpWebMockDefaults(g)
+	setupAcesUpOutputMock(g)
 	p := &AcesUpWebPresenter{}
 
 	out := parseAcesUpOutput(t, p.Output(g, nil))
@@ -76,7 +84,7 @@ func TestAcesUpWebPresenterOutput_Playing(t *testing.T) {
 
 func TestAcesUpWebPresenterOutput_EmptyDiscard(t *testing.T) {
 	g := new(interfaces.MockAcesUpGame)
-	setupAcesUpWebMockDefaults(g)
+	setupAcesUpOutputMock(g)
 	// Override the discard top to nil (no cards removed yet).
 	g.ExpectedCalls = nil
 	g.On("GetPhase").Return(domain.AcesUpPhasePlaying).Maybe()
@@ -92,6 +100,7 @@ func TestAcesUpWebPresenterOutput_EmptyDiscard(t *testing.T) {
 		g.On("CanRemove", c).Return(false).Maybe()
 		g.On("CanMove", c).Return(false).Maybe()
 	}
+	g.On("GetHint").Return(nil).Maybe()
 	p := &AcesUpWebPresenter{}
 
 	out := parseAcesUpOutput(t, p.Output(g, nil))
@@ -102,7 +111,7 @@ func TestAcesUpWebPresenterOutput_EmptyDiscard(t *testing.T) {
 
 func TestAcesUpWebPresenterOutput_Error(t *testing.T) {
 	g := new(interfaces.MockAcesUpGame)
-	setupAcesUpWebMockDefaults(g)
+	setupAcesUpOutputMock(g)
 	p := &AcesUpWebPresenter{}
 
 	out := parseAcesUpOutput(t, p.Output(g, errors.New("test error")))
@@ -162,6 +171,31 @@ func TestAcesUpWebPresenterOutput_GameOver(t *testing.T) {
 
 	out := parseAcesUpOutput(t, p.Output(g, nil))
 	assert.Equal(t, "acesup.gameOver", out.MessageCode)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestAcesUpWebPresenterOutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		aug := new(interfaces.MockAcesUpGame)
+		setupAcesUpWebMockDefaults(aug)
+		aug.On("GetHint").Return(&domain.AcesUpHint{Type: "remove", Col: 1}).Maybe()
+
+		result := new(AcesUpWebPresenter).Output(aug, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		aug := new(interfaces.MockAcesUpGame)
+		setupAcesUpWebMockDefaults(aug)
+		aug.ExpectedCalls = filterCalls(aug.ExpectedCalls, "IsStalemate")
+		aug.On("IsStalemate").Return(true)
+		aug.On("GetHint").Return(&domain.AcesUpHint{Type: "remove", Col: 1}).Maybe()
+
+		result := new(AcesUpWebPresenter).Output(aug, nil)
+		assert.NotContains(t, result, `"hint"`)
+	})
 }
 
 func TestAcesUpWebPresenterHintOutput(t *testing.T) {

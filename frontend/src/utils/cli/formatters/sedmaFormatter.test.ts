@@ -35,7 +35,9 @@ describe('formatSedmaState', () => {
   });
 
   it('renders a hint with card indices', () => {
-    const out = formatSedmaState(makeSedmaState({ hint: { cardIndices: [1, 2], reason: 'capture' } }));
+    const out = formatSedmaState(
+      makeSedmaState({ hint: { cardIndices: [1, 2], reason: 'capture' }, messageCode: 'sedma.hintRequested' }),
+    );
     expect(out).toContain('HINT: card indices [1, 2]');
     expect(out).toContain('capture');
   });
@@ -48,5 +50,14 @@ describe('formatSedmaState', () => {
   it('renders an explicit message when present', () => {
     const out = formatSedmaState(makeSedmaState({ message: 'hello world' }));
     expect(out).toContain('hello world');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  // このゲーム群は hintAvailable がラベルとして埋まっているため hintRequested。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [1], reason: 'capture' };
+    expect(formatSedmaState(makeSedmaState({ hint, messageCode: 'sedma.hintRequested' }))).toContain('HINT');
+    expect(formatSedmaState(makeSedmaState({ hint, messageCode: 'sedma.playing' }))).not.toContain('HINT');
   });
 });

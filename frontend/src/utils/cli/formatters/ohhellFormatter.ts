@@ -1,5 +1,12 @@
 import type { OhHellResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 /** Format an Oh Hell game state as terminal text. */
 export function formatOhhellState(state: OhHellResponse): string {
@@ -34,7 +41,7 @@ export function formatOhhellState(state: OhHellResponse): string {
     if (state.restrictedBid >= 0) lines.push(`(cannot bid ${state.restrictedBid})`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     if (state.hint.bid !== undefined) lines.push(`HINT: bid ${state.hint.bid} (${state.hint.reason})`);
     if (state.hint.cardIndex !== undefined) lines.push(`HINT: play [${state.hint.cardIndex}] (${state.hint.reason})`);
   }

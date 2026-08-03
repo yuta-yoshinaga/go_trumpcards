@@ -32,6 +32,7 @@ import { estimateCinchBidStrength } from '../utils/cinchBidStrength';
 import { CINCH_HELP, parseCinchCommand } from '../utils/cli/commands/cinchCommands';
 import { formatCinchState } from '../utils/cli/formatters/cinchFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -410,7 +411,7 @@ function CinchPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndices &&

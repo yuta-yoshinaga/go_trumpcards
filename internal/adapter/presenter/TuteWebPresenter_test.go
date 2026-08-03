@@ -39,6 +39,10 @@ func setupTuteWebMock() *interfaces.MockTuteGame {
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultTuteConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -193,6 +197,7 @@ func TestTuteWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint with card indices", func(t *testing.T) {
 		m, _ := setupTuteWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.TuteHint{CardIndices: []int{2}, Reason: "follow_win"})
 		result := p.HintOutput(m)
 		var resObj controller.TuteWebOutput
@@ -204,6 +209,7 @@ func TestTuteWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("marriage hint", func(t *testing.T) {
 		m, _ := setupTuteWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.TuteHint{Marriage: domain.CardDesignSpade, Reason: "declare_marriage"})
 		result := p.HintOutput(m)
 		var resObj controller.TuteWebOutput
@@ -214,6 +220,7 @@ func TestTuteWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupTuteWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.TuteHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.TuteWebOutput
@@ -231,4 +238,30 @@ func TestTuteWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestTuteWebPresenterOutputCarriesTheHint(t *testing.T) {
+	ttg, _ := setupTuteWebMockWithPlayers()
+	ttg.ExpectedCalls = removeMockCall(ttg.ExpectedCalls, "GetHint")
+	ttg.On("GetHint").Return(&domain.TuteHint{CardIndices: []int{1}, Marriage: -1, Reason: "follow_suit"})
+
+	result := new(presenter.TuteWebPresenter).Output(ttg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "tute.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestTuteWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	ttg, _ := setupTuteWebMockWithPlayers()
+	ttg.ExpectedCalls = removeMockCall(ttg.ExpectedCalls, "GetHint")
+	ttg.On("GetHint").Return(&domain.TuteHint{CardIndices: []int{1}, Marriage: -1, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.TuteWebPresenter).HintOutput(ttg), "tute.hintRequested")
+
+	none, _ := setupTuteWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.TuteHint)(nil))
+	assert.Contains(t, new(presenter.TuteWebPresenter).HintOutput(none), "tute.noHint")
 }

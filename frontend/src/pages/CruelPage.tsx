@@ -38,6 +38,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { cruelHelp, parseCruelCommand } from '../utils/cli/commands/cruelCommands';
 import { formatCruelState } from '../utils/cli/formatters/cruelFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -408,9 +409,15 @@ function CruelPageContent() {
                         const isDragSrc = isLast && dnd.isDragSource(zone);
 
                         // Hint highlight (Cruel only allows top-card moves).
-                        const hintFrom = isLast && state.hint && state.hint.fromCol === colIdx;
+                        // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
+                        // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+                        const requestedHint = isRequestedHint(state) ? state.hint : undefined;
+                        const hintFrom = isLast && requestedHint && requestedHint.fromCol === colIdx;
                         const hintTo =
-                          isLast && state.hint && state.hint.toZone === 'tableau' && state.hint.toCol === colIdx;
+                          isLast &&
+                          requestedHint &&
+                          requestedHint.toZone === 'tableau' &&
+                          requestedHint.toCol === colIdx;
 
                         return (
                           <div key={cardIdx} className="absolute" style={{ top: cardIdx * cr.co, zIndex: cardIdx }}>
@@ -475,7 +482,7 @@ function CruelPageContent() {
               </div>
             )}
 
-            {state.hint && (
+            {state.hint && isRequestedHint(state) && (
               <div
                 className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
                 role="status"

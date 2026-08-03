@@ -2,21 +2,25 @@ import { useEffect, useState } from 'react';
 import { doubleklondikeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { DoubleKlondikePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Double Klondike tutorial step definitions. */
 const DK_TUTORIAL_STEPS: TutorialStep[] = [
@@ -73,6 +77,12 @@ function DoubleKlondikePageContent() {
   // targets meet the DESIGN.md 44px minimum; the 9-column tableau and 8
   // foundations then scroll horizontally. Desktop keeps the compact half-width.
   const w = isMobile ? 44 : Math.round(cardWidth * 0.5);
+
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('doubleklondike', state);
 
   if (!state) return <GameSkeleton gameKey="doubleklondike" layout={{ kind: 'tableau', topRow: 4, tableau: 9 }} />;
 
@@ -294,6 +304,13 @@ function DoubleKlondikePageContent() {
         )}
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+        <SettingsPanel
+          title={tc('settings.title')}
+          groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+        />
+
         <ActionLogSection
           isEndPhase={isEnd}
           actionLog={actionLog}

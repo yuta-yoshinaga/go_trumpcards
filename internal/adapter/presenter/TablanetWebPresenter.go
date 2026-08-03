@@ -24,6 +24,20 @@ func (p *TablanetWebPresenter) Output(g interfaces.TablanetGame, lastErr error) 
 		resObj.MessageCode = "tablanet.result.scores"
 		resObj.MessageParams = map[string]string{"scores": p.encodeScoresParam(g)}
 	}
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **手番の判定は Tablanet.GetHint() を読んで確かめた。**他ゲームがそうだから、で
+	// 済ませない —— Pinochle は見ていなくて CPU の手が漏れた (#4585)。
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.TablanetWebOutputHint{
+			CardIndices:  hint.CardIndices,
+			TableIndices: hint.TableIndices,
+			Reason:       hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -132,6 +146,13 @@ func (p *TablanetWebPresenter) HintOutput(g interfaces.TablanetGame) string {
 			TableIndices: hint.TableIndices,
 			Reason:       hint.Reason,
 		}
+	}
+	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。
+	if g.GetHint() != nil {
+		resObj.MessageCode = "tablanet.hintRequested"
+	} else {
+		resObj.MessageCode = "tablanet.noHint"
 	}
 	return marshalOrError(resObj)
 }

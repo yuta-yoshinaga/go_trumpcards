@@ -45,6 +45,7 @@ export type GameKey =
   | 'sevencardstud'
   | 'fivecardstud'
   | 'razz'
+  | 'sevencardstudhilo'
   | 'badugi'
   | 'deucetoseven'
   | 'indianpoker'
@@ -85,7 +86,12 @@ export type GameKey =
   | 'solowhist'
   | 'fortyfives'
   | 'nap'
+  | 'aluette'
+  | 'minchiate'
+  | 'tarocchini'
+  | 'ganjifa'
   | 'preference'
+  | 'vira'
   | 'twentynine'
   | 'courtpiece'
   | 'bezique'
@@ -203,6 +209,45 @@ export type GameKey =
   | 'pokersquares'
   | 'montecarlo'
   | 'calculation'
+  | 'sirtommy'
+  | 'bisley'
+  | 'napoleonssquare'
+  | 'grandfathersclock'
+  | 'duchess'
+  | 'windmill'
+  | 'americantoad'
+  | 'congress'
+  | 'terrace'
+  | 'braid'
+  | 'pontoon'
+  | 'settemezzo'
+  | 'niuniu'
+  | 'bura'
+  | 'mushi'
+  | 'toepen'
+  | 'chineseten'
+  | 'skitgubbe'
+  | 'laughandliedown'
+  | 'sjavs'
+  | 'trex'
+  | 'loba'
+  | 'desmoche'
+  | 'zwicker'
+  | 'poch'
+  | 'popejoan'
+  | 'nainjaune'
+  | 'kille'
+  | 'klaberjass'
+  | 'kaiser'
+  | 'boston'
+  | 'vint'
+  | 'bideuchre'
+  | 'sixbidsolo'
+  | 'karnoffel'
+  | 'literature'
+  | 'guandan'
+  | 'shengji'
+  | 'missmilligan'
   | 'crescent'
   // Counting/Rummy
   | 'ginrummy'
@@ -367,6 +412,26 @@ const COURTPIECE = {
   bg: 'bg-game-bg-courtpiece',
   footer: 'bg-game-bg-courtpiece-dark border-white/20',
 } as const;
+const ALUETTE = {
+  bg: 'bg-game-bg-aluette',
+  footer: 'bg-game-bg-aluette-dark border-white/20',
+} as const;
+const MINCHIATE = {
+  bg: 'bg-game-bg-minchiate',
+  footer: 'bg-game-bg-minchiate-dark border-white/20',
+} as const;
+const TAROCCHINI = {
+  bg: 'bg-game-bg-tarocchini',
+  footer: 'bg-game-bg-tarocchini-dark border-white/20',
+} as const;
+const GANJIFA = {
+  bg: 'bg-game-bg-ganjifa',
+  footer: 'bg-game-bg-ganjifa-dark border-white/20',
+} as const;
+const VIRA = {
+  bg: 'bg-game-bg-vira',
+  footer: 'bg-game-bg-vira-dark border-white/20',
+} as const;
 const PREFERENCE = {
   bg: 'bg-game-bg-preference',
   footer: 'bg-game-bg-preference-dark border-white/20',
@@ -497,6 +562,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   sevencardstud: POKER,
   fivecardstud: POKER,
   razz: POKER,
+  sevencardstudhilo: POKER,
   badugi: POKER,
   deucetoseven: POKER,
   indianpoker: POKER,
@@ -537,7 +603,12 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   solowhist: SOLOWHIST,
   fortyfives: FORTYFIVES,
   nap: NAP,
+  aluette: ALUETTE,
+  minchiate: MINCHIATE,
+  tarocchini: TAROCCHINI,
+  ganjifa: GANJIFA,
   preference: PREFERENCE,
+  vira: VIRA,
   twentynine: TWENTYNINE,
   courtpiece: COURTPIECE,
   bezique: BEZIQUE,
@@ -655,6 +726,45 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   pokersquares: CASINO,
   montecarlo: CASINO,
   calculation: CASINO,
+  sirtommy: CASINO,
+  bisley: CASINO,
+  napoleonssquare: CASINO,
+  grandfathersclock: CASINO,
+  duchess: CASINO,
+  windmill: CASINO,
+  americantoad: CASINO,
+  congress: CASINO,
+  terrace: CASINO,
+  braid: CASINO,
+  pontoon: CASINO,
+  settemezzo: CASINO,
+  niuniu: CASINO,
+  bura: CASINO,
+  mushi: GREEN,
+  toepen: BLUE,
+  chineseten: GREEN,
+  skitgubbe: GREEN,
+  laughandliedown: GREEN,
+  sjavs: BLUE,
+  trex: BLUE,
+  loba: GREEN,
+  desmoche: GREEN,
+  zwicker: BLUE,
+  poch: CASINO,
+  popejoan: CASINO,
+  nainjaune: CASINO,
+  kille: CASINO,
+  klaberjass: CASINO,
+  kaiser: CASINO,
+  boston: CASINO,
+  vint: CASINO,
+  bideuchre: CASINO,
+  sixbidsolo: CASINO,
+  karnoffel: GREEN,
+  literature: BLUE,
+  guandan: GREEN,
+  shengji: GREEN,
+  missmilligan: CASINO,
   crescent: CASINO,
   // Counting/Rummy
   ginrummy: BLUE,

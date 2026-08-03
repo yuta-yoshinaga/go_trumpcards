@@ -1,0 +1,50 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "foundation": "組札",
+  "tableau": "場札",
+  "stock": "山札",
+  "waste": "捨て札",
+  "draw": "めくる",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "empty": "空",
+  "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}})",
+  "emptyColumnAriaLabel": "空のタブロー列 {{col}}",
+  "stockAriaLabel": "山札 残り{{count}}枚",
+  "emptyWasteAriaLabel": "捨て札は空です",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "組札を配り札より先へ進めると有効になります",
+  "undo": "元に戻す",
+  "stalemate": "手詰まりです",
+  "playing": "カードを移動してください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "gameOverSummary": "組札 {{count}}/104 枚（{{percent}}%）まで到達",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "tutorial": {
+    "foundation": "中央の8つの組札には、2デッキ分のA が最初から置かれています。同じスートで A→K の順に積み上げ、8つすべてを K まで積み切ればクリアです。",
+    "stock": "山札から1枚ずつめくって捨て札に送り、置ける場所を探します。めくり直しはできません（1巡のみ）。",
+    "tableau": "場札は12列×4枚の正方形。同じスートで1つ下のランクのカードにのみ重ねられます。空いた列には任意のカードを置けます。",
+    "runs": "このゲームの要は連番の一括移動です。同じスートで1つずつ下がって並んだカードは、その先頭を選べばまとめて別の列へ動かせます。",
+    "controls": "めくる・ヒント・元に戻す・自動完成などの操作ボタンです。"
+  },
+  "frontendHint": {
+    "tableau": "タブロー列{{col}}",
+    "foundation": "組札{{idx}}",
+    "waste": "捨て札",
+    "stock": "山札"
+  },
+  "hintReason": {
+    "toFoundation": "このカードを組札に上げると場が1枚軽くなります",
+    "toTableau": "示唆された場札への移動で下のカードを掘り出しましょう",
+    "draw": "動かせる札が無いので、山札をめくって手を増やしましょう"
+  }
+}

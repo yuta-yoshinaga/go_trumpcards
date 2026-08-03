@@ -81,5 +81,7 @@
     "dumpQueenOfSpades": "スペードのクイーンを捨てるチャンス",
     "dumpHearts": "ハートカードを捨てるチャンス",
     "playHighest": "最も高いカードをプレイ推奨"
-  }
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }

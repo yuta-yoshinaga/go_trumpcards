@@ -44,6 +44,10 @@ func setupWizardWebMock() *interfaces.MockWizardGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultWizardConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -224,6 +228,7 @@ func TestWizardWebPresenter_HintOutput(t *testing.T) {
 	t.Run("with hint", func(t *testing.T) {
 		m, _ := setupWizardWebMockWithPlayers()
 		bid := 3
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.WizardHint{Bid: &bid, Reason: "strategic_bid"})
 
 		result := p.HintOutput(m)
@@ -236,6 +241,7 @@ func TestWizardWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("nil hint", func(t *testing.T) {
 		m, _ := setupWizardWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.WizardHint)(nil))
 
 		result := p.HintOutput(m)
@@ -254,4 +260,31 @@ func TestWizardWebPresenter_ActionLogOutput(t *testing.T) {
 
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestWizardWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	wzg, _ := setupWizardWebMockWithPlayers()
+	wzg.ExpectedCalls = removeMockCall(wzg.ExpectedCalls, "GetHint")
+	wzg.On("GetHint").Return(&domain.WizardHint{CardIndex: &idx, Reason: "follow_suit"})
+
+	result := new(presenter.WizardWebPresenter).Output(wzg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	assert.NotContains(t, result, "wizard.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestWizardWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	wzg, _ := setupWizardWebMockWithPlayers()
+	wzg.ExpectedCalls = removeMockCall(wzg.ExpectedCalls, "GetHint")
+	wzg.On("GetHint").Return(&domain.WizardHint{CardIndex: &idx, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.WizardWebPresenter).HintOutput(wzg), "wizard.hintRequested")
+
+	none, _ := setupWizardWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.WizardHint)(nil))
+	assert.Contains(t, new(presenter.WizardWebPresenter).HintOutput(none), "wizard.noHint")
 }

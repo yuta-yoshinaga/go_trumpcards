@@ -72,5 +72,7 @@
     "trick": "Cards played to the current trick appear here. You must follow the led suit, ace high. The highest card wins the trick. There are 5 tricks in all.",
     "hand": "This is your hand (5 cards). During play, click a playable card and press Play.",
     "actions": "In the bidding phase, buttons appear for Pass / Two (2 tricks) / Three (3 tricks) / Four (4 tricks) / Nap (all 5 tricks, high stakes). Only a bid higher than the current highest is selectable. The highest bidder becomes the declarer, picks trump, and leads. Make the bid to win chips (a successful Nap wins 10 chips); miss it and the opponents each win the bid value (a failed Nap costs 5 chips each)."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

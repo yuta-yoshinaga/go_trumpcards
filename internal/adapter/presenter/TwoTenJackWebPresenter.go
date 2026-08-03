@@ -13,6 +13,20 @@ type TwoTenJackWebPresenter struct{}
 func (p *TwoTenJackWebPresenter) Output(s interfaces.TwoTenJackGame, lastErr error) string {
 	resObj := p.buildBase(s)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(s, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**TwoTenJack.GetHint() が自分で
+	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
+	if hint := s.GetHint(); hint != nil {
+		resObj.Hint = &controller.TwoTenJackWebOutputHint{
+			CardIndex: hint.CardIndex,
+			TrumpSuit: hint.TrumpSuit,
+			Reason:    hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 

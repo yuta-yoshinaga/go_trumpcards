@@ -20,6 +20,19 @@ func (p *TrenteEtQuaranteWebPresenter) Output(g interfaces.TrenteEtQuaranteGame,
 	} else if g.GetPhase() == domain.TrenteEtQuarantePhaseResult {
 		resObj.Message, resObj.MessageCode = trenteEtQuaranteEndMessage(g)
 	}
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**TrenteEtQuarante.GetHint() が自分で
+	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.TrenteEtQuaranteWebOutputHint{
+			Bet:    int(hint.Bet),
+			Reason: hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 

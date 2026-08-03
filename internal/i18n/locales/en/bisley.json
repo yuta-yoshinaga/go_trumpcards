@@ -1,0 +1,20 @@
+{
+  "helpTitle": "Bisley",
+  "helpMoveTA": "  m <col> a            move tableau to ascending foundation (A->K)",
+  "helpMoveTK": "  m <col> k            move tableau to descending foundation (K->A)",
+  "helpMoveTT": "  m <fromCol> <toCol>  move single card between tableau cols (same suit, +/-1)",
+  "helpGiveUp": "  g                    give up",
+  "helpHint": "  h                    hint",
+  "helpAutoComplete": "  ac                   auto-complete",
+  "helpUndo": "  u                    undo one move",
+  "promptToZone": "Enter destination (column number, a=ascending foundation, k=descending foundation):",
+  "aceFoundationHeader": "Ascending (A->K): ",
+  "kingFoundationHeader": "Descending (K->A): ",
+  "columnLabel": "Column {{col}}:",
+  "hintFrom": "tableau column {{col}}",
+  "hintToAce": "ascending foundation {{idx}}",
+  "hintToKing": "descending foundation {{idx}}",
+  "hintToTableau": "tableau column {{col}}",
+  "hintLine": "Hint: {{from}} → {{to}}",
+  "undoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)"
+}

@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Grandfather's Clock (グランドファーザーズ・クロック)",
+  "helpMoveTF": "  m <col> f <idx>      タブローから文字盤<idx> (0..11) へ",
+  "helpMoveTT": "  m <fromCol> <toCol>  タブロー間で1枚移動 (スート無視の降順)",
+  "helpGiveUp": "  g                    ギブアップ",
+  "helpHint": "  h                    ヒント",
+  "helpAutoComplete": "  ac                   オートコンプリート",
+  "helpUndo": "  u                    1手戻す",
+  "promptToZone": "移動先を入力してください (列番号, または f=文字盤):",
+  "promptFaceIdx": "文字盤の番号 (0..11) を入力してください:",
+  "invalidFaceIdx": "無効な文字盤番号です: {{val}}",
+  "foundationHeader": "文字盤 (0=1時 … 11=12時):",
+  "faceLabel": "[{{idx}}]",
+  "faceTarget": "→{{rank}}",
+  "faceComplete": "✔完成",
+  "columnLabel": "列{{col}}:",
+  "hintFrom": "タブロー列{{col}}",
+  "hintToFoundation": "文字盤{{idx}}",
+  "hintToTableau": "タブロー列{{col}}",
+  "hintLine": "ヒント: {{from}} → {{to}}",
+  "undoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）"
+}

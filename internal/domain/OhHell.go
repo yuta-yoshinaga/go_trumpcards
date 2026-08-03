@@ -218,6 +218,12 @@ func (o *OhHell) CpuPlay() {
 	player := o.players[o.currentPlayerIdx]
 	cardIdx := o.cpuSelectPlayCard(o.currentPlayerIdx)
 	played := player.RemoveCard(cardIdx)
+	// **出せる札が無ければ何もしない。**セレクタは候補ゼロのとき 0 を返し、
+	// 手札が空なら RemoveCard(0) は nil を返す。それを playCard に渡すと
+	// nil デリファレンスで HTTP ハンドラごと落ちる (#4606)。
+	if played == nil {
+		return
+	}
 	o.playCard(o.currentPlayerIdx, played)
 }
 

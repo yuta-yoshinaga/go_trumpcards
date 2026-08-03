@@ -30,10 +30,18 @@ func setupOsmosisWebMockDefaults(og *interfaces.MockOsmosisGame) {
 	og.On("GetFoundation").Return(foundation).Maybe()
 }
 
+// setupOsmosisOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupOsmosisOutputMock(g *interfaces.MockOsmosisGame) {
+	setupOsmosisWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestOsmosisWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		og := new(interfaces.MockOsmosisGame)
-		setupOsmosisWebMockDefaults(og)
+		setupOsmosisOutputMock(og)
 		p := new(OsmosisWebPresenter)
 		result := p.Output(og, nil)
 		assert.Contains(t, result, `"baseRank":7`)
@@ -45,7 +53,7 @@ func TestOsmosisWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		og := new(interfaces.MockOsmosisGame)
-		setupOsmosisWebMockDefaults(og)
+		setupOsmosisOutputMock(og)
 		p := new(OsmosisWebPresenter)
 		result := p.Output(og, assert.AnError)
 		assert.Contains(t, result, assert.AnError.Error())
@@ -53,7 +61,7 @@ func TestOsmosisWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		og := new(interfaces.MockOsmosisGame)
-		setupOsmosisWebMockDefaults(og)
+		setupOsmosisOutputMock(og)
 		og.ExpectedCalls = filterCalls(og.ExpectedCalls, "GetPhase")
 		og.On("GetPhase").Return(domain.OsmosisPhaseGameClear)
 		p := new(OsmosisWebPresenter)
@@ -63,7 +71,7 @@ func TestOsmosisWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		og := new(interfaces.MockOsmosisGame)
-		setupOsmosisWebMockDefaults(og)
+		setupOsmosisOutputMock(og)
 		og.ExpectedCalls = filterCalls(og.ExpectedCalls, "GetPhase")
 		og.On("GetPhase").Return(domain.OsmosisPhaseGameOver)
 		p := new(OsmosisWebPresenter)
@@ -73,12 +81,37 @@ func TestOsmosisWebPresenter_Output(t *testing.T) {
 
 	t.Run("with waste", func(t *testing.T) {
 		og := new(interfaces.MockOsmosisGame)
-		setupOsmosisWebMockDefaults(og)
+		setupOsmosisOutputMock(og)
 		og.ExpectedCalls = filterCalls(og.ExpectedCalls, "GetWaste")
 		og.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
 		p := new(OsmosisWebPresenter)
 		result := p.Output(og, nil)
 		assert.Contains(t, result, `"waste"`)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+// このゲームは手詰まり判定を持たないので、ゲートは進行中かどうかだけ。
+func TestOsmosisWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		og := new(interfaces.MockOsmosisGame)
+		setupOsmosisWebMockDefaults(og)
+		og.On("GetHint").Return(&domain.OsmosisHint{FromZone: "reserve", FromCol: 1, ToCol: 2}).Maybe()
+
+		result := new(OsmosisWebPresenter).Output(og, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	t.Run("not once cleared", func(t *testing.T) {
+		og := new(interfaces.MockOsmosisGame)
+		setupOsmosisWebMockDefaults(og)
+		og.ExpectedCalls = filterCalls(og.ExpectedCalls, "GetPhase")
+		og.On("GetPhase").Return(domain.OsmosisPhaseGameClear)
+		og.On("GetHint").Return(&domain.OsmosisHint{FromZone: "reserve", FromCol: 1, ToCol: 2}).Maybe()
+
+		result := new(OsmosisWebPresenter).Output(og, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 

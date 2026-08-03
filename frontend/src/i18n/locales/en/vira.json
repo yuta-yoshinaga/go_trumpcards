@@ -1,0 +1,88 @@
+{
+  "phase": {
+    "bid": "Bid",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetPoints": "Target Points",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump: {{suit}}",
+  "noTrump": "none",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "trickEmpty": "(no cards yet)",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "declarerBadge": "Declarer",
+  "score": "Score: {{score}}",
+  "playerScore": "{{name}}: {{score}} pts",
+  "contract": "Contract: {{contract}}",
+  "contractUndecided": "Contract: undecided",
+  "declarerLine": "Declarer: {{name}} — {{contract}}",
+  "bidLabel": "Bid",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "target": "Rounds",
+  "bidPrompt": "Place a bid (only a higher bid is allowed):",
+  "bid": {
+    "pass": "Pass",
+    "gask": "Gask (7)",
+    "solo": "Solo (8)",
+    "misere": "Misère (0)",
+    "vira": "Vira (10)"
+  },
+  "contractName": {
+    "pass": "Pass",
+    "gask": "Gask (7 tricks)",
+    "solo": "Solo (8 tricks)",
+    "misere": "Misère (0 tricks, no trump)",
+    "vira": "Vira (10 tricks)"
+  },
+  "roundResult": {
+    "title": "Round Result",
+    "tricks": "{{name}} tricks: {{count}}"
+  },
+  "progress": {
+    "line": "Declarer progress: {{won}} / {{needed}} tricks",
+    "misere": "Declarer progress: {{won}} tricks (Misère, target 0)",
+    "made": "Contract made",
+    "failed": "Contract failed"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_high": "As declarer, lead a strong card to start collecting the tricks the contract needs",
+    "lead_low": "As a defender, lead a low card and hold your strength back",
+    "follow_win": "As declarer, go for this trick",
+    "follow_block": "As a defender, block the declarer from taking this trick",
+    "misere_duck": "Misère — duck with a low card so you take no trick at all",
+    "misere_force": "Force a trick onto the Misère declarer"
+  },
+  "tutorial": {
+    "info": "Round, contract (declarer and type), trump, and each player's score are shown here. The first player to reach the target points (default 30) wins. The ★ marks the declarer.",
+    "trick": "Cards played to the current trick appear here. You must follow the led suit, ace high. The highest card wins the trick.",
+    "hand": "This is your hand. During play, click a playable card and press Play.",
+    "actions": "In the bidding phase, buttons appear for Pass / Six (6 tricks) / Misère (0 tricks, no trump) / Seven (7 tricks) / Eight (8 tricks). Bids rank Pass < Six < Misère < Seven < Eight, and only a bid higher than the current highest is selectable. The highest bidder becomes the declarer and plays against the other 2 defenders."
+  },
+  "bidHighest": "Highest bid: {{name}}",
+  "bidNone": "none",
+  "bidTooLow": "Must exceed the current highest bid",
+  "misereBadge": "Special",
+  "misereDesc": "Misère is a special contract aiming to win no tricks; failing it costs heavily.",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available",
+  "pot": "Pot",
+  "potHint": "The pot carries forward to the next round"
+}

@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"runtime"
 	"sync"
-	"time"
 )
 
 // HoldemEquityResult エクイティ計算結果
@@ -90,7 +89,7 @@ func runParallelSimulations(totalSims int, rng *rand.Rand, worker equityWorkerFn
 
 	// rng が nil の場合、一度だけ新しい RNG を生成してシード源とする
 	if rng == nil {
-		rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+		rng = rand.New(rand.NewSource(rand.Int63()))
 	}
 	workerSeeds := make([]int64, numWorkers)
 	for i := range numWorkers {

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"time"
 )
 
 // TonkPlayerCnt Tonkプレイヤー数
@@ -75,7 +74,7 @@ func NewTonk(trumpCards *TrumpCards, players []*TonkPlayer, config TonkConfig) *
 		winnerIdx:   -1,
 		roundNumber: 0,
 		knockerIdx:  -1,
-		rng:         rand.New(rand.NewSource(time.Now().UnixNano())),
+		rng:         rand.New(rand.NewSource(rand.Int63())),
 	}
 }
 
@@ -856,5 +855,10 @@ func (g *Tonk) UnmarshalJSON(data []byte) error {
 	}
 	g.isTonk = j.IsTonk
 	g.isUndercut = j.IsUndercut
+	// **復元したら必ず乱数源を張り直す。**Cloudflare Worker は毎リクエスト KV から
+	// 組み直すので SetRand は一度も呼ばれない。rng を nil のままにすると、
+	// シャッフル以外で rng を使う経路 (CPU の乱択など) が nil デリファレンスで
+	// 落ちる。呼び出し側ごとにガードするのではなく、ここで構造的に潰す。
+	g.rng = rand.New(rand.NewSource(rand.Int63()))
 	return nil
 }

@@ -29,6 +29,10 @@ func setupWhistWebMock() *interfaces.MockWhistGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultWhistConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -209,6 +213,7 @@ func TestWhistWebPresenter_HintOutput(t *testing.T) {
 	t.Run("with hint", func(t *testing.T) {
 		m, _ := setupWhistWebMockWithPlayers()
 		cardIdx := 3
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.WhistHint{CardIndex: &cardIdx, Reason: "follow_suit"})
 
 		result := p.HintOutput(m)
@@ -222,6 +227,7 @@ func TestWhistWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupWhistWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.WhistHint)(nil))
 
 		result := p.HintOutput(m)
@@ -241,4 +247,31 @@ func TestWhistWebPresenter_ActionLogOutput(t *testing.T) {
 
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestWhistWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	whg, _ := setupWhistWebMockWithPlayers()
+	whg.ExpectedCalls = removeMockCall(whg.ExpectedCalls, "GetHint")
+	whg.On("GetHint").Return(&domain.WhistHint{CardIndex: &idx, Reason: "follow_suit"})
+
+	result := new(presenter.WhistWebPresenter).Output(whg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	assert.NotContains(t, result, "whist.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestWhistWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	whg, _ := setupWhistWebMockWithPlayers()
+	whg.ExpectedCalls = removeMockCall(whg.ExpectedCalls, "GetHint")
+	whg.On("GetHint").Return(&domain.WhistHint{CardIndex: &idx, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.WhistWebPresenter).HintOutput(whg), "whist.hintRequested")
+
+	none, _ := setupWhistWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.WhistHint)(nil))
+	assert.Contains(t, new(presenter.WhistWebPresenter).HintOutput(none), "whist.noHint")
 }

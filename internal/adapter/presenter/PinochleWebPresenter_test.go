@@ -37,6 +37,10 @@ func setupPinochleWebMock() *interfaces.MockPinochleGame {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetValidPlayIndices", 0).Return([]int{0, 1})
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -123,6 +127,7 @@ func TestPinochleWebPresenter_Output(t *testing.T) {
 		m.On("GetPlayer", 1).Return(domain.NewPinochlePlayer(false, 1))
 		m.On("GetPlayer", 2).Return(domain.NewPinochlePlayer(false, 0))
 		m.On("GetPlayer", 3).Return(domain.NewPinochlePlayer(false, 1))
+		m.On("GetHint").Return(nil).Maybe()
 
 		result := p.Output(m, nil)
 		var resObj controller.PinochleWebOutput
@@ -146,8 +151,9 @@ func TestPinochleWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.PinochleWebPresenter)
 
 	t.Run("returns hint", func(t *testing.T) {
-		m := setupPinochleWebMock()
+		m, _ := setupPinochleWebMockWithPlayers()
 		bid := 25
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.PinochleHint{BidAmount: &bid, Reason: "hint_bid"})
 
 		result := p.HintOutput(m)
@@ -155,11 +161,12 @@ func TestPinochleWebPresenter_HintOutput(t *testing.T) {
 	})
 
 	t.Run("returns nil hint", func(t *testing.T) {
-		m := setupPinochleWebMock()
+		m, _ := setupPinochleWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.PinochleHint)(nil))
 
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "ヒントなし")
+		assert.Contains(t, result, "pinochle.noHint")
 	})
 }
 
@@ -169,4 +176,35 @@ func TestPinochleWebPresenter_ActionLogOutput(t *testing.T) {
 
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestPinochleWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	png, _ := setupPinochleWebMockWithPlayers()
+	png.ExpectedCalls = removeMockCall(png.ExpectedCalls, "GetHint")
+	png.On("GetHint").Return(&domain.PinochleHint{CardIndex: &idx, Reason: "follow_suit"})
+
+	result := new(presenter.PinochleWebPresenter).Output(png, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	assert.NotContains(t, result, "pinochle.hintRequested")
+}
+
+// **HintOutput は状態レスポンスを返し、「頼んだヒント」の印を付ける。**
+// 以前はヒント構造体を裸で返していて `hint` キーが無かった (#4483)。
+func TestPinochleWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	png, _ := setupPinochleWebMockWithPlayers()
+	png.ExpectedCalls = removeMockCall(png.ExpectedCalls, "GetHint")
+	png.On("GetHint").Return(&domain.PinochleHint{CardIndex: &idx, Reason: "follow_suit"})
+	got := new(presenter.PinochleWebPresenter).HintOutput(png)
+	assert.Contains(t, got, "pinochle.hintRequested")
+	assert.Contains(t, got, `"hint"`)
+	assert.Contains(t, got, `"players"`, "HintOutput must return a state response, not a bare hint")
+
+	none, _ := setupPinochleWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.PinochleHint)(nil))
+	assert.Contains(t, new(presenter.PinochleWebPresenter).HintOutput(none), "pinochle.noHint")
 }

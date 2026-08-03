@@ -85,5 +85,7 @@
     "playButton": "Once a card is selected, play it with this button. In the auction you pass or declare; then choose Cego or Handspiel; if you chose Cego, keep 1 card in the exchange.",
     "info": "Cego is a 4-player trick-taker on the 54-card Baden tarock deck. Once the auction settles the declarer, they choose Cego (keep just one card, lay down the rest, and take the 10-card blind — a gamble) or Handspiel (keep the dealt hand). The declarer plays 1-vs-3 and wins the deal by capturing more than half of the card-points. The player with the highest cumulative score after the set number of deals wins.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

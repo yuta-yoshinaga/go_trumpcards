@@ -26,5 +26,8 @@
     "resetButton": "Start a new game."
   },
   "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
-  "emptyColAria": "column {{col}} (empty)"
+  "emptyColAria": "column {{col}} (empty)",
+  "frontendHint": {
+    "simplesimonMove": "Cards in this column can move to another"
+  }
 }

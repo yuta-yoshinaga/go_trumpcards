@@ -69,5 +69,7 @@
     "trick": "Cards played to the current trick appear here. Follow the led suit. The hidden trump is revealed the moment you can no longer follow. Card points are J=3, 9=2, A=1, 10=1, plus +1 for the last trick — 29 in all. Trick rank is J > 9 > A > 10 > K > Q > 8 > 7, and trumps beat plain cards.",
     "hand": "This is your hand. During play, click a playable card and press Play.",
     "actions": "In the bidding phase, buttons appear for Pass / 16 / 20 / 24 / 28. Only a bid higher than the current highest is selectable. The highest bidder's team picks a hidden trump and plays eight tricks. If the bidding team captures at least its bid in card points it scores +1 game point; otherwise the other team scores +1. The first team to the target game points wins."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

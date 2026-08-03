@@ -39,10 +39,18 @@ func parseYukonOutput(t *testing.T, jsonStr string) *controller.YukonWebOutput {
 	return &out
 }
 
+// setupYukonOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupYukonOutputMock(g *interfaces.MockYukonGame) {
+	setupYukonWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestYukonWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		yg := new(interfaces.MockYukonGame)
-		setupYukonWebMockDefaults(yg)
+		setupYukonOutputMock(yg)
 		p := new(YukonWebPresenter)
 
 		result := parseYukonOutput(t, p.Output(yg, nil))
@@ -53,7 +61,7 @@ func TestYukonWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate with escape available", func(t *testing.T) {
 		yg := new(interfaces.MockYukonGame)
-		setupYukonWebMockDefaults(yg)
+		setupYukonOutputMock(yg)
 		yg.ExpectedCalls = nil
 		yg.On("GetPhase").Return(domain.YukonPhasePlaying).Maybe()
 		yg.On("GetMoveCount").Return(5).Maybe()
@@ -74,7 +82,7 @@ func TestYukonWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate without escape available", func(t *testing.T) {
 		yg := new(interfaces.MockYukonGame)
-		setupYukonWebMockDefaults(yg)
+		setupYukonOutputMock(yg)
 		yg.ExpectedCalls = nil
 		yg.On("GetPhase").Return(domain.YukonPhasePlaying).Maybe()
 		yg.On("GetMoveCount").Return(5).Maybe()
@@ -95,7 +103,7 @@ func TestYukonWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		yg := new(interfaces.MockYukonGame)
-		setupYukonWebMockDefaults(yg)
+		setupYukonOutputMock(yg)
 		yg.ExpectedCalls = nil
 		yg.On("GetPhase").Return(domain.YukonPhaseGameClear).Maybe()
 		yg.On("GetMoveCount").Return(42).Maybe()
@@ -114,7 +122,7 @@ func TestYukonWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		yg := new(interfaces.MockYukonGame)
-		setupYukonWebMockDefaults(yg)
+		setupYukonOutputMock(yg)
 		yg.ExpectedCalls = nil
 		yg.On("GetPhase").Return(domain.YukonPhaseGameOver).Maybe()
 		yg.On("GetMoveCount").Return(10).Maybe()
@@ -133,11 +141,36 @@ func TestYukonWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		yg := new(interfaces.MockYukonGame)
-		setupYukonWebMockDefaults(yg)
+		setupYukonOutputMock(yg)
 		p := new(YukonWebPresenter)
 
 		result := parseYukonOutput(t, p.Output(yg, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestYukonWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		yg := new(interfaces.MockYukonGame)
+		setupYukonWebMockDefaults(yg)
+		yg.On("GetHint").Return(&domain.YukonHint{FromCol: 1, CardIndex: 0, ToZone: "foundation", ToCol: 3}).Maybe()
+
+		result := new(YukonWebPresenter).Output(yg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		yg := new(interfaces.MockYukonGame)
+		setupYukonWebMockDefaults(yg)
+		yg.ExpectedCalls = filterCalls(yg.ExpectedCalls, "IsStalemate")
+		yg.On("IsStalemate").Return(true)
+		yg.On("GetHint").Return(&domain.YukonHint{FromCol: 1, CardIndex: 0, ToZone: "foundation", ToCol: 3}).Maybe()
+
+		result := new(YukonWebPresenter).Output(yg, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 

@@ -1,6 +1,6 @@
 import type { SeahavenTowersResponse } from '../../../types/card';
 import { SeahavenTowersPhase } from '../../../types/phases';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a Seahaven Towers game state as terminal text. */
 export function formatSeahavenTowersState(state: SeahavenTowersResponse): string {
@@ -32,7 +32,7 @@ export function formatSeahavenTowersState(state: SeahavenTowersResponse): string
   lines.push(`moves: ${state.moveCount}`);
 
   if (state.isStalemate) lines.push('Stalemate - no more moves possible');
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     lines.push(
       `HINT: ${state.hint.fromZone}${state.hint.fromCol >= 0 ? state.hint.fromCol : ''} → ${state.hint.toZone}${state.hint.toCol >= 0 ? state.hint.toCol : ''}`,
     );

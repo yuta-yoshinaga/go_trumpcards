@@ -1,5 +1,9 @@
 {
-  "phase": { "playing": "プレイ中", "gameClear": "ゲームクリア", "gameOver": "ゲームオーバー" },
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
   "title": "ダブル・クロンダイク",
   "stock": "ストック",
   "waste": "山札（めくり）",
@@ -27,5 +31,9 @@
     "rules": "場札は色違いの降順に重ね、組札はスートごとにA→Kで積み上げます。104枚すべてを組札に上げるとクリアです。",
     "actionButtons": "めくる・ヒント・元に戻す・ギブアップなどの操作ボタンです。",
     "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "frontendHint": {
+    "dklondikeToFoundation": "この札を台札へ上げられます",
+    "dklondikeToTableau": "この札を別の列へ移せます"
   }
 }

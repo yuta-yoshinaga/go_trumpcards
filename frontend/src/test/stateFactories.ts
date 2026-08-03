@@ -1,4 +1,5 @@
 import type {
+  AluetteResponse,
   AnacondaResponse,
   BasraResponse,
   BeziqueResponse,
@@ -13,6 +14,7 @@ import type {
   EscobaResponse,
   FortyFivesResponse,
   FrenchTarotResponse,
+  GanjifaResponse,
   GongZhuResponse,
   GoStopBreakdown,
   GoStopResponse,
@@ -28,6 +30,7 @@ import type {
   ManilleResponse,
   MariasResponse,
   MichiganResponse,
+  MinchiateResponse,
   MusResponse,
   NapResponse,
   OmbreResponse,
@@ -44,6 +47,7 @@ import type {
   SpoilFiveResponse,
   SuecaResponse,
   TablanetResponse,
+  TarocchiniResponse,
   TeenPattiResponse,
   ThreeCardBragResponse,
   TrenteEtQuaranteResponse,
@@ -53,6 +57,7 @@ import type {
   TwoTenJackResponse,
   TysiacResponse,
   UltiResponse,
+  ViraResponse,
   WattenResponse,
 } from '../types/card';
 
@@ -2566,6 +2571,219 @@ export function makeTeenPattiState(overrides?: Partial<TeenPattiResponse>): Teen
   return { ...baseTeenPattiState, ...overrides };
 }
 
+/**
+ * Base Aluette state used as the default for {@link makeAluetteState}.
+ *
+ * A 4-player Breton 2v2 trick-taker on a 48-card Spanish-suited deck. There is
+ * no trump suit and no follow obligation, so `playableIndices` is the whole
+ * hand on a human turn. The `luettes` table is what the backend sends on every
+ * response — the six named cards, strongest first.
+ */
+const baseAluetteState: AluetteResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        // 金貨の3 = Monsieur。同じ 3 でも剣の3 はただの札で、そこが眼目。
+        { design: 'DIAMOND' as const, value: 3 },
+        { design: 'SPADE' as const, value: 3 },
+        { design: 'HEART' as const, value: 9 },
+        { design: 'CLOVER' as const, value: 7 },
+        { design: 'SPADE' as const, value: 12 },
+      ],
+      trickCount: 0,
+      team: 0,
+      isDealer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], trickCount: 0, team: 1, isDealer: false },
+    { id: 2, isHuman: false, cardCount: 5, cards: [], trickCount: 0, team: 0, isDealer: false },
+    { id: 3, isHuman: false, cardCount: 5, cards: [], trickCount: 0, team: 1, isDealer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 1,
+  dealerIdx: 0,
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundTricks: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2, 3, 4],
+  luettes: [
+    { design: 'DIAMOND', value: 3, name: 'Monsieur' },
+    { design: 'HEART', value: 3, name: 'Madame' },
+    { design: 'HEART', value: 2, name: 'Borgne' },
+    { design: 'DIAMOND', value: 2, name: 'Vache' },
+    { design: 'HEART', value: 9, name: 'GrandNeuf' },
+    { design: 'DIAMOND', value: 9, name: 'PetitNeuf' },
+  ],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 5 },
+};
+
+/** Builds an Aluette state for tests, overriding fields of the default human play turn. */
+export function makeAluetteState(overrides?: Partial<AluetteResponse>): AluetteResponse {
+  return { ...baseAluetteState, ...overrides };
+}
+
+/**
+ * Base Minchiate state used as the default for {@link makeMinchiateState}.
+ * A 4-player Florentine 2v2 tarot trick-taker on a 97-card deck; defaults to a
+ * human play turn with the dealer's scarto already done.
+ */
+const baseMinchiateState: MinchiateResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 21,
+      cards: [
+        { design: 'SPADE' as const, value: 14, glyph: '\u2660', label: 'Re', color: 'black', deck: 'tarot' },
+        // 切札は番号ではなく呼び名。40 枚あるので番号だけでは何の札か分からない。
+        { design: 'JOKER' as const, value: 39, glyph: '\u2726', label: 'Angelo', color: 'purple', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 12, glyph: '\u2726', label: 'Eremita', color: 'purple', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      team: 0,
+      isDealer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 21, cards: [], trickCount: 0, team: 1, isDealer: false },
+    { id: 2, isHuman: false, cardCount: 21, cards: [], trickCount: 0, team: 0, isDealer: false },
+    { id: 3, isHuman: false, cardCount: 21, cards: [], trickCount: 0, team: 1, isDealer: false },
+  ],
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 1,
+  dealerIdx: 0,
+  scartoCount: 13,
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundTricks: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  isHumanScarto: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 4 },
+};
+
+/** Builds a Minchiate state for tests, overriding fields of the default human play turn. */
+export function makeMinchiateState(overrides?: Partial<MinchiateResponse>): MinchiateResponse {
+  return { ...baseMinchiateState, ...overrides };
+}
+
+/**
+ * Base Tarocchini state used as the default for {@link makeTarocchiniState}.
+ * A 4-player Bolognese 2v2 tarot trick-taker; defaults to a human play turn
+ * with the dealer's scarto already done.
+ */
+const baseTarocchiniState: TarocchiniResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 15,
+      cards: [
+        // 62 枚デッキには専用アートが無く、全札が手続き記述子で届く。
+        { design: 'SPADE' as const, value: 14, glyph: '\u2660', label: 'Re', color: 'black', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 20, glyph: '\u2726', label: '20', color: 'purple', deck: 'tarot' },
+        // パパは番号ではなく Papa。色も通常の切札と変える。
+        { design: 'JOKER' as const, value: 2, glyph: '\u2726', label: 'Papa', color: 'green', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      team: 0,
+      isDealer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 15, cards: [], trickCount: 0, team: 1, isDealer: false },
+    { id: 2, isHuman: false, cardCount: 15, cards: [], trickCount: 0, team: 0, isDealer: false },
+    { id: 3, isHuman: false, cardCount: 15, cards: [], trickCount: 0, team: 1, isDealer: false },
+  ],
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 1,
+  dealerIdx: 0,
+  scartoCount: 2,
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundTricks: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  isHumanScarto: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 4 },
+};
+
+/** Builds a Tarocchini state for tests, overriding fields of the default human play turn. */
+export function makeTarocchiniState(overrides?: Partial<TarocchiniResponse>): TarocchiniResponse {
+  return { ...baseTarocchiniState, ...overrides };
+}
+
+/**
+ * Base Ganjifa state used as the default for {@link makeGanjifaState}. A 3-player
+ * Mughal-era trick-taker on a 96-card 8-suit deck; defaults to a human play turn
+ * with a strong-group trump (design 1).
+ */
+const baseGanjifaState: GanjifaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 32,
+      cards: [
+        // The Go side maps designs 1-4 onto the standard suit names and everything
+        // above onto 'JOKER'; only `deck`/`glyph` actually drive the rendering.
+        { design: 'SPADE' as const, value: 12, glyph: '\u265b', label: '12', color: 'black', deck: 'ganjifa' },
+        { design: 'JOKER' as const, value: 1, glyph: '\u266a', label: '1', color: 'blue', deck: 'ganjifa' },
+        { design: 'CLOVER' as const, value: 7, glyph: '\u2020', label: '7', color: 'black', deck: 'ganjifa' },
+      ],
+      trickCount: 0,
+      score: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 32, cards: [], trickCount: 0, score: 0 },
+    { id: 2, isHuman: false, cardCount: 32, cards: [], trickCount: 0, score: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  trumpSuit: 1,
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  roundTricks: [0, 0, 0],
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 3 },
+};
+
+/** Builds a Ganjifa state for tests, overriding fields of the default human play turn. */
+export function makeGanjifaState(overrides?: Partial<GanjifaResponse>): GanjifaResponse {
+  return { ...baseGanjifaState, ...overrides };
+}
+
 /** Base Préférence state used as the default for {@link makePreferenceState}. A 3-player Russian bidding trick-taker; defaults to a human Bid turn. */
 const basePreferenceState: PreferenceResponse = {
   players: [
@@ -2617,6 +2835,63 @@ const basePreferenceState: PreferenceResponse = {
  */
 export function makePreferenceState(overrides?: Partial<PreferenceResponse>): PreferenceResponse {
   return { ...basePreferenceState, ...overrides };
+}
+
+/** Base Vira state used as the default for {@link makeViraState}. A 3-player Swedish bidding trick-taker settled through a carried-forward pot; defaults to a human Bid turn. */
+/** Base Vira state used as the default for {@link makeViraState}. A 3-player Swedish bidding trick-taker settled through a carried-forward pot; defaults to a human Bid turn. */
+const baseViraState: ViraResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 13,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 13, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 13, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  declarerIdx: -1,
+  contract: 0,
+  trumpSuit: 0,
+  bids: [0, 0, 0],
+  pot: 3,
+  lastRoundDelta: [0, 0, 0],
+  lastRoundMade: false,
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  roundTricks: [0, 0, 0],
+  playableIndices: [],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: false,
+  isHumanBidTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 6 },
+};
+
+/**
+ * Creates a {@link ViraResponse} with sensible defaults (a human Bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial ViraResponse fields to override.
+ * @returns A complete ViraResponse suitable for use in tests.
+ */
+export function makeViraState(overrides?: Partial<ViraResponse>): ViraResponse {
+  return { ...baseViraState, ...overrides };
 }
 
 /** Base Nap (Napoleon) state used as the default for {@link makeNapState}. Defaults to a human Bid turn. */

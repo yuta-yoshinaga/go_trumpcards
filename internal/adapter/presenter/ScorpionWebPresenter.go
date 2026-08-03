@@ -17,6 +17,19 @@ type ScorpionWebPresenter struct{}
 func (p *ScorpionWebPresenter) Output(s interfaces.ScorpionGame, lastErr error) string {
 	resObj := p.buildBase(s)
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if s.GetPhase() == domain.ScorpionPhasePlaying && !s.IsStalemate() {
+		if hint := s.GetHint(); hint != nil {
+			resObj.Hint = &controller.ScorpionWebOutputHint{
+				FromCol:   hint.FromCol,
+				CardIndex: hint.CardIndex,
+				ToCol:     hint.ToCol,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

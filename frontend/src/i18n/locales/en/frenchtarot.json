@@ -92,5 +92,7 @@
     "playButton": "Once a card is selected, play it with this button. In the auction you pass or declare Petite / Garde / Garde Sans / Garde Contre. In the chien phase you bury 6 cards.",
     "info": "French Tarot is a 4-player trick-taker on the 78-card deck. The highest bidder in the auction becomes the declarer versus three CPU defenders. On Petite/Garde the 6-card chien is revealed and merged into the hand, then 6 cards are buried. The declarer wins the deal by reaching a card-point target that depends on the number of bouts (trumps 1, 21, and the Excuse). Multipliers: Petite ×1, Garde ×2, Garde Sans ×4, Garde Contre ×6. The player with the highest cumulative score after the set number of deals wins.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

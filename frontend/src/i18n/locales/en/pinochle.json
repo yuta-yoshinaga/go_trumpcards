@@ -76,5 +76,7 @@
     "resetButton": "Press the reset button to start a new game."
   },
   "bidAmountLabel": "Bid amount (min {{min}})",
-  "bidTooLow": "Bid must be at least {{min}}."
+  "bidTooLow": "Bid must be at least {{min}}.",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

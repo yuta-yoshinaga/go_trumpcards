@@ -13,6 +13,20 @@ type PitchWebPresenter struct{}
 func (p *PitchWebPresenter) Output(s interfaces.PitchGame, lastErr error) string {
 	resObj := p.buildBase(s)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(s, s.GetCurrentTrick(), lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**Pitch.GetHint() が自分で
+	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
+	if hint := s.GetHint(); hint != nil {
+		resObj.Hint = &controller.PitchWebOutputHint{
+			CardIndex: hint.CardIndex,
+			Bid:       hint.Bid,
+			Reason:    hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 

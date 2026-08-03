@@ -42,6 +42,10 @@ func setupDoppelkopfWebMock() *interfaces.MockDoppelkopfGame {
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultDoppelkopfConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -199,6 +203,7 @@ func TestDoppelkopfWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint with card indices", func(t *testing.T) {
 		m, _ := setupDoppelkopfWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.DoppelkopfHint{CardIndices: []int{2}, Reason: "follow_win"})
 		result := p.HintOutput(m)
 		var resObj controller.DoppelkopfWebOutput
@@ -210,6 +215,7 @@ func TestDoppelkopfWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupDoppelkopfWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.DoppelkopfHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.DoppelkopfWebOutput
@@ -227,4 +233,30 @@ func TestDoppelkopfWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestDoppelkopfWebPresenterOutputCarriesTheHint(t *testing.T) {
+	dkg, _ := setupDoppelkopfWebMockWithPlayers()
+	dkg.ExpectedCalls = removeMockCall(dkg.ExpectedCalls, "GetHint")
+	dkg.On("GetHint").Return(&domain.DoppelkopfHint{CardIndices: []int{0}, Reason: "follow_suit"})
+
+	result := new(presenter.DoppelkopfWebPresenter).Output(dkg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "doppelkopf.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestDoppelkopfWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	dkg, _ := setupDoppelkopfWebMockWithPlayers()
+	dkg.ExpectedCalls = removeMockCall(dkg.ExpectedCalls, "GetHint")
+	dkg.On("GetHint").Return(&domain.DoppelkopfHint{CardIndices: []int{0}, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.DoppelkopfWebPresenter).HintOutput(dkg), "doppelkopf.hintRequested")
+
+	none, _ := setupDoppelkopfWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.DoppelkopfHint)(nil))
+	assert.Contains(t, new(presenter.DoppelkopfWebPresenter).HintOutput(none), "doppelkopf.noHint")
 }

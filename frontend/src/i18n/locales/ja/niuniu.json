@@ -1,0 +1,33 @@
+{
+  "phase": {
+    "bet": "ベット",
+    "end": "精算"
+  },
+  "chips": "チップ",
+  "banker": "親",
+  "bankerHand": "親の手",
+  "bet": "賭け金",
+  "multiplier": "x{{mult}}",
+  "betLabel": "賭け金を選んでください",
+  "betAmount": "{{amount}}",
+  "placeBet": "賭け金を選んでください",
+  "roundOver": "{{result}}",
+  "nextRound": "次の局へ",
+  "comboHint": "★ の3枚が10の倍数を作っています",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "seatAriaLabel": "{{name}} の手 {{rank}}",
+  "hiddenHandAriaLabel": "{{name}} の手は伏せられています",
+  "bankerHandAriaLabel": "親の手 {{rank}}",
+  "hiddenBankerHandAriaLabel": "親の手は伏せられています",
+  "tutorial": {
+    "combo": "5枚のうち**3枚の合計が10の倍数**になる組み合わせを探します。見つかれば「牛あり」で、**★ が付いた3枚**がそれです。",
+    "rank": "**残り2枚の合計の下1桁**が役の強さです。**0なら牛牛**（最強）、1〜9ならそれぞれ牛1〜牛9。どの3枚でも作れなければ**無牛**で最弱です。",
+    "multiplier": "配当は役で変わります。**牛牛が3倍、牛7〜牛9が2倍**、あとは等倍。**勝った側の役の倍率**が使われるので、親が牛牛なら3倍取られます。",
+    "noChoice": "このゲームに**手番の選択肢はありません**。配られた5枚で役が決まるので、賭けた時点で結果まで確定します。",
+    "controls": "賭け金と次の局の操作ボタンです。"
+  },
+  "frontendHint": {
+    "niuniuStakeCap": "賭けられるのは持ち点 ÷ 最大倍率までです。親のニウニウは 3 倍払いになります",
+    "niuniuStackTooShort": "最大倍率を賭けきれる持ち点がありません"
+  }
+}

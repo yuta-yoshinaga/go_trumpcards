@@ -836,7 +836,8 @@ describe('useGameHint', () => {
     expect(result.current.hint?.reason).toBe('frontendHint.accordionOffset3');
   });
 
-  it('routes trash through getTrashHint (always null — decisional hints n/a)', () => {
+  // Trash はもうスタブではない。人間の手番なら「引く」を返す (#4557 完了時に実装)。
+  it('routes trash through getTrashHint', () => {
     localStorage.setItem('hint_enabled_trash', 'true');
     const state: TrashResponse = {
       phase: 0,
@@ -852,7 +853,7 @@ describe('useGameHint', () => {
       message: '',
     };
     const { result } = renderHook(() => useGameHint('trash', state));
-    expect(result.current.hint).toBeNull();
+    expect(result.current.hint?.targetAction).toBe('draw');
   });
 
   it('routes slapjack through getSlapjackHint (slap when Jack is on top)', () => {
@@ -1130,5 +1131,63 @@ describe('useGameHint', () => {
     const { result } = renderHook(() => useGameHint('osmosis', state as OsmosisResponse));
     expect(result.current.hint).not.toBeNull();
     expect(result.current.hint?.targetAction).toBe('moveToFoundation');
+  });
+});
+
+// **登録行が実装に繋がっているかを直接見る。**ページテストではこれを検証できない
+// —— どのページも `vi.mock('../hooks/useGameHint')` でフックごと差し替えるので、
+// `hintFactories` の行は一度も走らない。#4637 の codecov が 4 行を未カバーと
+// 指摘したのはそのため。
+describe('hintFactories wiring', () => {
+  const CASES = [
+    {
+      game: 'sultan',
+      state: { hint: { fromZone: 'tableau', fromIdx: 0, toFoundation: 0 } },
+      reason: 'frontendHint.sultanMove',
+    },
+    {
+      game: 'crescent',
+      state: { hint: { fromCol: 0, toZone: 'foundation', toCol: 0, redeal: false } },
+      reason: 'frontendHint.crescentMove',
+    },
+    {
+      game: 'fortythieves',
+      state: { hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 } },
+      reason: 'frontendHint.fortythievesMove',
+    },
+    {
+      game: 'fortyandeight',
+      state: { hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 } },
+      reason: 'frontendHint.fortyandeightMove',
+    },
+    {
+      game: 'ganjifa',
+      state: { hint: { cardIndices: [0], reason: 'lead_high' } },
+      reason: 'hint.lead_high',
+    },
+    {
+      game: 'tarocchini',
+      state: { hint: { cardIndices: [0], reason: 'play_papa' } },
+      reason: 'hint.play_papa',
+    },
+    {
+      game: 'minchiate',
+      state: { hint: { cardIndices: [0], reason: 'lead_trump' } },
+      reason: 'hint.lead_trump',
+    },
+  ] as const;
+
+  it.each(CASES)('$game returns a hint rather than the null stub', ({ game, state }) => {
+    localStorage.setItem(`hint_enabled_${game}`, 'true');
+    // biome-ignore lint/suspicious/noExplicitAny: フィクスチャは各ゲームの応答の一部だけを持つ
+    const { result } = renderHook(() => useGameHint(game, state as any));
+    expect(result.current.hint).not.toBeNull();
+  });
+
+  it.each(CASES)('$game keeps returning null without a server hint', ({ game }) => {
+    localStorage.setItem(`hint_enabled_${game}`, 'true');
+    // biome-ignore lint/suspicious/noExplicitAny: 同上
+    const { result } = renderHook(() => useGameHint(game, {} as any));
+    expect(result.current.hint).toBeNull();
   });
 });

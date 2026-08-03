@@ -48,6 +48,21 @@ func (p *EightOffWebPresenter) Output(e interfaces.EightOffGame, lastErr error) 
 	}
 
 	// メッセージ
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if e.GetPhase() == domain.EightOffPhasePlaying && !e.IsStalemate() {
+		if hint := e.GetHint(); hint != nil {
+			resObj.Hint = &controller.EightOffWebOutputHint{
+				FromZone:  hint.FromZone,
+				FromCol:   hint.FromCol,
+				CardIndex: hint.CardIndex,
+				ToZone:    hint.ToZone,
+				ToCol:     hint.ToCol,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

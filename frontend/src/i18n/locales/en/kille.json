@@ -1,0 +1,65 @@
+{
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "round": "Round {{n}}",
+  "dealer": "Dealer",
+  "pot": "Pot: {{count}}",
+  "stock": "Stock: {{count}}",
+  "playersTitle": "Players",
+  "chips": "Chips {{n}}",
+  "yourCard": "Your card",
+  "hidden": "?",
+  "out": "out",
+  "outHussar": "cut down by the Hussar",
+  "outPig": "bitten by the Pig",
+  "outLowest": "lowest card",
+  "eliminated": "eliminated",
+  "satisfied": "stands pat",
+  "reentriesUsed": "Buy-backs {{used}}/{{max}}",
+  "turnNotice": "Your turn — challenge your left neighbour, or keep your card.",
+  "dealerNotice": "You are the dealer — you swap with the stock, not a neighbour, and nobody can challenge you.",
+  "exchangeButton": "Exchange",
+  "exchangeDealerButton": "Swap with the stock",
+  "satisfiedButton": "Keep my card",
+  "reenterButton": "Buy back in ({{cost}})",
+  "reenterExhausted": "You may buy back in at most three times.",
+  "nextRound": "Next round",
+  "showdownTitle": "Showdown",
+  "loserLine": "{{name}} goes out ({{reason}})",
+  "eventsTitle": "Exchanges this round",
+  "event": {
+    "swap": "{{actor}} exchanged with {{target}}",
+    "satisfied": "{{actor}} kept their card",
+    "cuckoo": "{{target}} held the Cuckoo — no swap, and the round ends here",
+    "hussar": "{{target}} held the Hussar — the challenger {{actor}} goes out",
+    "pig": "{{target}} held the Pig — the swap unwinds and {{target}} goes out",
+    "pass": "{{actor}}'s challenge was passed to the next seat",
+    "stock": "{{actor}} swapped with the stock"
+  },
+  "deckTitle": "The pack, strongest first",
+  "deckNote": "42 cards of its own: 21 denominations twice over, a single suit. The five cards with an effect are colour-coded.",
+  "rulesNote": "A Harlequin received in an exchange is the LOWEST card, not the highest.",
+  "settings": {
+    "title": "Settings",
+    "stake": "Stake per round"
+  },
+  "phase": {
+    "exchange": "Exchange",
+    "showdown": "Showdown",
+    "gameEnd": "Game over"
+  },
+  "win": "You win!",
+  "lose": "{{name}} wins.",
+  "tutorial": {
+    "info": "Round number, the pot and the stock are shown here.",
+    "players": "Each seat's chips and buy-backs. Everyone else's card stays face down until the showdown.",
+    "card": "Your single card. The lowest hand at the showdown goes out.",
+    "actions": "On your turn, exchange with your left neighbour or keep your card. As dealer you swap with the stock instead.",
+    "resetButton": "Reset the game at any time with this button."
+  },
+  "frontendHint": {
+    "killeSwapLow": "A weak card — swap with your neighbour",
+    "killeSwapStock": "A weak card — as dealer you swap with the stock, and nobody can refuse",
+    "killeKeepHigh": "Strong enough to stand on — declare satisfied"
+  }
+}

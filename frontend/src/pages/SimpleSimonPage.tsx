@@ -2,15 +2,18 @@ import { useEffect, useState } from 'react';
 import { simplesimonApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -19,6 +22,7 @@ import type { Card } from '../types/card';
 import { SimpleSimonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { hintCheckboxItem } from '../utils/settingsItems';
 import { simpleSimonAutoMoveTarget } from '../utils/simpleSimonAutoMoveTarget';
 import { isGrabbable, movableFromIndex } from '../utils/simpleSimonRun';
 
@@ -80,6 +84,12 @@ function SimpleSimonPageContent() {
   const phaseNames = usePhaseNames('simplesimon', SS_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const w = Math.round(cardWidth * 0.58);
+
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('simplesimon', state);
 
   if (!state) return <GameSkeleton gameKey="simplesimon" layout={{ kind: 'tableau', topRow: 0, tableau: 10 }} />;
 
@@ -230,6 +240,13 @@ function SimpleSimonPageContent() {
         )}
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+        <SettingsPanel
+          title={tc('settings.title')}
+          groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+        />
+
         <ActionLogSection
           isEndPhase={isEnd}
           actionLog={actionLog}

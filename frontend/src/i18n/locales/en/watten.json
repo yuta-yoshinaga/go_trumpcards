@@ -89,5 +89,7 @@
     "playButton": "Once a card is selected, play it with this button. As lead you may Raise the stake; if raised, respond with Hold or Fold. In the Declare phase, pick a Schlag rank and critical suit and declare.",
     "info": "Watten is a Bavarian/Austrian 4-player, 2-team trick-taker. Five cards are dealt from a 32-card pack; the dealer declares a Schlag rank and a critical (trump) suit. A team that wins at least three of the five tricks scores the stake, and the first team to 15 (configurable) wins the match.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

@@ -1,0 +1,23 @@
+{
+  "helpTitle": "Chinese Ten",
+  "helpPlay": "  p <i>                    play a card from your hand",
+  "helpSelect": "  s <i>                    choose which layout card to take",
+  "header": "stock {{stock}} · tie score {{tie}}",
+  "ruleLine": "capture: A-9 sum to ten, 10-K by rank / only the red cards (H/D) score",
+  "layoutLine": "layout: {{cards}}",
+  "playerLine": "{{name}}: {{score}} pt ({{cards}} in hand)",
+  "capturedLine": "captured: {{cards}}",
+  "pendingLine": "played: {{card}}",
+  "promptPlay": "p <i> to play (a card is then turned from the stock as well)",
+  "promptSelect": "s <i> to choose which layout card to take",
+  "gameEndWin": "You win!",
+  "gameEndLose": "You lose",
+  "gameEndDraw": "Draw",
+  "hintPlay": "suggested: hand[{{idx}}] -- {{reason}}",
+  "hintSelect": "suggested: layout[{{idx}}] -- {{reason}}",
+  "hintNone": "No hint available",
+  "hintReasonGameEnd": "this game is over",
+  "hintReasonNotYourTurn": "it is not your turn",
+  "hintReasonSelect": "this is the most valuable card you may take",
+  "hintReasonPlay": "this card captures the most points"
+}

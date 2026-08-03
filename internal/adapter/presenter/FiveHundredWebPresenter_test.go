@@ -136,3 +136,24 @@ func TestFiveHundredWebPresenter_PhaseMessages(t *testing.T) {
 		t.Errorf("game-end message missing: %s", out)
 	}
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// Output 側にゲートは置きません。FiveHundred.GetHint() が「人間の手番で、かつ
+// 行動を選べる状態か」を自分で確かめて nil を返します。
+func TestFiveHundredWebPresenterOutputCarriesTheHint(t *testing.T) {
+	g := newFiveHundredGame()
+	g.SetContract(domain.FiveHundredContractSuit, 7, domain.CardDesignSpade)
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	g.SetPhase(domain.FiveHundredPhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	if g.GetHint() == nil {
+		t.Fatal("fixture must actually produce a hint")
+	}
+
+	result := new(presenter.FiveHundredWebPresenter).Output(g, nil)
+	if !strings.Contains(result, `"hint"`) {
+		t.Error("Output must carry the hint -- the frontend reads state.hint")
+	}
+}

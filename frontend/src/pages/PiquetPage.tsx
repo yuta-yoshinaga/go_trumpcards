@@ -5,10 +5,12 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePiquetGame } from '../hooks/usePiquetGame';
 import { badgeErrorColors, badgeSuccessColors } from '../styles/badgeStyles';
@@ -17,6 +19,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { PiquetDeclaration, PiquetPlayerData, PiquetResponse } from '../types/card';
 import { PiquetDeclarationKind, PiquetExchangeTurn, PiquetPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { isRequestedHint } from '../utils/hintRequest';
 import { type DeclarationHighlight, declarationHighlight } from '../utils/piquetDeclarationHighlight';
 
 const HIGHLIGHT_MS = 1500;
@@ -61,6 +64,14 @@ function PiquetPageContent() {
   const [selectedDiscards, setSelectedDiscards] = useState<number[]>([]);
   const [activeHighlight, setActiveHighlight] = useState<DeclarationHighlight | null>(null);
   const prevDeclLenRef = useRef(0);
+
+  // **フックは早期 return より上。**`if (!state) return <GameSkeleton>` の
+  // 下に置くと、初回レンダーだけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('piquet', state);
 
   const human = state?.players.find((p) => p.isHuman);
   const elderIdx = state?.elderIdx ?? 0;
@@ -187,6 +198,7 @@ function PiquetPageContent() {
                     key={`hand-${i}-${c.design}-${c.value}`}
                     type="button"
                     aria-pressed={humanCanExchange ? selected : undefined}
+                    data-hint-action={humanCanExchange ? 'discard' : 'play'}
                     className="rounded"
                     onClick={handleClick}
                     disabled={handleClick == null}
@@ -205,6 +217,7 @@ function PiquetPageContent() {
           <button
             type="button"
             onClick={handleElderExchange}
+            data-hint-action="discard"
             disabled={selectedDiscards.length < 1 || selectedDiscards.length > 5}
             className={btnPrimary}
           >
@@ -215,6 +228,7 @@ function PiquetPageContent() {
           <button
             type="button"
             onClick={handleYoungerExchange}
+            data-hint-action="discard"
             disabled={selectedDiscards.length > 3}
             className={btnPrimary}
           >
@@ -244,7 +258,18 @@ function PiquetPageContent() {
         />
       </div>
 
-      {state.hint ? (
+      <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mt-2 cursor-pointer min-h-[44px]">
+        <input
+          type="checkbox"
+          checked={frontendHintEnabled}
+          onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+        />
+        {tc('hint.toggle', { ns: 'tutorial' })}
+      </label>
+
+      <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+      {state.hint && isRequestedHint(state) ? (
         <p className="mt-2 text-sm text-ds-accent" data-testid="piquet-hint">
           {state.hint.cardIndex !== undefined
             ? t('hintPlay', { index: state.hint.cardIndex })

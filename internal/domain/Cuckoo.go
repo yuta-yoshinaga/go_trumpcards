@@ -33,7 +33,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"time"
 )
 
 // CuckooPlayerCnt Cuckoo プレイヤー数 (人間 1 + CPU 3)
@@ -97,7 +96,7 @@ func NewCuckoo(trumpCards *TrumpCards, players []*CuckooPlayer, config CuckooCon
 		roundLowest:     -1,
 		revealedKings:   make([]bool, len(players)),
 		roundLosers:     make([]int, 0),
-		rng:             rand.New(rand.NewSource(time.Now().UnixNano())),
+		rng:             rand.New(rand.NewSource(rand.Int63())),
 	}
 }
 
@@ -775,7 +774,7 @@ func (g *Cuckoo) UnmarshalJSON(data []byte) error {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
 	if g.rng == nil {
-		g.rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+		g.rng = rand.New(rand.NewSource(rand.Int63()))
 	}
 	return nil
 }

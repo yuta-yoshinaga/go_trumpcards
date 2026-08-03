@@ -1,0 +1,62 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "foundation": "組札",
+  "tableau": "場札",
+  "terrace": "テラス",
+  "stock": "山札",
+  "waste": "捨て札",
+  "draw": "めくる",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "empty": "空",
+  "baseRankLabel": "開始ランク",
+  "baseRankUnset": "未決定",
+  "chooseBaseBanner": "最初に組札へ送った札のランクが、8つの組札すべての開始ランクになります",
+  "foundationAriaLabel": "組札{{idx}} {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札{{idx}}",
+  "emptyPileAriaLabel": "空の山 {{pile}}",
+  "terraceAriaLabel": "テラス 残り{{count}}枚（組札にのみ出せます）",
+  "emptyTerraceAriaLabel": "テラスは空です",
+  "stockAriaLabel": "山札 残り{{count}}枚",
+  "emptyStockAriaLabel": "山札は空です（めくり直しはありません）",
+  "emptyWasteAriaLabel": "捨て札は空です",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "組札へ送れる札があると有効になります",
+  "undo": "元に戻す",
+  "stalemate": "手詰まりです",
+  "playing": "カードを移動してください",
+  "chooseBase": "最初の1枚を組札へ送って開始ランクを決めてください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "gameOverSummary": "組札 {{count}}/104 枚（{{percent}}%）まで到達",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "tutorial": {
+    "foundation": "組札は8つ。**同じスートではなく「色違い」で1つずつ上げます。** 開始ランクはあなたが決め、K の次は A に折り返して13枚。8×13＝104枚でクリアです。",
+    "terrace": "左の11枚が「テラス」。**一番上の1枚は組札にしか出せません。場札へは動かせず、減っても補充されません。** ここを詰まらせるのが最大の敗因です。",
+    "tableau": "場札は9山。**色違いの降順**で、A の下には K を置けます。**1枚ずつしか動かせません。**",
+    "emptyPile": "山が空くと、捨て札（無ければ山札）から**自動的に**埋まります。手で埋める操作はありません。",
+    "stock": "山札は1枚ずつ捨て札へ。**めくり直しはありません（1巡のみ）。**",
+    "controls": "めくる・ヒント・元に戻す・自動完成などの操作ボタンです。"
+  },
+  "frontendHint": {
+    "tableau": "山{{pile}}",
+    "foundation": "組札{{idx}}",
+    "terrace": "テラス",
+    "waste": "捨て札",
+    "stock": "山札"
+  },
+  "hintReason": {
+    "chooseBase": "まず開始ランクを決めないと組札が動きません",
+    "fromTerrace": "テラスは組札にしか出せず補充もされません。動かせるうちに減らしましょう",
+    "toFoundation": "このカードを組札に上げると場が1枚軽くなります",
+    "toTableau": "示唆された場札への移動で山を掘り出しましょう",
+    "draw": "動かせる札が無いので、山札をめくって手を増やしましょう"
+  }
+}

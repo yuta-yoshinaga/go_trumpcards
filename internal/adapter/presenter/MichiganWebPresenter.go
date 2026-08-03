@@ -17,6 +17,19 @@ type MichiganWebPresenter struct{}
 func (p *MichiganWebPresenter) Output(g interfaces.MichiganGame, lastErr error) string {
 	resObj := p.buildBase(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **手番の判定は Michigan.GetHint() を読んで確かめた。**他ゲームがそうだから、で
+	// 済ませない —— Pinochle は見ていなくて CPU の手が漏れた (#4585)。
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.MichiganWebOutputHint{
+			CardIndex: hint.CardIndex,
+			Reason:    hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -172,6 +185,13 @@ func (p *MichiganWebPresenter) HintOutput(g interfaces.MichiganGame) string {
 			CardIndex: hint.CardIndex,
 			Reason:    hint.Reason,
 		}
+	}
+	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。
+	if g.GetHint() != nil {
+		resObj.MessageCode = "michigan.hintRequested"
+	} else {
+		resObj.MessageCode = "michigan.noHint"
 	}
 	return marshalOrError(resObj)
 }

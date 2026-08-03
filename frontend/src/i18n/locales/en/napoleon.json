@@ -118,5 +118,7 @@
     "playerHand": "Your hand. Select a card to play.",
     "scoreTable": "Score table showing Napoleon team vs. Allied forces.",
     "resetButton": "Press the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

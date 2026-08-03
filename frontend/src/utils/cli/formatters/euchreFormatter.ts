@@ -1,5 +1,12 @@
 import type { EuchreResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const SUIT_NAMES: Record<number, string> = { 1: 'Spade', 2: 'Clover', 3: 'Heart', 4: 'Diamond' };
 
@@ -33,7 +40,7 @@ export function formatEuchreState(state: EuchreResponse): string {
     lines.push(`trick: ${parts.join(', ')}`);
   }
 
-  if (state.hint) lines.push(`HINT: ${state.hint.reason}`);
+  if (state.hint && isRequestedHint(state)) lines.push(`HINT: ${state.hint.reason}`);
 
   if (state.message) lines.push(state.message);
   if (state.gameEndFlag) lines.push(`Game Over! Winner: Team ${state.winnerTeam}`);

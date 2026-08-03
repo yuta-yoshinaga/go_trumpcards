@@ -29,6 +29,10 @@ func setupSpadesWebMock() *interfaces.MockSpadesGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultSpadesConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -404,6 +408,7 @@ func TestSpadesWebPresenter_HintOutput(t *testing.T) {
 	t.Run("hint available with card", func(t *testing.T) {
 		idx := 2
 		m, _ := setupSpadesWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.SpadesHint{
 			CardIndex: &idx,
 			Reason:    "follow_suit",
@@ -416,12 +421,13 @@ func TestSpadesWebPresenter_HintOutput(t *testing.T) {
 		assert.NotNil(t, resObj.Hint)
 		assert.Equal(t, &idx, resObj.Hint.CardIndex)
 		assert.Equal(t, "follow_suit", resObj.Hint.Reason)
-		assert.Empty(t, resObj.MessageCode)
+		assert.Equal(t, "spades.hintRequested", resObj.MessageCode)
 	})
 
 	t.Run("hint available with bid", func(t *testing.T) {
 		bid := 3
 		m, _ := setupSpadesWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.SpadesHint{
 			Bid:    &bid,
 			Reason: "strategic_bid",
@@ -434,11 +440,12 @@ func TestSpadesWebPresenter_HintOutput(t *testing.T) {
 		assert.NotNil(t, resObj.Hint)
 		assert.Equal(t, &bid, resObj.Hint.Bid)
 		assert.Equal(t, "strategic_bid", resObj.Hint.Reason)
-		assert.Empty(t, resObj.MessageCode)
+		assert.Equal(t, "spades.hintRequested", resObj.MessageCode)
 	})
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupSpadesWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.SpadesHint)(nil))
 
 		result := p.HintOutput(m)
@@ -446,6 +453,33 @@ func TestSpadesWebPresenter_HintOutput(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Nil(t, resObj.Hint)
-		assert.Empty(t, resObj.MessageCode)
+		assert.Equal(t, "spades.noHint", resObj.MessageCode)
 	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestSpadesWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	spg, _ := setupSpadesWebMockWithPlayers()
+	spg.ExpectedCalls = removeMockCall(spg.ExpectedCalls, "GetHint")
+	spg.On("GetHint").Return(&domain.SpadesHint{CardIndex: &idx, Reason: "follow_suit"})
+
+	result := new(presenter.SpadesWebPresenter).Output(spg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	assert.NotContains(t, result, "spades.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestSpadesWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	spg, _ := setupSpadesWebMockWithPlayers()
+	spg.ExpectedCalls = removeMockCall(spg.ExpectedCalls, "GetHint")
+	spg.On("GetHint").Return(&domain.SpadesHint{CardIndex: &idx, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.SpadesWebPresenter).HintOutput(spg), "spades.hintRequested")
+
+	none, _ := setupSpadesWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.SpadesHint)(nil))
+	assert.Contains(t, new(presenter.SpadesWebPresenter).HintOutput(none), "spades.noHint")
 }

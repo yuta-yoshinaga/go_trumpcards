@@ -19,6 +19,20 @@ func (p *SimpleSimonWebPresenter) Output(g interfaces.SimpleSimonGame, lastErr e
 	cols := g.GetColumns()
 	resObj.Columns = pilesToOutput(cols[:])
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	// このゲームは手詰まり判定を持たないので、ゲートは進行中かどうかだけ。
+	if g.GetPhase() == domain.SimpleSimonPhasePlaying {
+		if hint := g.GetHint(); hint != nil {
+			resObj.Hint = &controller.SimpleSimonWebOutputHint{
+				FromCol:   hint.FromCol,
+				CardIndex: hint.CardIndex,
+				ToCol:     hint.ToCol,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

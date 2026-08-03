@@ -69,5 +69,11 @@
     "betControls": "Set ante and optional Aces Up bet, then press Bet.",
     "actionButtons": "Pick a play multiplier (1x-3x) and press Play, or Fold.",
     "results": "Compare best 4-card hands and review payouts."
+  },
+  "frontendHint": {
+    "fourcardpokerBet": "Place an ante to be dealt in",
+    "fourcardpokerPlayMax": "Three of a kind or better — bet the maximum",
+    "fourcardpokerPlayMin": "A middling hand — bet the minimum",
+    "fourcardpokerFold": "No better than a pair, and the dealer gets an extra card — fold"
   }
 }

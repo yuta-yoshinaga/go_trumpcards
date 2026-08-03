@@ -1,5 +1,12 @@
 import type { TysiacResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Bid', 'Talon', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
 const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'];
@@ -41,7 +48,7 @@ export function formatTysiacState(state: TysiacResponse): string {
     lines.push(`marriage: ${marriage}`);
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const indices = state.hint.cardIndices ?? [];
     lines.push(`HINT: card indices [${indices.join(', ')}] (${state.hint.reason})`);
   }

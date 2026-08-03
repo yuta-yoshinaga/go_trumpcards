@@ -91,4 +91,12 @@ describe('formatHeartsState', () => {
     const output = formatHeartsState(makeState({ gameEndFlag: true, winnerIdx: 0 }));
     expect(output).toContain('Game Over');
   });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [1], reason: 'follow_suit' };
+    expect(formatHeartsState(makeState({ hint, messageCode: 'hearts.hintRequested' }))).toContain('HINT');
+    expect(formatHeartsState(makeState({ hint, messageCode: 'hearts.playing' }))).not.toContain('HINT');
+  });
 });

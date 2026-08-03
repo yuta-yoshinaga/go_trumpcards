@@ -14,6 +14,22 @@ import (
 )
 
 func init() {
+	games.RegisterKVGame("minchiate", games.CategorySolo,
+		func() usecase.MinchiateInteractorIF {
+			return usecase.NewMinchiateInteractor(domain.NewDefaultMinchiate(), new(presenter.MinchiateWebPresenter))
+		},
+		func(data []byte) (usecase.MinchiateInteractorIF, error) {
+			return usecase.RestoreMinchiateInteractor(data, new(presenter.MinchiateWebPresenter))
+		},
+		controller.NewMinchiateWebControllerWithProvider)
+	games.RegisterKVGame("tarocchini", games.CategorySolo,
+		func() usecase.TarocchiniInteractorIF {
+			return usecase.NewTarocchiniInteractor(domain.NewDefaultTarocchini(), new(presenter.TarocchiniWebPresenter))
+		},
+		func(data []byte) (usecase.TarocchiniInteractorIF, error) {
+			return usecase.RestoreTarocchiniInteractor(data, new(presenter.TarocchiniWebPresenter))
+		},
+		controller.NewTarocchiniWebControllerWithProvider)
 	games.RegisterKVGame("memory", games.CategorySolo,
 		func() usecase.MemoryInteractorIF {
 			return usecase.NewMemoryInteractor(domain.NewDefaultMemory(), new(presenter.MemoryWebPresenter))
@@ -395,4 +411,12 @@ func init() {
 			return usecase.RestoreYanivInteractor(data, new(presenter.YanivWebPresenter))
 		},
 		controller.NewYanivWebControllerWithProvider)
+	games.RegisterKVGame("literature", games.CategorySolo,
+		func() usecase.LiteratureInteractorIF {
+			return usecase.NewLiteratureInteractor(domain.NewDefaultLiterature(), new(presenter.LiteratureWebPresenter))
+		},
+		func(data []byte) (usecase.LiteratureInteractorIF, error) {
+			return usecase.RestoreLiteratureInteractor(data, new(presenter.LiteratureWebPresenter))
+		},
+		controller.NewLiteratureWebControllerWithProvider)
 }

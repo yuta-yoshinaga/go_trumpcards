@@ -117,15 +117,30 @@ func TestMichiganWebPresenter_ResultHumanWin(t *testing.T) {
 	assert.Equal(t, float64(0), b0["chips"])
 }
 
+// **配り方に依存させない。**PlaceHumanBet は配ってから CPU を回すので、人間が
+// 一度も出せない配りを引くと、プレゼンターに渡る前にラウンドが終わってしまい
+// michigan.roundEndHumanLose になる (#4506)。プレイフェーズに入った局だけを
+// 対象にし、それが一度も起きなければ落とす。
 func TestMichiganWebPresenter_PlayPhase(t *testing.T) {
-	g := domain.NewDefaultMichigan()
-	require.NoError(t, g.PlaceHumanBet(michiganWebEvenBet(g.GetBetBudget())))
+	const attempts = 50
 	p := new(presenter.MichiganWebPresenter)
-	out := p.Output(g, nil)
-	var decoded map[string]any
-	require.NoError(t, json.Unmarshal([]byte(out), &decoded))
-	assert.Equal(t, float64(domain.MichiganPhasePlay), decoded["phase"])
-	assert.Equal(t, "michigan.playPhase", decoded["messageCode"])
+
+	for i := 0; i < attempts; i++ {
+		g := domain.NewDefaultMichigan()
+		require.NoError(t, g.PlaceHumanBet(michiganWebEvenBet(g.GetBetBudget())))
+		if g.GetPhase() != domain.MichiganPhasePlay {
+			// この配りは人間の手番を迎えずにラウンドが終わった。配り直す。
+			continue
+		}
+
+		out := p.Output(g, nil)
+		var decoded map[string]any
+		require.NoError(t, json.Unmarshal([]byte(out), &decoded))
+		assert.Equal(t, float64(domain.MichiganPhasePlay), decoded["phase"])
+		assert.Equal(t, "michigan.playPhase", decoded["messageCode"])
+		return
+	}
+	t.Fatalf("no deal out of %d reached the play phase — the CPU drive may never be yielding", attempts)
 }
 
 // michiganWebEvenBet は budget を 4 分割した賭けスライスを返す。
@@ -179,4 +194,40 @@ func TestMichiganWebPresenter_ActionLog(t *testing.T) {
 	g := michiganResultGame(false)
 	p := new(presenter.MichiganWebPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestMichiganWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// **配りに依存させない。**ベット直後にヒントが出ない配りが 300 回中 1 回ある
+	// ので、出る配りを引くまで回す。1000 回引けなければヒントが壊れている。
+	for range 1000 {
+		g := domain.NewDefaultMichigan()
+		require.NoError(t, g.PlaceHumanBet(michiganWebEvenBet(g.GetBetBudget())))
+		if g.GetHint() == nil {
+			continue
+		}
+
+		var decoded map[string]any
+		require.NoError(t, json.Unmarshal([]byte(new(presenter.MichiganWebPresenter).Output(g, nil)), &decoded))
+		assert.Contains(t, decoded, "hint", "Output must carry the hint -- the frontend reads state.hint")
+		// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+		assert.NotEqual(t, "michigan.hintRequested", decoded["messageCode"])
+		return
+	}
+	t.Fatal("1000 deals and never once did a hint come back")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestMichiganWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	for range 1000 {
+		g := domain.NewDefaultMichigan()
+		require.NoError(t, g.PlaceHumanBet(michiganWebEvenBet(g.GetBetBudget())))
+		if g.GetHint() == nil {
+			continue
+		}
+		assert.Contains(t, new(presenter.MichiganWebPresenter).HintOutput(g), "michigan.hintRequested")
+		return
+	}
+	t.Fatal("1000 deals and never once did a hint come back")
 }

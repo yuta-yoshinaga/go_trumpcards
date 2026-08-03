@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Grandfather's Clock",
+  "helpMoveTF": "  m <col> f <idx>      move tableau to clock face <idx> (0..11)",
+  "helpMoveTT": "  m <fromCol> <toCol>  move one card between columns (down, any suit)",
+  "helpGiveUp": "  g                    give up",
+  "helpHint": "  h                    hint",
+  "helpAutoComplete": "  ac                   auto-complete",
+  "helpUndo": "  u                    undo one move",
+  "promptToZone": "Enter destination (column number, or f=clock face):",
+  "promptFaceIdx": "Enter the clock face index (0..11):",
+  "invalidFaceIdx": "Invalid clock face index: {{val}}",
+  "foundationHeader": "Clock faces (0 = 1 o'clock ... 11 = 12 o'clock):",
+  "faceLabel": "[{{idx}}]",
+  "faceTarget": "-> {{rank}}",
+  "faceComplete": "done",
+  "columnLabel": "Column {{col}}:",
+  "hintFrom": "tableau column {{col}}",
+  "hintToFoundation": "clock face {{idx}}",
+  "hintToTableau": "tableau column {{col}}",
+  "hintLine": "Hint: {{from}} → {{to}}",
+  "undoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)"
+}

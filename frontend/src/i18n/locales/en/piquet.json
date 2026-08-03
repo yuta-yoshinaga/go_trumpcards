@@ -32,5 +32,9 @@
   "tutorial": {
     "hand": "Your hand. Click to select for exchange, or click to play during the play phase.",
     "controls": "Action buttons (exchange, declaration advance, next deal) appear here."
+  },
+  "frontendHint": {
+    "piquetPlayLowest": "Your weakest card — losing it costs little and keeps your strong cards",
+    "piquetExchangeLowest": "Your weakest cards — exchanging them gives the best chance of drawing better"
   }
 }

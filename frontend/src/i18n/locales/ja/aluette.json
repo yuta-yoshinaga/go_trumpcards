@@ -1,0 +1,65 @@
+{
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "メーヌ終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetPoints": "目標点",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "mene": "メーヌ {{n}}",
+  "trick": "トリック {{n}}",
+  "target": "{{points}}点先取",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "team": "チーム{{n}}",
+  "teamScore": "チーム{{n}}: {{score}}",
+  "dealerBadge": "親",
+  "luetteLegend": "リュエット（強い順）",
+  "noLuetteInHand": "手札にリュエットはありません",
+  "luette": {
+    "Monsieur": "ムッシュー",
+    "Madame": "マダム",
+    "Borgne": "ボルニュ",
+    "Vache": "ヴァッシュ",
+    "GrandNeuf": "グラン・ヌフ",
+    "PetitNeuf": "プチ・ヌフ"
+  },
+  "suit": {
+    "SPADE": "♠",
+    "CLOVER": "♣",
+    "HEART": "♥",
+    "DIAMOND": "♦"
+  },
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のメーヌ",
+  "roundResult": {
+    "title": "メーヌ結果",
+    "tricks": "{{name}} トリック: {{count}}"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_low": "低い札でリードして強い札を温存することを推奨",
+    "play_luette": "リュエットでトリックを取りに行く",
+    "partner_winning": "味方が勝っているので強い札を使わない",
+    "follow_low": "取れないので低い札を捨てる"
+  },
+  "tutorial": {
+    "info": "ここにメーヌ・トリック・チーム得点が表示されます。対面同士が固定パートナーの2対2で、あなたは席0です。入札も捨て札もありません。",
+    "luettes": "このゲームの核心です。**強さはランクではなく「その1枚」で決まります。**♦3 (ムッシュー) はデッキ最強ですが、♠3 はごく普通の札です。ここに並ぶ6枚が上位を独占します。",
+    "trick": "場に出されたカードがここに並びます。**切札もフォロー義務もありません** —— どの札もいつでも出せます。同じ強さが複数出たときは**先に出した側が勝ちます**。",
+    "hand": "あなたの手札です。48枚から5枚が配られます。手札にリュエットがあれば、手札の上に呼び名で表示されます —— カード画像だけでは最強札と分からないためです。",
+    "actions": "1メーヌは5トリックで、**3トリック取れば1点**です。全部取る必要はありません。取れないトリックは最も弱い札で降り、リュエットを使うべき場面まで温存しましょう。"
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
+}

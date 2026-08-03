@@ -1,7 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it } from 'vitest';
+import { gameRoutes } from '../../constants/gameRoutes';
 import { TutorialProgressPanel } from './TutorialProgressPanel';
+
+// **ゲーム数はここに数字で書かない。**書けばゲームを 1 本足すたびに無関係な
+// テストが赤くなるだけで、何も守っていない (#4652)。
+const TOTAL_GAMES = gameRoutes.length;
 
 function renderPanel() {
   return render(
@@ -19,7 +24,7 @@ describe('TutorialProgressPanel', () => {
   it('renders progress summary with 0 completed', () => {
     renderPanel();
     expect(screen.getByText(/0/)).toBeInTheDocument();
-    expect(screen.getByText(/219/)).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(String(TOTAL_GAMES)))).toBeInTheDocument();
   });
 
   it('shows correct completed count', () => {
@@ -33,7 +38,7 @@ describe('TutorialProgressPanel', () => {
   it('renders game links as icons', () => {
     renderPanel();
     const links = screen.getAllByRole('link');
-    expect(links.length).toBe(219);
+    expect(links.length).toBe(TOTAL_GAMES);
   });
 
   it('shows checkmark for completed games', () => {
@@ -46,7 +51,7 @@ describe('TutorialProgressPanel', () => {
   it('shows circle for incomplete games', () => {
     renderPanel();
     const incompleteMarkers = screen.getAllByText('○');
-    expect(incompleteMarkers.length).toBe(219);
+    expect(incompleteMarkers.length).toBe(TOTAL_GAMES);
   });
 
   it('renders as details/summary collapsible', () => {

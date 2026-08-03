@@ -56,6 +56,7 @@ describe('formatFlowerGardenState', () => {
     const result = formatFlowerGardenState(
       makeState({
         hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 1, toZone: 'tableau', toCol: 2 },
+        messageCode: 'flowergarden.hintAvailable',
       }),
     );
     expect(result).toContain('HINT');
@@ -63,10 +64,22 @@ describe('formatFlowerGardenState', () => {
     expect(result).toContain('tableau2');
   });
 
+  // **頼んでいないヒントは CLI に出さない。**#4483 以降 Output() もヒントを載せる。
+  it('does not print a passive hint carried on an ordinary response', () => {
+    const result = formatFlowerGardenState(
+      makeState({
+        hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 1, toZone: 'tableau', toCol: 2 },
+        messageCode: 'flowergarden.playing',
+      }),
+    );
+    expect(result).not.toContain('HINT');
+  });
+
   it('shows hint from reserve when present', () => {
     const result = formatFlowerGardenState(
       makeState({
         hint: { fromZone: 'reserve', fromCol: 3, cardIndex: 0, toZone: 'foundation', toCol: 1 },
+        messageCode: 'flowergarden.hintAvailable',
       }),
     );
     expect(result).toContain('HINT');

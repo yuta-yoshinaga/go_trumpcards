@@ -72,5 +72,7 @@
     "heart": "Heart",
     "diamond": "Diamond"
   },
-  "trumpLabel": "Trump"
+  "trumpLabel": "Trump",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

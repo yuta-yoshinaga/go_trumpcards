@@ -31,6 +31,9 @@ func setupPitchWebMock() *interfaces.MockPitchGame {
 	m.On("GetConfig").Return(domain.DefaultPitchConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetValidPlayIndices", 0).Return([]int{0, 1})
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -109,6 +112,7 @@ func TestPitchWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("nil hint", func(t *testing.T) {
 		m, _ := setupPitchWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.PitchHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.PitchWebOutput
@@ -119,6 +123,7 @@ func TestPitchWebPresenter_HintOutput(t *testing.T) {
 	t.Run("with hint", func(t *testing.T) {
 		m, _ := setupPitchWebMockWithPlayers()
 		bid := 3
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.PitchHint{Bid: &bid, Reason: "bid_strong"})
 		result := p.HintOutput(m)
 		var resObj controller.PitchWebOutput
@@ -155,6 +160,9 @@ func setupPitchWebMockCustom(phase domain.PitchPhase, trickNumber int, log []*do
 	for i := 0; i < 4; i++ {
 		m.On("GetPlayer", i).Return(players[i])
 	}
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -212,4 +220,19 @@ func TestPitchWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	out := p.ActionLogOutput(m)
 	assert.Contains(t, out, "You bid 3")
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// トリックテイキング系は Output 側にゲートを置きません。Pitch.GetHint() が
+// 「人間の手番で、かつ行動を選べる状態か」を自分で確かめて nil を返します。
+func TestPitchWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	ptg, _ := setupPitchWebMockWithPlayers()
+	ptg.ExpectedCalls = removeMockCall(ptg.ExpectedCalls, "GetHint")
+	ptg.On("GetHint").Return(&domain.PitchHint{CardIndex: &idx, Reason: "lead_trump"})
+
+	result := new(presenter.PitchWebPresenter).Output(ptg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }

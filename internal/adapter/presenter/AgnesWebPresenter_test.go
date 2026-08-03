@@ -74,6 +74,34 @@ func TestAgnesWebPresenter_Output(t *testing.T) {
 	})
 }
 
+// **受動ヒントは Output() に載る。**Agnes は実ドメインオブジェクトを使うので
+// モックの差し替えが要らないぶん、ヒントを検証するテストが無いまま通っていた。
+func TestAgnesWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("while the game is playable", func(t *testing.T) {
+		a := domain.NewDefaultAgnes()
+		a.Reset()
+		a.SetBaseRank(5)
+		var f [domain.AgnesFoundationCnt][]*domain.Card
+		a.SetFoundation(f)
+		var tab [domain.AgnesTableauCnt][]*domain.AgnesTableauCard
+		tab[0] = []*domain.AgnesTableauCard{{Card: domain.NewCard(domain.CardDesignSpade, 5, false), FaceUp: true}}
+		a.SetTableau(tab)
+
+		result := new(AgnesWebPresenter).Output(a, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// **終局では探索を走らせない。**ゲートを消したら CI で捕まえる。
+	t.Run("not once the game is over", func(t *testing.T) {
+		a := domain.NewDefaultAgnes()
+		a.Reset()
+		a.SetPhase(domain.AgnesPhaseGameOver)
+
+		result := new(AgnesWebPresenter).Output(a, nil)
+		assert.NotContains(t, result, `"hint"`, "a finished game must not run the search")
+	})
+}
+
 func TestAgnesWebPresenter_HintOutput(t *testing.T) {
 	t.Run("hint available", func(t *testing.T) {
 		a := domain.NewDefaultAgnes()

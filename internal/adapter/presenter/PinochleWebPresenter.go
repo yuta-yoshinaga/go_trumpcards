@@ -13,6 +13,32 @@ type PinochleWebPresenter struct{}
 
 // Output ゲーム状態をJSON出力
 func (p *PinochleWebPresenter) Output(g interfaces.PinochleGame, lastErr error) string {
+	resObj := p.buildBase(g, lastErr)
+
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**Pinochle.Hint() が自分で人間の手番かを
+	// 確かめて nil を返す —— ただし**このシリーズでその保証を足したのは #4585 で、
+	// それまでは見ていなかった。**「他ゲームがそうだから」で書かず、1 本ずつ読む。
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.PinochleWebOutputHint{
+			CardIndex: hint.CardIndex,
+			BidAmount: hint.BidAmount,
+			Pass:      hint.Pass,
+			Suit:      hint.Suit,
+			Reason:    hint.Reason,
+		}
+	}
+
+	return marshalOrError(resObj)
+}
+
+// buildBase は状態レスポンスを組み立てる。Output と HintOutput で共有する。
+// **HintOutput もこれを使う。**以前はヒント構造体を裸で返していて `hint` キーが
+// 無く、フロントの `state.hint` からは読めなかった (#4483)。
+func (p *PinochleWebPresenter) buildBase(g interfaces.PinochleGame, lastErr error) *controller.PinochleWebOutput {
 	resObj := new(controller.PinochleWebOutput)
 	resObj.Phase = int(g.GetPhase())
 	resObj.RoundNumber = g.GetRoundNumber()
@@ -47,25 +73,29 @@ func (p *PinochleWebPresenter) Output(g interfaces.PinochleGame, lastErr error) 
 
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 
-	return marshalOrError(resObj)
+	return resObj
 }
 
 // HintOutput ヒント情報を出力
 func (p *PinochleWebPresenter) HintOutput(g interfaces.PinochleGame) string {
-	hint := g.GetHint()
-	if hint == nil {
-		return marshalOrError(controller.PinochleWebOutput{
-			WebOutputBase: controller.WebOutputBase{Message: "ヒントなし"},
-		})
+	// **状態レスポンスを返す。**以前はヒント構造体を裸で返していたので `hint`
+	// キーが無く、フロントの `state.hint` からは読めなかった (#4483)。
+	resObj := p.buildBase(g, nil)
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.PinochleWebOutputHint{
+			CardIndex: hint.CardIndex,
+			BidAmount: hint.BidAmount,
+			Pass:      hint.Pass,
+			Suit:      hint.Suit,
+			Reason:    hint.Reason,
+		}
+		// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+		// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す。
+		resObj.MessageCode = "pinochle.hintRequested"
+	} else {
+		resObj.MessageCode = "pinochle.noHint"
 	}
-	out := &controller.PinochleWebOutputHint{
-		CardIndex: hint.CardIndex,
-		BidAmount: hint.BidAmount,
-		Pass:      hint.Pass,
-		Suit:      hint.Suit,
-		Reason:    hint.Reason,
-	}
-	return marshalOrError(out)
+	return marshalOrError(resObj)
 }
 
 // ActionLogOutput 棋譜を出力

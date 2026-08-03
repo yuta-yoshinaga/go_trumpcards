@@ -58,6 +58,21 @@ func (p *CanfieldWebPresenter) Output(c interfaces.CanfieldGame, lastErr error) 
 	}
 
 	// メッセージ
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if c.GetPhase() == domain.CanfieldPhasePlaying {
+		if hint := c.GetHint(); hint != nil {
+			resObj.Hint = &controller.CanfieldWebOutputHint{
+				FromZone:  hint.FromZone,
+				FromCol:   hint.FromCol,
+				CardIndex: hint.CardIndex,
+				ToZone:    hint.ToZone,
+				ToCol:     hint.ToCol,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

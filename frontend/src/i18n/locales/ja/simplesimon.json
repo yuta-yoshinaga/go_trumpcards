@@ -26,5 +26,8 @@
     "resetButton": "新しいゲームを始めるボタンです。"
   },
   "cardPosAria": "{{card}}（列{{col}}・上から{{pos}}枚目）",
-  "emptyColAria": "列{{col}}（空）"
+  "emptyColAria": "列{{col}}（空）",
+  "frontendHint": {
+    "simplesimonMove": "この列の札を別の列へ移せます"
+  }
 }

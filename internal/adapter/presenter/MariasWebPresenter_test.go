@@ -35,6 +35,10 @@ func setupMariasWebMock() *interfaces.MockMariasGame {
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultMariasConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -170,6 +174,7 @@ func TestMariasWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint with card indices", func(t *testing.T) {
 		m, _ := setupMariasWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.MariasHint{CardIndices: []int{2}, Reason: "follow_win"})
 		result := p.HintOutput(m)
 		var resObj controller.MariasWebOutput
@@ -181,6 +186,7 @@ func TestMariasWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupMariasWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.MariasHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.MariasWebOutput
@@ -198,4 +204,30 @@ func TestMariasWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestMariasWebPresenterOutputCarriesTheHint(t *testing.T) {
+	mrg, _ := setupMariasWebMockWithPlayers()
+	mrg.ExpectedCalls = removeMockCall(mrg.ExpectedCalls, "GetHint")
+	mrg.On("GetHint").Return(&domain.MariasHint{CardIndices: []int{0}, Reason: "follow_suit"})
+
+	result := new(presenter.MariasWebPresenter).Output(mrg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "marias.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestMariasWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	mrg, _ := setupMariasWebMockWithPlayers()
+	mrg.ExpectedCalls = removeMockCall(mrg.ExpectedCalls, "GetHint")
+	mrg.On("GetHint").Return(&domain.MariasHint{CardIndices: []int{0}, Reason: "follow_suit"})
+	assert.Contains(t, new(presenter.MariasWebPresenter).HintOutput(mrg), "marias.hintRequested")
+
+	none, _ := setupMariasWebMockWithPlayers()
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.MariasHint)(nil))
+	assert.Contains(t, new(presenter.MariasWebPresenter).HintOutput(none), "marias.noHint")
 }

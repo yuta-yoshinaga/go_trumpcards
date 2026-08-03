@@ -17,6 +17,8 @@ type SevenCardStudPlayer struct {
 	holeCards           []*Card                // 伏せ札 (最大3枚: 1st, 2nd, 7th)
 	doorCards           []*Card                // 表向き札 (最大4枚: 3rd-6th Street)
 	bestHand            []*Card                // ベスト5枚
+	lowQualifies        bool                   // 8-or-better のローが成立したか (Hi-Lo のみ)
+	lowBestHand         []*Card                // ローのベスト5枚 (Hi-Lo のみ)
 	playStyle           SevenCardStudPlayStyle // CPUプレイスタイル
 	totalHands          int                    // 総ハンド数 (セッション通算)
 	vpipCount           int                    // VPIP対象ハンド数
@@ -400,6 +402,51 @@ func SuitRank(design int) int {
 	}
 }
 
+// EvalBestLowHandEightOrBetter は Hi-Lo (8 or Better) 用のローベスト5枚を
+// 評価する。7 枚から C(7,5)=21 通りを見て、**5 枚すべて 8 以下・ランク重複なし**
+// (Ace=1) を満たす中で最も低いものを採る。
+//
+// スタッドにコミュニティカードは無いので、オマハのような「手札から2枚・場から
+// 3枚」の制約は付かない。素直に 7 枚から 5 枚を選ぶ。
+//
+// 判定そのものは isQualifyingOmahaLow を使う。名前はオマハだが中身は
+// 「8 以下・ペア無し」という汎用の 8-or-better 判定で、ここで別実装を書くと
+// 同じ規則が 2 箇所に散る。
+//
+// 戻り値: qualifying なローが見つかったかどうか。
+func (p *SevenCardStudPlayer) EvalBestLowHandEightOrBetter() bool {
+	p.lowQualifies = false
+	p.lowBestHand = nil
+
+	all := p.GetAllCards()
+	if len(all) < 5 {
+		return false
+	}
+
+	var bestCards []*Card
+	for _, combo := range combinations(all, 5) {
+		if !isQualifyingOmahaLow(combo) {
+			continue
+		}
+		if bestCards == nil || compareRazzCards(combo, bestCards) < 0 {
+			bestCards = make([]*Card, 5)
+			copy(bestCards, combo)
+		}
+	}
+	if bestCards == nil {
+		return false
+	}
+	p.lowQualifies = true
+	p.lowBestHand = bestCards
+	return true
+}
+
+// GetLowQualifies は 8-or-better のローが成立したかを返す。
+func (p *SevenCardStudPlayer) GetLowQualifies() bool { return p.lowQualifies }
+
+// GetLowBestHand はローのベスト5枚を返す。成立していなければ nil。
+func (p *SevenCardStudPlayer) GetLowBestHand() []*Card { return p.lowBestHand }
+
 // sevenCardStudPlayerJSON is the JSON wire format for SevenCardStudPlayer.
 type sevenCardStudPlayerJSON struct {
 	Player              *Player                `json:"p"`
@@ -409,6 +456,8 @@ type sevenCardStudPlayerJSON struct {
 	HoleCards           []*Card                `json:"hc"`
 	DoorCards           []*Card                `json:"dc"`
 	BestHand            []*Card                `json:"bh"`
+	LowQualifies        bool                   `json:"lq,omitempty"`
+	LowBestHand         []*Card                `json:"lb,omitempty"`
 	PlayStyle           SevenCardStudPlayStyle `json:"ps"`
 	TotalHands          int                    `json:"th"`
 	VPIPCount           int                    `json:"vc"`
@@ -429,6 +478,8 @@ func (p *SevenCardStudPlayer) MarshalJSON() ([]byte, error) {
 		HoleCards:           p.holeCards,
 		DoorCards:           p.doorCards,
 		BestHand:            p.bestHand,
+		LowQualifies:        p.lowQualifies,
+		LowBestHand:         p.lowBestHand,
 		PlayStyle:           p.playStyle,
 		TotalHands:          p.totalHands,
 		VPIPCount:           p.vpipCount,
@@ -465,6 +516,8 @@ func (p *SevenCardStudPlayer) UnmarshalJSON(data []byte) error {
 		p.doorCards = make([]*Card, 0, 4)
 	}
 	p.bestHand = j.BestHand
+	p.lowQualifies = j.LowQualifies
+	p.lowBestHand = j.LowBestHand
 	p.playStyle = j.PlayStyle
 	p.totalHands = j.TotalHands
 	p.vpipCount = j.VPIPCount

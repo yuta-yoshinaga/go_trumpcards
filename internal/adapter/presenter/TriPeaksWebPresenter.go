@@ -52,6 +52,19 @@ func (pr *TriPeaksWebPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 	}
 
 	// メッセージ
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if t.GetPhase() == domain.TriPeaksPhasePlaying && !t.IsStalemate() {
+		if hint := t.GetHint(); hint != nil {
+			resObj.Hint = &controller.TriPeaksWebOutputHint{
+				Type: hint.Type,
+				Row:  hint.Row,
+				Col:  hint.Col,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

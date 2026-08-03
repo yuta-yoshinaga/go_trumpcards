@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -37,6 +38,10 @@ func setupSoloWhistWebMock() *interfaces.MockSoloWhistGame {
 	m.On("IsHumanBidTurn").Return(false)
 	m.On("GetConfig").Return(domain.DefaultSoloWhistConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -183,6 +188,7 @@ func TestSoloWhistWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint with card indices", func(t *testing.T) {
 		m, _ := setupSoloWhistWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.SoloWhistHint{CardIndices: []int{2}, Reason: "follow_win"})
 		result := p.HintOutput(m)
 		var resObj controller.SoloWhistWebOutput
@@ -194,6 +200,7 @@ func TestSoloWhistWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := setupSoloWhistWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.SoloWhistHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.SoloWhistWebOutput
@@ -211,4 +218,33 @@ func TestSoloWhistWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// Output 側にゲートは置きません。SoloWhist.GetHint() が「人間の手番で、かつ
+// 行動を選べる状態か」を自分で確かめて nil を返します。
+func TestSoloWhistWebPresenterOutputCarriesTheHint(t *testing.T) {
+	swg, _ := setupSoloWhistWebMockWithPlayers()
+	swg.ExpectedCalls = removeMockCall(swg.ExpectedCalls, "GetHint")
+	swg.On("GetHint").Return(&domain.SoloWhistHint{CardIndices: []int{0}, Reason: "follow_suit"})
+
+	result := new(presenter.SoloWhistWebPresenter).Output(swg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+// ページは `isRequestedHint` でこのコードを見てからバナーを出すので (#4605)、
+// 付いていないとヒントを押しても画面に何も出ない。
+func TestSoloWhistWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultSoloWhist()
+	g.Reset()
+	// **Reset 直後は人間の手番とは限らず、フェーズも配り直しのまま。**GetHint は
+	// プレイフェーズかつ人間の手番でなければ nil を返すので、両方そろえないと
+	// このテストは前提で落ちる。
+	g.SetPhase(domain.SoloWhistPhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+	assert.Contains(t, new(presenter.SoloWhistWebPresenter).HintOutput(g), "solowhist.hintRequested")
 }

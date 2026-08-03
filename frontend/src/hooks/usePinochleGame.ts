@@ -106,10 +106,10 @@ export function usePinochleGame() {
       const res = await pinochleApi.exec('hint');
       // Navigating away mid-request must not write to a gone component (#4447).
       if (!isMounted()) return;
-      // Server marshals the bare hint fields at the top level (cardIndex,
-      // bidAmount, pass, suit, reason); when no hint applies `reason` is absent.
-      const raw = res as unknown as Partial<PinochleHint>;
-      setHint(raw.reason ? (raw as PinochleHint) : null);
+      // **ヒントは state レスポンスの `hint` に入る。**以前は裸のヒント構造体が
+      // 返っていたので最上位から読んでいたが、他ゲームと同じ形に揃えた (#4483)。
+      const hint = res.hint as PinochleHint | undefined;
+      setHint(hint?.reason ? hint : null);
       setHintError(null);
     } catch {
       if (!isMounted()) return;

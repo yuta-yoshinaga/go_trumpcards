@@ -59,6 +59,21 @@ func (p *FortyAndEightWebPresenter) Output(ft interfaces.FortyAndEightGame, last
 	}
 
 	// メッセージ
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if ft.GetPhase() == domain.FortyAndEightPhasePlaying && !ft.IsStalemate() {
+		if hint := ft.GetHint(); hint != nil {
+			resObj.Hint = &controller.FortyAndEightWebOutputHint{
+				FromZone:  hint.FromZone,
+				FromCol:   hint.FromCol,
+				CardIndex: hint.CardIndex,
+				ToZone:    hint.ToZone,
+				ToCol:     hint.ToCol,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

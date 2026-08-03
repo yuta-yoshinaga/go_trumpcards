@@ -35,6 +35,16 @@ func TestLaBelleLucieWebPresenter_Output(t *testing.T) {
 		assert.Contains(t, p.Output(llState(t, `{"ph":2}`), nil), "labellelucie.gameOver")
 	})
 
+	// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+	// レスポンスで、ページの state にはマージされない (#4483)。
+	t.Run("output carries the hint", func(t *testing.T) {
+		// 扇の一番上がスペードのエース。台札を開始できるのでヒントが必ず出る。
+		js := `{"fn":[[{"d":1,"v":1,"w":true}]],"ph":0}`
+		assert.Contains(t, p.Output(llState(t, js), nil), `"hint"`,
+			"Output must carry the hint -- the frontend reads state.hint")
+		assert.NotContains(t, p.Output(llState(t, `{"ph":2}`), nil), `"hint"`)
+	})
+
 	t.Run("hint output", func(t *testing.T) {
 		g := domain.NewDefaultLaBelleLucie()
 		g.Reset()

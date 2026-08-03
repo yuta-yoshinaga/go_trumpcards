@@ -35,5 +35,10 @@
     "controls": "Action buttons: remove, move, and deal.",
     "resetButton": "Use the reset button to start a new game."
   },
-  "landscapeBanner": "Rotate to landscape for easier play"
+  "landscapeBanner": "Rotate to landscape for easier play",
+  "frontendHint": {
+    "acesupRemove": "A lower card of the same suit can be discarded",
+    "acesupMove": "Moving to an empty column exposes a new card",
+    "acesupDeal": "One card can be dealt to each column"
+  }
 }

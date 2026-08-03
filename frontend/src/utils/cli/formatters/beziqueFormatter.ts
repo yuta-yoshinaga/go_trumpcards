@@ -1,5 +1,12 @@
 import type { BeziqueResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES = ['Play', 'Meld', 'RoundEnd', 'GameEnd'];
 const SUIT_SYMBOLS = ['none', '♠', '♣', '♥', '♦'];
@@ -52,7 +59,7 @@ export function formatBeziqueState(state: BeziqueResponse): string {
     });
   }
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     if (state.hint.meldIndex != null) {
       lines.push(
         state.hint.meldIndex < 0

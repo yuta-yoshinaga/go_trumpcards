@@ -1,0 +1,22 @@
+{
+  "helpTitle": "ラフ・アンド・ライダウン (Laugh and Lie Down)",
+  "helpPlay": "  p <i> [n]                手札の i 番目で場札を取る（n=3 で3枚取り）",
+  "header": "ポット{{pot}} · 親は席{{dealer}}",
+  "ruleLine": "同ランクの場札を取る（1枚 または 3枚）／取れなくなったら手札を全部場に置いて降りる",
+  "layoutLine": "場（表向き）: {{cards}}",
+  "playerLine": "{{name}}: 手札{{cards}}枚 (取り札{{won}}枚)",
+  "laidDownMark": "— 降りた",
+  "promptPlay": "p <i> で1枚取る／p <i> 3 で3枚取る",
+  "lastInLine": "{{name}} が最後まで手札を持っていたので {{amount}} を受け取ります",
+  "settleLine": "{{name}}: 取り札{{won}}枚 → 収支 {{score}}",
+  "gameEndWin": "勝ち越しました！",
+  "gameEndLose": "負け越しました",
+  "gameEndEven": "収支ゼロでした",
+  "hintPlay": "推奨: 手札[{{idx}}] で{{take}}枚取る — {{reason}}",
+  "hintNone": "ヒントはありません",
+  "hintReasonGameEnd": "この対局は終わっています",
+  "hintReasonNotYourTurn": "あなたの手番ではありません",
+  "hintReasonMustLieDown": "取れる札が1枚もないので、手札を場に置いて降りることになります",
+  "hintReasonTakeOne": "同ランクの場札を取れます",
+  "hintReasonTakeThree": "同ランクが3枚あるので、まとめて取れます"
+}

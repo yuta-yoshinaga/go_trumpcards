@@ -1,6 +1,6 @@
 import type { FortyAndEightResponse } from '../../../types/card';
 import { FortyAndEightPhase } from '../../../types/phases';
-import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format a Forty and Eight game state as terminal text. */
 export function formatFortyandeightState(state: FortyAndEightResponse): string {
@@ -31,7 +31,7 @@ export function formatFortyandeightState(state: FortyAndEightResponse): string {
 
   lines.push(`moves: ${state.moveCount}  undo:${state.canUndo ? 'yes' : 'no'}`);
 
-  if (state.hint) {
+  if (state.hint && isRequestedHint(state)) {
     const from = state.hint.fromZone === 'waste' ? 'waste' : `t${state.hint.fromCol}[${state.hint.cardIndex}]`;
     const target = state.hint.toCol >= 0 ? `${state.hint.toZone}${state.hint.toCol}` : state.hint.toZone;
     lines.push(`HINT: ${from} → ${target}`);

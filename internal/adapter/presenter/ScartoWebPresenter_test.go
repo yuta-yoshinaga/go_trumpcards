@@ -190,3 +190,32 @@ func TestScartoWebPresenter_WinnerMessages(t *testing.T) {
 		})
 	}
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestScartoWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// 既存の HintOutput テストと同じ状態。300 回試して nil 0 件で確認済み。
+	g := newScartoGame()
+	g.Reset() // human dealer in scarto phase
+	if g.GetHint() == nil {
+		t.Fatal("fixture must actually produce a hint")
+	}
+
+	out := new(presenter.ScartoWebPresenter).Output(g, nil)
+	if !strings.Contains(out, `"hint"`) {
+		t.Error("Output must carry the hint -- the frontend reads state.hint")
+	}
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	if strings.Contains(out, "scarto.hintRequested") {
+		t.Error("Output must not mark the response as a requested hint")
+	}
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestScartoWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := newScartoGame()
+	g.Reset()
+	if !strings.Contains(new(presenter.ScartoWebPresenter).HintOutput(g), "scarto.hintRequested") {
+		t.Error("HintOutput must mark the response as a requested hint")
+	}
+}

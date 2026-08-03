@@ -40,6 +40,9 @@ func setupAllFoursWebMock() *interfaces.MockAllFoursGame {
 	m.On("GetConfig").Return(domain.DefaultAllFoursConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetValidPlayIndices", 0).Return([]int{0, 1})
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -194,6 +197,7 @@ func TestAllFoursWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("nil hint", func(t *testing.T) {
 		m, _ := setupAllFoursWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.AllFoursHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.AllFoursWebOutput
@@ -204,6 +208,7 @@ func TestAllFoursWebPresenter_HintOutput(t *testing.T) {
 	t.Run("with beg hint", func(t *testing.T) {
 		m, _ := setupAllFoursWebMockWithPlayers()
 		beg := true
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.AllFoursHint{Beg: &beg, Reason: "beg_beg"})
 		result := p.HintOutput(m)
 		var resObj controller.AllFoursWebOutput
@@ -223,4 +228,19 @@ func TestAllFoursWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	out := p.ActionLogOutput(m)
 	assert.Contains(t, out, "You stand")
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// トリックテイキング系は Output 側にゲートを置きません。AllFours.GetHint() が
+// 「人間の手番で、かつ行動を選べる状態か」を自分で確かめて nil を返します。
+func TestAllFoursWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 1
+	afg, _ := setupAllFoursWebMockWithPlayers()
+	afg.ExpectedCalls = removeMockCall(afg.ExpectedCalls, "GetHint")
+	afg.On("GetHint").Return(&domain.AllFoursHint{CardIndex: &idx, Reason: "lead_low"})
+
+	result := new(presenter.AllFoursWebPresenter).Output(afg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }

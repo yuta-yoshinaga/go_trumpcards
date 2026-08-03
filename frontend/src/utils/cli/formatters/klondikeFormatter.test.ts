@@ -59,4 +59,12 @@ describe('formatKlondikeState', () => {
     const output = formatKlondikeState(makeState({ phase: 2 }));
     expect(output).toContain('Congratulations');
   });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { fromZone: 'tableau', fromCol: 1, cardIndex: 0, toZone: 'foundation', toCol: 2 };
+    expect(formatKlondikeState(makeState({ hint, messageCode: 'klondike.hintAvailable' }))).toContain('HINT:');
+    expect(formatKlondikeState(makeState({ hint, messageCode: 'klondike.playing' }))).not.toContain('HINT:');
+  });
 });

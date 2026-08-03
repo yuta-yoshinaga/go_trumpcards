@@ -35,6 +35,10 @@ func setupEcarteWebMock(trumpCard *domain.Card) *interfaces.MockEcarteGame {
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetConfig").Return(domain.DefaultEcarteConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -160,6 +164,7 @@ func TestEcarteWebPresenter_HintOutput_Card(t *testing.T) {
 	m, players := setupEcarteWebMockWithPlayers(trump)
 	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 	idx := 0
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return(&domain.EcarteHint{CardIndex: &idx, Reason: "lead_high"})
 
 	got := p.HintOutput(m)
@@ -173,6 +178,7 @@ func TestEcarteWebPresenter_HintOutput_Card(t *testing.T) {
 func TestEcarteWebPresenter_HintOutput_Action(t *testing.T) {
 	p := new(presenter.EcarteWebPresenter)
 	m, _ := setupEcarteWebMockWithPlayers(nil)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return(&domain.EcarteHint{Action: "propose", Reason: "weak_hand"})
 
 	got := p.HintOutput(m)
@@ -186,6 +192,7 @@ func TestEcarteWebPresenter_HintOutput_Action(t *testing.T) {
 func TestEcarteWebPresenter_HintOutput_None(t *testing.T) {
 	p := new(presenter.EcarteWebPresenter)
 	m, _ := setupEcarteWebMockWithPlayers(nil)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 	m.On("GetHint").Return((*domain.EcarteHint)(nil))
 	got := p.HintOutput(m)
 	var out controller.EcarteWebOutput
@@ -198,4 +205,33 @@ func TestEcarteWebPresenter_ActionLogOutput(t *testing.T) {
 	m, _ := setupEcarteWebMockWithPlayers(nil)
 	got := p.ActionLogOutput(m)
 	assert.NotEmpty(t, got)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestEcarteWebPresenterOutputCarriesTheHint(t *testing.T) {
+	idx := 0
+	ecg, _ := setupEcarteWebMockWithPlayers(domain.NewCard(domain.CardDesignSpade, 13, false))
+	ecg.ExpectedCalls = removeMockCall(ecg.ExpectedCalls, "GetHint")
+	ecg.On("GetHint").Return(&domain.EcarteHint{CardIndex: &idx, Action: "play", Reason: "lead_low"})
+
+	result := new(presenter.EcarteWebPresenter).Output(ecg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotContains(t, result, "ecarte.hintRequested")
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**このゲーム群の
+// hintAvailable は画面のラベルとして埋まっているので別キーを使う (#4483)。
+func TestEcarteWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	idx := 0
+	ecg, _ := setupEcarteWebMockWithPlayers(domain.NewCard(domain.CardDesignSpade, 13, false))
+	ecg.ExpectedCalls = removeMockCall(ecg.ExpectedCalls, "GetHint")
+	ecg.On("GetHint").Return(&domain.EcarteHint{CardIndex: &idx, Action: "play", Reason: "lead_low"})
+	assert.Contains(t, new(presenter.EcarteWebPresenter).HintOutput(ecg), "ecarte.hintRequested")
+
+	none, _ := setupEcarteWebMockWithPlayers(domain.NewCard(domain.CardDesignSpade, 13, false))
+	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
+	none.On("GetHint").Return((*domain.EcarteHint)(nil))
+	assert.Contains(t, new(presenter.EcarteWebPresenter).HintOutput(none), "ecarte.noHint")
 }

@@ -37,7 +37,10 @@ describe('formatTuteState', () => {
 
   it('renders a hint with marriage suit', () => {
     const out = formatTuteState(
-      makeTuteState({ hint: { cardIndices: [1, 2], marriage: 3, reason: 'declare_marriage' } }),
+      makeTuteState({
+        hint: { cardIndices: [1, 2], marriage: 3, reason: 'declare_marriage' },
+        messageCode: 'tute.hintRequested',
+      }),
     );
     expect(out).toContain('HINT: card indices [1, 2]');
     expect(out).toContain('marriage=♥');
@@ -45,7 +48,9 @@ describe('formatTuteState', () => {
   });
 
   it('renders a hint without marriage when marriage is 0', () => {
-    const out = formatTuteState(makeTuteState({ hint: { cardIndices: [0], marriage: 0, reason: 'lead_low' } }));
+    const out = formatTuteState(
+      makeTuteState({ hint: { cardIndices: [0], marriage: 0, reason: 'lead_low' }, messageCode: 'tute.hintRequested' }),
+    );
     expect(out).toContain('HINT: card indices [0]');
     expect(out).not.toContain('marriage=');
   });
@@ -58,5 +63,13 @@ describe('formatTuteState', () => {
   it('renders an explicit message when present', () => {
     const out = formatTuteState(makeTuteState({ message: 'hello world' }));
     expect(out).toContain('hello world');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndices: [0], marriage: 0, reason: 'lead_low' };
+    expect(formatTuteState(makeTuteState({ hint, messageCode: 'tute.hintRequested' }))).toContain('HINT');
+    expect(formatTuteState(makeTuteState({ hint, messageCode: 'tute.playing' }))).not.toContain('HINT');
   });
 });

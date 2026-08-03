@@ -60,5 +60,7 @@
     "playButton": "Once a card is selected, play it with this button. Sueca has no declarations — your only action is playing a card.",
     "info": "A=11, 7=10, K=4, Q=3, J=2. Team A (seats 0 & 2) vs Team B (seats 1 & 3) fight for the 60+ card points; each round awards game points. The first team to reach the target game points wins.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

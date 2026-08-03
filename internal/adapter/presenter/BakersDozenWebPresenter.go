@@ -45,6 +45,20 @@ func (p *BakersDozenWebPresenter) Output(bd interfaces.BakersDozenGame, lastErr 
 	}
 
 	// メッセージ
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if bd.GetPhase() == domain.BakersDozenPhasePlaying && !bd.IsStalemate() {
+		if hint := bd.GetHint(); hint != nil {
+			resObj.Hint = &controller.BakersDozenWebOutputHint{
+				FromCol:   hint.FromCol,
+				CardIndex: hint.CardIndex,
+				ToZone:    hint.ToZone,
+				ToCol:     hint.ToCol,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

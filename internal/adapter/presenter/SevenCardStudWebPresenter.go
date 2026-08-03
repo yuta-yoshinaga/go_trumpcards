@@ -21,6 +21,7 @@ func (p *SevenCardStudWebPresenter) Output(s interfaces.SevenCardStudGame, lastE
 func (p *SevenCardStudWebPresenter) buildOutput(s interfaces.SevenCardStudGame, lastErr error) *controller.SevenCardStudWebOutput {
 	resObj := new(controller.SevenCardStudWebOutput)
 	resObj.Phase = s.GetPhase()
+	resObj.IsHiLo = s.GetIsHiLo()
 	resObj.Pot = s.GetPot()
 	resObj.DealerIdx = s.GetDealerIdx()
 	resObj.CurrentTurn = s.GetCurrentTurn()
@@ -169,6 +170,13 @@ func (p *SevenCardStudWebPresenter) buildRoundResultsOutput(s interfaces.SevenCa
 			result.Kickers = ""
 		} else {
 			result.BestHand = cardsToOutput(r.BestHand)
+			// ローの内訳も出す。これが無いと、なぜポットが半分になったのかが
+			// 画面から読み取れない。
+			result.LowQualifies = r.LowQualifies
+			result.WonLow = r.WonLow
+			if len(r.LowBestHand) > 0 {
+				result.LowBestHand = cardsToOutput(r.LowBestHand)
+			}
 		}
 		out = append(out, result)
 	}

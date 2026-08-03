@@ -133,3 +133,25 @@ func TestCinchWebPresenter_HintOutput_TrumpAndCard(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(p.HintOutput(gp)), &playHint))
 	assert.Contains(t, playHint, "hint")
 }
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestCinchWebPresenterOutputCarriesTheHint(t *testing.T) {
+	// Reset 直後は入札フェーズの人間手番。500 回試して nil 0 件で確認済み。
+	g := domain.NewDefaultCinch()
+	g.Reset()
+	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
+
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.CinchWebPresenter).Output(g, nil)), &decoded))
+	assert.Contains(t, decoded, "hint", "Output must carry the hint -- the frontend reads state.hint")
+	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
+	assert.NotEqual(t, "cinch.hintRequested", decoded["messageCode"])
+}
+
+// **HintOutput は「頼んだヒント」だと分かる印を付ける。**
+func TestCinchWebPresenterHintOutputMarksTheRequest(t *testing.T) {
+	g := domain.NewDefaultCinch()
+	g.Reset()
+	assert.Contains(t, new(presenter.CinchWebPresenter).HintOutput(g), "cinch.hintRequested")
+}

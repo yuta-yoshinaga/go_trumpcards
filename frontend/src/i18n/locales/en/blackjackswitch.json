@@ -54,5 +54,13 @@
     "hit": "H",
     "stand": "T",
     "doubleDown": "D"
+  },
+  "frontendHint": {
+    "blackjackswitchBet": "Place a bet to be dealt two hands",
+    "blackjackswitchSwitch": "Swapping makes both hands playable — switch",
+    "blackjackswitchKeep": "Swapping does not improve the pair — keep the deal",
+    "blackjackswitchStand": "Seventeen or better — stand",
+    "blackjackswitchStandPush22": "A dealer 22 is a push, so you cannot count on a bust — stand",
+    "blackjackswitchHit": "Still low — take another card"
   }
 }

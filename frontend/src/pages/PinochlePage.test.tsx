@@ -495,7 +495,7 @@ describe('PinochlePage', () => {
     await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue({ bidAmount: 30, reason: 'hint_bid' } as unknown as PinochleResponse);
+    mockExec.mockResolvedValue({ hint: { bidAmount: 30, reason: 'hint_bid' } } as unknown as PinochleResponse);
     fireEvent.click(screen.getByTestId('pn-hint-button'));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
@@ -512,7 +512,7 @@ describe('PinochlePage', () => {
     await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue({ pass: true, reason: 'hint_pass' } as unknown as PinochleResponse);
+    mockExec.mockResolvedValue({ hint: { pass: true, reason: 'hint_pass' } } as unknown as PinochleResponse);
     fireEvent.click(screen.getByTestId('pn-hint-button'));
 
     const hintBox = await screen.findByTestId('pn-server-hint');
@@ -527,7 +527,7 @@ describe('PinochlePage', () => {
     await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue({ cardIndex: 1, reason: 'hint_play' } as unknown as PinochleResponse);
+    mockExec.mockResolvedValue({ hint: { cardIndex: 1, reason: 'hint_play' } } as unknown as PinochleResponse);
     fireEvent.click(screen.getByTestId('pn-hint-button'));
 
     const hintBox = await screen.findByTestId('pn-server-hint');

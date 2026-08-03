@@ -1,5 +1,6 @@
 import i18n from '../../i18n';
 import type { Card } from '../../types/card';
+import { isRequestedHint } from '../hintRequest';
 
 const SUIT_SYMBOLS: Record<string, string> = {
   SPADE: '\u2660',
@@ -49,3 +50,7 @@ export function formatHeader(title: string): string {
 export function formatPlayerName(id: number, isHuman: boolean): string {
   return isHuman ? i18n.t('player.you') : i18n.t('player.cpu', { id });
 }
+
+// 実体は `utils/hintRequest.ts`。CLI フォーマッタ 77 本がここから読んでいるので
+// 再エクスポートで受ける (#4605)。
+export { isRequestedHint };

@@ -15,6 +15,24 @@ type SkatWebPresenter struct{}
 func (p *SkatWebPresenter) Output(s interfaces.SkatGame, lastErr error) string {
 	resObj := p.buildBaseOutput(s)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(s, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**Skat.GetHint() が自分で
+	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
+	if hint := s.GetHint(); hint != nil {
+		resObj.Hint = &controller.SkatWebOutputHint{
+			CardIndex:    hint.CardIndex,
+			Bid:          hint.Bid,
+			GameType:     hint.GameType,
+			TrumpSuit:    hint.TrumpSuit,
+			PickSkat:     hint.PickSkat,
+			DiscardIndex: hint.DiscardIndex,
+			Reason:       hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 

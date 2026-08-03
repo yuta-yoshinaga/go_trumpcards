@@ -47,5 +47,8 @@
     "deal": "Turn two cards with this button. The first (losing) card is collected by the bank; the second (winning) card pays you 1:1.",
     "call": "The final three cards can be called by predicting their order — a correct call pays 4:1.",
     "resetButton": "Use this button to reset the game at any time."
+  },
+  "frontendHint": {
+    "faroCallOdds": "Six possible orders for the last three, paying 4:1 — skip it unless you have been counting"
   }
 }

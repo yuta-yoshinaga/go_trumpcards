@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"time"
 )
 
 // ThirtyOnePlayerCnt ThirtyOne プレイヤー数 (人間 1 + CPU 3)
@@ -68,7 +67,7 @@ func NewThirtyOne(trumpCards *TrumpCards, players []*ThirtyOnePlayer, config Thi
 		thirtyOneIdx:   -1,
 		roundWinnerIdx: -1,
 		roundLosers:    make([]int, 0),
-		rng:            rand.New(rand.NewSource(time.Now().UnixNano())),
+		rng:            rand.New(rand.NewSource(rand.Int63())),
 	}
 }
 
@@ -787,7 +786,7 @@ func (g *ThirtyOne) UnmarshalJSON(data []byte) error {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
 	if g.rng == nil {
-		g.rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+		g.rng = rand.New(rand.NewSource(rand.Int63()))
 	}
 	return nil
 }

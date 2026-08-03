@@ -93,5 +93,7 @@
     "trumpWithCard": "Trump with a card",
     "dumpJester": "Good chance to dump a Jester",
     "discardLowest": "Discard your lowest card"
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

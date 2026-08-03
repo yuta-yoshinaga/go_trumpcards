@@ -54,10 +54,18 @@ func decodeNertzWebOutput(t *testing.T, raw string) *controller.NertzWebOutput {
 	return &out
 }
 
+// setupNertzOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupNertzOutputMock(g *interfaces.MockNertzGame) {
+	setupNertzWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestNertzWebPresenter_Output(t *testing.T) {
 	t.Run("playing", func(t *testing.T) {
 		g := new(interfaces.MockNertzGame)
-		setupNertzWebMockDefaults(g)
+		setupNertzOutputMock(g)
 		raw := new(NertzWebPresenter).Output(g, nil)
 		out := decodeNertzWebOutput(t, raw)
 		assert.Equal(t, "nertz.playing", out.MessageCode)
@@ -80,7 +88,7 @@ func TestNertzWebPresenter_Output(t *testing.T) {
 	// in the public API contract. See issue #1532.
 	t.Run("JSON shape uses isHuman / roundNumber", func(t *testing.T) {
 		g := new(interfaces.MockNertzGame)
-		setupNertzWebMockDefaults(g)
+		setupNertzOutputMock(g)
 		raw := new(NertzWebPresenter).Output(g, nil)
 		// New canonical names must appear.
 		assert.Contains(t, raw, `"roundNumber":`, "JSON output must use roundNumber")
@@ -92,7 +100,7 @@ func TestNertzWebPresenter_Output(t *testing.T) {
 
 	t.Run("with error", func(t *testing.T) {
 		g := new(interfaces.MockNertzGame)
-		setupNertzWebMockDefaults(g)
+		setupNertzOutputMock(g)
 		raw := new(NertzWebPresenter).Output(g, assert.AnError)
 		out := decodeNertzWebOutput(t, raw)
 		assert.Equal(t, assert.AnError.Error(), out.Message)
@@ -158,11 +166,36 @@ func TestNertzWebPresenter_Output(t *testing.T) {
 		g.On("GetConfig").Return(domain.DefaultNertzConfig()).Maybe()
 		g.On("GetPlayers").Return([]*domain.NertzPlayer{nil}).Maybe()
 		g.On("GetFoundations").Return([]*domain.NertzFoundation{nil}).Maybe()
+		g.On("GetHint").Return(nil).Maybe()
 		raw := new(NertzWebPresenter).Output(g, nil)
 		out := decodeNertzWebOutput(t, raw)
 		assert.Empty(t, out.Players)
 		require.Len(t, out.Foundations, 1)
 		assert.Equal(t, -1, out.Foundations[0].Suit)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestNertzWebPresenterOutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		ntg := new(interfaces.MockNertzGame)
+		setupNertzWebMockDefaults(ntg)
+		ntg.On("GetHint").Return(&domain.NertzHint{FromZone: "waste", FromCol: -1, CardIndex: -1, ToZone: "foundation", ToCol: 2}).Maybe()
+
+		result := new(NertzWebPresenter).Output(ntg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	t.Run("not once the game has ended", func(t *testing.T) {
+		ntg := new(interfaces.MockNertzGame)
+		setupNertzWebMockDefaults(ntg)
+		ntg.ExpectedCalls = filterCalls(ntg.ExpectedCalls, "GetPhase")
+		ntg.On("GetPhase").Return(domain.NertzPhaseGameEnd)
+		ntg.On("GetHint").Return(&domain.NertzHint{FromZone: "waste", FromCol: -1, CardIndex: -1, ToZone: "foundation", ToCol: 2}).Maybe()
+
+		result := new(NertzWebPresenter).Output(ntg, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 

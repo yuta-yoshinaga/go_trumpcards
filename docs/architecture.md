@@ -47,7 +47,7 @@ public/                        # Built frontend assets served by Go web server
 
 - **Presenter pattern**: `internal/usecase/presenter/` defines output interfaces (e.g., `BlackJackPresenter`). `internal/adapter/presenter/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
 - **Mock presenters**: `*_mock.go` files in `internal/usecase/presenter/` are used in tests to avoid I/O.
-- **Web API**: Two hundred and nineteen endpoints -- `POST /blackjack/exec` (BlackJack), `POST /poker/exec` (5-card Draw Poker), `POST /oldmaid/exec` (Old Maid), `POST /daifugo/exec` (Daifugo / Great Fool), `POST /bigtwo/exec` (Big Two), `POST /sevens/exec` (Sevens), `POST /doubt/exec` (Doubt), `POST /holdem/exec` (Texas Hold'em), `POST /omaha/exec` (Omaha Hold'em), `POST /omahahilo/exec` (Omaha Hi-Lo / 8 or Better), `POST /bigo/exec` (5 Card Omaha (Big O)), `POST /bigohilo/exec` (5 Card Omaha Hi-Lo (Big O)), `POST /shortdeck/exec` (Short Deck (6+ Hold'em)), `POST /pineapple/exec` (Pineapple Poker), `POST /crazypineapple/exec` (Crazy Pineapple Poker), `POST /irishpoker/exec` (Irish Poker), `POST /hearts/exec` (Hearts), `POST /memory/exec` (Memory / Concentration), `POST /klondike/exec` (Klondike Solitaire), `POST /freecell/exec` (FreeCell), `POST /seahaventowers/exec` (Seahaven Towers), `POST /cruel/exec` (Cruel), `POST /baccarat/exec` (Baccarat), `POST /spades/exec` (Spades), `POST /crazyeights/exec` (Crazy Eights), `POST /ginrummy/exec` (Gin Rummy), `POST /canasta/exec` (Canasta), `POST /spider/exec` (Spider Solitaire), `POST /napoleon/exec` (Napoleon), `POST /indianpoker/exec` (Indian Poker), `POST /videopoker/exec` (Video Poker Jacks or Better), `POST /deuceswild/exec` (Deuces Wild), `POST /jokerpoker/exec` (Joker Poker), `POST /euchre/exec` (Euchre), `POST /pyramid/exec` (Pyramid), `POST /tripeaks/exec` (TriPeaks), `POST /cribbage/exec` (Cribbage), `POST /threecard/exec` (Three Card Poker), `POST /ohhell/exec` (Oh Hell), `POST /ninetynine/exec` (Ninety-Nine), `POST /bridge/exec` (Contract Bridge), `POST /speed/exec` (Speed), `POST /gofish/exec` (Go Fish), `POST /pinochle/exec` (Pinochle), `POST /golf/exec` (Golf Solitaire), `POST /pigtail/exec` (Pig's Tail), `POST /sevencardstud/exec` (Seven Card Stud), `POST /clocksolitaire/exec` (Clock Solitaire), `POST /durak/exec` (Durak / Fool), `POST /fortythieves/exec` (Forty Thieves), `POST /paigow/exec` (Pai Gow Poker), `POST /twotenjack/exec` (Two Ten Jack), `POST /caribbeanstud/exec` (Caribbean Stud Poker), `POST /texasholdembonus/exec` (Texas Hold'em Bonus Poker), `POST /war/exec` (War), `POST /canfield/exec` (Canfield Solitaire), `POST /fiftyone/exec` (Fifty-one), `POST /yukon/exec` (Yukon Solitaire), `POST /russiansolitaire/exec` (Russian Solitaire), `POST /whist/exec` (Whist), `POST /letitride/exec` (Let It Ride), `POST /pokersquares/exec` (Poker Squares), `POST /pageone/exec` (Page One), `POST /reddog/exec` (Red Dog), `POST /badugi/exec` (Badugi), `POST /deucetoseven/exec` (2-7 Triple Draw), `POST /razz/exec` (Razz), `POST /scorpion/exec` (Scorpion), `POST /wasp/exec` (Wasp), `POST /accordion/exec` (Accordion), `POST /trash/exec` (Trash), `POST /sevenbridge/exec` (Seven Bridge), `POST /president/exec` (President / Scum), `POST /cassino/exec` (Cassino), `POST /spanish21/exec` (Spanish 21), `POST /calculation/exec` (Calculation), `POST /spiteandmalice/exec` (Spite and Malice), `POST /skat/exec` (Skat), `POST /shithead/exec` (Shithead / Karma), `POST /nertz/exec` (Nertz / Pounce), `POST /slapjack/exec` (Slapjack), `POST /egyptianratscrew/exec` (Egyptian Ratscrew), `POST /bakersdozen/exec` (Baker's Dozen), `POST /tonk/exec` (Tonk), `POST /casinowar/exec` (Casino War), `POST /pitch/exec` (Pitch / Setback), `POST /dragontiger/exec` (Dragon Tiger), `POST /blackjackswitch/exec` (Blackjack Switch), `POST /montecarlo/exec` (Monte Carlo Solitaire), `POST /contractrummy/exec` (Contract Rummy), `POST /ultimatetexasholdem/exec` (Ultimate Texas Hold'em), `POST /crescent/exec` (Crescent Solitaire), `POST /mississippistud/exec` (Mississippi Stud), `POST /belote/exec` (Belote), `POST /spiderette/exec` (Spiderette), `POST /mighty/exec` (Mighty), `POST /oasispoker/exec` (Oasis Poker), `POST /beleagueredcastle/exec` (Beleaguered Castle), `POST /piquet/exec` (Piquet), `POST /casinoholdem/exec` (Casino Hold'em), `POST /callbreak/exec` (Call Break), `POST /tarneeb/exec` (Tarneeb), `POST /highcardflush/exec` (High Card Flush), `POST /briscola/exec` (Briscola), `POST /gaps/exec` (Gaps / Montana), `POST /fourcardpoker/exec` (Four Card Poker), `POST /rummy500/exec` (Rummy 500), `POST /eightoff/exec` (Eight Off), `POST /russianpoker/exec` (Russian Poker), `POST /penguin/exec` (Penguin), `POST /chinesepoker/exec` (Chinese Poker), `POST /sixcardgolf/exec` (Six Card Golf), `POST /doudizhu/exec` (Dou Dizhu / Fight the Landlord), `POST /truco/exec` (Truco), `POST /scopa/exec` (Scopa), `POST /acesup/exec` (Aces Up), `POST /barbu/exec` (Barbu), `POST /macau/exec` (Macau), `POST /thirtyone/exec` (Thirty-One), `POST /tienlen/exec` (Tien Len), `POST /osmosis/exec` (Osmosis Solitaire), `POST /fivehundred/exec` (500), `POST /schnapsen/exec` (Schnapsen / Sixty-Six), `POST /burraco/exec` (Burraco), `POST /yaniv/exec` (Yaniv), `POST /gongzhu/exec` (Gong Zhu), `POST /bristol/exec` (Bristol), `POST /bidwhist/exec` (Bid Whist), `POST /tressette/exec` (Tressette), `POST /easthaven/exec` (Easthaven), `POST /tichu/exec` (Tichu), `POST /bakersgame/exec` (Baker's Game), `POST /bourre/exec` (Bourré), `POST /sheepshead/exec` (Sheepshead), `POST /doppelkopf/exec` (Doppelkopf), `POST /mus/exec` (Mus), `POST /tute/exec` (Tute), `POST /sueca/exec` (Sueca), `POST /fortyfives/exec` (Auction Forty-Fives), `POST /twentynine/exec` (Twenty-Nine / 29), `POST /klaverjas/exec` (Klaverjas), `POST /manille/exec` (Manille), `POST /marias/exec` (Mariáš), `POST /sedma/exec` (Sedma), `POST /solowhist/exec` (Solo Whist), `POST /knockoutwhist/exec` (Knockout Whist), `POST /nap/exec` (Nap / Napoleon), `POST /preference/exec` (Préférence), `POST /spoilfive/exec` (Spoil Five / Maw), `POST /courtpiece/exec` (Court Piece / Rang), `POST /bezique/exec` (Bezique), `POST /ecarte/exec` (Écarté), `POST /threecardbrag/exec` (Three Card Brag), `POST /teenpatti/exec` (Teen Patti), `POST /scopone/exec` (Scopone), `POST /escoba/exec` (Escoba), `POST /handandfoot/exec` (Hand and Foot), `POST /conquian/exec` (Conquian), `POST /chinchon/exec` (Chinchón), `POST /kalooki/exec` (Kalooki), `POST /threethirteen/exec` (Three Thirteen), `POST /mao/exec` (Mao), `POST /spoons/exec` (Spoons), `POST /kemps/exec` (Kemps), `POST /cuckoo/exec` (Cuckoo), `POST /pishti/exec` (Pişti), `POST /cuarenta/exec` (Cuarenta), `POST /fivecardstud/exec` (Five Card Stud), `POST /faro/exec` (Faro), `POST /openfacechinese/exec` (Open Face Chinese Poker / OFC), `POST /russianbank/exec` (Russian Bank / Crapette), `POST /labellelucie/exec` (La Belle Lucie), `POST /simplesimon/exec` (Simple Simon), `POST /doubleklondike/exec` (Double Klondike / Gargantua), and `POST /blackhole/exec` (Black Hole), `POST /beggarmyneighbour/exec` (Beggar-My-Neighbour), `POST /allfours/exec` (All Fours / Seven Up), `POST /catchten/exec` (Catch the Ten / Scotch Whist), `POST /prsi/exec` (Prší / Czech Crazy Eights), `POST /streetsandalleys/exec` (Streets and Alleys), `POST /kingalbert/exec` (King Albert), `POST /flowergarden/exec` (Flower Garden / The Bouquet), `POST /fortyandeight/exec` (Forty and Eight), `POST /agnes/exec` (Agnes Sorel), `POST /sultan/exec` (Sultan of Turkey), `POST /jass/exec` (Jass / Schieber), `POST /gaigel/exec` (Gaigel), `POST /tysiac/exec` (Thousand / Tysiąc), `POST /calabresella/exec` (Calabresella / Terziglio), `POST /ombre/exec` (Ombre / Hombre), `POST /king/exec` (King), `POST /cinch/exec` (Cinch), `POST /loo/exec` (Loo / Lanterloo), `POST /basra/exec` (Basra / Bastra), `POST /tablanet/exec` (Tablanet / Tablić), `POST /trenteetquarante/exec` (Trente et Quarante / Rouge et Noir), `POST /guts/exec` (Guts), `POST /bouillotte/exec` (Bouillotte), `POST /primero/exec` (Primero), `POST /michigan/exec` (Michigan / Newmarket), `POST /watten/exec` (Watten / ヴァッテン), `POST /carioca/exec` (Carioca / カリオカ), `POST /samba/exec` (Samba / サンバ), `POST /indianrummy/exec` (Indian Rummy / インドラミー), `POST /machiavelli/exec` (Machiavelli / マキャヴェッリ), `POST /anaconda/exec` (Anaconda / Pass the Trash), `POST /pan/exec` (Panguingue / Pan), `POST /ulti/exec` (Ulti / Ultimó), `POST /wizard/exec` (Wizard), `POST /oichokabu/exec` (Oicho-Kabu), `POST /rook/exec` (Rook), `POST /koikoi/exec` (Koi-Koi), `POST /gostop/exec` (Go-Stop), `POST /hachihachi/exec` (Hachi-Hachi), `POST /frenchtarot/exec` (French Tarot), `POST /koenigrufen/exec` (Königrufen), `POST /scarto/exec` (Scarto), and `POST /cego/exec` (Cego), and `POST /zheng/exec` (Zheng Shangyou) -- accept JSON with a `command` field and game state.
+- **Web API**: 264 endpoints, one per game. Each accepts JSON with a `command` field and the game state; the full list is in [Web API endpoints](#web-api-endpoints) below.
 - **Swagger UI**: Available at `/swagger/` -- serves the OpenAPI spec (`api/openapi.yaml`) via Swagger UI for interactive API documentation and testing. The spec is embedded into the binary with `go:embed`; the Swagger UI frontend is loaded from a CDN. Both routes accept `GET` and `HEAD` (HEAD returns headers only).
 - **SPA fallback**: All other GET/HEAD requests are served from `public/` via `http.FileServer`; unknown paths fall back to `public/index.html` so externally shared deep-links (e.g., `/blackjack`, `/poker`) reach the React HashRouter SPA instead of returning a bare 404. See `internal/infrastructure/web/spa.go`.
 
@@ -67,17 +67,21 @@ Go source (//go:build js && wasm)
   → wrangler deploy (Cloudflare Workers)
 ```
 
-Build commands: `make build-worker-{solo,casino,classic}` or `make build-workers`.
+Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3}` or `make build-workers`.
 
-### 3-Worker split
+### Size buckets
 
-Games are distributed across three Workers to stay under the 1MB gzip size limit per Worker:
+Games are distributed across **six** Workers to stay under the 1 MB gzip size limit per Worker
+(`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`; see [ADR-0032](adr/0032-fourth-worker-capacity.md)
+and [ADR-0036](adr/0036-fifth-sixth-worker-capacity.md)). A `Category` is purely a binary-size
+bucket, **not** a user-facing taxonomy, and games move between buckets whenever one nears the
+limit.
 
-| Worker | Category | Entry point | Games |
-|--------|----------|-------------|-------|
-| **casino** | Table & poker | `cmd/workers/casino/main.go` | blackjack, baccarat, poker, holdem, omaha, omahahilo, bigo, bigohilo, shortdeck, pineapple, crazypineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, fourcardpoker, caribbeanstud, texasholdembonus, ultimatetexasholdem, mississippistud, sevencardstud, paigow, letitride, reddog, razz, badugi, deucetoseven, spanish21, casinowar, dragontiger, blackjackswitch, highcardflush |
-| **classic** | Trick-taking & matching | `cmd/workers/classic/main.go` | hearts, spades, euchre, napoleon, mighty, oldmaid, doubt, daifugo, bigtwo, sevens, crazyeights, ohhell, ninetynine, bridge, speed, gofish, pinochle, pigtail, twotenjack, war, durak, fiftyone, whist, trash, spiteandmalice, skat, shithead, nertz, slapjack, belote, sixcardgolf |
-| **solo** | Solitaire & rummy | `cmd/workers/solo/main.go` | klondike, freecell, cruel, spider, spiderette, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, russiansolitaire, scorpion, wasp, accordion, pokersquares, crescent, bakersdozen, beleagueredcastle, gaps, rummy500, eightoff, penguin, acesup |
+**The per-worker game lists live in [`docs/cloudflare-workers.md`](cloudflare-workers.md), and
+only there.** That table is checked against the registry by `TestDocsMatchRegistry`; this file
+deliberately does not repeat it. A second hand-maintained copy is how this section came to
+describe three workers and 93 of 233 games long after the other three shipped -- the duplicate,
+not the wording, was the defect.
 
 The frontend routes requests to the correct Worker via `workerUrl` mapping in `frontend/src/api/gameApi.ts`. When `VITE_WORKER_*_URL` env vars are unset, requests fall back to relative URLs (Docker deployment).
 
@@ -90,21 +94,306 @@ Workers are stateless, so game sessions are persisted in **Cloudflare KV** (`GAM
 
 ### Adding a game to Workers
 
-When adding a new game, register it in the appropriate Worker entry point using `registerKV`:
+Worker entry points (`cmd/workers/<worker>/main.go`) are thin shells: they blank-import their
+category sub-package and call `games.RegisterCategory`. A new game is registered in that
+sub-package with the `games.RegisterKVGame` helper, not in the entry point:
 
 ```go
-// cmd/workers/<worker>/main.go
-registerKV(mux, "/<game>/exec", "<game>:",
-    func() usecase.<Game>InteractorIF { ... },      // factory
+// internal/infrastructure/games/<category>/<category>.go  (//go:build js && wasm)
+games.RegisterKVGame("<game>", games.Category<Bucket>,
+    func() usecase.<Game>InteractorIF { ... },                     // factory
     func(data []byte) (usecase.<Game>InteractorIF, error) { ... }, // restore
-    func(p controller.SessionProvider[usecase.<Game>InteractorIF], f func() usecase.<Game>InteractorIF) interface { ... } { ... }, // controller
+    ...,                                                           // controller
 )
 ```
 
-Also ensure `frontend/src/api/gameApi.ts` `workerUrl` maps the game to the correct `WORKER_*` constant.
+The bucket named here must match the game's `Category` in `registry.go` and the `WORKER_*`
+constant in `frontend/src/api/gameApi.ts`. For the full set of registration points, see
+[`docs/new-game-checklist.md`](new-game-checklist.md).
 
 ### TinyGo constraints
 
 - `go.mod` specifies `go 1.25.8` (TinyGo's latest supported Go version) with `toolchain go1.26.0` for local development
 - Mock files require `//go:build test` tag to exclude `testify/mock` from WASM builds
 - `net/http` method-prefixed routing (`"POST /path"`) is not supported; Worker entry points use plain `"/path"` patterns
+
+## Web API endpoints
+
+One `POST /<game>/exec` per registered game -- **264** in total. Every endpoint takes JSON with a
+`command` field plus the game state, and returns that game's Web presenter output.
+
+One row per game, so adding a game is a one-line diff. This used to be a single inline paragraph
+holding all 233 entries, which meant every new game rewrote a line tens of thousands of characters
+long and no reviewer could see what changed (#4470).
+
+Two tests hold it to the registry, both in `internal/infrastructure/games/docs_consistency_test.go`:
+`TestArchitectureDocEndpointsMatchRegistry` for a strict 1:1 mapping, and
+`TestArchitectureDocEndpointCountMatchesRegistry` for the counts stated above. The count was
+previously spelled out in words and maintained entirely by hand, with nothing checking it.
+
+| Endpoint | Game |
+|---|---|
+| `POST /blackjack/exec` | BlackJack |
+| `POST /poker/exec` | 5-card Draw Poker |
+| `POST /oldmaid/exec` | Old Maid |
+| `POST /daifugo/exec` | Daifugo / Great Fool |
+| `POST /bigtwo/exec` | Big Two |
+| `POST /sevens/exec` | Sevens |
+| `POST /doubt/exec` | Doubt |
+| `POST /holdem/exec` | Texas Hold'em |
+| `POST /omaha/exec` | Omaha Hold'em |
+| `POST /omahahilo/exec` | Omaha Hi-Lo / 8 or Better |
+| `POST /bigo/exec` | 5 Card Omaha (Big O) |
+| `POST /bigohilo/exec` | 5 Card Omaha Hi-Lo (Big O) |
+| `POST /shortdeck/exec` | Short Deck (6+ Hold'em) |
+| `POST /pineapple/exec` | Pineapple Poker |
+| `POST /crazypineapple/exec` | Crazy Pineapple Poker |
+| `POST /irishpoker/exec` | Irish Poker |
+| `POST /hearts/exec` | Hearts |
+| `POST /memory/exec` | Memory / Concentration |
+| `POST /klondike/exec` | Klondike Solitaire |
+| `POST /freecell/exec` | FreeCell |
+| `POST /seahaventowers/exec` | Seahaven Towers |
+| `POST /cruel/exec` | Cruel |
+| `POST /baccarat/exec` | Baccarat |
+| `POST /spades/exec` | Spades |
+| `POST /crazyeights/exec` | Crazy Eights |
+| `POST /ginrummy/exec` | Gin Rummy |
+| `POST /canasta/exec` | Canasta |
+| `POST /spider/exec` | Spider Solitaire |
+| `POST /napoleon/exec` | Napoleon |
+| `POST /indianpoker/exec` | Indian Poker |
+| `POST /videopoker/exec` | Video Poker Jacks or Better |
+| `POST /deuceswild/exec` | Deuces Wild |
+| `POST /jokerpoker/exec` | Joker Poker |
+| `POST /euchre/exec` | Euchre |
+| `POST /pyramid/exec` | Pyramid |
+| `POST /tripeaks/exec` | TriPeaks |
+| `POST /cribbage/exec` | Cribbage |
+| `POST /threecard/exec` | Three Card Poker |
+| `POST /ohhell/exec` | Oh Hell |
+| `POST /ninetynine/exec` | Ninety-Nine |
+| `POST /bridge/exec` | Contract Bridge |
+| `POST /speed/exec` | Speed |
+| `POST /gofish/exec` | Go Fish |
+| `POST /pinochle/exec` | Pinochle |
+| `POST /golf/exec` | Golf Solitaire |
+| `POST /pigtail/exec` | Pig's Tail |
+| `POST /sevencardstud/exec` | Seven Card Stud |
+| `POST /clocksolitaire/exec` | Clock Solitaire |
+| `POST /durak/exec` | Durak / Fool |
+| `POST /fortythieves/exec` | Forty Thieves |
+| `POST /paigow/exec` | Pai Gow Poker |
+| `POST /twotenjack/exec` | Two Ten Jack |
+| `POST /caribbeanstud/exec` | Caribbean Stud Poker |
+| `POST /texasholdembonus/exec` | Texas Hold'em Bonus Poker |
+| `POST /war/exec` | War |
+| `POST /canfield/exec` | Canfield Solitaire |
+| `POST /fiftyone/exec` | Fifty-one |
+| `POST /yukon/exec` | Yukon Solitaire |
+| `POST /russiansolitaire/exec` | Russian Solitaire |
+| `POST /whist/exec` | Whist |
+| `POST /letitride/exec` | Let It Ride |
+| `POST /pokersquares/exec` | Poker Squares |
+| `POST /pageone/exec` | Page One |
+| `POST /reddog/exec` | Red Dog |
+| `POST /badugi/exec` | Badugi |
+| `POST /deucetoseven/exec` | 2-7 Triple Draw |
+| `POST /razz/exec` | Razz |
+| `POST /sevencardstudhilo/exec` | Seven Card Stud Hi-Lo |
+| `POST /scorpion/exec` | Scorpion |
+| `POST /wasp/exec` | Wasp |
+| `POST /accordion/exec` | Accordion |
+| `POST /trash/exec` | Trash |
+| `POST /sevenbridge/exec` | Seven Bridge |
+| `POST /president/exec` | President / Scum |
+| `POST /cassino/exec` | Cassino |
+| `POST /spanish21/exec` | Spanish 21 |
+| `POST /calculation/exec` | Calculation |
+| `POST /sirtommy/exec` | Sir Tommy |
+| `POST /spiteandmalice/exec` | Spite and Malice |
+| `POST /skat/exec` | Skat |
+| `POST /shithead/exec` | Shithead / Karma |
+| `POST /nertz/exec` | Nertz / Pounce |
+| `POST /slapjack/exec` | Slapjack |
+| `POST /egyptianratscrew/exec` | Egyptian Ratscrew |
+| `POST /bakersdozen/exec` | Baker's Dozen |
+| `POST /tonk/exec` | Tonk |
+| `POST /casinowar/exec` | Casino War |
+| `POST /pitch/exec` | Pitch / Setback |
+| `POST /dragontiger/exec` | Dragon Tiger |
+| `POST /blackjackswitch/exec` | Blackjack Switch |
+| `POST /montecarlo/exec` | Monte Carlo Solitaire |
+| `POST /contractrummy/exec` | Contract Rummy |
+| `POST /ultimatetexasholdem/exec` | Ultimate Texas Hold'em |
+| `POST /crescent/exec` | Crescent Solitaire |
+| `POST /mississippistud/exec` | Mississippi Stud |
+| `POST /belote/exec` | Belote |
+| `POST /spiderette/exec` | Spiderette |
+| `POST /mighty/exec` | Mighty |
+| `POST /oasispoker/exec` | Oasis Poker |
+| `POST /beleagueredcastle/exec` | Beleaguered Castle |
+| `POST /piquet/exec` | Piquet |
+| `POST /casinoholdem/exec` | Casino Hold'em |
+| `POST /callbreak/exec` | Call Break |
+| `POST /tarneeb/exec` | Tarneeb |
+| `POST /highcardflush/exec` | High Card Flush |
+| `POST /briscola/exec` | Briscola |
+| `POST /gaps/exec` | Gaps / Montana |
+| `POST /fourcardpoker/exec` | Four Card Poker |
+| `POST /rummy500/exec` | Rummy 500 |
+| `POST /eightoff/exec` | Eight Off |
+| `POST /russianpoker/exec` | Russian Poker |
+| `POST /penguin/exec` | Penguin |
+| `POST /chinesepoker/exec` | Chinese Poker |
+| `POST /sixcardgolf/exec` | Six Card Golf |
+| `POST /doudizhu/exec` | Dou Dizhu / Fight the Landlord |
+| `POST /truco/exec` | Truco |
+| `POST /scopa/exec` | Scopa |
+| `POST /acesup/exec` | Aces Up |
+| `POST /barbu/exec` | Barbu |
+| `POST /macau/exec` | Macau |
+| `POST /thirtyone/exec` | Thirty-One |
+| `POST /tienlen/exec` | Tien Len |
+| `POST /osmosis/exec` | Osmosis Solitaire |
+| `POST /fivehundred/exec` | 500 |
+| `POST /schnapsen/exec` | Schnapsen / Sixty-Six |
+| `POST /burraco/exec` | Burraco |
+| `POST /yaniv/exec` | Yaniv |
+| `POST /gongzhu/exec` | Gong Zhu |
+| `POST /bristol/exec` | Bristol |
+| `POST /bidwhist/exec` | Bid Whist |
+| `POST /tressette/exec` | Tressette |
+| `POST /easthaven/exec` | Easthaven |
+| `POST /tichu/exec` | Tichu |
+| `POST /bakersgame/exec` | Baker's Game |
+| `POST /bourre/exec` | Bourré |
+| `POST /sheepshead/exec` | Sheepshead |
+| `POST /doppelkopf/exec` | Doppelkopf |
+| `POST /mus/exec` | Mus |
+| `POST /tute/exec` | Tute |
+| `POST /sueca/exec` | Sueca |
+| `POST /fortyfives/exec` | Auction Forty-Fives |
+| `POST /twentynine/exec` | Twenty-Nine / 29 |
+| `POST /klaverjas/exec` | Klaverjas |
+| `POST /manille/exec` | Manille |
+| `POST /marias/exec` | Mariáš |
+| `POST /sedma/exec` | Sedma |
+| `POST /solowhist/exec` | Solo Whist |
+| `POST /knockoutwhist/exec` | Knockout Whist |
+| `POST /nap/exec` | Nap / Napoleon |
+| `POST /preference/exec` | Préférence |
+| `POST /ganjifa/exec` | Ganjifa |
+| `POST /vira/exec` | Vira |
+| `POST /spoilfive/exec` | Spoil Five / Maw |
+| `POST /courtpiece/exec` | Court Piece / Rang |
+| `POST /bezique/exec` | Bezique |
+| `POST /ecarte/exec` | Écarté |
+| `POST /threecardbrag/exec` | Three Card Brag |
+| `POST /teenpatti/exec` | Teen Patti |
+| `POST /scopone/exec` | Scopone |
+| `POST /escoba/exec` | Escoba |
+| `POST /handandfoot/exec` | Hand and Foot |
+| `POST /conquian/exec` | Conquian |
+| `POST /chinchon/exec` | Chinchón |
+| `POST /kalooki/exec` | Kalooki |
+| `POST /threethirteen/exec` | Three Thirteen |
+| `POST /mao/exec` | Mao |
+| `POST /spoons/exec` | Spoons |
+| `POST /kemps/exec` | Kemps |
+| `POST /cuckoo/exec` | Cuckoo |
+| `POST /pishti/exec` | Pişti |
+| `POST /cuarenta/exec` | Cuarenta |
+| `POST /fivecardstud/exec` | Five Card Stud |
+| `POST /faro/exec` | Faro |
+| `POST /openfacechinese/exec` | Open Face Chinese Poker / OFC |
+| `POST /russianbank/exec` | Russian Bank / Crapette |
+| `POST /labellelucie/exec` | La Belle Lucie |
+| `POST /simplesimon/exec` | Simple Simon |
+| `POST /doubleklondike/exec` | Double Klondike / Gargantua |
+| `POST /blackhole/exec` | Black Hole |
+| `POST /beggarmyneighbour/exec` | Beggar-My-Neighbour |
+| `POST /allfours/exec` | All Fours / Seven Up |
+| `POST /catchten/exec` | Catch the Ten / Scotch Whist |
+| `POST /prsi/exec` | Prší / Czech Crazy Eights |
+| `POST /streetsandalleys/exec` | Streets and Alleys |
+| `POST /kingalbert/exec` | King Albert |
+| `POST /flowergarden/exec` | Flower Garden / The Bouquet |
+| `POST /fortyandeight/exec` | Forty and Eight |
+| `POST /agnes/exec` | Agnes Sorel |
+| `POST /sultan/exec` | Sultan of Turkey |
+| `POST /jass/exec` | Jass / Schieber |
+| `POST /gaigel/exec` | Gaigel |
+| `POST /tysiac/exec` | Thousand / Tysiąc |
+| `POST /calabresella/exec` | Calabresella / Terziglio |
+| `POST /ombre/exec` | Ombre / Hombre |
+| `POST /king/exec` | King |
+| `POST /cinch/exec` | Cinch |
+| `POST /loo/exec` | Loo / Lanterloo |
+| `POST /basra/exec` | Basra / Bastra |
+| `POST /tablanet/exec` | Tablanet / Tablić |
+| `POST /trenteetquarante/exec` | Trente et Quarante / Rouge et Noir |
+| `POST /guts/exec` | Guts |
+| `POST /bouillotte/exec` | Bouillotte |
+| `POST /primero/exec` | Primero |
+| `POST /michigan/exec` | Michigan / Newmarket |
+| `POST /watten/exec` | Watten / ヴァッテン |
+| `POST /carioca/exec` | Carioca / カリオカ |
+| `POST /samba/exec` | Samba / サンバ |
+| `POST /indianrummy/exec` | Indian Rummy / インドラミー |
+| `POST /machiavelli/exec` | Machiavelli / マキャヴェッリ |
+| `POST /anaconda/exec` | Anaconda / Pass the Trash |
+| `POST /pan/exec` | Panguingue / Pan |
+| `POST /ulti/exec` | Ulti / Ultimó |
+| `POST /wizard/exec` | Wizard |
+| `POST /oichokabu/exec` | Oicho-Kabu |
+| `POST /rook/exec` | Rook |
+| `POST /koikoi/exec` | Koi-Koi |
+| `POST /gostop/exec` | Go-Stop |
+| `POST /hachihachi/exec` | Hachi-Hachi |
+| `POST /frenchtarot/exec` | French Tarot |
+| `POST /koenigrufen/exec` | Königrufen |
+| `POST /aluette/exec` | Aluette |
+| `POST /minchiate/exec` | Minchiate |
+| `POST /tarocchini/exec` | Tarocchini |
+| `POST /scarto/exec` | Scarto |
+| `POST /cego/exec` | Cego |
+| `POST /zheng/exec` | Zheng Shangyou |
+| `POST /bisley/exec` | Bisley |
+| `POST /napoleonssquare/exec` | Napoleon's Square |
+| `POST /grandfathersclock/exec` | Grandfather's Clock |
+| `POST /missmilligan/exec` | Miss Milligan |
+| `POST /duchess/exec` | Duchess |
+| `POST /windmill/exec` | Windmill |
+| `POST /americantoad/exec` | American Toad |
+| `POST /congress/exec` | Congress |
+| `POST /terrace/exec` | Terrace |
+| `POST /braid/exec` | Braid |
+| `POST /pontoon/exec` | Pontoon |
+| `POST /settemezzo/exec` | Sette e Mezzo |
+| `POST /niuniu/exec` | Niu Niu |
+| `POST /bura/exec` | Bura |
+| `POST /mushi/exec` | Mushi |
+| `POST /toepen/exec` | Toepen |
+| `POST /chineseten/exec` | Chinese Ten |
+| `POST /laughandliedown/exec` | Laugh and Lie Down |
+| `POST /loba/exec` | Loba |
+| `POST /desmoche/exec` | Desmoche |
+| `POST /zwicker/exec` | Zwicker |
+| `POST /poch/exec` | Poch |
+| `POST /popejoan/exec` | Pope Joan |
+| `POST /nainjaune/exec` | Le Nain Jaune |
+| `POST /kille/exec` | Kille |
+| `POST /klaberjass/exec` | Klaberjass |
+| `POST /kaiser/exec` | Kaiser |
+| `POST /boston/exec` | Boston |
+| `POST /vint/exec` | Vint |
+| `POST /bideuchre/exec` | Bid Euchre |
+| `POST /sixbidsolo/exec` | Six-Bid Solo |
+| `POST /karnoffel/exec` | Karnöffel |
+| `POST /literature/exec` | Literature |
+| `POST /guandan/exec` | Guandan |
+| `POST /shengji/exec` | Sheng Ji |
+| `POST /sjavs/exec` | Sjavs |
+| `POST /skitgubbe/exec` | Skitgubbe |
+| `POST /trex/exec` | Trex |

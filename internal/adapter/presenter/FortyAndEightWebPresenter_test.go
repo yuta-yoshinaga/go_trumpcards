@@ -49,10 +49,18 @@ func parseFortyAndEightOutput(t *testing.T, jsonStr string) *controller.FortyAnd
 	return &out
 }
 
+// setupFortyAndEightOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupFortyAndEightOutputMock(g *interfaces.MockFortyAndEightGame) {
+	setupFortyAndEightWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestFortyAndEightWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		fg := new(interfaces.MockFortyAndEightGame)
-		setupFortyAndEightWebMockDefaults(fg)
+		setupFortyAndEightOutputMock(fg)
 		p := new(FortyAndEightWebPresenter)
 
 		result := parseFortyAndEightOutput(t, p.Output(fg, nil))
@@ -69,7 +77,7 @@ func TestFortyAndEightWebPresenter_Output(t *testing.T) {
 
 	t.Run("waste with cards", func(t *testing.T) {
 		fg := new(interfaces.MockFortyAndEightGame)
-		setupFortyAndEightWebMockDefaults(fg)
+		setupFortyAndEightOutputMock(fg)
 		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetWaste")
 		fg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
 
@@ -82,7 +90,7 @@ func TestFortyAndEightWebPresenter_Output(t *testing.T) {
 
 	t.Run("redeal available", func(t *testing.T) {
 		fg := new(interfaces.MockFortyAndEightGame)
-		setupFortyAndEightWebMockDefaults(fg)
+		setupFortyAndEightOutputMock(fg)
 		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "CanRedeal")
 		fg.On("CanRedeal").Return(true)
 
@@ -93,7 +101,7 @@ func TestFortyAndEightWebPresenter_Output(t *testing.T) {
 
 	t.Run("redeal used", func(t *testing.T) {
 		fg := new(interfaces.MockFortyAndEightGame)
-		setupFortyAndEightWebMockDefaults(fg)
+		setupFortyAndEightOutputMock(fg)
 		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetRedealUsed")
 		fg.On("GetRedealUsed").Return(true)
 
@@ -104,7 +112,7 @@ func TestFortyAndEightWebPresenter_Output(t *testing.T) {
 
 	t.Run("all face up", func(t *testing.T) {
 		fg := new(interfaces.MockFortyAndEightGame)
-		setupFortyAndEightWebMockDefaults(fg)
+		setupFortyAndEightOutputMock(fg)
 		p := new(FortyAndEightWebPresenter)
 
 		result := parseFortyAndEightOutput(t, p.Output(fg, nil))
@@ -118,7 +126,7 @@ func TestFortyAndEightWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		fg := new(interfaces.MockFortyAndEightGame)
-		setupFortyAndEightWebMockDefaults(fg)
+		setupFortyAndEightOutputMock(fg)
 		p := new(FortyAndEightWebPresenter)
 
 		result := parseFortyAndEightOutput(t, p.Output(fg, errors.New("test error")))
@@ -127,7 +135,7 @@ func TestFortyAndEightWebPresenter_Output(t *testing.T) {
 
 	t.Run("game clear", func(t *testing.T) {
 		fg := new(interfaces.MockFortyAndEightGame)
-		setupFortyAndEightWebMockDefaults(fg)
+		setupFortyAndEightOutputMock(fg)
 		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetPhase")
 		fg.On("GetPhase").Return(domain.FortyAndEightPhaseGameClear)
 
@@ -138,7 +146,7 @@ func TestFortyAndEightWebPresenter_Output(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		fg := new(interfaces.MockFortyAndEightGame)
-		setupFortyAndEightWebMockDefaults(fg)
+		setupFortyAndEightOutputMock(fg)
 		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetPhase")
 		fg.On("GetPhase").Return(domain.FortyAndEightPhaseGameOver)
 
@@ -149,13 +157,38 @@ func TestFortyAndEightWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		fg := new(interfaces.MockFortyAndEightGame)
-		setupFortyAndEightWebMockDefaults(fg)
+		setupFortyAndEightOutputMock(fg)
 		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "IsStalemate")
 		fg.On("IsStalemate").Return(true)
 
 		p := new(FortyAndEightWebPresenter)
 		result := parseFortyAndEightOutput(t, p.Output(fg, nil))
 		assert.Equal(t, "fortyandeight.stalemate", result.MessageCode)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestFortyAndEightWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		fg := new(interfaces.MockFortyAndEightGame)
+		setupFortyAndEightWebMockDefaults(fg)
+		fg.On("GetHint").Return(&domain.FortyAndEightHint{FromZone: "tableau", FromCol: 1, CardIndex: 0, ToZone: "foundation", ToCol: 3}).Maybe()
+
+		result := new(FortyAndEightWebPresenter).Output(fg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		fg := new(interfaces.MockFortyAndEightGame)
+		setupFortyAndEightWebMockDefaults(fg)
+		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "IsStalemate")
+		fg.On("IsStalemate").Return(true)
+		fg.On("GetHint").Return(&domain.FortyAndEightHint{FromZone: "tableau", FromCol: 1, CardIndex: 0, ToZone: "foundation", ToCol: 3}).Maybe()
+
+		result := new(FortyAndEightWebPresenter).Output(fg, nil)
+		assert.NotContains(t, result, `"hint"`)
 	})
 }
 

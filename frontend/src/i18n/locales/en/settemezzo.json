@@ -1,0 +1,52 @@
+{
+  "phase": {
+    "bet": "Betting",
+    "playerTurn": "Your turn",
+    "bankerTurn": "Banker's turn",
+    "end": "Settled"
+  },
+  "chips": "Chips",
+  "banker": "Banker",
+  "bankerIsYou": "you",
+  "bankerHand": "Banker's hand",
+  "bet": "Bet",
+  "total": "Total",
+  "target": "Target",
+  "matta": "Matta",
+  "mattaValue": "matta = {{value}}",
+  "actions": {
+    "hit": "Draw",
+    "stand": "Stand",
+    "bankerHit": "Draw as banker",
+    "bankerStand": "Stop as banker",
+    "deal": "Deal",
+    "nextRound": "Next round"
+  },
+  "mattaLabel": "What is the matta worth?",
+  "betLabel": "Choose your stake",
+  "betAmount": "{{amount}}",
+  "dealAsBanker": "You are the banker — deal the round",
+  "placeBet": "Choose your stake",
+  "yourTurn": "Draw or stand",
+  "bankerTurn": "Draw or stop as the banker",
+  "roundOver": "{{result}}",
+  "bankPasses": "An exact 7.5 takes the bank",
+  "landscapeBanner": "Landscape orientation is recommended",
+  "seatAriaLabel": "{{name}}'s hand, total {{total}}",
+  "hiddenHandAriaLabel": "{{name}}'s hand is face down",
+  "bankerHandAriaLabel": "Banker's hand, total {{total}}",
+  "hiddenBankerHandAriaLabel": "The banker's hand is face down",
+  "tutorial": {
+    "halfPoints": "**Face cards are worth half a point.** Drawing one on seven does not bust you — it lands you exactly on 7.5. Nothing here has to move the total by a whole number.",
+    "matta": "**The king of coins (the matta) is wild** for 0.5 or any whole number from 1 to 7. **Its value is not fixed when you draw it — you can change it until you stand.**",
+    "target": "The target is **7.5**; over that is a bust. **Ties go to the banker**, so matching the banker's total still loses.",
+    "banker": "**A player who lands exactly 7.5 takes the bank next deal.** It does not rotate every round.",
+    "controls": "Buttons for drawing, standing, and the next round."
+  },
+  "frontendHint": {
+    "settemezzoExact": "Exactly seven and a half — the only total that takes the bank. Stand",
+    "settemezzoHitLow": "Still far from seven and a half — draw another card",
+    "settemezzoStandClose": "Close to seven and a half; drawing busts you more often than not",
+    "settemezzoSetMatta": "You can choose the matta value — set it to reach exactly seven and a half"
+  }
+}

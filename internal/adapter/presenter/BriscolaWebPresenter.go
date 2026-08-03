@@ -15,6 +15,20 @@ type BriscolaWebPresenter struct{}
 func (p *BriscolaWebPresenter) Output(b interfaces.BriscolaGame, lastErr error) string {
 	resObj := p.buildBase(b)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(b, lastErr)
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	//
+	// **フェーズと手番はここでは見ない。**Briscola.GetHint() が自分で
+	// 「プレイ中かつ人間の手番」を確かめて nil を返す。ソリティア側のゲートを
+	// 持ち込むと、ドメインが既に持つ判定を二重に書くことになる。
+	if hint := b.GetHint(); hint != nil {
+		resObj.Hint = &controller.BriscolaWebOutputHint{
+			CardIndex: hint.CardIndex,
+			Reason:    hint.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -103,6 +117,15 @@ func (p *BriscolaWebPresenter) HintOutput(b interfaces.BriscolaGame) string {
 			CardIndex: hint.CardIndex,
 			Reason:    hint.Reason,
 		}
+	}
+	// **「頼んだヒントか」をフロントが見分けられるようにする。**ページは
+	// `isRequestedHint` でこのコードを見てからバナーを出すので (#4605)、
+	// 付けないと押しても何も出ない。`hintAvailable` は画面のラベルとして
+	// 既に使われているため別キーにする (#4483)。
+	if hint != nil {
+		resObj.MessageCode = "briscola.hintRequested"
+	} else {
+		resObj.MessageCode = "briscola.noHint"
 	}
 	return marshalOrError(resObj)
 }

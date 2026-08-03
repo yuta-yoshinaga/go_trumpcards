@@ -53,9 +53,17 @@ func parseGolfOutput(t *testing.T, jsonStr string) *controller.GolfWebOutput {
 	return &out
 }
 
+// setupGolfOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupGolfOutputMock(g *interfaces.MockGolfGame) {
+	setupGolfWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
 func TestGolfWebPresenterOutput_Playing(t *testing.T) {
 	gg := new(interfaces.MockGolfGame)
-	setupGolfWebMockDefaults(gg)
+	setupGolfOutputMock(gg)
 	p := &GolfWebPresenter{}
 
 	result := p.Output(gg, nil)
@@ -69,7 +77,7 @@ func TestGolfWebPresenterOutput_Playing(t *testing.T) {
 
 func TestGolfWebPresenterOutput_Error(t *testing.T) {
 	gg := new(interfaces.MockGolfGame)
-	setupGolfWebMockDefaults(gg)
+	setupGolfOutputMock(gg)
 	p := &GolfWebPresenter{}
 
 	result := p.Output(gg, errors.New("test error"))
@@ -80,7 +88,7 @@ func TestGolfWebPresenterOutput_Error(t *testing.T) {
 
 func TestGolfWebPresenterOutput_Stalemate(t *testing.T) {
 	gg := new(interfaces.MockGolfGame)
-	setupGolfWebMockDefaults(gg)
+	setupGolfOutputMock(gg)
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
 	gg.On("GetMoveCount").Return(5).Maybe()
@@ -106,7 +114,7 @@ func TestGolfWebPresenterOutput_Stalemate(t *testing.T) {
 
 func TestGolfWebPresenterOutput_GameClear(t *testing.T) {
 	gg := new(interfaces.MockGolfGame)
-	setupGolfWebMockDefaults(gg)
+	setupGolfOutputMock(gg)
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhaseGameClear).Maybe()
 	gg.On("GetMoveCount").Return(10).Maybe()
@@ -133,7 +141,7 @@ func TestGolfWebPresenterOutput_GameClear(t *testing.T) {
 
 func TestGolfWebPresenterOutput_GameOver(t *testing.T) {
 	gg := new(interfaces.MockGolfGame)
-	setupGolfWebMockDefaults(gg)
+	setupGolfOutputMock(gg)
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhaseGameOver).Maybe()
 	gg.On("GetMoveCount").Return(5).Maybe()
@@ -155,6 +163,31 @@ func TestGolfWebPresenterOutput_GameOver(t *testing.T) {
 	out := parseGolfOutput(t, result)
 
 	assert.Equal(t, "golf.gameOver", out.MessageCode)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestGolfWebPresenterOutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		glg := new(interfaces.MockGolfGame)
+		setupGolfWebMockDefaults(glg)
+		glg.On("GetHint").Return(&domain.GolfHint{Type: "remove", Col: 2}).Maybe()
+
+		result := new(GolfWebPresenter).Output(glg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		glg := new(interfaces.MockGolfGame)
+		setupGolfWebMockDefaults(glg)
+		glg.ExpectedCalls = filterCalls(glg.ExpectedCalls, "IsStalemate")
+		glg.On("IsStalemate").Return(true)
+		glg.On("GetHint").Return(&domain.GolfHint{Type: "remove", Col: 2}).Maybe()
+
+		result := new(GolfWebPresenter).Output(glg, nil)
+		assert.NotContains(t, result, `"hint"`)
+	})
 }
 
 func TestGolfWebPresenterHintOutput(t *testing.T) {

@@ -61,7 +61,9 @@ describe('formatCatchTenState', () => {
   });
 
   it('renders a hint when present', () => {
-    const out = formatCatchTenState(baseState({ hint: { cardIndex: 1, reason: 'follow_suit' } }));
+    const out = formatCatchTenState(
+      baseState({ hint: { cardIndex: 1, reason: 'follow_suit' }, messageCode: 'catchten.hintRequested' }),
+    );
     expect(out).toContain('HINT: play [1]');
   });
 
@@ -73,5 +75,13 @@ describe('formatCatchTenState', () => {
   it('omits trump line when no trump set', () => {
     const out = formatCatchTenState(baseState({ trumpSuit: 0 }));
     expect(out).not.toContain('trump:');
+  });
+
+  // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように
+  // なった (#4483) ので、messageCode で「頼んだ応答か」を見分ける。
+  it('shows the hint only when the hint was requested', () => {
+    const hint = { cardIndex: 1, reason: 'follow_suit' };
+    expect(formatCatchTenState(baseState({ hint, messageCode: 'catchten.hintRequested' }))).toContain('HINT');
+    expect(formatCatchTenState(baseState({ hint, messageCode: 'catchten.playing' }))).not.toContain('HINT');
   });
 });

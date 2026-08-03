@@ -35,6 +35,11 @@ func tpSetupWebMock() *interfaces.MockTeenPattiGame {
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultTeenPattiConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
+	// **base だけに置く。**removeMockCall は最初の 1 件しか外さないので、
+	// wrapper にも入れると HintOutput テストの実物が食われる。
+	m.On("GetHint").Return(nil).Maybe()
+
 	return m
 }
 
@@ -225,6 +230,7 @@ func TestTeenPattiWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("hint present", func(t *testing.T) {
 		m, _ := tpSetupWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.TeenPattiHint{Action: "raise", Reason: "strong_hand"})
 		result := p.HintOutput(m)
 		var resObj controller.TeenPattiWebOutput
@@ -236,6 +242,7 @@ func TestTeenPattiWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		m, _ := tpSetupWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.TeenPattiHint)(nil))
 		result := p.HintOutput(m)
 		var resObj controller.TeenPattiWebOutput
@@ -253,4 +260,18 @@ func TestTeenPattiWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"bet"`)
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+//
+// ベッティング系も Output 側にゲートを置きません。TeenPatti.GetHint() が
+// 「人間の手番で、かつ行動を選べる状態か」を自分で確かめて nil を返します。
+func TestTeenPattiWebPresenterOutputCarriesTheHint(t *testing.T) {
+	tpg, _ := tpSetupWebMockWithPlayers()
+	tpg.ExpectedCalls = removeMockCall(tpg.ExpectedCalls, "GetHint")
+	tpg.On("GetHint").Return(&domain.TeenPattiHint{Action: "call", Reason: "strong_hand"})
+
+	result := new(presenter.TeenPattiWebPresenter).Output(tpg, nil)
+	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }

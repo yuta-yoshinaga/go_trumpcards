@@ -1,0 +1,12 @@
+{
+  "helpTitle": "Niu Niu (闘牛／ニウニウ)",
+  "helpBet": "  b <額>                   ベットして配り、その場で精算する",
+  "chipsLine": "チップ: {{chips}}",
+  "bankerHandHeader": "親:",
+  "faceDown": "[伏]",
+  "betInline": "賭け{{bet}}",
+  "payoutInline": "→ {{payout}}",
+  "multiplierInline": " (x{{mult}})",
+  "placeBet": "ベット額を入力してください (b <額>)。* の3枚が牛を作った札です",
+  "nextRound": "r で次の局へ"
+}

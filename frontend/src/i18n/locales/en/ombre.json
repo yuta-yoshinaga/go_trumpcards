@@ -90,5 +90,7 @@
     "playButton": "Once a card is selected, play it with this button. In the Bid phase first choose entrar / solo / pass, then for entrar or solo pick a trump suit and confirm.",
     "info": "Ombre (Hombre) is a 3-player soloist-vs-coalition trick-taker on a 40-card Spanish deck (no 8/9/10). A Bid phase (pass / entrar / solo) plus a chosen trump suit decides the Ombre, who plays alone against the coalition of the other two over nine tricks. Sacar (Ombre takes the most tricks) scores for the Ombre; Puesta (a tie) penalizes the Ombre; Codille (an opponent beats the Ombre) doubles the penalty. The highest cumulative score after the set number of deals wins the match.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

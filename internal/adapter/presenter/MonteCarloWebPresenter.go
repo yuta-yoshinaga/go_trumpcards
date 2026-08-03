@@ -17,6 +17,21 @@ type MonteCarloWebPresenter struct{}
 func (pr *MonteCarloWebPresenter) Output(g interfaces.MonteCarloGame, lastErr error) string {
 	resObj := pr.buildBase(g)
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
+	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
+	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	if g.GetPhase() == domain.MonteCarloPhasePlaying && !g.IsStalemate() {
+		if hint := g.Hint(); hint != nil {
+			resObj.Hint = &controller.MonteCarloWebOutputHint{
+				Action: hint.Action,
+				FromR:  hint.FromR,
+				FromC:  hint.FromC,
+				ToR:    hint.ToR,
+				ToC:    hint.ToC,
+			}
+		}
+	}
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {

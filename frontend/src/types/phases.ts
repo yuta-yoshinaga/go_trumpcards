@@ -637,6 +637,58 @@ export const KempsSignal = {
   BLINK: 1,
 } as const;
 
+/** Ganjifa phase constants (sync: internal/domain/Ganjifa.go). There is no Bid phase — trump is auto-declared. */
+export const GanjifaPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/**
+ * Aluette game phases.
+ *
+ * There is no bidding and no discard, so play starts the moment the cards are
+ * dealt — the numbering does not line up with the tarot games it sits beside.
+ */
+export const AluettePhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Union of Aluette phase values. */
+export type AluettePhaseType = (typeof AluettePhase)[keyof typeof AluettePhase];
+
+/**
+ * Minchiate phase constants (sync: internal/domain/Minchiate.go).
+ *
+ * **Scarto comes first, not a Bid.** The dealer buries the 13 surplus cards
+ * before any trick is played; there is no bidding phase in this game.
+ */
+export const MinchiatePhase = {
+  SCARTO: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
+ * Tarocchini phase constants (sync: internal/domain/Tarocchini.go).
+ *
+ * **Scarto comes first, not a Bid.** The dealer buries the 2 surplus cards
+ * before any trick is played; there is no bidding phase in this game.
+ */
+export const TarocchiniPhase = {
+  SCARTO: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Préférence phase constants (sync: internal/domain/Preference.go). */
 export const PreferencePhase = {
   BID: 0,
@@ -653,6 +705,30 @@ export const PreferenceContract = {
   MISERE: 2,
   SEVEN: 3,
   EIGHT: 4,
+} as const;
+
+/** Vira phase constants (sync: internal/domain/Vira.go). */
+export const ViraPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
+ * Vira contract constants (sync: internal/domain/Vira.go).
+ *
+ * Outranking order is Pass < Gask < Solo < Misère < Vira. **Misère sits between
+ * Solo and Vira rather than at the bottom** — it is a real contract worth 6,
+ * not a way out of bidding.
+ */
+export const ViraContract = {
+  PASS: 0,
+  GASK: 1,
+  SOLO: 2,
+  MISERE: 3,
+  VIRA: 4,
 } as const;
 
 /** Nap (Napoleon) phase constants (sync: internal/domain/Nap.go). */
@@ -1330,6 +1406,13 @@ export const CalculationPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Sir Tommy phase constants (sync: internal/domain/SirTommy.go). */
+export const SirTommyPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Fifty-one phase constants (sync: internal/domain/FiftyOne.go). */
 export const FiftyOnePhase = {
   PLAY: 0,
@@ -1624,6 +1707,312 @@ export const RussianPokerPhase = {
 
 /** Beleaguered Castle phase constants (sync: internal/domain/BeleagueredCastle.go). */
 export const BeleagueredCastlePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Bisley phase constants (sync: internal/domain/Bisley.go). */
+export const BisleyPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Napoleon's Square phase constants (sync: internal/domain/NapoleonsSquare.go). */
+export const NapoleonsSquarePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Grandfather's Clock phase constants (sync: internal/domain/GrandfathersClock.go). */
+export const GrandfathersClockPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Niu Niu phase constants (sync: internal/domain/NiuNiu.go). */
+export const NiuNiuPhase = {
+  BET: 1,
+  END: 2,
+} as const;
+
+/** Bura phase constants (sync: internal/domain/Bura.go). */
+export const BuraPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/** Mushi phase constants (sync: internal/domain/Mushi.go). */
+export const MushiPhase = {
+  PLAY: 0,
+  SELECT: 1,
+  WILD_SELECT: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Toepen phase constants (sync: internal/domain/Toepen.go). */
+export const ToepenPhase = {
+  PLAY: 0,
+  RESPOND: 1,
+  HAND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Chinese Ten phase constants (sync: internal/domain/ChineseTen.go). */
+export const ChineseTenPhase = {
+  PLAY: 0,
+  SELECT: 1,
+  GAME_END: 2,
+} as const;
+
+/** Skitgubbe phase constants (sync: internal/domain/Skitgubbe.go). */
+export const SkitgubbePhase = {
+  COLLECT: 0,
+  SHED: 1,
+  GAME_END: 2,
+} as const;
+
+/** Laugh and Lie Down phase constants (sync: internal/domain/LaughAndLieDown.go). */
+export const LaughAndLieDownPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/** Sjavs phase constants (sync: internal/domain/Sjavs.go). */
+export const SjavsPhase = {
+  BID: 0,
+  PLAY: 1,
+  HAND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Loba phase constants (sync: internal/domain/Loba.go). */
+export const LobaPhase = {
+  DRAW: 0,
+  ACT: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Le Nain Jaune phase constants (sync: internal/domain/NainJaune.go). */
+/** Vint phase constants (sync: internal/domain/Vint.go). */
+export const VintPhase = {
+  BID: 0,
+  PLAY: 1,
+  HAND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Bid Euchre phase constants (sync: internal/domain/BidEuchre.go). */
+export const BidEuchrePhase = {
+  BID: 0,
+  CHOOSE_TRUMP: 1,
+  PLAY: 2,
+  HAND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Literature phase constants (sync: internal/domain/Literature.go). */
+export const LiteraturePhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/** Sheng Ji phase constants (sync: internal/domain/ShengJi.go). */
+export const ShengJiPhase = {
+  DECLARE: 0,
+  KITTY: 1,
+  PLAY: 2,
+  HAND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Guandan phase constants (sync: internal/domain/Guandan.go). */
+export const GuandanPhase = {
+  TRIBUTE: 0,
+  PLAY: 1,
+  HAND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Karnöffel phase constants (sync: internal/domain/Karnoffel.go). */
+export const KarnoffelPhase = {
+  PLAY: 0,
+  HAND_END: 1,
+  GAME_END: 2,
+} as const;
+
+/** Six-Bid Solo phase constants (sync: internal/domain/SixBidSolo.go). */
+export const SixBidSoloPhase = {
+  BID: 0,
+  DECLARE: 1,
+  PLAY: 2,
+  HAND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Boston phase constants (sync: internal/domain/Boston.go). */
+export const BostonPhase = {
+  BID: 0,
+  CALL_PARTNER: 1,
+  PLAY: 2,
+  HAND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Kaiser phase constants (sync: internal/domain/Kaiser.go). */
+export const KaiserPhase = {
+  BID: 0,
+  DISCARD: 1,
+  PLAY: 2,
+  HAND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Klaberjass phase constants (sync: internal/domain/Klaberjass.go). */
+export const KlaberjassPhase = {
+  BID_TURN_UP: 0,
+  BID_FREE: 1,
+  SCHMEISS: 2,
+  PLAY: 3,
+  HAND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Kille phase constants (sync: internal/domain/Kille.go). */
+export const KillePhase = {
+  EXCHANGE: 0,
+  SHOWDOWN: 1,
+  GAME_END: 2,
+} as const;
+
+export const NainJaunePhase = {
+  PLAY: 0,
+  DEAL_END: 1,
+  GAME_END: 2,
+} as const;
+
+/** Pope Joan phase constants (sync: internal/domain/PopeJoan.go). */
+export const PopeJoanPhase = {
+  PLAY: 0,
+  DEAL_END: 1,
+  GAME_END: 2,
+} as const;
+
+/** Poch phase constants (sync: internal/domain/Poch.go). */
+export const PochPhase = {
+  STAKING: 0,
+  POCHEN: 1,
+  STOPS: 2,
+  DEAL_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Zwicker phase constants (sync: internal/domain/Zwicker.go). */
+export const ZwickerPhase = {
+  PLAY: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;
+
+/** Desmoche phase constants (sync: internal/domain/Desmoche.go). */
+export const DesmochePhase = {
+  DRAW: 0,
+  ACT: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Trex phase constants (sync: internal/domain/Trex.go). */
+export const TrexPhase = {
+  CHOOSE: 0,
+  PLAY: 1,
+  DEAL_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Trex contract constants (sync: internal/domain/Trex.go). */
+export const TrexContract = {
+  KING_OF_HEARTS: 0,
+  DIAMONDS: 1,
+  QUEENS: 2,
+  TRICKS: 3,
+  DOMINOES: 4,
+  NONE: 5,
+} as const;
+
+/** Sette e Mezzo phase constants (sync: internal/domain/SetteEMezzo.go). */
+export const SetteEMezzoPhase = {
+  BET: 1,
+  PLAYER_TURN: 2,
+  BANKER_TURN: 3,
+  END: 4,
+} as const;
+
+/** Pontoon phase constants (sync: internal/domain/Pontoon.go). */
+export const PontoonPhase = {
+  BET: 1,
+  PLAYER_TURN: 2,
+  BANKER_TURN: 3,
+  END: 4,
+} as const;
+
+/** Pontoon hand ranks (sync: internal/domain/Pontoon.go). */
+export const PontoonRank = {
+  BUST: 0,
+  POINTS: 1,
+  FIVE_CARD: 2,
+  PONTOON: 3,
+} as const;
+
+/** Braid phase constants (sync: internal/domain/Braid.go). */
+export const BraidPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Terrace phase constants (sync: internal/domain/Terrace.go). */
+export const TerracePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Congress phase constants (sync: internal/domain/Congress.go). */
+export const CongressPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** American Toad phase constants (sync: internal/domain/AmericanToad.go). */
+export const AmericanToadPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Windmill phase constants (sync: internal/domain/Windmill.go). */
+export const WindmillPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Duchess phase constants (sync: internal/domain/Duchess.go). */
+export const DuchessPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Miss Milligan phase constants (sync: internal/domain/MissMilligan.go). */
+export const MissMilliganPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
   GAME_OVER: 2,
