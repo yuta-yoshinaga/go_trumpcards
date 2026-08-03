@@ -200,3 +200,303 @@ func TestGanjifa_SuitNamesAndGlyphs(t *testing.T) {
 		assert.Empty(t, GanjifaSuitGlyph(bad))
 	}
 }
+
+// setHand replaces a player's hand with exactly the given cards.
+func setGanjifaHand(t *testing.T, g *Ganjifa, idx int, cards ...*Card) {
+	t.Helper()
+	p := g.GetPlayer(idx)
+	for p.GetCardsSize() > 0 {
+		p.RemoveCard(0)
+	}
+	for _, c := range cards {
+		p.AddCard(c)
+	}
+}
+
+// playOneTrick drives a full three-card trick from the current lead.
+func playOneTrick(t *testing.T, g *Ganjifa) {
+	t.Helper()
+	for range GanjifaPlayerCnt {
+		if g.IsHumanTurn() {
+			idx := g.GetPlayableIndices(g.GetCurrentPlayerIdx())
+			require.NotEmpty(t, idx)
+			require.NoError(t, g.PlayerPlay(idx[0]))
+			continue
+		}
+		g.CpuPlay()
+	}
+}
+
+// The trick winner is the crux of the inversion: in a weak suit the 1 beats the
+// 12, which is the opposite of what a raw value comparison would say.
+func TestGanjifa_TrickWinnerUsesGroupAwareOrder(t *testing.T) {
+	cases := []struct {
+		name      string
+		lead      int // design of the led suit
+		values    [3]int
+		wantOrder int // index of the seat that must win
+	}{
+		{"strong suit: the 12 wins", 1, [3]int{3, 12, 7}, 1},
+		{"weak suit: the 1 wins, not the 12", 5, [3]int{12, 1, 7}, 1},
+		{"weak suit: 2 beats 11", 6, [3]int{11, 2, 9}, 1},
+		{"strong suit: 1 is the weakest", 2, [3]int{1, 2, 3}, 2},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newTestGanjifa(t)
+			g.trumpSuit = 0 // no trump, so the led suit alone decides
+			g.currentTrick = nil
+			for seat, v := range tc.values {
+				g.currentTrick = append(g.currentTrick,
+					&TrickCard{PlayerIdx: seat, Card: NewCard(tc.lead, v, false)})
+			}
+			assert.Equal(t, tc.wantOrder, g.trickWinner())
+		})
+	}
+}
+
+func TestGanjifa_TrumpBeatsTheLedSuitInEitherGroup(t *testing.T) {
+	for _, trump := range []int{2, 7} { // one strong, one weak
+		g := newTestGanjifa(t)
+		g.trumpSuit = trump
+		g.currentTrick = []*TrickCard{
+			// Seat 0 leads the strongest possible card of a non-trump suit...
+			{PlayerIdx: 0, Card: NewCard(1, 12, false)},
+			// ...and seat 1 ruffs with the weakest card of the trump suit.
+			{PlayerIdx: 1, Card: NewCard(trump, weakestValue(trump), false)},
+			{PlayerIdx: 2, Card: NewCard(1, 11, false)},
+		}
+		assert.Equal(t, 1, g.trickWinner(), "trump %d must beat any plain card", trump)
+	}
+}
+
+// weakestValue returns the lowest-ranking value in the given suit's group.
+func weakestValue(design int) int {
+	if GanjifaIsStrongSuit(design) {
+		return 1
+	}
+	return GanjifaRankCnt
+}
+
+// A card of neither trump nor the led suit cannot win, however high its value.
+func TestGanjifa_OffSuitDiscardNeverWins(t *testing.T) {
+	g := newTestGanjifa(t)
+	g.trumpSuit = 4
+	g.currentTrick = []*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(1, 2, false)},
+		{PlayerIdx: 1, Card: NewCard(3, 12, false)},
+		{PlayerIdx: 2, Card: NewCard(1, 1, false)},
+	}
+	assert.Equal(t, 0, g.trickWinner(), "seat 1 discarded off-suit and must not win")
+}
+
+func TestGanjifa_PlayerPlayRejectsRenege(t *testing.T) {
+	g := newTestGanjifa(t)
+	g.SetCurrentPlayerIdx(0)
+	g.SetPhase(GanjifaPhasePlay)
+	setGanjifaHand(t, g, 0, NewCard(1, 5, false), NewCard(3, 9, false))
+	g.currentTrick = []*TrickCard{{PlayerIdx: 2, Card: NewCard(1, 8, false)}}
+
+	assert.Error(t, g.PlayerPlay(1), "holding the led suit, an off-suit card must be refused")
+	assert.NoError(t, g.PlayerPlay(0))
+}
+
+func TestGanjifa_PlayerPlayGuards(t *testing.T) {
+	t.Run("index out of range", func(t *testing.T) {
+		g := newTestGanjifa(t)
+		g.SetCurrentPlayerIdx(0)
+		assert.Error(t, g.PlayerPlay(-1))
+		assert.Error(t, g.PlayerPlay(GanjifaHandSize))
+	})
+	t.Run("not the human turn", func(t *testing.T) {
+		g := newTestGanjifa(t)
+		g.SetCurrentPlayerIdx(1)
+		assert.ErrorIs(t, g.PlayerPlay(0), ErrNotHumanTurn)
+	})
+	t.Run("wrong phase", func(t *testing.T) {
+		g := newTestGanjifa(t)
+		g.SetPhase(GanjifaPhaseRoundEnd)
+		assert.ErrorIs(t, g.PlayerPlay(0), ErrWrongPhase)
+	})
+	t.Run("game already ended", func(t *testing.T) {
+		g := newTestGanjifa(t)
+		g.gameEndFlag = true
+		assert.ErrorIs(t, g.PlayerPlay(0), ErrGameEnded)
+	})
+}
+
+// A CPU with an empty hand must not be asked to play: RemoveCard returns nil and
+// passing that to playCard would nil-deref the whole request (#4606).
+func TestGanjifa_CpuPlayWithAnEmptyHandIsANoOp(t *testing.T) {
+	g := newTestGanjifa(t)
+	g.SetPhase(GanjifaPhasePlay)
+	g.SetCurrentPlayerIdx(1)
+	setGanjifaHand(t, g, 1)
+	assert.NotPanics(t, func() { g.CpuPlay() })
+	assert.Empty(t, g.GetCurrentTrick())
+}
+
+func TestGanjifa_CpuPlayIgnoresAHumanSeatAndAFinishedGame(t *testing.T) {
+	g := newTestGanjifa(t)
+	g.SetPhase(GanjifaPhasePlay)
+	g.SetCurrentPlayerIdx(0) // the human seat
+	g.CpuPlay()
+	assert.Empty(t, g.GetCurrentTrick())
+
+	g.SetCurrentPlayerIdx(1)
+	g.gameEndFlag = true
+	g.CpuPlay()
+	assert.Empty(t, g.GetCurrentTrick())
+}
+
+func TestGanjifa_TrickFlowAwardsAndLeadsFromTheWinner(t *testing.T) {
+	g := newTestGanjifa(t)
+	before := g.GetTrickNumber()
+	playOneTrick(t, g)
+
+	require.Equal(t, GanjifaPhaseTrickEnd, g.GetPhase())
+	g.ResolveTrick()
+
+	won := 0
+	for i := range GanjifaPlayerCnt {
+		won += g.GetRoundTricks()[i]
+	}
+	assert.Equal(t, 1, won, "exactly one seat takes the trick")
+	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetCurrentPlayerIdx(), "the winner leads next")
+
+	g.NextTrick()
+	assert.Equal(t, GanjifaPhasePlay, g.GetPhase())
+	assert.Equal(t, before+1, g.GetTrickNumber())
+	assert.Empty(t, g.GetCurrentTrick())
+}
+
+func TestGanjifa_ResolveAndNextTrickAreNoOpsOutsideTrickEnd(t *testing.T) {
+	g := newTestGanjifa(t)
+	g.SetPhase(GanjifaPhasePlay)
+	g.ResolveTrick()
+	g.NextTrick()
+	assert.Equal(t, GanjifaPhasePlay, g.GetPhase())
+	assert.Equal(t, 1, g.GetTrickNumber())
+}
+
+// One point per trick, and the 32 tricks of a round are all accounted for.
+func TestGanjifa_RoundSettlementAddsEveryTrick(t *testing.T) {
+	g := newTestGanjifa(t)
+	for range GanjifaTrickCount {
+		playOneTrick(t, g)
+		g.ResolveTrick()
+		if g.GetPhase() == GanjifaPhaseTrickEnd {
+			g.NextTrick()
+		}
+	}
+	require.Equal(t, GanjifaPhaseRoundEnd, g.GetPhase())
+
+	total := 0
+	for i := range GanjifaPlayerCnt {
+		assert.Equal(t, g.GetRoundTricks()[i], g.GetPlayerScores()[i])
+		total += g.GetPlayerScores()[i]
+	}
+	assert.Equal(t, GanjifaTrickCount, total, "every trick must land in someone's score")
+}
+
+func TestGanjifa_NextRoundRedealsAndRotatesTheDealer(t *testing.T) {
+	g := newTestGanjifa(t)
+	g.SetPhase(GanjifaPhaseRoundEnd)
+	dealer, round := g.GetDealerIdx(), g.GetRoundNumber()
+
+	g.NextRound()
+	assert.Equal(t, round+1, g.GetRoundNumber())
+	assert.Equal(t, (dealer+1)%GanjifaPlayerCnt, g.GetDealerIdx(), "the deal must move on")
+	assert.Equal(t, GanjifaPhasePlay, g.GetPhase())
+	for i := range GanjifaPlayerCnt {
+		assert.Equal(t, GanjifaHandSize, g.GetPlayer(i).GetCardsSize())
+		assert.Zero(t, g.GetRoundTricks()[i], "the per-round tally resets")
+	}
+}
+
+func TestGanjifa_NextRoundIsANoOpOutsideRoundEnd(t *testing.T) {
+	g := newTestGanjifa(t)
+	g.SetPhase(GanjifaPhasePlay)
+	g.NextRound()
+	assert.Equal(t, 1, g.GetRoundNumber())
+}
+
+func TestGanjifa_ScoreRoundEndsTheMatchOnTheLastRound(t *testing.T) {
+	g := newTestGanjifa(t)
+	cfg := g.GetConfig()
+	g.SetPhase(GanjifaPhaseRoundEnd)
+
+	g.roundNumber = cfg.TargetRounds - 1
+	g.ScoreRound()
+	assert.False(t, g.GetGameEndFlag(), "an earlier round must not end the match")
+
+	g.roundNumber = cfg.TargetRounds
+	g.ScoreRound()
+	assert.True(t, g.GetGameEndFlag())
+	assert.Equal(t, GanjifaPhaseGameEnd, g.GetPhase())
+}
+
+func TestGanjifa_ScoreRoundIsANoOpOutsideRoundEnd(t *testing.T) {
+	g := newTestGanjifa(t)
+	g.SetPhase(GanjifaPhasePlay)
+	g.roundNumber = g.GetConfig().TargetRounds
+	g.ScoreRound()
+	assert.False(t, g.GetGameEndFlag())
+}
+
+func TestGanjifa_MatchWinner(t *testing.T) {
+	cases := map[string]struct {
+		scores [GanjifaPlayerCnt]int
+		want   int
+	}{
+		"clear leader":        {[GanjifaPlayerCnt]int{40, 30, 26}, 0},
+		"leader in last seat": {[GanjifaPlayerCnt]int{26, 30, 40}, 2},
+		// A tie must leave no winner: breaking it by seat order would hand the
+		// match to the lowest seat every time.
+		"two-way tie at the top": {[GanjifaPlayerCnt]int{40, 40, 16}, -1},
+		"three-way tie":          {[GanjifaPlayerCnt]int{32, 32, 32}, -1},
+		"tie below the leader":   {[GanjifaPlayerCnt]int{40, 28, 28}, 0},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			g := newTestGanjifa(t)
+			g.playerScores = tc.scores
+			g.finishMatch()
+			assert.Equal(t, tc.want, g.GetWinnerPlayer())
+			assert.True(t, g.GetGameEndFlag())
+		})
+	}
+}
+
+func TestGanjifa_ValidPlayIndicesOutOfRange(t *testing.T) {
+	g := newTestGanjifa(t)
+	assert.Nil(t, g.GetValidPlayIndices(-1))
+	assert.Nil(t, g.GetValidPlayIndices(GanjifaPlayerCnt))
+}
+
+func TestGanjifa_ValidPlayIndicesFallBackToTheWholeHandWhenVoid(t *testing.T) {
+	g := newTestGanjifa(t)
+	setGanjifaHand(t, g, 0, NewCard(2, 4, false), NewCard(3, 9, false))
+	g.currentTrick = []*TrickCard{{PlayerIdx: 2, Card: NewCard(1, 8, false)}}
+	assert.Equal(t, []int{0, 1}, g.GetValidPlayIndices(0), "void in the led suit frees the whole hand")
+}
+
+func TestGanjifa_ActionLogRecordsPlay(t *testing.T) {
+	g := newTestGanjifa(t)
+	playOneTrick(t, g)
+	g.ResolveTrick()
+	types := map[string]int{}
+	for _, e := range g.GetActionLog() {
+		types[e.ActionType]++
+	}
+	assert.Equal(t, GanjifaPlayerCnt, types["play"])
+	assert.Equal(t, 1, types["trickwin"])
+}
+
+func TestGanjifa_ConfigAccessors(t *testing.T) {
+	g := newTestGanjifa(t)
+	cfg := GanjifaConfig{CpuDifficulty: GanjifaCpuDifficultyHard, TargetRounds: 9}
+	g.SetConfig(cfg)
+	assert.Equal(t, cfg, g.GetConfig())
+	assert.Len(t, g.GetPlayers(), GanjifaPlayerCnt)
+}
