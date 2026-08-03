@@ -88,7 +88,7 @@ func NewSlapjack(trumpCards *TrumpCards, players []*SlapjackPlayer, config Slapj
 		config:     config,
 		winnerIdx:  -1,
 		now:        time.Now,
-		rng:        rand.New(rand.NewSource(time.Now().UnixNano())),
+		rng:        rand.New(rand.NewSource(rand.Int63())),
 	}
 	for i := 0; i < SlapjackPlayerCnt && i < len(players); i++ {
 		g.players[i] = players[i]
@@ -490,7 +490,7 @@ func (g *Slapjack) UnmarshalJSON(data []byte) error {
 		g.now = time.Now
 	}
 	if g.rng == nil {
-		g.rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+		g.rng = rand.New(rand.NewSource(rand.Int63()))
 	}
 	return nil
 }

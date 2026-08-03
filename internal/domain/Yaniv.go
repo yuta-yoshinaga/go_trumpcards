@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
-	"time"
 )
 
 // YanivPlayerCnt Yaniv プレイヤー数 (人間 1 + CPU 3)
@@ -66,7 +65,7 @@ func NewYaniv(trumpCards *TrumpCards, players []*YanivPlayer, config YanivConfig
 		callerIdx:     -1,
 		asafWinnerIdx: -1,
 		roundScores:   make([]int, 0),
-		rng:           rand.New(rand.NewSource(time.Now().UnixNano())),
+		rng:           rand.New(rand.NewSource(rand.Int63())),
 	}
 }
 
@@ -969,7 +968,7 @@ func (g *Yaniv) UnmarshalJSON(data []byte) error {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
 	if g.rng == nil {
-		g.rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+		g.rng = rand.New(rand.NewSource(rand.Int63()))
 	}
 	return nil
 }

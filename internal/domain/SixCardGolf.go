@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"time"
 )
 
 // SixCardGolfPhase ゲームフェーズ
@@ -151,7 +150,7 @@ func NewSixCardGolf(trumpCards *TrumpCards, config SixCardGolfConfig) *SixCardGo
 		config:           config,
 		winnerIdx:        -1,
 		finalTurnTrigger: -1,
-		rng:              rand.New(rand.NewSource(time.Now().UnixNano())),
+		rng:              rand.New(rand.NewSource(rand.Int63())),
 	}
 }
 
@@ -1019,7 +1018,7 @@ func (g *SixCardGolf) UnmarshalJSON(data []byte) error {
 		g.players[i] = p
 	}
 	if g.rng == nil {
-		g.rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+		g.rng = rand.New(rand.NewSource(rand.Int63()))
 	}
 	return nil
 }
