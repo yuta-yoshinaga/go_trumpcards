@@ -242,9 +242,9 @@ Go + Clean Architecture で実装した264種類のトランプゲーム。CLI �
 | カラブレセッラ (Calabresella / Terziglio) | `calabresella` | [CUI](docs/manual/cui/calabresella.md) / [Web](docs/manual/web/calabresella.md) |
 | タブラネット (Tablanet / Tablić) | `tablanet` | [CUI](docs/manual/cui/tablanet.md) / [Web](docs/manual/web/tablanet.md) |
 | トラント・エ・カラント (Trente et Quarante) | `trenteetquarante` | [CUI](docs/manual/cui/trenteetquarante.md) / [Web](docs/manual/web/trenteetquarante.md) |
-| ウィザード (Wizard) | `wizard` | [CUI](docs/manual/cui/wizard.md) / [Web](docs/manual/web/wizard.md) |
+| ぴたり宣言 (Exact Call / Wizard系) | `wizard` | [CUI](docs/manual/cui/wizard.md) / [Web](docs/manual/web/wizard.md) |
 | おいちょかぶ (Oicho-Kabu) | `oichokabu` | [CUI](docs/manual/cui/oichokabu.md) / [Web](docs/manual/web/oichokabu.md) |
-| ルーク (Rook) | `rook` | [CUI](docs/manual/cui/rook.md) / [Web](docs/manual/web/rook.md) |
+| 四色入札 (Four-Color Bid / Rook系) | `rook` | [CUI](docs/manual/cui/rook.md) / [Web](docs/manual/web/rook.md) |
 | こいこい (Koi-Koi) | `koikoi` | [CUI](docs/manual/cui/koikoi.md) / [Web](docs/manual/web/koikoi.md) |
 | ゴーストップ (Go-Stop) | `gostop` | [CUI](docs/manual/cui/gostop.md) / [Web](docs/manual/web/gostop.md) |
 | 八八 (Hachi-Hachi) | `hachihachi` | [CUI](docs/manual/cui/hachihachi.md) / [Web](docs/manual/web/hachihachi.md) |
