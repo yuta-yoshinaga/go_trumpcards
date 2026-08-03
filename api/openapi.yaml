@@ -23101,6 +23101,75 @@ paths:
                 properties:
                   message:
                     type: string
+  /minchiate/exec:
+    post:
+      tags:
+        - minchiate
+      summary: Execute a Minchiate (ミンキアーテ) game command
+      description: |
+        Send a command to advance the Minchiate (ミンキアーテ) game session identified by
+        `sessionId`. Minchiate, a 16th-century Florentine four-player tarot trick-taker in fixed 2v2
+        teams on a **97-card pack**: 4 suits of 14 + **40 trumps** + the Matto.
+        The 40-trump ladder is the largest here and is not a plain number line — the upper
+        reaches carry the 12 zodiac signs, the four elements and the virtues — so responses
+        name each trump rather than only numbering it.
+        97 does not divide by 4: each player gets 21 and the dealer buries the remaining 13
+        (scarto). Buried cards score for the dealer's team, so trumps and the Matto cannot
+        be discarded.
+        Must-follow, then must-trump when void; the Matto is exempt from both and never
+        takes a trick. **A led Matto does not set the suit** — the next non-Matto card does,
+        so a client must not treat the first card of a trick as the led suit unconditionally.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: minchiateExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
   /tarocchini/exec:
     post:
       tags:

@@ -139,6 +139,7 @@ export * from './games/marias';
 export * from './games/memory';
 export * from './games/michigan';
 export * from './games/mighty';
+export * from './games/minchiate';
 export * from './games/mississippistud';
 export * from './games/missmilligan';
 export * from './games/montecarlo';
