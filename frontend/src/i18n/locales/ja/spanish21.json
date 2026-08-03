@@ -54,11 +54,11 @@
   "sideBetActive": "サイドベットあり",
   "sideBetLabel": {
     "pp": "PP (ペアベット):",
-    "t3": "21+3:"
+    "t3": "ポーカー役ベット:"
   },
   "sideBetTooltip": {
     "pp": "Perfect Pairs: 最初の2枚がペアなら配当",
-    "t3": "21+3: 最初の2枚+ディーラー1枚でポーカー役が成立すれば配当"
+    "t3": "ポーカー役ベット: 最初の2枚+ディーラー1枚でポーカー役が成立すれば配当"
   },
   "soft17Tooltip": "H17=ソフト17でヒット / S17=ソフト17でスタンド",
   "dasTooltip": "DAS=スプリット後にダブルダウン可",
@@ -77,7 +77,7 @@
   "autoAdvanceSec": "{{sec}}秒",
   "sideBet": {
     "perfectPairs": "Perfect Pairs",
-    "twentyOnePlus3": "21+3",
+    "twentyOnePlus3": "ポーカー役ボーナス",
     "win": "{{name}} WIN +{{payout}}",
     "lose": "{{name}} LOSE -{{amount}}"
   },

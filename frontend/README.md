@@ -10,7 +10,7 @@ This project uses [Vite](https://vitejs.dev/) with [React](https://react.dev/) a
 - `bun run lint`: Run [Biome](https://biomejs.dev/) lint checks only
 - `bun run lint:tokens`: Verify Tailwind classes use design tokens (no hard-coded values)
 - `bun run format`: Run Biome formatter and auto-write fixes
-- `bun run check`: Run Biome (lint + format) and the design-token check
+- `bun run check`: Run Biome (lint + format) **and every guard script** — design tokens, a11y, i18n coverage, dependency licenses, and more. The authoritative list is the `check` entry in `package.json`; each guard prints its own OK line, so read that output rather than a list here. Prefer this over `bun run lint`: the guards catch most regressions, not Biome
 - `bun run check:write`: Run Biome and automatically fix linting/formatting errors
 - `bun run test`: Run tests with [Vitest](https://vitest.dev/)
 - `bun run test:watch`: Run Vitest in watch mode

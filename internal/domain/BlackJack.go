@@ -178,7 +178,7 @@ func (b *BlackJack) PlayerBet(amount, ppBet, t3Bet, handCount int) error {
 		return NewDomainError(ErrInvalidAmount, "Invalid Perfect Pairs bet amount.")
 	}
 	if t3Bet != 0 && (t3Bet < BJMinBet || t3Bet%BJMinBet != 0 || t3Bet > BJMaxBet) {
-		return NewDomainError(ErrInvalidAmount, "Invalid 21+3 bet amount.")
+		return NewDomainError(ErrInvalidAmount, "Invalid poker-hand side bet amount.")
 	}
 	totalCost := amount*handCount + ppBet + t3Bet
 	if !b.player.SubtractChips(totalCost) {

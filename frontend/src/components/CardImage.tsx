@@ -34,9 +34,9 @@ export interface CardImageProps {
   onDrop?: (e: React.DragEvent) => void;
 }
 
-/** Natural card image dimensions (200x300 PNG assets, 2:3 aspect ratio). */
-const CARD_NATURAL_WIDTH = 200;
-const CARD_NATURAL_HEIGHT = 300;
+/** Natural card image dimensions (250x375 PNG assets, 2:3 aspect ratio). */
+const CARD_NATURAL_WIDTH = 250;
+const CARD_NATURAL_HEIGHT = 375;
 
 /** Suppresses iOS Safari long-press callout and text selection on card images. */
 const noCalloutStyle = {

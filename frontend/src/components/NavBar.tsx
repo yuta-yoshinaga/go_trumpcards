@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { SITE_NAME } from '../constants/site';
-import { useIsMediumDesktop, useIsMobile } from '../hooks/useCardDimensions';
+import { useIsLargeDesktop, useIsMediumDesktop, useIsMobile } from '../hooks/useCardDimensions';
 import { useDetailsOutsideClick } from '../hooks/useDetailsOutsideClick';
 import { useFavoriteGames } from '../hooks/useFavoriteGames';
 import { useGameRouteSearch } from '../hooks/useGameRouteSearch';
@@ -68,6 +68,7 @@ export function NavBar() {
   const [searchTerm, setSearchTerm] = useState('');
   const isMobile = useIsMobile();
   const isMediumDesktop = useIsMediumDesktop();
+  const isLargeDesktop = useIsLargeDesktop();
   const recentGames = useRecentGames(pathname);
   const { favorites, isFavorite, toggleFavorite } = useFavoriteGames();
   const navRef = useRef<HTMLElement>(null);
@@ -288,6 +289,20 @@ export function NavBar() {
           </div>
         )}
         <TutorialProgressPanel />
+        {/* Rendered below the large-desktop breakpoint only, because
+            DesktopSidebar (which is `hidden lg:flex`) carries the same link in
+            its footer above it. Keying this on `isMobile` instead left tablet
+            and small-desktop widths with no route to the notice at all. */}
+        {!isLargeDesktop && (
+          <Link
+            to="/legal"
+            aria-current={pathname === '/legal' ? 'page' : undefined}
+            onClick={closeMenu}
+            className={`flex items-center min-h-[44px] px-3 text-xs text-ds-text-muted hover:text-ds-text-primary transition-colors ${focusRingWhite}`}
+          >
+            {t('nav.legal')}
+          </Link>
+        )}
         <div className="hidden sm:flex sm:items-center sm:gap-2">
           <SoundToggle />
           <NavLangToggle />

@@ -59,7 +59,11 @@ func (r *BJSideBetResult) BetTypeName() string {
 	case BJSideBetPerfectPairs:
 		return "Perfect Pairs"
 	case BJSideBet21Plus3:
-		return "21+3"
+		// Displayed name, not an identifier — "21+3" is a live Japanese
+		// trademark (登録6752649 / 6785367, Galaxy Gaming, classes 28 & 41,
+		// which cover providing online games), so the shipped label describes
+		// the bet instead of naming it. See TRADEMARKS.md.
+		return "Poker Hand Bonus"
 	default:
 		return "Unknown"
 	}
