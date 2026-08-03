@@ -214,3 +214,425 @@ func TestVira_UnmarshalRejectsBadState(t *testing.T) {
 		})
 	}
 }
+
+// setViraHand replaces a player's hand with exactly the given cards.
+func setViraHand(t *testing.T, g *Vira, idx int, cards ...*Card) {
+	t.Helper()
+	p := g.GetPlayer(idx)
+	for p.GetCardsSize() > 0 {
+		p.RemoveCard(0)
+	}
+	for _, c := range cards {
+		p.AddCard(c)
+	}
+}
+
+// settleAllBids drives the bidding to a close from wherever it stands.
+func settleAllBids(t *testing.T, g *Vira) {
+	t.Helper()
+	for range ViraPlayerCnt * 2 {
+		if g.GetPhase() != ViraPhaseBid {
+			return
+		}
+		if g.IsHumanBidTurn() {
+			require.NoError(t, g.PlayerBid(ViraBidPass))
+			continue
+		}
+		g.CpuBid()
+	}
+}
+
+// playOneViraTrick drives a full three-card trick from the current lead.
+func playOneViraTrick(t *testing.T, g *Vira) {
+	t.Helper()
+	for range ViraPlayerCnt {
+		if g.IsHumanTurn() {
+			idx := g.GetValidPlayIndices(g.GetCurrentPlayerIdx())
+			require.NotEmpty(t, idx)
+			require.NoError(t, g.PlayerPlay(idx[0]))
+			continue
+		}
+		g.CpuPlay()
+	}
+}
+
+// The bid ladder and the value table are two separate numbers per contract, and
+// the CUI reads both. Pinning them stops a rename from quietly changing payouts.
+func TestVira_BidLadderAndValues(t *testing.T) {
+	cases := []struct {
+		bid           ViraBid
+		target, value int
+	}{
+		{ViraBidPass, 0, 0},
+		{ViraBidGask, 7, 2},
+		{ViraBidSolo, 8, 4},
+		{ViraBidMisere, 0, 6}, // Misère targets zero tricks but is worth more than Gask
+		{ViraBidVira, 10, 8},
+	}
+	for _, tc := range cases {
+		t.Run(ViraBidNames[tc.bid], func(t *testing.T) {
+			assert.Equal(t, tc.target, ViraBidTarget(tc.bid))
+			assert.Equal(t, tc.value, viraBidValue(tc.bid))
+		})
+	}
+}
+
+func TestVira_TrickWinner(t *testing.T) {
+	cases := []struct {
+		name  string
+		trump int
+		trick []*TrickCard
+		want  int
+	}{
+		{"highest of the led suit wins", 0, []*TrickCard{
+			{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 5, false)},
+			{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 13, false)},
+			{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 9, false)},
+		}, 1},
+		// Ace is high, so a 1 must beat a king rather than lose to it.
+		{"the ace outranks the king", 0, []*TrickCard{
+			{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 13, false)},
+			{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 1, false)},
+			{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 12, false)},
+		}, 1},
+		{"the lowest trump beats the highest plain card", CardDesignClover, []*TrickCard{
+			{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 1, false)},
+			{PlayerIdx: 1, Card: NewCard(CardDesignClover, 2, false)},
+			{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 13, false)},
+		}, 1},
+		{"an off-suit discard never wins", CardDesignClover, []*TrickCard{
+			{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 3, false)},
+			{PlayerIdx: 1, Card: NewCard(CardDesignDiamond, 1, false)},
+			{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 2, false)},
+		}, 0},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newTestVira(t)
+			g.trumpSuit = tc.trump
+			g.currentTrick = tc.trick
+			assert.Equal(t, tc.want, g.trickWinner())
+		})
+	}
+}
+
+func TestVira_PlayerPlayRejectsRenege(t *testing.T) {
+	g := newTestVira(t)
+	g.SetPhase(ViraPhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	setViraHand(t, g, 0, NewCard(CardDesignSpade, 5, false), NewCard(CardDesignHeart, 9, false))
+	g.currentTrick = []*TrickCard{{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 8, false)}}
+
+	assert.Error(t, g.PlayerPlay(1), "holding the led suit, an off-suit card must be refused")
+	assert.NoError(t, g.PlayerPlay(0))
+}
+
+func TestVira_PlayerPlayGuards(t *testing.T) {
+	t.Run("wrong phase", func(t *testing.T) {
+		g := newTestVira(t)
+		assert.Error(t, g.PlayerPlay(0), "the bid phase is not a play phase")
+	})
+	t.Run("index out of range", func(t *testing.T) {
+		g := newTestVira(t)
+		g.SetPhase(ViraPhasePlay)
+		g.SetCurrentPlayerIdx(0)
+		assert.Error(t, g.PlayerPlay(-1))
+		assert.Error(t, g.PlayerPlay(ViraHandSize))
+	})
+	t.Run("not the human turn", func(t *testing.T) {
+		g := newTestVira(t)
+		g.SetPhase(ViraPhasePlay)
+		g.SetCurrentPlayerIdx(1)
+		assert.Error(t, g.PlayerPlay(0))
+	})
+	t.Run("game already ended", func(t *testing.T) {
+		g := newTestVira(t)
+		g.SetPhase(ViraPhasePlay)
+		g.gameEndFlag = true
+		assert.Error(t, g.PlayerPlay(0))
+	})
+}
+
+// A CPU with an empty hand must not be asked to play: RemoveCard returns nil and
+// passing that on would nil-deref the whole request (#4606).
+func TestVira_CpuPlayWithAnEmptyHandIsANoOp(t *testing.T) {
+	g := newTestVira(t)
+	g.SetPhase(ViraPhasePlay)
+	g.SetCurrentPlayerIdx(1)
+	setViraHand(t, g, 1)
+	assert.NotPanics(t, func() { g.CpuPlay() })
+	assert.Empty(t, g.GetCurrentTrick())
+}
+
+func TestVira_CpuPlayIgnoresAHumanSeatAndAFinishedGame(t *testing.T) {
+	g := newTestVira(t)
+	g.SetPhase(ViraPhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	g.CpuPlay()
+	assert.Empty(t, g.GetCurrentTrick())
+
+	g.SetCurrentPlayerIdx(1)
+	g.gameEndFlag = true
+	g.CpuPlay()
+	assert.Empty(t, g.GetCurrentTrick())
+}
+
+func TestVira_TrickFlowAwardsAndLeadsFromTheWinner(t *testing.T) {
+	g := newTestVira(t)
+	settleAllBids(t, g)
+	require.Equal(t, ViraPhasePlay, g.GetPhase())
+
+	before := g.GetTrickNumber()
+	playOneViraTrick(t, g)
+	require.Equal(t, ViraPhaseTrickEnd, g.GetPhase())
+	g.ResolveTrick()
+
+	won := 0
+	for i := range ViraPlayerCnt {
+		won += g.GetRoundTricks()[i]
+	}
+	assert.Equal(t, 1, won)
+	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetCurrentPlayerIdx(), "the winner leads next")
+
+	g.NextTrick()
+	assert.Equal(t, ViraPhasePlay, g.GetPhase())
+	assert.Equal(t, before+1, g.GetTrickNumber())
+	assert.Empty(t, g.GetCurrentTrick())
+}
+
+func TestVira_ResolveAndNextTrickAreNoOpsOutsideTrickEnd(t *testing.T) {
+	g := newTestVira(t)
+	g.SetPhase(ViraPhasePlay)
+	g.ResolveTrick()
+	g.NextTrick()
+	assert.Equal(t, ViraPhasePlay, g.GetPhase())
+	assert.Equal(t, 1, g.GetTrickNumber())
+}
+
+// Settlement is where the pot does its work, and made/failed move it in opposite
+// directions. The declarer sweeps it on success and feeds it on failure.
+func TestVira_SettlementMovesThePot(t *testing.T) {
+	t.Run("a made contract sweeps the pot and collects from each defender", func(t *testing.T) {
+		g := newTestVira(t)
+		g.declarerIdx = 0
+		g.contract = ViraBidGask
+		g.roundTricks = [ViraPlayerCnt]int{7, 3, 3}
+		g.pot = 30
+		g.playerScores = [ViraPlayerCnt]int{100, 100, 100}
+		g.settleRound()
+
+		value := viraBidValue(ViraBidGask)
+		assert.True(t, g.GetLastRoundMade())
+		assert.Zero(t, g.GetPot(), "a made contract empties the pot")
+		assert.Equal(t, 100+30+2*value, g.GetPlayerScores()[0])
+		assert.Equal(t, 100-value, g.GetPlayerScores()[1])
+		assert.Equal(t, 30+2*value, g.GetLastRoundDelta()[0])
+	})
+
+	t.Run("a failed contract feeds the pot and pays each defender", func(t *testing.T) {
+		g := newTestVira(t)
+		g.declarerIdx = 0
+		g.contract = ViraBidVira
+		g.roundTricks = [ViraPlayerCnt]int{4, 5, 4}
+		g.pot = 30
+		g.playerScores = [ViraPlayerCnt]int{100, 100, 100}
+		g.settleRound()
+
+		value := viraBidValue(ViraBidVira)
+		assert.False(t, g.GetLastRoundMade())
+		assert.Equal(t, 30+value, g.GetPot(), "the failed contract's value is added to the pot")
+		assert.Equal(t, 100-3*value, g.GetPlayerScores()[0])
+		assert.Equal(t, 100+value, g.GetPlayerScores()[1])
+	})
+
+	// Misère inverts the test: it is made on zero tricks and lost on the first.
+	t.Run("misere is made on zero tricks", func(t *testing.T) {
+		g := newTestVira(t)
+		g.declarerIdx = 1
+		g.contract = ViraBidMisere
+		g.roundTricks = [ViraPlayerCnt]int{7, 0, 6}
+		g.settleRound()
+		assert.True(t, g.GetLastRoundMade())
+	})
+
+	t.Run("misere fails on a single trick", func(t *testing.T) {
+		g := newTestVira(t)
+		g.declarerIdx = 1
+		g.contract = ViraBidMisere
+		g.roundTricks = [ViraPlayerCnt]int{7, 1, 5}
+		g.settleRound()
+		assert.False(t, g.GetLastRoundMade())
+	})
+
+	// An all-pass round has no declarer, so nothing changes hands — but the ante
+	// already in the pot must stay there for the next round to compete over.
+	t.Run("an all-pass round leaves the pot alone", func(t *testing.T) {
+		g := newTestVira(t)
+		g.declarerIdx = -1
+		g.pot = 45
+		g.playerScores = [ViraPlayerCnt]int{100, 100, 100}
+		g.settleRound()
+		assert.Equal(t, 45, g.GetPot(), "the stake carries forward")
+		assert.Equal(t, [ViraPlayerCnt]int{100, 100, 100}, g.GetPlayerScores())
+	})
+}
+
+func TestVira_MadeLabel(t *testing.T) {
+	assert.Equal(t, "成功", viraMadeLabel(true))
+	assert.Equal(t, "失敗", viraMadeLabel(false))
+}
+
+func TestVira_NextRoundRedealsAndRotatesTheDealer(t *testing.T) {
+	g := newTestVira(t)
+	g.SetPhase(ViraPhaseRoundEnd)
+	dealer, round := g.GetDealerIdx(), g.GetRoundNumber()
+
+	g.NextRound()
+	assert.Equal(t, round+1, g.GetRoundNumber())
+	assert.Equal(t, (dealer+1)%ViraPlayerCnt, g.GetDealerIdx())
+	assert.Equal(t, ViraPhaseBid, g.GetPhase())
+	assert.Equal(t, -1, g.GetDeclarerIdx())
+	for i := range ViraPlayerCnt {
+		assert.Equal(t, ViraHandSize, g.GetPlayer(i).GetCardsSize())
+		assert.Zero(t, g.GetRoundTricks()[i])
+	}
+}
+
+func TestVira_NextRoundEndsTheMatchOnTheLastRound(t *testing.T) {
+	g := newTestVira(t)
+	g.SetPhase(ViraPhaseRoundEnd)
+	g.roundNumber = g.GetConfig().TargetRounds
+	g.NextRound()
+	assert.True(t, g.GetGameEndFlag())
+	assert.Equal(t, ViraPhaseGameEnd, g.GetPhase())
+}
+
+func TestVira_NextRoundAndScoreRoundAreNoOpsOutsideRoundEnd(t *testing.T) {
+	g := newTestVira(t)
+	g.SetPhase(ViraPhasePlay)
+	g.roundNumber = g.GetConfig().TargetRounds
+	g.NextRound()
+	g.ScoreRound()
+	assert.False(t, g.GetGameEndFlag())
+	assert.Equal(t, g.GetConfig().TargetRounds, g.GetRoundNumber(), "neither call advanced the round")
+}
+
+func TestVira_ScoreRoundEndsTheMatchOnTheLastRound(t *testing.T) {
+	g := newTestVira(t)
+	g.SetPhase(ViraPhaseRoundEnd)
+
+	g.roundNumber = g.GetConfig().TargetRounds - 1
+	g.ScoreRound()
+	assert.False(t, g.GetGameEndFlag())
+
+	g.roundNumber = g.GetConfig().TargetRounds
+	g.ScoreRound()
+	assert.True(t, g.GetGameEndFlag())
+}
+
+func TestVira_MatchWinner(t *testing.T) {
+	cases := map[string]struct {
+		scores [ViraPlayerCnt]int
+		want   int
+	}{
+		"clear leader":        {[ViraPlayerCnt]int{140, 90, 70}, 0},
+		"leader in last seat": {[ViraPlayerCnt]int{70, 90, 140}, 2},
+		// A tie must leave no winner: breaking it by seat order would hand the
+		// match to the lowest seat every time.
+		"two-way tie at the top": {[ViraPlayerCnt]int{140, 140, 20}, -1},
+		"three-way tie":          {[ViraPlayerCnt]int{100, 100, 100}, -1},
+		"tie below the leader":   {[ViraPlayerCnt]int{140, 80, 80}, 0},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			g := newTestVira(t)
+			g.playerScores = tc.scores
+			g.finishMatch()
+			assert.Equal(t, tc.want, g.GetWinnerPlayer())
+			assert.True(t, g.GetGameEndFlag())
+		})
+	}
+}
+
+// Each of the six reasons is reachable, and Misère's two are the opposite
+// advice for the two sides of the same contract.
+func TestVira_HintReasons(t *testing.T) {
+	cases := []struct {
+		name       string
+		contract   ViraBid
+		declarer   int
+		trickCards int
+		want       string
+	}{
+		{"declarer leads high", ViraBidGask, 0, 0, "lead_high"},
+		{"defender leads low", ViraBidGask, 1, 0, "lead_low"},
+		{"declarer follows to win", ViraBidGask, 0, 1, "follow_win"},
+		{"defender blocks", ViraBidGask, 1, 1, "follow_block"},
+		{"misere declarer ducks", ViraBidMisere, 0, 0, "misere_duck"},
+		{"misere defender forces", ViraBidMisere, 1, 0, "misere_force"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newTestVira(t)
+			g.contract = tc.contract
+			g.declarerIdx = tc.declarer
+			g.currentTrick = nil
+			for i := range tc.trickCards {
+				g.currentTrick = append(g.currentTrick,
+					&TrickCard{PlayerIdx: i + 1, Card: NewCard(CardDesignSpade, 3, false)})
+			}
+			assert.Equal(t, tc.want, g.playHintReason(0))
+		})
+	}
+}
+
+func TestVira_GetHintOnlyOnTheHumanPlayTurn(t *testing.T) {
+	g := newTestVira(t)
+	g.SetPhase(ViraPhaseBid)
+	assert.Nil(t, g.GetHint(), "no play hint during bidding")
+
+	g.SetPhase(ViraPhasePlay)
+	g.SetCurrentPlayerIdx(1)
+	assert.Nil(t, g.GetHint(), "no hint on a CPU turn")
+
+	g.SetCurrentPlayerIdx(0)
+	hint := g.GetHint()
+	require.NotNil(t, hint)
+	assert.Len(t, hint.CardIndices, 1)
+	assert.NotEmpty(t, hint.Reason)
+
+	setViraHand(t, g, 0)
+	assert.Nil(t, g.GetHint(), "an empty hand has nothing to suggest")
+}
+
+func TestVira_IsHumanBidTurn(t *testing.T) {
+	g := newTestVira(t)
+	g.SetPhase(ViraPhaseBid)
+	g.SetCurrentPlayerIdx(0)
+	assert.True(t, g.IsHumanBidTurn())
+
+	require.NoError(t, g.PlayerBid(ViraBidPass))
+	g.SetCurrentPlayerIdx(0)
+	assert.False(t, g.IsHumanBidTurn(), "a seat that has bid does not bid again")
+	assert.True(t, g.GetBidDone()[0])
+
+	g.SetPhase(ViraPhasePlay)
+	assert.False(t, g.IsHumanBidTurn())
+}
+
+func TestVira_ConfigAndAccessors(t *testing.T) {
+	g := newTestVira(t)
+	cfg := ViraConfig{CpuDifficulty: ViraCpuDifficultyHard, TargetRounds: 9}
+	g.SetConfig(cfg)
+	assert.Equal(t, cfg, g.GetConfig())
+	assert.Len(t, g.GetPlayers(), ViraPlayerCnt)
+	assert.Equal(t, ViraBidPass, g.GetContract())
+	assert.NotNil(t, g.GetActionLog())
+}
+
+func TestVira_ValidPlayIndicesFallBackToTheWholeHandWhenVoid(t *testing.T) {
+	g := newTestVira(t)
+	setViraHand(t, g, 0, NewCard(CardDesignHeart, 4, false), NewCard(CardDesignClover, 9, false))
+	g.currentTrick = []*TrickCard{{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 8, false)}}
+	assert.Equal(t, []int{0, 1}, g.GetPlayableIndices(0))
+}
