@@ -69,6 +69,39 @@ jobs:
           flags: backend
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  licenses-backend:
+    # Go 依存のライセンス検査。このリポジトリは MIT で再配布を許諾している
+    # ので、GPL/LGPL 系が混ざると、許諾できない権利を許諾したことになる。
+    #
+    # ネイティブと js/wasm を別々に検査するのは、ビルドタグで依存集合が
+    # 変わるため。syumai/workers は js/wasm ビルドにしか現れず、ネイティブ側
+    # だけを見ると素通りする (実測で確認済み)。
+    #
+    # フロント側 (npm) は `bun run check` の check-dependency-licenses.mjs が
+    # 見ている。license-checker は bun の node_modules を歩けず
+    # 「UNLICENSED: 1」で exit 0 するため使っていない。
+    name: Dependency Licenses (Go)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.26'
+
+      - name: Install go-licenses
+        run: go install github.com/google/go-licenses@latest
+
+      - name: Check native build dependencies
+        run: go-licenses check ./cmd/... ./internal/... --disallowed_types=forbidden,restricted
+
+      - name: Check js/wasm build dependencies
+        env:
+          GOOS: js
+          GOARCH: wasm
+        run: go-licenses check ./cmd/... --disallowed_types=forbidden,restricted
+
   static-frontend:
     # **Biome と tsc を 1 ジョブにまとめてある。**別々のときは実測で
     # 「待ち 40-52 分 / 実行 0.3 分」だった —— ランナーを確保するコストが
