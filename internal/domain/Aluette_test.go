@@ -3,9 +3,13 @@
 package domain
 
 import (
+	"fmt"
+	"math/rand"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func aluetteCard(design, value int) *Card { return NewCard(design, value, false) }
@@ -139,4 +143,345 @@ func TestAluette_DealArithmetic(t *testing.T) {
 func TestAluette_RankHandlesNil(t *testing.T) {
 	assert.Equal(t, -1, AluetteRank(nil))
 	assert.Empty(t, AluetteLuetteName(nil))
+}
+
+// newTestAluette は配り札を固定した Aluette を返す (#4467)。
+func newTestAluette(t *testing.T) *Aluette {
+	t.Helper()
+	g := NewDefaultAluette()
+	g.SetRand(rand.New(rand.NewSource(42)))
+	g.Reset()
+	return g
+}
+
+// **SetRand を呼ばずに作る。**helper が上書きすると、コンストラクタが乱数源を
+// 入れ忘れていても全テストが通ってしまう (Ganjifa #4661)。
+func TestAluette_ProductionConstructorShufflesTheDeck(t *testing.T) {
+	handOf := func(g *Aluette) string {
+		p := g.GetPlayer(0)
+		var b strings.Builder
+		for i := 0; i < p.GetCardsSize(); i++ {
+			fmt.Fprintf(&b, "%d-%d,", p.GetCard(i).GetDesign(), p.GetCard(i).GetValue())
+		}
+		return b.String()
+	}
+	first, second := NewDefaultAluette(), NewDefaultAluette()
+	first.Reset()
+	second.Reset()
+	assert.NotEqual(t, handOf(first), handOf(second),
+		"two fresh games dealt identical hands -- the constructor did not seed rng")
+}
+
+func TestAluette_ResetDealsTheHandSizeAndLeavesTheRest(t *testing.T) {
+	g := newTestAluette(t)
+	assert.Equal(t, AluettePhasePlay, g.GetPhase())
+	for i := 0; i < AluettePlayerCnt; i++ {
+		assert.Equal(t, AluetteHandSize, g.GetPlayer(i).GetCardsSize(), "seat %d", i)
+	}
+}
+
+// 手札は値順ではなく強さ順に並ぶ。値順だと金貨の3 が剣の3 と同じ位置に来る。
+func TestAluette_HandIsSortedByStrengthNotValue(t *testing.T) {
+	g := newTestAluette(t)
+	p := g.GetPlayer(0)
+	for i := 1; i < p.GetCardsSize(); i++ {
+		assert.GreaterOrEqual(t, AluetteRank(p.GetCard(i-1)), AluetteRank(p.GetCard(i)),
+			"the hand must read strongest-first")
+	}
+}
+
+// **フォロー義務は無い。**どの札もいつでも出せる。
+func TestAluette_EveryCardIsAlwaysPlayable(t *testing.T) {
+	g := newTestAluette(t)
+	g.SetCurrentPlayerIdx(0)
+	g.currentTrick = []*TrickCard{{PlayerIdx: 3, Card: aluetteCard(1, 6)}}
+	valid := g.GetValidPlayIndices(0)
+	assert.Len(t, valid, g.GetPlayer(0).GetCardsSize(),
+		"no follow obligation exists, so the whole hand stays legal")
+	assert.NoError(t, g.PlayerPlay(valid[len(valid)-1]),
+		"even the weakest card must be legal while a suit is led")
+}
+
+func TestAluette_PlayGuards(t *testing.T) {
+	g := newTestAluette(t)
+	g.SetCurrentPlayerIdx(0)
+	assert.Error(t, g.PlayerPlay(-1))
+	assert.Error(t, g.PlayerPlay(999))
+
+	g.SetCurrentPlayerIdx(1)
+	assert.ErrorIs(t, g.PlayerPlay(0), ErrNotHumanTurn)
+
+	g.SetPhase(AluettePhaseTrickEnd)
+	assert.ErrorIs(t, g.PlayerPlay(0), ErrWrongPhase)
+
+	g.SetPhase(AluettePhasePlay)
+	g.gameEndFlag = true
+	assert.ErrorIs(t, g.PlayerPlay(0), ErrGameEnded)
+}
+
+func TestAluette_CpuPlayWithAnEmptyHandIsANoOp(t *testing.T) {
+	g := newTestAluette(t)
+	g.SetCurrentPlayerIdx(1)
+	p := g.GetPlayer(1)
+	for p.GetCardsSize() > 0 {
+		p.RemoveCard(0)
+	}
+	assert.NotPanics(t, func() { g.CpuPlay() })
+	assert.Empty(t, g.GetCurrentTrick())
+}
+
+func TestAluette_FullMeneAccountsForEveryTrick(t *testing.T) {
+	g := newTestAluette(t)
+	for range AluetteTrickCount {
+		for range AluettePlayerCnt {
+			if g.IsHumanTurn() {
+				valid := g.GetValidPlayIndices(g.GetCurrentPlayerIdx())
+				require.NotEmpty(t, valid)
+				require.NoError(t, g.PlayerPlay(valid[0]))
+				continue
+			}
+			g.CpuPlay()
+		}
+		require.Equal(t, AluettePhaseTrickEnd, g.GetPhase())
+		g.ResolveTrick()
+		if g.GetPhase() == AluettePhaseTrickEnd {
+			g.NextTrick()
+		}
+	}
+	require.Equal(t, AluettePhaseRoundEnd, g.GetPhase())
+	tricks := 0
+	for _, n := range g.GetRoundTricks() {
+		tricks += n
+	}
+	assert.Equal(t, AluetteTrickCount, tricks)
+	for i := 0; i < AluettePlayerCnt; i++ {
+		assert.Zero(t, g.GetPlayer(i).GetCardsSize(), "seat %d should be out of cards", i)
+	}
+	// **メーヌを取った側に 1 点。**4-1 でも 3-2 でも 1 点で変わらない。
+	assert.Equal(t, 1, g.GetTeamScores()[0]+g.GetTeamScores()[1])
+}
+
+// 過半数に届かないメーヌ (同点) は誰にも点が入らない。
+func TestAluette_ASplitMeneScoresForNobody(t *testing.T) {
+	g := newTestAluette(t)
+	g.SetPhase(AluettePhaseTrickEnd)
+	g.trickNumber = AluetteTrickCount
+	// 2-2 で 1 トリック足りない状態を作る (5 戦のうち 4 戦しか決着していない)。
+	g.roundTricks = [AluettePlayerCnt]int{1, 1, 1, 1}
+	g.settleRound()
+	assert.Equal(t, 0, g.GetTeamScores()[0]+g.GetTeamScores()[1],
+		"neither side reached the majority, so no point is awarded")
+}
+
+func TestAluette_MatchEndsAtTheTargetPoints(t *testing.T) {
+	g := newTestAluette(t)
+	g.SetPhase(AluettePhaseRoundEnd)
+	g.teamScores = [2]int{g.GetConfig().TargetPoints, 0}
+	g.ScoreRound()
+	assert.True(t, g.GetGameEndFlag())
+	assert.Equal(t, 0, g.GetWinnerTeam())
+}
+
+func TestAluette_MatchWinnerIsATeam(t *testing.T) {
+	cases := map[string]struct {
+		scores [2]int
+		want   int
+	}{
+		"team 0 ahead":         {[2]int{6, 4}, 0},
+		"team 1 ahead":         {[2]int{4, 6}, 1},
+		"a draw has no winner": {[2]int{5, 5}, -1},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			g := newTestAluette(t)
+			g.teamScores = tc.scores
+			g.finishMatch()
+			assert.Equal(t, tc.want, g.GetWinnerTeam())
+			assert.True(t, g.GetGameEndFlag())
+		})
+	}
+}
+
+func TestAluette_NextRoundRotatesTheDealer(t *testing.T) {
+	g := newTestAluette(t)
+	g.SetPhase(AluettePhaseRoundEnd)
+	dealer, round := g.GetDealerIdx(), g.GetRoundNumber()
+	g.NextRound()
+	assert.Equal(t, round+1, g.GetRoundNumber())
+	assert.Equal(t, (dealer+1)%AluettePlayerCnt, g.GetDealerIdx())
+	assert.Equal(t, AluettePhasePlay, g.GetPhase())
+}
+
+func TestAluette_NoOpsOutsideTheirPhase(t *testing.T) {
+	g := newTestAluette(t)
+	g.ResolveTrick()
+	g.NextTrick()
+	assert.Equal(t, AluettePhasePlay, g.GetPhase())
+	assert.Equal(t, 1, g.GetTrickNumber())
+
+	g.NextRound()
+	g.ScoreRound()
+	assert.False(t, g.GetGameEndFlag())
+	assert.Equal(t, 1, g.GetRoundNumber())
+}
+
+func TestAluette_HintOnlyOnTheHumanTurn(t *testing.T) {
+	g := newTestAluette(t)
+	g.SetCurrentPlayerIdx(1)
+	assert.Nil(t, g.GetHint(), "no hint on a CPU turn")
+
+	g.SetCurrentPlayerIdx(0)
+	hint := g.GetHint()
+	require.NotNil(t, hint)
+	assert.Len(t, hint.CardIndices, 1)
+
+	g.SetPhase(AluettePhaseRoundEnd)
+	assert.Nil(t, g.GetHint())
+}
+
+// リュエットを勧めるときは専用の理由を返す。名前つきの 6 枚は見た目が他と
+// 変わらないので、「なぜその札か」を言わないと助言が読めない。
+func TestAluette_HintNamesALuette(t *testing.T) {
+	g := newTestAluette(t)
+	p := g.GetPlayer(0)
+	for p.GetCardsSize() > 0 {
+		p.RemoveCard(0)
+	}
+	p.AddCard(aluetteCard(4, 3)) // Monsieur
+	g.currentTrick = nil
+	assert.Equal(t, "play_luette", g.playHintReason(0, 0))
+
+	for p.GetCardsSize() > 0 {
+		p.RemoveCard(0)
+	}
+	p.AddCard(aluetteCard(1, 4))
+	assert.Equal(t, "lead_low", g.playHintReason(0, 0))
+}
+
+func TestAluette_Accessors(t *testing.T) {
+	g := newTestAluette(t)
+	assert.Equal(t, AluettePlayerCnt, g.GetPlayerCnt())
+	assert.Len(t, g.GetPlayers(), AluettePlayerCnt)
+	assert.Nil(t, g.GetPlayer(-1))
+	assert.Nil(t, g.GetPlayer(AluettePlayerCnt))
+	assert.Equal(t, -1, g.GetLastTrickWinner())
+	assert.Equal(t, (g.GetDealerIdx()+1)%AluettePlayerCnt, g.GetLeadPlayerIdx(),
+		"the seat left of the dealer leads the first trick")
+	assert.Nil(t, g.GetValidPlayIndices(-1))
+	assert.NotEmpty(t, g.GetPlayableIndices(0))
+
+	cfg := AluetteConfig{CpuDifficulty: AluetteCpuDifficultyHard, TargetPoints: 10}
+	g.SetConfig(cfg)
+	assert.Equal(t, cfg, g.GetConfig())
+	assert.Empty(t, g.GetActionLog())
+}
+
+func TestAluette_ConfigValidation(t *testing.T) {
+	assert.NoError(t, DefaultAluetteConfig().Validate())
+	assert.Error(t, AluetteConfig{CpuDifficulty: 99, TargetPoints: 6}.Validate())
+	assert.Error(t, AluetteConfig{TargetPoints: 0}.Validate())
+}
+
+// Worker のセッションは毎リクエスト JSON を往復する。
+func TestAluette_SurvivesRoundTrippingEveryRequest(t *testing.T) {
+	g := NewDefaultAluette()
+	g.SetRand(rand.New(rand.NewSource(7)))
+	g.Reset()
+	roundTrip := func(src *Aluette) *Aluette {
+		t.Helper()
+		data, err := src.MarshalJSON()
+		require.NoError(t, err)
+		var out Aluette
+		require.NoError(t, out.UnmarshalJSON(data))
+		return &out
+	}
+	g = roundTrip(g)
+	for range AluetteTrickCount {
+		for range AluettePlayerCnt {
+			if g.IsHumanTurn() {
+				valid := g.GetValidPlayIndices(g.GetCurrentPlayerIdx())
+				require.NotEmpty(t, valid)
+				require.NoError(t, g.PlayerPlay(valid[0]))
+			} else {
+				g.CpuPlay()
+			}
+			g = roundTrip(g)
+		}
+		g.ResolveTrick()
+		g = roundTrip(g)
+		if g.GetPhase() == AluettePhaseTrickEnd {
+			g.NextTrick()
+			g = roundTrip(g)
+		}
+	}
+	tricks := 0
+	for _, n := range g.GetRoundTricks() {
+		tricks += n
+	}
+	require.Equal(t, AluetteTrickCount, tricks, "tricks were lost across the round trips")
+}
+
+// **復元後に SetRand を呼ばずに Easy の CPU を回す。**Worker の復元経路には
+// その一行が無い (#4663)。
+func TestAluette_RestoredGameSurvivesEasyCpu(t *testing.T) {
+	src := NewDefaultAluette()
+	src.Reset()
+	cfg := src.GetConfig()
+	cfg.CpuDifficulty = AluetteCpuDifficultyEasy
+	src.SetConfig(cfg)
+	data, err := src.MarshalJSON()
+	require.NoError(t, err)
+
+	var restored Aluette
+	require.NoError(t, restored.UnmarshalJSON(data))
+	restored.SetCurrentPlayerIdx(1)
+	assert.NotPanics(t, func() { restored.CpuPlay() })
+	assert.Len(t, restored.GetCurrentTrick(), 1)
+}
+
+func TestAluette_UnmarshalRejectsBadState(t *testing.T) {
+	cases := map[string]string{
+		"not json":                 `{`,
+		"wrong player count":       `{"pl":[],"rn":1,"tn":1}`,
+		"trick number too high":    `{"pl":[{},{},{},{}],"rn":1,"tn":99,"cfg":{"cd":1,"tp":6}}`,
+		"nil trick card":           `{"pl":[{},{},{},{}],"rn":1,"tn":1,"ct":[null],"cfg":{"cd":1,"tp":6}}`,
+		"winner team out of range": `{"pl":[{},{},{},{}],"rn":1,"tn":1,"wt":5,"cfg":{"cd":1,"tp":6}}`,
+		"invalid config":           `{"pl":[{},{},{},{}],"rn":1,"tn":1,"cfg":{"cd":1,"tp":0}}`,
+	}
+	for name, payload := range cases {
+		t.Run(name, func(t *testing.T) {
+			var got Aluette
+			assert.Error(t, got.UnmarshalJSON([]byte(payload)))
+		})
+	}
+}
+
+// TestAluette_LuetteTableIsTheSameSourceAsRank はテーブル公開が序列とずれないことを見る。
+//
+// **UI に配る表とドメインの強さ判定が別々に育つのを防ぐ。**表の順序が
+// AluetteRank の降順と一致していなければ、画面の序列表は嘘になる。
+func TestAluette_LuetteTableIsTheSameSourceAsRank(t *testing.T) {
+	table := AluetteLuetteTable()
+	assert.Len(t, table, 6)
+
+	prev := 1 << 30
+	for _, l := range table {
+		c := NewCard(l.Design, l.Value, true)
+		assert.Equal(t, l.Name, AluetteLuetteName(c), "%s の同定がテーブルとずれている", l.Name)
+		r := AluetteRank(c)
+		assert.Less(t, r, prev, "%s がテーブル順どおりに弱くなっていない", l.Name)
+		prev = r
+	}
+
+	// 返した表を書き換えても内部表は動かない。
+	table[0].Name = "TAMPERED"
+	assert.Equal(t, "Monsieur", AluetteLuetteTable()[0].Name)
+}
+
+// TestAluette_LeadPlayerIdxFollowsDealer は配り直しごとのリード席を見る。
+func TestAluette_LeadPlayerIdxFollowsDealer(t *testing.T) {
+	g := NewDefaultAluette()
+	g.Reset()
+	assert.Equal(t, (g.GetDealerIdx()+1)%AluettePlayerCnt, g.GetLeadPlayerIdx())
+	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetCurrentPlayerIdx())
 }

@@ -107,6 +107,29 @@ func AluetteLuetteName(c *Card) string {
 	return ""
 }
 
+// AluetteLuetteInfo は表示用に公開するリュエット 1 枚の定義。
+type AluetteLuetteInfo struct {
+	// Design スート (3=Copas, 4=Oros)
+	Design int `json:"design"`
+	// Value ランク
+	Value int `json:"value"`
+	// Name 呼び名 (Monsieur, Madame, ...)
+	Name string `json:"name"`
+}
+
+// AluetteLuetteTable はリュエット 6 枚を**強い順**に返す。
+//
+// **UI 側で 6 枚を書き写させないための出口。**どの札がリュエットかを知らずに
+// アリュエットは遊べない一方、序列表をフロントに複製すると必ずドメインとずれる。
+// 表そのものを配ることで SSoT をドメインに残す。
+func AluetteLuetteTable() []AluetteLuetteInfo {
+	out := make([]AluetteLuetteInfo, 0, len(aluetteLuettes))
+	for _, l := range aluetteLuettes {
+		out = append(out, AluetteLuetteInfo{Design: l.design, Value: l.value, Name: l.name})
+	}
+	return out
+}
+
 // AluetteRank は札の強さを返す。**数値が大きいほど強い。**
 //
 // リュエット 6 枚が最上位を占め、残りは aluetteOrdinaryOrder の順。
