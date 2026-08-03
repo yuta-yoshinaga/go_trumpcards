@@ -21,6 +21,8 @@
 | Add/modify exported TS symbol | Ensure TSDoc comment (`/** description */`) is present |
 | Change backend struct/interface/domain logic | Update corresponding UML diagrams in [`docs/design/backend.md`](design/backend.md) (class, sequence, state machine) |
 | Change frontend component/hook/API/type | Update corresponding UML diagrams in [`docs/design/frontend.md`](design/frontend.md) (class, sequence, state machine) |
+| Add/replace a bundled asset (card art, sound, icon, font) | Record its source and license in [`public/images/README.md`](../public/images/README.md) or [`frontend/public/sounds/README.md`](../frontend/public/sounds/README.md) **in the same commit**. The asset must be CC0 or public domain — "royalty-free"/著作権フリー is not a license and usually forbids the redistribution that shipping under MIT performs |
+| Add a game whose name belongs to a live commercial product or a licensed casino table game | Add the name and its owner to [`TRADEMARKS.md`](../TRADEMARKS.md), or give the game a generic display title. Traditional and folk games need nothing |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 
