@@ -26,6 +26,8 @@
 package domain
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -873,6 +875,165 @@ func (g *Vira) ForcePassForTest(idx int) error {
 		return NewDomainError(ErrInvalidPlay, "席が範囲外です")
 	}
 	return g.applyBid(idx, ViraBidPass)
+}
+
+// viraJSON is the JSON wire format for Vira.
+//
+// **全フィールドが非公開なので専用のコーデックが要る。**これを省くと
+// Cloudflare Worker のセッション復元が空のゲームを返し、リクエストのたびに
+// 手札も持ち点も **ポットも** 消える。ポットは局をまたいで積み上がるので、
+// 落とすと失敗が続いたときの見返りが毎回リセットされる。
+//
+// rng / shuffled は載せない —— どちらも復元後に張り直せばよい。
+type viraJSON struct {
+	TrumpCards       *TrumpCards            `json:"tc"`
+	Players          []*ViraPlayer          `json:"pl"`
+	Config           ViraConfig             `json:"cfg"`
+	Phase            ViraPhase              `json:"ph"`
+	RoundNumber      int                    `json:"rn"`
+	TrickNumber      int                    `json:"tn"`
+	CurrentPlayerIdx int                    `json:"cpi"`
+	CurrentTrick     []*TrickCard           `json:"ct"`
+	LeadPlayerIdx    int                    `json:"lpi"`
+	DealerIdx        int                    `json:"di"`
+	Bids             [ViraPlayerCnt]ViraBid `json:"bd"`
+	BidDone          [ViraPlayerCnt]bool    `json:"bdn"`
+	DeclarerIdx      int                    `json:"dci"`
+	Contract         ViraBid                `json:"con"`
+	TrumpSuit        int                    `json:"ts"`
+	Pot              int                    `json:"pot"`
+	PlayerScores     [ViraPlayerCnt]int     `json:"ps"`
+	RoundTricks      [ViraPlayerCnt]int     `json:"rt"`
+	LastRoundDelta   [ViraPlayerCnt]int     `json:"lrd"`
+	LastRoundMade    bool                   `json:"lrm"`
+	GameEndFlag      bool                   `json:"gef"`
+	WinnerPlayer     int                    `json:"wp"`
+	ActionLog        []*ActionLogEntry      `json:"al"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (g *Vira) MarshalJSON() ([]byte, error) {
+	return json.Marshal(viraJSON{
+		TrumpCards:       g.trumpCards,
+		Players:          g.players,
+		Config:           g.config,
+		Phase:            g.phase,
+		RoundNumber:      g.roundNumber,
+		TrickNumber:      g.trickNumber,
+		CurrentPlayerIdx: g.currentPlayerIdx,
+		CurrentTrick:     g.currentTrick,
+		LeadPlayerIdx:    g.leadPlayerIdx,
+		DealerIdx:        g.dealerIdx,
+		Bids:             g.bids,
+		BidDone:          g.bidDone,
+		DeclarerIdx:      g.declarerIdx,
+		Contract:         g.contract,
+		TrumpSuit:        g.trumpSuit,
+		Pot:              g.pot,
+		PlayerScores:     g.playerScores,
+		RoundTricks:      g.roundTricks,
+		LastRoundDelta:   g.lastRoundDelta,
+		LastRoundMade:    g.lastRoundMade,
+		GameEndFlag:      g.gameEndFlag,
+		WinnerPlayer:     g.winnerPlayer,
+		ActionLog:        g.actionLog,
+	})
+}
+
+// viraMaxSliceLen caps slice sizes during deserialisation.
+const viraMaxSliceLen = 5000
+
+// errViraOversized is the single sentinel error for oversized input arrays.
+var errViraOversized = errors.New("vira: input array exceeds maximum allowed size")
+
+// errViraInvalidPlayers is returned when restored state lacks exactly ViraPlayerCnt players.
+var errViraInvalidPlayers = errors.New("vira: invalid player count")
+
+// errViraInvalidTrick is returned when a restored trick card is nil/out of range.
+var errViraInvalidTrick = errors.New("vira: invalid trick card")
+
+// errViraInvalidState is returned when a restored index/state field is out of range.
+var errViraInvalidState = errors.New("vira: invalid state values in json")
+
+// UnmarshalJSON implements json.Unmarshaler.
+//
+// **ポットは負にできない。**精算はポットから配るので、負の値を受け入れると
+// 復元したセッションが点を刷り続ける。
+func (g *Vira) UnmarshalJSON(data []byte) error {
+	var j viraJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > viraMaxSliceLen || len(j.CurrentTrick) > viraMaxSliceLen ||
+		len(j.ActionLog) > viraMaxSliceLen {
+		return errViraOversized
+	}
+	if len(j.Players) != ViraPlayerCnt {
+		return errViraInvalidPlayers
+	}
+	for _, p := range j.Players {
+		if p == nil {
+			return errViraInvalidPlayers
+		}
+	}
+	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= ViraPlayerCnt ||
+		j.LeadPlayerIdx < 0 || j.LeadPlayerIdx >= ViraPlayerCnt ||
+		j.DealerIdx < 0 || j.DealerIdx >= ViraPlayerCnt ||
+		j.DeclarerIdx < -1 || j.DeclarerIdx >= ViraPlayerCnt ||
+		j.WinnerPlayer < -1 || j.WinnerPlayer >= ViraPlayerCnt ||
+		j.TrumpSuit < 0 || j.TrumpSuit > CardDesignDiamond ||
+		j.Pot < 0 ||
+		j.Contract < ViraBidPass || j.Contract > ViraBidVira ||
+		j.RoundNumber < 1 ||
+		j.TrickNumber < 1 || j.TrickNumber > ViraTrickCount ||
+		j.Phase < ViraPhaseBid || j.Phase > ViraPhaseGameEnd {
+		return errViraInvalidState
+	}
+	for _, b := range j.Bids {
+		if b < ViraBidPass || b > ViraBidVira {
+			return errViraInvalidState
+		}
+	}
+	for _, tc := range j.CurrentTrick {
+		if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= ViraPlayerCnt {
+			return errViraInvalidTrick
+		}
+	}
+	if err := j.Config.Validate(); err != nil {
+		return err
+	}
+	g.trumpCards = j.TrumpCards
+	if g.trumpCards == nil {
+		// **NewTrumpCards(0) —— Belote デッキではない。**Vira は 52 枚デッキを使う
+		// ので、32 枚デッキで埋めると復元後に配れない札が出る。
+		g.trumpCards = NewTrumpCards(0)
+	}
+	g.players = j.Players
+	g.config = j.Config
+	g.phase = j.Phase
+	g.roundNumber = j.RoundNumber
+	g.trickNumber = j.TrickNumber
+	g.currentPlayerIdx = j.CurrentPlayerIdx
+	g.currentTrick = j.CurrentTrick
+	if g.currentTrick == nil {
+		g.currentTrick = make([]*TrickCard, 0)
+	}
+	g.leadPlayerIdx = j.LeadPlayerIdx
+	g.dealerIdx = j.DealerIdx
+	g.bids = j.Bids
+	g.bidDone = j.BidDone
+	g.declarerIdx = j.DeclarerIdx
+	g.contract = j.Contract
+	g.trumpSuit = j.TrumpSuit
+	g.pot = j.Pot
+	g.playerScores = j.PlayerScores
+	g.roundTricks = j.RoundTricks
+	g.lastRoundDelta = j.LastRoundDelta
+	g.lastRoundMade = j.LastRoundMade
+	g.gameEndFlag = j.GameEndFlag
+	g.winnerPlayer = j.WinnerPlayer
+	g.actionLog = j.ActionLog
+	return nil
 }
 
 // ViraHint ヒント情報。

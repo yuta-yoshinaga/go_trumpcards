@@ -46,7 +46,7 @@ func (c *ViraCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid is required (0=Pass, 1=Six, 2=Misère, 3=Seven, 4=Eight).",
+				return cuiutil.WithParsedInt(args, "Bid is required (0=Pass, 1=Gask, 2=Solo, 3=Misère, 4=Vira).",
 					"Invalid bid: %s. Please enter 0-4.",
 					int(domain.ViraBidPass), int(domain.ViraBidVira), c.di.Bid)
 			case "pass":

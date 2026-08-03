@@ -62,7 +62,7 @@ func viraPlayerStr(g interfaces.ViraGame, idx int) string {
 	return b.String()
 }
 
-// ViraCuiPresenter renders the Préférence CUI view.
+// ViraCuiPresenter renders the Vira CUI view.
 type ViraCuiPresenter struct{}
 
 // Output renders the current game state for the active locale.
@@ -72,6 +72,11 @@ func (p *ViraCuiPresenter) Output(g interfaces.ViraGame, lastErr error) string {
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"trick", strconv.Itoa(g.GetTrickNumber()),
 			"trump", viraTrumpStr(g.GetTrumpSuit())) + "\n")
+
+		// **ポットは毎フレーム出す。**局をまたいで積み上がる唯一の数字で、
+		// 精算はここから配られる。Web 版は出しているので、CUI で落とすと
+		// 同じ局面が二つの画面で別物に見える。
+		b.WriteString(i18n.Tf("vira.potLine", "pot", strconv.Itoa(g.GetPot())) + "\n")
 
 		if g.GetDeclarerIdx() >= 0 {
 			declIdx := g.GetDeclarerIdx()
@@ -180,7 +185,7 @@ func (p *ViraCuiPresenter) writeRoundEndResult(b *strings.Builder, g interfaces.
 // the ladder changes; `ViraBidTarget` is exported for exactly this reason.
 func viraContractTarget(bid domain.ViraBid) int { return domain.ViraBidTarget(bid) }
 
-// HintOutput emits the current Préférence hint.
+// HintOutput emits the current Vira hint.
 func (p *ViraCuiPresenter) HintOutput(g interfaces.ViraGame) string {
 	hint := g.GetHint()
 	if hint == nil {
@@ -207,13 +212,17 @@ func (p *ViraCuiPresenter) HintOutput(g interfaces.ViraGame) string {
 		"reason", reason)) + "\n"
 }
 
-// viraHintReasonKeys maps Préférence-specific hint-reason identifiers to i18n keys.
+// viraHintReasonKeys maps Vira-specific hint-reason identifiers to i18n keys.
+//
+// **ここは Vira.playHintReason が返す 6 種と 1 対 1 で対応させる。**外れた
+// 理由は hintReasonStr の既定でキー文字列そのものが画面に出る。
 var viraHintReasonKeys = map[string]string{
-	"lead_low":    "vira.hintReasonLeadLow",
-	"lead_high":   "vira.hintReasonLeadHigh",
-	"follow_win":  "vira.hintReasonFollowWin",
-	"follow_duck": "vira.hintReasonFollowDuck",
-	"discard_low": "vira.hintReasonDiscardLow",
+	"lead_high":    "vira.hintReasonLeadHigh",
+	"lead_low":     "vira.hintReasonLeadLow",
+	"follow_win":   "vira.hintReasonFollowWin",
+	"follow_block": "vira.hintReasonFollowBlock",
+	"misere_duck":  "vira.hintReasonMisereDuck",
+	"misere_force": "vira.hintReasonMisereForce",
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

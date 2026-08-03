@@ -63,11 +63,12 @@
   },
   "hintAvailable": "Hint",
   "hint": {
-    "lead_low": "Lead a low card to conserve strength",
-    "lead_high": "Lead a strong card to seize the initiative",
-    "follow_win": "Win this trick",
-    "follow_duck": "Cannot/should not win — duck",
-    "discard_low": "Cannot follow suit — discard a low card"
+    "lead_high": "As declarer, lead a strong card to start collecting the tricks the contract needs",
+    "lead_low": "As a defender, lead a low card and hold your strength back",
+    "follow_win": "As declarer, go for this trick",
+    "follow_block": "As a defender, block the declarer from taking this trick",
+    "misere_duck": "Misère — duck with a low card so you take no trick at all",
+    "misere_force": "Force a trick onto the Misère declarer"
   },
   "tutorial": {
     "info": "Round, contract (declarer and type), trump, and each player's score are shown here. The first player to reach the target points (default 30) wins. The ★ marks the declarer.",

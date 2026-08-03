@@ -158,3 +158,59 @@ func TestVira_ConfigRejectsRoundsNotDivisibleByPlayers(t *testing.T) {
 func TestVira_ConfigRejectsOutOfRangeDifficulty(t *testing.T) {
 	assert.Error(t, ViraConfig{CpuDifficulty: 99, TargetRounds: 6}.Validate())
 }
+
+// The whole game state lives in unexported fields, so a session that round-trips
+// through KV on the Worker only survives if the custom codec carries it. Plain
+// json.Marshal on the struct would emit "{}" and silently reset every hand.
+func TestVira_JSONRoundTripPreservesState(t *testing.T) {
+	src := NewDefaultVira()
+	src.SetRand(rand.New(rand.NewSource(11)))
+	src.Reset()
+
+	data, err := src.MarshalJSON()
+	assert.NoError(t, err)
+
+	var got Vira
+	assert.NoError(t, got.UnmarshalJSON(data))
+	assert.Equal(t, src.GetPhase(), got.GetPhase())
+	assert.Equal(t, src.GetDealerIdx(), got.GetDealerIdx())
+	assert.Equal(t, src.GetPlayerScores(), got.GetPlayerScores())
+	assert.Equal(t, ViraPlayerCnt, got.GetPlayerCnt())
+	for i := 0; i < ViraPlayerCnt; i++ {
+		assert.Equal(t, src.GetPlayer(i).GetCardsSize(), got.GetPlayer(i).GetCardsSize())
+	}
+}
+
+// The pot carries forward between rounds — including through an all-pass round —
+// so dropping it from the wire format would reset the accumulated stake on every
+// Worker request, which is the one number a Vira player is tracking.
+func TestVira_JSONRoundTripPreservesThePot(t *testing.T) {
+	src := NewDefaultVira()
+	src.SetRand(rand.New(rand.NewSource(11)))
+	src.Reset()
+	assert.Positive(t, src.GetPot(), "the ante must have seeded the pot")
+
+	data, err := src.MarshalJSON()
+	assert.NoError(t, err)
+	var got Vira
+	assert.NoError(t, got.UnmarshalJSON(data))
+	assert.Equal(t, src.GetPot(), got.GetPot())
+}
+
+func TestVira_UnmarshalRejectsBadState(t *testing.T) {
+	cases := map[string]string{
+		"not json":              `{`,
+		"no players":            `{"pl":[],"rn":1,"tn":1}`,
+		"negative pot":          `{"pl":[{},{},{}],"rn":1,"tn":1,"pot":-1,"cfg":{"cd":1,"tr":6}}`,
+		"trick number too high": `{"pl":[{},{},{}],"rn":1,"tn":99,"cfg":{"cd":1,"tr":6}}`,
+		"bid out of range":      `{"pl":[{},{},{}],"rn":1,"tn":1,"bd":[9,0,0],"cfg":{"cd":1,"tr":6}}`,
+		"nil trick card":        `{"pl":[{},{},{}],"rn":1,"tn":1,"ct":[null],"cfg":{"cd":1,"tr":6}}`,
+		"rounds not a multiple": `{"pl":[{},{},{}],"rn":1,"tn":1,"cfg":{"cd":1,"tr":7}}`,
+	}
+	for name, payload := range cases {
+		t.Run(name, func(t *testing.T) {
+			var got Vira
+			assert.Error(t, got.UnmarshalJSON([]byte(payload)))
+		})
+	}
+}

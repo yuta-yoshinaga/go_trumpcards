@@ -79,7 +79,9 @@ type ViraWebOutputConfig struct {
 func (c *ViraWebConfig) ToConfig() domain.ViraConfig {
 	cfg := domain.DefaultViraConfig()
 	cfg.CpuDifficulty = domain.ViraCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.ViraCpuDifficultyEasy), int(domain.ViraCpuDifficultyHard), int(cfg.CpuDifficulty)))
-	webutil.ApplyBoundedInt(&cfg.TargetRounds, c.TargetRounds, 1, 1000000)
+	// **下限は ViraPlayerCnt。**1 を許すと境界検査は通るが ViraConfig.Validate が
+	// 落とすので、リセットが黙って無視される。倍数条件は Validate 側が見る。
+	webutil.ApplyBoundedInt(&cfg.TargetRounds, c.TargetRounds, domain.ViraPlayerCnt, 1000000)
 	return cfg
 }
 
