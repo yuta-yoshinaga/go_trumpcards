@@ -162,14 +162,20 @@ func aluetteTrickWinnerOf(trick []*TrickCard) int {
 	if len(trick) == 0 {
 		return 0
 	}
-	winIdx, winRank := trick[0].PlayerIdx, -1
+	winIdx, winRank := -1, -1
 	for _, tc := range trick {
 		if tc == nil {
 			continue
 		}
+		if winIdx < 0 {
+			winIdx = tc.PlayerIdx
+		}
 		if r := AluetteRank(tc.Card); r > winRank {
 			winRank, winIdx = r, tc.PlayerIdx
 		}
+	}
+	if winIdx < 0 {
+		return 0
 	}
 	return winIdx
 }
@@ -449,31 +455,84 @@ func (g *Aluette) CpuPlay() {
 }
 
 // cpuSelectPlayCard CPU が出す札の位置を選ぶ。
+//
+// **難易度の差は「リュエットをいつ使うか」に出る。**強さが絶対（切り札もフォロー
+// 義務も無い）なので、リュエットは**いつ出しても勝つ**。つまり抱えておく損が無く、
+// 使い所を選べる側が強い。
+//
+//   - Easy:   ランダム。
+//   - Normal: 常に最強札を出す。取れる時は取るが、3 を出せば済む場面で
+//     Monsieur を切ってしまう。
+//   - Hard:   リードは最弱札で相手の強い札を吐かせ、フォローは**勝てる中で
+//     最も弱い札**で取る。5 トリック中 3 勝すればよいので、確実に勝てる札を
+//     終盤まで残せる側が有利。
 func (g *Aluette) cpuSelectPlayCard(playerIdx int, valid []int) int {
 	p := g.players[playerIdx]
 	if g.config.CpuDifficulty == AluetteCpuDifficultyEasy {
 		return valid[g.rng.Intn(len(valid))]
 	}
-	best, bestRank := valid[0], -1
-	for _, i := range valid {
-		if r := AluetteRank(p.GetCard(i)); r > bestRank {
-			best, bestRank = i, r
-		}
-	}
+	hard := g.config.CpuDifficulty == AluetteCpuDifficultyHard
+
 	if len(g.currentTrick) == 0 {
-		return best
+		if hard {
+			return g.lowestOf(playerIdx, valid)
+		}
+		return g.highestOf(playerIdx, valid)
 	}
 	// 味方が既に勝っているトリックは奪わない。
 	winIdx := aluetteTrickWinnerOf(g.currentTrick)
 	if AluetteTeamOf(winIdx) == AluetteTeamOf(playerIdx) {
 		return g.lowestOf(playerIdx, valid)
 	}
-	trial := append(append([]*TrickCard(nil), g.currentTrick...),
-		&TrickCard{PlayerIdx: playerIdx, Card: p.GetCard(best)})
-	if aluetteTrickWinnerOf(trial) == playerIdx {
+	if hard {
+		if i, ok := g.cheapestWinnerOf(playerIdx, valid); ok {
+			return i
+		}
+		return g.lowestOf(playerIdx, valid)
+	}
+	best := g.highestOf(playerIdx, valid)
+	if g.winsTrick(playerIdx, p.GetCard(best)) {
 		return best
 	}
 	return g.lowestOf(playerIdx, valid)
+}
+
+// winsTrick その札を今出したらトリックを取れるかを返す。
+func (g *Aluette) winsTrick(playerIdx int, card *Card) bool {
+	trial := append(append([]*TrickCard(nil), g.currentTrick...),
+		&TrickCard{PlayerIdx: playerIdx, Card: card})
+	return aluetteTrickWinnerOf(trial) == playerIdx
+}
+
+// cheapestWinnerOf 勝てる札のうち最も弱いものの位置を返す。第2返り値は勝てる札の有無。
+//
+// **勝つのに Monsieur は要らない。**リュエットはいつ出しても勝つので、3 で足りる
+// トリックに最強札を使うと、その 1 枚ぶんだけ後半の勝てるトリックが減る。
+func (g *Aluette) cheapestWinnerOf(playerIdx int, valid []int) (int, bool) {
+	p := g.players[playerIdx]
+	best, bestRank, found := 0, 1<<31-1, false
+	for _, i := range valid {
+		c := p.GetCard(i)
+		if c == nil || !g.winsTrick(playerIdx, c) {
+			continue
+		}
+		if r := AluetteRank(c); r < bestRank {
+			best, bestRank, found = i, r, true
+		}
+	}
+	return best, found
+}
+
+// highestOf 候補のうち最も強い札の位置を返す。
+func (g *Aluette) highestOf(playerIdx int, valid []int) int {
+	p := g.players[playerIdx]
+	high, highRank := valid[0], -1
+	for _, i := range valid {
+		if r := AluetteRank(p.GetCard(i)); r > highRank {
+			high, highRank = i, r
+		}
+	}
+	return high
 }
 
 // lowestOf 候補のうち最も弱い札の位置を返す。

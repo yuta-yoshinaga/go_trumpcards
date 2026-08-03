@@ -485,3 +485,115 @@ func TestAluette_LeadPlayerIdxFollowsDealer(t *testing.T) {
 	assert.Equal(t, (g.GetDealerIdx()+1)%AluettePlayerCnt, g.GetLeadPlayerIdx())
 	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetCurrentPlayerIdx())
 }
+
+// TestAluette_DefaultTargetPointsMatchesTheDocumentedValue は既定の到達点を固定する。
+//
+// **数値を誰も検査していないと黙ってずれる。**CUI は DefaultAluetteConfig を使う
+// 一方、Web はフロントの既定を送るので、片方だけ動かしてもローカルでは気づけない
+// (PR #4666 のレビュー指摘)。マニュアルと docs/games.md も 5 点先取と書いている。
+func TestAluette_DefaultTargetPointsMatchesTheDocumentedValue(t *testing.T) {
+	assert.Equal(t, 5, DefaultAluetteTargetPoints)
+	assert.Equal(t, DefaultAluetteTargetPoints, DefaultAluetteConfig().TargetPoints)
+	assert.NoError(t, DefaultAluetteConfig().Validate())
+}
+
+// TestAluette_HardKeepsItsLuettesForLaterTricks は Hard が Normal と別物であることを見る。
+//
+// **選べる難易度が何も変えないなら、それは嘘の選択肢。**強さが絶対なので
+// リュエットはいつ出しても勝つ ——「3 で足りる場面で Monsieur を切らない」かどうかが
+// 唯一の腕の差になる。
+func TestAluette_HardKeepsItsLuettesForLaterTricks(t *testing.T) {
+	setup := func(diff AluetteCpuDifficulty) *Aluette {
+		g := NewDefaultAluette()
+		cfg := DefaultAluetteConfig()
+		cfg.CpuDifficulty = diff
+		g.SetConfig(cfg)
+		g.Reset()
+		// 席 1 の手札を固定する。序列は 3 > 2 > A > 王 > 騎 > 従 > 9 > … > 4 なので、
+		// リードされた 6 に勝てるのは Monsieur と剣の A の 2 枚。剣の 4 は負ける。
+		p := g.players[1]
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+		p.AddCard(NewCard(4, 3, false)) // Monsieur — 最強
+		p.AddCard(NewCard(1, 1, false)) // 剣の A — 勝てるが安い
+		p.AddCard(NewCard(1, 4, false)) // 剣の 4 — 最弱、勝てない
+		// 席 0 (相手チーム) が中位の札でリード済みの状態にする。
+		g.currentTrick = []*TrickCard{{PlayerIdx: 0, Card: NewCard(1, 6, false)}}
+		g.currentPlayerIdx = 1
+		return g
+	}
+
+	// Hard は 5 で足りるので Monsieur を温存する。
+	hard := setup(AluetteCpuDifficultyHard)
+	pick := hard.cpuSelectPlayCard(1, []int{0, 1, 2})
+	assert.Equal(t, "", AluetteLuetteName(hard.players[1].GetCard(pick)),
+		"Hard がリュエットを無駄打ちしている")
+	assert.True(t, hard.winsTrick(1, hard.players[1].GetCard(pick)), "それでもトリックは取る")
+
+	// Normal は最強札を出す。ここが両者の差。
+	normal := setup(AluetteCpuDifficultyNormal)
+	pick = normal.cpuSelectPlayCard(1, []int{0, 1, 2})
+	assert.Equal(t, "Monsieur", AluetteLuetteName(normal.players[1].GetCard(pick)))
+}
+
+// TestAluette_HardLeadsLowToDrawOutStrength は Hard のリード方針を見る。
+func TestAluette_HardLeadsLowToDrawOutStrength(t *testing.T) {
+	g := NewDefaultAluette()
+	cfg := DefaultAluetteConfig()
+	cfg.CpuDifficulty = AluetteCpuDifficultyHard
+	g.SetConfig(cfg)
+	g.Reset()
+	p := g.players[1]
+	for p.GetCardsSize() > 0 {
+		p.RemoveCard(0)
+	}
+	p.AddCard(NewCard(4, 3, false)) // Monsieur
+	p.AddCard(NewCard(1, 4, false)) // 最弱
+	g.currentTrick = nil
+
+	pick := g.cpuSelectPlayCard(1, []int{0, 1})
+	assert.Equal(t, 4, p.GetCard(pick).GetValue(), "Hard がリードでリュエットを切っている")
+
+	// Normal は逆に最強札でリードする。
+	cfg.CpuDifficulty = AluetteCpuDifficultyNormal
+	g.SetConfig(cfg)
+	pick = g.cpuSelectPlayCard(1, []int{0, 1})
+	assert.Equal(t, "Monsieur", AluetteLuetteName(p.GetCard(pick)))
+}
+
+// TestAluette_CpuNeverOverplaysItsPartner は 3 難易度すべてで味方を奪わないことを見る
+// (Easy はランダムなので対象外)。
+func TestAluette_CpuNeverOverplaysItsPartner(t *testing.T) {
+	for _, diff := range []AluetteCpuDifficulty{AluetteCpuDifficultyNormal, AluetteCpuDifficultyHard} {
+		g := NewDefaultAluette()
+		cfg := DefaultAluetteConfig()
+		cfg.CpuDifficulty = diff
+		g.SetConfig(cfg)
+		g.Reset()
+		p := g.players[3]
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+		p.AddCard(NewCard(4, 3, false)) // Monsieur
+		p.AddCard(NewCard(1, 4, false))
+		// 席 1 (席 3 の味方) が Madame で勝っている。
+		g.currentTrick = []*TrickCard{
+			{PlayerIdx: 0, Card: NewCard(1, 6, false)},
+			{PlayerIdx: 1, Card: NewCard(3, 3, false)},
+			{PlayerIdx: 2, Card: NewCard(2, 7, false)},
+		}
+		g.currentPlayerIdx = 3
+
+		pick := g.cpuSelectPlayCard(3, []int{0, 1})
+		assert.Equal(t, 4, p.GetCard(pick).GetValue(),
+			"difficulty %d: 味方が勝っているのに強い札を重ねている", diff)
+	}
+}
+
+// TestAluette_TrickWinnerSurvivesNilEntries はトリックの先頭が nil でも落ちないことを見る。
+func TestAluette_TrickWinnerSurvivesNilEntries(t *testing.T) {
+	assert.Equal(t, 0, aluetteTrickWinnerOf(nil))
+	assert.Equal(t, 0, aluetteTrickWinnerOf([]*TrickCard{nil, nil}))
+	assert.Equal(t, 2, aluetteTrickWinnerOf([]*TrickCard{nil, {PlayerIdx: 2, Card: NewCard(1, 4, false)}}))
+}

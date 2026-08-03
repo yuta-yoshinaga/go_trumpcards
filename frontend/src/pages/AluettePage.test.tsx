@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { aluetteApi } from '../api/gameApi';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeAluetteState } from '../test/stateFactories';
 import { AluettePage } from './AluettePage';
@@ -147,6 +148,21 @@ describe('AluettePage', () => {
     expect(screen.queryByRole('button', { name: 'パス' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '捨てる' })).not.toBeInTheDocument();
     expect(screen.queryByTestId('bid-0')).not.toBeInTheDocument();
+  });
+
+  it('shows the shared ErrorAlert with a retry button when a play fails', async () => {
+    renderWithProviders(<AluettePage />);
+    await screen.findByRole('button', { name: '出す' });
+    fireEvent.click(screen.getByRole('button', { name: '♦ 3' }));
+
+    mockExec.mockRejectedValueOnce(new Error('boom'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(NETWORK_ERROR_MESSAGE());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playState);
+    fireEvent.click(screen.getByRole('button', { name: '再試行' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
 
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回

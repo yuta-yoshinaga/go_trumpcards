@@ -85,6 +85,9 @@ func (c *AluetteWebConfig) ToConfig() domain.AluetteConfig {
 	cfg := domain.DefaultAluetteConfig()
 	cfg.CpuDifficulty = domain.AluetteCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
 		int(domain.AluetteCpuDifficultyEasy), int(domain.AluetteCpuDifficultyHard), int(cfg.CpuDifficulty)))
+	// **上限が兄弟ゲームより 3 桁小さいのは意図的。**ここはトリック点の合計ではなく
+	// 「先取するメーヌ数」で、1 メーヌ = 5 トリック。1,000 でも 5,000 トリック分あり、
+	// 得点そのものを積む Solo Whist / Tysiac の 1,000,000 と同じ尺度では読めない。
 	webutil.ApplyBoundedInt(&cfg.TargetPoints, c.TargetPoints, 1, 1000)
 	return cfg
 }

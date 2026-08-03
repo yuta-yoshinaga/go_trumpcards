@@ -26,9 +26,16 @@ type AluetteConfig struct {
 	TargetPoints int `json:"tp"`
 }
 
+// DefaultAluetteTargetPoints 既定の到達点。
+//
+// **画面・マニュアル・フロントの既定と同じ値であること。**ここだけ動かすと
+// CUI は 6 点先取なのにマニュアルは 5 点先取、という食い違いが黙って生まれる
+// (PR #4666 のレビューで実際に指摘された)。
+const DefaultAluetteTargetPoints = 5
+
 // DefaultAluetteConfig 既定設定を返す。
 func DefaultAluetteConfig() AluetteConfig {
-	return AluetteConfig{CpuDifficulty: AluetteCpuDifficultyNormal, TargetPoints: 6}
+	return AluetteConfig{CpuDifficulty: AluetteCpuDifficultyNormal, TargetPoints: DefaultAluetteTargetPoints}
 }
 
 // Validate 設定値を検証する。
