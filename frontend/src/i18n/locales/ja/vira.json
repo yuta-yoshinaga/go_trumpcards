@@ -1,0 +1,88 @@
+{
+  "phase": {
+    "bid": "ビッド",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetPoints": "目標ポイント",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "trump": "切り札: {{suit}}",
+  "noTrump": "なし",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "currentTrick": "現在のトリック",
+  "trickEmpty": "(まだカードがありません)",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "declarerBadge": "宣言者",
+  "score": "得点: {{score}}",
+  "playerScore": "{{name}}: {{score}}点",
+  "contract": "契約: {{contract}}",
+  "contractUndecided": "契約: 未決定",
+  "declarerLine": "宣言者: {{name}} — {{contract}}",
+  "bidLabel": "入札",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "target": "規定局数",
+  "bidPrompt": "入札してください（上回る入札のみ可）:",
+  "bid": {
+    "pass": "パス",
+    "gask": "ガスク (7)",
+    "solo": "ソロ (8)",
+    "misere": "ミゼール (0)",
+    "vira": "ヴィーラ (10)"
+  },
+  "contractName": {
+    "pass": "パス",
+    "gask": "ガスク (7トリック)",
+    "solo": "ソロ (8トリック)",
+    "misere": "ミゼール (0トリック・切り札なし)",
+    "vira": "ヴィーラ (10トリック)"
+  },
+  "roundResult": {
+    "title": "ラウンド結果",
+    "tricks": "{{name}} トリック: {{count}}"
+  },
+  "progress": {
+    "line": "宣言者の進捗: {{won}} / {{needed}} トリック",
+    "misere": "宣言者の進捗: {{won}} トリック（ミゼール・目標0）",
+    "made": "達成",
+    "failed": "失敗確定"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_high": "宣言者として強い札でリードし、契約分のトリックを取りに行くことを推奨",
+    "lead_low": "ディフェンダーとして低い札でリードし、強い札を温存することを推奨",
+    "follow_win": "宣言者としてこのトリックを取りに行く",
+    "follow_block": "ディフェンダーとして宣言者のトリックを阻止する",
+    "misere_duck": "ミゼールなので1トリックも取らないよう低い札でかわす",
+    "misere_force": "ミゼールの宣言者にトリックを押し付ける"
+  },
+  "tutorial": {
+    "info": "ここにラウンド・契約（宣言者と種別）・切り札・各プレイヤーの得点が表示されます。先に目標ポイント（初期値30）へ達したプレイヤーの勝ちです。★が宣言者です。",
+    "trick": "場に出されたカードがここに並びます。リードスートにマストフォロー、A高。最強のカードを出したプレイヤーがトリックを取ります。",
+    "hand": "あなたの手札です。プレイ時は出せるカードをクリックして「出す」を押します。",
+    "actions": "入札フェーズでは、パス／シックス（6トリック）／ミゼール（0トリック・切り札なし）／セブン（7トリック）／エイト（8トリック）のボタンが出ます。入札の強さはパス＜シックス＜ミゼール＜セブン＜エイトで、現在の最高入札を上回るもののみ選べます。最高入札者が宣言者となり、残り2人のディフェンダーと対戦します。"
+  },
+  "bidHighest": "現在の最高入札: {{name}}",
+  "bidNone": "なし",
+  "bidTooLow": "現在の最高入札を上回る必要があります",
+  "misereBadge": "特殊",
+  "misereDesc": "ミゼールは1トリックも取らないことを目指す特殊契約で、失敗すると大きな失点になります。",
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "pot": "ポット",
+  "potHint": "ポットは次局へ持ち越されます"
+}

@@ -279,7 +279,8 @@
     "karnoffel": "Karnöffel",
     "literature": "Literature",
     "guandan": "Guandan",
-    "shengji": "Sheng Ji"
+    "shengji": "Sheng Ji",
+    "vira": "Vira"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1390,7 +1391,14 @@
     "shengji.handHeld": "The declarers held",
     "shengji.handTaken": "The defenders reached eighty and took the deal",
     "shengji.result.humanWin": "Your team held the deal at the ace",
-    "shengji.result.cpuWin": "The other team held the deal at the ace"
+    "shengji.result.cpuWin": "The other team held the deal at the ace",
+    "vira.bidPhase": "Bidding phase — place your bid.",
+    "vira.playPhase.lead": "Your turn — choose a card to lead.",
+    "vira.playPhase.follow": "Your turn — follow the led suit.",
+    "vira.trickEnd": "Trick complete — continue.",
+    "vira.roundEnd": "Round settled — start the next one.",
+    "vira.result.humanWin": "Game over — you win!",
+    "vira.result.cpuWin": "Game over — player {{player}} wins."
   },
   "manual": {
     "ariaLabel": "Game Manual",

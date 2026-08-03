@@ -191,6 +191,7 @@ var gameDescriptions = map[string]string{
 	"nap":                 "Nap / Napoleon (ナップ)",
 	"preference":          "Préférence (プレフェランス)",
 	"ganjifa":             "Ganjifa (ガンジファ)",
+	"vira":                "Vira (ヴィーラ)",
 	"spoilfive":           "Spoil Five / Maw (スポイル・ファイブ)",
 	"courtpiece":          "Court Piece / Rang (コートピース)",
 	"bezique":             "Bezique (ベジーク)",

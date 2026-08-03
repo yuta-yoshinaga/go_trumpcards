@@ -345,7 +345,8 @@
     "karnoffel": "The oldest card game known by name, attested in 1426. Five cards each from a 48-card pack with the aces removed, and the lowest of four face-up cards picks the trump suit.",
     "literature": "A deduction fishing game from India and Canada. Six players in two teams of three share a 48-card pack with the eights removed, contesting eight half-suits. Even a teammate’s hand is hidden.",
     "guandan": "A two-pack climbing game from Jiangsu. Four players in two partnerships, 27 cards each; the first side to climb from 2 to the ace wins.",
-    "shengji": "A two-pack point-trick game from China. Four players in two partnerships, 25 cards each, contesting the 200 points in the fives, tens and kings while climbing from 2 to the ace."
+    "shengji": "A two-pack point-trick game from China. Four players in two partnerships, 25 cards each, contesting the 200 points in the fives, tens and kings while climbing from 2 to the ace.",
+    "vira": "A 19th-century Swedish auction trick-taker whose pot carries forward — a run of failures makes the next contract worth more."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -607,6 +608,7 @@
     "karnoffel": "The highest card is the JACK (the Karnöffel), not the six. The seven (the devil) beats everything but the Karnöffel ONLY WHEN LED, and loses to every card otherwise. The 3, 4 and 5 are trumps that still lose to face cards.",
     "literature": "Winning takes FIVE of eight — a majority. Four decides nothing, since the other side can reach four too. A claim has three outcomes: misnaming which teammate holds a card CANCELS the half-suit rather than handing it over.",
     "guandan": "**The level cards beat aces**, and the two hearts among them are wild. The finishing order sets both the next hand's tribute and the climb: first and second is worth four levels, and no result is ever worth three.",
-    "shengji": "**Trumps are not just the trump suit** -- every card of the level rank, in all four suits, plus all four jokers. The **defenders** collect the points; the declarers win by holding them under 80. And the eight-card kitty reaches the defenders **multiplied** if they take the last trick."
+    "shengji": "**Trumps are not just the trump suit** -- every card of the level rank, in all four suits, plus all four jokers. The **defenders** collect the points; the declarers win by holding them under 80. And the eight-card kitty reaches the defenders **multiplied** if they take the last trick.",
+    "vira": "Three players, thirteen tricks. Each bids once from Gask, Solo, Misère or Vira; the highest bidder plays alone against the other two. Everyone antes into the pot each round: make the contract and you take the whole pot, fail and you add to it for whoever bids next."
   }
 }

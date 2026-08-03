@@ -930,6 +930,11 @@ func init() {
 			return usecase.NewGanjifaInteractor(domain.NewDefaultGanjifa(), new(presenter.GanjifaWebPresenter))
 		},
 		controller.NewGanjifaWebController)
+	BindWebControllerFor("vira",
+		func() usecase.ViraInteractorIF {
+			return usecase.NewViraInteractor(domain.NewDefaultVira(), new(presenter.ViraWebPresenter))
+		},
+		controller.NewViraWebController)
 	BindWebControllerFor("spoilfive",
 		func() usecase.SpoilFiveInteractorIF {
 			return usecase.NewSpoilFiveInteractor(domain.NewDefaultSpoilFive(), new(presenter.SpoilFiveWebPresenter))

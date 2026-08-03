@@ -239,6 +239,7 @@ import type {
   UltiResponse,
   VideoPokerResponse,
   VintResponse,
+  ViraResponse,
   WarResponse,
   WaspResponse,
   WattenResponse,
@@ -496,6 +497,7 @@ import { getUltiHint } from '../utils/hints/ultiHint';
 import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { getVintHint } from '../utils/hints/vintHint';
+import { getViraHint } from '../utils/hints/viraHint';
 import { getWarHint } from '../utils/hints/warHint';
 import { getWaspHint } from '../utils/hints/waspHint';
 import { getWattenHint } from '../utils/hints/wattenHint';
@@ -746,6 +748,7 @@ export const hintFactories = {
   nap: (s) => getNapHint(s as NapResponse),
   ganjifa: (s) => getGanjifaHint(s as GanjifaResponse),
   preference: (s) => getPreferenceHint(s as PreferenceResponse),
+  vira: (s) => getViraHint(s as ViraResponse),
   twentynine: (s) => getTwentyNineHint(s as TwentyNineResponse),
   courtpiece: (s) => getCourtPieceHint(s as CourtPieceResponse),
   bezique: (s) => getBeziqueHint(s as BeziqueResponse),

@@ -54,6 +54,7 @@ import type {
   TwoTenJackResponse,
   TysiacResponse,
   UltiResponse,
+  ViraResponse,
   WattenResponse,
 } from '../types/card';
 
@@ -2666,6 +2667,63 @@ const basePreferenceState: PreferenceResponse = {
  */
 export function makePreferenceState(overrides?: Partial<PreferenceResponse>): PreferenceResponse {
   return { ...basePreferenceState, ...overrides };
+}
+
+/** Base Vira state used as the default for {@link makeViraState}. A 3-player Swedish bidding trick-taker settled through a carried-forward pot; defaults to a human Bid turn. */
+/** Base Vira state used as the default for {@link makeViraState}. A 3-player Swedish bidding trick-taker settled through a carried-forward pot; defaults to a human Bid turn. */
+const baseViraState: ViraResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 13,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 13, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 13, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  declarerIdx: -1,
+  contract: 0,
+  trumpSuit: 0,
+  bids: [0, 0, 0],
+  pot: 3,
+  lastRoundDelta: [0, 0, 0],
+  lastRoundMade: false,
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  roundTricks: [0, 0, 0],
+  playableIndices: [],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: false,
+  isHumanBidTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 6 },
+};
+
+/**
+ * Creates a {@link ViraResponse} with sensible defaults (a human Bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial ViraResponse fields to override.
+ * @returns A complete ViraResponse suitable for use in tests.
+ */
+export function makeViraState(overrides?: Partial<ViraResponse>): ViraResponse {
+  return { ...baseViraState, ...overrides };
 }
 
 /** Base Nap (Napoleon) state used as the default for {@link makeNapState}. Defaults to a human Bid turn. */

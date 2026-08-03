@@ -299,4 +299,12 @@ func init() {
 			return usecase.RestoreGanjifaInteractor(data, new(presenter.GanjifaWebPresenter))
 		},
 		controller.NewGanjifaWebControllerWithProvider)
+	games.RegisterKVGame("vira", games.CategoryExtra,
+		func() usecase.ViraInteractorIF {
+			return usecase.NewViraInteractor(domain.NewDefaultVira(), new(presenter.ViraWebPresenter))
+		},
+		func(data []byte) (usecase.ViraInteractorIF, error) {
+			return usecase.RestoreViraInteractor(data, new(presenter.ViraWebPresenter))
+		},
+		controller.NewViraWebControllerWithProvider)
 }

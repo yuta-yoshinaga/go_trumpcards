@@ -2946,6 +2946,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"ganjifa.helpSetDifficulty"},
 			})
 	}},
+	{Name: "vira", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewViraCuiController(usecase.NewViraInteractor(
+				domain.NewDefaultVira(), new(presenter.ViraCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "vira.helpTitle",
+				CommandKeys: []string{
+					"vira.helpBid",
+					"vira.helpPass",
+					"vira.helpPlay",
+					"vira.helpNext",
+					"vira.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"vira.helpSetDifficulty"},
+			})
+	}},
 	{Name: "spoilfive", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSpoilFiveCuiController(usecase.NewSpoilFiveInteractor(

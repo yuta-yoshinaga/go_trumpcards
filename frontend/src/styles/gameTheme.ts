@@ -88,6 +88,7 @@ export type GameKey =
   | 'nap'
   | 'ganjifa'
   | 'preference'
+  | 'vira'
   | 'twentynine'
   | 'courtpiece'
   | 'bezique'
@@ -412,6 +413,10 @@ const GANJIFA = {
   bg: 'bg-game-bg-ganjifa',
   footer: 'bg-game-bg-ganjifa-dark border-white/20',
 } as const;
+const VIRA = {
+  bg: 'bg-game-bg-vira',
+  footer: 'bg-game-bg-vira-dark border-white/20',
+} as const;
 const PREFERENCE = {
   bg: 'bg-game-bg-preference',
   footer: 'bg-game-bg-preference-dark border-white/20',
@@ -585,6 +590,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   nap: NAP,
   ganjifa: GANJIFA,
   preference: PREFERENCE,
+  vira: VIRA,
   twentynine: TWENTYNINE,
   courtpiece: COURTPIECE,
   bezique: BEZIQUE,

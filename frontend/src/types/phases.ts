@@ -663,6 +663,30 @@ export const PreferenceContract = {
   EIGHT: 4,
 } as const;
 
+/** Vira phase constants (sync: internal/domain/Vira.go). */
+export const ViraPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
+ * Vira contract constants (sync: internal/domain/Vira.go).
+ *
+ * Outranking order is Pass < Gask < Solo < Misère < Vira. **Misère sits between
+ * Solo and Vira rather than at the bottom** — it is a real contract worth 6,
+ * not a way out of bidding.
+ */
+export const ViraContract = {
+  PASS: 0,
+  GASK: 1,
+  SOLO: 2,
+  MISERE: 3,
+  VIRA: 4,
+} as const;
+
 /** Nap (Napoleon) phase constants (sync: internal/domain/Nap.go). */
 export const NapPhase = {
   BID: 0,
