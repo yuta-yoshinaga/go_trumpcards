@@ -908,6 +908,11 @@ func (g *Tarocchini) UnmarshalJSON(data []byte) error {
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerTeam = j.WinnerTeam
 	g.actionLog = j.ActionLog
+	// **復元したら必ず乱数源を張り直す。**Worker は毎リクエスト KV から組み直し、
+	// SetRand は一度も呼ばれない。shuffle() だけが nil を遅延初期化していたので、
+	// `cpuSelectPlayCard` の Easy 分岐が nil の *rand.Rand を触って落ちていた。
+	// 個々の呼び出し側でガードするのではなく、ここで一度入れて構造的に安全にする。
+	g.rng = rand.New(rand.NewSource(rand.Int63()))
 	return nil
 }
 
