@@ -22,7 +22,7 @@ const lazyPages = new Map<string, ComponentType>(
   gameRoutes.map(({ path, page }) => [path, resolvePageComponent(pageModules, path, page)]),
 );
 
-// The three non-game pages match the glob above too, so importing them
+// The non-game pages match the glob above too, so importing them
 // statically made them *both* dynamic and static imports — which a static
 // import always wins. They were therefore inlined into the entry chunk that
 // every visitor downloads, including visitors who never open Discover or hit
@@ -30,6 +30,7 @@ const lazyPages = new Map<string, ComponentType>(
 // them out (#4355). Each usage below needs its own Suspense boundary.
 const DiscoverPage = resolvePageComponent(pageModules, '/discover', 'Discover');
 const DiscoverResultPage = resolvePageComponent(pageModules, '/discover/result', 'DiscoverResult');
+const LegalPage = resolvePageComponent(pageModules, '/legal', 'Legal');
 const NotFoundPage = resolvePageComponent(pageModules, '*', 'NotFound');
 
 /**
@@ -103,6 +104,17 @@ export default function App() {
                     element={
                       <Suspense fallback={<RouteSuspenseFallback />}>
                         <DiscoverResultPage />
+                      </Suspense>
+                    }
+                  />
+                  {/* Trademark notice and asset credits. Reachable from the nav
+                      because the statement has to reach players, not only
+                      readers of the repository. */}
+                  <Route
+                    path="/legal"
+                    element={
+                      <Suspense fallback={<RouteSuspenseFallback />}>
+                        <LegalPage />
                       </Suspense>
                     }
                   />

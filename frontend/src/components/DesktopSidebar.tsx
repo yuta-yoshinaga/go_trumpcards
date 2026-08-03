@@ -242,6 +242,19 @@ export function DesktopSidebar() {
         <NavLangToggle size="sm" />
         <SoundToggle />
       </div>
+
+      {/* Trademark notice and asset credits. Kept in the persistent chrome
+          rather than a single page's footer: the non-affiliation statement
+          only does its job if a player can reach it from anywhere. */}
+      <div className="border-t border-ds-border-subtle px-3 py-1">
+        <Link
+          to="/legal"
+          aria-current={pathname === '/legal' ? 'page' : undefined}
+          className={`flex items-center min-h-[44px] text-xs text-ds-text-muted hover:text-ds-text-primary transition-colors ${focusRingWhite}`}
+        >
+          {t('nav.legal')}
+        </Link>
+      </div>
     </aside>
   );
 }
