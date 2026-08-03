@@ -1225,6 +1225,11 @@ func init() {
 			return usecase.NewKoenigrufenInteractor(domain.NewDefaultKoenigrufen(), new(presenter.KoenigrufenWebPresenter))
 		},
 		controller.NewKoenigrufenWebController)
+	BindWebControllerFor("tarocchini",
+		func() usecase.TarocchiniInteractorIF {
+			return usecase.NewTarocchiniInteractor(domain.NewDefaultTarocchini(), new(presenter.TarocchiniWebPresenter))
+		},
+		controller.NewTarocchiniWebController)
 	BindWebControllerFor("scarto",
 		func() usecase.ScartoInteractorIF {
 			return usecase.NewScartoInteractor(domain.NewDefaultScarto(), new(presenter.ScartoWebPresenter))

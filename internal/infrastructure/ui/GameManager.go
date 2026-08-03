@@ -3864,6 +3864,22 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"koenigrufen.helpSetDifficulty"},
 			})
 	}},
+	{Name: "tarocchini", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTarocchiniCuiController(usecase.NewTarocchiniInteractor(
+				domain.NewDefaultTarocchini(), new(presenter.TarocchiniCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "tarocchini.helpTitle",
+				CommandKeys: []string{
+					"tarocchini.helpScarto",
+					"tarocchini.helpPlay",
+					"tarocchini.helpNext",
+					"tarocchini.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"tarocchini.helpSetDifficulty"},
+			})
+	}},
 	{Name: "scarto", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewScartoCuiController(usecase.NewScartoInteractor(

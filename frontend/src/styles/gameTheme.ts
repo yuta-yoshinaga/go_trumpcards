@@ -86,6 +86,7 @@ export type GameKey =
   | 'solowhist'
   | 'fortyfives'
   | 'nap'
+  | 'tarocchini'
   | 'ganjifa'
   | 'preference'
   | 'vira'
@@ -409,6 +410,10 @@ const COURTPIECE = {
   bg: 'bg-game-bg-courtpiece',
   footer: 'bg-game-bg-courtpiece-dark border-white/20',
 } as const;
+const TAROCCHINI = {
+  bg: 'bg-game-bg-tarocchini',
+  footer: 'bg-game-bg-tarocchini-dark border-white/20',
+} as const;
 const GANJIFA = {
   bg: 'bg-game-bg-ganjifa',
   footer: 'bg-game-bg-ganjifa-dark border-white/20',
@@ -588,6 +593,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   solowhist: SOLOWHIST,
   fortyfives: FORTYFIVES,
   nap: NAP,
+  tarocchini: TAROCCHINI,
   ganjifa: GANJIFA,
   preference: PREFERENCE,
   vira: VIRA,
