@@ -21,7 +21,13 @@ test.describe('Kaiser E2E', () => {
     // two unrelated PRs (#4665, #4667) before anyone measured it.
     const bidSeven = page.getByRole('button', { name: '7 を宣言' });
     for (let round = 0; round < 12; round++) {
-      if (!(await isVisibleWithin(bidSeven, TIMEOUT_ACTION))) break;
+      // The first check waits the full game-loop budget: the CPUs may still be
+      // bidding, and on a slow runner a short timeout here would break the loop
+      // early and drop us into the four-way check while the page is still
+      // showing bid buttons -- trading this flake for a rarer one. Later rounds
+      // follow a redeal we just triggered, so the shorter budget is enough.
+      const budget = round === 0 ? TIMEOUT_GAME_LOOP : TIMEOUT_ACTION;
+      if (!(await isVisibleWithin(bidSeven, budget))) break;
       // Six is below the floor, so no such button should ever exist.
       await expect(page.getByRole('button', { name: '6 を宣言' })).toHaveCount(0);
       await page.getByRole('button', { name: 'パス' }).click();
