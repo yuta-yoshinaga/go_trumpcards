@@ -61,7 +61,7 @@ func TestTarocchini_ALoneLedMattoLeavesTheTrickOpen(t *testing.T) {
 	for p.GetCardsSize() > 0 {
 		p.RemoveCard(0)
 	}
-	p.AddCard(NewCard(1, 6, false))                     // weak
+	p.AddCard(NewCard(1, 6, false))                      // weak
 	p.AddCard(NewCard(TarocchiniTrumpDesign, 20, false)) // strong
 	// 席 2 は席 0 のパートナー (対面)。
 	require.Equal(t, TarocchiniTeamOf(0), TarocchiniTeamOf(2))
