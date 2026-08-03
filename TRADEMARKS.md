@@ -159,9 +159,19 @@ All 264 Japanese display titles were queried
   | ルーク | 登録6065692 | **41** | トヨタアルバルク東京 |
   | ルーク | 登録6245020 | 09, 14, 16, … | トヨタアルバルク東京 |
 
-  Not yet resolved. **Only the class numbers were checked, not the 指定商品**,
-  so how far each registration actually reaches is unverified — read the
-  designated goods before drawing a conclusion either way.
+  The designated goods were then read (2026-08-04), and they change the picture
+  — a class number alone would have been misleading in both directions:
+
+  | Registration | Designated goods that reach this project | Verdict |
+  |---|---|---|
+  | 登録5990126 `WIZARD／ウィザード` (Liberal) | class 28: **「トリックテイキング用カード，トランプ」** (類似群 24B01) | **direct hit** — Wizard *is* a trick-taking card game, and this is that exact category |
+  | 登録5721850 `ウィザード` (Universal Entertainment) | class 9: 「ダウンロード可能な電子計算機用プログラム」; class 28: 「その他の遊戯用器具」 | reaches the downloadable CLI |
+  | 登録6245020 `ルーク` (Alvark Tokyo) | class 28: **「トランプ」「遊戯用器具」** (24B01); class 9: 「家庭用テレビゲーム機用プログラム」 | reaches, though the holder is a basketball club with no apparent use on cards |
+  | 登録6065692 `ルーク` (Alvark Tokyo) | class 41: 「スポーツの興行の企画・運営又は開催」 only | **miss** — sports promotion, nothing to do with a card game |
+
+  Class 41 looked like the dangerous one and turned out to be irrelevant; class
+  28, which is nominally physical goods, is where the real overlap sits. Read
+  the goods, not the number.
 
 Limits of this pass: Japanese display titles only. A mark registered in Japan in
 Latin script alone would not be found by it, and no jurisdiction outside Japan
