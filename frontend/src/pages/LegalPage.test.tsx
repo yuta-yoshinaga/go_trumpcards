@@ -109,4 +109,27 @@ describe('legal notice reachability across breakpoints', () => {
     );
     expect(screen.getByRole('link', { name: LINK_NAME })).toHaveAttribute('href', '/legal');
   });
+
+  // Both links compute `aria-current` from the route, and the tests above only
+  // ever render away from /legal — so only the `undefined` branch was taken and
+  // the "you are here" state was never asserted at all. Screen-reader users are
+  // the ones who lose if it regresses.
+  it('NavBar marks its link as the current page while on /legal', () => {
+    Object.defineProperty(window, 'innerWidth', { value: 375, configurable: true });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/legal']}>
+        <NavBar />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('link', { name: LINK_NAME })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('DesktopSidebar marks its link as the current page while on /legal', () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/legal']}>
+        <DesktopSidebar />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('link', { name: LINK_NAME })).toHaveAttribute('aria-current', 'page');
+  });
 });
