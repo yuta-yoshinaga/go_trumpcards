@@ -59,8 +59,11 @@ const (
 	ViraBidVira
 )
 
-// viraBidTarget 契約の目標トリック数を返す。Misère と Pass は 0。
-func viraBidTarget(b ViraBid) int {
+// ViraBidTarget 契約の目標トリック数を返す。Misère と Pass は 0。
+//
+// **公開しているのはプレゼンタが同じ表を持たないため。**CUI 側に写すと、
+// 階梯を変えたときに片方だけ直して黙って食い違う。
+func ViraBidTarget(b ViraBid) int {
 	switch b {
 	case ViraBidGask:
 		return 7
@@ -622,15 +625,39 @@ func (g *Vira) ResolveTrick() {
 	g.roundTricks[winnerIdx]++
 	g.appendLog(winnerIdx, "trickwin", fmt.Sprintf("トリック %d を獲得", g.trickNumber), cards)
 
-	g.currentTrick = nil
+	// **場は NextTrick までクリアしない。**共通の CPU ループ
+	// (`runCpuTurnsLoop`) は TrickEnd フェーズで結果を見せてから NextTrick を
+	// 呼ぶ形なので、ここで消すと勝ち札が一瞬も表示されない。
 	g.leadPlayerIdx = winnerIdx
 	g.currentPlayerIdx = winnerIdx
 	if g.trickNumber >= ViraTrickCount {
 		g.settleRound()
+	}
+}
+
+// NextTrick 次のトリックを開始する。
+func (g *Vira) NextTrick() {
+	if g.phase != ViraPhaseTrickEnd {
 		return
 	}
+	g.currentTrick = nil
+	g.currentPlayerIdx = g.leadPlayerIdx
 	g.trickNumber++
 	g.phase = ViraPhasePlay
+}
+
+// ScoreRound ラウンド終了時にマッチ終了を判定する。
+//
+// 精算そのものは最終トリックの解決時 (`settleRound`) に済んでいる。ここは
+// 共通インタラクタが「ラウンドを締める」ために呼ぶ入り口で、規定局数に
+// 達していればマッチを終える。
+func (g *Vira) ScoreRound() {
+	if g.phase != ViraPhaseRoundEnd {
+		return
+	}
+	if g.roundNumber >= g.config.TargetRounds {
+		g.finishMatch()
+	}
 }
 
 // trickWinner 現在のトリックの勝者を返す。
@@ -698,7 +725,7 @@ func (g *Vira) settleRound() {
 	}
 	value := viraBidValue(g.contract)
 	won := g.roundTricks[g.declarerIdx]
-	made := won >= viraBidTarget(g.contract)
+	made := won >= ViraBidTarget(g.contract)
 	if g.contract == ViraBidMisere {
 		// Misère は 1 トリックも取らないことが条件。
 		made = won == 0
@@ -822,13 +849,11 @@ func (g *Vira) GetPlayer(idx int) *ViraPlayer {
 func (g *Vira) GetConfig() ViraConfig { return g.config }
 
 // SetConfig 設定を差し替える。
-func (g *Vira) SetConfig(c ViraConfig) error {
-	if err := c.Validate(); err != nil {
-		return err
-	}
-	g.config = c
-	return nil
-}
+//
+// **検証はここではしない。**共通の `resetWithValidatedConfig` が呼ぶ前に
+// `Validate` を通す契約なので、ここで戻り値を持つと共通ヘルパーに載らない。
+// 直接呼ぶ場合も、呼び出し側が `Validate` を通してから渡すこと。
+func (g *Vira) SetConfig(c ViraConfig) { g.config = c }
 
 // GetActionLog 棋譜。
 func (g *Vira) GetActionLog() []*ActionLogEntry {
@@ -848,4 +873,68 @@ func (g *Vira) ForcePassForTest(idx int) error {
 		return NewDomainError(ErrInvalidPlay, "席が範囲外です")
 	}
 	return g.applyBid(idx, ViraBidPass)
+}
+
+// ViraHint ヒント情報。
+type ViraHint struct {
+	CardIndices []int  // 推奨カードインデックス
+	Reason      string // ヒント理由キー
+}
+
+// GetPlayerCnt プレイヤー数。
+func (g *Vira) GetPlayerCnt() int { return len(g.players) }
+
+// GetPlayableIndices プレイ可能なカードの位置。
+func (g *Vira) GetPlayableIndices(playerIdx int) []int {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return nil
+	}
+	return g.GetValidPlayIndices(playerIdx)
+}
+
+// findHumanIdx 人間プレイヤーの席。いなければ -1。
+func (g *Vira) findHumanIdx() int {
+	for i, p := range g.players {
+		if p.GetIsHuman() {
+			return i
+		}
+	}
+	return -1
+}
+
+// GetHint 人間プレイヤーへのヒント。手番でなければ nil。
+func (g *Vira) GetHint() *ViraHint {
+	human := g.findHumanIdx()
+	if human < 0 || g.phase != ViraPhasePlay || g.currentPlayerIdx != human {
+		return nil
+	}
+	valid := g.GetValidPlayIndices(human)
+	if len(valid) == 0 {
+		return nil
+	}
+	idx := g.cpuSelectPlayCard(human)
+	return &ViraHint{CardIndices: []int{idx}, Reason: g.playHintReason(human)}
+}
+
+// playHintReason ヒント理由キーを判定する。
+//
+// **Misère は宣言者と守備側で意味が逆になる。**宣言者は 1 枚も取ってはならず、
+// 守備側は取らせたい。同じ「強い札を出せ」でも狙いが反対なので、キーを分ける。
+func (g *Vira) playHintReason(playerIdx int) string {
+	misere := g.contract == ViraBidMisere
+	declarer := playerIdx == g.declarerIdx
+	switch {
+	case misere && declarer:
+		return "misere_duck"
+	case misere:
+		return "misere_force"
+	case len(g.currentTrick) == 0 && declarer:
+		return "lead_high"
+	case len(g.currentTrick) == 0:
+		return "lead_low"
+	case declarer:
+		return "follow_win"
+	default:
+		return "follow_block"
+	}
 }

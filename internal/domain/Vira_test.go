@@ -149,13 +149,12 @@ func TestVira_ValidPlayIndicesEnforceFollow(t *testing.T) {
 }
 
 func TestVira_ConfigRejectsRoundsNotDivisibleByPlayers(t *testing.T) {
-	g := NewDefaultVira()
-	// **局数はプレイヤー数の倍数。**そうでないとディーラーを務めた回数が揃わない。
-	assert.Error(t, g.SetConfig(ViraConfig{CpuDifficulty: ViraCpuDifficultyNormal, TargetRounds: 5}))
-	assert.NoError(t, g.SetConfig(ViraConfig{CpuDifficulty: ViraCpuDifficultyNormal, TargetRounds: 6}))
+	// **局数はプレイヤー数の倍数。**そうでないと各プレイヤーがディーラーを
+	// 務めた回数が揃わず、配り順の有利不利が精算に残る。
+	assert.Error(t, ViraConfig{CpuDifficulty: ViraCpuDifficultyNormal, TargetRounds: 5}.Validate())
+	assert.NoError(t, ViraConfig{CpuDifficulty: ViraCpuDifficultyNormal, TargetRounds: 6}.Validate())
 }
 
 func TestVira_ConfigRejectsOutOfRangeDifficulty(t *testing.T) {
-	g := NewDefaultVira()
-	assert.Error(t, g.SetConfig(ViraConfig{CpuDifficulty: 99, TargetRounds: 6}))
+	assert.Error(t, ViraConfig{CpuDifficulty: 99, TargetRounds: 6}.Validate())
 }
