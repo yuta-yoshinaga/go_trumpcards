@@ -87,6 +87,7 @@ export type GameKey =
   | 'fortyfives'
   | 'nap'
   | 'preference'
+  | 'vira'
   | 'twentynine'
   | 'courtpiece'
   | 'bezique'
@@ -407,6 +408,10 @@ const COURTPIECE = {
   bg: 'bg-game-bg-courtpiece',
   footer: 'bg-game-bg-courtpiece-dark border-white/20',
 } as const;
+const VIRA = {
+  bg: 'bg-game-bg-vira',
+  footer: 'bg-game-bg-vira-dark border-white/20',
+} as const;
 const PREFERENCE = {
   bg: 'bg-game-bg-preference',
   footer: 'bg-game-bg-preference-dark border-white/20',
@@ -579,6 +584,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   fortyfives: FORTYFIVES,
   nap: NAP,
   preference: PREFERENCE,
+  vira: VIRA,
   twentynine: TWENTYNINE,
   courtpiece: COURTPIECE,
   bezique: BEZIQUE,

@@ -278,7 +278,8 @@
     "karnoffel": "カルニッフェル",
     "literature": "リテラチャー",
     "guandan": "掼蛋",
-    "shengji": "升级"
+    "shengji": "升级",
+    "vira": "ヴィーラ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1381,7 +1382,14 @@
     "shengji.handHeld": "宣言側が守りきりました",
     "shengji.handTaken": "守備側が80点に届き、宣言側が交代しました",
     "shengji.result.humanWin": "あなたのチームがAを守りきりました",
-    "shengji.result.cpuWin": "相手チームがAを守りきりました"
+    "shengji.result.cpuWin": "相手チームがAを守りきりました",
+    "vira.bidPhase": "入札フェーズ — 入札してください。",
+    "vira.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
+    "vira.playPhase.follow": "あなたの番です — リードスートに従ってカードを選んでください。",
+    "vira.trickEnd": "トリック終了 — 次へ進んでください。",
+    "vira.roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
+    "vira.result.humanWin": "ゲーム終了！ あなたの勝ちです！",
+    "vira.result.cpuWin": "ゲーム終了！ プレイヤー {{player}} の勝ちです。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

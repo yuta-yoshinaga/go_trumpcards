@@ -121,6 +121,9 @@
   --color-game-bg-nap: #6e1f2e;
   --color-game-bg-nap-dark: #47131e;
   /* Préférence — imperial-Russian petrol/teal felt with a gilt undertone, distinct from every other felt (Austro-Russian salon game). */
+  /* Vira: スウェーデンの旗の青系。既存のどの game-bg とも重複しない値。 */
+  --color-game-bg-vira: #1b3a63;
+  --color-game-bg-vira-dark: #10233c;
   --color-game-bg-preference: #14474a;
   --color-game-bg-preference-dark: #0c2e30;
   /* Twenty-Nine (29) — Indian/Bangladeshi marigold-saffron deepening to terracotta, a warm spice-orange felt distinct from Forty-Fives' bronze-gold and Nap's wine. */

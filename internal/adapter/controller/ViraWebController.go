@@ -40,26 +40,31 @@ type ViraWebOutputPlayer struct {
 
 // ViraWebOutput ヴィーラのWebアウトプット
 type ViraWebOutput struct {
-	Players          []*ViraWebOutputPlayer    `json:"players"`
-	Phase            int                       `json:"phase"`
-	RoundNumber      int                       `json:"roundNumber"`
-	TrickNumber      int                       `json:"trickNumber"`
-	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
-	DealerIdx        int                       `json:"dealerIdx"`
-	DeclarerIdx      int                       `json:"declarerIdx"`
-	Contract         int                       `json:"contract"`
-	TrumpSuit        int                       `json:"trumpSuit"`
-	Bids             [domain.ViraPlayerCnt]int `json:"bids"`
-	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
-	PlayerScores     [domain.ViraPlayerCnt]int `json:"playerScores"`
-	RoundTricks      [domain.ViraPlayerCnt]int `json:"roundTricks"`
-	PlayableIndices  []int                     `json:"playableIndices"`
-	GameEndFlag      bool                      `json:"gameEndFlag"`
-	WinnerPlayer     int                       `json:"winnerPlayer"`
-	IsHumanTurn      bool                      `json:"isHumanTurn"`
-	IsHumanBidTurn   bool                      `json:"isHumanBidTurn"`
-	Hint             *WebOutputCardHint        `json:"hint,omitempty"`
+	Players          []*ViraWebOutputPlayer `json:"players"`
+	Phase            int                    `json:"phase"`
+	RoundNumber      int                    `json:"roundNumber"`
+	TrickNumber      int                    `json:"trickNumber"`
+	CurrentPlayerIdx int                    `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                    `json:"leadPlayerIdx"`
+	DealerIdx        int                    `json:"dealerIdx"`
+	DeclarerIdx      int                    `json:"declarerIdx"`
+	Contract         int                    `json:"contract"`
+	TrumpSuit        int                    `json:"trumpSuit"`
+	// Pot 現在のポット。**次局へ持ち越されるので画面に出す。**これが見えないと、
+	// 同じ契約でも見返りが違う理由がプレイヤーに分からない。
+	Pot             int                       `json:"pot"`
+	LastRoundDelta  [domain.ViraPlayerCnt]int `json:"lastRoundDelta"`
+	LastRoundMade   bool                      `json:"lastRoundMade"`
+	Bids            [domain.ViraPlayerCnt]int `json:"bids"`
+	CurrentTrick    []*WebOutputTrickCard     `json:"currentTrick"`
+	PlayerScores    [domain.ViraPlayerCnt]int `json:"playerScores"`
+	RoundTricks     [domain.ViraPlayerCnt]int `json:"roundTricks"`
+	PlayableIndices []int                     `json:"playableIndices"`
+	GameEndFlag     bool                      `json:"gameEndFlag"`
+	WinnerPlayer    int                       `json:"winnerPlayer"`
+	IsHumanTurn     bool                      `json:"isHumanTurn"`
+	IsHumanBidTurn  bool                      `json:"isHumanBidTurn"`
+	Hint            *WebOutputCardHint        `json:"hint,omitempty"`
 	WebOutputBase
 	Config ViraWebOutputConfig `json:"config"`
 }

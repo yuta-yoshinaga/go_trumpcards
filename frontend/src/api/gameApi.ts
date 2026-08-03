@@ -258,6 +258,7 @@ export * from './games/ulti';
 export * from './games/ultimatetexasholdem';
 export * from './games/videopoker';
 export * from './games/vint';
+export * from './games/vira';
 export * from './games/war';
 export * from './games/wasp';
 export * from './games/watten';
@@ -483,6 +484,7 @@ export const games = [
   'fortyfives',
   'nap',
   'preference',
+  'vira',
   'twentynine',
   'courtpiece',
   'bezique',

@@ -729,6 +729,15 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 2], skill: [1, 3, 5, 2], social: [1, 3, 5, 3, 4], theme: [2, 4, 1, 1, 2, 3] },
       },
       {
+        path: '/vira',
+        labelKey: 'nav.vira',
+        icon: '👑',
+        // Préférence の隣に置く。3 人・入札・宣言者 1 対 2 という骨格が同じで、
+        // 違うのは精算がポットを経由する点だけなので、探す人は同じ列を見る。
+        page: 'Vira',
+        profile: { mood: [2, 3, 5, 2], skill: [1, 3, 5, 2], social: [1, 3, 5, 3, 4], theme: [2, 4, 1, 1, 2, 3] },
+      },
+      {
         path: '/twentynine',
         labelKey: 'nav.twentynine',
         icon: '🪔',
