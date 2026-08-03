@@ -69,17 +69,45 @@ done
 echo
 
 echo "── Frontend (tsc-only — NOT caught by 'bun run check') ─────────"
-check "useTutorialProgress.test.ts totalCount" "$(grepval "$TUT_HOOK" 'totalCount\).toBe\(')" "$total"
+
+# A file that derives the count from gameRoutes cannot drift, so there is no
+# literal to audit and a blank "actual" is the *correct* state, not a stale one
+# (#4652 removed these literals on purpose). Reporting ❌ there would push the
+# next person to write the number back in — the exact drift this script exists
+# to catch. Verify the derivation instead: the identifier must be defined from
+# gameRoutes.length in the same file.
+derives_count() { # file  identifier
+  grep -qE "const $2 = gameRoutes\.length;" "$1" 2>/dev/null
+}
+
+# Report a count assertion, accepting a gameRoutes-derived value in place of a literal.
+check_count() { # label  file  actual  expected
+  if [ -z "$3" ] && derives_count "$2" TOTAL_GAMES; then
+    printf '  ✅ %-52s derived from gameRoutes.length\n' "$1"
+    return
+  fi
+  check "$1" "$3" "$4"
+}
+
+check_count "useTutorialProgress.test.ts totalCount" "$TUT_HOOK" \
+  "$(grepval "$TUT_HOOK" 'totalCount\).toBe\([0-9]')" "$total"
 # TutorialProgressPanel.test.tsx has three total assertions on separate lines.
 # getByText(/N/) has no unique anchor token, so we take the largest of the
 # getByText(/…/) numbers (the file also asserts /0/ and /3/); this assumes the
 # total is the largest such literal in the file — true today (124 > 3 > 0).
-panel_text=$(grep -E 'getByText\(/[0-9]+/\)' "$TUT_PANEL" 2>/dev/null | sed 's|//.*||' | grep -oE '/[0-9]+/' | tr -d '/' | sort -rn | head -1)
-panel_links=$(grepval "$TUT_PANEL" 'links\.length\)\.toBe\(')
-panel_incomplete=$(grepval "$TUT_PANEL" 'incompleteMarkers\.length\)\.toBe\(')
-check "TutorialProgressPanel getByText(/N/)"   "$panel_text"       "$total"
-check "TutorialProgressPanel links.length"     "$panel_links"      "$total"
-check "TutorialProgressPanel incompleteMarkers" "$panel_incomplete" "$total"
+# The total assertion may be the derived form `getByText(new RegExp(String(TOTAL_GAMES)))`.
+# Leave the actual blank in that case so check_count reports it as derived — otherwise the
+# largest *remaining* literal (the unrelated /0/ and /3/ assertions) is read as the total.
+if grep -qE 'getByText\(new RegExp\(String\(TOTAL_GAMES\)\)\)' "$TUT_PANEL" 2>/dev/null; then
+  panel_text=""
+else
+  panel_text=$(grep -E 'getByText\(/[0-9]+/\)' "$TUT_PANEL" 2>/dev/null | sed 's|//.*||' | grep -oE '/[0-9]+/' | tr -d '/' | sort -rn | head -1)
+fi
+panel_links=$(grepval "$TUT_PANEL" 'links\.length\)\.toBe\([0-9]')
+panel_incomplete=$(grepval "$TUT_PANEL" 'incompleteMarkers\.length\)\.toBe\([0-9]')
+check_count "TutorialProgressPanel getByText(/N/)"    "$TUT_PANEL" "$panel_text"       "$total"
+check_count "TutorialProgressPanel links.length"      "$TUT_PANEL" "$panel_links"      "$total"
+check_count "TutorialProgressPanel incompleteMarkers" "$TUT_PANEL" "$panel_incomplete" "$total"
 echo
 
 if [ "$fail" -eq 0 ]; then
