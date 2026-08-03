@@ -925,6 +925,11 @@ func init() {
 			return usecase.NewPreferenceInteractor(domain.NewDefaultPreference(), new(presenter.PreferenceWebPresenter))
 		},
 		controller.NewPreferenceWebController)
+	BindWebControllerFor("ganjifa",
+		func() usecase.GanjifaInteractorIF {
+			return usecase.NewGanjifaInteractor(domain.NewDefaultGanjifa(), new(presenter.GanjifaWebPresenter))
+		},
+		controller.NewGanjifaWebController)
 	BindWebControllerFor("spoilfive",
 		func() usecase.SpoilFiveInteractorIF {
 			return usecase.NewSpoilFiveInteractor(domain.NewDefaultSpoilFive(), new(presenter.SpoilFiveWebPresenter))

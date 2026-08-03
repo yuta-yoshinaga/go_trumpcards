@@ -1,0 +1,56 @@
+{
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetRounds": "Rounds",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump: {{suit}}",
+  "noTrump": "None",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "trickEmpty": "(no cards yet)",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "score": "Score: {{score}}",
+  "playerScore": "{{name}}: {{score}} pts",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "target": "{{rounds}} rounds total",
+  "trumpGroupStrong": "Trump is a strong suit — higher numbers are stronger (12 high)",
+  "trumpGroupWeak": "Trump is a weak suit — lower numbers are stronger (1 high)",
+  "roundResult": {
+    "title": "Round Result",
+    "tricks": "{{name}} tricks: {{count}}"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_low": "Lead a low card to hold your strength back",
+    "lead_high": "Lead a strong card to seize the initiative",
+    "lead_weak_suit": "A weak-group card — in this suit the lower number is the stronger one",
+    "follow_trump": "Play a trump to take this trick",
+    "follow_weak_suit": "Follow in a weak suit — remember the rank order runs the other way",
+    "follow_win": "Go for this trick"
+  },
+  "tutorial": {
+    "info": "The round, trick, trump suit and each player's score are shown here. There is no bidding: trump is auto-declared each round as the dealer's longest suit. By default you play 3 rounds, and the player with the most tricks in total wins (a tie leaves no winner).",
+    "trick": "Cards played to the table appear here. You must follow the led suit. Highest trump wins the trick; with no trump played, the strongest card of the led suit does.",
+    "hand": "Your hand. Click a playable card and press Play. A round runs for 32 tricks.",
+    "actions": "There is no bidding and no declarer — the only choice is which card to play. But **the rank order inverts between suit groups**. In a strong suit (black glyphs) higher numbers are stronger and the 12 is the best card; in a weak suit (blue glyphs) lower numbers are stronger and the 1 is. The same \"3\" is third-from-bottom in a strong suit and third-from-top in a weak one."
+  },
+  "hintRequested": "A hint is available",
+  "noHint": "No hint available"
+}

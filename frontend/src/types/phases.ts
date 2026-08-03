@@ -637,6 +637,14 @@ export const KempsSignal = {
   BLINK: 1,
 } as const;
 
+/** Ganjifa phase constants (sync: internal/domain/Ganjifa.go). There is no Bid phase — trump is auto-declared. */
+export const GanjifaPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Préférence phase constants (sync: internal/domain/Preference.go). */
 export const PreferencePhase = {
   BID: 0,

@@ -291,4 +291,12 @@ func init() {
 			return usecase.RestoreKoenigrufenInteractor(data, new(presenter.KoenigrufenWebPresenter))
 		},
 		controller.NewKoenigrufenWebControllerWithProvider)
+	games.RegisterKVGame("ganjifa", games.CategoryExtra,
+		func() usecase.GanjifaInteractorIF {
+			return usecase.NewGanjifaInteractor(domain.NewDefaultGanjifa(), new(presenter.GanjifaWebPresenter))
+		},
+		func(data []byte) (usecase.GanjifaInteractorIF, error) {
+			return usecase.RestoreGanjifaInteractor(data, new(presenter.GanjifaWebPresenter))
+		},
+		controller.NewGanjifaWebControllerWithProvider)
 }
