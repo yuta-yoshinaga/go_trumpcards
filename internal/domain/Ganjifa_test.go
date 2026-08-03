@@ -3,7 +3,9 @@
 package domain
 
 import (
+	"fmt"
 	"math/rand"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -499,4 +501,46 @@ func TestGanjifa_ConfigAccessors(t *testing.T) {
 	g.SetConfig(cfg)
 	assert.Equal(t, cfg, g.GetConfig())
 	assert.Len(t, g.GetPlayers(), GanjifaPlayerCnt)
+}
+
+// **SetRand を呼ばずに作る。**この一本だけは意図的にシードを固定しない。
+// 他のテストが全部 newTestGanjifa 経由で SetRand しているせいで、コンストラクタ
+// が乱数源を入れ忘れていても誰も気づかなかった —— shuffle() の nil 分岐は
+// 各札を自分自身と交換するだけの no-op で、本番の全対局が同じ配りになっていた。
+func TestGanjifa_ProductionConstructorShufflesTheDeck(t *testing.T) {
+	handOf := func(g *Ganjifa, seat int) string {
+		p := g.GetPlayer(seat)
+		var b strings.Builder
+		for i := 0; i < p.GetCardsSize(); i++ {
+			c := p.GetCard(i)
+			fmt.Fprintf(&b, "%d-%d,", c.GetDesign(), c.GetValue())
+		}
+		return b.String()
+	}
+
+	// 96 枚から 32 枚を配る組み合わせは天文学的なので、独立した 2 局が一致
+	// するのは実質ゼロ。一致したらシャッフルが効いていない。
+	first := NewDefaultGanjifa()
+	first.Reset()
+	second := NewDefaultGanjifa()
+	second.Reset()
+
+	assert.NotEqual(t, handOf(first, 0), handOf(second, 0),
+		"two fresh games dealt identical hands -- the constructor did not seed rng")
+}
+
+// Reset を繰り返しても同じ配りに戻らないこと。
+func TestGanjifa_ResetReshuffles(t *testing.T) {
+	g := NewDefaultGanjifa()
+	seen := map[string]bool{}
+	for range 5 {
+		g.Reset()
+		var b strings.Builder
+		p := g.GetPlayer(0)
+		for i := 0; i < p.GetCardsSize(); i++ {
+			fmt.Fprintf(&b, "%d-%d,", p.GetCard(i).GetDesign(), p.GetCard(i).GetValue())
+		}
+		seen[b.String()] = true
+	}
+	assert.Greater(t, len(seen), 1, "every Reset produced the same deal")
 }

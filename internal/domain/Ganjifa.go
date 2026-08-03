@@ -257,7 +257,16 @@ func (g *Ganjifa) UnmarshalJSON(data []byte) error {
 
 // NewGanjifa コンストラクタ。
 func NewGanjifa(players []*GanjifaPlayer, config GanjifaConfig) *Ganjifa {
-	return &Ganjifa{players: players, config: config, winnerPlayer: -1}
+	return &Ganjifa{
+		players: players,
+		config:  config,
+		// **本番の乱数源はここで入れる。**入れ忘れると shuffle() の nil 分岐に
+		// 落ちて山が一切並べ替わらず、毎回同じ 96 枚が同じ席に配られる。
+		// 種は rand.Int63() から取る —— time.Now().UnixNano() だと同じ
+		// ナノ秒に作った 2 局が同じ配りになりうる。
+		rng:          rand.New(rand.NewSource(rand.Int63())),
+		winnerPlayer: -1,
+	}
 }
 
 // NewDefaultGanjifa 標準の 3 人構成 (人間 1, CPU 2) と既定設定で生成する。
@@ -334,12 +343,11 @@ func (g *Ganjifa) startRound() {
 
 // shuffle 山札をシャッフルする。
 func (g *Ganjifa) shuffle() {
+	// **nil は「並べ替えない」ではなく異常。**コンストラクタが必ず種を入れる
+	// ので、ここに来るのはゼロ値の Ganjifa を直接組んだ場合だけ。黙って
+	// 素通りさせると、その山は未シャッフルのまま配られる。
 	if g.rng == nil {
-		for i := len(g.deck) - 1; i > 0; i-- {
-			j := i // rng 未設定時は並べ替えない (呼び出し側が SetRand する)
-			g.deck[i], g.deck[j] = g.deck[j], g.deck[i]
-		}
-		return
+		g.rng = rand.New(rand.NewSource(rand.Int63()))
 	}
 	g.rng.Shuffle(len(g.deck), func(i, j int) { g.deck[i], g.deck[j] = g.deck[j], g.deck[i] })
 }
