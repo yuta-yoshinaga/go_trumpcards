@@ -477,11 +477,21 @@ func (g *Tarocchini) IsHumanScartoTurn() bool {
 }
 
 // ledSuit 現在のトリックのリードデザインを返す (未リードなら 0)。
+//
+// **マットはスートを定めない。**マットはトリックを取らずフォロー義務も免れる札
+// なので、これがリードされた場合のリードスートは「次に出た札」が決める。
+// 単純に先頭札のデザインを返すと 2 つ壊れる: (1) 他の全札がリードスート外に
+// なってランク -1 に落ち、マットを出した席がトリックを取ってしまう。
+// (2) 続く players が「リードスートを持たない」と判定され、切札を出す義務が
+// 生じて手札が丸ごと縛られる。
 func (g *Tarocchini) ledSuit() int {
-	if len(g.currentTrick) == 0 || g.currentTrick[0].Card == nil {
-		return 0
+	for _, tc := range g.currentTrick {
+		if tc == nil || tc.Card == nil || tarocchiniIsMatto(tc.Card) {
+			continue
+		}
+		return tc.Card.GetDesign()
 	}
-	return g.currentTrick[0].Card.GetDesign()
+	return 0
 }
 
 // GetValidPlayIndices 出せる手札の位置を返す。
@@ -497,10 +507,13 @@ func (g *Tarocchini) GetValidPlayIndices(playerIdx int) []int {
 	for i := 0; i < p.GetCardsSize(); i++ {
 		all = append(all, i)
 	}
-	if len(g.currentTrick) == 0 {
+	led := g.ledSuit()
+	// **リードスートがまだ決まっていなければ義務は生じない。**トリックが空のとき
+	// だけでなく、マットがリードされてまだ誰もスートを定めていないときも同じ。
+	// ここを取りこぼすと、マットの直後の席が切札を出す義務を負う。
+	if len(g.currentTrick) == 0 || led == 0 {
 		return all
 	}
-	led := g.ledSuit()
 	var follow, trumps, matto []int
 	for i := 0; i < p.GetCardsSize(); i++ {
 		c := p.GetCard(i)
@@ -596,7 +609,11 @@ func (g *Tarocchini) cpuSelectPlayCard(playerIdx int, valid []int) int {
 		}
 	}
 	// リード時は最強札、フォロー時は取れるなら取り、取れないなら最弱札。
-	if len(g.currentTrick) == 0 {
+	// **マットだけがリードされた局面はまだ「誰も勝っていない」。**マットは
+	// トリックを取らないので、リードスートが決まるまでは実質リードと同じ。
+	// ここを follow として扱うと、味方がマットを出した局面で「味方が勝っている」
+	// と誤判定し、取りに行くべきトリックをダックしてしまう。
+	if len(g.currentTrick) == 0 || led == 0 {
 		return best
 	}
 	winIdx := tarocchiniTrickWinnerOf(g.currentTrick, led)
