@@ -22,6 +22,8 @@
 package domain
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -65,6 +67,39 @@ func GanjifaCardStrength(design, value int) int {
 // GanjifaIsStrongSuit 強いスート群か。
 func GanjifaIsStrongSuit(design int) bool { return design <= GanjifaStrongSuitMax }
 
+// ganjifaSuitNames はムガル・ガンジファ 8 スートの慣用名 (design 1..8)。
+//
+// **強い群／弱い群の割り当ては本実装の取り決め**であって史料の断定ではない。
+// 史料によってスートの並びは異なるため、ここでは design 1..4 を強い群、
+// 5..8 を弱い群として固定し、名前だけを慣用名から採っている。
+var ganjifaSuitNames = [GanjifaSuitCnt + 1]string{
+	"", "Taj", "Shamsher", "Ashrafi", "Ghulam", "Chang", "Surkh", "Barat", "Qimash",
+}
+
+// ganjifaSuitGlyphs は各スートの表示記号 (design 1..8)。
+//
+// **絵文字は使わない。**CUI は等幅前提で桁を揃えるので、全角に化ける絵文字を
+// 入れると 96 枚の手札一覧がずれる。BMP の記号だけを使う。
+var ganjifaSuitGlyphs = [GanjifaSuitCnt + 1]string{
+	"", "\u265b", "\u2020", "\u25c9", "\u265f", "\u266a", "\u2726", "\u25a4", "\u25a7",
+}
+
+// GanjifaSuitName はスートの慣用名を返す。範囲外は空文字。
+func GanjifaSuitName(design int) string {
+	if design < 1 || design > GanjifaSuitCnt {
+		return ""
+	}
+	return ganjifaSuitNames[design]
+}
+
+// GanjifaSuitGlyph はスートの表示記号を返す。範囲外は空文字。
+func GanjifaSuitGlyph(design int) string {
+	if design < 1 || design > GanjifaSuitCnt {
+		return ""
+	}
+	return ganjifaSuitGlyphs[design]
+}
+
 // GanjifaPhase ゲームフェーズ。
 type GanjifaPhase int
 
@@ -98,6 +133,126 @@ type Ganjifa struct {
 	gameEndFlag      bool
 	winnerPlayer     int // -1 = 未確定 (同点)
 	actionLog        []*ActionLogEntry
+}
+
+// ganjifaJSON is the JSON wire format for Ganjifa.
+//
+// **全フィールドが非公開なので専用のコーデックが要る。**これを省くと
+// Cloudflare Worker のセッション復元が空のゲームを返し、リクエストのたびに
+// 手札も点も消える。deck / rng は載せない —— 配り終えた後の deck は残り札を
+// 持たず、rng は復元後に張り直せばよい。
+type ganjifaJSON struct {
+	Players          []*GanjifaPlayer      `json:"pl"`
+	Config           GanjifaConfig         `json:"cfg"`
+	Phase            GanjifaPhase          `json:"ph"`
+	RoundNumber      int                   `json:"rn"`
+	TrickNumber      int                   `json:"tn"`
+	CurrentPlayerIdx int                   `json:"cpi"`
+	CurrentTrick     []*TrickCard          `json:"ct"`
+	LeadPlayerIdx    int                   `json:"lpi"`
+	DealerIdx        int                   `json:"di"`
+	TrumpSuit        int                   `json:"ts"`
+	RoundTricks      [GanjifaPlayerCnt]int `json:"rt"`
+	PlayerScores     [GanjifaPlayerCnt]int `json:"ps"`
+	GameEndFlag      bool                  `json:"gef"`
+	WinnerPlayer     int                   `json:"wp"`
+	ActionLog        []*ActionLogEntry     `json:"al"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (g *Ganjifa) MarshalJSON() ([]byte, error) {
+	return json.Marshal(ganjifaJSON{
+		Players:          g.players,
+		Config:           g.config,
+		Phase:            g.phase,
+		RoundNumber:      g.roundNumber,
+		TrickNumber:      g.trickNumber,
+		CurrentPlayerIdx: g.currentPlayerIdx,
+		CurrentTrick:     g.currentTrick,
+		LeadPlayerIdx:    g.leadPlayerIdx,
+		DealerIdx:        g.dealerIdx,
+		TrumpSuit:        g.trumpSuit,
+		RoundTricks:      g.roundTricks,
+		PlayerScores:     g.playerScores,
+		GameEndFlag:      g.gameEndFlag,
+		WinnerPlayer:     g.winnerPlayer,
+		ActionLog:        g.actionLog,
+	})
+}
+
+// ganjifaMaxSliceLen caps slice sizes during deserialisation.
+const ganjifaMaxSliceLen = 5000
+
+// errGanjifaOversized is the single sentinel error for oversized input arrays.
+var errGanjifaOversized = errors.New("ganjifa: input array exceeds maximum allowed size")
+
+// errGanjifaInvalidPlayers is returned when restored state lacks exactly GanjifaPlayerCnt players.
+var errGanjifaInvalidPlayers = errors.New("ganjifa: invalid player count")
+
+// errGanjifaInvalidTrick is returned when a restored trick card is nil/out of range.
+var errGanjifaInvalidTrick = errors.New("ganjifa: invalid trick card")
+
+// errGanjifaInvalidState is returned when a restored index/state field is out of range.
+var errGanjifaInvalidState = errors.New("ganjifa: invalid state values in json")
+
+// UnmarshalJSON implements json.Unmarshaler.
+//
+// **切り札は 1..8 を許す。**標準 52 枚デッキ用のバリデーション (1..4) を
+// そのまま持ち込むと、弱い群が切り札のセッションが復元できなくなる。
+func (g *Ganjifa) UnmarshalJSON(data []byte) error {
+	var j ganjifaJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > ganjifaMaxSliceLen || len(j.CurrentTrick) > ganjifaMaxSliceLen ||
+		len(j.ActionLog) > ganjifaMaxSliceLen {
+		return errGanjifaOversized
+	}
+	if len(j.Players) != GanjifaPlayerCnt {
+		return errGanjifaInvalidPlayers
+	}
+	for _, p := range j.Players {
+		if p == nil {
+			return errGanjifaInvalidPlayers
+		}
+	}
+	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= GanjifaPlayerCnt ||
+		j.LeadPlayerIdx < 0 || j.LeadPlayerIdx >= GanjifaPlayerCnt ||
+		j.DealerIdx < 0 || j.DealerIdx >= GanjifaPlayerCnt ||
+		j.WinnerPlayer < -1 || j.WinnerPlayer >= GanjifaPlayerCnt ||
+		j.TrumpSuit < 0 || j.TrumpSuit > GanjifaSuitCnt ||
+		j.RoundNumber < 1 ||
+		j.TrickNumber < 1 || j.TrickNumber > GanjifaTrickCount ||
+		j.Phase < GanjifaPhasePlay || j.Phase > GanjifaPhaseGameEnd {
+		return errGanjifaInvalidState
+	}
+	for _, tc := range j.CurrentTrick {
+		if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= GanjifaPlayerCnt {
+			return errGanjifaInvalidTrick
+		}
+	}
+	if err := j.Config.Validate(); err != nil {
+		return err
+	}
+	g.players = j.Players
+	g.config = j.Config
+	g.phase = j.Phase
+	g.roundNumber = j.RoundNumber
+	g.trickNumber = j.TrickNumber
+	g.currentPlayerIdx = j.CurrentPlayerIdx
+	g.currentTrick = j.CurrentTrick
+	if g.currentTrick == nil {
+		g.currentTrick = make([]*TrickCard, 0)
+	}
+	g.leadPlayerIdx = j.LeadPlayerIdx
+	g.dealerIdx = j.DealerIdx
+	g.trumpSuit = j.TrumpSuit
+	g.roundTricks = j.RoundTricks
+	g.playerScores = j.PlayerScores
+	g.gameEndFlag = j.GameEndFlag
+	g.winnerPlayer = j.WinnerPlayer
+	g.actionLog = j.ActionLog
+	return nil
 }
 
 // NewGanjifa コンストラクタ。

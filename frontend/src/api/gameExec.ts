@@ -281,6 +281,7 @@ export const workerUrl: Record<string, string> = {
   fortyfives: WORKER_CASINO,
   nap: WORKER_CLASSIC,
   preference: WORKER_CLASSIC,
+  ganjifa: WORKER_EXTRA,
   twentynine: WORKER_CASINO,
   courtpiece: WORKER_CASINO,
   bezique: WORKER_CLASSIC,

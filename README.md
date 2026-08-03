@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した259種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した260種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -187,6 +187,7 @@ Go + Clean Architecture で実装した259種類のトランプゲーム。CLI �
 | ノックアウト・ホイスト (Knockout Whist) | `knockoutwhist` | [CUI](docs/manual/cui/knockoutwhist.md) / [Web](docs/manual/web/knockoutwhist.md) |
 | スポイル・ファイブ (Spoil Five / Maw) | `spoilfive` | [CUI](docs/manual/cui/spoilfive.md) / [Web](docs/manual/web/spoilfive.md) |
 | ナップ (Nap / Napoleon) | `nap` | [CUI](docs/manual/cui/nap.md) / [Web](docs/manual/web/nap.md) |
+| ガンジファ (Ganjifa) | `ganjifa` | [CUI](docs/manual/cui/ganjifa.md) / [Web](docs/manual/web/ganjifa.md) |
 | プレフェランス (Préférence) | `preference` | [CUI](docs/manual/cui/preference.md) / [Web](docs/manual/web/preference.md) |
 | フォーティファイブズ (Auction Forty-Fives) | `fortyfives` | [CUI](docs/manual/cui/fortyfives.md) / [Web](docs/manual/web/fortyfives.md) |
 | トゥエンティナイン (Twenty-Nine / 29) | `twentynine` | [CUI](docs/manual/cui/twentynine.md) / [Web](docs/manual/web/twentynine.md) |

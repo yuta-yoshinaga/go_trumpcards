@@ -125,3 +125,78 @@ func TestGanjifa_HintNamesTheWeakSuitWhenItPicksOne(t *testing.T) {
 		assert.Contains(t, hint.Reason, "weak_suit")
 	}
 }
+
+// The whole game state lives in unexported fields, so a session that round-trips
+// through KV on the Worker only survives if the custom codec carries it. Plain
+// json.Marshal on the struct would emit "{}" and silently reset every hand.
+func TestGanjifa_JSONRoundTripPreservesHands(t *testing.T) {
+	src := NewDefaultGanjifa()
+	src.SetRand(rand.New(rand.NewSource(7)))
+	src.Reset()
+	src.SetPhase(GanjifaPhaseTrickEnd)
+
+	data, err := src.MarshalJSON()
+	assert.NoError(t, err)
+
+	var got Ganjifa
+	assert.NoError(t, got.UnmarshalJSON(data))
+	assert.Equal(t, GanjifaPhaseTrickEnd, got.GetPhase())
+	assert.Equal(t, src.GetTrumpSuit(), got.GetTrumpSuit())
+	assert.Equal(t, src.GetDealerIdx(), got.GetDealerIdx())
+	assert.Equal(t, GanjifaPlayerCnt, got.GetPlayerCnt())
+	for i := 0; i < GanjifaPlayerCnt; i++ {
+		assert.Equal(t, GanjifaHandSize, got.GetPlayer(i).GetCardsSize())
+		assert.Equal(t, src.GetPlayer(i).GetCard(0).GetDesign(), got.GetPlayer(i).GetCard(0).GetDesign())
+		assert.Equal(t, src.GetPlayer(i).GetCard(0).GetValue(), got.GetPlayer(i).GetCard(0).GetValue())
+	}
+}
+
+// A weak-group trump is a legal state (designs 5-8), so borrowing the standard
+// 52-card bound of 1-4 here would make half of all sessions unrestorable.
+func TestGanjifa_UnmarshalAcceptsWeakGroupTrump(t *testing.T) {
+	src := NewDefaultGanjifa()
+	src.Reset()
+	for suit := 1; suit <= GanjifaSuitCnt; suit++ {
+		src.trumpSuit = suit
+		data, err := src.MarshalJSON()
+		assert.NoError(t, err)
+		var got Ganjifa
+		assert.NoError(t, got.UnmarshalJSON(data), "trump suit %d must round-trip", suit)
+		assert.Equal(t, suit, got.GetTrumpSuit())
+	}
+}
+
+func TestGanjifa_UnmarshalRejectsBadState(t *testing.T) {
+	cases := map[string]string{
+		"not json":   `{`,
+		"no players": `{"pl":[],"rn":1,"tn":1}`,
+		"trump out of range": `{"pl":[{},{},{}],"rn":1,"tn":1,"ts":9,` +
+			`"cfg":{"cd":1,"tr":3}}`,
+		"trick number too high": `{"pl":[{},{},{}],"rn":1,"tn":99,"cfg":{"cd":1,"tr":3}}`,
+		"nil trick card":        `{"pl":[{},{},{}],"rn":1,"tn":1,"ct":[null],"cfg":{"cd":1,"tr":3}}`,
+		"invalid config":        `{"pl":[{},{},{}],"rn":1,"tn":1,"cfg":{"cd":1,"tr":0}}`,
+	}
+	for name, payload := range cases {
+		t.Run(name, func(t *testing.T) {
+			var got Ganjifa
+			assert.Error(t, got.UnmarshalJSON([]byte(payload)))
+		})
+	}
+}
+
+func TestGanjifa_SuitNamesAndGlyphs(t *testing.T) {
+	seenNames := map[string]bool{}
+	seenGlyphs := map[string]bool{}
+	for suit := 1; suit <= GanjifaSuitCnt; suit++ {
+		name, glyph := GanjifaSuitName(suit), GanjifaSuitGlyph(suit)
+		assert.NotEmpty(t, name)
+		assert.NotEmpty(t, glyph)
+		assert.False(t, seenNames[name], "suit name %q is reused", name)
+		assert.False(t, seenGlyphs[glyph], "suit glyph %q is reused", glyph)
+		seenNames[name], seenGlyphs[glyph] = true, true
+	}
+	for _, bad := range []int{0, -1, GanjifaSuitCnt + 1} {
+		assert.Empty(t, GanjifaSuitName(bad))
+		assert.Empty(t, GanjifaSuitGlyph(bad))
+	}
+}

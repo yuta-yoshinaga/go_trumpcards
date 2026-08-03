@@ -61,9 +61,34 @@ async function passthroughGames() {
   return games;
 }
 
-/** Reason literals in a domain file. */
+/**
+ * Reason literals in a domain file.
+ *
+ * Two shapes count. `Reason: "x"` is the common one. The second is a helper that
+ * computes the key and returns it — `func (g *X) playHintReason(...) string { ...
+ * return "lead_high" }` — and it has to be read too: Ganjifa built its keys that
+ * way, so the `Reason:` pattern alone found nothing, the game was skipped as
+ * "emits no reasons", and three of its six hints shipped as raw keys while two
+ * translated keys were never emitted. A guard that silently skips is worse than
+ * no guard, because the passing line reads like coverage.
+ */
 function reasonsIn(src) {
-  return new Set([...src.matchAll(/Reason:\s*"([a-z0-9_]+)"/g)].map((m) => m[1]));
+  const found = new Set([...src.matchAll(/Reason:\s*"([a-z0-9_]+)"/g)].map((m) => m[1]));
+  for (const fn of src.matchAll(/func [^\n]*[Hh]intReason[^\n]*\bstring\s*\{/g)) {
+    const body = balancedBody(src, src.indexOf('{', fn.index + fn[0].length - 1));
+    for (const r of body.matchAll(/return\s+"([a-z0-9_]+)"/g)) found.add(r[1]);
+  }
+  return found;
+}
+
+/** Source from an opening brace to its match, so a nested block cannot end the scan early. */
+function balancedBody(src, open) {
+  let depth = 0;
+  for (let i = open; i < src.length; i++) {
+    if (src[i] === '{') depth++;
+    else if (src[i] === '}' && --depth === 0) return src.slice(open, i + 1);
+  }
+  return src.slice(open);
 }
 
 /** Every hint key a locale defines under its nested `hint` object. */
