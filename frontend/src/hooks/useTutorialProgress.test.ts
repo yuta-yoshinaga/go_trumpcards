@@ -1,5 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
+import { gameRoutes } from '../constants/gameRoutes';
 import { useTutorialProgress } from './useTutorialProgress';
 
 describe('useTutorialProgress', () => {
@@ -9,7 +10,9 @@ describe('useTutorialProgress', () => {
 
   it('returns all games with 0 completed by default', () => {
     const { result } = renderHook(() => useTutorialProgress());
-    expect(result.current.totalCount).toBe(259);
+    // **数えて比べる。**リテラルを書くとゲームを 1 つ足すたびにここが落ち、
+    // しかも落ちた理由が「数が変わった」ことだと読み取れない (#4652 と同型)。
+    expect(result.current.totalCount).toBe(gameRoutes.length);
     expect(result.current.completedCount).toBe(0);
     expect(result.current.games.every((g) => !g.completed)).toBe(true);
   });

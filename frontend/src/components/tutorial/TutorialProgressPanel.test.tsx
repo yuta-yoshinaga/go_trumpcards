@@ -1,7 +1,18 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it } from 'vitest';
+import { gameRoutes } from '../../constants/gameRoutes';
 import { TutorialProgressPanel } from './TutorialProgressPanel';
+
+/**
+ * How many games the panel lists.
+ *
+ * **Derived, not written down.** This used to be the literal 259, so adding a
+ * game failed three assertions here with no hint that the count was the point
+ * (#4652 is the same shape one layer up). `useTutorialProgress` reads
+ * `gameRoutes`, so reading it here keeps the two in step by construction.
+ */
+const GAME_COUNT = gameRoutes.length;
 
 function renderPanel() {
   return render(
@@ -19,7 +30,7 @@ describe('TutorialProgressPanel', () => {
   it('renders progress summary with 0 completed', () => {
     renderPanel();
     expect(screen.getByText(/0/)).toBeInTheDocument();
-    expect(screen.getByText(/259/)).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(String(GAME_COUNT)))).toBeInTheDocument();
   });
 
   it('shows correct completed count', () => {
@@ -33,7 +44,7 @@ describe('TutorialProgressPanel', () => {
   it('renders game links as icons', () => {
     renderPanel();
     const links = screen.getAllByRole('link');
-    expect(links.length).toBe(259);
+    expect(links.length).toBe(GAME_COUNT);
   });
 
   it('shows checkmark for completed games', () => {
@@ -46,7 +57,7 @@ describe('TutorialProgressPanel', () => {
   it('shows circle for incomplete games', () => {
     renderPanel();
     const incompleteMarkers = screen.getAllByText('○');
-    expect(incompleteMarkers.length).toBe(259);
+    expect(incompleteMarkers.length).toBe(GAME_COUNT);
   });
 
   it('renders as details/summary collapsible', () => {

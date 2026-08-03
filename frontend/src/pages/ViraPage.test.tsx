@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { viraApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeViraState } from '../test/stateFactories';
 import { ViraPage } from './ViraPage';
@@ -272,5 +273,52 @@ describe('ViraPage', () => {
     });
     renderWithProviders(<ViraPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
+
+  // **ハンドラは押して初めて走る。**描画だけを見るテストでは `useViraGame` の
+  // exec 呼び出しが一度も通らず、カバレッジに穴が残る（codecov が #4660 で
+  // 指摘したのがこれ）。
+  it('plays the selected card', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<ViraPage />);
+    // 手札は `PlayerHandSection` が `cardAlt` を aria-label にして描く。
+    await screen.findByRole('button', { name: '出す' });
+    const hand = screen.getAllByRole('button').filter((b) => /^[♠♣♥♦] /.test(b.getAttribute('aria-label') ?? ''));
+    expect(hand.length).toBeGreaterThan(0);
+    fireEvent.click(hand[0]);
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', expect.anything()));
+  });
+
+  it('advances to the next trick', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<ViraPage />);
+    const next = await screen.findByRole('button', { name: '次のトリック' });
+    mockExec.mockClear();
+    fireEvent.click(next);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+  });
+
+  it('advances to the next round', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<ViraPage />);
+    const next = await screen.findByRole('button', { name: '次のラウンド' });
+    mockExec.mockClear();
+    fireEvent.click(next);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('does nothing when no card is selected', async () => {
+    // `handlePlay` は選択が 1 枚でなければ何もしない。押しても exec が飛ばない
+    // ことを踏まないと、この早期 return が未カバーのまま残る。
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<ViraPage />);
+    const play = await screen.findByRole('button', { name: '出す' });
+    mockExec.mockClear();
+    fireEvent.click(play);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });
