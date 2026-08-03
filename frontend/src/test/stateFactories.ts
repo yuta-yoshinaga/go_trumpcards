@@ -29,6 +29,7 @@ import type {
   ManilleResponse,
   MariasResponse,
   MichiganResponse,
+  MinchiateResponse,
   MusResponse,
   NapResponse,
   OmbreResponse,
@@ -2567,6 +2568,57 @@ const baseTeenPattiState: TeenPattiResponse = {
  */
 export function makeTeenPattiState(overrides?: Partial<TeenPattiResponse>): TeenPattiResponse {
   return { ...baseTeenPattiState, ...overrides };
+}
+
+/**
+ * Base Minchiate state used as the default for {@link makeMinchiateState}.
+ * A 4-player Florentine 2v2 tarot trick-taker on a 97-card deck; defaults to a
+ * human play turn with the dealer's scarto already done.
+ */
+const baseMinchiateState: MinchiateResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 21,
+      cards: [
+        { design: 'SPADE' as const, value: 14, glyph: '\u2660', label: 'Re', color: 'black', deck: 'tarot' },
+        // 切札は番号ではなく呼び名。40 枚あるので番号だけでは何の札か分からない。
+        { design: 'JOKER' as const, value: 39, glyph: '\u2726', label: 'Angelo', color: 'purple', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 12, glyph: '\u2726', label: 'Eremita', color: 'purple', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      team: 0,
+      isDealer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 21, cards: [], trickCount: 0, team: 1, isDealer: false },
+    { id: 2, isHuman: false, cardCount: 21, cards: [], trickCount: 0, team: 0, isDealer: false },
+    { id: 3, isHuman: false, cardCount: 21, cards: [], trickCount: 0, team: 1, isDealer: false },
+  ],
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 1,
+  dealerIdx: 0,
+  scartoCount: 13,
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundTricks: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  isHumanScarto: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 4 },
+};
+
+/** Builds a Minchiate state for tests, overriding fields of the default human play turn. */
+export function makeMinchiateState(overrides?: Partial<MinchiateResponse>): MinchiateResponse {
+  return { ...baseMinchiateState, ...overrides };
 }
 
 /**

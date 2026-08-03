@@ -477,6 +477,15 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 2], skill: [2, 4, 5, 2], social: [1, 3, 5, 3, 5], theme: [2, 4, 2, 1, 2, 3] },
       },
       {
+        path: '/minchiate',
+        labelKey: 'nav.minchiate',
+        icon: '🔭',
+        // Tarocchini / Scarto の隣。同じイタリア系タロットで、親が余剰札を捨てる
+        // 骨格も共通なので、探す人は同じ列を見る。
+        page: 'Minchiate',
+        profile: { mood: [3, 4, 5, 2], skill: [2, 3, 5, 2], social: [1, 2, 5, 4, 5], theme: [2, 4, 1, 1, 3, 3] },
+      },
+      {
         path: '/tarocchini',
         labelKey: 'nav.tarocchini',
         icon: '🃏',

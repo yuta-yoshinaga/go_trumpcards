@@ -252,6 +252,7 @@ var gameDescriptions = map[string]string{
 	"hachihachi":          "Hachi-Hachi (八八)",
 	"frenchtarot":         "French Tarot (フレンチタロット)",
 	"koenigrufen":         "Königrufen / Tarock (ケーニッヒルーフェン)",
+	"minchiate":           "Minchiate (ミンキアーテ)",
 	"tarocchini":          "Tarocchini (タロッキーニ)",
 	"scarto":              "Scarto (スカルト)",
 	"cego":                "Cego (チェゴ)",

@@ -1,0 +1,57 @@
+{
+  "phase": {
+    "scarto": "Scarto",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetRounds": "Rounds",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "target": "{{rounds}} rounds total",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "trickEmpty": "(no cards yet)",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "team": "Team {{n}}",
+  "teamScore": "Team {{n}}: {{score}}",
+  "dealerBadge": "dealer",
+  "scartoPrompt": "Choose {{count}} cards to bury (trumps and the Matto cannot be chosen)",
+  "scartoButton": "Bury",
+  "scartoDone": "Buried: {{count}} cards",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "roundResult": {
+    "title": "Round Result",
+    "tricks": "{{name}} tricks: {{count}}"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_low": "Lead a low card and hold your strength back",
+    "lead_trump": "Lead a trump to seize the initiative",
+    "play_matto": "Play the Matto (it takes no trick but is exempt from following)",
+    "follow_trump": "Follow with a trump to take the trick",
+    "follow_low": "You cannot take it, so follow with a low card"
+  },
+  "tutorial": {
+    "info": "The round, trick and team scores are shown here. Opposite seats are fixed partners in 2v2, and you are seat 0. There is no bidding.",
+    "trick": "Cards played to the table appear here. You must follow the led suit, and must play a trump when void. The Matto alone is exempt and may be played at any time -- though it never takes a trick. **A led Matto does not set the suit** -- the next card played does.",
+    "hand": "Your hand: 21 of the 97 tarot cards. Trumps are shown by name (Angelo, Eremita, ...) rather than by number alone.",
+    "actions": "The heart of this game is that **there are 40 trumps** -- nearly double the 21 of every other tarot game here, so the instinct that \"nothing can still be above me\" does not hold. Tracking how many higher trumps have gone is the main skill. As dealer you also bury 13 surplus cards, and those score for your team (13 points)."
+  },
+  "hintRequested": "A hint is available",
+  "noHint": "No hint available",
+  "trumpCountNote": "40 trumps -- including the 12 zodiac signs, the four elements and the virtues; tracking what is still above you is the skill"
+}
