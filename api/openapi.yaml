@@ -18702,6 +18702,88 @@ paths:
               schema:
                 $ref: '#/components/schemas/PreferenceResponse'
 
+  /ganjifa/exec:
+    post:
+      tags:
+        - ganjifa
+      summary: Execute a Ganjifa game command
+      description: |
+        Send a command to advance a Ganjifa session identified by `sessionId`.
+        Ganjifa is a 3-player (1 human + 2 CPU) Mughal-era Indian trick-taking game on a
+        **circular 96-card deck** of 8 suits x 12 ranks. Each player is dealt 32 cards and
+        32 tricks are played per round; there is no bidding.
+        **The rank order inverts between suit groups**, which is what separates this game
+        from every other trick-taker here:
+        strong suits (design 1-4) rank high-to-low from 12 down to 1, while weak suits
+        (design 5-8) rank the other way — 1 is the strongest card and 12 the weakest.
+        The same "3" is third-from-bottom in a strong suit and third-from-top in a weak one,
+        so comparing raw values gives the opposite answer in half the deck.
+        Trump: the dealer's longest suit is auto-declared each round, so **whether trump is a
+        strong or a weak suit changes how the hand should be read**; the response carries the
+        trump suit and the UI states which group it belongs to.
+        Must-follow: players must follow the led suit if able; otherwise any card may be played.
+        Highest trump wins; if no trump, the strongest card of the led suit wins — "strongest"
+        always meaning the group-aware order above.
+        Scoring: each trick won is one point. After the configured number of rounds
+        (default 3) the highest total wins; a tie leaves no winner.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+                | Play      | `0`   | Thirty-two tricks played under must-follow rules |
+        | TrickEnd  | `1`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `2`   | Round scored; advance with `nextround` |
+        | GameEnd   | `3`   | The configured number of rounds has been played |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+                        | `play`            | —                      | Play a card by `cardIndex` (Play phase) |
+        | `next`            | `n`                    | Advance to the next trick |
+        | `nextround`       | `nr`                   | Score the round and start the next |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `log`             | `l`                    | View action log |
+      operationId: ganjifaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GanjifaRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick
+                value:
+                  command: next
+                  sessionId: my-session-001
+              nextround:
+                summary: Score the round and continue
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GanjifaResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GanjifaResponse'
   /vira/exec:
     post:
       tags:
@@ -46180,6 +46262,43 @@ components:
           description: Client-generated session identifier (max 256 characters)
           example: my-session-001
 
+    GanjifaRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`),
+            `play`, `next` (`n`), `nextround` (`nr`), `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, play, next, n, nextround, nr, setdifficulty, sd, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetRounds:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
     ViraRequest:
       type: object
       required:
@@ -47260,6 +47379,107 @@ components:
             targetScore:
               type: integer
 
+    GanjifaResponse:
+      type: object
+      description: Current state of the Ganjifa game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+                description: Tricks won by this player in the current round
+              score:
+                type: integer
+                description: Cumulative tricks won by this player across the match
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=TrickEnd, 2=RoundEnd, 3=GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: >
+            Trump suit as a Ganjifa design (1-8), auto-declared each round as the dealer's
+            longest suit. **Designs 1-4 are the strong group and 5-8 the weak group**, and
+            the rank order inverts between them: in a strong suit the 12 is the highest
+            card, in a weak suit the 1 is. A client that ranks by raw value gets the
+            opposite answer for half the deck.
+          minimum: 0
+          maximum: 8
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        playerScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative tricks won per player across the match (index = player seat)
+        roundTricks:
+          type: array
+          items:
+            type: integer
+          description: Number of tricks won by each player in the current round (index = player seat)
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+          description: Index of the winning player (-1 if undecided, and also -1 on a tie)
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetRounds:
+              type: integer
     ViraResponse:
       type: object
       description: Current state of the Vira game

@@ -3,6 +3,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { gameRoutes } from '../constants/gameRoutes';
 import { useTutorialProgress } from './useTutorialProgress';
 
+// **ゲーム数はここに数字で書かない。**書けばゲームを 1 本足すたびに無関係な
+// テストが赤くなるだけで、何も守っていない (#4652)。
+const TOTAL_GAMES = gameRoutes.length;
+
 describe('useTutorialProgress', () => {
   afterEach(() => {
     localStorage.clear();
@@ -10,9 +14,7 @@ describe('useTutorialProgress', () => {
 
   it('returns all games with 0 completed by default', () => {
     const { result } = renderHook(() => useTutorialProgress());
-    // **数えて比べる。**リテラルを書くとゲームを 1 つ足すたびにここが落ち、
-    // しかも落ちた理由が「数が変わった」ことだと読み取れない (#4652 と同型)。
-    expect(result.current.totalCount).toBe(gameRoutes.length);
+    expect(result.current.totalCount).toBe(TOTAL_GAMES);
     expect(result.current.completedCount).toBe(0);
     expect(result.current.games.every((g) => !g.completed)).toBe(true);
   });
@@ -47,5 +49,14 @@ describe('useTutorialProgress', () => {
       expect(game.labelKey).toBeTruthy();
       expect(game.gameName).toBeTruthy();
     }
+  });
+});
+
+// Guards the guard: if gameRoutes ever stops being the flattened game list,
+// TOTAL_GAMES silently becomes a category count and the assertions above go
+// vacuous. A floor is enough — it must not be a handful of categories.
+describe('TOTAL_GAMES derivation', () => {
+  it('counts games, not categories', () => {
+    expect(TOTAL_GAMES).toBeGreaterThan(200);
   });
 });

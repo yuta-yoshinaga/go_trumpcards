@@ -190,6 +190,7 @@ var gameDescriptions = map[string]string{
 	"knockoutwhist":       "Knockout Whist (ノックアウト・ホイスト)",
 	"nap":                 "Nap / Napoleon (ナップ)",
 	"preference":          "Préférence (プレフェランス)",
+	"ganjifa":             "Ganjifa (ガンジファ)",
 	"vira":                "Vira (ヴィーラ)",
 	"spoilfive":           "Spoil Five / Maw (スポイル・ファイブ)",
 	"courtpiece":          "Court Piece / Rang (コートピース)",

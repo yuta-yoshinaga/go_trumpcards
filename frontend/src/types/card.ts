@@ -93,6 +93,7 @@ export * from './games/fourcardpoker';
 export * from './games/freecell';
 export * from './games/frenchtarot';
 export * from './games/gaigel';
+export * from './games/ganjifa';
 export * from './games/gaps';
 export * from './games/ginrummy';
 export * from './games/gofish';

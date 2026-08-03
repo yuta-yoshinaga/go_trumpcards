@@ -13,6 +13,7 @@ import type {
   EscobaResponse,
   FortyFivesResponse,
   FrenchTarotResponse,
+  GanjifaResponse,
   GongZhuResponse,
   GoStopBreakdown,
   GoStopResponse,
@@ -2565,6 +2566,54 @@ const baseTeenPattiState: TeenPattiResponse = {
  */
 export function makeTeenPattiState(overrides?: Partial<TeenPattiResponse>): TeenPattiResponse {
   return { ...baseTeenPattiState, ...overrides };
+}
+
+/**
+ * Base Ganjifa state used as the default for {@link makeGanjifaState}. A 3-player
+ * Mughal-era trick-taker on a 96-card 8-suit deck; defaults to a human play turn
+ * with a strong-group trump (design 1).
+ */
+const baseGanjifaState: GanjifaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 32,
+      cards: [
+        // The Go side maps designs 1-4 onto the standard suit names and everything
+        // above onto 'JOKER'; only `deck`/`glyph` actually drive the rendering.
+        { design: 'SPADE' as const, value: 12, glyph: '\u265b', label: '12', color: 'black', deck: 'ganjifa' },
+        { design: 'JOKER' as const, value: 1, glyph: '\u266a', label: '1', color: 'blue', deck: 'ganjifa' },
+        { design: 'CLOVER' as const, value: 7, glyph: '\u2020', label: '7', color: 'black', deck: 'ganjifa' },
+      ],
+      trickCount: 0,
+      score: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 32, cards: [], trickCount: 0, score: 0 },
+    { id: 2, isHuman: false, cardCount: 32, cards: [], trickCount: 0, score: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  trumpSuit: 1,
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  roundTricks: [0, 0, 0],
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 3 },
+};
+
+/** Builds a Ganjifa state for tests, overriding fields of the default human play turn. */
+export function makeGanjifaState(overrides?: Partial<GanjifaResponse>): GanjifaResponse {
+  return { ...baseGanjifaState, ...overrides };
 }
 
 /** Base Préférence state used as the default for {@link makePreferenceState}. A 3-player Russian bidding trick-taker; defaults to a human Bid turn. */

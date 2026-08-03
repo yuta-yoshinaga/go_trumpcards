@@ -1160,6 +1160,11 @@ describe('hintFactories wiring', () => {
       state: { hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 } },
       reason: 'frontendHint.fortyandeightMove',
     },
+    {
+      game: 'ganjifa',
+      state: { hint: { cardIndices: [0], reason: 'lead_high' } },
+      reason: 'hint.lead_high',
+    },
   ] as const;
 
   it.each(CASES)('$game returns a hint rather than the null stub', ({ game, state }) => {

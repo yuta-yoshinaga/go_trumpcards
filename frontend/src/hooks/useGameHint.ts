@@ -86,6 +86,7 @@ import type {
   FreeCellResponse,
   FrenchTarotResponse,
   GaigelResponse,
+  GanjifaResponse,
   GapsResponse,
   GinRummyResponse,
   GoFishResponse,
@@ -339,6 +340,7 @@ import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getFrenchTarotHint } from '../utils/hints/frenchtarotHint';
 import { getGaigelHint } from '../utils/hints/gaigelHint';
+import { getGanjifaHint } from '../utils/hints/ganjifaHint';
 import { getGapsHint } from '../utils/hints/gapsHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
@@ -744,6 +746,7 @@ export const hintFactories = {
   solowhist: (s) => getSoloWhistHint(s as SoloWhistResponse),
   fortyfives: (s) => getFortyFivesHint(s as FortyFivesResponse),
   nap: (s) => getNapHint(s as NapResponse),
+  ganjifa: (s) => getGanjifaHint(s as GanjifaResponse),
   preference: (s) => getPreferenceHint(s as PreferenceResponse),
   vira: (s) => getViraHint(s as ViraResponse),
   twentynine: (s) => getTwentyNineHint(s as TwentyNineResponse),

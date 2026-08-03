@@ -121,6 +121,8 @@
   --color-game-bg-nap: #6e1f2e;
   --color-game-bg-nap-dark: #47131e;
   /* Préférence — imperial-Russian petrol/teal felt with a gilt undertone, distinct from every other felt (Austro-Russian salon game). */
+  --color-game-bg-ganjifa: #3b2352;
+  --color-game-bg-ganjifa-dark: #241433;
   /* Vira: スウェーデンの旗の青系。既存のどの game-bg とも重複しない値。 */
   --color-game-bg-vira: #1b3a63;
   --color-game-bg-vira-dark: #10233c;

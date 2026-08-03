@@ -399,6 +399,7 @@ var registry = []*Game{
 	{Name: "knockoutwhist", Category: CategoryClassic},
 	{Name: "nap", Category: CategoryClassic},
 	{Name: "preference", Category: CategoryClassic},
+	{Name: "ganjifa", Category: CategoryExtra},
 	{Name: "vira", Category: CategoryExtra},
 	{Name: "spoilfive", Category: CategoryClassic},
 	// Court Piece (コートピース / Rang / Hokm) is a Pakistani/Iranian 4-player (2v2) trick-
