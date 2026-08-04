@@ -379,7 +379,7 @@ function SambaPageContent() {
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
                         <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {p.cardCount} cards
+                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })}
                         </div>
                         {p.cards.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1">

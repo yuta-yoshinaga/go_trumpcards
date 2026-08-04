@@ -57,7 +57,13 @@
     "leadValue": "Lead a high-value card",
     "followCut": "Cut with trump",
     "followWin": "Win the trick",
-    "followDump": "Discard a low-value card"
+    "followDump": "Discard a low-value card",
+    "lead_trump": "Lead a trump",
+    "lead_low": "Lead a low card",
+    "lead_value": "Lead a point card",
+    "follow_cut": "Trump the trick",
+    "follow_win": "Win the trick",
+    "follow_dump": "Discard a low card"
   },
   "hintReason": {
     "marriage": "Declare a marriage (King + Queen)",

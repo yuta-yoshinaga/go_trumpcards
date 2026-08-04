@@ -182,4 +182,23 @@ describe('GaigelPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
+
+  it('translates the server hint reason instead of leaking the raw code', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<GaigelPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValue(makeState({ hint: { cardIndex: 2, reason: 'lead_trump', isMarriage: false } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/切り札をリード/)).toBeInTheDocument());
+    expect(screen.queryByText(/lead_trump/)).not.toBeInTheDocument();
+  });
+
+  it('falls back to the raw code for an unknown hint reason', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<GaigelPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValue(makeState({ hint: { cardIndex: 0, reason: 'no_such_reason', isMarriage: false } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/no_such_reason/)).toBeInTheDocument());
+  });
 });

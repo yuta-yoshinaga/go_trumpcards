@@ -203,4 +203,14 @@ describe('SambaPage', () => {
     expect(sambaProgress).toHaveTextContent('サンバ成立！');
     expect(sambaProgress.className).toContain('animate-pulse');
   });
+
+  it('localizes the CPU hand-count label at round end', async () => {
+    // The label is split across text nodes, so match on the row's textContent.
+    const cpuRows = (re: RegExp) =>
+      screen.queryAllByText((_, el) => el?.tagName === 'DIV' && re.test(el.textContent ?? ''));
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<SambaPage />);
+    await waitFor(() => expect(cpuRows(/^CPU \d+: \d+枚$/).length).toBeGreaterThan(0));
+    expect(cpuRows(/^CPU \d+: \d+ cards$/)).toHaveLength(0);
+  });
 });

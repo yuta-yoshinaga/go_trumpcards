@@ -57,7 +57,13 @@
     "leadValue": "高得点のカードでリード",
     "followCut": "切り札でカット",
     "followWin": "トリックを取る",
-    "followDump": "低得点のカードを捨てる"
+    "followDump": "低得点のカードを捨てる",
+    "lead_trump": "切り札をリード",
+    "lead_low": "低いカードをリード",
+    "lead_value": "点札をリード",
+    "follow_cut": "切り札でトリックを取る",
+    "follow_win": "トリックを取る",
+    "follow_dump": "低いカードを捨てる"
   },
   "hintReason": {
     "marriage": "マリッジ宣言 (キング+クイーン)",

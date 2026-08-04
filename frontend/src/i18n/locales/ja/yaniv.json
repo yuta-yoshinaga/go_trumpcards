@@ -27,6 +27,9 @@
   },
   "settings": {
     "cpuDifficulty": "CPU難易度",
+    "easy": "Easy",
+    "hard": "Hard",
+    "normal": "Normal",
     "scoreLimit": "脱落スコア"
   },
   "discardWarn": {
