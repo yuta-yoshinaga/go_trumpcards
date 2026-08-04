@@ -35,6 +35,7 @@ import { valueName } from '../utils/cardUtils';
 import { PAGEONE_HELP, parsePageoneCommand } from '../utils/cli/commands/pageoneCommands';
 import { formatPageoneState } from '../utils/cli/formatters/pageoneFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isPageOnePlayable } from '../utils/hints/pageoneHint';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -321,25 +322,35 @@ function PageOnePageContent() {
             )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="po-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
+                {humanPlayer.cards.map((card, idx) => {
+                  // The CUI lists the legal indices every turn; the web player had
+                  // to compare each card against the discard top by eye (#4744).
+                  const playable = isHumanTurn && isPageOnePlayable(card, state.discardTop);
+                  return (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}-${idx}`}
+                      onClick={() => toggleCard(idx)}
+                      aria-label={playable ? `${cardAlt(card)} (${t('playableAria')})` : cardAlt(card)}
+                      aria-pressed={selectedCardIndices.includes(idx)}
+                      data-playable={playable || undefined}
+                      className={`transition-transform ${focusRingCard} ${
+                        playable && !selectedCardIndices.includes(idx)
+                          ? 'ring-2 ring-ds-success motion-safe:animate-pulse rounded'
+                          : ''
+                      }`}
+                      style={{
+                        background: 'none',
+                        padding: 0,
+                        borderRadius: 8,
+                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </button>
+                  );
+                })}
               </div>
             )}
 

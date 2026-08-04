@@ -29,6 +29,7 @@ import {
   type ScoponeCliArgs,
 } from '../utils/cli/commands/scoponeCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { scoponeSelectionSum } from '../utils/scoponeSelectionSum';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const DIFFICULTY_OPTIONS = [
@@ -191,6 +192,13 @@ function ScoponePageContent() {
     handIndex !== null && isHumanTurn ? captureCandidateIndices(state.handCaptures, handIndex) : new Set<number>();
   const canTake = isHumanTurn && handIndex !== null && tableIndices.length > 0;
   const canLay = isHumanTurn && handIndex !== null && tableIndices.length === 0;
+  // Scopone's target moves with the chosen hand card, so the mental arithmetic is
+  // heavier than Escoba's fixed 15 — yet only Escoba showed a running total (#4767).
+  const selection = scoponeSelectionSum(
+    handIndex === null ? null : human.cards[handIndex],
+    state.tableCards,
+    tableIndices,
+  );
   const phaseName = isGameEnd ? t('phase.gameEnd') : t(`phase.${state.phase}`, t('phase.play'));
   const detail = state.lastRoundDetail;
 
@@ -267,6 +275,22 @@ function ScoponePageContent() {
                   >
                     {scopaCelebration.own ? t('label.scopaBadgeOwn') : t('label.scopaBadge')}
                   </span>
+                </div>
+              )}
+              {selection !== null && tableIndices.length > 0 && (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  data-testid="scopone-sum-indicator"
+                  className={`text-center text-sm font-bold mb-1 ${
+                    selection.sum === selection.target
+                      ? 'text-ds-success'
+                      : selection.sum > selection.target
+                        ? 'text-ds-error'
+                        : 'text-ds-text-muted'
+                  }`}
+                >
+                  {t('sumIndicator', { sum: selection.sum, target: selection.target })}
                 </div>
               )}
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>

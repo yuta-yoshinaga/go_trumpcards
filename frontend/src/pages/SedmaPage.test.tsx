@@ -158,4 +158,13 @@ describe('SedmaPage', () => {
     renderWithProviders(<SedmaPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  it('shows the match target during play', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<SedmaPage />);
+    // The setting that decides the match was only visible inside the panel.
+    await waitFor(() => expect(screen.getByTestId('sedma-target')).toBeInTheDocument());
+  });
 });
