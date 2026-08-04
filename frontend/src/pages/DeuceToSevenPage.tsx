@@ -169,9 +169,12 @@ function DeuceToSevenPageContent() {
   // During the draw, lift the best-low core cards and dim the draw candidates.
   // Gated on the hint setting as well as the phase: the lift/dim is a hint in
   // everything but name, so turning hints off has to silence it too (#4701/#4702).
+  // Hoisted so the empty case is a real state (no human seat) rather than an
+  // unreachable fallback inside the guard: canExchange already implies a seat.
+  const humanCards = humanPlayer?.cards ?? [];
   const bestSubset = useMemo(
-    () => (canExchange && hintEnabled ? new Set(deuceToSevenBestIndices(humanPlayer?.cards ?? [])) : null),
-    [canExchange, hintEnabled, humanPlayer?.cards],
+    () => (canExchange && hintEnabled ? new Set(deuceToSevenBestIndices(humanCards)) : null),
+    [canExchange, hintEnabled, humanCards],
   );
 
   useCardKeyboardNav({

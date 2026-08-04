@@ -311,6 +311,18 @@ describe('DeuceToSevenPage', () => {
     await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
   });
 
+  it('renders the draw without a seated human', async () => {
+    // Spectator-shaped state: no human seat, so there is no hand to advise on.
+    localStorage.clear();
+    localStorage.setItem('hint_enabled_deucetoseven', 'true');
+    mockExec.mockReset();
+    const spectator = baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 1 });
+    mockExec.mockResolvedValue({ ...spectator, players: spectator.players.filter((p) => !p.isHuman) });
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+    expect(document.querySelectorAll('.-translate-y-1, .opacity-50').length).toBe(0);
+  });
+
   it('keeps the exchange lift/dim off outside the exchange window even with hints on', async () => {
     // Outside the draw the player cannot act on "keep these" advice, so the
     // assist stays off however the hint setting is configured.
