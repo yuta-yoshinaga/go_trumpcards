@@ -107,6 +107,8 @@ describe('BadugiPage', () => {
   });
 
   it('annotates card aria-labels with best-subset / exchange-candidate hints during the draw phase', async () => {
+    // The lift/dim assist follows the hint setting, which defaults to off.
+    localStorage.setItem('hint_enabled_badugi', 'true');
     // S1,H2,D3 form the best 3-card subset (lowest sum); the duplicate-suit S5
     // is the exchange candidate.
     mockExec.mockResolvedValue(
@@ -284,6 +286,8 @@ describe('BadugiPage', () => {
   });
 
   it('marks every card with data-badugi-subset during the draw phase when the hand is a perfect Badugi', async () => {
+    // The lift/dim assist follows the hint setting, which defaults to off.
+    localStorage.setItem('hint_enabled_badugi', 'true');
     mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
     renderWithProviders(<BadugiPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
@@ -298,6 +302,8 @@ describe('BadugiPage', () => {
   });
 
   it('dims duplicate-suit cards in the draw phase and omits data-badugi-subset on them', async () => {
+    // The lift/dim assist follows the hint setting, which defaults to off.
+    localStorage.setItem('hint_enabled_badugi', 'true');
     // Force a duplicate suit so one card falls out of the best subset (lowball: keep the lower ♠).
     mockExec.mockResolvedValue(
       baseState({
@@ -342,5 +348,22 @@ describe('BadugiPage', () => {
       expect(btn.className).not.toContain('opacity-50');
       expect(btn.className).not.toContain('-translate-y-1');
     }
+  });
+
+  it('keeps the exchange lift/dim off until hints are switched on', async () => {
+    // The assist is a hint in all but name, so it follows the hint setting —
+    // which defaults to off (#4701/#4702).
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
+    const { unmount } = renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+    expect(document.querySelectorAll('.-translate-y-1, .opacity-50').length).toBe(0);
+    unmount();
+
+    localStorage.setItem('hint_enabled_badugi', 'true');
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(document.querySelectorAll('.-translate-y-1, .opacity-50').length).toBeGreaterThan(0));
   });
 });

@@ -28,7 +28,7 @@
     "resetButton": "Press the reset button to start a new game."
   },
   "landscapeBanner": "Rotate to landscape for easier play",
-  "shortLabel": "ST",
+  "shortLabel": "R",
   "frontendHint": {
     "moveToFoundation": "A card can be moved to the foundation",
     "reservedFilling": "Both reserved cells are full — try to clear one",

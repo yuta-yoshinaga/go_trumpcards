@@ -268,6 +268,8 @@ describe('DeuceToSevenPage', () => {
   });
 
   it('lifts the best-low core cards and dims the draw candidates', async () => {
+    // The lift/dim assist follows the hint setting, which defaults to off.
+    localStorage.setItem('hint_enabled_deucetoseven', 'true');
     // Hand 2-2-4-6-8: the duplicate 2 is a draw candidate; the rest are kept.
     mockExec.mockResolvedValue(
       baseState({
@@ -307,5 +309,22 @@ describe('DeuceToSevenPage', () => {
     expect(cardButtons.length).toBe(5);
     fireEvent.click(cardButtons[0]);
     await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
+  });
+
+  it('keeps the exchange lift/dim off until hints are switched on', async () => {
+    // The assist is a hint in all but name, so it follows the hint setting —
+    // which defaults to off (#4701/#4702).
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 1 }));
+    const { unmount } = renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+    expect(document.querySelectorAll('.-translate-y-1, .opacity-50').length).toBe(0);
+    unmount();
+
+    localStorage.setItem('hint_enabled_deucetoseven', 'true');
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 1 }));
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(document.querySelectorAll('.-translate-y-1, .opacity-50').length).toBeGreaterThan(0));
   });
 });

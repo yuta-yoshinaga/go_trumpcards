@@ -167,9 +167,11 @@ function DeuceToSevenPageContent() {
   );
 
   // During the draw, lift the best-low core cards and dim the draw candidates.
+  // Gated on the hint setting as well as the phase: the lift/dim is a hint in
+  // everything but name, so turning hints off has to silence it too (#4701/#4702).
   const bestSubset = useMemo(
-    () => (canExchange ? new Set(deuceToSevenBestIndices(humanPlayer?.cards ?? [])) : null),
-    [canExchange, humanPlayer?.cards],
+    () => (canExchange && hintEnabled ? new Set(deuceToSevenBestIndices(humanPlayer?.cards ?? [])) : null),
+    [canExchange, hintEnabled, humanPlayer?.cards],
   );
 
   useCardKeyboardNav({

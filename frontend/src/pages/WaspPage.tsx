@@ -417,11 +417,13 @@ function WaspPageContent() {
                         const isDragSrc = dnd.isDragSource(zone);
                         const isLast = cardIdx === col.length - 1;
 
-                        const hintFrom =
-                          state.hint && state.hint.fromCol === colIdx && state.hint.cardIndex === cardIdx;
                         // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
                         // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+                        // 移動元も同じゲートを通す — 通していなかったので #4605 が片側だけ
+                        // 再発していた (#4791)。
                         const requestedHint = isRequestedHint(state) ? state.hint : undefined;
+                        const hintFrom =
+                          requestedHint && requestedHint.fromCol === colIdx && requestedHint.cardIndex === cardIdx;
                         const hintTo = requestedHint && requestedHint.toCol === colIdx && isLast;
 
                         return (
