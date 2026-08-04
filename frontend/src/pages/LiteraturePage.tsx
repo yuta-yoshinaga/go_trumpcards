@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { literatureApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -117,6 +118,11 @@ function LiteraturePageContent() {
 
   const { cardWidth } = useCardDimensions();
   const phaseNames = usePhaseNames('literature', LITERATURE_PHASE_KEYS);
+
+  // A claim is the heaviest move in the game: one wrong seat voids the set or
+  // gifts it to the opponents. Every other irreversible action here is confirmed
+  // (#2099); this one was not (#4822).
+  const [claimConfirmOpen, setClaimConfirmOpen] = useState(false);
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
   // だけフック数が変わってページが骨組みのまま固まる (#4561)。
@@ -394,7 +400,12 @@ function LiteraturePageContent() {
                       </select>
                     </label>
                   ))}
-                  <button type="button" className={btnSuccess} onClick={handleClaim} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={() => setClaimConfirmOpen(true)}
+                    disabled={loading}
+                  >
                     {t('claimButton')}
                   </button>
                 </div>
@@ -419,6 +430,18 @@ function LiteraturePageContent() {
           </GameFooter>
         </>
       )}
+      <ConfirmDialog
+        open={claimConfirmOpen}
+        title={t('claimConfirmTitle')}
+        message={t('claimConfirmMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={() => {
+          setClaimConfirmOpen(false);
+          handleClaim();
+        }}
+        onCancel={() => setClaimConfirmOpen(false)}
+      />
     </GamePageShell>
   );
 }

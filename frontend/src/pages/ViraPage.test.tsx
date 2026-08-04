@@ -351,4 +351,14 @@ describe('ViraPage', () => {
     }
     expect(line).toHaveTextContent('ソロ');
   });
+
+  it('keeps the running bid visible while the CPUs bid', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeViraState({ phase: 0, isHumanBidTurn: false, currentPlayerIdx: 1 }));
+    renderWithProviders(<ViraPage />);
+    // The auction was invisible from the player's side until it ended.
+    await waitFor(() => expect(screen.getByTestId('vira-highest-bid')).toBeInTheDocument());
+    expect(screen.queryByTestId('bid-0')).not.toBeInTheDocument();
+  });
 });

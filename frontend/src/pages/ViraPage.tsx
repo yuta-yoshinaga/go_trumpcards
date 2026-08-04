@@ -422,17 +422,22 @@ function ViraPageContent() {
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="vira-action-buttons">
+              {/* The running bid stays visible while the CPUs bid; only the buttons
+                  are gated on the human's turn. Otherwise the whole auction is
+                  invisible until it is over (#4835). */}
+              {isBidPhase && (
+                <span
+                  className="text-xs font-semibold text-ds-text-primary self-center mr-1"
+                  data-testid="vira-highest-bid"
+                >
+                  {t('bidHighest', {
+                    name: highestBid > 0 ? t(`bid.${CONTRACT_KEYS[highestBid]}`) : t('bidNone'),
+                  })}
+                </span>
+              )}
               {isBidPhase && isHumanBidTurn && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
-                  <span
-                    className="text-xs font-semibold text-ds-text-primary self-center mr-1"
-                    data-testid="vira-highest-bid"
-                  >
-                    {t('bidHighest', {
-                      name: highestBid > 0 ? t(`bid.${CONTRACT_KEYS[highestBid]}`) : t('bidNone'),
-                    })}
-                  </span>
                   {BIDS.map((b) => {
                     // Pass (0) is always allowed; a non-pass bid must beat the current highest.
                     const tooLow = b.value !== ViraContract.PASS && b.value <= highestBid;

@@ -55,5 +55,7 @@
   "frontendHint": {
     "literatureAskHeldSuit": "自分が 1 枚以上持っているハーフスートだけ聞けます",
     "literatureMustClaim": "持っている札のハーフスートは決着済みです。宣言しか残っていません"
-  }
+  },
+  "claimConfirmTitle": "所在宣言の確認",
+  "claimConfirmMessage": "1枚でも間違えると、その組は無効になるか相手チームのものになります。この内容で宣言しますか？"
 }
