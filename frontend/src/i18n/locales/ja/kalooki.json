@@ -49,5 +49,6 @@
     "kalookiDrawStock": "捨て札は手札と繋がりません。山から引きましょう",
     "kalookiDiscardHeavy": "繋がっていない札のうち一番重い札です",
     "kalookiOpenFirst": "まだ開いていません。規定点を一度に満たす組を作りましょう"
-  }
+  },
+  "openingProgress": "オープニング: {{points}} / {{threshold}} 点"
 }
