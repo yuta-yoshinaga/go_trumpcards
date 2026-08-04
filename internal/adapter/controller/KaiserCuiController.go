@@ -31,7 +31,7 @@ func (c *KaiserCuiController) Exec(command string) string {
 		},
 		[]string{
 			"b", "bid", "ps", "pass", "t", "trump",
-			"d", "discard", "p", "play", "n", "next", "log", "l",
+			"d", "discard", "p", "play", "n", "next", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -52,7 +52,7 @@ func (c *KaiserCuiController) Exec(command string) string {
 			case "n", "next":
 				return c.ki.NextHand(), true
 			default:
-				return handleCuiLog(cmd, c.ki.ActionLog)
+				return handleCuiHintAndLog(cmd, c.ki.Hint, c.ki.ActionLog)
 			}
 		},
 	)

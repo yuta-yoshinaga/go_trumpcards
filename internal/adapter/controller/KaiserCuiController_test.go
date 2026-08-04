@@ -27,8 +27,22 @@ func TestKaiserCuiController_Exec(t *testing.T) {
 		m.On("PlayCard", mock.Anything).Return(mockOutput)
 		m.On("NextHand").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
+		m.On("Hint").Return(mockOutput)
 		return m
 	}
+
+	// **CUI にもヒントが要る。**Web にはあるのに hint/h が未登録で、
+	// 「そんなコマンドは無い」と弾かれていた (#4938)。
+	t.Run("hint", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewKaiserCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("h"))
+		assert.Equal(t, mockOutput, c.Exec("hint"))
+		m.AssertNumberOfCalls(t, "Hint", 2)
+		// 既存コマンドは巻き添えを食わない。
+		assert.Equal(t, mockOutput, c.Exec("log"))
+		m.AssertCalled(t, "ActionLog")
+	})
 
 	t.Run("quit and reset", func(t *testing.T) {
 		m := newMock()

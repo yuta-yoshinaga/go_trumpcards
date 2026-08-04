@@ -6,6 +6,7 @@
   "helpDiscard": "  d <i> <j>                 キティを取り込んだあと2枚捨てる",
   "helpPlay": "  p <i>                     手札 i を出す",
   "helpNext": "  n / next                  次の局へ",
+  "helpHint": "  h / hint                  ヒントを表示",
   "header": "局: {{hand}}  目標: {{target}}点  チーム0: {{t0}}  チーム1: {{t1}}",
   "contractLine": "契約: {{value}} {{kind}} 切札: {{trump}}",
   "withTrump": "切札あり",
@@ -35,5 +36,18 @@
   "handMade": "宣言側が達成しました",
   "handSet": "宣言側が未達。宣言額がマイナスになります",
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ち！",
-  "result.cpuWin": "ゲーム終了！ 相手チームの勝ち！"
+  "result.cpuWin": "ゲーム終了！ 相手チームの勝ち！",
+  "hintNone": "今は助言できることがありません。",
+  "hintNotYourTurn": "あなたの手番ではありません。",
+  "hintGameEnd": "ゲームは終了しています。",
+  "hintHandEnd": "局が終わりました。n で次の局へ進みます。",
+  "hintBid": "強い手です。ビッドを検討してください（1 局で動くのは 10 点、最低ビッドは 7 点）。",
+  "hintPass": "ビッドに見合う強さがありません。パス（ps）が無難です。",
+  "hintBidMust": "自チームは 45 点以上です。自分がビッドしない限り加点できないので、取りに行くほかありません。",
+  "hintTrump": "最も長いスートを切札にするのが基本です。",
+  "hintDiscard": "♥5 と ♠3 は捨てられません。切札以外の低い札を落とします。",
+  "hintForced": "出せる札が 1 枚しかありません。",
+  "hintDumpSpadeThree": "♠3 は取った側が −3 点です。選べるうちに手放します。",
+  "hintChoose": "♥5 は +5 点なので、自分から出すと相手に取られかねません。",
+  "hintWith": "{{hint}} → {{list}}"
 }

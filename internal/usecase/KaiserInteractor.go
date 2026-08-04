@@ -32,6 +32,8 @@ type KaiserInteractorIF interface {
 	GetConfig() domain.KaiserConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒント取得
+	Hint() string
 }
 
 // KaiserInteractor カイザー (Kaiser) のインタラクタークラス
@@ -118,6 +120,9 @@ func (ki *KaiserInteractor) GetConfig() domain.KaiserConfig {
 func (ki *KaiserInteractor) ActionLog() string {
 	return ki.gp.ActionLogOutput(ki.Game)
 }
+
+// Hint ヒント取得
+func (ki *KaiserInteractor) Hint() string { return ki.gp.HintOutput(ki.Game) }
 
 // kaiserMaxCpuSteps bounds runCpuTurns so a malformed state can never spin the
 // CPU loop forever (defensive — normal play always reaches a human turn, the
