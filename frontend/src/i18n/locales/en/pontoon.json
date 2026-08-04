@@ -27,7 +27,9 @@
     "bankerTwist": "Draw",
     "bankerStay": "Stop",
     "deal": "Deal",
-    "nextRound": "Next round"
+    "nextRound": "Next round",
+    "buyAmount": "Buy stake",
+    "buyRange": "{{min}}–{{max}} chips"
   },
   "hint": {
     "stick": "Only on a total of 15 or more",

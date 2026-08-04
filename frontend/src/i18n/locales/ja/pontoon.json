@@ -27,7 +27,9 @@
     "bankerTwist": "引く",
     "bankerStay": "止める",
     "deal": "配る",
-    "nextRound": "次の局へ"
+    "nextRound": "次の局へ",
+    "buyAmount": "バイ額",
+    "buyRange": "{{min}}〜{{max}}チップ"
   },
   "hint": {
     "stick": "合計15以上でのみ宣言できます",
