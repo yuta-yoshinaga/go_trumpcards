@@ -241,4 +241,14 @@ describe('KillePage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  it('announces round events as they arrive', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ events: [{ kind: 'cuckoo', actor: 1, target: 2 }] } as Partial<KilleResponse>),
+    );
+    renderWithProviders(<KillePage />);
+    const events = await screen.findByTestId('kille-events');
+    expect(events).toHaveAttribute('aria-live', 'polite');
+    expect(events).toHaveAttribute('role', 'status');
+  });
 });

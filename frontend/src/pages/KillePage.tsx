@@ -277,7 +277,12 @@ function KillePageContent() {
 
             {/* Exchanges this round */}
             {state.events.length > 0 && (
-              <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="kille-events">
+              <div
+                className="mb-2 p-2 rounded bg-black/20 text-sm"
+                data-testid="kille-events"
+                role="status"
+                aria-live="polite"
+              >
                 <div className="mb-1 text-ds-text-primary">{t('eventsTitle')}</div>
                 {state.events.map((e, i) => (
                   <div key={`event-${e.kind}-${e.actor}-${e.target}-${i}`} className="text-ds-text-muted">

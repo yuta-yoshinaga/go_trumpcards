@@ -218,6 +218,13 @@ function SkitgubbePageContent() {
                 {t('pickUp')}
               </button>
               {state.canPickUp && <span className="text-xs text-ds-text-muted">{t('pickUpHint')}</span>}
+              {/* Every hand card turns aria-disabled the moment this flips, and
+                  until now that change was signalled only by colour (#4912). */}
+              {state.canPickUp && (
+                <span className="sr-only" role="status" aria-live="polite" data-testid="sk-forced-pickup-notice">
+                  {t('forcedPickUpNotice')}
+                </span>
+              )}
               <GameResetButton
                 isGameEnd={ended}
                 onReset={game.handleReset}
