@@ -1642,4 +1642,12 @@ describe('OmahaHiLoPage', () => {
       expect((screen.getByLabelText(label) as HTMLInputElement).checked).toBe(!before);
     });
   });
+
+  it('previews the current best hand during play', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('omahahilo-live-besthand')).toBeInTheDocument());
+  });
 });

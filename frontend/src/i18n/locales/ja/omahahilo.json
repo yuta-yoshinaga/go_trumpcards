@@ -99,5 +99,6 @@
     "lpTooltip": "Loose Passive：参加多めだがコール中心",
     "balanced": "BAL",
     "balancedTooltip": "バランス型のスタイル"
-  }
+  },
+  "livePreview": "現在の役:"
 }

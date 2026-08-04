@@ -1579,4 +1579,12 @@ describe('BigOPage', () => {
       expect((screen.getByLabelText(label) as HTMLInputElement).checked).toBe(!before);
     });
   });
+
+  it('previews the current best hand during play', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getByTestId('bigo-live-besthand')).toBeInTheDocument());
+  });
 });

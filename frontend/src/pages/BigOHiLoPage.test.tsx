@@ -1669,4 +1669,12 @@ describe('BigOHiLoPage', () => {
       expect((screen.getByLabelText(label) as HTMLInputElement).checked).toBe(!before);
     });
   });
+
+  it('shows whether the board can still make a low', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<BigOHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('bigohilo-board-low-badge')).toBeInTheDocument());
+  });
 });

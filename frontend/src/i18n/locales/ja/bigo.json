@@ -81,5 +81,6 @@
     "strongHandRank": "強いハンド — レイズ推奨",
     "decentHandRank": "まずまずのハンド — コール推奨",
     "weakHandRank": "弱いハンド — フォールド推奨"
-  }
+  },
+  "livePreview": "現在の役:"
 }

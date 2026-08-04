@@ -81,5 +81,6 @@
     "strongHandRank": "Strong hand — raise recommended",
     "decentHandRank": "Decent hand — call recommended",
     "weakHandRank": "Weak hand — fold recommended"
-  }
+  },
+  "livePreview": "Current hand:"
 }

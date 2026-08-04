@@ -99,5 +99,6 @@
     "lpTooltip": "Loose Passive: plays many hands but rarely raises",
     "balanced": "BAL",
     "balancedTooltip": "Balanced style"
-  }
+  },
+  "livePreview": "Current hand:"
 }
