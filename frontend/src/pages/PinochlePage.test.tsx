@@ -4,6 +4,7 @@ import { pinochleApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PinochleResponse } from '../types/card';
+import { PinochlePhase } from '../types/phases';
 import { PinochlePage } from './PinochlePage';
 
 vi.mock('../api/gameApi', () => ({
@@ -558,6 +559,16 @@ describe('PinochlePage', () => {
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pointLimit: 1500 }),
     );
     expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
+  });
+
+  it('drops the turn ring once the round is over', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // currentPlayerIdx still holds the last trick winner here; that is not a turn.
+    mockExec.mockResolvedValue({ ...playPhaseState, phase: PinochlePhase.ROUND_END, currentPlayerIdx: 2 });
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(document.querySelectorAll('[data-on-turn]')).toHaveLength(0);
   });
 
   it('marks whose turn it is in the players grid', async () => {

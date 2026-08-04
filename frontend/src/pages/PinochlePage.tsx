@@ -299,8 +299,13 @@ function PinochlePageContent() {
               {state.players?.map((p) => {
                 // Bidding jumps between four seats and the grid never moved, so the
                 // only cue was the message line (#4863).
+                // Only while somebody is actually to act: currentPlayerIdx keeps the
+                // last trick winner after the round ends, which is not a turn.
                 const onTurn =
-                  phase === PinochlePhase.BID ? p.id === state.bidPlayerIdx : p.id === state.currentPlayerIdx;
+                  phase === PinochlePhase.BID
+                    ? p.id === state.bidPlayerIdx
+                    : (phase === PinochlePhase.TRUMP || phase === PinochlePhase.MELD || phase === PinochlePhase.PLAY) &&
+                      p.id === state.currentPlayerIdx;
                 return (
                   <div
                     key={p.id}

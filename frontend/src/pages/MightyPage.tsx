@@ -582,7 +582,7 @@ function MightyPageContent() {
                     // The hint named an index and left the player counting cards;
                     // every sibling game rings the card itself (#4886).
                     const hinted =
-                      hint != null && (hint.cardIndex === idx || hint.discardIndices?.includes(idx) === true);
+                      hint != null && (hint.cardIndex === idx || (hint.discardIndices?.includes(idx) ?? false));
                     return (
                       <button
                         type="button"
