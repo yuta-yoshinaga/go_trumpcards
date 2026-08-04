@@ -31,7 +31,6 @@ func setupWizardCuiMock() *interfaces.MockWizardGame {
 	m.On("GetRestrictedBid").Return(-1)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetLeadPlayerIdx").Return(0)
-	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultWizardConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
@@ -109,6 +108,23 @@ func TestWizardCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "[3]Jester"+presenter.WizardLegalMark)
 		// 凡例が無いと印の意味が分からない。
 		assert.Contains(t, result, i18n.T("wizard.legalMark"))
+	})
+
+	// 他人の手番なら印は出ない。出せる札は手番が来てから分かればよい。
+	t.Run("no marks while it is not the human's turn", func(t *testing.T) {
+		m, players := setupWizardCuiMockWithPlayers()
+		players[0].Reset()
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
+		})
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(2)
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, presenter.WizardLegalMark)
+		assert.NotContains(t, result, i18n.T("wizard.legalMark"))
 	})
 
 	// 全部出せるときは印だらけになるだけなので、印も凡例も出さない。

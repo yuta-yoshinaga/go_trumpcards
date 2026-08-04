@@ -57,7 +57,6 @@ func wizardIndexedCardListStr(hand cuiCardList, legal []bool) string {
 		if i < len(legal) && legal[i] {
 			parts[i] += WizardLegalMark
 		}
-
 	}
 	return strings.Join(parts, "  ")
 }
@@ -129,7 +128,9 @@ func (p *WizardCuiPresenter) Output(o interfaces.WizardGame, lastErr error) stri
 			// 出せる札の印は、人間の手番のプレイフェーズだけ付ける。
 			var legal []bool
 			pl := o.GetPlayer(i)
-			if pl != nil && pl.GetIsHuman() && o.GetPhase() == domain.WizardPhasePlay && o.IsHumanTurn() {
+			// 手番の判定は席番号で行う。IsHumanTurn() は「人間は 1 人」という
+			// 暗黙の前提に寄りかかる。
+			if pl != nil && pl.GetIsHuman() && o.GetPhase() == domain.WizardPhasePlay && i == o.GetCurrentPlayerIdx() {
 				legal = wizardLegalIndices(pl, o.GetCurrentTrick())
 				legalShown = legalShown || legal != nil
 			}
