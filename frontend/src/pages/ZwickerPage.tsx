@@ -29,6 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseZwickerCommand, ZWICKER_HELP } from '../utils/cli/commands/zwickerCommands';
 import { formatZwickerState } from '../utils/cli/formatters/zwickerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const ZW_TUTORIAL_STEPS: TutorialStep[] = [
@@ -72,6 +73,9 @@ function ZwickerPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('zwicker', state);
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回ヒントを
+  // 載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+  const showServerHint = frontendHintEnabled && state !== null && isRequestedHint(state);
 
   if (!state) {
     return <GameSkeleton gameKey="zwicker" layout={{ kind: 'tableau', topRow: 3, tableau: 4 }} />;
@@ -183,7 +187,7 @@ function ZwickerPageContent() {
               ) : (
                 <div className="flex gap-1 justify-center flex-wrap">
                   {state.tableCards.map((card, i) => {
-                    const isHinted = frontendHintEnabled && state.hint?.tableIndices?.includes(i) === true;
+                    const isHinted = showServerHint && state.hint?.tableIndices?.includes(i) === true;
                     return (
                       <button
                         key={`tbl-${i.toString()}`}
@@ -195,7 +199,7 @@ function ZwickerPageContent() {
                         // The hint says which table cards to take with the card it
                         // names; only the hand card was ever highlighted, leaving the
                         // multi-card capture for the player to work out (#4898).
-                        data-hinted-table={(frontendHintEnabled && state.hint?.tableIndices?.includes(i)) || undefined}
+                        data-hinted-table={isHinted || undefined}
                         className={[
                           'rounded min-h-11 flex flex-col items-center',
                           tableSel.includes(i) ? 'ring-2 ring-ds-accent' : '',
@@ -273,7 +277,7 @@ function ZwickerPageContent() {
                       'rounded transition-transform flex flex-col items-center',
                       isHumanTurn ? 'hover:-translate-y-2' : 'opacity-60',
                       handIdx === i ? 'ring-2 ring-ds-accent -translate-y-2' : '',
-                      frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+                      showServerHint && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
                     ].join(' ')}
                   >
                     <AnimatedCard card={card} width={cardWidth} draggable={false} />
