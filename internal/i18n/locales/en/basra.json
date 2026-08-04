@@ -15,5 +15,6 @@
   "hintReasonJack": "Play a Jack to sweep the table",
   "hintReasonCapture": "Capture the most valuable table cards",
   "hintReasonTrail": "No capture — trail a low card",
-  "result.scores": "Game over! Scores: {{scores}}"
+  "result.scores": "Game over! Scores: {{scores}}",
+  "captureHint": "{{hand}} → table {{table}}"
 }
