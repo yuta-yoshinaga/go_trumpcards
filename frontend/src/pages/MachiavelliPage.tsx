@@ -39,6 +39,7 @@ import { valueName } from '../utils/cardUtils';
 import { MACHIAVELLI_HELP, parseMachiavelliCommand } from '../utils/cli/commands/machiavelliCommands';
 import { formatMachiavelliState } from '../utils/cli/formatters/machiavelliFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findHandMeld } from '../utils/hints/machiavelliHint';
 import { designToNum, evaluateRearrange, isMachiavelliValidMeld } from '../utils/machiavelliRearrange';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -170,6 +171,16 @@ function MachiavelliPageContent() {
     machiavelliConfig.cpuDifficulty,
     machiavelliConfig.targetRounds,
   ]);
+
+  // getMachiavelliHint already asks findHandMeld which cards form a meld and then
+  // throws the indices away, leaving the hint to say "make a meld" without saying
+  // which cards. Pan rings its candidates; this does the same (#4852).
+  // Above the early return: hooks must not be conditional.
+  const hintHand = state?.players.find((p) => p.isHuman)?.cards;
+  const meldHintIndices = useMemo(
+    () => new Set(frontendHintEnabled && hintHand ? (findHandMeld(hintHand) ?? []) : []),
+    [frontendHintEnabled, hintHand],
+  );
 
   if (!state)
     return (
@@ -524,7 +535,12 @@ function MachiavelliPageContent() {
                     onClick={() => toggleCard(idx)}
                     aria-label={cardAlt(card)}
                     aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
+                    data-meld-hint={meldHintIndices.has(idx) || undefined}
+                    className={`transition-transform ${focusRingCard} ${
+                      meldHintIndices.has(idx) && !selectedCardIndices.includes(idx)
+                        ? 'ring-2 ring-ds-success rounded'
+                        : ''
+                    }`}
                     style={{
                       background: 'none',
                       padding: 0,

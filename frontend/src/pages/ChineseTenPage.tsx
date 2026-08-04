@@ -28,6 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { CHINESETEN_HELP, parseChineseTenCommand } from '../utils/cli/commands/chinesetenCommands';
 import { formatChineseTenState } from '../utils/cli/formatters/chinesetenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const CT_TUTORIAL_STEPS: TutorialStep[] = [
@@ -64,6 +65,9 @@ function ChineseTenPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('chineseten', state);
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回ヒントを
+  // 載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+  const showServerHint = frontendHintEnabled && state !== null && isRequestedHint(state);
 
   if (!state) {
     return <GameSkeleton gameKey="chineseten" layout={{ kind: 'tableau', topRow: 4, tableau: 4 }} />;
@@ -170,11 +174,15 @@ function ChineseTenPageContent() {
                       // Kept focusable while it cannot act so the reason is
                       // announced rather than the control leaving the tab order.
                       aria-disabled={!canTake}
+                      data-hinted-layout={(showServerHint && state.hint?.layoutIndex === i) || undefined}
                       onClick={() => canTake && game.handleSelect(i)}
                       className={[
                         'rounded transition-transform',
                         canTake ? 'ring-2 ring-ds-accent hover:-translate-y-1' : '',
                         choosing && !canTake ? 'opacity-50' : '',
+                        // The hint carries layoutIndex — which table card to take —
+                        // and only the hand card was ever ringed (#4881).
+                        showServerHint && state.hint?.layoutIndex === i ? 'ring-2 ring-ds-warning' : '',
                       ].join(' ')}
                     >
                       {renderCard(card, `layout-c${i.toString()}`)}
@@ -216,7 +224,7 @@ function ChineseTenPageContent() {
                     className={[
                       'rounded transition-transform',
                       isHumanTurn && !choosing ? 'hover:-translate-y-2' : 'opacity-60',
-                      frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+                      showServerHint && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
                     ].join(' ')}
                   >
                     {renderCard(card, `hand-c${i.toString()}`)}
