@@ -788,6 +788,29 @@ func ombreCardStrength(c *Card, trump int) int {
 	return ombrePlainRank(d, v)
 }
 
+// OmbreMatadorRank は札が三大マタドールのどれかを返す。
+//
+// 1 = スパディーユ (♠A)、2 = マニーユ (切り札の 7)、3 = バスト (♣A)、
+// 0 = マタドールでない。**切り札が未確定なら 0。**マニーユは切り札スート
+// 次第で決まるので、確定前に一部だけ示すと不揃いな案内になる。
+//
+// **判定は ombreCardStrength をそのまま読む。**別に条件を書くと、序列を
+// 変えたときに表示だけ古いままになる。
+func OmbreMatadorRank(c *Card, trump int) int {
+	if c == nil || !ombreValidSuit(trump) {
+		return 0
+	}
+	switch ombreCardStrength(c, trump) {
+	case ombreStrSpadille:
+		return 1
+	case ombreStrManille:
+		return 2
+	case ombreStrBasto:
+		return 3
+	}
+	return 0
+}
+
 // ombreTrumpSuitRank 切り札スートの残り札 K>Q>J>6>5>4>3>2 の強さ。
 func ombreTrumpSuitRank(v int) int {
 	switch v {
