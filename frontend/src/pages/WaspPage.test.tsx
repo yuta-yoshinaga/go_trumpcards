@@ -553,4 +553,31 @@ describe('WaspPage', () => {
     fireEvent.click(hintToggle);
     expect(hintToggle).toBeChecked();
   });
+
+  it('does not light the source card when the hint was not requested', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // The backend attaches its latest hint to every Output(); only an explicit
+    // request sets the messageCode, so nothing may glow without one (#4791).
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 0, cardIndex: 1, toCol: 3 },
+      messageCode: 'wasp.playing',
+    });
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(document.querySelectorAll('.ring-ds-info').length).toBe(0);
+  });
+
+  it('lights the source card once the hint is requested', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 0, cardIndex: 1, toCol: 3 },
+      messageCode: 'wasp.hintAvailable',
+    });
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(document.querySelectorAll('.ring-ds-info').length).toBeGreaterThan(0));
+  });
 });

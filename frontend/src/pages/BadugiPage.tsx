@@ -167,9 +167,14 @@ function BadugiPageContent() {
   // Set of card indices belonging to the current best Badugi subset. Only computed during the draw
   // phase — outside of that window the lift / dim visuals would distract more than help, since the
   // player can't act on "dead weight" until the next exchange opens.
+  // Gated on the hint setting as well as the phase: the lift/dim is a hint in
+  // everything but name, so turning hints off has to silence it too (#4701/#4702).
+  // Hoisted so the empty case is a real state (no human seat) rather than an
+  // unreachable fallback inside the guard: canExchange already implies a seat.
+  const humanCards = humanPlayer?.cards ?? [];
   const subsetIndices = useMemo(
-    () => (canExchange ? new Set(badugiBestSubsetIndices(humanPlayer?.cards ?? [])) : null),
-    [canExchange, humanPlayer?.cards],
+    () => (canExchange && hintEnabled ? new Set(badugiBestSubsetIndices(humanCards)) : null),
+    [canExchange, hintEnabled, humanCards],
   );
 
   useCardKeyboardNav({

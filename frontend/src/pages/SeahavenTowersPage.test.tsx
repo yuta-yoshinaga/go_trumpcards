@@ -267,6 +267,16 @@ describe('SeahavenTowersPage', () => {
     fireEvent.mouseLeave(middleButton);
     expect(middleButton).not.toHaveAttribute('data-supermove-block');
   });
+
+  it('abbreviates the reserve cells by zone, not by game name', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SeahavenTowersPage />);
+    // "ST" was the game's initials, which tells a player nothing about the slot.
+    await waitFor(() => expect(screen.getAllByText(/^予備\d$/).length).toBeGreaterThan(0));
+    expect(screen.queryByText(/^ST\d$/)).not.toBeInTheDocument();
+  });
 });
 
 // Keyboard shortcuts are bound by useActionKeyboardNav and advertised by
