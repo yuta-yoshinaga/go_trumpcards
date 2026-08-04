@@ -88,10 +88,22 @@ function parseArgs(argv) {
  */
 function inClasses(row, classes) {
   if (!classes) return true;
-  const field = row.split('|')[4] || '';
-  const found = field.trim().split(/\s+/);
+  const field = (row.split('|')[4] || '').trim();
+  // The class column is identified by position, so a layout change would make
+  // this filter drop or keep rows for no reason — and these results feed legal
+  // judgement calls. Rather than guess, flag the row, show it, and make the run
+  // exit non-zero so the operator knows the filter stopped being trustworthy.
+  if (!/^\d{1,2}( \d{1,2})*( …)?$/.test(field)) {
+    console.log(`  !! class column not recognised (${JSON.stringify(field).slice(0, 40)}) — row shown unfiltered`);
+    layoutSuspect = true;
+    return true;
+  }
+  const found = field.split(/\s+/);
   return classes.some((c) => found.includes(c) || found.includes(c.padStart(2, '0')));
 }
+
+/** Set when a row's class column did not look like a class list. */
+let layoutSuspect = false;
 
 const { marks, owners, classes } = parseArgs(process.argv.slice(2));
 if (marks.length === 0 && owners.length === 0) {
@@ -150,7 +162,13 @@ for (const { mark, owner } of queries) {
   }
 
   done += 1;
-  if (queries.length > CANARY_EVERY && done % CANARY_EVERY === 0) {
+  // `>=`, not `>`: a sweep of exactly CANARY_EVERY names reaches the interval
+  // and must still be verified. The final query is always canaried too —
+  // otherwise the trailing partial chunk (241-264 of a 264-name run) is
+  // reported without ever confirming the session was still alive for it.
+  const atInterval = queries.length >= CANARY_EVERY && done % CANARY_EVERY === 0;
+  const atEnd = queries.length >= CANARY_EVERY && done === queries.length;
+  if (atInterval || atEnd) {
     canariesRun += 1;
     let alive = false;
     try {
@@ -160,7 +178,18 @@ for (const { mark, owner } of queries) {
     }
     if (!alive) canariesFailed += 1;
     console.log(`\n--- canary after ${done}: "${CANARY}" ${alive ? 'returned rows (session live)' : 'RETURNED NOTHING — results after this point are not trustworthy'} ---`);
+    // A failed canary already voids the run, so the remaining queries would be
+    // discarded anyway. Stop rather than spend another 13s each hammering
+    // J-PlatPat for results nobody may use.
+    if (!alive) {
+      console.log(`  stopping early: ${queries.length - done} quer(ies) not run`);
+      break;
+    }
   }
+}
+
+if (layoutSuspect) {
+  console.error('\nAt least one class column was unrecognised: the --classes filter cannot be trusted for this run.');
 }
 
 if (canariesRun > 0) {
@@ -173,3 +202,4 @@ if (canariesRun > 0) {
 }
 
 await browser.close();
+if (layoutSuspect) process.exit(1);

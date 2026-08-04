@@ -145,6 +145,12 @@ All 264 Japanese display titles were queried
 (`bun scripts/jpo-trademark-search.mjs --file <titles> --classes 9,28,41`;
 264 queries, 6 canary checks passed, 0 errors).
 
+The canary ran every 40 queries, which left the last 24 unverified at the time.
+Two of them returned rows (カイザー, ボストン at positions 256-257), proving the
+session was live that far; the remaining 7 were re-run afterwards with a canary
+and returned the same zeros. The script now canaries the final query of every
+sweep so no future tail is reported unverified.
+
 - **231 titles: no registration at all** in classes 9 / 28 / 41.
 - **31 titles: hits that are the game's own common name** — ゴルフ, キング,
   プレジデント, ペンギン, 大富豪, ブラックジャック, スパイダー, ピラミッド,
