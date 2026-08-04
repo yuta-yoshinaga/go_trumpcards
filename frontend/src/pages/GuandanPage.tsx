@@ -23,12 +23,19 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { GuandanResponse } from '../types/card';
+import type { Card, GuandanResponse } from '../types/card';
 import { GuandanPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { GUANDAN_HELP, parseGuandanCommand } from '../utils/cli/commands/guandanCommands';
 import { formatGuandanState } from '../utils/cli/formatters/guandanFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { guandanEvaluate, guandanIsBomb } from '../utils/guandanCombo';
+
+/**
+ * Level assumed before the first response lands. Nothing is selected then, so
+ * it never classifies anything — it only keeps the preview total.
+ */
+const GUANDAN_FALLBACK_LEVEL = 2;
 
 /** Combination names by wire code (sync: `GuandanComboKind`). */
 const COMBO_KEYS: Readonly<Record<number, string>> = {
@@ -124,6 +131,14 @@ function GuandanPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('guandan', state);
+
+  // 選択中の役プレビュー (#4901)。サーバに拒否されて初めて分かる、では遅い。
+  const selectedCombo = useMemo(() => {
+    const hand = state?.players.find((p) => p.isHuman)?.cards ?? [];
+    const picked = selected.map((i) => hand[i]).filter((c): c is Card => c !== undefined);
+    // レベル札の扱いは局のレベル次第なので、state が来るまでは判定できない。
+    return guandanEvaluate(picked, state?.level ?? GUANDAN_FALLBACK_LEVEL);
+  }, [selected, state]);
 
   if (!state)
     return <GameSkeleton gameKey="guandan" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 12 }} />;
@@ -319,6 +334,27 @@ function GuandanPageContent() {
                   </button>
                 ))}
               </div>
+              {isPlay && selected.length > 0 && (
+                <div className="mt-2 text-center text-xs" data-testid="guandan-combo-preview">
+                  {selectedCombo === null ? (
+                    <span className="font-medium text-ds-warning" data-testid="guandan-combo-invalid">
+                      {t('invalidCombo')}
+                    </span>
+                  ) : (
+                    <span className="text-ds-text-secondary">
+                      {t('comboPreview')}:{' '}
+                      <span className="font-medium text-ds-accent">
+                        {comboLabel(selectedCombo.kind)} ({selectedCombo.size})
+                      </span>
+                      {guandanIsBomb(selectedCombo.kind) && (
+                        <span className="ml-1 font-bold text-ds-success" data-testid="guandan-combo-bomb">
+                          {t('comboBeatsAll')}
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             <ErrorAlert message={error} onRetry={retry} />
