@@ -1,40 +1,13 @@
 {
-  "board": "ボード",
-  "tunnel": "トンネル",
-  "tunnelTag": "[トンネル]",
-  "jokerSelectHint": "配置先を選択してください",
-  "cardCount": "{{count}}枚",
-  "passCount": "パス: {{used}}/{{max}}",
-  "passUnlimited": "∞",
-  "clickPlayable": "出せるカードをクリック",
-  "mustPass": "出せるカードがありません — パスしてください",
-  "passRemaining": "パス (残り{{count}}回)",
-  "playTitle": "出す: {{design}} {{value}}",
-  "rankLabel": "{{rank}}位",
-  "placeAriaLabel": "{{suit}} {{value}} に配置",
-  "tunnelConnection": "トンネル接続",
-  "tunnelPortalLeft": "トンネル接続口 (左端: A↔K ループ)",
-  "tunnelPortalRight": "トンネル接続口 (右端: A↔K ループ)",
+  "actionForcedPass": "{{base}} ⚠ 出せるカードなし!",
+  "actionPassed": "{{name}}がパスしました",
   "actionPlayed": "{{name}}が出しました: {{design}} {{value}}",
   "actionPlayedJoker": "{{name}}が出しました: {{design}} {{value}} → {{targetSuit}} {{targetValue}}",
-  "actionPassed": "{{name}}がパスしました",
-  "actionForcedPass": "{{base}} ⚠ 出せるカードなし!",
-  "resultPrefix": "ゲーム終了！",
-  "resultEntry": "{{name}}:{{rank}}",
-  "rules": {
-    "title": "ルール:",
-    "tunnelTag": "[トンネル]",
-    "tunnelSkipTag": "[トンネルスキップ{{width}}]",
-    "jokerTag": "[ジョーカー×{{count}}]",
-    "cpuStrategy": "[CPU戦略]",
-    "cpuHarassment": "[嫌がらせ特化]",
-    "passUnlimited": "[パス無制限]",
-    "passCount": "[パス{{count}}回]",
-    "noJokerFinish": "[ジョーカー上がり禁止]",
-    "jokerReclaim": "[ジョーカー回収]",
-    "endStop": "[片側ストップ]",
-    "jokerConsecutiveBanned": "[ジョーカー連続禁止]"
-  },
+  "board": "ボード",
+  "cardCount": "{{count}}枚",
+  "cellEmptyAria": "{{suit}} {{value}} 空き",
+  "cellPlacedAria": "{{suit}} {{value}} 配置済み",
+  "clickPlayable": "出せるカードをクリック",
   "config": {
     "title": "ルール設定 (リセット時に適用)",
     "tunnel": "トンネル",
@@ -54,21 +27,51 @@
     "groupRules": "ルール",
     "groupGame": "ゲーム設定"
   },
+  "hint": {
+    "playExtend": "出せるカードがあります — 範囲を広げましょう",
+    "passAvailable": "出せるカードなし — パス",
+    "passLimitWarning": "パス残り回数わずか — 慎重に"
+  },
+  "jokerSelectHint": "配置先を選択してください",
+  "keyHints": "数字キー: 対応する手札をプレイ",
+  "mustPass": "出せるカードがありません — パスしてください",
+  "passCount": "パス: {{used}}/{{max}}",
+  "passRemaining": "パス (残り{{count}}回)",
+  "passUnlimited": "∞",
+  "phase": {
+    "play": "プレイ",
+    "end": "終了"
+  },
+  "placeAriaLabel": "{{suit}} {{value}} に配置",
+  "playTitle": "出す: {{design}} {{value}}",
+  "rankLabel": "{{rank}}位",
+  "resultEntry": "{{name}}:{{rank}}",
+  "resultPrefix": "ゲーム終了！",
+  "rules": {
+    "title": "ルール:",
+    "tunnelTag": "[トンネル]",
+    "tunnelSkipTag": "[トンネルスキップ{{width}}]",
+    "jokerTag": "[ジョーカー×{{count}}]",
+    "cpuStrategy": "[CPU戦略]",
+    "cpuHarassment": "[嫌がらせ特化]",
+    "passUnlimited": "[パス無制限]",
+    "passCount": "[パス{{count}}回]",
+    "noJokerFinish": "[ジョーカー上がり禁止]",
+    "jokerReclaim": "[ジョーカー回収]",
+    "endStop": "[片側ストップ]",
+    "jokerConsecutiveBanned": "[ジョーカー連続禁止]"
+  },
+  "suitRowAria": "{{suit}} の列",
+  "tunnel": "トンネル",
+  "tunnelConnection": "トンネル接続",
+  "tunnelPortalLeft": "トンネル接続口 (左端: A↔K ループ)",
+  "tunnelPortalRight": "トンネル接続口 (右端: A↔K ループ)",
+  "tunnelTag": "[トンネル]",
   "tutorial": {
     "board": "7を中心にカードを並べるボードです。同じスートで隣接する数字のカードを置けます。",
     "playerHand": "あなたの手札です。出せるカードがハイライトされます。",
     "playPass": "出せるカードがない場合はパスします。パス回数には制限があります。",
     "settings": "ルールや設定を変更できます。トンネルやジョーカーなどのバリエーションがあります。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
-  },
-  "phase": {
-    "play": "プレイ",
-    "end": "終了"
-  },
-  "hint": {
-    "playExtend": "出せるカードがあります — 範囲を広げましょう",
-    "passAvailable": "出せるカードなし — パス",
-    "passLimitWarning": "パス残り回数わずか — 慎重に"
-  },
-  "keyHints": "数字キー: 対応する手札をプレイ"
+  }
 }

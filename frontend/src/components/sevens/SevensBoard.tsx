@@ -54,7 +54,8 @@ function Board({
                 <span
                   className="flex items-center justify-center font-bold text-base sm:text-lg"
                   style={{ color }}
-                  aria-hidden="true"
+                  role="img"
+                  aria-label={t('suitRowAria', { suit: suitName(idx) })}
                 >
                   {label}
                   {tunnelEnabled && (
@@ -116,8 +117,21 @@ function Board({
                       </button>
                     );
                   }
+                  // The rank digit alone is meaningless out of the row's visual
+                  // context, which was aria-hidden — say which suit it belongs to
+                  // and whether the slot is filled (#4734).
                   return (
-                    <span key={v} className={`${baseClass}${bold}${border}`} style={colors} data-testid="board-cell">
+                    <span
+                      key={v}
+                      role="img"
+                      aria-label={t(placed ? 'cellPlacedAria' : 'cellEmptyAria', {
+                        suit: suitName(idx),
+                        value: valueName(v),
+                      })}
+                      className={`${baseClass}${bold}${border}`}
+                      style={colors}
+                      data-testid="board-cell"
+                    >
                       {valueName(v)}
                     </span>
                   );

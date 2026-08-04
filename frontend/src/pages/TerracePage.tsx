@@ -289,9 +289,10 @@ function TerracePageContent() {
                 {terraceTop ? (
                   <button
                     type="button"
+                    data-testid="terrace-pile"
                     onClick={() => game.handleSelectSource(terraceZone)}
                     disabled={!isPlaying || loading}
-                    aria-label={t('terraceAriaLabel', { count: state.reserve.length })}
+                    aria-label={t('terraceAriaLabel', { card: cardAlt(terraceTop), count: state.reserve.length })}
                     aria-pressed={isSourceSelected('reserve', undefined)}
                     draggable={isPlaying && !loading}
                     onDragStart={dnd.handleDragStart(terraceZone)}

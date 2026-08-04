@@ -1,8 +1,32 @@
 {
-  "title": "Tablanet (Tablić)",
+  "captureAnnounce": "{{player}} captured cards",
+  "captureButton": "Capture",
+  "captured": "Captured: {{count}}",
+  "cards": "{{count}} cards",
+  "cpu": "CPU {{id}}",
+  "deal": "Deal {{n}}",
+  "deck": "Deck: {{count}}",
+  "hint": {
+    "tabla_sweep": "Clear the table for a Tabla bonus",
+    "jack_sweep": "Play a Jack to sweep the table",
+    "capture": "Capture the most valuable table cards",
+    "trail_low": "No capture — trail a low card"
+  },
+  "hintAvailable": "Hint",
+  "hintRequested": "Hint available",
+  "listSeparator": ", ",
+  "newGame": "New Game",
+  "noHint": "No hint available",
   "phase": {
     "play": "Play",
     "gameEnd": "Game Over"
+  },
+  "playButton": "Play",
+  "players": "Players",
+  "result": {
+    "title": "Final Scores",
+    "winner": "Winner: {{names}}",
+    "score": "{{name}}: {{score}} pts"
   },
   "settings": {
     "title": "Settings",
@@ -11,36 +35,18 @@
     "normal": "Normal",
     "hard": "Hard"
   },
-  "deal": "Deal {{n}}",
-  "deck": "Deck: {{count}}",
-  "table": "Table",
-  "tableEmpty": "(empty)",
-  "players": "Players",
-  "you": "You",
-  "cpu": "CPU {{id}}",
-  "cards": "{{count}} cards",
-  "captured": "Captured: {{count}}",
   "tabla": "Tabla: {{count}}",
-  "turnYours": "Your turn — pick a hand card, then tap table cards to capture (or none to trail).",
-  "turnCpu": "CPU {{id}} is playing…",
-  "playButton": "Play",
-  "captureButton": "Capture",
-  "trailButton": "Trail",
+  "tablaAnnounce": "{{player}} scored a tabla (cleared the table)",
   "tablaButton": "Tabla Capture!",
   "tablaReady": "Tabla!",
-  "newGame": "New Game",
-  "result": {
-    "title": "Final Scores",
-    "winner": "Winner: {{names}}",
-    "score": "{{name}}: {{score}} pts"
-  },
-  "hintAvailable": "Hint",
-  "hint": {
-    "tabla_sweep": "Clear the table for a Tabla bonus",
-    "jack_sweep": "Play a Jack to sweep the table",
-    "capture": "Capture the most valuable table cards",
-    "trail_low": "No capture — trail a low card"
-  },
+  "table": "Table",
+  "tableCandidateAria": "{{card}}, capturable",
+  "tableEmpty": "(empty)",
+  "tableSelectedAria": "{{card}}, selected",
+  "title": "Tablanet (Tablić)",
+  "trailButton": "Trail",
+  "turnCpu": "CPU {{id}} is playing…",
+  "turnYours": "Your turn — pick a hand card, then tap table cards to capture (or none to trail).",
   "tutorial": {
     "table": "These are the table cards. A number card you play captures table cards of the same rank and any set whose values add up to it; a Jack sweeps the whole table (except other Jacks). Clearing the table with a single non-Jack card scores a 'Tabla' bonus.",
     "playerHand": "This is your hand. Pick one card, then tap the table cards you want to capture. Tap none and press Play to trail (leave your card on the table).",
@@ -48,9 +54,5 @@
     "info": "Tablanet (Tablić) is a 4-player (you + 3 CPU) fishing game on a 52-card deck. You are dealt four cards with four on the table; fresh hands are dealt until the stock is exhausted. Score the most cards, the 10♦, the 2♣, each Ace, each Jack, and every Tabla sweep. Highest total wins.",
     "resetButton": "Use the reset button to start a new game."
   },
-  "captureAnnounce": "{{player}} captured cards",
-  "tablaAnnounce": "{{player}} scored a tabla (cleared the table)",
-  "listSeparator": ", ",
-  "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "you": "You"
 }

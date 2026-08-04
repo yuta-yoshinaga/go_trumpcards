@@ -114,7 +114,7 @@ describe('TerracePage', () => {
   it('sends the terrace top to a foundation and shows its depth', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<TerracePage />);
-    const terrace = await screen.findByRole('button', { name: 'テラス 残り2枚（組札にのみ出せます）' });
+    const terrace = await screen.findByRole('button', { name: /^テラス .+ 残り2枚（組札にのみ出せます）$/ });
     fireEvent.click(terrace);
     await waitFor(() => expect(terrace).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
@@ -252,6 +252,16 @@ describe('TerracePage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
     await waitFor(() => expect(screen.queryByText('#0')).not.toBeInTheDocument());
+  });
+
+  it('names the terrace top card, not just the count', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<TerracePage />);
+    const terrace = await screen.findByTestId('terrace-pile');
+    // The count alone leaves a screen-reader user unable to plan the next move.
+    expect(terrace.getAttribute('aria-label')).toMatch(/[♠♣♥♦]/);
   });
 });
 

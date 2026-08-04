@@ -19,7 +19,7 @@
   "foundationAriaLabel": "Foundation {{idx}}, {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation {{idx}}",
   "emptyPileAriaLabel": "Empty pile {{pile}}",
-  "terraceAriaLabel": "Terrace, {{count}} cards left (foundations only)",
+  "terraceAriaLabel": "Terrace {{card}}, {{count}} cards left (foundations only)",
   "emptyTerraceAriaLabel": "The terrace is empty",
   "stockAriaLabel": "Stock, {{count}} cards left",
   "emptyStockAriaLabel": "The stock is empty (there is no redeal)",

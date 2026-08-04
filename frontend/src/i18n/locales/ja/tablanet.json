@@ -1,8 +1,32 @@
 {
-  "title": "タブラネット（Tablić）",
+  "captureAnnounce": "{{player}} が場札を捕獲しました",
+  "captureButton": "捕獲",
+  "captured": "捕獲: {{count}}",
+  "cards": "{{count}}枚",
+  "cpu": "CPU {{id}}",
+  "deal": "配布 {{n}}",
+  "deck": "山札: {{count}}",
+  "hint": {
+    "tabla_sweep": "場を一掃してタブラ・ボーナスを狙う",
+    "jack_sweep": "ジャックで場を一掃する",
+    "capture": "価値の高い場札を捕獲する",
+    "trail_low": "捕獲できないので低い札を捨てる"
+  },
+  "hintAvailable": "ヒント",
+  "hintRequested": "ヒントがあります",
+  "listSeparator": "、",
+  "newGame": "新しいゲーム",
+  "noHint": "ヒントはありません",
   "phase": {
     "play": "プレイ",
     "gameEnd": "ゲーム終了"
+  },
+  "playButton": "出す",
+  "players": "プレイヤー",
+  "result": {
+    "title": "最終得点",
+    "winner": "勝者: {{names}}",
+    "score": "{{name}}: {{score}}点"
   },
   "settings": {
     "title": "設定",
@@ -11,36 +35,18 @@
     "normal": "Normal",
     "hard": "Hard"
   },
-  "deal": "配布 {{n}}",
-  "deck": "山札: {{count}}",
-  "table": "場",
-  "tableEmpty": "（なし）",
-  "players": "プレイヤー",
-  "you": "あなた",
-  "cpu": "CPU {{id}}",
-  "cards": "{{count}}枚",
-  "captured": "捕獲: {{count}}",
   "tabla": "タブラ: {{count}}",
-  "turnYours": "あなたの手番です — 手札を1枚選び、捕獲する場札をタップ（何も選ばなければトレイル）。",
-  "turnCpu": "CPU {{id}} がプレイ中です…",
-  "playButton": "出す",
-  "captureButton": "捕獲",
-  "trailButton": "トレイル",
+  "tablaAnnounce": "{{player}} がタブラ（場を一掃）を達成しました",
   "tablaButton": "タブラ捕獲！",
   "tablaReady": "タブラ！",
-  "newGame": "新しいゲーム",
-  "result": {
-    "title": "最終得点",
-    "winner": "勝者: {{names}}",
-    "score": "{{name}}: {{score}}点"
-  },
-  "hintAvailable": "ヒント",
-  "hint": {
-    "tabla_sweep": "場を一掃してタブラ・ボーナスを狙う",
-    "jack_sweep": "ジャックで場を一掃する",
-    "capture": "価値の高い場札を捕獲する",
-    "trail_low": "捕獲できないので低い札を捨てる"
-  },
+  "table": "場",
+  "tableCandidateAria": "{{card}}、キャプチャ可能",
+  "tableEmpty": "（なし）",
+  "tableSelectedAria": "{{card}}、選択済み",
+  "title": "タブラネット（Tablić）",
+  "trailButton": "トレイル",
+  "turnCpu": "CPU {{id}} がプレイ中です…",
+  "turnYours": "あなたの手番です — 手札を1枚選び、捕獲する場札をタップ（何も選ばなければトレイル）。",
   "tutorial": {
     "table": "場の札です。出した数札は、同ランクの場札と、合計値が一致する組を捕獲します。ジャックは他のジャックを除く場札を一掃します。ジャック以外の1枚で場を空にすると「タブラ」ボーナス。",
     "playerHand": "あなたの手札です。1枚選んでから、捕獲したい場札をタップします。何も選ばずに「出す」を押すとトレイル（場に置く）になります。",
@@ -48,9 +54,5 @@
     "info": "タブラネット（Tablić）は52枚デッキを使う4人用（あなた＋CPU3人）の漁系カードゲームです。各自4枚＋場4枚で始め、山札が尽きるまで配り直します。最多枚数・10♦・2♣・各A・各J・各タブラを得点し、最高点が勝ちです。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "captureAnnounce": "{{player}} が場札を捕獲しました",
-  "tablaAnnounce": "{{player}} がタブラ（場を一掃）を達成しました",
-  "listSeparator": "、",
-  "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "you": "あなた"
 }

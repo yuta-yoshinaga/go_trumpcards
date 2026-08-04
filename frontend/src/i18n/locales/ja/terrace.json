@@ -19,7 +19,7 @@
   "foundationAriaLabel": "組札{{idx}} {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札{{idx}}",
   "emptyPileAriaLabel": "空の山 {{pile}}",
-  "terraceAriaLabel": "テラス 残り{{count}}枚（組札にのみ出せます）",
+  "terraceAriaLabel": "テラス {{card}} 残り{{count}}枚（組札にのみ出せます）",
   "emptyTerraceAriaLabel": "テラスは空です",
   "stockAriaLabel": "山札 残り{{count}}枚",
   "emptyStockAriaLabel": "山札は空です（めくり直しはありません）",
