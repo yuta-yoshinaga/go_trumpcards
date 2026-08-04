@@ -60,13 +60,13 @@ beforeEach(() => {
 describe('TrucoPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<TrucoPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { matchTarget: 15 }));
   });
 
   it('plays a card with number keys and declares truco with t during the play turn', async () => {
     mockExec.mockResolvedValue(makeState()); // PLAY phase, human turn, canDeclareTruco
     renderWithProviders(<TrucoPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { matchTarget: 15 }));
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: '1' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
@@ -77,7 +77,7 @@ describe('TrucoPage', () => {
   it('accepts and declines with a/d during the respond phase', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, responderIdx: 0, trucoCallerIdx: 1 }));
     renderWithProviders(<TrucoPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { matchTarget: 15 }));
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'a' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('accept'));
@@ -88,7 +88,7 @@ describe('TrucoPage', () => {
   it('ignores play/respond shortcuts outside their phases', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 4, gameEndFlag: true })); // GAME_END
     renderWithProviders(<TrucoPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { matchTarget: 15 }));
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: '1' });
     fireEvent.keyDown(document, { key: 'a' });
@@ -104,7 +104,7 @@ describe('TrucoPage', () => {
   it('renders match score and stake header', async () => {
     renderWithProviders(<TrucoPage />);
     await waitFor(() => expect(screen.getByText(/マッチ得点/)).toBeInTheDocument());
-    expect(screen.getByText(/目標/)).toBeInTheDocument();
+    expect(screen.getByTestId('truco-header')).toHaveTextContent(/目標/);
     expect(screen.getByTestId('truco-stake')).toBeInTheDocument();
   });
 
@@ -201,7 +201,7 @@ describe('TrucoPage', () => {
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { matchTarget: 15 }));
   });
 
   it('hides the hint tooltip by default and reveals a reasoned recommendation when the toggle is enabled', async () => {
@@ -234,5 +234,20 @@ describe('TrucoPage', () => {
       expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('強い札を出してこのバサを取りましょう'),
     );
     localStorage.removeItem('hint_enabled_truco');
+  });
+
+  it('sends the chosen match target on reset', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { matchTarget: 15 }));
+
+    fireEvent.change(screen.getByLabelText('マッチ目標点'), { target: { value: '24' } });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { matchTarget: 24 }));
   });
 });

@@ -26,9 +26,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { KarnoffelResponse } from '../types/card';
 import { KarnoffelPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { KARNOFFEL_HELP, parseKarnoffelCommand } from '../utils/cli/commands/karnoffelCommands';
 import { formatKarnoffelState } from '../utils/cli/formatters/karnoffelFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { karnoffelRankKey } from '../utils/karnoffelRanks';
 
 /** Karnöffel tutorial step definitions. */
 const KARNOFFEL_TUTORIAL_STEPS: TutorialStep[] = [
@@ -115,6 +117,9 @@ function KarnoffelPageContent() {
     return <GameSkeleton gameKey="karnoffel" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const human = state.players.find((p) => p.isHuman);
+  // Hoisted so a seat-less state exercises the empty case rather than leaving it
+  // as an unreachable fallback inside the hand render.
+  const humanCards = human?.cards ?? [];
   const isPlay = state.phase === KarnoffelPhase.PLAY;
   const isHandEnd = state.phase === KarnoffelPhase.HAND_END;
   const isGameEnd = state.phase === KarnoffelPhase.GAME_END || state.gameEndFlag;
@@ -262,20 +267,35 @@ function KarnoffelPageContent() {
             <div className="mb-2" data-tutorial="karnoffel-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex flex-wrap gap-1">
-                {(human?.cards ?? []).map((c, i) => (
-                  <button
-                    key={`hand-${c.design}-${c.value}-${i}`}
-                    type="button"
-                    data-hint-action="play"
-                    onClick={() => setSelected(i)}
-                    disabled={loading || (isPlay && !canPlay(i))}
-                    className={`rounded ${selected === i ? 'ring-2 ring-ds-accent' : ''} ${
-                      isPlay && !canPlay(i) ? 'opacity-40' : ''
-                    }`}
-                  >
-                    <CardImage card={c} width={cardWidth} />
-                  </button>
-                ))}
+                {humanCards.map((c, i) => {
+                  // The ladder text names the titled cards, but which card in hand
+                  // holds a title depends on the suit chosen this deal (#4773).
+                  const rankKey = karnoffelRankKey(c, state.chosenSuit);
+                  return (
+                    <button
+                      key={`hand-${c.design}-${c.value}-${i}`}
+                      type="button"
+                      data-hint-action="play"
+                      onClick={() => setSelected(i)}
+                      disabled={loading || (isPlay && !canPlay(i))}
+                      aria-label={rankKey ? `${cardAlt(c)} (${t(`rankBadge.${rankKey}`)})` : cardAlt(c)}
+                      className={`relative rounded ${selected === i ? 'ring-2 ring-ds-accent' : ''} ${
+                        isPlay && !canPlay(i) ? 'opacity-40' : ''
+                      }`}
+                    >
+                      <CardImage card={c} width={cardWidth} />
+                      {rankKey && (
+                        <span
+                          aria-hidden="true"
+                          data-testid={`karnoffel-rank-${rankKey}`}
+                          className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
+                        >
+                          {t(`rankBadge.${rankKey}`)}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
