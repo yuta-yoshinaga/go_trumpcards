@@ -199,4 +199,32 @@ describe('DoubleKlondikePage', () => {
     expect(board).toHaveClass('grid-cols-9');
     expect(board).not.toHaveClass('overflow-x-auto');
   });
+
+  it('rings only the piles that will accept the selected card', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<DoubleKlondikePage />);
+    await waitFor(() => expect(screen.getByTestId('waste')).toBeInTheDocument());
+    expect(document.querySelectorAll('[data-move-target]')).toHaveLength(0);
+
+    // The waste holds ♦A: every empty foundation takes it, no tableau column does.
+    fireEvent.click(screen.getByTestId('waste'));
+    await waitFor(() => expect(document.querySelectorAll('[data-move-target]').length).toBe(8));
+    expect(screen.getByTestId('foundation-0')).toHaveAttribute('data-move-target');
+    expect(screen.getByTestId('card-0-0')).not.toHaveAttribute('data-move-target');
+  });
+
+  it('rings the tableau column that accepts the selected card', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // ♥8 sits on column 1; a black 7 in the waste belongs there and nowhere else.
+    mockExec.mockResolvedValue(makeState({ waste: [{ design: 'SPADE', value: 7 }] }));
+    renderWithProviders(<DoubleKlondikePage />);
+    await waitFor(() => expect(screen.getByTestId('waste')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('waste'));
+    await waitFor(() => expect(screen.getByTestId('card-1-1')).toHaveAttribute('data-move-target'));
+    expect(screen.getByTestId('card-0-0')).not.toHaveAttribute('data-move-target');
+    expect(document.querySelectorAll('[data-move-target]')).toHaveLength(1);
+  });
 });
