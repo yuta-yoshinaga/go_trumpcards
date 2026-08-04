@@ -342,6 +342,36 @@ describe('CrescentPage', () => {
     // The badge is decorative — it must not add to the SR card label noise.
     expect(screen.getByTestId('crescent-col-badge-7')).toHaveAttribute('aria-hidden', 'true');
   });
+
+  it('announces how many legal destinations the selected card has', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CrescentPage />);
+    const status = await screen.findByTestId('cr-selection-status');
+    // Nothing selected yet, so the region stays empty rather than announcing noise.
+    expect(status).toHaveTextContent('');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+
+    // ♠4 needs ♠2 and ♠3 on the ascending ♠A first, so it has nowhere to go —
+    // the dead end has to be announced too, not just left silent.
+    fireEvent.click(screen.getByAltText('♠ 4').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(status).toHaveTextContent('置ける場所はありません'));
+  });
+
+  it('counts the legal destinations of a playable card', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // ♠2 goes straight onto the ascending ♠A foundation.
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[{ card: card('SPADE', 2), faceUp: true }]]),
+    });
+    renderWithProviders(<CrescentPage />);
+    const status = await screen.findByTestId('cr-selection-status');
+    fireEvent.click(screen.getByAltText('♠ 2').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(status).toHaveTextContent(/置ける場所が\d+箇所/));
+  });
 });
 
 // Keyboard shortcuts are bound by useActionKeyboardNav and advertised by

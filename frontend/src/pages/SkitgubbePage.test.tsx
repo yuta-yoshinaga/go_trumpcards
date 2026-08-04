@@ -144,4 +144,20 @@ describe('SkitgubbePage', () => {
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
     }
   });
+
+  it('announces that picking up has become forced', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, pile: [card('SPADE', 10)], validIndices: [], canPickUp: true }));
+    renderWithProviders(<SkitgubbePage />);
+    const notice = await screen.findByTestId('sk-forced-pickup-notice');
+    expect(notice).toHaveAttribute('role', 'status');
+    expect(notice).toHaveAttribute('aria-live', 'polite');
+    expect(notice).toHaveTextContent(/./);
+  });
+
+  it('stays silent while a playable card remains', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, pile: [card('SPADE', 10)], validIndices: [2] }));
+    renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('sk-forced-pickup-notice')).not.toBeInTheDocument();
+  });
 });

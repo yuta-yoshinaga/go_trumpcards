@@ -1,46 +1,48 @@
 {
-  "phase": {
-    "playing": "プレイ中",
-    "gameClear": "ゲームクリア",
-    "gameOver": "ゲームオーバー"
-  },
-  "foundation": "ファンデーション",
-  "tableau": "タブロー",
-  "moveCount": "手数",
-  "redeal": "再配り",
-  "redealsLeft": "残り再配り回数: {{count}}",
-  "redealUnavailable": "残り再配り回数がありません",
-  "giveup": "ギブアップ",
-  "empty": "空",
-  "foundationAriaLabel": "{{direction}}ファンデーション {{suit}} 残り{{count}}枚 トップ {{top}}",
-  "emptyFoundationAriaLabel": "空の{{direction}}ファンデーション ({{suit}})",
+  "autoComplete": "オートコンプリート",
+  "autoCompleteNotReady": "すべての山がファンデーションに移動可能になると有効になります",
   "direction": {
     "asc": "昇順",
     "desc": "降順"
   },
-  "landscapeBanner": "横向きでのプレイを推奨します",
-  "hint": "ヒント",
-  "autoComplete": "オートコンプリート",
-  "autoCompleteNotReady": "すべての山がファンデーションに移動可能になると有効になります",
-  "undo": "戻す",
-  "stalemate": "手詰まり",
-  "stalemateAlert": "手詰まりです。アンドゥ {{count}} 回で脱出できます",
-  "playing": "8 つのファンデーション (A から昇順 4 + K から降順 4) を同じスートで完成させましょう",
-  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
-  "gameOver": "ゲームオーバー",
-  "hintAvailable": "ヒントあり",
-  "noHint": "ヒントなし",
-  "tutorial": {
-    "foundations": "中央には 8 つのファンデーション。前 4 つは A から昇順、後 4 つは K から降順 (各スート 1 列ずつ) です。",
-    "tableau": "周りを囲む 16 のタブロー山。最上段のカードのみ移動でき、同じスートで値差 ±1 (A↔K は wrap) で重ねます。",
-    "redeal": "手詰まりになったら、最大 3 回の再配り (各列の順序を反転) で打開できます。",
-    "controls": "フッターのボタンで、ヒント・オートコンプリート・アンドゥ・再配り・ギブアップが使えます。"
-  },
+  "empty": "空",
+  "emptyFoundationAriaLabel": "空の{{direction}}ファンデーション ({{suit}})",
+  "foundation": "ファンデーション",
+  "foundationAriaLabel": "{{direction}}ファンデーション {{suit}} 残り{{count}}枚 トップ {{top}}",
   "frontendHint": {
     "tableau": "タブロー列{{col}}",
     "foundation": "ファンデーション{{id}}",
     "redeal": "再配り",
     "crescentMove": "この札を動かせます",
     "crescentRedeal": "動ける手がありません。再配りしましょう"
-  }
+  },
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "hintAvailable": "ヒントあり",
+  "landscapeBanner": "横向きでのプレイを推奨します",
+  "moveCount": "手数",
+  "noHint": "ヒントなし",
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "playing": "8 つのファンデーション (A から昇順 4 + K から降順 4) を同じスートで完成させましょう",
+  "redeal": "再配り",
+  "redealUnavailable": "残り再配り回数がありません",
+  "redealsLeft": "残り再配り回数: {{count}}",
+  "selectionMoves": "選択中のカードを置ける場所が{{count}}箇所あります",
+  "selectionNoMoves": "選択中のカードを置ける場所はありません",
+  "stalemate": "手詰まり",
+  "stalemateAlert": "手詰まりです。アンドゥ {{count}} 回で脱出できます",
+  "tableau": "タブロー",
+  "tutorial": {
+    "foundations": "中央には 8 つのファンデーション。前 4 つは A から昇順、後 4 つは K から降順 (各スート 1 列ずつ) です。",
+    "tableau": "周りを囲む 16 のタブロー山。最上段のカードのみ移動でき、同じスートで値差 ±1 (A↔K は wrap) で重ねます。",
+    "redeal": "手詰まりになったら、最大 3 回の再配り (各列の順序を反転) で打開できます。",
+    "controls": "フッターのボタンで、ヒント・オートコンプリート・アンドゥ・再配り・ギブアップが使えます。"
+  },
+  "undo": "戻す"
 }

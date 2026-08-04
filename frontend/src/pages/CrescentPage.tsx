@@ -218,6 +218,15 @@ function CrescentPageContent() {
   const targetRingClass = (valid: boolean, active: boolean) =>
     valid && !active ? 'ring-2 ring-ds-success rounded' : '';
 
+  // The legal-destination rings are colour only, so a screen-reader user cannot
+  // tell whether a selection leads anywhere. Count the same predicates the rings
+  // use and announce the total (#4797), mirroring Accordion's ac-selection-status.
+  const legalTargetCount =
+    selectedCard === null
+      ? 0
+      : state.foundation.filter((_, idx) => isFoundationTarget(idx)).length +
+        state.tableau.filter((_, colIdx) => isTableauTarget(colIdx)).length;
+
   return (
     <GamePageShell
       title={tc('nav.crescent')}
@@ -240,6 +249,13 @@ function CrescentPageContent() {
           </span>
           <span role="status" aria-live="polite">
             {t('redealsLeft', { count: state.redealsRemaining })}
+          </span>
+          <span className="sr-only" role="status" aria-live="polite" data-testid="cr-selection-status">
+            {isPlaying && selectedCard !== null
+              ? legalTargetCount > 0
+                ? t('selectionMoves', { count: legalTargetCount })
+                : t('selectionNoMoves')
+              : ''}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
