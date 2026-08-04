@@ -244,7 +244,7 @@ function BisleyPageContent() {
                           }
                         }}
                         disabled={!isPlaying || loading || (!isTop && !selectedSource)}
-                        aria-label={cardAlt(tc2.card)}
+                        aria-label={t('cardPosAria', { card: cardAlt(tc2.card), col: colIdx + 1, pos: cardIdx + 1 })}
                         aria-pressed={isSelected}
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(tableauColZone)}

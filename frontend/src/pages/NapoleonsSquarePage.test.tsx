@@ -122,7 +122,7 @@ describe('NapoleonsSquarePage', () => {
   it('lets a buried card be selected as the head of a run', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<NapoleonsSquarePage />);
-    const buried = await screen.findByRole('button', { name: '♠ 7' });
+    const buried = await screen.findByRole('button', { name: /^♠ 7（/ });
     expect(buried).toBeEnabled();
     fireEvent.click(buried);
     await waitFor(() => expect(buried).toHaveAttribute('aria-pressed', 'true'));
@@ -131,7 +131,7 @@ describe('NapoleonsSquarePage', () => {
   it('sends the selected run head with the move', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<NapoleonsSquarePage />);
-    const buried = await screen.findByRole('button', { name: '♠ 7' });
+    const buried = await screen.findByRole('button', { name: /^♠ 7（/ });
     fireEvent.click(buried);
     await waitFor(() => expect(buried).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
@@ -211,6 +211,16 @@ describe('NapoleonsSquarePage', () => {
     mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: 2, canUndo: true });
     renderWithProviders(<NapoleonsSquarePage />);
     await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
+  });
+
+  it('names each tableau card with its position for screen readers', async () => {
+    // Earlier tests in this file queue one-shot resolutions and can leave CLI
+    // mode persisted in localStorage; reset both so the board actually renders.
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<NapoleonsSquarePage />);
+    await waitFor(() => expect(screen.getAllByLabelText(/列\d+・上から\d+枚目/).length).toBeGreaterThan(0));
   });
 });
 

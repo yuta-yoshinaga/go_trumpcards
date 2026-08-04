@@ -1,46 +1,47 @@
 {
+  "aceFoundation": "Ascending (A->K)",
+  "aceFoundationAriaLabel": "{{suit}} ascending foundation {{count}} cards",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available once a foundation builds past the deal",
+  "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
+  "empty": "Empty",
+  "emptyAceFoundationAriaLabel": "Empty ascending foundation ({{suit}})",
+  "emptyColumnAriaLabel": "Empty tableau column {{col}}",
+  "emptyKingFoundationAriaLabel": "Empty descending foundation ({{suit}})",
+  "frontendHint": {
+    "tableau": "Tableau column {{col}}",
+    "aceFoundation": "{{suit}} ascending foundation",
+    "kingFoundation": "{{suit}} descending foundation"
+  },
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "hintAvailable": "Hint available",
+  "hintReason": {
+    "toAce": "Send this card to the ascending foundation to shorten the column.",
+    "toKing": "Send this card to the descending foundation to shorten the column.",
+    "toTableau": "Apply the suggested tableau move to dig out the cards underneath."
+  },
+  "kingFoundation": "Descending (K->A)",
+  "kingFoundationAriaLabel": "{{suit}} descending foundation {{count}} cards",
+  "landscapeBanner": "Landscape mode recommended",
+  "moveCount": "Moves",
+  "noHint": "No hint available",
   "phase": {
     "playing": "Playing",
     "gameClear": "Game Clear",
     "gameOver": "Game Over"
   },
-  "aceFoundation": "Ascending (A->K)",
-  "kingFoundation": "Descending (K->A)",
-  "tableau": "Tableau",
-  "moveCount": "Moves",
-  "giveup": "Give Up",
-  "empty": "Empty",
-  "aceFoundationAriaLabel": "{{suit}} ascending foundation {{count}} cards",
-  "kingFoundationAriaLabel": "{{suit}} descending foundation {{count}} cards",
-  "emptyAceFoundationAriaLabel": "Empty ascending foundation ({{suit}})",
-  "emptyKingFoundationAriaLabel": "Empty descending foundation ({{suit}})",
-  "emptyColumnAriaLabel": "Empty tableau column {{col}}",
-  "landscapeBanner": "Landscape mode recommended",
-  "hint": "Hint",
-  "autoComplete": "Auto Complete",
-  "autoCompleteNotReady": "Available once a foundation builds past the deal",
-  "undo": "Undo",
-  "stalemate": "Stalemate",
   "playing": "Move cards to build the foundations",
-  "gameClear": "Game Clear! Moves: {{moveCount}}",
-  "gameOver": "Game Over",
-  "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
-  "hintAvailable": "Hint available",
-  "noHint": "No hint available",
+  "stalemate": "Stalemate",
+  "tableau": "Tableau",
   "tutorial": {
     "foundation": "There are two sets of foundations. The ascending row starts with the four Aces and builds A to K by suit. The descending row starts empty and opens when you play a King, then builds K down to A.",
     "tableau": "The other 48 cards are dealt face-up into 13 columns (four of three cards, nine of four). Only the last card of a column can be moved.",
     "moves": "A card can be stacked on another of the same suit exactly one rank away, up or down. An emptied column is not a free parking space.",
     "controls": "Use hint, undo, and auto-complete buttons."
   },
-  "frontendHint": {
-    "tableau": "Tableau column {{col}}",
-    "aceFoundation": "{{suit}} ascending foundation",
-    "kingFoundation": "{{suit}} descending foundation"
-  },
-  "hintReason": {
-    "toAce": "Send this card to the ascending foundation to shorten the column.",
-    "toKing": "Send this card to the descending foundation to shorten the column.",
-    "toTableau": "Apply the suggested tableau move to dig out the cards underneath."
-  }
+  "undo": "Undo"
 }
