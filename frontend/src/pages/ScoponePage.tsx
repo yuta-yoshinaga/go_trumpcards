@@ -31,6 +31,7 @@ import {
 import type { CliGameConfig } from '../utils/cli/types';
 import { scoponeSelectionSum } from '../utils/scoponeSelectionSum';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { sweepCelebration } from '../utils/sweepCelebration';
 
 const DIFFICULTY_OPTIONS = [
   { value: '0', label: 'Easy' },
@@ -121,29 +122,12 @@ function ScoponePageContent() {
     const current = state.players.map((p) => p.scopaCount);
     const prev = prevScopaRef.current;
     prevScopaRef.current = current;
-    if (prev === null || prev.length !== current.length) {
-      // First render or a player-count change: seed the baseline without firing.
-      if (prev !== null) setScopaCelebration(null);
-      return;
-    }
     const humanTeam = state.players.find((p) => p.isHuman)?.team ?? -1;
-    let gain = false;
-    let own = false;
-    let dropped = false;
-    for (let i = 0; i < current.length; i++) {
-      const delta = current[i] - prev[i];
-      if (delta > 0) {
-        gain = true;
-        if (state.players[i].team === humanTeam) own = true;
-      } else if (delta < 0) {
-        dropped = true;
-      }
-    }
-    if (gain) {
-      setScopaCelebration((c) => ({ key: (c?.key ?? 0) + 1, own }));
+    const action = sweepCelebration(prev, current, (i) => state.players[i]?.team === humanTeam);
+    if (action.kind === 'fire') {
+      setScopaCelebration((c) => ({ key: (c?.key ?? 0) + 1, own: action.own }));
       playSound('chipClick', { pitchVariation: 0.1 });
-    } else if (dropped) {
-      // A reset / next round drops scopaCount back to 0; clear the stale badge.
+    } else if (action.kind === 'clear') {
       setScopaCelebration(null);
     }
   }, [state, playSound]);
