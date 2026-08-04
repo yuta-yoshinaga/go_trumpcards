@@ -332,6 +332,43 @@ describe('BraidPage', () => {
     // The destination may be an empty foundation, which must ring too.
     expect(document.querySelectorAll('[data-hint-slot="to"]')).toHaveLength(1);
   });
+
+  it('rings a helper destination and a foundation that already holds cards', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // The destination is a helper, and the source foundation is non-empty — the
+    // two render paths the field→empty-foundation case never reaches.
+    const withPile = {
+      ...playingState,
+      foundation: [[card('SPADE', 5)], [], [], [], [], [], [], []],
+    };
+    mockExec.mockResolvedValueOnce(withPile).mockResolvedValueOnce({
+      ...withPile,
+      hint: { fromZone: 'field', fromIdx: 0, toZone: 'helper', toIdx: 0 },
+    });
+    renderWithProviders(<BraidPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(document.querySelectorAll('[data-hint-slot="to"]')).toHaveLength(1));
+    expect(document.querySelectorAll('[data-hint-slot="from"]')).toHaveLength(1);
+  });
+
+  it('rings a non-empty foundation named as the destination', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    const withPile = {
+      ...playingState,
+      foundation: [[card('SPADE', 5)], [], [], [], [], [], [], []],
+    };
+    mockExec.mockResolvedValueOnce(withPile).mockResolvedValueOnce({
+      ...withPile,
+      hint: { fromZone: 'field', fromIdx: 2, toZone: 'foundation', toIdx: 0 },
+    });
+    renderWithProviders(<BraidPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(document.querySelectorAll('[data-hint-slot="to"]')).toHaveLength(1));
+  });
 });
 
 // Keyboard shortcuts are bound by useActionKeyboardNav and advertised by
