@@ -29,6 +29,7 @@ import {
 } from '../utils/cli/commands/escobaCommands';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { sweepCelebration } from '../utils/sweepCelebration';
 
 const DIFFICULTY_OPTIONS = [
   { value: '0', label: 'Easy' },
@@ -135,26 +136,11 @@ function EscobaPageContent() {
     const current = state.players.map((p) => p.escobaCount);
     const prev = prevEscobaRef.current;
     prevEscobaRef.current = current;
-    if (prev === null || prev.length !== current.length) {
-      if (prev !== null) setEscobaCelebration(null);
-      return;
-    }
-    let gain = false;
-    let own = false;
-    let dropped = false;
-    for (let i = 0; i < current.length; i++) {
-      const delta = (current[i] ?? 0) - (prev[i] ?? 0);
-      if (delta > 0) {
-        gain = true;
-        if (state.players[i]?.isHuman) own = true;
-      } else if (delta < 0) {
-        dropped = true;
-      }
-    }
-    if (gain) {
-      setEscobaCelebration((c) => ({ key: (c?.key ?? 0) + 1, own }));
+    const action = sweepCelebration(prev, current, (i) => state.players[i]?.isHuman === true);
+    if (action.kind === 'fire') {
+      setEscobaCelebration((c) => ({ key: (c?.key ?? 0) + 1, own: action.own }));
       playSound('chipClick', { pitchVariation: 0.1 });
-    } else if (dropped) {
+    } else if (action.kind === 'clear') {
       setEscobaCelebration(null);
     }
   }, [state, playSound]);
