@@ -202,7 +202,7 @@ describe('WindmillPage', () => {
       await waitFor(() => expect(screen.getByRole('button', { name: cornerName })).toBeInTheDocument());
 
       // 帆の札を選ぶと、四隅は「置き先」になるので再び押せる。
-      // 帆のボタンは札そのものの名前で引ける (aria-label = cardAlt)。
+      // 帆のボタンの aria-label は sailAriaLabel ("帆 N: <札>") なので、札名は末尾に来る。
       fireEvent.click(screen.getByRole('button', { name: /: ♠ 9$/ }));
 
       await waitFor(() => expect(screen.getByRole('button', { name: cornerName })).toBeEnabled());
