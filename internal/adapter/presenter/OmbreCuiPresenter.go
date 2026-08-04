@@ -77,15 +77,17 @@ var ombreMatadorKeys = map[int]string{
 // **マタドールは常にトリックに勝つ。**Web はバッジで示すのに、CUI は素の
 // 一覧しか出しておらず、序列を覚えていないと気づけなかった (#4919)。
 // 切り札が未確定なら注記は付かない。
+//
+// 索引と区切りは他ゲームと同じ formatCardList に任せる。自前で並べると
+// 区切り幅が揃わない。
 func ombreIndexedHandStr(player cuiCardList, trump int) string {
-	parts := make([]string, player.GetCardsSize())
-	for i := range parts {
-		parts[i] = "[" + strconv.Itoa(i) + "]" + cuiCardStr(player.GetCard(i))
-		if key := ombreMatadorKeys[domain.OmbreMatadorRank(player.GetCard(i), trump)]; key != "" {
-			parts[i] += "(" + i18n.T(key) + ")"
+	return formatCardList(player, func(c *domain.Card) string {
+		s := cuiCardStr(c)
+		if key := ombreMatadorKeys[domain.OmbreMatadorRank(c, trump)]; key != "" {
+			s += "(" + i18n.T(key) + ")"
 		}
-	}
-	return strings.Join(parts, " ")
+		return s
+	}, "  ", true)
 }
 
 // OmbreCuiPresenter renders the Ombre CUI view.

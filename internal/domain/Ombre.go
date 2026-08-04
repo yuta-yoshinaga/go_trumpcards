@@ -797,7 +797,7 @@ func ombreCardStrength(c *Card, trump int) int {
 // **判定は ombreCardStrength をそのまま読む。**別に条件を書くと、序列を
 // 変えたときに表示だけ古いままになる。
 func OmbreMatadorRank(c *Card, trump int) int {
-	if c == nil || trump < CardDesignSpade || trump > CardDesignDiamond {
+	if c == nil || !ombreValidSuit(trump) {
 		return 0
 	}
 	switch ombreCardStrength(c, trump) {

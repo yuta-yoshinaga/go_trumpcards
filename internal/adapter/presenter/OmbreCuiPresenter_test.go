@@ -160,7 +160,7 @@ func TestOmbreCuiPresenter_AnnotatesMatadors(t *testing.T) {
 		out := p.Output(m, nil)
 		// 手札行に注記が付かないことを見る。序列の説明は promptPlayHelp が
 		// 常に出しているので、文言そのものの有無では判定できない。
-		assert.Contains(t, out, "[0]SPADE 1 [1]CLOVER 1")
+		assert.Contains(t, out, "[0]SPADE 1  [1]CLOVER 1")
 		assert.NotContains(t, out, "[0]SPADE 1(")
 		assert.NotContains(t, out, "[1]CLOVER 1(")
 	})
