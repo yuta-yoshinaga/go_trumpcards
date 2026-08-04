@@ -172,6 +172,20 @@ describe('KingAlbertPage', () => {
     renderWithProviders(<KingAlbertPage />);
     await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
   });
+
+  it('rings every zone that can accept the selected card', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KingAlbertPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(0);
+
+    const source = screen.getAllByRole('button').find((b) => b.querySelector('img')) as HTMLButtonElement;
+    fireEvent.click(source);
+    // Foundations accept the card as readily as the tableau does.
+    await waitFor(() => expect(document.querySelectorAll('[data-target-candidate]').length).toBeGreaterThan(1));
+  });
 });
 
 // Keyboard shortcuts are bound by useActionKeyboardNav and advertised by

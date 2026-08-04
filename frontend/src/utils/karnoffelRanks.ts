@@ -26,7 +26,6 @@ export const KARNOFFEL_RANK_KEYS: Readonly<Record<number, string>> = {
  * @returns The rank key, or null for a plain card.
  */
 export function karnoffelRankKey(card: Card, chosenSuit: number): string | null {
-  if (card.value === undefined) return null;
   if (suitIndex(card.design) !== chosenSuit) return null;
   return KARNOFFEL_RANK_KEYS[card.value] ?? null;
 }
