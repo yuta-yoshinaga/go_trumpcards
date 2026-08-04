@@ -361,6 +361,18 @@ describe('EasthavenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument();
   });
+
+  it('previews the movable block on touch as well as hover', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    const cardButton = screen
+      .getAllByRole('button')
+      .find((b) => b.hasAttribute('data-block-member') === false && b.querySelector('img'));
+    expect(cardButton).toBeDefined();
+    fireEvent.touchStart(cardButton as HTMLElement);
+    await waitFor(() => expect(document.querySelectorAll('[data-block-member]').length).toBeGreaterThan(0));
+  });
 });
 
 // Keyboard shortcuts are bound by useActionKeyboardNav and advertised by

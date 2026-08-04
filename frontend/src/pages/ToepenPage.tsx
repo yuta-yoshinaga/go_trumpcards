@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ToepenResponse } from '../types/card';
 import { ToepenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseToepenCommand, TOEPEN_HELP } from '../utils/cli/commands/toepenCommands';
 import { formatToepenState } from '../utils/cli/formatters/toepenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -177,14 +178,20 @@ function ToepenPageContent() {
               <div className="flex gap-1 justify-center flex-wrap">
                 {(human?.cards ?? []).map((card, i) => {
                   const canPlay = isHumanTurn && playable.has(i);
+                  // Blocked only by the follow-suit duty; off-turn cards are not
+                  // "wrong", they are just not yours to play yet.
+                  const blockedBySuit = isHumanTurn && !playable.has(i);
                   return (
                     <button
                       key={`hand-${i.toString()}`}
                       type="button"
                       data-hint-action="play"
+                      data-testid={`toepen-hand-${i.toString()}`}
                       // Kept focusable while it cannot act so the reason is
                       // announced rather than the control leaving the tab order.
                       aria-disabled={!canPlay}
+                      title={blockedBySuit ? t('followSuitTooltip') : undefined}
+                      aria-label={blockedBySuit ? `${cardAlt(card)} (${t('followSuitAria')})` : cardAlt(card)}
                       onClick={() => canPlay && game.handlePlay(i)}
                       className={[
                         'rounded transition-transform',

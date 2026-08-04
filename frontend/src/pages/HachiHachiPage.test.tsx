@@ -171,4 +171,31 @@ describe('HachiHachiPage', () => {
     fireEvent.click(screen.getByTestId('field-card-0'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 0 }));
   });
+
+  it('lists the card shortcuts in the footer', async () => {
+    mockExec.mockResolvedValue(makeHachiHachiState());
+    renderWithProviders(<HachiHachiPage />);
+    await waitFor(() => expect(screen.getByTestId('hachihachi-kbd-shortcuts')).toBeInTheDocument());
+  });
+
+  it('plays a hand card with a number key', async () => {
+    mockExec.mockResolvedValue(makeHachiHachiState());
+    renderWithProviders(<HachiHachiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+  });
+
+  it('picks the field card with a number key during a two-way match', async () => {
+    mockExec.mockResolvedValue(makeHachiHachiState({ captureOptions: { 0: [0, 1] } }));
+    renderWithProviders(<HachiHachiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.keyDown(document, { key: '1' });
+    await waitFor(() => expect(screen.getByTestId('hachihachi-field-pick')).toBeInTheDocument());
+    mockExec.mockClear();
+    // Digits now address the field, not the hand.
+    fireEvent.keyDown(document, { key: '2' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 1 }));
+  });
 });

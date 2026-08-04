@@ -482,6 +482,10 @@ function EasthavenPageContent() {
                                       onMouseLeave={() => setHoveredBlock(null)}
                                       onFocus={() => setHoveredBlock({ col: colIdx, cardIdx })}
                                       onBlur={() => setHoveredBlock(null)}
+                                      // Touch has no hover, so without this the block
+                                      // preview was mouse-only and a tap moved cards
+                                      // whose extent the player never saw (#4815).
+                                      onTouchStart={() => setHoveredBlock({ col: colIdx, cardIdx })}
                                       data-block-member={inHoverBlock || undefined}
                                       className={`${focusRingWhite} rounded-lg transition-all ${
                                         isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
