@@ -372,4 +372,20 @@ describe('ClockSolitairePage', () => {
     // The step/autoplay controls are hidden once the game has ended.
     expect(screen.queryByTestId('cs-step-button')).not.toBeInTheDocument();
   });
+
+  it('announces where the drawn card is heading', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({ ...playingState, currentCard: { design: 'SPADE', value: 3 } });
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('cs-live-region')).toHaveTextContent(/3時/));
+  });
+
+  it('announces the centre pile for a king', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({ ...playingState, currentCard: { design: 'SPADE', value: 13 } });
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('cs-live-region')).toHaveTextContent(/中央/));
+  });
 });

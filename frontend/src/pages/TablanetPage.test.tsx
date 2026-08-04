@@ -207,4 +207,16 @@ describe('TablanetPage', () => {
     expect(screen.queryByTestId('tablanet-tabla-badge')).not.toBeInTheDocument();
     expect(screen.getByTestId('tablanet-play-button')).not.toHaveTextContent('タブラ捕獲！');
   });
+
+  it('names each table card and marks the selected one as pressed', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<TablanetPage />);
+    const first = await screen.findByTestId('table-card-0');
+    expect(first.getAttribute('aria-label')).toMatch(/./);
+    expect(first).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(first);
+    await waitFor(() => expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-pressed', 'true'));
+  });
 });

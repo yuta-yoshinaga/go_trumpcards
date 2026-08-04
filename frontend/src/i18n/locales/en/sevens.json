@@ -1,40 +1,13 @@
 {
-  "board": "Board",
-  "tunnel": "Tunnel",
-  "tunnelTag": "[Tunnel]",
-  "jokerSelectHint": "Select placement",
-  "cardCount": "{{count}} cards",
-  "passCount": "Pass: {{used}}/{{max}}",
-  "passUnlimited": "∞",
-  "clickPlayable": "Click a playable card",
-  "mustPass": "No playable cards — please pass",
-  "passRemaining": "Pass ({{count}} left)",
-  "playTitle": "Play: {{design}} {{value}}",
-  "rankLabel": "#{{rank}}",
-  "placeAriaLabel": "Place at {{suit}} {{value}}",
-  "tunnelConnection": "Tunnel connection",
-  "tunnelPortalLeft": "Tunnel portal left (A↔K wrap)",
-  "tunnelPortalRight": "Tunnel portal right (A↔K wrap)",
+  "actionForcedPass": "{{base}} ⚠ No playable cards!",
+  "actionPassed": "{{name}} passed",
   "actionPlayed": "{{name}} played: {{design}} {{value}}",
   "actionPlayedJoker": "{{name}} played: {{design}} {{value}} → {{targetSuit}} {{targetValue}}",
-  "actionPassed": "{{name}} passed",
-  "actionForcedPass": "{{base}} ⚠ No playable cards!",
-  "resultPrefix": "Game Over!",
-  "resultEntry": "{{name}}: {{rank}}",
-  "rules": {
-    "title": "Rules:",
-    "tunnelTag": "[Tunnel]",
-    "tunnelSkipTag": "[Tunnel Skip {{width}}]",
-    "jokerTag": "[Joker ×{{count}}]",
-    "cpuStrategy": "[CPU Strategy]",
-    "cpuHarassment": "[Harassment]",
-    "passUnlimited": "[Unlimited Pass]",
-    "passCount": "[Pass {{count}}×]",
-    "noJokerFinish": "[No Joker Finish]",
-    "jokerReclaim": "[Joker Reclaim]",
-    "endStop": "[End Stop]",
-    "jokerConsecutiveBanned": "[No Consecutive Joker]"
-  },
+  "board": "Board",
+  "cardCount": "{{count}} cards",
+  "cellEmptyAria": "{{suit}} {{value}} empty",
+  "cellPlacedAria": "{{suit}} {{value}} placed",
+  "clickPlayable": "Click a playable card",
   "config": {
     "title": "Rule Settings (applied on reset)",
     "tunnel": "Tunnel",
@@ -54,21 +27,51 @@
     "groupRules": "Rules",
     "groupGame": "Game Settings"
   },
+  "hint": {
+    "playExtend": "You have a playable card — extend the range",
+    "passAvailable": "No playable cards — pass",
+    "passLimitWarning": "Almost out of passes — be careful"
+  },
+  "jokerSelectHint": "Select placement",
+  "keyHints": "Number keys: play the matching card",
+  "mustPass": "No playable cards — please pass",
+  "passCount": "Pass: {{used}}/{{max}}",
+  "passRemaining": "Pass ({{count}} left)",
+  "passUnlimited": "∞",
+  "phase": {
+    "play": "Playing",
+    "end": "End"
+  },
+  "placeAriaLabel": "Place at {{suit}} {{value}}",
+  "playTitle": "Play: {{design}} {{value}}",
+  "rankLabel": "#{{rank}}",
+  "resultEntry": "{{name}}: {{rank}}",
+  "resultPrefix": "Game Over!",
+  "rules": {
+    "title": "Rules:",
+    "tunnelTag": "[Tunnel]",
+    "tunnelSkipTag": "[Tunnel Skip {{width}}]",
+    "jokerTag": "[Joker ×{{count}}]",
+    "cpuStrategy": "[CPU Strategy]",
+    "cpuHarassment": "[Harassment]",
+    "passUnlimited": "[Unlimited Pass]",
+    "passCount": "[Pass {{count}}×]",
+    "noJokerFinish": "[No Joker Finish]",
+    "jokerReclaim": "[Joker Reclaim]",
+    "endStop": "[End Stop]",
+    "jokerConsecutiveBanned": "[No Consecutive Joker]"
+  },
+  "suitRowAria": "{{suit}} row",
+  "tunnel": "Tunnel",
+  "tunnelConnection": "Tunnel connection",
+  "tunnelPortalLeft": "Tunnel portal left (A↔K wrap)",
+  "tunnelPortalRight": "Tunnel portal right (A↔K wrap)",
+  "tunnelTag": "[Tunnel]",
   "tutorial": {
     "board": "The board centered on 7s. Place cards adjacent in rank within the same suit.",
     "playerHand": "This is your hand. Playable cards are highlighted.",
     "playPass": "Pass if you have no playable cards. Pass count may be limited.",
     "settings": "Change rules and settings. Variations include tunnel and joker rules.",
     "resetButton": "Press the reset button to start a new game."
-  },
-  "phase": {
-    "play": "Playing",
-    "end": "End"
-  },
-  "hint": {
-    "playExtend": "You have a playable card — extend the range",
-    "passAvailable": "No playable cards — pass",
-    "passLimitWarning": "Almost out of passes — be careful"
-  },
-  "keyHints": "Number keys: play the matching card"
+  }
 }
