@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupBostonCuiMock(o bostonMockOpts) *interfaces.MockBostonGame {
@@ -56,6 +58,49 @@ func TestBostonCuiPresenter_HidesOpponentHands(t *testing.T) {
 	assert.Contains(t, out, "[親]")
 	assert.Contains(t, out, "[宣言]")
 	assert.Contains(t, out, "場:")
+}
+
+// **どの段が手札を晒し、どの段で味方を呼べるかを見せる。**Web の宣言ラダーは
+// タグで示しているのに、CUI は level:name を並べるだけで、自分の宣言が第1
+// トリック後に手札を晒す羽目になるか知らないままビッドさせていた (#4939)。
+func TestBostonCuiPresenter_LadderTagsExposedAndPartnerLevels(t *testing.T) {
+	o := defaultBostonOpts()
+	o.phase = domain.BostonPhaseBid
+	o.highBid = nil
+	out := new(presenter.BostonCuiPresenter).Output(setupBostonCuiMock(o), nil)
+
+	// トリック宣言は味方を呼べるが手札は晒さない。
+	assert.Contains(t, out, "1:5トリック[相方]")
+	assert.Contains(t, out, "2:6トリック[相方]")
+	// 11 トリック以上は単独固定。呼べない。
+	assert.Contains(t, out, "12:11トリック <")
+	// ミゼールの公開版は晒す側。味方は呼べない。
+	assert.Contains(t, out, "9:リトル・ミゼール（公開）[公開]")
+	assert.Contains(t, out, "11:グランド・ミゼール（公開）[公開]")
+	// 素のミゼールにはどちらも付かない。
+	assert.Contains(t, out, "3:リトル・ミゼール <")
+	assert.Contains(t, out, "7:グランド・ミゼール <")
+	// 最上段のシュレム（公開）も晒す側。
+	assert.Contains(t, out, "15:シュレム（公開）[公開]")
+	// 既存の区切り記号とレベル番号の形式は変えない (受け入れ条件3)。
+	assert.Contains(t, out, " < ")
+}
+
+// ja / en 双方にタグの訳があり、席の [味方] マークとは別のキーであること。
+// 同じキーを使い回すと、片方を直したときにもう片方が巻き添えを食う。
+func TestBostonLadderTags_TranslatedAndDistinctFromTheSeatMarker(t *testing.T) {
+	defer i18n.SetLang("ja")
+	for _, lang := range []string{"ja", "en"} {
+		i18n.SetLang(lang)
+		for _, key := range []string{"boston.ladderExposedTag", "boston.ladderPartnerTag"} {
+			assert.NotEqual(t, key, i18n.T(key), "%s missing from %s", key, lang)
+		}
+		// **大文字小文字だけの違いにしない。**CUI 出力を貼られたときに
+		// 席マーカーと見分けが付かなくなる。
+		assert.NotEqual(t, strings.ToLower(i18n.T("boston.partnerTag")),
+			strings.ToLower(i18n.T("boston.ladderPartnerTag")),
+			"the seat marker and the ladder tag must read differently (%s)", lang)
+	}
 }
 
 // **序列を見せないと競りの判断ができない。**ミゼールが間に挟まるため。

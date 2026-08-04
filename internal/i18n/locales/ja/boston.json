@@ -16,6 +16,8 @@
   "trick": "場: {{cards}}",
   "playable": "出せる札: {{indexes}}",
   "ladderTitle": "序列:",
+  "ladderExposedTag": "[公開]",
+  "ladderPartnerTag": "[相方]",
   "gameEnd": "ゲーム終了！ {{name}}の勝ち！",
   "promptBid": "宣言: {{name}}",
   "promptBidHelp": "b <段の番号> [スート] ・・・宣言（ミゼールはトリック宣言の間に挟まります）／ps ・・・見送る",
