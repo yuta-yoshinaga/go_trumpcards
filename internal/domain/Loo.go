@@ -906,6 +906,9 @@ func (g *Loo) SetPot(v int) { g.pot = v }
 // GetPotStart は現ディール開始時のポット額を返す。
 func (g *Loo) GetPotStart() int { return g.potStart }
 
+// SetPotStart は現ディール開始時のポット額を設定する (テスト用)。
+func (g *Loo) SetPotStart(v int) { g.potStart = v }
+
 // GetRoundTricks は現ディールの獲得トリック数を返す。
 func (g *Loo) GetRoundTricks() [LooPlayerCnt]int { return g.roundTricks }
 

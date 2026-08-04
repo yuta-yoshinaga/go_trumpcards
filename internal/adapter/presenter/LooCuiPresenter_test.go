@@ -23,6 +23,43 @@ func TestLooCuiPresenter_Output_DecidePhase(t *testing.T) {
 	assert.Contains(t, out, "[0]") // human indexed hand
 }
 
+// **参加の損得を出す。**Web は potRisk パネルで示すのに、CUI は現在のポット額
+// しか見えず、取り分もルーの負担も暗算させていた (#4921)。
+func TestLooCuiPresenter_DecidePhaseShowsThePotRisk(t *testing.T) {
+	g := domain.NewDefaultLoo()
+	g.Reset()
+	g.SetDecidePlayerIdx(0)
+	g.SetPotStart(37) // 5 で割り切れない額。端数の扱いが見える。
+
+	out := new(presenter.LooCuiPresenter).Output(g, nil)
+	// 37 / 5 = 7 (切り捨て)。ドメインの share と同じ整数除算。
+	assert.Contains(t, out, "+37")
+	assert.Contains(t, out, "+7")
+	assert.Contains(t, out, "-37")
+	assert.NotContains(t, out, "7.4")
+}
+
+// **ポットが 0 のディールでも壊れない** (受け入れ条件2)。
+func TestLooCuiPresenter_DecidePhasePotRiskWithAnEmptyPot(t *testing.T) {
+	g := domain.NewDefaultLoo()
+	g.Reset()
+	g.SetDecidePlayerIdx(0)
+	g.SetPotStart(0)
+
+	out := new(presenter.LooCuiPresenter).Output(g, nil)
+	assert.Contains(t, out, "+0")
+	assert.Contains(t, out, "-0")
+}
+
+// ディサイド以外のフェーズには出さない。毎画面に出ると邪魔になる。
+func TestLooCuiPresenter_PotRiskIsConfinedToTheDecidePhase(t *testing.T) {
+	g := domain.NewDefaultLoo()
+	g.Reset()
+	g.SetPotStart(37)
+	g.SetPhase(domain.LooPhasePlay)
+	assert.NotContains(t, new(presenter.LooCuiPresenter).Output(g, nil), "参加した場合")
+}
+
 func TestLooCuiPresenter_Output_AllPhases(t *testing.T) {
 	p := new(presenter.LooCuiPresenter)
 
