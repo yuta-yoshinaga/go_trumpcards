@@ -132,4 +132,34 @@ describe('ChineseTenPage', () => {
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
     }
   });
+
+  it('rings the table card the hint says to take, once the hint is requested', async () => {
+    localStorage.clear();
+    localStorage.setItem('hint_enabled_chineseten', 'true');
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(
+      makeState({
+        hint: { cardIndex: 0, layoutIndex: 1, reason: 'chineseten.hint.select' },
+        messageCode: 'chineseten.hintRequested',
+      }),
+    );
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(document.querySelectorAll('[data-hinted-layout]')).toHaveLength(1));
+  });
+
+  it('rings nothing until the hint is requested', async () => {
+    localStorage.clear();
+    localStorage.setItem('hint_enabled_chineseten', 'true');
+    mockExec.mockReset();
+    // Every response carries state.hint since #4483 (#4605).
+    mockExec.mockResolvedValue(
+      makeState({
+        hint: { cardIndex: 0, layoutIndex: 1, reason: 'chineseten.hint.select' },
+        messageCode: 'chineseten.playing',
+      }),
+    );
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+    expect(document.querySelectorAll('[data-hinted-layout]')).toHaveLength(0);
+  });
 });
