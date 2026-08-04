@@ -35,6 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { MAO_HELP, parseMaoCommand } from '../utils/cli/commands/maoCommands';
 import { formatMaoState } from '../utils/cli/formatters/maoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { ruleHintText } from '../utils/maoRuleHint';
 import { appendSayWordAttempt, type MaoSayWordAttempt } from '../utils/maoSayWordHistory';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -444,7 +445,7 @@ function MaoPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
               {state.hintUnlocked && state.ruleHint && (
                 <div className="text-ds-accent" data-testid="rule-hint">
-                  {t('ruleHintLabel')}: {state.ruleHint}
+                  {t('ruleHintLabel')}: {ruleHintText(state, t)}
                 </div>
               )}
               <div className="flex gap-2 items-center">
