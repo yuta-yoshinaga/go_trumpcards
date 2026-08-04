@@ -29,5 +29,6 @@
   "frontendHint": {
     "niuniuStakeCap": "Your cap is chips divided by the top multiplier — a banker Niu Niu pays three times",
     "niuniuStackTooShort": "Your stack cannot cover the top multiplier on any stake"
-  }
+  },
+  "betTooHigh": "Not enough chips — up to {{multiplier}}x means {{needed}} are needed"
 }

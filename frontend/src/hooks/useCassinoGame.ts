@@ -72,10 +72,6 @@ export function useCassinoGame() {
     callApi('trail', { handIndex });
   }, [callApi, handIndex]);
 
-  const handleNextRound = useCallback(() => {
-    callApi('next');
-  }, [callApi]);
-
   const handleResetWithConfig = useCallback(() => {
     callApi('reset', { config: configInput });
   }, [callApi, configInput]);
@@ -100,7 +96,6 @@ export function useCassinoGame() {
     playTake,
     playBuild,
     playTrail,
-    handleNextRound,
     handleResetWithConfig,
   };
 }

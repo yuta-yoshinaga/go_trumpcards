@@ -201,16 +201,6 @@ describe('useCassinoGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('trail', { handIndex: 2 }));
   });
 
-  it('handleNextRound calls next', async () => {
-    const { result } = renderHook(() => useCassinoGame(), { wrapper: Hookwrapper });
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    mockExec.mockClear();
-    act(() => {
-      result.current.handleNextRound();
-    });
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
-  });
-
   it('handleResetWithConfig forwards configInput', async () => {
     const { result } = renderHook(() => useCassinoGame(), { wrapper: Hookwrapper });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

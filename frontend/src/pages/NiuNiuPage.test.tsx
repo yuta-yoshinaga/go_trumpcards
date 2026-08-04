@@ -174,4 +174,16 @@ describe('NiuNiuPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  it('says why a stake is refused rather than only greying it out', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // 100 chips against a 5x ceiling: only the smallest stakes are affordable.
+    mockExec.mockResolvedValue(makeState({ chips: 100, maxMultiplier: 5 }));
+    renderWithProviders(<NiuNiuPage />);
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+    const refused = screen.getAllByRole('button').filter((b) => b.hasAttribute('disabled') && b.title);
+    expect(refused.length).toBeGreaterThan(0);
+    expect(refused[0]?.title).toMatch(/チップ/);
+  });
 });

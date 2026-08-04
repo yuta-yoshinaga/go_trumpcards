@@ -29,5 +29,6 @@
   "frontendHint": {
     "niuniuStakeCap": "賭けられるのは持ち点 ÷ 最大倍率までです。親のニウニウは 3 倍払いになります",
     "niuniuStackTooShort": "最大倍率を賭けきれる持ち点がありません"
-  }
+  },
+  "betTooHigh": "所持チップが不足しています（最大{{multiplier}}倍で{{needed}}チップ必要）"
 }

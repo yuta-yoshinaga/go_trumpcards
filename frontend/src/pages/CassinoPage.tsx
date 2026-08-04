@@ -101,7 +101,6 @@ function CassinoPageContent() {
     playTake,
     playBuild,
     playTrail,
-    handleNextRound,
     handleResetWithConfig,
     retry,
   } = useCassinoGame();
@@ -437,15 +436,6 @@ function CassinoPageContent() {
                 data-testid="trail-button"
               >
                 {t('button.trail')}
-              </button>
-              <button
-                type="button"
-                onClick={handleNextRound}
-                disabled={loading || !isGameEnd === false}
-                className="px-4 py-2 rounded-lg bg-ds-info/70 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm hidden"
-                data-testid="next-round-button"
-              >
-                {t('button.nextRound')}
               </button>
               <GameResetButton
                 isGameEnd={isGameEnd}
