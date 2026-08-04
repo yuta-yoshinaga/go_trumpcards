@@ -69,3 +69,14 @@ export function evaluateContractSlot(slot: ContractRummyContractSlot, cards: Car
   const ok = slot.kind === CONTRACT_SLOT_SET ? isContractSet(cards) : isContractRun(cards);
   return { required, placed, satisfied: ok, invalid: !ok };
 }
+
+/**
+ * Whether the cards form a valid extra meld — a set or a run of at least three.
+ * Mirrors `IsContractRummyMeld` in `internal/domain/ContractRummy.go`, which is
+ * the same predicate the contract slots are judged by.
+ * @param cards - The selected cards.
+ * @returns Whether they may be melded.
+ */
+export function isContractRummyMeld(cards: Card[]): boolean {
+  return isContractSet(cards) || isContractRun(cards);
+}

@@ -423,4 +423,35 @@ describe('ContractRummyPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  it('refuses an extra meld that is not a set or a run', async () => {
+    const metState: ContractRummyResponse = {
+      ...playState,
+      players: [{ ...playState.players[0], contractMet: true }, playState.players[1], playState.players[2]],
+    };
+    mockExec.mockResolvedValue(metState);
+    renderWithProviders(<ContractRummyPage />);
+    const meldExtra = await screen.findByRole('button', { name: /Lay extra meld|追加メルド/ });
+    // Three cards, but neither a set nor a run — counting to three used to be enough.
+    fireEvent.click(screen.getByRole('button', { name: '♠ 5' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ K' }));
+    expect(meldExtra).toBeDisabled();
+    expect(screen.getByTestId('cr-invalid-extra-meld')).toBeInTheDocument();
+  });
+
+  it('allows an extra meld that is a real set', async () => {
+    const metState: ContractRummyResponse = {
+      ...playState,
+      players: [{ ...playState.players[0], contractMet: true }, playState.players[1], playState.players[2]],
+    };
+    mockExec.mockResolvedValue(metState);
+    renderWithProviders(<ContractRummyPage />);
+    const meldExtra = await screen.findByRole('button', { name: /Lay extra meld|追加メルド/ });
+    fireEvent.click(screen.getByRole('button', { name: '♠ 5' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5' }));
+    fireEvent.click(screen.getByRole('button', { name: '♦ 5' }));
+    expect(meldExtra).toBeEnabled();
+    expect(screen.queryByTestId('cr-invalid-extra-meld')).not.toBeInTheDocument();
+  });
 });
