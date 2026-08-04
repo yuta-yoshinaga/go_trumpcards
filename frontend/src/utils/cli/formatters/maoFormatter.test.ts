@@ -72,6 +72,20 @@ describe('formatMaoState', () => {
     expect(out).toContain('hint: say something nice');
   });
 
+  // **CLI パネルも同じ応答を読む。**メインのヒント行だけ訳しても、
+  // CLI に切り替えるとサーバの言語のまま出てしまう (#4917)。
+  it('translates the rule hint code rather than echoing the server string', () => {
+    const out = formatMaoState(
+      makeState({
+        hintUnlocked: true,
+        ruleHint: 'A word is required when a certain suit is played.',
+        ruleHintCode: 'hintSuit',
+      }),
+    );
+    expect(out).toContain('hint: あるスートを出したときに言葉が必要です。');
+    expect(out).not.toContain('hintSuit');
+  });
+
   it('shows choose-suit prompt in phase 1', () => {
     expect(formatMaoState(makeState({ phase: 1 }))).toContain('Choose a suit');
   });

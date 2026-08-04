@@ -38,7 +38,7 @@ type MaoWebOutputPlayer struct {
 
 // MaoWebOutput マオWebアウトプット。
 // 隠しルール (hiddenRule) は意図的に含めない。クライアントには
-// awaitingWord / hintUnlocked / ruleHint / rulePenalty のみを公開する。
+// awaitingWord / hintUnlocked / ruleHint / ruleHintCode / rulePenalty のみを公開する。
 type MaoWebOutput struct {
 	Players          []*MaoWebOutputPlayer `json:"players"`
 	Phase            int                   `json:"phase"`

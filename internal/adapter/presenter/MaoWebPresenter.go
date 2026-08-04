@@ -14,7 +14,7 @@ type MaoWebPresenter struct{}
 
 // Output ゲーム状態をJSON出力する。
 // 隠しルール本体 (トリガー・宣言語) はクライアントに公開せず、3回正解で
-// 解放されたハーフヒント (GetRuleHint) のみを出力に含める。
+// 解放されたハーフヒント (GetRuleHintKey) のみを出力に含める。
 func (p *MaoWebPresenter) Output(g interfaces.MaoGame, lastErr error) string {
 	resObj := new(controller.MaoWebOutput)
 	resObj.Phase = int(g.GetPhase())

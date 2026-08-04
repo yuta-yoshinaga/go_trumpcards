@@ -1,4 +1,6 @@
+import i18n from '../../../i18n';
 import type { MaoResponse } from '../../../types/card';
+import { ruleHintText } from '../../maoRuleHint';
 import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const SUIT_NAMES: Record<number, string> = { 1: 'Spade', 2: 'Clover', 3: 'Heart', 4: 'Diamond' };
@@ -32,7 +34,9 @@ export function formatMaoState(state: MaoResponse): string {
   lines.push(`compliance: ${state.correctCount}/${HINT_THRESHOLD}`);
   if (state.rulePenalty) lines.push('!! a hidden-rule penalty was applied');
   if (state.awaitingWord) lines.push('?? you may need to say a word (dw <word>)');
-  if (state.hintUnlocked && state.ruleHint) lines.push(`hint: ${state.ruleHint}`);
+  // CLI パネルも同じ応答を読むので、ここも訳す。素の ruleHint はサーバの
+  // 言語で届く (#4917)。
+  if (state.hintUnlocked && state.ruleHint) lines.push(`hint: ${ruleHintText(state, (key) => i18n.t(`mao:${key}`))}`);
 
   if (state.phase === 1) lines.push('Choose a suit (suit <spade|clover|heart|diamond>)');
   if (state.phase === 2) lines.push('Declare "Mao!" (dc) or skip (sk)');
