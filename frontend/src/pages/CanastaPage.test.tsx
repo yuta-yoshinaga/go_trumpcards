@@ -285,7 +285,10 @@ describe('CanastaPage', () => {
     expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent('もう1枚選択してください');
   });
 
-  it('clears the reason and enables the draw button when exactly 2 cards are selected', async () => {
+  it('clears the reason and enables the draw button for a legal natural pair', async () => {
+    // The pair must be two natural cards of the discard top's rank, so the top is
+    // a 7 to match the two sevens the fixture hand opens with.
+    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: { design: 'SPADE', value: 7 } });
     renderWithProviders(<CanastaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
     const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
@@ -346,5 +349,45 @@ describe('CanastaPage', () => {
 
   afterEach(() => {
     localStorage.clear();
+  });
+
+  it('refuses a two-card selection the server would reject', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // Discard top is a 5; the hand's sevens are two cards but not a legal pair.
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    // Counting to two used to be enough to enable it.
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeDisabled();
+    expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent('同じランク');
+  });
+
+  it('names the wildcard as the problem when one is picked', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      discardTop: { design: 'SPADE', value: 7 },
+      players: [
+        {
+          ...drawPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 7 },
+            { design: 'HEART', value: 2 },
+          ],
+        },
+        ...drawPhaseState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent('ワイルドカード');
   });
 });
