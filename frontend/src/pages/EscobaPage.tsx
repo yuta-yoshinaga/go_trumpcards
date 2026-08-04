@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -17,6 +17,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useEscobaGame } from '../hooks/useEscobaGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, EscobaResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
@@ -120,6 +121,43 @@ function EscobaPageContent() {
     retry,
   } = useEscobaGame();
   const { cardWidth } = useCardDimensions();
+
+  const { playSound } = useSound();
+  // Flash a badge and a click when any player's escobaCount rises — sweeping the
+  // table is the game's highlight and is easy to miss amid fast CPU turns, which
+  // is why Scopone got the same treatment (#3464). Escoba is free-for-all, so
+  // "own" is simply the human rather than a partner team. escobaCount resets to 0
+  // each round, so a drop clears a stale badge instead of re-firing (#4768).
+  const [escobaCelebration, setEscobaCelebration] = useState<{ key: number; own: boolean } | null>(null);
+  const prevEscobaRef = useRef<number[] | null>(null);
+  useEffect(() => {
+    if (!state) return;
+    const current = state.players.map((p) => p.escobaCount);
+    const prev = prevEscobaRef.current;
+    prevEscobaRef.current = current;
+    if (prev === null || prev.length !== current.length) {
+      if (prev !== null) setEscobaCelebration(null);
+      return;
+    }
+    let gain = false;
+    let own = false;
+    let dropped = false;
+    for (let i = 0; i < current.length; i++) {
+      const delta = (current[i] ?? 0) - (prev[i] ?? 0);
+      if (delta > 0) {
+        gain = true;
+        if (state.players[i]?.isHuman) own = true;
+      } else if (delta < 0) {
+        dropped = true;
+      }
+    }
+    if (gain) {
+      setEscobaCelebration((c) => ({ key: (c?.key ?? 0) + 1, own }));
+      playSound('chipClick', { pitchVariation: 0.1 });
+    } else if (dropped) {
+      setEscobaCelebration(null);
+    }
+  }, [state, playSound]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('escoba');
   const cliConfig: CliGameConfig<EscobaResponse, EscobaCliArgs> = useMemo(
@@ -226,7 +264,25 @@ function EscobaPageContent() {
             </div>
 
             {/* Table cards */}
-            <div className="py-3 bg-black/20 rounded-lg" data-tutorial="es-table-cards">
+            <div className="relative py-3 bg-black/20 rounded-lg" data-tutorial="es-table-cards">
+              {escobaCelebration && (
+                <div
+                  key={escobaCelebration.key}
+                  className="absolute inset-x-0 -top-3 z-10 flex justify-center motion-safe:animate-bounce pointer-events-none"
+                  role="status"
+                  data-testid="escoba-celebration"
+                >
+                  <span
+                    className={`rounded-full px-3 py-0.5 text-sm font-bold shadow-lg ${
+                      escobaCelebration.own
+                        ? 'bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent'
+                        : 'bg-ds-info text-white'
+                    }`}
+                  >
+                    {escobaCelebration.own ? t('label.escobaBadgeOwn') : t('label.escobaBadge')}
+                  </span>
+                </div>
+              )}
               {selectionSum !== null && (
                 <div
                   role="status"
