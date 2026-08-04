@@ -3,6 +3,7 @@
 package presenter_test
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -40,6 +41,49 @@ func TestCegoCuiPresenter_Output(t *testing.T) {
 		g.SetPhase(domain.CegoPhaseContract)
 		result := p.Output(g, nil)
 		assert.Contains(t, result, "コントラクト")
+	})
+
+	// **コマンド名だけでは選べない。**Web には契約ごとのリスク・リターンを
+	// 説明する箱があるのに、CUI は構文リマインダーしか出していなかった (#4931)。
+	t.Run("contract phase explains both contracts", func(t *testing.T) {
+		g := cegoCuiGame()
+		g.SetDeclarerIdx(0)
+		g.SetContract(domain.CegoBidPlay)
+		g.SetPhase(domain.CegoPhaseContract)
+		result := p.Output(g, nil)
+
+		assert.Contains(t, result, "契約の選び方")
+		// 盲札の枚数が説明に入る (受け入れ条件2)。
+		assert.Contains(t, result, strconv.Itoa(g.GetBlindCount())+"枚の盲札")
+		assert.Positive(t, g.GetBlindCount(), "盲札が 0 枚だと枚数の検査が意味を失う")
+		assert.Contains(t, result, "大量得点")
+		assert.Contains(t, result, "堅実")
+		// 既存の構文リマインダーは残す。
+		assert.Contains(t, result, "cego ... 場札と交換")
+	})
+
+	// 契約フェーズ以外では出さない。毎画面に出ると邪魔になる。
+	t.Run("the contract explanation is confined to the contract phase", func(t *testing.T) {
+		g := cegoCuiGame()
+		g.SetDeclarerIdx(0)
+		g.SetContract(domain.CegoBidPlay)
+		g.SetContractType(domain.CegoContractCego)
+		g.SetPhase(domain.CegoPhaseExchange)
+		assert.NotContains(t, p.Output(g, nil), "契約の選び方")
+	})
+
+	// ja / en 双方に説明文があり、かつ別文字列であること。
+	t.Run("contract explanation is translated in both languages", func(t *testing.T) {
+		defer i18n.SetLang("ja")
+		for _, key := range []string{"cego.contractExplainTitle", "cego.contractCegoDesc", "cego.contractHandspielDesc"} {
+			i18n.SetLang("ja")
+			ja := i18n.T(key)
+			assert.NotEqual(t, key, ja, "%s missing from ja", key)
+			i18n.SetLang("en")
+			en := i18n.T(key)
+			assert.NotEqual(t, key, en, "%s missing from en", key)
+			assert.NotEqual(t, ja, en, "%s is the same in both languages", key)
+		}
 	})
 
 	t.Run("exchange phase", func(t *testing.T) {

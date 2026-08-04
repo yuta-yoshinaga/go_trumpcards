@@ -172,6 +172,12 @@ func (p *CegoCuiPresenter) writePrompt(b *strings.Builder, g interfaces.CegoGame
 		b.WriteString(i18n.Tf("cego.promptContract",
 			"name", cuiPlayerName(g.GetPlayer(g.GetDeclarerIdx()), g.GetDeclarerIdx())) + "\n")
 		b.WriteString(i18n.T("cego.promptContractHelp") + "\n")
+		// **コマンド名だけでは選べない。**Web には契約ごとのリスク・リターンを
+		// 説明する箱があるのに、CUI は構文リマインダーしか出していなかった (#4931)。
+		b.WriteString(i18n.T("cego.contractExplainTitle") + "\n")
+		b.WriteString(i18n.Tf("cego.contractCegoDesc",
+			"count", strconv.Itoa(g.GetBlindCount())) + "\n")
+		b.WriteString(i18n.T("cego.contractHandspielDesc") + "\n")
 	case domain.CegoPhaseExchange:
 		b.WriteString(i18n.Tf("cego.promptExchange",
 			"name", cuiPlayerName(g.GetPlayer(g.GetDeclarerIdx()), g.GetDeclarerIdx())) + "\n")
