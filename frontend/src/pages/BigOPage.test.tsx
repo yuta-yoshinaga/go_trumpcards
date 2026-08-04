@@ -1587,4 +1587,13 @@ describe('BigOPage', () => {
     renderWithProviders(<BigOPage />);
     await waitFor(() => expect(screen.getByTestId('bigo-live-besthand')).toBeInTheDocument());
   });
+
+  it('drops the preview at showdown, where the final hand is already shown', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.queryByTestId('bigo-live-besthand')).not.toBeInTheDocument());
+    expect(screen.getByTestId('bigo-rule-badge')).toBeInTheDocument();
+  });
 });

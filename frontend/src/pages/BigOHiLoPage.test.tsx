@@ -1677,4 +1677,13 @@ describe('BigOHiLoPage', () => {
     renderWithProviders(<BigOHiLoPage />);
     await waitFor(() => expect(screen.getByTestId('bigohilo-board-low-badge')).toBeInTheDocument());
   });
+
+  it('withholds the board-low badge before the flop', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<BigOHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('bigohilo-board-low-badge')).not.toBeInTheDocument();
+  });
 });

@@ -1650,4 +1650,13 @@ describe('OmahaHiLoPage', () => {
     renderWithProviders(<OmahaHiLoPage />);
     await waitFor(() => expect(screen.getByTestId('omahahilo-live-besthand')).toBeInTheDocument());
   });
+
+  it('drops the preview at showdown, where the final hand is already shown', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.queryByTestId('omahahilo-live-besthand')).not.toBeInTheDocument());
+    expect(screen.getByTestId('omahahilo-rule-badge')).toBeInTheDocument();
+  });
 });

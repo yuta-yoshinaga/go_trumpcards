@@ -16,10 +16,9 @@ import { evaluateFiveCardHand, pokerHandKey } from './pokerSquaresUtils';
 export function omahaLiveHandKey(hole: readonly Card[], board: readonly Card[]): string | null {
   const best = omahaBestFive(hole, board);
   if (!best) return null;
-  const five = [...best.holeIdx.map((i) => hole[i]), ...best.boardIdx.map((i) => board[i])].filter(
-    (c): c is Card => c !== undefined,
-  );
-  if (five.length !== 5) return null;
+  // omahaBestFive only returns a combination when it found five real cards, so
+  // the indices always resolve and evaluateFiveCardHand always scores.
+  const five = [...best.holeIdx.map((i) => hole[i]), ...best.boardIdx.map((i) => board[i])];
   const rank = evaluateFiveCardHand(five);
   return rank == null ? null : pokerHandKey(rank);
 }
