@@ -2381,7 +2381,7 @@ func TestBlackJack_SideBetValidation(t *testing.T) {
 		err := bj.PlayerBet(100, 0, 5, 0)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
-		assert.Contains(t, err.Error(), "21+3")
+		assert.Contains(t, err.Error(), "poker-hand")
 	})
 	t.Run("invalid T3 bet not multiple of min", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
@@ -2414,7 +2414,7 @@ func TestBlackJack_SideBetValidation(t *testing.T) {
 		err := bj.PlayerBet(100, 0, 10010, 0)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
-		assert.Contains(t, err.Error(), "21+3")
+		assert.Contains(t, err.Error(), "poker-hand")
 	})
 	t.Run("insufficient chips for main+side bets total", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()

@@ -28,9 +28,9 @@ describe('RouteSuspenseFallback', () => {
   });
 });
 
-// The three non-game routes are the only ones whose page component is not
+// The non-game routes are the only ones whose page component is not
 // reached through `gameRoutes`, so nothing else asserted they render at all —
-// there is no E2E spec for /discover, /discover/result or a 404 either.
+// there is no E2E spec for /discover, /discover/result, /legal or a 404 either.
 //
 // What these guard specifically: those pages are now pulled out of the
 // `./pages/*Page.tsx` glob by module NAME (#4355), so a typo in the name
@@ -86,6 +86,16 @@ describe('App non-game routes', () => {
     window.location.hash = '#/discover';
     renderWithProviders(<App />);
     expect(await screen.findByTestId('discover-survey', {}, CHUNK_TIMEOUT)).toBeInTheDocument();
+  });
+
+  // The trademark notice is only worth having if a player can actually reach
+  // it, and the page's own unit test renders the component directly — it says
+  // nothing about whether the route is wired. This is the assertion that fails
+  // if the /legal Route is dropped from App.tsx.
+  it('renders the trademark notice at /legal', async () => {
+    window.location.hash = '#/legal';
+    renderWithProviders(<App />);
+    expect(await screen.findByText(/一切関係がなく|not affiliated with/, {}, CHUNK_TIMEOUT)).toBeInTheDocument();
   });
 
   it('sends /discover/result back to the survey when the params are absent', async () => {

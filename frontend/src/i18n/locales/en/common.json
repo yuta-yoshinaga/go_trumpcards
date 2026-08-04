@@ -54,7 +54,7 @@
     "cego": "Cego",
     "frenchtarot": "French Tarot",
     "koenigrufen": "Königrufen",
-    "rook": "Rook",
+    "rook": "Four-Color Bid",
     "cinch": "Cinch",
     "loo": "Loo",
     "basra": "Basra",
@@ -124,7 +124,7 @@
     "crazypineapple": "Crazy Pineapple Poker",
     "irishpoker": "Irish Poker",
     "ohhell": "Oh Hell",
-    "wizard": "Wizard",
+    "wizard": "Exact Call",
     "ninetynine": "Ninety-Nine",
     "speed": "Speed",
     "gofish": "Go Fish",
@@ -283,7 +283,8 @@
     "literature": "Literature",
     "guandan": "Guandan",
     "shengji": "Sheng Ji",
-    "vira": "Vira"
+    "vira": "Vira",
+    "legal": "Trademarks & Credits"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1528,5 +1529,32 @@
       "twist": "Twist",
       "buy": "Buy"
     }
+  },
+  "legal": {
+    "eyebrow": "LEGAL & CREDITS",
+    "title": "Trademarks & Credits",
+    "trademarks": {
+      "title": "Trademarks",
+      "disclaimer": "go_trumpcards is an independent, non-commercial, open-source project. It is not affiliated with, endorsed by, sponsored by, or connected to the owners of any game name appearing here. Where a game name is a third-party trademark, it is used descriptively — solely to identify which game an implementation reproduces. No claim of ownership is made in any such name, and all trademarks remain the property of their respective owners.",
+      "rules": "Game rules themselves are not protected by copyright. This project implements rules. It does not reproduce any publisher's rulebook text, artwork, logos, typefaces, packaging, or trade dress.",
+      "inventoryLink": "Full inventory of marks and owners (TRADEMARKS.md)"
+    },
+    "assets": {
+      "title": "Asset credits",
+      "cards": "The 52 card faces and the card back are by Dmitry Fomin, released under CC0 (public-domain dedication). The two jokers are by Byron Knoll and are in the public domain. All are from Wikimedia Commons.",
+      "sounds": "Every sound effect was generated procedurally for this project and is released as CC0.",
+      "fonts": "Typefaces are Fraunces, DM Sans and Noto Sans JP, loaded from Google Fonts under the SIL Open Font License."
+    },
+    "license": {
+      "title": "License",
+      "body": "The source code of this project is published under the MIT License.",
+      "link": "Read the LICENSE"
+    },
+    "contact": {
+      "title": "For rights holders",
+      "body": "If you own a mark listed here and object to its use, please get in touch. We will rename or remove the game promptly.",
+      "link": "Open a GitHub issue"
+    },
+    "backHome": "Back to home"
   }
 }

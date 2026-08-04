@@ -215,15 +215,15 @@ describe('BjBetPhaseControls', () => {
     expect(onPerfectPairsBetChange).toHaveBeenCalledWith(30);
   });
 
-  it('renders 21+3 input with provided value', () => {
+  it('renders the poker-hand side bet input with provided value', () => {
     render(<BjBetPhaseControls {...defaultProps({ twentyOnePlus3Bet: 40 })} />);
-    expect(screen.getByLabelText('21+3:')).toHaveValue('40');
+    expect(screen.getByLabelText('ポーカー役ベット:')).toHaveValue('40');
   });
 
-  it('calls onTwentyOnePlus3BetChange when 21+3 input changes', () => {
+  it('calls onTwentyOnePlus3BetChange when the poker-hand side bet input changes', () => {
     const onTwentyOnePlus3BetChange = vi.fn();
     render(<BjBetPhaseControls {...defaultProps({ onTwentyOnePlus3BetChange })} />);
-    fireEvent.change(screen.getByLabelText('21+3:'), { target: { value: '50' } });
+    fireEvent.change(screen.getByLabelText('ポーカー役ベット:'), { target: { value: '50' } });
     expect(onTwentyOnePlus3BetChange).toHaveBeenCalledWith(50);
   });
 
@@ -305,7 +305,7 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByLabelText('カウンティング方式')).toBeDisabled();
     expect(screen.getByRole('button', { name: 'DAS ON' })).toBeDisabled();
     expect(screen.getByLabelText('PP (ペアベット):')).toBeDisabled();
-    expect(screen.getByLabelText('21+3:')).toBeDisabled();
+    expect(screen.getByLabelText('ポーカー役ベット:')).toBeDisabled();
     expect(screen.getByLabelText('ハンド数:')).toBeDisabled();
     expect(screen.getByLabelText('サレンダー:')).toBeDisabled();
   });
@@ -317,7 +317,7 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByLabelText('デッキ数:')).not.toBeDisabled();
     expect(screen.getByLabelText('CPU人数:')).not.toBeDisabled();
     expect(screen.getByLabelText('PP (ペアベット):')).not.toBeDisabled();
-    expect(screen.getByLabelText('21+3:')).not.toBeDisabled();
+    expect(screen.getByLabelText('ポーカー役ベット:')).not.toBeDisabled();
     expect(screen.getByLabelText('ハンド数:')).not.toBeDisabled();
     expect(screen.getByLabelText('サレンダー:')).not.toBeDisabled();
   });
@@ -366,9 +366,11 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByText('Perfect Pairs: 最初の2枚がペアなら配当')).toBeInTheDocument();
   });
 
-  it('renders 21+3 help text inline so touch users can see it', () => {
+  it('renders poker-hand side bet help text inline so touch users can see it', () => {
     render(<BjBetPhaseControls {...defaultProps()} />);
-    expect(screen.getByText('21+3: 最初の2枚+ディーラー1枚でポーカー役が成立すれば配当')).toBeInTheDocument();
+    expect(
+      screen.getByText('ポーカー役ベット: 最初の2枚+ディーラー1枚でポーカー役が成立すれば配当'),
+    ).toBeInTheDocument();
   });
 
   it('renders soft 17 help text inline so touch users can see it', () => {
@@ -384,7 +386,7 @@ describe('BjBetPhaseControls', () => {
   it('does not rely on title attribute tooltips for side bets and rule toggles', () => {
     render(<BjBetPhaseControls {...defaultProps()} />);
     expect(screen.getByLabelText('PP (ペアベット):')).not.toHaveAttribute('title');
-    expect(screen.getByLabelText('21+3:')).not.toHaveAttribute('title');
+    expect(screen.getByLabelText('ポーカー役ベット:')).not.toHaveAttribute('title');
     expect(screen.getByRole('button', { name: 'S17' })).not.toHaveAttribute('title');
     expect(screen.getByRole('button', { name: 'DAS ON' })).not.toHaveAttribute('title');
   });
@@ -392,7 +394,7 @@ describe('BjBetPhaseControls', () => {
   it('wires aria-describedby on side bets and rule toggles to their help text ids', () => {
     render(<BjBetPhaseControls {...defaultProps()} />);
     expect(screen.getByLabelText('PP (ペアベット):')).toHaveAttribute('aria-describedby', 'bj-pp-help');
-    expect(screen.getByLabelText('21+3:')).toHaveAttribute('aria-describedby', 'bj-t3-help');
+    expect(screen.getByLabelText('ポーカー役ベット:')).toHaveAttribute('aria-describedby', 'bj-t3-help');
     expect(screen.getByRole('button', { name: 'S17' })).toHaveAttribute('aria-describedby', 'bj-soft17-help');
     expect(screen.getByRole('button', { name: 'DAS ON' })).toHaveAttribute('aria-describedby', 'bj-das-help');
   });
@@ -401,7 +403,7 @@ describe('BjBetPhaseControls', () => {
     const { container } = render(<BjBetPhaseControls {...defaultProps()} />);
     expect(container.querySelector('#bj-pp-help')).toHaveTextContent('Perfect Pairs: 最初の2枚がペアなら配当');
     expect(container.querySelector('#bj-t3-help')).toHaveTextContent(
-      '21+3: 最初の2枚+ディーラー1枚でポーカー役が成立すれば配当',
+      'ポーカー役ベット: 最初の2枚+ディーラー1枚でポーカー役が成立すれば配当',
     );
     expect(container.querySelector('#bj-soft17-help')).toHaveTextContent(
       'H17=ソフト17でヒット / S17=ソフト17でスタンド',

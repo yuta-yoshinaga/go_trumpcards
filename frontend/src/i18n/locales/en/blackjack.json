@@ -60,11 +60,11 @@
   "sideBetActive": "Side Bets",
   "sideBetLabel": {
     "pp": "PP (Pair Bet):",
-    "t3": "21+3:"
+    "t3": "Poker Hand Bet:"
   },
   "sideBetTooltip": {
     "pp": "Perfect Pairs: pays if your first two cards are a pair",
-    "t3": "21+3: pays if your first two cards + dealer upcard form a poker hand"
+    "t3": "Poker Hand Bet: pays if your first two cards + dealer upcard form a poker hand"
   },
   "soft17Tooltip": "H17=dealer hits soft 17 / S17=dealer stands on soft 17",
   "dasTooltip": "DAS=Double After Split allowed",
@@ -83,7 +83,7 @@
   "autoAdvanceSec": "{{sec}}s",
   "sideBet": {
     "perfectPairs": "Perfect Pairs",
-    "twentyOnePlus3": "21+3",
+    "twentyOnePlus3": "Poker Hand Bonus",
     "win": "{{name}} WIN +{{payout}}",
     "lose": "{{name}} LOSE -{{amount}}"
   },

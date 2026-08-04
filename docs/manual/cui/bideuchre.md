@@ -4,7 +4,7 @@
 
 ユーカーを 24 枚・4 人 2 対 2 に仕立てた競り付きのトリックテイキング。各スート **A K Q J 10 9** の 24 枚を、**4 人にちょうど 6 枚ずつ配り切ります**。
 
-出典: [pagat.com: Bid Euchre](https://www.pagat.com/euchre/bideuchre.html) ／ [Wikipedia: Bid Euchre](https://en.wikipedia.org/wiki/Bid_euchre)
+出典: [pagat.com: Bid Euchre](https://www.pagat.com/euchre/bideuch.html) ／ [Wikipedia: Bid Euchre](https://en.wikipedia.org/wiki/Bid_euchre)
 
 ## 起動方法
 

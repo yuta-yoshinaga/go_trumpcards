@@ -17,7 +17,11 @@ public/index.html
 public/vite.svg
 
 # Frontend dependencies and cache
-frontend/node_modules/
+# Unanchored on purpose: tooling also drops a node_modules/ at the repo root
+# (bun leaves one behind when a command runs from there), and only the
+# frontend path was ignored, so the root one showed as untracked in every
+# `git status` and was one `git add -A` away from being committed.
+node_modules/
 frontend/.vite/
 frontend/coverage/
 

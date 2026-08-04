@@ -8,7 +8,7 @@
 
 **もうひとつの肝は「点を集めるのは守備側」**という点です。宣言側は点を集めるのではなく、**守備側を 80 点未満に抑える**ことで勝ちます。
 
-出典: [pagat.com: Sheng Ji](https://www.pagat.com/kt5/shengji.html)
+出典: [pagat.com: Sheng Ji](https://www.pagat.com/kt5/)
 
 ## 起動方法
 
