@@ -257,5 +257,9 @@ describe('PageOnePage', () => {
     // Only matching cards, never the whole hand.
     const hand = playPhaseState.players.find((p) => p.isHuman)?.cards ?? [];
     expect(document.querySelectorAll('[data-playable]').length).toBeLessThan(hand.length);
+    // The ring is decoration on a real control, so selection still works.
+    const first = document.querySelector('[data-playable]') as HTMLButtonElement;
+    fireEvent.click(first);
+    await waitFor(() => expect(first).toHaveAttribute('aria-pressed', 'true'));
   });
 });

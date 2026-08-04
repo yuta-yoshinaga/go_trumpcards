@@ -29,6 +29,7 @@ import {
   type ScoponeCliArgs,
 } from '../utils/cli/commands/scoponeCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { scoponeSelectionSum } from '../utils/scoponeSelectionSum';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const DIFFICULTY_OPTIONS = [
@@ -193,10 +194,11 @@ function ScoponePageContent() {
   const canLay = isHumanTurn && handIndex !== null && tableIndices.length === 0;
   // Scopone's target moves with the chosen hand card, so the mental arithmetic is
   // heavier than Escoba's fixed 15 — yet only Escoba showed a running total (#4767).
-  const selectedHandCard = handIndex !== null ? (human.cards[handIndex] ?? null) : null;
-  const selectionTarget = selectedHandCard?.value ?? null;
-  const selectionSum =
-    selectedHandCard === null ? null : tableIndices.reduce((sum, idx) => sum + (state.tableCards[idx]?.value ?? 0), 0);
+  const selection = scoponeSelectionSum(
+    handIndex === null ? null : human.cards[handIndex],
+    state.tableCards,
+    tableIndices,
+  );
   const phaseName = isGameEnd ? t('phase.gameEnd') : t(`phase.${state.phase}`, t('phase.play'));
   const detail = state.lastRoundDetail;
 
@@ -275,20 +277,20 @@ function ScoponePageContent() {
                   </span>
                 </div>
               )}
-              {selectionSum !== null && selectionTarget !== null && tableIndices.length > 0 && (
+              {selection !== null && tableIndices.length > 0 && (
                 <div
                   role="status"
                   aria-live="polite"
                   data-testid="scopone-sum-indicator"
                   className={`text-center text-sm font-bold mb-1 ${
-                    selectionSum === selectionTarget
+                    selection.sum === selection.target
                       ? 'text-ds-success'
-                      : selectionSum > selectionTarget
+                      : selection.sum > selection.target
                         ? 'text-ds-error'
                         : 'text-ds-text-muted'
                   }`}
                 >
-                  {t('sumIndicator', { sum: selectionSum, target: selectionTarget })}
+                  {t('sumIndicator', { sum: selection.sum, target: selection.target })}
                 </div>
               )}
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>
