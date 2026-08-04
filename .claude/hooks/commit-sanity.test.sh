@@ -51,13 +51,11 @@ git add clean.ts underline.md
 run pass 'clean staged content, incl. a Markdown === underline' 'git commit -m "x"'
 
 # --- conflict markers -----------------------------------------------------
-cat > conflicted.ts <<'EOF'
-<<<<<<< HEAD
-const a = 1;
-=======
-const a = 2;
->>>>>>> feature
-EOF
+# Written with printf rather than a heredoc on purpose. A heredoc puts the marker at column 0
+# of THIS file, and this file gets committed like any other -- the guard would then block every
+# commit that touches its own test. The fixture on disk is byte-identical either way; only the
+# test source differs, and here no line begins with a marker.
+printf '<<<<<<< HEAD\nconst a = 1;\n=======\nconst a = 2;\n>>>>>>> feature\n' > conflicted.ts
 git add conflicted.ts
 run block 'staged conflict markers' 'git commit -m "x"'
 
