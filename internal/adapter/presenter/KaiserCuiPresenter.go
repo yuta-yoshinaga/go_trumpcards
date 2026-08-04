@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 
@@ -153,4 +154,197 @@ func (p *KaiserCuiPresenter) Output(g interfaces.KaiserGame, lastErr error) stri
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KaiserCuiPresenter) ActionLogOutput(g interfaces.KaiserGame) string {
 	return actionLogOutputText(g)
+}
+
+// kaiserHintKey は今の局面で出すべき助言の i18n キーと、必要なら添える手札
+// インデックスを返す。キーが空なら助言なし。
+//
+// **Web のヒントはプレイ局面しか扱わない** (`utils/hints/kaiserHint.ts` は
+// `phase !== Play` で null を返す)。CUI はビッド・切札・捨て札まで面倒を見る。
+// 判断点が多いのに CUI 側は今まで一切の補助が無かった (#4938)。
+func kaiserHintKey(g interfaces.KaiserGame) (key string, idxs []int, suits []int) {
+	if g.GetGameEndFlag() {
+		return "kaiser.hintGameEnd", nil, nil
+	}
+	human := kaiserHumanIdx(g)
+	if human < 0 {
+		return "kaiser.hintNone", nil, nil
+	}
+	p := g.GetPlayer(human)
+
+	switch g.GetPhase() {
+	case domain.KaiserPhaseBid:
+		if g.GetBidPlayerIdx() != human {
+			return "kaiser.hintNotYourTurn", nil, nil
+		}
+		return kaiserBidHint(g, p), nil, nil
+	case domain.KaiserPhaseDiscard:
+		if g.GetDeclarerIdx() != human {
+			return "kaiser.hintNotYourTurn", nil, nil
+		}
+		// **切札が先。**指定前に捨てるとドメインに弾かれる。
+		if g.GetContract() == domain.KaiserContractTrump && g.GetTrumpSuit() == 0 {
+			return "kaiser.hintTrump", nil, kaiserLongestSuits(p)
+		}
+		return "kaiser.hintDiscard", kaiserDiscardCandidates(g, p), nil
+	case domain.KaiserPhasePlay:
+		if g.GetCurrentPlayerIdx() != human {
+			return "kaiser.hintNotYourTurn", nil, nil
+		}
+		k, i := kaiserPlayHint(g, p)
+		return k, i, nil
+	case domain.KaiserPhaseHandEnd:
+		return "kaiser.hintHandEnd", nil, nil
+	}
+	return "kaiser.hintNone", nil, nil
+}
+
+// kaiserHumanIdx は人間の席を返す (居なければ -1)。
+func kaiserHumanIdx(g interfaces.KaiserGame) int {
+	for i, p := range g.GetPlayers() {
+		if p != nil && p.GetIsHuman() {
+			return i
+		}
+	}
+	return -1
+}
+
+// kaiserBidHint はビッドすべきかを返す。
+//
+// **1 局で動くのは 10 点しかなく、最低ビッドが 7。**強い手でなければ降りる。
+// 目安は「最長スートが 4 枚以上あり、その A か K を持っている」か「♥5 を
+// 持っている」(単独で 5 点)。加えて 45 点以上ではビッドしないと加点できない
+// ので、そのときは降りるより取りに行くほうがよい。
+func kaiserBidHint(g interfaces.KaiserGame, p *domain.KaiserPlayer) string {
+	if g.GetScore(domain.KaiserTeamOf(kaiserHumanIdx(g))) >= domain.KaiserMustBidThreshold {
+		return "kaiser.hintBidMust"
+	}
+	strong := false
+	for _, suit := range kaiserLongestSuits(p) {
+		length, hasTop := 0, false
+		for j := range p.GetCardsSize() {
+			c := p.GetCard(j)
+			if c.GetDesign() != suit {
+				continue
+			}
+			length++
+			if c.GetValue() == 1 || c.GetValue() == 13 {
+				hasTop = true
+			}
+		}
+		if length >= 4 && hasTop {
+			strong = true
+		}
+	}
+	for j := range p.GetCardsSize() {
+		if domain.IsKaiserHeartFive(p.GetCard(j)) {
+			strong = true
+		}
+	}
+	if strong {
+		return "kaiser.hintBid"
+	}
+	return "kaiser.hintPass"
+}
+
+// kaiserLongestSuits は手札で最も長いスートを返す (同数なら複数)。
+func kaiserLongestSuits(p *domain.KaiserPlayer) []int {
+	counts := map[int]int{}
+	for j := range p.GetCardsSize() {
+		counts[p.GetCard(j).GetDesign()]++
+	}
+	best := 0
+	for _, n := range counts {
+		if n > best {
+			best = n
+		}
+	}
+	out := []int{}
+	// スート番号の昇順で返す。map の反復順に任せると出力が揺れる。
+	for suit := domain.CardDesignSpade; suit <= domain.CardDesignDiamond; suit++ {
+		if best > 0 && counts[suit] == best {
+			out = append(out, suit)
+		}
+	}
+	return out
+}
+
+// kaiserDiscardCandidates は捨てる 2 枚の候補インデックスを返す。
+//
+// **♥5 と ♠3 は捨てられない** (ドメインが拒否する)。切札も残す。残りから
+// 低いものを 2 枚。
+func kaiserDiscardCandidates(g interfaces.KaiserGame, p *domain.KaiserPlayer) []int {
+	trump := g.GetTrumpSuit()
+	type cand struct{ idx, value int }
+	cands := []cand{}
+	for j := range p.GetCardsSize() {
+		c := p.GetCard(j)
+		if domain.IsKaiserHeartFive(c) || domain.IsKaiserSpadeThree(c) {
+			continue
+		}
+		if trump != 0 && c.GetDesign() == trump {
+			continue
+		}
+		// A は最強なので最後に落とす。
+		v := c.GetValue()
+		if v == 1 {
+			v = 14
+		}
+		cands = append(cands, cand{j, v})
+	}
+	sort.Slice(cands, func(a, b int) bool {
+		if cands[a].value != cands[b].value {
+			return cands[a].value < cands[b].value
+		}
+		return cands[a].idx < cands[b].idx
+	})
+	out := []int{}
+	for i := 0; i < len(cands) && i < domain.KaiserKittySize; i++ {
+		out = append(out, cands[i].idx)
+	}
+	sort.Ints(out)
+	return out
+}
+
+// kaiserPlayHint は出す札の助言を返す。Web の getKaiserHint と同じ判断:
+// 強制手 → ♠3 を手放す → ♥5 は自分から出さない。
+func kaiserPlayHint(g interfaces.KaiserGame, p *domain.KaiserPlayer) (string, []int) {
+	plays := g.KaiserValidPlays(g.GetCurrentPlayerIdx())
+	if len(plays) == 0 {
+		return "kaiser.hintNone", nil
+	}
+	if len(plays) == 1 {
+		return "kaiser.hintForced", plays
+	}
+	for _, i := range plays {
+		if domain.IsKaiserSpadeThree(p.GetCard(i)) {
+			return "kaiser.hintDumpSpadeThree", []int{i}
+		}
+	}
+	for _, i := range plays {
+		if !domain.IsKaiserHeartFive(p.GetCard(i)) {
+			return "kaiser.hintChoose", []int{i}
+		}
+	}
+	return "kaiser.hintChoose", plays[:1]
+}
+
+// HintOutput emits the current Kaiser hint.
+func (p *KaiserCuiPresenter) HintOutput(g interfaces.KaiserGame) string {
+	key, idxs, suits := kaiserHintKey(g)
+	if key == "" {
+		key = "kaiser.hintNone"
+	}
+	msg := i18n.T(key)
+	parts := make([]string, 0, len(idxs)+len(suits))
+	for _, v := range idxs {
+		parts = append(parts, "["+strconv.Itoa(v)+"]")
+	}
+	for _, s := range suits {
+		parts = append(parts, kaiserSuitName(s))
+	}
+	if len(parts) > 0 {
+		msg = i18n.Tf("kaiser.hintWith", "hint", msg, "list", strings.Join(parts, ", "))
+	}
+	return color.Yellow(msg) + "\n"
 }

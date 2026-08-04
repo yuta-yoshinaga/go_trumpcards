@@ -6,6 +6,7 @@
   "helpDiscard": "  d <i> <j>                 Discard two after taking the kitty",
   "helpPlay": "  p <i>                     Play hand card i",
   "helpNext": "  n / next                  Deal the next hand",
+  "helpHint": "  h / hint                  show a hint",
   "header": "Hand: {{hand}}  Target: {{target}}  Team 0: {{t0}}  Team 1: {{t1}}",
   "contractLine": "Contract: {{value}} {{kind}} trump: {{trump}}",
   "withTrump": "with trump",
@@ -35,5 +36,18 @@
   "handMade": "The declaring side made its bid",
   "handSet": "The declaring side is set; the bid comes off its score",
   "result.humanWin": "Game over! Your team wins!",
-  "result.cpuWin": "Game over! The other team wins."
+  "result.cpuWin": "Game over! The other team wins.",
+  "hintNone": "There is nothing to advise right now.",
+  "hintNotYourTurn": "It is not your turn.",
+  "hintGameEnd": "The game is over.",
+  "hintHandEnd": "The hand is over. Press n for the next one.",
+  "hintBid": "A strong hand — consider bidding (only 10 points are in play and the minimum bid is 7).",
+  "hintPass": "Not strong enough for a bid; passing (ps) is the safe call.",
+  "hintBidMust": "Your team is at 45 or more, and can only score by bidding — you have to go for it.",
+  "hintTrump": "Naming your longest suit as trump is the usual choice.",
+  "hintDiscard": "The five of hearts and three of spades cannot be discarded. Shed low cards outside trump.",
+  "hintForced": "Only one card is legal.",
+  "hintDumpSpadeThree": "The three of spades costs its taker 3 points — shed it while you still have a choice.",
+  "hintChoose": "The five of hearts is worth 5 to whoever takes it, so leading it invites the opponents to grab it.",
+  "hintWith": "{{hint}} -> {{list}}"
 }

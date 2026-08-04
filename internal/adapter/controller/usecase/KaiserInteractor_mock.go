@@ -53,6 +53,11 @@ func (_m *MockKaiserInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }
 
+// Hint モック
+func (_m *MockKaiserInteractor) Hint() string {
+	return _m.Called().String(0)
+}
+
 // Snapshot モック
 func (_m *MockKaiserInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()

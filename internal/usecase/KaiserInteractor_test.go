@@ -249,6 +249,17 @@ func TestKaiserInteractor_GetConfigAndActionLog(t *testing.T) {
 	assert.Equal(t, `[]`, ki.ActionLog())
 }
 
+// **CUI のヒントはここを通る。**presenter の HintOutput に素通しする (#4938)。
+func TestKaiserInteractor_Hint(t *testing.T) {
+	pMock := new(presenter.MockKaiserPresenter)
+	pMock.On("HintOutput", mock.Anything).Return("advice")
+	gameMock := new(interfaces.MockKaiserGame)
+
+	ki := usecase.NewKaiserInteractor(gameMock, pMock)
+	assert.Equal(t, "advice", ki.Hint())
+	pMock.AssertCalled(t, "HintOutput", gameMock)
+}
+
 func TestKaiserInteractor_SnapshotAndRestore(t *testing.T) {
 	pMock := new(presenter.MockKaiserPresenter)
 	pMock.On("Output", mock.Anything, mock.Anything).Return(kaiserMockOutput)

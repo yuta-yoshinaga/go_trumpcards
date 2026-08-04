@@ -4069,6 +4069,7 @@ var gameRegistry = []GameRegistryEntry{
 					"kaiser.helpDiscard",
 					"kaiser.helpPlay",
 					"kaiser.helpNext",
+					"kaiser.helpHint",
 				},
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
