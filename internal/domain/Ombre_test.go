@@ -659,3 +659,34 @@ func TestOmbreConfig_Validate(t *testing.T) {
 	assert.Error(t, domain.OmbreConfig{CpuDifficulty: 99, TargetRounds: 5}.Validate())
 	assert.Error(t, domain.OmbreConfig{CpuDifficulty: domain.OmbreCpuDifficultyEasy, TargetRounds: 0}.Validate())
 }
+
+// **マタドールの判定は序列そのものから引く。**別に条件を書くと、序列を
+// 変えたときに表示だけ古いままになる (#4919)。
+func TestOmbre_MatadorRank(t *testing.T) {
+	spade, clover, heart := domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart
+	card := func(d, v int) *domain.Card { return domain.NewCard(d, v, false) }
+
+	// 赤 (♥) が切り札のとき。
+	assert.Equal(t, 1, domain.OmbreMatadorRank(card(spade, 1), heart), "spadille")
+	assert.Equal(t, 2, domain.OmbreMatadorRank(card(heart, 7), heart), "manille")
+	assert.Equal(t, 3, domain.OmbreMatadorRank(card(clover, 1), heart), "basto")
+	// 切り札の A は Punto であってマタドールではない。
+	assert.Equal(t, 0, domain.OmbreMatadorRank(card(heart, 1), heart))
+	assert.Equal(t, 0, domain.OmbreMatadorRank(card(heart, 13), heart))
+	// 他スートの 7 はただの平札。
+	assert.Equal(t, 0, domain.OmbreMatadorRank(card(spade, 7), heart))
+
+	// **マニーユは切り札スート次第。**♠ が切り札なら ♠7 がマニーユ。
+	assert.Equal(t, 2, domain.OmbreMatadorRank(card(spade, 7), spade))
+	assert.Equal(t, 0, domain.OmbreMatadorRank(card(heart, 7), spade))
+	// ♠A は切り札が何であれスパディーユ。
+	assert.Equal(t, 1, domain.OmbreMatadorRank(card(spade, 1), spade))
+
+	// **切り札未確定なら 0。**マニーユだけ決まらないと不揃いな案内になる。
+	for _, trump := range []int{-1, 0, 5} {
+		assert.Equal(t, 0, domain.OmbreMatadorRank(card(spade, 1), trump), "trump %d", trump)
+		assert.Equal(t, 0, domain.OmbreMatadorRank(card(clover, 1), trump), "trump %d", trump)
+	}
+
+	assert.Equal(t, 0, domain.OmbreMatadorRank(nil, heart))
+}

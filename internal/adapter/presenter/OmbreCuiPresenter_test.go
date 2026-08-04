@@ -109,6 +109,63 @@ func TestOmbreCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+// **マタドールは常にトリックに勝つ。**Web はバッジで示すのに、CUI は素の一覧
+// しか出しておらず、序列を覚えていないと気づけなかった (#4919)。
+func TestOmbreCuiPresenter_AnnotatesMatadors(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.OmbreCuiPresenter)
+
+	t.Run("marks all three matadors once trump is decided", func(t *testing.T) {
+		m, players := setupOmbreCuiMockWithPlayers()
+		players[0].Reset()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))  // スパディーユ
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))  // マニーユ (♥ が切り札)
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 1, false)) // バスト
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false)) // ただの切り札
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "[0]SPADE 1(スパディーユ)")
+		assert.Contains(t, out, "[1]HEART 7(マニーユ)")
+		assert.Contains(t, out, "[2]CLOVER 1(バスト)")
+		// 切り札の K は平の切り札。注記は付かない。
+		assert.Contains(t, out, "[3]HEART 13")
+		assert.NotContains(t, out, "[3]HEART 13(")
+	})
+
+	// **マニーユは切り札スート次第。**♠ が切り札なら ♥7 はただの平札。
+	t.Run("the manille follows the trump suit", func(t *testing.T) {
+		m, players := setupOmbreCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpSuit")
+		m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
+		players[0].Reset()
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+
+		out := p.Output(m, nil)
+		assert.NotContains(t, out, "[0]HEART 7(")
+		assert.Contains(t, out, "[1]SPADE 7(マニーユ)")
+	})
+
+	// 切り札未確定なら注記なし (受け入れ条件2)。
+	t.Run("no annotation before trump is decided", func(t *testing.T) {
+		m, players := setupOmbreCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpSuit")
+		m.On("GetTrumpSuit").Return(-1)
+		players[0].Reset()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+
+		out := p.Output(m, nil)
+		// 手札行に注記が付かないことを見る。序列の説明は promptPlayHelp が
+		// 常に出しているので、文言そのものの有無では判定できない。
+		assert.Contains(t, out, "[0]SPADE 1 [1]CLOVER 1")
+		assert.NotContains(t, out, "[0]SPADE 1(")
+		assert.NotContains(t, out, "[1]CLOVER 1(")
+	})
+}
+
 func TestOmbreCuiPresenter_HintOutput(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
