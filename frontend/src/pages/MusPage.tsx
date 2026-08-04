@@ -310,19 +310,15 @@ function MusPageContent() {
                       className={state.phase === MusPhase.GRANDE ? 'text-ds-warning font-semibold' : ''}
                       data-testid="mus-summary-grande"
                     >
-                      {t('handSummary.grande')}:{' '}
-                      {evalResult.highestRank === null
-                        ? t('handSummary.paresNone')
-                        : t('handSummary.rankValue', { rank: evalResult.highestRank })}
+                      {/* The panel only renders on a full four-card hand, so the ranks
+                          are never null here. */}
+                      {t('handSummary.grande')}: {t('handSummary.rankValue', { rank: evalResult.highestRank })}
                     </div>
                     <div
                       className={state.phase === MusPhase.CHICA ? 'text-ds-warning font-semibold' : ''}
                       data-testid="mus-summary-chica"
                     >
-                      {t('handSummary.chica')}:{' '}
-                      {evalResult.lowestRank === null
-                        ? t('handSummary.paresNone')
-                        : t('handSummary.rankValue', { rank: evalResult.lowestRank })}
+                      {t('handSummary.chica')}: {t('handSummary.rankValue', { rank: evalResult.lowestRank })}
                     </div>
                     <div className={paresActive ? 'text-ds-warning font-semibold' : ''} data-testid="mus-summary-pares">
                       {t('handSummary.pares')}: {paresValue}

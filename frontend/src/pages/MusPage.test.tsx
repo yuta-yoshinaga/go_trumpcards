@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { musApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeMusState } from '../test/stateFactories';
+import { MusPhase } from '../types/phases';
 import { MusPage } from './MusPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -192,6 +193,16 @@ describe('MusPage', () => {
     expect(screen.getByTestId('mus-summary-pares')).toHaveTextContent('パレス: メディアス');
     expect(screen.getByTestId('mus-summary-juego')).toHaveTextContent('31点 ★');
     expect(screen.getByTestId('mus-summary-juego').className).toContain('font-semibold');
+  });
+
+  it('emphasises Chica during the Chica round', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeMusState({ phase: MusPhase.CHICA }));
+    renderWithProviders(<MusPage />);
+    const chica = await screen.findByTestId('mus-summary-chica');
+    expect(chica.className).toContain('text-ds-warning');
+    expect(screen.getByTestId('mus-summary-grande').className).not.toContain('text-ds-warning');
   });
 
   it('summarises the Grande and Chica ranks the bet is about', async () => {

@@ -297,7 +297,7 @@ function BeziquePageContent() {
                         {...(p.isHuman ? { role: 'status', 'aria-live': 'polite' as const } : {})}
                       >
                         {(() => {
-                          const current = state.matchScore[p.id] ?? 0;
+                          const current = state.matchScore[p.id];
                           const target = state.config.targetScore;
                           const remaining = target - current;
                           return remaining > 0

@@ -242,6 +242,17 @@ describe('BeziquePage', () => {
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
 
+  it('says the target is reached rather than counting down past it', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeBeziqueState({ matchScore: [1000, 10] }));
+    renderWithProviders(<BeziquePage />);
+    const reached = await screen.findByTestId('bezique-match-progress-0');
+    expect(reached.textContent).not.toMatch(/-\d/);
+    // The opponent is still counting down, and only the human row is a live region.
+    expect(screen.getByTestId('bezique-match-progress-1')).not.toHaveAttribute('aria-live');
+  });
+
   it('shows how far each player is from the match target', async () => {
     localStorage.clear();
     mockExec.mockReset();
