@@ -71,6 +71,30 @@ func TestRookCuiPresenter_Output_Phases(t *testing.T) {
 		}
 	})
 
+	// **義務の断りは実際に縛られているときだけ。**ボイドなら全札出せるので、
+	// そこで「従う義務」と言うと嘘になる (レビュー指摘)。
+	t.Run("no follow-suit claim when every card is playable", func(t *testing.T) {
+		g := newRookGame()
+		g.Reset()
+		g.SetPhase(domain.RookPhasePlay)
+		g.SetTrumpColor(2)
+		g.SetCurrentPlayerIdx(0)
+		human := g.GetPlayer(0)
+		human.Reset()
+		human.AddCard(domain.NewCard(4, 5, false))
+		human.AddCard(domain.NewCard(3, 9, false))
+		// 赤 (1) がリード。赤は持っていないので全部出せる。
+		g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(1, 10, false)}})
+
+		out := p.Output(g, nil)
+		if !strings.Contains(out, "出せる札: 0 1") {
+			t.Errorf("playable indexes missing: %q", out)
+		}
+		if strings.Contains(out, "義務") {
+			t.Errorf("claimed a follow-suit obligation that does not bind: %q", out)
+		}
+	})
+
 	// CPU の手番では出さない。相手の手札の話をしても仕方がない。
 	t.Run("no playable list while it is not the human's turn", func(t *testing.T) {
 		g := newRookGame()

@@ -155,7 +155,13 @@ func (p *RookCuiPresenter) Output(g interfaces.RookGame, lastErr error) string {
 					for i, v := range idx {
 						parts[i] = strconv.Itoa(v)
 					}
-					b.WriteString(i18n.Tf("rook.playable", "indexes", strings.Join(parts, " ")) + "\n")
+					// **義務の断りは実際に縛られているときだけ。**リード時や
+					// ボイド時は全札出せるので、そこで「従う義務」と言うと嘘になる。
+					key := "rook.playable"
+					if p := g.GetPlayer(currentIdx); p != nil && len(idx) < p.GetCardsSize() {
+						key = "rook.playableRestricted"
+					}
+					b.WriteString(i18n.Tf(key, "indexes", strings.Join(parts, " ")) + "\n")
 				}
 			}
 			b.WriteString(i18n.T("rook.promptPlayHelp") + "\n")
