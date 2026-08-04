@@ -66,8 +66,8 @@ Perfect Pairs, the other side bet, is unregistered in Japan and is used as-is.
 
 | Name in this project | Reported owner |
 |---|---|
-| Rook | Hasbro |
-| Wizard | U.S. Games Systems, Inc. (created by Ken Fisher, 1984) |
+| Rook (shown as 四色入札 / Four-Color Bid) | Hasbro |
+| Wizard (shown as ぴたり宣言 / Exact Call) | U.S. Games Systems, Inc. (created by Ken Fisher, 1984) |
 | Tichu | Fata Morgana Spiele / Abacusspiele (created by Urs Hostettler, 1991) |
 | Nertz | asserted by Nertz-organising bodies |
 
@@ -90,11 +90,16 @@ Add a line here when a term is retired; that is the only place the guard reads.
   descriptive label instead: ポーカー役ベット / Poker Hand Bet.
 <!-- forbidden-terms:end -->
 
-Everything in the inventory above is *permitted* to appear: those names are used
-descriptively to identify which game an implementation reproduces, and none of
-them is registered in Japan (checked 2026-08-03 — see the re-check procedure
-below). A term moves from that inventory into this list only when we decide to
-stop displaying it.
+Everything in the inventory above is *permitted* to appear, because those names
+are used descriptively to identify which game an implementation reproduces. That
+is a narrower statement than it was before the 2026-08-04 sweep: `Wizard` and
+`Rook` turned out to have Japanese registrations covering playing cards, so they
+are no longer used as the *titles* of what we offer — only in the credit lines
+and card names that describe the original. Every other inventory name has no
+Japanese registration at all in a class that can reach this project.
+
+A term moves from that inventory into the enforced list above only when we
+decide to stop displaying it anywhere, which is a stronger step than retitling.
 
 ## Re-checking registrations
 
@@ -111,6 +116,98 @@ casino table games returned nothing; `21+3` was found only by listing Galaxy
 Gaming's own Japanese portfolio. Searching for what you already suspect will not
 find what you do not.
 
+### Reading the results: most hits are not problems
+
+A sweep of the game titles returns a lot of Japanese registrations, and nearly
+all of them are irrelevant. Two filters do the work:
+
+**Class.** Only classes 9, 28 and 41 (software / games / entertainment services)
+can reach what this project does. The sole `LET IT RIDE` registration in Japan
+is class 25 apparel and the sole `ティチュー` one is class 01/03 chemicals —
+neither has anything to do with a card game.
+
+**普通名称 (generic name).** Article 26(1)(ii) of the Japanese Trademark Act
+puts the ordinary display of a product's common name outside the reach of a
+trademark right, and the courts apply it (e.g. the ジルコニアバー decision).
+`ブラックジャック` and `大富豪` are registered by several companies in class
+9/28 — but those words *are* the common names of the games themselves, and this
+project uses them plainly as the name of the game it implements. A registration
+covering a generic game name is narrow for exactly the reason it was
+registrable at all.
+
+So a hit is worth acting on when the display name is **not** the game's own
+common name — a coined title, a publisher's product name, or a feature name
+like `21+3`. Otherwise record it and move on.
+
+### Sweep of 2026-08-04
+
+All 264 Japanese display titles were queried
+(`bun scripts/jpo-trademark-search.mjs --file <titles> --classes 9,28,41`;
+264 queries, 6 canary checks passed, 0 errors).
+
+The canary ran every 40 queries, which left the last 24 unverified at the time.
+Two of them returned rows (カイザー, ボストン at positions 256-257), proving the
+session was live that far; the remaining 7 were re-run afterwards with a canary
+and returned the same zeros. The script now canaries the final query of every
+sweep so no future tail is reported unverified.
+
+- **231 titles: no registration at all** in classes 9 / 28 / 41.
+- **31 titles: hits that are the game's own common name** — ゴルフ, キング,
+  プレジデント, ペンギン, 大富豪, ブラックジャック, スパイダー, ピラミッド,
+  スピード, ハーツ, 神経衰弱, ホイスト, ナポレオン and others, held by
+  unrelated companies for unrelated products (Nintendo holds ナポレオン in class
+  9; Tezuka Productions holds ブラックジャック in class 28). Article 26(1)(ii)
+  covers the ordinary display of a game's common name, so these are recorded,
+  not acted on.
+- **2 titles: acted on.** The word is *not* a generic card-game name, so
+  Article 26 offers nothing, and both collide with an unrelated Japanese
+  registrant on top of their own publisher:
+
+  | Our title | Registration | Class | Holder |
+  |---|---|---|---|
+  | ウィザード | 登録5721850 | **09, 28** | ユニバーサルエンターテインメント |
+  | ウィザード | 登録5990126 (`WIZARD／ウィザード`) | 28 | リベラル |
+  | ルーク | 登録6065692 | **41** | トヨタアルバルク東京 |
+  | ルーク | 登録6245020 | 09, 14, 16, … | トヨタアルバルク東京 |
+
+  The designated goods were then read (2026-08-04), and they change the picture
+  — a class number alone would have been misleading in both directions:
+
+  | Registration | Designated goods that reach this project | Verdict |
+  |---|---|---|
+  | 登録5990126 `WIZARD／ウィザード` (Liberal) | class 28: **「トリックテイキング用カード，トランプ」** (類似群 24B01) | **direct hit** — Wizard *is* a trick-taking card game, and this is that exact category |
+  | 登録5721850 `ウィザード` (Universal Entertainment) | class 9: 「ダウンロード可能な電子計算機用プログラム」; class 28: 「その他の遊戯用器具」 | reaches the downloadable CLI |
+  | 登録6245020 `ルーク` (Alvark Tokyo) | class 28: **「トランプ」「遊戯用器具」** (24B01); class 9: 「家庭用テレビゲーム機用プログラム」 | reaches, though the holder is a basketball club with no apparent use on cards |
+  | 登録6065692 `ルーク` (Alvark Tokyo) | class 41: 「スポーツの興行の企画・運営又は開催」 only | **miss** — sports promotion, nothing to do with a card game |
+
+  Class 41 looked like the dangerous one and turned out to be irrelevant; class
+  28, which is nominally physical goods, is where the real overlap sits. Read
+  the goods, not the number.
+
+  **Resolution.** Both display titles were changed, and the replacements were
+  themselves screened before being adopted — a first candidate, `ネスト`, was
+  dropped because it is registered in class 41 (登録6876883):
+
+  | Game | Was | Now |
+  |---|---|---|
+  | `wizard` | ウィザード / Wizard | **ぴたり宣言 / Exact Call** |
+  | `rook` | ルーク / Rook | **四色入札 / Four-Color Bid** |
+
+  Only the title changed. Internal names, routes and CLI commands (`wizard`,
+  `rook`) are untouched, and the in-game card names (ウィザード札, ジェスター,
+  ルーク鳥) stay: a trademark right reaches use that identifies the *source* of
+  goods, which is the title in the nav and the page heading, not the vocabulary
+  describing what is in the deck. Each manual now opens with a credit naming the
+  original, which keeps the game findable and makes that reference plainly
+  nominative.
+
+  These two are therefore **not** in the `forbidden-terms` block — the words are
+  still used deliberately, just no longer as the name of what we offer.
+
+Limits of this pass: Japanese display titles only. A mark registered in Japan in
+Latin script alone would not be found by it, and no jurisdiction outside Japan
+was searched.
+
 ## Policy for new games
 
 When adding a game, before choosing its display name:
@@ -123,6 +220,13 @@ When adding a game, before choosing its display name:
 3. Never reproduce the publisher's rulebook wording, logo, card art, or trade
    dress — implement the rules from a neutral description and write the manual in
    your own words.
+4. If the game is a **currently published product** rather than a traditional
+   one, credit its designer and publisher at the top of both manuals, as
+   `docs/manual/*/{tichu,wizard,rook}.md` do. Crediting the original is the
+   norm among free implementations, and it directly contradicts the belief that
+   actually gets litigated — that the implementation is licensed by the
+   publisher. Verify the designer, publisher and year against a source before
+   writing them down; a wrong credit is worse than none.
 
 ## Contact
 
