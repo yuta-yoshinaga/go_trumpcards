@@ -18,8 +18,10 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { Card } from '../types/card';
 import { DoubleKlondikePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { doubleKlondikeCanPlaceOnFoundation, doubleKlondikeCanPlaceOnTableau } from '../utils/doubleKlondikeTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Double Klondike tutorial step definitions. */
@@ -110,6 +112,35 @@ function DoubleKlondikePageContent() {
     setSelected({ zone: 'waste' });
   };
 
+  // The board is nearly twice a Klondike's, and legality was only discoverable by
+  // making the move and reading the server's rejection. These mirror the domain's
+  // canPlaceOnTableau / canPlaceOnFoundation (#4895).
+  //
+  // Two different cards are at stake. `mtt` carries the selected index, so a
+  // tableau target is judged on the selected card. `mtf` carries only the column
+  // and MoveTableauToFoundation always takes that column's *top* card, so a
+  // foundation must be judged on the top card — selecting a buried card of a run
+  // is normal play, and judging the ring on it would promise a move the server
+  // would never make.
+  const selectedCard: Card | null =
+    selected === null
+      ? null
+      : selected.zone === 'waste'
+        ? (state.waste[state.waste.length - 1] ?? null)
+        : (state.tableau[selected.col]?.[selected.idx]?.card ?? null);
+  const foundationSourceCard: Card | null =
+    selected === null
+      ? null
+      : selected.zone === 'waste'
+        ? selectedCard
+        : (state.tableau[selected.col]?.[state.tableau[selected.col].length - 1]?.card ?? null);
+  const isTableauTarget = (col: number) =>
+    selectedCard !== null &&
+    !(selected?.zone === 'tableau' && selected.col === col) &&
+    doubleKlondikeCanPlaceOnTableau(selectedCard, state.tableau, col);
+  const isFoundationTarget = (fIdx: number) =>
+    foundationSourceCard !== null && doubleKlondikeCanPlaceOnFoundation(foundationSourceCard, state.foundation, fIdx);
+
   // Click a tableau card: select it as a source, or move the current source here.
   const clickTableauCard = (col: number, idx: number) => {
     if (!canAct) return;
@@ -158,8 +189,11 @@ function DoubleKlondikePageContent() {
       {column.length === 0 ? (
         <button
           type="button"
-          className="rounded border border-dashed border-white/25 bg-black/20"
+          className={`rounded border border-dashed border-white/25 bg-black/20 ${
+            isTableauTarget(col) ? 'ring-2 ring-ds-success' : ''
+          }`}
           style={{ width: w, height: cardH }}
+          data-move-target={isTableauTarget(col) || undefined}
           onClick={canAct ? () => clickEmptyColumn(col) : undefined}
           disabled={!canAct}
           title={t('empty')}
@@ -170,7 +204,10 @@ function DoubleKlondikePageContent() {
           <button
             type="button"
             key={`col-${col}-${i}`}
-            className={`rounded ${selected?.zone === 'tableau' && selected.col === col && i >= selected.idx ? 'ring-2 ring-ds-warning' : ''}`}
+            className={`rounded ${selected?.zone === 'tableau' && selected.col === col && i >= selected.idx ? 'ring-2 ring-ds-warning' : ''} ${
+              i === column.length - 1 && isTableauTarget(col) ? 'ring-2 ring-ds-success' : ''
+            }`}
+            data-move-target={(i === column.length - 1 && isTableauTarget(col)) || undefined}
             style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
             onClick={canAct && tc2.faceUp ? () => clickTableauCard(col, i) : undefined}
             disabled={!canAct || !tc2.faceUp}
@@ -271,7 +308,8 @@ function DoubleKlondikePageContent() {
                 <button
                   type="button"
                   key={`foundation-${i}`}
-                  className="rounded shrink-0"
+                  className={`rounded shrink-0 ${isFoundationTarget(i) ? 'ring-2 ring-ds-success' : ''}`}
+                  data-move-target={isFoundationTarget(i) || undefined}
                   onClick={canAct ? clickFoundation : undefined}
                   disabled={!canAct}
                   title={t('foundation')}
