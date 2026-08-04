@@ -178,7 +178,6 @@ func (p *CegoCuiPresenter) writePrompt(b *strings.Builder, g interfaces.CegoGame
 		b.WriteString(i18n.Tf("cego.contractCegoDesc",
 			"count", strconv.Itoa(g.GetBlindCount())) + "\n")
 		b.WriteString(i18n.T("cego.contractHandspielDesc") + "\n")
-
 	case domain.CegoPhaseExchange:
 		b.WriteString(i18n.Tf("cego.promptExchange",
 			"name", cuiPlayerName(g.GetPlayer(g.GetDeclarerIdx()), g.GetDeclarerIdx())) + "\n")
