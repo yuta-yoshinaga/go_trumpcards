@@ -252,7 +252,9 @@ describe('BurracoPage', () => {
     expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent('もう1枚選択してください');
   });
 
-  it('clears the reason and enables the draw button when exactly 2 cards are selected', async () => {
+  it('clears the reason and enables the draw button for a legal natural pair', async () => {
+    // Two natural cards of the discard top's rank; the fixture hand opens with sevens.
+    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: { design: 'SPADE', value: 7 } });
     renderWithProviders(<BurracoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
     const handCards = screen.getAllByTestId(/^bu-hand-card-/);
@@ -390,5 +392,20 @@ describe('BurracoPage', () => {
 
   afterEach(() => {
     localStorage.clear();
+  });
+
+  it('refuses a two-card selection the shared Canasta rules reject', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // Burraco runs on the Canasta domain, so the same pair rules apply here.
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<BurracoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    const handCards = screen.getAllByTestId(/^bu-hand-card-/);
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeDisabled();
+    // Pin the reason too, so this cannot pass merely because nothing got selected.
+    expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent('同じランク');
   });
 });

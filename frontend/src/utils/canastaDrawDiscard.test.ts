@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, CardDesign } from '../types/card';
-import { canastaDrawDiscardProblem, canastaIsWild } from './canastaDrawDiscard';
+import { canastaDrawDiscardProblem, canastaIsBlack3, canastaIsWild } from './canastaDrawDiscard';
 
 const c = (design: CardDesign, value: number): Card => ({ design, value });
 const top = c('SPADE', 9);
@@ -47,5 +47,25 @@ describe('canastaDrawDiscardProblem', () => {
 
   it('rejects taking from an empty pile', () => {
     expect(canastaDrawDiscardProblem([c('HEART', 9), c('CLOVER', 9)], null)).toBe('pileEmpty');
+  });
+});
+
+describe('canastaIsBlack3', () => {
+  it('is true only for the spade and club threes', () => {
+    expect([canastaIsBlack3(c('SPADE', 3)), canastaIsBlack3(c('CLOVER', 3))]).toEqual([true, true]);
+    expect([canastaIsBlack3(c('HEART', 3)), canastaIsBlack3(c('SPADE', 4))]).toEqual([false, false]);
+  });
+});
+
+describe('canastaDrawDiscardProblem with a black three on top', () => {
+  it('refuses the take outright, even for a matching natural pair', () => {
+    // Two black threes pass both the wild check (a three is not wild) and the
+    // rank check (3 === 3), so without this guard the button would light up for
+    // a request the server always rejects.
+    expect(canastaDrawDiscardProblem([c('SPADE', 3), c('CLOVER', 3)], c('SPADE', 3))).toBe('blackThreeTop');
+  });
+
+  it('still allows a red three on top, which is not blocked', () => {
+    expect(canastaDrawDiscardProblem([c('SPADE', 3), c('CLOVER', 3)], c('HEART', 3))).toBeNull();
   });
 });
