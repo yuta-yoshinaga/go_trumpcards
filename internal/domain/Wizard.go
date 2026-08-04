@@ -614,7 +614,13 @@ func (o *Wizard) playCard(playerIdx int, card *Card) {
 // 先頭から順に見て、ウィザードが最初に出ていればリードスートなし、
 // ジェスターは読み飛ばし、最初のスート札 (design 1..4) をリードスートとする。
 func (o *Wizard) leadSuitOfTrick() int {
-	for _, tc := range o.currentTrick {
+	return WizardLeadSuitOfTrick(o.currentTrick)
+}
+
+// WizardLeadSuitOfTrick はトリックのリードスートを返す (-1 = 未確定)。
+// ウィザードがリードすればスートは立たず、ジェスターは読み飛ばす。
+func WizardLeadSuitOfTrick(trick []*TrickCard) int {
+	for _, tc := range trick {
 		d := tc.Card.GetDesign()
 		if d == WizardDesignWizard {
 			return -1
@@ -629,38 +635,46 @@ func (o *Wizard) leadSuitOfTrick() int {
 
 // validatePlay カードのプレイが有効か検証する
 func (o *Wizard) validatePlay(playerIdx int, card *Card) error {
-	if len(o.currentTrick) == 0 {
-		// リード: ウィザード/ジェスターを含め何でもリード可能。
+	if WizardIsLegalPlay(card, o.currentTrick, o.players[playerIdx]) {
 		return nil
+	}
+	return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+}
+
+// WizardIsLegalPlay は card を現在のトリックに出せるかを返す。
+//
+// リードなら何でも出せる。ウィザード/ジェスターはフォロー義務を免除される。
+// リードスートが確定していて、そのスートをまだ持っているなら従わねばならない。
+//
+// **判定はここ 1 箇所に置く。**presenter が「出せる札」を印付けするのに
+// 同じ規則を書き写すと、片方だけ直したときに嘘の案内になる (#4927)。
+func WizardIsLegalPlay(card *Card, trick []*TrickCard, hand *WizardPlayer) bool {
+	if len(trick) == 0 {
+		// リード: ウィザード/ジェスターを含め何でもリード可能。
+		return true
 	}
 
 	d := card.GetDesign()
 	// ウィザード/ジェスターはいつでもプレイ可能 (フォロー義務の免除)。
 	if d == WizardDesignWizard || d == WizardDesignJester {
-		return nil
+		return true
 	}
 
-	leadSuit := o.leadSuitOfTrick()
+	leadSuit := WizardLeadSuitOfTrick(trick)
 	if leadSuit < 0 {
 		// リードスートが未確定 (ウィザードがリード、または全てジェスター)。
-		return nil
+		return true
 	}
-	if d != leadSuit && o.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+	if d == leadSuit {
+		return true
 	}
-
-	return nil
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (o *Wizard) playerHasSuit(playerIdx int, design int) bool {
-	p := o.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
+	// リードスートを持っていなければ何を出してもよい。
+	for i := 0; i < hand.GetCardsSize(); i++ {
+		if c := hand.GetCard(i); c != nil && c.GetDesign() == leadSuit {
+			return false
 		}
 	}
-	return false
+	return true
 }
 
 // trickWinner トリックの勝者を決定する
