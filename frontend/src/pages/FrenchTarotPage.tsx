@@ -330,12 +330,22 @@ function FrenchTarotPageContent() {
                     ) : (
                       <div className="text-ds-text-muted text-sm">{t('bouts.none')}</div>
                     )}
-                    <div className="text-ds-text-muted text-xs mt-1">
-                      {t('bouts.target', {
-                        count: heldBoutList.length,
-                        points: frenchTarotTarget(heldBoutList.length),
-                      })}
-                    </div>
+                    {/* The target follows the bouts the declarer *wins in tricks*, not
+                        the ones in hand. During the bid those coincide closely enough to
+                        judge a bid on; afterwards the held list drains as the bouts are
+                        played, and for a non-declarer it never meant anything (#4857). */}
+                    {isBidPhase ? (
+                      <div className="text-ds-text-muted text-xs mt-1" data-testid="frenchtarot-bouts-target">
+                        {t('bouts.target', {
+                          count: heldBoutList.length,
+                          points: frenchTarotTarget(heldBoutList.length),
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-ds-text-muted text-xs mt-1" data-testid="frenchtarot-bouts-note">
+                        {t('bouts.boutsNote')}
+                      </div>
+                    )}
                   </div>
                 )}
 

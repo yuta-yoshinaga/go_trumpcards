@@ -38,7 +38,8 @@
     "petit": "Petit (trump 1)",
     "excuse": "Excuse",
     "none": "None",
-    "target": "Target with {{count}} bout(s): {{points}} pts"
+    "target": "Target with {{count}} bout(s): {{points}} pts",
+    "boutsNote": "Bouts in hand inform the bid. The target that decides the contract is set by the bouts actually won in tricks"
   },
   "you": "You",
   "cpu": "CPU {{id}}",
