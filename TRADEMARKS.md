@@ -21,6 +21,20 @@ rulebook text, artwork, logos, typefaces, packaging, or trade dress. Card art
 shipped with the project is CC0 or public domain; see
 [`public/images/README.md`](public/images/README.md).
 
+That second sentence was audited rather than assumed. 22 manuals cite an
+external rule source; 20 of them cite a single comparable page, and every one of
+those 20 was read against it (2026-08-04). All 20 are independent summaries:
+they follow this repository's own template, and each carries reasoning absent
+from its source — Zwicker deals 4/4/5 against pagat's 4/4/4 and shows the
+arithmetic `55−3=52=13×4`; Klaberjass derives "only 18 of the 32 cards reach the
+table"; Guandan explains that a level 5 sits above the Ace rather than between 4
+and 6; Pontoon lists what its source left undecided and says so. A translation
+would follow the source's structure instead. The remaining two have nothing to
+compare against: `settemezzo` cites no external source, and `shengji`'s source
+is a group index with no page for the game.
+
+`scripts/check-manual-citations.mjs` verifies those citations still resolve.
+
 ## Third-party names used in this project
 
 The table lists names in this project that are, or are likely to be, third-party
