@@ -148,4 +148,13 @@ describe('MushiPage', () => {
     renderWithProviders(<MushiPage />);
     await waitFor(() => expect(screen.getByText('あなたの勝ちです')).toBeInTheDocument());
   });
+
+  it('states the wild exception outside the tutorial', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<MushiPage />);
+    const rule = await screen.findByTestId('mushi-wild-rule');
+    expect(rule.textContent).toMatch(/柳/);
+  });
 });
