@@ -27,7 +27,7 @@
   "bidRaiseTo": "レイズ（{{points}}）",
   "bidPass": "パス",
   "giveCard": "カードを渡す",
-  "marriageAvailable": "マリッジ可能: {{list}}",
+  "marriageAvailable": "マリッジ可能: {{list}}（K か Q を【リードで】出すと成立）",
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",

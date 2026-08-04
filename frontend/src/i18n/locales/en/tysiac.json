@@ -27,7 +27,7 @@
   "bidRaiseTo": "Raise ({{points}})",
   "bidPass": "Pass",
   "giveCard": "Give card",
-  "marriageAvailable": "Marriage available: {{list}}",
+  "marriageAvailable": "Marriage available: {{list}} (scores only when you LEAD the K or Q)",
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
