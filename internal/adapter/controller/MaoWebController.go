@@ -55,7 +55,10 @@ type MaoWebOutput struct {
 	CorrectCount     int                   `json:"correctCount"`
 	HintUnlocked     bool                  `json:"hintUnlocked"`
 	RuleHint         string                `json:"ruleHint"`
-	RulePenalty      bool                  `json:"rulePenalty"`
+	// RuleHintCode は RuleHint の i18n キー (`mao.` を除いた部分)。
+	// フロントはこちらを翻訳する (#4917)。
+	RuleHintCode string `json:"ruleHintCode,omitempty"`
+	RulePenalty  bool   `json:"rulePenalty"`
 	WebOutputBase
 	Config MaoWebOutputConfig `json:"config"`
 }

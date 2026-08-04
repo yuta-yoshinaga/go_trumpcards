@@ -6,6 +6,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // MaoWebPresenter マオWebプレゼンタークラス
@@ -30,7 +31,13 @@ func (p *MaoWebPresenter) Output(g interfaces.MaoGame, lastErr error) string {
 	resObj.AwaitingWord = g.GetAwaitingWord()
 	resObj.CorrectCount = g.GetPlayerCorrectCount()
 	resObj.HintUnlocked = g.GetHintUnlocked()
-	resObj.RuleHint = g.GetRuleHint() // 未解放なら空文字
+	// **コードも一緒に返す。**Web サーバの i18n 言語はプロセス全体で 1 つなので、
+	// 文言だけ返すとブラウザが英語でも日本語のまま届く。翻訳はフロントで行い、
+	// RuleHint はそれ以外のクライアント向けのフォールバックとして残す (#4917)。
+	resObj.RuleHintCode = g.GetRuleHintKey() // 未解放なら空文字
+	if resObj.RuleHintCode != "" {
+		resObj.RuleHint = i18n.T("mao." + resObj.RuleHintCode)
+	}
 	resObj.RulePenalty = g.GetRulePenaltyFlag()
 
 	top := g.GetDiscardTop()

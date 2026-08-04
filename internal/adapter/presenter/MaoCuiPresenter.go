@@ -67,8 +67,9 @@ func (p *MaoCuiPresenter) Output(g interfaces.MaoGame, lastErr error) string {
 
 		// 隠しルールのハーフヒント (3回正解で解放)。解放前は正解の進捗を表示する。
 		if g.GetHintUnlocked() {
-			if g.GetRuleHint() != "" {
-				b.WriteString(color.Yellow(i18n.Tf("mao.ruleHint", "hint", g.GetRuleHint())) + "\n")
+			if key := g.GetRuleHintKey(); key != "" {
+				// **キーの翻訳はここで行う。**ドメインは文言を持たない (#4917)。
+				b.WriteString(color.Yellow(i18n.Tf("mao.ruleHint", "hint", i18n.T("mao."+key))) + "\n")
 			}
 		} else {
 			b.WriteString(i18n.Tf("mao.compliance",

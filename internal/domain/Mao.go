@@ -74,17 +74,19 @@ type MaoHiddenRule struct {
 	TriggerValue int `json:"tv"`
 	// RequiredWord 発火時に宣言すべき言葉 (大文字小文字を無視して比較)
 	RequiredWord string `json:"rw"`
-	// HintText トリガーを示すぼかしたヒント (アクションは明かさない)
-	HintText string `json:"ht"`
+	// HintKey トリガーを示すぼかしたヒントの i18n キー (アクションは明かさない)。
+	// **文言そのものではなくキーを持つ。**日本語を直書きすると `--lang en` でも
+	// 日本語のまま出る (#4917)。`mao.` を前置して引く。
+	HintKey string `json:"ht"`
 }
 
 // maoRuleSet は固定の隠しルール候補。ゲーム開始時に 1 つが決定的に選ばれる。
 var maoRuleSet = []MaoHiddenRule{
-	{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintText: "あるスートを出したときに言葉が必要です。"},
-	{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignHeart, RequiredWord: "heart", HintText: "あるスートを出したときに言葉が必要です。"},
-	{TriggerKind: MaoTriggerValue, TriggerValue: 7, RequiredWord: "seven", HintText: "ある数字を出したときに言葉が必要です。"},
-	{TriggerKind: MaoTriggerValue, TriggerValue: 13, RequiredWord: "thank you", HintText: "ある絵札を出したときに言葉が必要です。"},
-	{TriggerKind: MaoTriggerValue, TriggerValue: 1, RequiredWord: "mao", HintText: "あるランクを出したときに言葉が必要です。"},
+	{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintKey: "hintSuit"},
+	{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignHeart, RequiredWord: "heart", HintKey: "hintSuit"},
+	{TriggerKind: MaoTriggerValue, TriggerValue: 7, RequiredWord: "seven", HintKey: "hintNumber"},
+	{TriggerKind: MaoTriggerValue, TriggerValue: 13, RequiredWord: "thank you", HintKey: "hintFace"},
+	{TriggerKind: MaoTriggerValue, TriggerValue: 1, RequiredWord: "mao", HintKey: "hintRank"},
 }
 
 // Mao マオゲームクラス (クレイジーエイト + マジックカード + 秘密の隠しルール)
@@ -664,13 +666,14 @@ func (g *Mao) GetHintUnlocked() bool { return g.hintUnlocked }
 // GetRulePenaltyFlag 直近のアクションで隠しルール違反ペナルティが発生したか
 func (g *Mao) GetRulePenaltyFlag() bool { return g.rulePenaltyFlag }
 
-// GetRuleHint 解放済みであればハーフヒントを返す。未解放なら空文字を返す。
+// GetRuleHintKey 解放済みであればハーフヒントの i18n キーを返す。未解放なら空文字。
 // 解放後もトリガーのみを示し、宣言すべき言葉そのものは明かさない。
-func (g *Mao) GetRuleHint() string {
+// 翻訳は presenter 側で行う (ドメインは i18n に依存しない)。
+func (g *Mao) GetRuleHintKey() string {
 	if !g.hintUnlocked {
 		return ""
 	}
-	return g.hiddenRule.HintText
+	return g.hiddenRule.HintKey
 }
 
 // GetHiddenRule 隠しルールを返す (ドメイン内部・テスト用。Web には公開しない)

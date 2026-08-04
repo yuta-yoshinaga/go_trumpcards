@@ -41,6 +41,12 @@
   "rulePenalty": "⚠ ペナルティ（理由は秘密）",
   "awaitingWord": "何か言うべきかも？",
   "ruleHintLabel": "ヒント",
+  "ruleHint": {
+    "hintSuit": "あるスートを出したときに言葉が必要です。",
+    "hintNumber": "ある数字を出したときに言葉が必要です。",
+    "hintFace": "ある絵札を出したときに言葉が必要です。",
+    "hintRank": "あるランクを出したときに言葉が必要です。"
+  },
   "sayWordButton": "発言する",
   "sayWordPlaceholder": "唱える言葉を入力…",
   "sayWordHistory": {

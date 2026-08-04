@@ -42,7 +42,7 @@ func setupMaoWebMock() *interfaces.MockMaoGame {
 	m.On("GetAwaitingWord").Return(false)
 	m.On("GetPlayerCorrectCount").Return(0)
 	m.On("GetHintUnlocked").Return(false)
-	m.On("GetRuleHint").Return("")
+	m.On("GetRuleHintKey").Return("")
 	m.On("GetRulePenaltyFlag").Return(false)
 	return m
 }
@@ -82,9 +82,9 @@ func TestMaoWebPresenter_Output(t *testing.T) {
 		// Even when the hint IS unlocked, only the vague hint is exposed, never
 		// the trigger value or the required word.
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHintUnlocked")
-		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRuleHint")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRuleHintKey")
 		m.On("GetHintUnlocked").Return(true)
-		m.On("GetRuleHint").Return("a suit matters")
+		m.On("GetRuleHintKey").Return("hintSuit")
 
 		raw := p.Output(m, nil)
 		// The web output must not contain any hidden-rule field names.
@@ -95,7 +95,10 @@ func TestMaoWebPresenter_Output(t *testing.T) {
 		var resObj controller.MaoWebOutput
 		_ = json.Unmarshal([]byte(raw), &resObj)
 		assert.True(t, resObj.HintUnlocked)
-		assert.Equal(t, "a suit matters", resObj.RuleHint)
+		// **コードを返す。**Web サーバの i18n 言語はプロセス全体で 1 つなので、
+		// ブラウザ側で訳せるようコードも載せる (#4917)。
+		assert.Equal(t, "hintSuit", resObj.RuleHintCode)
+		assert.Equal(t, "あるスートを出したときに言葉が必要です。", resObj.RuleHint)
 	})
 
 	t.Run("awaiting word flag and message", func(t *testing.T) {

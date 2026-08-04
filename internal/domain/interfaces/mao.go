@@ -71,8 +71,8 @@ type MaoGame interface {
 	GetPlayerCorrectCount() int
 	// GetHintUnlocked ハーフヒントが解放されたかを返す
 	GetHintUnlocked() bool
-	// GetRuleHint 解放済みのハーフヒントを返す (未解放なら空文字)
-	GetRuleHint() string
+	// GetRuleHintKey 解放済みのハーフヒントの i18n キーを返す (未解放なら空文字)
+	GetRuleHintKey() string
 	// GetRulePenaltyFlag 直近のアクションで隠しルール違反が発生したかを返す
 	GetRulePenaltyFlag() bool
 }

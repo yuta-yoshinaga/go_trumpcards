@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupMaoCuiMock() *interfaces.MockMaoGame {
@@ -30,7 +31,7 @@ func setupMaoCuiMock() *interfaces.MockMaoGame {
 	m.On("GetAwaitingWord").Return(false)
 	m.On("GetHintUnlocked").Return(false)
 	m.On("GetPlayerCorrectCount").Return(1)
-	m.On("GetRuleHint").Return("")
+	m.On("GetRuleHintKey").Return("")
 	m.On("GetRulePenaltyFlag").Return(false)
 	return m
 }
@@ -66,12 +67,14 @@ func TestMaoCuiPresenter_Output(t *testing.T) {
 	t.Run("unlocked hint replaces the compliance progress", func(t *testing.T) {
 		m, _ := setupMaoCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHintUnlocked")
-		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRuleHint")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRuleHintKey")
 		m.On("GetHintUnlocked").Return(true)
-		m.On("GetRuleHint").Return("odd cards")
+		m.On("GetRuleHintKey").Return("hintNumber")
 		result := p.Output(m, nil)
 		assert.NotContains(t, result, "ルール適合:")
-		assert.Contains(t, result, "odd cards")
+		// **キーではなく訳文が出る。**キーがそのまま出たら翻訳を通していない (#4917)。
+		assert.Contains(t, result, "ある数字を出したときに言葉が必要です。")
+		assert.NotContains(t, result, "hintNumber")
 	})
 
 	t.Run("awaiting word prompt and no hidden rule leak", func(t *testing.T) {
@@ -86,11 +89,11 @@ func TestMaoCuiPresenter_Output(t *testing.T) {
 	t.Run("hint shown when unlocked", func(t *testing.T) {
 		m, _ := setupMaoCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHintUnlocked")
-		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRuleHint")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRuleHintKey")
 		m.On("GetHintUnlocked").Return(true)
-		m.On("GetRuleHint").Return("a suit matters")
+		m.On("GetRuleHintKey").Return("hintSuit")
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "a suit matters")
+		assert.Contains(t, result, "あるスートを出したときに言葉が必要です。")
 	})
 
 	t.Run("rule penalty notice", func(t *testing.T) {
@@ -158,4 +161,34 @@ func TestMaoCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return(entries)
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "You plays SPADE 5")
+}
+
+// MaoRuleHintKeys は domain.maoRuleSet が使うヒントキー。ここを増やしたら
+// TestMao_RuleHintKeySet も落ちるので、片方だけ更新して訳し忘れることはない。
+var MaoRuleHintKeys = []string{"hintSuit", "hintNumber", "hintFace", "hintRank"}
+
+// **ja / en 両方に訳がある。**片方だけだと `--lang en` で日本語のまま出る (#4917)。
+func TestMaoRuleHintKeys_TranslatedInBothLanguages(t *testing.T) {
+	defer i18n.SetLang("ja")
+	for _, lang := range []string{"ja", "en"} {
+		i18n.SetLang(lang)
+		for _, key := range MaoRuleHintKeys {
+			full := "mao." + key
+			got := i18n.T(full)
+			assert.NotEqual(t, full, got, "%s is missing from %s", full, lang)
+			assert.NotEmpty(t, got, "%s is empty in %s", full, lang)
+		}
+	}
+}
+
+// 訳が言語ごとに違うことも見る。両方に同じ日本語を入れても上のテストは通る。
+func TestMaoRuleHintKeys_DifferPerLanguage(t *testing.T) {
+	defer i18n.SetLang("ja")
+	for _, key := range MaoRuleHintKeys {
+		i18n.SetLang("ja")
+		ja := i18n.T("mao." + key)
+		i18n.SetLang("en")
+		en := i18n.T("mao." + key)
+		assert.NotEqual(t, ja, en, "mao.%s is the same string in both languages", key)
+	}
 }

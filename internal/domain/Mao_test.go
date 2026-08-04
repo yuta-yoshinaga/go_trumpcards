@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -88,7 +89,7 @@ func TestMao_RuleTriggered(t *testing.T) {
 func TestMao_PlayTriggersAwaitingWord(t *testing.T) {
 	g := newTestMao()
 	g.Reset()
-	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintText: "h"})
+	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintKey: "hintSuit"})
 	g.SetCurrentPlayerIdx(0)
 	g.SetPhase(MaoPhasePlay)
 	g.SetChosenSuit(-1)
@@ -103,7 +104,7 @@ func TestMao_PlayTriggersAwaitingWord(t *testing.T) {
 func TestMao_DeclareWordCorrect(t *testing.T) {
 	g := newTestMao()
 	g.Reset()
-	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintText: "h"})
+	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintKey: "hintSuit"})
 	g.SetCurrentPlayerIdx(0)
 	g.SetPhase(MaoPhasePlay)
 	g.SetChosenSuit(-1)
@@ -125,7 +126,7 @@ func TestMao_DeclareWordCorrect(t *testing.T) {
 func TestMao_DeclareWordWrong_AppliesPenalty(t *testing.T) {
 	g := newTestMao()
 	g.Reset()
-	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintText: "h"})
+	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintKey: "hintSuit"})
 	g.SetCurrentPlayerIdx(0)
 	g.SetPhase(MaoPhasePlay)
 	g.SetChosenSuit(-1)
@@ -147,7 +148,7 @@ func TestMao_DeclareWordWrong_AppliesPenalty(t *testing.T) {
 func TestMao_DeclareWordWhenNotAwaiting_Penalty(t *testing.T) {
 	g := newTestMao()
 	g.Reset()
-	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintText: "h"})
+	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintKey: "hintSuit"})
 	g.SetCurrentPlayerIdx(0)
 	g.SetAwaitingWord(false)
 	g.SetDrawPile([]*Card{maoCard(CardDesignClover, 6)})
@@ -162,29 +163,29 @@ func TestMao_DeclareWordWhenNotAwaiting_Penalty(t *testing.T) {
 func TestMao_HintUnlocksAfterThreeCorrect(t *testing.T) {
 	g := newTestMao()
 	g.Reset()
-	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintText: "secret hint"})
+	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintKey: "hintSuit"})
 
 	for i := 0; i < MaoHintThreshold; i++ {
 		g.SetAwaitingWord(true)
 		require.NoError(t, g.PlayerDeclareWord("spade"))
 	}
 	assert.True(t, g.GetHintUnlocked())
-	assert.Equal(t, "secret hint", g.GetRuleHint())
+	assert.Equal(t, "hintSuit", g.GetRuleHintKey())
 	assert.Equal(t, MaoHintThreshold, g.GetPlayerCorrectCount())
 }
 
 func TestMao_RuleHintHiddenBeforeUnlock(t *testing.T) {
 	g := newTestMao()
 	g.Reset()
-	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintText: "secret hint"})
+	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintKey: "hintSuit"})
 	assert.False(t, g.GetHintUnlocked())
-	assert.Equal(t, "", g.GetRuleHint())
+	assert.Equal(t, "", g.GetRuleHintKey())
 }
 
 func TestMao_PlayWhileAwaitingWord_Penalizes(t *testing.T) {
 	g := newTestMao()
 	g.Reset()
-	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerValue, TriggerValue: 99, RequiredWord: "x", HintText: "h"})
+	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerValue, TriggerValue: 99, RequiredWord: "x", HintKey: "hintSuit"})
 	g.SetCurrentPlayerIdx(0)
 	g.SetPhase(MaoPhasePlay)
 	g.SetChosenSuit(-1)
@@ -364,7 +365,7 @@ func TestMao_FullCpuGameTerminates(t *testing.T) {
 func TestMao_JSONRoundTripIncludesHiddenRule(t *testing.T) {
 	g := newTestMao()
 	g.Reset()
-	rule := MaoHiddenRule{TriggerKind: MaoTriggerValue, TriggerValue: 7, RequiredWord: "seven", HintText: "a number"}
+	rule := MaoHiddenRule{TriggerKind: MaoTriggerValue, TriggerValue: 7, RequiredWord: "seven", HintKey: "hintNumber"}
 	g.SetHiddenRule(rule)
 	g.SetAwaitingWord(true)
 	g.playerCorrectCount = 2
@@ -416,7 +417,7 @@ func TestMao_UnmarshalRejectsBadInput(t *testing.T) {
 func TestMao_NextRoundKeepsHiddenRuleProgress(t *testing.T) {
 	g := newTestMao()
 	g.Reset()
-	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintText: "h"})
+	g.SetHiddenRule(MaoHiddenRule{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintKey: "hintSuit"})
 	g.playerCorrectCount = 3
 	g.hintUnlocked = true
 	g.SetPhase(MaoPhaseRoundEnd)
@@ -442,4 +443,26 @@ func TestMao_ScoreRoundAndConfig(t *testing.T) {
 	assert.NoError(t, cfg.Validate())
 	cfg.PointLimit = 0
 	assert.Error(t, cfg.Validate())
+}
+
+// **ヒント文は i18n キーで持つ。**Go に日本語を直書きすると `--lang en` でも
+// 日本語のまま出る (#4917)。
+func TestMao_RuleHintIsAnI18nKeyNotJapaneseText(t *testing.T) {
+	for i, r := range maoRuleSet {
+		assert.NotEmpty(t, r.HintKey, "rule %d", i)
+		assert.True(t, strings.HasPrefix(r.HintKey, "hint"), "rule %d: %q is not a hint key", i, r.HintKey)
+		for _, ru := range r.HintKey {
+			assert.Less(t, ru, rune(128), "rule %d: %q must be ASCII, not a translated string", i, r.HintKey)
+		}
+	}
+}
+
+// **キー集合を固定する。**presenter 側の翻訳確認テストと突き合わせる相手が
+// 無いと、キーを増やしたときに訳し忘れても誰も気づかない (#4917)。
+func TestMao_RuleHintKeySet(t *testing.T) {
+	seen := map[string]bool{}
+	for _, r := range maoRuleSet {
+		seen[r.HintKey] = true
+	}
+	assert.Equal(t, map[string]bool{"hintSuit": true, "hintNumber": true, "hintFace": true, "hintRank": true}, seen)
 }

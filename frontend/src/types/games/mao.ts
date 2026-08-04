@@ -46,6 +46,12 @@ export interface MaoResponse extends BaseGameResponse {
   correctCount: number;
   hintUnlocked: boolean;
   ruleHint: string;
+  /**
+   * i18n key for {@link MaoResponse.ruleHint}, without the `mao.` prefix
+   * (e.g. `hintSuit`). The server's own language is process-wide, so the hint
+   * text arrives in the server's language — translate this instead (#4917).
+   */
+  ruleHintCode?: string;
   rulePenalty: boolean;
   config: MaoConfig;
 }
