@@ -166,6 +166,7 @@ function ChineseTenPageContent() {
               <div className="flex gap-1 justify-center flex-wrap">
                 {state.layout.map((card, i) => {
                   const canTake = choosing && isHumanTurn && selectable.has(i);
+                  const isHintedLayout = showServerHint && state.hint?.layoutIndex === i;
                   return (
                     <button
                       key={`layout-${i.toString()}`}
@@ -174,15 +175,20 @@ function ChineseTenPageContent() {
                       // Kept focusable while it cannot act so the reason is
                       // announced rather than the control leaving the tab order.
                       aria-disabled={!canTake}
-                      data-hinted-layout={(showServerHint && state.hint?.layoutIndex === i) || undefined}
+                      data-hinted-layout={isHintedLayout || undefined}
                       onClick={() => canTake && game.handleSelect(i)}
                       className={[
                         'rounded transition-transform',
-                        canTake ? 'ring-2 ring-ds-accent hover:-translate-y-1' : '',
-                        choosing && !canTake ? 'opacity-50' : '',
                         // The hint carries layoutIndex — which table card to take —
-                        // and only the hand card was ever ringed (#4881).
-                        showServerHint && state.hint?.layoutIndex === i ? 'ring-2 ring-ds-warning' : '',
+                        // and only the hand card was ever ringed (#4881). Two ring-*
+                        // utilities on one element would fight, so the hint wins
+                        // outright when it names this card.
+                        isHintedLayout
+                          ? 'ring-2 ring-ds-warning'
+                          : canTake
+                            ? 'ring-2 ring-ds-accent hover:-translate-y-1'
+                            : '',
+                        choosing && !canTake ? 'opacity-50' : '',
                       ].join(' ')}
                     >
                       {renderCard(card, `layout-c${i.toString()}`)}

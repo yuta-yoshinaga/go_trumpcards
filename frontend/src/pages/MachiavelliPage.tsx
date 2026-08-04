@@ -175,11 +175,19 @@ function MachiavelliPageContent() {
   // getMachiavelliHint already asks findHandMeld which cards form a meld and then
   // throws the indices away, leaving the hint to say "make a meld" without saying
   // which cards. Pan rings its candidates; this does the same (#4852).
+  // Derived from the tooltip's own verdict rather than re-deriving the rules, so
+  // the ring cannot disagree with it: getMachiavelliHint already requires the
+  // human's turn, the TURN phase and a live game before suggesting a meld.
   // Above the early return: hooks must not be conditional.
   const hintHand = state?.players.find((p) => p.isHuman)?.cards;
   const meldHintIndices = useMemo(
-    () => new Set(frontendHintEnabled && hintHand ? (findHandMeld(hintHand) ?? []) : []),
-    [frontendHintEnabled, hintHand],
+    () =>
+      new Set(
+        frontendHintEnabled && frontendHint?.targetAction === 'newMeld' && hintHand
+          ? (findHandMeld(hintHand) ?? [])
+          : [],
+      ),
+    [frontendHintEnabled, frontendHint, hintHand],
   );
 
   if (!state)
