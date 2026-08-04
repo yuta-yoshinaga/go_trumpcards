@@ -362,15 +362,14 @@ describe('EasthavenPage', () => {
     expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument();
   });
 
-  it('previews the movable block on touch as well as hover', async () => {
+  it('previews the movable block from the selection, not only from hover', async () => {
+    // Touch has no hover, so selecting has to reveal the block extent too.
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<EasthavenPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
-    const cardButton = screen
-      .getAllByRole('button')
-      .find((b) => b.hasAttribute('data-block-member') === false && b.querySelector('img'));
-    expect(cardButton).toBeDefined();
-    fireEvent.touchStart(cardButton as HTMLElement);
+    expect(document.querySelectorAll('[data-block-member]')).toHaveLength(0);
+    const cardButton = screen.getAllByRole('button').find((b) => b.querySelector('img')) as HTMLButtonElement;
+    fireEvent.click(cardButton);
     await waitFor(() => expect(document.querySelectorAll('[data-block-member]').length).toBeGreaterThan(0));
   });
 });

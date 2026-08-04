@@ -413,8 +413,14 @@ function HachiHachiPageContent() {
                 dataTutorial="hachihachi-reset-button"
               />
             </div>
-            {/* Digits address the hand, or the field row while a two-way match is pending. */}
-            <CardNavShortcutsPanel directPlay data-testid="hachihachi-kbd-shortcuts" />
+            {/* Digits address the hand, or the field row while a two-way match is
+                pending. `directPlay` drops the Enter hint (nothing to confirm), but
+                Escape does cancel a pending pick, so it is listed explicitly. */}
+            <CardNavShortcutsPanel
+              directPlay
+              extra={[{ keys: ['Esc'], description: t('cancelFieldPick') }]}
+              data-testid="hachihachi-kbd-shortcuts"
+            />
           </GameFooter>
         </>
       )}
