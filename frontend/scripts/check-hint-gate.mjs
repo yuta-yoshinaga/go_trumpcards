@@ -20,6 +20,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertFloor } from './lib/floor.mjs';
 
 const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(FRONTEND, '..');
@@ -80,10 +81,12 @@ function testsBothSides(src) {
 
 const oneSided = [];
 const offenders = [];
+let inspected = 0;
 for (const file of await readdir(PAGES)) {
   if (!file.endsWith('Page.tsx')) continue;
   const game = file.replace(/Page\.tsx$/, '');
   if (ALLOWED.has(game)) continue;
+  inspected += 1;
   const src = await readFile(join(PAGES, file), 'utf8');
   // Two surfaces leak an unasked hint, and the second was missed at first:
   //
@@ -147,5 +150,9 @@ if (oneSided.length > 0) {
   process.exit(1);
 }
 
-const gated = (await readdir(PAGES)).filter((f) => f.endsWith('Page.tsx')).length;
-console.log(`hint-gate: OK (both sides tested on every gated page; ${gated} pages checked).`);
+// Count what the loop actually opened, not what the directory holds: pages in ALLOWED are
+// skipped, so the directory total reported a larger scope than was ever inspected. The floor
+// sits under the real number -- a `readdir` pointed at the wrong directory yields zero
+// iterations, zero offenders, and a cheerful pass.
+assertFloor('hint-gate', inspected, 200, 'game pages inspected');
+console.log(`hint-gate: OK (both sides tested on every gated page; ${inspected} pages checked).`);
