@@ -12,6 +12,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -106,13 +107,7 @@ function BlackJackSwitchPageContent() {
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
-  if (!state) {
-    return (
-      <div className={`flex-1 flex items-center justify-center ${gameTheme.blackjackswitch.bg}`}>
-        <div className="text-ds-text-primary">Loading...</div>
-      </div>
-    );
-  }
+  if (!state) return <GameSkeleton gameKey="blackjackswitch" layout={{ kind: 'casino-table', sections: [5, 2, 2] }} />;
 
   const phaseName = isBetPhase
     ? t('phase.bet')
