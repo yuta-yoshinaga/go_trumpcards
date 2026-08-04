@@ -350,6 +350,18 @@ describe('BadugiPage', () => {
     }
   });
 
+  it('keeps the exchange lift/dim off outside the exchange window even with hints on', async () => {
+    // Outside the draw the player cannot act on "keep these" advice, so the
+    // assist stays off however the hint setting is configured.
+    localStorage.clear();
+    localStorage.setItem('hint_enabled_badugi', 'true');
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.SHOWDOWN, currentTurn: 0 }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+    expect(document.querySelectorAll('.-translate-y-1, .opacity-50').length).toBe(0);
+  });
+
   it('keeps the exchange lift/dim off until hints are switched on', async () => {
     // The assist is a hint in all but name, so it follows the hint setting —
     // which defaults to off (#4701/#4702).
