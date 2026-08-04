@@ -33,7 +33,7 @@ import { OmahaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
-import { omahaLiveHandKey } from '../utils/livePokerPreview';
+import { omahaLivePreviewKey } from '../utils/livePokerPreview';
 import { omahaBestFive } from '../utils/omahaBestFive';
 import { findPlayerName } from '../utils/playerUtils';
 
@@ -164,10 +164,10 @@ function BigOPageContent() {
   // Preview the hand the player currently holds under the must-use-exactly-2
   // rule. Big O deals five hole cards — ten pairings to weigh by eye — so the
   // preview matters more here than in plain Omaha, which already had it (#4681/#4682).
-  const liveBestHandKey = useMemo(() => {
-    if (!isActive || isShowdown || !humanPlayer || humanPlayer.folded) return null;
-    return omahaLiveHandKey(humanPlayer.cards ?? [], state?.communityCards ?? []);
-  }, [isActive, isShowdown, humanPlayer, state?.communityCards]);
+  const liveBestHandKey = useMemo(
+    () => omahaLivePreviewKey(humanPlayer, state?.communityCards ?? [], { isActive, isShowdown }),
+    [isActive, isShowdown, humanPlayer, state?.communityCards],
+  );
 
   if (!state)
     return (

@@ -36,7 +36,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
-import { omahaLiveHandKey } from '../utils/livePokerPreview';
+import { omahaLivePreviewKey } from '../utils/livePokerPreview';
 import { omahaBestFive } from '../utils/omahaBestFive';
 import { lowCardIndexSets } from '../utils/omahaLowCards';
 import { findPlayerName } from '../utils/playerUtils';
@@ -219,10 +219,10 @@ function OmahaHiLoPageContent() {
   // Preview the hand the player currently holds under the must-use-exactly-2
   // rule. Big O deals five hole cards — ten pairings to weigh by eye — so the
   // preview matters more here than in plain Omaha, which already had it (#4681/#4682).
-  const liveBestHandKey = useMemo(() => {
-    if (!isActive || isShowdown || !humanPlayer || humanPlayer.folded) return null;
-    return omahaLiveHandKey(humanPlayer.cards ?? [], state?.communityCards ?? []);
-  }, [isActive, isShowdown, humanPlayer, state?.communityCards]);
+  const liveBestHandKey = useMemo(
+    () => omahaLivePreviewKey(humanPlayer, state?.communityCards ?? [], { isActive, isShowdown }),
+    [isActive, isShowdown, humanPlayer, state?.communityCards],
+  );
   // At showdown, highlight the human's qualifying low cards (hole + board), if any.
   const humanLowBestHand = isShowdown
     ? state?.roundResults?.find((r) => r.playerIdx === humanPlayer?.id)?.lowBestHand

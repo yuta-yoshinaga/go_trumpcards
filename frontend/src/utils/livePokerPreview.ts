@@ -22,3 +22,31 @@ export function omahaLiveHandKey(hole: readonly Card[], board: readonly Card[]):
   const rank = evaluateFiveCardHand(five);
   return rank == null ? null : pokerHandKey(rank);
 }
+
+/** The subset of a poker player this preview needs. */
+export interface LivePreviewPlayer {
+  cards?: Card[];
+  folded?: boolean;
+}
+
+/**
+ * The preview key to show for a player mid-hand, or null when no preview
+ * belongs on screen: before the hand is live, at showdown (where the final
+ * hand is already highlighted), or for a player who has folded or is absent.
+ *
+ * The guard lives here rather than in each page so the three Omaha variants
+ * cannot disagree about when a preview is appropriate.
+ * @param player - The human player, if seated.
+ * @param board - The community cards.
+ * @param opts - Whether the hand is live and whether it has reached showdown.
+ * @returns The hand-name i18n key, or null.
+ */
+export function omahaLivePreviewKey(
+  player: LivePreviewPlayer | null | undefined,
+  board: readonly Card[],
+  opts: { isActive: boolean; isShowdown: boolean },
+): string | null {
+  if (!opts.isActive || opts.isShowdown) return null;
+  if (!player || player.folded) return null;
+  return omahaLiveHandKey(player.cards ?? [], board);
+}

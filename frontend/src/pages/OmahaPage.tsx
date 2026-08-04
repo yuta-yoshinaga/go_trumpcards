@@ -33,7 +33,7 @@ import { OmahaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
-import { omahaLiveHandKey } from '../utils/livePokerPreview';
+import { omahaLivePreviewKey } from '../utils/livePokerPreview';
 import { omahaBestFive } from '../utils/omahaBestFive';
 import { findPlayerName } from '../utils/playerUtils';
 
@@ -164,10 +164,10 @@ function OmahaPageContent() {
   // During play (flop..river), preview the human's current best hand name under
   // Omaha's must-use-exactly-2-hole + 3-board rule. Returns null pre-flop (fewer
   // than 3 board cards) or at showdown (where the winning hand is already shown).
-  const liveBestHandKey = useMemo(() => {
-    if (!isActive || isShowdown || !humanPlayer || humanPlayer.folded) return null;
-    return omahaLiveHandKey(humanPlayer.cards ?? [], state?.communityCards ?? []);
-  }, [isActive, isShowdown, humanPlayer, state?.communityCards]);
+  const liveBestHandKey = useMemo(
+    () => omahaLivePreviewKey(humanPlayer, state?.communityCards ?? [], { isActive, isShowdown }),
+    [isActive, isShowdown, humanPlayer, state?.communityCards],
+  );
 
   if (!state)
     return (
