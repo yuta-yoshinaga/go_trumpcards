@@ -9,7 +9,6 @@
   "button.trail": "場に置く",
   "button.suggestTake": "取る ({{value}})",
   "button.suggestBuild": "ビルド ({{value}})",
-  "button.nextRound": "次のラウンド",
   "button.reset": "リセット",
   "label.tableCards": "場",
   "label.tableEmpty": "なし",

@@ -9,7 +9,6 @@
   "button.trail": "Trail",
   "button.suggestTake": "Take ({{value}})",
   "button.suggestBuild": "Build ({{value}})",
-  "button.nextRound": "Next Round",
   "button.reset": "Reset",
   "label.tableCards": "Table",
   "label.tableEmpty": "Empty",

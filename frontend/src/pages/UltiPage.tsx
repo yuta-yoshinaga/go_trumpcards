@@ -447,6 +447,8 @@ function UltiPageContent() {
                     className={btnPrimary}
                     onClick={declareParty}
                     disabled={loading || selectedTrump === null}
+                    title={t('bidDesc.party')}
+                    aria-describedby="ulti-bid-desc-party"
                   >
                     {t('bidParty')}
                   </button>
@@ -455,10 +457,19 @@ function UltiPageContent() {
                     className={btnPrimary}
                     onClick={declareUlti}
                     disabled={loading || selectedTrump === null}
+                    title={t('bidDesc.ulti')}
+                    aria-describedby="ulti-bid-desc-ulti"
                   >
                     {t('bidUlti')}
                   </button>
-                  <button type="button" className={btnPrimary} onClick={() => handleBid('betli')} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => handleBid('betli')}
+                    disabled={loading}
+                    title={t('bidDesc.betli')}
+                    aria-describedby="ulti-bid-desc-betli"
+                  >
                     {t('bidBetli')}
                   </button>
                   <button
@@ -466,9 +477,20 @@ function UltiPageContent() {
                     className={btnPrimary}
                     onClick={() => handleBid('durchmarsch')}
                     disabled={loading}
+                    title={t('bidDesc.durchmarsch')}
+                    aria-describedby="ulti-bid-desc-durchmarsch"
                   >
                     {t('bidDurchmarsch')}
                   </button>
+                  {/* The win conditions the CUI states in promptBidHelp; Ulti's own
+                      (trump 7 takes the last trick) is the name of the game. */}
+                  <div className="sr-only" data-testid="ulti-bid-descriptions">
+                    {(['party', 'ulti', 'betli', 'durchmarsch'] as const).map((k) => (
+                      <span key={k} id={`ulti-bid-desc-${k}`}>
+                        {t(`bidDesc.${k}`)}
+                      </span>
+                    ))}
+                  </div>
                 </>
               )}
               {canDiscard && (

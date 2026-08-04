@@ -88,5 +88,11 @@
   },
   "coinDelta": "({{delta}} coins)",
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "bidDesc": {
+    "party": "Win by taking more than half the card points (61 of 126)",
+    "ulti": "Win the last trick with the trump 7 — failing it pays double",
+    "betli": "No trump. Win by taking no trick at all",
+    "durchmarsch": "No trump. Win by taking all ten tricks"
+  }
 }
