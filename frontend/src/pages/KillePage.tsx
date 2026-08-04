@@ -275,22 +275,26 @@ function KillePageContent() {
               ))}
             </div>
 
-            {/* Exchanges this round */}
-            {state.events.length > 0 && (
-              <div
-                className="mb-2 p-2 rounded bg-black/20 text-sm"
-                data-testid="kille-events"
-                role="status"
-                aria-live="polite"
-              >
-                <div className="mb-1 text-ds-text-primary">{t('eventsTitle')}</div>
-                {state.events.map((e, i) => (
-                  <div key={`event-${e.kind}-${e.actor}-${e.target}-${i}`} className="text-ds-text-muted">
-                    {eventLine(e)}
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Exchanges this round. The region is mounted unconditionally and only
+                its contents vary: a live region created in the same paint as its
+                first text is not reliably announced. */}
+            <div
+              className={state.events.length > 0 ? 'mb-2 p-2 rounded bg-black/20 text-sm' : 'sr-only'}
+              data-testid="kille-events"
+              role="status"
+              aria-live="polite"
+            >
+              {state.events.length > 0 && (
+                <>
+                  <div className="mb-1 text-ds-text-primary">{t('eventsTitle')}</div>
+                  {state.events.map((e, i) => (
+                    <div key={`event-${e.kind}-${e.actor}-${e.target}-${i}`} className="text-ds-text-muted">
+                      {eventLine(e)}
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
 
             {/* Showdown */}
             {(isShowdown || isGameEnd) && state.loserIdxs.length > 0 && (
