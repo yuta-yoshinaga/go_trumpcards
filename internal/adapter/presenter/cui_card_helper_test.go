@@ -545,3 +545,22 @@ func TestCuiPlayerNameColor(t *testing.T) {
 	got = cuiPlayerName[*mockCuiPlayer](nil, 0)
 	assert.Equal(t, "UNKNOWN", got)
 }
+
+// 共有ヘルパの境界。**空を返す条件を取り違えると、空行だけが出る。**
+func TestCuiCaptureHintLine(t *testing.T) {
+	hand := domain.NewBasraPlayer(true)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+
+	// 捕獲候補がある札だけ注記が付く。
+	line := cuiCaptureHintLine(hand, map[int][]int{0: {1, 3}}, "tablanet.captureHint")
+	assert.Contains(t, line, "[0]SPADE 5")
+	assert.Contains(t, line, "[1][3]")
+	assert.NotContains(t, line, "HEART 9")
+
+	// 候補が無ければ 1 行も出さない (空文字。空白 1 文字ではない)。
+	assert.Empty(t, cuiCaptureHintLine(hand, map[int][]int{}, "tablanet.captureHint"))
+	assert.Empty(t, cuiCaptureHintLine(hand, nil, "tablanet.captureHint"))
+	// 値が空スライスのキーしか無い場合も同じ。
+	assert.Empty(t, cuiCaptureHintLine(hand, map[int][]int{0: {}}, "tablanet.captureHint"))
+}

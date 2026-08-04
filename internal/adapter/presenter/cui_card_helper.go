@@ -201,3 +201,34 @@ func cuiCardSliceStr(cards []*domain.Card) string {
 func cuiCardSliceStrEmoji(cards []*domain.Card) string {
 	return formatCardSlice(cards, cuiCardStrEmoji, "  ")
 }
+
+// cuiCaptureHintLine annotates each hand card with the table cards it can
+// capture, e.g. `[0]♠5 → 場[1][3]`.
+//
+// Shared by the fishing games (Basra, Tablanet), which all get the pairing from
+// the domain's own `GetCaptureOptions`. **Recomputing it per presenter is how
+// the note starts disagreeing with what the server will accept** (#4922).
+// Cards that capture nothing get no note; an empty result means no line at all.
+func cuiCaptureHintLine(hand cuiCardList, opts map[int][]int, key string) string {
+	if len(opts) == 0 {
+		return ""
+	}
+	notes := make([]string, 0, hand.GetCardsSize())
+	for h := range hand.GetCardsSize() {
+		tableIdxs := opts[h]
+		if len(tableIdxs) == 0 {
+			continue
+		}
+		marks := make([]string, len(tableIdxs))
+		for j, ti := range tableIdxs {
+			marks[j] = "[" + strconv.Itoa(ti) + "]"
+		}
+		notes = append(notes, i18n.Tf(key,
+			"hand", "["+strconv.Itoa(h)+"]"+cuiCardStr(hand.GetCard(h)),
+			"table", strings.Join(marks, "")))
+	}
+	if len(notes) == 0 {
+		return ""
+	}
+	return strings.Join(notes, "  ")
+}
