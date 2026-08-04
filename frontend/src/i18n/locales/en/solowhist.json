@@ -1,4 +1,42 @@
 {
+  "bid": {
+    "pass": "Pass",
+    "solo": "Solo",
+    "misere": "Misère",
+    "abundance": "Abundance"
+  },
+  "bidHighest": "Highest bid: {{bid}} ({{player}})",
+  "bidLabel": "Bid",
+  "bidNone": "No bids yet",
+  "bidPrompt": "Place a bid (only a higher bid is allowed):",
+  "bidTooLow": "Must beat the current highest bid",
+  "cards": "{{count}} cards",
+  "contract": "Contract: {{contract}}",
+  "contractName": {
+    "pass": "Pass",
+    "solo": "Solo (8 tricks)",
+    "misere": "Misère (0 tricks, no trump)",
+    "abundance": "Abundance (9 tricks)"
+  },
+  "contractUndecided": "Contract: undecided",
+  "cpu": "CPU {{id}}",
+  "currentTrick": "Current Trick",
+  "declarerBadge": "Declarer",
+  "declarerLine": "Declarer: {{name}} — {{contract}}",
+  "hint": {
+    "lead_low": "Lead a low card to conserve strength",
+    "follow_win": "Win this trick",
+    "follow_duck": "Cannot/should not win — duck",
+    "discard_low": "Cannot follow suit — discard a low card"
+  },
+  "hintAvailable": "Hint",
+  "hintRequested": "Hint available",
+  "misereBadge": "Special",
+  "misereDesc": "Misère is a special contract aiming to win no tricks; failing it costs heavily.",
+  "nextRound": "Next Round",
+  "nextTrick": "Next Trick",
+  "noHint": "No hint available",
+  "noTrump": "none",
   "phase": {
     "bid": "Bid",
     "play": "Play",
@@ -6,6 +44,21 @@
     "roundEnd": "Round End",
     "gameEnd": "Game End"
   },
+  "playButton": "Play",
+  "playerScore": "{{name}}: {{score}} pts",
+  "players": "Players",
+  "progress": {
+    "line": "Declarer progress: {{won}} / {{needed}} tricks",
+    "misere": "Declarer progress: {{won}} tricks (Misère, target 0)",
+    "made": "Contract made",
+    "failed": "Contract failed"
+  },
+  "round": "Round {{n}}",
+  "roundResult": {
+    "title": "Round Result",
+    "tricks": "{{name}} tricks: {{count}}"
+  },
+  "score": "Score: {{score}}",
   "settings": {
     "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
@@ -14,67 +67,16 @@
     "normal": "Normal",
     "hard": "Hard"
   },
-  "round": "Round {{n}}",
-  "trick": "Trick {{n}}",
-  "trump": "Trump: {{suit}}",
-  "noTrump": "none",
-  "cards": "{{count}} cards",
-  "tricks": "{{count}} tricks",
-  "currentTrick": "Current Trick",
-  "trickEmpty": "(no cards yet)",
-  "players": "Players",
-  "you": "You",
-  "cpu": "CPU {{id}}",
-  "declarerBadge": "Declarer",
-  "score": "Score: {{score}}",
-  "playerScore": "{{name}}: {{score}} pts",
-  "contract": "Contract: {{contract}}",
-  "contractUndecided": "Contract: undecided",
-  "declarerLine": "Declarer: {{name}} — {{contract}}",
-  "progress": {
-    "line": "Declarer progress: {{won}} / {{needed}} tricks",
-    "misere": "Declarer progress: {{won}} tricks (Misère, target 0)",
-    "made": "Contract made",
-    "failed": "Contract failed"
-  },
-  "bidLabel": "Bid",
-  "playButton": "Play",
-  "nextTrick": "Next Trick",
-  "nextRound": "Next Round",
   "target": "Target: {{points}} pts",
-  "bidPrompt": "Place a bid (only a higher bid is allowed):",
-  "bidHighest": "Highest bid: {{bid}} ({{player}})",
-  "bidNone": "No bids yet",
-  "bidTooLow": "Must beat the current highest bid",
-  "bid": {
-    "pass": "Pass",
-    "solo": "Solo",
-    "misere": "Misère",
-    "abundance": "Abundance"
-  },
-  "contractName": {
-    "pass": "Pass",
-    "solo": "Solo (8 tricks)",
-    "misere": "Misère (0 tricks, no trump)",
-    "abundance": "Abundance (9 tricks)"
-  },
-  "roundResult": {
-    "title": "Round Result",
-    "tricks": "{{name}} tricks: {{count}}"
-  },
-  "hintAvailable": "Hint",
-  "hint": {
-    "lead_low": "Lead a low card to conserve strength",
-    "follow_win": "Win this trick",
-    "follow_duck": "Cannot/should not win — duck",
-    "discard_low": "Cannot follow suit — discard a low card"
-  },
+  "trick": "Trick {{n}}",
+  "trickEmpty": "(no cards yet)",
+  "tricks": "{{count}} tricks",
+  "trump": "Trump: {{suit}}",
   "tutorial": {
     "info": "Round, contract (declarer and type), trump, and each player's score are shown here. The first player to reach the target points (default 21) wins. The ★ marks the declarer.",
     "trick": "Cards played to the current trick appear here. You must follow the led suit, ace high. The highest card wins the trick.",
     "hand": "This is your hand. During play, click a playable card and press Play.",
     "actions": "In the bidding phase, buttons appear for Pass / Solo (win 8 tricks alone) / Misère (win 0 tricks, no trump) / Abundance (win 9 tricks alone). Only a bid higher than the current highest is selectable. The highest bidder becomes the declarer and plays against the other 3 defenders."
   },
-  "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "you": "You"
 }

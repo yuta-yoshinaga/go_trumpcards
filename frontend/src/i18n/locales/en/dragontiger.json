@@ -17,6 +17,9 @@
     "rebet": "Rebet ({{type}} {{amount}})"
   },
   "kbd": {
+    "betDragon": "D",
+    "betTie": "E",
+    "betTiger": "T",
     "rebet": "E"
   },
   "phase": {

@@ -1,4 +1,42 @@
 {
+  "bid": {
+    "pass": "パス",
+    "solo": "ソロ",
+    "misere": "ミゼール",
+    "abundance": "アバンダンス"
+  },
+  "bidHighest": "現在の最高ビッド: {{bid}}（{{player}}）",
+  "bidLabel": "入札",
+  "bidNone": "まだ入札なし",
+  "bidPrompt": "入札してください（上回る入札のみ可）:",
+  "bidTooLow": "現在の最高ビッドを上回る必要があります",
+  "cards": "{{count}}枚",
+  "contract": "契約: {{contract}}",
+  "contractName": {
+    "pass": "パス",
+    "solo": "ソロ (8トリック)",
+    "misere": "ミゼール (0トリック・切り札なし)",
+    "abundance": "アバンダンス (9トリック)"
+  },
+  "contractUndecided": "契約: 未決定",
+  "cpu": "CPU {{id}}",
+  "currentTrick": "現在のトリック",
+  "declarerBadge": "宣言者",
+  "declarerLine": "宣言者: {{name}} — {{contract}}",
+  "hint": {
+    "lead_low": "低い札でリードして温存することを推奨",
+    "follow_win": "このトリックを取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック推奨",
+    "discard_low": "フォローできないので低い札を捨てる"
+  },
+  "hintAvailable": "ヒント",
+  "hintRequested": "ヒントがあります",
+  "misereBadge": "特殊",
+  "misereDesc": "ミゼールは1トリックも取らないことを目指す特殊契約で、失敗すると大きな失点になります。",
+  "nextRound": "次のラウンド",
+  "nextTrick": "次のトリック",
+  "noHint": "ヒントはありません",
+  "noTrump": "なし",
   "phase": {
     "bid": "ビッド",
     "play": "プレイ",
@@ -6,6 +44,21 @@
     "roundEnd": "ラウンド終了",
     "gameEnd": "ゲーム終了"
   },
+  "playButton": "出す",
+  "playerScore": "{{name}}: {{score}}点",
+  "players": "プレイヤー",
+  "progress": {
+    "line": "宣言者の進捗: {{won}} / {{needed}} トリック",
+    "misere": "宣言者の進捗: {{won}} トリック（ミゼール・目標0）",
+    "made": "達成",
+    "failed": "失敗確定"
+  },
+  "round": "ラウンド {{n}}",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "tricks": "{{name}} トリック: {{count}}"
+  },
+  "score": "得点: {{score}}",
   "settings": {
     "title": "設定",
     "cpuDifficulty": "CPU難易度",
@@ -14,67 +67,16 @@
     "normal": "Normal",
     "hard": "Hard"
   },
-  "round": "ラウンド {{n}}",
-  "trick": "トリック {{n}}",
-  "trump": "切り札: {{suit}}",
-  "noTrump": "なし",
-  "cards": "{{count}}枚",
-  "tricks": "{{count}}トリック",
-  "currentTrick": "現在のトリック",
-  "trickEmpty": "(まだカードがありません)",
-  "players": "プレイヤー",
-  "you": "あなた",
-  "cpu": "CPU {{id}}",
-  "declarerBadge": "宣言者",
-  "score": "得点: {{score}}",
-  "playerScore": "{{name}}: {{score}}点",
-  "contract": "契約: {{contract}}",
-  "contractUndecided": "契約: 未決定",
-  "declarerLine": "宣言者: {{name}} — {{contract}}",
-  "progress": {
-    "line": "宣言者の進捗: {{won}} / {{needed}} トリック",
-    "misere": "宣言者の進捗: {{won}} トリック（ミゼール・目標0）",
-    "made": "達成",
-    "failed": "失敗確定"
-  },
-  "bidLabel": "入札",
-  "playButton": "出す",
-  "nextTrick": "次のトリック",
-  "nextRound": "次のラウンド",
   "target": "目標: {{points}}点",
-  "bidPrompt": "入札してください（上回る入札のみ可）:",
-  "bidHighest": "現在の最高ビッド: {{bid}}（{{player}}）",
-  "bidNone": "まだ入札なし",
-  "bidTooLow": "現在の最高ビッドを上回る必要があります",
-  "bid": {
-    "pass": "パス",
-    "solo": "ソロ",
-    "misere": "ミゼール",
-    "abundance": "アバンダンス"
-  },
-  "contractName": {
-    "pass": "パス",
-    "solo": "ソロ (8トリック)",
-    "misere": "ミゼール (0トリック・切り札なし)",
-    "abundance": "アバンダンス (9トリック)"
-  },
-  "roundResult": {
-    "title": "ラウンド結果",
-    "tricks": "{{name}} トリック: {{count}}"
-  },
-  "hintAvailable": "ヒント",
-  "hint": {
-    "lead_low": "低い札でリードして温存することを推奨",
-    "follow_win": "このトリックを取りに行く",
-    "follow_duck": "取れない／取る価値がないのでダック推奨",
-    "discard_low": "フォローできないので低い札を捨てる"
-  },
+  "trick": "トリック {{n}}",
+  "trickEmpty": "(まだカードがありません)",
+  "tricks": "{{count}}トリック",
+  "trump": "切り札: {{suit}}",
   "tutorial": {
     "info": "ここにラウンド・契約（宣言者と種別）・切り札・各プレイヤーの得点が表示されます。先に目標ポイント（初期値21）へ達したプレイヤーの勝ちです。★が宣言者です。",
     "trick": "場に出されたカードがここに並びます。リードスートにマストフォロー、A高。最強のカードを出したプレイヤーがトリックを取ります。",
     "hand": "あなたの手札です。プレイ時は出せるカードをクリックして「出す」を押します。",
     "actions": "入札フェーズでは、パス／ソロ（8トリック単独）／ミゼール（0トリック・切り札なし）／アバンダンス（9トリック単独）のボタンが出ます。現在の最高入札を上回る入札のみ選べます。最高入札者が宣言者となり、残り3人のディフェンダーと対戦します。"
   },
-  "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "you": "あなた"
 }
