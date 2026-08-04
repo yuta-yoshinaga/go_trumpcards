@@ -205,6 +205,18 @@ describe('HachiHachiPage', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
+  it('does not treat Enter as a play', async () => {
+    // Digits play directly here, so there is no confirm step — Enter must stay
+    // inert rather than replaying the highlighted card.
+    mockExec.mockResolvedValue(makeHachiHachiState());
+    renderWithProviders(<HachiHachiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   it('lists the card shortcuts in the footer', async () => {
     mockExec.mockResolvedValue(makeHachiHachiState());
     renderWithProviders(<HachiHachiPage />);
