@@ -1175,4 +1175,46 @@ describe('ShortDeckPage', () => {
     expect(chip.className).not.toContain('bg-ds-warning/');
     expect(chip.className).not.toContain('border-ds-warning/');
   });
+
+  it('highlights the five cards that made the winning hand', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<ShortDeckPage />);
+    await waitFor(() => expect(document.querySelectorAll('[data-best5-board]').length).toBeGreaterThan(0));
+    const marked =
+      document.querySelectorAll('[data-best5-board]').length + document.querySelectorAll('[data-best5-hole]').length;
+    expect(marked).toBe(5);
+  });
+
+  it('highlights the Short Deck wheel, which the standard evaluator cannot see', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // A♠ 7♥ against 6♥ 8♦ 9♣ K♠ Q♦: A-6-7-8-9 is a straight here but nothing in
+    // standard poker, so a Hold'em evaluator would light up A K Q 9 8 instead.
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [
+        humanPlayer({
+          handName: 'ストレート',
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 7 },
+          ],
+        }),
+        ...showdownState.players.slice(1),
+      ],
+      communityCards: [
+        { design: 'HEART', value: 6 },
+        { design: 'DIAMOND', value: 8 },
+        { design: 'CLOVER', value: 9 },
+        { design: 'SPADE', value: 13 },
+        { design: 'DIAMOND', value: 12 },
+      ],
+    });
+    renderWithProviders(<ShortDeckPage />);
+    await waitFor(() => expect(document.querySelectorAll('[data-best5-hole]').length).toBe(2));
+    // Both hole cards belong to the wheel; the K and Q on the board do not.
+    expect(document.querySelectorAll('[data-best5-board]').length).toBe(3);
+  });
 });

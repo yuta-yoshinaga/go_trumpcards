@@ -45,6 +45,7 @@ import { parseShortdeckCommand, SHORTDECK_HELP } from '../utils/cli/commands/sho
 import { formatShortdeckState } from '../utils/cli/formatters/shortdeckFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
+import { shortDeckBestFive } from '../utils/shortDeckBestFive';
 
 /** Short Deck Hold'em tutorial step definitions. */
 const SD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -168,6 +169,25 @@ function ShortDeckPageContent() {
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  // Short Deck reorders the hand rankings, so the standard holdemBestFive would
+  // sometimes mark five cards the server did not score — most visibly on the
+  // A-6-7-8-9 wheel, which it cannot see at all (#4684).
+  const showdownBest5 = useMemo(() => {
+    const empty = { holeSet: new Set<number>(), boardSet: new Set<number>() };
+    if (!isShowdown || !humanPlayer || humanPlayer.folded) return empty;
+    const hole = humanPlayer.cards ?? [];
+    const board = state?.communityCards ?? [];
+    if (hole.length !== 2 || board.length < 5) return empty;
+    const combined = [...hole, ...board.slice(0, 5)];
+    const holeSet = new Set<number>();
+    const boardSet = new Set<number>();
+    for (const i of shortDeckBestFive(combined) ?? []) {
+      if (i < hole.length) holeSet.add(i);
+      else boardSet.add(i - hole.length);
+    }
+    return { holeSet, boardSet };
+  }, [isShowdown, humanPlayer, state?.communityCards]);
+
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === HoldemPhase.SHOWDOWN && state?.muckAvailable === true;
   const isRebuyPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === HoldemRebuyPhaseType.REBUY;
@@ -277,14 +297,21 @@ function ShortDeckPageContent() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
-                      ? state.communityCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
-                        ))
+                      ? state.communityCards.map((card, idx) => {
+                          const inBest = showdownBest5.boardSet.has(idx);
+                          const dim = isShowdown && showdownBest5.boardSet.size > 0 && !inBest;
+                          return (
+                            <div
+                              key={`${card.design}-${card.value}`}
+                              className={`transition-all ${
+                                inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                              } ${dim ? 'opacity-50' : ''}`}
+                              data-best5-board={inBest || undefined}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            </div>
+                          );
+                        })
                       : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
@@ -399,14 +426,21 @@ function ShortDeckPageContent() {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {humanPlayer.cards?.length
-                    ? humanPlayer.cards.map((card) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                        />
-                      ))
+                    ? humanPlayer.cards.map((card, idx) => {
+                        const inBest = showdownBest5.holeSet.has(idx);
+                        const dim = isShowdown && showdownBest5.holeSet.size > 0 && !inBest;
+                        return (
+                          <div
+                            key={`${card.design}-${card.value}`}
+                            className={`transition-all ${
+                              inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                            } ${dim ? 'opacity-50' : ''}`}
+                            data-best5-hole={inBest || undefined}
+                          >
+                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                          </div>
+                        );
+                      })
                     : !humanPlayer.folded &&
                       Array.from({ length: 2 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>
