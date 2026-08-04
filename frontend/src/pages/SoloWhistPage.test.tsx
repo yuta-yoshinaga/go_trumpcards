@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { soloWhistApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeSoloWhistState } from '../test/stateFactories';
+import { SoloWhistContract } from '../types/phases';
 import { SoloWhistPage } from './SoloWhistPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -280,5 +281,18 @@ describe('SoloWhistPage', () => {
     });
     renderWithProviders(<SoloWhistPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
+
+  it('describes the misere contract for screen readers', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<SoloWhistPage />);
+    const misere = await screen.findByTestId(`bid-${SoloWhistContract.MISERE}`);
+    const descId = misere.getAttribute('aria-describedby');
+    expect(descId).toBe('solowhist-misere-desc');
+    expect(document.getElementById(descId ?? '')).toHaveTextContent('1トリックも取らない');
+    // Non-misere bids must not borrow the description.
+    expect(screen.getByTestId(`bid-${SoloWhistContract.PASS}`)).not.toHaveAttribute('aria-describedby');
   });
 });

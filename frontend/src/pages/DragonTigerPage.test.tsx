@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { dragontigerApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -304,5 +305,24 @@ describe('DragonTigerPage', () => {
     renderWithProviders(<DragonTigerPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+  });
+
+  it('shows the keyboard shortcut on each bet button', async () => {
+    localStorage.clear();
+    mockApi.mockReset();
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<DragonTigerPage />);
+    for (const [name, key] of [
+      ['button.betDragon', 'd'],
+      ['button.betTiger', 't'],
+      ['button.betTie', 'e'],
+    ] as const) {
+      // The labels contain regex metacharacters ("タイ (8:1)"), so match on the
+      // accessible name directly rather than building a RegExp from them.
+      const label = i18n.t(`dragontiger:${name}`);
+      const btn = await screen.findByRole('button', { name: (accessibleName) => accessibleName.includes(label) });
+      expect(btn).toHaveAttribute('aria-keyshortcuts', key);
+      expect(btn).toHaveTextContent(key.toUpperCase());
+    }
   });
 });

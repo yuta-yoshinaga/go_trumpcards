@@ -290,24 +290,30 @@ function DragonTigerPageContent() {
                     className={btnWarning}
                     onClick={() => handleBet(DragonTigerBetType.DRAGON)}
                     disabled={loading}
+                    aria-keyshortcuts="d"
                   >
                     {t('button.betDragon')}
+                    <KbdBadge label={t('kbd.betDragon')} />
                   </button>
                   <button
                     type="button"
                     className={btnSuccess}
                     onClick={() => handleBet(DragonTigerBetType.TIGER)}
                     disabled={loading}
+                    aria-keyshortcuts="t"
                   >
                     {t('button.betTiger')}
+                    <KbdBadge label={t('kbd.betTiger')} />
                   </button>
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={() => handleBet(DragonTigerBetType.TIE)}
                     disabled={loading}
+                    aria-keyshortcuts="e"
                   >
                     {t('button.betTie')}
+                    <KbdBadge label={t('kbd.betTie')} />
                   </button>
                 </div>
               </div>

@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { kingApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -74,7 +75,7 @@ describe('KingPage', () => {
     mockExec.mockResolvedValue(selectPhaseState);
     renderWithProviders(<KingPage />);
     await waitFor(() => expect(screen.getByTestId('king-select-prompt')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'ノートリック' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^ノートリック —/ })).toBeInTheDocument();
   });
 
   it('shows achieve/avoid badges on the contract buttons', async () => {
@@ -93,7 +94,7 @@ describe('KingPage', () => {
   it('choosing a non-trump contract dispatches contract with trumpSuit -1', async () => {
     mockExec.mockResolvedValue(selectPhaseState);
     renderWithProviders(<KingPage />);
-    const btn = await screen.findByRole('button', { name: 'ノートリック' });
+    const btn = await screen.findByRole('button', { name: /^ノートリック —/ });
     mockExec.mockClear();
     mockExec.mockResolvedValue(selectPhaseState);
     fireEvent.click(btn);
@@ -103,7 +104,7 @@ describe('KingPage', () => {
   it('choosing King (Trump) shows a trump picker then dispatches the chosen suit', async () => {
     mockExec.mockResolvedValue(selectPhaseState);
     renderWithProviders(<KingPage />);
-    const kingBtn = await screen.findByRole('button', { name: 'キング（切り札）' });
+    const kingBtn = await screen.findByRole('button', { name: /^キング（切り札） —/ });
     fireEvent.click(kingBtn);
     // The trump prompt and suit buttons appear.
     await waitFor(() => expect(screen.getByTestId('king-trump-prompt')).toBeInTheDocument());
@@ -199,5 +200,21 @@ describe('KingPage', () => {
     });
     renderWithProviders(<KingPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
+
+  it('carries the contract type and description into the accessible name', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+    // The badge is aria-hidden, so the same information has to reach the
+    // accessible name or a screen reader hears only the contract's name.
+    const avoid = await screen.findByTestId('king-contract-1');
+    const achieve = await screen.findByTestId('king-contract-6');
+    const descId = avoid.getAttribute('aria-describedby');
+    expect(descId).toBe('king-contract-desc-1');
+    expect(document.getElementById(descId ?? '')).toHaveTextContent(i18n.t('king:contractDesc.1'));
+    expect(avoid).toHaveAccessibleName(new RegExp(i18n.t('king:contractType.avoid')));
+    expect(achieve).toHaveAccessibleName(new RegExp(i18n.t('king:contractType.achieve')));
   });
 });

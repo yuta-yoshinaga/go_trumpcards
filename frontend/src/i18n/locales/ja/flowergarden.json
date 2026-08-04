@@ -1,29 +1,39 @@
 {
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "ファンデーションを2枚目以降まで進めると有効になります",
+  "empty": "空",
+  "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "emptyReserveSlot": "空のリザーブ枠 {{idx}}",
+  "foundation": "組札",
+  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
+  "frontendHint": {
+    "tableau": "フラワーベッド{{col}}",
+    "reserve": "ブーケ{{col}}",
+    "foundation": "組札"
+  },
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "gameOverSummary": "ファウンデーション {{count}}/52 枚（{{percent}}%）まで到達",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "hintAvailable": "ヒントがあります",
+  "hintReason": {
+    "toFoundation": "このカードを組札に上げると後の展開が楽になります",
+    "toTableau": "示唆されたフラワーベッドへの移動でロックされたカードを動かしましょう"
+  },
+  "landscapeBanner": "横画面での表示を推奨します",
+  "moveCount": "手数",
+  "noHint": "ヒントはありません",
   "phase": {
     "playing": "プレイ中",
     "gameClear": "ゲームクリア",
     "gameOver": "ゲームオーバー"
   },
-  "foundation": "組札",
-  "tableau": "フラワーベッド",
-  "reserve": "ブーケ",
-  "moveCount": "手数",
-  "giveup": "ギブアップ",
-  "empty": "空",
-  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
-  "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
-  "landscapeBanner": "横画面での表示を推奨します",
-  "hint": "ヒント",
-  "autoComplete": "自動完成",
-  "autoCompleteNotReady": "ファンデーションを2枚目以降まで進めると有効になります",
-  "undo": "元に戻す",
-  "stalemate": "手詰まりです",
   "playing": "カードを移動してください",
-  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
-  "gameOver": "ゲームオーバー",
-  "gameOverSummary": "ファウンデーション {{count}}/52 枚（{{percent}}%）まで到達",
-  "hintAvailable": "ヒントがあります",
-  "noHint": "ヒントはありません",
+  "reserve": "ブーケ",
+  "reserveCardAriaLabel": "{{card}}（リザーブ枠 {{idx}}）",
+  "stalemate": "手詰まりです",
+  "tableau": "フラワーベッド",
   "tutorial": {
     "foundation": "ブーケの隣に4つの空の組札があります。同じスートでA→Kの順に積み上げます。",
     "reserve": "ブーケには16枚の表向きカードが1枚ずつ置かれます。フラワーベッドや組札へ出せますが、一度出すと二度と戻せません。",
@@ -31,13 +41,5 @@
     "moves": "フラワーベッドへはスートを問わず1つ下のランクのカードに重ねます（1つ上のランクに置く）。空のベッドには任意のカードを置けます。",
     "controls": "ヒント・元に戻す・自動完成などの操作ボタンです。"
   },
-  "frontendHint": {
-    "tableau": "フラワーベッド{{col}}",
-    "reserve": "ブーケ{{col}}",
-    "foundation": "組札"
-  },
-  "hintReason": {
-    "toFoundation": "このカードを組札に上げると後の展開が楽になります",
-    "toTableau": "示唆されたフラワーベッドへの移動でロックされたカードを動かしましょう"
-  }
+  "undo": "元に戻す"
 }
