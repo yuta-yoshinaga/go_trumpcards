@@ -6,6 +6,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertFloor } from './lib/floor.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const SRC_DIR = join(ROOT, 'src');
@@ -90,6 +91,10 @@ if (!rmBlock.includes('*,') || !rmBlock.includes('animation-duration: 0.01ms')) 
   process.exit(1);
 }
 
+// 2020 source files under src/ today. Each sub-guard below floors its own walk: this file
+// holds eight independent checks, and a floor on one of them says nothing about the other
+// seven.
+assertFloor('design-tokens', files.length, 1200, 'source files scanned');
 console.log(`design-tokens: OK (${files.length} source files scanned, test files skipped).`);
 console.log('reduced-motion: OK (index.css uses the universal prefers-reduced-motion block).');
 
@@ -357,6 +362,10 @@ if (labelViolations.length > 0) {
   process.exit(1);
 }
 
+// 48 shared labels today, read out of common.json's kbd.action map. An empty or renamed map
+// means every label lookup misses -- which this guard reports as "resolves" for the zero
+// labels it went on to check.
+assertFloor('kbd-labels', knownLabels.size, 30, 'shared kbd.action labels');
 console.log(`kbd-labels: OK (every ActionBinding label resolves; ${knownLabels.size} shared labels).`);
 
 // --- Mobile shell-height contract (issue #4373) -----------------------------
@@ -509,6 +518,9 @@ if (unmountViolations.length > 0) {
   process.exit(1);
 }
 
+// 225 hooks today. This walk is a plain readdir of src/hooks with a name filter, so a moved
+// directory yields an empty list -- and an empty list has no unguarded writes in it.
+assertFloor('unmount-safety', hookFiles.length, 150, 'hook files');
 console.log(`unmount-safety: OK (${hookFiles.length} hooks; every await -> own-state write is guarded).`);
 
 // --- Vacuous "not called" assertions in tests (issues #4439, #4451) ---------
@@ -535,12 +547,14 @@ async function collectTests(dir) {
   }
   return out;
 }
+let vacuousInspected = 0;
 for (const file of await collectTests(SRC_DIR)) {
   const text = await readFile(file, 'utf8');
   // Only mocks of a game API — a plain `vi.fn()` prop callback IS synchronous and
   // needs no flush, so flagging those would be noise that gets the guard switched off.
   const apiMocks = new Set([...text.matchAll(/const (\w+) = vi\.mocked\((\w+Api)\.\w+\)/g)].map((m) => m[1]));
   if (apiMocks.size === 0) continue;
+  vacuousInspected += 1;
   const lines = text.split('\n');
   for (let i = 0; i < lines.length; i += 1) {
     const m = /^\s*expect\((\w+)\)\.not\.toHaveBeenCalled/.exec(lines[i]);
@@ -574,4 +588,11 @@ if (vacuousViolations.length > 0) {
   process.exit(1);
 }
 
-console.log('vacuous-assertions: OK (every "not called" assertion on an api mock is awaited first).');
+// 361 test files declare an api mock today. This guard is doubly conditional — it skips files
+// with no api mock, then looks only at `not.toHaveBeenCalled` lines inside them — so a change
+// to either the mock-declaration regex or the `collectTests` walk empties the scope without
+// emptying the output. #4451 already found 76 sites a narrower matcher could not see.
+assertFloor('vacuous-assertions', vacuousInspected, 250, 'test files declaring an api mock');
+console.log(
+  `vacuous-assertions: OK (${vacuousInspected} test files with api mocks; every "not called" assertion is awaited first).`,
+);

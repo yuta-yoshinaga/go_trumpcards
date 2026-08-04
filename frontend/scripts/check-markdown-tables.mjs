@@ -24,6 +24,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertFloor } from './lib/floor.mjs';
 
 const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(FRONTEND, '..');
@@ -79,10 +80,10 @@ for await (const file of markdownFiles(REPO)) {
   }
 }
 
-if (tables === 0) {
-  console.error('markdown-tables: found no tables at all — the separator match has drifted.');
-  process.exit(1);
-}
+// 904 tables / 6474 rows today. `=== 0` only catches a walk that broke completely; a SKIP
+// entry that swallowed `docs/` would still leave a few hundred tables and read as a pass.
+assertFloor('markdown-tables', tables, 600, 'tables');
+assertFloor('markdown-tables', rows, 4000, 'table rows');
 
 if (problems.length > 0) {
   console.error('Markdown table rows that do not match their header:\n');

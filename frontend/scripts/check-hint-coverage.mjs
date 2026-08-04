@@ -22,6 +22,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { splitRegistrations, stubbedFactoryNames } from '../src/utils/hintStubs.ts';
+import { assertFloor } from './lib/floor.mjs';
 
 const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(FRONTEND, '..');
@@ -90,17 +91,21 @@ async function hintedGames() {
 }
 
 const games = await registeredGames();
-if (games.size === 0) {
-  console.error(`hint-coverage: found no routes in ${relative(REPO, ROUTES)} — the regex has drifted.`);
-  process.exit(1);
-}
+// 264 routes today. Drift usually narrows the match rather than emptying it, and a run that
+// found 20 routes with 20 factories reports "20 of 20 games hinted" -- a full-coverage line
+// for a fifth of the games.
+assertFloor('hint-coverage', games.size, 200, `routes in ${relative(REPO, ROUTES)}`);
 
 const result = await hintedGames();
-if (result === null || result.names.size === 0) {
+if (result === null) {
   console.error(`hint-coverage: found no factories in ${relative(REPO, HOOK)} — the regex has drifted.`);
   process.exit(1);
 }
 const { names: hinted, stubbed } = result;
+// Same reasoning on the other side of the join: a registration parser that recognises only a
+// few factories reports the rest as MISSING (loud, fine) -- but one that recognises only the
+// games it can also see in the route table reports nothing at all.
+assertFloor('hint-coverage', hinted.size, 200, `factories in ${relative(REPO, HOOK)}`);
 
 const missing = [];
 for (const game of games) {

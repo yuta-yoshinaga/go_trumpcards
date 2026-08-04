@@ -9,6 +9,12 @@
         "hooks": [
           {
             "type": "command",
+            "command": "hook=.claude/hooks/commit-sanity.sh; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
+            "timeout": 15,
+            "statusMessage": "Checking staged content for conflict markers..."
+          },
+          {
+            "type": "command",
             "command": "cmd=$(jq -r '.tool_input.command'); if printf '%s' \"$cmd\" | grep -qE '(^|[^[:alnum:]_-])git[[:space:]]+(add[[:space:]]+(-A|--all|\\.)([[:space:]/]|$)|checkout[[:space:]]+[^[:space:]]+[[:space:]]+--[[:space:]]+\\.([[:space:]]|$))'; then printf '%s' '{\"continue\": false, \"stopReason\": \"Blocked: do not use git add -A / git add . / git checkout <ref> -- . in this worktree. It has local-only files (node_modules, vendored .claude/skills, casino/classic/solo TinyGo build dirs, public/sounds) that must never be staged. Stage specific paths instead, e.g. git add path/to/file.\"}'; else echo '{}'; fi",
             "timeout": 5,
             "statusMessage": "Guarding against bulk git add..."
@@ -21,9 +27,9 @@
           },
           {
             "type": "command",
-            "command": "jq -r '.tool_input.command' | { read -r cmd; case \"$cmd\" in git\\ commit*) if git diff --cached --name-only | grep -qE '\\.(ts|tsx)$'; then cd frontend && output=$(bun run check 2>&1); if echo \"$output\" | grep -q 'Found'; then printf '{\"continue\": false, \"stopReason\": \"biome check failed:\\n%s\"}' \"$(echo \"$output\" | head -30)\"; else echo '{}'; fi; else echo '{}'; fi ;; *) echo '{}' ;; esac; }",
+            "command": "jq -r '.tool_input.command' | { read -r cmd; case \"$cmd\" in git\\ commit*) if git diff --cached --name-only | grep -qE '\\.(ts|tsx|mjs)$'; then cd frontend && output=$(bun run check 2>&1); if [ $? -ne 0 ]; then jq -nc --arg msg \"$(printf '%s' \"$output\" | tail -30)\" '{continue: false, stopReason: (\"bun run check failed (biome + the guard scripts):\\n\" + $msg)}'; else echo '{}'; fi; else echo '{}'; fi ;; *) echo '{}' ;; esac; }",
             "timeout": 60,
-            "statusMessage": "Running biome check..."
+            "statusMessage": "Running biome check + guard floors..."
           },
           {
             "type": "command",

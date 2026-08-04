@@ -35,6 +35,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertFloor } from './lib/floor.mjs';
 
 const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(FRONTEND, '..');
@@ -134,10 +135,11 @@ for (const game of await passthroughGames()) {
   }
 }
 
-if (checkedGames === 0) {
-  console.error('hint-reasons: matched no games — the reason-passthrough pattern in the adapters has drifted.');
-  process.exit(1);
-}
+// 49 games / 502 lookups today. The passthrough pattern is matched by regex against the hint
+// adapters, so drift trims the set rather than emptying it -- and a run down to three games
+// still prints an OK line, just a smaller one.
+assertFloor('hint-reasons', checkedGames, 30, 'games with passthrough hint reasons');
+assertFloor('hint-reasons', checkedKeys, 300, 'reason lookups');
 
 if (problems.length > 0) {
   console.error('Hint reason keys with no translation:\n');

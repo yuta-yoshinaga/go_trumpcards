@@ -34,3 +34,6 @@ TODOS.md
 # gstack (team mode — installed globally, not vendored)
 .claude/skills/gstack/
 public/sounds/
+
+# Local-only observation ledger (flake-ledger skill); confirmed flakes go to a GitHub issue
+.claude/.flake-ledger.jsonl

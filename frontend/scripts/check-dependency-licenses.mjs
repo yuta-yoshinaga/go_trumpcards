@@ -17,6 +17,7 @@
 
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { assertFloor } from './lib/floor.mjs';
 
 /** Root of the installed dependency tree. */
 const NODE_MODULES = new URL('../node_modules', import.meta.url).pathname;
@@ -165,13 +166,7 @@ for (const dir of packageDirs(NODE_MODULES)) {
   }
 }
 
-if (scanned < MIN_PACKAGES) {
-  console.error(
-    `check-dependency-licenses: only ${scanned} packages inspected (expected >= ${MIN_PACKAGES}).\n` +
-      'The scan is broken, not the tree clean. Run `bun install` and re-run.',
-  );
-  process.exit(1);
-}
+assertFloor('dependency-licenses', scanned, MIN_PACKAGES, 'packages inspected (run `bun install` first)');
 
 if (blocked.length > 0) {
   console.error(

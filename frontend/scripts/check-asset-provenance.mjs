@@ -16,6 +16,7 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { assertFloor } from './lib/floor.mjs';
 
 /** Repository root — this file lives at frontend/scripts/. */
 const REPO_ROOT = new URL('../../', import.meta.url).pathname;
@@ -56,13 +57,7 @@ const declared = new Set(
     .flatMap((line) => expand(line.split('|')[0].trim())),
 );
 
-if (declared.size < MIN_FILES) {
-  console.error(
-    `check-asset-provenance: manifest declares only ${declared.size} files (expected >= ${MIN_FILES}).\n` +
-      'The manifest or its range syntax is broken, not the directory empty.',
-  );
-  process.exit(1);
-}
+assertFloor('asset-provenance', declared.size, MIN_FILES, 'files declared in the manifest');
 
 const present = new Set(readdirSync(IMAGES_DIR));
 
