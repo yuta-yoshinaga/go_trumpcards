@@ -210,7 +210,7 @@ describe('BisleyPage', () => {
   it('selecting a tableau card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BisleyPage />);
-    const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
+    const sourceBtn = await screen.findByRole('button', { name: /^♠ 5（/ });
     fireEvent.click(sourceBtn);
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
@@ -218,7 +218,7 @@ describe('BisleyPage', () => {
   it('sends the descending zone when a King foundation is chosen as target', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BisleyPage />);
-    const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
+    const sourceBtn = await screen.findByRole('button', { name: /^♠ 5（/ });
     fireEvent.click(sourceBtn);
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
@@ -226,6 +226,16 @@ describe('BisleyPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'king', col: 0 }),
     );
+  });
+
+  it('names each tableau card with its position for screen readers', async () => {
+    // Earlier tests in this file queue one-shot resolutions and can leave CLI
+    // mode persisted in localStorage; reset both so the board actually renders.
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BisleyPage />);
+    await waitFor(() => expect(screen.getAllByLabelText(/列\d+・上から\d+枚目/).length).toBeGreaterThan(0));
   });
 });
 

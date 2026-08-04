@@ -128,7 +128,7 @@ describe('GrandfathersClockPage', () => {
   it('sends the face index with the move', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<GrandfathersClockPage />);
-    const source = await screen.findByRole('button', { name: '♠ 6' });
+    const source = await screen.findByRole('button', { name: /^♠ 6（/ });
     fireEvent.click(source);
     await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
@@ -234,6 +234,16 @@ describe('GrandfathersClockPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
     await waitFor(() => expect(screen.queryByText('#0')).not.toBeInTheDocument());
+  });
+
+  it('names each tableau card with its position for screen readers', async () => {
+    // Earlier tests in this file queue one-shot resolutions and can leave CLI
+    // mode persisted in localStorage; reset both so the board actually renders.
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<GrandfathersClockPage />);
+    await waitFor(() => expect(screen.getAllByLabelText(/列\d+・上から\d+枚目/).length).toBeGreaterThan(0));
   });
 });
 

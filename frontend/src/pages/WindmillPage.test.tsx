@@ -112,7 +112,7 @@ describe('WindmillPage', () => {
   it('sends a sail card to the centre', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<WindmillPage />);
-    const sail = await screen.findByRole('button', { name: '♠ 9' });
+    const sail = await screen.findByRole('button', { name: /: ♠ 9$/ });
     fireEvent.click(sail);
     await waitFor(() => expect(sail).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
@@ -124,7 +124,7 @@ describe('WindmillPage', () => {
   it('sends a sail card to an unopened corner', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<WindmillPage />);
-    const sail = await screen.findByRole('button', { name: '♥ 4' });
+    const sail = await screen.findByRole('button', { name: /: ♥ 4$/ });
     fireEvent.click(sail);
     await waitFor(() => expect(sail).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
@@ -202,8 +202,8 @@ describe('WindmillPage', () => {
       await waitFor(() => expect(screen.getByRole('button', { name: cornerName })).toBeInTheDocument());
 
       // 帆の札を選ぶと、四隅は「置き先」になるので再び押せる。
-      // 帆のボタンは札そのものの名前で引ける (aria-label = cardAlt)。
-      fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
+      // 帆のボタンの aria-label は sailAriaLabel ("帆 N: <札>") なので、札名は末尾に来る。
+      fireEvent.click(screen.getByRole('button', { name: /: ♠ 9$/ }));
 
       await waitFor(() => expect(screen.getByRole('button', { name: cornerName })).toBeEnabled());
     });
@@ -300,6 +300,16 @@ describe('WindmillPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
     await waitFor(() => expect(screen.queryByText('#0')).not.toBeInTheDocument());
+  });
+
+  it('names each sail card with its position for screen readers', async () => {
+    // Earlier tests in this file queue one-shot resolutions and can leave CLI
+    // mode persisted in localStorage; reset both so the board actually renders.
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<WindmillPage />);
+    await waitFor(() => expect(screen.getAllByLabelText(/帆 \d+: /).length).toBeGreaterThan(0));
   });
 });
 
