@@ -6,7 +6,7 @@
 
 **このゲームの肝は「レベル札」です。**その局のレベルと同じランクの札は、**A より強く、黒ジョーカーより弱い**位置に割り込みます。さらにその中の **♥ の 2 枚はワイルド**で、ジョーカー以外の任意の札の代わりになります。
 
-出典: [pagat.com: Guandan](https://www.pagat.com/climbing/guandan.html)
+出典: [pagat.com: Guandan](https://www.pagat.com/climbing/guan_dan.html)
 
 ## 起動方法
 

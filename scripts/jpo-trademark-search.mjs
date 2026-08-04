@@ -19,6 +19,11 @@
  *   2. **Spaces mean OR, not phrase.** J-PlatPat's own note says so, and
  *      `LET IT RIDE` duly returned every mark containing LET, IT or RIDE.
  *      Pass multi-word marks with the spaces removed: `LETITRIDE`.
+ *   3. **Decompose accents; do not drop them.** Building a `--file` list with
+ *      `replace(/[^A-Za-z0-9]/g, '')` silently mangles names: `Écarté` became
+ *      `CART`, `Mariáš` became `MARI`, and `Prší` became `PR`, which was then
+ *      short enough to be skipped entirely. Normalise with NFD and strip the
+ *      combining marks (é→E, š→S, ą→A) so the query is still the name.
  *
  * J-PlatPat is a single-page app with no public API, so this drives a real
  * browser using the Playwright already installed for the E2E suite.
