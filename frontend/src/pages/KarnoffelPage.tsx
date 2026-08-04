@@ -117,6 +117,9 @@ function KarnoffelPageContent() {
     return <GameSkeleton gameKey="karnoffel" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const human = state.players.find((p) => p.isHuman);
+  // Hoisted so a seat-less state exercises the empty case rather than leaving it
+  // as an unreachable fallback inside the hand render.
+  const humanCards = human?.cards ?? [];
   const isPlay = state.phase === KarnoffelPhase.PLAY;
   const isHandEnd = state.phase === KarnoffelPhase.HAND_END;
   const isGameEnd = state.phase === KarnoffelPhase.GAME_END || state.gameEndFlag;
@@ -264,7 +267,7 @@ function KarnoffelPageContent() {
             <div className="mb-2" data-tutorial="karnoffel-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex flex-wrap gap-1">
-                {(human?.cards ?? []).map((c, i) => {
+                {humanCards.map((c, i) => {
                   // The ladder text names the titled cards, but which card in hand
                   // holds a title depends on the suit chosen this deal (#4773).
                   const rankKey = karnoffelRankKey(c, state.chosenSuit);
