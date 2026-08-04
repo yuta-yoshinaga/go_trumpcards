@@ -251,7 +251,7 @@ describe('DoudizhuPage', () => {
           isFinished: false,
           isLandlord: false,
           cardCount: 1,
-          cards: [{ design: 'SPADE', value: 5 }],
+          cards: [{ design: 'SPADE', value: 2 }],
         },
         { id: 1, isHuman: false, isFinished: false, isLandlord: true, cardCount: 17, cards: [] },
         { id: 2, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
@@ -261,9 +261,9 @@ describe('DoudizhuPage', () => {
 
     const playButton = await screen.findByRole('button', { name: '出す' });
     // Select then deselect — play returns to disabled (toggleCard delete branch).
-    fireEvent.click(screen.getByAltText('♠ 5'));
+    fireEvent.click(screen.getByAltText('♠ 2'));
     expect(playButton).toBeEnabled();
-    fireEvent.click(screen.getByAltText('♠ 5'));
+    fireEvent.click(screen.getByAltText('♠ 2'));
     expect(playButton).toBeDisabled();
 
     // Pass is available because the table is non-empty.
@@ -432,5 +432,30 @@ describe('DoudizhuPage', () => {
       expect(screen.getAllByText(/Unknown command/).length).toBeGreaterThan(0);
     });
     expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('blocks Play while the selection is already known to be illegal', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      players: [
+        {
+          ...defaultState.players[0],
+          cards: [
+            { design: 'SPADE', value: 3 },
+            { design: 'HEART', value: 7 },
+          ],
+        },
+        ...defaultState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<DoudizhuPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '♠ 3' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 7' }));
+    // The page already tells the player this is not a combo.
+    await waitFor(() => expect(screen.getByTestId('ddz-invalid-combo')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
   });
 });

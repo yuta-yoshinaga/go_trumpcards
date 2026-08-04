@@ -247,4 +247,15 @@ describe('PageOnePage', () => {
     );
     expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
   });
+
+  it('rings the cards that may be played on the discard top', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PageOnePage />);
+    await waitFor(() => expect(document.querySelectorAll('[data-playable]').length).toBeGreaterThan(0));
+    // Only matching cards, never the whole hand.
+    const hand = playPhaseState.players.find((p) => p.isHuman)?.cards ?? [];
+    expect(document.querySelectorAll('[data-playable]').length).toBeLessThan(hand.length);
+  });
 });
