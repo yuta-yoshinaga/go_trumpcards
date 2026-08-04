@@ -435,4 +435,11 @@ describe('BlackJackSwitchPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalled());
     expect(screen.queryByTestId('dealer-area')).not.toBeInTheDocument();
   });
+
+  it('renders the i18n skeleton instead of a hardcoded Loading label before state loads', () => {
+    mockApi.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<BlackJackSwitchPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+  });
 });

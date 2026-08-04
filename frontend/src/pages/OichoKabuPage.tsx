@@ -13,6 +13,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -116,13 +117,7 @@ function OichoKabuPageContent() {
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
-  if (!state) {
-    return (
-      <div className={`flex-1 flex items-center justify-center ${gameTheme.oichokabu.bg}`}>
-        <div className="text-ds-text-primary">Loading...</div>
-      </div>
-    );
-  }
+  if (!state) return <GameSkeleton gameKey="oichokabu" layout={{ kind: 'casino-table', sections: [3, 3] }} />;
 
   const phaseName = isBetPhase ? t('phase.bet') : isDrawPhase ? t('phase.draw') : t('phase.end');
 

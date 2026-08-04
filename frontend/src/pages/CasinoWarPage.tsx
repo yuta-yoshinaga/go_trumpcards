@@ -14,6 +14,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { RoadmapTrendBar } from '../components/RoadmapTrendBar';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -128,13 +129,7 @@ function CasinoWarPageContent() {
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
-  if (!state) {
-    return (
-      <div className={`flex-1 flex items-center justify-center ${gameTheme.casinowar.bg}`}>
-        <div className="text-ds-text-primary">Loading...</div>
-      </div>
-    );
-  }
+  if (!state) return <GameSkeleton gameKey="casinowar" layout={{ kind: 'casino-table', sections: [1, 1] }} />;
 
   const phaseName = isBetPhase
     ? t('phase.bet')

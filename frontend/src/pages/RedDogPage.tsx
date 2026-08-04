@@ -12,6 +12,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -90,13 +91,7 @@ function RedDogPageContent() {
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
-  if (!state) {
-    return (
-      <div className={`flex-1 flex items-center justify-center ${gameTheme.reddog.bg}`}>
-        <div className="text-ds-text-primary">Loading...</div>
-      </div>
-    );
-  }
+  if (!state) return <GameSkeleton gameKey="reddog" layout={{ kind: 'casino-table', sections: [3] }} />;
 
   const handleBet = () => execApi('bet', betAmount);
   const handleRaise = () => execApi('raise', Math.min(raiseAmount, state.ante, state.chips));

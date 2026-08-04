@@ -349,4 +349,11 @@ describe('CasinoWarPage', () => {
     expect(screen.getAllByTestId('cw-history-pip')).toHaveLength(3);
     expect(screen.getByTestId('cw-tally')).toHaveTextContent('2勝 1敗 0分');
   });
+
+  it('renders the i18n skeleton instead of a hardcoded Loading label before state loads', () => {
+    mockApi.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<CasinoWarPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+  });
 });

@@ -174,6 +174,13 @@ describe('RedDogPage', () => {
     const hitChip = screen.getByTestId('reddog-ghost-7');
     expect(hitChip.className).toContain('bg-ds-success');
   });
+
+  it('renders the i18n skeleton instead of a hardcoded Loading label before state loads', () => {
+    mockApi.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<RedDogPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+  });
 });
 
 // --- keyboard shortcut execution (#4429) ---
