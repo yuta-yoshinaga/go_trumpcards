@@ -325,7 +325,7 @@ function PageOnePageContent() {
                 {humanPlayer.cards.map((card, idx) => {
                   // The CUI lists the legal indices every turn; the web player had
                   // to compare each card against the discard top by eye (#4744).
-                  const playable = isHumanTurn && isPageOnePlayable(card, state.discardTop ?? null);
+                  const playable = isHumanTurn && isPageOnePlayable(card, state.discardTop);
                   return (
                     <button
                       type="button"

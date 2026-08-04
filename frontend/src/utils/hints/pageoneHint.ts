@@ -57,6 +57,9 @@ export function getPageOneHint(state: PageOneResponse): HintResult | null {
  * @returns Whether the card may be played.
  */
 export function isPageOnePlayable(card: Card, top: Card | null): boolean {
-  if (!top) return false;
+  // An empty discard accepts anything, matching PageOne.isValidPlay. Start()
+  // always seeds the pile so this cannot happen in a live game, but the two
+  // implementations are now compared directly and must not disagree.
+  if (!top) return true;
   return card.design === top.design || card.value === top.value;
 }
