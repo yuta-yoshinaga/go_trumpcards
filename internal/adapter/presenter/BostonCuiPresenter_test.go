@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -79,6 +80,8 @@ func TestBostonCuiPresenter_LadderTagsExposedAndPartnerLevels(t *testing.T) {
 	// 素のミゼールにはどちらも付かない。
 	assert.Contains(t, out, "3:リトル・ミゼール <")
 	assert.Contains(t, out, "7:グランド・ミゼール <")
+	// 最上段のシュレム（公開）も晒す側。
+	assert.Contains(t, out, "15:シュレム（公開）[公開]")
 	// 既存の区切り記号とレベル番号の形式は変えない (受け入れ条件3)。
 	assert.Contains(t, out, " < ")
 }
@@ -92,8 +95,11 @@ func TestBostonLadderTags_TranslatedAndDistinctFromTheSeatMarker(t *testing.T) {
 		for _, key := range []string{"boston.ladderExposedTag", "boston.ladderPartnerTag"} {
 			assert.NotEqual(t, key, i18n.T(key), "%s missing from %s", key, lang)
 		}
-		assert.NotEqual(t, i18n.T("boston.partnerTag"), i18n.T("boston.ladderPartnerTag"),
-			"the seat marker and the ladder tag must not share a key (%s)", lang)
+		// **大文字小文字だけの違いにしない。**CUI 出力を貼られたときに
+		// 席マーカーと見分けが付かなくなる。
+		assert.NotEqual(t, strings.ToLower(i18n.T("boston.partnerTag")),
+			strings.ToLower(i18n.T("boston.ladderPartnerTag")),
+			"the seat marker and the ladder tag must read differently (%s)", lang)
 	}
 }
 

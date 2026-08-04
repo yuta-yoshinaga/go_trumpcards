@@ -17,7 +17,7 @@
   "playable": "Playable: {{indexes}}",
   "ladderTitle": "Ladder:",
   "ladderExposedTag": "[exposed]",
-  "ladderPartnerTag": "[partner]",
+  "ladderPartnerTag": "[can call partner]",
   "gameEnd": "Game over! {{name}} wins!",
   "promptBid": "Bid: {{name}}",
   "promptBidHelp": "b <step> [suit] ... bid (the miseres sit BETWEEN the trick bids) / ps ... pass",
