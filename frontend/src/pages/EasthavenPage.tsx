@@ -471,7 +471,17 @@ function EasthavenPageContent() {
                             >
                               {tcard.faceUp ? (
                                 (() => {
-                                  const inHoverBlock = hoveredBlock?.col === colIdx && cardIdx >= hoveredBlock.cardIdx;
+                                  // Touch has no hover, so the preview also follows the
+                                  // selection: tapping a card shows the block that would
+                                  // move, and it clears with the selection rather than
+                                  // sticking around after the finger leaves (#4815).
+                                  const selectedBlockStart =
+                                    selectedSource?.zone === 'tableau' && selectedSource.col === colIdx
+                                      ? (selectedSource.cardIndex ?? null)
+                                      : null;
+                                  const inHoverBlock =
+                                    (hoveredBlock?.col === colIdx && cardIdx >= hoveredBlock.cardIdx) ||
+                                    (selectedBlockStart !== null && cardIdx >= selectedBlockStart);
                                   return (
                                     <button
                                       type="button"

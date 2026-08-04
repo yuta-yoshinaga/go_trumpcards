@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import type { hachihachiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -13,6 +14,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -26,6 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { HACHIHACHI_HELP, parseHachiHachiCommand } from '../utils/cli/commands/hachihachiCommands';
 import { formatHachiHachiState } from '../utils/cli/formatters/hachihachiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hachiHachiAction, hachiHachiPendingCandidates } from '../utils/hachihachiKeyboard';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Hachi-Hachi (八八) tutorial step definitions. */
@@ -92,6 +95,42 @@ function HachiHachiPageContent() {
   );
   const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
+  // Hooks must precede the early return, so these derive defensively from a
+  // possibly-null state. Click handlers below reuse them, keeping the click and
+  // keyboard paths on one implementation.
+  const human = state?.players.find((p) => p.isHuman) ?? null;
+  // `selecting` drives the UI; input additionally requires that no call is in flight.
+  const selecting = !!state && state.phase === HachiHachiPhase.PLAY && state.isHumanTurn && !state.gameEndFlag;
+  const canAct = selecting && !loading;
+  const captureOptions = selecting && state ? state.captureOptions : {};
+  const candidates = hachiHachiPendingCandidates(captureOptions, handIndex);
+  const needsFieldPick = candidates.length > 1;
+  const candidateSet = new Set(candidates);
+
+  /**
+   * Activates hand or field index `idx`. Which row it addresses is decided by
+   * {@link hachiHachiAction}, so clicks and digit keys cannot diverge (#4856).
+   */
+  const activate = (idx: number) => {
+    if (!canAct) return;
+    const action = hachiHachiAction(captureOptions, handIndex, idx);
+    if (action.kind === 'select') selectHand(action.handIndex);
+    if (action.kind === 'play') playCard(action.handIndex, action.fieldIndex);
+  };
+
+  // Selection was mouse-only, leaving both the hand and the field-pick step
+  // unreachable from the keyboard (#4856).
+  useCardKeyboardNav({
+    cardCount: needsFieldPick ? (state?.fieldCards.length ?? 0) : (human?.cards.length ?? 0),
+    onToggle: activate,
+    // Digits play directly, so there is nothing to confirm.
+    onConfirm: () => undefined,
+    onClear: () => {
+      if (handIndex !== null) selectHand(handIndex);
+    },
+    enabled: canAct,
+  });
+
   if (!state) {
     return (
       <div
@@ -103,7 +142,6 @@ function HachiHachiPageContent() {
     );
   }
 
-  const human = state.players.find((p) => p.isHuman) ?? state.players[0] ?? null;
   const opponents = state.players.filter((p) => !p.isHuman);
 
   const isPlayPhase = state.phase === HachiHachiPhase.PLAY;
@@ -112,11 +150,6 @@ function HachiHachiPageContent() {
   const isHumanTurn = state.isHumanTurn && !isGameEnd;
   const humanWon = isGameEnd && state.winner === (human?.id ?? 0);
   const phaseName = isGameEnd ? t('phase.gameEnd') : isRoundEnd ? t('phase.roundEnd') : t('phase.play');
-
-  // Field indices the currently-selected hand card can capture (backend hint).
-  const candidates = handIndex !== null && isPlayPhase && isHumanTurn ? (state.captureOptions[handIndex] ?? []) : [];
-  const needsFieldPick = candidates.length > 1;
-  const candidateSet = new Set(candidates);
 
   /** Localizes a yaku key, falling back to the raw key. */
   const yakuName = (key: string): string => t(`yaku.${key}`, { defaultValue: key });
@@ -128,25 +161,9 @@ function HachiHachiPageContent() {
   /** Seat label for a player: "You" for the human, otherwise "CPU N". */
   const seatName = (p: (typeof state.players)[number]): string => (p.isHuman ? t('you') : t('cpu', { n: p.id }));
 
-  /** Handles clicking a hand card: selects it, or plays immediately when no field choice is needed. */
-  const onHandClick = (idx: number) => {
-    if (!isPlayPhase || !isHumanTurn) return;
-    const opts = state.captureOptions[idx] ?? [];
-    if (opts.length > 1) {
-      // Two-way match: require the player to pick a field card next.
-      selectHand(idx);
-    } else {
-      // Zero or single match: play right away (backend resolves the capture).
-      playCard(idx);
-    }
-  };
-
-  /** Handles clicking a field card during a two-way-match pick. */
-  const onFieldClick = (fieldIdx: number) => {
-    if (!needsFieldPick || handIndex === null) return;
-    if (!candidateSet.has(fieldIdx)) return;
-    playCard(handIndex, fieldIdx);
-  };
+  /** Handles clicking a hand or field card. Shares `activate` with the keyboard path. */
+  const onHandClick = activate;
+  const onFieldClick = activate;
 
   const playerLine = (p: (typeof state.players)[number]) =>
     `${seatName(p)} — ${t('captured', { count: p.capturedCount })} · ${t('rawScore', { raw: p.rawScore })} · ${t('score', { score: p.score })}${
@@ -396,6 +413,14 @@ function HachiHachiPageContent() {
                 dataTutorial="hachihachi-reset-button"
               />
             </div>
+            {/* Digits address the hand, or the field row while a two-way match is
+                pending. `directPlay` drops the Enter hint (nothing to confirm), but
+                Escape does cancel a pending pick, so it is listed explicitly. */}
+            <CardNavShortcutsPanel
+              directPlay
+              extra={[{ keys: ['Esc'], description: t('cancelFieldPick') }]}
+              data-testid="hachihachi-kbd-shortcuts"
+            />
           </GameFooter>
         </>
       )}
