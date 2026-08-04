@@ -363,6 +363,11 @@ function BakersGamePageContent() {
 
             {/* Tableau */}
             <div className="relative">
+              {/* The same-suit restriction is this game's whole point of difference
+                  from Free Cell, and it was only ever stated in the tutorial (#4816). */}
+              <div className="mb-0.5 text-center text-xs text-ds-text-muted" data-testid="bg-tableau-rule">
+                {t('tableauRule')}
+              </div>
               <div className="flex gap-0.5 sm:gap-2 mb-3" data-tutorial="fc-tableau">
                 {state.tableau.map((col: (Card | null)[], colIdx: number) => {
                   const tableauColZone: FreeCellMoveZone = { zone: 'tableau', col: colIdx };
