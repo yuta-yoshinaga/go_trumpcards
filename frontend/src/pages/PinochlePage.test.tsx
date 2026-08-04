@@ -559,4 +559,13 @@ describe('PinochlePage', () => {
     );
     expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
   });
+
+  it('marks whose turn it is in the players grid', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // Bidding jumps between seats, which is where the grid was least helpful.
+    mockExec.mockResolvedValue({ ...bidPhaseState, bidPlayerIdx: 2 });
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(document.querySelectorAll('[data-on-turn]')).toHaveLength(1));
+  });
 });

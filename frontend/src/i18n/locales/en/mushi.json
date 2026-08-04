@@ -26,5 +26,6 @@
   "tutorial.match": "Click a hand card to play it. With no match it goes to the field, and then one card is turned from the stock.",
   "tutorial.wild": "The willow lightning card, marked ★, is wild: it takes any card that is not a willow. Holding it until a bright appears is the standard play.",
   "tutorial.captured": "Captures are public for both sides. Watch what your opponent is collecting before you hand over a card.",
-  "tutorial.controls": "The round settles once the hands are empty. There is no koi-koi style stop decision."
+  "tutorial.controls": "The round settles once the hands are empty. There is no koi-koi style stop decision.",
+  "wildRule": "The ★ lightning card is wild — it takes any field card EXCEPT a willow"
 }

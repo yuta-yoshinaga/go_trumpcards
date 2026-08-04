@@ -296,17 +296,26 @@ function PinochlePageContent() {
 
             {/* Players Info */}
             <div className="grid grid-cols-2 gap-2 mb-3" data-tutorial="pn-player-info">
-              {state.players?.map((p) => (
-                <div
-                  key={p.id}
-                  className={`rounded p-2 text-sm ${p.isHuman ? 'bg-ds-accent/20 text-ds-accent' : 'bg-black/30 text-ds-text-muted'}`}
-                >
-                  <div className="font-bold">{playerName(p.id, p.isHuman)}</div>
-                  <div>
-                    {t('team')} {p.team} | {t('bid')}: {p.bid} | {t('meldScore')}: {p.meldScore} | T: {p.trickCount}
+              {state.players?.map((p) => {
+                // Bidding jumps between four seats and the grid never moved, so the
+                // only cue was the message line (#4863).
+                const onTurn =
+                  phase === PinochlePhase.BID ? p.id === state.bidPlayerIdx : p.id === state.currentPlayerIdx;
+                return (
+                  <div
+                    key={p.id}
+                    data-on-turn={onTurn || undefined}
+                    className={`rounded p-2 text-sm ${p.isHuman ? 'bg-ds-accent/20 text-ds-accent' : 'bg-black/30 text-ds-text-muted'} ${
+                      onTurn ? 'ring-2 ring-ds-warning' : ''
+                    }`}
+                  >
+                    <div className="font-bold">{playerName(p.id, p.isHuman)}</div>
+                    <div>
+                      {t('team')} {p.team} | {t('bid')}: {p.bid} | {t('meldScore')}: {p.meldScore} | T: {p.trickCount}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Current Trick */}

@@ -861,4 +861,15 @@ describe('MightyPage', () => {
     renderWithProviders(<MightyPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  it('rings the hinted card instead of only printing its index', async () => {
+    localStorage.clear();
+    mockCall.mockReset();
+    mockCall.mockResolvedValue(playPhaseState);
+    renderWithProviders(<MightyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockCall.mockResolvedValue({ ...playPhaseState, hint: { cardIndex: 1, reason: 'followSuit' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(document.querySelectorAll('[data-hinted]').length).toBeGreaterThan(0));
+  });
 });
