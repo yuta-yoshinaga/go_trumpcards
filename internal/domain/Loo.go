@@ -488,7 +488,7 @@ func (g *Loo) ScoreRound() {
 		g.pot = 0
 	default:
 		// 参加者でトリックに応じてポットを分配 (1 トリック = ポット/トリック数)。
-		share := potStart / LooTrickCount
+		share := LooPerTrickShare(potStart)
 		distributed := 0
 		for _, idx := range active {
 			win := g.roundTricks[idx] * share
@@ -905,6 +905,24 @@ func (g *Loo) SetPot(v int) { g.pot = v }
 
 // GetPotStart は現ディール開始時のポット額を返す。
 func (g *Loo) GetPotStart() int { return g.potStart }
+
+// LooPerTrickShare は 1 トリックあたりの取り分を返す。
+//
+// **端数はポットに残る。**5 で割り切れないディールでは、全トリック取っても
+// ポット全額は入らない (37 なら 7×5 = 35)。表示側もこの関数を通すこと —
+// 別に割ると、表示より少ない額しか入らない案内になる (#4921)。
+func LooPerTrickShare(potStart int) int {
+	if potStart <= 0 {
+		return 0
+	}
+	return potStart / LooTrickCount
+}
+
+// LooMaxWin は全トリック取ったときに実際に入る額を返す。
+func LooMaxWin(potStart int) int { return LooPerTrickShare(potStart) * LooTrickCount }
+
+// SetPotStart は現ディール開始時のポット額を設定する (テスト用)。
+func (g *Loo) SetPotStart(v int) { g.potStart = v }
 
 // GetRoundTricks は現ディールの獲得トリック数を返す。
 func (g *Loo) GetRoundTricks() [LooPlayerCnt]int { return g.roundTricks }

@@ -9,6 +9,7 @@
   "playing": "Play",
   "passed": "Pass",
   "promptDecide": "{{name}}'s decision (play/pass, or d 1 / d 0)",
+  "potRisk": "If you play: win up to +{{pot}} (+{{perTrick}} per trick); take no trick and you pay {{penalty}} into the pot (looed)",
   "promptPlay": "Turn: {{name}}",
   "promptTrickEnd": "Trick complete.",
   "promptRoundEnd": "Deal complete. Use nr to settle and start the next deal.",

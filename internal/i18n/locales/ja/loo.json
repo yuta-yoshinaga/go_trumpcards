@@ -9,6 +9,7 @@
   "playing": "参加",
   "passed": "降り",
   "promptDecide": "{{name}} の判断です（play/pass、または d 1 / d 0）",
+  "potRisk": "参加した場合: 勝てば最大 +{{pot}}（1トリックにつき +{{perTrick}}）／0トリックなら -{{penalty}} をポットへ支払い（looed）",
   "promptPlay": "手番: {{name}}",
   "promptTrickEnd": "トリック終了。",
   "promptRoundEnd": "ディール終了。nr で精算・次のディールへ。",
