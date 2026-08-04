@@ -27,7 +27,7 @@ import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/butt
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { BurracoResponse } from '../types/card';
+import type { BurracoResponse, Card } from '../types/card';
 import { BurracoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import {
@@ -36,6 +36,7 @@ import {
   saveBurracoSortMode,
   sortedBurracoHand,
 } from '../utils/burracoSort';
+import { canastaDrawDiscardProblem } from '../utils/canastaDrawDiscard';
 import { cardAlt } from '../utils/cardAlt';
 import { BURRACO_HELP, parseBurracoCommand } from '../utils/cli/commands/burracoCommands';
 import { formatBurracoState } from '../utils/cli/formatters/burracoFormatter';
@@ -127,17 +128,24 @@ function BurracoPageContent() {
   const isRoundEnd = state?.phase === BurracoPhase.ROUND_END;
   const isGameEnd = state?.phase === BurracoPhase.GAME_END || !!state?.gameEndFlag;
 
+  // Burraco runs on the Canasta domain (`BurracoGame = CanastaGame`), so the same
+  // pair rules apply and the same count-only check was letting rejected
+  // selections look ready.
+  const drawDiscardProblem = useMemo(() => {
+    if (!isDrawPhase || !humanPlayer) return null;
+    const selected = selectedCardIndices
+      .map((i) => humanPlayer.cards[i])
+      .filter((card): card is Card => card !== undefined);
+    return canastaDrawDiscardProblem(selected, state?.discardTop);
+  }, [isDrawPhase, humanPlayer, selectedCardIndices, state?.discardTop]);
+
   const drawDiscardReason = useMemo(() => {
     if (!isDrawPhase) return '';
-    const n = selectedCardIndices.length;
-    if (n > 2) return t('drawDiscardReason.tooMany');
-    if (n === 2) return '';
-    // Frozen takes priority while the player is still picking — the wildcard restriction
-    // is the load-bearing rule players forget; surface it whether they've picked 0 or 1 cards.
-    if (state?.isFrozen) return t('drawDiscardReason.frozen');
-    if (n === 1) return t('drawDiscardReason.selectOneMore');
-    return t('drawDiscardReason.selectTwo');
-  }, [isDrawPhase, selectedCardIndices.length, state?.isFrozen, t]);
+    if (state?.isFrozen && (drawDiscardProblem === 'selectTwo' || drawDiscardProblem === 'selectOneMore')) {
+      return t('drawDiscardReason.frozen');
+    }
+    return drawDiscardProblem === null ? '' : t(`drawDiscardReason.${drawDiscardProblem}`);
+  }, [isDrawPhase, state?.isFrozen, drawDiscardProblem, t]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -519,7 +527,7 @@ function BurracoPageContent() {
                       type="button"
                       className={btnPrimary}
                       onClick={handleDrawDiscard}
-                      disabled={loading || selectedCardIndices.length !== 2}
+                      disabled={loading || drawDiscardProblem !== null}
                       title={drawDiscardReason || undefined}
                       aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
                     >
