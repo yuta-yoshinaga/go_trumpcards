@@ -226,6 +226,13 @@ describe('TrenteEtQuarantePage', () => {
     renderWithProviders(<TrenteEtQuarantePage />);
     await waitFor(() => expect(screen.queryByTestId('teq-deal-button')).not.toBeInTheDocument());
   });
+
+  it('renders the i18n skeleton instead of a hardcoded Loading label before state loads', () => {
+    mockApi.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<TrenteEtQuarantePage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+  });
 });
 
 // --- keyboard shortcut execution (#4429) ---
@@ -286,12 +293,5 @@ describe('TrenteEtQuarantePage keyboard shortcuts', () => {
     fireEvent.keyDown(document, { key: 'd' });
     await flushPendingDispatch();
     expect(mockApi).not.toHaveBeenCalled();
-  });
-
-  it('renders the i18n skeleton instead of a hardcoded Loading label before state loads', () => {
-    mockApi.mockReturnValue(new Promise(() => {}));
-    renderWithProviders(<TrenteEtQuarantePage />);
-    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
-    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
   });
 });
