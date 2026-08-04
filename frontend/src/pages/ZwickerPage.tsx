@@ -190,9 +190,14 @@ function ZwickerPageContent() {
                       aria-pressed={tableSel.includes(i)}
                       aria-disabled={!isHumanTurn}
                       onClick={() => isHumanTurn && toggle(tableSel, setTableSel, i)}
+                      // The hint says which table cards to take with the card it
+                      // names; only the hand card was ever highlighted, leaving the
+                      // multi-card capture for the player to work out (#4898).
+                      data-hinted-table={(frontendHintEnabled && state.hint?.tableIndices?.includes(i)) || undefined}
                       className={[
                         'rounded min-h-11 flex flex-col items-center',
                         tableSel.includes(i) ? 'ring-2 ring-ds-accent' : '',
+                        frontendHintEnabled && state.hint?.tableIndices?.includes(i) ? 'ring-2 ring-ds-warning' : '',
                       ].join(' ')}
                     >
                       <AnimatedCard card={card} width={cardWidth} draggable={false} />

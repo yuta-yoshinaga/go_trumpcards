@@ -232,4 +232,16 @@ describe('ZwickerPage', () => {
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
     }
   });
+
+  it('highlights the table cards the hint says to take with the named card', async () => {
+    localStorage.clear();
+    // The lift/ring assist follows the hint setting, which defaults to off.
+    localStorage.setItem('hint_enabled_zwicker', 'true');
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeState({ hint: { take: true, cardIndex: 0, value: 7, tableIndices: [1] } }));
+    renderWithProviders(<ZwickerPage />);
+    await waitFor(() => expect(screen.getAllByTestId('zwicker-table-card').length).toBeGreaterThan(1));
+    // Naming the hand card alone left the multi-card capture unexplained.
+    expect(document.querySelectorAll('[data-hinted-table]')).toHaveLength(1);
+  });
 });
