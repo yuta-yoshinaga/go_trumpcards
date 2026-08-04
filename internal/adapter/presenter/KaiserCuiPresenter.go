@@ -177,7 +177,7 @@ func kaiserHintKey(g interfaces.KaiserGame) (key string, idxs []int, suits []int
 		if g.GetBidPlayerIdx() != human {
 			return "kaiser.hintNotYourTurn", nil, nil
 		}
-		return kaiserBidHint(g, p), nil, nil
+		return kaiserBidHint(g, p, human), nil, nil
 	case domain.KaiserPhaseDiscard:
 		if g.GetDeclarerIdx() != human {
 			return "kaiser.hintNotYourTurn", nil, nil
@@ -215,8 +215,8 @@ func kaiserHumanIdx(g interfaces.KaiserGame) int {
 // 目安は「最長スートが 4 枚以上あり、その A か K を持っている」か「♥5 を
 // 持っている」(単独で 5 点)。加えて 45 点以上ではビッドしないと加点できない
 // ので、そのときは降りるより取りに行くほうがよい。
-func kaiserBidHint(g interfaces.KaiserGame, p *domain.KaiserPlayer) string {
-	if g.GetScore(domain.KaiserTeamOf(kaiserHumanIdx(g))) >= domain.KaiserMustBidThreshold {
+func kaiserBidHint(g interfaces.KaiserGame, p *domain.KaiserPlayer, human int) string {
+	if g.GetScore(domain.KaiserTeamOf(human)) >= domain.KaiserMustBidThreshold {
 		return "kaiser.hintBidMust"
 	}
 	strong := false
