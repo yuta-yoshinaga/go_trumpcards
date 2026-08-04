@@ -115,18 +115,31 @@ function DoubleKlondikePageContent() {
   // The board is nearly twice a Klondike's, and legality was only discoverable by
   // making the move and reading the server's rejection. These mirror the domain's
   // canPlaceOnTableau / canPlaceOnFoundation (#4895).
+  //
+  // Two different cards are at stake. `mtt` carries the selected index, so a
+  // tableau target is judged on the selected card. `mtf` carries only the column
+  // and MoveTableauToFoundation always takes that column's *top* card, so a
+  // foundation must be judged on the top card — selecting a buried card of a run
+  // is normal play, and judging the ring on it would promise a move the server
+  // would never make.
   const selectedCard: Card | null =
     selected === null
       ? null
       : selected.zone === 'waste'
         ? (state.waste[state.waste.length - 1] ?? null)
         : (state.tableau[selected.col]?.[selected.idx]?.card ?? null);
+  const foundationSourceCard: Card | null =
+    selected === null
+      ? null
+      : selected.zone === 'waste'
+        ? selectedCard
+        : (state.tableau[selected.col]?.[state.tableau[selected.col].length - 1]?.card ?? null);
   const isTableauTarget = (col: number) =>
     selectedCard !== null &&
     !(selected?.zone === 'tableau' && selected.col === col) &&
     doubleKlondikeCanPlaceOnTableau(selectedCard, state.tableau, col);
   const isFoundationTarget = (fIdx: number) =>
-    selectedCard !== null && doubleKlondikeCanPlaceOnFoundation(selectedCard, state.foundation, fIdx);
+    foundationSourceCard !== null && doubleKlondikeCanPlaceOnFoundation(foundationSourceCard, state.foundation, fIdx);
 
   // Click a tableau card: select it as a source, or move the current source here.
   const clickTableauCard = (col: number, idx: number) => {

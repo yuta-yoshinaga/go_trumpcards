@@ -227,4 +227,36 @@ describe('DoubleKlondikePage', () => {
     expect(screen.getByTestId('card-0-0')).not.toHaveAttribute('data-move-target');
     expect(document.querySelectorAll('[data-move-target]')).toHaveLength(1);
   });
+
+  it('judges the foundation ring on the card the server would actually move', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // A run of ♠2 under ♥A on column 0. Selecting the buried ♠2 sends
+    // mtf { col: 0 }, and MoveTableauToFoundation takes the column top (♥A) —
+    // so the ring must follow ♥A, not the ♠2 the player clicked.
+    mockExec.mockResolvedValue(
+      makeState({
+        tableau: (() => {
+          const t = Array.from({ length: 9 }, () => []) as ReturnType<typeof makeState>['tableau'];
+          t[0] = [
+            { card: { design: 'SPADE', value: 2 }, faceUp: true },
+            { card: { design: 'HEART', value: 1 }, faceUp: true },
+          ];
+          return t;
+        })(),
+        waste: [],
+        foundation: (() => {
+          const f = Array.from({ length: 8 }, () => []) as ReturnType<typeof makeState>['foundation'];
+          f[0] = [{ design: 'SPADE', value: 1 }];
+          return f;
+        })(),
+      }),
+    );
+    renderWithProviders(<DoubleKlondikePage />);
+    await waitFor(() => expect(screen.getByTestId('card-0-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('card-0-0'));
+    // ♠2 would fit foundation 0 (which holds ♠A) but ♠2 is not what gets sent.
+    await waitFor(() => expect(screen.getByTestId('foundation-1')).toHaveAttribute('data-move-target'));
+    expect(screen.getByTestId('foundation-0')).not.toHaveAttribute('data-move-target');
+  });
 });
