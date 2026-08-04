@@ -204,9 +204,33 @@ sweep so no future tail is reported unverified.
   These two are therefore **not** in the `forbidden-terms` block — the words are
   still used deliberately, just no longer as the name of what we offer.
 
-Limits of this pass: Japanese display titles only. A mark registered in Japan in
-Latin script alone would not be found by it, and no jurisdiction outside Japan
-was searched.
+### Sweep of 2026-08-04, Latin script
+
+The pass above covered Japanese titles only, so the English display names were
+swept too — 263 queries (names under three characters and duplicates dropped),
+7 canary checks passed, 0 errors.
+
+- **217 titles: no registration** in classes 9 / 28 / 41.
+- **46 titles: hits, all of them the game's own name or an ordinary English
+  word** held by unrelated companies for unrelated products — Mizuno on GOLF,
+  PRESIDENT and MIGHTY, Sony on MEMORY, rugby unions on SEVENS, the Baccarat
+  crystal maker on BACCARAT. Same Article 26 reasoning as the Japanese pass.
+- **No new case of the ウィザード / ルーク kind.** `EXACTCALL` and
+  `FOURCOLORBID`, the replacements adopted above, return nothing.
+
+Ten of those queries were initially wrong and had to be re-run: the list was
+built by stripping every non-ASCII character, which turned `Écarté` into `CART`,
+`Mariáš` into `MARI` and `Prší` into `PR` — short enough that it was dropped
+from the list altogether. Re-queried as BOURRE / MARIAS / PREFERENCE / ECARTE /
+CHINCHON / PISTI / PRSI / TYSIAC / KONIGRUFEN / KARNOFFEL, the conclusion is
+unchanged; the single class-28 hit on PREFERENCE is the composite mark
+`30 MINUTES／PREFERENCE`, not the word itself.
+
+Limits that remain: no jurisdiction outside Japan has been searched. The USPTO
+offers no public API and its search is a single-page app, so a US sweep of this
+kind was not attempted — what is known about the US is the per-name research
+recorded in the inventory above (e.g. LET IT RIDE reg. 1840102, THREE CARD POKER
+reg. 2917863), not a systematic pass.
 
 ## Policy for new games
 
