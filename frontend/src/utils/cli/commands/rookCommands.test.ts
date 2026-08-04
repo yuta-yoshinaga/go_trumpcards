@@ -94,6 +94,7 @@ describe('formatRookState', () => {
     highestBidder: 0,
     nestCount: 0,
     nest: [],
+    playableIndices: [],
     currentTrick: [
       { playerIdx: 0, card: { design: 'SPADE', value: 7, label: '7', deck: 'rook', color: 'red' } as never },
     ],

@@ -147,6 +147,23 @@ func (p *RookCuiPresenter) Output(g interfaces.RookGame, lastErr error) string {
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("rook.promptCurrentPlayer",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			// **追随は強制。**リードスートも出せる札も示さないと、出して拒否
+			// されるまで違反に気づけない (#4928)。
+			if g.IsHumanTurn() {
+				if idx := g.GetPlayableIndices(currentIdx); len(idx) > 0 {
+					parts := make([]string, len(idx))
+					for i, v := range idx {
+						parts[i] = strconv.Itoa(v)
+					}
+					// **義務の断りは実際に縛られているときだけ。**リード時や
+					// ボイド時は全札出せるので、そこで「従う義務」と言うと嘘になる。
+					key := "rook.playable"
+					if p := g.GetPlayer(currentIdx); p != nil && len(idx) < p.GetCardsSize() {
+						key = "rook.playableRestricted"
+					}
+					b.WriteString(i18n.Tf(key, "indexes", strings.Join(parts, " ")) + "\n")
+				}
+			}
 			b.WriteString(i18n.T("rook.promptPlayHelp") + "\n")
 		case domain.RookPhaseTrickEnd:
 			b.WriteString(i18n.T("rook.promptTrickEnd") + "\n")

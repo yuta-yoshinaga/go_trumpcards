@@ -28,6 +28,8 @@
   "promptNestExchange": "ネストを手札に加えました。5枚捨てて切り札色を宣言してください",
   "promptNestExchangeHelp": "e <i> <j> <k> <l> <m> <color> (color: 1=赤 2=黄 3=緑 4=黒)",
   "promptCurrentPlayer": "{{name}} の番です",
+  "playable": "出せる札: {{indexes}}",
+  "playableRestricted": "出せる札: {{indexes}}（リードスートに従う義務があります）",
   "promptPlayHelp": "p <i> でカードをプレイ",
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "n で次のトリックへ",

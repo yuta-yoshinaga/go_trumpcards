@@ -695,6 +695,27 @@ func (g *Rook) validatePlay(playerIdx int, card *Card) error {
 	return nil
 }
 
+// GetPlayableIndices はプレイフェーズで出せる手札のインデックス一覧を返す。
+//
+// **判定は validatePlay と同じ経路を通す。**別に書き写すと、片方だけ直したときに
+// 「出せる」と示した札が拒否される (#4928)。プレイフェーズ以外では nil。
+func (g *Rook) GetPlayableIndices(playerIdx int) []int {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return nil
+	}
+	if g.phase != RookPhasePlay {
+		return nil
+	}
+	p := g.players[playerIdx]
+	out := make([]int, 0, p.GetCardsSize())
+	for i := range p.GetCardsSize() {
+		if g.validatePlay(playerIdx, p.GetCard(i)) == nil {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
 // playerHasSuit プレイヤーが実効スートのカードを持っているか (ルーク鳥は除く)
 func (g *Rook) playerHasSuit(playerIdx, suit int) bool {
 	p := g.players[playerIdx]
