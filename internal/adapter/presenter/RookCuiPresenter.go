@@ -147,6 +147,17 @@ func (p *RookCuiPresenter) Output(g interfaces.RookGame, lastErr error) string {
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("rook.promptCurrentPlayer",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			// **追随は強制。**リードスートも出せる札も示さないと、出して拒否
+			// されるまで違反に気づけない (#4928)。
+			if g.IsHumanTurn() {
+				if idx := g.GetPlayableIndices(currentIdx); len(idx) > 0 {
+					parts := make([]string, len(idx))
+					for i, v := range idx {
+						parts[i] = strconv.Itoa(v)
+					}
+					b.WriteString(i18n.Tf("rook.playable", "indexes", strings.Join(parts, " ")) + "\n")
+				}
+			}
 			b.WriteString(i18n.T("rook.promptPlayHelp") + "\n")
 		case domain.RookPhaseTrickEnd:
 			b.WriteString(i18n.T("rook.promptTrickEnd") + "\n")

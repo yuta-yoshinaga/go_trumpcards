@@ -28,6 +28,7 @@
   "promptNestExchange": "Nest added to your hand. Discard 5 cards and declare the trump color",
   "promptNestExchangeHelp": "e <i> <j> <k> <l> <m> <color> (color: 1=Red 2=Yellow 3=Green 4=Black)",
   "promptCurrentPlayer": "{{name}}'s turn",
+  "playable": "Playable: {{indexes}} (following the led suit is compulsory)",
   "promptPlayHelp": "p <i> to play a card",
   "promptTrickEnd": "Trick over",
   "promptTrickEndHelp": "n for the next trick",

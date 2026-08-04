@@ -170,6 +170,8 @@ function RookPageContent() {
   const isHumanBidTurn = isBid && state.bidPlayerIdx === 0;
   const isHumanExchange = isNestExchange && state.declarerIdx === 0;
   const isHumanPlayTurn = isPlay && state.currentPlayerIdx === 0;
+  // 出せる札の制限をかけるのは、サーバがリストを返してきたときだけ。
+  const restrictingPlays = isHumanPlayTurn && (state.playableIndices?.length ?? 0) > 0;
   const isHumanTurn = isHumanBidTurn || isHumanExchange || isHumanPlayTurn;
 
   const phaseName = isGameEnd
@@ -324,7 +326,12 @@ function RookPageContent() {
               <div className="flex flex-wrap justify-center gap-2">
                 {human.cards.map((c, i) => {
                   const selected = selectedCardIndices.includes(i);
-                  const selectable = isHumanPlayTurn || isHumanExchange;
+                  // **追随は強制。**出せない札を押せてしまうと、拒否されて
+                  // 初めて義務に気づくことになる (#4928)。空リストは「情報が
+                  // 無い」であって「一枚も出せない」ではない — 手番のプレイヤー
+                  // には必ず合法手があるので、空なら制限しない。
+                  const playable = !restrictingPlays || state.playableIndices.includes(i);
+                  const selectable = (isHumanPlayTurn && playable) || isHumanExchange;
                   // A pale ring marks the backend's recommended discards, but an
                   // explicit selection (info ring) always takes visual priority.
                   const recommendedDiscard = isHumanExchange && !selected && !!recommendedDiscards?.includes(i);
@@ -334,7 +341,10 @@ function RookPageContent() {
                     : recommendedDiscard
                       ? 'ring-2 ring-ds-warning/70'
                       : '';
-                  const cardClass = `rounded transition-all ${ringClass} ${cursorClass}`.replace(/\s+/g, ' ').trim();
+                  const dimClass = restrictingPlays && !playable ? 'opacity-40' : '';
+                  const cardClass = `rounded transition-all ${ringClass} ${cursorClass} ${dimClass}`
+                    .replace(/\s+/g, ' ')
+                    .trim();
                   return (
                     <button
                       key={i}
@@ -344,6 +354,7 @@ function RookPageContent() {
                       className={cardClass}
                       data-testid={`hand-card-${i}`}
                       data-recommended-discard={recommendedDiscard ? 'true' : undefined}
+                      data-unplayable={restrictingPlays && !playable ? 'true' : undefined}
                     >
                       <AnimatedCard card={c} width={cardWidth} />
                     </button>

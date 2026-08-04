@@ -59,6 +59,12 @@ export interface RookResponse extends BaseGameResponse {
   /** Nest (widow) cards; only populated for the human declarer during nest exchange. */
   nest: Card[];
   currentTrick: RookTrickCard[];
+  /**
+   * Hand indices the human may legally play, filled only on the human's turn
+   * in the play phase. **Following the led suit is compulsory**, so the page
+   * dims the rest rather than letting the server reject the move (#4928).
+   */
+  playableIndices: number[];
   teamScores: [number, number];
   teamPoints: [number, number];
   gameEndFlag: boolean;

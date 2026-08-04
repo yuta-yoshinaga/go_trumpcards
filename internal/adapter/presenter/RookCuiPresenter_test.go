@@ -47,6 +47,43 @@ func TestRookCuiPresenter_Output_Phases(t *testing.T) {
 		}
 	})
 
+	// **追随は強制。**リードスートも出せる札も示さないと、出して拒否される
+	// まで違反に気づけない (#4928)。
+	t.Run("play phase lists the playable indexes on the human's turn", func(t *testing.T) {
+		g := newRookGame()
+		g.Reset()
+		g.SetPhase(domain.RookPhasePlay)
+		g.SetTrumpColor(2)
+		g.SetCurrentPlayerIdx(0)
+		human := g.GetPlayer(0)
+		human.Reset()
+		human.AddCard(domain.NewCard(4, 5, false))
+		human.AddCard(domain.NewCard(3, 9, false))
+		human.AddCard(domain.NewCard(4, 12, false))
+		g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(4, 10, false)}})
+
+		out := p.Output(g, nil)
+		if !strings.Contains(out, "出せる札: 0 2") {
+			t.Errorf("playable indexes missing from output: %q", out)
+		}
+		if !strings.Contains(out, "リードスートに従う義務") {
+			t.Errorf("the follow-suit obligation is not spelled out: %q", out)
+		}
+	})
+
+	// CPU の手番では出さない。相手の手札の話をしても仕方がない。
+	t.Run("no playable list while it is not the human's turn", func(t *testing.T) {
+		g := newRookGame()
+		g.Reset()
+		g.SetPhase(domain.RookPhasePlay)
+		g.SetTrumpColor(2)
+		g.SetCurrentPlayerIdx(1)
+		g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 0, Card: domain.NewCard(4, 10, false)}})
+		if out := p.Output(g, nil); strings.Contains(out, "出せる札:") {
+			t.Errorf("playable list leaked on a CPU turn: %q", out)
+		}
+	})
+
 	t.Run("game end", func(t *testing.T) {
 		g := newRookGame()
 		g.SetTeamScore(0, 500)
