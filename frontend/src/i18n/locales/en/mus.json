@@ -89,7 +89,10 @@
     "paresDuples": "Duples (two pairs)",
     "juegoBest": "31 ★ (best)",
     "juegoYes": "{{points}} (has Juego)",
-    "juegoPunto": "Punto {{points}} (no Juego)"
+    "juegoPunto": "Punto {{points}} (no Juego)",
+    "grande": "Grande (highest)",
+    "chica": "Chica (lowest)",
+    "rankValue": "rank {{rank}}"
   },
   "hintRequested": "Hint available",
   "noHint": "No hint available"

@@ -94,3 +94,16 @@ describe('evalMusHand', () => {
     expect(e.hasJuego).toBe(false);
   });
 });
+
+describe('evalMusHand ranks for Grande and Chica', () => {
+  it('reports the highest and lowest rank held', () => {
+    const hand = [c(1, 'SPADE'), c(12, 'HEART'), c(4, 'CLOVER'), c(7, 'DIAMOND')];
+    const result = evalMusHand(hand);
+    expect(result.highestRank).toBe(Math.max(...hand.map((x) => musCardRank(x.value))));
+    expect(result.lowestRank).toBe(Math.min(...hand.map((x) => musCardRank(x.value))));
+  });
+
+  it('reports null ranks for an empty hand', () => {
+    expect(evalMusHand([])).toMatchObject({ highestRank: null, lowestRank: null });
+  });
+});

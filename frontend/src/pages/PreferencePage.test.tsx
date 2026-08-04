@@ -271,4 +271,22 @@ describe('PreferencePage', () => {
     renderWithProviders(<PreferencePage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  it('names who holds the highest bid', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // With no bid yet the line says so, without empty brackets.
+    mockExec.mockResolvedValue(bidPhaseState);
+    const { unmount } = renderWithProviders(<PreferencePage />);
+    const empty = await screen.findByTestId('preference-highest-bid');
+    expect(empty.textContent).not.toMatch(/[（(]\s*[）)]/);
+    unmount();
+
+    // Once someone has bid, the contract alone does not say who to outbid.
+    mockExec.mockResolvedValue(makePreferenceState({ bids: [0, 2, 0] }));
+    renderWithProviders(<PreferencePage />);
+    // Assert the actual name, not merely "something in brackets": dropping the
+    // interpolation leaves the literal {{player}}, which a loose pattern accepts.
+    await waitFor(() => expect(screen.getByTestId('preference-highest-bid').textContent).toContain('CPU 1'));
+  });
 });
