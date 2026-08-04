@@ -53,6 +53,19 @@ func (p *JassCuiPresenter) Output(g interfaces.JassGame, lastErr error) string {
 			"t0", strconv.Itoa(g.GetTeamScore(0)),
 			"t1", strconv.Itoa(g.GetTeamScore(1))) + "\n")
 
+		// **Weis の内訳が無いとラウンド得点が説明できない。**Web は専用パネルを
+		// 出すのに、CUI は Weis で加点があったことすら伝えていなかった (#4918)。
+		// **勝ったチームだけが自陣の Weis を総取りする**ので、0 点のほうも
+		// 出さないと「なぜ入らなかったか」が読めない。
+		if g.GetConfig().EnableWeis {
+			w0, w1 := g.GetRoundWeisPoints(0), g.GetRoundWeisPoints(1)
+			if w0 > 0 || w1 > 0 {
+				out.WriteString(i18n.Tf("jass.weisLine",
+					"t0", strconv.Itoa(w0),
+					"t1", strconv.Itoa(w1)) + "\n")
+			}
+		}
+
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			out.WriteString(jassPlayerStr(g.GetPlayer(i), i))
 		}
