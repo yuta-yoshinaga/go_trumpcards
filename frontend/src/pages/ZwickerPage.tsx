@@ -182,29 +182,32 @@ function ZwickerPageContent() {
                 <div className="text-center text-game-text-muted text-xs">{t('emptyTable')}</div>
               ) : (
                 <div className="flex gap-1 justify-center flex-wrap">
-                  {state.tableCards.map((card, i) => (
-                    <button
-                      key={`tbl-${i.toString()}`}
-                      type="button"
-                      data-testid="zwicker-table-card"
-                      aria-pressed={tableSel.includes(i)}
-                      aria-disabled={!isHumanTurn}
-                      onClick={() => isHumanTurn && toggle(tableSel, setTableSel, i)}
-                      // The hint says which table cards to take with the card it
-                      // names; only the hand card was ever highlighted, leaving the
-                      // multi-card capture for the player to work out (#4898).
-                      data-hinted-table={(frontendHintEnabled && state.hint?.tableIndices?.includes(i)) || undefined}
-                      className={[
-                        'rounded min-h-11 flex flex-col items-center',
-                        tableSel.includes(i) ? 'ring-2 ring-ds-accent' : '',
-                        frontendHintEnabled && state.hint?.tableIndices?.includes(i) ? 'ring-2 ring-ds-warning' : '',
-                      ].join(' ')}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} draggable={false} />
-                      {/* 値を出さないと何と取れるか判らない。 */}
-                      <span className="text-[10px] text-ds-text-muted">{card.values.join('/')}</span>
-                    </button>
-                  ))}
+                  {state.tableCards.map((card, i) => {
+                    const isHinted = frontendHintEnabled && state.hint?.tableIndices?.includes(i) === true;
+                    return (
+                      <button
+                        key={`tbl-${i.toString()}`}
+                        type="button"
+                        data-testid="zwicker-table-card"
+                        aria-pressed={tableSel.includes(i)}
+                        aria-disabled={!isHumanTurn}
+                        onClick={() => isHumanTurn && toggle(tableSel, setTableSel, i)}
+                        // The hint says which table cards to take with the card it
+                        // names; only the hand card was ever highlighted, leaving the
+                        // multi-card capture for the player to work out (#4898).
+                        data-hinted-table={(frontendHintEnabled && state.hint?.tableIndices?.includes(i)) || undefined}
+                        className={[
+                          'rounded min-h-11 flex flex-col items-center',
+                          tableSel.includes(i) ? 'ring-2 ring-ds-accent' : '',
+                          isHinted ? 'ring-2 ring-ds-warning' : '',
+                        ].join(' ')}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                        {/* 値を出さないと何と取れるか判らない。 */}
+                        <span className="text-[10px] text-ds-text-muted">{card.values.join('/')}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 

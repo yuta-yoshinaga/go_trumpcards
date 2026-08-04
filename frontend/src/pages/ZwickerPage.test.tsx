@@ -238,10 +238,14 @@ describe('ZwickerPage', () => {
     // The lift/ring assist follows the hint setting, which defaults to off.
     localStorage.setItem('hint_enabled_zwicker', 'true');
     mockExec.mockReset();
-    mockExec.mockResolvedValue(makeState({ hint: { take: true, cardIndex: 0, value: 7, tableIndices: [1] } }));
+    mockExec.mockResolvedValue(
+      makeState({ hint: { take: true, cardIndex: 0, value: 7, tableIndices: [1], reason: 'zwicker.hint.take' } }),
+    );
     renderWithProviders(<ZwickerPage />);
     await waitFor(() => expect(screen.getAllByTestId('zwicker-table-card').length).toBeGreaterThan(1));
     // Naming the hand card alone left the multi-card capture unexplained.
-    expect(document.querySelectorAll('[data-hinted-table]')).toHaveLength(1);
+    const tableCards = screen.getAllByTestId('zwicker-table-card');
+    expect(tableCards[1]).toHaveAttribute('data-hinted-table');
+    expect(tableCards[0]).not.toHaveAttribute('data-hinted-table');
   });
 });
