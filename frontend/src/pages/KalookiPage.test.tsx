@@ -375,4 +375,20 @@ describe('KalookiPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  it('totals the staged groups against the opening threshold', async () => {
+    mockExec.mockResolvedValue(meldState);
+    renderWithProviders(<KalookiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add group|グループに追加/ })).toBeInTheDocument());
+    // Nothing staged yet.
+    expect(screen.getByTestId('kalooki-opening-progress')).toHaveTextContent('0 / 51');
+
+    stageGroup(0, 3); // three 5s = 15
+    expect(screen.getByTestId('kalooki-opening-progress')).toHaveTextContent('15 / 51');
+
+    stageGroup(3, 3); // three kings = 30, so 45 — still short of 51
+    const progress = screen.getByTestId('kalooki-opening-progress');
+    expect(progress).toHaveTextContent('45 / 51');
+    expect(progress.className).not.toContain('text-ds-success');
+  });
 });

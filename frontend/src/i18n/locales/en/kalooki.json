@@ -49,5 +49,6 @@
     "kalookiDrawStock": "The discard connects with nothing — draw from the stock",
     "kalookiDiscardHeavy": "Your heaviest unconnected card",
     "kalookiOpenFirst": "You have not opened yet — the threshold has to be met in one go, so keep building"
-  }
+  },
+  "openingProgress": "Opening: {{points}} / {{threshold}} points"
 }
