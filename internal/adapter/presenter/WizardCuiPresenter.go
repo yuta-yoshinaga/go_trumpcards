@@ -1,6 +1,7 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -44,13 +45,43 @@ func wizardLeadSuit(trick []*domain.TrickCard) int {
 	return -1
 }
 
+// WizardLegalMark は「この札は今のトリックに出せる」ことを示す印。
+const WizardLegalMark = "*"
+
 // wizardIndexedCardListStr は手札をインデックス付き (ウィザード/ジェスター対応) で描画する。
-func wizardIndexedCardListStr(hand cuiCardList) string {
-	return formatCardList(hand, wizardCuiCardStr, "  ", true)
+// legal が非 nil なら、出せる札に WizardLegalMark を付ける。
+func wizardIndexedCardListStr(hand cuiCardList, legal []bool) string {
+	parts := make([]string, hand.GetCardsSize())
+	for i := range parts {
+		parts[i] = fmt.Sprintf("[%d]%s", i, wizardCuiCardStr(hand.GetCard(i)))
+		if i < len(legal) && legal[i] {
+			parts[i] += WizardLegalMark
+		}
+
+	}
+	return strings.Join(parts, "  ")
+}
+
+// wizardLegalIndices は手札の各札が今のトリックに出せるかを返す。
+// **全部出せるなら nil を返す。**リード時のように全部に印が付くだけの場面では、
+// 印も凡例もノイズにしかならない。
+func wizardLegalIndices(player *domain.WizardPlayer, trick []*domain.TrickCard) []bool {
+	legal := make([]bool, player.GetCardsSize())
+	all := true
+	for i := range legal {
+		legal[i] = domain.WizardIsLegalPlay(player.GetCard(i), trick, player)
+		if !legal[i] {
+			all = false
+		}
+	}
+	if all {
+		return nil
+	}
+	return legal
 }
 
 // wizardPlayerStr returns the display string for a single Wizard player.
-func wizardPlayerStr(player *domain.WizardPlayer, i int) string {
+func wizardPlayerStr(player *domain.WizardPlayer, i int, legal []bool) string {
 	var b strings.Builder
 	bidStr := i18n.T("wizard.bidPending")
 	if player.GetBid() >= 0 {
@@ -66,7 +97,7 @@ func wizardPlayerStr(player *domain.WizardPlayer, i int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(wizardIndexedCardListStr(player) + "\n")
+		b.WriteString(wizardIndexedCardListStr(player, legal) + "\n")
 	}
 	return b.String()
 }
@@ -93,8 +124,16 @@ func (p *WizardCuiPresenter) Output(o interfaces.WizardGame, lastErr error) stri
 		b.WriteString(i18n.Tf("wizard.dealer",
 			"name", cuiPlayerName(o.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 
+		legalShown := false
 		for i := 0; i < o.GetPlayerCnt(); i++ {
-			b.WriteString(wizardPlayerStr(o.GetPlayer(i), i))
+			// 出せる札の印は、人間の手番のプレイフェーズだけ付ける。
+			var legal []bool
+			pl := o.GetPlayer(i)
+			if pl != nil && pl.GetIsHuman() && o.GetPhase() == domain.WizardPhasePlay && o.IsHumanTurn() {
+				legal = wizardLegalIndices(pl, o.GetCurrentTrick())
+				legalShown = legalShown || legal != nil
+			}
+			b.WriteString(wizardPlayerStr(pl, i, legal))
 		}
 
 		b.WriteString("----------\n")
@@ -142,6 +181,9 @@ func (p *WizardCuiPresenter) Output(o interfaces.WizardGame, lastErr error) stri
 			b.WriteString(i18n.Tf("wizard.promptLead",
 				"trick", strconv.Itoa(o.GetTrickNumber()),
 				"lead", leadName) + "\n")
+			if legalShown {
+				b.WriteString(i18n.T("wizard.legalMark") + "\n")
+			}
 			b.WriteString(i18n.T("wizard.promptPlayHelp") + "\n")
 		case domain.WizardPhaseTrickEnd:
 			b.WriteString(i18n.T("wizard.promptTrickEnd") + "\n")

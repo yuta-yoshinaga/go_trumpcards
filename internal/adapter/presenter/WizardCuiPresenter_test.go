@@ -31,6 +31,7 @@ func setupWizardCuiMock() *interfaces.MockWizardGame {
 	m.On("GetRestrictedBid").Return(-1)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetLeadPlayerIdx").Return(0)
+	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultWizardConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
@@ -86,6 +87,51 @@ func TestWizardCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "Wizard")
 		assert.Contains(t, result, "Jester")
+	})
+
+	// **出せる札に印を付ける。**リードスート名だけ出しても、CUI プレイヤーは
+	// 毎トリック自分の手札と暗算で照合させられる (#4927)。
+	t.Run("play phase marks the cards that may legally be played", func(t *testing.T) {
+		m, players := setupWizardCuiMockWithPlayers()
+		players[0].Reset()
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))    // follows
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))    // must not
+		players[0].AddCard(domain.NewCard(domain.WizardDesignWizard, 1, false)) // always legal
+		players[0].AddCard(domain.NewCard(domain.WizardDesignJester, 1, false)) // always legal
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
+		})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[0]HEART 9"+presenter.WizardLegalMark)
+		assert.NotContains(t, result, "[1]SPADE 3"+presenter.WizardLegalMark)
+		assert.Contains(t, result, "[2]Wizard"+presenter.WizardLegalMark)
+		assert.Contains(t, result, "[3]Jester"+presenter.WizardLegalMark)
+		// 凡例が無いと印の意味が分からない。
+		assert.Contains(t, result, i18n.T("wizard.legalMark"))
+	})
+
+	// 全部出せるときは印だらけになるだけなので、印も凡例も出さない。
+	t.Run("no marks while leading, where every card is legal", func(t *testing.T) {
+		m, players := setupWizardCuiMockWithPlayers()
+		players[0].Reset()
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		result := p.Output(m, nil) // 既定のトリックは空 = リード
+		assert.NotContains(t, result, presenter.WizardLegalMark)
+		assert.NotContains(t, result, i18n.T("wizard.legalMark"))
+	})
+
+	// ja / en 双方に凡例がある。片方だけだと `--lang en` でキーが出る。
+	t.Run("legal-mark legend is translated in both languages", func(t *testing.T) {
+		defer i18n.SetLang("ja")
+		i18n.SetLang("ja")
+		ja := i18n.T("wizard.legalMark")
+		assert.NotEqual(t, "wizard.legalMark", ja)
+		i18n.SetLang("en")
+		en := i18n.T("wizard.legalMark")
+		assert.NotEqual(t, "wizard.legalMark", en)
+		assert.NotEqual(t, ja, en)
 	})
 
 	t.Run("bid phase", func(t *testing.T) {

@@ -17,6 +17,7 @@
   "promptBidHelp": "b <n>・・・ビッドを宣言 (0-手札枚数)",
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "play <idx>・・・カードを出す",
+  "legalMark": "* 印の付いた札が今のトリックに出せます。",
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了",
