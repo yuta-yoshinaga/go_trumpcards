@@ -32,9 +32,9 @@ import { isPickupable } from '../utils/yanivPickup';
 type YanivArgs = Parameters<typeof yanivApi.exec>;
 
 const DIFFICULTY_OPTIONS = [
-  { value: '0', label: 'Easy' },
-  { value: '1', label: 'Normal' },
-  { value: '2', label: 'Hard' },
+  { value: '0', labelKey: 'settings.easy' },
+  { value: '1', labelKey: 'settings.normal' },
+  { value: '2', labelKey: 'settings.hard' },
 ];
 
 const SCORE_LIMIT_OPTIONS = [
@@ -353,7 +353,7 @@ function YanivPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: String(cpuDifficulty),
-                    options: DIFFICULTY_OPTIONS,
+                    options: DIFFICULTY_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) })),
                     onSelect: (v: string) => setCpuDifficulty(Number.parseInt(v, 10)),
                   },
                   {

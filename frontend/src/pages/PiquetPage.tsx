@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -39,17 +40,16 @@ const PIQUET_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-function declKindLabel(kind: number): string {
-  switch (kind) {
-    case PiquetDeclarationKind.POINT:
-      return 'Point';
-    case PiquetDeclarationKind.SEQUENCE:
-      return 'Sequence';
-    case PiquetDeclarationKind.SET:
-      return 'Set';
-    default:
-      return '?';
-  }
+/** i18n keys for each declaration kind, mirroring `piquetKindLabel` in PiquetCuiPresenter.go. */
+const DECL_KIND_KEYS: Record<number, string> = {
+  [PiquetDeclarationKind.POINT]: 'declKindPoint',
+  [PiquetDeclarationKind.SEQUENCE]: 'declKindSequence',
+  [PiquetDeclarationKind.SET]: 'declKindSet',
+};
+
+function declKindLabel(kind: number, t: TFunction): string {
+  const key = DECL_KIND_KEYS[kind];
+  return key ? t(key) : '?';
 }
 
 /** Renders the Piquet game page. */
@@ -237,7 +237,7 @@ function PiquetPageContent() {
         ) : null}
         {inDeclarationPhase ? (
           <button type="button" onClick={game.handleResolveDeclaration} className={btnPrimary}>
-            {t('advanceDeclaration', { kind: declKindLabel(state.declStage) })}
+            {t('advanceDeclaration', { kind: declKindLabel(state.declStage, t) })}
           </button>
         ) : null}
         {inScorePhase ? (
@@ -361,7 +361,7 @@ function DeclarationList({ results, elderIdx }: { results: PiquetDeclaration[]; 
           r.scoredBy === elderIdx ? t('roleElder') : r.scoredBy === youngerIdx ? t('roleYounger') : '?';
         return (
           <div key={`decl-${r.kind}-${r.winner}-${r.score}`} className="text-xs">
-            {declKindLabel(r.kind)}:{' '}
+            {declKindLabel(r.kind, t)}:{' '}
             {r.score === 0 ? t('declTied') : t('declScored', { player: playerLabel, score: r.score })}
           </div>
         );

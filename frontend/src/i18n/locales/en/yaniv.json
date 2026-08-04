@@ -27,6 +27,9 @@
   },
   "settings": {
     "cpuDifficulty": "CPU Difficulty",
+    "easy": "Easy",
+    "hard": "Hard",
+    "normal": "Normal",
     "scoreLimit": "Elimination Score"
   },
   "discardWarn": {
