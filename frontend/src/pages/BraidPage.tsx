@@ -187,6 +187,17 @@ function BraidPageContent() {
    * they refill: a field refills itself from the braid, so an empty one is not
    * a drop target, while an empty helper accepts the waste top.
    */
+  // The hint names its zones in prose across a board of 4 fields, 8 helpers and
+  // 8 foundations; every sibling page rings the card instead (#4877).
+  const isHintFrom = (zone: string, idx: number) => hint != null && hint.fromZone === zone && hint.fromIdx === idx;
+  const isHintTo = (zone: string, idx: number) => hint != null && hint.toZone === zone && hint.toIdx === idx;
+  const hintRingClass = (zone: string, idx: number) =>
+    isHintFrom(zone, idx)
+      ? 'ring-2 ring-ds-info motion-safe:animate-pulse'
+      : isHintTo(zone, idx)
+        ? 'ring-2 ring-ds-success motion-safe:animate-pulse'
+        : '';
+
   const renderSlot = (kind: 'field' | 'helper', idx: number) => {
     const card = (kind === 'field' ? state.fields[idx] : state.helpers[idx]) ?? null;
     const zone: BraidMoveZone = { zone: kind, col: idx };
@@ -207,7 +218,8 @@ function BraidPageContent() {
             draggable={isPlaying && !loading}
             onDragStart={dnd.handleDragStart(zone)}
             onDragEnd={dnd.handleDragEnd}
-            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected(kind, idx) ? 'ring-2 ring-ds-warning' : ''}`}
+            data-hint-slot={isHintFrom(kind, idx) ? 'from' : isHintTo(kind, idx) ? 'to' : undefined}
+            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected(kind, idx) ? 'ring-2 ring-ds-warning' : ''} ${hintRingClass(kind, idx)}`}
           >
             <AnimatedCard card={card} width={dims.cw} draggable={false} />
           </button>
@@ -348,7 +360,8 @@ function BraidPageContent() {
                             onClick={() => game.handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
                             aria-label={t('foundationAriaLabel', { idx, count: pile.length })}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                            data-hint-slot={isHintTo('foundation', idx) ? 'to' : undefined}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${hintRingClass('foundation', idx)}`}
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
@@ -364,7 +377,8 @@ function BraidPageContent() {
                             disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
                             aria-label={t('emptyFoundationAriaLabel', { idx })}
                             style={{ width: dims.cw, height: dims.ch }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            data-hint-slot={isHintTo('foundation', idx) ? 'to' : undefined}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${hintRingClass('foundation', idx)}`}
                           >
                             {state.baseRank}
                           </button>
