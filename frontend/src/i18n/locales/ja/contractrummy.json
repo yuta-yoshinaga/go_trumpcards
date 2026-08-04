@@ -39,5 +39,6 @@
     "contractrummyDrawStock": "捨て札は使えません。山から引きましょう",
     "contractrummyMeetContract": "まだ契約を満たしていません。重い札も材料です",
     "contractrummyDiscardHeavy": "繋がっていない札のうち一番重い札です"
-  }
+  },
+  "invalidExtraMeld": "セットまたはランとして成立していません"
 }

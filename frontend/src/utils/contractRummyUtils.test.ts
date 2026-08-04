@@ -4,6 +4,7 @@ import {
   CONTRACT_SLOT_RUN,
   CONTRACT_SLOT_SET,
   evaluateContractSlot,
+  isContractRummyMeld,
   isContractRun,
   isContractSet,
 } from './contractRummyUtils';
@@ -108,5 +109,29 @@ describe('evaluateContractSlot', () => {
     ]);
     expect(ev.invalid).toBe(true);
     expect(ev.satisfied).toBe(false);
+  });
+});
+
+describe('isContractRummyMeld', () => {
+  const c = (design: Card['design'], value: number): Card => ({ design, value });
+
+  it('accepts a set of three', () => {
+    expect(isContractRummyMeld([c('SPADE', 7), c('HEART', 7), c('CLOVER', 7)])).toBe(true);
+  });
+
+  it('accepts a run of three in one suit', () => {
+    expect(isContractRummyMeld([c('SPADE', 5), c('SPADE', 6), c('SPADE', 7)])).toBe(true);
+  });
+
+  it('rejects three unrelated cards, which the count-only check allowed', () => {
+    expect(isContractRummyMeld([c('SPADE', 5), c('HEART', 9), c('CLOVER', 13)])).toBe(false);
+  });
+
+  it('rejects a run split across suits', () => {
+    expect(isContractRummyMeld([c('SPADE', 5), c('HEART', 6), c('SPADE', 7)])).toBe(false);
+  });
+
+  it('rejects fewer than three', () => {
+    expect(isContractRummyMeld([c('SPADE', 7), c('HEART', 7)])).toBe(false);
   });
 });
