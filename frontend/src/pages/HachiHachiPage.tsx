@@ -28,6 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { HACHIHACHI_HELP, parseHachiHachiCommand } from '../utils/cli/commands/hachihachiCommands';
 import { formatHachiHachiState } from '../utils/cli/formatters/hachihachiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hachiHachiAction, hachiHachiPendingCandidates } from '../utils/hachihachiKeyboard';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Hachi-Hachi (八八) tutorial step definitions. */
@@ -97,35 +98,32 @@ function HachiHachiPageContent() {
   // Hooks must precede the early return, so these derive defensively from a
   // possibly-null state. Click handlers below reuse them, keeping the click and
   // keyboard paths on one implementation.
-  const human = state?.players.find((p) => p.isHuman) ?? state?.players[0] ?? null;
+  const human = state?.players.find((p) => p.isHuman) ?? null;
   // `selecting` drives the UI; input additionally requires that no call is in flight.
   const selecting = !!state && state.phase === HachiHachiPhase.PLAY && state.isHumanTurn && !state.gameEndFlag;
   const canAct = selecting && !loading;
-  const candidates = selecting && handIndex !== null ? (state.captureOptions[handIndex] ?? []) : [];
+  const captureOptions = selecting && state ? state.captureOptions : {};
+  const candidates = hachiHachiPendingCandidates(captureOptions, handIndex);
   const needsFieldPick = candidates.length > 1;
   const candidateSet = new Set(candidates);
 
-  /** Selects a hand card when a two-way match needs a field pick, else plays it. */
-  const activateHandCard = (idx: number) => {
-    if (!canAct || !state) return;
-    const opts = state.captureOptions[idx] ?? [];
-    if (opts.length > 1) selectHand(idx);
-    else playCard(idx);
-  };
-
-  /** Resolves a two-way match by naming the field card to capture. */
-  const activateFieldCard = (fieldIdx: number) => {
-    if (!needsFieldPick || handIndex === null) return;
-    if (!candidateSet.has(fieldIdx)) return;
-    playCard(handIndex, fieldIdx);
+  /**
+   * Activates hand or field index `idx`. Which row it addresses is decided by
+   * {@link hachiHachiAction}, so clicks and digit keys cannot diverge (#4856).
+   */
+  const activate = (idx: number) => {
+    if (!canAct) return;
+    const action = hachiHachiAction(captureOptions, handIndex, idx);
+    if (action.kind === 'select') selectHand(action.handIndex);
+    if (action.kind === 'play') playCard(action.handIndex, action.fieldIndex);
   };
 
   // Selection was mouse-only, leaving both the hand and the field-pick step
-  // unreachable from the keyboard (#4856). One binding covers both: the digits
-  // address the field row instead of the hand once a two-way match is pending.
+  // unreachable from the keyboard (#4856).
   useCardKeyboardNav({
     cardCount: needsFieldPick ? (state?.fieldCards.length ?? 0) : (human?.cards.length ?? 0),
-    onToggle: (idx: number) => (needsFieldPick ? activateFieldCard(idx) : activateHandCard(idx)),
+    onToggle: activate,
+    // Digits play directly, so there is nothing to confirm.
     onConfirm: () => undefined,
     onClear: () => {
       if (handIndex !== null) selectHand(handIndex);
@@ -163,11 +161,9 @@ function HachiHachiPageContent() {
   /** Seat label for a player: "You" for the human, otherwise "CPU N". */
   const seatName = (p: (typeof state.players)[number]): string => (p.isHuman ? t('you') : t('cpu', { n: p.id }));
 
-  /** Handles clicking a hand card. Shares activateHandCard with the keyboard path. */
-  const onHandClick = activateHandCard;
-
-  /** Handles clicking a field card during a two-way-match pick. */
-  const onFieldClick = activateFieldCard;
+  /** Handles clicking a hand or field card. Shares `activate` with the keyboard path. */
+  const onHandClick = activate;
+  const onFieldClick = activate;
 
   const playerLine = (p: (typeof state.players)[number]) =>
     `${seatName(p)} — ${t('captured', { count: p.capturedCount })} · ${t('rawScore', { raw: p.rawScore })} · ${t('score', { score: p.score })}${
