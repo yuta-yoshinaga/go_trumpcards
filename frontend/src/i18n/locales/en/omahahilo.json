@@ -99,5 +99,18 @@
     "lpTooltip": "Loose Passive: plays many hands but rarely raises",
     "balanced": "BAL",
     "balancedTooltip": "Balanced style"
+  },
+  "livePreview": "Current hand:",
+  "hand": {
+    "highCard": "High Card",
+    "onePair": "One Pair",
+    "twoPair": "Two Pair",
+    "threeOfAKind": "Three of a Kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full House",
+    "fourOfAKind": "Four of a Kind",
+    "straightFlush": "Straight Flush",
+    "royalFlush": "Royal Flush"
   }
 }

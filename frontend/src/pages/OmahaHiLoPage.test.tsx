@@ -1642,4 +1642,24 @@ describe('OmahaHiLoPage', () => {
       expect((screen.getByLabelText(label) as HTMLInputElement).checked).toBe(!before);
     });
   });
+
+  it('previews the current best hand during play', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<OmahaHiLoPage />);
+    const badge = await screen.findByTestId('omahahilo-live-besthand-name');
+    // A missing hand.* key renders the key itself, which the presence check missed.
+    expect(badge.textContent).not.toMatch(/^hand\./);
+    expect(badge.textContent?.trim()).toBeTruthy();
+  });
+
+  it('drops the preview at showdown, where the final hand is already shown', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.queryByTestId('omahahilo-live-besthand')).not.toBeInTheDocument());
+    expect(screen.getByTestId('omahahilo-rule-badge')).toBeInTheDocument();
+  });
 });

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { bigOHiLoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
+import { BoardLowBadge } from '../components/BoardLowBadge';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuActionToast } from '../components/CpuActionToast';
@@ -219,7 +220,16 @@ function BigOHiLoPageContent() {
             {(() => {
               const communityCardsContent = (
                 <>
-                  <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
+                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                    <span className="text-ds-text-primary text-lg">{t('communityCards')}</span>
+                    {phase >= OmahaPhase.FLOP && phase <= OmahaPhase.RIVER && (
+                      <BoardLowBadge
+                        communityCards={state?.communityCards ?? []}
+                        t={t}
+                        testId="bigohilo-board-low-badge"
+                      />
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {

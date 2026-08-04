@@ -81,5 +81,18 @@
     "strongHandRank": "Strong hand — raise recommended",
     "decentHandRank": "Decent hand — call recommended",
     "weakHandRank": "Weak hand — fold recommended"
+  },
+  "livePreview": "Current hand:",
+  "hand": {
+    "highCard": "High Card",
+    "onePair": "One Pair",
+    "twoPair": "Two Pair",
+    "threeOfAKind": "Three of a Kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full House",
+    "fourOfAKind": "Four of a Kind",
+    "straightFlush": "Straight Flush",
+    "royalFlush": "Royal Flush"
   }
 }
