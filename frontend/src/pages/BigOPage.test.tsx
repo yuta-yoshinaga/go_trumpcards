@@ -1585,7 +1585,10 @@ describe('BigOPage', () => {
     mockExec.mockReset();
     mockExec.mockResolvedValue(flopState);
     renderWithProviders(<BigOPage />);
-    await waitFor(() => expect(screen.getByTestId('bigo-live-besthand')).toBeInTheDocument());
+    const badge = await screen.findByTestId('bigo-live-besthand-name');
+    // A missing hand.* key renders the key itself, which the presence check missed.
+    expect(badge.textContent).not.toMatch(/^hand\./);
+    expect(badge.textContent?.trim()).toBeTruthy();
   });
 
   it('drops the preview at showdown, where the final hand is already shown', async () => {

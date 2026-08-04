@@ -1648,7 +1648,10 @@ describe('OmahaHiLoPage', () => {
     mockExec.mockReset();
     mockExec.mockResolvedValue(flopState);
     renderWithProviders(<OmahaHiLoPage />);
-    await waitFor(() => expect(screen.getByTestId('omahahilo-live-besthand')).toBeInTheDocument());
+    const badge = await screen.findByTestId('omahahilo-live-besthand-name');
+    // A missing hand.* key renders the key itself, which the presence check missed.
+    expect(badge.textContent).not.toMatch(/^hand\./);
+    expect(badge.textContent?.trim()).toBeTruthy();
   });
 
   it('drops the preview at showdown, where the final hand is already shown', async () => {

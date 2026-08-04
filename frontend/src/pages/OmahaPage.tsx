@@ -33,9 +33,9 @@ import { OmahaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
+import { omahaLiveHandKey } from '../utils/livePokerPreview';
 import { omahaBestFive } from '../utils/omahaBestFive';
 import { findPlayerName } from '../utils/playerUtils';
-import { evaluateFiveCardHand, pokerHandKey } from '../utils/pokerSquaresUtils';
 
 /** Omaha Hold'em tutorial step definitions. */
 const OH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -166,13 +166,7 @@ function OmahaPageContent() {
   // than 3 board cards) or at showdown (where the winning hand is already shown).
   const liveBestHandKey = useMemo(() => {
     if (!isActive || isShowdown || !humanPlayer || humanPlayer.folded) return null;
-    const hole = humanPlayer.cards ?? [];
-    const board = state?.communityCards ?? [];
-    const best = omahaBestFive(hole, board);
-    if (!best) return null;
-    const five = [...best.holeIdx.map((i) => hole[i]), ...best.boardIdx.map((i) => board[i])];
-    const rank = evaluateFiveCardHand(five);
-    return rank == null ? null : pokerHandKey(rank);
+    return omahaLiveHandKey(humanPlayer.cards ?? [], state?.communityCards ?? []);
   }, [isActive, isShowdown, humanPlayer, state?.communityCards]);
 
   if (!state)
