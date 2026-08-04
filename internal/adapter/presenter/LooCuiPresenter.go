@@ -86,11 +86,12 @@ func (p *LooCuiPresenter) Output(g interfaces.LooGame, lastErr error) string {
 				"name", cuiPlayerName(g.GetPlayer(deciderIdx), deciderIdx)) + "\n")
 			// **参加の損得を出す。**Web は potRisk パネルで示すのに、CUI は現在の
 			// ポット額しか見えず、取り分もルーの負担も暗算させていた (#4921)。
-			// **除算はドメインの share と同じ整数除算。**端数は切り捨て。
+			// **「最大」はポット全額ではない。**端数はポットに残るので、
+			// 37 のディールで全トリック取っても入るのは 35 (レビュー指摘)。
 			potStart := max(g.GetPotStart(), 0)
 			b.WriteString(i18n.Tf("loo.potRisk",
-				"pot", strconv.Itoa(potStart),
-				"perTrick", strconv.Itoa(potStart/domain.LooTrickCount),
+				"pot", strconv.Itoa(domain.LooMaxWin(potStart)),
+				"perTrick", strconv.Itoa(domain.LooPerTrickShare(potStart)),
 				"penalty", strconv.Itoa(potStart)) + "\n")
 		case domain.LooPhasePlay:
 			currentIdx := g.GetCurrentTurn()

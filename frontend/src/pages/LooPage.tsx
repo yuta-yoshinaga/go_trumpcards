@@ -324,14 +324,14 @@ function LooPageContent() {
             )}
             {canDecide &&
               (() => {
-                const { pot, looPenalty, perTrick } = computeLooPotRisk(state.pot, state.potStart);
+                const { looPenalty, perTrick, maxWin } = computeLooPotRisk(state.pot, state.potStart);
                 return (
                   <div
                     className="mb-2 mx-auto max-w-md p-2 rounded bg-black/30 text-center text-sm"
                     data-testid="loo-pot-risk"
                   >
                     <div className="text-ds-text-muted mb-0.5">{t('potRisk.label')}</div>
-                    <div className="text-ds-accent">{t('potRisk.win', { pot, perTrick })}</div>
+                    <div className="text-ds-accent">{t('potRisk.win', { pot: maxWin, perTrick })}</div>
                     <div className="text-ds-error">{t('potRisk.loss', { penalty: looPenalty })}</div>
                   </div>
                 );

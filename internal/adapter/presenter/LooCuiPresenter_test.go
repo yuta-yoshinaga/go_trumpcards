@@ -32,9 +32,12 @@ func TestLooCuiPresenter_DecidePhaseShowsThePotRisk(t *testing.T) {
 	g.SetPotStart(37) // 5 で割り切れない額。端数の扱いが見える。
 
 	out := new(presenter.LooCuiPresenter).Output(g, nil)
-	// 37 / 5 = 7 (切り捨て)。ドメインの share と同じ整数除算。
-	assert.Contains(t, out, "+37")
+	// 37 / 5 = 7 (切り捨て)。**全トリック取っても入るのは 35。**端数の 2 は
+	// ポットに残るので、「最大 +37」は実際より多く見せることになる。
+	assert.Contains(t, out, "+35")
 	assert.Contains(t, out, "+7")
+	assert.NotContains(t, out, "+37")
+	// 一方ペナルティはポット全額。
 	assert.Contains(t, out, "-37")
 	assert.NotContains(t, out, "7.4")
 }
