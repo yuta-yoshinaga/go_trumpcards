@@ -49,5 +49,14 @@
     "karnoffelForced": "出せる札はこれ 1 枚だけです",
     "karnoffelOneAway": "あと 1 トリックでこの手が決まります",
     "karnoffelChoose": "出せる札が複数あります。ハイライトされた札から選べます"
+  },
+  "rankBadge": {
+    "karnoffel": "カルニッフェル",
+    "devil": "悪魔",
+    "pope": "法王",
+    "kaiser": "皇帝",
+    "oberstecher": "オーバー",
+    "unterstecher": "ウンター",
+    "farbenstecher": "ファルベン"
   }
 }

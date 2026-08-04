@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { trucoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardImage } from '../components/CardImage';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
@@ -42,6 +43,12 @@ const LEVEL_KEYS = ['none', 'truco', 'retruco', 'valecuatro'] as const;
  * stake escalation (Truco → Retruco → Vale Cuatro) that the opponent may
  * accept, decline, or re-raise. First to the match target (default 15) wins.
  */
+/** Match-target choices, inside the domain's 1..60 range (TrucoConfig.go). */
+const TRUCO_MATCH_TARGET_OPTIONS = [9, 12, 15, 18, 24, 30] as const;
+
+/** Domain default: "truco a 15". */
+const TRUCO_DEFAULT_MATCH_TARGET = 15;
+
 function TrucoPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('truco');
@@ -55,13 +62,20 @@ function TrucoPageContent() {
   const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('truco', state);
 
+  // Only the match target is offered. TrucoCpuDifficulty has a single value
+  // ("v1 で唯一サポート") and nothing branches on it, so a difficulty selector
+  // would be a choice that changes nothing (#4755).
+  const [matchTarget, setMatchTarget] = useState(TRUCO_DEFAULT_MATCH_TARGET);
+  const matchTargetRef = useRef(matchTarget);
+  matchTargetRef.current = matchTarget;
+
   useEffect(() => {
-    void dispatch('reset');
+    void dispatch('reset', undefined, { matchTarget: matchTargetRef.current });
   }, [dispatch]);
 
   const handleReset = useCallback(() => {
     hideActionLog();
-    void dispatch('reset');
+    void dispatch('reset', undefined, { matchTarget: matchTargetRef.current });
   }, [dispatch, hideActionLog]);
 
   const handlePlay = useCallback((idx: number) => void dispatch('play', idx), [dispatch]);
@@ -159,7 +173,7 @@ function TrucoPageContent() {
       cancelReset={cancelReset}
     >
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        <div className="text-ds-text-primary text-center mb-3" data-tutorial="truco-score">
+        <div className="text-ds-text-primary text-center mb-3" data-tutorial="truco-score" data-testid="truco-header">
           <span className="mr-4">
             {t('header.match')} — {t('header.you')}: {youPoints} / {t('header.cpu')}: {cpuPoints} ({t('header.target')}:{' '}
             {state.matchTarget})
@@ -298,6 +312,23 @@ function TrucoPageContent() {
         actionLog={actionLog}
         showActionLog={showActionLog}
         hideActionLog={hideActionLog}
+      />
+      <SettingsPanel
+        title={t('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'matchTarget',
+                label: t('settings.matchTarget'),
+                value: matchTarget,
+                options: TRUCO_MATCH_TARGET_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                onSelect: (v) => setMatchTarget(Number(v)),
+              },
+            ],
+          },
+        ]}
       />
       {/* No GameFooter on this page, where the other 55 action-nav pages put the
           panel, so it sits after the action log instead — still last on the page. */}

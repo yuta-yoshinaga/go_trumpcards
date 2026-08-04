@@ -221,4 +221,16 @@ describe('KarnoffelPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  it('badges only the titled cards of the suit chosen this deal', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // Hand is ♠K, ♥J, ♣6 with hearts chosen: only the ♥J is the Karnöffel.
+    // The ♣6 would be the Pope in clubs, which is exactly the trap.
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<KarnoffelPage />);
+    await waitFor(() => expect(screen.getByTestId('karnoffel-rank-karnoffel')).toBeInTheDocument());
+    expect(screen.queryByTestId('karnoffel-rank-pope')).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-testid^="karnoffel-rank-"]')).toHaveLength(1);
+  });
 });
