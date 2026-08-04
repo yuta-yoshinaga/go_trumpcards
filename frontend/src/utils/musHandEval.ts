@@ -82,6 +82,10 @@ export interface MusHandEval {
   points: number;
   /** Whether the hand reaches the Juego threshold (>=31); otherwise it plays for Punto. */
   hasJuego: boolean;
+  /** Highest card rank held, or null for an empty hand. Grande is bet on this. */
+  highestRank: number | null;
+  /** Lowest card rank held, or null for an empty hand. Chica is bet on this. */
+  lowestRank: number | null;
 }
 
 /**
@@ -91,9 +95,12 @@ export interface MusHandEval {
  */
 export function evalMusHand(cards: readonly Card[]): MusHandEval {
   const points = musJuegoPoints(cards);
+  const ranks = cards.map((c) => musCardRank(c.value));
   return {
     paresCategory: musParesCategory(cards),
     points,
     hasJuego: points >= MUS_JUEGO_THRESHOLD,
+    highestRank: ranks.length > 0 ? Math.max(...ranks) : null,
+    lowestRank: ranks.length > 0 ? Math.min(...ranks) : null,
   };
 }

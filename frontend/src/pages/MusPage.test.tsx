@@ -193,4 +193,16 @@ describe('MusPage', () => {
     expect(screen.getByTestId('mus-summary-juego')).toHaveTextContent('31点 ★');
     expect(screen.getByTestId('mus-summary-juego').className).toContain('font-semibold');
   });
+
+  it('summarises the Grande and Chica ranks the bet is about', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(grandeState);
+    renderWithProviders(<MusPage />);
+    const grande = await screen.findByTestId('mus-summary-grande');
+    expect(screen.getByTestId('mus-summary-chica')).toBeInTheDocument();
+    // The active round is the one emphasised.
+    expect(grande.className).toContain('text-ds-warning');
+    expect(screen.getByTestId('mus-summary-pares').className).not.toContain('text-ds-warning');
+  });
 });

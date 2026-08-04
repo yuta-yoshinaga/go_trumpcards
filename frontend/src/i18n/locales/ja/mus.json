@@ -89,7 +89,10 @@
     "paresDuples": "デュプレス（2ペア）",
     "juegoBest": "31点 ★（最強）",
     "juegoYes": "{{points}}点（フエゴあり）",
-    "juegoPunto": "プント {{points}}点（フエゴなし）"
+    "juegoPunto": "プント {{points}}点（フエゴなし）",
+    "grande": "グランデ（最高札）",
+    "chica": "チカ（最低札）",
+    "rankValue": "ランク {{rank}}"
   },
   "hintRequested": "ヒントがあります",
   "noHint": "ヒントはありません"

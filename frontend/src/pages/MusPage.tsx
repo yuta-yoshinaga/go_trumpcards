@@ -304,6 +304,26 @@ function MusPageContent() {
                     data-testid="mus-hand-summary"
                   >
                     <div className="mb-1 text-ds-text-primary">{t('handSummary.title')}</div>
+                    {/* Grande and Chica are two of the four betting rounds, and the
+                        panel said nothing during either of them (#4721). */}
+                    <div
+                      className={state.phase === MusPhase.GRANDE ? 'text-ds-warning font-semibold' : ''}
+                      data-testid="mus-summary-grande"
+                    >
+                      {t('handSummary.grande')}:{' '}
+                      {evalResult.highestRank === null
+                        ? t('handSummary.paresNone')
+                        : t('handSummary.rankValue', { rank: evalResult.highestRank })}
+                    </div>
+                    <div
+                      className={state.phase === MusPhase.CHICA ? 'text-ds-warning font-semibold' : ''}
+                      data-testid="mus-summary-chica"
+                    >
+                      {t('handSummary.chica')}:{' '}
+                      {evalResult.lowestRank === null
+                        ? t('handSummary.paresNone')
+                        : t('handSummary.rankValue', { rank: evalResult.lowestRank })}
+                    </div>
                     <div className={paresActive ? 'text-ds-warning font-semibold' : ''} data-testid="mus-summary-pares">
                       {t('handSummary.pares')}: {paresValue}
                     </div>

@@ -272,6 +272,22 @@ function TutePageContent() {
                   </div>
                 )}
 
+                {/* A marriage scores the moment it is declared, and the button even
+                    announces how much — but the total only appeared at round end,
+                    so the player could not see it land (#4722). */}
+                {(isPlayPhase || isTrickEnd) && (
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="tute-running-points"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <div className="mb-1 text-ds-text-primary">{t('roundResult.runningTitle')}</div>
+                    <div>{t('roundResult.teamA', { points: state.roundTeamPoints[0] ?? 0 })}</div>
+                    <div>{t('roundResult.teamB', { points: state.roundTeamPoints[1] ?? 0 })}</div>
+                  </div>
+                )}
+
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">

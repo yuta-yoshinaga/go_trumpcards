@@ -289,6 +289,22 @@ function BeziquePageContent() {
                           tricks: p.trickCount,
                         })}
                       </div>
+                      {/* The match is decided by reaching targetScore, not by any one
+                          deal, so how far off it is outranks every other number here. */}
+                      <div
+                        className="text-ds-text-muted text-xs"
+                        data-testid={`bezique-match-progress-${p.id}`}
+                        {...(p.isHuman ? { role: 'status', 'aria-live': 'polite' as const } : {})}
+                      >
+                        {(() => {
+                          const current = state.matchScore[p.id] ?? 0;
+                          const target = state.config.targetScore;
+                          const remaining = target - current;
+                          return remaining > 0
+                            ? t('matchProgress', { current, target, remaining })
+                            : t('matchProgressReached', { current, target });
+                        })()}
+                      </div>
                       <div className="text-ds-text-muted text-xs" data-testid={`bezique-deal-breakdown-${p.id}`}>
                         {t('dealBreakdown', {
                           trick: state.dealPoints[p.id] - state.dealMeldPoints[p.id],

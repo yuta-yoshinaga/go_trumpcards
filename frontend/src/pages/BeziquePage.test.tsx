@@ -241,4 +241,13 @@ describe('BeziquePage', () => {
     renderWithProviders(<BeziquePage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  it('shows how far each player is from the match target', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<BeziquePage />);
+    const row = await screen.findByTestId('bezique-match-progress-0');
+    expect(row.textContent).toMatch(/\d+ \/ \d+/);
+  });
 });
