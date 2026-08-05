@@ -483,4 +483,17 @@ describe('CariocaPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  // **CUI プレゼンターがあるのに Web からその表現へ行けなかった (#4849)。**
+  it('switches to CLI mode from the header toggle', async () => {
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<CariocaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
+
+    // ターミナルが出て、GUI の操作行は消える。
+    expect(await screen.findByRole('textbox')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '山札から引く' })).not.toBeInTheDocument();
+  });
 });

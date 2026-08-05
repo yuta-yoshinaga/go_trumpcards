@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { cariocaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -11,6 +13,8 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -22,6 +26,9 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, CariocaContractSlot, CariocaResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { canLayoffCariocaMeld, describeCariocaSlotShortfall, evaluateCariocaContractSlot } from '../utils/cariocaUtils';
+import { CARIOCA_HELP, parseCariocaCommand } from '../utils/cli/commands/cariocaCommands';
+import { formatCariocaState } from '../utils/cli/formatters/cariocaFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Phase identifiers for Carioca. */
 const CA_PHASE = {
@@ -80,6 +87,20 @@ function CariocaPageContent() {
 
   useMountReset(execApi);
   const phaseNames = usePhaseNames('carioca', CA_PHASE_KEYS);
+
+  // CLI mode. Carioca は CUI プレゼンターがあるのに Web からその表現へ行けなかった
+  // (#4849)。他の extra worker のゲームと同じ配線。
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('carioca');
+  const cliConfig: CliGameConfig<CariocaResponse, Parameters<typeof cariocaApi.exec>> = useMemo(
+    () => ({
+      gameName: 'carioca',
+      parseCommand: parseCariocaCommand,
+      formatResponse: formatCariocaState,
+      helpText: CARIOCA_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   // Selected card indices in the human's hand (multi-select).
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
@@ -234,272 +255,292 @@ function CariocaPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      {error && <ErrorAlert message={error} onRetry={retry} />}
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          {error && <ErrorAlert message={error} onRetry={retry} />}
 
-      {/* Scrollable state display. Carioca had no play area at all, so its
+          {/* Scrollable state display. Carioca had no play area at all, so its
           content grew the document by 333px at 375x667; the pinned action row,
           message box and footer below stay reachable. See issue #4373. */}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        <section className="px-4 py-2 flex flex-wrap gap-3 items-center text-white" data-tutorial="ca-contract">
-          <span className="font-semibold">
-            {t('roundLabel', { round: state.roundNumber, total: state.totalRounds })}
-          </span>
-          <span>
-            {t('contractLabel')}: {state.contractSlots.map((s) => formatSlot(s, t)).join(' + ')}
-          </span>
-          <span>
-            {t('stockLabel')}: {state.drawPileCount}
-          </span>
-          {state.discardTop && (
-            <span className="flex items-center gap-2">
-              {t('discardLabel')}:
-              <AnimatedCard card={state.discardTop} width={cardWidth} />
-            </span>
-          )}
-        </section>
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <section className="px-4 py-2 flex flex-wrap gap-3 items-center text-white" data-tutorial="ca-contract">
+              <span className="font-semibold">
+                {t('roundLabel', { round: state.roundNumber, total: state.totalRounds })}
+              </span>
+              <span>
+                {t('contractLabel')}: {state.contractSlots.map((s) => formatSlot(s, t)).join(' + ')}
+              </span>
+              <span>
+                {t('stockLabel')}: {state.drawPileCount}
+              </span>
+              {state.discardTop && (
+                <span className="flex items-center gap-2">
+                  {t('discardLabel')}:
+                  <AnimatedCard card={state.discardTop} width={cardWidth} />
+                </span>
+              )}
+            </section>
 
-        {isPlayPhase && humanPlayer && !humanPlayer.contractMet && state.contractSlots.length > 0 && (
-          <section className="px-4 py-2 flex flex-wrap gap-2 text-sm" data-testid="ca-slot-progress">
-            {state.contractSlots.map((slot, slotIdx) => {
-              const detail = slotEvaluations[slotIdx];
-              const ev = detail?.ev ?? { placed: 0, required: slot.size, satisfied: false, invalid: false };
-              const shortfall = detail?.shortfall ?? null;
-              const color = ev.satisfied
-                ? badgeSuccessColors
-                : ev.invalid
-                  ? badgeErrorColors
-                  : ev.placed === 0
-                    ? 'bg-black/20 border border-white/30 text-ds-text-muted'
-                    : badgeWarningColors;
-              return (
-                <span key={`slot-${slotIdx}`} className="flex flex-col items-start gap-0.5">
-                  <span
-                    className={`px-2 py-1 rounded ${color}`}
-                    data-testid={`ca-slot-progress-${slotIdx}`}
-                    data-state={
-                      ev.satisfied ? 'satisfied' : ev.invalid ? 'invalid' : ev.placed === 0 ? 'empty' : 'partial'
-                    }
-                  >
-                    {formatSlot(slot, t)} ({ev.placed}/{ev.required}){ev.satisfied ? ' ✓' : ''}
-                  </span>
-                  {shortfall && (
-                    <span className="text-xs text-ds-text-muted" data-testid={`ca-slot-shortfall-${slotIdx}`}>
-                      {t(`shortfall.${shortfall.code}`, shortfall.count != null ? { n: shortfall.count } : undefined)}
+            {isPlayPhase && humanPlayer && !humanPlayer.contractMet && state.contractSlots.length > 0 && (
+              <section className="px-4 py-2 flex flex-wrap gap-2 text-sm" data-testid="ca-slot-progress">
+                {state.contractSlots.map((slot, slotIdx) => {
+                  const detail = slotEvaluations[slotIdx];
+                  const ev = detail?.ev ?? { placed: 0, required: slot.size, satisfied: false, invalid: false };
+                  const shortfall = detail?.shortfall ?? null;
+                  const color = ev.satisfied
+                    ? badgeSuccessColors
+                    : ev.invalid
+                      ? badgeErrorColors
+                      : ev.placed === 0
+                        ? 'bg-black/20 border border-white/30 text-ds-text-muted'
+                        : badgeWarningColors;
+                  return (
+                    <span key={`slot-${slotIdx}`} className="flex flex-col items-start gap-0.5">
+                      <span
+                        className={`px-2 py-1 rounded ${color}`}
+                        data-testid={`ca-slot-progress-${slotIdx}`}
+                        data-state={
+                          ev.satisfied ? 'satisfied' : ev.invalid ? 'invalid' : ev.placed === 0 ? 'empty' : 'partial'
+                        }
+                      >
+                        {formatSlot(slot, t)} ({ev.placed}/{ev.required}){ev.satisfied ? ' ✓' : ''}
+                      </span>
+                      {shortfall && (
+                        <span className="text-xs text-ds-text-muted" data-testid={`ca-slot-shortfall-${slotIdx}`}>
+                          {t(
+                            `shortfall.${shortfall.code}`,
+                            shortfall.count != null ? { n: shortfall.count } : undefined,
+                          )}
+                        </span>
+                      )}
+                    </span>
+                  );
+                })}
+              </section>
+            )}
+
+            <section className="px-4 py-2 grid gap-2 md:grid-cols-3">
+              {state.players.map((p) => (
+                <div
+                  key={p.id}
+                  className={`p-3 rounded border ${
+                    state.currentPlayerIdx === p.id ? 'border-ds-warning' : 'border-white/30'
+                  } text-white text-sm bg-black/20`}
+                >
+                  <div className="flex justify-between font-semibold">
+                    <span>
+                      {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
+                      {p.contractMet ? ` ✓` : ''}
+                    </span>
+                    <span>
+                      {t('cards')}: {p.cardCount}
+                    </span>
+                  </div>
+                  <div className="text-xs opacity-75">
+                    {t('scoreLabel')}: {p.cumulativeScore} (+{p.roundScore})
+                  </div>
+                  {p.melds.length > 0 && (
+                    <div className="mt-2">
+                      {p.melds.map((m, mi) => {
+                        const isLayoffTarget = layoffTarget?.playerIdx === p.id && layoffTarget?.meldIdx === mi;
+                        const playerLabel = p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id });
+                        // The meld is only a selectable layoff target once both contracts are met.
+                        const canLayoff = humanPlayer?.contractMet === true && p.contractMet;
+                        // Preview: does the staged card fit this meld? `null` when no preview applies.
+                        const accepts = canLayoff && layoffCard ? canLayoffCariocaMeld(m.cards, layoffCard) : null;
+                        // The selection highlight (warning) wins; otherwise the acceptance preview
+                        // marks the meld green (accepts) or dims + reds it (rejects).
+                        const previewRing = isLayoffTarget
+                          ? 'ring-2 ring-ds-warning bg-ds-warning/20'
+                          : accepts === true
+                            ? 'ring-2 ring-ds-success'
+                            : accepts === false
+                              ? 'ring-2 ring-ds-error opacity-50'
+                              : '';
+                        return (
+                          <button
+                            type="button"
+                            key={`${p.id}-${mi}`}
+                            onClick={() => {
+                              if (canLayoff) {
+                                setLayoffTarget({ playerIdx: p.id, meldIdx: mi });
+                              }
+                            }}
+                            aria-label={t('meldAria', { player: playerLabel, meld: mi + 1 })}
+                            // Only expose the toggle semantics when the meld is actually actionable.
+                            aria-pressed={canLayoff ? isLayoffTarget : undefined}
+                            data-testid={`ca-meld-${p.id}-${mi}`}
+                            data-layoff-accepts={accepts === null ? undefined : String(accepts)}
+                            className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${previewRing}`}
+                          >
+                            {m.cards.map((c, ci) => (
+                              <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
+                            ))}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </section>
+
+            {humanPlayer && (
+              <section className="px-4 py-2" data-tutorial="ca-hand">
+                <div className="text-white text-sm mb-1">
+                  {t('yourHand')} ({humanPlayer.cardCount})
+                  {contractSlots.length > 0 && (
+                    <span className="ml-2 opacity-75">
+                      {t('slotsBuilt')}: {contractSlots.length}
                     </span>
                   )}
-                </span>
-              );
-            })}
-          </section>
-        )}
-
-        <section className="px-4 py-2 grid gap-2 md:grid-cols-3">
-          {state.players.map((p) => (
-            <div
-              key={p.id}
-              className={`p-3 rounded border ${
-                state.currentPlayerIdx === p.id ? 'border-ds-warning' : 'border-white/30'
-              } text-white text-sm bg-black/20`}
-            >
-              <div className="flex justify-between font-semibold">
-                <span>
-                  {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
-                  {p.contractMet ? ` ✓` : ''}
-                </span>
-                <span>
-                  {t('cards')}: {p.cardCount}
-                </span>
-              </div>
-              <div className="text-xs opacity-75">
-                {t('scoreLabel')}: {p.cumulativeScore} (+{p.roundScore})
-              </div>
-              {p.melds.length > 0 && (
-                <div className="mt-2">
-                  {p.melds.map((m, mi) => {
-                    const isLayoffTarget = layoffTarget?.playerIdx === p.id && layoffTarget?.meldIdx === mi;
-                    const playerLabel = p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id });
-                    // The meld is only a selectable layoff target once both contracts are met.
-                    const canLayoff = humanPlayer?.contractMet === true && p.contractMet;
-                    // Preview: does the staged card fit this meld? `null` when no preview applies.
-                    const accepts = canLayoff && layoffCard ? canLayoffCariocaMeld(m.cards, layoffCard) : null;
-                    // The selection highlight (warning) wins; otherwise the acceptance preview
-                    // marks the meld green (accepts) or dims + reds it (rejects).
-                    const previewRing = isLayoffTarget
-                      ? 'ring-2 ring-ds-warning bg-ds-warning/20'
-                      : accepts === true
-                        ? 'ring-2 ring-ds-success'
-                        : accepts === false
-                          ? 'ring-2 ring-ds-error opacity-50'
-                          : '';
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {humanPlayer.cards.map((c: Card, idx: number) => {
+                    const isSelected = selectedCards.includes(idx);
+                    const isInSlot = contractSlots.some((slot) => slot.includes(idx));
                     return (
                       <button
                         type="button"
-                        key={`${p.id}-${mi}`}
-                        onClick={() => {
-                          if (canLayoff) {
-                            setLayoffTarget({ playerIdx: p.id, meldIdx: mi });
-                          }
-                        }}
-                        aria-label={t('meldAria', { player: playerLabel, meld: mi + 1 })}
-                        // Only expose the toggle semantics when the meld is actually actionable.
-                        aria-pressed={canLayoff ? isLayoffTarget : undefined}
-                        data-testid={`ca-meld-${p.id}-${mi}`}
-                        data-layoff-accepts={accepts === null ? undefined : String(accepts)}
-                        className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${previewRing}`}
+                        key={`${idx}-${c.design}-${c.value}`}
+                        onClick={() => toggleCard(idx)}
+                        disabled={isInSlot}
+                        className={`${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${
+                          isInSlot ? 'opacity-40' : ''
+                        }`}
                       >
-                        {m.cards.map((c, ci) => (
-                          <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
-                        ))}
+                        <AnimatedCard card={c} width={cardWidth} />
                       </button>
                     );
                   })}
                 </div>
-              )}
-            </div>
-          ))}
-        </section>
+              </section>
+            )}
+          </div>
 
-        {humanPlayer && (
-          <section className="px-4 py-2" data-tutorial="ca-hand">
-            <div className="text-white text-sm mb-1">
-              {t('yourHand')} ({humanPlayer.cardCount})
-              {contractSlots.length > 0 && (
-                <span className="ml-2 opacity-75">
-                  {t('slotsBuilt')}: {contractSlots.length}
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {humanPlayer.cards.map((c: Card, idx: number) => {
-                const isSelected = selectedCards.includes(idx);
-                const isInSlot = contractSlots.some((slot) => slot.includes(idx));
-                return (
-                  <button
-                    type="button"
-                    key={`${idx}-${c.design}-${c.value}`}
-                    onClick={() => toggleCard(idx)}
-                    disabled={isInSlot}
-                    className={`${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${
-                      isInSlot ? 'opacity-40' : ''
-                    }`}
-                  >
-                    <AnimatedCard card={c} width={cardWidth} />
+          <section className="px-4 py-2 flex flex-wrap gap-2" data-tutorial="ca-actions">
+            {isDrawPhase && (
+              <>
+                <button type="button" onClick={handleDrawStock} className={btnPrimary}>
+                  {t('drawStock')}
+                </button>
+                {state.discardTop && (
+                  <button type="button" onClick={handleDrawDiscard} className={btnPrimary}>
+                    {t('drawDiscard')}
                   </button>
-                );
-              })}
-            </div>
-          </section>
-        )}
-      </div>
-
-      <section className="px-4 py-2 flex flex-wrap gap-2" data-tutorial="ca-actions">
-        {isDrawPhase && (
-          <>
-            <button type="button" onClick={handleDrawStock} className={btnPrimary}>
-              {t('drawStock')}
-            </button>
-            {state.discardTop && (
-              <button type="button" onClick={handleDrawDiscard} className={btnPrimary}>
-                {t('drawDiscard')}
+                )}
+              </>
+            )}
+            {isPlayPhase && humanPlayer && !humanPlayer.contractMet && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleAddSlot}
+                  disabled={selectedCards.length === 0}
+                  className={btnOutline}
+                >
+                  {t('addSlot')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemoveLastSlot}
+                  disabled={contractSlots.length === 0}
+                  className={btnOutline}
+                >
+                  {t('removeLastSlot')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmitContract}
+                  disabled={!allSlotsSatisfied}
+                  className={`${btnPrimary} ${allSlotsSatisfied ? 'motion-safe:animate-pulse' : ''}`}
+                  data-testid="ca-submit-contract"
+                >
+                  {t('submitContract')}
+                </button>
+              </>
+            )}
+            {isPlayPhase && humanPlayer?.contractMet && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleMeldExtra}
+                  disabled={selectedCards.length < 3}
+                  className={btnOutline}
+                >
+                  {t('meldExtra')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLayoff}
+                  disabled={selectedCards.length !== 1 || !layoffTarget}
+                  className={btnOutline}
+                >
+                  {t('layoff')}
+                </button>
+              </>
+            )}
+            {isPlayPhase && (
+              <button type="button" onClick={handleDiscard} disabled={selectedCards.length !== 1} className={btnDanger}>
+                {t('discard')}
               </button>
             )}
-          </>
-        )}
-        {isPlayPhase && humanPlayer && !humanPlayer.contractMet && (
-          <>
-            <button type="button" onClick={handleAddSlot} disabled={selectedCards.length === 0} className={btnOutline}>
-              {t('addSlot')}
-            </button>
-            <button
-              type="button"
-              onClick={handleRemoveLastSlot}
-              disabled={contractSlots.length === 0}
-              className={btnOutline}
-            >
-              {t('removeLastSlot')}
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmitContract}
-              disabled={!allSlotsSatisfied}
-              className={`${btnPrimary} ${allSlotsSatisfied ? 'motion-safe:animate-pulse' : ''}`}
-              data-testid="ca-submit-contract"
-            >
-              {t('submitContract')}
-            </button>
-          </>
-        )}
-        {isPlayPhase && humanPlayer?.contractMet && (
-          <>
-            <button type="button" onClick={handleMeldExtra} disabled={selectedCards.length < 3} className={btnOutline}>
-              {t('meldExtra')}
-            </button>
-            <button
-              type="button"
-              onClick={handleLayoff}
-              disabled={selectedCards.length !== 1 || !layoffTarget}
-              className={btnOutline}
-            >
-              {t('layoff')}
-            </button>
-          </>
-        )}
-        {isPlayPhase && (
-          <button type="button" onClick={handleDiscard} disabled={selectedCards.length !== 1} className={btnDanger}>
-            {t('discard')}
-          </button>
-        )}
-        {isRoundEnd && (
-          <button type="button" onClick={handleNextRound} className={btnPrimary}>
-            {t('nextRound')}
-          </button>
-        )}
-      </section>
+            {isRoundEnd && (
+              <button type="button" onClick={handleNextRound} className={btnPrimary}>
+                {t('nextRound')}
+              </button>
+            )}
+          </section>
 
-      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
-      <ActionLogSection
-        isEndPhase={state.gameEndFlag || isRoundEnd}
-        actionLog={actionLog}
-        showActionLog={showActionLog}
-        hideActionLog={hideActionLog}
-      />
-
-      <GameFooter className={`${gameTheme.carioca.footer} px-4 py-2.5`}>
-        <div className="flex gap-2 items-center flex-wrap">
-          <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
-            <input
-              type="checkbox"
-              checked={frontendHintEnabled}
-              onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-            />
-            {tc('hint.toggle', { ns: 'tutorial' })}
-          </label>
-          <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-          <GameResetButton
-            isGameEnd={state.gameEndFlag}
-            onReset={handleReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
+          <ActionLogSection
+            isEndPhase={state.gameEndFlag || isRoundEnd}
+            actionLog={actionLog}
+            showActionLog={showActionLog}
+            hideActionLog={hideActionLog}
           />
-          {layoffTarget && layoffTargetLabel && (
-            <span data-testid="ca-layoff-target" className="text-xs text-ds-warning font-medium">
-              {t('layoffTargetSummary', { player: layoffTargetLabel, meld: layoffTarget.meldIdx + 1 })}
-              {layoffTargetAccepts !== null && (
-                <span
-                  data-testid="ca-layoff-acceptance"
-                  data-accepts={String(layoffTargetAccepts)}
-                  className={`ml-1 ${layoffTargetAccepts ? 'text-ds-success' : 'text-ds-error'}`}
-                >
-                  {layoffTargetAccepts ? t('layoffAcceptable') : t('layoffNotAcceptable')}
+
+          <GameFooter className={`${gameTheme.carioca.footer} px-4 py-2.5`}>
+            <div className="flex gap-2 items-center flex-wrap">
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
+                <input
+                  type="checkbox"
+                  checked={frontendHintEnabled}
+                  onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+                />
+                {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+              <GameResetButton
+                isGameEnd={state.gameEndFlag}
+                onReset={handleReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+              />
+              {layoffTarget && layoffTargetLabel && (
+                <span data-testid="ca-layoff-target" className="text-xs text-ds-warning font-medium">
+                  {t('layoffTargetSummary', { player: layoffTargetLabel, meld: layoffTarget.meldIdx + 1 })}
+                  {layoffTargetAccepts !== null && (
+                    <span
+                      data-testid="ca-layoff-acceptance"
+                      data-accepts={String(layoffTargetAccepts)}
+                      className={`ml-1 ${layoffTargetAccepts ? 'text-ds-success' : 'text-ds-error'}`}
+                    >
+                      {layoffTargetAccepts ? t('layoffAcceptable') : t('layoffNotAcceptable')}
+                    </span>
+                  )}
                 </span>
               )}
-            </span>
-          )}
-        </div>
-      </GameFooter>
+            </div>
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }
