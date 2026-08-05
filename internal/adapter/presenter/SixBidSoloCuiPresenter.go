@@ -189,11 +189,23 @@ func (p *SixBidSoloCuiPresenter) Output(g interfaces.SixBidSoloGame, lastErr err
 func sixBidSoloLadderLine(g interfaces.SixBidSoloGame) string {
 	var b strings.Builder
 	b.WriteString(i18n.T("sixbidsolo.ladderTitle") + " ")
+	// **上回れない段階は選べない。**Web は選択肢からそもそも外すのに、CUI は
+	// 6 段階を常に並べるだけで、現在ビッドと突き合わせる暗算を強いていた (#4900)。
+	high := g.GetHighBid()
 	for k := domain.SixBidSoloMinBid; k <= domain.SixBidSoloMaxBid; k++ {
 		if k > domain.SixBidSoloMinBid {
 			b.WriteString(" < ")
 		}
-		b.WriteString(strconv.Itoa(int(k)) + ":" + sixBidSoloBidLabel(k))
+		entry := strconv.Itoa(int(k)) + ":" + sixBidSoloBidLabel(k)
+		if high != nil && k <= high.Kind {
+			// 消さずに残す。序列そのものは判断材料なので。
+			entry = i18n.Tf("sixbidsolo.ladderTaken", "bid", entry)
+		}
+		b.WriteString(entry)
+	}
+	// 最高段階まで取られたら「選べる段階はもう無い」と言い切る。
+	if high != nil && high.Kind >= domain.SixBidSoloMaxBid {
+		b.WriteString("  " + i18n.T("sixbidsolo.ladderNoneLeft"))
 	}
 	return b.String()
 }
