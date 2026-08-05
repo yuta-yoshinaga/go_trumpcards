@@ -10,6 +10,17 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { cuckoo: vi.fn() },
 }));
 
+const mockPlaySound = vi.fn();
+const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+/** 中央のタップ (useGameApi / GamePageShell) も同じ mock を通るので、名前で絞る。 */
+const soundCalls = (name: string) => mockPlaySound.mock.calls.filter((c) => c[0] === name).length;
+
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSound: () => mockSoundValue,
+  useOptionalSound: () => mockSoundValue,
+}));
+
 const mockExec = vi.mocked(cuckooApi.exec);
 
 function makePlayer(overrides: Partial<CuckooPlayer> = {}): CuckooPlayer {
@@ -299,5 +310,54 @@ describe('CuckooPage', () => {
     renderWithProviders(<CuckooPage />);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
     localStorage.removeItem('hint_enabled_cuckoo');
+  });
+
+  // **山場が全部無音だった。**CPU の手番が自動で進むテンポの速いゲームなので、
+  // バッジだけだとライフ喪失やキング公開を見落とす (#4891)。
+  describe('sound cues', () => {
+    beforeEach(() => {
+      mockPlaySound.mockClear();
+    });
+
+    it('thuds when the human loses a life', async () => {
+      mockExec.mockResolvedValue(makeState({ players: [makePlayer({ id: 0, isHuman: true, lives: 3 })] }));
+      renderWithProviders(<CuckooPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      // 初回描画だけでは鳴らない (前回値が無いので減ったと判定しない)。
+      expect(soundCalls('lossThud')).toBe(0);
+
+      // **手を打って次の応答を受けると減る。**リセットは確認ダイアログ越しなので
+      // 直接は再取得されない。
+      mockExec.mockResolvedValue(makeState({ players: [makePlayer({ id: 0, isHuman: true, lives: 2 })] }));
+      fireEvent.click(screen.getAllByRole('button', { name: /キープ|交換/ })[0]);
+      await waitFor(() => expect(soundCalls('lossThud')).toBe(1));
+    });
+
+    it('flips when a king is newly revealed', async () => {
+      mockExec.mockResolvedValue(makeState({ players: [makePlayer({ id: 0, isHuman: true })] }));
+      renderWithProviders(<CuckooPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(soundCalls('cardFlip')).toBe(0);
+
+      mockExec.mockResolvedValue(makeState({ players: [makePlayer({ id: 0, isHuman: true, kingRevealed: true })] }));
+      fireEvent.click(screen.getAllByRole('button', { name: /キープ|交換/ })[0]);
+      await waitFor(() => expect(soundCalls('cardFlip')).toBe(1));
+    });
+
+    // **勝敗の音は GamePageShell が持つ設計。**ページで鳴らすと二重になるので、
+    // lossShow を渡して shell に任せる（勝ちの fanfare は元から shell が鳴らす）。
+    it('lets the shell thud when the human loses the game', async () => {
+      mockExec.mockResolvedValue(makeState({ gameEndFlag: true, winnerIdx: 1 }));
+      renderWithProviders(<CuckooPage />);
+      await waitFor(() => expect(soundCalls('lossThud')).toBe(1));
+      expect(soundCalls('winFanfare')).toBe(0);
+    });
+
+    it('does not thud when the human wins', async () => {
+      mockExec.mockResolvedValue(makeState({ gameEndFlag: true, winnerIdx: 0 }));
+      renderWithProviders(<CuckooPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(soundCalls('lossThud')).toBe(0);
+    });
   });
 });
