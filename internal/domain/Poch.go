@@ -485,6 +485,27 @@ func (p *Poch) playable(card *Card) bool {
 	return card.GetDesign() == p.stopsSuit && pochRankOrder(card.GetValue()) == p.stopsRank+1
 }
 
+// PochValidPlays は player が今出せる手札インデックスを返す。
+//
+// **判定は playable をそのまま呼ぶ。**規則を書き写すと、示した手が拒否される
+// ようになる (#4933)。ストップス以外・手番でない場合は nil。
+func (p *Poch) PochValidPlays(player int) []int {
+	if p.phase != PochPhaseStops || player != p.currentIdx {
+		return nil
+	}
+	pl := p.GetPlayer(player)
+	if pl == nil {
+		return nil
+	}
+	out := make([]int, 0, pl.GetCardsSize())
+	for i := range pl.GetCardsSize() {
+		if p.playable(pl.GetCard(i)) {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
 // advanceStops は次に出せる人へ手番を回す。誰も次を持っていなければ stop で、
 // **最後に最高札を出した人**が好きな札から再開する。
 func (p *Poch) advanceStops(lastPlayer int) {

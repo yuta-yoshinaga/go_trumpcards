@@ -63,10 +63,13 @@ type NainJauneWebOutputHint struct {
 
 // NainJauneWebOutput ル・ナン・ジョーヌWebアウトプット
 type NainJauneWebOutput struct {
-	Players          []*NainJauneWebOutputPlayer `json:"players"`
-	Phase            int                         `json:"phase"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	Boxes            []*NainJauneWebOutputBox    `json:"boxes"`
+	Players []*NainJauneWebOutputPlayer `json:"players"`
+	Phase   int                         `json:"phase"`
+	// ValidPlays は人間の手番でのみ埋まる、今出せる手札のインデックス。
+	// **並びに従う義務がある**ので、出す前に示さないと押して初めて弾かれる。
+	ValidPlays       []int                    `json:"validPlays"`
+	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	Boxes            []*NainJauneWebOutputBox `json:"boxes"`
 	// TalonCount は配り切らなかった残りの枚数。誰も使わない。
 	TalonCount int                        `json:"talonCount"`
 	Awards     []*NainJauneWebOutputAward `json:"awards"`

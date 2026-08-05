@@ -64,10 +64,13 @@ type PochWebOutputHint struct {
 
 // PochWebOutput ポッホWebアウトプット
 type PochWebOutput struct {
-	Players          []*PochWebOutputPlayer `json:"players"`
-	Phase            int                    `json:"phase"`
-	CurrentPlayerIdx int                    `json:"currentPlayerIdx"`
-	Pools            []*PochWebOutputPool   `json:"pools"`
+	Players []*PochWebOutputPlayer `json:"players"`
+	Phase   int                    `json:"phase"`
+	// ValidPlays は人間の手番でのみ埋まる、今出せる手札のインデックス。
+	// **並びに従う義務がある**ので、出す前に示さないと押して初めて弾かれる。
+	ValidPlays       []int                `json:"validPlays"`
+	CurrentPlayerIdx int                  `json:"currentPlayerIdx"`
+	Pools            []*PochWebOutputPool `json:"pools"`
 	// PaySuit は表向きの余り札のスート。第 1 段階はこれだけで決まる。
 	PaySuit int `json:"paySuit"`
 	// TurnUp は表向きにした余り札そのもの。

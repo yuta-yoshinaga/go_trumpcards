@@ -55,6 +55,11 @@ export interface PopeJoanResponse extends BaseGameResponse {
   players: PopeJoanPlayer[];
   /** 0 = Play, 1 = DealEnd, 2 = GameEnd. */
   phase: number;
+  /**
+   * Hand indices the human may legally play, filled only on their turn.
+   * runSuit に従う義務があり、**自由リードでも自分の最も低い札に限られる**ので、出す前に示さないと押して初めて弾かれる (#4934)。
+   */
+  validPlays: number[];
   currentPlayerIdx: number;
   /** All eight, always. */
   compartments: PopeJoanCompartment[];

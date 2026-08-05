@@ -55,6 +55,11 @@ export interface NainJauneResponse extends BaseGameResponse {
   players: NainJaunePlayer[];
   /** 0 = Play, 1 = DealEnd, 2 = GameEnd. */
   phase: number;
+  /**
+   * Hand indices the human may legally play, filled only on their turn.
+   * runRank の次のランクを続ける義務があるので、出す前に示さないと押して初めて弾かれる (#4935)。
+   */
+  validPlays: number[];
   currentPlayerIdx: number;
   /** All five, always. */
   boxes: NainJauneBox[];

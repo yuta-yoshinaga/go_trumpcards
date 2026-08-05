@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -44,6 +45,7 @@ func pcBoardWith(n int) domain.PochBoard {
 func pcStub(phase domain.PochPhase, gameEnd bool, winner int, awards []*domain.PochStakingAward) *interfaces.MockPochGame {
 	g := new(interfaces.MockPochGame)
 	g.On("GetPhase").Return(phase)
+	g.On("PochValidPlays", mock.Anything).Return([]int{}).Maybe()
 	g.On("GetGameEndFlag").Return(gameEnd)
 	g.On("GetWinnerIdx").Return(winner)
 	g.On("GetCurrentPlayerIdx").Return(0)
@@ -300,4 +302,39 @@ func TestPochCuiPresenter_HintReasonKeysAreAllMapped(t *testing.T) {
 
 func TestPochCuiPresenter_ActionLog(t *testing.T) {
 	assert.NotEmpty(t, new(PochCuiPresenter).ActionLogOutput(pcTestGame(t)))
+}
+
+// **出せる札を応答に載せる。**フロントは押して弾かれるまで違反を示せない (#4933)。
+func TestPochWebPresenter_ValidPlays(t *testing.T) {
+	decode := func(raw string) controller.PochWebOutput {
+		var parsed controller.PochWebOutput
+		if err := json.Unmarshal([]byte(raw), &parsed); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		return parsed
+	}
+
+	g := domain.NewDefaultPoch()
+	g.Reset()
+	raw := new(PochWebPresenter).Output(g, nil)
+	got := decode(raw).ValidPlays
+	// **null ではなく空配列。**フロントが `?? []` を忘れても壊れない。
+	if got == nil {
+		t.Fatal("validPlays must be [] rather than null")
+	}
+	// 応答に必ず現れる。
+	if !strings.Contains(raw, `"validPlays"`) {
+		t.Fatalf("validPlays missing from the response: %s", raw)
+	}
+
+	// **人間の手番でなければ空。**ドメインは nil を返すので、presenter 側で
+	// 空スライスに寄せている。ここを通さないと null が漏れる。
+	g.SetCurrentPlayerForTest(1)
+	off := decode(new(PochWebPresenter).Output(g, nil)).ValidPlays
+	if off == nil {
+		t.Fatal("off-turn validPlays must be [] rather than null")
+	}
+	if len(off) != 0 {
+		t.Fatalf("off-turn validPlays must be empty, got %v", off)
+	}
 }

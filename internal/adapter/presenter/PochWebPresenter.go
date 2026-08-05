@@ -33,6 +33,11 @@ func (p *PochWebPresenter) Output(c interfaces.PochGame, lastErr error) string {
 func (p *PochWebPresenter) buildBase(c interfaces.PochGame) *controller.PochWebOutput {
 	resObj := new(controller.PochWebOutput)
 	resObj.Phase = int(c.GetPhase())
+	// 人間の手番でないときは null ではなく空スライス。
+	resObj.ValidPlays = c.PochValidPlays(0)
+	if resObj.ValidPlays == nil {
+		resObj.ValidPlays = make([]int, 0)
+	}
 	resObj.CurrentPlayerIdx = c.GetCurrentPlayerIdx()
 	resObj.PaySuit = c.GetPaySuit()
 	resObj.BetTarget = c.GetBetTarget()

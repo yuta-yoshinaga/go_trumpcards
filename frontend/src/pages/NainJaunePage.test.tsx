@@ -41,6 +41,7 @@ function makeState(overrides?: Partial<NainJauneResponse>): NainJauneResponse {
   return {
     players: [seat(0, true), seat(1, false), seat(2, false), seat(3, false)],
     phase: NainJaunePhase.PLAY,
+    validPlays: [],
     currentPlayerIdx: 0,
     boxes: BOXES,
     talonCount: 4,
@@ -149,5 +150,34 @@ describe('NainJaunePage', () => {
       renderWithProviders(<NainJaunePage />);
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
     }
+  });
+
+  // **並びに従う義務がある。**出せない札を押せてしまうと、サーバに弾かれて
+  // 初めて分かる (#4935)。
+  describe('playable-card restriction', () => {
+    it('disables and dims the cards that cannot legally be played', async () => {
+      mockExec.mockResolvedValue(makeState({ validPlays: [0] }));
+      renderWithProviders(<NainJaunePage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      const buttons = screen.getAllByRole('button').filter((b) => b.hasAttribute('data-hint-action'));
+      expect(buttons.length).toBeGreaterThan(1);
+      expect(buttons[0]).not.toBeDisabled();
+      expect(buttons[0]).not.toHaveAttribute('data-unplayable');
+      expect(buttons[1]).toBeDisabled();
+      expect(buttons[1]).toHaveAttribute('data-unplayable', 'true');
+    });
+
+    // **空リストは「一枚も出せない」ではなく「情報が無い」。**空で全部塞ぐと
+    // 盤面が操作不能になる。
+    it('does not restrict anything when the server sent no list', async () => {
+      mockExec.mockResolvedValue(makeState({ validPlays: [] }));
+      renderWithProviders(<NainJaunePage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      for (const b of screen.getAllByRole('button').filter((x) => x.hasAttribute('data-hint-action'))) {
+        expect(b).not.toBeDisabled();
+      }
+    });
   });
 });

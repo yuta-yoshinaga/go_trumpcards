@@ -24,6 +24,7 @@ function makeState(overrides?: Partial<PopeJoanResponse>): PopeJoanResponse {
   return {
     players: [seat(0, true), seat(1, false)],
     phase: 0,
+    validPlays: [],
     currentPlayerIdx: 0,
     compartments: COMPS.map((name, i) => ({ name, chips: DRESS[i] })),
     trumpSuit: 1,

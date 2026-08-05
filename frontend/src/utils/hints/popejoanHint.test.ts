@@ -5,6 +5,7 @@ import { getPopeJoanHint } from './popejoanHint';
 const base = {
   players: [],
   phase: 0,
+  validPlays: [],
   currentPlayerIdx: 0,
   compartments: [],
   trumpSuit: 1,

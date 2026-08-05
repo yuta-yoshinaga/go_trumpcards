@@ -573,3 +573,39 @@ func TestNainJauneUnmarshalKeepsALiveRun(t *testing.T) {
 		t.Errorf("runRank = %d, want 8 preserved", got)
 	}
 }
+
+// **並びに従う義務がある。**出せる札を先に示さないと、押して初めて弾かれる (#4935)。
+func TestNainJaune_NainJauneValidPlays(t *testing.T) {
+	g := NewDefaultNainJaune()
+	g.Reset()
+	g.SetCurrentPlayerForTest(0)
+
+	p := g.GetPlayer(0)
+	p.Reset()
+	p.AddCard(njCard(CardDesignSpade, 5))
+	p.AddCard(njCard(CardDesignHeart, 9))
+	p.AddCard(njCard(CardDesignClover, 5))
+
+	// runRank 0 なら並びが止まっていて自由リード。
+	g.SetRunRankForTest(0)
+	if got := g.NainJauneValidPlays(0); len(got) != 3 {
+		t.Fatalf("a stopped run should allow every card, got %v", got)
+	}
+
+	// **スートは問わない。**次のランクでありさえすればよい。
+	g.SetRunRankForTest(4)
+	if got := g.NainJauneValidPlays(0); len(got) != 2 || got[0] != 0 || got[1] != 2 {
+		t.Fatalf("both fives should be playable regardless of suit, got %v", got)
+	}
+
+	// 続けられる札が無ければ空。
+	g.SetRunRankForTest(11)
+	if got := g.NainJauneValidPlays(0); len(got) != 0 {
+		t.Fatalf("nothing should be playable, got %v", got)
+	}
+
+	// 手番でなければ nil。
+	if got := g.NainJauneValidPlays(1); got != nil {
+		t.Fatalf("off-turn must be nil, got %v", got)
+	}
+}

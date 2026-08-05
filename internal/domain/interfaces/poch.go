@@ -29,6 +29,8 @@ type PochGame interface {
 	GetGameEndFlag() bool
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.PochPhase
+	// PochValidPlays は今出せる手札インデックスを返す
+	PochValidPlays(player int) []int
 	// GetCurrentPlayerIdx 手番のプレイヤー添字を取得する
 	GetCurrentPlayerIdx() int
 	// GetBoard 9プールの残高を取得する
