@@ -16,6 +16,8 @@
   "playerLine": "{{name}}: Team {{team}} tricks={{tricks}} cards={{cards}}",
   "gameEnd": "Game over! Team {{team}} wins!",
   "promptDeclare": "Declare: {{name}} to choose Schlag and critical suit",
+  "declareSuitPreview": "  Extra trumps per critical suit: {{suits}} (permanent trumps held: {{permanent}})",
+  "declareRankPreview": "  Extra trumps per Schlag rank: {{ranks}}",
   "promptDeclareHelp": "d <rank> <suit> (e.g. d 10 3)",
   "promptCurrentPlayer": "{{name}} to play",
   "promptRaiseHelp": "rz (raise the stake)",
