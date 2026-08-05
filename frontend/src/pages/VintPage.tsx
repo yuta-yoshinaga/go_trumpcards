@@ -29,6 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseVintCommand, VINT_HELP } from '../utils/cli/commands/vintCommands';
 import { formatVintState } from '../utils/cli/formatters/vintFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { vintBidBeats, vintLevelHasLegalBid, vintNextLegalBid } from '../utils/vintBid';
 
 /** Denominations in bidding order — spades LOWEST, no trump highest. */
 const DENOMS = [0, 1, 2, 3, 4];
@@ -93,6 +94,20 @@ function VintPageContent() {
     exec('reset');
   }, []);
 
+  // **選択が下から追い越されたら前に送る。**他家が上を宣言すると、選んだままの
+  // 組が不正になってボタンが無効のまま固まる。押せないだけで次に何を選べばよいか
+  // 分からない状態を残さない (#4940 レビュー指摘)。
+  const highBid = state?.highBid ?? null;
+  const minLevel = state?.minLevel ?? 1;
+  const maxLevel = state?.maxLevel ?? 7;
+  useEffect(() => {
+    if (vintBidBeats(bidDenom, bidLevel, highBid)) return;
+    const next = vintNextLegalBid(highBid, minLevel, maxLevel);
+    if (!next) return; // 出せる宣言が尽きた: パスしかない
+    setBidLevel(next.level);
+    setBidDenom(next.denom);
+  }, [highBid, bidDenom, bidLevel, minLevel, maxLevel]);
+
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('vint');
   const cliConfig: CliGameConfig<VintResponse, Parameters<typeof vintApi.exec>> = useMemo(
@@ -137,6 +152,10 @@ function VintPageContent() {
 
   const levels: number[] = [];
   for (let l = state.minLevel; l <= state.maxLevel; l++) levels.push(l);
+
+  // **既存の宣言を上回らない組は出せない。**サーバは同格も `<=` で弾くので、
+  // 選ばせてからエラーで返すのではなく、選べないようにする (#4940)。
+  const bidIsLegal = vintBidBeats(bidDenom, bidLevel, state.highBid);
 
   const handleBid = () => {
     exec('bid', { level: bidLevel, denom: bidDenom });
@@ -347,7 +366,7 @@ function VintPageContent() {
                       onChange={(e) => setBidLevel(Number(e.target.value))}
                     >
                       {levels.map((l) => (
-                        <option key={l} value={l}>
+                        <option key={l} value={l} disabled={!vintLevelHasLegalBid(l, state.highBid)}>
                           {l}
                         </option>
                       ))}
@@ -362,15 +381,26 @@ function VintPageContent() {
                       onChange={(e) => setBidDenom(Number(e.target.value))}
                     >
                       {DENOMS.map((d) => (
-                        <option key={d} value={d}>
+                        <option key={d} value={d} disabled={!vintBidBeats(d, bidLevel, state.highBid)}>
                           {denomLabel(d)}
                         </option>
                       ))}
                     </select>
                   </label>
-                  <button type="button" className={btnPrimary} onClick={handleBid} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleBid}
+                    disabled={loading || !bidIsLegal}
+                    data-testid="vint-bid-button"
+                  >
                     {t('bidButton')}
                   </button>
+                  {!bidIsLegal && (
+                    <span className="text-ds-warning text-xs" data-testid="vint-bid-too-low">
+                      {t('bidMustBeat')}
+                    </span>
+                  )}
                   <button type="button" className={btnWarning} onClick={() => exec('pass')} disabled={loading}>
                     {t('passButton')}
                   </button>

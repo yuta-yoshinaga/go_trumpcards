@@ -65,5 +65,6 @@
     "vintForced": "This is the only legal card — following suit is compulsory",
     "vintDeclaring": "You are on the declaring side — every trick you take scores",
     "vintDefending": "You are defending, and in Vint defenders score for the tricks they take too"
-  }
+  },
+  "bidMustBeat": "Pick a bid that beats the standing one"
 }
