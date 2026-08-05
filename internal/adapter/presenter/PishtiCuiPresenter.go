@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -19,6 +20,27 @@ func (p *PishtiCuiPresenter) Output(pg interfaces.PishtiGame, lastErr error) str
 	return buildCuiOutput(i18n.T("pishti.helpTitle"), func(b *strings.Builder) {
 		for i := 0; i < pg.GetPlayerCnt(); i++ {
 			b.WriteString(pishtiPlayerStr(pg.GetPlayer(i), i))
+		}
+		// **対局中の優劣を数値で出す。**ピシュティ賞と捕獲枚数を別々に出すだけ
+		// では、複数プレイヤー分を毎回暗算することになる (#4892)。ゲーム終了後は
+		// 下の最終スコアが出るので、ここでは出さない。
+		if !pg.GetGameEndFlag() {
+			prov := pg.GetProvisionalScores()
+			leader := pg.GetProvisionalLeader()
+			for i := 0; i < pg.GetPlayerCnt() && i < len(prov); i++ {
+				pl := pg.GetPlayer(i)
+				if pl == nil {
+					continue
+				}
+				line := i18n.Tf("pishti.provisional",
+					"name", cuiPlayerName(pl, i), "score", strconv.Itoa(prov[i]))
+				if i == leader {
+					line = color.Yellow(line)
+				}
+				b.WriteString(line + "\n")
+			}
+			// **カード点は含まないと断る。**確実な分だけの近似値なので。
+			b.WriteString(i18n.T("pishti.provisionalNote") + "\n")
 		}
 		b.WriteString("----------\n")
 
