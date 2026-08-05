@@ -21,6 +21,7 @@
   "labelCpu": "CPU",
   "playerHeader": "[P{{idx}} {{label}}] ",
   "goalLine": "Goal: {{card}} ({{count}} left)",
+  "goalPlayable": " ← playable now!",
   "goalEmpty": "Goal: (empty)",
   "humanHandLabel": "  Hand: ",
   "humanHandEmpty": "(empty)",

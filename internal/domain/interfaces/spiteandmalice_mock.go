@@ -95,6 +95,10 @@ func (_m *MockSpiteAndMaliceGame) GetFoundationTopValue(foundationIdx int) int {
 	return _m.Called(foundationIdx).Int(0)
 }
 
+func (_m *MockSpiteAndMaliceGame) IsGoalTopPlayable(playerIdx int) bool {
+	return _m.Called(playerIdx).Bool(0)
+}
+
 func (_m *MockSpiteAndMaliceGame) GetPlayer(idx int) *domain.SpiteAndMalicePlayer {
 	ret := _m.Called(idx)
 	v := ret.Get(0)

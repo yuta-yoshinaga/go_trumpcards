@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -29,8 +30,38 @@ func setupSpiteAndMaliceCuiMockDefaults(g *interfaces.MockSpiteAndMaliceGame) {
 	cpu := domain.NewSpiteAndMalicePlayer(true)
 	cpu.AddToHand(domain.NewCard(domain.CardDesignDiamond, 3, false))
 	cpu.AddToGoal(domain.NewCard(domain.CardDesignClover, 7, false))
+	g.On("IsGoalTopPlayable", 0).Return(false).Maybe()
+	g.On("IsGoalTopPlayable", 1).Return(false).Maybe()
 	g.On("GetPlayer", 0).Return(player).Maybe()
 	g.On("GetPlayer", 1).Return(cpu).Maybe()
+}
+
+// **ゴール札を先に空にした方が勝ち。**Web は出せる状態のゴール札にリングを出す
+// のに、CUI は札と残り枚数だけで毎ターン全基礎札と見比べさせていた (#4876)。
+func TestSpiteAndMaliceCuiPresenter_MarksPlayableGoalTop(t *testing.T) {
+	t.Run("marks the human's goal top when it can go out", func(t *testing.T) {
+		g := new(interfaces.MockSpiteAndMaliceGame)
+		// **defaults より先に登録する。**testify は最初に一致した期待値を使う。
+		g.On("IsGoalTopPlayable", 0).Return(true)
+		setupSpiteAndMaliceCuiMockDefaults(g)
+		result := new(SpiteAndMaliceCuiPresenter).Output(g, nil)
+		assert.Contains(t, result, "今出せます")
+		// 印は 1 つだけ = CPU 側には付かない。
+		assert.Equal(t, 1, strings.Count(result, "今出せます"))
+	})
+
+	t.Run("no mark when it cannot", func(t *testing.T) {
+		g := new(interfaces.MockSpiteAndMaliceGame)
+		setupSpiteAndMaliceCuiMockDefaults(g)
+		assert.NotContains(t, new(SpiteAndMaliceCuiPresenter).Output(g, nil), "今出せます")
+	})
+
+	t.Run("no mark for the cpu even when its goal top is playable", func(t *testing.T) {
+		g := new(interfaces.MockSpiteAndMaliceGame)
+		g.On("IsGoalTopPlayable", 1).Return(true)
+		setupSpiteAndMaliceCuiMockDefaults(g)
+		assert.NotContains(t, new(SpiteAndMaliceCuiPresenter).Output(g, nil), "今出せます")
+	})
 }
 
 func TestSpiteAndMaliceCuiPresenter_Output(t *testing.T) {
