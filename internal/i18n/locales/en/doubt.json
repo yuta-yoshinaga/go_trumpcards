@@ -29,6 +29,7 @@
   "promptDoubtPhaseGeneric": "Doubt phase",
   "promptDoubtHelp": "d <idx...>: doubt / s: skip",
   "promptCurrentPlayer": "{{name}} to play",
+  "promptHonestValue": "An honest claim would be: {{value}}",
   "promptPlayHelp": "p <value> <idx...>: play cards",
   "tell": "(looks nervous…)"
 }

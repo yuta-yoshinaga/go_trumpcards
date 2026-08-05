@@ -29,6 +29,7 @@
   "promptDoubtPhaseGeneric": "ダウトフェーズ",
   "promptDoubtHelp": "d <idx...>・・・ダウト / s・・・スキップ",
   "promptCurrentPlayer": "手番: {{name}}",
+  "promptHonestValue": "正直に申告するなら: {{value}}",
   "promptPlayHelp": "p <値> <idx...>・・・カードを出す",
   "tell": "（そわそわしている…）"
 }

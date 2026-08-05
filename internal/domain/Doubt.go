@@ -15,6 +15,17 @@ const MinClaimedValue = 1
 // MaxClaimedValue claimed value の最大値 (K)
 const MaxClaimedValue = 13
 
+// DoubtHonestClaimValue returns the value an honest play would claim next: the
+// previous claim plus one, wrapping K back to A, or A when nothing has been
+// played yet. Any value in range is legal — this is the value that is true
+// rather than a bluff, which is why both UIs offer it (#4860).
+func DoubtHonestClaimValue(lastAction *DoubtAction) int {
+	if lastAction == nil {
+		return MinClaimedValue
+	}
+	return (lastAction.ClaimedValue % MaxClaimedValue) + 1
+}
+
 // randomDoubtChance CPUがランダムにダウトを宣言する確率
 const randomDoubtChance = 0.3
 
