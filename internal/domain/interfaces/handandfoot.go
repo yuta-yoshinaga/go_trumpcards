@@ -61,6 +61,8 @@ type HandAndFootGame interface {
 	GetPlayer(i int) *domain.HandAndFootPlayer
 	// GetTeamMelds 指定チームのメルドを取得する
 	GetTeamMelds(team int) []*domain.CanastaMeld
+	// GetGoOutStatus 指定プレイヤーの上がり条件の内訳を取得する
+	GetGoOutStatus(playerIdx int) domain.HandAndFootGoOutStatus
 	// GetTeamRed3s 指定チームの赤3を取得する
 	GetTeamRed3s(team int) []*domain.Card
 	// GetDrewFromDiscard 捨て札から引いたかを返す

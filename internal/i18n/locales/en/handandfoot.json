@@ -41,5 +41,11 @@
   "result.cpuWin": "Game over! The CPU team wins!",
   "hintMeld": "[HINT: meld candidates {{melds}}]",
   "hintNone": "No melds can be played right now.",
-  "hintNotYourTurn": "It is not your turn right now."
+  "hintNotYourTurn": "It is not your turn right now.",
+  "minMeldLine": "  Initial meld minimum: {{points}} (cumulative {{score}})",
+  "goOutReady": "  You can go out",
+  "goOutBlocked": "  Cannot go out yet: {{reasons}}",
+  "goOutNeedFoot": "foot not picked up",
+  "goOutNeedRed": "red canastas {{have}}/{{need}}",
+  "goOutNeedBlack": "black canastas {{have}}/{{need}}"
 }

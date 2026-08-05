@@ -282,15 +282,58 @@ func (g *HandAndFoot) teamCanastaCounts(team int) (red, black int) {
 	return red, black
 }
 
-// canGoOut 上がり条件を満たすか。
-func (g *HandAndFoot) canGoOut(playerIdx int) bool {
-	p := g.players[playerIdx]
-	if !p.GetInFoot() {
-		return false
+// CanastaMinMeld はキャナスタ系の初回メルド最低点を累積得点から返す。
+// Web の canastaMinMeld と同じ帯 (マイナス 15 / 1500 未満 50 / 3000 未満 90 /
+// それ以上 120)。表示専用で、ドメインはこの最低点を強制しない。
+func CanastaMinMeld(cumulativeScore int) int {
+	switch {
+	case cumulativeScore < 0:
+		return 15
+	case cumulativeScore < 1500:
+		return 50
+	case cumulativeScore < 3000:
+		return 90
+	default:
+		return 120
 	}
-	team := HandAndFootTeamOf(playerIdx)
-	red, black := g.teamCanastaCounts(team)
-	return red >= g.config.RedCanastasToGoOut && black >= g.config.BlackCanastasToGoOut
+}
+
+// HandAndFootGoOutStatus は上がり条件の充足状況。UI が「なぜ今上がれないか」を
+// 説明するために使う (#4836)。
+type HandAndFootGoOutStatus struct {
+	InFoot       bool
+	RedCanastas  int
+	RedRequired  int
+	BlackCanasta int
+	BlackReq     int
+}
+
+// CanGoOut は 3 条件をすべて満たしているかを返す。
+func (s HandAndFootGoOutStatus) CanGoOut() bool {
+	return s.InFoot && s.RedCanastas >= s.RedRequired && s.BlackCanasta >= s.BlackReq
+}
+
+// GetGoOutStatus は指定プレイヤーの上がり条件の内訳を返す。canGoOut と同じ判定を
+// 使うので、「条件を満たしている」表示と実際に上がれるかがずれない。
+func (g *HandAndFoot) GetGoOutStatus(playerIdx int) HandAndFootGoOutStatus {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return HandAndFootGoOutStatus{}
+	}
+	red, black := g.teamCanastaCounts(HandAndFootTeamOf(playerIdx))
+	return HandAndFootGoOutStatus{
+		InFoot:       g.players[playerIdx].GetInFoot(),
+		RedCanastas:  red,
+		RedRequired:  g.config.RedCanastasToGoOut,
+		BlackCanasta: black,
+		BlackReq:     g.config.BlackCanastasToGoOut,
+	}
+}
+
+// canGoOut 上がり条件を満たすか。表示側と同じ材料で判定するため
+// GetGoOutStatus に委譲する — 2 つの実装が並ぶと「上がれます」と出しながら
+// サーバーに拒否される状態が作れてしまう。
+func (g *HandAndFoot) canGoOut(playerIdx int) bool {
+	return g.GetGoOutStatus(playerIdx).CanGoOut()
 }
 
 // PlayerDrawFromStock 人間プレイヤーが山札から2枚引く
