@@ -497,7 +497,9 @@ function FortyAndEightPageContent() {
                   >
                     {t('draw')}
                   </button>
-                  {state.canRedeal && (
+                  {/* **消すと「使い切った」のか「元から無い」のか区別が付かない。**
+                      CUI は毎回どちらかを必ず案内している (#4914)。 */}
+                  {state.canRedeal ? (
                     <button
                       type="button"
                       className={btnPrimary}
@@ -506,6 +508,12 @@ function FortyAndEightPageContent() {
                     >
                       {t('redeal')}
                     </button>
+                  ) : (
+                    state.redealUsed && (
+                      <span className="mx-1.5 text-ds-text-muted text-xs" data-testid="fe-redeal-used">
+                        {t('redealUsed')}
+                      </span>
+                    )
                   )}
                   <button
                     type="button"
