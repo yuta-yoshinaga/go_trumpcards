@@ -106,6 +106,35 @@ func TestSixBidSoloCuiPresenter_ShowsTheLadderWhileBidding(t *testing.T) {
 	// 並びは低い順。
 	assert.Less(t, strings.Index(out, "1:ソロ"), strings.Index(out, "6:コール・ソロ"))
 	assert.Contains(t, out, "61点以上")
+	// 場にビッドが無いので、どの段階にも取られた印は付かない (受け入れ条件1)。
+	assert.NotContains(t, out, "[1:ソロ]")
+	assert.NotContains(t, out, "これ以上の段階はありません")
+}
+
+// **上回れない段階は選べない。**Web は選択肢から外すのに、CUI は 6 段階を常に
+// 並べるだけで、現在ビッドと突き合わせる暗算を強いていた (#4900)。
+func TestSixBidSoloCuiPresenter_MarksTheLadderStepsAlreadyTaken(t *testing.T) {
+	build := func(kind domain.SixBidSoloBidKind) string {
+		o := defaultSixBidSoloOpts()
+		o.phase = domain.SixBidSoloPhaseBid
+		o.highBid = &domain.SixBidSoloBid{Kind: kind}
+		return new(presenter.SixBidSoloCuiPresenter).Output(setupSixBidSoloCuiMock(o), nil)
+	}
+
+	// ミゼール(3)が立っている → 1〜3 は選べない、4〜6 は選べる。
+	out := build(domain.SixBidSoloBidMisere)
+	assert.Contains(t, out, "[1:ソロ]")
+	assert.Contains(t, out, "[3:ミゼール]")
+	assert.NotContains(t, out, "[4:ギャランティー・ソロ]")
+	assert.NotContains(t, out, "[6:コール・ソロ]")
+	// 序列そのものは残す。判断材料なので消さない。
+	assert.Contains(t, out, "4:ギャランティー・ソロ")
+	assert.NotContains(t, out, "これ以上の段階はありません")
+
+	// **最高段階まで取られたら破綻せず言い切る** (受け入れ条件3)。
+	top := build(domain.SixBidSoloBidCall)
+	assert.Contains(t, top, "[6:コール・ソロ]")
+	assert.Contains(t, top, "これ以上の段階はありません")
 }
 
 // **コール・ソロの指名札を見せる。**交換が起きたことが読めないと意味が通らない。

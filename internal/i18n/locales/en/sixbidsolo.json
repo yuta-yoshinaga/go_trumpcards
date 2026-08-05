@@ -19,6 +19,8 @@
   "trick": "Trick: {{cards}}",
   "playable": "Playable: {{indexes}}",
   "ladderTitle": "Bid ladder:",
+  "ladderTaken": "[{{bid}}]",
+  "ladderNoneLeft": "(nothing higher remains; pass only)",
   "bid.pass": "pass",
   "bid.solo": "Solo",
   "bid.heartSolo": "Heart Solo",
