@@ -28,6 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { LAUGHANDLIEDOWN_HELP, parseLaughAndLieDownCommand } from '../utils/cli/commands/laughandliedownCommands';
 import { formatLaughAndLieDownState } from '../utils/cli/formatters/laughandliedownFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const LLD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -82,6 +83,12 @@ function LaughAndLieDownPageContent() {
   // owns them. Recounting the table here would put the rule in two places.
   const playable = new Set(state.validIndices);
   const threeTakes = new Set(state.threeTakeIndices);
+  // **押したときだけ出す。**`frontendHintEnabled` は設定トグルであって
+  // 「ヒントを押したか」ではない (#4605)。
+  const showServerHint = frontendHintEnabled && isRequestedHint(state);
+  // CUI は `hintPlay` に「1枚 or 3枚」を書いているのに、Web はカードを光らせる
+  // だけで takeCount を捨てていた (#4884)。
+  const hintWantsThree = showServerHint && state.hint?.takeCount === 3;
 
   const play = (i: number) => {
     if (!isHumanTurn || !playable.has(i)) return;
@@ -190,7 +197,7 @@ function LaughAndLieDownPageContent() {
                         className={[
                           'rounded transition-transform',
                           canPlay ? 'hover:-translate-y-2' : 'opacity-60',
-                          frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+                          showServerHint && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
                         ].join(' ')}
                       >
                         <AnimatedCard card={card} width={cardWidth} draggable={false} />
@@ -205,7 +212,12 @@ function LaughAndLieDownPageContent() {
                           className={[
                             'mt-1 px-2 py-1 rounded text-[10px] min-h-11',
                             threeArmed === i ? 'bg-ds-accent text-ds-on-accent' : 'bg-ds-surface-2 text-ds-text',
+                            // **ヒントが 3 枚取りを勧めているなら、そのボタンも
+                            // 示す。**カードを光らせるだけでは、さらにこれを
+                            // 押す必要があることが伝わらない (#4884)。
+                            hintWantsThree && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
                           ].join(' ')}
+                          data-hint-take-three={hintWantsThree && state.hint?.cardIndex === i ? 'true' : undefined}
                         >
                           {t('takeThree')}
                         </button>

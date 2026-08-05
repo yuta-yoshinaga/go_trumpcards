@@ -112,6 +112,44 @@ describe('LaughAndLieDownPage', () => {
     expect(screen.getAllByRole('button', { name: '3枚取る' })).toHaveLength(1);
   });
 
+  // **CUI は「1枚 or 3枚」を書いている。**Web はカードを光らせるだけで
+  // takeCount を捨てており、さらにボタンを押す必要があることが伝わらなかった (#4884)。
+  describe('three-take hint', () => {
+    const armed = (takeCount: number) =>
+      makeState({
+        validIndices: [0],
+        threeTakeIndices: [0],
+        hint: { cardIndex: 0, takeCount, reason: 'x' },
+        messageCode: 'laughandliedown.hintRequested',
+      });
+
+    it('marks the three-take button when the hint asks for three', async () => {
+      mockExec.mockResolvedValue(armed(3));
+      renderWithProviders(<LaughAndLieDownPage />);
+      const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+      fireEvent.click(toggle);
+
+      await waitFor(() => expect(document.querySelectorAll('[data-hint-take-three="true"]')).toHaveLength(1));
+    });
+
+    it('leaves it unmarked when the hint asks for one', async () => {
+      mockExec.mockResolvedValue(armed(1));
+      renderWithProviders(<LaughAndLieDownPage />);
+      const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+      fireEvent.click(toggle);
+
+      await waitFor(() => expect(screen.getByRole('button', { name: '3枚取る' })).toBeInTheDocument());
+      expect(document.querySelectorAll('[data-hint-take-three="true"]')).toHaveLength(0);
+    });
+
+    it('leaves it unmarked while hints are off', async () => {
+      mockExec.mockResolvedValue(armed(3));
+      renderWithProviders(<LaughAndLieDownPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: '3枚取る' })).toBeInTheDocument());
+      expect(document.querySelectorAll('[data-hint-take-three="true"]')).toHaveLength(0);
+    });
+  });
+
   it('sends a take count of three once the option is armed', async () => {
     mockExec.mockResolvedValue(makeState({ validIndices: [0], threeTakeIndices: [0] }));
     renderWithProviders(<LaughAndLieDownPage />);
