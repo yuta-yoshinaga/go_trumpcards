@@ -18,5 +18,6 @@
   "gameEnd": "ゲーム終了！",
   "scoreEntry": "  チーム{{team}}: {{score}}点",
   "promptCurrentTurn": "手番: {{name}}",
-  "promptHelp": "p <hand> で捕獲または場に置く / n で次のラウンド"
+  "promptHelp": "p <hand> で捕獲または場に置く / n で次のラウンド",
+  "teamCaptured": "チーム{{team}} 捕獲: {{count}}枚（{{need}}枚以上で +{{bonus}}）"
 }

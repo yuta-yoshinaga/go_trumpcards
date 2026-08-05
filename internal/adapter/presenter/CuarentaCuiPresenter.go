@@ -24,6 +24,27 @@ func (p *CuarentaCuiPresenter) Output(cg interfaces.CuarentaGame, lastErr error)
 				"team", strconv.Itoa(t),
 				"score", strconv.Itoa(cg.GetTeamScore(t))) + "\n")
 		}
+		// **ボーナスまでの残りをチーム単位で出す。**プレイヤー単位の捕獲数しか
+		// 出しておらず、2 人分を毎回自分で合計させていた (#4893)。
+		// **閾値は「超えた」チーム** — 20 枚ちょうどでは付かない。
+		captured := [domain.CuarentaTeamCnt]int{}
+		for i := 0; i < cg.GetPlayerCnt(); i++ {
+			if pl := cg.GetPlayer(i); pl != nil {
+				captured[domain.CuarentaTeamOf(i)] += pl.CapturedCount()
+			}
+		}
+		for t := 0; t < domain.CuarentaTeamCnt; t++ {
+			line := i18n.Tf("cuarenta.teamCaptured",
+				"team", strconv.Itoa(t),
+				"count", strconv.Itoa(captured[t]),
+				"need", strconv.Itoa(domain.CuarentaMostCardsThreshold+1),
+				"bonus", strconv.Itoa(domain.CuarentaScoreMostCards))
+			// Web と同じく、閾値の 1 つ手前から強調する (あと 2 枚)。
+			if captured[t] >= domain.CuarentaMostCardsThreshold-1 {
+				line = color.Yellow(line)
+			}
+			b.WriteString(line + "\n")
+		}
 		b.WriteString("----------\n")
 
 		for i := 0; i < cg.GetPlayerCnt(); i++ {

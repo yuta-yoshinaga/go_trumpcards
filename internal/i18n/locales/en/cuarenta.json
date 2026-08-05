@@ -18,5 +18,6 @@
   "gameEnd": "Game over!",
   "scoreEntry": "  Team {{team}}: {{score}} pts",
   "promptCurrentTurn": "Turn: {{name}}",
-  "promptHelp": "p <hand> to capture or lay / n for next round"
+  "promptHelp": "p <hand> to capture or lay / n for next round",
+  "teamCaptured": "Team {{team}} captured: {{count}} ({{need}}+ earns +{{bonus}})"
 }
