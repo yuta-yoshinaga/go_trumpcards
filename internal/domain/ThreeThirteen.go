@@ -598,6 +598,21 @@ func (g *ThreeThirteen) GetPlayerDeadwoodValue(i int) int {
 	return threeThirteenDeadwoodValue(dead, g.WildRank())
 }
 
+// GetDeadwoodAfterDiscard returns the deadwood the player would be left with if
+// they discarded the card at cardIndex, or -1 when the index is out of range.
+//
+// **捨てる前に分かる情報。**Web は 1 枚選ぶたびに予測デッドウッドを出しているのに、
+// CUI は今の値しか出しておらず、どれを捨てると得かは実際に捨てるまで分からなかった
+// (#4840)。ワイルドランクは現在のラウンドのものを使う。
+func (g *ThreeThirteen) GetDeadwoodAfterDiscard(playerIdx, cardIndex int) int {
+	p := g.GetPlayer(playerIdx)
+	if p == nil || cardIndex < 0 || cardIndex >= p.GetCardsSize() {
+		return -1
+	}
+	_, dead := threeThirteenBestMelds(handWithout(p, cardIndex), g.WildRank())
+	return threeThirteenDeadwoodValue(dead, g.WildRank())
+}
+
 // --- Private helpers ---
 
 func (g *ThreeThirteen) sortAllHands() {

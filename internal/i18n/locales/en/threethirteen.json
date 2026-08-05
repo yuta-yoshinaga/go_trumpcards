@@ -9,6 +9,7 @@
   "helpSetPlayers": "  sp [2-4]             player count",
   "header": "Round {{round}}/11  Wild: {{wild}}  Stock: {{stock}}",
   "discardLine": "Discard: {{card}}",
+  "discardPreview": "  Deadwood after discarding: {{values}}",
   "playerLine": "{{name}}: cumulative {{cum}} round {{round}} cards {{cards}} deadwood {{deadwood}}",
   "gameEnd": "Game over! {{name}} wins!",
   "drawPhase": "Draw a card from the stock or the discard pile",

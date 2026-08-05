@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -41,8 +42,39 @@ func setupThreeThirteenCuiMock(phase domain.ThreeThirteenPhase, gameEnd bool) (*
 	for i := 0; i < 4; i++ {
 		m.On("GetPlayer", i).Return(players[i])
 		m.On("GetPlayerDeadwoodValue", i).Return(5)
+		m.On("GetDeadwoodAfterDiscard", i, mock.Anything).Return(4).Maybe()
 	}
 	return m, players
+}
+
+// **捨てる前に分かる情報。**Web は 1 枚選ぶたびに予測デッドウッドを出しているのに、
+// CUI は今の値しか出さず、どれを捨てると得かは捨てるまで分からなかった (#4840)。
+func TestThreeThirteenCuiPresenter_DiscardPreview(t *testing.T) {
+	p := new(presenter.ThreeThirteenCuiPresenter)
+
+	t.Run("lists the deadwood for each discard", func(t *testing.T) {
+		m, players := setupThreeThirteenCuiMock(domain.ThreeThirteenPhaseDiscard, false)
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeadwoodAfterDiscard")
+		m.On("GetDeadwoodAfterDiscard", 0, 0).Return(9)
+		m.On("GetDeadwoodAfterDiscard", 0, 1).Return(5)
+		m.On("GetDeadwoodAfterDiscard", mock.Anything, mock.Anything).Return(0).Maybe()
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "捨てた後のデッドウッド: [0]9  [1]5")
+	})
+
+	t.Run("not shown in the draw phase", func(t *testing.T) {
+		m, _ := setupThreeThirteenCuiMock(domain.ThreeThirteenPhaseDraw, false)
+		assert.NotContains(t, p.Output(m, nil), "捨てた後のデッドウッド")
+	})
+
+	t.Run("not shown while another player is on turn", func(t *testing.T) {
+		m, _ := setupThreeThirteenCuiMock(domain.ThreeThirteenPhaseDiscard, false)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(2)
+		assert.NotContains(t, p.Output(m, nil), "捨てた後のデッドウッド")
+	})
 }
 
 func TestThreeThirteenCuiPresenter_Output(t *testing.T) {
