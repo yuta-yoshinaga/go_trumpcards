@@ -141,3 +141,41 @@ func TestBigTwoCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, p.Output(m, errors.New("invalid play")), "invalid play")
 	})
 }
+
+// 8 種類の役名が全部揃っていること。#5024 で switch にしたとき、patch coverage が
+// 落ちた分をここで埋める。名前の抜けは Web のバッジとの食い違いになる。
+func TestBigTwoCuiPresenter_NamesEveryPlayType(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.BigTwoCuiPresenter)
+
+	cases := []struct {
+		playType domain.BigTwoPlayType
+		want     string
+	}{
+		{domain.BigTwoPlaySingle, "[シングル]"},
+		{domain.BigTwoPlayPair, "[ペア]"},
+		{domain.BigTwoPlayTriple, "[トリプル]"},
+		{domain.BigTwoPlayStraight, "[ストレート]"},
+		{domain.BigTwoPlayFlush, "[フラッシュ]"},
+		{domain.BigTwoPlayFullHouse, "[フルハウス]"},
+		{domain.BigTwoPlayFourOfAKind, "[フォーカード]"},
+		{domain.BigTwoPlayStraightFlush, "[ストレートフラッシュ]"},
+	}
+	for _, tc := range cases {
+		m := new(interfaces.MockBigTwoGame)
+		players := makeBigTwoPlayers()
+		m.On("GetTableCards").Return([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
+		m.On("GetTablePlayType").Return(tc.playType)
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetCpuActions").Return(([]*domain.BigTwoAction)(nil))
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+		m.On("GetPlayerCnt").Return(4)
+		for i := 0; i < 4; i++ {
+			m.On("GetPlayer", i).Return(players[i])
+		}
+		assert.Contains(t, p.Output(m, nil), tc.want)
+	}
+}
