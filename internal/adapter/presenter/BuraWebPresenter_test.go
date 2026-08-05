@@ -128,8 +128,15 @@ func TestBuraWebPresenter_HintOutputCarriesTheSameSuggestion(t *testing.T) {
 		switch hint["reason"] {
 		case "bura.hint.lead", "bura.hint.respond":
 			assert.NotEmpty(t, hint["cardIndices"], "a card suggestion must name the cards")
-		case "bura.hint.declare", "bura.hint.claim":
-			assert.Empty(t, hint["cardIndices"], "there are no cards to play when the advice is to declare")
+		case "bura.hint.declare":
+			// **役はどれも手札 3 枚すべてで成る。**一番重要な瞬間に何も
+			// 光らないのが元の不具合だった (#4909)。
+			idx, ok := hint["cardIndices"].([]any)
+			require.True(t, ok, "declaring must name the cards that form the combination")
+			assert.Len(t, idx, domain.BuraHandSize)
+		case "bura.hint.claim":
+			// クレームは得点の主張で、特定の札の話ではない。
+			assert.Empty(t, hint["cardIndices"], "a points claim is not about particular cards")
 		default:
 			t.Fatalf("unexpected hint reason on a live round: %v", hint["reason"])
 		}
@@ -203,4 +210,31 @@ func TestBuraWebPresenter_HintReportsAFinishedRound(t *testing.T) {
 	out := buraDecode(t, new(BuraWebPresenter).HintOutput(b))
 	hint := out["hint"].(map[string]any)
 	assert.Equal(t, "bura.hint.game_end", hint["reason"])
+}
+
+// **役があるときは必ず 3 枚すべてが挙がる。**ランダムな配りに任せると declare の
+// 分岐を一度も踏まないまま通ることがあるので、役のある手札を直接組んで踏む (#4909)。
+func TestBuraWebPresenter_DeclareHintNamesTheWholeHand(t *testing.T) {
+	b := buraTestGame(t)
+	// 全部切札 = ブラ。手札全体で成る役なので、挙がるのは 3 枚すべて。
+	trump := b.GetTrumpSuit()
+	p := b.GetPlayer(0)
+	p.Reset()
+	for _, v := range []int{1, 10, 13} {
+		p.AddCard(domain.NewCard(trump, v, false))
+	}
+	hand := make([]*domain.Card, p.GetCardsSize())
+	for i := range hand {
+		hand[i] = p.GetCard(i)
+	}
+	require.Equal(t, domain.BuraCombinationBura, domain.BuraDetectCombination(hand, trump))
+
+	out := buraDecode(t, new(BuraWebPresenter).HintOutput(b))
+	hint, ok := out["hint"].(map[string]any)
+	require.True(t, ok)
+	require.Equal(t, "bura.hint.declare", hint["reason"])
+	idx, ok := hint["cardIndices"].([]any)
+	require.True(t, ok)
+	assert.Len(t, idx, domain.BuraHandSize)
+	assert.Equal(t, []any{float64(0), float64(1), float64(2)}, idx)
 }
