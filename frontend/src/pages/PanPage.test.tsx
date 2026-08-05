@@ -80,6 +80,36 @@ const playPhaseState: PanResponse = {
   ],
 };
 
+// バジェ (3/5/7 のセット) を場に出した状態。4 のセットは valle ではない。
+const valleMeldState: PanResponse = {
+  ...drawPhaseState,
+  phase: 1,
+  players: [
+    player({ cards: [...humanHand] }),
+    player({
+      id: 1,
+      isHuman: false,
+      cardCount: 7,
+      laidMelds: [
+        {
+          cards: [
+            { design: 'DIAMOND', value: 5 },
+            { design: 'HEART', value: 5 },
+            { design: 'CLOVER', value: 5 },
+          ],
+        },
+        {
+          cards: [
+            { design: 'DIAMOND', value: 4 },
+            { design: 'HEART', value: 4 },
+            { design: 'CLOVER', value: 4 },
+          ],
+        },
+      ],
+    }),
+  ],
+};
+
 const roundEndState: PanResponse = { ...drawPhaseState, phase: 2 };
 const gameEndState: PanResponse = {
   ...drawPhaseState,
@@ -540,5 +570,15 @@ describe('PanPage meld candidates', () => {
     renderWithProviders(<PanPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'メルド' })).toBeInTheDocument());
     expect(screen.queryByTestId('pan-meld-candidates')).not.toBeInTheDocument();
+  });
+
+  // **チップ列が動いた理由を盤面から読めるようにする。**バジェ (3/5/7 のセット) は
+  // 全員にチップを配るのに、どのメルドがそれなのか表示が無かった (#4853)。
+  it('badges only the valle melds on the table', async () => {
+    mockExec.mockResolvedValue(valleMeldState);
+    renderWithProviders(<PanPage />);
+
+    await waitFor(() => expect(screen.getByTestId('pan-valle-1-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('pan-valle-1-1')).not.toBeInTheDocument();
   });
 });
