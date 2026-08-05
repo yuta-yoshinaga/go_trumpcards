@@ -142,7 +142,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 				case r.HandName != "":
 					b.WriteString(i18n.Tf("holdem.resultHand",
 						"name", name,
-						"hand", r.HandName,
+						"hand", cuiPokerHandName(r.HandRank),
 						"kickers", kickers))
 				default:
 					b.WriteString(i18n.Tf("holdem.resultName", "name", name))

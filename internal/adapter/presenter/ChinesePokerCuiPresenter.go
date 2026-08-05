@@ -141,8 +141,10 @@ func (pp *ChinesePokerCuiPresenter) phaseStr(phase int) string {
 
 // frontRankStr フロントハンドランク文字列（3枚ポーカー）
 func (pp *ChinesePokerCuiPresenter) frontRankStr(rank int) string {
+	// 3 枚役の名前はスリーカードポーカーと同じ表を引く。英語の
+	// `ThreeCardHandNames` を直接返すと日本語ロケールでも英語で出る。
 	if rank >= 0 && rank < len(domain.ThreeCardHandNames) {
-		return domain.ThreeCardHandNames[rank]
+		return threeCardHandName(rank)
 	}
 	return i18n.T("chinesepoker.rankUnknown")
 }

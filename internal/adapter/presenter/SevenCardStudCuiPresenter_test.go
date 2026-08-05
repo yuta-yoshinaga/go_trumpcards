@@ -198,7 +198,7 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(s, nil)
 		assert.Contains(t, result, "[結果]")
-		assert.Contains(t, result, "あなた: Flush")
+		assert.Contains(t, result, "あなた: フラッシュ")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
@@ -210,7 +210,7 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(s, nil)
-		assert.Contains(t, result, "あなた: One Pair (キッカー: A, Q, 10)")
+		assert.Contains(t, result, "あなた: ワンペア (キッカー: A, Q, 10)")
 	})
 
 	t.Run("showdown results with CPU winner", func(t *testing.T) {
@@ -221,14 +221,14 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(s, nil)
-		assert.Contains(t, result, "CPU 1: One Pair (キッカー: K, Q, J)")
+		assert.Contains(t, result, "CPU 1: ワンペア (キッカー: K, Q, J)")
 	})
 
 	t.Run("results not shown in non-end phase", func(t *testing.T) {
 		s, _ := makeSevenCardStudForPresenter()
 		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
 		s.SetRoundResults([]domain.SevenCardStudResult{
-			{PlayerIdx: 0, HandName: "Flush", WonAmount: 100},
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100},
 		})
 
 		result := p.Output(s, nil)
@@ -255,13 +255,13 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		s, _ := makeSevenCardStudForPresenter()
 		s.SetPhase(domain.SevenCardStudPhaseEnd)
 		s.SetRoundResults([]domain.SevenCardStudResult{
-			{PlayerIdx: 0, HandName: "One Pair", WonAmount: 0, Mucked: true},
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, Mucked: true},
 			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100},
 		})
 
 		result := p.Output(s, nil)
 		assert.Contains(t, result, "あなた: マック")
-		assert.NotContains(t, result, "あなた: One Pair")
+		assert.NotContains(t, result, "あなた: ワンペア")
 	})
 
 	t.Run("results shown in showdown phase", func(t *testing.T) {
@@ -273,7 +273,7 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(s, nil)
 		assert.Contains(t, result, "[結果]")
-		assert.Contains(t, result, "あなた: Flush")
+		assert.Contains(t, result, "あなた: フラッシュ")
 	})
 
 	t.Run("HUD stats shown when totalHands > 0", func(t *testing.T) {

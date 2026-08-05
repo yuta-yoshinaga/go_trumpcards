@@ -75,7 +75,9 @@ func TestDeuceToSevenCuiPresenter_Output_EndPhaseShowsHandName(t *testing.T) {
 	dt.SetRoundResults([]domain.DeuceToSevenResult{{PlayerIdx: 1, HandRank: domain.PokerHandHighCard, HandName: "High Card", WonAmount: 100}})
 
 	out := pres.Output(dt, nil)
-	assert.Contains(t, out, "High Card")
+	// 役名は日本語ロケールで日本語 (英語の PokerHandNames 直埋めをやめた)。
+	assert.Contains(t, out, "ハイカード")
+	assert.NotContains(t, out, "High Card")
 	assert.Contains(t, out, "ゲーム終了")
 	assert.Contains(t, strings.ToLower(out), "100")
 }

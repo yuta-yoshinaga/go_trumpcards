@@ -153,7 +153,7 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 				case r.HandName != "":
 					b.WriteString(i18n.Tf("pineapple.resultHand",
 						"name", name,
-						"hand", r.HandName,
+						"hand", cuiPokerHandName(r.HandRank),
 						"kickers", kickers))
 				default:
 					b.WriteString(i18n.Tf("pineapple.resultName", "name", name))

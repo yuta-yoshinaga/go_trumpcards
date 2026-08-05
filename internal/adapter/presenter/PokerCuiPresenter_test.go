@@ -195,7 +195,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		players[0].EvalHand()
 
 		result := pres.Output(p, nil)
-		assert.Contains(t, result, "[Straight Flush]")
+		assert.Contains(t, result, "[ストレートフラッシュ]")
 	})
 
 	t.Run("human hand name not shown in non-end phase", func(t *testing.T) {
@@ -209,7 +209,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		players[0].EvalHand()
 
 		result := pres.Output(p, nil)
-		assert.NotContains(t, result, "[Straight Flush]")
+		assert.NotContains(t, result, "[ストレートフラッシュ]")
 	})
 
 	t.Run("CPU cards shown at end phase when not folded", func(t *testing.T) {
@@ -225,7 +225,10 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		result := pres.Output(p, nil)
 		assert.Contains(t, result, "♠5")
 		assert.Contains(t, result, "♥5")
-		assert.Contains(t, result, "[Two Pair]")
+		// **役名も日本語ロケールで日本語。**英語の PokerHandNames をそのまま
+		// 埋めていて、このテストがその挙動を固定していた。
+		assert.Contains(t, result, "[ツーペア]")
+		assert.NotContains(t, result, "[Two Pair]")
 	})
 
 	t.Run("CPU cards hidden when not end phase", func(t *testing.T) {
@@ -332,7 +335,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 
 		result := pres.Output(p, nil)
 		assert.Contains(t, result, "[結果]")
-		assert.Contains(t, result, "あなた: Flush")
+		assert.Contains(t, result, "あなた: フラッシュ")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
@@ -344,7 +347,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := pres.Output(p, nil)
-		assert.Contains(t, result, "あなた: One Pair (キッカー: A, Q, 10)")
+		assert.Contains(t, result, "あなた: ワンペア (キッカー: A, Q, 10)")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
@@ -356,7 +359,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := pres.Output(p, nil)
-		assert.Contains(t, result, "あなた: Flush")
+		assert.Contains(t, result, "あなた: フラッシュ")
 		assert.NotContains(t, result, "キッカー")
 	})
 
@@ -368,7 +371,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := pres.Output(p, nil)
-		assert.Contains(t, result, "CPU 1: One Pair (キッカー: K, Q, J)")
+		assert.Contains(t, result, "CPU 1: ワンペア (キッカー: K, Q, J)")
 		assert.Contains(t, result, "50チップ獲得")
 	})
 
@@ -388,7 +391,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		p, _ := makePokerCuiForPresenter()
 		p.SetPhase(domain.PokerPhaseEnd)
 		p.SetRoundResults([]domain.PokerResult{
-			{PlayerIdx: 1, HandName: "High Card", WonAmount: 0},
+			{PlayerIdx: 1, HandRank: domain.PokerHandHighCard, HandName: "High Card", WonAmount: 0},
 		})
 
 		result := pres.Output(p, nil)
@@ -399,7 +402,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		p, _ := makePokerCuiForPresenter()
 		p.SetPhase(domain.PokerPhaseDeal)
 		p.SetRoundResults([]domain.PokerResult{
-			{PlayerIdx: 0, HandName: "Flush", WonAmount: 100},
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100},
 		})
 
 		result := pres.Output(p, nil)
@@ -584,8 +587,8 @@ func TestPokerCuiPresenter_OutputWithOdds(t *testing.T) {
 
 	result := pres.OutputWithOdds(p, nil, odds)
 	assert.Contains(t, result, "[ドローオッズ]")
-	assert.Contains(t, result, "High Card: 50.00% (50/100)")
-	assert.Contains(t, result, "One Pair: 30.00% (30/100)")
+	assert.Contains(t, result, "ハイカード: 50.00% (50/100)")
+	assert.Contains(t, result, "ワンペア: 30.00% (30/100)")
 }
 
 func TestPokerCuiPresenter_OutputWithOdds_NilOdds(t *testing.T) {
