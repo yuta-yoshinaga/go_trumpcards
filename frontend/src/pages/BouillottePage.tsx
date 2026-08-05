@@ -363,6 +363,13 @@ function BouillottePageContent() {
                   <button type="button" className={btnPrimary} onClick={handleCall} disabled={loading}>
                     {potOdds.isFree ? t('callButton') : t('callButtonAmount', { amount: potOdds.callAmount })}
                   </button>
+                  {/* **レイズが消えた理由を書く。**回数上限とチップ不足を
+                      区別できないと、突然選択肢を奪われたように見える (#4924)。 */}
+                  <span className="text-ds-text-muted text-xs" data-testid="bouillotte-raise-count">
+                    {state.raiseCount >= state.maxRaises
+                      ? t('raiseCapReached', { max: state.maxRaises })
+                      : t('raiseCount', { count: state.raiseCount, max: state.maxRaises })}
+                  </span>
                   {state.canRaise && (
                     <button type="button" className={btnSuccess} onClick={handleRaise} disabled={loading}>
                       {t('raiseButtonAmount', { amount: raiseCost })}

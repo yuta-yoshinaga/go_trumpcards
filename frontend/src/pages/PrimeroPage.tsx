@@ -375,6 +375,13 @@ function PrimeroPageContent() {
                   <button type="button" className={btnPrimary} onClick={handleCall} disabled={loading}>
                     {t('callButton')}
                   </button>
+                  {/* **レイズが消えた理由を書く。**回数上限とチップ不足を
+                      区別できないと、突然選択肢を奪われたように見える (#4925)。 */}
+                  <span className="text-ds-text-muted text-xs" data-testid="primero-raise-count">
+                    {state.raiseCount >= state.maxRaises
+                      ? t('raiseCapReached', { max: state.maxRaises })
+                      : t('raiseCount', { count: state.raiseCount, max: state.maxRaises })}
+                  </span>
                   {state.canRaise && (
                     <button type="button" className={btnSuccess} onClick={handleRaise} disabled={loading}>
                       {t('raiseButton')}

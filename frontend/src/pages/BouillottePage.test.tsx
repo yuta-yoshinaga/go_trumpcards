@@ -266,4 +266,29 @@ describe('BouillottePage', () => {
     expect(screen.getByTestId('retourne-card').className).not.toContain('ring-ds-accent');
     expect(screen.queryByTestId('retourne-note')).not.toBeInTheDocument();
   });
+
+  // **レイズが消えた理由を書く。**回数上限とチップ不足を区別できないと、
+  // 突然選択肢を奪われたように見える (#4924)。
+  describe('raise cap readout', () => {
+    it('shows the current count against the cap while raising is still open', async () => {
+      mockExec.mockResolvedValue(
+        makeBouillotteState({ phase: 0, isHumanTurn: true, canRaise: true, raiseCount: 1, maxRaises: 3 }),
+      );
+      renderWithProviders(<BouillottePage />);
+      const readout = await screen.findByTestId('bouillotte-raise-count');
+      expect(readout).toHaveTextContent('レイズ 1/3回');
+      expect(readout).not.toHaveTextContent('上限');
+    });
+
+    it('says the cap was reached rather than silently dropping the button', async () => {
+      mockExec.mockResolvedValue(
+        makeBouillotteState({ phase: 0, isHumanTurn: true, canRaise: false, raiseCount: 3, maxRaises: 3 }),
+      );
+      renderWithProviders(<BouillottePage />);
+      const readout = await screen.findByTestId('bouillotte-raise-count');
+      expect(readout).toHaveTextContent('レイズ上限（3回）に達しました');
+      // ボタン自体は消えたままでよい。理由が読めることが要点。
+      expect(screen.queryByRole('button', { name: /レイズ/ })).not.toBeInTheDocument();
+    });
+  });
 });
