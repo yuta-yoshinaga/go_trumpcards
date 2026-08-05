@@ -95,14 +95,9 @@ func TestKempsCuiPresenter_AnnouncesFourOfAKind(t *testing.T) {
 	defer color.SetNoColor(orig)
 	p := new(presenter.KempsCuiPresenter)
 
-	// 配られたままでは普通そろっていない。まず出ないことを確かめる。
 	g := setupKempsTest()
 	human := g.GetPlayer(0)
-	human.Reset()
-	for _, d := range []int{domain.CardDesignSpade, domain.CardDesignHeart, domain.CardDesignClover, domain.CardDesignDiamond} {
-		human.AddCard(domain.NewCard(d, 7, false))
-	}
-	// 1 枚だけ別ランクに差し替えると成立しない。
+	// 1 枚だけ別ランクなら成立しない。
 	human.Reset()
 	for i, d := range []int{domain.CardDesignSpade, domain.CardDesignHeart, domain.CardDesignClover, domain.CardDesignDiamond} {
 		v := 7
@@ -121,4 +116,9 @@ func TestKempsCuiPresenter_AnnouncesFourOfAKind(t *testing.T) {
 	out := p.Output(g, nil)
 	assert.Contains(t, out, "4枚が同ランク")
 	assert.Contains(t, out, "ケンプスを宣言できます")
+
+	// **終局後は出さない。**宣言できないので案内する意味がなく、Web も
+	// `humanHasFour && !isGameEnd` で隠している（レビュー指摘）。
+	g.SetGameEndFlagForTest(true)
+	assert.NotContains(t, p.Output(g, nil), "4枚が同ランク")
 }

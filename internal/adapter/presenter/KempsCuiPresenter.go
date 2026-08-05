@@ -48,7 +48,8 @@ func (p *KempsCuiPresenter) Output(g interfaces.KempsGame, lastErr error) string
 				// **揃ったことに気づかないと宣言する権利ごと失う。**Web は交換中
 				// からバナーとボタン強調で知らせるのに、CUI は手札を自分で見て
 				// 判断するしかなかった (#4890)。
-				if player.HasFourOfAKind() {
+				// 終局後は宣言できないので出さない (Web も同様に隠す)。
+				if player.HasFourOfAKind() && !g.GetGameEndFlag() {
 					b.WriteString("  " + color.Green(i18n.T("kemps.fourOfAKindReady")) + "\n")
 				}
 			} else {
