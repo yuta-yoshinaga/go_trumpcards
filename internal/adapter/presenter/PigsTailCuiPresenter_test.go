@@ -1,12 +1,14 @@
 package presenter_test
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
@@ -32,6 +34,41 @@ func TestPigsTailCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, output, "山札: 52枚")
 		assert.Contains(t, output, "手番:")
 	})
+	// **Web は引いた札と判定を見せている。**CUI は CPU の行動履歴しか出さず、
+	// 自分が引いた札もペナルティかどうかも分からなかった (#4864)。
+	t.Run("last drawn card", func(t *testing.T) {
+		orig := color.NoColor()
+		color.SetNoColor(true)
+		defer color.SetNoColor(orig)
+
+		pt := newTestPigsTailForPresenter()
+		// 誰も引いていないうちは出さない。
+		assert.NotContains(t, p.Output(pt, nil), "直前に引いた札")
+
+		for !pt.IsHumanTurn() {
+			assert.NoError(t, pt.CpuAction())
+		}
+		assert.NoError(t, pt.PlayerAction(0))
+		assert.NotNil(t, pt.GetLastDrawCard())
+		if pt.GetLastPenalty() {
+			assert.Contains(t, p.Output(pt, nil), "→ ペナルティ！ 場札を全て引き取り")
+		} else {
+			assert.Contains(t, p.Output(pt, nil), "→ セーフ")
+		}
+
+		// ペナルティ側の文言も踏む。引いた札は保ったままフラグだけ立てる。
+		data, _ := json.Marshal(pt)
+		var raw map[string]json.RawMessage
+		_ = json.Unmarshal(data, &raw)
+		raw["lp"], _ = json.Marshal(true)
+		newData, _ := json.Marshal(raw)
+		_ = json.Unmarshal(newData, pt)
+
+		output := p.Output(pt, nil)
+		assert.Contains(t, output, "→ ペナルティ！ 場札を全て引き取り")
+		assert.NotContains(t, output, "→ セーフ")
+	})
+
 	t.Run("with error", func(t *testing.T) {
 		pt := newTestPigsTailForPresenter()
 		output := p.Output(pt, errors.New("test error"))

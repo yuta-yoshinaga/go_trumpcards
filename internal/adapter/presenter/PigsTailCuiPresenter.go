@@ -23,6 +23,18 @@ func (p *PigsTailCuiPresenter) Output(pt interfaces.PigsTailGame, lastErr error)
 			b.WriteString(i18n.Tf("pigtail.topCardLine", "card", cuiCardStr(topCard)) + "\n")
 		}
 
+		// **引いた札とその結果を出す。**Web は `pt-draw-reveal` でめくった札と
+		// 安全/ペナルティを見せているのに、CUI は CPU の行動履歴しか出しておらず、
+		// 自分が引いた札も判定も分からなかった (#4864)。CPU 分も同じ欄に出る
+		// (ドメインは誰が引いたかを持たない) ので、主語を置かず「直前に引いた札」とする。
+		if drawn := pt.GetLastDrawCard(); drawn != nil {
+			key, colorize := "pigtail.lastDrawSafe", color.Green
+			if pt.GetLastPenalty() {
+				key, colorize = "pigtail.lastDrawPenalty", color.Red
+			}
+			b.WriteString(colorize(i18n.Tf(key, "card", cuiCardStr(drawn))) + "\n")
+		}
+
 		b.WriteString("----------\n")
 
 		for i := 0; i < pt.GetPlayerCnt(); i++ {

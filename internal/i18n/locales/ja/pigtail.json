@@ -4,6 +4,8 @@
   "header": "山札: {{stock}}枚 / 場札: {{center}}枚",
   "topCardLine": "場札トップ: {{card}}",
   "playerLine": "{{name}}: {{cards}}枚",
+  "lastDrawSafe": "直前に引いた札: {{card}} → セーフ",
+  "lastDrawPenalty": "直前に引いた札: {{card}} → ペナルティ！ 場札を全て引き取り",
   "cpuActionsHeader": "[CPUの行動]",
   "cpuActionPenalty": "{{name}}が引いた → ペナルティ！ {{count}}枚引き取り",
   "cpuActionSafe": "{{name}}が引いた → セーフ",
