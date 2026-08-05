@@ -21,7 +21,14 @@ describe('getNertzHint', () => {
 
   it('includes the tableau column and card position of the source', () => {
     const r = getNertzHint(state({ fromZone: 'tableau', fromCol: 3, cardIndex: 1, toZone: 'tableau', toCol: 0 }));
-    expect(r?.reasonParams).toEqual({ from: 'タブロー3の1枚目', to: 'タブロー0' });
+    expect(r?.reasonParams).toEqual({ from: 'タブロー3(idx=1)', to: 'タブロー0' });
+  });
+
+  // **0 は実在する。**タブローの一番下から丸ごと動かす手がこれ。「0枚目」のような
+  // 序数表現にすると日本語として壊れるので、CUI と同じ生の索引で出す。
+  it('renders index 0 without pretending it is an ordinal', () => {
+    const r = getNertzHint(state({ fromZone: 'tableau', fromCol: 2, cardIndex: 0, toZone: 'foundation', toCol: 1 }));
+    expect(r?.reasonParams).toEqual({ from: 'タブロー2(idx=0)', to: 'ファウンデーション1' });
   });
 
   it('keeps the targetAction identifier the page keys off', () => {

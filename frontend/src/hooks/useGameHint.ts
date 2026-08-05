@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import type {
   AccordionResponse,
   AcesUpResponse,
@@ -806,10 +807,16 @@ export interface UseGameHintReturn {
 export function useGameHint(gameName: HintGameName, state: unknown): UseGameHintReturn {
   const [hintEnabled, setHintEnabled] = useLocalStorageToggle(`hint_enabled_${gameName}`, false);
 
+  // **言語も依存に入れる。**Nertz のようにゾーン名を訳して `reasonParams` に
+  // 焼き込むファクトリがあり、言語を切り替えたときにテンプレートだけ新しい言語で
+  // 埋め込みが古いまま、という混在文が出る (#4885 のレビュー指摘)。
+  const { i18n } = useTranslation();
+  const language = i18n.language;
   const hint = useMemo(() => {
     if (!hintEnabled || !state) return null;
     return hintFactories[gameName]?.(state) ?? null;
-  }, [gameName, hintEnabled, state]);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: language は再計算のトリガとしてのみ必要
+  }, [gameName, hintEnabled, state, language]);
 
   return { hintEnabled, setHintEnabled, hint };
 }

@@ -70,7 +70,7 @@
     "nertz": "ナッツ",
     "waste": "ウェイスト",
     "tableau": "タブロー{{col}}",
-    "tableauWithIdx": "タブロー{{col}}の{{idx}}枚目",
+    "tableauWithIdx": "タブロー{{col}}(idx={{idx}})",
     "foundation": "ファウンデーション{{col}}"
   }
 }

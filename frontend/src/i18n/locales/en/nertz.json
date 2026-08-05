@@ -70,7 +70,7 @@
     "nertz": "Nertz",
     "waste": "Waste",
     "tableau": "Tableau {{col}}",
-    "tableauWithIdx": "Tableau {{col}} (card {{idx}})",
+    "tableauWithIdx": "Tableau {{col}} (idx={{idx}})",
     "foundation": "Foundation {{col}}"
   }
 }
