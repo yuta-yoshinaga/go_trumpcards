@@ -45,6 +45,12 @@ func (p *KempsCuiPresenter) Output(g interfaces.KempsGame, lastErr error) string
 				// 人間の手札のみ公開表示する。
 				b.WriteString(name + " " + team + "\n")
 				b.WriteString("  " + cuiIndexedCardListStr(player) + "\n")
+				// **揃ったことに気づかないと宣言する権利ごと失う。**Web は交換中
+				// からバナーとボタン強調で知らせるのに、CUI は手札を自分で見て
+				// 判断するしかなかった (#4890)。
+				if player.HasFourOfAKind() {
+					b.WriteString("  " + color.Green(i18n.T("kemps.fourOfAKindReady")) + "\n")
+				}
 			} else {
 				b.WriteString(i18n.Tf("kemps.cpuHandLine",
 					"name", name,
