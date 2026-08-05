@@ -88,6 +88,15 @@ function LobaPageContent() {
 
   const meldKindName = (kind: number) => (kind === 0 ? t('pierna') : t('escalera'));
 
+  // CUI は hintDraw / hintMeld で「どちらから引くか」「どの札でメルドするか」を
+  // 明示しているのに、Web は捨て札 1 枚のリングしか使っておらず、ロバの核心の
+  // 2 アクションが不可視だった (#4882)。
+  // 判定が `frontendHintEnabled` だけなのは、このゲームの hint がゲーム追加時
+  // (#4414) から Output に乗る常時表示で、`isRequestedHint` を通すと恒久的に
+  // false になるため。check-hint-gate の ALLOWED に登録済み。
+  const hintMeldIndices = new Set(frontendHintEnabled && acting ? (state.hint?.cardIndices ?? []) : []);
+  const hintDrawStock = frontendHintEnabled && drawing ? state.hint?.drawStock : undefined;
+
   const phaseName = ended
     ? t('phase.end')
     : roundOver
@@ -232,6 +241,7 @@ function LobaPageContent() {
                       isHumanTurn && acting ? 'hover:-translate-y-2' : 'opacity-60',
                       selected.includes(i) ? 'ring-2 ring-ds-accent -translate-y-2' : '',
                       frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+                      hintMeldIndices.has(i) ? 'ring-2 ring-ds-warning' : '',
                     ].join(' ')}
                   >
                     <AnimatedCard card={card} width={cardWidth} draggable={false} />
@@ -264,14 +274,20 @@ function LobaPageContent() {
                   <button
                     type="button"
                     data-hint-action="draw"
-                    className={`${btnPrimary} min-h-11`}
+                    className={[btnPrimary, 'min-h-11', hintDrawStock === true ? 'ring-2 ring-ds-warning' : ''].join(
+                      ' ',
+                    )}
+                    data-hint-draw={hintDrawStock === true ? 'true' : undefined}
                     onClick={game.handleDrawStock}
                   >
                     {t('drawStock')}
                   </button>
                   <button
                     type="button"
-                    className={`${btnSecondary} min-h-11`}
+                    className={[btnSecondary, 'min-h-11', hintDrawStock === false ? 'ring-2 ring-ds-warning' : ''].join(
+                      ' ',
+                    )}
+                    data-hint-draw={hintDrawStock === false ? 'true' : undefined}
                     onClick={game.handleDrawDiscard}
                     disabled={!state.discardTop}
                   >
