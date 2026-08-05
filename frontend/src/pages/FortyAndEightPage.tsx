@@ -510,7 +510,7 @@ function FortyAndEightPageContent() {
                     </button>
                   ) : (
                     state.redealUsed && (
-                      <span className="text-ds-text-muted text-xs self-center" data-testid="fe-redeal-used">
+                      <span className="mx-1.5 text-ds-text-muted text-xs" data-testid="fe-redeal-used">
                         {t('redealUsed')}
                       </span>
                     )
