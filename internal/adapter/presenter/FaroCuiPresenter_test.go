@@ -16,7 +16,7 @@ func setupFaroCuiMockDefaults(m *interfaces.MockFaroGame) {
 	m.On("GetTurnsPlayed").Return(0).Maybe()
 	m.On("GetTurnsTotal").Return(domain.FaroTurnsPerDeal).Maybe()
 	m.On("GetRemainingCount").Return(51).Maybe()
-	m.On("FaroRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
+	m.On("GetRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
 	m.On("GetBetRanks").Return(([]int)(nil)).Maybe()
 	m.On("GetBets").Return((map[int]*domain.FaroBet)(nil)).Maybe()
 	m.On("GetLastTurn").Return((*domain.FaroTurnResult)(nil)).Maybe()
@@ -46,7 +46,7 @@ func TestFaroCuiPresenter_Output_FaceRankLabels(t *testing.T) {
 	m.On("GetTurnsPlayed").Return(0)
 	m.On("GetTurnsTotal").Return(domain.FaroTurnsPerDeal)
 	m.On("GetRemainingCount").Return(51)
-	m.On("FaroRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
+	m.On("GetRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
 	m.On("GetBetRanks").Return([]int{1, 11, 12, 13, 8})
 	m.On("GetBets").Return(map[int]*domain.FaroBet{
 		1: {Amount: 50}, 11: {Amount: 60}, 12: {Amount: 70}, 13: {Amount: 80}, 8: {Amount: 90},
@@ -84,7 +84,7 @@ func TestFaroCuiPresenter_Output_WithBetsAndTurn(t *testing.T) {
 	m.On("GetTurnsPlayed").Return(1)
 	m.On("GetTurnsTotal").Return(domain.FaroTurnsPerDeal)
 	m.On("GetRemainingCount").Return(49)
-	m.On("FaroRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
+	m.On("GetRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
 	m.On("GetBetRanks").Return([]int{7})
 	m.On("GetBets").Return(map[int]*domain.FaroBet{7: {Amount: 100, Copper: true}})
 	m.On("GetLastTurn").Return(&domain.FaroTurnResult{
@@ -113,7 +113,7 @@ func TestFaroCuiPresenter_Output_SplitAndCall(t *testing.T) {
 	m.On("GetTurnsPlayed").Return(domain.FaroTurnsPerDeal)
 	m.On("GetTurnsTotal").Return(domain.FaroTurnsPerDeal)
 	m.On("GetRemainingCount").Return(3)
-	m.On("FaroRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
+	m.On("GetRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
 	m.On("GetBetRanks").Return(([]int)(nil))
 	m.On("GetBets").Return((map[int]*domain.FaroBet)(nil))
 	m.On("GetLastTurn").Return(&domain.FaroTurnResult{
@@ -145,7 +145,7 @@ func TestFaroCuiPresenter_Output_RoundEndWonAndLost(t *testing.T) {
 	won.On("GetTurnsPlayed").Return(domain.FaroTurnsPerDeal)
 	won.On("GetTurnsTotal").Return(domain.FaroTurnsPerDeal)
 	won.On("GetRemainingCount").Return(0)
-	won.On("FaroRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
+	won.On("GetRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
 	won.On("GetBetRanks").Return(([]int)(nil))
 	won.On("GetBets").Return((map[int]*domain.FaroBet)(nil))
 	won.On("GetLastTurn").Return((*domain.FaroTurnResult)(nil))
@@ -162,7 +162,7 @@ func TestFaroCuiPresenter_Output_RoundEndWonAndLost(t *testing.T) {
 	lost.On("GetTurnsPlayed").Return(domain.FaroTurnsPerDeal)
 	lost.On("GetTurnsTotal").Return(domain.FaroTurnsPerDeal)
 	lost.On("GetRemainingCount").Return(0)
-	lost.On("FaroRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
+	lost.On("GetRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
 	lost.On("GetBetRanks").Return(([]int)(nil))
 	lost.On("GetBets").Return((map[int]*domain.FaroBet)(nil))
 	lost.On("GetLastTurn").Return((*domain.FaroTurnResult)(nil))
@@ -184,7 +184,7 @@ func TestFaroCuiPresenter_Output_GameEnd(t *testing.T) {
 	m.On("GetTurnsPlayed").Return(0)
 	m.On("GetTurnsTotal").Return(domain.FaroTurnsPerDeal)
 	m.On("GetRemainingCount").Return(0)
-	m.On("FaroRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
+	m.On("GetRemainingByRank").Return([domain.FaroMaxRank + 1]int{}).Maybe()
 	m.On("GetBetRanks").Return(([]int)(nil))
 	m.On("GetBets").Return((map[int]*domain.FaroBet)(nil))
 	m.On("GetLastTurn").Return((*domain.FaroTurnResult)(nil))
@@ -221,7 +221,7 @@ func TestFaroCuiPresenter_ActionLogOutput(t *testing.T) {
 // **ケースキーパーはこのゲームの中核。**Web はランク別の残数を常時出すのに、
 // CUI は総枚数しか出していなかった (#4894)。
 func TestFaroCuiPresenter_ShowsTheCaseKeeper(t *testing.T) {
-	// defaults は FaroRemainingByRank を空で先に登録してしまう (testify は最初に
+	// defaults は GetRemainingByRank を空で先に登録してしまう (testify は最初に
 	// 一致した期待値を使う) ので、この検査だけは自前で組む。
 	m := new(interfaces.MockFaroGame)
 	m.On("GetChips").Return(1000)
@@ -237,12 +237,12 @@ func TestFaroCuiPresenter_ShowsTheCaseKeeper(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	var counts [domain.FaroMaxRank + 1]int
-	for r := 1; r <= domain.FaroMaxRank; r++ {
+	for r := domain.FaroMinRank; r <= domain.FaroMaxRank; r++ {
 		counts[r] = 4
 	}
-	counts[1] = 0  // A は出尽くした
-	counts[13] = 2 // K は 2 枚残り
-	m.On("FaroRemainingByRank").Return(counts)
+	counts[domain.FaroMinRank] = 0 // A は出尽くした
+	counts[13] = 2                 // K は 2 枚残り
+	m.On("GetRemainingByRank").Return(counts)
 
 	out := new(FaroCuiPresenter).Output(m, nil)
 	assert.Contains(t, out, "ケースキーパー")

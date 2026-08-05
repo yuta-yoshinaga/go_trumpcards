@@ -34,8 +34,8 @@ type FaroGame interface {
 	GetTurnsTotal() int
 	// GetRemainingCount デッキ残枚数
 	GetRemainingCount() int
-	// FaroRemainingByRank ランク別の残り枚数 (index 1..13 が A..K)
-	FaroRemainingByRank() [domain.FaroMaxRank + 1]int
+	// GetRemainingByRank ランク別の残り枚数 (index 1..13 が A..K)
+	GetRemainingByRank() [domain.FaroMaxRank + 1]int
 	// GetSoda 焼かれたソーダ札
 	GetSoda() *domain.Card
 	// GetLastTurn 直近ターンの結果

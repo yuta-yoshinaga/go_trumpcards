@@ -479,9 +479,9 @@ func TestFaro_RemainingByRank(t *testing.T) {
 	f := newFaroForTest()
 
 	// リセット直後: ソーダ 1 枚だけが抜けている。
-	start := f.FaroRemainingByRank()
+	start := f.GetRemainingByRank()
 	total := 0
-	for r := 1; r <= FaroMaxRank; r++ {
+	for r := FaroMinRank; r <= FaroMaxRank; r++ {
 		if start[r] < 0 || start[r] > 4 {
 			t.Fatalf("rank %d = %d, want 0..4", r, start[r])
 		}
@@ -502,9 +502,9 @@ func TestFaro_RemainingByRank(t *testing.T) {
 	if err := f.PlayerDealTurn(); err != nil {
 		t.Fatalf("deal: %v", err)
 	}
-	after := f.FaroRemainingByRank()
+	after := f.GetRemainingByRank()
 	sum := 0
-	for r := 1; r <= FaroMaxRank; r++ {
+	for r := FaroMinRank; r <= FaroMaxRank; r++ {
 		if after[r] > start[r] {
 			t.Fatalf("rank %d went up: %d -> %d", r, start[r], after[r])
 		}
@@ -519,9 +519,9 @@ func TestFaro_RemainingByRank(t *testing.T) {
 
 	// **リセットで元に戻る。**蓄積を持たないので取りこぼしようがない。
 	f.Reset()
-	again := f.FaroRemainingByRank()
+	again := f.GetRemainingByRank()
 	back := 0
-	for r := 1; r <= FaroMaxRank; r++ {
+	for r := FaroMinRank; r <= FaroMaxRank; r++ {
 		back += again[r]
 	}
 	if back != 51 {

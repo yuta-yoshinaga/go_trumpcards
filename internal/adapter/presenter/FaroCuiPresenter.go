@@ -27,9 +27,9 @@ func (fp *FaroCuiPresenter) Output(f interfaces.FaroGame, lastErr error) string 
 
 	// **ケースキーパーはこのゲームの中核。**Web はランク別の残数を常時出すのに、
 	// CUI は総枚数しか出しておらず、勘だけで賭けることになっていた (#4894)。
-	remaining := f.FaroRemainingByRank()
+	remaining := f.GetRemainingByRank()
 	parts := make([]string, 0, domain.FaroMaxRank)
-	for r := 1; r <= domain.FaroMaxRank; r++ {
+	for r := domain.FaroMinRank; r <= domain.FaroMaxRank; r++ {
 		parts = append(parts, cuiRankLabel(r)+":"+strconv.Itoa(remaining[r]))
 	}
 	sb.WriteString(i18n.Tf("faro.caseKeeper", "counts", strings.Join(parts, " ")) + "\n")

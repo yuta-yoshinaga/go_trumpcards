@@ -408,12 +408,12 @@ func (f *Faro) GetGameEndFlag() bool { return f.gameEndFlag }
 // GetChips は現在のチップ数を返す。
 func (f *Faro) GetChips() int { return f.chips.GetChips() }
 
-// FaroRemainingByRank は各ランクの残り枚数を返す (index 1..13 が A..K)。
+// GetRemainingByRank は各ランクの残り枚数を返す (index 1..13 が A..K)。
 //
 // **未配の山札から直接数える。**公開済みカードを別に蓄えると、リセットの
 // 取りこぼしや二重計上でケースキーパーが嘘をつく (#4894)。ソーダも配った
 // 時点で山札から抜けているので、自動的に除かれる。
-func (f *Faro) FaroRemainingByRank() [FaroMaxRank + 1]int {
+func (f *Faro) GetRemainingByRank() [FaroMaxRank + 1]int {
 	var out [FaroMaxRank + 1]int
 	if f.trumpCards == nil {
 		return out
@@ -424,7 +424,7 @@ func (f *Faro) FaroRemainingByRank() [FaroMaxRank + 1]int {
 			continue
 		}
 		v := c.GetValue()
-		if v >= 1 && v <= FaroMaxRank {
+		if v >= FaroMinRank && v <= FaroMaxRank {
 			out[v]++
 		}
 	}
