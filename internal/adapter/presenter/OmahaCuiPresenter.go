@@ -143,7 +143,7 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 				case r.Mucked:
 					b.WriteString(i18n.Tf("omaha.resultMucked", "name", name))
 				case r.HandName != "":
-					b.WriteString(i18n.Tf("omaha.resultHand", "name", name, "hand", r.HandName, "kickers", kickers))
+					b.WriteString(i18n.Tf("omaha.resultHand", "name", name, "hand", cuiPokerHandName(r.HandRank), "kickers", kickers))
 				default:
 					b.WriteString(i18n.Tf("omaha.resultPlayerOnly", "name", name))
 				}

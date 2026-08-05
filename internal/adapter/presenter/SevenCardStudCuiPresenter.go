@@ -161,7 +161,7 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 				case r.HandName != "":
 					b.WriteString(i18n.Tf("sevencardstud.resultHand",
 						"name", name,
-						"hand", r.HandName,
+						"hand", cuiPokerHandName(r.HandRank),
 						"kickers", kickers))
 				default:
 					b.WriteString(i18n.Tf("sevencardstud.resultName", "name", name))

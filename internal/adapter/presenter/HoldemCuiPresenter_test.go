@@ -198,7 +198,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		_ = players[0]
 		result := p.Output(h, nil)
 		assert.Contains(t, result, "[結果]")
-		assert.Contains(t, result, "あなた: Flush")
+		assert.Contains(t, result, "あなた: フラッシュ")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
@@ -210,7 +210,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "あなた: One Pair (キッカー: A, Q, 10)")
+		assert.Contains(t, result, "あなた: ワンペア (キッカー: A, Q, 10)")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
@@ -222,7 +222,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "あなた: Flush")
+		assert.Contains(t, result, "あなた: フラッシュ")
 		assert.NotContains(t, result, "キッカー")
 	})
 
@@ -234,7 +234,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "CPU 1: One Pair (キッカー: K, Q, J)")
+		assert.Contains(t, result, "CPU 1: ワンペア (キッカー: K, Q, J)")
 		assert.Contains(t, result, "50チップ獲得")
 	})
 
@@ -254,7 +254,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		h, _ := makeHoldemForPresenter()
 		h.SetPhase(domain.HoldemPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 1, HandName: "High Card", WonAmount: 0, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.PokerHandHighCard, HandName: "High Card", WonAmount: 0, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
@@ -265,7 +265,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		h, _ := makeHoldemForPresenter()
 		h.SetPhase(domain.HoldemPhaseFlop)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 0, HandName: "Flush", WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
@@ -680,13 +680,13 @@ func TestHoldemCuiPresenter_Output_Muck(t *testing.T) {
 		h, _ := makeHoldemForPresenter()
 		h.SetPhase(domain.HoldemPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 0, HandName: "One Pair", WonAmount: 0, Mucked: true, BestHand: nil},
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, Mucked: true, BestHand: nil},
 			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
 		assert.Contains(t, result, "あなた: マック")
-		assert.NotContains(t, result, "あなた: One Pair")
+		assert.NotContains(t, result, "あなた: ワンペア")
 	})
 
 	t.Run("results shown in showdown phase", func(t *testing.T) {
@@ -698,7 +698,7 @@ func TestHoldemCuiPresenter_Output_Muck(t *testing.T) {
 
 		result := p.Output(h, nil)
 		assert.Contains(t, result, "[結果]")
-		assert.Contains(t, result, "あなた: Flush")
+		assert.Contains(t, result, "あなた: フラッシュ")
 	})
 }
 

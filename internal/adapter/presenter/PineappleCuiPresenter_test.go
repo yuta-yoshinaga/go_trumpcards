@@ -109,10 +109,10 @@ func TestPineappleCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundResults")
 		m.On("GetPhase").Return(domain.PineapplePhaseEnd)
 		m.On("GetRoundResults").Return([]domain.HoldemResult{
-			{PlayerIdx: 0, HandName: "Flush", WonAmount: 100},
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100},
 		})
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "あなた: Flush")
+		assert.Contains(t, result, "あなた: フラッシュ")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 

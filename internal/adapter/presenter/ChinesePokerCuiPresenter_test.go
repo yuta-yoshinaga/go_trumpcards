@@ -131,3 +131,15 @@ func TestChinesePokerCuiPresenter_RankStr(t *testing.T) {
 	assert.NotEmpty(t, pp.fiveCardRankStr(domain.PokerHandFlush))
 	assert.NotEmpty(t, pp.fiveCardRankStr(99))
 }
+
+// **フロントの役名も日本語ロケールで日本語。**英語の ThreeCardHandNames を
+// そのまま返していた (#4985 レビュー指摘の follow-up)。
+func TestChinesePokerCuiPresenter_FrontRankIsTranslated(t *testing.T) {
+	pp := new(ChinesePokerCuiPresenter)
+	assert.Equal(t, "ハイカード", pp.frontRankStr(domain.ThreeCardHandHighCard))
+	assert.Equal(t, "ストレートフラッシュ", pp.frontRankStr(domain.ThreeCardHandStraightFlush))
+	assert.NotContains(t, pp.frontRankStr(domain.ThreeCardHandFlush), "Flush")
+	// 範囲外は未知ランクの文言に落ちる。キー文字列を出さない。
+	assert.NotContains(t, pp.frontRankStr(99), "pokerhand.")
+	assert.NotEmpty(t, pp.frontRankStr(99))
+}

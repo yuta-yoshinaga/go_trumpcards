@@ -64,7 +64,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 				if isEnd {
 					b.WriteString(i18n.Tf("poker.humanHandWithName",
 						"cards", handStr,
-						"name", player.GetHandName()) + "\n")
+						"name", cuiPokerHandName(player.GetHandRank())) + "\n")
 				} else {
 					b.WriteString(i18n.Tf("poker.humanHand", "cards", handStr) + "\n")
 				}
@@ -74,7 +74,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 			if !player.GetIsHuman() && isEnd && !player.GetFolded() {
 				b.WriteString(i18n.Tf("poker.humanHandWithName",
 					"cards", cuiCardListStrEmoji(player),
-					"name", player.GetHandName()) + "\n")
+					"name", cuiPokerHandName(player.GetHandRank())) + "\n")
 			}
 		}
 
@@ -117,7 +117,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 				if r.HandName != "" {
 					b.WriteString(i18n.Tf("poker.resultHand",
 						"name", name,
-						"hand", r.HandName,
+						"hand", cuiPokerHandName(r.HandRank),
 						"kickers", kickers))
 				} else {
 					b.WriteString(i18n.Tf("poker.resultName", "name", name))
@@ -181,7 +181,7 @@ func (pcp *PokerCuiPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr err
 	oddsBuilder.WriteString(color.Bold(i18n.T("poker.drawOddsHeader")) + "\n")
 	for _, o := range odds {
 		oddsBuilder.WriteString(i18n.Tf("poker.drawOddsLine",
-			"name", o.HandName,
+			"name", cuiPokerHandName(o.HandRank),
 			"prob", fmt.Sprintf("%.2f", o.Probability*100),
 			"count", strconv.Itoa(o.Count),
 			"total", strconv.Itoa(o.Total)) + "\n")
