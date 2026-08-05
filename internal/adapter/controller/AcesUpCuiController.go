@@ -3,9 +3,9 @@
 package controller
 
 import (
-	"fmt"
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -48,12 +48,15 @@ func (c *AcesUpCuiController) Exec(command string) string {
 
 // handleColCommand 列番号を1つ取るコマンドを処理する。
 func (c *AcesUpCuiController) handleColCommand(args []string, name string, fn func(int) string) string {
+	// **エラーだけ英語で混ざらないようにする。**presenter 側は丁寧に i18n を
+	// 通しているのに、ここだけ英語リテラルを返していた (#4803)。
 	if len(args) != 1 {
-		return fmt.Sprintf("Usage: %s <col>", name)
+		return i18n.Tf("acesup.usageCol", "cmd", name)
 	}
 	col, err := strconv.Atoi(args[0])
 	if err != nil {
-		return fmt.Sprintf("Invalid col: %s.", args[0])
+		// 列番号のエラーは共通キーがある。ゲームごとに文言を割らない。
+		return i18n.Tf("invalidColumn", "val", args[0])
 	}
 	return fn(col)
 }
