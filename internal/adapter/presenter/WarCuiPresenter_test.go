@@ -30,6 +30,38 @@ func TestWarCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "[場札]")
 	})
 
+	// **打ち切りがいつ来るかを出す。**Web はアリーナに「ラウンド: n / max」を
+	// 常時出しているのに、CUI は一度も出しておらず、あと何ラウンドで強制引き分けに
+	// なるかが分からなかった (#4865)。
+	t.Run("round progress", func(t *testing.T) {
+		w := setupWarTest()
+		cfg := w.GetConfig()
+		cfg.MaxRounds = 120
+		w.SetConfig(cfg)
+		assert.Contains(t, p.Output(w, nil), "ラウンド: 0 / 120")
+	})
+
+	// 打ち切り目前は強調する。色を出す側と出さない側の両方を踏む。
+	t.Run("round progress highlights the cap", func(t *testing.T) {
+		orig := color.NoColor()
+		color.SetNoColor(false)
+		defer color.SetNoColor(orig)
+
+		w := setupWarTest()
+		cfg := w.GetConfig()
+		cfg.MaxRounds = 100
+		w.SetConfig(cfg)
+		assert.NotContains(t, p.Output(w, nil), color.Yellow("ラウンド: 0 / 100（上限で保有枚数の多い方が勝ち）"))
+
+		data, _ := json.Marshal(w)
+		var raw map[string]json.RawMessage
+		_ = json.Unmarshal(data, &raw)
+		raw["rp"], _ = json.Marshal(90)
+		newData, _ := json.Marshal(raw)
+		_ = json.Unmarshal(newData, w)
+		assert.Contains(t, p.Output(w, nil), color.Yellow("ラウンド: 90 / 100（上限で保有枚数の多い方が勝ち）"))
+	})
+
 	t.Run("error", func(t *testing.T) {
 		w := setupWarTest()
 		result := p.Output(w, errors.New("oops"))
