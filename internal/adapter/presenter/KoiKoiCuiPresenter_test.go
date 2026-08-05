@@ -2,13 +2,16 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestKoiKoiCuiPresenter_Output_PlayPhase(t *testing.T) {
@@ -119,7 +122,24 @@ func TestKoiKoiCuiPresenter_RoundResult_CpuWinner(t *testing.T) {
 	g.CpuDecide() // Easy → stop → CPU wins round
 	require.Equal(t, domain.KoiKoiPhaseRoundEnd, g.GetPhase())
 
+	// **CPU 名も i18n と太字を通す。**人間側だけ i18n を通し、CPU は英語
+	// リテラルのままだった (#4855 と同型)。色を有効にして太字の有無まで見る。
+	origNoColor := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
+
 	p := new(presenter.KoiKoiCuiPresenter)
 	out := p.Output(g, nil)
 	assert.NotEmpty(t, out)
+	// **ラウンド勝利行そのものを見る。**プレイヤー一覧は元から太字の CPU 名を
+	// 出しているので、出力全体で探すと修正前でも当たってしまう。
+	bold1 := color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "1"))
+	var winLine string
+	for _, line := range strings.Split(out, "\n") {
+		if strings.Contains(line, "ラウンド勝利") {
+			winLine = line
+		}
+	}
+	require.NotEmpty(t, winLine, "round-win line missing from output: %q", out)
+	assert.Contains(t, winLine, bold1)
 }

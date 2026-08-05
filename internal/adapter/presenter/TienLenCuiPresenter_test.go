@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -141,4 +142,25 @@ func TestTienLenCuiPresenter_ActionLogOutput(t *testing.T) {
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 1 card(s)"},
 	})
 	assert.Contains(t, p.ActionLogOutput(m), "play")
+}
+
+// **CPU 名も i18n と太字を通す。**順位表示と CPU 手番ログだけ `fmt.Sprintf("CPU %d")`
+// で自前に組んでいて、同じ画面の他の名前と見た目も経路も違っていた (#4807)。
+func TestTienLen_CpuNamesGoThroughTheSharedHelper(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
+
+	bold1 := color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "1"))
+	p := new(presenter.TienLenCuiPresenter)
+
+	t.Run("cpu action log", func(t *testing.T) {
+		m, _ := setupTienLenCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCpuActions")
+		m.On("GetCpuActions").Return([]*domain.TienLenAction{{PlayerIdx: 1, PlayedCards: nil}})
+		out := p.Output(m, nil)
+		assert.Contains(t, out, bold1)
+		// 素の "CPU 1" が太字の外に残っていないこと。
+		assert.NotContains(t, strings.ReplaceAll(out, bold1, ""), "CPU 1")
+	})
 }

@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupZhengCuiMock() (*interfaces.MockZhengGame, []*domain.ZhengPlayer) {
@@ -107,4 +109,25 @@ func TestZhengCuiPresenter_ActionLogOutput(t *testing.T) {
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 1 card(s)"},
 	})
 	assert.Contains(t, p.ActionLogOutput(m), "play")
+}
+
+// **CPU 名も i18n と太字を通す。**順位表示と CPU 手番ログだけ `fmt.Sprintf("CPU %d")`
+// で自前に組んでいて、同じ画面の他の名前と見た目も経路も違っていた (#4807)。
+func TestZheng_CpuNamesGoThroughTheSharedHelper(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
+
+	bold1 := color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "1"))
+	p := new(presenter.ZhengCuiPresenter)
+
+	t.Run("cpu action log", func(t *testing.T) {
+		m, _ := setupZhengCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCpuActions")
+		m.On("GetCpuActions").Return([]*domain.ZhengAction{{PlayerIdx: 1, PlayedCards: nil}})
+		out := p.Output(m, nil)
+		assert.Contains(t, out, bold1)
+		// 素の "CPU 1" が太字の外に残っていないこと。
+		assert.NotContains(t, strings.ReplaceAll(out, bold1, ""), "CPU 1")
+	})
 }

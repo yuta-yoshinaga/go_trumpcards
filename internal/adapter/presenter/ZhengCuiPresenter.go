@@ -56,12 +56,9 @@ func (p *ZhengCuiPresenter) Output(zg interfaces.ZhengGame, lastErr error) strin
 					continue
 				}
 				if player.GetRank() >= 1 {
-					var name string
-					if player.GetIsHuman() {
-						name = i18n.T("zheng.playerYou")
-					} else {
-						name = fmt.Sprintf("CPU %d", i)
-					}
+					// 名前の組み立ては他の表示と同じ cuiPlayerName に任せる。
+					// 自前で組むと太字も i18n も抜ける (#4807)。
+					name := cuiPlayerName(player, i)
 					fmt.Fprintf(b, "  %s: %s\n", name, i18n.Tf("zheng.rankN", "rank", strconv.Itoa(player.GetRank())))
 				}
 			}
@@ -73,7 +70,7 @@ func (p *ZhengCuiPresenter) Output(zg interfaces.ZhengGame, lastErr error) strin
 				} else {
 					actionStr = cuiCardSliceStr(action.PlayedCards)
 				}
-				fmt.Fprintf(b, "CPU %d: %s\n", action.PlayerIdx, actionStr)
+				fmt.Fprintf(b, "%s: %s\n", cuiPlayerName(zg.GetPlayer(action.PlayerIdx), action.PlayerIdx), actionStr)
 			}
 			if zg.IsHumanTurn() {
 				b.WriteString(i18n.T("zheng.yourTurn") + "\n")

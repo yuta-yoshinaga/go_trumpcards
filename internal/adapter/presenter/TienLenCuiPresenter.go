@@ -79,12 +79,9 @@ func (p *TienLenCuiPresenter) Output(tg interfaces.TienLenGame, lastErr error) s
 			for i := 0; i < tg.GetPlayerCnt(); i++ {
 				player := tg.GetPlayer(i)
 				if player.GetRank() >= 1 {
-					var name string
-					if player.GetIsHuman() {
-						name = i18n.T("tienlen.playerYou")
-					} else {
-						name = fmt.Sprintf("CPU %d", i)
-					}
+					// 名前の組み立ては他の表示と同じ cuiPlayerName に任せる。
+					// 自前で組むと太字も i18n も抜ける (#4807)。
+					name := cuiPlayerName(player, i)
 					fmt.Fprintf(b, "  %s: %s\n", name, i18n.Tf("tienlen.rankN", "rank", strconv.Itoa(player.GetRank())))
 				}
 			}
@@ -96,7 +93,7 @@ func (p *TienLenCuiPresenter) Output(tg interfaces.TienLenGame, lastErr error) s
 				} else {
 					actionStr = cuiCardSliceStr(action.PlayedCards)
 				}
-				fmt.Fprintf(b, "CPU %d: %s\n", action.PlayerIdx, actionStr)
+				fmt.Fprintf(b, "%s: %s\n", cuiPlayerName(tg.GetPlayer(action.PlayerIdx), action.PlayerIdx), actionStr)
 			}
 			if tg.IsHumanTurn() {
 				b.WriteString(i18n.T("tienlen.yourTurn") + "\n")
