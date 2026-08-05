@@ -111,23 +111,22 @@ func spoonsGroupedHandStr(player cuiCardList) string {
 			counts[c.GetValue()]++
 		}
 	}
-	parts := make([]string, player.GetCardsSize())
-	for i := range parts {
-		parts[i] = "[" + strconv.Itoa(i) + "]" + cuiCardStr(player.GetCard(i))
-		c := player.GetCard(i)
+	// 索引と区切りは他ゲームと同じ formatCardList に任せ、注記だけを足す
+	// (OmbreCuiPresenter と同じ形)。
+	return formatCardList(player, func(c *domain.Card) string {
+		out := cuiCardStr(c)
 		if c == nil {
-			continue
+			return out
 		}
 		n := counts[c.GetValue()]
 		if n < 2 {
-			continue
+			return out
 		}
 		tag := i18n.Tf("spoons.rankGroup", "count", strconv.Itoa(n))
 		// **3 枚は 1 枚違い。**2 枚と同じ見た目だと、脈があることが伝わらない。
 		if n >= 3 {
 			tag = color.Yellow(tag)
 		}
-		parts[i] += tag
-	}
-	return strings.Join(parts, "  ")
+		return out + tag
+	}, "  ", true)
 }
