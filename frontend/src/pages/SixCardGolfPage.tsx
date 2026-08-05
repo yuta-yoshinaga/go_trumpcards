@@ -206,8 +206,6 @@ function SixCardGolfPageContent() {
                     faceDownLabel={t('gridSlotFaceDownAria', { pos: sIdx + 1 })}
                     cardWidth={cardWidth}
                     isHumanGrid={player.isHuman}
-                    // **ヒントは既にどのマスかを算出している。**渡さないと
-                    // 6 マスから目視で探し直させることになる (#4887)。
                     hinted={hintEnabled && player.isHuman && hint?.targetPos === sIdx}
                     phase={phase}
                     canFlip={state.canFlip}
@@ -387,7 +385,7 @@ function GridSlotButton({
         clickable
           ? `cursor-pointer ring-2 ring-ds-warning hover:ring-ds-warning-hover ${focusRingWhite}`
           : 'cursor-default',
-        // ヒントの指す 1 マスは、押せる枠より強い印にする。
+        // 押せる枠より強い印にする。
         hinted ? 'ring-4 ring-ds-accent' : '',
       ].join(' ')}
       data-hinted={hinted ? 'true' : undefined}

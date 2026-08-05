@@ -119,8 +119,6 @@ describe('SixCardGolfPage', () => {
     expect(screen.getByTestId('scg-column-score-1')).not.toHaveTextContent('+?');
   });
 
-  // **ヒントは既にどのマスかを算出している。**渡さないと 6 マスから目視で
-  // 探し直させることになる (#4887)。
   describe('hinted slot highlight', () => {
     it('marks the slot the hint points at', async () => {
       vi.mocked(useGameHint).mockReturnValue({
