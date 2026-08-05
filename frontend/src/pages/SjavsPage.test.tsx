@@ -59,6 +59,10 @@ function makeState(overrides?: Partial<SjavsResponse>): SjavsResponse {
 describe('SjavsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // **ヒントのトグルは localStorage に残る。**消さないと次のテストが
+    // 「チェック済みで始まり、クリックで off になる」ので、印が出ない理由が
+    // すり替わる (レビュー指摘 #5033)。
+    localStorage.clear();
     mockExec.mockResolvedValue(makeState());
   });
 
@@ -221,6 +225,16 @@ describe('SjavsPage', () => {
 
       await waitFor(() => expect(screen.getByRole('button', { name: '5枚を申告' })).toBeInTheDocument());
       expect(document.querySelectorAll('[data-hint-bid="true"]')).toHaveLength(0);
+    });
+
+    it('rings the pass button when the hint recommends passing', async () => {
+      mockExec.mockResolvedValue(armed(0));
+      renderWithProviders(<SjavsPage />);
+      const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+      fireEvent.click(toggle);
+
+      await waitFor(() => expect(document.querySelectorAll('[data-hint-bid="true"]')).toHaveLength(1));
+      expect(screen.getByRole('button', { name: 'パス' })).toHaveAttribute('data-hint-bid', 'true');
     });
 
     it('rings nothing while hints are off', async () => {
