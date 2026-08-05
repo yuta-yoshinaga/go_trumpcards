@@ -32,21 +32,26 @@ type BigTwoCuiPresenter struct{}
 // BigTwoPlayInvalid (nothing on the table). Mirrors the web GUI's
 // `bigTwoPlayTypeKey`, which keys the same eight names off the same enum.
 func bigTwoPlayTypeName(t domain.BigTwoPlayType) string {
-	keys := map[domain.BigTwoPlayType]string{
-		domain.BigTwoPlaySingle:        "bigtwo.playTypeSingle",
-		domain.BigTwoPlayPair:          "bigtwo.playTypePair",
-		domain.BigTwoPlayTriple:        "bigtwo.playTypeTriple",
-		domain.BigTwoPlayStraight:      "bigtwo.playTypeStraight",
-		domain.BigTwoPlayFlush:         "bigtwo.playTypeFlush",
-		domain.BigTwoPlayFullHouse:     "bigtwo.playTypeFullHouse",
-		domain.BigTwoPlayFourOfAKind:   "bigtwo.playTypeFourOfAKind",
-		domain.BigTwoPlayStraightFlush: "bigtwo.playTypeStraightFlush",
-	}
-	key, ok := keys[t]
-	if !ok {
+	switch t {
+	case domain.BigTwoPlaySingle:
+		return i18n.T("bigtwo.playTypeSingle")
+	case domain.BigTwoPlayPair:
+		return i18n.T("bigtwo.playTypePair")
+	case domain.BigTwoPlayTriple:
+		return i18n.T("bigtwo.playTypeTriple")
+	case domain.BigTwoPlayStraight:
+		return i18n.T("bigtwo.playTypeStraight")
+	case domain.BigTwoPlayFlush:
+		return i18n.T("bigtwo.playTypeFlush")
+	case domain.BigTwoPlayFullHouse:
+		return i18n.T("bigtwo.playTypeFullHouse")
+	case domain.BigTwoPlayFourOfAKind:
+		return i18n.T("bigtwo.playTypeFourOfAKind")
+	case domain.BigTwoPlayStraightFlush:
+		return i18n.T("bigtwo.playTypeStraightFlush")
+	default:
 		return ""
 	}
-	return i18n.T(key)
 }
 
 // Output renders the current game state for the active locale.
