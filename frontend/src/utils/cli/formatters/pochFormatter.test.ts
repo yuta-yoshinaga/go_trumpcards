@@ -24,6 +24,7 @@ function makeState(overrides?: Partial<PochResponse>): PochResponse {
   return {
     players: [seat(0, true), seat(1, false)],
     phase: 1,
+    validPlays: [],
     currentPlayerIdx: 0,
     pools: POOLS.map((name, i) => ({ name, chips: i === 5 ? 12 : 4 })),
     paySuit: 1,

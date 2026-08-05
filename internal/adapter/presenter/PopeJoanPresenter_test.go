@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -44,6 +45,7 @@ func pjDressedBoard() domain.PopeJoanBoard {
 func pjStub(phase domain.PopeJoanPhase, gameEnd bool, winner int, awards []*domain.PopeJoanAward) *interfaces.MockPopeJoanGame {
 	g := new(interfaces.MockPopeJoanGame)
 	g.On("GetPhase").Return(phase)
+	g.On("PopeJoanValidPlays", mock.Anything).Return([]int{}).Maybe()
 	g.On("GetGameEndFlag").Return(gameEnd)
 	g.On("GetWinnerIdx").Return(winner)
 	g.On("GetCurrentPlayerIdx").Return(0)
@@ -289,4 +291,28 @@ func TestPopeJoanCuiPresenter_HintReasonKeysAreAllMapped(t *testing.T) {
 
 func TestPopeJoanCuiPresenter_ActionLog(t *testing.T) {
 	assert.NotEmpty(t, new(PopeJoanCuiPresenter).ActionLogOutput(pjTestGame(t)))
+}
+
+// **出せる札を応答に載せる。**フロントは押して弾かれるまで違反を示せない (#4934)。
+func TestPopeJoanWebPresenter_ValidPlays(t *testing.T) {
+	decode := func(raw string) controller.PopeJoanWebOutput {
+		var parsed controller.PopeJoanWebOutput
+		if err := json.Unmarshal([]byte(raw), &parsed); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		return parsed
+	}
+
+	g := domain.NewDefaultPopeJoan()
+	g.Reset()
+	raw := new(PopeJoanWebPresenter).Output(g, nil)
+	got := decode(raw).ValidPlays
+	// **null ではなく空配列。**フロントが `?? []` を忘れても壊れない。
+	if got == nil {
+		t.Fatal("validPlays must be [] rather than null")
+	}
+	// 応答に必ず現れる。
+	if !strings.Contains(raw, `"validPlays"`) {
+		t.Fatalf("validPlays missing from the response: %s", raw)
+	}
 }

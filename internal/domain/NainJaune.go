@@ -239,6 +239,27 @@ func (n *NainJaune) playable(card *Card) bool {
 	return card.GetValue() == n.runRank+1
 }
 
+// NainJauneValidPlays は player が今出せる手札インデックスを返す。
+//
+// **判定は playable をそのまま呼ぶ。**規則を書き写すと、示した手が拒否される
+// ようになる (#4935)。手番でない場合は nil。
+func (n *NainJaune) NainJauneValidPlays(player int) []int {
+	if player != n.currentIdx {
+		return nil
+	}
+	pl := n.GetPlayer(player)
+	if pl == nil {
+		return nil
+	}
+	out := make([]int, 0, pl.GetCardsSize())
+	for i := range pl.GetCardsSize() {
+		if n.playable(pl.GetCard(i)) {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
 // payForCard は出した札が区画を取るかを判定する。
 func (n *NainJaune) payForCard(player int, card *Card) {
 	box, ok := NainJauneBoxForCard(card)

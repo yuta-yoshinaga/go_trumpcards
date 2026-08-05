@@ -306,6 +306,28 @@ func (p *PopeJoan) Play(player, handIdx int) error {
 	return nil
 }
 
+// PopeJoanValidPlays は player が今出せる手札インデックスを返す。
+//
+// **判定は checkPlayable をそのまま呼ぶ。**規則を書き写すと、示した手が拒否
+// されるようになる (#4934)。**自由リードでも全部が出せるわけではない** —
+// 新しい並びは自分の最も低い札で始めなければならない。手番でない場合は nil。
+func (p *PopeJoan) PopeJoanValidPlays(player int) []int {
+	if player != p.currentIdx {
+		return nil
+	}
+	pl := p.GetPlayer(player)
+	if pl == nil {
+		return nil
+	}
+	out := make([]int, 0, pl.GetCardsSize())
+	for i := range pl.GetCardsSize() {
+		if p.checkPlayable(player, pl.GetCard(i)) == nil {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
 // checkPlayable は card が今出せるかを確かめる。
 func (p *PopeJoan) checkPlayable(player int, card *Card) error {
 	if card == nil {

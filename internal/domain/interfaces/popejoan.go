@@ -25,6 +25,8 @@ type PopeJoanGame interface {
 	GetGameEndFlag() bool
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.PopeJoanPhase
+	// PopeJoanValidPlays は今出せる手札インデックスを返す
+	PopeJoanValidPlays(player int) []int
 	// GetCurrentPlayerIdx 手番のプレイヤー添字を取得する
 	GetCurrentPlayerIdx() int
 	// GetBoard 8区画の残高を取得する

@@ -54,6 +54,11 @@ export interface PochResponse extends BaseGameResponse {
   players: PochPlayer[];
   /** 0 = Staking, 1 = Pochen, 2 = Stops, 3 = DealEnd, 4 = GameEnd. */
   phase: number;
+  /**
+   * Hand indices the human may legally play, filled only on their turn.
+   * stopsSuit に従う義務があるので、出す前に示さないと押して初めて弾かれる (#4933)。
+   */
+  validPlays: number[];
   currentPlayerIdx: number;
   /** All nine, always. */
   pools: PochPool[];

@@ -225,24 +225,34 @@ function PochPageContent() {
                 {betting && ` · ${t('yourBet', { n: human?.bet ?? 0, target: state.betTarget })}`}
               </div>
               <div className="flex gap-1 justify-center flex-wrap">
-                {(human?.cards ?? []).map((card, i) => (
-                  <button
-                    key={`hand-${i.toString()}`}
-                    type="button"
-                    data-hint-action="play"
-                    aria-pressed={handIdx === i}
-                    aria-disabled={!isHumanTurn || !playing}
-                    onClick={() => isHumanTurn && playing && setHandIdx(handIdx === i ? null : i)}
-                    className={[
-                      'rounded transition-transform',
-                      isHumanTurn && playing ? 'hover:-translate-y-2' : 'opacity-60',
-                      handIdx === i ? 'ring-2 ring-ds-accent -translate-y-2' : '',
-                      frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
-                    ].join(' ')}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} draggable={false} />
-                  </button>
-                ))}
+                {(human?.cards ?? []).map((card, i) => {
+                  // **並びに従う義務がある。**出せない札を押せてしまうと、
+                  // サーバに弾かれて初めて分かる (#4933)。空リストは「情報が
+                  // 無い」なので制限しない。
+                  const restricting = isHumanTurn && playing && (state.validPlays?.length ?? 0) > 0;
+                  const canPlay = !restricting || state.validPlays.includes(i);
+                  return (
+                    <button
+                      key={`hand-${i.toString()}`}
+                      type="button"
+                      data-hint-action="play"
+                      data-unplayable={restricting && !canPlay ? 'true' : undefined}
+                      aria-pressed={handIdx === i}
+                      disabled={restricting && !canPlay}
+                      aria-disabled={!isHumanTurn || !playing || !canPlay}
+                      onClick={() => isHumanTurn && playing && canPlay && setHandIdx(handIdx === i ? null : i)}
+                      className={[
+                        'rounded transition-transform',
+                        restricting && !canPlay ? 'opacity-40' : '',
+                        isHumanTurn && playing ? 'hover:-translate-y-2' : 'opacity-60',
+                        handIdx === i ? 'ring-2 ring-ds-accent -translate-y-2' : '',
+                        frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+                      ].join(' ')}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                    </button>
+                  );
+                })}
               </div>
               {isHumanTurn && playing && (
                 <div className="text-[10px] text-ds-text-muted mt-1">

@@ -775,3 +775,44 @@ func TestPochUnmarshalKeepsAStoppedRun(t *testing.T) {
 		t.Errorf("stopsRank = %d, want 8", got)
 	}
 }
+
+// **並びに従う義務がある。**出せる札を先に示さないと、押して初めて弾かれる (#4933)。
+func TestPoch_PochValidPlays(t *testing.T) {
+	g := NewDefaultPoch()
+	g.Reset()
+	g.SetPhaseForTest(PochPhaseStops)
+	g.SetCurrentPlayerForTest(0)
+
+	p := g.GetPlayer(0)
+	p.Reset()
+	p.AddCard(NewCard(CardDesignSpade, 9, false))
+	p.AddCard(NewCard(CardDesignHeart, 9, false))
+	p.AddCard(NewCard(CardDesignSpade, 10, false))
+
+	// 自由リード (stopsSuit < 0) では全部出せる。
+	g.SetStopsForTest(-1, 0)
+	if got := g.PochValidPlays(0); len(got) != 3 {
+		t.Fatalf("free lead should allow every card, got %v", got)
+	}
+
+	// ♠8 の次は ♠9 だけ。同ランクの ♥9 も ♠10 も続けられない。
+	g.SetStopsForTest(CardDesignSpade, pochRankOrder(8))
+	if got := g.PochValidPlays(0); len(got) != 1 || got[0] != 0 {
+		t.Fatalf("only the next higher card of the run suit is legal, got %v", got)
+	}
+
+	// 続けられる札が 1 枚も無ければ空。
+	g.SetStopsForTest(CardDesignSpade, pochRankOrder(2))
+	if got := g.PochValidPlays(0); len(got) != 0 {
+		t.Fatalf("nothing should be playable, got %v", got)
+	}
+
+	// 手番でない/フェーズ違いは nil。
+	if got := g.PochValidPlays(1); got != nil {
+		t.Fatalf("off-turn must be nil, got %v", got)
+	}
+	g.SetPhaseForTest(PochPhasePochen)
+	if got := g.PochValidPlays(0); got != nil {
+		t.Fatalf("outside the stops phase must be nil, got %v", got)
+	}
+}

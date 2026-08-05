@@ -85,3 +85,12 @@ func (_m *MockNainJauneGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// NainJauneValidPlays モック
+func (_m *MockNainJauneGame) NainJauneValidPlays(player int) []int {
+	ret := _m.Called(player)
+	if v, ok := ret.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}

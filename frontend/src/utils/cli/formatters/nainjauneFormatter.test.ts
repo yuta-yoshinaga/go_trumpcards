@@ -29,6 +29,7 @@ function makeState(overrides?: Partial<NainJauneResponse>): NainJauneResponse {
   return {
     players: [seat(0, true), seat(1, false)],
     phase: 0,
+    validPlays: [],
     currentPlayerIdx: 0,
     boxes: BOXES,
     talonCount: 4,

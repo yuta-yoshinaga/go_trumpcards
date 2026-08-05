@@ -5,6 +5,7 @@ import { getPochHint } from './pochHint';
 const base = {
   players: [],
   phase: 1,
+  validPlays: [],
   currentPlayerIdx: 0,
   pools: [],
   paySuit: 1,

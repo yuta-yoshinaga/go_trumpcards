@@ -33,6 +33,11 @@ func (p *PopeJoanWebPresenter) Output(c interfaces.PopeJoanGame, lastErr error) 
 func (p *PopeJoanWebPresenter) buildBase(c interfaces.PopeJoanGame) *controller.PopeJoanWebOutput {
 	resObj := new(controller.PopeJoanWebOutput)
 	resObj.Phase = int(c.GetPhase())
+	// 人間の手番でないときは null ではなく空スライス。
+	resObj.ValidPlays = c.PopeJoanValidPlays(0)
+	if resObj.ValidPlays == nil {
+		resObj.ValidPlays = make([]int, 0)
+	}
 	resObj.CurrentPlayerIdx = c.GetCurrentPlayerIdx()
 	resObj.TrumpSuit = c.GetTrumpSuit()
 	resObj.RunSuit = c.GetRunSuit()

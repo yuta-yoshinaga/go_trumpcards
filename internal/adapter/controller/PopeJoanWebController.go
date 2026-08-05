@@ -62,8 +62,11 @@ type PopeJoanWebOutputHint struct {
 
 // PopeJoanWebOutput ポープ・ジョーンWebアウトプット
 type PopeJoanWebOutput struct {
-	Players          []*PopeJoanWebOutputPlayer      `json:"players"`
-	Phase            int                             `json:"phase"`
+	Players []*PopeJoanWebOutputPlayer `json:"players"`
+	Phase   int                        `json:"phase"`
+	// ValidPlays は人間の手番でのみ埋まる、今出せる手札のインデックス。
+	// **並びに従う義務がある**ので、出す前に示さないと押して初めて弾かれる。
+	ValidPlays       []int                           `json:"validPlays"`
 	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`
 	Compartments     []*PopeJoanWebOutputCompartment `json:"compartments"`
 	// TrumpSuit は dead hand の最後の 1 枚で決まる。区画はこのスートでしか払わない。
