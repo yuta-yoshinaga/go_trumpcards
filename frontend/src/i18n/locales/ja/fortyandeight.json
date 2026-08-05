@@ -11,6 +11,7 @@
   "moveCount": "手数",
   "draw": "引く",
   "redeal": "リディール",
+  "redealUsed": "リディール使用済み",
   "giveup": "ギブアップ",
   "empty": "空",
   "foundationAriaLabel": "{{suit}} 組札 {{pile}} {{count}}枚",

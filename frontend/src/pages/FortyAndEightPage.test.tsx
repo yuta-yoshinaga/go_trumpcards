@@ -235,6 +235,19 @@ describe('FortyAndEightPage', () => {
     renderWithProviders(<FortyAndEightPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'リディール' })).not.toBeInTheDocument();
+    // まだ使っていないうちは「使用済み」も出さない。
+    expect(screen.queryByTestId('fe-redeal-used')).not.toBeInTheDocument();
+  });
+
+  // **消すと「使い切った」のか「元から無い」のか区別が付かない。**CUI は毎回
+  // どちらかを必ず案内している (#4914)。
+  it('says the redeal was used once it is spent', async () => {
+    mockExec.mockResolvedValue({ ...playingState, redealUsed: true, canRedeal: false });
+    renderWithProviders(<FortyAndEightPage />);
+    const note = await screen.findByTestId('fe-redeal-used');
+    expect(note).toHaveTextContent('リディール使用済み');
+    // ボタンは復活しない。
+    expect(screen.queryByRole('button', { name: 'リディール' })).not.toBeInTheDocument();
   });
 
   it('clicking hint button dispatches hint', async () => {
