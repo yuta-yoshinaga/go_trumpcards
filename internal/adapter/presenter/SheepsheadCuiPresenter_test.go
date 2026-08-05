@@ -33,6 +33,7 @@ func setupSheepsheadCuiMock() *interfaces.MockSheepsheadGame {
 	m.On("GetPickerIdx").Return(-1)
 	m.On("GetPartnerIdx").Return(-1)
 	m.On("GetCalledSuit").Return(0)
+	m.On("GetCallableSuits").Return([]int{domain.CardDesignSpade, domain.CardDesignHeart})
 	m.On("GetBlind").Return([]*domain.Card(nil))
 	m.On("GetPassCount").Return(0)
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
@@ -58,6 +59,44 @@ func setupSheepsheadCuiMockWithPlayers() (*interfaces.MockSheepsheadGame, []*dom
 	m.On("GetPlayer", 3).Return(players[3])
 	m.On("GetPlayer", 4).Return(players[4])
 	return m, players
+}
+
+// **どのスートを呼べるかを出す。**Web は呼べるスートだけボタンを描くのに、
+// CUI はコマンド構文しか示さず試行錯誤させていた (#4916)。
+func TestSheepsheadCuiPresenter_ListsTheCallableSuits(t *testing.T) {
+	p := new(presenter.SheepsheadCuiPresenter)
+
+	callMock := func(suits []int) *interfaces.MockSheepsheadGame {
+		m, _ := setupSheepsheadCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPickerIdx")
+		m.On("GetPhase").Return(domain.SheepsheadPhaseCall)
+		m.On("GetPickerIdx").Return(0)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCallableSuits")
+		m.On("GetCallableSuits").Return(suits)
+		return m
+	}
+
+	t.Run("lists the suits with the number the command takes", func(t *testing.T) {
+		out := p.Output(callMock([]int{domain.CardDesignSpade, domain.CardDesignHeart}), nil)
+		// **行ごと照合する。**promptCallHelp が `1=♠ 2=♣ 3=♥` を常に出しているので、
+		// 断片で見ると呼べない ♣ の有無を判定できない。
+		// 番号を添えるのは、c コマンドが取るのが記号ではなく数字だから。
+		assert.Contains(t, out, "呼べるスート: 1=♠ 3=♥\n")
+	})
+
+	// 呼べるスートが 0 件でもクラッシュしない (受け入れ条件2)。
+	t.Run("says so when no suit can be called", func(t *testing.T) {
+		out := p.Output(callMock(nil), nil)
+		assert.Contains(t, out, "呼べるスートがありません")
+		assert.NotContains(t, out, "呼べるスート: ")
+	})
+
+	// コールフェーズ以外には出さない。
+	t.Run("confined to the call phase", func(t *testing.T) {
+		m, _ := setupSheepsheadCuiMockWithPlayers()
+		assert.NotContains(t, p.Output(m, nil), "呼べるスート")
+	})
 }
 
 func TestSheepsheadCuiPresenter_Output(t *testing.T) {

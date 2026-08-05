@@ -20,6 +20,8 @@
   "promptBury": "{{name}} ― 2枚を埋めてください",
   "promptBuryHelp": "b <idx1> <idx2>・・・手札から2枚を埋める",
   "promptCall": "{{name}} ― 相棒スートを呼んでください",
+  "callableSuits": "呼べるスート: {{suits}}",
+  "callableNone": "呼べるスートがありません（相棒なしで進みます）",
   "promptCallHelp": "c <suit>・・・フェイルスートを指定（1=♠ 2=♣ 3=♥）",
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "play <idx>・・・カードを出す（マストフォロー）",
