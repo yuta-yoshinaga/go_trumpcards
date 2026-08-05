@@ -18,7 +18,8 @@ test.describe('Le Nain Jaune E2E', () => {
     // Nothing is selected yet, so playing is refused.
     await expect(play).toBeDisabled();
 
-    await page.locator('[data-hint-action="play"]').first().click();
+    // **出せない札は disabled。**先頭の札が常に選べるとは限らない (#4933-#4935)。
+    await page.locator('[data-hint-action="play"]:not([disabled])').first().click();
     await expect(play).toBeEnabled();
     await play.click();
     await waitForLoaded(page);

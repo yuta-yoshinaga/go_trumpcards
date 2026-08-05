@@ -315,4 +315,15 @@ func TestPopeJoanWebPresenter_ValidPlays(t *testing.T) {
 	if !strings.Contains(raw, `"validPlays"`) {
 		t.Fatalf("validPlays missing from the response: %s", raw)
 	}
+
+	// **人間の手番でなければ空。**ドメインは nil を返すので、presenter 側で
+	// 空スライスに寄せている。ここを通さないと null が漏れる。
+	g.SetCurrentPlayerForTest(1)
+	off := decode(new(PopeJoanWebPresenter).Output(g, nil)).ValidPlays
+	if off == nil {
+		t.Fatal("off-turn validPlays must be [] rather than null")
+	}
+	if len(off) != 0 {
+		t.Fatalf("off-turn validPlays must be empty, got %v", off)
+	}
 }
