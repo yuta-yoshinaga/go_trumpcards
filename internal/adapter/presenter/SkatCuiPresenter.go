@@ -94,6 +94,22 @@ func (p *SkatCuiPresenter) Output(s interfaces.SkatGame, lastErr error) string {
 				name := cuiPlayerName(s.GetPlayer(actor), actor)
 				b.WriteString(i18n.Tf("skat.biddingTurn", "name", name) + "\n")
 			}
+			// **どこまで受けて安全かの目安を出す。**Web は常時表示しているのに
+			// CUI には無く、オーバービッドの危険を測れなかった (#4905)。
+			if human := s.GetPlayer(0); human != nil && human.GetCardsSize() > 0 {
+				hand := make([]*domain.Card, human.GetCardsSize())
+				for i := range hand {
+					hand[i] = human.GetCard(i)
+				}
+				est := domain.SkatBestBidEstimate(hand)
+				b.WriteString(i18n.Tf("skat.bidEstimate",
+					"value", strconv.Itoa(est.Value),
+					"game", skatEstimateGameLabel(est.GameType, est.TrumpSuit),
+					"matadors", strconv.Itoa(est.Matadors)) + "\n")
+				if cur := s.GetCurrentBid(); cur > est.Value {
+					b.WriteString(color.Red(i18n.Tf("skat.bidExceedsHand", "value", strconv.Itoa(est.Value))) + "\n")
+				}
+			}
 			b.WriteString(i18n.T("skat.promptBid") + "\n")
 		case domain.SkatPhaseSkatPickup:
 			b.WriteString(i18n.T("skat.skatPickup") + "\n")
@@ -204,4 +220,12 @@ var skatHintReasonKeys = map[string]string{
 	"discard_low":   "skat.hintReasonDiscardLow",
 	"game_choice":   "skat.hintReasonGameChoice",
 	"best_play":     "skat.hintReasonBestPlay",
+}
+
+// skatEstimateGameLabel は見積もりの契約名を返す。スート戦は切札名まで出す。
+func skatEstimateGameLabel(gameType domain.SkatGameType, trumpSuit int) string {
+	if gameType == domain.SkatGameSuit {
+		return skatGameTypeLabel(gameType) + " " + cuiSuitName(trumpSuit)
+	}
+	return skatGameTypeLabel(gameType)
 }

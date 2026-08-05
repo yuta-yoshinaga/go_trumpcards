@@ -804,9 +804,14 @@ func (s *Skat) computeRoundResult() (int, bool) {
 
 // gameBaseValue returns the base value for the game type.
 func (s *Skat) gameBaseValue() int {
-	switch s.round.gameType {
+	return skatBaseValueFor(s.round.gameType, s.round.trumpSuit)
+}
+
+// skatBaseValueFor は仮の契約に対する基礎点を返す。
+func skatBaseValueFor(gameType SkatGameType, trumpSuit int) int {
+	switch gameType {
 	case SkatGameSuit:
-		switch s.round.trumpSuit {
+		switch trumpSuit {
 		case CardDesignDiamond:
 			return 9
 		case CardDesignHeart:
@@ -839,7 +844,12 @@ func (s *Skat) gameMultiplier() int {
 // phase — we cannot read the live SkatPlayer hand here because matadors is
 // computed at scoring time, after every card has been played out.
 func (s *Skat) matadorsCount(cards []*Card) int {
-	order := s.trumpOrder()
+	return skatMatadorsFor(cards, s.round.gameType, s.round.trumpSuit)
+}
+
+// skatMatadorsFor は仮の契約に対するマタドール数を返す。
+func skatMatadorsFor(cards []*Card, gameType SkatGameType, trumpSuit int) int {
+	order := skatTrumpOrderFor(gameType, trumpSuit)
 	if len(order) == 0 {
 		return 0
 	}
@@ -883,7 +893,15 @@ type trumpOrderEntry struct {
 
 // trumpOrder returns the trump cards in descending strength.
 func (s *Skat) trumpOrder() []trumpOrderEntry {
-	switch s.round.gameType {
+	return skatTrumpOrderFor(s.round.gameType, s.round.trumpSuit)
+}
+
+// skatTrumpOrderFor は仮の契約に対する切札の序列を返す。
+//
+// **ビッド前の見積もりにも同じ序列が要る。**round の状態に縛られたままだと、
+// 「この手札ならどの契約でいくつまで受けられるか」を計算できない (#4905)。
+func skatTrumpOrderFor(gameType SkatGameType, trumpSuit int) []trumpOrderEntry {
+	switch gameType {
 	case SkatGameNull:
 		return nil
 	case SkatGameGrand:
@@ -901,7 +919,7 @@ func (s *Skat) trumpOrder() []trumpOrderEntry {
 			{CardDesignHeart, skatValueJack},
 			{CardDesignDiamond, skatValueJack},
 		}
-		ts := s.round.trumpSuit
+		ts := trumpSuit
 		// Then suit cards in standard high→low order: A, T, K, Q, 9, 8, 7.
 		order := []int{skatValueAce, skatValueTen, skatValueKing, skatValueQueen, skatValueNine, skatValueEight, skatValueSeven}
 		for _, v := range order {
@@ -1607,4 +1625,66 @@ func (s *Skat) cpuPickPlay(playerIdx int) int {
 		}
 	}
 	return worstIdx
+}
+
+// SkatBidEstimate は 1 つの契約について、手札から安全に受けられるビッド額を表す。
+type SkatBidEstimate struct {
+	// GameType は契約の種別 (スート戦 / グランド)。
+	GameType SkatGameType
+	// TrumpSuit はスート戦の切札 (グランドでは 0)。
+	TrumpSuit int
+	// Base は基礎点。
+	Base int
+	// Matadors はマタドール数 (with / without のうち成立するほう)。
+	Matadors int
+	// Value は (マタドール + 1) × 基礎点。**追加の宣言 (ハント / シュナイダー /
+	// シュヴァルツ / ウーヴェルト) を一切使わずに正当化できる上限**で、これを
+	// 超えて落札するとオーバービッドで失う危険がある。
+	Value int
+}
+
+// SkatBidEstimates は各契約についての安全ビッド上限を返す。
+//
+// **ヌル戦は含めない。**基礎点 23 が契約の種別だけで決まり、マタドールの
+// 連なりで伸びないので、マタドールに基づく見積もりには乗らない。
+func SkatBidEstimates(hand []*Card) []SkatBidEstimate {
+	type spec struct {
+		gameType SkatGameType
+		trump    int
+	}
+	specs := []spec{
+		{SkatGameSuit, CardDesignClover},
+		{SkatGameSuit, CardDesignSpade},
+		{SkatGameSuit, CardDesignHeart},
+		{SkatGameSuit, CardDesignDiamond},
+		{SkatGameGrand, 0},
+	}
+	out := make([]SkatBidEstimate, 0, len(specs))
+	for _, sp := range specs {
+		m := skatMatadorsFor(hand, sp.gameType, sp.trump)
+		base := skatBaseValueFor(sp.gameType, sp.trump)
+		out = append(out, SkatBidEstimate{
+			GameType:  sp.gameType,
+			TrumpSuit: sp.trump,
+			Base:      base,
+			Matadors:  m,
+			Value:     (m + 1) * base,
+		})
+	}
+	return out
+}
+
+// SkatBestBidEstimate は最も高い見積もりを返す。
+//
+// **手札が空でも 0 にはならない。**切札を 1 枚も持たないのは「without が最大」と
+// いうことなので、かえって大きな値が出る。配り終えた 10 枚の手札に対してだけ
+// 意味がある — 途中まで出したあとの手札に使ってはいけない。
+func SkatBestBidEstimate(hand []*Card) SkatBidEstimate {
+	best := SkatBidEstimate{}
+	for _, e := range SkatBidEstimates(hand) {
+		if e.Value > best.Value {
+			best = e
+		}
+	}
+	return best
 }

@@ -16,6 +16,8 @@
   "gameOver": "Game over!",
   "biddingTurn": "Bidding: {{name}}'s turn",
   "promptBid": "b 0/1 - pass (0) or accept the active bid step (1)",
+  "bidEstimate": "Hand estimate: up to {{value}} ({{game}}, {{matadors}} matadors)",
+  "bidExceedsHand": "! The current bid is above your hand estimate ({{value}})",
   "skatPickup": "Skat pickup: declarer decides",
   "promptPickup": "ps 0/1 - decline (0) or pick up the skat (1)",
   "discardPrompt": "Discard 2 cards into the skat",
