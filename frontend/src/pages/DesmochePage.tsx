@@ -175,49 +175,54 @@ function DesmochePageContent() {
                 <div className="text-center text-game-text-muted text-xs">{t('noMelds')}</div>
               ) : (
                 <div className="flex flex-col gap-1 items-center">
-                  {state.melds.map((m, i) => (
-                    <div
-                      key={`meld-${i.toString()}`}
-                      className={[
-                        'flex items-center gap-1 rounded px-2 py-1',
-                        // **自分のメルドだけが上がり枚数に加算される。**番号を
-                        // 読んで暗算しないと、進捗の進まない先にレイオフして
-                        // 手番を捨てることになる (#4932)。
-                        m.owner === 0 ? 'bg-ds-accent/10' : 'bg-black/20',
-                        meldTarget === i ? 'ring-2 ring-ds-accent' : '',
-                      ].join(' ')}
-                      data-own-meld={m.owner === 0 ? 'true' : 'false'}
-                    >
-                      <button
-                        type="button"
-                        data-testid="desmoche-meld"
-                        aria-pressed={meldTarget === i}
-                        onClick={() => setMeldTarget(meldTarget === i ? null : i)}
-                        className="text-[10px] text-ds-text-muted min-h-11 px-1"
+                  {state.melds.map((m, i) => {
+                    // **自分のメルドだけが上がり枚数に加算される。**色・ラベル・
+                    // 警告が食い違わないよう、判定は 1 箇所から配る。
+                    const isOwn = m.owner === 0;
+                    return (
+                      <div
+                        key={`meld-${i.toString()}`}
+                        className={[
+                          'flex items-center gap-1 rounded px-2 py-1',
+                          // **自分のメルドだけが上がり枚数に加算される。**番号を
+                          // 読んで暗算しないと、進捗の進まない先にレイオフして
+                          // 手番を捨てることになる (#4932)。
+                          isOwn ? 'bg-ds-accent/10' : 'bg-black/20',
+                          meldTarget === i ? 'ring-2 ring-ds-accent' : '',
+                        ].join(' ')}
+                        data-own-meld={isOwn ? 'true' : 'false'}
                       >
-                        {meldKindName(m.kind)} · {m.owner === 0 ? t('meldOwnerYou') : t('meldOwner', { n: m.owner })}
-                      </button>
-                      {m.cards.map((card, j) => (
                         <button
-                          key={`meld-${i.toString()}-c${j.toString()}`}
                           type="button"
-                          data-testid="desmoche-meld-card"
-                          aria-pressed={meldCard?.meld === i && meldCard.card === j}
-                          aria-disabled={m.owner !== 0}
-                          onClick={() =>
-                            m.owner === 0 &&
-                            setMeldCard(meldCard?.meld === i && meldCard.card === j ? null : { meld: i, card: j })
-                          }
-                          className={[
-                            'rounded min-h-11',
-                            meldCard?.meld === i && meldCard.card === j ? 'ring-2 ring-ds-warning' : '',
-                          ].join(' ')}
+                          data-testid="desmoche-meld"
+                          aria-pressed={meldTarget === i}
+                          onClick={() => setMeldTarget(meldTarget === i ? null : i)}
+                          className="text-[10px] text-ds-text-muted min-h-11 px-1"
                         >
-                          <AnimatedCard card={card} width={Math.round(cardWidth * 0.7)} draggable={false} />
+                          {meldKindName(m.kind)} · {m.owner === 0 ? t('meldOwnerYou') : t('meldOwner', { n: m.owner })}
                         </button>
-                      ))}
-                    </div>
-                  ))}
+                        {m.cards.map((card, j) => (
+                          <button
+                            key={`meld-${i.toString()}-c${j.toString()}`}
+                            type="button"
+                            data-testid="desmoche-meld-card"
+                            aria-pressed={meldCard?.meld === i && meldCard.card === j}
+                            aria-disabled={!isOwn}
+                            onClick={() =>
+                              isOwn &&
+                              setMeldCard(meldCard?.meld === i && meldCard.card === j ? null : { meld: i, card: j })
+                            }
+                            className={[
+                              'rounded min-h-11',
+                              meldCard?.meld === i && meldCard.card === j ? 'ring-2 ring-ds-warning' : '',
+                            ].join(' ')}
+                          >
+                            <AnimatedCard card={card} width={Math.round(cardWidth * 0.7)} draggable={false} />
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
