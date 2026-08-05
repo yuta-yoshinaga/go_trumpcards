@@ -123,6 +123,50 @@ func TestCalabresellaCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+// **モンテは公開情報。**取得した時点で全員に見える札なのに、CUI はどのフェーズでも
+// 出しておらず、Web だけが monteLabel パネルに出していた (#4843)。
+func TestCalabresellaCuiPresenter_ShowsRevealedMonte(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.CalabresellaCuiPresenter)
+
+	monte := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, false),
+		domain.NewCard(domain.CardDesignHeart, 3, false),
+		domain.NewCard(domain.CardDesignClover, 7, false),
+		domain.NewCard(domain.CardDesignDiamond, 13, false),
+	}
+	log := []*domain.ActionLogEntry{
+		{PlayerIdx: 0, ActionType: "bid", Cards: nil},
+		{PlayerIdx: 0, ActionType: "monte_take", Cards: monte},
+	}
+
+	t.Run("shown once taken", func(t *testing.T) {
+		m, _ := setupCalabresellaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+		m.On("GetActionLog").Return(log)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "モンテ（公開）:")
+		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "DIAMOND 13")
+	})
+
+	t.Run("hidden during the bid phase", func(t *testing.T) {
+		m, _ := setupCalabresellaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetActionLog").Return(log)
+		m.On("GetPhase").Return(domain.CalabresellaPhaseBid)
+		assert.NotContains(t, p.Output(m, nil), "モンテ（公開）:")
+	})
+
+	t.Run("hidden before anyone takes it", func(t *testing.T) {
+		m, _ := setupCalabresellaCuiMockWithPlayers()
+		assert.NotContains(t, p.Output(m, nil), "モンテ（公開）:")
+	})
+}
+
 func TestCalabresellaCuiPresenter_HintOutput(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
