@@ -2,12 +2,14 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
@@ -98,6 +100,40 @@ func TestAnacondaCuiPresenter_HintOutputs(t *testing.T) {
 	// Result phase → GetHint returns nil, still non-empty text.
 	g.SetPhase(domain.AnacondaPhaseResult)
 	assert.NotEmpty(t, p.HintOutput(g))
+}
+
+// **どの札かまで出す。**ドメインは pass/keep の推奨インデックスを計算しているのに、
+// 行は「3枚パス（弱いため）」で止まっていた (#4851)。
+func TestAnacondaCuiPresenter_HintNamesTheCards(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	g := domain.NewDefaultAnaconda()
+	p := new(presenter.AnacondaCuiPresenter)
+
+	hint := g.GetHint()
+	assert.NotNil(t, hint)
+	assert.NotEmpty(t, hint.CardIndices, "パスフェーズの推奨は札のインデックスを持つ")
+
+	out := p.HintOutput(g)
+	assert.Contains(t, out, "対象:")
+	// 推奨された各インデックスが、その位置の実際の札と一緒に出ている。
+	var human *domain.AnacondaPlayer
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		if pl := g.GetPlayer(i); pl != nil && pl.GetIsHuman() {
+			human = pl
+			break
+		}
+	}
+	assert.NotNil(t, human)
+	for _, idx := range hint.CardIndices {
+		assert.Contains(t, out, "["+strconv.Itoa(idx)+"]")
+	}
+
+	// ベッティングの手 (CardIndices なし) には付かない。
+	g.SetPhase(domain.AnacondaPhaseRoll)
+	assert.NotContains(t, p.HintOutput(g), "対象:")
 }
 
 func TestAnacondaCuiPresenter_ActionLog(t *testing.T) {

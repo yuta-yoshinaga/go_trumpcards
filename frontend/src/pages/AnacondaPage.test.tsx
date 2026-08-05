@@ -33,6 +33,9 @@ function cardButtons(): HTMLElement[] {
 }
 
 beforeEach(() => {
+  // ヒントのトグルは localStorage に残る。消さないと次のテストが
+  // チェック済みで始まり、クリックで off になる。
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(passState);
 });
@@ -246,5 +249,27 @@ describe('AnacondaPage', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  // **バックエンドはどの札かまで計算している。**ツールチップは「3枚パス」で
+  // 止まっていて、選ぶのはプレイヤー任せだった (#4851)。
+  it('rings the cards the hint recommends passing', async () => {
+    mockExec.mockResolvedValue(
+      makeAnacondaState({ hint: { action: 'pass', cardIndices: [0, 2], reason: 'pass_weakest' } }),
+    );
+    renderWithProviders(<AnacondaPage />);
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    fireEvent.click(toggle);
+
+    await waitFor(() => expect(document.querySelectorAll('[data-hint-card="true"]')).toHaveLength(2));
+  });
+
+  it('rings nothing for a betting suggestion or while hints are off', async () => {
+    mockExec.mockResolvedValue(makeAnacondaState({ hint: { action: 'raise', reason: 'strong_hand' } }));
+    renderWithProviders(<AnacondaPage />);
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    fireEvent.click(toggle);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(document.querySelectorAll('[data-hint-card="true"]')).toHaveLength(0);
   });
 });
