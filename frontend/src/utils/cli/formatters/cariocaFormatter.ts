@@ -8,6 +8,9 @@ import {
   formatSeparator,
 } from '../formatterBase';
 
+/** ラウンド終了フェーズ。ここでは手番ではなく次の一手を促す。 */
+const ROUND_END_PHASE = 2;
+
 const PHASE_NAMES: Record<number, string> = {
   0: 'DRAW',
   1: 'PLAY',
@@ -43,7 +46,12 @@ export function formatCariocaState(state: CariocaResponse): string {
   }
   lines.push('----------');
 
-  if (!state.gameEndFlag) {
+  if (state.gameEndFlag) {
+    // 手番行は出さない。
+  } else if (state.phase === ROUND_END_PHASE) {
+    // ラウンド終了時は手番ではなく次の一手を出す (CUI と同じ)。
+    lines.push('round over — nr for the next round');
+  } else {
     const current = formatPlayerName(state.currentPlayerIdx, state.players[state.currentPlayerIdx]?.isHuman ?? false);
     lines.push(`turn: ${current}`);
   }

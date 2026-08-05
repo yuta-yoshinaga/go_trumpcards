@@ -103,6 +103,12 @@ describe('formatCariocaState', () => {
     expect(out).toContain('[0] ');
   });
 
+  it('prompts for the next round instead of a turn at round end', () => {
+    const out = formatCariocaState(makeCariocaState({ phase: 2 }));
+    expect(out).toContain('round over');
+    expect(out).not.toContain('turn:');
+  });
+
   it('announces the winner once the game ends', () => {
     const out = formatCariocaState(makeCariocaState({ gameEndFlag: true, winnerIdx: 0 }));
     expect(out).toContain('Game Over!');
