@@ -14,6 +14,7 @@
   "trumpUndecided": "Trump: undecided",
   "faceUpCard": "Face-up card: {{card}}",
   "teamScoreLine": "Team 0: {{t0}}  Team 1: {{t1}}",
+  "beloteBonusLine": "Belote/Rebelote: +{{points}} to team {{team}} (K+Q of trumps)",
   "playerLine": "{{name}}: Team {{team}} tricks={{tricks}} cards={{cards}}",
   "gameEnd": "Game over! Team {{team}} wins!",
   "promptPickup": "Pickup phase: {{name}} to act",
