@@ -269,6 +269,18 @@ function GutsPageContent() {
               </div>
             )}
 
+            {/* Nobody stayed: the pot carries. The CUI has said so since the game
+                shipped (guts.result.carry); the Web page rendered no panel at all
+                for winnerIdx < 0, which is exactly when carryPot matters (#4847). */}
+            {isResultPhase && state.winnerIdx < 0 && (
+              <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="guts-carry-result">
+                <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+                <div className="text-ds-warning font-semibold">
+                  {t('roundResult.carry', { pot: state.carryPot, count: state.carryCount })}
+                </div>
+              </div>
+            )}
+
             {/* Round result */}
             {isResultPhase && state.winnerIdx >= 0 && (
               <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">

@@ -3108,6 +3108,7 @@ const baseGutsState: GutsResponse = {
   roundNumber: 1,
   pot: 40,
   carryPot: 0,
+  carryCount: 0,
   ante: 10,
   chips: 200,
   winnerIdx: -1,

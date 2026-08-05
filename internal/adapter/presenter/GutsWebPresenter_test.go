@@ -117,6 +117,12 @@ func TestGutsWebPresenter_ResultCarry(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(out), &decoded))
 	assert.Equal(t, "guts.roundEndCarry", decoded["messageCode"])
 	assert.Equal(t, float64(-1), decoded["winnerIdx"])
+	// **持ち越し額と回数まで載せる。**CUI の guts.result.carry と同じ 2 つを
+	// Web も出すようになった (#4847)。ここで見ておかないと、配線が外れても
+	// フロントのテスト (API をモックする) は素通りする。
+	assert.Equal(t, float64(g.GetCarryPot()), decoded["carryPot"])
+	assert.Equal(t, float64(g.GetCarryCount()), decoded["carryCount"])
+	assert.Positive(t, g.GetCarryCount(), "全員アウトのラウンドなので 1 回以上持ち越している")
 }
 
 func TestGutsWebPresenter_GameEnd(t *testing.T) {

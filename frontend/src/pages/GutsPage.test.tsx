@@ -229,4 +229,22 @@ describe('GutsPage', () => {
     renderWithProviders(<GutsPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝利です！')).toBeInTheDocument());
   });
+
+  // **誰も残らなかったラウンドは表示が丸ごと無かった。**CUI は最初から
+  // guts.result.carry で持ち越し額と連続回数を出している (#4847)。
+  it('shows the carried pot when nobody stayed in', async () => {
+    mockExec.mockResolvedValue(makeGutsState({ phase: 1, winnerIdx: -1, carryPot: 40, carryCount: 2 }));
+    renderWithProviders(<GutsPage />);
+
+    const panel = await screen.findByTestId('guts-carry-result');
+    expect(panel).toHaveTextContent('ポット 40');
+    expect(panel).toHaveTextContent('2 回連続');
+  });
+
+  it('shows the winner panel instead when the round had a winner', async () => {
+    mockExec.mockResolvedValue(resultState);
+    renderWithProviders(<GutsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+    expect(screen.queryByTestId('guts-carry-result')).not.toBeInTheDocument();
+  });
 });
