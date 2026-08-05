@@ -20,10 +20,6 @@ const CribbageHandSize = 4
 // CribbageDiscardSize クリブに捨てる枚数
 const CribbageDiscardSize = 2
 
-// CribbageJackValue は J の値。**スターターが J なら His Heels でディーラーに 2 点**。
-// 判定を presenter でも書くので、リテラルを 2 箇所に散らさない。
-const CribbageJackValue = 11
-
 // CribbagePegLimit ペギングの上限値
 const CribbagePegLimit = 31
 
