@@ -814,8 +814,10 @@ export function useGameHint(gameName: HintGameName, state: unknown): UseGameHint
   const language = i18n.language;
   const hint = useMemo(() => {
     if (!hintEnabled || !state) return null;
+    // `language` を読むのは、訳語を `reasonParams` に焼き込むファクトリ (Nertz) を
+    // 言語切り替えで作り直すため。値そのものは使わない。
+    void language;
     return hintFactories[gameName]?.(state) ?? null;
-    // biome-ignore lint/correctness/useExhaustiveDependencies: language は再計算のトリガとしてのみ必要
   }, [gameName, hintEnabled, state, language]);
 
   return { hintEnabled, setHintEnabled, hint };
