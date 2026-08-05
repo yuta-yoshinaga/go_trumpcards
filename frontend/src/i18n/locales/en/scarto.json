@@ -47,7 +47,8 @@
     "outcome": "Your result: {{outcome}}",
     "playerLine": "{{name}}: {{delta}} (total {{score}})",
     "average": "Table average: {{avg}} pts",
-    "earnedLine": "{{name}}: earned {{points}} pts (vs avg {{diff}})"
+    "earnedLine": "{{name}}: earned {{points}} pts (vs avg {{diff}} -> change {{scaled}})",
+    "formula": "Change = difference from the average x players ({{n}})"
   },
   "hintAvailable": "Hint",
   "hint": {
