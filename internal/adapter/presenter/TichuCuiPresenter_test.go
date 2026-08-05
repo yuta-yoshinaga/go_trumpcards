@@ -41,3 +41,31 @@ func TestTichuCuiPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.TichuCuiPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(tg))
 }
+
+// **得点差もボムの使用状況も終局まで分からなかった。**Web は常時スコアバーに
+// 出している (#4888)。
+func TestTichuCuiPresenter_ShowsRunningScoreAndBombs(t *testing.T) {
+	tg := newTichuAllCpu()
+	tg.Reset()
+	p := new(presenter.TichuCuiPresenter)
+
+	// 宣言フェーズから既にスコアが出る。
+	declare := p.Output(tg, nil)
+	assert.Contains(t, declare, "チームA (P0/P2):")
+	assert.Contains(t, declare, "チームB (P1/P3):")
+	// まだボムは使われていないので行は出さない。
+	assert.NotContains(t, declare, "ボム使用")
+
+	for tg.GetPhase() == domain.TichuPhaseDeclare {
+		tg.CpuPlay()
+	}
+	assert.Contains(t, p.Output(tg, nil), "チームA (P0/P2):")
+
+	// **終局時に二重に出さない。**下の gameEnd ブロックが出す。
+	for !tg.GetGameEndFlag() {
+		tg.CpuPlay()
+	}
+	end := p.Output(tg, nil)
+	assert.Equal(t, 1, strings.Count(end, "チームA (P0/P2):"))
+	assert.Contains(t, end, "ディール終了")
+}
