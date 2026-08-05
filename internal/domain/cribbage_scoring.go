@@ -157,7 +157,7 @@ func CribbageScoreNobs(hand []*Card, starter *Card) int {
 		return 0
 	}
 	for _, c := range hand {
-		if c.GetValue() == 11 && c.GetDesign() == starter.GetDesign() {
+		if c.GetValue() == CribbageJackValue && c.GetDesign() == starter.GetDesign() {
 			return 1
 		}
 	}
