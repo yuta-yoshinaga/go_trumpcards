@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 
@@ -24,6 +25,54 @@ func wattenPlayerStr(player *domain.WattenPlayer, i int) string {
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+	}
+	return b.String()
+}
+
+// wattenDeclarePreview renders how many of the human's cards each declaration
+// would turn into trumps. The Web GUI previews this live while the dealer picks
+// (#4848); the CUI prompt showed only the command syntax, and the declaration
+// decides who holds the initiative for the whole deal.
+func wattenDeclarePreview(g interfaces.WattenGame) string {
+	var human *domain.WattenPlayer
+	for i := range g.GetPlayerCnt() {
+		if p := g.GetPlayer(i); p != nil && p.GetIsHuman() {
+			human = p
+			break
+		}
+	}
+	if human == nil || human.GetCardsSize() == 0 {
+		return ""
+	}
+	cards := make([]*domain.Card, 0, human.GetCardsSize())
+	for i := range human.GetCardsSize() {
+		cards = append(cards, human.GetCard(i))
+	}
+	// 分類はドメインに置いた。ここで書き直すと Max/Belli/Spitz の二重計上や
+	// Web との食い違いが起きる。
+	pv := domain.WattenPreviewTrumps(cards)
+
+	suitParts := make([]string, 0, domain.CardDesignDiamond)
+	for suit := domain.CardDesignSpade; suit <= domain.CardDesignDiamond; suit++ {
+		suitParts = append(suitParts, cuiSuitName(suit)+" "+strconv.Itoa(pv.BySuit[suit]))
+	}
+	var b strings.Builder
+	b.WriteString(i18n.Tf("watten.declareSuitPreview",
+		"suits", strings.Join(suitParts, "  "),
+		"permanent", strconv.Itoa(pv.Permanent)) + "\n")
+
+	// Schlag は手札に無いランクを並べても仕方がないので、持っているものだけ。
+	ranks := make([]int, 0, len(pv.ByRank))
+	for r := range pv.ByRank {
+		ranks = append(ranks, r)
+	}
+	sort.Ints(ranks)
+	rankParts := make([]string, 0, len(ranks))
+	for _, r := range ranks {
+		rankParts = append(rankParts, cuiRankLabel(r)+" "+strconv.Itoa(pv.ByRank[r]))
+	}
+	if len(rankParts) > 0 {
+		b.WriteString(i18n.Tf("watten.declareRankPreview", "ranks", strings.Join(rankParts, "  ")) + "\n")
 	}
 	return b.String()
 }
@@ -79,6 +128,7 @@ func (p *WattenCuiPresenter) Output(g interfaces.WattenGame, lastErr error) stri
 		case domain.WattenPhaseDeclare:
 			out.WriteString(i18n.Tf("watten.promptDeclare",
 				"name", cuiPlayerName(g.GetPlayer(dealerIdx), dealerIdx)) + "\n")
+			out.WriteString(wattenDeclarePreview(g))
 			out.WriteString(i18n.T("watten.promptDeclareHelp") + "\n")
 		case domain.WattenPhasePlay:
 			currentIdx := g.GetCurrentPlayerIdx()

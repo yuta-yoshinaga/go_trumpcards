@@ -16,6 +16,8 @@
   "playerLine": "{{name}}: チーム{{team}} 獲得{{tricks}}トリック {{cards}}枚",
   "gameEnd": "ゲーム終了！ チーム{{team}}の勝利です！",
   "promptDeclare": "宣言: {{name}}が Schlag と切り札を選択",
+  "declareSuitPreview": "  切り札にすると増える枚数: {{suits}}（常時切り札の保持: {{permanent}} 枚）",
+  "declareRankPreview": "  Schlag にすると増える枚数: {{ranks}}",
   "promptDeclareHelp": "d <rank> <suit> (例: d 10 3)",
   "promptCurrentPlayer": "手番: {{name}}",
   "promptRaiseHelp": "rz (ステークを引き上げる)",

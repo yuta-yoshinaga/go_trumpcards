@@ -601,6 +601,40 @@ func (g *Watten) isTrump(c *Card) bool {
 	return false
 }
 
+// WattenTrumpPreview counts, for a hand, how many cards would become trumps for
+// each candidate declaration. `Permanent` is the number of Max/Belli/Spitz held
+// (trumps whatever is declared), `BySuit` counts the extra cards a critical
+// suit would add, and `ByRank` the extra cards a Schlag rank would add — extra
+// meaning "not already counted as permanent", so the three never double-count.
+//
+// The Web GUI previews the same thing live while the dealer picks (#4848); the
+// CUI prompt showed only the command syntax, and the declaration decides who
+// holds the initiative for the whole deal.
+type WattenTrumpPreview struct {
+	Permanent int
+	BySuit    [CardDesignDiamond + 1]int
+	ByRank    map[int]int
+}
+
+// WattenPreviewTrumps builds a WattenTrumpPreview for the given hand.
+func WattenPreviewTrumps(cards []*Card) WattenTrumpPreview {
+	pv := WattenTrumpPreview{ByRank: map[int]int{}}
+	for _, c := range cards {
+		if c == nil {
+			continue
+		}
+		if isMax(c) || isBelli(c) || isSpitz(c) {
+			pv.Permanent++
+			continue
+		}
+		if d := c.GetDesign(); d >= CardDesignSpade && d <= CardDesignDiamond {
+			pv.BySuit[d]++
+		}
+		pv.ByRank[c.GetValue()]++
+	}
+	return pv
+}
+
 // IsTrumpPublic テスト用公開ラッパー。
 func (g *Watten) IsTrumpPublic(c *Card) bool { return g.isTrump(c) }
 
