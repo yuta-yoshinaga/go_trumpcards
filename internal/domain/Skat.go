@@ -1674,7 +1674,11 @@ func SkatBidEstimates(hand []*Card) []SkatBidEstimate {
 	return out
 }
 
-// SkatBestBidEstimate は最も高い見積もりを返す。手札が空なら Value 0。
+// SkatBestBidEstimate は最も高い見積もりを返す。
+//
+// **手札が空でも 0 にはならない。**切札を 1 枚も持たないのは「without が最大」と
+// いうことなので、かえって大きな値が出る。配り終えた 10 枚の手札に対してだけ
+// 意味がある — 途中まで出したあとの手札に使ってはいけない。
 func SkatBestBidEstimate(hand []*Card) SkatBidEstimate {
 	best := SkatBidEstimate{}
 	for _, e := range SkatBidEstimates(hand) {
