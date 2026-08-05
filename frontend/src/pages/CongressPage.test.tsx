@@ -99,6 +99,21 @@ describe('CongressPage', () => {
     );
   });
 
+  // **空き山はタブローからは埋められない。**`MoveTableauToTableau` が明示的に
+  // 拒否する。押せてしまうとサーバに弾かれるまで気づけない (#4906)。
+  it('disables an empty pile while a tableau card is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CongressPage />);
+    const empty = await screen.findByRole('button', { name: /空の山 3/ });
+    // まだ何も選んでいなければ、当然押せない。
+    expect(empty).toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 9' })).toHaveAttribute('aria-pressed', 'true'));
+    // タブローの札を選んでも押せないまま。
+    expect(empty).toBeDisabled();
+  });
+
   // The stock doubles as a move source: with a card selected it fills a gap
   // directly instead of turning to the waste.
   it('fills an empty pile straight from the stock', async () => {

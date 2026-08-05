@@ -189,7 +189,10 @@ function CongressPageContent() {
               <button
                 type="button"
                 onClick={() => game.handleSelectTarget(pileZone)}
-                disabled={!isPlaying || loading || !selectedSource}
+                // **空き山はタブローからは埋められない。**山札か捨て札からだけ
+                // (`MoveTableauToTableau` が明示的に拒否する)。押せてしまうと
+                // サーバに弾かれるまで気づけない (#4906)。
+                disabled={!isPlaying || loading || !selectedSource || selectedSource.zone === 'tableau'}
                 aria-label={t('emptyPileAriaLabel', { pile: pileIdx })}
                 style={{ height: dims.ch }}
                 className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
