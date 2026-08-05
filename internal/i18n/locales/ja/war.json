@@ -16,5 +16,6 @@
   "promptResolvedCpu": "CPUがラウンドに勝利... step で回収します。",
   "promptWarBury": "戦争発生！ step で伏せ札と表札を出します。",
   "gameWinHuman": "あなたの勝ちです！",
-  "gameWinCpu": "CPUの勝ちです..."
+  "gameWinCpu": "CPUの勝ちです...",
+  "roundProgress": "ラウンド: {{played}} / {{max}}（上限で引き分け）"
 }

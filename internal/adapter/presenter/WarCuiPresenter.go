@@ -19,6 +19,18 @@ func (p *WarCuiPresenter) Output(w interfaces.WarGame, lastErr error) string {
 		cpu := w.GetPlayer(1)
 		human := w.GetPlayer(0)
 
+		// **引き分け打ち切りがいつ来るかを出す。**Web はアリーナに
+		// 「ラウンド: n / max」を常時出しているのに、CUI は一度も出しておらず、
+		// あと何ラウンドで強制引き分けになるかが分からなかった (#4865)。
+		rounds, maxRounds := w.GetRoundsPlayed(), w.GetConfig().MaxRounds
+		line := i18n.Tf("war.roundProgress",
+			"played", strconv.Itoa(rounds), "max", strconv.Itoa(maxRounds))
+		// 9 割を超えたら強調する。打ち切りが目前だと分かる必要がある。
+		if maxRounds > 0 && rounds*10 >= maxRounds*9 {
+			line = color.Yellow(line)
+		}
+		b.WriteString(line + "\n")
+
 		b.WriteString(i18n.Tf("war.cpuStats",
 			"draw", strconv.Itoa(cpu.GetDrawPileSize()),
 			"discard", strconv.Itoa(cpu.GetDiscardPileSize()),
