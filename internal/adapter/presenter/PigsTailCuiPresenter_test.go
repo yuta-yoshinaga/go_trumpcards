@@ -1,7 +1,6 @@
 package presenter_test
 
 import (
-	"encoding/json"
 	"errors"
 	"testing"
 
@@ -57,12 +56,7 @@ func TestPigsTailCuiPresenter_Output(t *testing.T) {
 		}
 
 		// ペナルティ側の文言も踏む。引いた札は保ったままフラグだけ立てる。
-		data, _ := json.Marshal(pt)
-		var raw map[string]json.RawMessage
-		_ = json.Unmarshal(data, &raw)
-		raw["lp"], _ = json.Marshal(true)
-		newData, _ := json.Marshal(raw)
-		_ = json.Unmarshal(newData, pt)
+		pt.SetLastPenalty(true)
 
 		output := p.Output(pt, nil)
 		assert.Contains(t, output, "→ ペナルティ！ 場札を全て引き取り")
