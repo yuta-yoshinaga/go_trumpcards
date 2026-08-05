@@ -10,6 +10,7 @@
   "phaseLine": "phase: {{phase}}",
   "turnsLine": "turns: {{played}}/{{total}}",
   "remainingLine": "cards left: {{count}}",
+  "caseKeeper": "Case keeper (remaining of 4 per rank): {{counts}}",
   "betsHeader": "BETS",
   "betLine": "  rank {{rank}}: {{amount}}",
   "copperTag": "(copper)",

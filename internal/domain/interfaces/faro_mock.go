@@ -141,3 +141,12 @@ func (m *MockFaroGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return args.Get(0).([]*domain.ActionLogEntry)
 }
+
+// GetRemainingByRank モック
+func (m *MockFaroGame) GetRemainingByRank() [domain.FaroMaxRank + 1]int {
+	ret := m.Called()
+	if v, ok := ret.Get(0).([domain.FaroMaxRank + 1]int); ok {
+		return v
+	}
+	return [domain.FaroMaxRank + 1]int{}
+}
