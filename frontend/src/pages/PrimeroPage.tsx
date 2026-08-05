@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { PRIMERO_HELP, parsePrimeroCommand } from '../utils/cli/commands/primeroCommands';
 import { formatPrimeroState } from '../utils/cli/formatters/primeroFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { raiseAvailability, raiseCost } from '../utils/raiseAvailability';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Primero tutorial step definitions. */
@@ -125,6 +126,18 @@ function PrimeroPageContent() {
     return <GameSkeleton gameKey="primero" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  // **レイズが消えた理由は 2 つある。**上限と枚数不足を区別しないと、
+  // 「レイズ 1/3回」がボタンの無い画面で「まだできる」と読めてしまう。
+  const raiseInput = {
+    raiseCount: state.raiseCount,
+    maxRaises: state.maxRaises,
+    chips: humanPlayer?.chips ?? 0,
+    currentBet: state.currentBet,
+    roundBet: humanPlayer?.roundBet ?? 0,
+    ante: state.ante,
+  };
+  const raiseBlock = raiseAvailability(raiseInput);
+  const raiseNeeded = raiseCost(raiseInput);
   const humanIdx = state.players.findIndex((p) => p.isHuman);
 
   const isBettingPhase = state.phase === PrimeroPhase.BETTING;
@@ -375,6 +388,15 @@ function PrimeroPageContent() {
                   <button type="button" className={btnPrimary} onClick={handleCall} disabled={loading}>
                     {t('callButton')}
                   </button>
+                  {/* **レイズが消えた理由を書く。**回数上限とチップ不足を
+                      区別できないと、突然選択肢を奪われたように見える (#4925)。 */}
+                  <span className="text-ds-text-muted text-xs" data-testid="primero-raise-count">
+                    {raiseBlock === 'cap'
+                      ? t('raiseCapReached', { max: state.maxRaises })
+                      : raiseBlock === 'chips'
+                        ? t('raiseNoChips', { cost: raiseNeeded })
+                        : t('raiseCount', { count: state.raiseCount, max: state.maxRaises })}
+                  </span>
                   {state.canRaise && (
                     <button type="button" className={btnSuccess} onClick={handleRaise} disabled={loading}>
                       {t('raiseButton')}
