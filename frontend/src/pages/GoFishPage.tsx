@@ -158,8 +158,8 @@ function GoFishPageContent() {
     [kbdHumanRanks, selectedRank, handleSelectRank, t],
   );
   const askBindings = useMemo(() => {
-    // Annotated so the pushes below can carry labelKey; inference from the map
-    // alone would fix the element type to exactly these three properties.
+    // Annotated so the pushes below can carry `label`; inference from the map
+    // alone would fix the element type to exactly the properties it sets.
     const bindings: ActionBinding[] = kbdCpuPlayers.map((p, i) => ({
       key: String(i + 1),
       action: () => {
