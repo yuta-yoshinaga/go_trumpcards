@@ -1113,6 +1113,12 @@ func (k *Klaberjass) GetSequences(idx int) []*KlaberjassSequence {
 // GetSequenceWinner はシーケンス勝負に勝った席を返す (-1 なら得点なし)。
 func (k *Klaberjass) GetSequenceWinner() int { return k.sequenceWinner }
 
+// GetLastTrickWinner は最終トリックを取った席を返す (-1 ならまだ)。
+//
+// **10 点のボーナスが付く。**画面に出さないと、ベラや宣言点を足しても
+// handPoints と合わない理由が説明できない (#4937)。
+func (k *Klaberjass) GetLastTrickWinner() int { return k.lastTrickWinner }
+
 // GetBelaHolder は切札 K+Q を持っていた席を返す (-1 ならなし)。
 func (k *Klaberjass) GetBelaHolder() int { return k.belaHolder }
 

@@ -33,5 +33,6 @@
   "handEnd": "Hand over",
   "bete": "Bete: the maker did not score more than the opponent",
   "result.humanWin": "Game over! You win!",
-  "result.cpuWin": "Game over! CPU {{cpuId}} wins!"
+  "result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+  "lastTrickBonus": "Last trick: +{{points}} to {{name}}"
 }

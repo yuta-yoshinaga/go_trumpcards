@@ -33,5 +33,6 @@
   "handEnd": "ディール終了",
   "bete": "ベート：宣言側が相手を上回れませんでした",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
-  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
+  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+  "lastTrickBonus": "最終トリック: {{name}} に +{{points}}点"
 }
