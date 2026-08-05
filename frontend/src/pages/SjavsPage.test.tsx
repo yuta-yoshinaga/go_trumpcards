@@ -196,4 +196,38 @@ describe('SjavsPage', () => {
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
     }
   });
+
+  // **CUI は sjavs.hintBid で推奨ビッド長を明示している。**Web はビッドボタンを
+  // 素で並べていて、シャウス最大の判断点に手掛かりが無かった (#4883)。
+  describe('bid hint', () => {
+    const armed = (bidLength: number) => makeState({ hint: { bidLength, reason: 'x' } });
+
+    it('rings the recommended bid length', async () => {
+      mockExec.mockResolvedValue(armed(6));
+      renderWithProviders(<SjavsPage />);
+      const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+      fireEvent.click(toggle);
+
+      await waitFor(() => expect(document.querySelectorAll('[data-hint-bid="true"]')).toHaveLength(1));
+      expect(screen.getByRole('button', { name: '6枚を申告' })).toHaveAttribute('data-hint-bid', 'true');
+    });
+
+    it('rings nothing when the recommended length is not among the buttons', async () => {
+      // minBid 5 / myLongest 6 なので 8 のボタンは存在しない。
+      mockExec.mockResolvedValue(armed(8));
+      renderWithProviders(<SjavsPage />);
+      const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+      fireEvent.click(toggle);
+
+      await waitFor(() => expect(screen.getByRole('button', { name: '5枚を申告' })).toBeInTheDocument());
+      expect(document.querySelectorAll('[data-hint-bid="true"]')).toHaveLength(0);
+    });
+
+    it('rings nothing while hints are off', async () => {
+      mockExec.mockResolvedValue(armed(6));
+      renderWithProviders(<SjavsPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: '6枚を申告' })).toBeInTheDocument());
+      expect(document.querySelectorAll('[data-hint-bid="true"]')).toHaveLength(0);
+    });
+  });
 });

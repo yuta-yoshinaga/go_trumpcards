@@ -89,6 +89,13 @@ function SjavsPageContent() {
     bidChoices.push(n);
   }
 
+  // CUI は `sjavs.hintBid` で推奨するビッド長を明示しているのに、Web はビッド
+  // ボタンを素で並べていて、シャウス最大の判断点に手掛かりが無かった (#4883)。
+  // 判定が `frontendHintEnabled` だけなのは意図的 — このゲームの hint は
+  // ゲーム追加時 (#4403) から Output に乗る常時表示で、`isRequestedHint` を
+  // 通すと恒久的に false になる。check-hint-gate の ALLOWED に登録済み。
+  const hintBidLength = frontendHintEnabled ? state.hint?.bidLength : undefined;
+
   const phaseName = ended ? t('phase.end') : handOver ? t('phase.handEnd') : bidding ? t('phase.bid') : t('phase.play');
 
   return (
@@ -250,7 +257,10 @@ function SjavsPageContent() {
                       key={`bid-${n.toString()}`}
                       type="button"
                       data-hint-action="bid"
-                      className={`${btnPrimary} min-h-11`}
+                      className={[btnPrimary, 'min-h-11', hintBidLength === n ? 'ring-2 ring-ds-warning' : ''].join(
+                        ' ',
+                      )}
+                      data-hint-bid={hintBidLength === n ? 'true' : undefined}
                       onClick={() => game.handleBid(n)}
                     >
                       {t('bid', { n })}

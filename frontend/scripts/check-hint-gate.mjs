@@ -53,6 +53,12 @@ const ALLOWED = new Map([
       ' 元からある表示が消える。',
   ],
   [
+    'Sjavs',
+    'Sjavs の hint は #4403 (ゲーム追加時) から Output に乗っていて、手札のハイライトは' +
+      ' 元からの仕様。web presenter は hintAvailable/hintRequested を一度も出さず、ページに' +
+      ' hint コマンドを叩くボタンも無いので、門番を通すと恒久的に false になる。',
+  ],
+  [
     'Speed',
     'Speed の hint は #1055 (ゲーム追加時) から Output に乗っていて、リアルタイム進行の' +
       ' UI の一部。#4483 が持ち込んだ常時表示ではないので、門番を通すと元からある機能が消える。',
