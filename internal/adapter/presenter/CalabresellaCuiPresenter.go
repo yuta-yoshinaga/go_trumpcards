@@ -50,8 +50,10 @@ func calabresellaPlayerStr(g interfaces.CalabresellaGame, idx int) string {
 }
 
 // calabresellaMonteCards renders the revealed monte, or "" before it is taken.
-// Reads the same source as the Web presenter's buildMonteOutput so the two
-// cannot drift: the most recent "monte_take" action-log entry.
+//
+// **モンテは取得した時点で全員に公開される情報。**ドメインは取得時に g.monte を
+// nil にするので、Web の buildMonteOutput と同じ出どころ — 棋譜の最後の
+// "monte_take" エントリ — から読む。両者がずれない唯一の読み方 (#4843)。
 func calabresellaMonteCards(g interfaces.CalabresellaGame) string {
 	if g.GetPhase() == domain.CalabresellaPhaseBid {
 		return ""
@@ -82,10 +84,7 @@ func (p *CalabresellaCuiPresenter) Output(g interfaces.CalabresellaGame, lastErr
 			b.WriteString(calabresellaPlayerStr(g, i))
 		}
 
-		// **モンテは公開情報。**取得した時点で全員に見える札で、Web は monteLabel の
-		// パネルに出しているのに、CUI はどのフェーズでも出していなかった (#4843)。
-		// ドメインは取得時に g.monte を nil にするので、Web と同じく棋譜の
-		// "monte_take" から読む。
+		// **モンテは公開情報。**中身の出どころは calabresellaMonteCards を参照。
 		if monte := calabresellaMonteCards(g); monte != "" {
 			b.WriteString(i18n.Tf("calabresella.monteLine", "cards", monte) + "\n")
 		}
