@@ -11,6 +11,7 @@
   "helpSetLimit": "  sl <n>               point limit",
   "header": "Round: {{round}}  Dealer: Player{{dealer}}",
   "starterLine": "Starter: {{card}}",
+  "hisHeels": "His Heels! Starter is a Jack — dealer scores 2",
   "peggingTotal": "Pegging total: {{count}}/31",
   "peggingCards": "Played cards: {{cards}}",
   "playerLine": "{{name}}{{dealerMark}}: cumulative {{cum}} round {{round}} cards {{cards}}",

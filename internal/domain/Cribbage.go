@@ -20,6 +20,10 @@ const CribbageHandSize = 4
 // CribbageDiscardSize クリブに捨てる枚数
 const CribbageDiscardSize = 2
 
+// CribbageJackValue は J の値。**スターターが J なら His Heels でディーラーに 2 点**。
+// 判定を presenter でも書くので、リテラルを 2 箇所に散らさない。
+const CribbageJackValue = 11
+
 // CribbagePegLimit ペギングの上限値
 const CribbagePegLimit = 31
 
@@ -263,7 +267,7 @@ func (g *Cribbage) doCut() {
 	g.addLog(-1, "cut", "スターターカード公開", []*Card{g.starter})
 
 	// His Heels: スターターがJなら、ディーラーに2点
-	if g.starter != nil && g.starter.GetValue() == 11 {
+	if g.starter != nil && g.starter.GetValue() == CribbageJackValue {
 		g.addScore(g.dealerIdx, 2, "His Heels (スターターがJ)")
 		if g.checkWin() {
 			return
