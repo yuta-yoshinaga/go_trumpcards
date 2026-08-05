@@ -30,6 +30,7 @@ import { parseTrexCommand, TREX_HELP } from '../utils/cli/commands/trexCommands'
 import { formatTrexState } from '../utils/cli/formatters/trexFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { trexIsPenaltyCard } from '../utils/trexPenaltyCards';
 
 const TX_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="tx-rule"]', messageKey: 'tutorial.contracts', placement: 'bottom', advanceOn: 'next' },
@@ -178,14 +179,21 @@ function TrexPageContent() {
                     {state.trick.length === 0 ? (
                       <span className="text-game-text-muted text-xs">—</span>
                     ) : (
-                      state.trick.map((tc2) => (
-                        <AnimatedCard
-                          key={`trick-${tc2.playerIdx.toString()}`}
-                          card={tc2.card}
-                          width={cardWidth}
-                          draggable={false}
-                        />
-                      ))
+                      state.trick.map((tc2) => {
+                        // **失点対象は契約ごとに違う。**5 種が 1 王国内で切り替わる
+                        // ので、どれが危険かを記憶と暗算で追わせることになる (#4911)。
+                        const penalty = trexIsPenaltyCard(tc2.card, state.contract);
+                        return (
+                          <div
+                            key={`trick-${tc2.playerIdx.toString()}`}
+                            className={penalty ? 'rounded ring-2 ring-ds-error' : ''}
+                            data-testid={penalty ? 'trex-penalty-card' : undefined}
+                            title={penalty ? t('penaltyCard') : undefined}
+                          >
+                            <AnimatedCard card={tc2.card} width={cardWidth} draggable={false} />
+                          </div>
+                        );
+                      })
                     )}
                   </div>
                 </>
