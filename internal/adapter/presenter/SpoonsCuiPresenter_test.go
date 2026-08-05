@@ -79,3 +79,39 @@ func TestSpoonsCuiPresenter_ActionLogOutput(t *testing.T) {
 	g := setupSpoonsTest()
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **同ランクの組が最大の判断材料。**Web は色付きリングで示すのに、CUI は素の
+// 一覧しか出さず、パスする札を暗算させていた (#4889)。
+func TestSpoonsCuiPresenter_MarksRankGroups(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(false) // 3 枚組の強調まで見る
+	defer color.SetNoColor(orig)
+	p := new(presenter.SpoonsCuiPresenter)
+
+	g := setupSpoonsTest()
+	human := g.GetPlayer(0)
+	setHand := func(vals []int) {
+		human.Reset()
+		designs := []int{domain.CardDesignSpade, domain.CardDesignHeart, domain.CardDesignClover, domain.CardDesignDiamond}
+		for i, v := range vals {
+			human.AddCard(domain.NewCard(designs[i%len(designs)], v, false))
+		}
+	}
+
+	// バラバラなら印は付かない。
+	setHand([]int{2, 5, 9, 13})
+	assert.NotContains(t, p.Output(g, nil), "(同")
+
+	// 2 枚組には枚数が付くが、強調はしない。
+	setHand([]int{7, 7, 9, 13})
+	two := p.Output(g, nil)
+	assert.Contains(t, two, "(同2枚)")
+	assert.NotContains(t, two, color.Yellow("(同2枚)"))
+
+	// **3 枚は 1 枚違い。**強調してフォーカードが近いことを示す。
+	setHand([]int{7, 7, 7, 13})
+	three := p.Output(g, nil)
+	assert.Contains(t, three, color.Yellow("(同3枚)"))
+	// 組に入らない札には付かない。
+	assert.NotContains(t, three, "(同1枚)")
+}

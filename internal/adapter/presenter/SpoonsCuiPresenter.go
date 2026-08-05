@@ -41,7 +41,10 @@ func (p *SpoonsCuiPresenter) Output(g interfaces.SpoonsGame, lastErr error) stri
 			if i == 0 {
 				// 人間の手札のみ公開表示する。
 				b.WriteString(name + " " + letters + spoon + "\n")
-				b.WriteString("  " + cuiIndexedCardListStr(player) + "\n")
+				// **同ランクの組が最大の判断材料。**Web は色付きリングで囲み、
+				// 3 枚以上は脈ありとして強調するのに、CUI は素の一覧しか出さず、
+				// パスする札を暗算させていた (#4889)。
+				b.WriteString("  " + spoonsGroupedHandStr(player) + "\n")
 			} else {
 				b.WriteString(i18n.Tf("spoons.cpuHandLine",
 					"name", name,
@@ -97,4 +100,34 @@ func spoonsLetters(n int) string {
 		n = len(letters)
 	}
 	return strings.Join(letters[:n], "")
+}
+
+// spoonsGroupedHandStr は手札をインデックス付きで並べ、同ランクが 2 枚以上ある
+// 札に枚数を添える。3 枚以上（フォーカード目前）は強調する。
+func spoonsGroupedHandStr(player cuiCardList) string {
+	counts := map[int]int{}
+	for i := range player.GetCardsSize() {
+		if c := player.GetCard(i); c != nil {
+			counts[c.GetValue()]++
+		}
+	}
+	parts := make([]string, player.GetCardsSize())
+	for i := range parts {
+		parts[i] = "[" + strconv.Itoa(i) + "]" + cuiCardStr(player.GetCard(i))
+		c := player.GetCard(i)
+		if c == nil {
+			continue
+		}
+		n := counts[c.GetValue()]
+		if n < 2 {
+			continue
+		}
+		tag := i18n.Tf("spoons.rankGroup", "count", strconv.Itoa(n))
+		// **3 枚は 1 枚違い。**2 枚と同じ見た目だと、脈があることが伝わらない。
+		if n >= 3 {
+			tag = color.Yellow(tag)
+		}
+		parts[i] += tag
+	}
+	return strings.Join(parts, "  ")
 }

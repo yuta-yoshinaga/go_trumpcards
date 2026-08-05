@@ -19,5 +19,6 @@
   "winHuman": "あなたの勝ちです！",
   "winCpu": "{{name}} の勝ちです...",
   "result.humanWin": "あなたの勝ちです！",
-  "result.cpuWin": "CPUの勝ちです..."
+  "result.cpuWin": "CPUの勝ちです...",
+  "rankGroup": "(同{{count}}枚)"
 }
