@@ -77,4 +77,4 @@ func (m *MockKlaberjassGame) GetActionLog() []*domain.ActionLogEntry {
 }
 
 // GetLastTrickWinner モック
-func (_m *MockKlaberjassGame) GetLastTrickWinner() int { return _m.Called().Int(0) }
+func (m *MockKlaberjassGame) GetLastTrickWinner() int { return m.Called().Int(0) }

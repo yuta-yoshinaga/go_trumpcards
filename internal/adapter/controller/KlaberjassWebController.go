@@ -69,16 +69,19 @@ type KlaberjassWebOutput struct {
 	// ValidPlays は人間が出せる手札インデックス。追随・切札・上乗せが強制なので必須。
 	ValidPlays     []int `json:"validPlays"`
 	SequenceWinner int   `json:"sequenceWinner"`
-	// LastTrickWinner は最終トリックの 10 点ボーナスを得た席 (-1 ならまだ)。
-	LastTrickWinner int  `json:"lastTrickWinner"`
-	BelaHolder      int  `json:"belaHolder"`
-	BelaScored      bool `json:"belaScored"`
-	DixUsed         bool `json:"dixUsed"`
-	Bete            bool `json:"bete"`
-	SchmeissBy      int  `json:"schmeissBy"`
-	TargetScore     int  `json:"targetScore"`
-	GameEndFlag     bool `json:"gameEndFlag"`
-	WinnerIdx       int  `json:"winnerIdx"`
+	// LastTrickWinner は最終トリックのボーナスを得た席 (-1 ならまだ)。
+	LastTrickWinner int `json:"lastTrickWinner"`
+	// LastTrickBonus は最終トリックの点数。**フロントに焼き込ませない** —
+	// 定数を両言語に複製すると、変えたときに片方が黙って古いままになる。
+	LastTrickBonus int  `json:"lastTrickBonus"`
+	BelaHolder     int  `json:"belaHolder"`
+	BelaScored     bool `json:"belaScored"`
+	DixUsed        bool `json:"dixUsed"`
+	Bete           bool `json:"bete"`
+	SchmeissBy     int  `json:"schmeissBy"`
+	TargetScore    int  `json:"targetScore"`
+	GameEndFlag    bool `json:"gameEndFlag"`
+	WinnerIdx      int  `json:"winnerIdx"`
 	WebOutputBase
 	Config KlaberjassWebOutputConfig `json:"config"`
 }

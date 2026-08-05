@@ -26,6 +26,7 @@ func (p *KlaberjassWebPresenter) Output(g interfaces.KlaberjassGame, lastErr err
 	resObj.TrickNumber = g.GetTrickNumber()
 	resObj.SequenceWinner = g.GetSequenceWinner()
 	resObj.LastTrickWinner = g.GetLastTrickWinner()
+	resObj.LastTrickBonus = domain.KlaberjassLastTrickBonus
 	resObj.BelaHolder = g.GetBelaHolder()
 	resObj.BelaScored = g.IsBelaScored()
 	resObj.DixUsed = g.IsDixUsed()

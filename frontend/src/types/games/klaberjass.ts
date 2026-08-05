@@ -68,6 +68,8 @@ export interface KlaberjassResponse extends BaseGameResponse {
    * points do not add up from the declarations alone (#4937).
    */
   lastTrickWinner: number;
+  /** Points the last trick is worth, sent by the server so the two sides cannot drift. */
+  lastTrickBonus: number;
   /** Seat holding trump K+Q; -1 when neither does. */
   belaHolder: number;
   belaScored: boolean;

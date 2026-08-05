@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -262,4 +263,15 @@ func TestKlaberjassWebPresenter_ActionLogOutput(t *testing.T) {
 	m, _ := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	assert.NotEmpty(t, new(presenter.KlaberjassWebPresenter).ActionLogOutput(m))
+}
+
+// **点数はサーバが送る。**定数をフロントに焼き込むと、変えたときに片方だけ
+// 古いまま残る (#4937 レビュー指摘)。
+func TestKlaberjassWebPresenter_ShipsTheLastTrickBonusValue(t *testing.T) {
+	g := domain.NewDefaultKlaberjass()
+	g.Reset()
+	var parsed controller.KlaberjassWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.KlaberjassWebPresenter).Output(g, nil)), &parsed))
+	assert.Equal(t, domain.KlaberjassLastTrickBonus, parsed.LastTrickBonus)
+	assert.Positive(t, parsed.LastTrickBonus, "a zero bonus would make the assertion vacuous")
 }
