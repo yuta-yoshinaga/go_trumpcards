@@ -440,7 +440,7 @@ function AnacondaPageContent() {
                     const isSelected = selected.includes(i);
                     // バックエンドは「どの札を」まで計算しているのに、ツールチップは
                     // 「3枚パス」で止まっていた (#4851)。
-                    const isSuggested = frontendHintEnabled && frontendHint?.targetIndices?.includes(i) === true;
+                    const isSuggested = frontendHintEnabled && (frontendHint?.targetIndices?.includes(i) ?? false);
                     return (
                       <button
                         key={`human-${c.design}-${c.value}`}
