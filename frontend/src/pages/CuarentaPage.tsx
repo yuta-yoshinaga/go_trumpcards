@@ -34,10 +34,14 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { cuarentaCaptureIndices } from '../utils/cuarentaCapture';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Cards a team must capture in a round to earn the extra "más de veinte" points. */
-const CUARENTA_CAPTURE_BONUS = 20;
+/**
+ * Threshold a team must **exceed** to earn the extra "más de veinte" points.
+ * The domain scores it on `CapturedCount[t] > CuarentaMostCardsThreshold`
+ * (`internal/domain/Cuarenta.go`), so 20 captured is not enough — 21 is.
+ */
+const CUARENTA_CAPTURE_THRESHOLD = 20;
 /** Captured-card count from which a team's counter is highlighted as approaching the bonus. */
-const CUARENTA_CAPTURE_NEAR = CUARENTA_CAPTURE_BONUS - 1;
+const CUARENTA_CAPTURE_NEAR = CUARENTA_CAPTURE_THRESHOLD - 1;
 
 /** CPU difficulty options for the Cuarenta settings panel. */
 const CPU_DIFFICULTY_OPTIONS = [
@@ -275,7 +279,7 @@ function CuarentaPageContent() {
               <span>{t('deck', { count: state.remainingDeck })}</span>
             </div>
 
-            {/* Team scores + running captured-card totals (20+ earns a bonus) */}
+            {/* Team scores + running captured-card totals (more than 20 earns a bonus) */}
             <div className="mb-2 p-2 rounded bg-black/30 flex justify-center gap-6" data-tutorial="cuarenta-teams">
               {state.teamScores.map((score, team) => {
                 const captured = teamCaptured[team] ?? 0;

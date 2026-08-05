@@ -2,7 +2,11 @@
 
 package domain
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 // cuCard はテスト用に 1 枚のカードを生成するヘルパー (design, value は plain int)。
 func cuCard(d, v int) *Card { return NewCard(d, v, false) }
@@ -412,4 +416,29 @@ func TestCuarentaConfigValidate(t *testing.T) {
 	if err := bad2.Validate(); err == nil {
 		t.Errorf("difficulty 9 should be invalid")
 	}
+}
+
+// **合算は 1 箇所に置く。**精算・CUI で別々に足すと、席とチームの対応を変えた
+// ときに片方だけ古いままになる (#4893)。
+func TestCuarenta_GetTeamCapturedCount(t *testing.T) {
+	g := NewDefaultCuarenta()
+	g.Reset()
+	card := func() *Card { return NewCard(CardDesignSpade, 2, false) }
+	give := func(seat, n int) {
+		cards := make([]*Card, n)
+		for i := range cards {
+			cards[i] = card()
+		}
+		g.GetPlayer(seat).AddCaptured(cards)
+	}
+
+	// 席 0 と 2 が同じチーム、1 と 3 がもう一方。
+	give(0, 7)
+	give(2, 5)
+	give(1, 3)
+	assert.Equal(t, 12, g.GetTeamCapturedCount(0))
+	assert.Equal(t, 3, g.GetTeamCapturedCount(1))
+
+	// 範囲外のチーム番号は 0。
+	assert.Equal(t, 0, g.GetTeamCapturedCount(99))
 }

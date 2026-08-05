@@ -150,3 +150,6 @@ func (_m *MockCuarentaGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// GetTeamCapturedCount モック
+func (m *MockCuarentaGame) GetTeamCapturedCount(team int) int { return m.Called(team).Int(0) }
