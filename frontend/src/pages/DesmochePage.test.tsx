@@ -228,4 +228,49 @@ describe('DesmochePage', () => {
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
     }
   });
+
+  // **自分のメルドだけが上がり枚数に加算される。**番号を読んで暗算しないと、
+  // 進捗の進まない先にレイオフして手番を捨てることになる (#4932)。
+  describe('meld ownership', () => {
+    const twoMelds = () =>
+      makeState({
+        melds: [
+          { owner: 0, kind: 0, cards: [card('SPADE', 5), card('HEART', 5), card('CLOVER', 5)] },
+          { owner: 2, kind: 0, cards: [card('SPADE', 9), card('HEART', 9), card('CLOVER', 9)] },
+        ],
+      });
+
+    it('marks which melds are yours', async () => {
+      mockExec.mockResolvedValue(twoMelds());
+      renderWithProviders(<DesmochePage />);
+      await waitFor(() => expect(screen.getAllByTestId('desmoche-meld')).toHaveLength(2));
+
+      const labels = screen.getAllByTestId('desmoche-meld');
+      expect(labels[0]).toHaveTextContent('あなたのメルド');
+      expect(labels[1]).not.toHaveTextContent('あなたのメルド');
+
+      // 色でも区別が付く (テキストを読まずに済む)。
+      const rows = document.querySelectorAll('[data-own-meld]');
+      expect(rows[0]).toHaveAttribute('data-own-meld', 'true');
+      expect(rows[1]).toHaveAttribute('data-own-meld', 'false');
+    });
+
+    it('warns when a foreign meld is picked as the lay-off target', async () => {
+      mockExec.mockResolvedValue(twoMelds());
+      renderWithProviders(<DesmochePage />);
+      await waitFor(() => expect(screen.getAllByTestId('desmoche-meld')).toHaveLength(2));
+
+      fireEvent.click(screen.getAllByTestId('desmoche-meld')[1]);
+      expect(screen.getByTestId('desmoche-foreign-meld-warning')).toHaveTextContent('加算されません');
+    });
+
+    it('stays quiet for your own meld', async () => {
+      mockExec.mockResolvedValue(twoMelds());
+      renderWithProviders(<DesmochePage />);
+      await waitFor(() => expect(screen.getAllByTestId('desmoche-meld')).toHaveLength(2));
+
+      fireEvent.click(screen.getAllByTestId('desmoche-meld')[0]);
+      expect(screen.queryByTestId('desmoche-foreign-meld-warning')).not.toBeInTheDocument();
+    });
+  });
 });

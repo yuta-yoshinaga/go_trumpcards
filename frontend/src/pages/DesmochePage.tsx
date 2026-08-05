@@ -180,8 +180,13 @@ function DesmochePageContent() {
                       key={`meld-${i.toString()}`}
                       className={[
                         'flex items-center gap-1 rounded px-2 py-1',
+                        // **自分のメルドだけが上がり枚数に加算される。**番号を
+                        // 読んで暗算しないと、進捗の進まない先にレイオフして
+                        // 手番を捨てることになる (#4932)。
+                        m.owner === 0 ? 'bg-ds-accent/10' : 'bg-black/20',
                         meldTarget === i ? 'ring-2 ring-ds-accent' : '',
                       ].join(' ')}
+                      data-own-meld={m.owner === 0 ? 'true' : 'false'}
                     >
                       <button
                         type="button"
@@ -190,7 +195,7 @@ function DesmochePageContent() {
                         onClick={() => setMeldTarget(meldTarget === i ? null : i)}
                         className="text-[10px] text-ds-text-muted min-h-11 px-1"
                       >
-                        {meldKindName(m.kind)} · {t('meldOwner', { n: m.owner })}
+                        {meldKindName(m.kind)} · {m.owner === 0 ? t('meldOwnerYou') : t('meldOwner', { n: m.owner })}
                       </button>
                       {m.cards.map((card, j) => (
                         <button
@@ -216,6 +221,14 @@ function DesmochePageContent() {
                 </div>
               )}
             </div>
+
+            {/* **他人のメルドへ足しても上がり枚数は増えない。**選んだ時点で
+                言わないと、手番を捨てたあとで気づくことになる (#4932)。 */}
+            {meldTarget !== null && state.melds[meldTarget] && state.melds[meldTarget].owner !== 0 && (
+              <div className="mb-2 text-center text-ds-warning text-xs" data-testid="desmoche-foreign-meld-warning">
+                {t('foreignMeldWarning')}
+              </div>
+            )}
 
             {roundOver && (
               <div className="text-center text-sm mb-3" data-testid="desmoche-round-result">

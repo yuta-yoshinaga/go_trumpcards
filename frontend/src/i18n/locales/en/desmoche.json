@@ -35,5 +35,7 @@
   "tutorial.goOut": "Going out takes exactly ten cards — the nine dealt plus the one you drew — not nine. Emptying your hand with 3+3+3 is not a win.",
   "tutorial.noPoker": "Despite the name and the pot, poker hand rankings play no part. The only question is who gets down first.",
   "tutorial.desmoche": "\"Desmoche\" is not a declaration. It is the move of taking a card out of one of your own melds to use in another, allowed as long as the one you took from is still valid.",
-  "tutorial.pot": "If the stock runs out with nobody down to ten, there is no winner and the pot carries over into the next deal."
+  "tutorial.pot": "If the stock runs out with nobody down to ten, there is no winner and the pot carries over into the next deal.",
+  "meldOwnerYou": "Your meld",
+  "foreignMeldWarning": "This meld belongs to another player; laying off here does not count toward your going out."
 }
