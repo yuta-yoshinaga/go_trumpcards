@@ -896,3 +896,37 @@ func TestHandAndFoot_UnmarshalJSON_InvalidPlayerCount(t *testing.T) {
 	err := json.Unmarshal([]byte(data), &g)
 	assert.Error(t, err)
 }
+
+// **Web の canastaMinMeld と同じ帯であること (#4836)。**
+func TestCanastaMinMeld(t *testing.T) {
+	assert.Equal(t, 15, domain.CanastaMinMeld(-50))
+	assert.Equal(t, 50, domain.CanastaMinMeld(0))
+	assert.Equal(t, 50, domain.CanastaMinMeld(1499))
+	assert.Equal(t, 90, domain.CanastaMinMeld(1500))
+	assert.Equal(t, 90, domain.CanastaMinMeld(2999))
+	assert.Equal(t, 120, domain.CanastaMinMeld(3000))
+}
+
+// **「上がれる」表示と実際に上がれるかがずれないこと。**GetGoOutStatus は
+// canGoOut と同じ判定を使う (#4836)。
+func TestHandAndFoot_GetGoOutStatus(t *testing.T) {
+	g := domain.NewDefaultHandAndFoot()
+	g.Reset()
+
+	st := g.GetGoOutStatus(0)
+	assert.False(t, st.InFoot, "配った直後はフットに入っていない")
+	assert.False(t, st.CanGoOut())
+	assert.Positive(t, st.RedRequired)
+	assert.Positive(t, st.BlackReq)
+
+	// 範囲外は空 (= 上がれない)。
+	assert.False(t, g.GetGoOutStatus(-1).CanGoOut())
+	assert.False(t, g.GetGoOutStatus(99).CanGoOut())
+
+	// 3 条件が揃えば CanGoOut は真。
+	full := domain.HandAndFootGoOutStatus{InFoot: true, RedCanastas: 1, RedRequired: 1, BlackCanasta: 1, BlackReq: 1}
+	assert.True(t, full.CanGoOut())
+	noFoot := full
+	noFoot.InFoot = false
+	assert.False(t, noFoot.CanGoOut())
+}

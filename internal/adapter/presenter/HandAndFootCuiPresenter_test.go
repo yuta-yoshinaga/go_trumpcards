@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -39,6 +40,7 @@ func setupHandAndFootCuiMock() *interfaces.MockHandAndFootGame {
 	m.On("GetTeamRed3s", 0).Return(([]*domain.Card)(nil))
 	m.On("GetTeamRed3s", 1).Return(([]*domain.Card)(nil))
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetGoOutStatus", mock.Anything).Return(domain.HandAndFootGoOutStatus{RedRequired: 1, BlackReq: 1}).Maybe()
 	return m
 }
 
@@ -50,6 +52,59 @@ func setupHandAndFootCuiMockWithPlayers() (*interfaces.MockHandAndFootGame, []*d
 		m.On("GetPlayer", i).Return(players[i])
 	}
 	return m, players
+}
+
+// **なぜ今できないのかを先に言う。**Web はゴーアウト条件と初回メルド最低点を
+// 常時出しているのに、CUI はサーバーのエラーで初めて条件未達を知る形だった (#4836)。
+func TestHandAndFootCuiPresenter_GoOutAndMinMeldGuidance(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.HandAndFootCuiPresenter)
+
+	discardMock := func(st domain.HandAndFootGoOutStatus) *interfaces.MockHandAndFootGame {
+		m, _ := setupHandAndFootCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGoOutStatus")
+		m.On("GetPhase").Return(domain.HandAndFootPhaseDiscard)
+		m.On("GetGoOutStatus", mock.Anything).Return(st)
+		return m
+	}
+
+	t.Run("names every missing condition", func(t *testing.T) {
+		out := p.Output(discardMock(domain.HandAndFootGoOutStatus{RedRequired: 1, BlackReq: 1}), nil)
+		assert.Contains(t, out, "まだ上がれません:")
+		assert.Contains(t, out, "フット未突入")
+		assert.Contains(t, out, "赤キャナスタ 0/1")
+		assert.Contains(t, out, "黒キャナスタ 0/1")
+	})
+
+	t.Run("names only the missing one", func(t *testing.T) {
+		out := p.Output(discardMock(domain.HandAndFootGoOutStatus{
+			InFoot: true, RedCanastas: 1, RedRequired: 1, BlackReq: 1,
+		}), nil)
+		assert.Contains(t, out, "黒キャナスタ 0/1")
+		assert.NotContains(t, out, "フット未突入")
+		assert.NotContains(t, out, "赤キャナスタ")
+	})
+
+	t.Run("says so once the conditions are met", func(t *testing.T) {
+		out := p.Output(discardMock(domain.HandAndFootGoOutStatus{
+			InFoot: true, RedCanastas: 1, RedRequired: 1, BlackCanasta: 1, BlackReq: 1,
+		}), nil)
+		assert.Contains(t, out, "上がれます")
+		assert.NotContains(t, out, "まだ上がれません")
+	})
+
+	t.Run("shows the initial-meld minimum in the meld phase", func(t *testing.T) {
+		m, _ := setupHandAndFootCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.HandAndFootPhaseMeld)
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "初回メルド最低点: 50点 (累積 0点)")
+		// ゴーアウトの行はディスカードフェーズのもの。
+		assert.NotContains(t, out, "まだ上がれません")
+	})
 }
 
 func TestHandAndFootCuiPresenter_Output(t *testing.T) {

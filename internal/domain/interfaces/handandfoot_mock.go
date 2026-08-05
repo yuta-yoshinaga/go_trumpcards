@@ -60,6 +60,11 @@ func (m *MockHandAndFootGame) GetPlayerCnt() int        { return m.Called().Int(
 func (m *MockHandAndFootGame) GetPlayer(i int) *domain.HandAndFootPlayer {
 	return m.Called(i).Get(0).(*domain.HandAndFootPlayer)
 }
+func (m *MockHandAndFootGame) GetGoOutStatus(playerIdx int) domain.HandAndFootGoOutStatus {
+	st, _ := m.Called(playerIdx).Get(0).(domain.HandAndFootGoOutStatus)
+	return st
+}
+
 func (m *MockHandAndFootGame) GetTeamMelds(team int) []*domain.CanastaMeld {
 	return m.Called(team).Get(0).([]*domain.CanastaMeld)
 }
