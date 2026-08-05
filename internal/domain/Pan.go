@@ -888,7 +888,8 @@ func PanCanLayoff(meld []*Card, card *Card) bool {
 // or 7s. Laying one pays every player a chip, but neither UI said which meld on
 // the table caused the chip column to move (#4853).
 func PanIsValleMeld(meld []*Card) bool {
-	return PanIsValidMeld(meld) && panIsValidSet(meld) && panValleRanks[meld[0].GetValue()]
+	// panIsValidSet が真なら PanIsValidMeld も真 (set か run の OR) なので重ねない。
+	return panIsValidSet(meld) && panValleRanks[meld[0].GetValue()]
 }
 
 // PanMeldChipUnits メルドが満たすチップ条件の数を返す（0〜2）。

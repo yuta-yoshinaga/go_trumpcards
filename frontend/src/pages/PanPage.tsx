@@ -441,7 +441,7 @@ function PanPageContent() {
                         <span className="text-xs font-bold">{kindLabel}</span>
                         {isPanValleMeld(cards) && (
                           <span
-                            className="text-xs font-bold text-ds-warning"
+                            className={`text-xs font-bold px-1.5 py-0.5 rounded ${badgeWarningColors}`}
                             data-testid={`pan-candidate-valle-${cand.indices.join('-')}`}
                           >
                             {t('valleBadge')}

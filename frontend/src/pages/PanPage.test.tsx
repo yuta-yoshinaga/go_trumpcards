@@ -581,5 +581,4 @@ describe('PanPage meld candidates', () => {
     await waitFor(() => expect(screen.getByTestId('pan-valle-1-0')).toBeInTheDocument());
     expect(screen.queryByTestId('pan-valle-1-1')).not.toBeInTheDocument();
   });
-
 });

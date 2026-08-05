@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { type PanMeldCandidate, isPanValleMeld, panLayoffIndices, panMeldCandidates } from './panMeldCandidates';
+import { isPanValleMeld, type PanMeldCandidate, panLayoffIndices, panMeldCandidates } from './panMeldCandidates';
 
 const c = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
