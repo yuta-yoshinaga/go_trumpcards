@@ -61,6 +61,14 @@ func TestTichuCuiPresenter_ShowsRunningScoreAndBombs(t *testing.T) {
 	}
 	assert.Contains(t, p.Output(tg, nil), "チームA (P0/P2):")
 
+	// ボムが使われたら回数が出る。
+	tg.SetBombCountForTest(2)
+	assert.Contains(t, p.Output(tg, nil), "ボム使用: 2回")
+
+	// ワンツーが成立したらその旨も出る。
+	tg.SetIsOneTwoForTest(true)
+	assert.Contains(t, p.Output(tg, nil), "ワンツー成立")
+
 	// **終局時に二重に出さない。**下の gameEnd ブロックが出す。
 	for !tg.GetGameEndFlag() {
 		tg.CpuPlay()
