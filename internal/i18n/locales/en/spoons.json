@@ -19,5 +19,6 @@
   "winHuman": "You win!",
   "winCpu": "{{name}} wins...",
   "result.humanWin": "You win!",
-  "result.cpuWin": "CPU wins..."
+  "result.cpuWin": "CPU wins...",
+  "rankGroup": "(x{{count}})"
 }
