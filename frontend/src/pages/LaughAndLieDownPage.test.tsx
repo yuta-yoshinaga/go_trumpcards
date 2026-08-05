@@ -120,7 +120,6 @@ describe('LaughAndLieDownPage', () => {
         validIndices: [0],
         threeTakeIndices: [0],
         hint: { cardIndex: 0, takeCount, reason: 'x' },
-        messageCode: 'laughandliedown.hintRequested',
       });
 
     it('marks the three-take button when the hint asks for three', async () => {

@@ -28,7 +28,6 @@ import type { TutorialStep } from '../types/tutorial';
 import { LAUGHANDLIEDOWN_HELP, parseLaughAndLieDownCommand } from '../utils/cli/commands/laughandliedownCommands';
 import { formatLaughAndLieDownState } from '../utils/cli/formatters/laughandliedownFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const LLD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -83,12 +82,13 @@ function LaughAndLieDownPageContent() {
   // owns them. Recounting the table here would put the rule in two places.
   const playable = new Set(state.validIndices);
   const threeTakes = new Set(state.threeTakeIndices);
-  // **押したときだけ出す。**`frontendHintEnabled` は設定トグルであって
-  // 「ヒントを押したか」ではない (#4605)。
-  const showServerHint = frontendHintEnabled && isRequestedHint(state);
   // CUI は `hintPlay` に「1枚 or 3枚」を書いているのに、Web はカードを光らせる
   // だけで takeCount を捨てていた (#4884)。
-  const hintWantsThree = showServerHint && state.hint?.takeCount === 3;
+  // 判定が `frontendHintEnabled` だけなのは意図的。このページの hint は
+  // ゲーム追加時 (#4396) から常時ハイライトで、`isRequestedHint` を通すと
+  // 常に false になって元からある表示ごと消える。check-hint-gate の
+  // ALLOWED に理由付きで登録してある。
+  const hintWantsThree = frontendHintEnabled && state.hint?.takeCount === 3;
 
   const play = (i: number) => {
     if (!isHumanTurn || !playable.has(i)) return;
@@ -197,7 +197,7 @@ function LaughAndLieDownPageContent() {
                         className={[
                           'rounded transition-transform',
                           canPlay ? 'hover:-translate-y-2' : 'opacity-60',
-                          showServerHint && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+                          frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
                         ].join(' ')}
                       >
                         <AnimatedCard card={card} width={cardWidth} draggable={false} />
