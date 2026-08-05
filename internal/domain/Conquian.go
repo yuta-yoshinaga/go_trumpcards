@@ -360,7 +360,7 @@ func (g *Conquian) PlayerMeldWithTargets(meldGroups [][]int, extendTargets []int
 		extendIdx int // -1 = 新メルド、>=0 = 既存メルドへの追加
 	}
 	var pending []pendingMeld
-	for _, group := range meldGroups {
+	for gi, group := range meldGroups {
 		cards := make([]*Card, 0, len(group))
 		for _, idx := range group {
 			cards = append(cards, player.GetCard(idx))
@@ -371,7 +371,7 @@ func (g *Conquian) PlayerMeldWithTargets(meldGroups [][]int, extendTargets []int
 		}
 		if len(cards) == 1 {
 			ext := g.findExtendableMeld(g.currentPlayerIdx, cards[0])
-			if t := conquianTargetAt(extendTargets, len(pending)); t >= 0 &&
+			if t := conquianTargetAt(extendTargets, gi); t >= 0 &&
 				t < len(g.players[g.currentPlayerIdx].melds) &&
 				conquianCanExtendMeld(g.players[g.currentPlayerIdx].melds[t], cards[0]) {
 				ext = t

@@ -43,16 +43,19 @@ type ConquianWebOutputPlayer struct {
 
 // ConquianWebOutput コンキャンWebアウトプット
 type ConquianWebOutput struct {
-	Players          []*ConquianWebOutputPlayer `json:"players"`
-	Phase            int                        `json:"phase"`
-	RoundNumber      int                        `json:"roundNumber"`
-	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
-	DiscardTop       *WebOutputCard             `json:"discardTop"`
-	DrawPileCount    int                        `json:"drawPileCount"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerIdx        int                        `json:"winnerIdx"`
-	RoundWinnerIdx   int                        `json:"roundWinnerIdx"`
-	TookDiscard      bool                       `json:"tookDiscard"`
+	Players []*ConquianWebOutputPlayer `json:"players"`
+	// LayoffTargets[i] は人間の手札 i 番目を足せる自分のメルド番号一覧。
+	// どのメルドが延長先になり得るかを画面が示すために使う (#4837)。
+	LayoffTargets    [][]int        `json:"layoffTargets"`
+	Phase            int            `json:"phase"`
+	RoundNumber      int            `json:"roundNumber"`
+	CurrentPlayerIdx int            `json:"currentPlayerIdx"`
+	DiscardTop       *WebOutputCard `json:"discardTop"`
+	DrawPileCount    int            `json:"drawPileCount"`
+	GameEndFlag      bool           `json:"gameEndFlag"`
+	WinnerIdx        int            `json:"winnerIdx"`
+	RoundWinnerIdx   int            `json:"roundWinnerIdx"`
+	TookDiscard      bool           `json:"tookDiscard"`
 	WebOutputBase
 	Config ConquianWebOutputConfig `json:"config"`
 }

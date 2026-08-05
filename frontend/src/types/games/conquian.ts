@@ -27,6 +27,13 @@ export interface ConquianConfig {
 /** Full Conquian game state returned from the API. */
 export interface ConquianResponse extends BaseGameResponse {
   players: ConquianPlayerData[];
+  /**
+   * 手札のカードごとに、それを足せる自分のテーブルメルドの番号。
+   *
+   * 延長先は一意とは限らない（♠5 は「5 のセット」も「♠4-6-7 のラン」も延長できる）。
+   * どれでも押せるように見せると、押した先と実際に足される先が食い違う (#4837)。
+   */
+  layoffTargets: number[][];
   phase: number;
   roundNumber: number;
   currentPlayerIdx: number;

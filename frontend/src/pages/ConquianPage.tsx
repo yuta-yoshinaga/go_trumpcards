@@ -292,7 +292,17 @@ function ConquianPageContent() {
                       {p.melds.map((m, mi) => {
                         // 自分のメルドだけがレイオフ先。1 枚選んでいるときに押すと、
                         // そのメルドへ足す (延長先が複数ある場面で選べるようにする — #4837)。
-                        const canLayoff = p.isHuman && isMeldPhase && isHumanTurn && selectedCardIndices.length === 1;
+                        // **押せる先だけを押せるように。**選んだ札が実際に足せる
+                        // メルドだけをレイオフ先にする。バックエンドは足せない
+                        // 指定を黙って別のメルドへ落とすので、見た目と結果が
+                        // 食い違ってしまう (#4837)。
+                        const selectedIdx = selectedCardIndices.length === 1 ? selectedCardIndices[0] : -1;
+                        const canLayoff =
+                          p.isHuman &&
+                          isMeldPhase &&
+                          isHumanTurn &&
+                          selectedIdx >= 0 &&
+                          (state.layoffTargets?.[selectedIdx]?.includes(mi) ?? false);
                         return (
                           <button
                             key={`meld-${p.id}-${mi}`}

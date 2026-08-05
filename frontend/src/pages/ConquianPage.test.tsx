@@ -29,6 +29,7 @@ const drawPhaseState: ConquianResponse = {
     },
     { id: 1, isHuman: false, cardCount: 10, cards: [], melds: [], wins: 1 },
   ],
+  layoffTargets: [],
   phase: 0,
   roundNumber: 1,
   currentPlayerIdx: 0,
@@ -529,7 +530,8 @@ describe('ConquianPage', () => {
   // **延長先が一意とは限らない。**♠5 は「5 のセット」も「♦3-8 のラン」も延長でき、
   // バックエンドは先頭一致で決め打っていた (#4837)。
   it('lays off onto the meld the player clicks', async () => {
-    mockExec.mockResolvedValue(meldProgressState);
+    // 1 枚目の札は 2 つ目のメルドにだけ足せる、という盤面。
+    mockExec.mockResolvedValue({ ...meldProgressState, layoffTargets: [[1], []] });
     renderWithProviders(<ConquianPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
@@ -539,16 +541,27 @@ describe('ConquianPage', () => {
     expect(handButtons.length).toBeGreaterThan(0);
     fireEvent.click(handButtons[0]);
 
+    // **足せるメルドだけが押せる。**2 つあるうち候補は 1 つ。
     const targets = document.querySelectorAll('[data-layoff-target]');
-    expect(targets.length).toBe(2);
+    expect(targets.length).toBe(1);
     mockExec.mockClear();
-    fireEvent.click(targets[1] as HTMLElement);
+    fireEvent.click(targets[0] as HTMLElement);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [expect.any(Array)], [1]));
   });
 
+  it('offers no layoff target when the selected card fits none of the melds', async () => {
+    mockExec.mockResolvedValue({ ...meldProgressState, layoffTargets: [[], []] });
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const handButtons = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handButtons[0]);
+    expect(document.querySelectorAll('[data-layoff-target]')).toHaveLength(0);
+  });
+
   it('does not offer layoff targets without exactly one selected card', async () => {
-    mockExec.mockResolvedValue(meldProgressState);
+    mockExec.mockResolvedValue({ ...meldProgressState, layoffTargets: [[1], []] });
     renderWithProviders(<ConquianPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(document.querySelectorAll('[data-layoff-target]')).toHaveLength(0);
