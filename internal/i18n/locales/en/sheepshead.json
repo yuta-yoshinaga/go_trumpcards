@@ -20,6 +20,8 @@
   "promptBury": "{{name}} — bury 2 cards",
   "promptBuryHelp": "b <idx1> <idx2> ... bury two cards from your hand",
   "promptCall": "{{name}} — call a partner suit",
+  "callableSuits": "Callable suits: {{suits}}",
+  "callableNone": "No suit can be called; you play without a partner",
   "promptCallHelp": "c <suit> ... call a fail suit (1=♠ 2=♣ 3=♥)",
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> ... play a card (must follow suit)",
