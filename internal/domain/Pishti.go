@@ -349,19 +349,14 @@ func (g *Pishti) calcFinalScore() []int {
 	cardCounts := make([]int, n)
 
 	// 最多枚数判定 (同点なら誰ももらえない)。
-	mostIdx := -1
-	mostVal := 0
-	tie := false
+	mostIdx := g.mostCapturedSeat()
 	for i, p := range g.players {
-		cnt := p.CapturedCount()
-		cardCounts[i] = cnt
-		if mostIdx == -1 || cnt > mostVal {
-			mostIdx = i
-			mostVal = cnt
-			tie = false
-		} else if cnt == mostVal {
-			tie = true
-		}
+		cardCounts[i] = p.CapturedCount()
+	}
+	tie := mostIdx < 0
+	mostVal := 0
+	if mostIdx >= 0 {
+		mostVal = g.players[mostIdx].CapturedCount()
 	}
 
 	for i, p := range g.players {
@@ -377,6 +372,44 @@ func (g *Pishti) calcFinalScore() []int {
 	}
 	return scores
 }
+
+// mostCapturedSeat は最多捕獲の単独リーダーの席を返す。同数、または誰も
+// 捕獲していなければ -1。
+func (g *Pishti) mostCapturedSeat() int {
+	best, bestSeat, tie := 0, -1, false
+	for i, p := range g.players {
+		cnt := p.CapturedCount()
+		if bestSeat == -1 || cnt > best {
+			best, bestSeat, tie = cnt, i, false
+		} else if cnt == best {
+			tie = true
+		}
+	}
+	if tie || best == 0 {
+		return -1
+	}
+	return bestSeat
+}
+
+// GetProvisionalScores は対局中の暫定スコアを返す。
+//
+// **カード点は含まない。**捕獲札の点数配分は最後に数えるので、途中で確実に
+// 分かるのはピシュティ賞と最多捕獲の +3 だけ。近似であることは呼び出し側が
+// 明示する (#4892)。**同数なら誰にも +3 は付かない。**
+func (g *Pishti) GetProvisionalScores() []int {
+	out := make([]int, len(g.players))
+	leader := g.mostCapturedSeat()
+	for i, p := range g.players {
+		out[i] = p.GetPistiBonus()
+		if i == leader {
+			out[i] += PishtiScoreMostCards
+		}
+	}
+	return out
+}
+
+// GetProvisionalLeader は暫定の最多捕獲リーダーの席を返す (同数なら -1)。
+func (g *Pishti) GetProvisionalLeader() int { return g.mostCapturedSeat() }
 
 // pishtiCardPoints は 1 枚のカードの基本得点を返す。
 //
@@ -548,6 +581,9 @@ func (g *Pishti) GetConfig() PishtiConfig { return g.config }
 
 // SetConfig は設定を変更する。
 func (g *Pishti) SetConfig(config PishtiConfig) { g.config = config }
+
+// SetGameEndFlagForTest はテスト用に終了フラグを設定する。
+func (g *Pishti) SetGameEndFlagForTest(v bool) { g.state.gameEndFlag = v }
 
 // GetActionLog は棋譜を返す。
 func (g *Pishti) GetActionLog() []*ActionLogEntry { return g.state.actionLog }

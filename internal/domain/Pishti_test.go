@@ -366,3 +366,48 @@ func TestPishti_NextRound_RestartsGame(t *testing.T) {
 		t.Fatalf("NextRound phase = %s", g.GetPhase())
 	}
 }
+
+// **同数なら誰にも +3 は付かない。**暫定スコアと最終集計で規則が割れると、
+// 途中の順位表示が嘘になる (#4892)。
+func TestPishti_ProvisionalScores(t *testing.T) {
+	g := NewDefaultPishti()
+	g.Reset()
+	card := func() *Card { return NewCard(CardDesignSpade, 2, false) }
+	give := func(seat, n int) {
+		cards := make([]*Card, n)
+		for i := range cards {
+			cards[i] = card()
+		}
+		g.GetPlayer(seat).AddCaptured(cards)
+	}
+
+	// 誰も捕獲していなければリーダー無し。
+	if got := g.GetProvisionalLeader(); got != -1 {
+		t.Fatalf("no captures should mean no leader, got %d", got)
+	}
+
+	// 単独リーダーに +3。
+	give(0, 5)
+	give(1, 3)
+	if got := g.GetProvisionalLeader(); got != 0 {
+		t.Fatalf("leader = %d, want 0", got)
+	}
+	prov := g.GetProvisionalScores()
+	if prov[0] != PishtiScoreMostCards {
+		t.Fatalf("sole leader should get +%d, got %d", PishtiScoreMostCards, prov[0])
+	}
+	if prov[1] != 0 {
+		t.Fatalf("non-leader should get nothing, got %d", prov[1])
+	}
+
+	// **同数になったら誰にも付かない** (受け入れ条件2)。
+	give(1, 2)
+	if got := g.GetProvisionalLeader(); got != -1 {
+		t.Fatalf("a tie should have no leader, got %d", got)
+	}
+	for i, v := range g.GetProvisionalScores() {
+		if v != 0 {
+			t.Fatalf("seat %d got %d on a tie, want 0", i, v)
+		}
+	}
+}
