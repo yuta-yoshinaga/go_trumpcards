@@ -35,6 +35,19 @@ func (p *SirTommyCuiPresenter) Output(g interfaces.SirTommyGame, lastErr error) 
 					"count", strconv.Itoa(len(pile)),
 					"max", maxStr))
 			}
+			// **次に必要なランクを出す。**Web は各基礎札にバッジで出しているのに、
+			// CUI は一番上の札しか出さず、4 本分の「+1」を暗算させていた (#4868)。
+			// 段差もスートも無い (canPlaceOnFoundation) ので、次は必ず top+1、
+			// 空なら A、13 枚で打ち止め。
+			switch {
+			case len(pile) >= domain.CardValueMax:
+				b.WriteString(i18n.T("sirtommy.foundationComplete"))
+			case len(pile) == 0:
+				b.WriteString(i18n.Tf("sirtommy.foundationNext", "rank", cuiRankLabel(1)))
+			default:
+				b.WriteString(i18n.Tf("sirtommy.foundationNext",
+					"rank", cuiRankLabel(pile[len(pile)-1].GetValue()+1)))
+			}
 			b.WriteString("\n")
 		}
 		b.WriteString("----------\n")

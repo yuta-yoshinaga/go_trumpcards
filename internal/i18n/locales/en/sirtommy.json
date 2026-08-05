@@ -20,6 +20,8 @@
   "noHint": "No hint",
   "foundationLabel": "[F{{idx}}] ",
   "foundationEmpty": "(empty)",
+  "foundationNext": " → next: {{rank}}",
+  "foundationComplete": " → complete",
   "foundationFilled": "{{card}} ({{count}}/{{max}})",
   "wasteLabel": "[W{{idx}}] ",
   "wasteEmpty": "(empty)",
