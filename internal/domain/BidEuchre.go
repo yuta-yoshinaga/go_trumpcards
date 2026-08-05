@@ -380,6 +380,19 @@ func (b *BidEuchre) BidEuchreCanBid(player, value int) bool {
 	return value > b.highBid.Value
 }
 
+// BidEuchreMinLegalBid は player が通せる最も低い宣言を返す。無ければ ok=false。
+//
+// **判定は BidEuchreCanBid をそのまま試す。**規則を書き写すと、案内した額が
+// 拒否されることになる (#4899)。
+func (b *BidEuchre) BidEuchreMinLegalBid(player int) (int, bool) {
+	for v := BidEuchreMinBid; v <= BidEuchreMaxBid; v++ {
+		if b.BidEuchreCanBid(player, v) {
+			return v, true
+		}
+	}
+	return 0, false
+}
+
 // Bid はトリック数を宣言する。
 func (b *BidEuchre) Bid(player, value int) error {
 	if err := b.checkBidTurn(player); err != nil {

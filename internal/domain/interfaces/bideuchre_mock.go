@@ -76,3 +76,9 @@ func (m *MockBidEuchreGame) GetPlayer(idx int) *domain.BidEuchrePlayer {
 func (m *MockBidEuchreGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
+
+// BidEuchreMinLegalBid モック
+func (m *MockBidEuchreGame) BidEuchreMinLegalBid(player int) (int, bool) {
+	ret := m.Called(player)
+	return ret.Int(0), ret.Bool(1)
+}

@@ -5,6 +5,8 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func beCard(suit, value int) *Card { return NewCard(suit, value, true) }
@@ -822,4 +824,36 @@ func TestBidEuchreGetScoreOutOfRange(t *testing.T) {
 	if got := b.GetScore(1); got != 17 {
 		t.Errorf("GetScore(1) = %d, want 17", got)
 	}
+}
+
+// **「立っている宣言＋1、親なら同額」を 1 箇所で決める** (#4899)。
+func TestBidEuchre_MinLegalBid(t *testing.T) {
+	g := NewDefaultBidEuchre()
+	g.Reset()
+	g.SetDealerForTest(3)
+
+	// 宣言が無ければ最低値から (受け入れ条件1)。
+	g.highBid = nil
+	v, ok := g.BidEuchreMinLegalBid(1)
+	assert.True(t, ok)
+	assert.Equal(t, BidEuchreMinBid, v)
+
+	// 非ディーラーは +1 から (受け入れ条件2)。
+	g.highBid = &BidEuchreBid{Player: 0, Value: 4}
+	v, ok = g.BidEuchreMinLegalBid(1)
+	assert.True(t, ok)
+	assert.Equal(t, 5, v)
+
+	// **親だけは同額で奪える** (受け入れ条件3)。
+	v, ok = g.BidEuchreMinLegalBid(3)
+	assert.True(t, ok)
+	assert.Equal(t, 4, v)
+
+	// 上限まで宣言されたら非ディーラーには無い。親にはまだある。
+	g.highBid = &BidEuchreBid{Player: 0, Value: BidEuchreMaxBid}
+	_, ok = g.BidEuchreMinLegalBid(1)
+	assert.False(t, ok)
+	v, ok = g.BidEuchreMinLegalBid(3)
+	assert.True(t, ok)
+	assert.Equal(t, BidEuchreMaxBid, v)
 }
