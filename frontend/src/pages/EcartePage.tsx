@@ -334,7 +334,8 @@ function EcartePageContent() {
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndex != null && ` ([${state.hint.cardIndex}])`}
                 {/* **識別子をそのまま出さない。**`propose` のような英語が
-                    日本語 UI に混ざる (#4727)。訳が無ければ何も足さない。 */}
+                    日本語 UI に混ざる (#4727)。訳が無ければ識別子に落とす
+                    (キー文字列は出さない)。 */}
                 {state.hint.action != null &&
                   ` (${t(`action.${state.hint.action}`, { defaultValue: state.hint.action })})`}
               </div>
