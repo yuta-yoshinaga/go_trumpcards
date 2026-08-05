@@ -116,9 +116,15 @@ function CongressPageContent() {
 
   const dispatchMove = useCallback(
     (source: CongressMoveZone, target: CongressMoveZone) => {
+      // **空き山はタブローからは埋められない** (`MoveTableauToTableau` が拒否)。
+      // クリック経路はボタンを無効化して防いでいるが、**ドラッグ経路はここを
+      // 通る**ので、同じ規則をここでも見る (#4906)。
+      const targetIsEmptyPile =
+        target.zone === 'tableau' && target.col !== undefined && (state?.tableau[target.col]?.length ?? 0) === 0;
+      if (targetIsEmptyPile && source.zone === 'tableau') return;
       void game.exec('move', source, target);
     },
-    [game],
+    [game, state],
   );
   const dnd = useSolitaireDragDrop<CongressMoveZone>({
     onMove: dispatchMove,
