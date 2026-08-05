@@ -86,3 +86,39 @@ func TestKempsCuiPresenter_ActionLogOutput(t *testing.T) {
 	g := setupKempsTest()
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **揃ったことに気づかないと宣言する権利ごと失う。**Web は交換中からバナーと
+// ボタン強調で知らせるのに、CUI は手札を自分で見て判断するしかなかった (#4890)。
+func TestKempsCuiPresenter_AnnouncesFourOfAKind(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.KempsCuiPresenter)
+
+	g := setupKempsTest()
+	human := g.GetPlayer(0)
+	// 1 枚だけ別ランクなら成立しない。
+	human.Reset()
+	for i, d := range []int{domain.CardDesignSpade, domain.CardDesignHeart, domain.CardDesignClover, domain.CardDesignDiamond} {
+		v := 7
+		if i == 3 {
+			v = 8
+		}
+		human.AddCard(domain.NewCard(d, v, false))
+	}
+	assert.NotContains(t, p.Output(g, nil), "4枚が同ランク")
+
+	// 4 枚そろえば出る。
+	human.Reset()
+	for _, d := range []int{domain.CardDesignSpade, domain.CardDesignHeart, domain.CardDesignClover, domain.CardDesignDiamond} {
+		human.AddCard(domain.NewCard(d, 7, false))
+	}
+	out := p.Output(g, nil)
+	assert.Contains(t, out, "4枚が同ランク")
+	assert.Contains(t, out, "ケンプスを宣言できます")
+
+	// **終局後は出さない。**宣言できないので案内する意味がなく、Web も
+	// `humanHasFour && !isGameEnd` で隠している（レビュー指摘）。
+	g.SetGameEndFlagForTest(true)
+	assert.NotContains(t, p.Output(g, nil), "4枚が同ランク")
+}

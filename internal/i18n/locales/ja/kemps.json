@@ -25,5 +25,6 @@
   "winHuman": "あなたのチームの勝ちです！",
   "winCpu": "相手チームの勝ちです...",
   "result.humanWin": "あなたのチームの勝ちです！",
-  "result.cpuWin": "相手チームの勝ちです..."
+  "result.cpuWin": "相手チームの勝ちです...",
+  "fourOfAKindReady": "★ 4枚が同ランクです！ ケンプスを宣言できます（declare / d）"
 }

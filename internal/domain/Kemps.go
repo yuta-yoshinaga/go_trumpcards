@@ -150,6 +150,9 @@ func (g *Kemps) GetConfig() KempsConfig { return g.config }
 // SetConfig は設定を更新する。
 func (g *Kemps) SetConfig(cfg KempsConfig) { g.config = cfg }
 
+// SetGameEndFlagForTest はテスト用に終了フラグを設定する。
+func (g *Kemps) SetGameEndFlagForTest(v bool) { g.gameEndFlag = v }
+
 // ResetWithConfig は設定を更新してゲームを初期化する。
 func (g *Kemps) ResetWithConfig(cfg KempsConfig) {
 	g.config = cfg
