@@ -213,6 +213,10 @@ function GanjifaPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="ganjifa-trick-display"
+                  // トリック確定と同時に ResolveTrick が走るので、TRICK_END の
+                  // 間は leadPlayerIdx がそのトリックの勝者 (OhHell と同じ)。
+                  winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+                  winnerLabel={t('trickWinnerBadge')}
                 />
               </div>
 
