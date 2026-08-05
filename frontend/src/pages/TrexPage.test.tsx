@@ -189,4 +189,48 @@ describe('TrexPage', () => {
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
     }
   });
+
+  // **失点対象は契約ごとに違う。**5 種が 1 王国内で切り替わるので、どれが危険かを
+  // 記憶と暗算で追わせることになる (#4911)。
+  describe('penalty-card highlight', () => {
+    const withTrick = (contract: number) =>
+      makeState({
+        phase: TrexPhase.PLAY,
+        contract,
+        trick: [
+          { playerIdx: 0, card: card('HEART', 13) },
+          { playerIdx: 1, card: card('DIAMOND', 5) },
+          { playerIdx: 2, card: card('SPADE', 12) },
+          { playerIdx: 3, card: card('CLOVER', 3) },
+        ],
+      });
+
+    it('marks the king of hearts under the King of Hearts contract', async () => {
+      mockExec.mockResolvedValue(withTrick(TrexContract.KING_OF_HEARTS));
+      renderWithProviders(<TrexPage />);
+      await waitFor(() => expect(screen.getAllByTestId('trex-penalty-card')).toHaveLength(1));
+    });
+
+    // **クイーンはスートを問わない。**♥Q だけ見ると 3 枚見落とす。
+    it('marks every queen under the Queens contract', async () => {
+      mockExec.mockResolvedValue(withTrick(TrexContract.QUEENS));
+      renderWithProviders(<TrexPage />);
+      await waitFor(() => expect(screen.getAllByTestId('trex-penalty-card')).toHaveLength(1));
+    });
+
+    it('marks the diamonds under the Diamonds contract', async () => {
+      mockExec.mockResolvedValue(withTrick(TrexContract.DIAMONDS));
+      renderWithProviders(<TrexPage />);
+      await waitFor(() => expect(screen.getAllByTestId('trex-penalty-card')).toHaveLength(1));
+    });
+
+    // **トリック契約では個々の札に失点は無い。**赤くすると嘘になる。
+    it('marks nothing under the trick-counting contract', async () => {
+      mockExec.mockResolvedValue(withTrick(TrexContract.TRICKS));
+      renderWithProviders(<TrexPage />);
+      // トリックが描かれたことを、赤くない札の存在で確かめてから否定を見る。
+      await waitFor(() => expect(screen.getAllByRole('img', { hidden: true }).length).toBeGreaterThan(0));
+      expect(screen.queryByTestId('trex-penalty-card')).not.toBeInTheDocument();
+    });
+  });
 });
