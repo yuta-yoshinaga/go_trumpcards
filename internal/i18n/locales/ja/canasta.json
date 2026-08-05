@@ -11,6 +11,7 @@
   "helpSetLimit": "  sl <n>               ポイント上限",
   "header": "ラウンド: {{round}}  山札: {{stock}}枚  廃棄山: {{discard}}枚",
   "frozenTag": " [フリーズ]",
+  "discardPileLine": "  山の中身: {{cards}}",
   "discardLine": "捨て札: {{card}}",
   "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
   "playerRed3s": " 赤3: {{count}}枚",

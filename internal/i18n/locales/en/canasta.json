@@ -11,6 +11,7 @@
   "helpSetLimit": "  sl <n>               point limit",
   "header": "Round: {{round}}  Stock: {{stock}}  Discard: {{discard}}",
   "frozenTag": " [frozen]",
+  "discardPileLine": "  Pile: {{cards}}",
   "discardLine": "Discard top: {{card}}",
   "playerLine": "{{name}}: cumulative {{cum}} round {{round}} cards {{cards}}",
   "playerRed3s": " red 3s: {{count}}",
