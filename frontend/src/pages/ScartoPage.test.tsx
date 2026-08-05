@@ -245,8 +245,7 @@ describe('ScartoPage', () => {
     expect(screen.getByTestId('scarto-result')).toHaveTextContent('+28');
   });
 
-  // **平均差と実際の変動は N 倍ちがう。**式を書かないと、同じ箱の中で「+28」と
-  // 「平均差 +9.3」が並んで計算が合わないように見える (#4930)。
+  // 上段の dealScores と内訳の平均差が N 倍で結び付くことを固定する (#4930)。
   it('spells out that the change is the average difference times the player count', async () => {
     mockExec.mockResolvedValue(settlementState);
     renderWithProviders(<ScartoPage />);
