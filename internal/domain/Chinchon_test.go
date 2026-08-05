@@ -572,3 +572,37 @@ func TestChinchon_GameEndedGuards(t *testing.T) {
 	assert.ErrorIs(t, g.PlayerDiscard(0), domain.ErrWrongPhase)
 	assert.ErrorIs(t, g.PlayerKnock(0), domain.ErrWrongPhase)
 }
+
+// **合計は既存の deadwoodLine と一致する。**分割と合計が別経路になると、
+// 内訳の和が表示値とずれる (#4838)。
+func TestChinchon_GetPlayerMeldSplit(t *testing.T) {
+	g := domain.NewDefaultChinchon()
+	g.Reset()
+	p := g.GetPlayer(0)
+	for p.GetCardsSize() > 0 {
+		p.RemoveCard(0)
+	}
+	// ♠5-6-7 のラン + 端数 ♥9, ♣2。
+	for _, c := range []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignSpade, 6, false),
+		domain.NewCard(domain.CardDesignSpade, 7, false),
+		domain.NewCard(domain.CardDesignHeart, 9, false),
+		domain.NewCard(domain.CardDesignClover, 2, false),
+	} {
+		p.AddCard(c)
+	}
+
+	melds, dead := g.GetPlayerMeldSplit(0)
+	assert.Len(t, melds, 1)
+	assert.Len(t, melds[0], 3)
+	assert.Len(t, dead, 2)
+	// 内訳の合計が GetPlayerDeadwoodValue と一致する。
+	assert.Equal(t, g.GetPlayerDeadwoodValue(0), domain.CalcDeadwoodValue(dead))
+	assert.Equal(t, 11, domain.CalcDeadwoodValue(dead))
+
+	// 範囲外は空。
+	m2, d2 := g.GetPlayerMeldSplit(99)
+	assert.Nil(t, m2)
+	assert.Nil(t, d2)
+}

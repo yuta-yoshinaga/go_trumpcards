@@ -33,6 +33,8 @@
   "promptRoundEndHelp": "nr / nextround: advance to next round",
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+  "meldedLine": "  Melded: {{melds}}",
+  "deadwoodBreakdown": "  Deadwood: {{cards}} ({{sum}} = {{total}})",
   "deadwoodLine": "Deadwood: {{value}} (knock at {{threshold}} or less)",
   "knockReady": "→ ready to knock"
 }
