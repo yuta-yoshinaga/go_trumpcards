@@ -34,6 +34,55 @@ func TestTrashCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "ペンディング")
 	})
 
+	// **行き先を書く。**Web は `pendingAnnounce` で置ける場所・死に札・ワイルドを
+	// 毎回文章化しているのに、CUI は札をそのまま出すだけだった (#4867)。
+	t.Run("pending card names its destination", func(t *testing.T) {
+		p := new(TrashCuiPresenter)
+
+		// 空きスロットのあるワイルド: 選べる位置を並べる (推奨は HintOutput の役目)。
+		slots := make([]domain.TrashSlot, domain.TrashSlotCnt)
+		for i := range slots {
+			slots[i] = domain.TrashSlot{Card: domain.NewCard(domain.CardDesignSpade, i+1, false), FaceUp: true}
+		}
+		slots[1].FaceUp = false
+		slots[4].FaceUp = false
+		out := p.Output(buildTrashMock(trashMockOpts{
+			phase:   domain.TrashPhaseAwaitWild,
+			pending: domain.NewCard(domain.CardDesignSpade, 13, false),
+			p0Slots: slots,
+		}), nil)
+		assert.Contains(t, out, "ワイルド: 空きスロット 2, 5 のどこへでも")
+
+		// 数札で、その位置がまだ伏せられている: 位置番号を出す。
+		down := make([]domain.TrashSlot, domain.TrashSlotCnt)
+		for i := range down {
+			down[i] = domain.TrashSlot{Card: domain.NewCard(domain.CardDesignSpade, i+1, false), FaceUp: false}
+		}
+		out = p.Output(buildTrashMock(trashMockOpts{
+			pending: domain.NewCard(domain.CardDesignHeart, 4, false),
+			p0Slots: down,
+		}), nil)
+		assert.Contains(t, out, "→ スロット 4 へ")
+
+		// 同じ札でも、その位置が既に表向きなら死に札。
+		filled := make([]domain.TrashSlot, domain.TrashSlotCnt)
+		copy(filled, down)
+		filled[3].FaceUp = true
+		out = p.Output(buildTrashMock(trashMockOpts{
+			pending: domain.NewCard(domain.CardDesignHeart, 4, false),
+			p0Slots: filled,
+		}), nil)
+		assert.Contains(t, out, "置き場所なし: 捨て札行き")
+		assert.NotContains(t, out, "→ スロット 4 へ")
+
+		// スロットを持たないランク (Q) も死に札。
+		out = p.Output(buildTrashMock(trashMockOpts{
+			pending: domain.NewCard(domain.CardDesignHeart, 12, false),
+			p0Slots: down,
+		}), nil)
+		assert.Contains(t, out, "置き場所なし: 捨て札行き")
+	})
+
 	t.Run("game over banner — human wins", func(t *testing.T) {
 		tg := buildTrashMock(trashMockOpts{phase: domain.TrashPhaseGameOver, winner: 0, winnerSet: true})
 		p := new(TrashCuiPresenter)

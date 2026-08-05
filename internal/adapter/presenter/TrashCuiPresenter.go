@@ -51,7 +51,8 @@ func (p *TrashCuiPresenter) Output(t interfaces.TrashGame, lastErr error) string
 		}
 		b.WriteString("\n")
 		if pending := t.GetPending(); pending != nil {
-			b.WriteString(i18n.Tf("trash.pending", "card", cuiCardStr(pending)) + "\n")
+			b.WriteString(i18n.Tf("trash.pending", "card", cuiCardStr(pending)) +
+				trashPendingDestination(t, pending) + "\n")
 		}
 		b.WriteString("----------\n")
 
@@ -76,13 +77,41 @@ func (p *TrashCuiPresenter) Output(t interfaces.TrashGame, lastErr error) string
 // trashHumanFaceDownSlots returns the 1-based positions of the human's slots
 // that are still unfilled (face down) — the valid targets for a wild card.
 func trashHumanFaceDownSlots(t interfaces.TrashGame) []string {
+	return trashFaceDownSlots(t, domain.TrashHumanIdx)
+}
+
+// trashFaceDownSlots returns the 1-based unfilled positions on the given
+// player's board.
+func trashFaceDownSlots(t interfaces.TrashGame, playerIdx int) []string {
 	var out []string
-	for i, s := range t.GetPlayerSlots(domain.TrashHumanIdx) {
+	for i, s := range t.GetPlayerSlots(playerIdx) {
 		if !s.FaceUp {
 			out = append(out, strconv.Itoa(i+1))
 		}
 	}
 	return out
+}
+
+// trashPendingDestination annotates the pending card with where it can go on
+// the board of the player holding it. The Web GUI narrates exactly this in
+// `pendingAnnounce` and pulses the target slot; the CUI printed the bare card
+// and left the player to work the destination out (#4867).
+func trashPendingDestination(t interfaces.TrashGame, pending *domain.Card) string {
+	slots := t.GetPlayerSlots(t.GetCurrent())
+	if trashIsWild(pending) {
+		open := trashFaceDownSlots(t, t.GetCurrent())
+		if len(open) == 0 {
+			return i18n.T("trash.pendingDead")
+		}
+		// AwaitWild のプロンプト (「p <位置>」) と矛盾しないよう、選べる位置を
+		// 並べるだけにする。どこを推すかは HintOutput の役目。
+		return i18n.Tf("trash.pendingWild", "slots", strings.Join(open, ", "))
+	}
+	slot := trashSlotFor(pending)
+	if slot == 0 || slot > len(slots) || slots[slot-1].FaceUp {
+		return i18n.T("trash.pendingDead")
+	}
+	return i18n.Tf("trash.pendingSlot", "slot", strconv.Itoa(slot))
 }
 
 // trashIsWild reports whether a card is a Trash wild (King or Joker).
