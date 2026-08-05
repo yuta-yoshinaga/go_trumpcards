@@ -94,7 +94,7 @@ function LobaPageContent() {
   // 判定が `frontendHintEnabled` だけなのは、このゲームの hint がゲーム追加時
   // (#4414) から Output に乗る常時表示で、`isRequestedHint` を通すと恒久的に
   // false になるため。check-hint-gate の ALLOWED に登録済み。
-  const hintMeldIndices = new Set(frontendHintEnabled ? (state.hint?.cardIndices ?? []) : []);
+  const hintMeldIndices = new Set(frontendHintEnabled && acting ? (state.hint?.cardIndices ?? []) : []);
   const hintDrawStock = frontendHintEnabled && drawing ? state.hint?.drawStock : undefined;
 
   const phaseName = ended

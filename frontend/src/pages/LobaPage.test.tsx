@@ -197,6 +197,18 @@ describe('LobaPage', () => {
       });
     });
 
+    it('does not ring meld cards outside the act phase', async () => {
+      mockExec.mockResolvedValue(
+        makeState({ phase: LobaPhase.DRAW, hint: { cardIndices: [0, 2], drawStock: true, reason: 'x' } }),
+      );
+      renderWithProviders(<LobaPage />);
+      await enableHints();
+
+      await waitFor(() => expect(document.querySelectorAll('[data-hint-draw="true"]')).toHaveLength(1));
+      const hand = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'discard');
+      expect(hand.filter((b) => b.className.includes('ring-ds-warning'))).toHaveLength(0);
+    });
+
     it('rings the stock button when the hint says draw from stock', async () => {
       mockExec.mockResolvedValue(makeState({ phase: LobaPhase.DRAW, hint: { drawStock: true, reason: 'x' } }));
       renderWithProviders(<LobaPage />);
