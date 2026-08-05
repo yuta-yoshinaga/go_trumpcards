@@ -28,6 +28,32 @@ func bigTwoPlayerStr(player *domain.BigTwoPlayer, i int) string {
 // BigTwoCuiPresenter renders the Big Two CUI view.
 type BigTwoCuiPresenter struct{}
 
+// bigTwoPlayTypeName returns the localized name of a play type, or "" for
+// BigTwoPlayInvalid (nothing on the table). Mirrors the web GUI's
+// `bigTwoPlayTypeKey`, which keys the same eight names off the same enum.
+func bigTwoPlayTypeName(t domain.BigTwoPlayType) string {
+	switch t {
+	case domain.BigTwoPlaySingle:
+		return i18n.T("bigtwo.playTypeSingle")
+	case domain.BigTwoPlayPair:
+		return i18n.T("bigtwo.playTypePair")
+	case domain.BigTwoPlayTriple:
+		return i18n.T("bigtwo.playTypeTriple")
+	case domain.BigTwoPlayStraight:
+		return i18n.T("bigtwo.playTypeStraight")
+	case domain.BigTwoPlayFlush:
+		return i18n.T("bigtwo.playTypeFlush")
+	case domain.BigTwoPlayFullHouse:
+		return i18n.T("bigtwo.playTypeFullHouse")
+	case domain.BigTwoPlayFourOfAKind:
+		return i18n.T("bigtwo.playTypeFourOfAKind")
+	case domain.BigTwoPlayStraightFlush:
+		return i18n.T("bigtwo.playTypeStraightFlush")
+	default:
+		return ""
+	}
+}
+
 // Output renders the current game state for the active locale.
 func (p *BigTwoCuiPresenter) Output(bg interfaces.BigTwoGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("bigtwo.helpTitle"), func(b *strings.Builder) {
@@ -38,7 +64,14 @@ func (p *BigTwoCuiPresenter) Output(bg interfaces.BigTwoGame, lastErr error) str
 		b.WriteString("----------\n")
 
 		if bg.GetTableCards() != nil {
-			b.WriteString(i18n.T("bigtwo.tableCards") + ": " + cuiCardSliceStr(bg.GetTableCards()) + "\n")
+			// **役名を添える。**Web は `bt-table-playtype` バッジで場の役を常時出して
+			// いるのに、CUI は生のカード列だけで、何を出せば通るのかを自分で
+			// 読み取るしかなかった (#4859)。
+			line := i18n.T("bigtwo.tableCards") + ": " + cuiCardSliceStr(bg.GetTableCards())
+			if name := bigTwoPlayTypeName(bg.GetTablePlayType()); name != "" {
+				line += " " + i18n.Tf("bigtwo.tablePlayType", "type", name)
+			}
+			b.WriteString(line + "\n")
 		} else {
 			b.WriteString(i18n.T("bigtwo.tableEmpty") + "\n")
 		}
