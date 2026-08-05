@@ -595,6 +595,12 @@ func (t *Tichu) GetConfig() TichuConfig { return t.config }
 // SetConfig 設定変更
 func (t *Tichu) SetConfig(config TichuConfig) { t.config = config }
 
+// SetBombCountForTest はテスト用にボム使用回数を設定する。
+func (t *Tichu) SetBombCountForTest(n int) { t.round.bombCount = n }
+
+// SetIsOneTwoForTest はテスト用にワンツー成立を設定する。
+func (t *Tichu) SetIsOneTwoForTest(v bool) { t.round.oneTwo = v }
+
 // HasPendingAction ペンディングアクションがあるか (常にfalse)
 func (t *Tichu) HasPendingAction() bool { return false }
 

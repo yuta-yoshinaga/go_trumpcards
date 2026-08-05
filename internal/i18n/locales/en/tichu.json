@@ -14,5 +14,7 @@
   "grandTichu": "Grand Tichu",
   "you": "You",
   "playerRank": " (finished #{{rank}})",
-  "playerCardCount": " ({{count}} cards)"
+  "playerCardCount": " ({{count}} cards)",
+  "bombCount": "Bombs played: {{count}}",
+  "oneTwo": "One-two! (the same team went out first and second)"
 }
