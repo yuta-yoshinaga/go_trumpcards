@@ -167,7 +167,10 @@ function GoFishPageContent() {
         setKbdAnnounce(t('a11y.targetSelected', { name: playerName(p.id, false) }));
       },
       enabled: kbdIsHumanTurn,
-      label: 'selectTarget',
+      // 相手ごとに別のキーなので、一覧も相手ごとに別の文言にする。全部
+      // 「対象のプレイヤーを選ぶ」だと、どのキーが誰なのか読み取れない (#4862)。
+      label: 'selectTargetNamed',
+      labelParams: { name: playerName(p.id, false) },
     }));
     bindings.push({ key: 'ArrowRight', action: () => cycleRank(1), enabled: kbdIsHumanTurn, label: 'nextRank' });
     bindings.push({ key: 'ArrowLeft', action: () => cycleRank(-1), enabled: kbdIsHumanTurn, label: 'prevRank' });

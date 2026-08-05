@@ -37,6 +37,23 @@ describe('ActionShortcutsPanel', () => {
     expect(screen.getByText('コール')).toBeInTheDocument();
   });
 
+  // **同じラベルが並ぶと一覧が役に立たない。**Go Fish は相手ごとに 1 キーを
+  // 割り当てているのに、行は全部「対象のプレイヤーを選ぶ」だった (#4862)。
+  it('interpolates labelParams so per-target rows differ', () => {
+    render(
+      <ActionShortcutsPanel
+        bindings={[
+          { key: '1', action: vi.fn(), label: 'selectTargetNamed', labelParams: { name: 'CPU 1' } },
+          { key: '2', action: vi.fn(), label: 'selectTargetNamed', labelParams: { name: 'CPU 2' } },
+        ]}
+      />,
+    );
+    openPanel();
+    expect(screen.getByText('CPU 1 を選ぶ')).toBeInTheDocument();
+    expect(screen.getByText('CPU 2 を選ぶ')).toBeInTheDocument();
+    expect(screen.queryByText('{{name}} を選ぶ')).not.toBeInTheDocument();
+  });
+
   it('omits bindings with no label rather than showing a raw key name', () => {
     // A binding may be bound deliberately without being advertised; it must not
     // surface as an untranslated i18n key (the failure mode of #4374).

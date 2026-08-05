@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { goFishApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -140,6 +140,19 @@ describe('GoFishPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '要求する' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('ask', expect.any(Number), 7));
+  });
+
+  // **どのキーが誰なのかを一覧から読み取れること。**相手が何人いても全行が
+  // 「対象のプレイヤーを選ぶ」で、盤面と数え合わせるしかなかった (#4862)。
+  it('names each opponent in the shortcut list', async () => {
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
+    const panel = screen.getByTestId('go-fish-kbd-shortcuts');
+    fireEvent.click(panel.querySelector('summary') as HTMLElement);
+
+    expect(within(panel).getByText('CPU 1 を選ぶ')).toBeInTheDocument();
+    expect(within(panel).getByText('CPU 2 を選ぶ')).toBeInTheDocument();
+    expect(within(panel).queryByText('対象のプレイヤーを選ぶ')).not.toBeInTheDocument();
   });
 
   it('keyboard: number key selects an opponent and arrows cycle the rank, then "a" asks', async () => {

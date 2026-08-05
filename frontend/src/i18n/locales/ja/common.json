@@ -1515,6 +1515,7 @@
       "reset": "ゲームをやり直す",
       "selectNertzPile": "ナーツの山を選ぶ",
       "selectTarget": "対象のプレイヤーを選ぶ",
+      "selectTargetNamed": "{{name}} を選ぶ",
       "selectWastePile": "廃棄の山を選ぶ",
       "setHands": "手役を確定する",
       "shift": "列をずらす",

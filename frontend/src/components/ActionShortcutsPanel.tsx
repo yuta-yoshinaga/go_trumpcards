@@ -34,7 +34,7 @@ export function ActionShortcutsPanel({ bindings, includeCardNav = false, ...rest
   const { t } = useTranslation('common');
   const shortcuts: KeyboardShortcut[] = bindings
     .filter((b) => b.label && b.enabled !== false)
-    .map((b) => ({ keys: [b.key], description: t(`kbd.action.${b.label}`) }));
+    .map((b) => ({ keys: [b.key], description: t(`kbd.action.${b.label}`, b.labelParams) }));
 
   if (includeCardNav) {
     shortcuts.push(
