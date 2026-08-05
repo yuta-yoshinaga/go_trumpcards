@@ -28,6 +28,8 @@ type CuarentaGame interface {
 	GetPlayer(i int) *domain.CuarentaPlayer
 	// GetTeamScore 指定チームの累計点を取得する
 	GetTeamScore(team int) int
+	// GetTeamCapturedCount チームの捕獲枚数合計を取得する
+	GetTeamCapturedCount(team int) int
 	// GetTableCards 場札一覧を取得する
 	GetTableCards() []*domain.Card
 	// GetLastCaptureIdx 最後に捕獲したプレイヤーを返す (-1 = なし)
