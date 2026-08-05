@@ -141,3 +141,15 @@ func (m *MockBridgeGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// BridgeMinLegalBid モック
+func (m *MockBridgeGame) BridgeMinLegalBid() (int, int, bool) {
+	ret := m.Called()
+	return ret.Int(0), ret.Int(1), ret.Bool(2)
+}
+
+// BridgeCanDouble モック
+func (m *MockBridgeGame) BridgeCanDouble(playerIdx int) bool { return m.Called(playerIdx).Bool(0) }
+
+// BridgeCanRedouble モック
+func (m *MockBridgeGame) BridgeCanRedouble(playerIdx int) bool { return m.Called(playerIdx).Bool(0) }
