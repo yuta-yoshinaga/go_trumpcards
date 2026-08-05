@@ -212,4 +212,31 @@ describe('KoiKoiPage', () => {
     expect(screen.getAllByText('獲得札なし').length).toBeGreaterThanOrEqual(2);
     expect(screen.queryByTestId('koikoi-human-group-bright')).not.toBeInTheDocument();
   });
+
+  // **こいこいを一度でも宣言していれば確定点は 2 倍。**生の pendingPoints を
+  // 出すと、実際より低い「今止めた場合の点数」を見せることになる (#4929)。
+  describe('decision panel multiplier', () => {
+    it('shows the raw points on the first decision', async () => {
+      mockExec.mockResolvedValue(
+        makeKoiKoiState({ phase: 1, pendingYaku: [{ key: 'tane', points: 3 }], pendingPoints: 3, koikoiCount: 0 }),
+      );
+      renderWithProviders(<KoiKoiPage />);
+      const panel = await screen.findByTestId('koikoi-decision-points');
+      expect(panel).toHaveTextContent('3文');
+      expect(panel).not.toHaveTextContent('倍率');
+    });
+
+    it('doubles the points once a koi-koi has been declared', async () => {
+      mockExec.mockResolvedValue(
+        makeKoiKoiState({ phase: 1, pendingYaku: [{ key: 'tane', points: 3 }], pendingPoints: 3, koikoiCount: 1 }),
+      );
+      renderWithProviders(<KoiKoiPage />);
+      const panel = await screen.findByTestId('koikoi-decision-points');
+      expect(panel).toHaveTextContent('6文');
+      // 倍率が効いていることを明示する。
+      expect(panel).toHaveTextContent('倍率×2');
+      // 生の値をそのまま出していないこと。
+      expect(panel).not.toHaveTextContent('3文');
+    });
+  });
 });
