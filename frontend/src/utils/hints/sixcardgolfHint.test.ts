@@ -92,6 +92,8 @@ describe('getSixcardgolfHint', () => {
       targetAction: 'swap',
       reason: 'hintReason.swapHigh',
       confidence: 'strong',
+      // 既定グリッドの表向きは 5(0) と 8(1)。最も高いのは 8 なので位置 1。
+      targetPos: 1,
     });
   });
 
@@ -136,6 +138,39 @@ describe('getSixcardgolfHint', () => {
       targetAction: 'swap',
       reason: 'hintReason.columnMatch',
       confidence: 'strong',
+      // 列を揃えられるマスそのもの（grid[0] の相方 = grid[3]）を指す。
+      targetPos: 3,
+    });
+  });
+
+  // 伏せ札を勧める 2 経路。どちらも位置を返す (#4887)。
+  it('points at the first face-down slot when a low card has no visible target', () => {
+    // 表向きが 1 枚も無ければ「最も高い表札」は選べない。
+    const grid = makeDefaultGrid().map((slot) => makeSlot(slot.card, false));
+    const state = makeState({
+      phase: 2,
+      drawnCard: makeCard(2),
+      players: [
+        { id: 0, isHuman: true, grid, roundScore: 0, cumulativeScore: 0, allFaceUp: false },
+        { id: 1, isHuman: false, grid: makeDefaultGrid(), roundScore: 0, cumulativeScore: 0, allFaceUp: false },
+      ],
+    });
+    expect(getSixcardgolfHint(state)).toEqual({
+      targetAction: 'swap',
+      reason: 'hintReason.swapFaceDown',
+      confidence: 'moderate',
+      targetPos: 0,
+    });
+  });
+
+  it('points at the first face-down slot for a middling card', () => {
+    // 6 は低くも高くもないので、伏せ札との交換になる。既定グリッドの伏せ札は位置 2。
+    const result = getSixcardgolfHint(makeState({ phase: 2, drawnCard: makeCard(6) }));
+    expect(result).toEqual({
+      targetAction: 'swap',
+      reason: 'hintReason.swapFaceDown',
+      confidence: 'moderate',
+      targetPos: 2,
     });
   });
 });

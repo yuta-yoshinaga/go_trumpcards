@@ -9,4 +9,12 @@ export interface HintResult {
   reason: string;
   /** Confidence level of the recommendation. */
   confidence: HintConfidence;
+  /**
+   * Board position the advice points at, when the hint knows one.
+   *
+   * A hint that says "swap with your highest card" has already worked out
+   * *which* card it means; dropping the index leaves the player to redo that
+   * search by eye (#4887). Pages use it to highlight the slot.
+   */
+  targetPos?: number;
 }
