@@ -102,15 +102,22 @@ func (vpp *VideoPokerCuiPresenter) paytableStr(variantName string) string {
 	return sb.String()
 }
 
-// handNameForWin は勝利行に表示する役名を返す。Deuces Wild は安定キー
-// (GetHandKey) 経由で "deuceswild.hand.<key>" を翻訳し、ja/en それぞれの
-// ロケールで役名を表示する。他バリアント (videopoker / jokerpoker) は従来通り
-// 英語の GetHandName をそのまま返し、後方互換を保つ。
+// handNameForWin は勝利行に表示する役名を返す。
+//
+// **役名はバリアントに依らず共通。**以前は Deuces Wild だけ安定キー
+// (GetHandKey) 経由で翻訳し、Joker Poker と Video Poker は英語の GetHandName に
+// フォールバックしていたため、日本語ロケールでも勝敗行だけ英語で出ていた
+// (#4693)。翻訳表は 3 バリアント共通の `pokerhand` に置いてある。
+//
+// キーが無い、または訳が無い場合だけ英語名に落とす。
 func (vpp *VideoPokerCuiPresenter) handNameForWin(vp interfaces.VideoPokerGame) string {
-	if vp.GetVariantName() == "deuceswild" {
-		if key := vp.GetHandKey(); key != "" {
-			return i18n.T("deuceswild.hand." + key)
-		}
+	key := vp.GetHandKey()
+	if key == "" {
+		return vp.GetHandName()
+	}
+	full := "pokerhand." + key
+	if name := i18n.T(full); name != full {
+		return name
 	}
 	return vp.GetHandName()
 }

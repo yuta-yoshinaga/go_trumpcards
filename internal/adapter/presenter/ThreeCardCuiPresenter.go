@@ -30,7 +30,7 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 		sb.WriteString("--- " + color.Bold(i18n.T("threecard.playerHeader")) + " ---\n")
 		rank := tc.GetPlayerHandRank()
 		if rank > 0 && rank < len(domain.ThreeCardHandNames) {
-			sb.WriteString(i18n.Tf("threecard.handLine", "hand", domain.ThreeCardHandNames[rank]) + "\n")
+			sb.WriteString(i18n.Tf("threecard.handLine", "hand", threeCardHandName(rank)) + "\n")
 		}
 		parts := make([]string, len(playerHand))
 		for i, card := range playerHand {
@@ -45,7 +45,7 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 		sb.WriteString("--- " + color.Bold(i18n.T("threecard.dealerHeader")) + " ---\n")
 		rank := tc.GetDealerHandRank()
 		if rank > 0 && rank < len(domain.ThreeCardHandNames) {
-			sb.WriteString(i18n.Tf("threecard.handLine", "hand", domain.ThreeCardHandNames[rank]) + "\n")
+			sb.WriteString(i18n.Tf("threecard.handLine", "hand", threeCardHandName(rank)) + "\n")
 		}
 		if tc.GetDealerQualified() {
 			sb.WriteString(i18n.T("threecard.qualified") + "\n")
@@ -154,4 +154,33 @@ func (tp *ThreeCardCuiPresenter) phaseStr(phase int) string {
 	default:
 		return i18n.T("threecard.phaseUnknown")
 	}
+}
+
+// threeCardHandKeys は役ランクと共通役名キーの対応。
+var threeCardHandKeys = []string{
+	"", // 0 は未使用
+	"highCard",
+	"pair",
+	"flush",
+	"straight",
+	"threeOfAKind",
+	"straightFlush",
+}
+
+// threeCardHandName は役名をロケールに応じて返す。
+//
+// **`domain.ThreeCardHandNames` は英語の表示名配列。**そのまま埋めていたので
+// 日本語ロケールでも Straight / Flush と出ていた (#4694)。訳は 3 カード固有では
+// ないので、ポーカー役の共通表 `pokerhand` を引く。訳が無ければ英語名に落とす。
+func threeCardHandName(rank int) string {
+	if rank > 0 && rank < len(threeCardHandKeys) {
+		full := "pokerhand." + threeCardHandKeys[rank]
+		if name := i18n.T(full); name != full {
+			return name
+		}
+	}
+	if rank > 0 && rank < len(domain.ThreeCardHandNames) {
+		return domain.ThreeCardHandNames[rank]
+	}
+	return ""
 }

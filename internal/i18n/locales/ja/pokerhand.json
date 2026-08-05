@@ -1,0 +1,18 @@
+{
+  "royalFlush": "ロイヤルフラッシュ",
+  "naturalRoyalFlush": "ナチュラルロイヤルフラッシュ",
+  "wildRoyalFlush": "ワイルドロイヤルフラッシュ",
+  "fourDeuces": "フォーデューシーズ",
+  "fiveOfAKind": "ファイブカード",
+  "straightFlush": "ストレートフラッシュ",
+  "fourOfAKind": "フォーカード",
+  "fullHouse": "フルハウス",
+  "flush": "フラッシュ",
+  "straight": "ストレート",
+  "threeOfAKind": "スリーカード",
+  "twoPair": "ツーペア",
+  "pair": "ペア",
+  "jacksOrBetter": "ジャックス・オア・ベター",
+  "kingsOrBetter": "キングス・オア・ベター",
+  "highCard": "ハイカード"
+}
