@@ -52,5 +52,6 @@
     "actions": "There is no bidding and no declarer — the only choice is which card to play. But **the rank order inverts between suit groups**. In a strong suit (black glyphs) higher numbers are stronger and the 12 is the best card; in a weak suit (blue glyphs) lower numbers are stronger and the 1 is. The same \"3\" is third-from-bottom in a strong suit and third-from-top in a weak one."
   },
   "hintRequested": "A hint is available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "trickWinnerBadge": "Won"
 }
