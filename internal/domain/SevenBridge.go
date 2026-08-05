@@ -692,6 +692,35 @@ func (g *SevenBridge) findChiIndices(playerIdx int, top *Card) ([]int, bool) {
 	return nil, false
 }
 
+// SuggestPon は playerIdx が捨て札の上札でポンできる手札インデックスを返す。
+// できなければ nil。**判定は claim 経路と同じ findPonIndices を通す** — 別に
+// 書くと、案内した組が拒否されることになる (#4904)。
+func (g *SevenBridge) SuggestPon(playerIdx int) []int {
+	top := g.GetDiscardTop()
+	if top == nil || playerIdx < 0 || playerIdx >= len(g.players) {
+		return nil
+	}
+	idx, ok := g.findPonIndices(playerIdx, top)
+	if !ok {
+		return nil
+	}
+	return idx
+}
+
+// SuggestChi は playerIdx が捨て札の上札でチーできる手札インデックスを返す。
+// できなければ nil。
+func (g *SevenBridge) SuggestChi(playerIdx int) []int {
+	top := g.GetDiscardTop()
+	if top == nil || playerIdx < 0 || playerIdx >= len(g.players) {
+		return nil
+	}
+	idx, ok := g.findChiIndices(playerIdx, top)
+	if !ok {
+		return nil
+	}
+	return idx
+}
+
 // findBestMeldIndices プレイヤーの手札から最大のメルド（3 枚以上）を探す
 // SuggestMeld は playerIdx の最善メルド (手札インデックス) を返す。メルドできる組が
 // 無ければ nil。CUI ヒント用に findBestMeldIndices を公開する薄いラッパー。

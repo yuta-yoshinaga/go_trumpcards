@@ -1256,3 +1256,53 @@ func TestSevenBridge_CpuDraw_FromDiscardViaChi(t *testing.T) {
 	g.CpuPlay()
 	assert.Equal(t, 1, g.GetPlayer(1).GetMeldCount())
 }
+
+// **判定は claim 経路と同じ finder を通す。**別に書くと、案内した組が拒否される
+// ことになる (#4904)。
+func TestSevenBridge_SuggestPonAndChi(t *testing.T) {
+	g := newTestSevenBridge()
+	g.Reset()
+	g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 7, true)})
+
+	// 同ランク 2 枚 → ポン。
+	setHand(g.GetPlayer(0), []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 7, true),
+		domain.NewCard(domain.CardDesignClover, 7, true),
+		domain.NewCard(domain.CardDesignDiamond, 2, true),
+	})
+	assert.Equal(t, []int{0, 1}, g.SuggestPon(0))
+	// **チーは同スートの連番。**♥7 に対して ♠7 ♣7 は繋がらない。
+	assert.Nil(t, g.SuggestChi(0))
+
+	// 同スートの連番 2 枚 → チー。ポンは成立しない。
+	setHand(g.GetPlayer(0), []*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 5, true),
+		domain.NewCard(domain.CardDesignHeart, 6, true),
+		domain.NewCard(domain.CardDesignSpade, 13, true),
+	})
+	assert.Nil(t, g.SuggestPon(0))
+	assert.Equal(t, []int{0, 1}, g.SuggestChi(0))
+
+	// またぎ (6, 8) でもチーになる。
+	setHand(g.GetPlayer(0), []*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 6, true),
+		domain.NewCard(domain.CardDesignHeart, 8, true),
+	})
+	assert.Equal(t, []int{0, 1}, g.SuggestChi(0))
+
+	// どちらも成立しない手札。
+	setHand(g.GetPlayer(0), []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 2, true),
+		domain.NewCard(domain.CardDesignClover, 13, true),
+	})
+	assert.Nil(t, g.SuggestPon(0))
+	assert.Nil(t, g.SuggestChi(0))
+
+	// 捨て札が無ければどちらも nil。範囲外の席も nil。
+	g.SetDiscardPile(nil)
+	assert.Nil(t, g.SuggestPon(0))
+	assert.Nil(t, g.SuggestChi(0))
+	g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 7, true)})
+	assert.Nil(t, g.SuggestPon(99))
+	assert.Nil(t, g.SuggestChi(-1))
+}
