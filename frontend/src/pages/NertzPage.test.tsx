@@ -541,4 +541,23 @@ describe('NertzPage', () => {
     await waitFor(() => expect(screen.getByTestId('nertz-foundation-3')).toHaveAttribute('data-collided', 'true'));
     expect(screen.getByTestId('nertz-foundation-2')).not.toHaveAttribute('data-collided');
   });
+
+  // **CUI の方が具体的だった。**同じ from/to を持ちながら、Web のツールチップは
+  // 「移動先を選んでください」の固定文だった (#4885)。
+  it('names the recommended move in the hint tooltip', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'nertz', fromCol: -1, cardIndex: -1, toZone: 'foundation', toCol: 2 },
+    });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    fireEvent.click(toggle);
+
+    await waitFor(() => expect(screen.getByText(/ナッツ から ファウンデーション2 へ移動/)).toBeInTheDocument());
+    expect(screen.queryByText('移動先のファウンデーションかタブローを選んでください')).not.toBeInTheDocument();
+  });
 });

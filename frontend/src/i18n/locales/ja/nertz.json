@@ -35,7 +35,8 @@
     "selectTarget": "移動先のファウンデーションかタブローを選んでください",
     "win": "あなたの勝ち！",
     "lose": "プレイヤー{{winner}}の勝ち",
-    "noHint": "ヒントはありません"
+    "noHint": "ヒントはありません",
+    "hintMove": "{{from}} から {{to}} へ移動しましょう"
   },
   "settings": {
     "title": "設定",
@@ -64,5 +65,12 @@
     "human": "ファウンデーション{{foundation}}にあなたが配置",
     "cpu": "ファウンデーション{{foundation}}にCPUが配置",
     "collision": "ファウンデーション{{foundation}}への移動が失敗"
+  },
+  "zones": {
+    "nertz": "ナッツ",
+    "waste": "ウェイスト",
+    "tableau": "タブロー{{col}}",
+    "tableauWithIdx": "タブロー{{col}}(idx={{idx}})",
+    "foundation": "ファウンデーション{{col}}"
   }
 }

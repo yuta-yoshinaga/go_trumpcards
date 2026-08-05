@@ -7,6 +7,14 @@ export interface HintResult {
   targetAction: string;
   /** i18n key for the reasoning text. */
   reason: string;
+  /**
+   * Interpolation values for {@link reason}.
+   *
+   * A hint that already knows *where* the move goes should say so: Nertz's
+   * reason was a fixed "pick a destination" string while the CUI printed
+   * "Nertz → Foundation 2" from the very same fields (#4885).
+   */
+  reasonParams?: Record<string, string | number>;
   /** Confidence level of the recommendation. */
   confidence: HintConfidence;
   /**
