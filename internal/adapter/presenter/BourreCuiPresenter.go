@@ -94,11 +94,12 @@ func bourrePlayerStr(bg interfaces.BourreGame, player *domain.BourrePlayer, idx 
 	return b.String()
 }
 
+// bourreName はプレイヤー名を返す。
+//
+// CPU 名を自前で組むと英語リテラルがそのまま日本語ロケールに混ざるので、
+// 他ゲームと同じ cuiPlayerName に任せる (#4719)。
 func bourreName(bg interfaces.BourreGame, idx int) string {
-	if player := bg.GetPlayer(idx); player != nil && player.GetIsHuman() {
-		return i18n.T("bourre.you")
-	}
-	return fmt.Sprintf("CPU %d", idx)
+	return cuiPlayerName(bg.GetPlayer(idx), idx)
 }
 
 func bourrePhaseLabel(phase domain.BourrePhase) string {

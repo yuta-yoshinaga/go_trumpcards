@@ -159,10 +159,9 @@ func koikoiRoundResultStr(g interfaces.KoiKoiGame) string {
 	if res.Winner < 0 {
 		return i18n.T("koikoi.roundDraw")
 	}
-	name := "CPU"
-	if p := g.GetPlayer(res.Winner); p != nil && p.GetIsHuman() {
-		name = i18n.T("cuiPlayerYou")
-	}
+	// 人間側だけ i18n を通していて、CPU は英語リテラルのままだった。
+	// 名前の組み立ては他の表示と同じ cuiPlayerName に任せる (#4855)。
+	name := cuiPlayerName(g.GetPlayer(res.Winner), res.Winner)
 	return i18n.Tf("koikoi.roundWin",
 		"name", name,
 		"yaku", koikoiYakuStr(res.Yaku),
