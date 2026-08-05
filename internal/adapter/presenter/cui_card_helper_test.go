@@ -4,6 +4,7 @@
 package presenter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -563,4 +564,26 @@ func TestCuiCaptureHintLine(t *testing.T) {
 	assert.Empty(t, cuiCaptureHintLine(hand, nil, "tablanet.captureHint"))
 	// 値が空スライスのキーしか無い場合も同じ。
 	assert.Empty(t, cuiCaptureHintLine(hand, map[int][]int{0: {}}, "tablanet.captureHint"))
+}
+
+// **空の山でヘルパー自体が黙ること。**プレゼンター側のテストは `GetDiscardTop()`
+// が nil のときブロックごと飛ばすので、この分岐には届かない (#5043 のレビュー指摘)。
+func TestCuiDiscardPileLines(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	assert.Empty(t, cuiDiscardPileLines(nil, "canasta.discardPileLine"))
+	assert.Empty(t, cuiDiscardPileLines([]*domain.Card{}, "canasta.discardPileLine"))
+
+	pile := make([]*domain.Card, 0, 20)
+	for i := 0; i < 20; i++ {
+		pile = append(pile, domain.NewCard(domain.CardDesignSpade, i%13+1, false))
+	}
+	out := cuiDiscardPileLines(pile, "canasta.discardPileLine")
+	assert.Equal(t, 3, strings.Count(out, "\n"), "8 枚ごとに折り返して 3 行")
+	assert.Contains(t, out, "[0]SPADE 1")
+	assert.Contains(t, out, "[19]SPADE 7")
+	// 折り返しの境目: 8 枚目の次は新しい行の先頭。
+	assert.Contains(t, out, "[7]SPADE 8\n")
 }
