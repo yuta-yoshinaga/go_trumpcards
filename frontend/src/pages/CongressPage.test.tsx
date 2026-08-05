@@ -99,6 +99,80 @@ describe('CongressPage', () => {
     );
   });
 
+  // **空き山はタブローからは埋められない。**`MoveTableauToTableau` が明示的に
+  // 拒否する。押せてしまうとサーバに弾かれるまで気づけない (#4906)。
+  it('disables an empty pile while a tableau card is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CongressPage />);
+    const empty = await screen.findByRole('button', { name: /空の山 3/ });
+    // まだ何も選んでいなければ、当然押せない。
+    expect(empty).toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 9' })).toHaveAttribute('aria-pressed', 'true'));
+    // タブローの札を選んでも押せないまま。
+    expect(empty).toBeDisabled();
+  });
+
+  // **ドラッグ経路も同じ規則を守る。**クリックはボタンを無効化して防いでいるが、
+  // ドラッグは dispatchMove を直接通る（レビュー指摘）。
+  it('ignores a tableau card dragged onto an empty pile', async () => {
+    const buildDataTransfer = () => {
+      const store: Record<string, string> = {};
+      return {
+        setData: (type: string, val: string) => {
+          store[type] = val;
+        },
+        getData: (type: string) => store[type] ?? '',
+        effectAllowed: '',
+        dropEffect: '',
+      };
+    };
+
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CongressPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 9' })).toBeInTheDocument());
+    mockExec.mockClear();
+
+    const dataTransfer = buildDataTransfer();
+    fireEvent.dragStart(screen.getByRole('button', { name: '♠ 9' }), { dataTransfer });
+    const empty = screen.getByRole('button', { name: /空の山 3/ });
+    fireEvent.dragOver(empty, { dataTransfer });
+    fireEvent.drop(empty, { dataTransfer });
+
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  // 捨て札からのドラッグは通る。上の否定が「ドロップ経路そのものが死んでいる」
+  // ことで通っていないかを確かめる。
+  it('still accepts a waste card dragged onto an empty pile', async () => {
+    const buildDataTransfer = () => {
+      const store: Record<string, string> = {};
+      return {
+        setData: (type: string, val: string) => {
+          store[type] = val;
+        },
+        getData: (type: string) => store[type] ?? '',
+        effectAllowed: '',
+        dropEffect: '',
+      };
+    };
+
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4)] });
+    renderWithProviders(<CongressPage />);
+    const wasteCard = await screen.findByRole('button', { name: '♦ 4' });
+    mockExec.mockClear();
+
+    const dataTransfer = buildDataTransfer();
+    fireEvent.dragStart(wasteCard, { dataTransfer });
+    const empty = screen.getByRole('button', { name: /空の山 3/ });
+    fireEvent.dragOver(empty, { dataTransfer });
+    fireEvent.drop(empty, { dataTransfer });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'tableau', col: 3 }));
+  });
+
   // The stock doubles as a move source: with a card selected it fills a gap
   // directly instead of turning to the waste.
   it('fills an empty pile straight from the stock', async () => {
