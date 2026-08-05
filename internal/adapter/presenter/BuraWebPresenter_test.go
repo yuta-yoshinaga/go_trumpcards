@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // buraTestGame returns a dealt game with a known trump so the fixtures below
@@ -237,4 +238,12 @@ func TestBuraWebPresenter_DeclareHintNamesTheWholeHand(t *testing.T) {
 	require.True(t, ok)
 	assert.Len(t, idx, domain.BuraHandSize)
 	assert.Equal(t, []any{float64(0), float64(1), float64(2)}, idx)
+}
+
+// 席が取れないときに落ちない。**mock 越しには nil が返りうる**ので、
+// インデックスを組む前に確かめている。
+func TestBuraWholeHandIndices_ToleratesAMissingSeat(t *testing.T) {
+	m := new(interfaces.MockBuraGame)
+	m.On("GetPlayer", 0).Return((*domain.BuraPlayer)(nil))
+	assert.Nil(t, buraWholeHandIndices(m))
 }
