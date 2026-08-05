@@ -55,5 +55,6 @@
     "conquianTakeDiscard": "The discard connects with your hand — take it",
     "conquianDrawStock": "The discard connects with nothing — draw from the stock",
     "conquianDiscardHeavy": "Your heaviest unconnected card"
-  }
+  },
+  "layoffToMeld": "Lay off onto meld {{n}}"
 }

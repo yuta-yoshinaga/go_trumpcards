@@ -17,6 +17,15 @@ func (m *MockConquianGame) Reset()                       { m.Called() }
 func (m *MockConquianGame) NextRound()                   { m.Called() }
 func (m *MockConquianGame) PlayerDrawFromStock() error   { return m.Called().Error(0) }
 func (m *MockConquianGame) PlayerDrawFromDiscard() error { return m.Called().Error(0) }
+func (m *MockConquianGame) PlayerMeldWithTargets(meldGroups [][]int, extendTargets []int) error {
+	return m.Called(meldGroups, extendTargets).Error(0)
+}
+
+func (m *MockConquianGame) GetExtendableMeldIndices(playerIdx int, card *domain.Card) []int {
+	out, _ := m.Called(playerIdx, card).Get(0).([]int)
+	return out
+}
+
 func (m *MockConquianGame) PlayerMeld(meldGroups [][]int) error {
 	return m.Called(meldGroups).Error(0)
 }

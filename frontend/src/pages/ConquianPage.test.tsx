@@ -289,7 +289,7 @@ describe('ConquianPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(drawPhaseState);
     fireEvent.click(screen.getByTestId('conquian-layoff-button'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [[0]]));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [[0]], undefined));
   });
 
   it('both meld and layoff disabled when exactly 2 cards selected', async () => {
@@ -317,7 +317,7 @@ describe('ConquianPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(drawPhaseState);
     fireEvent.click(screen.getByTestId('conquian-meld-button'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [[0, 1, 2]]));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [[0, 1, 2]], undefined));
   });
 
   it('discard button disabled when not exactly 1 card selected', async () => {
@@ -524,5 +524,33 @@ describe('ConquianPage', () => {
 
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+
+  // **延長先が一意とは限らない。**♠5 は「5 のセット」も「♦3-8 のラン」も延長でき、
+  // バックエンドは先頭一致で決め打っていた (#4837)。
+  it('lays off onto the meld the player clicks', async () => {
+    mockExec.mockResolvedValue(meldProgressState);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    // 手札を 1 枚選ぶとメルドがレイオフ先として押せるようになる。
+    // 手札のボタンは aria-pressed を持つ (メルドのカードは持たない)。
+    const handButtons = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
+    expect(handButtons.length).toBeGreaterThan(0);
+    fireEvent.click(handButtons[0]);
+
+    const targets = document.querySelectorAll('[data-layoff-target]');
+    expect(targets.length).toBe(2);
+    mockExec.mockClear();
+    fireEvent.click(targets[1] as HTMLElement);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [expect.any(Array)], [1]));
+  });
+
+  it('does not offer layoff targets without exactly one selected card', async () => {
+    mockExec.mockResolvedValue(meldProgressState);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(document.querySelectorAll('[data-layoff-target]')).toHaveLength(0);
   });
 });

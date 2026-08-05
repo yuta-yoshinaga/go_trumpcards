@@ -289,13 +289,29 @@ function ConquianPageContent() {
                       <div className="text-ds-text-muted text-sm mb-1">
                         {playerName(p.id, p.isHuman)} - {t('tableMelds')}
                       </div>
-                      {p.melds.map((m, mi) => (
-                        <div key={`meld-${p.id}-${mi}`} className="flex flex-wrap gap-1 mb-1">
-                          {m.cards.map((card, ci) => (
-                            <AnimatedCard key={`meld-${p.id}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
-                          ))}
-                        </div>
-                      ))}
+                      {p.melds.map((m, mi) => {
+                        // 自分のメルドだけがレイオフ先。1 枚選んでいるときに押すと、
+                        // そのメルドへ足す (延長先が複数ある場面で選べるようにする — #4837)。
+                        const canLayoff = p.isHuman && isMeldPhase && isHumanTurn && selectedCardIndices.length === 1;
+                        return (
+                          <button
+                            key={`meld-${p.id}-${mi}`}
+                            type="button"
+                            disabled={!canLayoff}
+                            aria-label={canLayoff ? t('layoffToMeld', { n: mi + 1 }) : undefined}
+                            data-layoff-target={canLayoff ? mi : undefined}
+                            onClick={() => canLayoff && handleMeldSelected(mi)}
+                            className={[
+                              'flex flex-wrap gap-1 mb-1 rounded p-0.5',
+                              canLayoff ? 'ring-1 ring-ds-accent cursor-pointer' : 'cursor-default',
+                            ].join(' ')}
+                          >
+                            {m.cards.map((card, ci) => (
+                              <AnimatedCard key={`meld-${p.id}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
+                            ))}
+                          </button>
+                        );
+                      })}
                     </div>
                   ),
                 )}
@@ -432,7 +448,7 @@ function ConquianPageContent() {
                   <button
                     type="button"
                     className={btnPrimary}
-                    onClick={handleMeldSelected}
+                    onClick={() => handleMeldSelected()}
                     disabled={loading || selectedCardIndices.length < 3}
                     data-tutorial="cq-meld-button"
                     data-testid="conquian-meld-button"
@@ -442,7 +458,7 @@ function ConquianPageContent() {
                   <button
                     type="button"
                     className={btnPrimary}
-                    onClick={handleMeldSelected}
+                    onClick={() => handleMeldSelected()}
                     disabled={loading || selectedCardIndices.length !== 1}
                     data-testid="conquian-layoff-button"
                   >

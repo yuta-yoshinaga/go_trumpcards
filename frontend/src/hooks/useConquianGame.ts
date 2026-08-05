@@ -45,11 +45,17 @@ export function useConquianGame() {
     gameExec('drawdiscard');
   }, [gameExec]);
 
-  const handleMeldSelected = useCallback(() => {
-    // 1 card extends an existing table meld; 3+ cards lay a new set/run.
-    if (selectedCardIndices.length !== 1 && selectedCardIndices.length < 3) return;
-    gameExec('meld', undefined, undefined, [selectedCardIndices]);
-  }, [gameExec, selectedCardIndices]);
+  const handleMeldSelected = useCallback(
+    (layoffTarget?: number) => {
+      // 1 card extends an existing table meld; 3+ cards lay a new set/run.
+      if (selectedCardIndices.length !== 1 && selectedCardIndices.length < 3) return;
+      // 延長先はプレイヤーが選べる。♠5 は「5 のセット」も「♠4-6-7 のラン」も
+      // 延長できるので、先頭一致で決め打たれると意図した側を選べない (#4837)。
+      const targets = layoffTarget === undefined ? undefined : [layoffTarget];
+      gameExec('meld', undefined, undefined, [selectedCardIndices], targets);
+    },
+    [gameExec, selectedCardIndices],
+  );
 
   const handleDiscard = useCallback(() => {
     if (selectedCardIndices.length !== 1) return;

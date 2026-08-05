@@ -13,9 +13,11 @@ import (
 // ConquianWebInput コンキャンWebインプット
 type ConquianWebInput struct {
 	BaseWebInput
-	CardIndex  *int               `json:"cardIndex,omitempty"`
-	MeldGroups [][]int            `json:"meldGroups,omitempty"`
-	Config     *ConquianWebConfig `json:"config,omitempty"`
+	CardIndex  *int    `json:"cardIndex,omitempty"`
+	MeldGroups [][]int `json:"meldGroups,omitempty"`
+	// ExtendTargets は meldGroups の各グループの延長先メルド番号 (省略可)。
+	ExtendTargets []int              `json:"extendTargets,omitempty"`
+	Config        *ConquianWebConfig `json:"config,omitempty"`
 }
 
 // ConquianWebConfig コンキャンWeb設定
@@ -100,7 +102,7 @@ func conquianDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Conq
 	case "dd", "drawdiscard":
 		bc.writePresenterResponse(w, ci.DrawFromDiscard())
 	case "m", "meld":
-		bc.writePresenterResponse(w, ci.Meld(param.MeldGroups))
+		bc.writePresenterResponse(w, ci.MeldWithTargets(param.MeldGroups, param.ExtendTargets))
 	case "d", "discard":
 		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
