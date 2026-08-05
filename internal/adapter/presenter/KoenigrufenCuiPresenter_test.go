@@ -116,11 +116,16 @@ func TestKoenigrufenCuiPresenter_HintOutput(t *testing.T) {
 		assert.NotEmpty(t, p.HintOutput(g))
 	})
 
-	t.Run("call hint shows suit", func(t *testing.T) {
+	// **スート名で出す。**生の数値だと「スート 3」がどのスートか分からない。
+	// 番号はカードの design と同じ値なので名前に直せる (#4858)。
+	t.Run("call hint names the suit", func(t *testing.T) {
 		g := koenigrufenCuiGame()
 		g.SetDeclarerIdx(0)
 		g.SetPhase(domain.KoenigrufenPhaseCall)
-		assert.NotEmpty(t, p.HintOutput(g))
+		out := p.HintOutput(g)
+		assert.Regexp(t, `(SPADE|CLOVER|HEART|DIAMOND) のキングを呼ぶ`, out)
+		assert.NotRegexp(t, `スート [0-9]+`, out)
+		assert.NotContains(t, out, "UNKNOWN")
 	})
 
 	t.Run("play hint with card index", func(t *testing.T) {

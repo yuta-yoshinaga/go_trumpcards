@@ -33,7 +33,7 @@
   "promptRoundEndHelp": "nr / nextround ... go to the next deal",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
-  "hintCallSuit": "call the King of suit {{suit}}",
+  "hintCallSuit": "call the King of {{suit}}",
   "hintReasonBidTake": "Strong hand — take the contract",
   "hintReasonBidPass": "Weak hand — pass",
   "hintReasonCallKing": "Call a king you do not hold to gain a secret partner",

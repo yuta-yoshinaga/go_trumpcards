@@ -204,9 +204,12 @@ func (p *KoenigrufenCuiPresenter) HintOutput(g interfaces.KoenigrufenGame) strin
 			"cards", strings.Join(cards, ", "),
 			"reason", reason)) + "\n"
 	}
+	// **スート名に直す。**呼び王のスート番号 (1..4) はカードの design と同じ値なので、
+	// 他ゲーム (Cinch/King/Watten) と同じく名前で出す。`callking <1-4>` の入力構文は
+	// 数値のまま (#4858)。
 	if hint.CallSuit != nil {
 		return color.Yellow(i18n.Tf("koenigrufen.hintCard",
-			"cards", i18n.Tf("koenigrufen.hintCallSuit", "suit", strconv.Itoa(*hint.CallSuit)),
+			"cards", i18n.Tf("koenigrufen.hintCallSuit", "suit", cuiSuitName(*hint.CallSuit)),
 			"reason", reason)) + "\n"
 	}
 	return color.Yellow(i18n.Tf("koenigrufen.hintCard", "cards", "-", "reason", reason)) + "\n"
