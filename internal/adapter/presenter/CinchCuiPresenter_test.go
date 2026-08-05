@@ -140,4 +140,14 @@ func TestCinchCuiPresenter_BidStrengthLine(t *testing.T) {
 	// 他のフェーズには出さない。
 	g.SetPhase(domain.CinchPhasePlay)
 	assert.NotContains(t, new(presenter.CinchCuiPresenter).Output(g, nil), "手札の点数:")
+
+	// 手札が無いとき (配り直し前など) も出さない。0 点の表を出しても意味が無い。
+	g2 := domain.NewDefaultCinch()
+	g2.Reset()
+	for i := range g2.GetPlayerCnt() {
+		if p := g2.GetPlayer(i); p != nil && p.GetIsHuman() {
+			p.ResetDeal()
+		}
+	}
+	assert.NotContains(t, new(presenter.CinchCuiPresenter).Output(g2, nil), "手札の点数:")
 }

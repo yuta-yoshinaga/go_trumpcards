@@ -42,7 +42,7 @@ func cinchTrumpLabel(suit int) string {
 func cinchBidStrengthLine(g interfaces.CinchGame) string {
 	// 席順は固定でないので GetIsHuman で探す (ドメインの findHumanIdx と同じ)。
 	var human *domain.CinchPlayer
-	for i := range domain.CinchPlayerCnt {
+	for i := range g.GetPlayerCnt() {
 		if p := g.GetPlayer(i); p != nil && p.GetIsHuman() {
 			human = p
 			break
@@ -66,7 +66,8 @@ func cinchBidStrengthLine(g interfaces.CinchGame) string {
 	return i18n.Tf("cinch.bidStrength",
 		"points", strings.Join(parts, "  "),
 		"best", cinchTrumpLabel(best),
-		"max", strconv.Itoa(points[best])) + "\n"
+		"max", strconv.Itoa(points[best]),
+		"total", strconv.Itoa(domain.CinchTotalPoints)) + "\n"
 }
 
 func cinchPlayerStr(g interfaces.CinchGame, idx int) string {
