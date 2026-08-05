@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sixcardgolfApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, SixCardGolfResponse, SixCardGolfSlot } from '../types/card';
 import { SixCardGolfPage } from './SixCardGolfPage';
@@ -8,6 +9,10 @@ import { SixCardGolfPage } from './SixCardGolfPage';
 vi.mock('../api/gameApi', () => ({
   sixcardgolfApi: { exec: vi.fn() },
   actionLogApi: { sixcardgolf: vi.fn() },
+}));
+
+vi.mock('../hooks/useGameHint', () => ({
+  useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
 const mockExec = vi.mocked(sixcardgolfApi.exec);
@@ -112,5 +117,44 @@ describe('SixCardGolfPage', () => {
     // Column 0 has a hidden bottom card → uncertain "+?" display; column 1 is fully revealed.
     expect(screen.getByTestId('scg-column-score-0')).toHaveTextContent('+?');
     expect(screen.getByTestId('scg-column-score-1')).not.toHaveTextContent('+?');
+  });
+
+  // **ヒントは既にどのマスかを算出している。**渡さないと 6 マスから目視で
+  // 探し直させることになる (#4887)。
+  describe('hinted slot highlight', () => {
+    it('marks the slot the hint points at', async () => {
+      vi.mocked(useGameHint).mockReturnValue({
+        hint: { targetAction: 'swap', reason: 'hintReason.swapHigh', confidence: 'strong', targetPos: 1 },
+        hintEnabled: true,
+        setHintEnabled: vi.fn(),
+      });
+      renderWithProviders(<SixCardGolfPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      const hinted = document.querySelectorAll('[data-hinted="true"]');
+      expect(hinted).toHaveLength(1);
+    });
+
+    it('marks nothing while hints are off', async () => {
+      vi.mocked(useGameHint).mockReturnValue({
+        hint: { targetAction: 'swap', reason: 'hintReason.swapHigh', confidence: 'strong', targetPos: 1 },
+        hintEnabled: false,
+        setHintEnabled: vi.fn(),
+      });
+      renderWithProviders(<SixCardGolfPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(document.querySelectorAll('[data-hinted="true"]')).toHaveLength(0);
+    });
+
+    it('marks nothing when the hint carries no position', async () => {
+      vi.mocked(useGameHint).mockReturnValue({
+        hint: { targetAction: 'discard', reason: 'hintReason.discardHigh', confidence: 'strong' },
+        hintEnabled: true,
+        setHintEnabled: vi.fn(),
+      });
+      renderWithProviders(<SixCardGolfPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(document.querySelectorAll('[data-hinted="true"]')).toHaveLength(0);
+    });
   });
 });

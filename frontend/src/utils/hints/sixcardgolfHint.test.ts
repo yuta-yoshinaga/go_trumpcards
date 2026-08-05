@@ -92,6 +92,9 @@ describe('getSixcardgolfHint', () => {
       targetAction: 'swap',
       reason: 'hintReason.swapHigh',
       confidence: 'strong',
+      // **どのマスかまで返す。**返さないと 6 マスから目視で探し直させる (#4887)。
+      // 既定グリッドの表向きは 5(0) と 8(1)。最も高いのは 8 なので位置 1。
+      targetPos: 1,
     });
   });
 
@@ -136,6 +139,8 @@ describe('getSixcardgolfHint', () => {
       targetAction: 'swap',
       reason: 'hintReason.columnMatch',
       confidence: 'strong',
+      // 列を揃えられるマスそのもの（grid[0] の相方 = grid[3]）を指す。
+      targetPos: 3,
     });
   });
 });
