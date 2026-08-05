@@ -10,6 +10,34 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// speedHumanIdx is the human seat. Speed is strictly two-handed: seat 0 is the
+// player, seat 1 the CPU.
+const speedHumanIdx = 0
+
+// speedIndexedHandStr renders the human's hand, marking the cards that can go
+// onto one of the two centre piles right now. The Web GUI rings exactly these
+// cards for the whole PLAY phase, independent of the hint feature; the CUI
+// printed a bare indexed list and left the ±1 (and K↔A) comparison against both
+// piles to the player, every turn, under time pressure (#4861).
+//
+// 索引と区切りは他ゲームと同じ formatCardList に任せ、印だけを足す
+// (OmbreCuiPresenter / SpoonsCuiPresenter と同じ形)。
+func speedIndexedHandStr(s interfaces.SpeedGame, human cuiCardList) string {
+	idx := -1
+	return formatCardList(human, func(c *domain.Card) string {
+		idx++
+		out := cuiCardStr(c)
+		// 判定はドメインの CanPlay をそのまま呼ぶ。ここで ±1 を書き直すと
+		// K↔A のラップが片方だけずれる。
+		for pile := range domain.SpeedCenterPileCnt {
+			if s.CanPlay(speedHumanIdx, idx, pile) {
+				return out + i18n.T("speed.playableMark")
+			}
+		}
+		return out
+	}, "  ", true)
+}
+
 // SpeedCuiPresenter renders the Speed CUI view.
 type SpeedCuiPresenter struct{}
 
@@ -41,7 +69,7 @@ func (p *SpeedCuiPresenter) Output(s interfaces.SpeedGame, lastErr error) string
 		b.WriteString(i18n.Tf("speed.humanStats",
 			"hand", strconv.Itoa(human.GetCardsSize()),
 			"draw", strconv.Itoa(human.GetDrawPileSize())) + "\n")
-		b.WriteString(cuiIndexedCardListStr(human) + "\n")
+		b.WriteString(speedIndexedHandStr(s, human) + "\n")
 
 		// Hint
 		ci, pi, found := s.GetHint()

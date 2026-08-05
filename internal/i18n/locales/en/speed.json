@@ -5,6 +5,7 @@
   "helpHint": "  h                    show hint",
   "helpSetDifficulty": "  sd <level>           CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "cpuStats": "CPU: hand {{hand}} / deck {{draw}}",
+  "playableMark": "*",
   "humanStats": "You: hand {{hand}} / deck {{draw}}",
   "centerLabel": "[Center]",
   "centerCard": "[{{idx}}] {{card}} ",
