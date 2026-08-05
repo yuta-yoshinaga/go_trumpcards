@@ -14,5 +14,6 @@
   "promptCollect": "Penalty paid off! step to collect the pile.",
   "gameWinHuman": "You win!",
   "gameWinCpu": "CPU wins...",
-  "gameDraw": "It's a draw!"
+  "gameDraw": "It's a draw!",
+  "roundProgress": "Round {{played}} of {{max}} (a draw is called at the cap)"
 }

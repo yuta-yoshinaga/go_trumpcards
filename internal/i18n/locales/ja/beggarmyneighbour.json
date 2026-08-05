@@ -14,5 +14,6 @@
   "promptCollect": "ペナルティを払いきった！ step で山を回収します。",
   "gameWinHuman": "あなたの勝ちです！",
   "gameWinCpu": "CPUの勝ちです...",
-  "gameDraw": "引き分けです！"
+  "gameDraw": "引き分けです！",
+  "roundProgress": "ラウンド: {{played}} / {{max}}（上限で引き分け）"
 }

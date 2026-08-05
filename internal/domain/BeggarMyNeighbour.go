@@ -330,6 +330,9 @@ func (g *BeggarMyNeighbour) GetConfig() BeggarMyNeighbourConfig { return g.confi
 // SetConfig 設定更新
 func (g *BeggarMyNeighbour) SetConfig(cfg BeggarMyNeighbourConfig) { g.config = cfg }
 
+// SetRoundsPlayedForTest はテスト用に消化ラウンド数を設定する。
+func (g *BeggarMyNeighbour) SetRoundsPlayedForTest(n int) { g.roundsPlayed = n }
+
 // GetActionLog 棋譜取得
 func (g *BeggarMyNeighbour) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
