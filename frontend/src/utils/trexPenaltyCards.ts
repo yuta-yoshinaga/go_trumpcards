@@ -1,17 +1,5 @@
 import type { Card } from '../types/card';
-
-/**
- * Trex contracts, matching `domain.TrexContract`. Each names a different set of
- * cards as the ones that cost points.
- */
-export const TREX_CONTRACT = {
-  KingOfHearts: 0,
-  Diamonds: 1,
-  Queens: 2,
-  Tricks: 3,
-  Trix: 4,
-  None: 5,
-} as const;
+import { TrexContract } from '../types/phases';
 
 /**
  * Whether this card is a penalty card under the contract in play, mirroring the
@@ -32,11 +20,11 @@ export const TREX_CONTRACT = {
 export function trexIsPenaltyCard(card: Card | null | undefined, contract: number): boolean {
   if (!card) return false;
   switch (contract) {
-    case TREX_CONTRACT.KingOfHearts:
+    case TrexContract.KING_OF_HEARTS:
       return card.design === 'HEART' && card.value === 13;
-    case TREX_CONTRACT.Diamonds:
+    case TrexContract.DIAMONDS:
       return card.design === 'DIAMOND';
-    case TREX_CONTRACT.Queens:
+    case TrexContract.QUEENS:
       return card.value === 12;
     default:
       return false;
