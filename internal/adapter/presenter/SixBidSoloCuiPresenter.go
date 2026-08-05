@@ -205,7 +205,7 @@ func sixBidSoloLadderLine(g interfaces.SixBidSoloGame) string {
 	}
 	// 最高段階まで取られたら「選べる段階はもう無い」と言い切る。
 	if high != nil && high.Kind >= domain.SixBidSoloMaxBid {
-		b.WriteString("  " + i18n.T("sixbidsolo.ladderNoneLeft"))
+		b.WriteString(" " + i18n.T("sixbidsolo.ladderNoneLeft"))
 	}
 	return b.String()
 }
