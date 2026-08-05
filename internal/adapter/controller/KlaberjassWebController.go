@@ -69,14 +69,16 @@ type KlaberjassWebOutput struct {
 	// ValidPlays は人間が出せる手札インデックス。追随・切札・上乗せが強制なので必須。
 	ValidPlays     []int `json:"validPlays"`
 	SequenceWinner int   `json:"sequenceWinner"`
-	BelaHolder     int   `json:"belaHolder"`
-	BelaScored     bool  `json:"belaScored"`
-	DixUsed        bool  `json:"dixUsed"`
-	Bete           bool  `json:"bete"`
-	SchmeissBy     int   `json:"schmeissBy"`
-	TargetScore    int   `json:"targetScore"`
-	GameEndFlag    bool  `json:"gameEndFlag"`
-	WinnerIdx      int   `json:"winnerIdx"`
+	// LastTrickWinner は最終トリックの 10 点ボーナスを得た席 (-1 ならまだ)。
+	LastTrickWinner int  `json:"lastTrickWinner"`
+	BelaHolder      int  `json:"belaHolder"`
+	BelaScored      bool `json:"belaScored"`
+	DixUsed         bool `json:"dixUsed"`
+	Bete            bool `json:"bete"`
+	SchmeissBy      int  `json:"schmeissBy"`
+	TargetScore     int  `json:"targetScore"`
+	GameEndFlag     bool `json:"gameEndFlag"`
+	WinnerIdx       int  `json:"winnerIdx"`
 	WebOutputBase
 	Config KlaberjassWebOutputConfig `json:"config"`
 }
@@ -117,15 +119,16 @@ var NewKlaberjassWebController, NewKlaberjassWebControllerWithProvider = webCont
 
 func newKlaberjassDefaultOutput(msg string) *KlaberjassWebOutput {
 	return &KlaberjassWebOutput{
-		Players:        make([]*KlaberjassWebOutputPlayer, 0),
-		Trick:          make([]*WebOutputCard, 0),
-		ValidPlays:     make([]int, 0),
-		MakerIdx:       -1,
-		SequenceWinner: -1,
-		BelaHolder:     -1,
-		SchmeissBy:     -1,
-		WinnerIdx:      -1,
-		WebOutputBase:  WebOutputBase{Message: msg},
+		Players:         make([]*KlaberjassWebOutputPlayer, 0),
+		Trick:           make([]*WebOutputCard, 0),
+		ValidPlays:      make([]int, 0),
+		MakerIdx:        -1,
+		SequenceWinner:  -1,
+		LastTrickWinner: -1,
+		BelaHolder:      -1,
+		SchmeissBy:      -1,
+		WinnerIdx:       -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

@@ -33,6 +33,9 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Target-score options for the Klaberjass settings panel. */
+/** Points the last trick is worth. Mirrors `KlaberjassLastTrickBonus`. */
+const KLABERJASS_LAST_TRICK_BONUS = 10;
+
 const TARGET_OPTIONS = [301, 501, 1000];
 
 /** Suit glyphs by design value (1=Spade … 4=Diamond). */
@@ -307,6 +310,16 @@ function KlaberjassPageContent() {
                   <div>{t('belaLine', { name: playerLabel(state.belaHolder, state.belaHolder === 0) })}</div>
                 )}
                 {state.dixUsed && <div>{t('dixLine')}</div>}
+                {/* **最終トリックには 10 点が付く。**書かないと、ベラや宣言点を
+                    足しても handPoints と合わない理由が説明できない (#4937)。 */}
+                {state.lastTrickWinner >= 0 && (
+                  <div data-testid="klaberjass-last-trick-bonus">
+                    {t('lastTrickBonus', {
+                      name: playerLabel(state.lastTrickWinner, state.lastTrickWinner === 0),
+                      points: KLABERJASS_LAST_TRICK_BONUS,
+                    })}
+                  </div>
+                )}
               </div>
             )}
 

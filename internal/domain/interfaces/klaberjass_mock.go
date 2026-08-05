@@ -75,3 +75,6 @@ func (m *MockKlaberjassGame) GetPlayer(idx int) *domain.KlaberjassPlayer {
 func (m *MockKlaberjassGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
+
+// GetLastTrickWinner モック
+func (_m *MockKlaberjassGame) GetLastTrickWinner() int { return _m.Called().Int(0) }

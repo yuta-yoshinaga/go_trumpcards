@@ -36,6 +36,7 @@ function makeState(overrides?: Partial<KlaberjassResponse>): KlaberjassResponse 
     trickNumber: 0,
     validPlays: [0, 1],
     sequenceWinner: -1,
+    lastTrickWinner: -1,
     belaHolder: -1,
     belaScored: false,
     dixUsed: false,

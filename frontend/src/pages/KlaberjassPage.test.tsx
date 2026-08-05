@@ -48,6 +48,7 @@ function makeState(overrides?: Partial<KlaberjassResponse>): KlaberjassResponse 
     trickNumber: 0,
     validPlays: [0, 1, 2],
     sequenceWinner: -1,
+    lastTrickWinner: -1,
     belaHolder: -1,
     belaScored: false,
     dixUsed: false,
@@ -245,5 +246,24 @@ describe('KlaberjassPage', () => {
 
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+
+  // **最終トリックには 10 点が付く。**書かないと、ベラや宣言点を足しても
+  // handPoints と合わない理由が説明できない (#4937)。
+  describe('last-trick bonus', () => {
+    it('names who took the bonus in the settlement panel', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: KlaberjassPhase.HAND_END, lastTrickWinner: 1 }));
+      renderWithProviders(<KlaberjassPage />);
+      const line = await screen.findByTestId('klaberjass-last-trick-bonus');
+      expect(line).toHaveTextContent('最終トリック');
+      expect(line).toHaveTextContent('+10点');
+    });
+
+    it('stays out of the panel before anyone has taken the last trick', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: KlaberjassPhase.HAND_END, lastTrickWinner: -1 }));
+      renderWithProviders(<KlaberjassPage />);
+      await waitFor(() => expect(screen.getByTestId('klaberjass-settlement')).toBeInTheDocument());
+      expect(screen.queryByTestId('klaberjass-last-trick-bonus')).not.toBeInTheDocument();
+    });
   });
 });

@@ -127,6 +127,13 @@ func (p *KlaberjassCuiPresenter) Output(g interfaces.KlaberjassGame, lastErr err
 			if g.IsBete() {
 				b.WriteString(i18n.T("klaberjass.beteLine") + "\n")
 			}
+			// **最終トリックには 10 点が付く。**書かないと、ベラや宣言点を
+			// 足しても handPoints と合わない理由が説明できない (#4937)。
+			if w := g.GetLastTrickWinner(); w >= 0 {
+				b.WriteString(i18n.Tf("klaberjass.lastTrickBonus",
+					"name", cuiPlayerName(g.GetPlayer(w), w),
+					"points", strconv.Itoa(domain.KlaberjassLastTrickBonus)) + "\n")
+			}
 			b.WriteString(i18n.T("klaberjass.promptHandEndHelp") + "\n")
 		}
 	})
