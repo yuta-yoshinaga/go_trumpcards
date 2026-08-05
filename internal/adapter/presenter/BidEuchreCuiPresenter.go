@@ -117,6 +117,23 @@ func (p *BidEuchreCuiPresenter) Output(g interfaces.BidEuchreGame, lastErr error
 		case domain.BidEuchrePhaseBid:
 			idx := g.GetBidPlayerIdx()
 			b.WriteString(i18n.Tf("bideuchre.promptBid", "name", cuiPlayerName(g.GetPlayer(idx), idx)) + "\n")
+			// **「立っている宣言＋1、親なら同額」を毎回暗算させない。**Web は
+			// 選べる値だけをドロップダウンに詰めている (#4899)。
+			floor := domain.BidEuchreMinBid
+			if high := g.GetHighBid(); high != nil && high.Value > 0 {
+				floor = high.Value + 1
+				// **親だけは同額で奪える。**
+				if idx == g.GetDealerIdx() {
+					floor = high.Value
+				}
+			}
+			if floor <= domain.BidEuchreMaxBid {
+				b.WriteString(i18n.Tf("bideuchre.bidRange",
+					"min", strconv.Itoa(floor),
+					"max", strconv.Itoa(domain.BidEuchreMaxBid)) + "\n")
+			} else {
+				b.WriteString(i18n.T("bideuchre.bidRangeNone") + "\n")
+			}
 			b.WriteString(i18n.T("bideuchre.promptBidHelp") + "\n")
 		case domain.BidEuchrePhaseChooseTrump:
 			idx := g.GetDeclarerIdx()

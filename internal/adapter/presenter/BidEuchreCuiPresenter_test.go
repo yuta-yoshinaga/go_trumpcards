@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -195,4 +196,37 @@ func TestBidEuchreCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := setupBidEuchreCuiMock(defaultBidEuchreOpts())
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	assert.NotNil(t, new(presenter.BidEuchreCuiPresenter).ActionLogOutput(m))
+}
+
+// **「立っている宣言＋1、親なら同額」を毎回暗算させない** (#4899)。
+func TestBidEuchreCuiPresenter_ShowsTheLegalBidRange(t *testing.T) {
+	p := new(presenter.BidEuchreCuiPresenter)
+
+	build := func(high *domain.BidEuchreBid, bidder int) string {
+		o := defaultBidEuchreOpts()
+		o.phase = domain.BidEuchrePhaseBid
+		o.highBid = high
+		m := setupBidEuchreCuiMock(o)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBidPlayerIdx")
+		m.On("GetBidPlayerIdx").Return(bidder)
+		return p.Output(m, nil)
+	}
+
+	// 宣言が無ければ最低値から (受け入れ条件1)。
+	assert.Contains(t, build(nil, 1),
+		"有効な入札: "+strconv.Itoa(domain.BidEuchreMinBid)+"〜"+strconv.Itoa(domain.BidEuchreMaxBid))
+
+	// 非ディーラーは +1 から (受け入れ条件2)。
+	assert.Contains(t, build(&domain.BidEuchreBid{Player: 0, Value: 4}, 1), "有効な入札: 5〜")
+
+	// **親だけは同額で奪える** (受け入れ条件3)。ディーラーは席 3。
+	assert.Contains(t, build(&domain.BidEuchreBid{Player: 0, Value: 4}, 3), "有効な入札: 4〜")
+
+	// 上限まで宣言されたら、非ディーラーには選べる値が無い。
+	top := build(&domain.BidEuchreBid{Player: 0, Value: domain.BidEuchreMaxBid}, 1)
+	assert.Contains(t, top, "これ以上の入札はできません")
+	assert.NotContains(t, top, "有効な入札:")
+
+	// 同じ状況でも親は同額で奪えるので、範囲が出る。
+	assert.Contains(t, build(&domain.BidEuchreBid{Player: 0, Value: domain.BidEuchreMaxBid}, 3), "有効な入札:")
 }

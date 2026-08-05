@@ -20,6 +20,8 @@
   "trumpMenuTitle": "切札の候補:",
   "gameEnd": "ゲーム終了！ チーム{{team}}の勝ち！",
   "promptBid": "宣言: {{name}}",
+  "bidRange": "有効な入札: {{min}}〜{{max}}",
+  "bidRangeNone": "これ以上の入札はできません。パスのみ",
   "promptBidHelp": "b <3-6> ・・・宣言（最低3。上回る宣言のみ有効ですが、【親だけは同額でも奪えます】）／ps ・・・見送る",
   "promptTrump": "切札指定: {{name}}",
   "promptTrumpHelp": "t <0-5> ・・・切札を指定（【NTローは序列が逆転し9が最強】になります）",
