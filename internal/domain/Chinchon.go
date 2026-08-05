@@ -753,6 +753,20 @@ func (g *Chinchon) GetPlayerDeadwoodValue(i int) int {
 	return CalcDeadwoodValue(dead)
 }
 
+// GetPlayerMeldSplit はプレイヤーの手札を最善のメルド群と残りのデッドウッドに
+// 分けて返す。GetPlayerDeadwoodValue と同じ分割なので、デッドウッドの合計は
+// 必ずその値に一致する。
+//
+// **どの札が成立しているかは捨て札選びの前提。**Web は緑/破線で色分けし内訳まで
+// 出しているのに、CUI は合計点しか出していなかった (#4838)。
+func (g *Chinchon) GetPlayerMeldSplit(i int) (melds [][]*Card, deadwood []*Card) {
+	p := g.GetPlayer(i)
+	if p == nil {
+		return nil, nil
+	}
+	return chinchonFindBestMelds(handCards(p))
+}
+
 // GetKnockThreshold はノック可能なデッドウッド点の上限（この値以下でノック可）を返す。
 func (g *Chinchon) GetKnockThreshold() int { return g.config.KnockThreshold }
 

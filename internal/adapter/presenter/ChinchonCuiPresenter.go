@@ -30,6 +30,32 @@ func chinchonPlayerStr(player *domain.ChinchonPlayer, i int) string {
 	return b.String()
 }
 
+// chinchonMeldSplitLines renders which of the human's cards are already melded
+// and which are deadwood, with the point breakdown. The Web GUI colours the two
+// groups and prints "5 + 3 + 2 = 10"; the CUI showed only the total (#4838).
+func chinchonMeldSplitLines(g interfaces.ChinchonGame, idx int) string {
+	melds, deadwood := g.GetPlayerMeldSplit(idx)
+	var b strings.Builder
+	if len(melds) > 0 {
+		groups := make([]string, 0, len(melds))
+		for _, meld := range melds {
+			groups = append(groups, cuiCardSliceStr(meld))
+		}
+		b.WriteString(i18n.Tf("chinchon.meldedLine", "melds", strings.Join(groups, " / ")) + "\n")
+	}
+	if len(deadwood) > 0 {
+		values := make([]string, 0, len(deadwood))
+		for _, c := range deadwood {
+			values = append(values, strconv.Itoa(domain.CalcDeadwoodValue([]*domain.Card{c})))
+		}
+		b.WriteString(i18n.Tf("chinchon.deadwoodBreakdown",
+			"cards", cuiCardSliceStr(deadwood),
+			"sum", strings.Join(values, " + "),
+			"total", strconv.Itoa(domain.CalcDeadwoodValue(deadwood))) + "\n")
+	}
+	return b.String()
+}
+
 // ChinchonCuiPresenter renders the Chinchón CUI view.
 type ChinchonCuiPresenter struct{}
 
@@ -59,6 +85,7 @@ func (p *ChinchonCuiPresenter) Output(g interfaces.ChinchonGame, lastErr error) 
 					line = color.Green(line + " " + i18n.T("chinchon.knockReady"))
 				}
 				b.WriteString(line + "\n")
+				b.WriteString(chinchonMeldSplitLines(g, i))
 			}
 		}
 

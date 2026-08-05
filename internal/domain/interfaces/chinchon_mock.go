@@ -46,8 +46,15 @@ func (m *MockChinchonGame) GetPlayer(i int) *domain.ChinchonPlayer {
 	return m.Called(i).Get(0).(*domain.ChinchonPlayer)
 }
 func (m *MockChinchonGame) GetPlayerDeadwoodValue(i int) int { return m.Called(i).Int(0) }
-func (m *MockChinchonGame) GetKnockThreshold() int           { return m.Called().Int(0) }
-func (m *MockChinchonGame) GetKnockerIdx() int               { return m.Called().Int(0) }
+
+func (m *MockChinchonGame) GetPlayerMeldSplit(i int) ([][]*domain.Card, []*domain.Card) {
+	ret := m.Called(i)
+	melds, _ := ret.Get(0).([][]*domain.Card)
+	dead, _ := ret.Get(1).([]*domain.Card)
+	return melds, dead
+}
+func (m *MockChinchonGame) GetKnockThreshold() int { return m.Called().Int(0) }
+func (m *MockChinchonGame) GetKnockerIdx() int     { return m.Called().Int(0) }
 func (m *MockChinchonGame) GetKnockerMelds() [][]*domain.Card {
 	return m.Called().Get(0).([][]*domain.Card)
 }

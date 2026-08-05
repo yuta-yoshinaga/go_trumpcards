@@ -41,8 +41,48 @@ func setupChinchonCuiMock(phase domain.ChinchonPhase, ended bool, winner int) (*
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
 	m.On("GetPlayerDeadwoodValue", mock.Anything).Return(15)
+	m.On("GetPlayerMeldSplit", mock.Anything).Return(([][]*domain.Card)(nil), ([]*domain.Card)(nil)).Maybe()
 	m.On("GetKnockThreshold").Return(5)
 	return m, players
+}
+
+// **どの札が成立しているかは捨て札選びの前提。**Web は緑/破線で色分けし
+// 「5 + 3 + 2 = 10」の内訳まで出しているのに、CUI は合計点だけだった (#4838)。
+func TestChinchonCuiPresenter_MeldSplit(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.ChinchonCuiPresenter)
+
+	t.Run("lists melds and the deadwood breakdown", func(t *testing.T) {
+		m, players := setupChinchonCuiMock(domain.ChinchonPhaseDiscard, false, -1)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		melds := [][]*domain.Card{{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 6, false),
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+		}}
+		dead := []*domain.Card{
+			domain.NewCard(domain.CardDesignHeart, 9, false),
+			domain.NewCard(domain.CardDesignClover, 2, false),
+		}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayerMeldSplit")
+		m.On("GetPlayerMeldSplit", 0).Return(melds, dead)
+		m.On("GetPlayerMeldSplit", mock.Anything).Return(([][]*domain.Card)(nil), ([]*domain.Card)(nil)).Maybe()
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "メルド済み: SPADE 5, SPADE 6, SPADE 7")
+		assert.Contains(t, out, "デッドウッド: HEART 9, CLOVER 2 (9 + 2 = 11)")
+	})
+
+	t.Run("no lines when the split is empty", func(t *testing.T) {
+		m, players := setupChinchonCuiMock(domain.ChinchonPhaseDiscard, false, -1)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		out := p.Output(m, nil)
+		assert.NotContains(t, out, "メルド済み:")
+		// 既存の deadwoodLine (「デッドウッド: 15点」) とは別物。内訳の括弧が出ないことを見る。
+		assert.NotContains(t, out, " = ")
+	})
 }
 
 func TestChinchonCuiPresenter_Output(t *testing.T) {
