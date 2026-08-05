@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { type PanMeldCandidate, panLayoffIndices, panMeldCandidates } from './panMeldCandidates';
+import { type PanMeldCandidate, isPanValleMeld, panLayoffIndices, panMeldCandidates } from './panMeldCandidates';
 
 const c = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -107,5 +107,29 @@ describe('panLayoffIndices', () => {
 
   it('returns empty when there are no table melds', () => {
     expect(panLayoffIndices([c('SPADE', 4)], [])).toEqual(new Set());
+  });
+});
+
+// **チップが動いた理由。**バジェ (3/5/7 のセット) は全員にチップを配る特別ルール
+// なのに、どのメルドがそれなのか盤面から読めなかった (#4853)。
+describe('isPanValleMeld', () => {
+  it('accepts a set of 3s, 5s or 7s', () => {
+    for (const v of [3, 5, 7]) {
+      expect(isPanValleMeld([c('SPADE', v), c('HEART', v), c('CLOVER', v)])).toBe(true);
+    }
+  });
+
+  it('rejects a set of a non-valle rank', () => {
+    for (const v of [1, 2, 4, 6, 11, 13]) {
+      expect(isPanValleMeld([c('SPADE', v), c('HEART', v), c('CLOVER', v)])).toBe(false);
+    }
+  });
+
+  it('rejects a run through the valle ranks', () => {
+    expect(isPanValleMeld([c('SPADE', 3), c('SPADE', 4), c('SPADE', 5)])).toBe(false);
+  });
+
+  it('rejects fewer than three cards', () => {
+    expect(isPanValleMeld([c('SPADE', 5), c('HEART', 5)])).toBe(false);
   });
 });

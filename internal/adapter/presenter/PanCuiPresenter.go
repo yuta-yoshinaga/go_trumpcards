@@ -18,7 +18,14 @@ func panMeldLine(meld []*domain.Card) string {
 	for _, c := range meld {
 		parts = append(parts, cuiCardStr(c))
 	}
-	return strings.Join(parts, ",")
+	line := strings.Join(parts, ",")
+	// **チップが動いた理由が分かるようにする。**バジェ (3/5/7 のセット) は
+	// 各プレイヤーにチップを配る特別ルールなのに、盤面のどのメルドがそれなのか
+	// どこにも出ていなかった (#4853)。
+	if domain.PanIsValleMeld(meld) {
+		line += " " + i18n.T("pan.valleTag")
+	}
+	return line
 }
 
 // panPlayerStr returns the display string for a single Pan player.

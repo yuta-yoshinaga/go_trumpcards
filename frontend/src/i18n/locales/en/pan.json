@@ -64,5 +64,6 @@
     "discardButton": "Discard one card to end your turn.",
     "scoreTable": "Each player's chips and scores are shown here.",
     "resetButton": "Press the reset button to start a new game."
-  }
+  },
+  "valleBadge": "★valle"
 }

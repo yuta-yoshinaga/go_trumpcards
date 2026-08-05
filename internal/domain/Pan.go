@@ -884,6 +884,13 @@ func PanCanLayoff(meld []*Card, card *Card) bool {
 	return panIsValidRun(candidate)
 }
 
+// PanIsValleMeld reports whether the meld is a valle (バジェ): a set of 3s, 5s
+// or 7s. Laying one pays every player a chip, but neither UI said which meld on
+// the table caused the chip column to move (#4853).
+func PanIsValleMeld(meld []*Card) bool {
+	return PanIsValidMeld(meld) && panIsValidSet(meld) && panValleRanks[meld[0].GetValue()]
+}
+
 // PanMeldChipUnits メルドが満たすチップ条件の数を返す（0〜2）。
 //   - バジェランク（3,5,7）のセット → +1
 //   - ラン、または 4 枚以上のセット   → +1
@@ -893,7 +900,7 @@ func PanMeldChipUnits(meld []*Card) int {
 	}
 	units := 0
 	isSetMeld := panIsValidSet(meld)
-	if isSetMeld && panValleRanks[meld[0].GetValue()] {
+	if PanIsValleMeld(meld) {
 		units++
 	}
 	if !isSetMeld || len(meld) >= 4 {

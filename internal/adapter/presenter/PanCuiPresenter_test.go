@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -116,4 +117,36 @@ func TestPanCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetGameEndFlag").Return(false)
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)
+}
+
+// **チップが動いた理由を出す。**バジェ (3/5/7 のセット) は各プレイヤーにチップを
+// 配る特別ルールなのに、盤面のどのメルドがそれなのか出ていなかった (#4853)。
+func TestPanCuiPresenter_MarksValleMelds(t *testing.T) {
+	set := func(v int) []*domain.Card {
+		return []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, v, false),
+			domain.NewCard(domain.CardDesignHeart, v, false),
+			domain.NewCard(domain.CardDesignClover, v, false),
+		}
+	}
+	for _, v := range []int{3, 5, 7} {
+		assert.True(t, domain.PanIsValleMeld(set(v)))
+	}
+	for _, v := range []int{1, 4, 6, 12} {
+		assert.False(t, domain.PanIsValleMeld(set(v)))
+	}
+	// ラン (3-4-5) はバジェではない。
+	run := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 3, false),
+		domain.NewCard(domain.CardDesignSpade, 4, false),
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+	}
+	assert.False(t, domain.PanIsValleMeld(run))
+
+	// 出力側: バジェにだけ印が付く。
+	m, players := setupPanCuiMock()
+	players[0].SetLaidMelds([][]*domain.Card{set(5), set(4), run})
+	out := new(presenter.PanCuiPresenter).Output(m, nil)
+	assert.Contains(t, out, "★バジェ")
+	assert.Equal(t, 1, strings.Count(out, "★バジェ"))
 }

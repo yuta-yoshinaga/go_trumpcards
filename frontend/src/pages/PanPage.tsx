@@ -22,6 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, PLAYER_COUNT_OPTIONS, TARGET_ROUNDS_OPTIONS, usePanGame } from '../hooks/usePanGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -33,7 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { PAN_HELP, parsePanCommand } from '../utils/cli/commands/panCommands';
 import { formatPanState } from '../utils/cli/formatters/panFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { panLayoffIndices, panMeldCandidates } from '../utils/panMeldCandidates';
+import { isPanValleMeld, panLayoffIndices, panMeldCandidates } from '../utils/panMeldCandidates';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -324,6 +325,16 @@ function PanPageContent() {
                                   width={cardWidth * 0.7}
                                 />
                               ))}
+                              {/* バジェ (3/5/7 のセット) は全員にチップを配る。どのメルドが
+                                  その原因なのかが盤面から読めなかった (#4853)。 */}
+                              {isPanValleMeld(meld.cards) && (
+                                <span
+                                  className={`text-xs font-bold px-1.5 py-0.5 rounded ${badgeWarningColors}`}
+                                  data-testid={`pan-valle-${p.id}-${meldIdx}`}
+                                >
+                                  {t('valleBadge')}
+                                </span>
+                              )}
                               {canLayoff && (
                                 <button
                                   type="button"
@@ -428,6 +439,14 @@ function PanPageContent() {
                         data-testid={`pan-candidate-${cand.indices.join('-')}`}
                       >
                         <span className="text-xs font-bold">{kindLabel}</span>
+                        {isPanValleMeld(cards) && (
+                          <span
+                            className="text-xs font-bold text-ds-warning"
+                            data-testid={`pan-candidate-valle-${cand.indices.join('-')}`}
+                          >
+                            {t('valleBadge')}
+                          </span>
+                        )}
                         {cards.map((card, ci) => (
                           <AnimatedCard
                             key={`cand-card-${card.design}-${card.value}-${ci}`}
