@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
@@ -24,6 +25,7 @@ func (p *FiftyOneCuiPresenter) Output(fo interfaces.FiftyOneGame, lastErr error)
 				b.WriteString(i18n.Tf("fiftyone.humanScoreLine",
 					"score", strconv.Itoa(score)) + "\n")
 				b.WriteString(cuiIndexedCardListStr(player) + "\n")
+				b.WriteString(fiftyOneSuitScoreLine(player) + "\n")
 			} else {
 				scoreStr := i18n.T("fiftyone.scoreUnknown")
 				if fo.GetGameEndFlag() {
@@ -81,6 +83,31 @@ func (p *FiftyOneCuiPresenter) Output(fo interfaces.FiftyOneGame, lastErr error)
 			b.WriteString(i18n.T("fiftyone.promptHumanTurn") + "\n")
 		}
 	})
+}
+
+// fiftyOneSuitScoreLine renders every suit total for the given player, marking
+// the best one. The Web GUI shows the four badges permanently; the CUI only had
+// `BestSuitScore()` as a single number, so the other three had to be added up by
+// hand from the indexed hand list every turn (#4866).
+func fiftyOneSuitScoreLine(player *domain.FiftyOnePlayer) string {
+	scores := player.SuitScores()
+	// BestSuit と同じ決定論的順序で走査する。同点のときに印が付く先が食い違うと
+	// 「(スコア: n)」の n がどの行のものか分からなくなる。
+	suits := []int{domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond}
+	best := player.BestSuit()
+	parts := make([]string, 0, len(suits))
+	for _, design := range suits {
+		entry := i18n.Tf("fiftyone.suitScoreEntry",
+			"suit", cuiSuitName(design), "score", strconv.Itoa(scores[design]))
+		if design == best {
+			entry += i18n.T("fiftyone.suitScoreBestMark")
+		}
+		if isRedSuit(design) {
+			entry = color.Red(entry)
+		}
+		parts = append(parts, entry)
+	}
+	return i18n.Tf("fiftyone.suitScoresLine", "scores", strings.Join(parts, "  "))
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

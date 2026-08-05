@@ -4,11 +4,13 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -48,6 +50,24 @@ func setupFiftyOneMock() *interfaces.MockFiftyOneGame {
 		m.On("GetPlayer", i).Return(p)
 	}
 	return m
+}
+
+// **4 スート分の合計を出す。**Web はバッジで 4 つとも常時出しているのに、CUI は
+// 最良スートの 1 数値しか出さず、残り 3 スートは手札一覧から暗算する必要があった (#4866)。
+func TestFiftyOneCuiPresenter_ShowsEverySuitTotal(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	m := setupFiftyOneMock()
+	p := new(presenter.FiftyOneCuiPresenter)
+	result := p.Output(m, nil)
+
+	// 手札は SPADE A(11)/10, HEART 5, DIAMOND 3, CLOVER 2 -> SPADE 21 が最良で、
+	// 既存の (スコア: 21) と一致する。
+	assert.Contains(t, result, "スート別: SPADE 21*  CLOVER 2  HEART 5  DIAMOND 3")
+	// CPU の行には出さない (非公開ルールは変えない)。
+	assert.Equal(t, 1, strings.Count(result, "スート別:"))
 }
 
 func TestFiftyOneCuiPresenter_Output_Initial(t *testing.T) {
