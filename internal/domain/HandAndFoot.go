@@ -329,15 +329,11 @@ func (g *HandAndFoot) GetGoOutStatus(playerIdx int) HandAndFootGoOutStatus {
 	}
 }
 
-// canGoOut 上がり条件を満たすか。
+// canGoOut 上がり条件を満たすか。表示側と同じ材料で判定するため
+// GetGoOutStatus に委譲する — 2 つの実装が並ぶと「上がれます」と出しながら
+// サーバーに拒否される状態が作れてしまう。
 func (g *HandAndFoot) canGoOut(playerIdx int) bool {
-	p := g.players[playerIdx]
-	if !p.GetInFoot() {
-		return false
-	}
-	team := HandAndFootTeamOf(playerIdx)
-	red, black := g.teamCanastaCounts(team)
-	return red >= g.config.RedCanastasToGoOut && black >= g.config.BlackCanastasToGoOut
+	return g.GetGoOutStatus(playerIdx).CanGoOut()
 }
 
 // PlayerDrawFromStock 人間プレイヤーが山札から2枚引く
