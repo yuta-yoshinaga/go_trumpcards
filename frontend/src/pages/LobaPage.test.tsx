@@ -60,6 +60,9 @@ function selectCards(indices: number[]) {
 describe('LobaPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // ヒントのトグルは localStorage に残る。消さないと次のテストが
+    // チェック済みで始まり、クリックで off になる。
+    localStorage.clear();
     mockExec.mockResolvedValue(makeState());
   });
 
@@ -173,5 +176,52 @@ describe('LobaPage', () => {
       renderWithProviders(<LobaPage />);
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
     }
+  });
+
+  // **ロバの核心の 2 アクション。**CUI は hintDraw / hintMeld で明示しているのに、
+  // Web は捨て札 1 枚のリングしか使っていなかった (#4882)。
+  describe('meld and draw hints', () => {
+    const enableHints = async () => {
+      const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+      fireEvent.click(toggle);
+    };
+
+    it('rings every card of the suggested meld', async () => {
+      mockExec.mockResolvedValue(makeState({ hint: { cardIndices: [0, 2], drawStock: false, reason: 'x' } }));
+      renderWithProviders(<LobaPage />);
+      await enableHints();
+
+      await waitFor(() => {
+        const hand = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'discard');
+        expect(hand.filter((b) => b.className.includes('ring-ds-warning'))).toHaveLength(2);
+      });
+    });
+
+    it('rings the stock button when the hint says draw from stock', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: LobaPhase.DRAW, hint: { drawStock: true, reason: 'x' } }));
+      renderWithProviders(<LobaPage />);
+      await enableHints();
+
+      await waitFor(() => expect(document.querySelectorAll('[data-hint-draw="true"]')).toHaveLength(1));
+      expect(screen.getByRole('button', { name: '山札から引く' })).toHaveAttribute('data-hint-draw', 'true');
+    });
+
+    it('rings the discard button when the hint says draw from the discard', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: LobaPhase.DRAW, hint: { drawStock: false, reason: 'x' } }));
+      renderWithProviders(<LobaPage />);
+      await enableHints();
+
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: '捨て札を取る' })).toHaveAttribute('data-hint-draw', 'true'),
+      );
+      expect(screen.getByRole('button', { name: '山札から引く' })).not.toHaveAttribute('data-hint-draw');
+    });
+
+    it('rings nothing while hints are off', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: LobaPhase.DRAW, hint: { drawStock: true, reason: 'x' } }));
+      renderWithProviders(<LobaPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+      expect(document.querySelectorAll('[data-hint-draw="true"]')).toHaveLength(0);
+    });
   });
 });
