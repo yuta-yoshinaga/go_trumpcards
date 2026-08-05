@@ -77,8 +77,14 @@ func (p *TrashCuiPresenter) Output(t interfaces.TrashGame, lastErr error) string
 // trashHumanFaceDownSlots returns the 1-based positions of the human's slots
 // that are still unfilled (face down) — the valid targets for a wild card.
 func trashHumanFaceDownSlots(t interfaces.TrashGame) []string {
+	return trashFaceDownSlots(t, domain.TrashHumanIdx)
+}
+
+// trashFaceDownSlots returns the 1-based unfilled positions on the given
+// player's board.
+func trashFaceDownSlots(t interfaces.TrashGame, playerIdx int) []string {
 	var out []string
-	for i, s := range t.GetPlayerSlots(domain.TrashHumanIdx) {
+	for i, s := range t.GetPlayerSlots(playerIdx) {
 		if !s.FaceUp {
 			out = append(out, strconv.Itoa(i+1))
 		}
@@ -93,12 +99,7 @@ func trashHumanFaceDownSlots(t interfaces.TrashGame) []string {
 func trashPendingDestination(t interfaces.TrashGame, pending *domain.Card) string {
 	slots := t.GetPlayerSlots(t.GetCurrent())
 	if trashIsWild(pending) {
-		var open []string
-		for i, s := range slots {
-			if !s.FaceUp {
-				open = append(open, strconv.Itoa(i+1))
-			}
-		}
+		open := trashFaceDownSlots(t, t.GetCurrent())
 		if len(open) == 0 {
 			return i18n.T("trash.pendingDead")
 		}
