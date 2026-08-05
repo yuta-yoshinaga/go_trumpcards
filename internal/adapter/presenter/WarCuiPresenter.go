@@ -21,7 +21,7 @@ func (p *WarCuiPresenter) Output(w interfaces.WarGame, lastErr error) string {
 
 		// **引き分け打ち切りがいつ来るかを出す。**Web はアリーナに
 		// 「ラウンド: n / max」を常時出しているのに、CUI は一度も出しておらず、
-		// あと何ラウンドで強制引き分けになるかが分からなかった (#4865)。
+		// あと何ラウンドで打ち切り (保有枚数の多い方の勝ち) になるかが分からなかった (#4865)。
 		rounds, maxRounds := w.GetRoundsPlayed(), w.GetConfig().MaxRounds
 		line := i18n.Tf("war.roundProgress",
 			"played", strconv.Itoa(rounds), "max", strconv.Itoa(maxRounds))

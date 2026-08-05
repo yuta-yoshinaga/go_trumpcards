@@ -17,5 +17,5 @@
   "promptWarBury": "War declared! step to lay down face-down + face-up cards.",
   "gameWinHuman": "You win!",
   "gameWinCpu": "CPU wins...",
-  "roundProgress": "Round {{played}} of {{max}} (a draw is called at the cap)"
+  "roundProgress": "Round {{played}} of {{max}} (at the cap the larger total wins)"
 }
