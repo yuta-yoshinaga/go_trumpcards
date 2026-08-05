@@ -489,3 +489,54 @@ func TestConquianPlayer_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, 2, restored.GetWins())
 	assert.True(t, restored.GetIsHuman())
 }
+
+// **延長先が一意とは限らない。**♠5 は「5 のセット」も「♠4-6-7 のラン」も延長できる。
+// 先頭一致で決め打つと意図した側を選べない (#4837)。
+func TestConquian_PlayerMeldWithTargets(t *testing.T) {
+	setup := func() *domain.Conquian {
+		g := newTestConquian()
+		g.Reset()
+		p := g.GetPlayer(0)
+		p.SetMelds([][]*domain.Card{
+			{
+				cqCard(domain.CardDesignHeart, 5),
+				cqCard(domain.CardDesignClover, 5),
+				cqCard(domain.CardDesignDiamond, 5),
+			},
+			{
+				cqCard(domain.CardDesignSpade, 4),
+				cqCard(domain.CardDesignSpade, 6),
+				cqCard(domain.CardDesignSpade, 7),
+			},
+		})
+		cqSetHand(p, cqCard(domain.CardDesignSpade, 5), cqCard(domain.CardDesignHeart, 2))
+		g.SetCurrentPlayerIdx(0)
+		g.SetPhase(domain.ConquianPhaseMeld)
+		return g
+	}
+
+	g := setup()
+	// ♠5 はセット (4 枚目の 5) にもラン (♠4-5-6-7) にも足せる。
+	assert.Equal(t, []int{0, 1},
+		g.GetExtendableMeldIndices(0, cqCard(domain.CardDesignSpade, 5)))
+
+	// 指定なしなら従来どおり先頭 (セット)。
+	require.NoError(t, g.PlayerMeld([][]int{{0}}))
+	assert.Len(t, g.GetPlayer(0).GetMelds()[0], 4)
+	assert.Len(t, g.GetPlayer(0).GetMelds()[1], 3)
+
+	// 指定すればラン側に付く。
+	g2 := setup()
+	require.NoError(t, g2.PlayerMeldWithTargets([][]int{{0}}, []int{1}))
+	assert.Len(t, g2.GetPlayer(0).GetMelds()[1], 4)
+	assert.Len(t, g2.GetPlayer(0).GetMelds()[0], 3, "セットは増えていない")
+
+	// 足せないメルドを指定したら従来どおり最初に足せるメルドへ。
+	g3 := setup()
+	require.NoError(t, g3.PlayerMeldWithTargets([][]int{{0}}, []int{99}))
+	assert.Len(t, g3.GetPlayer(0).GetMelds()[0], 4)
+
+	// 範囲外・nil のカードは候補なし。
+	assert.Nil(t, g.GetExtendableMeldIndices(99, cqCard(domain.CardDesignSpade, 5)))
+	assert.Nil(t, g.GetExtendableMeldIndices(0, nil))
+}

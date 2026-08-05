@@ -17,6 +17,10 @@ type ConquianGame interface {
 	PlayerDrawFromDiscard() error
 	// PlayerMeld プレイヤーが手札からメルドを並べる/付ける
 	PlayerMeld(meldGroups [][]int) error
+	// PlayerMeldWithTargets 延長先メルドの指定つきでメルドする
+	PlayerMeldWithTargets(meldGroups [][]int, extendTargets []int) error
+	// GetExtendableMeldIndices その札を足せるメルド番号を返す
+	GetExtendableMeldIndices(playerIdx int, card *domain.Card) []int
 	// PlayerDiscard プレイヤーがカードを捨てる
 	PlayerDiscard(cardIndex int) error
 	// CpuPlay CPUプレイヤーが1ターン実行する

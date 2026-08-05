@@ -311,6 +311,16 @@ func (g *Conquian) PlayerDrawFromDiscard() error {
 //
 // のいずれかとして解釈される。空スライスを渡すと「メルドなし」として扱われる。
 func (g *Conquian) PlayerMeld(meldGroups [][]int) error {
+	return g.PlayerMeldWithTargets(meldGroups, nil)
+}
+
+// PlayerMeldWithTargets は PlayerMeld に「1 枚グループをどのメルドへ足すか」の
+// 指定を加えたもの。extendTargets[i] は meldGroups[i] の延長先メルド番号で、
+// 負値または範囲外なら従来どおり最初に延長できるメルドを選ぶ。
+//
+// **延長先が一意とは限らない。**♠5 は「5 のセット」も「♠6-7-8 のラン」も延長できる。
+// 先頭一致で決め打つと、プレイヤーが意図した側を選べない (#4837)。
+func (g *Conquian) PlayerMeldWithTargets(meldGroups [][]int, extendTargets []int) error {
 	if g.gameEndFlag {
 		return ErrGameEnded
 	}
@@ -350,7 +360,7 @@ func (g *Conquian) PlayerMeld(meldGroups [][]int) error {
 		extendIdx int // -1 = 新メルド、>=0 = 既存メルドへの追加
 	}
 	var pending []pendingMeld
-	for _, group := range meldGroups {
+	for gi, group := range meldGroups {
 		cards := make([]*Card, 0, len(group))
 		for _, idx := range group {
 			cards = append(cards, player.GetCard(idx))
@@ -361,6 +371,11 @@ func (g *Conquian) PlayerMeld(meldGroups [][]int) error {
 		}
 		if len(cards) == 1 {
 			ext := g.findExtendableMeld(g.currentPlayerIdx, cards[0])
+			if t := conquianTargetAt(extendTargets, gi); t >= 0 &&
+				t < len(g.players[g.currentPlayerIdx].melds) &&
+				conquianCanExtendMeld(g.players[g.currentPlayerIdx].melds[t], cards[0]) {
+				ext = t
+			}
 			if ext >= 0 {
 				pending = append(pending, pendingMeld{cards: cards, extendIdx: ext})
 				continue
@@ -525,6 +540,29 @@ func (g *Conquian) findExtendableMeld(playerIdx int, card *Card) int {
 		}
 	}
 	return -1
+}
+
+// conquianTargetAt は extendTargets の i 番目を返す (無ければ -1)。
+func conquianTargetAt(targets []int, i int) int {
+	if i < 0 || i >= len(targets) {
+		return -1
+	}
+	return targets[i]
+}
+
+// GetExtendableMeldIndices は指定プレイヤーの盤面で、その札を足せるメルドの番号を
+// すべて返す。UI が延長先の候補を示すために使う (#4837)。
+func (g *Conquian) GetExtendableMeldIndices(playerIdx int, card *Card) []int {
+	if playerIdx < 0 || playerIdx >= len(g.players) || card == nil {
+		return nil
+	}
+	var out []int
+	for i, meld := range g.players[playerIdx].melds {
+		if conquianCanExtendMeld(meld, card) {
+			out = append(out, i)
+		}
+	}
+	return out
 }
 
 // CpuPlay 現在の手番がCPUの場合にターンを実行する

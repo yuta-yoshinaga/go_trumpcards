@@ -113,15 +113,15 @@ func TestConquianInteractor_Actions(t *testing.T) {
 	t.Run("Meld success", func(t *testing.T) {
 		pMock := cqNewPresenterMock()
 		gameMock := cqGameMockPlayable()
-		gameMock.On("PlayerMeld", mock.Anything).Return(nil)
+		gameMock.On("PlayerMeldWithTargets", mock.Anything, mock.Anything).Return(nil)
 		ci := usecase.NewConquianInteractor(gameMock, pMock)
 		assert.Equal(t, cqMockOut, ci.Meld([][]int{{0, 1, 2}}))
-		gameMock.AssertCalled(t, "PlayerMeld", [][]int{{0, 1, 2}})
+		gameMock.AssertCalled(t, "PlayerMeldWithTargets", [][]int{{0, 1, 2}}, []int(nil))
 	})
 	t.Run("Meld error", func(t *testing.T) {
 		pMock := cqNewPresenterMock()
 		gameMock := cqGameMockPlayable()
-		gameMock.On("PlayerMeld", mock.Anything).Return(errors.New("boom"))
+		gameMock.On("PlayerMeldWithTargets", mock.Anything, mock.Anything).Return(errors.New("boom"))
 		ci := usecase.NewConquianInteractor(gameMock, pMock)
 		assert.Equal(t, cqMockOut, ci.Meld(nil))
 	})
@@ -209,4 +209,16 @@ func TestRestoreConquianInteractor(t *testing.T) {
 	ci, err := usecase.RestoreConquianInteractor(data, pMock)
 	assert.NoError(t, err)
 	assert.NotNil(t, ci)
+}
+
+// **延長先の指定がドメインまで届くこと (#4837)。**Web から来た extendTargets を
+// 捨てていると、プレイヤーがどのメルドに足すかを選べないままになる。
+func TestConquianInteractor_MeldWithTargets(t *testing.T) {
+	pMock := cqNewPresenterMock()
+	gameMock := cqGameMockPlayable()
+	gameMock.On("PlayerMeldWithTargets", mock.Anything, mock.Anything).Return(nil)
+	ci := usecase.NewConquianInteractor(gameMock, pMock)
+
+	assert.Equal(t, cqMockOut, ci.MeldWithTargets([][]int{{0}}, []int{1}))
+	gameMock.AssertCalled(t, "PlayerMeldWithTargets", [][]int{{0}}, []int{1})
 }
