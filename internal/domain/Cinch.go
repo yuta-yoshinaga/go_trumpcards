@@ -252,6 +252,35 @@ func cinchPointValue(c *Card, trumpSuit int) int {
 	}
 }
 
+// CinchHandPointsBySuit returns, for each candidate trump suit (1..4, indexed by
+// the CardDesign constants), how many of the 14 deal points the hand already
+// holds. Index 0 is unused.
+//
+// Holding a point card is not the same as capturing it, so this is a bidding
+// guide, not a promise. The Web GUI has shown the same table since the game
+// shipped; the CUI showed only the current high bid (#4845).
+func CinchHandPointsBySuit(cards []*Card) [CardDesignDiamond + 1]int {
+	var points [CardDesignDiamond + 1]int
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		for _, c := range cards {
+			points[suit] += cinchPointValue(c, suit)
+		}
+	}
+	return points
+}
+
+// CinchBestTrumpSuit returns the suit holding the most points, the lowest suit
+// index winning ties (same rule as the Web GUI's estimateCinchBidStrength).
+func CinchBestTrumpSuit(points [CardDesignDiamond + 1]int) int {
+	best := CardDesignSpade
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		if points[suit] > points[best] {
+			best = suit
+		}
+	}
+	return best
+}
+
 // --- ゲーム進行 ---
 
 // Reset は新しいゲームを開始する。累計得点もクリアする。
