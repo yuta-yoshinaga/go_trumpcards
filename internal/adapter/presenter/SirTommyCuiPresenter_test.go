@@ -64,8 +64,9 @@ func TestSirTommyCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "→ 次: 6")
 		assert.Contains(t, result, "→ 完成")
 		assert.Contains(t, result, "→ 次: 2")
-		// 完成した山に「次」は出さない。
-		assert.NotContains(t, result, "→ 次: K")
+		// 完成した山に「次」は出さない。完成判定を外すと `→ 次: 14` が出るので、
+		// ランクを指定せず「13/13 の行に次が付かないこと」を見る。
+		assert.NotContains(t, result, "(13/13) → 次")
 	})
 
 	t.Run("with error", func(t *testing.T) {
