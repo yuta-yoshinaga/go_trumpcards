@@ -28,6 +28,27 @@ func bigTwoPlayerStr(player *domain.BigTwoPlayer, i int) string {
 // BigTwoCuiPresenter renders the Big Two CUI view.
 type BigTwoCuiPresenter struct{}
 
+// bigTwoPlayTypeName returns the localized name of a play type, or "" for
+// BigTwoPlayInvalid (nothing on the table). Mirrors the web GUI's
+// `bigTwoPlayTypeKey`, which keys the same eight names off the same enum.
+func bigTwoPlayTypeName(t domain.BigTwoPlayType) string {
+	keys := map[domain.BigTwoPlayType]string{
+		domain.BigTwoPlaySingle:        "bigtwo.playTypeSingle",
+		domain.BigTwoPlayPair:          "bigtwo.playTypePair",
+		domain.BigTwoPlayTriple:        "bigtwo.playTypeTriple",
+		domain.BigTwoPlayStraight:      "bigtwo.playTypeStraight",
+		domain.BigTwoPlayFlush:         "bigtwo.playTypeFlush",
+		domain.BigTwoPlayFullHouse:     "bigtwo.playTypeFullHouse",
+		domain.BigTwoPlayFourOfAKind:   "bigtwo.playTypeFourOfAKind",
+		domain.BigTwoPlayStraightFlush: "bigtwo.playTypeStraightFlush",
+	}
+	key, ok := keys[t]
+	if !ok {
+		return ""
+	}
+	return i18n.T(key)
+}
+
 // Output renders the current game state for the active locale.
 func (p *BigTwoCuiPresenter) Output(bg interfaces.BigTwoGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("bigtwo.helpTitle"), func(b *strings.Builder) {
@@ -38,7 +59,14 @@ func (p *BigTwoCuiPresenter) Output(bg interfaces.BigTwoGame, lastErr error) str
 		b.WriteString("----------\n")
 
 		if bg.GetTableCards() != nil {
-			b.WriteString(i18n.T("bigtwo.tableCards") + ": " + cuiCardSliceStr(bg.GetTableCards()) + "\n")
+			// **役名を添える。**Web は `bt-table-playtype` バッジで場の役を常時出して
+			// いるのに、CUI は生のカード列だけで、何を出せば通るのかを自分で
+			// 読み取るしかなかった (#4859)。
+			line := i18n.T("bigtwo.tableCards") + ": " + cuiCardSliceStr(bg.GetTableCards())
+			if name := bigTwoPlayTypeName(bg.GetTablePlayType()); name != "" {
+				line += " " + i18n.Tf("bigtwo.tablePlayType", "type", name)
+			}
+			b.WriteString(line + "\n")
 		} else {
 			b.WriteString(i18n.T("bigtwo.tableEmpty") + "\n")
 		}
