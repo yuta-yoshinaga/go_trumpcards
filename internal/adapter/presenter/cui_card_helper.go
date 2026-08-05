@@ -240,9 +240,8 @@ func cuiCaptureHintLine(hand cuiCardList, opts map[int][]int, key string) string
 // **山ごと取るゲームでは捨て札の中身は公開情報。**Canasta/Burraco は一番上しか
 // 出しておらず、「山全体を取る」判断を 1 枚で迫っていた (#4833, #5043)。
 func cuiDiscardPileLines(pile []*domain.Card, key string) string {
-	if len(pile) == 0 {
-		return ""
-	}
+	// 空の山は 1 行も出さない。長さ 0 なら下のループが回らないので、専用のガードは
+	// 置かない (置いても分岐が到達不能になるだけ)。
 	parts := make([]string, 0, len(pile))
 	for i, c := range pile {
 		parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(c))
