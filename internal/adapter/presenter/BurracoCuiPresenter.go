@@ -56,6 +56,30 @@ func burracoPlayerStr(player *domain.BurracoPlayer, i int, showCards bool) strin
 	return b.String()
 }
 
+// burracoDiscardPileLine lists the whole discard pile, oldest first, in the same
+// indexed form Rummy 500 uses. Returns "" for an empty pile.
+func burracoDiscardPileLine(g interfaces.BurracoGame) string {
+	pile := g.GetDiscardPile()
+	if len(pile) == 0 {
+		return ""
+	}
+	parts := make([]string, 0, len(pile))
+	for i, c := range pile {
+		parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(c))
+	}
+	// 8 枚ごとに折り返す。ブラーコの山は 20 枚を超えることがあり、1 行だと読めない。
+	var b strings.Builder
+	for i := 0; i < len(parts); i += burracoDiscardPerLine {
+		end := min(i+burracoDiscardPerLine, len(parts))
+		b.WriteString(i18n.Tf("burraco.discardPileLine",
+			"cards", strings.Join(parts[i:end], " ")) + "\n")
+	}
+	return b.String()
+}
+
+// burracoDiscardPerLine は捨て札一覧の 1 行あたりの枚数。
+const burracoDiscardPerLine = 8
+
 // BurracoCuiPresenter renders the Burraco CUI view.
 type BurracoCuiPresenter struct{}
 
@@ -76,6 +100,10 @@ func (p *BurracoCuiPresenter) Output(g interfaces.BurracoGame, lastErr error) st
 		// Top of discard
 		if top := g.GetDiscardTop(); top != nil {
 			b.WriteString(i18n.Tf("burraco.discardLine", "card", cuiCardStr(top)) + "\n")
+			// **山ごと取れるゲームなので中身は公開情報。**Web は details で全部
+			// 見せているのに、CUI は一番上の 1 枚しか出しておらず、「山全体を取る」
+			// 判断を一番上だけで迫っていた (#4833)。
+			b.WriteString(burracoDiscardPileLine(g))
 		}
 
 		// Players
