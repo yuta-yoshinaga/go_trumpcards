@@ -632,3 +632,34 @@ func TestCinch_ColorHelpers(t *testing.T) {
 	assert.Equal(t, domain.CardDesignDiamond, domain.CinchSameColorSuitForTest(domain.CardDesignHeart))
 	assert.Equal(t, domain.CardDesignHeart, domain.CinchSameColorSuitForTest(domain.CardDesignDiamond))
 }
+
+// **ビッドの目安はドメインの規則。**Web の estimateCinchBidStrength と同じ値に
+// なること。Left Pedro (同色スートの 5) を含むのがこの計算の肝 (#4845)。
+func TestCinchHandPointsBySuit(t *testing.T) {
+	cards := []*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 1, false),
+		domain.NewCard(domain.CardDesignClover, 5, false),
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+	}
+	points := domain.CinchHandPointsBySuit(cards)
+	// ♣ 切り札: ♣A=1 + ♣5(Right)=5 + ♠5(Left)=5 = 11。
+	assert.Equal(t, 11, points[domain.CardDesignClover])
+	// ♠ 切り札: ♠5(Right)=5 + ♣5(Left)=5 = 10。♣A は点にならない。
+	assert.Equal(t, 10, points[domain.CardDesignSpade])
+	assert.Equal(t, 0, points[domain.CardDesignHeart])
+	assert.Equal(t, 0, points[domain.CardDesignDiamond])
+	assert.Equal(t, domain.CardDesignClover, domain.CinchBestTrumpSuit(points))
+
+	// 同点は小さいスート番号が勝つ (Web と同じ)。
+	tie := domain.CinchHandPointsBySuit([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 1, false),
+		domain.NewCard(domain.CardDesignDiamond, 1, false),
+	})
+	assert.Equal(t, tie[domain.CardDesignHeart], tie[domain.CardDesignDiamond])
+	assert.Equal(t, domain.CardDesignHeart, domain.CinchBestTrumpSuit(tie))
+
+	// 空の手札は全スート 0 点、ベストは既定の ♠。
+	empty := domain.CinchHandPointsBySuit(nil)
+	assert.Equal(t, 0, empty[domain.CardDesignSpade])
+	assert.Equal(t, domain.CardDesignSpade, domain.CinchBestTrumpSuit(empty))
+}

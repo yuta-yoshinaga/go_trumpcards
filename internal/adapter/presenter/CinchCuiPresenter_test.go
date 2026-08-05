@@ -104,3 +104,50 @@ func TestCinchCuiPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.CinchCuiPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **ビッドの定量的な材料。**Web は estimateCinchBidStrength でスート別の保持点と
+// 最有力スートをビッドフェーズ中ずっと出しているのに、CUI は最高ビッド額しか
+// 出していなかった (#4845)。
+func TestCinchCuiPresenter_BidStrengthLine(t *testing.T) {
+	// ♣ が最有力になる手札: ♣A(1) ♣5(Right Pedro=5) ♠5(Left Pedro=5) -> ♣ で 11 点。
+	cards := []*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 1, false),
+		domain.NewCard(domain.CardDesignClover, 5, false),
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+	}
+	points := domain.CinchHandPointsBySuit(cards)
+	// ♣ 切り札: ♣A=1 + ♣5(Right)=5 + ♠5(Left)=5 = 11。
+	assert.Equal(t, 11, points[domain.CardDesignClover])
+	// ♠ 切り札: ♠5(Right)=5 + ♣5(Left)=5 = 10。♣A は点にならない。
+	assert.Equal(t, 10, points[domain.CardDesignSpade])
+	assert.Equal(t, 0, points[domain.CardDesignHeart])
+	assert.Equal(t, domain.CardDesignClover, domain.CinchBestTrumpSuit(points))
+
+	// 同点は小さいスート番号が勝つ (Web の estimateCinchBidStrength と同じ)。
+	tie := domain.CinchHandPointsBySuit([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 1, false),
+		domain.NewCard(domain.CardDesignDiamond, 1, false),
+	})
+	assert.Equal(t, tie[domain.CardDesignHeart], tie[domain.CardDesignDiamond])
+	assert.Equal(t, domain.CardDesignHeart, domain.CinchBestTrumpSuit(tie))
+
+	g := domain.NewDefaultCinch()
+	g.Reset()
+	out := new(presenter.CinchCuiPresenter).Output(g, nil)
+	assert.Contains(t, out, "手札の点数:", "ビッドフェーズには常時出る")
+	assert.Contains(t, out, "最有力:")
+
+	// 他のフェーズには出さない。
+	g.SetPhase(domain.CinchPhasePlay)
+	assert.NotContains(t, new(presenter.CinchCuiPresenter).Output(g, nil), "手札の点数:")
+
+	// 手札が無いとき (配り直し前など) も出さない。0 点の表を出しても意味が無い。
+	g2 := domain.NewDefaultCinch()
+	g2.Reset()
+	for i := range g2.GetPlayerCnt() {
+		if p := g2.GetPlayer(i); p != nil && p.GetIsHuman() {
+			p.ResetDeal()
+		}
+	}
+	assert.NotContains(t, new(presenter.CinchCuiPresenter).Output(g2, nil), "手札の点数:")
+}

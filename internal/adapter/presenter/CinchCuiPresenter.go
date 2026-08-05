@@ -35,6 +35,41 @@ func cinchTrumpLabel(suit int) string {
 	return suitNames[suit]
 }
 
+// cinchBidStrengthLine renders the human hand's held points per candidate trump
+// suit. The Web GUI shows this table for the whole bid phase (#4845); the CUI
+// printed only the current high bid, so the quantitative half of the bidding
+// decision was missing.
+func cinchBidStrengthLine(g interfaces.CinchGame) string {
+	// 席順は固定でないので GetIsHuman で探す (ドメインの findHumanIdx と同じ)。
+	var human *domain.CinchPlayer
+	for i := range g.GetPlayerCnt() {
+		if p := g.GetPlayer(i); p != nil && p.GetIsHuman() {
+			human = p
+			break
+		}
+	}
+	if human == nil || human.GetCardsSize() == 0 {
+		return ""
+	}
+	cards := make([]*domain.Card, 0, human.GetCardsSize())
+	for i := range human.GetCardsSize() {
+		cards = append(cards, human.GetCard(i))
+	}
+	// 計算はドメインに置いた。ここで書き直すと Left Pedro (同色スートの 5) の
+	// 扱いが Web と食い違う。
+	points := domain.CinchHandPointsBySuit(cards)
+	best := domain.CinchBestTrumpSuit(points)
+	parts := make([]string, 0, domain.CardDesignDiamond)
+	for suit := domain.CardDesignSpade; suit <= domain.CardDesignDiamond; suit++ {
+		parts = append(parts, cinchTrumpLabel(suit)+" "+strconv.Itoa(points[suit]))
+	}
+	return i18n.Tf("cinch.bidStrength",
+		"points", strings.Join(parts, "  "),
+		"best", cinchTrumpLabel(best),
+		"max", strconv.Itoa(points[best]),
+		"total", strconv.Itoa(domain.CinchTotalPoints)) + "\n"
+}
+
 func cinchPlayerStr(g interfaces.CinchGame, idx int) string {
 	player := g.GetPlayer(idx)
 	if player == nil {
@@ -95,6 +130,7 @@ func (p *CinchCuiPresenter) Output(g interfaces.CinchGame, lastErr error) string
 			b.WriteString(i18n.Tf("cinch.promptBid",
 				"name", cuiPlayerName(g.GetPlayer(bidderIdx), bidderIdx),
 				"bid", strconv.Itoa(g.GetCurrentBid())) + "\n")
+			b.WriteString(cinchBidStrengthLine(g))
 		case domain.CinchPhaseNameTrump:
 			winnerIdx := g.GetBidWinnerIdx()
 			b.WriteString(i18n.Tf("cinch.promptTrump",
