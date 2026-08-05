@@ -38,7 +38,8 @@
   "roundResult": {
     "title": "Round Result",
     "winner": "{{name}} won the pot of {{pot}}.",
-    "matchPayment": "Match payment: {{name}} pays -{{amount}}"
+    "matchPayment": "Match payment: {{name}} pays -{{amount}}",
+    "carry": "Everyone folded — the pot of {{pot}} carries to the next round ({{count}} in a row)."
   },
   "matchWinner": "{{name}} won the match!",
   "hint": {

@@ -74,20 +74,22 @@ type GutsWebOutputConfig struct {
 
 // GutsWebOutput はガッツ Web アウトプット。
 type GutsWebOutput struct {
-	Players        []*GutsWebOutputPlayer `json:"players"`
-	Phase          int                    `json:"phase"`
-	RoundNumber    int                    `json:"roundNumber"`
-	Pot            int                    `json:"pot"`
-	CarryPot       int                    `json:"carryPot"`
-	Ante           int                    `json:"ante"`
-	Chips          int                    `json:"chips"`
-	WinnerIdx      int                    `json:"winnerIdx"`
-	MatchWinnerIdx int                    `json:"matchWinnerIdx"`
-	Result         int                    `json:"result"`
-	Matchers       []int                  `json:"matchers"`
-	GameEndFlag    bool                   `json:"gameEndFlag"`
-	Hint           *GutsWebOutputHint     `json:"hint,omitempty"`
-	Config         GutsWebOutputConfig    `json:"config"`
+	Players     []*GutsWebOutputPlayer `json:"players"`
+	Phase       int                    `json:"phase"`
+	RoundNumber int                    `json:"roundNumber"`
+	Pot         int                    `json:"pot"`
+	CarryPot    int                    `json:"carryPot"`
+	// CarryCount 連続で持ち越された回数 (CUI の guts.result.carry と同じ値)。
+	CarryCount     int                 `json:"carryCount"`
+	Ante           int                 `json:"ante"`
+	Chips          int                 `json:"chips"`
+	WinnerIdx      int                 `json:"winnerIdx"`
+	MatchWinnerIdx int                 `json:"matchWinnerIdx"`
+	Result         int                 `json:"result"`
+	Matchers       []int               `json:"matchers"`
+	GameEndFlag    bool                `json:"gameEndFlag"`
+	Hint           *GutsWebOutputHint  `json:"hint,omitempty"`
+	Config         GutsWebOutputConfig `json:"config"`
 	WebOutputBase
 }
 
