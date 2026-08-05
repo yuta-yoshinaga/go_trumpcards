@@ -5,6 +5,7 @@
   "helpHint": "  h                    show hint",
   "helpSetDifficulty": "  sd <level>           CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "cpuStats": "CPU: 手札{{hand}}枚 / 山札{{draw}}枚",
+  "playableMark": "*",
   "humanStats": "あなた: 手札{{hand}}枚 / 山札{{draw}}枚",
   "centerLabel": "[台札]",
   "centerCard": "[{{idx}}] {{card}} ",

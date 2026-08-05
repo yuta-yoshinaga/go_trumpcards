@@ -14,6 +14,82 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
+// speedWithBoard rebuilds a Speed game with an exact hand and centre piles, so
+// the playable/unplayable branches are both reachable without depending on the
+// shuffle.
+func speedWithBoard(t *testing.T, hand []*domain.Card, piles [2]*domain.Card) *domain.Speed {
+	t.Helper()
+	s := setupSpeedWebTest()
+	data, err := json.Marshal(s)
+	assert.NoError(t, err)
+	var raw map[string]json.RawMessage
+	assert.NoError(t, json.Unmarshal(data, &raw))
+
+	var players []json.RawMessage
+	assert.NoError(t, json.Unmarshal(raw["ps"], &players))
+	// 手札は SpeedPlayer -> GamePlayer("gp") -> Player("p") -> Cards("c") の奥。
+	var human map[string]json.RawMessage
+	assert.NoError(t, json.Unmarshal(players[0], &human))
+	var gp map[string]json.RawMessage
+	assert.NoError(t, json.Unmarshal(human["gp"], &gp))
+	var pl map[string]json.RawMessage
+	assert.NoError(t, json.Unmarshal(gp["p"], &pl))
+	pl["c"], err = json.Marshal(hand)
+	assert.NoError(t, err)
+	gp["p"], err = json.Marshal(pl)
+	assert.NoError(t, err)
+	human["gp"], err = json.Marshal(gp)
+	assert.NoError(t, err)
+	players[0], err = json.Marshal(human)
+	assert.NoError(t, err)
+	raw["ps"], err = json.Marshal(players)
+	assert.NoError(t, err)
+	raw["cp"], err = json.Marshal(piles)
+	assert.NoError(t, err)
+
+	newData, err := json.Marshal(raw)
+	assert.NoError(t, err)
+	assert.NoError(t, json.Unmarshal(newData, s))
+	return s
+}
+
+// **出せる札に印を付ける。**Web は PLAY フェーズ中ずっと出せる札にリングを出す
+// のに、CUI は番号付き一覧だけで、2 枚の台札に対する ±1 (と K↔A) を毎回自分で
+// 比べる必要があった (#4861)。
+func TestSpeedCuiPresenter_MarksPlayableCards(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.SpeedCuiPresenter)
+
+	t.Run("marks only the cards that fit a pile", func(t *testing.T) {
+		s := speedWithBoard(t, []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 6, false),  // 台札 7 の隣 -> 出せる
+			domain.NewCard(domain.CardDesignHeart, 10, false), // どちらにも付かない
+			domain.NewCard(domain.CardDesignClover, 1, false), // K の隣 (ラップ) -> 出せる
+		}, [2]*domain.Card{
+			domain.NewCard(domain.CardDesignDiamond, 7, false),
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+		})
+		out := p.Output(s, nil)
+		assert.Contains(t, out, "[0]SPADE 6*")
+		assert.Contains(t, out, "[1]HEART 10 ")
+		assert.NotContains(t, out, "[1]HEART 10*")
+		assert.Contains(t, out, "[2]CLOVER 1*")
+	})
+
+	t.Run("marks nothing when the hand is stuck", func(t *testing.T) {
+		s := speedWithBoard(t, []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 4, false),
+			domain.NewCard(domain.CardDesignHeart, 10, false),
+		}, [2]*domain.Card{
+			domain.NewCard(domain.CardDesignDiamond, 7, false),
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+		})
+		assert.NotContains(t, p.Output(s, nil), "*")
+	})
+}
+
 func TestSpeedCuiPresenter_Output(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
