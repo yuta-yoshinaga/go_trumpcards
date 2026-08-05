@@ -54,3 +54,23 @@ export function vintBidBeats(denom: number, level: number, high: VintBid | null 
 export function vintLevelHasLegalBid(level: number, high: VintBid | null | undefined): boolean {
   return vintBidBeats(VINT_DENOM_COUNT - 1, level, high);
 }
+
+/**
+ * The cheapest bid that still beats the standing one: the very next rank up.
+ *
+ * Used to move the pickers forward when another player outbids the selection
+ * underneath them — leaving the button disabled with no hint of what to pick
+ * next is a dead end (#4940).
+ * @param high - The standing bid, or null when nobody has bid.
+ * @param minLevel - The lowest biddable level.
+ * @param maxLevel - The highest biddable level.
+ * @returns The next legal pair, or null when the ladder is exhausted.
+ */
+export function vintNextLegalBid(high: VintBid | null | undefined, minLevel: number, maxLevel: number): VintBid | null {
+  if (!high) return { denom: 0, level: minLevel };
+  const next = vintBidRank(high.denom, high.level) + 1;
+  const level = Math.floor(next / VINT_DENOM_COUNT);
+  const denom = next % VINT_DENOM_COUNT;
+  if (level > maxLevel) return null;
+  return { denom, level: Math.max(level, minLevel) };
+}

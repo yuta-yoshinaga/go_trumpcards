@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { VINT_DENOM_COUNT, vintBidBeats, vintBidRank, vintLevelHasLegalBid } from './vintBid';
+import { VINT_DENOM_COUNT, vintBidBeats, vintBidRank, vintLevelHasLegalBid, vintNextLegalBid } from './vintBid';
 
 describe('vintBidRank', () => {
   it('ranks a higher level above every denomination of a lower one', () => {
@@ -46,5 +46,33 @@ describe('vintLevelHasLegalBid', () => {
 
   it('leaves every level open before the first bid', () => {
     expect(vintLevelHasLegalBid(1, null)).toBe(true);
+  });
+});
+
+describe('vintNextLegalBid', () => {
+  it('is the lowest bid of all before anyone has bid', () => {
+    expect(vintNextLegalBid(null, 1, 7)).toEqual({ denom: 0, level: 1 });
+  });
+
+  // **一つ上のランクに進む。**レベルを丸ごと飛ばすと、出せる宣言を勝手に捨てる。
+  it('steps to the next denomination within the same level', () => {
+    expect(vintNextLegalBid({ denom: 2, level: 4 }, 1, 7)).toEqual({ denom: 3, level: 4 });
+  });
+
+  it('rolls over to the next level after the top denomination', () => {
+    expect(vintNextLegalBid({ denom: VINT_DENOM_COUNT - 1, level: 4 }, 1, 7)).toEqual({ denom: 0, level: 5 });
+  });
+
+  it('is null once the ladder is exhausted', () => {
+    expect(vintNextLegalBid({ denom: VINT_DENOM_COUNT - 1, level: 7 }, 1, 7)).toBeNull();
+  });
+
+  it('always yields a bid that beats the standing one', () => {
+    for (let level = 1; level <= 7; level++) {
+      for (let denom = 0; denom < VINT_DENOM_COUNT; denom++) {
+        const next = vintNextLegalBid({ denom, level }, 1, 7);
+        if (next) expect(vintBidBeats(next.denom, next.level, { denom, level })).toBe(true);
+      }
+    }
   });
 });

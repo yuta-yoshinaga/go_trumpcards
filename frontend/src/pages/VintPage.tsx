@@ -29,7 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseVintCommand, VINT_HELP } from '../utils/cli/commands/vintCommands';
 import { formatVintState } from '../utils/cli/formatters/vintFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { vintBidBeats, vintLevelHasLegalBid } from '../utils/vintBid';
+import { vintBidBeats, vintLevelHasLegalBid, vintNextLegalBid } from '../utils/vintBid';
 
 /** Denominations in bidding order — spades LOWEST, no trump highest. */
 const DENOMS = [0, 1, 2, 3, 4];
@@ -93,6 +93,20 @@ function VintPageContent() {
   useEffect(() => {
     exec('reset');
   }, []);
+
+  // **選択が下から追い越されたら前に送る。**他家が上を宣言すると、選んだままの
+  // 組が不正になってボタンが無効のまま固まる。押せないだけで次に何を選べばよいか
+  // 分からない状態を残さない (#4940 レビュー指摘)。
+  const highBid = state?.highBid ?? null;
+  const minLevel = state?.minLevel ?? 1;
+  const maxLevel = state?.maxLevel ?? 7;
+  useEffect(() => {
+    if (vintBidBeats(bidDenom, bidLevel, highBid)) return;
+    const next = vintNextLegalBid(highBid, minLevel, maxLevel);
+    if (!next) return; // 出せる宣言が尽きた: パスしかない
+    setBidLevel(next.level);
+    setBidDenom(next.denom);
+  }, [highBid, bidDenom, bidLevel, minLevel, maxLevel]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('vint');

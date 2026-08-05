@@ -288,6 +288,21 @@ describe('VintPage', () => {
       expect(byValue['5']).toBe(false);
     });
 
+    // **選択が追い越されたら前に送る。**押せないだけで次に何を選べばよいか
+    // 分からない状態を残さない（レビュー指摘）。
+    it('moves the pickers to the next legal bid when outbid underneath', async () => {
+      mockExec.mockResolvedValue(bidding({ highBid: { player: 1, level: 4, denom: 2, trickValue: 40 } }));
+      renderWithProviders(<VintPage />);
+
+      const levels = (await screen.findByLabelText(/レベル/)) as HTMLSelectElement;
+      const denoms = screen.getByLabelText(/スート|デノミ/) as HTMLSelectElement;
+      // 既定の 1/♠ のままではなく、♦4 の次 = ♥4 に送られている。
+      await waitFor(() => expect(levels.value).toBe('4'));
+      expect(denoms.value).toBe('3');
+      expect(screen.getByTestId('vint-bid-button')).not.toBeDisabled();
+      expect(screen.queryByTestId('vint-bid-too-low')).not.toBeInTheDocument();
+    });
+
     // **同格も通らない。**「レベルが上でなければ不可」だと出せる宣言を潰しすぎ、
     // 「以上なら可」だと弾かれる宣言を残す。
     it('disables the denominations at or below the standing bid', async () => {
