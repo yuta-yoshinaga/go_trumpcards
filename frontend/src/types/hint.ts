@@ -25,4 +25,12 @@ export interface HintResult {
    * search by eye (#4887). Pages use it to highlight the slot.
    */
   targetPos?: number;
+  /**
+   * Board positions the advice points at, when it means several at once.
+   *
+   * Anaconda's backend already works out *which* cards to pass or keep; the
+   * tooltip said "pass 3 cards (weak hand)" and left the player to pick them
+   * (#4851).
+   */
+  targetIndices?: number[];
 }

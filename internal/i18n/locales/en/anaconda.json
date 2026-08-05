@@ -46,5 +46,6 @@
   "hintReasonStrongHand": "strong hand — worth raising",
   "hintReasonMediumHand": "decent hand — call to see more",
   "hintReasonWeakHand": "weak hand — better to fold",
-  "promptPassTo": "→ pass {{count}} card(s) left to {{name}}"
+  "promptPassTo": "→ pass {{count}} card(s) left to {{name}}",
+  "hintCards": "cards: {{cards}}"
 }

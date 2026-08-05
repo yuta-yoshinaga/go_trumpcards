@@ -438,6 +438,9 @@ function AnacondaPageContent() {
                 <div className="flex flex-wrap gap-1">
                   {humanPlayer.cards.map((c, i) => {
                     const isSelected = selected.includes(i);
+                    // バックエンドは「どの札を」まで計算しているのに、ツールチップは
+                    // 「3枚パス」で止まっていた (#4851)。
+                    const isSuggested = frontendHintEnabled && frontendHint?.targetIndices?.includes(i) === true;
                     return (
                       <button
                         key={`human-${c.design}-${c.value}`}
@@ -445,7 +448,8 @@ function AnacondaPageContent() {
                         aria-pressed={isSelected}
                         disabled={!canSelectCards || loading}
                         onClick={() => toggle(i)}
-                        className={`${focusRingAccent} rounded`}
+                        className={[focusRingAccent, 'rounded', isSuggested ? 'ring-2 ring-ds-warning' : ''].join(' ')}
+                        data-hint-card={isSuggested ? 'true' : undefined}
                         style={{
                           background: 'none',
                           padding: 0,
