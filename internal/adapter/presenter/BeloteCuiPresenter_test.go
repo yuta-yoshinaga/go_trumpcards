@@ -1,6 +1,7 @@
 package presenter_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -56,6 +57,30 @@ func setupBeloteCuiMockWithPlayers() (*interfaces.MockBeloteGame, []*domain.Belo
 	m.On("GetPlayer", 2).Return(players[2])
 	m.On("GetPlayer", 3).Return(players[3])
 	return m, players
+}
+
+// **20 点規模のボーナスに気づけない。**Web は専用バッジと読み上げまで用意して
+// いるのに、CUI は累計点しか出していなかった (#4913)。
+func TestBeloteCuiPresenter_NamesTheBeloteRebeloteBonus(t *testing.T) {
+	p := new(presenter.BeloteCuiPresenter)
+
+	build := func(t0, t1 int) *interfaces.MockBeloteGame {
+		m, _ := setupBeloteCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundBeloteBonus")
+		m.On("GetRoundBeloteBonus", 0).Return(t0)
+		m.On("GetRoundBeloteBonus", 1).Return(t1)
+		return m
+	}
+
+	out := p.Output(build(domain.BeloteRebeloteBonus, 0), nil)
+	assert.Contains(t, out, "ベロート・ルベロート成立")
+	assert.Contains(t, out, "チーム0")
+	assert.Contains(t, out, "+"+strconv.Itoa(domain.BeloteRebeloteBonus)+"点")
+	// 成立していないチームの行は出さない。
+	assert.NotContains(t, out, "チーム1 に")
+
+	// どちらも 0 なら行そのものを出さない。
+	assert.NotContains(t, p.Output(build(0, 0), nil), "ベロート・ルベロート成立")
 }
 
 func TestBeloteCuiPresenter_Output(t *testing.T) {
