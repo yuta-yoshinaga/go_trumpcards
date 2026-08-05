@@ -1156,3 +1156,11 @@ func TestDoubt_ActionLog_Reset(t *testing.T) {
 	game.Reset()
 	assert.Nil(t, game.GetActionLog())
 }
+
+// **Web の honestValue と同じ式であること。**両方が (値 % 13) + 1、開始直後は A。
+func TestDoubtHonestClaimValue(t *testing.T) {
+	assert.Equal(t, 1, domain.DoubtHonestClaimValue(nil))
+	assert.Equal(t, 2, domain.DoubtHonestClaimValue(&domain.DoubtAction{ClaimedValue: 1}))
+	assert.Equal(t, 8, domain.DoubtHonestClaimValue(&domain.DoubtAction{ClaimedValue: 7}))
+	assert.Equal(t, 1, domain.DoubtHonestClaimValue(&domain.DoubtAction{ClaimedValue: 13}))
+}
