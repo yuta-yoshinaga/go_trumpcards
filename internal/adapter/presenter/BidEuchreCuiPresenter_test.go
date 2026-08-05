@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -37,6 +38,7 @@ func setupBidEuchreCuiMock(o bidEuchreMockOpts) *interfaces.MockBidEuchreGame {
 	m.On("GetGameEndFlag").Return(o.gameEnd)
 	m.On("GetWinnerTeam").Return(o.winner)
 	m.On("GetHighBid").Return(o.highBid)
+	m.On("BidEuchreMinLegalBid", mock.Anything).Return(domain.BidEuchreMinBid, true).Maybe()
 	m.On("GetLastResult").Return(o.result)
 	m.On("GetPlayers").Return(players)
 	m.On("IsHumanTurn").Return(true)
@@ -202,31 +204,25 @@ func TestBidEuchreCuiPresenter_ActionLogOutput(t *testing.T) {
 func TestBidEuchreCuiPresenter_ShowsTheLegalBidRange(t *testing.T) {
 	p := new(presenter.BidEuchreCuiPresenter)
 
-	build := func(high *domain.BidEuchreBid, bidder int) string {
+	// **判定そのものはドメインでテストする** (TestBidEuchre_MinLegalBid)。
+	// ここは「返ってきた下限をそのまま出す / 無ければパスのみと言う」だけを見る。
+	build := func(floor int, ok bool, bidder int) string {
 		o := defaultBidEuchreOpts()
 		o.phase = domain.BidEuchrePhaseBid
-		o.highBid = high
 		m := setupBidEuchreCuiMock(o)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBidPlayerIdx")
 		m.On("GetBidPlayerIdx").Return(bidder)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "BidEuchreMinLegalBid")
+		m.On("BidEuchreMinLegalBid", bidder).Return(floor, ok)
 		return p.Output(m, nil)
 	}
 
-	// 宣言が無ければ最低値から (受け入れ条件1)。
-	assert.Contains(t, build(nil, 1),
+	assert.Contains(t, build(domain.BidEuchreMinBid, true, 1),
 		"有効な入札: "+strconv.Itoa(domain.BidEuchreMinBid)+"〜"+strconv.Itoa(domain.BidEuchreMaxBid))
+	assert.Contains(t, build(5, true, 1), "有効な入札: 5〜")
 
-	// 非ディーラーは +1 から (受け入れ条件2)。
-	assert.Contains(t, build(&domain.BidEuchreBid{Player: 0, Value: 4}, 1), "有効な入札: 5〜")
-
-	// **親だけは同額で奪える** (受け入れ条件3)。ディーラーは席 3。
-	assert.Contains(t, build(&domain.BidEuchreBid{Player: 0, Value: 4}, 3), "有効な入札: 4〜")
-
-	// 上限まで宣言されたら、非ディーラーには選べる値が無い。
-	top := build(&domain.BidEuchreBid{Player: 0, Value: domain.BidEuchreMaxBid}, 1)
+	// 選べる値が無ければ、範囲を出さずにパスのみと言う。
+	top := build(0, false, 1)
 	assert.Contains(t, top, "これ以上の入札はできません")
 	assert.NotContains(t, top, "有効な入札:")
-
-	// 同じ状況でも親は同額で奪えるので、範囲が出る。
-	assert.Contains(t, build(&domain.BidEuchreBid{Player: 0, Value: domain.BidEuchreMaxBid}, 3), "有効な入札:")
 }
