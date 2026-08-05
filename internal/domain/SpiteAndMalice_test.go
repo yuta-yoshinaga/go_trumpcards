@@ -599,3 +599,48 @@ func TestSpiteAndMalicePlayer_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, 1, q.GoalSize())
 	assert.Equal(t, 1, q.SideSize(0))
 }
+
+// **ゴール札が出せるかは勝敗条件そのもの。**Web の isGoalTopPlayableToFoundation と
+// 同じ規則 (空の基礎札には A、K はワイルド、完成した山には置けない) であること。
+func TestSpiteAndMalice_IsGoalTopPlayable(t *testing.T) {
+	t.Run("out of range and empty goal", func(t *testing.T) {
+		g := newTestSpiteAndMalice()
+		assert.False(t, g.IsGoalTopPlayable(-1))
+		assert.False(t, g.IsGoalTopPlayable(99))
+		g.SetPlayerGoal(SpiteAndMaliceHumanIdx, nil)
+		assert.False(t, g.IsGoalTopPlayable(SpiteAndMaliceHumanIdx))
+	})
+
+	t.Run("an ace opens an empty foundation", func(t *testing.T) {
+		g := newTestSpiteAndMalice()
+		g.SetPlayerGoal(SpiteAndMaliceHumanIdx, []*Card{mkCard(CardDesignSpade, 1)})
+		assert.True(t, g.IsGoalTopPlayable(SpiteAndMaliceHumanIdx))
+	})
+
+	t.Run("only the next rank fits a started foundation", func(t *testing.T) {
+		g := newTestSpiteAndMalice()
+		for i := range SpiteAndMaliceFoundationCnt {
+			g.SetFoundation(i, []*Card{mkCard(CardDesignSpade, 1), mkCard(CardDesignHeart, 2)})
+		}
+		g.SetPlayerGoal(SpiteAndMaliceHumanIdx, []*Card{mkCard(CardDesignDiamond, 5)})
+		assert.False(t, g.IsGoalTopPlayable(SpiteAndMaliceHumanIdx))
+		g.SetPlayerGoal(SpiteAndMaliceHumanIdx, []*Card{mkCard(CardDesignDiamond, 3)})
+		assert.True(t, g.IsGoalTopPlayable(SpiteAndMaliceHumanIdx))
+	})
+
+	t.Run("a king is wild but not on a completed pile", func(t *testing.T) {
+		g := newTestSpiteAndMalice()
+		full := make([]*Card, 0, SpiteAndMaliceFoundationMax)
+		for v := 1; v <= SpiteAndMaliceFoundationMax; v++ {
+			full = append(full, mkCard(CardDesignSpade, v))
+		}
+		for i := range SpiteAndMaliceFoundationCnt {
+			g.SetFoundation(i, full)
+		}
+		g.SetPlayerGoal(SpiteAndMaliceHumanIdx, []*Card{mkCard(CardDesignClover, SpiteAndMaliceWildValue)})
+		assert.False(t, g.IsGoalTopPlayable(SpiteAndMaliceHumanIdx))
+
+		g.SetFoundation(0, []*Card{mkCard(CardDesignSpade, 1)})
+		assert.True(t, g.IsGoalTopPlayable(SpiteAndMaliceHumanIdx))
+	})
+}

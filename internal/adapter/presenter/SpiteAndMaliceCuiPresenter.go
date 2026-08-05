@@ -52,6 +52,13 @@ func (p *SpiteAndMaliceCuiPresenter) Output(g interfaces.SpiteAndMaliceGame, las
 				b.WriteString(i18n.Tf("spiteandmalice.goalLine",
 					"card", cuiCardStr(top),
 					"count", strconv.Itoa(pl.GoalSize())))
+				// **ゴール札を先に空にした方が勝ち。**Web は出せる状態のゴール札に
+				// 警告色のリングを常時出しているのに、CUI は札と残り枚数だけで、
+				// 毎ターン全基礎札と見比べる必要があった (#4876)。CPU 側は伏せた
+				// 情報の扱いを変えないため印を付けない。
+				if !pl.GetIsCpu() && g.IsGoalTopPlayable(i) {
+					b.WriteString(color.Yellow(i18n.T("spiteandmalice.goalPlayable")))
+				}
 			} else {
 				b.WriteString(i18n.T("spiteandmalice.goalEmpty"))
 			}
