@@ -62,3 +62,21 @@ func (m *MockSevenBridgeGame) GetActionLog() []*domain.ActionLogEntry {
 }
 func (m *MockSevenBridgeGame) GetRoundWinnerIdx() int   { return m.Called().Int(0) }
 func (m *MockSevenBridgeGame) GetClaimedThisTurn() bool { return m.Called().Bool(0) }
+
+// SuggestPon モック
+func (m *MockSevenBridgeGame) SuggestPon(playerIdx int) []int {
+	ret := m.Called(playerIdx)
+	if v, ok := ret.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}
+
+// SuggestChi モック
+func (m *MockSevenBridgeGame) SuggestChi(playerIdx int) []int {
+	ret := m.Called(playerIdx)
+	if v, ok := ret.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}

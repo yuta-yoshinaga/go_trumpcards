@@ -28,5 +28,8 @@
   "hintMeld": "推奨: 手札 [{{idxs}}] ({{cards}}) でメルド (m {{idxs}})",
   "hintDiscard": "推奨: 手札 {{idx}} ({{card}}) を捨てる (d {{idx}})",
   "hintNoMove": "推奨できる手がありません。",
-  "hintNotYourTurn": "今はあなたのプレイフェーズではありません。"
+  "hintNotYourTurn": "今はあなたのプレイフェーズではありません。",
+  "hintPon": "ポンできます: 手札 {{cards}}",
+  "hintChi": "チーできます: 手札 {{cards}}",
+  "hintDraw": "捨て札は使えません。山札から引きましょう。"
 }
