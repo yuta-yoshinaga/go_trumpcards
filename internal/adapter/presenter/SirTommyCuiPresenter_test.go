@@ -42,6 +42,33 @@ func TestSirTommyCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ストック")
 	})
 
+	// **次に必要なランクを常時出す。**Web はバッジで見せているのに CUI は
+	// 一番上の札しか出しておらず、4 本分の暗算を強いていた (#4868)。
+	t.Run("next required rank per foundation", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+
+		var foundations [domain.SirTommyFoundationCnt][]*domain.Card
+		// F0: 空 -> A、F1: 5 の上 -> 6、F2: 13 枚 -> 完成、F3: A の上 -> 2
+		foundations[1] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)}
+		for v := 1; v <= domain.CardValueMax; v++ {
+			foundations[2] = append(foundations[2], domain.NewCard(domain.CardDesignClover, v, false))
+		}
+		foundations[3] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+		// **defaults より先に登録する。**testify は最初に一致した期待値を使うので、
+		// 先に setup を呼ぶと `.Maybe()` 側の山が勝ってしまう。
+		g.On("GetFoundations").Return(foundations)
+		setupSirTommyCuiMockDefaults(g)
+
+		result := new(SirTommyCuiPresenter).Output(g, nil)
+		assert.Contains(t, result, "(空) → 次: A")
+		assert.Contains(t, result, "→ 次: 6")
+		assert.Contains(t, result, "→ 完成")
+		assert.Contains(t, result, "→ 次: 2")
+		// 完成した山に「次」は出さない。完成判定を外すと `→ 次: 14` が出るので、
+		// ランクを指定せず「13/13 の行に次が付かないこと」を見る。
+		assert.NotContains(t, result, "(13/13) → 次")
+	})
+
 	t.Run("with error", func(t *testing.T) {
 		g := new(interfaces.MockSirTommyGame)
 		setupSirTommyCuiMockDefaults(g)
