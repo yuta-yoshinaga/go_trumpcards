@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newMockAcesUpInteractor() *mockusecase.MockAcesUpInteractor {
@@ -86,11 +87,20 @@ func TestAcesUpCuiControllerMove(t *testing.T) {
 func TestAcesUpCuiControllerColCommand_InvalidArgs(t *testing.T) {
 	ai := newMockAcesUpInteractor()
 	c := NewAcesUpCuiController(ai)
-	assert.Contains(t, c.Exec("rm"), "Usage")
-	assert.Contains(t, c.Exec("rm 3 0"), "Usage")
-	assert.Contains(t, c.Exec("rm a"), "Invalid col")
-	assert.Contains(t, c.Exec("mv"), "Usage")
-	assert.Contains(t, c.Exec("mv x"), "Invalid col")
+	// **エラーも日本語ロケールでは日本語。**ここだけ英語リテラルを返していて、
+	// このテストがその挙動を固定していた (#4803)。
+	assert.Contains(t, c.Exec("rm"), "使い方: rm")
+	assert.Contains(t, c.Exec("rm 3 0"), "使い方: rm")
+	assert.Contains(t, c.Exec("rm a"), "無効な列番号です: a")
+	assert.Contains(t, c.Exec("mv"), "使い方: mv")
+	assert.Contains(t, c.Exec("mv x"), "無効な列番号です: x")
+	assert.NotContains(t, c.Exec("rm a"), "Invalid col")
+
+	// 英語ロケールでは従来と同じ文面 (受け入れ条件2)。
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	assert.Contains(t, c.Exec("rm"), "Usage: rm <col>")
+	assert.Contains(t, c.Exec("rm a"), "Invalid column: a")
 }
 
 func TestAcesUpCuiControllerUnknown(t *testing.T) {

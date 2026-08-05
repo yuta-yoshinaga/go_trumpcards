@@ -234,4 +234,33 @@ describe('EcartePage', () => {
     renderWithProviders(<EcartePage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **識別子をそのまま出さない。**`(propose)` のような英語が日本語 UI に
+  // 混ざっていた (#4727)。
+  it('translates the hint action rather than printing the identifier', async () => {
+    mockExec.mockResolvedValue({
+      ...elderDecideState,
+      hint: { reason: 'x', action: 'propose' },
+      messageCode: 'ecarte.hintRequested',
+    });
+    renderWithProviders(<EcartePage />);
+    expect(
+      (await screen.findAllByText((_, el) => el?.textContent?.includes('(交換を提案)') === true)).length,
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText(/\(propose\)/)).not.toBeInTheDocument();
+  });
+
+  // 訳の無いアクションは識別子に落とす。キー文字列を画面に出さない。
+  it('falls back to the identifier for an unknown action', async () => {
+    mockExec.mockResolvedValue({
+      ...elderDecideState,
+      hint: { reason: 'x', action: 'somethingNew' },
+      messageCode: 'ecarte.hintRequested',
+    });
+    renderWithProviders(<EcartePage />);
+    expect(
+      (await screen.findAllByText((_, el) => el?.textContent?.includes('(somethingNew)') === true)).length,
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText(/action\./)).not.toBeInTheDocument();
+  });
 });

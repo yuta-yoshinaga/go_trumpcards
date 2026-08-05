@@ -333,7 +333,10 @@ function EcartePageContent() {
               <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                 {state.hint.cardIndex != null && ` ([${state.hint.cardIndex}])`}
-                {state.hint.action != null && ` (${state.hint.action})`}
+                {/* **識別子をそのまま出さない。**`propose` のような英語が
+                    日本語 UI に混ざる (#4727)。訳が無ければ何も足さない。 */}
+                {state.hint.action != null &&
+                  ` (${t(`action.${state.hint.action}`, { defaultValue: state.hint.action })})`}
               </div>
             )}
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
