@@ -263,7 +263,7 @@ func (g *Cribbage) doCut() {
 	g.addLog(-1, "cut", "スターターカード公開", []*Card{g.starter})
 
 	// His Heels: スターターがJなら、ディーラーに2点
-	if g.starter != nil && g.starter.GetValue() == 11 {
+	if g.starter != nil && g.starter.GetValue() == CribbageJackValue {
 		g.addScore(g.dealerIdx, 2, "His Heels (スターターがJ)")
 		if g.checkWin() {
 			return

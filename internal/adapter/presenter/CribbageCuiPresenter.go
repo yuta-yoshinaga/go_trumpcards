@@ -54,6 +54,12 @@ func (p *CribbageCuiPresenter) Output(g interfaces.CribbageGame, lastErr error) 
 		if starter := g.GetStarter(); starter != nil {
 			b.WriteString(i18n.Tf("cribbage.starterLine",
 				"card", cuiCardStr(starter)) + "\n")
+			// **スターターが J ならディーラーに 2 点** (`cutStarter` の His Heels)。
+			// Web は専用バッジで出すのに CUI は黙っており、ディーラーの点が
+			// 唐突に 2 増える理由が分からなかった (#4902)。
+			if starter.GetValue() == domain.CribbageJackValue {
+				b.WriteString(color.Yellow(i18n.T("cribbage.hisHeels")) + "\n")
+			}
 		}
 
 		// Pegging info

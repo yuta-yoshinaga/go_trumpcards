@@ -2,6 +2,14 @@ package domain
 
 import "encoding/json"
 
+// CribbageJackValue は J の値。**スターターが J なら His Heels でディーラーに 2 点**、
+// 手札の J が スターターと同スートなら Nobs で 1 点。判定を presenter でも書くので、
+// リテラルを散らさない。
+//
+// **ビルドタグの無いこのファイルに置く。**`Cribbage.go` は worker のバケット外だと
+// コンパイルされず、ここから参照できなくなる。
+const CribbageJackValue = 11
+
 // CribbageScoreDetail クリベッジのスコア内訳
 type CribbageScoreDetail struct {
 	Fifteens int
@@ -157,7 +165,7 @@ func CribbageScoreNobs(hand []*Card, starter *Card) int {
 		return 0
 	}
 	for _, c := range hand {
-		if c.GetValue() == 11 && c.GetDesign() == starter.GetDesign() {
+		if c.GetValue() == CribbageJackValue && c.GetDesign() == starter.GetDesign() {
 			return 1
 		}
 	}

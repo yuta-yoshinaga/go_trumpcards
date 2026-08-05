@@ -11,6 +11,7 @@
   "helpSetLimit": "  sl <n>               ポイント上限",
   "header": "ラウンド: {{round}}  ディーラー: Player{{dealer}}",
   "starterLine": "スターター: {{card}}",
+  "hisHeels": "His Heels! スターターがJのためディーラーに2点",
   "peggingTotal": "ペギング合計: {{count}}/31",
   "peggingCards": "出されたカード: {{cards}}",
   "playerLine": "{{name}}{{dealerMark}}: 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
