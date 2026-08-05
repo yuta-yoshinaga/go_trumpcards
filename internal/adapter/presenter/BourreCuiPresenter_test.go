@@ -66,8 +66,10 @@ func TestBourreCuiPresenter_CpuNamesGoThroughTheSharedHelper(t *testing.T) {
 	bg.Reset()
 	p := new(presenter.BourreCuiPresenter)
 	// **リセット直後は bourreName を通らない。**トリックが場に出るまで進める。
+	// 上限はリポジトリの慣習どおり 1000。トリックは数手で場に出るので、
+	// これで届かないなら収束していないほうを疑う。
 	var out string
-	for i := 0; i < 300000; i++ {
+	for i := 0; i < 1000; i++ {
 		out = p.Output(bg, nil)
 		if strings.Contains(out, i18n.T("cuiPlayerCpu")) || len(bg.GetCurrentTrick()) > 0 {
 			break
