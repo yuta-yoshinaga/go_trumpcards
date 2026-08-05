@@ -1,0 +1,18 @@
+{
+  "royalFlush": "Royal Flush",
+  "naturalRoyalFlush": "Natural Royal Flush",
+  "wildRoyalFlush": "Wild Royal Flush",
+  "fourDeuces": "Four Deuces",
+  "fiveOfAKind": "Five of a Kind",
+  "straightFlush": "Straight Flush",
+  "fourOfAKind": "Four of a Kind",
+  "fullHouse": "Full House",
+  "flush": "Flush",
+  "straight": "Straight",
+  "threeOfAKind": "Three of a Kind",
+  "twoPair": "Two Pair",
+  "pair": "Pair",
+  "jacksOrBetter": "Jacks or Better",
+  "kingsOrBetter": "Kings or Better",
+  "highCard": "High Card"
+}

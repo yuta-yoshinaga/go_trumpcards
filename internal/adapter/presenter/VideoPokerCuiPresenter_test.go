@@ -133,8 +133,10 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Win(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "フェーズ: リザルト")
-	// videopoker keeps the English hand name (backward compatible).
-	assert.Contains(t, result, "Four of a Kind! あなたの勝利です！")
+	// **役名は全バリアントで訳す。**以前はここが英語のままで、その挙動を
+	// このテストが固定していた (#4693 / #4694)。
+	assert.Contains(t, result, "フォーカード! あなたの勝利です！")
+	assert.NotContains(t, result, "Four of a Kind!")
 	assert.Contains(t, result, "払戻し: 25")
 }
 
@@ -180,6 +182,21 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Win_DeucesWildTranslated(t *t
 	t.Run("empty key falls back to the raw hand name", func(t *testing.T) {
 		result := p.Output(winMock("deuceswild", "Wild Royal Flush", ""), nil)
 		assert.Contains(t, result, "Wild Royal Flush! あなたの勝利です！")
+	})
+
+	// **Joker Poker も訳す。**deuceswild だけ分岐していたので、日本語ロケール
+	// でも勝敗行だけ英語で出ていた (#4693)。
+	t.Run("joker poker is translated too", func(t *testing.T) {
+		result := p.Output(winMock("jokerpoker", "Five of a Kind", "fiveOfAKind"), nil)
+		assert.Contains(t, result, "ファイブカード! あなたの勝利です！")
+		assert.NotContains(t, result, "Five of a Kind!")
+	})
+
+	// 訳の無いキーは英語名に落とす。キー文字列を画面に出さない。
+	t.Run("an untranslated key falls back rather than printing the key", func(t *testing.T) {
+		result := p.Output(winMock("jokerpoker", "Mystery Hand", "mysteryHand"), nil)
+		assert.Contains(t, result, "Mystery Hand! あなたの勝利です！")
+		assert.NotContains(t, result, "pokerhand.")
 	})
 }
 
