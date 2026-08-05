@@ -5,6 +5,7 @@ package presenter_test
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupBeggarMyNeighbourTest() *domain.BeggarMyNeighbour {
@@ -119,4 +121,35 @@ func TestBeggarMyNeighbourCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.BeggarMyNeighbourCuiPresenter)
 	g := setupBeggarMyNeighbourTest()
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+}
+
+// **引き分け打ち切りがいつ来るかを出す。**自動進行するゲームで、あとどれだけかが
+// 分からないと待つほかない (#4896)。
+func TestBeggarMyNeighbourCuiPresenter_ShowsTheRoundProgress(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(false) // 強調 (太字/色) の有無まで見る
+	defer color.SetNoColor(orig)
+
+	p := new(presenter.BeggarMyNeighbourCuiPresenter)
+	g := setupBeggarMyNeighbourTest()
+	cfg := g.GetConfig()
+
+	// 序盤: 数字は出るが強調しない。
+	g.SetRoundsPlayedForTest(1)
+	out := p.Output(g, nil)
+	assert.Contains(t, out, "ラウンド: 1 / "+strconv.Itoa(cfg.MaxRounds))
+	assert.NotContains(t, out, color.Yellow("ラウンド: 1 / "+strconv.Itoa(cfg.MaxRounds)))
+
+	// **9 割を超えたら強調する** (受け入れ条件2)。
+	near := cfg.MaxRounds * 9 / 10
+	g.SetRoundsPlayedForTest(near)
+	assert.Contains(t, p.Output(g, nil),
+		color.Yellow(i18n.Tf("beggarmyneighbour.roundProgress",
+			"played", strconv.Itoa(near), "max", strconv.Itoa(cfg.MaxRounds))))
+
+	// **上限を変えたら即座に反映される** (受け入れ条件3)。
+	cfg.MaxRounds = 500
+	g.SetConfig(cfg)
+	g.SetRoundsPlayedForTest(1)
+	assert.Contains(t, p.Output(g, nil), "ラウンド: 1 / 500")
 }
