@@ -229,6 +229,30 @@ describe('PrimeroPage', () => {
       expect(readout).not.toHaveTextContent('上限');
     });
 
+    // **枚数不足も理由として区別する。**上限に達していないのに押せないとき、
+    // 「レイズ 1/3回」とだけ出すと「まだできる」と読めてしまう（レビュー指摘）。
+    it('says the chips are short when the cap is not the reason', async () => {
+      mockExec.mockResolvedValue(
+        makePrimeroState({
+          phase: 0,
+          isHumanTurn: true,
+          canRaise: false,
+          raiseCount: 1,
+          maxRaises: 3,
+          currentBet: 10,
+          ante: 5,
+          players: [
+            { ...makePrimeroState().players[0], isHuman: true, chips: 3, roundBet: 0 },
+            ...makePrimeroState().players.slice(1),
+          ],
+        }),
+      );
+      renderWithProviders(<PrimeroPage />);
+      const readout = await screen.findByTestId('primero-raise-count');
+      expect(readout).toHaveTextContent('チップが足りません');
+      expect(readout).not.toHaveTextContent('レイズ 1/3回');
+    });
+
     it('says the cap was reached rather than silently dropping the button', async () => {
       mockExec.mockResolvedValue(
         makePrimeroState({ phase: 0, isHumanTurn: true, canRaise: false, raiseCount: 3, maxRaises: 3 }),
