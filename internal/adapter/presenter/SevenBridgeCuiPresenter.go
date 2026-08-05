@@ -139,21 +139,24 @@ func sevenBridgeDrawHint(g interfaces.SevenBridgeGame) string {
 	if human == nil {
 		return i18n.T("sevenbridge.hintNotYourTurn") + "\n"
 	}
-	label := func(is []int) string {
+	// idxs と cards は近隣の hintMeld / hintDiscard と同じく別々に渡す。
+	label := func(is []int) (string, string) {
 		idxStrs := make([]string, len(is))
 		cards := make([]string, len(is))
 		for i, hi := range is {
 			idxStrs[i] = strconv.Itoa(hi)
 			cards[i] = cuiCardStr(human.GetCard(hi))
 		}
-		return strings.Join(idxStrs, ", ") + " (" + strings.Join(cards, ",") + ")"
+		return strings.Join(idxStrs, ", "), strings.Join(cards, ",")
 	}
 	// **ポンが先。**同ランク 3 枚は連番より確実に面子になる。
 	if pon := g.SuggestPon(idx); len(pon) > 0 {
-		return color.Yellow(i18n.Tf("sevenbridge.hintPon", "cards", label(pon))) + "\n"
+		idxs, cards := label(pon)
+		return color.Yellow(i18n.Tf("sevenbridge.hintPon", "idxs", idxs, "cards", cards)) + "\n"
 	}
 	if chi := g.SuggestChi(idx); len(chi) > 0 {
-		return color.Yellow(i18n.Tf("sevenbridge.hintChi", "cards", label(chi))) + "\n"
+		idxs, cards := label(chi)
+		return color.Yellow(i18n.Tf("sevenbridge.hintChi", "idxs", idxs, "cards", cards)) + "\n"
 	}
 	return i18n.T("sevenbridge.hintDraw") + "\n"
 }
