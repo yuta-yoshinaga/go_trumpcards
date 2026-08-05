@@ -293,6 +293,45 @@ func (b *Bridge) doBidPass(playerIdx int) error {
 	return nil
 }
 
+// BridgeMinLegalBid は現在のコントラクトを上回る最も低いビッドを返す。
+// 7NT まで埋まっていれば ok=false。
+//
+// **判定は isHigherBid と同じ規則。**別に書くと、案内した組が拒否される (#4903)。
+func (b *Bridge) BridgeMinLegalBid() (level, suit int, ok bool) {
+	if b.contractLevel == 0 {
+		return 1, BridgeBidSuitClub, true
+	}
+	if b.contractSuit < BridgeBidSuitNT {
+		return b.contractLevel, b.contractSuit + 1, true
+	}
+	if b.contractLevel >= 7 {
+		return 0, 0, false
+	}
+	return b.contractLevel + 1, BridgeBidSuitClub, true
+}
+
+// BridgeCanDouble は今ダブルできるかを返す。doBidDouble の拒否条件の裏返し。
+func (b *Bridge) BridgeCanDouble(playerIdx int) bool {
+	if b.contractLevel == 0 || b.doubled != 0 {
+		return false
+	}
+	if playerIdx < 0 || playerIdx >= len(b.players) {
+		return false
+	}
+	return b.players[playerIdx].GetTeam() != b.lastBidTeam
+}
+
+// BridgeCanRedouble は今リダブルできるかを返す。doBidRedouble の拒否条件の裏返し。
+func (b *Bridge) BridgeCanRedouble(playerIdx int) bool {
+	if b.doubled != 1 {
+		return false
+	}
+	if playerIdx < 0 || playerIdx >= len(b.players) {
+		return false
+	}
+	return b.players[playerIdx].GetTeam() == b.lastBidTeam
+}
+
 // doBidNormal 通常ビッドする
 func (b *Bridge) doBidNormal(playerIdx int, level int, suit int) error {
 	if level < 1 || level > 7 {

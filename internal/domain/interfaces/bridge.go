@@ -61,6 +61,12 @@ type BridgeGame interface {
 	GetContractSuit() int
 	// GetDoubled ダブル状態を取得する (0=なし, 1=ダブル, 2=リダブル)
 	GetDoubled() int
+	// BridgeMinLegalBid 現在のコントラクトを上回る最も低いビッドを返す
+	BridgeMinLegalBid() (level, suit int, ok bool)
+	// BridgeCanDouble 今ダブルできるかを返す
+	BridgeCanDouble(playerIdx int) bool
+	// BridgeCanRedouble 今リダブルできるかを返す
+	BridgeCanRedouble(playerIdx int) bool
 	// GetDeclarerIdx デクレアラーインデックスを取得する
 	GetDeclarerIdx() int
 	// GetDummyIdx ダミーインデックスを取得する

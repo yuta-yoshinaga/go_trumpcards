@@ -1968,3 +1968,66 @@ func TestBridgeCpuSelectBid_HardDispatch(t *testing.T) {
 	bt, _, _ := b.cpuSelectBid(1)
 	assert.NotEqual(t, BridgeBidPass, bt)
 }
+
+// **どこから上回れるか・ダブルできるかを、拒否条件の裏返しで出す** (#4903)。
+func TestBridge_MinLegalBidAndDoubleRules(t *testing.T) {
+	g := newTestBridgeWithReset()
+
+	// まだ誰もビッドしていなければ 1♣ から。
+	g.SetContractLevel(0)
+	lv, st, ok := g.BridgeMinLegalBid()
+	assert.True(t, ok)
+	assert.Equal(t, 1, lv)
+	assert.Equal(t, BridgeBidSuitClub, st)
+
+	// **同レベルの上位スートが先。**レベルを上げるのは NT まで埋まってから。
+	g.SetContractLevel(3)
+	g.SetContractSuit(BridgeBidSuitClub)
+	lv, st, ok = g.BridgeMinLegalBid()
+	assert.True(t, ok)
+	assert.Equal(t, 3, lv)
+	assert.Equal(t, BridgeBidSuitClub+1, st)
+
+	// 3NT の次は 4♣。
+	g.SetContractSuit(BridgeBidSuitNT)
+	lv, st, ok = g.BridgeMinLegalBid()
+	assert.True(t, ok)
+	assert.Equal(t, 4, lv)
+	assert.Equal(t, BridgeBidSuitClub, st)
+
+	// 7NT まで埋まれば上は無い。
+	g.SetContractLevel(7)
+	g.SetContractSuit(BridgeBidSuitNT)
+	_, _, ok = g.BridgeMinLegalBid()
+	assert.False(t, ok)
+
+	// --- ダブル / リダブル ---
+	g.SetContractLevel(3)
+	g.SetContractSuit(BridgeBidSuitClub)
+	g.SetDoubled(0)
+	g.lastBidTeam = g.GetPlayer(0).GetTeam()
+
+	// 相手チームだけがダブルできる。
+	assert.False(t, g.BridgeCanDouble(0), "own team's bid cannot be doubled")
+	assert.True(t, g.BridgeCanDouble(1))
+	// ビッドが無ければ不可。
+	g.SetContractLevel(0)
+	assert.False(t, g.BridgeCanDouble(1))
+	g.SetContractLevel(3)
+
+	// 既にダブル済みなら不可。代わりに、ダブルされた側だけがリダブルできる。
+	g.SetDoubled(1)
+	assert.False(t, g.BridgeCanDouble(1))
+	assert.True(t, g.BridgeCanRedouble(0))
+	assert.False(t, g.BridgeCanRedouble(1), "only the doubled team may redouble")
+
+	// リダブル済みならどちらも不可。
+	g.SetDoubled(2)
+	assert.False(t, g.BridgeCanDouble(1))
+	assert.False(t, g.BridgeCanRedouble(0))
+
+	// 範囲外の席。
+	g.SetDoubled(0)
+	assert.False(t, g.BridgeCanDouble(99))
+	assert.False(t, g.BridgeCanRedouble(-1))
+}
