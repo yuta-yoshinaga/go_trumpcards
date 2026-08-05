@@ -1515,6 +1515,7 @@
       "reset": "Restart the game",
       "selectNertzPile": "Select the Nertz pile",
       "selectTarget": "Select the target player",
+      "selectTargetNamed": "Select {{name}}",
       "selectWastePile": "Select the waste pile",
       "setHands": "Confirm the hands",
       "shift": "Shift a column",
