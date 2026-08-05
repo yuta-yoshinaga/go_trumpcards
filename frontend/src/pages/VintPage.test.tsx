@@ -260,4 +260,46 @@ describe('VintPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  // **既存の宣言を上回らない組は出せない。**サーバは同格も弾くので、選ばせて
+  // からエラーで返すのではなく、選べないようにする (#4940)。
+  describe('bid must beat the standing bid', () => {
+    const bidding = (over?: Partial<VintResponse>) =>
+      makeState({ phase: VintPhase.BID, declarerIdx: -1, currentPlayerIdx: 0, ...over });
+
+    it('leaves every level and denomination open before the first bid', async () => {
+      mockExec.mockResolvedValue(bidding({ highBid: null }));
+      renderWithProviders(<VintPage />);
+      const levels = (await screen.findByLabelText(/レベル/)) as HTMLSelectElement;
+      for (const o of Array.from(levels.options)) expect(o.disabled).toBe(false);
+      const denoms = screen.getByLabelText(/スート|デノミ/) as HTMLSelectElement;
+      for (const o of Array.from(denoms.options)) expect(o.disabled).toBe(false);
+      expect(screen.getByTestId('vint-bid-button')).not.toBeDisabled();
+    });
+
+    it('closes the levels that no denomination can beat', async () => {
+      // ♥4 が立っている → レベル 4 は NT だけ残り、1〜3 は全滅。
+      mockExec.mockResolvedValue(bidding({ highBid: { player: 1, level: 4, denom: 3, trickValue: 40 } }));
+      renderWithProviders(<VintPage />);
+      const levels = (await screen.findByLabelText(/レベル/)) as HTMLSelectElement;
+      const byValue = Object.fromEntries(Array.from(levels.options).map((o) => [o.value, o.disabled]));
+      expect(byValue['3']).toBe(true);
+      expect(byValue['4']).toBe(false);
+      expect(byValue['5']).toBe(false);
+    });
+
+    // **同格も通らない。**「レベルが上でなければ不可」だと出せる宣言を潰しすぎ、
+    // 「以上なら可」だと弾かれる宣言を残す。
+    it('disables the denominations at or below the standing bid', async () => {
+      mockExec.mockResolvedValue(bidding({ highBid: { player: 1, level: 3, denom: 2, trickValue: 30 } }));
+      renderWithProviders(<VintPage />);
+      const levels = (await screen.findByLabelText(/レベル/)) as HTMLSelectElement;
+      fireEvent.change(levels, { target: { value: '3' } });
+
+      const denoms = screen.getByLabelText(/スート|デノミ/) as HTMLSelectElement;
+      const disabled = Array.from(denoms.options).map((o) => o.disabled);
+      // 0(♠) 1(♣) 2(♦) は不可、3(♥) 4(NT) は可。
+      expect(disabled).toEqual([true, true, true, false, false]);
+    });
+  });
 });

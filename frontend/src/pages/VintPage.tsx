@@ -29,6 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseVintCommand, VINT_HELP } from '../utils/cli/commands/vintCommands';
 import { formatVintState } from '../utils/cli/formatters/vintFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { vintBidBeats, vintLevelHasLegalBid } from '../utils/vintBid';
 
 /** Denominations in bidding order — spades LOWEST, no trump highest. */
 const DENOMS = [0, 1, 2, 3, 4];
@@ -137,6 +138,10 @@ function VintPageContent() {
 
   const levels: number[] = [];
   for (let l = state.minLevel; l <= state.maxLevel; l++) levels.push(l);
+
+  // **既存の宣言を上回らない組は出せない。**サーバは同格も `<=` で弾くので、
+  // 選ばせてからエラーで返すのではなく、選べないようにする (#4940)。
+  const bidIsLegal = vintBidBeats(bidDenom, bidLevel, state.highBid);
 
   const handleBid = () => {
     exec('bid', { level: bidLevel, denom: bidDenom });
@@ -347,7 +352,7 @@ function VintPageContent() {
                       onChange={(e) => setBidLevel(Number(e.target.value))}
                     >
                       {levels.map((l) => (
-                        <option key={l} value={l}>
+                        <option key={l} value={l} disabled={!vintLevelHasLegalBid(l, state.highBid)}>
                           {l}
                         </option>
                       ))}
@@ -362,15 +367,26 @@ function VintPageContent() {
                       onChange={(e) => setBidDenom(Number(e.target.value))}
                     >
                       {DENOMS.map((d) => (
-                        <option key={d} value={d}>
+                        <option key={d} value={d} disabled={!vintBidBeats(d, bidLevel, state.highBid)}>
                           {denomLabel(d)}
                         </option>
                       ))}
                     </select>
                   </label>
-                  <button type="button" className={btnPrimary} onClick={handleBid} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleBid}
+                    disabled={loading || !bidIsLegal}
+                    data-testid="vint-bid-button"
+                  >
                     {t('bidButton')}
                   </button>
+                  {!bidIsLegal && (
+                    <span className="text-ds-warning text-xs" data-testid="vint-bid-too-low">
+                      {t('bidMustBeat')}
+                    </span>
+                  )}
                   <button type="button" className={btnWarning} onClick={() => exec('pass')} disabled={loading}>
                     {t('passButton')}
                   </button>
