@@ -37,7 +37,8 @@
     "title": "You completed a yaku! Koi-Koi or Shobu?",
     "points": "{{points}} pts",
     "koikoi": "Koi-Koi",
-    "shobu": "Shobu"
+    "shobu": "Shobu",
+    "multiplier": "(x{{mult}})"
   },
   "roundResult": {
     "title": "Round Result",

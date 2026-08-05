@@ -37,7 +37,8 @@
     "title": "役が成立しました！ こいこい？ それとも勝負？",
     "points": "{{points}}文",
     "koikoi": "こいこい",
-    "shobu": "勝負"
+    "shobu": "勝負",
+    "multiplier": "（倍率×{{mult}}）"
   },
   "roundResult": {
     "title": "ラウンド結果",
