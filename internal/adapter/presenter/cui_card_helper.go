@@ -232,3 +232,29 @@ func cuiCaptureHintLine(hand cuiCardList, opts map[int][]int, key string) string
 	}
 	return strings.Join(notes, "  ")
 }
+
+// cuiDiscardPileLines lists a whole discard pile, oldest first, in indexed form
+// ("[0]SPADE 5 [1]HEART 9"), wrapped every cuiDiscardPerLine cards. Returns ""
+// for an empty pile.
+//
+// **山ごと取るゲームでは捨て札の中身は公開情報。**Canasta/Burraco は一番上しか
+// 出しておらず、「山全体を取る」判断を 1 枚で迫っていた (#4833, #5043)。
+func cuiDiscardPileLines(pile []*domain.Card, key string) string {
+	if len(pile) == 0 {
+		return ""
+	}
+	parts := make([]string, 0, len(pile))
+	for i, c := range pile {
+		parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(c))
+	}
+	var b strings.Builder
+	for i := 0; i < len(parts); i += cuiDiscardPerLine {
+		end := min(i+cuiDiscardPerLine, len(parts))
+		b.WriteString(i18n.Tf(key, "cards", strings.Join(parts[i:end], " ")) + "\n")
+	}
+	return b.String()
+}
+
+// cuiDiscardPerLine は捨て札一覧の 1 行あたりの枚数。20 枚超の山を 1 行に並べると
+// 折り返しで読めなくなる。
+const cuiDiscardPerLine = 8
