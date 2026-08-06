@@ -319,31 +319,25 @@ function HeartsPageContent() {
                     <div className="mt-1">
                       {state.players
                         .filter((p) => !p.isHuman)
-                        .map((p) => (
-                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                            <span
-                              className={
-                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit)
-                                  ? 'text-ds-warning font-semibold'
-                                  : undefined
-                              }
-                              title={
-                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit)
-                                  ? t('limitNear', { limit: state.config.pointLimit })
-                                  : undefined
-                              }
-                              data-near-limit={
-                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit) || undefined
-                              }
-                            >
-                              {t('cumulativeScore', { score: p.cumulativeScore })}
-                            </span>{' '}
-                            | {t('roundScore', { score: p.roundScore })} |{' '}
-                            <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
-                            {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
-                          </div>
-                        ))}
+                        .map((p) => {
+                          // 表と同じく1行につき一度だけ判定する。
+                          const isNear = heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit);
+                          return (
+                            <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                              {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                              <span
+                                className={isNear ? 'text-ds-warning font-semibold' : undefined}
+                                title={isNear ? t('limitNear', { limit: state.config.pointLimit }) : undefined}
+                                data-near-limit={isNear || undefined}
+                              >
+                                {t('cumulativeScore', { score: p.cumulativeScore })}
+                              </span>{' '}
+                              | {t('roundScore', { score: p.roundScore })} |{' '}
+                              <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
+                              {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
+                            </div>
+                          );
+                        })}
                     </div>
                   </details>
                 ) : (
@@ -383,33 +377,29 @@ function HeartsPageContent() {
                         </tr>
                       </thead>
                       <tbody>
-                        {state.players.map((p) => (
-                          <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                            <td>{playerName(p.id, p.isHuman)}</td>
-                            <td className="text-center">{p.roundScore}</td>
-                            <td
-                              className={`text-center${
-                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit)
-                                  ? ' text-ds-warning font-semibold'
-                                  : ''
-                              }`}
-                              title={
-                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit)
-                                  ? t('limitNear', { limit: state.config.pointLimit })
-                                  : undefined
-                              }
-                              data-near-limit={
-                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit) || undefined
-                              }
-                            >
-                              {p.cumulativeScore}
-                            </td>
-                            <td className="text-center">{p.trickCount}</td>
-                            <td className="text-center">
-                              <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
-                            </td>
-                          </tr>
-                        ))}
+                        {state.players.map((p) => {
+                          // 1行につき一度だけ判定する。className / title /
+                          // data-near-limit で別々に呼ぶと、条件を変えたときに
+                          // 片方だけ直してずれる。
+                          const isNear = heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit);
+                          return (
+                            <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                              <td>{playerName(p.id, p.isHuman)}</td>
+                              <td className="text-center">{p.roundScore}</td>
+                              <td
+                                className={`text-center${isNear ? ' text-ds-warning font-semibold' : ''}`}
+                                title={isNear ? t('limitNear', { limit: state.config.pointLimit }) : undefined}
+                                data-near-limit={isNear || undefined}
+                              >
+                                {p.cumulativeScore}
+                              </td>
+                              <td className="text-center">{p.trickCount}</td>
+                              <td className="text-center">
+                                <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </details>
@@ -429,33 +419,29 @@ function HeartsPageContent() {
                         </tr>
                       </thead>
                       <tbody>
-                        {state.players.map((p) => (
-                          <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                            <td>{playerName(p.id, p.isHuman)}</td>
-                            <td className="text-center">{p.roundScore}</td>
-                            <td
-                              className={`text-center${
-                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit)
-                                  ? ' text-ds-warning font-semibold'
-                                  : ''
-                              }`}
-                              title={
-                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit)
-                                  ? t('limitNear', { limit: state.config.pointLimit })
-                                  : undefined
-                              }
-                              data-near-limit={
-                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit) || undefined
-                              }
-                            >
-                              {p.cumulativeScore}
-                            </td>
-                            <td className="text-center">{p.trickCount}</td>
-                            <td className="text-center">
-                              <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
-                            </td>
-                          </tr>
-                        ))}
+                        {state.players.map((p) => {
+                          // 1行につき一度だけ判定する。className / title /
+                          // data-near-limit で別々に呼ぶと、条件を変えたときに
+                          // 片方だけ直してずれる。
+                          const isNear = heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit);
+                          return (
+                            <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                              <td>{playerName(p.id, p.isHuman)}</td>
+                              <td className="text-center">{p.roundScore}</td>
+                              <td
+                                className={`text-center${isNear ? ' text-ds-warning font-semibold' : ''}`}
+                                title={isNear ? t('limitNear', { limit: state.config.pointLimit }) : undefined}
+                                data-near-limit={isNear || undefined}
+                              >
+                                {p.cumulativeScore}
+                              </td>
+                              <td className="text-center">{p.trickCount}</td>
+                              <td className="text-center">
+                                <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
