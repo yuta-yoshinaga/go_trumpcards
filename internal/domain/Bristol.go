@@ -460,13 +460,13 @@ func (b *Bristol) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return card.GetValue() == top.GetValue()+1
 }
 
-// BristolLegalTargets は指定した移動元の一番上の札を置ける先を返す。
+// LegalTargets は指定した移動元の一番上の札を置ける先を返す。
 // tableau は列番号、foundation はファウンデーション番号。
 //
 // **選んだ札で実際に動かせる先だけを示すため。**画面は選択中に全ての移動先を
 // 同じ見た目で強調していて、押すまで合法か分からなかった (#4813)。判定は
 // canPlaceOnTableau / canPlaceOnFoundation をそのまま使う。
-func (b *Bristol) BristolLegalTargets(fromZone string, fromCol int) (tableau []int, foundation []int) {
+func (b *Bristol) LegalTargets(fromZone string, fromCol int) (tableau []int, foundation []int) {
 	var card *Card
 	switch fromZone {
 	case "tableau":
@@ -483,6 +483,8 @@ func (b *Bristol) BristolLegalTargets(fromZone string, fromCol int) (tableau []i
 		return nil, nil
 	}
 	for col := 0; col < BristolTableauCnt; col++ {
+		// 自分の列は canPlaceOnTableau が既に弾く (自分自身の 1 つ下にはならない)。
+		// それでも明示するのは、読み手が「同じ列が候補に出るのでは」と疑わずに済むため。
 		if col == fromCol && fromZone == "tableau" {
 			continue
 		}

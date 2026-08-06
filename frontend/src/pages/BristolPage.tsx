@@ -292,7 +292,7 @@ function BristolPageContent() {
                             ? `rounded border p-0.5 ${focusRingWhite} border-ds-success`
                             : `rounded border p-0.5 ${focusRingWhite} border-white/30`
                         }
-                        data-legal-target={selected && legalFoundation.has(i) ? 'true' : undefined}
+                        data-testid={selected && legalFoundation.has(i) ? 'bristol-legal-target' : undefined}
                         style={{ width: cardWidth + 4, height: cardHeight + 4 }}
                       >
                         {pile.length > 0 ? (
@@ -343,7 +343,7 @@ function BristolPageContent() {
                               ? `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} border-ds-success`
                               : `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} border-transparent`
                         }
-                        data-legal-target={selected && legalTableau.has(colIdx) ? 'true' : undefined}
+                        data-testid={selected && legalTableau.has(colIdx) ? 'bristol-legal-target' : undefined}
                         style={{ height: colHeight }}
                       >
                         {col.length === 0 ? (

@@ -96,7 +96,7 @@ func (_m *MockBristolGame) GetFan() [domain.BristolFanCnt][]*domain.Card {
 	return ret.Get(0).([domain.BristolFanCnt][]*domain.Card)
 }
 
-func (_m *MockBristolGame) BristolLegalTargets(fromZone string, fromCol int) ([]int, []int) {
+func (_m *MockBristolGame) LegalTargets(fromZone string, fromCol int) ([]int, []int) {
 	ret := _m.Called(fromZone, fromCol)
 	tab, _ := ret.Get(0).([]int)
 	found, _ := ret.Get(1).([]int)

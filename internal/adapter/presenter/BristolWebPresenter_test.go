@@ -19,7 +19,7 @@ func setupBristolWebMockDefaults(bg *interfaces.MockBristolGame) {
 	bg.On("GetMoveCount").Return(0).Maybe()
 	bg.On("GetStockCount").Return(28).Maybe()
 	bg.On("CanUndo").Return(false).Maybe()
-	bg.On("BristolLegalTargets", mock.Anything, mock.Anything).Return(([]int)(nil), ([]int)(nil)).Maybe()
+	bg.On("LegalTargets", mock.Anything, mock.Anything).Return(([]int)(nil), ([]int)(nil)).Maybe()
 
 	var tableau [domain.BristolTableauCnt][]*domain.Card
 	for i := 0; i < domain.BristolTableauCnt; i++ {
@@ -104,9 +104,9 @@ func TestBristolWebPresenter_OutputCarriesTheHint(t *testing.T) {
 func TestBristolWebPresenter_LegalTargets(t *testing.T) {
 	bg := new(interfaces.MockBristolGame)
 	setupBristolWebMockDefaults(bg)
-	bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "BristolLegalTargets")
-	bg.On("BristolLegalTargets", "tableau", 0).Return([]int{3}, []int{1})
-	bg.On("BristolLegalTargets", mock.Anything, mock.Anything).Return(([]int)(nil), ([]int)(nil))
+	bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "LegalTargets")
+	bg.On("LegalTargets", "tableau", 0).Return([]int{3}, []int{1})
+	bg.On("LegalTargets", mock.Anything, mock.Anything).Return(([]int)(nil), ([]int)(nil))
 	bg.On("GetHint").Return((*domain.BristolHint)(nil)).Maybe()
 
 	var out controller.BristolWebOutput

@@ -131,7 +131,7 @@ func (p *BristolWebPresenter) buildBaseOutput(b interfaces.BristolGame) *control
 func (p *BristolWebPresenter) buildLegalTargets(g interfaces.BristolGame) map[string]controller.BristolWebOutputTargets {
 	out := make(map[string]controller.BristolWebOutputTargets)
 	add := func(zone string, col int) {
-		tab, found := g.BristolLegalTargets(zone, col)
+		tab, found := g.LegalTargets(zone, col)
 		if len(tab) == 0 && len(found) == 0 {
 			return
 		}

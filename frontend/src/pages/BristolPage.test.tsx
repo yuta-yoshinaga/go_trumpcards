@@ -369,11 +369,11 @@ describe('BristolPage', () => {
 
     // 何も選んでいなければ 1 つも光らない。
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0);
+    expect(screen.queryAllByTestId('bristol-legal-target')).toHaveLength(0);
 
     fireEvent.click(screen.getByRole('button', { name: '降順ビルド列 1（1枚）' }));
 
     // 合法な移動先は 2 つ (タブロー 3 とファウンデーション 1) だけ。
-    await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(2));
+    await waitFor(() => expect(screen.queryAllByTestId('bristol-legal-target')).toHaveLength(2));
   });
 });
