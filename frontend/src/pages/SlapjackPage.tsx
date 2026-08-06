@@ -130,15 +130,10 @@ function SlapjackPageContent() {
 
   useMountReset(execApi);
 
-  // CPU tick driver: poll only while a CPU action is actually pending.
+  // CPU tick driver: poll only while a CPU action is pending (#4748).
   //
-  // **ドメインの Tick() は pending.Kind が None のとき即座に何もせず返る。**
-  // それでも 100ms ごとに投げ続けていたので、人間が考えている間ずっと毎秒10回の
-  // 無駄なリクエストが飛んでいた (#4748)。EgyptianRatscrewPage と同じゲートに揃える。
-  //
-  // **手番でゲートしてはいけない。**CPU のスラップは人間の手番中にも予約される
-  // (SlapjackPendingSlap)。「CPU の手番中だけ」に絞ると CPU が J を叩かなくなる。
-  // 予約の有無こそが正しい条件。
+  // **手番ではなく予約でゲートする。**CPU のスラップは人間の手番中にも予約される
+  // (SlapjackPendingSlap) ので、「CPU の手番中だけ」に絞ると CPU が J を叩かなくなる。
   const isCpuPending = state?.pendingKind !== undefined && state.pendingKind !== SlapjackPendingKind.NONE;
   const isGameRunning = !!state && !state.gameEndFlag;
   useEffect(() => {
