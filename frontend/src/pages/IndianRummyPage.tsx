@@ -417,12 +417,9 @@ function IndianRummyPageContent() {
             {/* **CUI は毎ターン出している。**カードを選んでいない思案中でも、いまの
                 デッドウッドとピュアシーケンス充足を確認できるようにする (#4824)。 */}
             {isDiscardPhase && isHumanTurn && humanPlayer && (
-              <div
-                className="mt-2 text-sm text-ds-text-muted"
-                data-testid="indianrummy-hand-status"
-                role="status"
-                aria-live="polite"
-              >
+              // 読み上げは declarePreview 側の live region に任せる。隣り合う
+              // live region が 2 つあると同じ変化を二重に告知する。
+              <div className="mt-2 text-sm text-ds-text-muted" data-testid="indianrummy-hand-status">
                 {t('deadwoodShort', { score: humanPlayer.deadwood })}
                 <span className={`ml-2 ${humanPlayer.hasPureSequence ? 'text-ds-success' : 'text-ds-warning'}`}>
                   {humanPlayer.hasPureSequence ? t('pureSequenceBadge') : t('pureSequenceMissing')}
