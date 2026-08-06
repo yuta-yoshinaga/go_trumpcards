@@ -342,4 +342,29 @@ describe('PresidentPage', () => {
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     localStorage.removeItem('cli-mode-president');
   });
+
+  // **CUI と Daifugo は以前から交換内容を出していたのに、President の Web だけ
+  // state.exchangeActions を描画していなかった (#4745)。**誰が誰に何を渡したかが
+  // 分からないと、ラウンド開始時に手札が変わった理由を追えない。
+  it('renders the round-start card exchange log', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        exchangeActions: [{ fromPlayerIdx: 1, toPlayerIdx: 0, cards: [{ design: 'SPADE', value: 1 }] }],
+      }),
+    );
+    renderWithProviders(<PresidentPage />);
+
+    const log = await screen.findByTestId('exchange-log');
+    expect(log).toHaveTextContent('SPADE 1');
+  });
+
+  // 空のときは出さない。常時表示に退化すると、交換が無いラウンドでも見出しだけの
+  // 空パネルが残る。
+  it('renders no exchange log when there was no exchange', async () => {
+    mockExec.mockResolvedValue(makeState({ exchangeActions: [] }));
+    renderWithProviders(<PresidentPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('exchange-log')).not.toBeInTheDocument();
+  });
 });
