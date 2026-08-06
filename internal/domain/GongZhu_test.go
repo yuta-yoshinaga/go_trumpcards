@@ -546,3 +546,31 @@ func TestGongZhuCpuPlayWithNoCards(t *testing.T) {
 		t.Errorf("手札の無い席が札を出した: trick=%d", len(g.GetCurrentTrick()))
 	}
 }
+
+// **マストフォローの可視化 (#4812)。**GetPlayableIndices は validatePlay と
+// 同じ判定を返すこと。別のスキャンだと「出せる」と光った札が弾かれる。
+func TestGongZhu_GetPlayableIndices(t *testing.T) {
+	g := domain.NewDefaultGongZhu()
+	g.Reset()
+	g.SetPhase(domain.GongZhuPhasePlay)
+	g.SetCurrentPlayerIdx(0)
+
+	p := g.GetPlayer(0)
+	for p.GetCardsSize() > 0 {
+		p.RemoveCard(0)
+	}
+	p.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	p.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+
+	// ♠ リードに追従できるなら ♠ だけ。
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 13, false)}})
+	assert.Equal(t, []int{0, 2}, g.GetPlayableIndices(0))
+
+	// 追従できないスートのリードなら全部出せる。
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignClover, 4, false)}})
+	assert.Equal(t, []int{0, 1, 2}, g.GetPlayableIndices(0))
+
+	// 範囲外は nil。
+	assert.Nil(t, g.GetPlayableIndices(99))
+}

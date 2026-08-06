@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -31,6 +32,8 @@ func setupGongZhuWebMock() *interfaces.MockGongZhuGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.GongZhuPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("IsHumanTurn").Return(true).Maybe()
+	m.On("GetPlayableIndices", mock.Anything).Return(([]int)(nil)).Maybe()
 	m.On("GetExposure").Return(domain.GongZhuExposure{})
 	m.On("GetExposableIndices", 0).Return([]int{})
 	m.On("GetWinnerIdx").Return(-1)
@@ -262,4 +265,25 @@ func TestGongZhuWebPresenterHintOutputMarksTheRequest(t *testing.T) {
 	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
 	none.On("GetHint").Return((*domain.GongZhuHint)(nil))
 	assert.Contains(t, new(presenter.GongZhuWebPresenter).HintOutput(none), "gongzhu.noHint")
+}
+
+// **マストフォローの可視化 (#4812)。**人間の手番のプレイフェーズだけ、
+// 出せる手札の位置を載せる。
+func TestGongZhuWebPresenter_PlayableIndices(t *testing.T) {
+	m, _ := setupGongZhuWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayableIndices")
+	m.On("GetPlayableIndices", 0).Return([]int{1, 3})
+
+	var out controller.GongZhuWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.GongZhuWebPresenter).Output(m, nil)), &out))
+	assert.Equal(t, []int{1, 3}, out.PlayableIndices)
+
+	// CPU の手番では空 (null ではない)。
+	m2, _ := setupGongZhuWebMockWithPlayers()
+	m2.ExpectedCalls = removeMockCall(m2.ExpectedCalls, "IsHumanTurn")
+	m2.On("IsHumanTurn").Return(false)
+
+	var out2 controller.GongZhuWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.GongZhuWebPresenter).Output(m2, nil)), &out2))
+	assert.Empty(t, out2.PlayableIndices)
 }

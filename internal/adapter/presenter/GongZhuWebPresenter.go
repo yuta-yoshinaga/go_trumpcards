@@ -57,6 +57,7 @@ func (p *GongZhuWebPresenter) buildBase(g interfaces.GongZhuGame) *controller.Go
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
+	resObj.PlayableIndices = p.playableIndices(g)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -153,4 +154,20 @@ func (p *GongZhuWebPresenter) HintOutput(g interfaces.GongZhuGame) string {
 // ActionLogOutput 棋譜をJSON出力
 func (p *GongZhuWebPresenter) ActionLogOutput(g interfaces.GongZhuGame) string {
 	return actionLogOutputJSON(g)
+}
+
+// playableIndices は人間がいま出せる手札の位置を返す。
+//
+// **マストフォローの可視化。**Web はどのカードが出せるかを一切示しておらず、
+// プレイヤーが自力で判断するしかなかった (#4812)。判定はドメインの validatePlay
+// をそのまま通す GetPlayableIndices を使う。
+func (p *GongZhuWebPresenter) playableIndices(g interfaces.GongZhuGame) []int {
+	if g.GetPhase() != domain.GongZhuPhasePlay || !g.IsHumanTurn() {
+		return make([]int, 0)
+	}
+	idx := g.GetPlayableIndices(g.GetCurrentPlayerIdx())
+	if idx == nil {
+		return make([]int, 0)
+	}
+	return idx
 }

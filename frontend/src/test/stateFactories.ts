@@ -191,6 +191,8 @@ const baseGongZhuState: GongZhuResponse = {
   heartsBroken: false,
   exposed: { pig: false, sheep: false, ace: false, doubler: false },
   exposableIndices: [],
+  // 既定は「手札 2 枚とも出せる」。空にすると全ページテストの play が黙って死ぬ。
+  playableIndices: [0, 1],
   gameEndFlag: false,
   winnerIdx: -1,
   leadPlayerIdx: 0,
