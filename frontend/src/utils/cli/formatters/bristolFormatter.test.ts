@@ -17,6 +17,7 @@ function makeState(overrides: Partial<BristolResponse> = {}): BristolResponse {
     fan: [[{ design: 'HEART', value: 4 }], [], []],
     stockCount: 28,
     foundation: [[], [], [], []],
+    legalTargets: {},
     phase: 0,
     moveCount: 0,
     canUndo: false,

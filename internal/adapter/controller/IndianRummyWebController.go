@@ -38,20 +38,25 @@ type IndianRummyWebOutputPlayer struct {
 
 // IndianRummyWebOutput インドラミー Web アウトプット
 type IndianRummyWebOutput struct {
-	Players          []*IndianRummyWebOutputPlayer `json:"players"`
-	Phase            int                           `json:"phase"`
-	RoundNumber      int                           `json:"roundNumber"`
-	TargetRounds     int                           `json:"targetRounds"`
-	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
-	DealerIdx        int                           `json:"dealerIdx"`
-	DiscardTop       *WebOutputCard                `json:"discardTop"`
-	DrawPileCount    int                           `json:"drawPileCount"`
-	WildJoker        *WebOutputCard                `json:"wildJoker"`
-	WildRank         int                           `json:"wildRank"`
-	GameEndFlag      bool                          `json:"gameEndFlag"`
-	WinnerIdx        int                           `json:"winnerIdx"`
-	DeclarerIdx      int                           `json:"declarerIdx"`
-	DeclarationValid bool                          `json:"declarationValid"`
+	Players []*IndianRummyWebOutputPlayer `json:"players"`
+	// HumanDeadwood は人間の手札のデッドウッド採点値、HumanHasPureSequence は
+	// 必須のピュアシーケンスを満たしているか。CUI は毎ターン出しているのに Web は
+	// 狭い条件でしか出していなかった (#4824)。
+	HumanDeadwood        int            `json:"humanDeadwood"`
+	HumanHasPureSequence bool           `json:"humanHasPureSequence"`
+	Phase                int            `json:"phase"`
+	RoundNumber          int            `json:"roundNumber"`
+	TargetRounds         int            `json:"targetRounds"`
+	CurrentPlayerIdx     int            `json:"currentPlayerIdx"`
+	DealerIdx            int            `json:"dealerIdx"`
+	DiscardTop           *WebOutputCard `json:"discardTop"`
+	DrawPileCount        int            `json:"drawPileCount"`
+	WildJoker            *WebOutputCard `json:"wildJoker"`
+	WildRank             int            `json:"wildRank"`
+	GameEndFlag          bool           `json:"gameEndFlag"`
+	WinnerIdx            int            `json:"winnerIdx"`
+	DeclarerIdx          int            `json:"declarerIdx"`
+	DeclarationValid     bool           `json:"declarationValid"`
 	WebOutputBase
 	Config IndianRummyWebOutputConfig `json:"config"`
 }

@@ -409,3 +409,38 @@ func TestBristol_GetActionLog(t *testing.T) {
 	assert.NoError(t, b.Draw())
 	assert.NotEmpty(t, b.GetActionLog())
 }
+
+// **押すまで合法か分からなかった (#4813)。**移動元ごとに、置ける先だけを返すこと。
+func TestBristol_LegalTargets(t *testing.T) {
+	b := setupPlayingBristol()
+	var tb [domain.BristolTableauCnt][]*domain.Card
+	tb[0] = []*domain.Card{brCard(domain.CardDesignSpade, 8)}
+	tb[1] = []*domain.Card{brCard(domain.CardDesignHeart, 9)} // 8 を置ける
+	tb[2] = []*domain.Card{brCard(domain.CardDesignClover, 4)}
+	b.SetTableau(tb)
+	var fn [domain.BristolFanCnt][]*domain.Card
+	fn[0] = []*domain.Card{brCard(domain.CardDesignDiamond, 5)} // 4 の上には置けない
+	b.SetFan(fn)
+	var fd [domain.BristolFoundationCnt][]*domain.Card
+	fd[0] = []*domain.Card{brCard(domain.CardDesignSpade, 7)} // 8 を置ける
+	b.SetFoundation(fd)
+
+	tab, found := b.LegalTargets("tableau", 0)
+	assert.Equal(t, []int{1}, tab, "♠8 は ♥9 の上だけ")
+	assert.Equal(t, []int{0}, found, "♠7 の上に ♠8")
+
+	// 置ける先が無い移動元。
+	tab2, found2 := b.LegalTargets("fan", 0)
+	assert.Nil(t, tab2)
+	assert.Nil(t, found2)
+
+	// 空の移動元・未知のゾーン・範囲外。
+	for _, tc := range []struct {
+		zone string
+		col  int
+	}{{"fan", 1}, {"tableau", 99}, {"fan", -1}, {"stock", 0}} {
+		tab3, found3 := b.LegalTargets(tc.zone, tc.col)
+		assert.Nil(t, tab3, tc.zone)
+		assert.Nil(t, found3, tc.zone)
+	}
+}

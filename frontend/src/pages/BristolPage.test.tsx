@@ -29,6 +29,7 @@ const playingState: BristolResponse = {
   fan: [[card('HEART', 4)], [], []],
   stockCount: 28,
   foundation: [[], [], [], []],
+  legalTargets: {},
   phase: 0,
   moveCount: 0,
   canUndo: false,
@@ -354,5 +355,25 @@ describe('BristolPage', () => {
       await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
     });
+  });
+
+  // **押すまで合法か分からなかった (#4813)。**選択中は全ての移動先が同じ見た目で
+  // 強調されていた。実際に置ける先だけを緑で示す。
+  it('highlights only the destinations the selected card can go to', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      // タブロー 0 の札は「タブロー 3」と「ファウンデーション 1」にだけ置ける。
+      legalTargets: { 'tableau-0': { tableau: [3], foundation: [1] } },
+    });
+    renderWithProviders(<BristolPage />);
+
+    // 何も選んでいなければ 1 つも光らない。
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryAllByTestId('bristol-legal-target')).toHaveLength(0);
+
+    fireEvent.click(screen.getByRole('button', { name: '降順ビルド列 1（1枚）' }));
+
+    // 合法な移動先は 2 つ (タブロー 3 とファウンデーション 1) だけ。
+    await waitFor(() => expect(screen.queryAllByTestId('bristol-legal-target')).toHaveLength(2));
   });
 });
