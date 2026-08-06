@@ -32,6 +32,9 @@ const SuecaHandSize = 10
 // SuecaTrickCount 1 ラウンドのトリック数
 const SuecaTrickCount = 10
 
+// SuecaWinPoints ラウンドを取るのに必要なカード得点 (全 120 点の過半数)。
+const SuecaWinPoints = 61
+
 // SuecaPhase ゲームフェーズ
 type SuecaPhase int
 

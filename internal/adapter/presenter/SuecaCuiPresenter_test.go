@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -106,6 +107,50 @@ func TestSuecaCuiPresenter_Output(t *testing.T) {
 		m, _ := setupSuecaCuiMockWithPlayers()
 		result := p.Output(m, errors.New("boom"))
 		assert.Contains(t, result, "boom")
+	})
+}
+
+// **Web はプレイ中ずっと得点を出しているのに、CUI はラウンド終了まで黙っていた
+// (#4723)。**61 点が勝利ラインなので、途中経過が見えないと「あと何点で取れるか」を
+// 手で数えるしかない。
+func TestSuecaCuiPresenter_ShowsRoundCardPointsDuringPlay(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.SuecaCuiPresenter)
+
+	for _, tt := range []struct {
+		name  string
+		phase domain.SuecaPhase
+	}{
+		{"play", domain.SuecaPhasePlay},
+		{"trick end", domain.SuecaPhaseTrickEnd},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			m, _ := setupSuecaCuiMockWithPlayers()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundCardPoints")
+			m.On("GetPhase").Return(tt.phase)
+			m.On("GetRoundCardPoints").Return([domain.SuecaTeamCnt]int{47, 33})
+
+			result := p.Output(m, nil)
+			assert.Contains(t, result, "47", "チームAのカード得点")
+			assert.Contains(t, result, "33", "チームBのカード得点")
+			assert.Contains(t, result, strconv.Itoa(domain.SuecaWinPoints), "勝利ライン")
+		})
+	}
+
+	// ラウンド終了フェーズは従来どおり promptRoundEnd 側で出すので、途中経過の
+	// 行は重ねない。**この一本が無いと「常に出す」に退化しても気づけない。**
+	t.Run("round end keeps the existing single summary", func(t *testing.T) {
+		m, _ := setupSuecaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundCardPoints")
+		m.On("GetPhase").Return(domain.SuecaPhaseRoundEnd)
+		m.On("GetRoundCardPoints").Return([domain.SuecaTeamCnt]int{47, 33})
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "カード獲得点", "途中経過の行はラウンド終了では出さない")
 	})
 }
 

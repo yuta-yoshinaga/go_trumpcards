@@ -76,7 +76,18 @@ func (p *SuecaCuiPresenter) Output(g interfaces.SuecaGame, lastErr error) string
 			b.WriteString(color.Green(banner) + "\n")
 			return
 		}
-		switch g.GetPhase() {
+		// **Web は PLAY/TRICK_END 中ずっと sueca-round-points を出しているのに、CUI は
+		// ラウンド終了まで一切出していなかった (#4723)。**61 点が勝利ラインなので、
+		// 途中経過が見えないと「あと何点で取れるか」を手で数えるしかない。
+		phase := g.GetPhase()
+		if phase == domain.SuecaPhasePlay || phase == domain.SuecaPhaseTrickEnd {
+			pts := g.GetRoundCardPoints()
+			b.WriteString(i18n.Tf("sueca.roundPoints",
+				"ptsA", strconv.Itoa(pts[0]),
+				"ptsB", strconv.Itoa(pts[1]),
+				"win", strconv.Itoa(domain.SuecaWinPoints)) + "\n")
+		}
+		switch phase {
 		case domain.SuecaPhasePlay:
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("sueca.promptPlay",

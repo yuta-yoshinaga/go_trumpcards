@@ -19,5 +19,6 @@
   "hintReasonFollowWin": "得点があるので勝ちに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダック",
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
-  "trickWinner": "{{name}}（チーム{{team}}）がトリックを獲得"
+  "trickWinner": "{{name}}（チーム{{team}}）がトリックを獲得",
+  "roundPoints": "カード獲得点 — チームA: {{ptsA}}点 / チームB: {{ptsB}}点（勝利ライン {{win}}点）"
 }
