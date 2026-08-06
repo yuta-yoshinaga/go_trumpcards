@@ -32,6 +32,23 @@ func (p *WhistWebPresenter) Output(w interfaces.WhistGame, lastErr error) string
 }
 
 // buildBase 共通フィールドを構築
+// validPlayIndices は人間がいま出せる手札の位置を返す。
+//
+// **判定はドメインの GetValidPlayIndices をそのまま呼ぶ。**フォロースートの
+// 規則をフロントに複製すると、ドメインだけ直したときに黙って食い違う。
+// プレイフェーズで人間の手番でなければ空 -- 呼び出し側は空を「制限なし」とは
+// 解釈せず、手番かどうかで先に分岐する (#4742)。
+func (p *WhistWebPresenter) validPlayIndices(w interfaces.WhistGame) []int {
+	if w.GetPhase() != domain.WhistPhasePlay || !w.IsHumanTurn() {
+		return make([]int, 0)
+	}
+	idx := w.GetValidPlayIndices(w.GetCurrentPlayerIdx())
+	if idx == nil {
+		return make([]int, 0)
+	}
+	return idx
+}
+
 func (p *WhistWebPresenter) buildBase(w interfaces.WhistGame) *controller.WhistWebOutput {
 	resObj := new(controller.WhistWebOutput)
 	resObj.Phase = int(w.GetPhase())
@@ -44,6 +61,7 @@ func (p *WhistWebPresenter) buildBase(w interfaces.WhistGame) *controller.WhistW
 	resObj.GameEndFlag = w.GetGameEndFlag()
 	resObj.WinnerTeam = w.GetWinnerTeam()
 	resObj.LeadPlayerIdx = w.GetLeadPlayerIdx()
+	resObj.ValidPlayIndices = p.validPlayIndices(w)
 
 	// 設定
 	cfg := w.GetConfig()

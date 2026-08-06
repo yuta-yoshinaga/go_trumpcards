@@ -42,6 +42,7 @@ function makeState(overrides: Partial<WhistResponse> = {}): WhistResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     leadPlayerIdx: 0,
+    validPlayIndices: [],
     message: '',
     config: { cpuDifficulty: 1, pointLimit: 5 },
     ...overrides,
@@ -178,5 +179,35 @@ describe('WhistPage', () => {
     const team1Chips = screen.getAllByText('チーム 1').filter((el) => el.className.includes('text-ds-error'));
     expect(team0Chips.length).toBeGreaterThan(0);
     expect(team1Chips.length).toBeGreaterThan(0);
+  });
+
+  // **ドメインは合法手を判定済みなのに、画面が使っていなかった (#4742)。**
+  // フォロースートに反する札もクリックでき、サーバーのエラーが返って初めて
+  // 出せないと分かる状態だった。
+  it('dims the cards that follow-suit forbids on the human play turn', async () => {
+    // 手札は SPADE A / HEART 5 / DIAMOND 9。合法なのは index 1 だけ。
+    mockExec.mockResolvedValue(makeState({ phase: 0, currentPlayerIdx: 0, validPlayIndices: [1] }));
+    renderWithProviders(<WhistPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const cards = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
+    expect(cards).toHaveLength(3);
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+    expect(cards[2]).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  // **空を「制限なし」と読まない。**CPU の手番では制限そのものを送っていない。
+  // 長さで判定すると「1枚も出せない」局面と区別が付かなくなる。
+  it('leaves every card enabled when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0, currentPlayerIdx: 1, validPlayIndices: [] }));
+    renderWithProviders(<WhistPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const cards = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
+    expect(cards).toHaveLength(3);
+    for (const c of cards) {
+      expect(c).not.toHaveAttribute('aria-disabled', 'true');
+    }
   });
 });
