@@ -134,6 +134,14 @@ function Rummy500PageContent() {
     .map((i) => humanPlayer?.cards[i])
     .filter((c): c is NonNullable<typeof c> => c !== undefined);
   const meldValid = classifyRummy500Meld(selectedMeldCards).valid;
+  // 選択中の 1 枚を、選んだメルドに本当に置けるか。
+  const selectedLayoffIsLegal =
+    layoffTarget !== null &&
+    selectedCardIndices.length === 1 &&
+    (state?.layoffTargets?.[selectedCardIndices[0]]?.some(
+      (tgt) => tgt.owner === layoffTarget.owner && tgt.meldIdx === layoffTarget.meldIdx,
+    ) ??
+      false);
   const showInvalidMeld = selectedCardIndices.length >= 3 && !meldValid;
 
   return (
@@ -390,7 +398,10 @@ function Rummy500PageContent() {
                         }
                       : undefined
                   }
-                  disabled={loading || layoffTarget === null || selectedCardIndices.length !== 1}
+                  // **選び直しで不正になった組み合わせを弾く。**カード A に合う先を
+                  // 選んだあと選択を B に変えると、ボタン自体は無効化されるのに
+                  // 送信は通ってしまっていた (#4832 のレビュー指摘)。
+                  disabled={loading || !selectedLayoffIsLegal}
                 >
                   {t('layoffButton')}
                 </button>

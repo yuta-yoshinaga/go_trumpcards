@@ -176,6 +176,9 @@ describe('Rummy500Page', () => {
   it('selects a lay-off target by clicking a laid meld', async () => {
     const withMeld: Rummy500Response = {
       ...playPhaseState,
+      // 置けるかどうかを決めるのはサーバー (Rummy500CanLayoff)。ここでは
+      // 「手札 0 枚目はこのメルドに置ける」と答えた状態を作る。
+      layoffTargets: [[{ owner: 1, meldIdx: 0 }]],
       players: [
         playPhaseState.players[0],
         {
@@ -365,5 +368,43 @@ describe('Rummy500Page', () => {
     expect(screen.getByTestId('layoff-meld-1-0')).toBeDisabled();
     expect(screen.getByTestId('layoff-meld-1-1')).not.toBeDisabled();
     expect(screen.getByTestId('layoff-meld-1-1')).toHaveAttribute('data-layoff-legal', 'true');
+  });
+
+  // **選び直しで不正になった組み合わせを弾く。**カード A に合う先を選んだあと
+  // 選択を B に変えても送信できてしまっていた (#4832 のレビュー指摘)。
+  it('disables the layoff button when the chosen meld does not fit the newly selected card', async () => {
+    const withMelds = {
+      ...playPhaseState,
+      players: [
+        playPhaseState.players[0],
+        {
+          ...playPhaseState.players[1],
+          laidMelds: [
+            {
+              cards: [
+                { design: 'SPADE' as const, value: 7 },
+                { design: 'HEART' as const, value: 7 },
+                { design: 'CLOVER' as const, value: 7 },
+              ],
+            },
+          ],
+        },
+      ],
+      // 手札 0 枚目は置ける、1 枚目は置けない。
+      layoffTargets: [[{ owner: 1, meldIdx: 0 }], []],
+    };
+    mockExec.mockResolvedValue(withMelds);
+    renderWithProviders(<Rummy500Page />);
+    await waitFor(() => expect(screen.getByTestId('layoff-meld-1-0')).toBeInTheDocument());
+
+    const handCards = document.querySelectorAll('[data-tutorial="r5-player-hand"] button');
+    fireEvent.click(handCards[0] as HTMLElement);
+    fireEvent.click(screen.getByTestId('layoff-meld-1-0'));
+    expect(screen.getByRole('button', { name: 'レイオフ' })).toBeEnabled();
+
+    // 選択を「置けない札」に変える。ボタンは無効に戻る。
+    fireEvent.click(handCards[0] as HTMLElement);
+    fireEvent.click(handCards[1] as HTMLElement);
+    expect(screen.getByRole('button', { name: 'レイオフ' })).toBeDisabled();
   });
 });

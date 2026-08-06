@@ -43,13 +43,13 @@ type Rummy500WebOutputMeld struct {
 	Cards []*WebOutputCard `json:"cards"`
 }
 
-// Rummy500WebOutput Rummy 500Webアウトプット
 // Rummy500LayoffTarget は 1 枚のカードを置ける既存メルドの場所。
 type Rummy500LayoffTarget struct {
 	Owner   int `json:"owner"`
 	MeldIdx int `json:"meldIdx"`
 }
 
+// Rummy500WebOutput は 500 ラムの Web アウトプット。
 type Rummy500WebOutput struct {
 	Players []*Rummy500WebOutputPlayer `json:"players"`
 	// LayoffTargets[i] は人間の手札 i 番目を置けるメルドの場所一覧。
