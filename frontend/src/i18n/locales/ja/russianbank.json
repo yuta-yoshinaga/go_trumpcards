@@ -43,5 +43,6 @@
   "frontendHint": {
     "russianbankToFoundation": "この札を台札へ上げられます",
     "russianbankToTableau": "この札を別の列へ移せます"
-  }
+  },
+  "stopAvailable": "CPU が強制手を取りこぼしています。「ストップ」で咎められます"
 }

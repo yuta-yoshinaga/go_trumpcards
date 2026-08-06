@@ -1433,7 +1433,8 @@
     "zwicker.lose": "The other team wins",
     "zwicker.win": "Your team wins",
     "bidwhist.hintRequested": "Hint available",
-    "bidwhist.noHint": "No hint available"
+    "bidwhist.noHint": "No hint available",
+    "russianbank.stopAvailable": "The CPU missed a forced move — call Stop to penalise it"
   },
   "manual": {
     "ariaLabel": "Game Manual",

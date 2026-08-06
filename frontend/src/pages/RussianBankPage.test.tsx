@@ -223,4 +223,20 @@ describe('RussianBankPage', () => {
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
     localStorage.removeItem('hint_enabled_russianbank');
   });
+
+  // **無言でボタンが増えるだけだった (#4817)。**CUI は同じ状態を黄色で明示している。
+  it('explains why the stop button appeared', async () => {
+    mockExec.mockResolvedValue(makeState({ canCallStop: true }));
+    renderWithProviders(<RussianBankPage />);
+
+    expect(await screen.findByTestId('rb-stop-available')).toBeInTheDocument();
+    expect(screen.getByTestId('stop-button')).toBeInTheDocument();
+  });
+
+  it('shows no stop notice while nothing can be called', async () => {
+    mockExec.mockResolvedValue(makeState({ canCallStop: false }));
+    renderWithProviders(<RussianBankPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('rb-stop-available')).not.toBeInTheDocument();
+  });
 });

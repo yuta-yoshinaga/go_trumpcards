@@ -452,15 +452,22 @@ function RussianBankPageContent() {
             </span>
           )}
           {canAct && state.canCallStop && (
-            <button
-              type="button"
-              className={btnWarning}
-              onClick={() => exec('s')}
-              disabled={loading}
-              data-testid="stop-button"
-            >
-              {t('stop')}
-            </button>
+            <>
+              {/* **なぜボタンが増えたのかを言う。**CUI は同じ状態を黄色で明示して
+                  いるのに、Web は無言でボタンが現れるだけだった (#4817)。 */}
+              <span className="text-ds-warning text-xs" role="status" data-testid="rb-stop-available">
+                {t('stopAvailable')}
+              </span>
+              <button
+                type="button"
+                className={btnWarning}
+                onClick={() => exec('s')}
+                disabled={loading}
+                data-testid="stop-button"
+              >
+                {t('stop')}
+              </button>
+            </>
           )}
           {canAct && state.canUndo && (
             <button
