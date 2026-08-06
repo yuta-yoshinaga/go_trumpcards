@@ -135,6 +135,12 @@ func (m *MockCatchTenGame) GetHint() *domain.CatchTenHint {
 	return nil
 }
 
+// GetValidPlayIndices はプレイ可能なカードのインデックスを返すモック。
+func (m *MockCatchTenGame) GetValidPlayIndices(playerIdx int) []int {
+	out, _ := m.Called(playerIdx).Get(0).([]int)
+	return out
+}
+
 func (m *MockCatchTenGame) GetActionLog() []*domain.ActionLogEntry {
 	args := m.Called()
 	if v := args.Get(0); v != nil {

@@ -54,6 +54,11 @@ type CatchTenWebOutput struct {
 	WinnerTeam       int                        `json:"winnerTeam"`
 	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
 	Hint             *CatchTenWebOutputHint     `json:"hint,omitempty"`
+	// ValidPlayIndices は人間がいま出せる手札の位置。ドメインの
+	// GetValidPlayIndices はコメントに「Web用」と書かれているのに一度も
+	// 呼ばれておらず、違反札をクリックしてエラーで確かめるしかなかった。
+	// プレイフェーズで人間の手番のときだけ埋まり、それ以外は空。
+	ValidPlayIndices []int `json:"validPlayIndices"`
 	WebOutputBase
 	Config CatchTenWebOutputConfig `json:"config"`
 }
