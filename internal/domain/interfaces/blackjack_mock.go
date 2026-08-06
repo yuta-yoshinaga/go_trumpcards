@@ -242,6 +242,12 @@ func (_m *MockBlackJackGame) GetDeckPenetration() int {
 	return ret.Int(0)
 }
 
+// GetVariant モック
+func (_m *MockBlackJackGame) GetVariant() *domain.BlackJackVariantConfig {
+	v, _ := _m.Called().Get(0).(*domain.BlackJackVariantConfig)
+	return v
+}
+
 // GetMultiHandCount モック
 func (_m *MockBlackJackGame) GetMultiHandCount() int {
 	ret := _m.Called()

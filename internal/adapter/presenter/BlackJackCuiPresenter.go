@@ -106,6 +106,12 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 
 	fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.phaseLine", "phase", bjp.phaseStr(bj.GetPhase())))
 
+	// **ベット前に配当を見せる。**Web はベットフェーズに配当表の details を出して
+	// いるのに、CUI はチップ・デッキ・ルールしか出していなかった (#4677)。
+	if bj.GetPhase() == domain.BJPhaseBet && !bj.GetGameEndFlag() {
+		b.WriteString(bjp.payoutTable(bj))
+	}
+
 	b.WriteString(color.Bold(i18n.T("blackjack.dealerLabel")) + i18n.T("blackjack.scoreSuffix"))
 	if bj.GetGameEndFlag() {
 		fmt.Fprintf(&b, "%d\n", dealer.GetScore())
@@ -239,6 +245,24 @@ func writeBJCpuHands(b *strings.Builder, bj interfaces.BlackJackGame, cpuIdx int
 			b.WriteString("\n")
 		}
 	}
+}
+
+// payoutTable はベットフェーズの配当一覧を返す。Spanish 21 ではボーナス配当も
+// 並べる。文言は Web の payoutRef.* と同じ内容 (#4677)。
+func (bjp *BlackJackCuiPresenter) payoutTable(bj interfaces.BlackJackGame) string {
+	keys := []string{"blackjack", "win", "insurance", "push", "surrender", "bust"}
+	ns := "blackjack.payoutRef"
+	if v := bj.GetVariant(); v != nil && v.Name == domain.BJVariantSpanish21 {
+		ns = "spanish21.payoutRef"
+		keys = append(keys,
+			"bonusFiveCard21", "bonusSixCard21", "bonusSevenCard21", "bonus678", "bonus777")
+	}
+	var b strings.Builder
+	b.WriteString(color.Bold(i18n.T(ns+".title")) + "\n")
+	for _, k := range keys {
+		b.WriteString("  " + i18n.T(ns+"."+k) + "\n")
+	}
+	return b.String()
 }
 
 // ActionLogOutput 棋譜をテキスト出力
