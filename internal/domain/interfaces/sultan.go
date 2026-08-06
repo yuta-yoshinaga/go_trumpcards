@@ -37,6 +37,8 @@ type SultanGame interface {
 	AllFaceUp() bool
 	// IsStalemate 手詰まり状態を取得する
 	IsStalemate() bool
+	// UndoToEscape 手詰まりを脱出するのに必要なアンドゥ回数 (不明なら -1)
+	UndoToEscape() int
 	// GetRedealCount リディール使用回数を返す
 	GetRedealCount() int
 	// CanRedeal リディール可能かどうかを返す

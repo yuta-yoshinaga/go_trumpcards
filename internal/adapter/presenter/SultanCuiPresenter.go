@@ -69,6 +69,14 @@ func (p *SultanCuiPresenter) Output(su interfaces.SultanGame, lastErr error) str
 		case domain.SultanPhasePlaying:
 			if su.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// **具体的な脱出手数まで出す。**Web は StalemateEscapeButton に
+				// undoToEscape を渡していて、CUI だけ汎用メッセージで止まっていた
+				// (#4831)。0 以下は「戻れる局面が無い」なので何も出さない —
+				// 「undo を 0 回」は指示にならない。
+				if n := su.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("sultan.stalemateEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			b.WriteString(i18n.T("sultan.cuiCommandHint") + "\n")
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
