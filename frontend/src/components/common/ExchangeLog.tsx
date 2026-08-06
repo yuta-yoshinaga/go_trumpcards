@@ -3,6 +3,9 @@ import type { Card } from '../../types/card';
 import { cardLabel } from '../../utils/cardUtils';
 import { findPlayerName } from '../../utils/playerUtils';
 
+/** i18n namespaces that carry `exchange.title` / `exchange.entry`. */
+export type ExchangeLogNamespace = 'daifugo' | 'president';
+
 /** One "player A handed these cards to player B" record. */
 export interface ExchangeLogAction {
   fromPlayerIdx: number;
@@ -22,8 +25,14 @@ export function ExchangeLog({
   players,
   actions,
 }: {
-  /** i18n namespace holding `exchange.title` / `exchange.entry`. */
-  ns: string;
+  /**
+   * i18n namespace holding `exchange.title` / `exchange.entry`.
+   *
+   * 素の string にすると綴り違い (`preisdent` 等) が型検査を素通りして、
+   * i18next のキー欠落フォールバックとして黙って出てしまう。ゲームを増やす
+   * ときは、ここに足す = その locale に `exchange.*` を用意する合図。
+   */
+  ns: ExchangeLogNamespace;
   players: { id: number; isHuman: boolean }[];
   actions: ExchangeLogAction[];
 }) {

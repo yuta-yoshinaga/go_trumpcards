@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import type { ExchangeLogAction } from './ExchangeLog';
+import type { ExchangeLogAction, ExchangeLogNamespace } from './ExchangeLog';
 import { ExchangeLog } from './ExchangeLog';
 
 const players = [
@@ -51,7 +51,10 @@ describe('ExchangeLog', () => {
   // 翻訳を持たない名前空間を渡し、i18next がキーをそのまま返すことで踏む。
   it('resolves the copy from the namespace it was given', () => {
     const actions: ExchangeLogAction[] = [{ fromPlayerIdx: 1, toPlayerIdx: 0, cards: [{ design: 'SPADE', value: 1 }] }];
-    render(<ExchangeLog ns="__no_such_namespace__" players={players} actions={actions} />);
+    // ns は union なので、存在しない名前空間を渡すにはキャストが要る。ここは
+    // 「訳が無いときキーが漏れる」ことを利用した意図的な負のコントロール。
+    const missingNs = '__no_such_namespace__' as unknown as ExchangeLogNamespace;
+    render(<ExchangeLog ns={missingNs} players={players} actions={actions} />);
     // 訳が無ければ i18next はキー文字列を返す。daifugo 固定ならここは
     // 「[カード交換]」になり、この期待は外れる。
     expect(screen.getByTestId('exchange-log')).toHaveTextContent('exchange.title');
