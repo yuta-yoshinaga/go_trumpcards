@@ -391,4 +391,32 @@ func TestThirtyOne_GetHint(t *testing.T) {
 	// 終了フェーズでは行動を返さない。
 	g.SetPhase(ThirtyOnePhaseGameEnd)
 	assert.Nil(t, g.GetHint())
+
+	// ノックできる点数に届いていれば knock を勧める。
+	knockable := NewDefaultThirtyOne()
+	knockable.Reset()
+	knockable.SetCurrentPlayerIdx(0)
+	knockable.SetPhase(ThirtyOnePhaseDraw)
+	p0 := knockable.GetPlayer(0)
+	for p0.GetCardsSize() > 0 {
+		p0.RemoveCard(0)
+	}
+	// ♠A + ♠K + ♠Q = 11 + 10 + 10 = 31。どの難易度の閾値も超える。
+	p0.AddCard(NewCard(CardDesignSpade, 1, false))
+	p0.AddCard(NewCard(CardDesignSpade, 13, false))
+	p0.AddCard(NewCard(CardDesignSpade, 12, false))
+	kh := knockable.GetHint()
+	assert.NotNil(t, kh)
+	assert.Equal(t, "knock", kh.Action)
+
+	// 手札が空のディスカードフェーズは nil (壊れた復元状態への防御)。
+	empty := NewDefaultThirtyOne()
+	empty.Reset()
+	empty.SetCurrentPlayerIdx(0)
+	empty.SetPhase(ThirtyOnePhaseDiscard)
+	pe := empty.GetPlayer(0)
+	for pe.GetCardsSize() > 0 {
+		pe.RemoveCard(0)
+	}
+	assert.Nil(t, empty.GetHint())
 }
