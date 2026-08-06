@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupKingAlbertCuiMockDefaults(bg *interfaces.MockKingAlbertGame) {
@@ -102,6 +104,23 @@ func TestKingAlbertCuiPresenter_Output(t *testing.T) {
 		result := p.Output(bg, nil)
 		assert.Contains(t, result, "手詰まり")
 		assert.Contains(t, result, "脱出には undo を 3 回")
+	})
+
+	// **「undo を -1 回」は指示にならない (#5052)。**UndoToEscape は戻れる局面が
+	// 無いとき -1、手詰まりでないとき 0 を返す。
+	t.Run("no escape line when there is nowhere to undo to", func(t *testing.T) {
+		escapePrefix := strings.SplitN(i18n.T("kingalbert.stalemateEscape"), "{{", 2)[0]
+		for _, n := range []int{0, -1} {
+			bg := new(interfaces.MockKingAlbertGame)
+			setupKingAlbertCuiMockDefaults(bg)
+			bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
+			bg.On("IsStalemate").Return(true)
+			bg.On("UndoToEscape").Return(n)
+
+			out := new(KingAlbertCuiPresenter).Output(bg, nil)
+			assert.Contains(t, out, "手詰まり", "警告そのものは出る")
+			assert.NotContains(t, out, escapePrefix)
+		}
 	})
 
 	t.Run("empty column and depleted reserve", func(t *testing.T) {
