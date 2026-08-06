@@ -87,6 +87,7 @@ function TarocchiniPageContent() {
     handlePlay,
     handleNextTrick,
     handleNextRound,
+    handleHint,
   } = useTarocchiniGame();
 
   // Fetch a fresh game on mount.
@@ -342,6 +343,19 @@ function TarocchiniPageContent() {
                   disabled={loading || selectedCardIndices.length !== 1}
                 >
                   {t('playButton')}
+                </button>
+              )}
+              {/* 同格のパパ 4 枚をどう使うかがこのゲームの難所。CUI と CLI からは
+                  呼べるのに、盤面には要求する手段が無かった (#4820)。 */}
+              {(canScarto || canPlay) && (
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={handleHint}
+                  disabled={loading}
+                  data-testid="tarocchini-hint-button"
+                >
+                  {t('hintButton')}
                 </button>
               )}
               {isTrickEnd && (
