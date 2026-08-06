@@ -4,11 +4,11 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ExchangeLog } from '../components/common/ExchangeLog';
 import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
 import { DaifugoCpuCompact } from '../components/daifugo/DaifugoCpuCompact';
-import { DaifugoExchangeLog } from '../components/daifugo/DaifugoExchangeLog';
 import { DaifugoHumanArea } from '../components/daifugo/DaifugoHumanArea';
 import { DaifugoRulesBadges } from '../components/daifugo/DaifugoRulesBadges';
 import { DaifugoSettingsPanel } from '../components/daifugo/DaifugoSettingsPanel';
@@ -350,7 +350,7 @@ function DaifugoPageContent() {
             </div>
 
             {state.exchangeActions && state.exchangeActions.length > 0 && (
-              <DaifugoExchangeLog players={state.players} actions={state.exchangeActions} />
+              <ExchangeLog ns="daifugo" players={state.players} actions={state.exchangeActions} />
             )}
 
             {state.humanAction && (

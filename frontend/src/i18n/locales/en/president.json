@@ -33,5 +33,9 @@
     "presidentFollow": "Play the weakest card that still beats the table",
     "presidentFollowRevolution": "The order is inverted — play the weakest card that beats the table now",
     "presidentPass": "Nothing in hand beats the table — pass"
+  },
+  "exchange": {
+    "title": "[Card Exchange]",
+    "entry": "{{from}} → {{to}}: {{cards}}"
   }
 }

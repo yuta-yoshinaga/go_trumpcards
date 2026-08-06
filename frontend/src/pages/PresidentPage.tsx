@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ExchangeLog } from '../components/common/ExchangeLog';
 import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { GameFooter } from '../components/GameFooter';
@@ -238,6 +239,13 @@ function PresidentPageContent() {
                 </span>
                 {t('badge.revolution')}
               </div>
+            )}
+
+            {/* ラウンド開始時のカード交換ログ。CUI (PresidentCuiPresenter) と Daifugo は
+                以前から出していたが、President の Web だけ state.exchangeActions を
+                描画していなかった (#4745)。 */}
+            {state.exchangeActions && state.exchangeActions.length > 0 && (
+              <ExchangeLog ns="president" players={state.players} actions={state.exchangeActions} />
             )}
 
             {/* CPU players */}
