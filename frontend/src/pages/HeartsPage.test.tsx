@@ -1198,4 +1198,78 @@ describe('HeartsPage', () => {
       expect(spadeA.className).not.toContain('opacity-50');
     });
   });
+
+  // **上限接近を画面が言う (#4735)。**CUI は上限の 80% を超えた累計点を黄色で
+  // 強調し、誰が一番近いかを常に出しているのに、Web のスコア表は数値を並べる
+  // だけだった。上限到達で即ゲームが終わるので、気づかないまま最終ラウンドに
+  // 入ってしまう。
+  it('marks the players who are close to the point limit', async () => {
+    mockExec.mockResolvedValue(
+      makeHeartsState({
+        // pointLimit 100 → 80 点から強調。85 は該当、40 は非該当。
+        players: makeHeartsState().players.map((p, i) => ({ ...p, cumulativeScore: i === 0 ? 85 : 40 })),
+      }),
+    );
+    renderWithProviders(<HeartsPage />);
+
+    await waitFor(() => expect(screen.getAllByText('85').length).toBeGreaterThan(0));
+    const marked = document.querySelectorAll('[data-near-limit="true"]');
+    expect(marked.length).toBeGreaterThan(0);
+    for (const el of marked) {
+      expect(el).toHaveTextContent('85');
+    }
+  });
+
+  // 逆側。全員が遠ければ一つも強調しない -- 常時強調に退化していないこと。
+  it('marks nobody while every score is far from the limit', async () => {
+    mockExec.mockResolvedValue(
+      makeHeartsState({
+        players: makeHeartsState().players.map((p) => ({ ...p, cumulativeScore: 10 })),
+      }),
+    );
+    renderWithProviders(<HeartsPage />);
+
+    await waitFor(() => expect(screen.getAllByText('10').length).toBeGreaterThan(0));
+    expect(document.querySelectorAll('[data-near-limit="true"]')).toHaveLength(0);
+  });
+
+  // **モバイルの行も踏む。**受け入れ条件が「モバイル版・デスクトップ版の両方の
+  // 表に適用される」なので、デスクトップだけ確かめても半分しか見ていない。
+  // codecov が実際にこの分岐を partial として拾ったので追加した (#4735)。
+  it('marks the players close to the limit on the mobile layout too', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(
+        makeHeartsState({
+          players: makeHeartsState().players.map((p, i) => ({ ...p, cumulativeScore: i === 1 ? 90 : 5 })),
+        }),
+      );
+      renderWithProviders(<HeartsPage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+
+      const marked = document.querySelectorAll('[data-near-limit="true"]');
+      expect(marked.length).toBeGreaterThan(0);
+      for (const el of marked) {
+        expect(el).toHaveTextContent('90');
+      }
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('marks nobody on the mobile layout while every score is far from the limit', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(
+        makeHeartsState({ players: makeHeartsState().players.map((p) => ({ ...p, cumulativeScore: 5 })) }),
+      );
+      renderWithProviders(<HeartsPage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+      expect(document.querySelectorAll('[data-near-limit="true"]')).toHaveLength(0);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
 });
