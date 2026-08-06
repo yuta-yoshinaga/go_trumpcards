@@ -197,6 +197,13 @@ function GinRummyPageContent() {
     return bestMeldSplit(human.cards).meldedIndices;
   }, [state]);
 
+  // レイオフできる手札。判定はサーバー (ドメインの canLayoff と同じ) が返す
+  // layoffTargets をそのまま使う — ここで書き直すと結果が食い違う (#4823)。
+  const layoffableIndices = useMemo<ReadonlySet<number>>(() => {
+    const targets = state?.layoffTargets ?? [];
+    return new Set(targets.flatMap((list, idx) => (list.length > 0 ? [idx] : [])));
+  }, [state?.layoffTargets]);
+
   // At round/game end, derive the additive score breakdown (outcome, each
   // player's deadwood, and the deadwood-difference + bonus components) from the
   // exposed round result, mirroring the domain's scoreRound. `null` for a drawn
@@ -472,12 +479,17 @@ function GinRummyPageContent() {
                     aria-pressed={selectedCardIndices.includes(idx)}
                     data-testid={`gr-hand-card-${idx}`}
                     data-meld={isDiscardPhase ? (meldedIndices.has(idx) ? 'meld' : 'deadwood') : undefined}
+                    // **レイオフフェーズの主題そのもの。**ディスカードでは
+                    // メルド/デッドウッドを見せているのに、レイオフには補助が
+                    // 無く、押してサーバーの応答で初めて成否が分かった (#4823)。
+                    data-layoff={isLayoffPhase ? (layoffableIndices.has(idx) ? 'yes' : 'no') : undefined}
                     className={`transition-transform ${focusRingCard}`}
                     style={{
                       background: 'none',
                       padding: 0,
                       borderRadius: 8,
                       ...(isDiscardPhase ? meldCardStyle(meldedIndices.has(idx)) : undefined),
+                      ...(isLayoffPhase ? meldCardStyle(layoffableIndices.has(idx)) : undefined),
                       ...selectedCardStyle(selectedCardIndices.includes(idx)),
                       boxSizing: 'border-box',
                     }}

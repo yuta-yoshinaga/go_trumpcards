@@ -28,6 +28,7 @@ const drawPhaseState: GinRummyResponse = {
     },
     { id: 1, isHuman: false, cardCount: 10, cards: [], roundScore: 3, cumulativeScore: 10 },
   ],
+  layoffTargets: [],
   phase: 0,
   roundNumber: 1,
   currentPlayerIdx: 0,
@@ -1007,5 +1008,26 @@ describe('GinRummyPage', () => {
     mockExec.mockResolvedValue(drawPhaseState);
     renderWithProviders(<GinRummyPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  // **レイオフフェーズの主題そのもの (#4823)。**ディスカードでは
+  // メルド/デッドウッドを見せているのに、レイオフには補助が無かった。
+  it('marks which hand cards can be laid off during the layoff phase', async () => {
+    mockExec.mockResolvedValue({
+      ...layoffPhaseState,
+      // 手札 0 枚目だけがノッカーのメルドに足せる。
+      layoffTargets: [[0], [], []],
+    });
+    renderWithProviders(<GinRummyPage />);
+
+    await waitFor(() => expect(document.querySelectorAll('[data-layoff="yes"]')).toHaveLength(1));
+    expect(document.querySelectorAll('[data-layoff="no"]').length).toBeGreaterThan(0);
+  });
+
+  it('does not mark layoffable cards outside the layoff phase', async () => {
+    mockExec.mockResolvedValue({ ...discardPhaseState, layoffTargets: [[0], [], []] });
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(document.querySelectorAll('[data-layoff]')).toHaveLength(0);
   });
 });

@@ -1498,3 +1498,29 @@ func TestGinRummy_FullRoundFlow(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 10, g.GetPlayer(0).GetCardsSize())
 }
+
+// **レイオフフェーズの主題そのもの (#4823)。**canLayoff と同じ判定を返すこと。
+func TestGinRummy_GinRummyLayoffTargets(t *testing.T) {
+	g := domain.NewDefaultGinRummy()
+	g.Reset()
+	g.SetKnockerMelds([][]*domain.Card{
+		{
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+			domain.NewCard(domain.CardDesignHeart, 7, false),
+			domain.NewCard(domain.CardDesignClover, 7, false),
+		},
+		{
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			domain.NewCard(domain.CardDesignSpade, 4, false),
+		},
+	})
+
+	// 4 枚目の 7 は 1 つ目のセットへ。
+	assert.Equal(t, []int{0}, g.GinRummyLayoffTargets(domain.NewCard(domain.CardDesignDiamond, 7, false)))
+	// ♠5 はランの上端へ。
+	assert.Equal(t, []int{1}, g.GinRummyLayoffTargets(domain.NewCard(domain.CardDesignSpade, 5, false)))
+	// どこにも足せない札と nil。
+	assert.Nil(t, g.GinRummyLayoffTargets(domain.NewCard(domain.CardDesignHeart, 10, false)))
+	assert.Nil(t, g.GinRummyLayoffTargets(nil))
+}
