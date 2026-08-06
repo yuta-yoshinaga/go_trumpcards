@@ -43,17 +43,26 @@ type Rummy500WebOutputMeld struct {
 	Cards []*WebOutputCard `json:"cards"`
 }
 
-// Rummy500WebOutput Rummy 500Webアウトプット
+// Rummy500LayoffTarget は 1 枚のカードを置ける既存メルドの場所。
+type Rummy500LayoffTarget struct {
+	Owner   int `json:"owner"`
+	MeldIdx int `json:"meldIdx"`
+}
+
+// Rummy500WebOutput は 500 ラムの Web アウトプット。
 type Rummy500WebOutput struct {
-	Players          []*Rummy500WebOutputPlayer `json:"players"`
-	Phase            int                        `json:"phase"`
-	RoundNumber      int                        `json:"roundNumber"`
-	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
-	DiscardPile      []*WebOutputCard           `json:"discardPile"`
-	DrawPileCount    int                        `json:"drawPileCount"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerIdx        int                        `json:"winnerIdx"`
-	RoundEnderIdx    int                        `json:"roundEnderIdx"`
+	Players []*Rummy500WebOutputPlayer `json:"players"`
+	// LayoffTargets[i] は人間の手札 i 番目を置けるメルドの場所一覧。
+	// 押せるボタンが必ず通るようにするために使う (#4832)。
+	LayoffTargets    [][]Rummy500LayoffTarget `json:"layoffTargets"`
+	Phase            int                      `json:"phase"`
+	RoundNumber      int                      `json:"roundNumber"`
+	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	DiscardPile      []*WebOutputCard         `json:"discardPile"`
+	DrawPileCount    int                      `json:"drawPileCount"`
+	GameEndFlag      bool                     `json:"gameEndFlag"`
+	WinnerIdx        int                      `json:"winnerIdx"`
+	RoundEnderIdx    int                      `json:"roundEnderIdx"`
 	WebOutputBase
 	Config Rummy500WebOutputConfig `json:"config"`
 }

@@ -26,6 +26,7 @@ const baseState = (overrides: Partial<Rummy500Response> = {}): Rummy500Response 
       laidMelds: [],
     },
   ],
+  layoffTargets: [],
   phase: Rummy500Phase.DRAW,
   roundNumber: 1,
   currentPlayerIdx: 0,

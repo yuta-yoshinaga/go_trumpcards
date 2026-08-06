@@ -30,5 +30,7 @@
   "winnerCpu": "CPU {{idx}} wins",
   "hintNone": "No hint available.",
   "hintMeld": "Meld candidates: {{cands}} (m <idx...> to lay down)",
-  "hintNoMeld": "No meldable combination. Consider discarding with d <idx>."
+  "hintNoMeld": "No meldable combination. Consider discarding with d <idx>.",
+  "hintLayoff": "Layoff: {{cands}}",
+  "hintLayoffEntry": "{{card}} -> {{name}} [{{meld}}]"
 }

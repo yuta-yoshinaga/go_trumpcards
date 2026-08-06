@@ -134,6 +134,14 @@ function Rummy500PageContent() {
     .map((i) => humanPlayer?.cards[i])
     .filter((c): c is NonNullable<typeof c> => c !== undefined);
   const meldValid = classifyRummy500Meld(selectedMeldCards).valid;
+  // 選択中の 1 枚を、選んだメルドに本当に置けるか。
+  const selectedLayoffIsLegal =
+    layoffTarget !== null &&
+    selectedCardIndices.length === 1 &&
+    (state?.layoffTargets?.[selectedCardIndices[0]]?.some(
+      (tgt) => tgt.owner === layoffTarget.owner && tgt.meldIdx === layoffTarget.meldIdx,
+    ) ??
+      false);
   const showInvalidMeld = selectedCardIndices.length >= 3 && !meldValid;
 
   return (
@@ -246,6 +254,14 @@ function Rummy500PageContent() {
                     <div className="text-ds-text-muted text-xs mb-1">{t('laidMelds')}</div>
                     {p.laidMelds.map((meld, mIdx) => {
                       const isLayoffTarget = layoffTarget?.owner === p.id && layoffTarget?.meldIdx === mIdx;
+                      // **押せるボタンは必ず通る。**1 枚選んでいるあいだ、その札を
+                      // 実際に置けるメルドだけを押せるようにする (#4832)。
+                      const canLayoffHere =
+                        selectedCardIndices.length === 1 &&
+                        (state.layoffTargets?.[selectedCardIndices[0]]?.some(
+                          (tgt) => tgt.owner === p.id && tgt.meldIdx === mIdx,
+                        ) ??
+                          false);
                       return (
                         <button
                           type="button"
@@ -258,10 +274,16 @@ function Rummy500PageContent() {
                             )
                           }
                           aria-pressed={isLayoffTarget}
+                          disabled={selectedCardIndices.length === 1 && !canLayoffHere}
+                          data-layoff-legal={canLayoffHere ? 'true' : undefined}
                           aria-label={t('layoffMeldTarget', { owner: playerName(p.id, p.isHuman), idx: mIdx })}
                           data-testid={`layoff-meld-${p.id}-${mIdx}`}
                           className={`flex flex-wrap gap-1 mb-1 w-full rounded p-1 text-left transition-all ${
-                            isLayoffTarget ? 'ring-2 ring-ds-info' : 'hover:bg-white/5'
+                            isLayoffTarget
+                              ? 'ring-2 ring-ds-info'
+                              : canLayoffHere
+                                ? 'ring-1 ring-ds-success hover:bg-white/5'
+                                : 'hover:bg-white/5'
                           }`}
                         >
                           <span className="text-xs text-ds-text-muted self-center">[{mIdx}]</span>
@@ -376,7 +398,10 @@ function Rummy500PageContent() {
                         }
                       : undefined
                   }
-                  disabled={loading || layoffTarget === null || selectedCardIndices.length !== 1}
+                  // **選び直しで不正になった組み合わせを弾く。**カード A に合う先を
+                  // 選んだあと選択を B に変えると、ボタン自体は無効化されるのに
+                  // 送信は通ってしまっていた (#4832 のレビュー指摘)。
+                  disabled={loading || !selectedLayoffIsLegal}
                 >
                   {t('layoffButton')}
                 </button>

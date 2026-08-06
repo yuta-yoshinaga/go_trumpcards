@@ -36,9 +36,47 @@ func (p *Rummy500WebPresenter) Output(g interfaces.Rummy500Game, lastErr error) 
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
+	resObj.LayoffTargets = p.buildLayoffTargets(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)
+}
+
+// buildLayoffTargets は人間の手札 1 枚ごとに、それを置ける既存メルドの場所を返す。
+//
+// **レイオフだけ支援から取り残されていた。**どのメルドのボタンも常に押せて、
+// 置けるかどうかはサーバー応答で初めて分かる状態だった (#4832)。判定は
+// ドメインの Rummy500CanLayoff をそのまま使う。
+func (p *Rummy500WebPresenter) buildLayoffTargets(g interfaces.Rummy500Game) [][]controller.Rummy500LayoffTarget {
+	human := -1
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		if pl := g.GetPlayer(i); pl != nil && pl.GetIsHuman() {
+			human = i
+			break
+		}
+	}
+	if human < 0 {
+		return nil
+	}
+	hand := g.GetPlayer(human)
+	out := make([][]controller.Rummy500LayoffTarget, 0, hand.GetCardsSize())
+	for i := 0; i < hand.GetCardsSize(); i++ {
+		card := hand.GetCard(i)
+		targets := make([]controller.Rummy500LayoffTarget, 0)
+		for owner := 0; owner < g.GetPlayerCnt(); owner++ {
+			op := g.GetPlayer(owner)
+			if op == nil {
+				continue
+			}
+			for mi, meld := range op.GetLaidMelds() {
+				if domain.Rummy500CanLayoff(meld, card) {
+					targets = append(targets, controller.Rummy500LayoffTarget{Owner: owner, MeldIdx: mi})
+				}
+			}
+		}
+		out = append(out, targets)
+	}
+	return out
 }
 
 // buildPlayersOutput プレイヤー情報を構築

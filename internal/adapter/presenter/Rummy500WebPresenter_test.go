@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -109,6 +110,38 @@ func TestRummy500WebPresenter_Output(t *testing.T) {
 		})
 		out := p.Output(m, nil)
 		assert.Contains(t, out, `"laidMelds":[`)
+	})
+
+	// **押せるボタンが必ず通るように。**どのメルドのボタンも常に押せて、置けるかは
+	// サーバー応答で初めて分かる状態だった (#4832)。
+	t.Run("layoff targets list only the legal melds", func(t *testing.T) {
+		m, players := setupRummy500WebMock()
+		// CPU 1 の場: [0] 7 のセット、[1] ♠2-3-4 のラン。
+		players[1].SetLaidMelds([][]*domain.Card{
+			{
+				domain.NewCard(domain.CardDesignSpade, 7, false),
+				domain.NewCard(domain.CardDesignHeart, 7, false),
+				domain.NewCard(domain.CardDesignClover, 7, false),
+			},
+			{
+				domain.NewCard(domain.CardDesignSpade, 2, false),
+				domain.NewCard(domain.CardDesignSpade, 3, false),
+				domain.NewCard(domain.CardDesignSpade, 4, false),
+			},
+		})
+		// 手札: ♦7 (セットへ置ける) / ♠5 (ランへ置ける) / ♥10 (どこにも置けない)。
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+
+		var out controller.Rummy500WebOutput
+		require.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+
+		require.Len(t, out.LayoffTargets, 3, "手札 1 枚につき 1 要素")
+		assert.Equal(t, []controller.Rummy500LayoffTarget{{Owner: 1, MeldIdx: 0}}, out.LayoffTargets[0])
+		assert.Equal(t, []controller.Rummy500LayoffTarget{{Owner: 1, MeldIdx: 1}}, out.LayoffTargets[1])
+		// 置けない札は空配列 (null ではない)。
+		assert.Empty(t, out.LayoffTargets[2])
 	})
 
 	t.Run("CPU cards hidden during play", func(t *testing.T) {
