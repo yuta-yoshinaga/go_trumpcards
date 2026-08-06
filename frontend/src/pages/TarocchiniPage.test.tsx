@@ -160,4 +160,32 @@ describe('TarocchiniPage', () => {
     renderWithProviders(<TarocchiniPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **CUI と CLI からは呼べるのに、盤面には要求する手段が無かった (#4820)。**
+  // isRequestedHint は hintRequested の messageCode を待つので、コマンドを
+  // 送らないと表示側は永遠に出ない (実質デッドコードだった)。
+  it('asks the server for a hint and shows the answer', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<TarocchiniPage />);
+    const hintBtn = await screen.findByTestId('tarocchini-hint-button');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({
+      ...playState,
+      messageCode: 'tarocchini.hintRequested',
+      hint: { cardIndices: [2], reason: 'lead_trump' },
+    });
+    fireEvent.click(hintBtn);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    await waitFor(() => expect(screen.getByText(/\[2\]/)).toBeInTheDocument());
+  });
+
+  it('shows no hint line until one is requested', async () => {
+    // hint が載っていても messageCode が無ければ出さない (常時表示にしない)。
+    mockExec.mockResolvedValue({ ...playState, hint: { cardIndices: [2], reason: 'lead_trump' } });
+    renderWithProviders(<TarocchiniPage />);
+    await waitFor(() => expect(screen.getByTestId('tarocchini-hint-button')).toBeInTheDocument());
+    expect(screen.queryByText(/\[2\]/)).not.toBeInTheDocument();
+  });
 });
