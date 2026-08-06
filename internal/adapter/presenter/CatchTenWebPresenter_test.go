@@ -207,6 +207,34 @@ func TestCatchTenWebPresenter_ValidPlayIndices(t *testing.T) {
 		assert.Empty(t, decode(t, m).ValidPlayIndices)
 	})
 
+	// プレイフェーズ以外も踏む。トリック終了中は制限が決まっていないので、
+	// ここで合法手を送ると「いま出せる」と誤って伝えることになる。
+	t.Run("trick end reports nothing", func(t *testing.T) {
+		m, _ := setupCatchTenWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetPhase").Return(domain.CatchTenPhaseTrickEnd)
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetValidPlayIndices", 0).Return([]int{2})
+
+		assert.Empty(t, decode(t, m).ValidPlayIndices)
+	})
+
+	// nil を返す実装でも JSON が null にならないこと。GetValidPlayIndices は
+	// インターフェース越しの呼び出しなので、具象型の性質には依存できない。
+	t.Run("nil from the domain serialises as an empty array", func(t *testing.T) {
+		m, _ := setupCatchTenWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetValidPlayIndices", 0).Return([]int(nil))
+
+		raw := p.Output(m, nil)
+		assert.Contains(t, raw, `"validPlayIndices":[]`, "null ではなく空配列で出す")
+		assert.Empty(t, decode(t, m).ValidPlayIndices)
+	})
+
 	t.Run("cpu turn reports nothing", func(t *testing.T) {
 		m, _ := setupCatchTenWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
