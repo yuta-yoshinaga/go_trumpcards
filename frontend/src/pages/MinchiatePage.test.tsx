@@ -188,4 +188,31 @@ describe('MinchiatePage', () => {
     renderWithProviders(<MinchiatePage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **CUI と CLI からは呼べるのに、盤面には要求する手段が無かった (#4819)。**
+  // isRequestedHint は hintRequested の messageCode を待つので、コマンドを
+  // 送らないと表示側は永遠に出ない (実質デッドコードだった)。
+  it('asks the server for a hint and shows the answer', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<MinchiatePage />);
+    const hintBtn = await screen.findByTestId('minchiate-hint-button');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({
+      ...playState,
+      messageCode: 'minchiate.hintRequested',
+      hint: { cardIndices: [2], reason: 'lead_trump' },
+    });
+    fireEvent.click(hintBtn);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    await waitFor(() => expect(screen.getByText(/\[2\]/)).toBeInTheDocument());
+  });
+
+  it('shows no hint line until one is requested', async () => {
+    mockExec.mockResolvedValue({ ...playState, hint: { cardIndices: [2], reason: 'lead_trump' } });
+    renderWithProviders(<MinchiatePage />);
+    await waitFor(() => expect(screen.getByTestId('minchiate-hint-button')).toBeInTheDocument());
+    expect(screen.queryByText(/\[2\]/)).not.toBeInTheDocument();
+  });
 });

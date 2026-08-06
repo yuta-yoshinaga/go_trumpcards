@@ -87,6 +87,7 @@ function MinchiatePageContent() {
     handlePlay,
     handleNextTrick,
     handleNextRound,
+    handleHint,
   } = useMinchiateGame();
 
   // Fetch a fresh game on mount.
@@ -345,6 +346,18 @@ function MinchiatePageContent() {
                   disabled={loading || selectedCardIndices.length !== 1}
                 >
                   {t('playButton')}
+                </button>
+              )}
+              {/* CUI と CLI からは呼べるのに、盤面には要求する手段が無かった (#4819)。 */}
+              {(canScarto || canPlay) && (
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={handleHint}
+                  disabled={loading}
+                  data-testid="minchiate-hint-button"
+                >
+                  {t('hintButton')}
                 </button>
               )}
               {isTrickEnd && (

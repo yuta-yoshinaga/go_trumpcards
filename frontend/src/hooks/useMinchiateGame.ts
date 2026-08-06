@@ -72,6 +72,17 @@ export function useMinchiateGame() {
     void exec('nextround');
   }, [exec]);
 
+  /**
+   * Asks the server for a play recommendation.
+   *
+   * CUI と CLI からは呼べるのに、盤面には要求する手段が無かった。表示側の
+   * `isRequestedHint` は `hintRequested` の messageCode を待つので、この
+   * コマンドを送らないと永遠に出ない — 実質デッドコードだった (#4819)。
+   */
+  const handleHint = useCallback(() => {
+    void exec('hint');
+  }, [exec]);
+
   return {
     state,
     loading,
@@ -88,5 +99,6 @@ export function useMinchiateGame() {
     handlePlay,
     handleNextTrick,
     handleNextRound,
+    handleHint,
   };
 }
