@@ -22,7 +22,10 @@ test.describe('Tressette E2E', () => {
     const playButton = page.getByRole('button', { name: '出す' });
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
-    const handCards = page.locator('button[aria-pressed]:has(img)');
+    // マストフォローに反する札は aria-disabled で選択不可になる (#4718)。
+    // 全札から first() を取ると制限札を掴んでクリックが無反応になるため、
+    // 合法な札だけに絞る。
+    const handCards = page.locator('button[aria-pressed]:has(img):not([aria-disabled="true"])');
     const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
     const MAX_TURNS = 60;
