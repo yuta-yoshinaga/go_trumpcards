@@ -9,6 +9,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // newCuiAgnes returns a real Agnes with deterministic state for CUI rendering.
@@ -83,6 +84,47 @@ func TestAgnesCuiPresenter_Output(t *testing.T) {
 		p := new(AgnesCuiPresenter)
 		result := p.Output(a, nil)
 		assert.Contains(t, result, "[空]")
+	})
+}
+
+// **Web は ag-stalemate-banner で毎レンダー知らせている。**CUI は手数しか出さず、
+// 詰んでいても分からなかった (#4830)。
+func TestAgnesCuiPresenter_StalemateWarning(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(AgnesCuiPresenter)
+
+	t.Run("no warning while the stock still has cards", func(t *testing.T) {
+		a := newCuiAgnes()
+		assert.False(t, a.IsStalemate(), "ストックが残っていれば手詰まりではない")
+		assert.NotContains(t, p.Output(a, nil), i18n.T("cuiSolitaireStalemate"))
+	})
+
+	t.Run("warns once nothing can move", func(t *testing.T) {
+		a := newCuiAgnes()
+		a.SetStock(nil)
+		// どこにも動かせない盤面にする: 各列に孤立した札を 1 枚ずつ。
+		var tab [domain.AgnesTableauCnt][]*domain.AgnesTableauCard
+		for i := range domain.AgnesTableauCnt {
+			tab[i] = []*domain.AgnesTableauCard{
+				{Card: domain.NewCard(domain.CardDesignSpade, 13, false), FaceUp: true},
+			}
+		}
+		a.SetTableau(tab)
+		var f [domain.AgnesFoundationCnt][]*domain.Card
+		a.SetFoundation(f)
+
+		assert.True(t, a.IsStalemate())
+		assert.Nil(t, a.GetHint(), "手詰まりならヒントも手を返さない")
+		assert.Contains(t, p.Output(a, nil), i18n.T("cuiSolitaireStalemate"))
+	})
+
+	t.Run("no warning outside the playing phase", func(t *testing.T) {
+		a := newCuiAgnes()
+		a.SetStock(nil)
+		a.SetPhase(domain.AgnesPhaseGameOver)
+		assert.False(t, a.IsStalemate())
 	})
 }
 

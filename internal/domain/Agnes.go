@@ -263,6 +263,21 @@ func (a *Agnes) GetHint() *AgnesHint {
 	return nil
 }
 
+// IsStalemate は合法手が 1 つも無いかを返す。ストックが残っていれば false。
+//
+// **判定は GetHint をそのまま使う。**ヒントが探す手（タブロー→ファンデーション、
+// タブロー→タブロー）が合法手の全てなので、別のスキャンを書くと「手詰まり」と
+// 言いながらヒントが手を返す状態が作れる (#4830)。
+func (a *Agnes) IsStalemate() bool {
+	if a.phase != AgnesPhasePlaying {
+		return false
+	}
+	if len(a.stock) > 0 {
+		return false
+	}
+	return a.GetHint() == nil
+}
+
 // --- Getters / Setters ---
 
 // GetPhase フェーズ取得

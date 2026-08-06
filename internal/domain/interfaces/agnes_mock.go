@@ -66,6 +66,11 @@ func (_m *MockAgnesGame) GetMoveCount() int {
 	return ret.Int(0)
 }
 
+func (_m *MockAgnesGame) IsStalemate() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 func (_m *MockAgnesGame) GetStockCount() int {
 	ret := _m.Called()
 	return ret.Int(0)
