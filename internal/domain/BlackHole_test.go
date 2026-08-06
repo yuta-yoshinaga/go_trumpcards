@@ -177,3 +177,46 @@ func TestBlackHole_JSONRoundTrip(t *testing.T) {
 		t.Error("expected error for invalid phase")
 	}
 }
+
+// **±1 のクランプと合法手数 (#4818)。**Web の acceptableRanks / legalFans と
+// 同じ値になること。
+func TestBlackHole_AcceptableRanksAndPlayableFans(t *testing.T) {
+	g := NewDefaultBlackHole()
+	if got := g.AcceptableRanks(); got != nil {
+		t.Errorf("穴が空なら候補なし: got %v", got)
+	}
+
+	restore := func(js string) {
+		t.Helper()
+		if err := json.Unmarshal([]byte(js), g); err != nil {
+			t.Fatalf("restore: %v", err)
+		}
+	}
+	eq := func(want, got []int, msg string) {
+		t.Helper()
+		if len(want) != len(got) {
+			t.Fatalf("%s: want %v got %v", msg, want, got)
+		}
+		for i := range want {
+			if want[i] != got[i] {
+				t.Fatalf("%s: want %v got %v", msg, want, got)
+			}
+		}
+	}
+
+	restore(`{"ph":0,"bh":[{"d":1,"v":7}],"fn":[[{"d":3,"v":8}],[{"d":2,"v":2}],[{"d":4,"v":6}]]}`)
+	eq([]int{6, 8}, g.AcceptableRanks(), "±1")
+	eq([]int{0, 2}, g.PlayableFans(), "♥8 と ♦6 が積める")
+
+	// A は下側が無い、K は上側が無い (ラップしない)。
+	restore(`{"ph":0,"bh":[{"d":1,"v":1}],"fn":[]}`)
+	eq([]int{2}, g.AcceptableRanks(), "A の隣は 2 だけ")
+	restore(`{"ph":0,"bh":[{"d":1,"v":13}],"fn":[]}`)
+	eq([]int{12}, g.AcceptableRanks(), "K の隣は Q だけ")
+
+	// 積める扇が無い。
+	restore(`{"ph":0,"bh":[{"d":1,"v":7}],"fn":[[{"d":2,"v":2}]]}`)
+	if got := g.PlayableFans(); got != nil {
+		t.Errorf("積める扇は無いはず: got %v", got)
+	}
+}

@@ -36,6 +36,28 @@ func (p *BlackHoleCuiPresenter) Output(g interfaces.BlackHoleGame, lastErr error
 			sb.WriteString(" " + bhPileStr(fan) + "\n")
 		}
 
+		// **±1 を暗算させない。**Web は「出せるランク」と「残り合法手」を常時
+		// 出しているのに、CUI は穴のトップと扇一覧しか出していなかった (#4818)。
+		if g.GetPhase() == domain.BlackHolePhasePlaying {
+			ranks := g.AcceptableRanks()
+			if len(ranks) > 0 {
+				labels := make([]string, 0, len(ranks))
+				for _, r := range ranks {
+					labels = append(labels, cuiRankLabel(r))
+				}
+				sb.WriteString(i18n.Tf("blackhole.acceptableRanks",
+					"ranks", strings.Join(labels, " / ")) + "\n")
+			} else {
+				sb.WriteString(i18n.T("blackhole.acceptableRanksNone") + "\n")
+			}
+			playable := g.PlayableFans()
+			line := i18n.Tf("blackhole.legalMoveCount", "count", strconv.Itoa(len(playable)))
+			if len(playable) == 0 {
+				line = color.Red(line)
+			}
+			sb.WriteString(line + "\n")
+		}
+
 		cuiErrorBlock(sb, lastErr)
 
 		switch g.GetPhase() {
