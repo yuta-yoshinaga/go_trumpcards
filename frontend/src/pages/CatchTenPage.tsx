@@ -477,6 +477,8 @@ function CatchTenPageContent() {
                 isMobile={isMobile}
                 dataTutorialPrefix="ct"
                 highlightIndices={isHumanTurn && hint?.cardIndex !== undefined ? [hint.cardIndex] : undefined}
+                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+                restrictedTooltip={t('restrictedCard')}
               />
             )}
 

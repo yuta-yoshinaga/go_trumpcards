@@ -32,6 +32,10 @@ func setupCatchTenWebMock() *interfaces.MockCatchTenGame {
 	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
 	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
 	m.On("GetHint").Return(nil).Maybe()
+	// validPlayIndices を出すようになった。既定は「人間の手番でない」= 制限なし。
+	// 合法手を確かめるテストは自分で上書きする。
+	m.On("IsHumanTurn").Return(false).Maybe()
+	m.On("GetValidPlayIndices", 0).Return([]int(nil)).Maybe()
 
 	return m
 }
@@ -166,6 +170,49 @@ func TestCatchTenWebPresenter_Output(t *testing.T) {
 		var resObj controller.CatchTenWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.Equal(t, "catchten.roundEnd", resObj.MessageCode)
+	})
+}
+
+// ドメインは合法手を判定済み (GetValidPlayIndices は「Web用」と明記されている)
+// なのに Web に送っていなかった。違反札をクリックしてサーバーのエラーが返って
+// 初めて出せないと分かる状態だった。
+func TestCatchTenWebPresenter_ValidPlayIndices(t *testing.T) {
+	p := new(presenter.CatchTenWebPresenter)
+
+	decode := func(t *testing.T, m *interfaces.MockCatchTenGame) controller.CatchTenWebOutput {
+		t.Helper()
+		var out controller.CatchTenWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+		return out
+	}
+
+	t.Run("human play turn carries the domain's answer", func(t *testing.T) {
+		m, _ := setupCatchTenWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetValidPlayIndices", 0).Return([]int{2})
+
+		assert.Equal(t, []int{2}, decode(t, m).ValidPlayIndices)
+	})
+
+	// 合法手が1枚も無い局面も空で返る。呼び出し側はこれを「制限なし」と読まない。
+	t.Run("no legal card still reports empty", func(t *testing.T) {
+		m, _ := setupCatchTenWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetValidPlayIndices", 0).Return([]int{})
+
+		assert.Empty(t, decode(t, m).ValidPlayIndices)
+	})
+
+	t.Run("cpu turn reports nothing", func(t *testing.T) {
+		m, _ := setupCatchTenWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return([]int{2})
+
+		assert.Empty(t, decode(t, m).ValidPlayIndices)
 	})
 }
 
