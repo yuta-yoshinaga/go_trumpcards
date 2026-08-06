@@ -43,6 +43,7 @@ function makeState(overrides: Partial<TarneebResponse> = {}): TarneebResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     leadPlayerIdx: -1,
+    validPlayIndices: [],
     message: '',
     config: { cpuDifficulty: 1, pointLimit: 31, minBid: 7 },
     ...overrides,

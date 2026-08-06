@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tarneebApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, TarneebResponse } from '../types/card';
+import { TarneebPhase } from '../types/phases';
 import { TarneebPage } from './TarneebPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -46,6 +47,7 @@ function makeState(overrides: Partial<TarneebResponse> = {}): TarneebResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     leadPlayerIdx: 0,
+    validPlayIndices: [],
     config: { cpuDifficulty: 1, pointLimit: 31, minBid: 7 },
     message: '',
     ...overrides,
@@ -158,5 +160,59 @@ describe('TarneebPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 0));
+  });
+
+  // **ドメインは合法手を判定済みなのに、画面が使っていなかった (#4713)。**
+  // マストフォローに反する札もクリックでき、サーバーのエラーが返って初めて
+  // 出せないと分かる状態だった。
+  it('dims the cards that must-follow forbids on the human play turn', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: TarneebPhase.PLAY,
+        currentPlayerIdx: 0,
+        players: [
+          { ...player(0, true, 0, 3), cards: [card('SPADE', 1), card('HEART', 13)] },
+          player(1, false, 1, 2),
+          player(2, false, 0, 1),
+          player(3, false, 1, 0),
+        ],
+        // 合法なのは index 1 だけ。
+        validPlayIndices: [1],
+      }),
+    );
+    renderWithProviders(<TarneebPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const cards = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
+    expect(cards).toHaveLength(2);
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
+  // **空を「制限なし」と読まない。**CPU の手番では制限そのものを送っていないので
+  // 全札が有効のまま。ここを validPlayIndices.length で判定すると、
+  // 「1枚も出せない」局面と区別が付かなくなる。
+  it('leaves every card enabled when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: TarneebPhase.PLAY,
+        currentPlayerIdx: 1,
+        players: [
+          { ...player(0, true, 0, 3), cards: [card('SPADE', 1), card('HEART', 13)] },
+          player(1, false, 1, 2),
+          player(2, false, 0, 1),
+          player(3, false, 1, 0),
+        ],
+        validPlayIndices: [],
+      }),
+    );
+    renderWithProviders(<TarneebPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const cards = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
+    expect(cards).toHaveLength(2);
+    for (const c of cards) {
+      expect(c).not.toHaveAttribute('aria-disabled', 'true');
+    }
   });
 });

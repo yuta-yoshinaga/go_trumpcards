@@ -29,6 +29,8 @@ type webOutPartial struct {
 	Players     []json.RawMessage `json:"players"`
 	GameEndFlag bool              `json:"gameEndFlag"`
 	WinnerTeam  int               `json:"winnerTeam"`
+	// #4713 で追加。合法手の位置。
+	ValidPlayIndices []int `json:"validPlayIndices"`
 }
 
 func TestTarneebWebPresenter_Output(t *testing.T) {
@@ -151,6 +153,51 @@ func TestTarneebWebPresenter_Output(t *testing.T) {
 		require.NoError(t, json.Unmarshal([]byte(p.Output(tn, nil)), &got))
 		assert.Equal(t, "tarneeb.gameEndCpuWin", got.MessageCode)
 		assert.Equal(t, 1, got.WinnerTeam)
+	})
+}
+
+// **ドメインは合法手を判定済みなのに Web に送っていなかった (#4713)。**
+// 違反札をクリックしてサーバーのエラーが返って初めて出せないと分かる状態だった。
+func TestTarneebWebPresenter_ValidPlayIndices(t *testing.T) {
+	p := new(presenter.TarneebWebPresenter)
+
+	decode := func(t *testing.T, tn *domain.Tarneeb) webOutPartial {
+		t.Helper()
+		var got webOutPartial
+		require.NoError(t, json.Unmarshal([]byte(p.Output(tn, nil)), &got))
+		return got
+	}
+
+	t.Run("human play turn reports the domain's own answer", func(t *testing.T) {
+		tn := newTarneebForWebTest()
+		tn.SetPhase(domain.TarneebPhasePlay)
+		tn.SetCurrentPlayerIdx(0) // 席 0 が人間
+		require.True(t, tn.IsHumanTurn(), "前提: 人間の手番であること")
+
+		got := decode(t, tn)
+		// **ドメインと一致することを見る。**ここで固定値を期待すると、配りに
+		// 依存して落ちるうえ、presenter が独自計算していても気づけない。
+		assert.Equal(t, tn.GetValidPlayIndices(0), got.ValidPlayIndices)
+		assert.NotEmpty(t, got.ValidPlayIndices, "リード時は全札が合法なので空にはならない")
+	})
+
+	t.Run("cpu turn reports nothing", func(t *testing.T) {
+		tn := newTarneebForWebTest()
+		tn.SetPhase(domain.TarneebPhasePlay)
+		tn.SetCurrentPlayerIdx(1) // CPU
+		require.False(t, tn.IsHumanTurn())
+
+		assert.Empty(t, decode(t, tn).ValidPlayIndices)
+	})
+
+	// **プレイフェーズ以外も踏む。**ビッド中は制限そのものが決まっていないので、
+	// ここで合法手を送ると「いま出せる」と誤って伝えることになる。
+	t.Run("bid phase reports nothing", func(t *testing.T) {
+		tn := newTarneebForWebTest()
+		tn.SetCurrentPlayerIdx(0)
+		require.Equal(t, domain.TarneebPhaseBid, tn.GetPhase(), "前提: 配り直後はビッド")
+
+		assert.Empty(t, decode(t, tn).ValidPlayIndices)
 	})
 }
 

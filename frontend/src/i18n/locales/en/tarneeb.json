@@ -87,5 +87,6 @@
     "discardLowest": "Discard your lowest card"
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "restrictedCard": "You cannot play this card (follow the led suit)"
 }

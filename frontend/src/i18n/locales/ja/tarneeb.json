@@ -87,5 +87,6 @@
     "discardLowest": "最も低いカードを捨てることを推奨"
   },
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "restrictedCard": "このカードは出せません（リードスートに従ってください）"
 }
