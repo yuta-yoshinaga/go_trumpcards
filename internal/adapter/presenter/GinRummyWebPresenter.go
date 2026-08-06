@@ -134,7 +134,7 @@ func (p *GinRummyWebPresenter) buildLayoffTargets(g interfaces.GinRummyGame) [][
 	hand := g.GetPlayer(human)
 	out := make([][]int, 0, hand.GetCardsSize())
 	for i := 0; i < hand.GetCardsSize(); i++ {
-		targets := g.GinRummyLayoffTargets(hand.GetCard(i))
+		targets := g.LayoffTargets(hand.GetCard(i))
 		if targets == nil {
 			targets = []int{}
 		}

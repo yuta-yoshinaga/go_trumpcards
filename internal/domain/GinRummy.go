@@ -34,7 +34,7 @@ const (
 	GinRummyPhaseDraw GinRummyPhase = 0
 	// GinRummyPhaseDiscard ディスカードフェーズ (手札から1枚捨てる or ノック/ジン)
 	GinRummyPhaseDiscard GinRummyPhase = 1
-	// GinRummyPhaseLayoff レイオフェーズ (相手がノッカーのメルドにカードを付ける)
+	// GinRummyPhaseLayoff レイオフフェーズ (相手がノッカーのメルドにカードを付ける)
 	GinRummyPhaseLayoff GinRummyPhase = 2
 	// GinRummyPhaseRoundEnd ラウンド終了フェーズ
 	GinRummyPhaseRoundEnd GinRummyPhase = 3
@@ -301,7 +301,7 @@ func (g *GinRummy) PlayerKnock(cardIndex int) error {
 		g.appendLog(g.currentPlayerIdx, "gin", fmt.Sprintf("%s has Gin!", g.playerName(g.currentPlayerIdx)), nil)
 		g.scoreRound()
 	} else {
-		// 相手のレイオフェーズへ
+		// 相手のレイオフフェーズへ
 		g.phase = GinRummyPhaseLayoff
 		g.currentPlayerIdx = 1 - g.currentPlayerIdx
 	}
@@ -365,11 +365,11 @@ func (g *GinRummy) PlayerLayoff(cardIndices []int) error {
 	return nil
 }
 
-// GinRummyLayoffTargets はその札を足せるノッカーのメルド番号をすべて返す。
+// LayoffTargets はその札を足せるノッカーのメルド番号をすべて返す。
 //
 // **レイオフフェーズの主題は「どのメルドに付け足せるか」。**画面はその補助を
 // 一切持たず、押してサーバーの応答で初めて成否が分かる状態だった (#4823)。
-func (g *GinRummy) GinRummyLayoffTargets(card *Card) []int {
+func (g *GinRummy) LayoffTargets(card *Card) []int {
 	if card == nil {
 		return nil
 	}
@@ -385,7 +385,7 @@ func (g *GinRummy) GinRummyLayoffTargets(card *Card) []int {
 // canLayoff カードがノッカーのメルドにレイオフ可能か
 func (g *GinRummy) canLayoff(card *Card) bool {
 	// 表示側と同じ判定を使う。2 本置くと「置ける」と出しながら拒否される状態が作れる。
-	return len(g.GinRummyLayoffTargets(card)) > 0
+	return len(g.LayoffTargets(card)) > 0
 }
 
 // layoffCard カードをノッカーのメルドに追加する

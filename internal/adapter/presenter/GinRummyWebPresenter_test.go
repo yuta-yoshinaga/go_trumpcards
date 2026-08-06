@@ -29,7 +29,7 @@ func setupGinRummyWebMock() *interfaces.MockGinRummyGame {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetKnockerIdx").Return(-1)
 	m.On("GetKnockerMelds").Return(([][]*domain.Card)(nil))
-	m.On("GinRummyLayoffTargets", mock.Anything).Return(([]int)(nil)).Maybe()
+	m.On("LayoffTargets", mock.Anything).Return(([]int)(nil)).Maybe()
 	m.On("GetKnockerDeadwood").Return(([]*domain.Card)(nil))
 	m.On("GetIsGin").Return(false)
 	return m
@@ -366,11 +366,11 @@ func TestGinRummyWebPresenter_LayoffTargets(t *testing.T) {
 	}
 	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GinRummyLayoffTargets")
-	m.On("GinRummyLayoffTargets", mock.MatchedBy(func(c *domain.Card) bool {
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "LayoffTargets")
+	m.On("LayoffTargets", mock.MatchedBy(func(c *domain.Card) bool {
 		return c != nil && c.GetValue() == 7
 	})).Return([]int{0})
-	m.On("GinRummyLayoffTargets", mock.Anything).Return(([]int)(nil))
+	m.On("LayoffTargets", mock.Anything).Return(([]int)(nil))
 
 	var out controller.GinRummyWebOutput
 	assert.NoError(t, json.Unmarshal([]byte(new(presenter.GinRummyWebPresenter).Output(m, nil)), &out))

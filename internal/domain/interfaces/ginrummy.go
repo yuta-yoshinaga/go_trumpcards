@@ -55,8 +55,8 @@ type GinRummyGame interface {
 	GetKnockerIdx() int
 	// GetKnockerMelds ノッカーのメルド一覧を取得する
 	GetKnockerMelds() [][]*domain.Card
-	// GinRummyLayoffTargets その札を足せるノッカーのメルド番号を返す
-	GinRummyLayoffTargets(card *domain.Card) []int
+	// LayoffTargets その札を足せるノッカーのメルド番号を返す
+	LayoffTargets(card *domain.Card) []int
 	// GetKnockerDeadwood ノッカーのデッドウッドを取得する
 	GetKnockerDeadwood() []*domain.Card
 	// GetIsGin ジンかを返す
