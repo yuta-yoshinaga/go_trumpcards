@@ -8,6 +8,7 @@ function makeState(overrides: Partial<BristolResponse> = {}): BristolResponse {
     fan: [[], [], []],
     stockCount: 0,
     foundation: [[], [], [], []],
+    legalTargets: {},
     phase: 0,
     moveCount: 0,
     canUndo: false,

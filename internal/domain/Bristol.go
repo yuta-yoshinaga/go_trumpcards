@@ -460,6 +460,44 @@ func (b *Bristol) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return card.GetValue() == top.GetValue()+1
 }
 
+// BristolLegalTargets は指定した移動元の一番上の札を置ける先を返す。
+// tableau は列番号、foundation はファウンデーション番号。
+//
+// **選んだ札で実際に動かせる先だけを示すため。**画面は選択中に全ての移動先を
+// 同じ見た目で強調していて、押すまで合法か分からなかった (#4813)。判定は
+// canPlaceOnTableau / canPlaceOnFoundation をそのまま使う。
+func (b *Bristol) BristolLegalTargets(fromZone string, fromCol int) (tableau []int, foundation []int) {
+	var card *Card
+	switch fromZone {
+	case "tableau":
+		if fromCol < 0 || fromCol >= BristolTableauCnt || len(b.tableau[fromCol]) == 0 {
+			return nil, nil
+		}
+		card = b.tableau[fromCol][len(b.tableau[fromCol])-1]
+	case "fan":
+		if fromCol < 0 || fromCol >= BristolFanCnt || len(b.fan[fromCol]) == 0 {
+			return nil, nil
+		}
+		card = b.fan[fromCol][len(b.fan[fromCol])-1]
+	default:
+		return nil, nil
+	}
+	for col := 0; col < BristolTableauCnt; col++ {
+		if col == fromCol && fromZone == "tableau" {
+			continue
+		}
+		if b.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	for f := 0; f < BristolFoundationCnt; f++ {
+		if b.canPlaceOnFoundation(card, f) {
+			foundation = append(foundation, f)
+		}
+	}
+	return tableau, foundation
+}
+
 // findFoundation はカードを置けるファウンデーションのインデックスを返す（無ければ -1）。
 func (b *Bristol) findFoundation(card *Card) int {
 	for i := 0; i < BristolFoundationCnt; i++ {

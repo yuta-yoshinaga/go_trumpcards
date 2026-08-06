@@ -39,7 +39,16 @@ type BristolWebOutput struct {
 	MoveCount  int                   `json:"moveCount"`
 	CanUndo    bool                  `json:"canUndo"`
 	Hint       *BristolWebOutputHint `json:"hint,omitempty"`
+	// LegalTargets は移動元ごとの合法な移動先。キーは "tableau-0" / "fan-2"。
+	// 選択中の札で実際に動かせる先だけを画面が示すために使う (#4813)。
+	LegalTargets map[string]BristolWebOutputTargets `json:"legalTargets"`
 	WebOutputBase
+}
+
+// BristolWebOutputTargets は 1 つの移動元から置ける先。
+type BristolWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // BristolWebController ブリストルWebコントローラークラス

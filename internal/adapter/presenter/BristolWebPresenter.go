@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -81,6 +82,8 @@ func (p *BristolWebPresenter) Output(b interfaces.BristolGame, lastErr error) st
 		}
 	}
 
+	resObj.LegalTargets = p.buildLegalTargets(b)
+
 	return marshalOrError(resObj)
 }
 
@@ -118,4 +121,33 @@ func (p *BristolWebPresenter) buildBaseOutput(b interfaces.BristolGame) *control
 		StockCount: b.GetStockCount(),
 		CanUndo:    b.CanUndo(),
 	}
+}
+
+// buildLegalTargets は移動元ごとの合法な移動先を返す。キーは "tableau-0" / "fan-2"。
+//
+// **押すまで合法か分からなかった。**選択中は全ての移動先が同じ見た目で強調されて
+// いて、不正な移動はサーバーが弾くまで分からなかった (#4813)。判定はドメインの
+// canPlaceOnTableau / canPlaceOnFoundation をそのまま通す。
+func (p *BristolWebPresenter) buildLegalTargets(g interfaces.BristolGame) map[string]controller.BristolWebOutputTargets {
+	out := make(map[string]controller.BristolWebOutputTargets)
+	add := func(zone string, col int) {
+		tab, found := g.BristolLegalTargets(zone, col)
+		if len(tab) == 0 && len(found) == 0 {
+			return
+		}
+		if tab == nil {
+			tab = []int{}
+		}
+		if found == nil {
+			found = []int{}
+		}
+		out[zone+"-"+strconv.Itoa(col)] = controller.BristolWebOutputTargets{Tableau: tab, Foundation: found}
+	}
+	for col := 0; col < domain.BristolTableauCnt; col++ {
+		add("tableau", col)
+	}
+	for col := 0; col < domain.BristolFanCnt; col++ {
+		add("fan", col)
+	}
+	return out
 }

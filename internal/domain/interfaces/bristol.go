@@ -46,4 +46,6 @@ type BristolGame interface {
 	GetFan() [domain.BristolFanCnt][]*domain.Card
 	// GetFoundation ファウンデーション取得（4つ）
 	GetFoundation() [domain.BristolFoundationCnt][]*domain.Card
+	// BristolLegalTargets 指定した移動元の札を置ける先 (タブロー列/ファウンデーション)
+	BristolLegalTargets(fromZone string, fromCol int) ([]int, []int)
 }

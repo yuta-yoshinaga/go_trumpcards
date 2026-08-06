@@ -3,10 +3,13 @@
 package presenter
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -16,6 +19,7 @@ func setupBristolWebMockDefaults(bg *interfaces.MockBristolGame) {
 	bg.On("GetMoveCount").Return(0).Maybe()
 	bg.On("GetStockCount").Return(28).Maybe()
 	bg.On("CanUndo").Return(false).Maybe()
+	bg.On("BristolLegalTargets", mock.Anything, mock.Anything).Return(([]int)(nil), ([]int)(nil)).Maybe()
 
 	var tableau [domain.BristolTableauCnt][]*domain.Card
 	for i := 0; i < domain.BristolTableauCnt; i++ {
@@ -93,6 +97,26 @@ func TestBristolWebPresenter_OutputCarriesTheHint(t *testing.T) {
 
 	result := new(BristolWebPresenter).Output(bg, nil)
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+}
+
+// **押すまで合法か分からなかった (#4813)。**選択中は全ての移動先が同じ見た目で
+// 強調されていた。移動元ごとの合法な移動先を出力に載せる。
+func TestBristolWebPresenter_LegalTargets(t *testing.T) {
+	bg := new(interfaces.MockBristolGame)
+	setupBristolWebMockDefaults(bg)
+	bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "BristolLegalTargets")
+	bg.On("BristolLegalTargets", "tableau", 0).Return([]int{3}, []int{1})
+	bg.On("BristolLegalTargets", mock.Anything, mock.Anything).Return(([]int)(nil), ([]int)(nil))
+	bg.On("GetHint").Return((*domain.BristolHint)(nil)).Maybe()
+
+	var out controller.BristolWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(BristolWebPresenter).Output(bg, nil)), &out))
+
+	// 合法手のある移動元だけがキーになる。
+	assert.Equal(t, []int{3}, out.LegalTargets["tableau-0"].Tableau)
+	assert.Equal(t, []int{1}, out.LegalTargets["tableau-0"].Foundation)
+	assert.NotContains(t, out.LegalTargets, "tableau-1", "動かせない移動元はキーごと出さない")
+	assert.NotContains(t, out.LegalTargets, "fan-0")
 }
 
 func TestBristolWebPresenter_HintOutput(t *testing.T) {
