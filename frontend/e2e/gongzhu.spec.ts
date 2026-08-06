@@ -23,7 +23,9 @@ test.describe('Gong Zhu E2E', () => {
     const playButton = page.getByRole('button', { name: '出す' });
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
-    const handCards = page.locator('button[aria-pressed]:has(img)');
+    // マストフォローの可視化 (#4812) で、追従できない札は aria-disabled になる。
+    // それを掴むとクリックが通らずタイムアウトするので、出せる札だけを対象にする。
+    const handCards = page.locator('button[aria-pressed]:has(img):not([aria-disabled="true"])');
     const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
     const MAX_TURNS = 60;
