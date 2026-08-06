@@ -158,6 +158,12 @@ func (p *BidWhistWebPresenter) HintOutput(g interfaces.BidWhistGame) string {
 			CardIndex:      hint.CardIndex,
 			Reason:         hint.Reason,
 		}
+		// **押したことを messageCode で伝える。**フロントの isRequestedHint は
+		// これを待つので、付けないと「押したときだけ出す」表示が永遠に出ない
+		// (#4814)。Tarocchini / Minchiate と同じ形。
+		resObj.MessageCode = "bidwhist.hintRequested"
+	} else {
+		resObj.MessageCode = "bidwhist.noHint"
 	}
 	return marshalOrError(resObj)
 }

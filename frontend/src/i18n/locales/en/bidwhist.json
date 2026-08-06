@@ -57,5 +57,8 @@
     "follow_suit": "Follow the suit that was led",
     "trump_cut": "Cut in with a trump",
     "discard_weak": "This trick is out of reach — throw a weak card"
-  }
+  },
+  "hintButton": "Hint",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }

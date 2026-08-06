@@ -252,4 +252,33 @@ describe('BidWhistPage', () => {
     expect(screen.getByTestId('bid-dir-1')).toBeEnabled();
     expect(screen.getByTestId('bid-dir-2')).toBeEnabled();
   });
+
+  // **CUI には HintOutput があるのに、Web からも CLI からも到達できなかった (#4814)。**
+  // 表示は `hintRequested` の messageCode を待つので、押したときだけ出る。
+  it('renders the hint banner once the hint was requested', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 3, currentPlayerIdx: 0 }));
+    renderWithProviders(<BidWhistPage />);
+    const hintBtn = await screen.findByTestId('bidwhist-hint-button');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({
+      ...makeState({ phase: 3, currentPlayerIdx: 0 }),
+      messageCode: 'bidwhist.hintRequested',
+      hint: { cardIndex: 0, reason: 'lead_trump' },
+    });
+    fireEvent.click(hintBtn);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    expect(await screen.findByTestId('bidwhist-hint-line')).toBeInTheDocument();
+  });
+
+  it('hides the hint banner until it is requested', async () => {
+    mockExec.mockResolvedValue({
+      ...makeState({ phase: 3, currentPlayerIdx: 0 }),
+      hint: { cardIndex: 0, reason: 'lead_trump' },
+    });
+    renderWithProviders(<BidWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('bidwhist-hint-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('bidwhist-hint-line')).not.toBeInTheDocument();
+  });
 });
