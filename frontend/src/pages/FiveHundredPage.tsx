@@ -58,6 +58,11 @@ const SUITS: { id: number; glyph: string }[] = [
 ];
 
 /** Returns the glyph for a suit id, or "NT" for no-trump (-1). */
+/** 増減点に符号を付ける (宣言側の +220 と守備側の +10 で書式を揃える)。 */
+function formatDelta(delta: number): string {
+  return delta > 0 ? `+${delta}` : String(delta);
+}
+
 function suitGlyph(suit: number): string {
   return SUITS.find((s) => s.id === suit)?.glyph ?? 'NT';
 }
@@ -504,12 +509,19 @@ function FiveHundredPageContent() {
               {isRoundEnd && state.roundResult && (
                 <div className="w-full text-sm mb-2" role="status" aria-live="polite" data-testid="fh-round-result">
                   <span className={state.roundResult.made ? 'text-ds-success' : 'text-ds-error'}>
-                    {t(state.roundResult.made ? 'roundResult.made' : 'roundResult.set', {
-                      team: state.roundResult.declarerTeam,
-                      tricks: state.roundResult.declarerTricks,
-                      need: state.roundResult.needTricks,
-                      delta: state.roundResult.declarerDelta,
-                    })}
+                    {t(
+                      // ミゼールには「必要トリック数」が無い (0 トリックで成立)。
+                      // suit 用の「取得/必要」表記を使い回すと分数として読めてしまう。
+                      `roundResult.${state.roundResult.misere ? 'misere' : 'suit'}${
+                        state.roundResult.made ? 'Made' : 'Set'
+                      }`,
+                      {
+                        team: state.roundResult.declarerTeam,
+                        tricks: state.roundResult.declarerTricks,
+                        need: state.roundResult.needTricks,
+                        delta: formatDelta(state.roundResult.declarerDelta),
+                      },
+                    )}
                   </span>
                   {state.roundResult.slam && <span className="ml-2 text-ds-success">{t('roundResult.slam')}</span>}
                   {state.roundResult.defenderDelta > 0 && (
@@ -517,7 +529,7 @@ function FiveHundredPageContent() {
                       {t('roundResult.defenders', {
                         team: state.roundResult.defenderTeam,
                         tricks: state.roundResult.defenderTricks,
-                        delta: state.roundResult.defenderDelta,
+                        delta: formatDelta(state.roundResult.defenderDelta),
                       })}
                     </span>
                   )}
