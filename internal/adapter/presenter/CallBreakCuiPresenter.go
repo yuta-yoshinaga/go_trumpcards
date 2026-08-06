@@ -21,6 +21,9 @@ func callBreakPlayerStr(player *domain.CallBreakPlayer, i int) string {
 		"name", cuiPlayerName(player, i),
 		"bid", bidStr,
 		"tricks", strconv.Itoa(player.GetTrickCount()),
+		// **Web は cb-bags-counter で常時出しているのに CUI には無かった (#4752)。**
+		// バッグの蓄積は長期スコアに直結するので、宣言超過を毎行で見せる。
+		"bags", strconv.Itoa(player.GetBags()),
 		"cum", domain.FormatCallBreakScore(player.GetCumulativeScore()),
 		"round", domain.FormatCallBreakScore(player.GetRoundScore()),
 		"cards", strconv.Itoa(player.GetCardsSize()),

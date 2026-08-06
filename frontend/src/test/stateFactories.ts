@@ -304,6 +304,7 @@ const callBreakPlayers: CallBreakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 0,
     trickCount: 0,
+    bags: 0,
   },
   {
     id: 1,
@@ -314,6 +315,7 @@ const callBreakPlayers: CallBreakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 41,
     trickCount: 1,
+    bags: 0,
   },
   {
     id: 2,
@@ -324,6 +326,7 @@ const callBreakPlayers: CallBreakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 30,
     trickCount: 2,
+    bags: 0,
   },
   {
     id: 3,
@@ -333,7 +336,10 @@ const callBreakPlayers: CallBreakResponse['players'] = [
     bid: 2,
     roundScore: 0,
     cumulativeScore: -20,
-    trickCount: 0,
+    // **既定を全部 0 にしない。**バッグ表示のテストが「0 が出ている」だけで
+    // 通ってしまい、サーバー値を読まなくなっても気づけなくなる (#4752)。
+    trickCount: 5,
+    bags: 3,
   },
 ];
 

@@ -406,14 +406,12 @@ function CallBreakPageContent() {
                 data-testid="cb-bags-counter"
               >
                 <span className="mr-2">{t('bags')}:</span>
-                {state.players.map((p) => {
-                  const bags = p.bid >= 0 ? Math.max(0, p.trickCount - p.bid) : 0;
-                  return (
-                    <span key={p.id} className="mr-3" data-testid={`cb-bags-${p.id.toString()}`}>
-                      {t('bagsValue', { name: playerName(p.id, p.isHuman), n: bags })}
-                    </span>
-                  );
-                })}
+                {/* バッグの式はドメインの GetBags() が唯一の出どころ (#4752)。 */}
+                {state.players.map((p) => (
+                  <span key={p.id} className="mr-3" data-testid={`cb-bags-${p.id.toString()}`}>
+                    {t('bagsValue', { name: playerName(p.id, p.isHuman), n: p.bags })}
+                  </span>
+                ))}
               </div>
               <GameMessageBox
                 message={state.message}

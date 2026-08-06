@@ -501,3 +501,30 @@ func TestCallBreak_UnmarshalJSON_Empty(t *testing.T) {
 	assert.Empty(t, cb.GetCurrentTrick())
 	assert.Empty(t, cb.GetActionLog())
 }
+
+// **バッグの式は1箇所だけ (#4752)。**CUI と Web が別々に計算していると、
+// 片方だけ直したときに黙って食い違う。
+func TestCallBreakPlayer_GetBags(t *testing.T) {
+	for _, tt := range []struct {
+		name   string
+		bid    int
+		tricks int
+		want   int
+	}{
+		{"未ビッドは 0", -1, 3, 0},
+		{"宣言ちょうどは 0", 3, 3, 0},
+		{"宣言未達も 0 (ペナルティは別勘定)", 5, 2, 0},
+		{"宣言超過が バッグ", 2, 5, 3},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			p := domain.NewCallBreakPlayer(true)
+			p.SetBid(tt.bid)
+			for i := 0; i < tt.tricks; i++ {
+				p.AddTrick([]*domain.Card{nil})
+			}
+			if got := p.GetBags(); got != tt.want {
+				t.Errorf("GetBags() = %d, want %d", got, tt.want)
+			}
+		})
+	}
+}
