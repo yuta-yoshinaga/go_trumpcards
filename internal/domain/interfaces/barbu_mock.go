@@ -100,12 +100,13 @@ func (_m *MockBarbuGame) GetTrickNumber() int {
 	return ret.Int(0)
 }
 
-// GetCurrentTrick モック
-func (m *MockBarbuGame) GetPlayableIndices(playerIdx int) []int {
-	out, _ := m.Called(playerIdx).Get(0).([]int)
+// GetPlayableIndices モック
+func (_m *MockBarbuGame) GetPlayableIndices(playerIdx int) []int {
+	out, _ := _m.Called(playerIdx).Get(0).([]int)
 	return out
 }
 
+// GetCurrentTrick モック
 func (_m *MockBarbuGame) GetCurrentTrick() []*domain.TrickCard {
 	ret := _m.Called()
 	if v, ok := ret.Get(0).([]*domain.TrickCard); ok {

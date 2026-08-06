@@ -335,7 +335,10 @@ function BarbuPageContent() {
                   // 持っていても全カードが同じように押せていた (#4804)。
                   const playable = isDominoes
                     ? state.dominoPlayable.includes(i)
-                    : state.playableIndices.length === 0 || state.playableIndices.includes(i);
+                    : // 空配列は「制限なし」。フォローできない手番でも
+                      // GetPlayableIndices は全インデックスを返すので、空になるのは
+                      // 人間の手番でないとき (＝ボタン自体が押せない) だけ。
+                      state.playableIndices.length === 0 || state.playableIndices.includes(i);
                   return (
                     <button
                       key={i}
