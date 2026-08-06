@@ -13,7 +13,8 @@
     "trumpNone": "切り札: 山札なし",
     "tricks": "獲得",
     "phase1": "第1フェーズ (フォロー自由)",
-    "phase2": "第2フェーズ (マストフォロー)"
+    "phase2": "第2フェーズ (マストフォロー)",
+    "trumpNoneWithSuit": "切り札: {{suit}}（山札なし）"
   },
   "phase": {
     "play": "プレイ",

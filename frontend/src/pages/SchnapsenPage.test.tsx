@@ -174,10 +174,14 @@ describe('SchnapsenPage', () => {
     await waitFor(() => expect(screen.getByText(/CPUの勝ち/)).toBeInTheDocument());
   });
 
-  it('hides trump card label when stock is exhausted', async () => {
-    mockExec.mockResolvedValue(makeState({ trumpCard: undefined, stockRemaining: 0, isEndgame: true }));
+  // **フェーズ2 はマストフォローの厳格ルール。**現物が手札に入っても切り札スートは
+  // 出し続ける。汎用の「切り札: 山札なし」だけだと、合法手のリングの意味が
+  // 読めなくなっていた (#4810)。
+  it('keeps showing the trump suit once the trump card is gone', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpCard: undefined, trumpSuit: 3, stockRemaining: 0, isEndgame: true }));
     renderWithProviders(<SchnapsenPage />);
-    await waitFor(() => expect(screen.getByText(/切り札: 山札なし/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/切り札: ♥/)).toBeInTheDocument());
+    expect(screen.queryByText('切り札: 山札なし')).not.toBeInTheDocument();
   });
 
   it('disables play buttons when it is not the human turn', async () => {
