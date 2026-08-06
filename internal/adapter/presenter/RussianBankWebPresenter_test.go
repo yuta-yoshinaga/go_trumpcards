@@ -14,12 +14,44 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
+// rbWithoutForcedMove は配り直後の盤面から CPU のリザーブを空にして返す。
+//
+// 配り直後は CPU の捨て札も空なので、リザーブを空にすれば強制手は必ず消える
+// (シャッフル依存ではない)。TestRussianBankWebPresenter_StopAvailableMessage の
+// 「呼べない側」と同じ作り方。
+func rbWithoutForcedMove(t *testing.T) *domain.RussianBank {
+	t.Helper()
+	g := domain.NewDefaultRussianBank()
+	g.Reset()
+
+	data, err := json.Marshal(g)
+	assert.NoError(t, err)
+	var raw map[string]json.RawMessage
+	assert.NoError(t, json.Unmarshal(data, &raw))
+	var players []map[string]json.RawMessage
+	assert.NoError(t, json.Unmarshal(raw["pl"], &players))
+	players[1]["r"], err = json.Marshal([]*domain.Card{})
+	assert.NoError(t, err)
+	raw["pl"], err = json.Marshal(players)
+	assert.NoError(t, err)
+	patched, err := json.Marshal(raw)
+	assert.NoError(t, err)
+	assert.NoError(t, json.Unmarshal(patched, g))
+	return g
+}
+
 func TestRussianBankWebPresenter_Output(t *testing.T) {
 	p := new(presenter.RussianBankWebPresenter)
 
 	t.Run("playing state serialises the board and players", func(t *testing.T) {
-		g := domain.NewDefaultRussianBank()
-		g.Reset()
+		// **配りに賭けない (#4817 で入り込んだフレーク)。**`russianbank.playing` は
+		// CanCallStop() が false のときだけ出る。素の Reset() では CPU のリザーブ
+		// トップ次第で強制手が生まれ、`russianbank.stopAvailable` になる。実測で
+		// 300 回中 27 回 (9%) 落ちていた。CPU のリザーブを空にして、強制手が
+		// 生まれないことを確かめてから固定する。
+		g := rbWithoutForcedMove(t)
+		assert.False(t, g.CanCallStop(), "この盤面では stop を呼べない")
+
 		out := p.Output(g, nil)
 		for _, frag := range []string{`"phase"`, `"players"`, `"tableau"`, `"foundations"`, `"reserveCount"`, `"canCallStop"`, `"messageCode":"russianbank.playing"`} {
 			assert.Contains(t, out, frag)
