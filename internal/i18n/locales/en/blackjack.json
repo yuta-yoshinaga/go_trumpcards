@@ -60,5 +60,12 @@
   "suggestDouble": "DOUBLE",
   "suggestSplit": "SPLIT",
   "suggestSurrender": "SURRENDER",
-  "suggestDeclineInsurance": "DECLINE INSURANCE"
+  "suggestDeclineInsurance": "DECLINE INSURANCE",
+  "payoutRef.title": "Payouts",
+  "payoutRef.blackjack": "Blackjack (3:2)",
+  "payoutRef.win": "Win (1:1)",
+  "payoutRef.insurance": "Insurance (2:1)",
+  "payoutRef.push": "Push (tie: bet returned)",
+  "payoutRef.surrender": "Surrender (half the bet returned)",
+  "payoutRef.bust": "Bust (over 21: lose)"
 }

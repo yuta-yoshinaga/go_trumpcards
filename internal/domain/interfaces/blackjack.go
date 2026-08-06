@@ -82,6 +82,8 @@ type BlackJackGame interface {
 	GetDeckPenetration() int
 	// GetMultiHandCount マルチハンド数を取得する
 	GetMultiHandCount() int
+	// GetVariant バリアント設定を取得する (nil = 標準ブラックジャック)
+	GetVariant() *domain.BlackJackVariantConfig
 	// GetBonusKeys 当ラウンドで成立したバリアントボーナスのi18nキー一覧を取得する
 	GetBonusKeys() []string
 	// CanSurrenderHand 指定ハンドのサレンダー可否を返す
