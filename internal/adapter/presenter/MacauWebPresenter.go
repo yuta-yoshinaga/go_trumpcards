@@ -38,6 +38,8 @@ func (p *MacauWebPresenter) Output(g interfaces.MacauGame, lastErr error) string
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 
+	resObj.PlayableIndices = p.playableIndices(g)
+
 	return marshalOrError(resObj)
 }
 
@@ -96,4 +98,25 @@ func (p *MacauWebPresenter) ActionLogOutput(g interfaces.MacauGame) string {
 // 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
 func (p *MacauWebPresenter) HintOutput(g interfaces.MacauGame) string {
 	return p.Output(g, nil)
+}
+
+// playableIndices は人間がいま出せる手札の位置を返す。
+//
+// **CUI は HintOutput で全部並べているのに、Web は都度クリックしてエラーで確かめる
+// しかなかった (#4805)。**判定はドメインの IsValidPlay をそのまま呼ぶ。
+func (p *MacauWebPresenter) playableIndices(g interfaces.MacauGame) []int {
+	if g.GetGameEndFlag() || !g.IsHumanTurn() {
+		return make([]int, 0)
+	}
+	human := g.GetPlayer(g.GetCurrentPlayerIdx())
+	if human == nil {
+		return make([]int, 0)
+	}
+	out := make([]int, 0, human.GetCardsSize())
+	for i := 0; i < human.GetCardsSize(); i++ {
+		if g.IsValidPlay(human.GetCard(i)) {
+			out = append(out, i)
+		}
+	}
+	return out
 }

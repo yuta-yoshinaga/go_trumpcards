@@ -38,6 +38,7 @@ const playPhaseState: MacauResponse = {
   drawPileCount: 30,
   chosenSuit: 0,
   penaltyDrawCount: 0,
+  playableIndices: [],
   direction: 1,
   gameEndFlag: false,
   winnerIdx: -1,
@@ -289,5 +290,32 @@ describe('MacauPage', () => {
     expect(panel).toHaveTextContent('次のプレイヤーをスキップ');
     expect(panel).toHaveTextContent('ワイルド — 好きなスートを指定、いつでも出せる');
     expect(panel).toHaveTextContent('プレイ方向を反転（リバース）');
+  });
+
+  // **CUI は出せる札を全部並べているのに、Web は都度クリックしてエラーで
+  // 確かめるしかなかった (#4805)。**
+  it('rings only the cards that can legally be played', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, playableIndices: [1] });
+    renderWithProviders(<MacauPage />);
+
+    await waitFor(() => expect(document.querySelectorAll('[data-playable="true"]')).toHaveLength(1));
+  });
+
+  // **「引くしかない」局面で全札が光ってはいけない。**手番中の空配列は
+  // 「制限なし」ではなく「1 枚も出せない」(レビュー指摘 #5065)。
+  it('rings nothing when it is the human turn and no card is legal', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, playableIndices: [] });
+    renderWithProviders(<MacauPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(document.querySelectorAll('[data-playable="true"]')).toHaveLength(0);
+  });
+
+  it('rings every card while it is not the human turn', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 1, playableIndices: [] });
+    renderWithProviders(<MacauPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(document.querySelectorAll('[data-playable="true"]').length).toBeGreaterThan(1);
   });
 });

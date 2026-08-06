@@ -45,9 +45,12 @@ type MacauWebOutput struct {
 	DrawPileCount    int                     `json:"drawPileCount"`
 	ChosenSuit       int                     `json:"chosenSuit"`
 	PenaltyDrawCount int                     `json:"penaltyDrawCount"`
-	Direction        int                     `json:"direction"`
-	GameEndFlag      bool                    `json:"gameEndFlag"`
-	WinnerIdx        int                     `json:"winnerIdx"`
+	// PlayableIndices は人間がいま出せる手札の位置。マジックカードやチョウズド
+	// スートの絡む合法判定を画面が示すために使う (#4805)。
+	PlayableIndices []int `json:"playableIndices"`
+	Direction       int   `json:"direction"`
+	GameEndFlag     bool  `json:"gameEndFlag"`
+	WinnerIdx       int   `json:"winnerIdx"`
 	WebOutputBase
 	Config MacauWebOutputConfig `json:"config"`
 }
