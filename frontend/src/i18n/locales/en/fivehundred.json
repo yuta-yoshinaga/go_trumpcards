@@ -51,5 +51,13 @@
     "lead_strong": "Lead a strong card to keep the initiative",
     "lead_trump": "Lead a trump",
     "trump_cut": "Cut in with a trump"
+  },
+  "roundResult": {
+    "suitMade": "Team {{team}} made it: {{tricks}}/{{need}} tricks {{delta}}",
+    "suitSet": "Team {{team}} was set: {{tricks}}/{{need}} tricks {{delta}}",
+    "misereMade": "Team {{team}} made misere: took no tricks {{delta}}",
+    "misereSet": "Team {{team}} broke misere: took {{tricks}} trick(s) {{delta}}",
+    "slam": "(slam bonus)",
+    "defenders": "Defenders team {{team}}: {{tricks}} tricks {{delta}}"
   }
 }

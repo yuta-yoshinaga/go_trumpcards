@@ -6,6 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -156,4 +159,39 @@ func TestFiveHundredWebPresenterOutputCarriesTheHint(t *testing.T) {
 	if !strings.Contains(result, `"hint"`) {
 		t.Error("Output must carry the hint -- the frontend reads state.hint")
 	}
+}
+
+// **「何点動いたか」を画面が言えるようにする (#4809)。**ラウンド終了は定型文
+// しか出ておらず、成否も増減もヘッダーの数字を前後で見比べるしかなかった。
+func TestFiveHundredWebPresenter_RoundResult(t *testing.T) {
+	g := newFiveHundredGame()
+	g.SetContract(domain.FiveHundredContractSuit, 7, domain.CardDesignSpade)
+	g.SetDeclarerIdx(0)
+	// 宣言側 (チーム 0) が 7 トリック、守備側が 3 トリック。
+	for i := 0; i < 7; i++ {
+		g.GetPlayer(0).AddTrick([]*domain.Card{nil})
+	}
+	for i := 0; i < 3; i++ {
+		g.GetPlayer(1).AddTrick([]*domain.Card{nil})
+	}
+	g.SetPhase(domain.FiveHundredPhaseRoundEnd)
+
+	var out controller.FiveHundredWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.FiveHundredWebPresenter).Output(g, nil)), &out))
+	require.NotNil(t, out.RoundResult, "ラウンド終了フェーズでは内訳が載る")
+	assert.Equal(t, g.GetPlayer(g.GetDeclarerIdx()).GetTeam(), out.RoundResult.DeclarerTeam)
+	assert.NotZero(t, out.RoundResult.ContractValue)
+
+	// **表示と実際の加算がずれない。**内訳の増減が ScoreRound の結果と一致する。
+	before := [2]int{g.GetTeamScore(0), g.GetTeamScore(1)}
+	decl, def := out.RoundResult.DeclarerTeam, out.RoundResult.DefenderTeam
+	g.ScoreRound()
+	assert.Equal(t, before[decl]+out.RoundResult.DeclarerDelta, g.GetTeamScore(decl))
+	assert.Equal(t, before[def]+out.RoundResult.DefenderDelta, g.GetTeamScore(def))
+
+	// ラウンド終了フェーズ以外では載らない。
+	g.SetPhase(domain.FiveHundredPhasePlay)
+	var out2 controller.FiveHundredWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.FiveHundredWebPresenter).Output(g, nil)), &out2))
+	assert.Nil(t, out2.RoundResult)
 }

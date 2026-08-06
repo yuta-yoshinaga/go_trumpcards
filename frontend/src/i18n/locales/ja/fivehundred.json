@@ -51,5 +51,13 @@
     "lead_strong": "強い札でリードして主導権を取ります",
     "lead_trump": "切り札でリードします",
     "trump_cut": "切り札で刈り取ります"
+  },
+  "roundResult": {
+    "suitMade": "チーム{{team}} 成立: {{tricks}}/{{need}} トリック {{delta}}点",
+    "suitSet": "チーム{{team}} セット: {{tricks}}/{{need}} トリック {{delta}}点",
+    "misereMade": "チーム{{team}} ミゼール成立: 1トリックも取らず {{delta}}点",
+    "misereSet": "チーム{{team}} ミゼール失敗: {{tricks}}トリック取ってしまい {{delta}}点",
+    "slam": "（スラムボーナス）",
+    "defenders": "守備 チーム{{team}}: {{tricks}}トリック {{delta}}点"
   }
 }
