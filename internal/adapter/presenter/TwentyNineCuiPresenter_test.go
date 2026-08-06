@@ -76,9 +76,9 @@ func TestTwentyNineCuiPresenter_MarksPlayableCards(t *testing.T) {
 		m.On("GetPlayableIndices", 0).Return([]int{1})
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "*[1]HEART 5", "合法手には目印が付く")
-		assert.Contains(t, result, " [0]SPADE 1", "非合法手には付かない")
-		assert.Contains(t, result, " [2]CLOVER 9")
+		assert.Contains(t, result, "[1]HEART 5*", "合法手には目印が付く")
+		assert.NotContains(t, result, "[0]SPADE 1*", "非合法手には付かない")
+		assert.NotContains(t, result, "[2]CLOVER 9*")
 	})
 
 	// **目印を出さない側も踏む。**ビッド中は制限そのものが決まっていないので、
@@ -95,7 +95,7 @@ func TestTwentyNineCuiPresenter_MarksPlayableCards(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "[0]SPADE 1")
-		assert.NotContains(t, result, "*[", "ビッド中は目印を出さない")
+		assert.NotContains(t, result, "HEART 5*", "ビッド中は目印を出さない")
 	})
 
 	t.Run("cpu turn leaves the human hand unmarked", func(t *testing.T) {
@@ -108,7 +108,7 @@ func TestTwentyNineCuiPresenter_MarksPlayableCards(t *testing.T) {
 		m.On("GetPlayableIndices", 0).Return([]int{1})
 
 		result := p.Output(m, nil)
-		assert.NotContains(t, result, "*[", "相手の手番では目印を出さない")
+		assert.NotContains(t, result, "HEART 5*", "相手の手番では目印を出さない")
 	})
 }
 
