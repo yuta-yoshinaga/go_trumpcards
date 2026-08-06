@@ -70,6 +70,7 @@ const defaultState: GongZhuResponse = {
   heartsBroken: false,
   exposed: { pig: false, sheep: false, ace: false, doubler: false },
   exposableIndices: [],
+  playableIndices: [],
   gameEndFlag: false,
   winnerIdx: -1,
   leadPlayerIdx: 0,

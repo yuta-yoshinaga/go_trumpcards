@@ -628,6 +628,24 @@ func (g *GongZhu) validatePlay(playerIdx int, card *Card) error {
 	return nil
 }
 
+// GetPlayableIndices はそのプレイヤーがいま出せる手札の位置を返す。
+//
+// **判定は validatePlay をそのまま通す。**別のスキャンを書くと「出せる」と光った
+// 札がサーバーに弾かれる。Web はマストフォローの可視化を持っていなかった (#4812)。
+func (g *GongZhu) GetPlayableIndices(playerIdx int) []int {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return nil
+	}
+	p := g.players[playerIdx]
+	out := make([]int, 0, p.GetCardsSize())
+	for i := 0; i < p.GetCardsSize(); i++ {
+		if g.validatePlay(playerIdx, p.GetCard(i)) == nil {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (g *GongZhu) playerHasSuit(playerIdx int, design int) bool {
 	p := g.players[playerIdx]

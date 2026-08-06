@@ -221,4 +221,15 @@ describe('GongZhuPage', () => {
     await waitFor(() => expect(screen.getByAltText('♠ Q')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
+
+  // **マストフォローの可視化 (#4812)。**どのカードが出せるかを画面が一切
+  // 示しておらず、プレイヤーが自力で判断するしかなかった。
+  it('disables the hand cards that cannot follow suit', async () => {
+    mockExec.mockResolvedValue(makeGongZhuState({ playableIndices: [0] }));
+    renderWithProviders(<GongZhuPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    // 出せない札は aria-disabled になる (PlayerHandSection の validIndices の規約)。
+    await waitFor(() => expect(document.querySelectorAll('[aria-disabled="true"]').length).toBe(1));
+  });
 });

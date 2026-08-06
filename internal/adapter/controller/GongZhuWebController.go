@@ -53,13 +53,15 @@ type GongZhuWebOutput struct {
 	TrickNumber      int                       `json:"trickNumber"`
 	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
 	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
-	HeartsBroken     bool                      `json:"heartsBroken"`
-	Exposed          GongZhuWebOutputExposure  `json:"exposed"`
-	ExposableIndices []int                     `json:"exposableIndices"`
-	GameEndFlag      bool                      `json:"gameEndFlag"`
-	WinnerIdx        int                       `json:"winnerIdx"`
-	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
-	Hint             *WebOutputCardHint        `json:"hint,omitempty"`
+	// PlayableIndices はいま出せる手札の位置。マストフォローの可視化に使う (#4812)。
+	PlayableIndices  []int                    `json:"playableIndices"`
+	HeartsBroken     bool                     `json:"heartsBroken"`
+	Exposed          GongZhuWebOutputExposure `json:"exposed"`
+	ExposableIndices []int                    `json:"exposableIndices"`
+	GameEndFlag      bool                     `json:"gameEndFlag"`
+	WinnerIdx        int                      `json:"winnerIdx"`
+	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
+	Hint             *WebOutputCardHint       `json:"hint,omitempty"`
 	WebOutputBase
 	Config GongZhuWebOutputConfig `json:"config"`
 }
