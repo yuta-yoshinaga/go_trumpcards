@@ -527,3 +527,53 @@ func TestAgnes_UnmarshalJSON_Errors(t *testing.T) {
 		assert.Equal(t, 0, a.GetStockCount())
 	})
 }
+
+// **手詰まりは GetHint と同じ判定であること (#4830)。**別のスキャンを書くと
+// 「手詰まり」と言いながらヒントが手を返す状態が作れる。
+func TestAgnes_IsStalemate(t *testing.T) {
+	newBoard := func() *domain.Agnes {
+		a := domain.NewDefaultAgnes()
+		a.Reset()
+		a.SetBaseRank(7)
+		var f [domain.AgnesFoundationCnt][]*domain.Card
+		a.SetFoundation(f)
+		var tab [domain.AgnesTableauCnt][]*domain.AgnesTableauCard
+		for i := range domain.AgnesTableauCnt {
+			tab[i] = []*domain.AgnesTableauCard{
+				{Card: domain.NewCard(domain.CardDesignSpade, 13, false), FaceUp: true},
+			}
+		}
+		a.SetTableau(tab)
+		a.SetStock(nil)
+		return a
+	}
+
+	a := newBoard()
+	assert.True(t, a.IsStalemate(), "動かせる札が無い")
+	assert.Nil(t, a.GetHint(), "ヒントも手を返さない")
+
+	// ストックが残っていれば手詰まりではない。
+	withStock := newBoard()
+	withStock.SetStock([]*domain.Card{domain.NewCard(domain.CardDesignClover, 2, false)})
+	assert.False(t, withStock.IsStalemate())
+
+	// プレイ中以外では false。
+	ended := newBoard()
+	ended.SetPhase(domain.AgnesPhaseGameOver)
+	assert.False(t, ended.IsStalemate())
+
+	// 1 手でもあれば false。ベースランクの札はファンデーションへ置ける。
+	movable := newBoard()
+	var tab [domain.AgnesTableauCnt][]*domain.AgnesTableauCard
+	for i := range domain.AgnesTableauCnt {
+		tab[i] = []*domain.AgnesTableauCard{
+			{Card: domain.NewCard(domain.CardDesignSpade, 13, false), FaceUp: true},
+		}
+	}
+	tab[0] = []*domain.AgnesTableauCard{
+		{Card: domain.NewCard(domain.CardDesignSpade, 7, false), FaceUp: true},
+	}
+	movable.SetTableau(tab)
+	assert.False(t, movable.IsStalemate())
+	assert.NotNil(t, movable.GetHint())
+}
