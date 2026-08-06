@@ -21,7 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_ROUNDS_OPTIONS, useTarocchiniGame } from '../hooks/useTarocchiniGame';
-import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { TAROCCHINI_SURPLUS, type TarocchiniResponse } from '../types/card';
@@ -350,7 +350,7 @@ function TarocchiniPageContent() {
               {(canScarto || canPlay) && (
                 <button
                   type="button"
-                  className={btnSecondary}
+                  className={btnSuccess}
                   onClick={handleHint}
                   disabled={loading}
                   data-testid="tarocchini-hint-button"
