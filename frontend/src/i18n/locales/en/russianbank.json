@@ -43,5 +43,6 @@
   "frontendHint": {
     "russianbankToFoundation": "This card can go to a foundation",
     "russianbankToTableau": "This card can move to another column"
-  }
+  },
+  "stopAvailable": "The CPU missed a forced move"
 }

@@ -1433,7 +1433,8 @@
     "zwicker.lose": "負けました",
     "zwicker.win": "勝ちました",
     "bidwhist.hintRequested": "ヒントがあります",
-    "bidwhist.noHint": "ヒントはありません"
+    "bidwhist.noHint": "ヒントはありません",
+    "russianbank.stopAvailable": "CPU が強制手を取りこぼしています。「ストップ」で咎められます"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
