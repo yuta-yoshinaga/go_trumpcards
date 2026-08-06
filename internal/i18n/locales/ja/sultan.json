@@ -7,6 +7,7 @@
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete",
+  "stalemateEscape": "脱出には undo を {{count}} 回（undo コマンド）実行してください",
   "cuiCommandHint": "操作: m で移動 (例 m d 0 / m w), d=ドロー, rd=リディール, u=アンドゥ, h=ヒント",
   "foundationHeader": "Foundation: ",
   "divanHeader": "Divan:",

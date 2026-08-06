@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupSultanCuiMockDefaults(sg *interfaces.MockSultanGame) {
@@ -19,6 +21,7 @@ func setupSultanCuiMockDefaults(sg *interfaces.MockSultanGame) {
 	sg.On("GetStockCount").Return(88).Maybe()
 	sg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	sg.On("IsStalemate").Return(false).Maybe()
+	sg.On("UndoToEscape").Return(0).Maybe()
 	sg.On("GetRedealCount").Return(0).Maybe()
 
 	divan := make([]*domain.Card, domain.SultanDivanCnt)
@@ -121,6 +124,45 @@ func TestSultanCuiPresenter_Output(t *testing.T) {
 		p := new(SultanCuiPresenter)
 		result := p.Output(sg, nil)
 		assert.Contains(t, result, "手詰まり")
+	})
+
+	// **具体的な脱出手数まで出す。**Web は StalemateEscapeButton に undoToEscape を
+	// 渡していて、CUI だけ汎用メッセージで止まっていた (#4831)。
+	t.Run("stalemate names how many undos escape it", func(t *testing.T) {
+		sg := new(interfaces.MockSultanGame)
+		setupSultanCuiMockDefaults(sg)
+		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
+		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "UndoToEscape")
+		sg.On("IsStalemate").Return(true)
+		sg.On("UndoToEscape").Return(3)
+
+		assert.Contains(t, new(SultanCuiPresenter).Output(sg, nil),
+			i18n.Tf("sultan.stalemateEscape", "count", "3"))
+	})
+
+	// 戻れる局面が無ければ (-1) / 0 なら出さない。「undo を 0 回」は指示にならない。
+	t.Run("no escape line when there is nowhere to undo to", func(t *testing.T) {
+		escapePrefix := strings.SplitN(i18n.T("sultan.stalemateEscape"), "{{", 2)[0]
+		for _, n := range []int{0, -1} {
+			sg := new(interfaces.MockSultanGame)
+			setupSultanCuiMockDefaults(sg)
+			sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
+			sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "UndoToEscape")
+			sg.On("IsStalemate").Return(true)
+			sg.On("UndoToEscape").Return(n)
+
+			out := new(SultanCuiPresenter).Output(sg, nil)
+			assert.Contains(t, out, "手詰まり", "警告そのものは出る")
+			assert.NotContains(t, out, escapePrefix)
+		}
+	})
+
+	// 手詰まりでなければ脱出行も出ない。
+	t.Run("no escape line when not stuck", func(t *testing.T) {
+		sg := new(interfaces.MockSultanGame)
+		setupSultanCuiMockDefaults(sg)
+		escapePrefix := strings.SplitN(i18n.T("sultan.stalemateEscape"), "{{", 2)[0]
+		assert.NotContains(t, new(SultanCuiPresenter).Output(sg, nil), escapePrefix)
 	})
 }
 

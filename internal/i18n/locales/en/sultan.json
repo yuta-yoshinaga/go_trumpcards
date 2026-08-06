@@ -7,6 +7,7 @@
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete",
+  "stalemateEscape": "Undo {{count}} time(s) (undo command) to escape",
   "cuiCommandHint": "Commands: m to move (e.g. m d 0 / m w), d=draw, rd=redeal, u=undo, h=hint",
   "foundationHeader": "Foundation: ",
   "divanHeader": "Divan:",
