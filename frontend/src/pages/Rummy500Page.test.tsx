@@ -36,6 +36,7 @@ const drawPhaseState: Rummy500Response = {
       laidMelds: [],
     },
   ],
+  layoffTargets: [],
   phase: 0,
   roundNumber: 1,
   currentPlayerIdx: 0,
@@ -319,5 +320,50 @@ describe('Rummy500Page', () => {
     renderWithProviders(<Rummy500Page />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
     expect(screen.queryByTestId('hand-penalty-badge')).not.toBeInTheDocument();
+  });
+
+  // **押せるボタンは必ず通る。**どのメルドのボタンも常に押せて、置けるかどうかは
+  // サーバー応答で初めて分かる状態だった (#4832)。
+  it('only enables the melds the selected card can go onto', async () => {
+    const withMelds = {
+      ...playPhaseState,
+      players: [
+        playPhaseState.players[0],
+        {
+          ...playPhaseState.players[1],
+          laidMelds: [
+            {
+              cards: [
+                { design: 'SPADE' as const, value: 7 },
+                { design: 'HEART' as const, value: 7 },
+                { design: 'CLOVER' as const, value: 7 },
+              ],
+            },
+            {
+              cards: [
+                { design: 'SPADE' as const, value: 2 },
+                { design: 'SPADE' as const, value: 3 },
+                { design: 'SPADE' as const, value: 4 },
+              ],
+            },
+          ],
+        },
+      ],
+      // 手札 0 枚目は 2 つ目のメルドにだけ置ける。
+      layoffTargets: [[{ owner: 1, meldIdx: 1 }], []],
+    };
+    mockExec.mockResolvedValue(withMelds);
+    renderWithProviders(<Rummy500Page />);
+    await waitFor(() => expect(screen.getByTestId('layoff-meld-1-0')).toBeInTheDocument());
+
+    // 何も選んでいなければ従来どおり両方押せる (選び直しのため)。
+    expect(screen.getByTestId('layoff-meld-1-0')).not.toBeDisabled();
+
+    const handCard = document.querySelector('[data-tutorial="r5-player-hand"] button') as HTMLButtonElement;
+    fireEvent.click(handCard);
+
+    expect(screen.getByTestId('layoff-meld-1-0')).toBeDisabled();
+    expect(screen.getByTestId('layoff-meld-1-1')).not.toBeDisabled();
+    expect(screen.getByTestId('layoff-meld-1-1')).toHaveAttribute('data-layoff-legal', 'true');
   });
 });

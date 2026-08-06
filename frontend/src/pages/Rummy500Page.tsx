@@ -246,6 +246,14 @@ function Rummy500PageContent() {
                     <div className="text-ds-text-muted text-xs mb-1">{t('laidMelds')}</div>
                     {p.laidMelds.map((meld, mIdx) => {
                       const isLayoffTarget = layoffTarget?.owner === p.id && layoffTarget?.meldIdx === mIdx;
+                      // **押せるボタンは必ず通る。**1 枚選んでいるあいだ、その札を
+                      // 実際に置けるメルドだけを押せるようにする (#4832)。
+                      const canLayoffHere =
+                        selectedCardIndices.length === 1 &&
+                        (state.layoffTargets?.[selectedCardIndices[0]]?.some(
+                          (tgt) => tgt.owner === p.id && tgt.meldIdx === mIdx,
+                        ) ??
+                          false);
                       return (
                         <button
                           type="button"
@@ -258,10 +266,16 @@ function Rummy500PageContent() {
                             )
                           }
                           aria-pressed={isLayoffTarget}
+                          disabled={selectedCardIndices.length === 1 && !canLayoffHere}
+                          data-layoff-legal={canLayoffHere ? 'true' : undefined}
                           aria-label={t('layoffMeldTarget', { owner: playerName(p.id, p.isHuman), idx: mIdx })}
                           data-testid={`layoff-meld-${p.id}-${mIdx}`}
                           className={`flex flex-wrap gap-1 mb-1 w-full rounded p-1 text-left transition-all ${
-                            isLayoffTarget ? 'ring-2 ring-ds-info' : 'hover:bg-white/5'
+                            isLayoffTarget
+                              ? 'ring-2 ring-ds-info'
+                              : canLayoffHere
+                                ? 'ring-1 ring-ds-success hover:bg-white/5'
+                                : 'hover:bg-white/5'
                           }`}
                         >
                           <span className="text-xs text-ds-text-muted self-center">[{mIdx}]</span>

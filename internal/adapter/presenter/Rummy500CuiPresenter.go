@@ -138,8 +138,14 @@ func (p *Rummy500CuiPresenter) HintOutput(g interfaces.Rummy500Game) string {
 	if player == nil {
 		return i18n.T("rummy500.hintNone") + "\n"
 	}
+	// **レイオフだけ支援から取り残されていた。**新規メルドの候補は出すのに、既存の
+	// メルドへ 1 枚足せるかはサーバーに送るまで分からなかった (#4832)。
+	layoffs := rummy500LayoffCandidates(g, player)
 	cands := rummy500MeldCandidates(player, 3)
 	if len(cands) == 0 {
+		if layoffs != "" {
+			return color.Yellow(layoffs) + "\n"
+		}
 		return color.Yellow(i18n.T("rummy500.hintNoMeld")) + "\n"
 	}
 	groups := make([]string, len(cands))
@@ -150,5 +156,40 @@ func (p *Rummy500CuiPresenter) HintOutput(g interfaces.Rummy500Game) string {
 		}
 		groups[gi] = "(" + strings.Join(idxs, " ") + ")"
 	}
-	return color.Yellow(i18n.Tf("rummy500.hintMeld", "cands", strings.Join(groups, " / "))) + "\n"
+	out := i18n.Tf("rummy500.hintMeld", "cands", strings.Join(groups, " / "))
+	if layoffs != "" {
+		out += "\n" + layoffs
+	}
+	return color.Yellow(out) + "\n"
+}
+
+// rummy500LayoffCandidates lists which hand cards can go onto which laid meld,
+// as "[2]SPADE 8 -> CPU 1 の [0]". Returns "" when nothing can be laid off.
+//
+// 判定はドメインの Rummy500CanLayoff をそのまま呼ぶ。ここで書き直すと、
+// サーバーが受け付ける手と画面が言う手が食い違う。
+func rummy500LayoffCandidates(g interfaces.Rummy500Game, player *domain.Rummy500Player) string {
+	parts := make([]string, 0)
+	for i := 0; i < player.GetCardsSize(); i++ {
+		card := player.GetCard(i)
+		for owner := 0; owner < g.GetPlayerCnt(); owner++ {
+			op := g.GetPlayer(owner)
+			if op == nil {
+				continue
+			}
+			for mi, meld := range op.GetLaidMelds() {
+				if !domain.Rummy500CanLayoff(meld, card) {
+					continue
+				}
+				parts = append(parts, i18n.Tf("rummy500.hintLayoffEntry",
+					"card", "["+strconv.Itoa(i)+"]"+cuiCardStr(card),
+					"name", cuiPlayerName(op, owner),
+					"meld", strconv.Itoa(mi)))
+			}
+		}
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return i18n.Tf("rummy500.hintLayoff", "cands", strings.Join(parts, " / "))
 }
