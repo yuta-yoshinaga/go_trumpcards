@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupThirtyOneCuiMock() (*interfaces.MockThirtyOneGame, []*domain.ThirtyOnePlayer) {
@@ -145,4 +146,44 @@ func TestThirtyOneCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)
 	assert.Contains(t, p.ActionLogOutput(m), "knock")
+}
+
+// **ネイティブ CUI にヒントが無かった (#4806)。**Web はクライアント側ヒントを
+// 持っていたが、go run ./cmd/trumpcards thirtyone では何の補助も無かった。
+func TestThirtyOneCuiPresenter_HintOutput(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.ThirtyOneCuiPresenter)
+
+	t.Run("recommends a discard with its index", func(t *testing.T) {
+		g := domain.NewDefaultThirtyOne()
+		g.Reset()
+		g.SetPhase(domain.ThirtyOnePhaseDiscard)
+		g.SetCurrentPlayerIdx(0)
+
+		out := p.HintOutput(g)
+		assert.Contains(t, out, "[HINT]")
+		assert.Contains(t, out, "捨てましょう")
+	})
+
+	t.Run("recommends an action in the draw phase", func(t *testing.T) {
+		g := domain.NewDefaultThirtyOne()
+		g.Reset()
+		g.SetPhase(domain.ThirtyOnePhaseDraw)
+		g.SetCurrentPlayerIdx(0)
+
+		out := p.HintOutput(g)
+		assert.Contains(t, out, "[HINT]")
+		// ドロー / ノックのいずれか。生の識別子が漏れていないこと。
+		assert.NotContains(t, out, "draw_stock")
+		assert.NotContains(t, out, "knock_ready")
+	})
+
+	t.Run("says nothing on a CPU turn", func(t *testing.T) {
+		g := domain.NewDefaultThirtyOne()
+		g.Reset()
+		g.SetCurrentPlayerIdx(1)
+		assert.Contains(t, p.HintOutput(g), i18n.T("thirtyone.hintNone"))
+	})
 }

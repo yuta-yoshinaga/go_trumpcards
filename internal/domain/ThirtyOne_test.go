@@ -361,3 +361,34 @@ func TestThirtyOne_ActionLogRecorded(t *testing.T) {
 	require.NoError(t, g.PlayerDrawFromStock())
 	assert.NotEmpty(t, g.GetActionLog())
 }
+
+// **CPU と同じ材料で判断すること (#4806)。**別の計算を書くと、CPU には有利と
+// 見える手を人間には勧めない、という食い違いが出る。
+func TestThirtyOne_GetHint(t *testing.T) {
+	g := NewDefaultThirtyOne()
+	g.Reset()
+
+	// CPU の手番では nil。
+	g.SetCurrentPlayerIdx(1)
+	assert.Nil(t, g.GetHint())
+
+	// ディスカードフェーズは捨てる札を指す。
+	g.SetCurrentPlayerIdx(0)
+	g.SetPhase(ThirtyOnePhaseDiscard)
+	h := g.GetHint()
+	assert.NotNil(t, h)
+	assert.Equal(t, "discard", h.Action)
+	assert.GreaterOrEqual(t, h.CardIndex, 0)
+	assert.Less(t, h.CardIndex, g.GetPlayer(0).GetCardsSize())
+
+	// ドローフェーズは 3 つの行動のいずれか。
+	g.SetPhase(ThirtyOnePhaseDraw)
+	h2 := g.GetHint()
+	assert.NotNil(t, h2)
+	assert.Contains(t, []string{"draw_stock", "draw_discard", "knock"}, h2.Action)
+	assert.Equal(t, -1, h2.CardIndex)
+
+	// 終了フェーズでは行動を返さない。
+	g.SetPhase(ThirtyOnePhaseGameEnd)
+	assert.Nil(t, g.GetHint())
+}

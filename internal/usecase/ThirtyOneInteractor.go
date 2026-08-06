@@ -30,6 +30,8 @@ type ThirtyOneInteractorIF interface {
 	GetConfig() domain.ThirtyOneConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 }
 
 // ThirtyOneInteractor ThirtyOne インタラクタークラス
@@ -122,6 +124,11 @@ func (ci *ThirtyOneInteractor) GetConfig() domain.ThirtyOneConfig {
 // ActionLog 棋譜を出力する
 func (ci *ThirtyOneInteractor) ActionLog() string {
 	return ci.gp.ActionLogOutput(ci.Game)
+}
+
+// Hint ヒントを出力する
+func (ci *ThirtyOneInteractor) Hint() string {
+	return ci.gp.HintOutput(ci.Game)
 }
 
 // thirtyOneMaxCpuSteps bounds runCpuTurns so a malformed state can never spin

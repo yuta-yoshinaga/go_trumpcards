@@ -5,6 +5,7 @@
   "helpDiscard": "  d <idx>              カードを捨てる",
   "helpKnock": "  k                    ノック (勝負する)",
   "helpNextRound": "  nr                   次のラウンドへ",
+  "helpHint": "  h                    ヒント (推奨する手)",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=易 1=普通 2=難)",
   "helpSetLives": "  sv <n>               初期ライフ (1-10)",
   "header": "ラウンド: {{round}}  山札: {{stock}}",
@@ -22,5 +23,15 @@
   "promptDiscardHelp": "d <idx>: カードを捨てる",
   "promptThirtyOne": "{{name}} が31を達成!",
   "promptRoundEnd": "ラウンド終了",
-  "promptRoundEndHelp": "nr / nextround: 次のラウンドへ"
+  "promptRoundEndHelp": "nr / nextround: 次のラウンドへ",
+  "hintNone": "ヒントはありません",
+  "hintDiscard": "[HINT] [{{idx}}]{{card}} を捨てましょう（{{reason}}）",
+  "hintAction": "[HINT] {{action}}（{{reason}}）",
+  "hintAction.draw_stock": "山札から引く",
+  "hintAction.draw_discard": "捨て札から引く",
+  "hintAction.knock": "ノックする",
+  "hintReason.knock_ready": "ノックできる点数に届いています",
+  "hintReason.discard_improves": "捨て札を取ると最高スートの点が上がります",
+  "hintReason.draw_stock": "捨て札では点が上がりません",
+  "hintReason.drop_weakest": "残りの点が最大になります"
 }
