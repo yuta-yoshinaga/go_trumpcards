@@ -57,5 +57,8 @@
     "follow_suit": "リードスートに追随します",
     "trump_cut": "切り札で刈り取ります",
     "discard_weak": "このトリックは取れません。弱い札を捨てましょう"
-  }
+  },
+  "hintButton": "ヒント",
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
 }

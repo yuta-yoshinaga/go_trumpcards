@@ -45,6 +45,9 @@ export function useBidWhistGame() {
   const nextTrick = useCallback(() => apiCall('next'), [apiCall]);
   const nextRound = useCallback(() => apiCall('nextround'), [apiCall]);
   const reset = useCallback(() => apiCall('reset', { config }), [apiCall, config]);
+  // サーバーのヒントを要求する。CUI には HintOutput があるのに、Web からも CLI
+  // からも到達できず事実上のデッドコードだった (#4814)。
+  const requestHint = useCallback(() => apiCall('hint'), [apiCall]);
 
   return {
     state,
@@ -57,6 +60,7 @@ export function useBidWhistGame() {
     config,
     handleConfigChange,
     apiCall,
+    requestHint,
     bid,
     pass,
     declareTrump,

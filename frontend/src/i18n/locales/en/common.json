@@ -1431,7 +1431,9 @@
     "yukon.stalemateWithEscape": "Stalemate. Undo {{count}} moves to find another play.",
     "zheng.result.rankings": "Game Over! {{rankings}}",
     "zwicker.lose": "The other team wins",
-    "zwicker.win": "Your team wins"
+    "zwicker.win": "Your team wins",
+    "bidwhist.hintRequested": "Hint available",
+    "bidwhist.noHint": "No hint available"
   },
   "manual": {
     "ariaLabel": "Game Manual",
