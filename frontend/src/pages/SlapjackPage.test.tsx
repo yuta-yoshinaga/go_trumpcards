@@ -1,10 +1,10 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { slapjackApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SlapjackResponse } from '../types/card';
-import { SlapjackEventKind, SlapjackPhase } from '../types/phases';
+import { SlapjackEventKind, SlapjackPendingKind, SlapjackPhase } from '../types/phases';
 import { SlapjackPage } from './SlapjackPage';
 
 vi.mock('../hooks/useCliMode', () => ({
@@ -310,5 +310,49 @@ describe('SlapjackPage', () => {
     await waitFor(() => expect(screen.getByTestId('slap-button')).toBeInTheDocument());
     expect(mockPlaySound).not.toHaveBeenCalledWith('winFanfare');
     expect(mockPlaySound).not.toHaveBeenCalledWith('errorBuzz');
+  });
+
+  // **ドメインの Tick() は pending.Kind が None なら即座に何もせず返る。**それでも
+  // 100ms ごとに投げ続けており、人間が考えている間ずっと毎秒10回の無駄なリクエストが
+  // 飛んでいた (#4748)。
+  it('does not poll tick while no CPU action is pending', async () => {
+    vi.useFakeTimers();
+    try {
+      mockExec.mockReset().mockResolvedValue(baseState); // pendingKind: NONE
+      renderWithProviders(<SlapjackPage />);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      mockExec.mockClear();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000); // 従来なら 10 回飛ぶ
+      });
+      expect(mockExec).not.toHaveBeenCalledWith('tick');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // **逆側。**予約があるうちは従来どおり回さないとゲームが進まない。
+  // CPU のスラップは人間の手番中にも予約されるので、手番ではなく予約でゲートする。
+  it('keeps polling tick while a CPU slap is pending', async () => {
+    vi.useFakeTimers();
+    try {
+      const pendingSlapState: SlapjackResponse = { ...baseState, pendingKind: SlapjackPendingKind.SLAP };
+      mockExec.mockReset().mockResolvedValue(pendingSlapState);
+      renderWithProviders(<SlapjackPage />);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      mockExec.mockClear();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(300);
+      });
+      expect(mockExec).toHaveBeenCalledWith('tick');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
