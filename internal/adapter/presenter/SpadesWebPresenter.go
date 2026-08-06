@@ -31,6 +31,23 @@ func (p *SpadesWebPresenter) Output(s interfaces.SpadesGame, lastErr error) stri
 }
 
 // buildBase 共通フィールドを構築
+// validPlayIndices は人間がいま出せる手札の位置を返す。
+//
+// 判定はドメインの GetValidPlayIndices をそのまま呼ぶ。フォロースートと
+// スペードブレイク前のリード制限をフロントに複製すると、ドメインだけ直した
+// ときに黙って食い違う。プレイフェーズで人間の手番でなければ空 -- 呼び出し側は
+// 空を「制限なし」とは解釈せず、手番かどうかで先に分岐する。
+func (p *SpadesWebPresenter) validPlayIndices(s interfaces.SpadesGame) []int {
+	if s.GetPhase() != domain.SpadesPhasePlay || !s.IsHumanTurn() {
+		return make([]int, 0)
+	}
+	idx := s.GetValidPlayIndices(s.GetCurrentPlayerIdx())
+	if idx == nil {
+		return make([]int, 0)
+	}
+	return idx
+}
+
 func (p *SpadesWebPresenter) buildBase(s interfaces.SpadesGame) *controller.SpadesWebOutput {
 	resObj := new(controller.SpadesWebOutput)
 	resObj.Phase = int(s.GetPhase())
@@ -42,6 +59,7 @@ func (p *SpadesWebPresenter) buildBase(s interfaces.SpadesGame) *controller.Spad
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.WinnerIdx = s.GetWinnerIdx()
 	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
+	resObj.ValidPlayIndices = p.validPlayIndices(s)
 
 	// 設定
 	cfg := s.GetConfig()

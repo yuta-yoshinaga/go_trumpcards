@@ -58,6 +58,11 @@ type SpadesWebOutput struct {
 	WinnerIdx        int                      `json:"winnerIdx"`
 	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
 	Hint             *SpadesWebOutputHint     `json:"hint,omitempty"`
+	// ValidPlayIndices は人間がいま出せる手札の位置。フォロースートと
+	// スペードブレイク前のリード制限はドメインが判定済みだが Web に載って
+	// おらず、違反札をクリックしてエラーで確かめるしかなかった。
+	// プレイフェーズで人間の手番のときだけ埋まり、それ以外は空。
+	ValidPlayIndices []int `json:"validPlayIndices"`
 	WebOutputBase
 	Config SpadesWebOutputConfig `json:"config"`
 }
