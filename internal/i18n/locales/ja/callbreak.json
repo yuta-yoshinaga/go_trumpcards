@@ -10,7 +10,7 @@
   "spadesBrokenYes": "スペードブレイク: あり",
   "spadesBrokenNo": "スペードブレイク: なし",
   "bidPending": "未ビッド",
-  "playerLine": "{{name}}: ビッド={{bid}} 獲得{{tricks}}トリック 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
+  "playerLine": "{{name}}: ビッド={{bid}} 獲得{{tricks}}トリック バッグ{{bags}} 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "promptBid": "ビッドフェーズ: {{name}}の番",
   "promptBidHelp": "b <n>・・・ビッドを宣言 (1-13)",

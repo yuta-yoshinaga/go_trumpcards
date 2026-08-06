@@ -80,6 +80,7 @@ func (p *CallBreakWebPresenter) buildPlayersOutput(cb interfaces.CallBreakGame) 
 			RoundScore:      player.GetRoundScore(),
 			CumulativeScore: player.GetCumulativeScore(),
 			TrickCount:      player.GetTrickCount(),
+			Bags:            player.GetBags(),
 		}
 		out = append(out, pObj)
 	}

@@ -35,6 +35,9 @@ type CallBreakWebOutputPlayer struct {
 	RoundScore      int              `json:"roundScore"`
 	CumulativeScore int              `json:"cumulativeScore"`
 	TrickCount      int              `json:"trickCount"`
+	// Bags はビッドを超えて取った余剰トリック数。式をページ側に置くと CUI と
+	// 食い違うので、ドメインの GetBags() をそのまま載せる (#4752)。
+	Bags int `json:"bags"`
 }
 
 // CallBreakWebOutputHint ヒント出力

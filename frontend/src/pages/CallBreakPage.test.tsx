@@ -98,17 +98,21 @@ describe('CallBreakPage', () => {
     });
   });
 
-  it('shows a bags counter with each player overtricks derived from bid and tricks', async () => {
+  // **バッグの式はドメインの GetBags() が唯一の出どころ (#4752)。**以前はこの
+  // ページが bid と trickCount から自前で組み立てており、CUI 側と二重化していた。
+  // ここで確かめるのは「サーバーの値をそのまま出すこと」— わざと式と矛盾する
+  // bags を送り、ページが再計算していないことを踏む。
+  it('renders the bags value the server sent instead of recomputing it', async () => {
     const bagsState = makeCallBreakState({
       players: makeCallBreakState().players.map((p, i) =>
-        // Player 0 (human): bid 3, 5 tricks -> 2 bags; others below/at bid -> 0.
-        i === 0 ? { ...p, bid: 3, trickCount: 5 } : { ...p, bid: 4, trickCount: 1 },
+        // bid 3 / 5 トリックなら式の上では 2 だが、サーバーは 7 と言っている。
+        i === 0 ? { ...p, bid: 3, trickCount: 5, bags: 7 } : { ...p, bid: 4, trickCount: 1, bags: 0 },
       ),
     });
     mockExec.mockResolvedValue(bagsState);
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => expect(screen.getByTestId('cb-bags-counter')).toBeInTheDocument());
-    expect(screen.getByTestId('cb-bags-0')).toHaveTextContent('2');
+    expect(screen.getByTestId('cb-bags-0')).toHaveTextContent('7');
     expect(screen.getByTestId('cb-bags-1')).toHaveTextContent('0');
   });
 

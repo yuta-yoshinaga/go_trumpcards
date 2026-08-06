@@ -65,7 +65,7 @@ func TestCallBreakCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1 / 5")
 		assert.Contains(t, result, "トリック: 1")
 		assert.Contains(t, result, "スペードブレイク: なし")
-		assert.Contains(t, result, "あなた: ビッド=未ビッド 獲得0トリック 累積0.0点 ラウンド0.0点 2枚")
+		assert.Contains(t, result, "あなた: ビッド=未ビッド 獲得0トリック バッグ0 累積0.0点 ラウンド0.0点 2枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "play <idx>")
 	})
@@ -78,7 +78,7 @@ func TestCallBreakCuiPresenter_Output(t *testing.T) {
 		players[1].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignClover, 2, false)})
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "CPU 1: ビッド=4 獲得1トリック 累積4.1点 ラウンド4.1点")
+		assert.Contains(t, result, "CPU 1: ビッド=4 獲得1トリック バッグ0 累積4.1点 ラウンド4.1点")
 	})
 
 	t.Run("formatted negative score", func(t *testing.T) {
@@ -88,7 +88,7 @@ func TestCallBreakCuiPresenter_Output(t *testing.T) {
 		players[1].SetBid(3)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "CPU 1: ビッド=3 獲得0トリック 累積-3.0点 ラウンド-3.0点")
+		assert.Contains(t, result, "CPU 1: ビッド=3 獲得0トリック バッグ0 累積-3.0点 ラウンド-3.0点")
 	})
 
 	t.Run("spades broken shows yes", func(t *testing.T) {
@@ -132,6 +132,29 @@ func TestCallBreakCuiPresenter_Output(t *testing.T) {
 		m.On("GetPhase").Return(domain.CallBreakPhaseTrickEnd)
 		assert.Contains(t, p.Output(m, nil), "トリック終了")
 	})
+}
+
+// **Web は cb-bags-counter で常時出しているのに CUI には無かった (#4752)。**
+// バッグ (宣言超過トリック) の蓄積は長期スコアに直結する。
+func TestCallBreakCuiPresenter_ShowsBags(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.CallBreakCuiPresenter)
+
+	m, players := setupCallBreakCuiMockWithPlayers()
+	// 宣言 2 に対して 5 トリック = バッグ 3。
+	players[1].SetBid(2)
+	for i := 0; i < 5; i++ {
+		players[1].AddTrick([]*domain.Card{nil})
+	}
+	// 宣言ちょうど = バッグ 0 (超過だけを数えていることの確認)。
+	players[2].SetBid(1)
+	players[2].AddTrick([]*domain.Card{nil})
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "CPU 1: ビッド=2 獲得5トリック バッグ3")
+	assert.Contains(t, result, "CPU 2: ビッド=1 獲得1トリック バッグ0")
 }
 
 func TestCallBreakCuiPresenter_ActionLogOutput(t *testing.T) {
