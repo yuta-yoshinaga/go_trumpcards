@@ -100,9 +100,9 @@ func (p *BigTwoCuiPresenter) Output(bg interfaces.BigTwoGame, lastErr error) str
 			}
 		}
 
-		if lastErr != nil {
-			b.WriteString(lastErr.Error() + "\n")
-		}
+		// 他の CUI プレゼンターと同じ共通ヘルパーを使う。素の WriteString だと
+		// 赤くならず、直前の通常行と見分けが付かない (#4821)。
+		cuiErrorBlock(b, lastErr)
 	})
 }
 

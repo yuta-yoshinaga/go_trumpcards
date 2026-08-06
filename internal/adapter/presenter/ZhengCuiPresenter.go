@@ -80,9 +80,9 @@ func (p *ZhengCuiPresenter) Output(zg interfaces.ZhengGame, lastErr error) strin
 			}
 		}
 
-		if lastErr != nil {
-			b.WriteString(lastErr.Error() + "\n")
-		}
+		// 他の CUI プレゼンターと同じ共通ヘルパーを使う。素の WriteString だと
+		// 赤くならず、直前の通常行と見分けが付かない (#4821)。
+		cuiErrorBlock(b, lastErr)
 	})
 }
 

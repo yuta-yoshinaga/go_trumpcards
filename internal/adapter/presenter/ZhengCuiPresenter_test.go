@@ -131,3 +131,15 @@ func TestZheng_CpuNamesGoThroughTheSharedHelper(t *testing.T) {
 		assert.NotContains(t, strings.ReplaceAll(out, bold1, ""), "CPU 1")
 	})
 }
+
+// **エラー行が赤くないと通常の状態行と見分けが付かない (#4821)。**共通ヘルパーの
+// cuiErrorBlock を使っているかを、色を出したまま確認する。
+func TestZhengCuiPresenter_ErrorIsRed(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(orig)
+
+	m, _ := setupZhengCuiMock()
+	out := new(presenter.ZhengCuiPresenter).Output(m, errors.New("invalid play"))
+	assert.Contains(t, out, color.Red("invalid play"))
+}
