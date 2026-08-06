@@ -99,6 +99,20 @@ func TestIndianRummyWebPresenter_Output(t *testing.T) {
 	})
 }
 
+// **CUI は毎ターン出しているのに、Web は狭い条件でしか出していなかった (#4824)。**
+func TestIndianRummyWebPresenter_HumanHandStatus(t *testing.T) {
+	m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseDiscard, false)
+
+	var out controller.IndianRummyWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.IndianRummyWebPresenter).Output(m, nil)), &out))
+
+	// 人間 (席 0) の値は公開前でも載る。CPU (席 1) は伏せたまま。
+	assert.Equal(t, 5, out.Players[0].Deadwood)
+	assert.True(t, out.Players[0].HasPureSequence)
+	assert.Equal(t, 0, out.Players[1].Deadwood, "CPU のデッドウッドは伏せる")
+	assert.False(t, out.Players[1].HasPureSequence)
+}
+
 func TestIndianRummyWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.IndianRummyWebPresenter)
 	m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)

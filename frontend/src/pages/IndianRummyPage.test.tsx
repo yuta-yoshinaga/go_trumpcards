@@ -672,4 +672,23 @@ describe('IndianRummyPage', () => {
     renderWithProviders(<IndianRummyPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  // **CUI は DISCARD の手番で毎ターン出している。**Web は「1 枚選んで残り 13 枚が
+  // 成立するとき」しか出しておらず、思案中に確認できなかった (#4824)。
+  it('always shows the deadwood and pure-sequence status during the discard phase', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<IndianRummyPage />);
+
+    const status = await screen.findByTestId('indianrummy-hand-status');
+    expect(status).toHaveTextContent('デッドウッド');
+    // カードを 1 枚も選んでいない状態で出ている。
+    expect(screen.queryByTestId('indianrummy-declare-preview')).not.toBeInTheDocument();
+  });
+
+  it('does not show the hand status outside the discard phase', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('indianrummy-hand-status')).not.toBeInTheDocument();
+  });
 });

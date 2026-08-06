@@ -54,9 +54,12 @@ func (p *IndianRummyWebPresenter) buildPlayersOutput(g interfaces.IndianRummyGam
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		player := g.GetPlayer(i)
 		showCards := player.GetIsHuman() || revealAll
+		// **自分の手札の情報は隠す理由がない。**CUI は DISCARD の手番で毎ターン
+		// デッドウッドとピュアシーケンス充足を出しているのに、Web は公開時にしか
+		// 載せておらず、盤面から確認できなかった (#4824)。
 		deadwood := 0
 		hasPure := false
-		if revealAll {
+		if revealAll || player.GetIsHuman() {
 			deadwood = g.PlayerDeadwoodValue(i)
 			hasPure = g.PlayerHasPureSequence(i)
 		}
