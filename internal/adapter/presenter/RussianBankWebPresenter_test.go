@@ -14,29 +14,35 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
-// rbWithoutForcedMove は配り直後の盤面から CPU のリザーブを空にして返す。
+// rbSetCpuReserve は盤面の CPU (席 1) のリザーブを差し替える。ドメインに
+// セッターが無いので JSON 経由で組み替える。
 //
-// 配り直後は CPU の捨て札も空なので、リザーブを空にすれば強制手は必ず消える
-// (シャッフル依存ではない)。TestRussianBankWebPresenter_StopAvailableMessage の
-// 「呼べない側」と同じ作り方。
-func rbWithoutForcedMove(t *testing.T) *domain.RussianBank {
+// 強制手の有無は CPU のリザーブトップだけで決まる (配り直後は CPU の捨て札も
+// 空なので) ため、ここを固定すれば `CanCallStop()` はシャッフルに依存しない。
+func rbSetCpuReserve(t *testing.T, g *domain.RussianBank, cards []*domain.Card) {
 	t.Helper()
-	g := domain.NewDefaultRussianBank()
-	g.Reset()
-
 	data, err := json.Marshal(g)
 	assert.NoError(t, err)
 	var raw map[string]json.RawMessage
 	assert.NoError(t, json.Unmarshal(data, &raw))
 	var players []map[string]json.RawMessage
 	assert.NoError(t, json.Unmarshal(raw["pl"], &players))
-	players[1]["r"], err = json.Marshal([]*domain.Card{})
+	players[1]["r"], err = json.Marshal(cards)
 	assert.NoError(t, err)
 	raw["pl"], err = json.Marshal(players)
 	assert.NoError(t, err)
 	patched, err := json.Marshal(raw)
 	assert.NoError(t, err)
 	assert.NoError(t, json.Unmarshal(patched, g))
+}
+
+// rbWithoutForcedMove は配り直後の盤面から CPU のリザーブを空にして返す。
+// 強制手が必ず消えるので `CanCallStop()` は false で確定する。
+func rbWithoutForcedMove(t *testing.T) *domain.RussianBank {
+	t.Helper()
+	g := domain.NewDefaultRussianBank()
+	g.Reset()
+	rbSetCpuReserve(t, g, []*domain.Card{})
 	return g
 }
 
@@ -116,22 +122,10 @@ func TestRussianBankWebPresenter_StopAvailableMessage(t *testing.T) {
 	p := new(presenter.RussianBankWebPresenter)
 
 	// CPU (席 1) のリザーブトップを A にすると、ファウンデーションへ必ず置ける
-	// = 強制手の取りこぼし。JSON 経由で盤面を作る。
+	// = 強制手の取りこぼし。
 	g := domain.NewDefaultRussianBank()
 	g.Reset()
-	data, err := json.Marshal(g)
-	assert.NoError(t, err)
-	var raw map[string]json.RawMessage
-	assert.NoError(t, json.Unmarshal(data, &raw))
-	var players []map[string]json.RawMessage
-	assert.NoError(t, json.Unmarshal(raw["pl"], &players))
-	players[1]["r"], err = json.Marshal([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)})
-	assert.NoError(t, err)
-	raw["pl"], err = json.Marshal(players)
-	assert.NoError(t, err)
-	newData, err := json.Marshal(raw)
-	assert.NoError(t, err)
-	assert.NoError(t, json.Unmarshal(newData, g))
+	rbSetCpuReserve(t, g, []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)})
 
 	assert.True(t, g.CanCallStop(), "この盤面では stop を呼べる")
 	var out controller.RussianBankWebOutput
@@ -139,15 +133,7 @@ func TestRussianBankWebPresenter_StopAvailableMessage(t *testing.T) {
 	assert.Equal(t, "russianbank.stopAvailable", out.MessageCode)
 
 	// 呼べない盤面では従来どおり。
-	players[1]["r"], err = json.Marshal([]*domain.Card{})
-	assert.NoError(t, err)
-	raw["pl"], err = json.Marshal(players)
-	assert.NoError(t, err)
-	newData, err = json.Marshal(raw)
-	assert.NoError(t, err)
-	assert.NoError(t, json.Unmarshal(newData, g))
-	// 配り直後は CPU の捨て札が空なので、リザーブを空にすれば強制手は必ず消える
-	// (シャッフル依存ではない)。
+	rbSetCpuReserve(t, g, []*domain.Card{})
 	assert.False(t, g.CanCallStop())
 	var out2 controller.RussianBankWebOutput
 	assert.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out2))
