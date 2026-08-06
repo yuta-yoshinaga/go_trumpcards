@@ -5,5 +5,8 @@
   "helpGiveUp": "  g / giveup           投了する",
   "blackHoleLabel": "ブラックホール:",
   "fanLabel": "扇{{idx}}:",
-  "hintLine": "[HINT: 扇{{fan}} を積めます]"
+  "hintLine": "[HINT: 扇{{fan}} を積めます]",
+  "acceptableRanks": "出せるランク: {{ranks}}",
+  "acceptableRanksNone": "出せるランク: なし",
+  "legalMoveCount": "残り合法手: {{count}}"
 }
