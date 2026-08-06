@@ -43,6 +43,7 @@ function makeState(overrides: Partial<BarbuResponse> = {}): BarbuResponse {
     lastTrickWinner: -1,
     tablePlaced: [0, 0, 0, 0, 0],
     dominoPlayable: [],
+    playableIndices: [],
     usedContracts: [false, false, false, false, false, false, false],
     gameEndFlag: false,
     config: { cpuDifficulty: 1 },
@@ -220,5 +221,24 @@ describe('BarbuPage', () => {
     renderWithProviders(<BarbuPage />);
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     localStorage.removeItem('cli-mode-barbu');
+  });
+
+  // **フォロー義務の可視化 (#4804)。**ドミノ以外の 6 契約では、リード色を持って
+  // いても全カードが同じように押せて、サーバーに弾かれて初めて分かった。
+  it('disables the cards that cannot follow suit in a trick contract', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 'play', currentContract: 0, currentTurn: 0, playableIndices: [0] }));
+    renderWithProviders(<BarbuPage />);
+
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeEnabled());
+    expect(screen.getByTestId('hand-card-1')).toBeDisabled();
+  });
+
+  it('keeps every card clickable when the server sends no restriction', async () => {
+    // 人間の手番でないときなどは空配列。全部押せる従来どおりの見た目に戻す。
+    mockExec.mockResolvedValue(makeState({ phase: 'play', currentContract: 0, currentTurn: 0, playableIndices: [] }));
+    renderWithProviders(<BarbuPage />);
+
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeEnabled());
+    expect(screen.getByTestId('hand-card-1')).toBeEnabled();
   });
 });

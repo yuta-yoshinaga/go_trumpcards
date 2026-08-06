@@ -42,6 +42,8 @@ type BarbuGame interface {
 	GetTrickNumber() int
 	// GetCurrentTrick 進行中のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetPlayableIndices いま出せる手札の位置 (フォロー義務を反映)
+	GetPlayableIndices(playerIdx int) []int
 	// GetLastTrick 直前に完了したトリックを取得する
 	GetLastTrick() []*domain.TrickCard
 	// GetLastTrickWinner 直前トリックの勝者を取得する (-1 = なし)
