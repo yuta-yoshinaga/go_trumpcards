@@ -380,7 +380,10 @@ function MacauPageContent() {
                   // エラーで確かめるしかなかった (#4805)。**マジックカード (2/7/8/J) や
                   // チョウズドスートが絡むので、目視では判断しづらい。
                   // 空配列は「自分の手番でない」= 制限を送っていない状態。
-                  const playable = state.playableIndices.length === 0 || state.playableIndices.includes(idx);
+                  // 自分の手番でなければ制限を出さない (全札に枠)。手番中は
+                  // playableIndices が真実で、空 = 1 枚も出せない (引くしかない)。
+                  // 長さで判定すると、この「引くしかない」局面で全札が光る。
+                  const playable = !isHumanTurn || state.playableIndices.includes(idx);
                   return (
                     <button
                       type="button"

@@ -301,13 +301,21 @@ describe('MacauPage', () => {
     await waitFor(() => expect(document.querySelectorAll('[data-playable="true"]')).toHaveLength(1));
   });
 
-  it('rings every card when the server sends no restriction', async () => {
-    // 自分の手番でないときは空配列。減光したままにしない。
+  // **「引くしかない」局面で全札が光ってはいけない。**手番中の空配列は
+  // 「制限なし」ではなく「1 枚も出せない」(レビュー指摘 #5065)。
+  it('rings nothing when it is the human turn and no card is legal', async () => {
     mockExec.mockResolvedValue({ ...playPhaseState, playableIndices: [] });
     renderWithProviders(<MacauPage />);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    const rings = document.querySelectorAll('[data-playable="true"]');
-    expect(rings.length).toBeGreaterThan(1);
+    expect(document.querySelectorAll('[data-playable="true"]')).toHaveLength(0);
+  });
+
+  it('rings every card while it is not the human turn', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 1, playableIndices: [] });
+    renderWithProviders(<MacauPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(document.querySelectorAll('[data-playable="true"]').length).toBeGreaterThan(1);
   });
 });
