@@ -24,6 +24,10 @@ func (bwp *BarbuWebPresenter) Output(bg interfaces.BarbuGame, lastErr error) str
 	resObj.UsedContracts = barbuUsedToOutput(bg.GetUsedContracts(bg.GetDealerIdx()))
 	if bg.GetCurrentContract() == domain.BarbuContractDominoes && bg.IsHumanTurn() {
 		resObj.DominoPlayable = append(resObj.DominoPlayable, bg.GetDominoPlayableIndices(bg.GetCurrentTurn())...)
+	} else if bg.IsHumanTurn() {
+		// **フォロー義務の可視化。**ドミノ以外の 6 契約では、リード色を持っていても
+		// 全カードが同じように押せて、弾かれて初めて分かる状態だった (#4804)。
+		resObj.PlayableIndices = append(resObj.PlayableIndices, bg.GetPlayableIndices(bg.GetCurrentTurn())...)
 	}
 
 	for i := 0; i < bg.GetPlayerCnt(); i++ {

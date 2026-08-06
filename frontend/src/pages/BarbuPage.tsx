@@ -330,7 +330,15 @@ function BarbuPageContent() {
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {human.cards.map((c, i) => {
-                  const playable = !isDominoes || state.dominoPlayable.includes(i);
+                  // ドミノ契約は dominoPlayable、それ以外の 6 契約はフォロー義務を
+                  // 反映した playableIndices。後者は Web に可視化が無く、リード色を
+                  // 持っていても全カードが同じように押せていた (#4804)。
+                  const playable = isDominoes
+                    ? state.dominoPlayable.includes(i)
+                    : // 空配列は「制限なし」。フォローできない手番でも
+                      // GetPlayableIndices は全インデックスを返すので、空になるのは
+                      // 人間の手番でないとき (＝ボタン自体が押せない) だけ。
+                      state.playableIndices.length === 0 || state.playableIndices.includes(i);
                   return (
                     <button
                       key={i}

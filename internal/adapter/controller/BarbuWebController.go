@@ -52,20 +52,23 @@ type BarbuWebOutputDealDetail struct {
 
 // BarbuWebOutput バルブ Web アウトプット
 type BarbuWebOutput struct {
-	Players         []*BarbuWebOutputPlayer     `json:"players"`
-	Phase           string                      `json:"phase"`
-	DealNumber      int                         `json:"dealNumber"`
-	TotalDeals      int                         `json:"totalDeals"`
-	DealerIdx       int                         `json:"dealerIdx"`
-	CurrentTurn     int                         `json:"currentTurn"`
-	CurrentContract int                         `json:"currentContract"`
-	TrumpSuit       int                         `json:"trumpSuit"`
-	TrickNumber     int                         `json:"trickNumber"`
-	CurrentTrick    []*WebOutputTrickCard       `json:"currentTrick"`
-	LastTrick       []*WebOutputTrickCard       `json:"lastTrick"`
-	LastTrickWinner int                         `json:"lastTrickWinner"`
-	TablePlaced     []int                       `json:"tablePlaced"`
-	DominoPlayable  []int                       `json:"dominoPlayable"`
+	Players         []*BarbuWebOutputPlayer `json:"players"`
+	Phase           string                  `json:"phase"`
+	DealNumber      int                     `json:"dealNumber"`
+	TotalDeals      int                     `json:"totalDeals"`
+	DealerIdx       int                     `json:"dealerIdx"`
+	CurrentTurn     int                     `json:"currentTurn"`
+	CurrentContract int                     `json:"currentContract"`
+	TrumpSuit       int                     `json:"trumpSuit"`
+	TrickNumber     int                     `json:"trickNumber"`
+	CurrentTrick    []*WebOutputTrickCard   `json:"currentTrick"`
+	LastTrick       []*WebOutputTrickCard   `json:"lastTrick"`
+	LastTrickWinner int                     `json:"lastTrickWinner"`
+	TablePlaced     []int                   `json:"tablePlaced"`
+	DominoPlayable  []int                   `json:"dominoPlayable"`
+	// PlayableIndices はトリック契約でいま出せる手札の位置 (フォロー義務を反映)。
+	// ドミノ契約以外では Web に可視化が無かった (#4804)。
+	PlayableIndices []int                       `json:"playableIndices"`
 	UsedContracts   []bool                      `json:"usedContracts"`
 	GameEndFlag     bool                        `json:"gameEndFlag"`
 	Config          BarbuWebConfig              `json:"config"`
@@ -86,16 +89,17 @@ var NewBarbuWebController, NewBarbuWebControllerWithProvider = webControllerPair
 
 func newBarbuDefaultOutput(msg string) *BarbuWebOutput {
 	return &BarbuWebOutput{
-		Players:        make([]*BarbuWebOutputPlayer, 0),
-		CurrentTrick:   make([]*WebOutputTrickCard, 0),
-		LastTrick:      make([]*WebOutputTrickCard, 0),
-		TablePlaced:    make([]int, 0),
-		DominoPlayable: make([]int, 0),
-		UsedContracts:  make([]bool, 0),
-		RoundWinners:   make([]int, 0),
-		DealHistory:    make([]*BarbuWebOutputDealDetail, 0),
-		TotalDeals:     domain.BarbuTotalDeals,
-		WebOutputBase:  WebOutputBase{Message: msg},
+		Players:         make([]*BarbuWebOutputPlayer, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
+		TablePlaced:     make([]int, 0),
+		DominoPlayable:  make([]int, 0),
+		PlayableIndices: make([]int, 0),
+		UsedContracts:   make([]bool, 0),
+		RoundWinners:    make([]int, 0),
+		DealHistory:     make([]*BarbuWebOutputDealDetail, 0),
+		TotalDeals:      domain.BarbuTotalDeals,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

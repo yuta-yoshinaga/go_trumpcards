@@ -284,6 +284,25 @@ func (b *Barbu) applyTrickPlay(playerIdx, handIdx int) error {
 	return nil
 }
 
+// GetPlayableIndices はそのプレイヤーがいま出せる手札の位置を返す。
+//
+// **判定は validateTrickPlay をそのまま通す。**別のスキャンを書くと「出せる」と
+// 見えた札がサーバーに弾かれる。Web はドミノ契約以外でフォロー義務を可視化して
+// いなかった (#4804)。
+func (b *Barbu) GetPlayableIndices(playerIdx int) []int {
+	if playerIdx < 0 || playerIdx >= len(b.players) {
+		return nil
+	}
+	p := b.players[playerIdx]
+	out := make([]int, 0, p.GetCardsSize())
+	for i := 0; i < p.GetCardsSize(); i++ {
+		if b.validateTrickPlay(playerIdx, p.GetCard(i)) == nil {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
 // validateTrickPlay はトリックプレイの合法性 (フォロースート) を検証する。
 func (b *Barbu) validateTrickPlay(playerIdx int, card *Card) error {
 	if len(b.currentTrick) == 0 {
