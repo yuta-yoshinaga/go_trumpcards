@@ -34,6 +34,15 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 /** Card design → Schnapsen trump-suit id (1=♠ 2=♣ 3=♥ 4=♦). */
 const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
 
+/**
+ * Suit code (1=♠ 2=♣ 3=♥ 4=♦) back to a design, for the phase-2 header.
+ *
+ * ストックが尽きて切り札の現物が手札に入ると、画面から切り札スートが消えていた。
+ * フェーズ2 はマストフォローの厳格ルールなので、スートを覚えていないと合法手の
+ * リングの意味が読めない。CUI は同じ場面でスート名を出している (#4810)。
+ */
+const SUIT_TO_DESIGN: Readonly<Record<number, string>> = { 1: 'SPADE', 2: 'CLOVER', 3: 'HEART', 4: 'DIAMOND' };
+
 /** Guided tutorial steps for the Schnapsen page (trump/stock, trick, hand, actions). */
 const SCHNAPSEN_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="schnapsen-trump"]', messageKey: 'tutorial.trump', placement: 'bottom', advanceOn: 'next' },
@@ -185,7 +194,9 @@ function SchnapsenPageContent() {
                 data-tutorial="schnapsen-trump"
               >
                 <span className="text-ds-text-muted text-sm">
-                  {state.trumpCard ? t('header.trump') : t('header.trumpNone')}
+                  {state.trumpCard
+                    ? t('header.trump')
+                    : t('header.trumpNoneWithSuit', { suit: suitSymbol(SUIT_TO_DESIGN[state.trumpSuit] ?? '') })}
                 </span>
                 {state.trumpCard ? (
                   <div
