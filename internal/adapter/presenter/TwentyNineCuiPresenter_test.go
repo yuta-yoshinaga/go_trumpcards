@@ -40,6 +40,8 @@ func setupTwentyNineCuiMock() *interfaces.MockTwentyNineGame {
 	m.On("GetTeamScores").Return([domain.TwentyNineTeamCnt]int{0, 0})
 	m.On("GetRoundTeamPoints").Return([domain.TwentyNineTeamCnt]int{0, 0})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// 既定は「制限なし」。目印を確かめるテストは自分で上書きする。
+	m.On("GetPlayableIndices", 0).Return([]int(nil)).Maybe()
 	return m
 }
 
@@ -51,6 +53,63 @@ func setupTwentyNineCuiMockWithPlayers() (*interfaces.MockTwentyNineGame, []*dom
 		m.On("GetPlayer", i).Return(players[i])
 	}
 	return m, players
+}
+
+// **Web は playableIndices をリング表示しているのに、CUI は素の一覧だけで、
+// 番号を入力してエラーを踏むまで合法手が分からなかった (#4725)。**
+func TestTwentyNineCuiPresenter_MarksPlayableCards(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.TwentyNineCuiPresenter)
+
+	addThreeCards := func(pl *domain.TwentyNinePlayer) {
+		pl.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		pl.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		pl.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+	}
+
+	t.Run("human play turn marks only the legal cards", func(t *testing.T) {
+		m, players := setupTwentyNineCuiMockWithPlayers()
+		addThreeCards(players[0])
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayableIndices")
+		m.On("GetPlayableIndices", 0).Return([]int{1})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[1]HEART 5*", "合法手には目印が付く")
+		assert.NotContains(t, result, "[0]SPADE 1*", "非合法手には付かない")
+		assert.NotContains(t, result, "[2]CLOVER 9*")
+	})
+
+	// **目印を出さない側も踏む。**ビッド中は制限そのものが決まっていないので、
+	// 常時マークに退化すると「全部出せる」と誤って伝えてしまう。
+	t.Run("bid phase leaves the hand unmarked", func(t *testing.T) {
+		m, players := setupTwentyNineCuiMockWithPlayers()
+		addThreeCards(players[0])
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TwentyNinePhaseBid)
+		// **ドメインは合法手を返し得る。**ここを nil にすると、フェーズのガードを
+		// 外しても目印が出ず、この一本が何も確かめなくなる。
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayableIndices")
+		m.On("GetPlayableIndices", 0).Return([]int{1})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[0]SPADE 1")
+		assert.NotContains(t, result, "HEART 5*", "ビッド中は目印を出さない")
+	})
+
+	t.Run("cpu turn leaves the human hand unmarked", func(t *testing.T) {
+		m, players := setupTwentyNineCuiMockWithPlayers()
+		addThreeCards(players[0])
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1)
+		// 手番ガードを外したときに確実に落ちるよう、合法手を返させておく。
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayableIndices")
+		m.On("GetPlayableIndices", 0).Return([]int{1})
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "HEART 5*", "相手の手番では目印を出さない")
+	})
 }
 
 func TestTwentyNineCuiPresenter_Output(t *testing.T) {

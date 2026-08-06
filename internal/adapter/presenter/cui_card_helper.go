@@ -178,6 +178,35 @@ func cuiIndexedCardListStr(hand cuiCardList) string {
 	return formatCardList(hand, cuiCardStr, "  ", true)
 }
 
+// CuiLegalMark は「この札は今出せる」ことを示す印。CrazyEights / Wizard /
+// Mushi / GoFish が以前から使っている後置の "*" に合わせている。
+const CuiLegalMark = "*"
+
+// cuiPlayableMarkedCardListStr returns an indexed card list where the cards at
+// the given indices are suffixed with CuiLegalMark.
+//
+// **CUI プレイヤーだけが「どれを出せるか」を番号入力とエラーで学ぶしかなかった。**
+// Web は validIndices でリング表示しているので、同じ情報をテキストでも出す。
+// playable が nil または空のときは目印を付けない -- ビッド中や CPU の手番など、
+// そもそも制限を出していない状態と区別するため (#4725)。
+func cuiPlayableMarkedCardListStr(hand cuiCardList, playable []int) string {
+	if len(playable) == 0 {
+		return cuiIndexedCardListStr(hand)
+	}
+	marked := make(map[int]bool, len(playable))
+	for _, i := range playable {
+		marked[i] = true
+	}
+	parts := make([]string, hand.GetCardsSize())
+	for i := range parts {
+		parts[i] = fmt.Sprintf("[%d]%s", i, cuiCardStr(hand.GetCard(i)))
+		if marked[i] {
+			parts[i] += CuiLegalMark
+		}
+	}
+	return strings.Join(parts, "  ")
+}
+
 // cuiCardListStrEmoji returns a double-space separated emoji card string (no index).
 // e.g. "♠5  ♥3"
 func cuiCardListStrEmoji(hand cuiCardList) string {
