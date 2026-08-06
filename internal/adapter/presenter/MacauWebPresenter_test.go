@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -27,6 +28,8 @@ func setupMacauWebMock() *interfaces.MockMacauGame {
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetConfig").Return(domain.DefaultMacauConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("IsHumanTurn").Return(true).Maybe()
+	m.On("IsValidPlay", mock.Anything).Return(true).Maybe()
 	return m
 }
 
@@ -181,6 +184,34 @@ func TestMacauWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, int(domain.MacauCpuDifficultyHard), resObj.Config.CpuDifficulty)
 		assert.Equal(t, 300, resObj.Config.PointLimit)
 	})
+}
+
+// **CUI は HintOutput で出せる札を全部並べているのに、Web は都度クリックして
+// エラーで確かめるしかなかった (#4805)。**
+func TestMacauWebPresenter_PlayableIndices(t *testing.T) {
+	m, players := setupMacauWebMockWithPlayers()
+	for players[0].GetCardsSize() > 0 {
+		players[0].RemoveCard(0)
+	}
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsValidPlay")
+	m.On("IsValidPlay", mock.MatchedBy(func(c *domain.Card) bool {
+		return c != nil && c.GetValue() == 5
+	})).Return(true)
+	m.On("IsValidPlay", mock.Anything).Return(false)
+
+	var out controller.MacauWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.MacauWebPresenter).Output(m, nil)), &out))
+	assert.Equal(t, []int{0}, out.PlayableIndices)
+
+	// CPU の手番では空 (null ではない)。
+	m2, _ := setupMacauWebMockWithPlayers()
+	m2.ExpectedCalls = removeMockCall(m2.ExpectedCalls, "IsHumanTurn")
+	m2.On("IsHumanTurn").Return(false)
+	var out2 controller.MacauWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.MacauWebPresenter).Output(m2, nil)), &out2))
+	assert.Empty(t, out2.PlayableIndices)
 }
 
 func TestMacauWebPresenter_ActionLogOutput(t *testing.T) {

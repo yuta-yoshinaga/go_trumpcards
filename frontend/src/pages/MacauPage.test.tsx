@@ -38,6 +38,7 @@ const playPhaseState: MacauResponse = {
   drawPileCount: 30,
   chosenSuit: 0,
   penaltyDrawCount: 0,
+  playableIndices: [],
   direction: 1,
   gameEndFlag: false,
   winnerIdx: -1,
@@ -289,5 +290,24 @@ describe('MacauPage', () => {
     expect(panel).toHaveTextContent('次のプレイヤーをスキップ');
     expect(panel).toHaveTextContent('ワイルド — 好きなスートを指定、いつでも出せる');
     expect(panel).toHaveTextContent('プレイ方向を反転（リバース）');
+  });
+
+  // **CUI は出せる札を全部並べているのに、Web は都度クリックしてエラーで
+  // 確かめるしかなかった (#4805)。**
+  it('rings only the cards that can legally be played', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, playableIndices: [1] });
+    renderWithProviders(<MacauPage />);
+
+    await waitFor(() => expect(document.querySelectorAll('[data-playable="true"]')).toHaveLength(1));
+  });
+
+  it('rings every card when the server sends no restriction', async () => {
+    // 自分の手番でないときは空配列。減光したままにしない。
+    mockExec.mockResolvedValue({ ...playPhaseState, playableIndices: [] });
+    renderWithProviders(<MacauPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const rings = document.querySelectorAll('[data-playable="true"]');
+    expect(rings.length).toBeGreaterThan(1);
   });
 });

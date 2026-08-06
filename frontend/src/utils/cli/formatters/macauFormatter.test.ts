@@ -25,6 +25,7 @@ function makeState(overrides: Partial<MacauResponse> = {}): MacauResponse {
     drawPileCount: 20,
     chosenSuit: 0,
     penaltyDrawCount: 0,
+    playableIndices: [],
     direction: 1,
     gameEndFlag: false,
     winnerIdx: -1,

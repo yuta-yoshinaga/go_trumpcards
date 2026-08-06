@@ -42,6 +42,7 @@ const defaultState: MacauResponse = {
   drawPileCount: 30,
   chosenSuit: 0,
   penaltyDrawCount: 0,
+  playableIndices: [],
   direction: 1,
   gameEndFlag: false,
   winnerIdx: -1,

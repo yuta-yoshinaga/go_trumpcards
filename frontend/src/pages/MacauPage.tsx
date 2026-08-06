@@ -375,25 +375,33 @@ function MacauPageContent() {
           <GameFooter className={`${gameTheme.macau.footer} px-4 py-2.5`}>
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="macau-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
+                {humanPlayer.cards.map((card, idx) => {
+                  // **CUI は出せる札を全部並べているのに、Web は都度クリックして
+                  // エラーで確かめるしかなかった (#4805)。**マジックカード (2/7/8/J) や
+                  // チョウズドスートが絡むので、目視では判断しづらい。
+                  // 空配列は「自分の手番でない」= 制限を送っていない状態。
+                  const playable = state.playableIndices.length === 0 || state.playableIndices.includes(idx);
+                  return (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}-${idx}`}
+                      onClick={() => toggleCard(idx)}
+                      aria-label={cardAlt(card)}
+                      aria-pressed={selectedCardIndices.includes(idx)}
+                      data-playable={playable ? 'true' : undefined}
+                      className={`transition-transform ${focusRingCard} ${playable ? 'rounded-lg ring-2 ring-ds-success' : 'opacity-50'}`}
+                      style={{
+                        background: 'none',
+                        padding: 0,
+                        borderRadius: 8,
+                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </button>
+                  );
+                })}
               </div>
             )}
 
