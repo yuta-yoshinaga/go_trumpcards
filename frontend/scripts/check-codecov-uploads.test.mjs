@@ -101,4 +101,17 @@ describe('check-codecov-uploads', () => {
     expect(status).toBe(0);
     expect(out).not.toContain('test-e2e');
   });
+
+  // **コメントを数えない。**ci.yml には長い日本語コメントを書く流儀があるので、
+  // アクション名に触れた説明が1行増えただけで本数が水増しされると、
+  // ステータスが永久に pending になる。
+  it('counts only `uses:` lines, not comments mentioning the action', () => {
+    const withComment = CI_FIVE.replace(
+      '      - name: Upload backend coverage to Codecov',
+      '      # codecov/codecov-action へのアップロードはここだけ\n      - name: Upload backend coverage to Codecov',
+    );
+    const { status, out } = run(withComment, 'codecov:\n  notify:\n    after_n_builds: 5\n');
+    expect(status).toBe(0);
+    expect(out).toContain('OK');
+  });
 });

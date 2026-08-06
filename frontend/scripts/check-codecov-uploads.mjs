@@ -85,7 +85,10 @@ if (!process.env.CHECK_CODECOV_CI) {
 
 const uploaders = [];
 for (const job of jobs) {
-  const uses = job.body.split('\n').filter((l) => l.includes('codecov/codecov-action')).length;
+  // `uses:` 行だけを数える。**部分一致にすると、アクション名に言及した
+  // 説明コメントが1行増えただけで本数が水増しされる** — このリポジトリは
+  // ci.yml に長い日本語コメントを書く流儀なので、現実的な誤爆経路。
+  const uses = job.body.split('\n').filter((l) => /^\s*uses:\s*codecov\/codecov-action/.test(l)).length;
   if (uses === 0) continue;
   uploaders.push({ job: job.name, uses, shards: shardCount(job.body) });
 }

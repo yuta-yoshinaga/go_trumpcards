@@ -70,6 +70,10 @@ jobs:
         uses: codecov/codecov-action@v6
         with:
           files: coverage.out
+          # frontend 側と揃える。コンパイルエラーなどで coverage.out が
+          # 生成されなかったとき、ここで job を落とすと 5 本目が届かず
+          # ステータスが pending のまま張り付く (#4991)。
+          fail_ci_if_error: false
           flags: backend
           token: ${{ secrets.CODECOV_TOKEN }}
 
