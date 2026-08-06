@@ -128,3 +128,26 @@ func (p *ThirtyOneCuiPresenter) Output(g interfaces.ThirtyOneGame, lastErr error
 func (p *ThirtyOneCuiPresenter) ActionLogOutput(g interfaces.ThirtyOneGame) string {
 	return actionLogOutputText(g)
 }
+
+// HintOutput emits the recommended move for the human player.
+//
+// **CPU と同じ材料で判断する。**ドロー先も捨て札も、ドメインの GetHint が
+// cpuWantsDiscard / bestDropIndex / ノック閾値をそのまま通した結果を出す。
+// Web はクライアント側ヒントを持っていたが、ネイティブ CUI には何も無かった (#4806)。
+func (p *ThirtyOneCuiPresenter) HintOutput(g interfaces.ThirtyOneGame) string {
+	hint := g.GetHint()
+	if hint == nil {
+		return i18n.T("thirtyone.hintNone") + "\n"
+	}
+	if hint.Action == "discard" && hint.CardIndex >= 0 {
+		idx := g.GetCurrentPlayerIdx()
+		card := g.GetPlayer(idx).GetCard(hint.CardIndex)
+		return color.Yellow(i18n.Tf("thirtyone.hintDiscard",
+			"idx", strconv.Itoa(hint.CardIndex),
+			"card", cuiCardStr(card),
+			"reason", i18n.T("thirtyone.hintReason."+hint.Reason))) + "\n"
+	}
+	return color.Yellow(i18n.Tf("thirtyone.hintAction",
+		"action", i18n.T("thirtyone.hintAction."+hint.Action),
+		"reason", i18n.T("thirtyone.hintReason."+hint.Reason))) + "\n"
+}

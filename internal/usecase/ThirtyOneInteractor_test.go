@@ -313,3 +313,14 @@ func TestRestoreThirtyOneInteractor_InvalidJSON(t *testing.T) {
 	_, err := usecase.RestoreThirtyOneInteractor([]byte("not json"), pMock)
 	assert.Error(t, err)
 }
+
+// **ヒントがプレゼンターまで通っていること (#4806)。**Barbu / Macau と同じ配線。
+func TestThirtyOneInteractor_Hint(t *testing.T) {
+	pMock := new(presenter.MockThirtyOnePresenter)
+	gameMock := new(interfaces.MockThirtyOneGame)
+	pMock.On("HintOutput", gameMock).Return("hint")
+
+	ci := usecase.NewThirtyOneInteractor(gameMock, pMock)
+	assert.Equal(t, "hint", ci.Hint())
+	pMock.AssertExpectations(t)
+}

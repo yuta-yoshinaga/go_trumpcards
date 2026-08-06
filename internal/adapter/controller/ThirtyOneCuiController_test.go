@@ -26,8 +26,18 @@ func TestThirtyOneCuiController_Exec(t *testing.T) {
 		m.On("Knock").Return(mockOutput)
 		m.On("NextRound").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
+		m.On("Hint").Return(mockOutput)
 		return m
 	}
+
+	// **h/hint がコントローラまで通っていること (#4806)。**Barbu / Macau と同じ配線。
+	t.Run("hint command", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewThirtyOneCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("h"))
+		assert.Equal(t, mockOutput, c.Exec("hint"))
+		m.AssertCalled(t, "Hint")
+	})
 
 	t.Run("quit", func(t *testing.T) {
 		c := controller.NewThirtyOneCuiController(newMock())

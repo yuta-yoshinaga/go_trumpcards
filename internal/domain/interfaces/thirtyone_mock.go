@@ -45,7 +45,13 @@ func (m *MockThirtyOneGame) GetPlayer(i int) *domain.ThirtyOnePlayer {
 func (m *MockThirtyOneGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
-func (m *MockThirtyOneGame) GetKnockerIdx() int     { return m.Called().Int(0) }
+func (m *MockThirtyOneGame) GetKnockerIdx() int { return m.Called().Int(0) }
+
+func (m *MockThirtyOneGame) GetHint() *domain.ThirtyOneHint {
+	h, _ := m.Called().Get(0).(*domain.ThirtyOneHint)
+	return h
+}
+
 func (m *MockThirtyOneGame) GetThirtyOneIdx() int   { return m.Called().Int(0) }
 func (m *MockThirtyOneGame) GetRoundWinnerIdx() int { return m.Called().Int(0) }
 func (m *MockThirtyOneGame) GetRoundLosers() []int {

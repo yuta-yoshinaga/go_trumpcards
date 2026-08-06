@@ -342,6 +342,46 @@ func (g *ThirtyOne) cpuDraw() {
 	g.drawFromStock(idx)
 }
 
+// ThirtyOneHint は人間プレイヤーへの推奨手。
+type ThirtyOneHint struct {
+	// Action は "draw_stock" / "draw_discard" / "discard" / "knock" のいずれか。
+	Action string
+	// CardIndex は discard のときの推奨インデックス (それ以外は -1)。
+	CardIndex int
+	// Reason は i18n キーの末尾。
+	Reason string
+}
+
+// GetHint は現在の局面での推奨手を返す (人間の手番でなければ nil)。
+//
+// **CPU と同じ材料で判断する。**ドローは cpuWantsDiscard、捨て札は bestDropIndex、
+// ノックは難易度ごとの閾値をそのまま使う。別の計算を書くと、CPU には有利と見える
+// 手を人間には勧めない、という食い違いが出る (#4806)。
+func (g *ThirtyOne) GetHint() *ThirtyOneHint {
+	if g.gameEndFlag || !g.players[g.currentPlayerIdx].GetIsHuman() {
+		return nil
+	}
+	p := g.players[g.currentPlayerIdx]
+	switch g.phase {
+	case ThirtyOnePhaseDraw:
+		// ノックできる点数に届いているなら、まずそれを勧める。
+		if g.knockerIdx < 0 && p.BestSuitScore() >= g.cpuKnockThreshold() {
+			return &ThirtyOneHint{Action: "knock", CardIndex: -1, Reason: "knock_ready"}
+		}
+		if len(g.discardPile) > 0 && g.cpuWantsDiscard(p) {
+			return &ThirtyOneHint{Action: "draw_discard", CardIndex: -1, Reason: "discard_improves"}
+		}
+		return &ThirtyOneHint{Action: "draw_stock", CardIndex: -1, Reason: "draw_stock"}
+	case ThirtyOnePhaseDiscard:
+		cards := g.handCards(g.currentPlayerIdx)
+		if len(cards) == 0 {
+			return nil
+		}
+		return &ThirtyOneHint{Action: "discard", CardIndex: bestDropIndex(cards), Reason: "drop_weakest"}
+	}
+	return nil
+}
+
 // cpuDiscard CPU が最も得点に貢献しないカードを捨てる
 func (g *ThirtyOne) cpuDiscard() {
 	idx := g.currentPlayerIdx

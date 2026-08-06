@@ -2423,6 +2423,7 @@ var gameRegistry = []GameRegistryEntry{
 					"thirtyone.helpDiscard",
 					"thirtyone.helpKnock",
 					"thirtyone.helpNextRound",
+					"thirtyone.helpHint",
 				},
 				ExtraCommandLines: []string{"  l                    action log"},
 				SettingKeys:       []string{"thirtyone.helpSetDifficulty", "thirtyone.helpSetLives"},

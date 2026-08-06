@@ -361,3 +361,62 @@ func TestThirtyOne_ActionLogRecorded(t *testing.T) {
 	require.NoError(t, g.PlayerDrawFromStock())
 	assert.NotEmpty(t, g.GetActionLog())
 }
+
+// **CPU と同じ材料で判断すること (#4806)。**別の計算を書くと、CPU には有利と
+// 見える手を人間には勧めない、という食い違いが出る。
+func TestThirtyOne_GetHint(t *testing.T) {
+	g := NewDefaultThirtyOne()
+	g.Reset()
+
+	// CPU の手番では nil。
+	g.SetCurrentPlayerIdx(1)
+	assert.Nil(t, g.GetHint())
+
+	// ディスカードフェーズは捨てる札を指す。
+	g.SetCurrentPlayerIdx(0)
+	g.SetPhase(ThirtyOnePhaseDiscard)
+	h := g.GetHint()
+	assert.NotNil(t, h)
+	assert.Equal(t, "discard", h.Action)
+	assert.GreaterOrEqual(t, h.CardIndex, 0)
+	assert.Less(t, h.CardIndex, g.GetPlayer(0).GetCardsSize())
+
+	// ドローフェーズは 3 つの行動のいずれか。
+	g.SetPhase(ThirtyOnePhaseDraw)
+	h2 := g.GetHint()
+	assert.NotNil(t, h2)
+	assert.Contains(t, []string{"draw_stock", "draw_discard", "knock"}, h2.Action)
+	assert.Equal(t, -1, h2.CardIndex)
+
+	// 終了フェーズでは行動を返さない。
+	g.SetPhase(ThirtyOnePhaseGameEnd)
+	assert.Nil(t, g.GetHint())
+
+	// ノックできる点数に届いていれば knock を勧める。
+	knockable := NewDefaultThirtyOne()
+	knockable.Reset()
+	knockable.SetCurrentPlayerIdx(0)
+	knockable.SetPhase(ThirtyOnePhaseDraw)
+	p0 := knockable.GetPlayer(0)
+	for p0.GetCardsSize() > 0 {
+		p0.RemoveCard(0)
+	}
+	// ♠A + ♠K + ♠Q = 11 + 10 + 10 = 31。どの難易度の閾値も超える。
+	p0.AddCard(NewCard(CardDesignSpade, 1, false))
+	p0.AddCard(NewCard(CardDesignSpade, 13, false))
+	p0.AddCard(NewCard(CardDesignSpade, 12, false))
+	kh := knockable.GetHint()
+	assert.NotNil(t, kh)
+	assert.Equal(t, "knock", kh.Action)
+
+	// 手札が空のディスカードフェーズは nil (壊れた復元状態への防御)。
+	empty := NewDefaultThirtyOne()
+	empty.Reset()
+	empty.SetCurrentPlayerIdx(0)
+	empty.SetPhase(ThirtyOnePhaseDiscard)
+	pe := empty.GetPlayer(0)
+	for pe.GetCardsSize() > 0 {
+		pe.RemoveCard(0)
+	}
+	assert.Nil(t, empty.GetHint())
+}
