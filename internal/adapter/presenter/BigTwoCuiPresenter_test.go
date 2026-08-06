@@ -179,3 +179,15 @@ func TestBigTwoCuiPresenter_NamesEveryPlayType(t *testing.T) {
 		assert.Contains(t, p.Output(m, nil), tc.want)
 	}
 }
+
+// **エラー行が赤くないと通常の状態行と見分けが付かない (#4821)。**共通ヘルパーの
+// cuiErrorBlock を使っているかを、色を出したまま確認する。
+func TestBigTwoCuiPresenter_ErrorIsRed(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(orig)
+
+	m, _ := setupBigTwoCuiMock()
+	out := new(presenter.BigTwoCuiPresenter).Output(m, errors.New("invalid play"))
+	assert.Contains(t, out, color.Red("invalid play"))
+}
