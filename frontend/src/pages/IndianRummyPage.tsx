@@ -414,6 +414,22 @@ function IndianRummyPageContent() {
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
+            {/* **CUI は毎ターン出している。**カードを選んでいない思案中でも、いまの
+                デッドウッドとピュアシーケンス充足を確認できるようにする (#4824)。 */}
+            {isDiscardPhase && isHumanTurn && humanPlayer && (
+              <div
+                className="mt-2 text-sm text-ds-text-muted"
+                data-testid="indianrummy-hand-status"
+                role="status"
+                aria-live="polite"
+              >
+                {t('deadwoodShort', { score: humanPlayer.deadwood })}
+                <span className={`ml-2 ${humanPlayer.hasPureSequence ? 'text-ds-success' : 'text-ds-warning'}`}>
+                  {humanPlayer.hasPureSequence ? t('pureSequenceBadge') : t('pureSequenceMissing')}
+                </span>
+              </div>
+            )}
+
             {isDiscardPhase && isHumanTurn && declarePreview && (
               <div
                 role="status"

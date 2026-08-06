@@ -62,5 +62,6 @@
     "declareButton": "Declare to go out when your 13 cards form valid melds (2+ sequences, one of them a pure sequence).",
     "scoreTable": "Player scores are shown here. Lowest cumulative total wins.",
     "resetButton": "Press the reset button to start a new game."
-  }
+  },
+  "pureSequenceMissing": "No pure seq."
 }
