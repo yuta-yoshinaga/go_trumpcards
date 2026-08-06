@@ -114,9 +114,9 @@ func TestRussianBankWebPresenter_StopAvailableMessage(t *testing.T) {
 	newData, err = json.Marshal(raw)
 	assert.NoError(t, err)
 	assert.NoError(t, json.Unmarshal(newData, g))
-	if g.CanCallStop() {
-		t.Skip("捨て札トップでも強制手が立つ配りだった")
-	}
+	// 配り直後は CPU の捨て札が空なので、リザーブを空にすれば強制手は必ず消える
+	// (シャッフル依存ではない)。
+	assert.False(t, g.CanCallStop())
 	var out2 controller.RussianBankWebOutput
 	assert.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out2))
 	assert.Equal(t, "russianbank.playing", out2.MessageCode)
