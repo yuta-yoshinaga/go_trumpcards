@@ -35,6 +35,8 @@ func (p *GinRummyWebPresenter) Output(g interfaces.GinRummyGame, lastErr error) 
 	}
 
 	// ノッカーのメルド
+	resObj.LayoffTargets = p.buildLayoffTargets(g)
+
 	knockerMelds := g.GetKnockerMelds()
 	resObj.KnockerMelds = make([]*controller.GinRummyWebOutputMeld, 0, len(knockerMelds))
 	for _, meld := range knockerMelds {
@@ -111,4 +113,32 @@ func (p *GinRummyWebPresenter) buildMessage(g interfaces.GinRummyGame, lastErr e
 // ActionLogOutput 棋譜をJSON出力
 func (p *GinRummyWebPresenter) ActionLogOutput(g interfaces.GinRummyGame) string {
 	return actionLogOutputJSON(g)
+}
+
+// buildLayoffTargets は人間の手札 1 枚ごとに、足せるノッカーのメルド番号を返す。
+//
+// **レイオフフェーズの主題そのもの。**ディスカードフェーズは meldedIndices で
+// 区分を見せているのに、レイオフには補助が無く、押してサーバーの応答で初めて
+// 成否が分かる状態だった (#4823)。判定はドメインをそのまま使う。
+func (p *GinRummyWebPresenter) buildLayoffTargets(g interfaces.GinRummyGame) [][]int {
+	human := -1
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		if pl := g.GetPlayer(i); pl != nil && pl.GetIsHuman() {
+			human = i
+			break
+		}
+	}
+	if human < 0 {
+		return nil
+	}
+	hand := g.GetPlayer(human)
+	out := make([][]int, 0, hand.GetCardsSize())
+	for i := 0; i < hand.GetCardsSize(); i++ {
+		targets := g.LayoffTargets(hand.GetCard(i))
+		if targets == nil {
+			targets = []int{}
+		}
+		out = append(out, targets)
+	}
+	return out
 }

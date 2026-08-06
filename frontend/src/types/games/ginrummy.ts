@@ -38,6 +38,13 @@ export interface GinRummyResponse extends BaseGameResponse {
   winnerIdx: number;
   knockerIdx: number;
   knockerMelds: GinRummyMeld[];
+  /**
+   * 手札のカードごとに、それを足せるノッカーのメルド番号。
+   *
+   * レイオフフェーズの主題そのものなのに、押してサーバーの応答で初めて成否が
+   * 分かる状態だった (#4823)。
+   */
+  layoffTargets: number[][];
   knockerDeadwood: Card[];
   isGin: boolean;
   config: GinRummyConfig;

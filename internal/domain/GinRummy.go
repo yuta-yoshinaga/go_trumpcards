@@ -365,14 +365,27 @@ func (g *GinRummy) PlayerLayoff(cardIndices []int) error {
 	return nil
 }
 
-// canLayoff カードがノッカーのメルドにレイオフ可能か
-func (g *GinRummy) canLayoff(card *Card) bool {
-	for _, meld := range g.knockerMelds {
+// LayoffTargets はその札を足せるノッカーのメルド番号をすべて返す。
+//
+// **レイオフフェーズの主題は「どのメルドに付け足せるか」。**画面はその補助を
+// 一切持たず、押してサーバーの応答で初めて成否が分かる状態だった (#4823)。
+func (g *GinRummy) LayoffTargets(card *Card) []int {
+	if card == nil {
+		return nil
+	}
+	var out []int
+	for i, meld := range g.knockerMelds {
 		if canAddToMeld(meld, card) {
-			return true
+			out = append(out, i)
 		}
 	}
-	return false
+	return out
+}
+
+// canLayoff カードがノッカーのメルドにレイオフ可能か
+func (g *GinRummy) canLayoff(card *Card) bool {
+	// 表示側と同じ判定を使う。2 本置くと「置ける」と出しながら拒否される状態が作れる。
+	return len(g.LayoffTargets(card)) > 0
 }
 
 // layoffCard カードをノッカーのメルドに追加する
