@@ -69,6 +69,8 @@ type FiveHundredGame interface {
 	GetContractValue() int
 	// GetDeclarerIdx 落札者インデックスを取得する (-1 = 未確定)
 	GetDeclarerIdx() int
+	// GetRoundResult ラウンド終了時の得点内訳 (それ以外は nil)
+	GetRoundResult() *domain.FiveHundredRoundResult
 	// GetHighestBid 現在の最高ビッドを取得する (nil = なし)
 	GetHighestBid() *domain.FiveHundredBid
 	// GetHighestBidder 最高ビッダーのインデックスを取得する (-1 = なし)

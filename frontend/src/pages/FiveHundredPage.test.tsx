@@ -249,4 +249,40 @@ describe('FiveHundredPage', () => {
     fireEvent.click(await screen.findByTestId('nextround-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
+
+  // **「何点動いたか」を言う (#4809)。**ラウンド終了は定型文しか出ておらず、
+  // 成否も増減もヘッダーの数字を前後で見比べるしかなかった。
+  it('explains the contract outcome and the point swing at round end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 4, // ROUND_END
+        roundResult: {
+          declarerTeam: 0,
+          defenderTeam: 1,
+          contractValue: 220,
+          needTricks: 8,
+          declarerTricks: 9,
+          defenderTricks: 1,
+          misere: false,
+          made: true,
+          slam: false,
+          declarerDelta: 220,
+          defenderDelta: 10,
+        },
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+
+    const banner = await screen.findByTestId('fh-round-result');
+    expect(banner).toHaveTextContent('成立');
+    expect(banner).toHaveTextContent('220');
+    expect(banner).toHaveTextContent('守備');
+  });
+
+  it('shows no round-result banner outside the round-end phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2 })); // PLAY
+    renderWithProviders(<FiveHundredPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('fh-round-result')).not.toBeInTheDocument();
+  });
 });

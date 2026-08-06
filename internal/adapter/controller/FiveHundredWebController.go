@@ -82,11 +82,29 @@ type FiveHundredWebOutput struct {
 	KittyCount       int                           `json:"kittyCount"`
 	CurrentTrick     []*WebOutputTrickCard         `json:"currentTrick"`
 	TeamScores       [2]int                        `json:"teamScores"`
-	GameEndFlag      bool                          `json:"gameEndFlag"`
-	WinnerTeam       int                           `json:"winnerTeam"`
-	Hint             *FiveHundredWebOutputHint     `json:"hint,omitempty"`
+	// RoundResult はラウンド終了フェーズでの得点内訳 (それ以外は null)。
+	// 定型文の「ラウンド終了」しか出ていなかった (#4809)。
+	RoundResult *FiveHundredWebOutputRoundResult `json:"roundResult,omitempty"`
+	GameEndFlag bool                             `json:"gameEndFlag"`
+	WinnerTeam  int                              `json:"winnerTeam"`
+	Hint        *FiveHundredWebOutputHint        `json:"hint,omitempty"`
 	WebOutputBase
 	Config FiveHundredWebOutputConfig `json:"config"`
+}
+
+// FiveHundredWebOutputRoundResult はラウンド終了時の得点内訳。
+type FiveHundredWebOutputRoundResult struct {
+	DeclarerTeam   int  `json:"declarerTeam"`
+	DefenderTeam   int  `json:"defenderTeam"`
+	ContractValue  int  `json:"contractValue"`
+	NeedTricks     int  `json:"needTricks"`
+	DeclarerTricks int  `json:"declarerTricks"`
+	DefenderTricks int  `json:"defenderTricks"`
+	Misere         bool `json:"misere"`
+	Made           bool `json:"made"`
+	Slam           bool `json:"slam"`
+	DeclarerDelta  int  `json:"declarerDelta"`
+	DefenderDelta  int  `json:"defenderDelta"`
 }
 
 // FiveHundredWebOutputConfig 500 設定アウトプット

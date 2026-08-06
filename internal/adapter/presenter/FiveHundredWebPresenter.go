@@ -59,6 +59,21 @@ func (p *FiveHundredWebPresenter) buildBase(g interfaces.FiveHundredGame) *contr
 	resObj.JokerLeadSuit = g.GetJokerLeadSuit()
 	resObj.KittyCount = len(g.GetKitty())
 	resObj.TeamScores = [2]int{g.GetTeamScore(0), g.GetTeamScore(1)}
+	if r := g.GetRoundResult(); r != nil {
+		resObj.RoundResult = &controller.FiveHundredWebOutputRoundResult{
+			DeclarerTeam:   r.DeclarerTeam,
+			DefenderTeam:   r.DefenderTeam,
+			ContractValue:  r.ContractValue,
+			NeedTricks:     r.NeedTricks,
+			DeclarerTricks: r.DeclarerTricks,
+			DefenderTricks: r.DefenderTricks,
+			Misere:         r.Misere,
+			Made:           r.Made,
+			Slam:           r.Slam,
+			DeclarerDelta:  r.DeclarerDelta,
+			DefenderDelta:  r.DefenderDelta,
+		}
+	}
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerTeam = g.GetWinnerTeam()
 

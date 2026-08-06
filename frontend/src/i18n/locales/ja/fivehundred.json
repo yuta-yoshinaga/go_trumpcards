@@ -51,5 +51,11 @@
     "lead_strong": "強い札でリードして主導権を取ります",
     "lead_trump": "切り札でリードします",
     "trump_cut": "切り札で刈り取ります"
+  },
+  "roundResult": {
+    "made": "チーム{{team}} 成立: {{tricks}}/{{need}} トリック {{delta}}点",
+    "set": "チーム{{team}} セット: {{tricks}}/{{need}} トリック {{delta}}点",
+    "slam": "（スラムボーナス）",
+    "defenders": "守備 チーム{{team}}: {{tricks}}トリック +{{delta}}点"
   }
 }

@@ -559,11 +559,41 @@ func (g *FiveHundred) NextTrick() {
 	g.phase = FiveHundredPhasePlay
 }
 
-// ScoreRound ラウンドのスコアを確定し、ゲーム終了判定を行う
-func (g *FiveHundred) ScoreRound() {
-	if g.phase != FiveHundredPhaseRoundEnd {
-		return
+// FiveHundredRoundResult はラウンド終了時の内訳。
+//
+// **「何点動いたか」を画面が言えるようにする。**ラウンド終了バナーは定型文
+// しか出しておらず、成否も増減もヘッダーの数字を前後で見比べるしかなかった
+// (#4809)。ScoreRound はこの結果をそのまま適用するので、表示と実際の加算が
+// ずれない。
+type FiveHundredRoundResult struct {
+	DeclarerTeam  int
+	DefenderTeam  int
+	ContractValue int
+	// NeedTricks は成立に必要なトリック数 (ミゼールでは 0)。
+	NeedTricks int
+	// DeclarerTricks はミゼールなら宣言者本人、それ以外は宣言側チームの獲得数。
+	DeclarerTricks int
+	DefenderTricks int
+	Misere         bool
+	Made           bool
+	// Slam は全トリック獲得によるボーナス (250 点) が適用されたか。
+	Slam bool
+	// DeclarerDelta / DefenderDelta は各チームの得点増減。
+	DeclarerDelta int
+	DefenderDelta int
+}
+
+// GetRoundResult はラウンド終了フェーズでの内訳を返す (それ以外は nil)。
+// 計算のみで状態は変えないので、ScoreRound の前に何度呼んでも安全。
+func (g *FiveHundred) GetRoundResult() *FiveHundredRoundResult {
+	if g.phase != FiveHundredPhaseRoundEnd || g.declarerIdx < 0 {
+		return nil
 	}
+	return g.computeRoundResult()
+}
+
+// computeRoundResult はラウンドの得点内訳を計算する (状態は変えない)。
+func (g *FiveHundred) computeRoundResult() *FiveHundredRoundResult {
 	declTeam := g.players[g.declarerIdx].GetTeam()
 	defTeam := 1 - declTeam
 	teamTricks := [FiveHundredTeamCnt]int{}
@@ -571,43 +601,69 @@ func (g *FiveHundred) ScoreRound() {
 		teamTricks[p.GetTeam()] += p.GetTrickCount()
 	}
 	bidVal := g.contract.Value()
+	r := &FiveHundredRoundResult{
+		DeclarerTeam:   declTeam,
+		DefenderTeam:   defTeam,
+		ContractValue:  bidVal,
+		DefenderTricks: teamTricks[defTeam],
+		Misere:         g.isMisere(),
+	}
+	if r.Misere {
+		r.DeclarerTricks = g.players[g.declarerIdx].GetTrickCount()
+		r.Made = r.DeclarerTricks == 0
+		if r.Made {
+			r.DeclarerDelta = bidVal
+		} else {
+			r.DeclarerDelta = -bidVal
+		}
+		return r
+	}
+	r.DeclarerTricks = teamTricks[declTeam]
+	r.NeedTricks = g.contract.Tricks
+	r.Made = r.DeclarerTricks >= r.NeedTricks
+	switch {
+	case r.Made && r.DeclarerTricks == FiveHundredTrickCnt && bidVal < 250:
+		r.Slam = true
+		r.DeclarerDelta = 250 // 全トリック獲得のスラムボーナス
+	case r.Made:
+		r.DeclarerDelta = bidVal
+	default:
+		r.DeclarerDelta = -bidVal
+	}
+	// 守備側は獲得トリック1つにつき10点
+	r.DefenderDelta = 10 * teamTricks[defTeam]
+	return r
+}
 
-	if g.isMisere() {
-		declTricks := g.players[g.declarerIdx].GetTrickCount()
-		if declTricks == 0 {
-			g.teamScores[declTeam] += bidVal
-			g.appendLog(-1, "misere_made",
-				fmt.Sprintf("Team %d makes misere! +%d", declTeam, bidVal), nil)
-		} else {
-			g.teamScores[declTeam] -= bidVal
-			g.appendLog(-1, "misere_failed",
-				fmt.Sprintf("Team %d fails misere (%d tricks). -%d", declTeam, declTricks, bidVal), nil)
-		}
-	} else {
-		declTricks := teamTricks[declTeam]
-		need := g.contract.Tricks
-		if declTricks >= need {
-			gain := bidVal
-			if declTricks == FiveHundredTrickCnt && bidVal < 250 {
-				gain = 250 // 全トリック獲得のスラムボーナス
-			}
-			g.teamScores[declTeam] += gain
-			g.appendLog(-1, "contract_made",
-				fmt.Sprintf("Team %d makes the contract (%d tricks). +%d", declTeam, declTricks, gain), nil)
-		} else {
-			g.teamScores[declTeam] -= bidVal
-			g.appendLog(-1, "contract_failed",
-				fmt.Sprintf("Team %d is set (%d/%d tricks). -%d", declTeam, declTricks, need, bidVal), nil)
-		}
-		// 守備側は獲得トリック1つにつき10点
-		g.teamScores[defTeam] += 10 * teamTricks[defTeam]
+// ScoreRound ラウンドのスコアを確定し、ゲーム終了判定を行う
+func (g *FiveHundred) ScoreRound() {
+	if g.phase != FiveHundredPhaseRoundEnd {
+		return
+	}
+	r := g.computeRoundResult()
+	g.teamScores[r.DeclarerTeam] += r.DeclarerDelta
+	g.teamScores[r.DefenderTeam] += r.DefenderDelta
+
+	switch {
+	case r.Misere && r.Made:
+		g.appendLog(-1, "misere_made",
+			fmt.Sprintf("Team %d makes misere! +%d", r.DeclarerTeam, r.ContractValue), nil)
+	case r.Misere:
+		g.appendLog(-1, "misere_failed",
+			fmt.Sprintf("Team %d fails misere (%d tricks). -%d", r.DeclarerTeam, r.DeclarerTricks, r.ContractValue), nil)
+	case r.Made:
+		g.appendLog(-1, "contract_made",
+			fmt.Sprintf("Team %d makes the contract (%d tricks). +%d", r.DeclarerTeam, r.DeclarerTricks, r.DeclarerDelta), nil)
+	default:
+		g.appendLog(-1, "contract_failed",
+			fmt.Sprintf("Team %d is set (%d/%d tricks). -%d", r.DeclarerTeam, r.DeclarerTricks, r.NeedTricks, r.ContractValue), nil)
 	}
 
 	for ti := range FiveHundredTeamCnt {
 		g.appendLog(-1, "team_score",
 			fmt.Sprintf("Team %d: %d points", ti, g.teamScores[ti]), nil)
 	}
-	g.checkGameEnd(declTeam)
+	g.checkGameEnd(r.DeclarerTeam)
 }
 
 // checkGameEnd ゲーム終了判定。先に TargetScore に到達したチームが勝利、

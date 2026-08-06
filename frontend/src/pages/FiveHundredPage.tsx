@@ -501,6 +501,29 @@ function FiveHundredPageContent() {
                 </button>
               )}
 
+              {isRoundEnd && state.roundResult && (
+                <div className="w-full text-sm mb-2" role="status" aria-live="polite" data-testid="fh-round-result">
+                  <span className={state.roundResult.made ? 'text-ds-success' : 'text-ds-error'}>
+                    {t(state.roundResult.made ? 'roundResult.made' : 'roundResult.set', {
+                      team: state.roundResult.declarerTeam,
+                      tricks: state.roundResult.declarerTricks,
+                      need: state.roundResult.needTricks,
+                      delta: state.roundResult.declarerDelta,
+                    })}
+                  </span>
+                  {state.roundResult.slam && <span className="ml-2 text-ds-success">{t('roundResult.slam')}</span>}
+                  {state.roundResult.defenderDelta > 0 && (
+                    <span className="ml-2 text-ds-text-muted">
+                      {t('roundResult.defenders', {
+                        team: state.roundResult.defenderTeam,
+                        tricks: state.roundResult.defenderTricks,
+                        delta: state.roundResult.defenderDelta,
+                      })}
+                    </span>
+                  )}
+                </div>
+              )}
+
               {isRoundEnd && (
                 <button
                   type="button"

@@ -49,6 +49,21 @@ export interface FiveHundredHint {
 }
 
 /** Full 500 game state returned from the API. */
+/** ラウンド終了時の得点内訳。 */
+export interface FiveHundredRoundResult {
+  declarerTeam: number;
+  defenderTeam: number;
+  contractValue: number;
+  needTricks: number;
+  declarerTricks: number;
+  defenderTricks: number;
+  misere: boolean;
+  made: boolean;
+  slam: boolean;
+  declarerDelta: number;
+  defenderDelta: number;
+}
+
 export interface FiveHundredResponse extends BaseGameResponse {
   players: FiveHundredPlayerData[];
   phase: number;
@@ -69,6 +84,13 @@ export interface FiveHundredResponse extends BaseGameResponse {
   kittyCount: number;
   currentTrick: FiveHundredTrickCard[];
   teamScores: [number, number];
+  /**
+   * ラウンド終了時の得点内訳（それ以外のフェーズでは undefined）。
+   *
+   * 定型文の「ラウンド終了」しか出ておらず、契約の成否も点の増減もヘッダーの
+   * 数字を前後で見比べるしかなかった (#4809)。
+   */
+  roundResult?: FiveHundredRoundResult;
   gameEndFlag: boolean;
   winnerTeam: number;
   config: FiveHundredConfig;
