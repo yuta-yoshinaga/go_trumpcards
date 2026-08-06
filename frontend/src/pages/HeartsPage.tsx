@@ -35,6 +35,7 @@ import { HEARTS_HELP, parseHeartsCommand } from '../utils/cli/commands/heartsCom
 import { formatHeartsState } from '../utils/cli/formatters/heartsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { heartsLegalPlayIndices } from '../utils/heartsLegal';
+import { heartsNearPointLimit } from '../utils/heartsLimit';
 import { heartsPassTarget } from '../utils/heartsPass';
 import { shootTheMoonAlertIdx } from '../utils/heartsShootMoonAlert';
 import { playerName } from '../utils/playerUtils';
@@ -321,8 +322,24 @@ function HeartsPageContent() {
                         .map((p) => (
                           <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                             {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                            {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                            {t('roundScore', { score: p.roundScore })} |{' '}
+                            <span
+                              className={
+                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit)
+                                  ? 'text-ds-warning font-semibold'
+                                  : undefined
+                              }
+                              title={
+                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit)
+                                  ? t('limitNear', { limit: state.config.pointLimit })
+                                  : undefined
+                              }
+                              data-near-limit={
+                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit) || undefined
+                              }
+                            >
+                              {t('cumulativeScore', { score: p.cumulativeScore })}
+                            </span>{' '}
+                            | {t('roundScore', { score: p.roundScore })} |{' '}
                             <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
                             {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
                           </div>
@@ -370,7 +387,23 @@ function HeartsPageContent() {
                           <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                             <td>{playerName(p.id, p.isHuman)}</td>
                             <td className="text-center">{p.roundScore}</td>
-                            <td className="text-center">{p.cumulativeScore}</td>
+                            <td
+                              className={`text-center${
+                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit)
+                                  ? ' text-ds-warning font-semibold'
+                                  : ''
+                              }`}
+                              title={
+                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit)
+                                  ? t('limitNear', { limit: state.config.pointLimit })
+                                  : undefined
+                              }
+                              data-near-limit={
+                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit) || undefined
+                              }
+                            >
+                              {p.cumulativeScore}
+                            </td>
                             <td className="text-center">{p.trickCount}</td>
                             <td className="text-center">
                               <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
@@ -400,7 +433,23 @@ function HeartsPageContent() {
                           <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                             <td>{playerName(p.id, p.isHuman)}</td>
                             <td className="text-center">{p.roundScore}</td>
-                            <td className="text-center">{p.cumulativeScore}</td>
+                            <td
+                              className={`text-center${
+                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit)
+                                  ? ' text-ds-warning font-semibold'
+                                  : ''
+                              }`}
+                              title={
+                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit)
+                                  ? t('limitNear', { limit: state.config.pointLimit })
+                                  : undefined
+                              }
+                              data-near-limit={
+                                heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit) || undefined
+                              }
+                            >
+                              {p.cumulativeScore}
+                            </td>
                             <td className="text-center">{p.trickCount}</td>
                             <td className="text-center">
                               <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
