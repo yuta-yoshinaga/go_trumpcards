@@ -23,6 +23,7 @@ function makeState(overrides: Partial<WhistResponse> = {}): WhistResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     leadPlayerIdx: 0,
+    validPlayIndices: [],
     message: '',
     config: defaultConfig,
     ...overrides,

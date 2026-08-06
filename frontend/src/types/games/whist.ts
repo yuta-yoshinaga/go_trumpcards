@@ -47,6 +47,15 @@ export interface WhistResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerTeam: number;
   leadPlayerIdx: number;
+  /**
+   * 人間がいま出せる手札の位置。
+   *
+   * フォロースートの判定はドメインの `GetValidPlayIndices` が持っており、
+   * フロントで組み立て直すと片方だけ直したときに黙って食い違う。
+   * プレイフェーズで人間の手番でなければ空 — **空を「制限なし」と読まないこと**
+   * (「1枚も出せない」局面と区別が付かなくなる)。
+   */
+  validPlayIndices: number[];
   config: WhistConfig;
   hint?: WhistHint;
 }

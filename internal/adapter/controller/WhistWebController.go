@@ -54,6 +54,11 @@ type WhistWebOutput struct {
 	WinnerTeam       int                     `json:"winnerTeam"`
 	LeadPlayerIdx    int                     `json:"leadPlayerIdx"`
 	Hint             *WhistWebOutputHint     `json:"hint,omitempty"`
+	// ValidPlayIndices は人間がいま出せる手札の位置。**ドメインの
+	// GetValidPlayIndices がフォロースートを判定済みなのに Web へ送っておらず、
+	// 違反札をクリックしてエラーで確かめるしかなかった (#4742)。**
+	// プレイフェーズで人間の手番のときだけ埋まり、それ以外は空。
+	ValidPlayIndices []int `json:"validPlayIndices"`
 	WebOutputBase
 	Config WhistWebOutputConfig `json:"config"`
 }
