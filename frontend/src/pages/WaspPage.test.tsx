@@ -618,6 +618,40 @@ describe('WaspPage CLI legal command', () => {
     await waitFor(() => expect(screen.getAllByText(/empty/).length).toBeGreaterThan(0));
   });
 
+  // **同スート次ランクの列も並べる。**空き列だけ出して本命を落とすと、
+  // 一覧としては嘘になる。
+  it('lists a column whose top card accepts the move', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [
+        [{ card: card('SPADE', 5), faceUp: true }],
+        [{ card: card('SPADE', 6), faceUp: true }],
+        [{ card: card('HEART', 6), faceUp: true }],
+        [{ card: card('SPADE', 9), faceUp: true }],
+        [{ card: card('SPADE', 10), faceUp: true }],
+        [{ card: card('SPADE', 11), faceUp: true }],
+        [{ card: card('SPADE', 12), faceUp: true }],
+      ],
+    });
+    await runCli('legal 0');
+    // ♠5 は ♠6 の列 (1) にだけ乗る。別スートの ♥6 は対象外。
+    await waitFor(() => expect(screen.getAllByText(/can move onto: 1$/).length).toBeGreaterThan(0));
+  });
+
+  it('says so when the column has no movable card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[{ card: card('SPADE', 5), faceUp: false }], [], [], [], [], [], []],
+    });
+    await runCli('legal 0');
+    await waitFor(() => expect(screen.getAllByText(/no movable card/).length).toBeGreaterThan(0));
+  });
+
+  it('rejects a non-numeric column', async () => {
+    await runCli('legal abc');
+    await waitFor(() => expect(screen.getAllByText(/Usage: legal/).length).toBeGreaterThan(0));
+  });
+
   // **legal を足しても他のコマンドは変わらない。**
   it('still sends other commands to the API', async () => {
     await runCli('d');
