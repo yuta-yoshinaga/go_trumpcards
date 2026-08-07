@@ -93,7 +93,6 @@ func TestOsmosisWebPresenter_Output(t *testing.T) {
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
 // レスポンスで、ページの state にはマージされない (#4483)。
-// このゲームは手詰まり判定を持たないので、ゲートは進行中かどうかだけ。
 // **手詰まりでもフェーズは Playing のまま (#4808)。**メッセージコードと
 // isStalemate の両方で通知する。両側を踏まないと常時 true の実装でも通る。
 func TestOsmosisWebPresenter_Stalemate(t *testing.T) {

@@ -56,17 +56,16 @@ describe('OsmosisPage', () => {
 
   // **手詰まりでもサーバは Playing を返す (#4808)。**「プレイ中」と出たままだと、
   // もう動かない盤面をめくり続けることになる。出る側と出ない側の両方を踏む。
-  it('shows the dead-end phase label once no card can be placed', async () => {
+  it('announces the dead end once no card can be placed', async () => {
     mockExec.mockResolvedValue({ ...playingState, isStalemate: true, messageCode: 'osmosis.stalemate' });
     renderWithProviders(<OsmosisPage />);
-    await waitFor(() => expect(screen.getAllByText('手詰まり').length).toBeGreaterThanOrEqual(1));
-    expect(screen.queryByText('プレイ中')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/手詰まりです/)).toBeInTheDocument());
   });
 
-  it('keeps the plain playing label while a move remains', async () => {
+  it('says nothing about a dead end while a move remains', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(screen.getAllByText('プレイ中').length).toBeGreaterThanOrEqual(1));
-    expect(screen.queryByText('手詰まり')).not.toBeInTheDocument();
+    expect(screen.queryByText(/手詰まりです/)).not.toBeInTheDocument();
   });
 
   it('calls reset on mount', async () => {

@@ -2,11 +2,9 @@
   "phase": {
     "playing": "プレイ中",
     "gameClear": "ゲームクリア",
-    "gameOver": "ゲームオーバー",
-    "stalemate": "手詰まり"
+    "gameOver": "ゲームオーバー"
   },
   "title": "オズモシス",
-  "stalemate": "手詰まりです。置けるカードがもうありません。",
   "stock": "山札",
   "waste": "ウェイスト",
   "reserve": "リザーブ",

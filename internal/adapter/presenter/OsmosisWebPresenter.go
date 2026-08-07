@@ -16,6 +16,9 @@ type OsmosisWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *OsmosisWebPresenter) Output(o interfaces.OsmosisGame, lastErr error) string {
 	resObj := p.buildBaseOutput(o)
+	// 1回だけ数えて使い回す。3箇所で呼ぶと、将来 IsStalemate に副作用が入ったとき
+	// 判定同士が食い違いうる。
+	stalemate := resObj.IsStalemate
 
 	// ウェイスト
 	waste := o.GetWaste()
@@ -51,7 +54,7 @@ func (p *OsmosisWebPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
 	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
 	// 手詰まりならもう置ける札は無いので、ヒントを探しに行くだけ無駄になる。
-	if o.GetPhase() == domain.OsmosisPhasePlaying && !o.IsStalemate() {
+	if o.GetPhase() == domain.OsmosisPhasePlaying && !stalemate {
 		if hint := o.GetHint(); hint != nil {
 			resObj.Hint = &controller.OsmosisWebOutputHint{
 				FromZone: hint.FromZone,
@@ -66,7 +69,7 @@ func (p *OsmosisWebPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 	} else {
 		switch o.GetPhase() {
 		case domain.OsmosisPhasePlaying:
-			if o.IsStalemate() {
+			if stalemate {
 				resObj.MessageCode = "osmosis.stalemate"
 			} else {
 				resObj.MessageCode = "osmosis.playing"
