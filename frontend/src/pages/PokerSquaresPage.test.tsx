@@ -454,3 +454,49 @@ describe('PokerSquaresPage', () => {
     expect(preview.textContent).toContain('+50');
   });
 });
+
+// **シナジーを考慮した本格的なヒントは CUI しか受け取れていなかった (#4790)。**
+// ページ側の useGameHint はシナジーを見ない単純なヒューリスティックなので、
+// Web プレイヤーのほうが弱い助言しか使えないという逆転が起きていた。
+describe('PokerSquaresPage server hint', () => {
+  it('asks the server when the hint button is pressed', async () => {
+    renderWithProviders(<PokerSquaresPage />);
+    const button = await screen.findByTestId('ps-hint-button');
+    fireEvent.click(button);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('hint'));
+  });
+
+  it('shows the suggested cell and that it has synergy', async () => {
+    mockApi.mockResolvedValue({
+      ...playingState,
+      hint: { row: 2, col: 3, score: 12, synergy: true },
+      messageCode: 'pokersquares.hintAvailable',
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    const hint = await screen.findByTestId('ps-server-hint');
+    expect(hint).toHaveTextContent('2');
+    expect(hint).toHaveTextContent('3');
+    expect(hint).toHaveTextContent('12');
+  });
+
+  // **押していないのに出さない。**Output() は毎回 hint を載せるので、要求印が
+  // 無ければ黙る。
+  it('stays quiet until the hint is actually requested', async () => {
+    mockApi.mockResolvedValue({ ...playingState, hint: { row: 2, col: 3, score: 12, synergy: true } });
+    renderWithProviders(<PokerSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('ps-hint-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('ps-server-hint')).not.toBeInTheDocument();
+  });
+
+  // **相乗効果の有無で文言を変える。**同じ文だと「置くだけ」と「効く」の
+  // 区別が付かない。
+  it('words a synergy-free suggestion differently', async () => {
+    mockApi.mockResolvedValue({
+      ...playingState,
+      hint: { row: 0, col: 0, score: 0, synergy: false },
+      messageCode: 'pokersquares.hintAvailable',
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    expect(await screen.findByTestId('ps-server-hint')).toHaveTextContent('相乗効果は無し');
+  });
+});

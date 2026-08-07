@@ -57,6 +57,9 @@ func TestPokerSquaresWebController_Commands(t *testing.T) {
 	piMock.On("Undo").Return(mockOutput)
 	piMock.On("GiveUp").Return(mockOutput)
 	piMock.On("ActionLog").Return(mockOutput)
+	// **hint は Web からも呼べる (#4790)。**シナジー考慮ヒントは CUI しか
+	// 受け取れていなかった。
+	piMock.On("Hint").Return(mockOutput)
 
 	tests := []struct {
 		name    string
@@ -66,6 +69,8 @@ func TestPokerSquaresWebController_Commands(t *testing.T) {
 		{"undo", `{"command":"undo","sessionId":"s1"}`},
 		{"giveup", `{"command":"giveup","sessionId":"s1"}`},
 		{"log", `{"command":"log","sessionId":"s1"}`},
+		{"hint", `{"command":"hint","sessionId":"s1"}`},
+		{"hint short", `{"command":"h","sessionId":"s1"}`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

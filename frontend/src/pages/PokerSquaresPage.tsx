@@ -10,6 +10,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CARD_DIMENSIONS, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
@@ -30,6 +31,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { POKERSQUARES_HELP, parsePokerSquaresCommand } from '../utils/cli/commands/pokersquaresCommands';
 import { formatPokerSquaresState } from '../utils/cli/formatters/pokersquaresFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import {
   evaluateFiveCardHand,
   evaluatePartialHand,
@@ -222,6 +224,10 @@ function PokerSquaresPageContent() {
     execApi('place', row, col);
   };
   const handleUndo = () => execApi('undo');
+  // **シナジーを考慮した本格的なヒントは CUI しか受け取れていなかった (#4790)。**
+  // ページ側の useGameHint はシナジーを見ない単純なヒューリスティックなので、
+  // Web プレイヤーのほうが弱い助言しか使えないという逆転が起きていた。
+  const handleHint = () => execApi('hint');
   const handleGiveUp = useCallback(() => execApi('giveup'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
 
@@ -467,6 +473,16 @@ function PokerSquaresPageContent() {
           <GameFooter className={`${gameTheme.pokersquares.footer} px-4 py-2.5`}>
             <ErrorAlert message={error} onRetry={retry} />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            {/* サーバ側のシナジー考慮ヒント。ボタンを押したときだけ出す。 */}
+            {state?.hint && isRequestedHint(state) && (
+              <p className="text-center text-sm text-ds-accent mt-1" data-testid="ps-server-hint">
+                {t(state.hint.synergy ? 'hint.synergy' : 'hint.plain', {
+                  row: state.hint.row,
+                  col: state.hint.col,
+                  score: state.hint.score,
+                })}
+              </p>
+            )}
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="ps-controls">
               {isPlaying && (
                 <>
@@ -477,6 +493,15 @@ function PokerSquaresPageContent() {
                     disabled={loading || !state?.canUndo}
                   >
                     {t('button.undo')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleHint}
+                    disabled={loading}
+                    data-testid="ps-hint-button"
+                  >
+                    {t('button.hint')}
                   </button>
                   <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('button.giveup')}
