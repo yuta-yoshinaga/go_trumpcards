@@ -613,3 +613,52 @@ func TestSpideretteUnmarshalRejectsOversize(t *testing.T) {
 	var s Spiderette
 	assert.Error(t, json.Unmarshal(payload, &s))
 }
+
+// **生の残り枚数だけでは「あと何回配れるか」が分からない (#4798)。**Web は
+// 7で割った切り上げをバッジに出しているのに、CUI は暗算を強いていた。
+func TestSpiderette_GetDealsRemaining(t *testing.T) {
+	stock := func(n int) *Spiderette {
+		s := NewSpiderette(NewTrumpCards(0))
+		s.Reset()
+		cards := make([]*Card, n)
+		for i := range cards {
+			cards[i] = NewCard(CardDesignSpade, (i%13)+1, false)
+		}
+		s.SetStock(cards)
+		return s
+	}
+
+	t.Run("an empty stock leaves no deals", func(t *testing.T) {
+		assert.Equal(t, 0, stock(0).GetDealsRemaining())
+	})
+
+	// **端数も1回として数える。**残り1枚でも「配る」は押せる。切り捨てると
+	// 「もう配れない」と誤解させる。
+	t.Run("counts a partial deal as a full one", func(t *testing.T) {
+		assert.Equal(t, 1, stock(1).GetDealsRemaining())
+		assert.Equal(t, 1, stock(SpideretteDealCnt-1).GetDealsRemaining())
+	})
+
+	t.Run("counts one deal per full batch", func(t *testing.T) {
+		assert.Equal(t, 1, stock(SpideretteDealCnt).GetDealsRemaining())
+		assert.Equal(t, 2, stock(SpideretteDealCnt+1).GetDealsRemaining())
+		assert.Equal(t, 3, stock(SpideretteDealCnt*3).GetDealsRemaining())
+	})
+
+	// **実際に配り切るまでの回数と一致すること。**回数だけ別に数えると、
+	// 表示と実際に押せる回数がずれる。
+	t.Run("matches how many batches the stock actually splits into", func(t *testing.T) {
+		total := SpideretteDealCnt*2 + 3
+		s := stock(total)
+		want := s.GetDealsRemaining()
+		got, left := 0, total
+		for left > 0 {
+			left -= SpideretteDealCnt
+			if left < 0 {
+				left = 0
+			}
+			got++
+		}
+		assert.Equal(t, want, got)
+	})
+}
