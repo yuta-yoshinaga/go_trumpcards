@@ -14,6 +14,8 @@ type ChinesePokerInteractorIF interface {
 	Reset() string
 	Bet(amount int) string
 	SetHands(frontIndices []int, middleIndices []int) string
+	// Hint ヒント取得
+	Hint() string
 	ActionLog() string
 }
 
@@ -45,6 +47,11 @@ func (ci *ChinesePokerInteractor) Bet(amount int) string {
 // SetHands ハンド設定
 func (ci *ChinesePokerInteractor) SetHands(frontIndices []int, middleIndices []int) string {
 	return execAndPresent(ci.Game, ci.pp, func() error { return ci.Game.SetHands(frontIndices, middleIndices) })
+}
+
+// Hint ヒント取得
+func (ci *ChinesePokerInteractor) Hint() string {
+	return ci.pp.HintOutput(ci.Game)
 }
 
 // ActionLog 棋譜出力

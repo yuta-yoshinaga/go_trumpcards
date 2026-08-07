@@ -76,3 +76,24 @@ func TestChinesePokerCuiController_Exec_Quit(t *testing.T) {
 	result := cc.Exec("q")
 	assert.NotEmpty(t, result)
 }
+
+// **CUI は13枚を自力で 3/5/5 に分けるしかなく、ファウルしても無警告だった
+// (#4717)。**
+func TestChinesePokerCuiController_Exec_Hint(t *testing.T) {
+	mock := new(mockusecase.MockChinesePokerInteractor)
+	mock.On("Hint").Return("hint ok")
+	cc := NewChinesePokerCuiController(mock)
+
+	assert.Equal(t, "hint ok", cc.Exec("h"))
+	assert.Equal(t, "hint ok", cc.Exec("hint"))
+}
+
+// **既存コマンドは何も変わらない。**
+func TestChinesePokerCuiController_Exec_HintDoesNotShadowSet(t *testing.T) {
+	mock := new(mockusecase.MockChinesePokerInteractor)
+	mock.On("Bet", 100).Return("bet ok")
+	cc := NewChinesePokerCuiController(mock)
+
+	assert.Equal(t, "bet ok", cc.Exec("b 100"))
+	mock.AssertNotCalled(t, "Hint")
+}

@@ -316,6 +316,61 @@ func cpCompareFiveCardHands(a, b []*Card) int {
 
 // --- ファウルチェック ---
 
+// ChinesePokerSuggestedArrangement は推奨する13枚の分け方。
+type ChinesePokerSuggestedArrangement struct {
+	// Front / Middle / Back は手札のインデックス (前列3枚・中列5枚・後列5枚)。
+	Front  []int
+	Middle []int
+	Back   []int
+	// Foul はこの分け方がファウル (前列 > 中列、または中列 > 後列) になるか。
+	Foul bool
+}
+
+// GetSuggestedArrangement は13枚をランク順に「後列に強い5枚・中列に次の5枚・
+// 前列に残り3枚」で分けた案を返す (#4717)。セットハンドフェーズで13枚
+// そろっていないときは nil。
+//
+// **ランク順に切るだけでは合法とは限らない。**役のカテゴリは高い札の順に
+// 従わないので、前列に低いスリーカードが入ると中列のハイカードより強くなって
+// ファウルする。判定は実際の検証 cpValidateHands を通し、ファウルするなら
+// そう伝える。**総当たりで直さない**のは 13C3 × 10C5 = 72,072 通りになるため
+// で、フロントの getChinesePokerHint も同じ理由で同じ挙動にしている。
+func (c *ChinesePoker) GetSuggestedArrangement() *ChinesePokerSuggestedArrangement {
+	if c.phase != ChinesePokerPhaseSetHands || len(c.playerCards) != ChinesePokerHandSize {
+		return nil
+	}
+	idx := make([]int, len(c.playerCards))
+	for i := range idx {
+		idx[i] = i
+	}
+	// **エースは 14。**value は 1 なので、そのまま並べると最強の札が前列に落ちる。
+	rank := func(i int) int {
+		if v := c.playerCards[i].GetValue(); v == 1 {
+			return 14
+		}
+		return c.playerCards[i].GetValue()
+	}
+	sort.SliceStable(idx, func(a, b int) bool { return rank(idx[a]) > rank(idx[b]) })
+
+	back := idx[:ChinesePokerBackSize]
+	middle := idx[ChinesePokerBackSize : ChinesePokerBackSize+ChinesePokerMiddleSize]
+	front := idx[ChinesePokerBackSize+ChinesePokerMiddleSize:]
+
+	pick := func(indices []int) []*Card {
+		out := make([]*Card, len(indices))
+		for i, j := range indices {
+			out[i] = c.playerCards[j]
+		}
+		return out
+	}
+	return &ChinesePokerSuggestedArrangement{
+		Front:  front,
+		Middle: middle,
+		Back:   back,
+		Foul:   !cpValidateHands(pick(front), pick(middle), pick(back)),
+	}
+}
+
 // cpValidateHands Back ≥ Middle ≥ Front を検証する
 func cpValidateHands(front, middle, back []*Card) bool {
 	middleRank := evalFiveCardHand(middle)

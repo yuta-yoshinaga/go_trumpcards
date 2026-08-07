@@ -581,3 +581,92 @@ func TestCpPairValue_NoPair(t *testing.T) {
 	}
 	assert.Equal(t, 0, cpPairValue(cards))
 }
+
+// **CUI は13枚を自力で 3/5/5 に分けるしかなく、ファウルしても無警告だった
+// (#4717)。**Web には推奨分割もファウル警告 (cp-foul-warning) もある。
+func TestChinesePoker_GetSuggestedArrangement(t *testing.T) {
+	card := func(design, value int) *Card { return NewCard(design, value, false) }
+	setHands := func(cards []*Card) *ChinesePoker {
+		cp := NewDefaultChinesePoker()
+		cp.SetPhase(ChinesePokerPhaseSetHands)
+		cp.SetPlayerCards(cards)
+		return cp
+	}
+	// A K Q J 10 9 8 7 6 5 4 3 2 のばらばらな13枚。
+	spread := []*Card{
+		card(CardDesignSpade, 1), card(CardDesignHeart, 13), card(CardDesignClover, 12),
+		card(CardDesignDiamond, 11), card(CardDesignSpade, 10), card(CardDesignHeart, 9),
+		card(CardDesignClover, 8), card(CardDesignDiamond, 7), card(CardDesignSpade, 6),
+		card(CardDesignHeart, 5), card(CardDesignClover, 4), card(CardDesignDiamond, 3),
+		card(CardDesignSpade, 2),
+	}
+
+	t.Run("nothing to suggest outside the set-hands phase", func(t *testing.T) {
+		cp := setHands(spread)
+		cp.SetPhase(ChinesePokerPhaseBet)
+		assert.Nil(t, cp.GetSuggestedArrangement())
+	})
+
+	t.Run("nothing to suggest without a full hand", func(t *testing.T) {
+		assert.Nil(t, setHands(spread[:12]).GetSuggestedArrangement())
+	})
+
+	t.Run("splits the hand into three, five and five", func(t *testing.T) {
+		arr := setHands(spread).GetSuggestedArrangement()
+		require.NotNil(t, arr)
+		assert.Len(t, arr.Front, ChinesePokerFrontSize)
+		assert.Len(t, arr.Middle, ChinesePokerMiddleSize)
+		assert.Len(t, arr.Back, ChinesePokerBackSize)
+
+		// **13枚を過不足なく使う。**同じ札を二度置いたら成立しない。
+		seen := map[int]bool{}
+		for _, group := range [][]int{arr.Front, arr.Middle, arr.Back} {
+			for _, i := range group {
+				assert.False(t, seen[i], "index %d が重複している", i)
+				seen[i] = true
+			}
+		}
+		assert.Len(t, seen, ChinesePokerHandSize)
+	})
+
+	// **エースは 14 として並べる。**value が 1 のまま並べると、最強の札が
+	// 前列に落ちる。
+	t.Run("puts the ace in the back row, not the front", func(t *testing.T) {
+		cp := setHands(spread)
+		arr := cp.GetSuggestedArrangement()
+		require.NotNil(t, arr)
+		aceInBack := false
+		for _, i := range arr.Back {
+			if cp.GetPlayerCards()[i].GetValue() == 1 {
+				aceInBack = true
+			}
+		}
+		assert.True(t, aceInBack, "エースは後列に入るべき")
+		for _, i := range arr.Front {
+			assert.NotEqual(t, 1, cp.GetPlayerCards()[i].GetValue(), "エースが前列に落ちている")
+		}
+	})
+
+	t.Run("reports a clean split as legal", func(t *testing.T) {
+		arr := setHands(spread).GetSuggestedArrangement()
+		require.NotNil(t, arr)
+		assert.False(t, arr.Foul)
+	})
+
+	// **ランク順に切るだけでは合法とは限らない。**低いスリーカードが前列に
+	// 落ちると、中列のハイカードより強くなってファウルする。
+	t.Run("flags a rank-ordered split that would foul", func(t *testing.T) {
+		// 後列 A K Q J 9 / 中列 8 7 5 4 3 (どちらもハイカード) / 前列 2 2 2。
+		// 前列のスリーカードが中列のハイカードより強いのでファウル。
+		fouling := []*Card{
+			card(CardDesignSpade, 1), card(CardDesignHeart, 13), card(CardDesignClover, 12),
+			card(CardDesignDiamond, 11), card(CardDesignSpade, 9), card(CardDesignHeart, 8),
+			card(CardDesignClover, 7), card(CardDesignDiamond, 5), card(CardDesignSpade, 4),
+			card(CardDesignHeart, 3), card(CardDesignClover, 2), card(CardDesignDiamond, 2),
+			card(CardDesignSpade, 2),
+		}
+		arr := setHands(fouling).GetSuggestedArrangement()
+		require.NotNil(t, arr)
+		assert.True(t, arr.Foul, "前列が 2 のスリーカードになりファウルするはず")
+	})
+}
