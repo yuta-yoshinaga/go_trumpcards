@@ -61,5 +61,6 @@
   "keepFeatureHighCard": "high card",
   "discardUpcoming": "You will discard {{count}} card(s) after the flop betting round",
   "discardCandidate": "  [{{idx}}] discard this and you keep: {{hand}}",
-  "discardRecommended": " <- recommended"
+  "discardRecommended": " <- recommended",
+  "discardCandidatePair": "  discard [{{idx0}}] [{{idx1}}] and you keep: {{hand}}"
 }

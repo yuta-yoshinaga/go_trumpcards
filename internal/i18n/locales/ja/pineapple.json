@@ -61,5 +61,6 @@
   "keepFeatureHighCard": "ハイカード",
   "discardUpcoming": "フロップベット終了後にカードを{{count}}枚捨てます",
   "discardCandidate": "  [{{idx}}] これを捨てると: {{hand}}",
-  "discardRecommended": " ← おすすめ"
+  "discardRecommended": " ← おすすめ",
+  "discardCandidatePair": "  [{{idx0}}] [{{idx1}}] を捨てると: {{hand}}"
 }

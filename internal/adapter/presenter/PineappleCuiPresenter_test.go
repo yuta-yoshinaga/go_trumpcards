@@ -38,6 +38,7 @@ func setupPineappleCuiMock() *interfaces.MockPineappleGame {
 	m.On("GetInitialDealCount").Return(3).Maybe()
 	m.On("IsDiscardAfterFlopBetting").Return(false).Maybe()
 	m.On("GetDiscardDone").Return(([]bool)(nil)).Maybe()
+	m.On("GetHumanDiscardPairPreviews").Return(([]domain.PineappleDiscardPairPreview)(nil)).Maybe()
 	m.On("GetHumanDiscardPreviews").Return(([]domain.PineappleDiscardPreview)(nil)).Maybe()
 	return m
 }
@@ -260,6 +261,32 @@ func TestPineappleCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 
 		assert.NotContains(t, p.Output(m, nil), "スーテッド")
+	})
+
+	// **4枚配り (Irish) は2枚まとめて捨てる。**Web は1枚目を選んだ後の3択しか
+	// 出せないが、CUI には選択途中が無いので6通りを最初から並べる (#4687)。
+	t.Run("four-card deal lists every discard pair", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetInitialDealCount")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHumanDiscardPairPreviews")
+		m.On("GetPhase").Return(domain.PineapplePhaseDiscard)
+		m.On("GetInitialDealCount").Return(4)
+		m.On("GetHumanDiscardPairPreviews").Return([]domain.PineappleDiscardPairPreview{
+			{DiscardIdx0: 0, DiscardIdx1: 1, HandRank: domain.PokerHandOnePair},
+			{DiscardIdx0: 0, DiscardIdx1: 2, HandRank: domain.PokerHandOnePair},
+			{DiscardIdx0: 0, DiscardIdx1: 3, HandRank: domain.PokerHandTwoPair, Recommended: true},
+			{DiscardIdx0: 1, DiscardIdx1: 2, HandRank: domain.PokerHandHighCard},
+			{DiscardIdx0: 1, DiscardIdx1: 3, HandRank: domain.PokerHandOnePair},
+			{DiscardIdx0: 2, DiscardIdx1: 3, HandRank: domain.PokerHandOnePair},
+		})
+
+		result := p.Output(m, nil)
+		// **6通り全部。**一部だけ出すと「載っていない組み合わせは弱い」と
+		// 読めてしまう。
+		assert.Equal(t, 6, strings.Count(result, "を捨てると:"))
+		assert.Contains(t, result, "[0] [3] を捨てると: ツーペア")
+		assert.Equal(t, 1, strings.Count(result, "おすすめ"))
 	})
 
 	// **4枚配り (Irish) では出さない。**2枚捨てなので「1枚捨てたら残る2枚」

@@ -679,3 +679,62 @@ func TestPineapple_GetHumanDiscardPreviews(t *testing.T) {
 		assert.Nil(t, p.GetHumanDiscardPreviews())
 	})
 }
+
+func TestPineapple_GetHumanDiscardPairPreviews(t *testing.T) {
+	// ♠A ♠K ♥2 ♣2 / ボード ♠2 ♠3 ♠4。
+	// [2][3] (♥2 ♣2) を捨てると ♠A ♠K が残ってスペード5枚 = フラッシュ。
+	irishHole := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignSpade, 13, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 2, false),
+	}
+	spadeBoard := []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignSpade, 4, false),
+	}
+
+	// **6通り全部返す。**一部だけだと「載っていない組み合わせは弱い」と
+	// 読めてしまう。
+	t.Run("covers every one of the six discard pairs", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, irishHole, spadeBoard)
+		previews := p.GetHumanDiscardPairPreviews()
+		require.Len(t, previews, 6)
+		seen := map[[2]int]bool{}
+		for _, pv := range previews {
+			seen[[2]int{pv.DiscardIdx0, pv.DiscardIdx1}] = true
+		}
+		assert.Len(t, seen, 6, "同じ組み合わせが重複していないこと")
+	})
+
+	t.Run("recommends the pair that leaves the strongest hand", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, irishHole, spadeBoard)
+		for _, pv := range p.GetHumanDiscardPairPreviews() {
+			if pv.DiscardIdx0 == 2 && pv.DiscardIdx1 == 3 {
+				assert.Equal(t, PokerHandFlush, pv.HandRank)
+				assert.True(t, pv.Recommended)
+			} else {
+				assert.False(t, pv.Recommended,
+					"[%d][%d] は最強ではない", pv.DiscardIdx0, pv.DiscardIdx1)
+			}
+		}
+	})
+
+	// 3枚配りは1枚捨てなので GetHumanDiscardPreviews の担当。両方出すと重複する。
+	t.Run("returns nothing for a three-card deal", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, irishHole[:3], spadeBoard)
+		assert.Nil(t, p.GetHumanDiscardPairPreviews())
+	})
+
+	t.Run("returns nothing before the flop is on the table", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, irishHole, nil)
+		assert.Nil(t, p.GetHumanDiscardPairPreviews())
+	})
+
+	t.Run("returns nothing outside the discard phase", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, irishHole, spadeBoard)
+		p.phase = PineapplePhaseFlop
+		assert.Nil(t, p.GetHumanDiscardPairPreviews())
+	})
+}
