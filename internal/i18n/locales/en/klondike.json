@@ -24,5 +24,6 @@
   "hintFromWaste": "waste",
   "hintToFoundation": "foundation",
   "hintToTableau": "tableau column {{col}}",
-  "hintLine": "Hint: {{from}} → {{to}}"
+  "hintLine": "Hint: {{from}} → {{to}}",
+  "autoCompleteReady": "Auto-complete is available (ac)"
 }

@@ -123,6 +123,11 @@ func (_m *MockKlondikeGame) AllFaceUp() bool {
 	return ret.Bool(0)
 }
 
+func (_m *MockKlondikeGame) CanAutoComplete() bool {
+	args := _m.Called()
+	return args.Bool(0)
+}
+
 func (_m *MockKlondikeGame) GetActionLog() []*domain.ActionLogEntry {
 	ret := _m.Called()
 	v := ret.Get(0)

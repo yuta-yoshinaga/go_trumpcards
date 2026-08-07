@@ -19,6 +19,7 @@ func setupKlondikeCuiMockDefaults(kg *interfaces.MockKlondikeGame) {
 	kg.On("GetStockCount").Return(24).Maybe()
 	kg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	kg.On("IsStalemate").Return(false).Maybe()
+	kg.On("CanAutoComplete").Return(false).Maybe()
 	kg.On("GetDrawCount").Return(1).Maybe()
 	kg.On("GetScore").Return(0).Maybe()
 	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone).Maybe()
@@ -144,6 +145,7 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		setupKlondikeCuiMockDefaults(kg)
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "IsStalemate")
+		kg.On("CanAutoComplete").Return(false).Maybe()
 		kg.On("IsStalemate").Return(true)
 
 		p := new(KlondikeCuiPresenter)
@@ -278,4 +280,34 @@ func filterCalls(calls []*mock.Call, methodName string) []*mock.Call {
 		}
 	}
 	return result
+}
+
+// **オートコンプリートが使える状態かを CUI は出していなかった (#4776)。**
+// ac コマンド自体はあるのに、その存在も、いま使えるかも分からない。
+func TestKlondikeCuiPresenter_AutoCompleteReady(t *testing.T) {
+	p := new(KlondikeCuiPresenter)
+	game := func(ready bool, phase domain.KlondikePhase) *interfaces.MockKlondikeGame {
+		kg := new(interfaces.MockKlondikeGame)
+		kg.On("CanAutoComplete").Return(ready)
+		kg.On("GetPhase").Return(phase)
+		setupKlondikeCuiMockDefaults(kg)
+		return kg
+	}
+
+	t.Run("announces the ready state with the command to use", func(t *testing.T) {
+		out := p.Output(game(true, domain.KlondikePhasePlaying), nil)
+		assert.Contains(t, out, "オートコンプリート可能")
+		// **コマンド名まで出す。**使えると分かってもコマンドが分からなければ同じ。
+		assert.Contains(t, out, "ac")
+	})
+
+	t.Run("says nothing while it is not available", func(t *testing.T) {
+		out := p.Output(game(false, domain.KlondikePhasePlaying), nil)
+		assert.NotContains(t, out, "オートコンプリート可能")
+	})
+
+	t.Run("says nothing once the game is cleared", func(t *testing.T) {
+		out := p.Output(game(false, domain.KlondikePhaseGameClear), nil)
+		assert.NotContains(t, out, "オートコンプリート可能")
+	})
 }
