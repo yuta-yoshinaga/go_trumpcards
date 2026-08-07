@@ -198,4 +198,58 @@ describe('TeenPattiPage', () => {
     renderWithProviders(<TeenPattiPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝利です！')).toBeInTheDocument());
   });
+
+  // **上限が無く、払えない額を送信できてサーバーエラーで初めて気づく状態
+  // だった (#4729)。**"+" は maxRaise で止まる。
+  it('does not let the raise amount go past the server-reported maximum', async () => {
+    mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 2, maxRaise: 3, canRaise: true }));
+    renderWithProviders(<TeenPattiPage />);
+
+    const plus = await screen.findByRole('button', { name: '+' });
+    // 2 -> 3 まで上げたら、そこで打ち止め。
+    fireEvent.click(plus);
+    expect(plus).toBeDisabled();
+    // レイズボタンの文言に現在額が入る。上限で止まっていること。
+    expect(screen.getByTestId('tp-raise-button')).toHaveTextContent('3');
+  });
+
+  it('does not let the raise amount go below the server-reported minimum', async () => {
+    mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 2, maxRaise: 30, canRaise: true }));
+    renderWithProviders(<TeenPattiPage />);
+
+    const minus = await screen.findByRole('button', { name: '-' });
+    expect(minus).toBeDisabled();
+  });
+
+  // **チップ不足ならボタンごと無効化する。**CUI は
+  // teenpatti.promptRaiseUnavailable でそう伝えている。
+  it('disables the raise button when the player cannot afford any raise', async () => {
+    mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 2, maxRaise: 1, canRaise: false }));
+    renderWithProviders(<TeenPattiPage />);
+
+    const raise = await screen.findByTestId('tp-raise-button');
+    expect(raise).toBeDisabled();
+    expect(raise).toHaveAttribute('title', 'チップ不足のためレイズできません');
+  });
+
+  // **CPU がレイズすると minRaise が上がるのに、ローカルの raiseStake は
+  // 据え置きだった (レビュー指摘)。**下限を割った額を送信でき、サーバーで
+  // 弾かれる — 上限を塞いだのと同じ穴が下側に残っていた。
+  it('pulls the raise amount up when the minimum rises mid-round', async () => {
+    mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 11, maxRaise: 30, canRaise: true }));
+    renderWithProviders(<TeenPattiPage />);
+
+    const raise = await screen.findByTestId('tp-raise-button');
+    // 初期値 2 のままだと下限 11 を割る。
+    expect(raise).toHaveTextContent('11');
+  });
+
+  it('pulls the raise amount down when it exceeds the maximum', async () => {
+    mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 2, maxRaise: 1, canRaise: false }));
+    renderWithProviders(<TeenPattiPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    // レイズ不可でもボタン文言が範囲外の額を出さないこと。
+    expect(screen.getByTestId('tp-raise-button')).not.toHaveTextContent('30');
+  });
 });

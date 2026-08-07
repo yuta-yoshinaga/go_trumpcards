@@ -119,6 +119,15 @@ export interface TeenPattiResponse extends BaseGameResponse {
   sideShowRequester: number;
   /** Seat index asked to accept/decline a Side Show, or -1 when none pending. */
   sideShowTarget: number;
+  /**
+   * 人間がいまレイズできる額の範囲。`canRaise` が false のときは意味を持たない。
+   *
+   * **フロントで `chips / 2` を組み立て直さないこと。**Seen は倍払うので上限が
+   * 半分になるが、その扱いが割れると「入力できたのに弾かれる」ずれになる。
+   */
+  minRaise: number;
+  maxRaise: number;
+  canRaise: boolean;
   gameEndFlag: boolean;
   /** Whether it is currently the human's turn to act. */
   isHumanTurn: boolean;

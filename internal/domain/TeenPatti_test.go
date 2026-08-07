@@ -321,3 +321,90 @@ func TestTeenPatti_JSONRoundTripSideShow(t *testing.T) {
 	var bad domain.TeenPatti
 	assert.Error(t, bad.UnmarshalJSON([]byte(tampered)))
 }
+
+// **拒否されたレイズが賭け単位を壊していた (#4729 の調査中に発見)。**
+// applyRaise は g.stake を更新してからチップ不足を判定しており、弾いた後も
+// 上がったままだった。以降の全員がその額でコールを迫られる。
+func TestTeenPatti_RejectedRaiseLeavesTheStakeUntouched(t *testing.T) {
+	g := domain.NewDefaultTeenPatti()
+	g.Reset()
+	g.SetCurrentPlayerIdx(0)
+
+	before := g.GetStake()
+	chips := g.GetPlayer(0).GetChips()
+
+	err := g.PlayerRaise(chips * 10) // 到底払えない額
+	if err == nil {
+		t.Fatal("チップ不足のレイズは弾かれるはず")
+	}
+	if got := g.GetStake(); got != before {
+		t.Errorf("弾かれたのに stake が %d -> %d に変わった", before, got)
+	}
+	// チップも減っていないこと。
+	if got := g.GetPlayer(0).GetChips(); got != chips {
+		t.Errorf("弾かれたのにチップが %d -> %d に減った", chips, got)
+	}
+}
+
+// **レイズ可能域は1箇所から出す (#4729)。**CUI の表示と Web の入力上限が
+// 別式だと「入力できたのに弾かれる」ずれになる。
+func TestTeenPatti_GetRaiseRange(t *testing.T) {
+	newGame := func(t *testing.T, chips int, seen bool) *domain.TeenPatti {
+		t.Helper()
+		g := domain.NewDefaultTeenPatti()
+		g.Reset()
+		g.SetCurrentPlayerIdx(0)
+		g.SetStake(10)
+		p := g.GetPlayer(0)
+		p.SetChips(chips)
+		p.SetSeen(seen)
+		return g
+	}
+
+	t.Run("blind can raise up to its chips", func(t *testing.T) {
+		g := newGame(t, 100, false)
+		lo, hi, ok := g.GetRaiseRange(0)
+		if !ok || lo != 11 || hi != 100 {
+			t.Errorf("GetRaiseRange = (%d, %d, %v), want (11, 100, true)", lo, hi, ok)
+		}
+	})
+
+	// Seen は倍払うので上限が半分になる。ここが CUI と食い違いやすい。
+	t.Run("seen can only raise up to half its chips", func(t *testing.T) {
+		g := newGame(t, 100, true)
+		_, hi, ok := g.GetRaiseRange(0)
+		if !ok || hi != 50 {
+			t.Errorf("seen max = %d (ok=%v), want 50", hi, ok)
+		}
+	})
+
+	t.Run("not enough chips reports ok=false", func(t *testing.T) {
+		g := newGame(t, 5, false) // stake 10 なので最低 11 が必要
+		if _, _, ok := g.GetRaiseRange(0); ok {
+			t.Error("チップ不足なのに ok=true")
+		}
+	})
+
+	// **上限ちょうどは実際に通ること。**式が1つずれていると、表示上は出せる額が
+	// サーバーに弾かれる。範囲の正しさを実際の PlayerRaise で裏取りする。
+	t.Run("the reported maximum is actually accepted", func(t *testing.T) {
+		for _, seen := range []bool{false, true} {
+			g := newGame(t, 100, seen)
+			_, hi, ok := g.GetRaiseRange(0)
+			if !ok {
+				t.Fatalf("seen=%v: レイズ可能なはず", seen)
+			}
+			if err := g.PlayerRaise(hi); err != nil {
+				t.Errorf("seen=%v: 上限 %d が弾かれた: %v", seen, hi, err)
+			}
+		}
+	})
+
+	t.Run("one over the reported maximum is rejected", func(t *testing.T) {
+		g := newGame(t, 100, true)
+		_, hi, _ := g.GetRaiseRange(0)
+		if err := g.PlayerRaise(hi + 1); err == nil {
+			t.Errorf("上限+1 (%d) は弾かれるはず", hi+1)
+		}
+	})
+}

@@ -82,5 +82,6 @@
     "bet": "On your turn choose See (look at your hand), Bet (call the stake), Raise (increase the stake), or Fold. A Seen player can request a Side Show (a private hand comparison) with the previous Seen player, who then accepts or declines. When two players remain you can Show to force a showdown.",
     "sideShow": "When a Side Show is requested, this highlighted panel shows the request. If you are the target, respond with the Accept / Decline buttons inside the panel.",
     "resetButton": "Reset the game and start over from the beginning."
-  }
+  },
+  "raiseUnavailable": "Not enough chips to raise"
 }

@@ -375,12 +375,19 @@ func (g *TeenPatti) applyCall(idx int) error {
 
 // applyRaise レイズを適用する。
 func (g *TeenPatti) applyRaise(idx, newStake int) error {
-	g.stake = newStake
-	cost := g.callCost(idx)
+	// **検証してから書き換える。**以前は g.stake を先に更新しており、チップ不足で
+	// 弾いた後も上がったままだった。以降の全員がその額でコールを迫られ、
+	// 賭け単位が 1 から 290 に化けるような壊れ方をする。Web 側に上限が無く
+	// (#4729)、この経路は誰でも踏めた。
 	p := g.players[idx]
+	cost := newStake
+	if p.GetSeen() {
+		cost = newStake * 2
+	}
 	if p.GetChips() < cost {
 		return NewDomainError(ErrInvalidPlay, "チップが不足しています")
 	}
+	g.stake = newStake
 	p.SubtractChips(cost)
 	p.AddRoundBet(cost)
 	g.pot += cost
@@ -699,6 +706,28 @@ func (g *TeenPatti) GetPot() int { return g.pot }
 
 // SetPot ポット設定 (テスト用)
 func (g *TeenPatti) SetPot(v int) { g.pot = v }
+
+// GetRaiseRange は指定プレイヤーがいまレイズできる額の範囲を返す。
+// レイズできないときは ok=false。
+//
+// **判定は callCost と同じ式から出す。**Seen は倍払うので上限が半分になる。
+// この式が CUI の表示と Web の入力上限で割れると、「入力できたのに弾かれる」
+// ずれになる (#4729)。
+func (g *TeenPatti) GetRaiseRange(playerIdx int) (minRaise, maxRaise int, ok bool) {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return 0, 0, false
+	}
+	p := g.players[playerIdx]
+	minRaise = g.stake + 1
+	maxRaise = p.GetChips()
+	if p.GetSeen() {
+		maxRaise = p.GetChips() / 2
+	}
+	if maxRaise < minRaise {
+		return minRaise, maxRaise, false
+	}
+	return minRaise, maxRaise, true
+}
 
 // GetStake 現在の賭け単位取得
 func (g *TeenPatti) GetStake() int { return g.stake }
