@@ -94,3 +94,25 @@ func TestAccordionCuiControllerEmpty(t *testing.T) {
 	result := c.Exec("")
 	assert.NotEmpty(t, result)
 }
+
+// **Web は1クリックで最後まで自動化できるのに、ネイティブ CUI には
+// オートコンプリートが無かった (#4793)。**姉妹の Wasp は ac/autocomplete を
+// 公開している。
+func TestAccordionCuiControllerAutoComplete(t *testing.T) {
+	ai := newMockAccordionInteractor()
+	c := NewAccordionCuiController(ai)
+	ai.On("AutoComplete").Return("auto_output")
+
+	assert.Equal(t, "auto_output", c.Exec("ac"))
+	assert.Equal(t, "auto_output", c.Exec("autocomplete"))
+}
+
+// **既存コマンドは何も変わらない。**
+func TestAccordionCuiControllerAutoCompleteDoesNotShadowOthers(t *testing.T) {
+	ai := newMockAccordionInteractor()
+	c := NewAccordionCuiController(ai)
+	ai.On("GiveUp").Return("giveup_output")
+
+	assert.Equal(t, "giveup_output", c.Exec("g"))
+	ai.AssertNotCalled(t, "AutoComplete")
+}

@@ -26,6 +26,10 @@ func (_m *MockAccordionGame) GiveUp() {
 	_m.Called()
 }
 
+func (_m *MockAccordionGame) AutoComplete() error {
+	return _m.Called().Error(0)
+}
+
 func (_m *MockAccordionGame) GetHint() *domain.AccordionHint {
 	ret := _m.Called()
 	v := ret.Get(0)

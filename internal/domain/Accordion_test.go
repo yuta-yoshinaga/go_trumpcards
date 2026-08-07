@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -310,4 +311,65 @@ func TestAccordion_UnmarshalJSON_SizeLimit(t *testing.T) {
 func TestNewDefaultAccordion(t *testing.T) {
 	a := domain.NewDefaultAccordion()
 	assert.NotNil(t, a)
+}
+
+// **Web は1クリックで最後まで自動化できるのに、ネイティブ CUI には
+// オートコンプリートが存在せず、同じ手を延々と打たされていた (#4793)。**
+func TestAccordion_AutoComplete(t *testing.T) {
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+	board := func(cards ...*domain.Card) *domain.Accordion {
+		a := newTestAccordion()
+		piles := make([][]*domain.Card, len(cards))
+		for i, c := range cards {
+			piles[i] = []*domain.Card{c}
+		}
+		a.SetPiles(piles)
+		return a
+	}
+
+	t.Run("merges until no move is left", func(t *testing.T) {
+		// 同スート4枚。offset=3 と offset=1 の手が続き、最後は1山になる。
+		a := board(
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignSpade, 2),
+			card(domain.CardDesignSpade, 3), card(domain.CardDesignSpade, 4),
+		)
+		require.NoError(t, a.AutoComplete())
+		assert.Equal(t, 1, len(a.GetPiles()), "全部まとまるはず")
+		assert.Nil(t, a.GetHint(), "打てる手が残っていない")
+	})
+
+	// **1手も動かせなければエラー。**押しても何も起きないより、押せない理由が
+	// 返るほうがよい。
+	t.Run("reports an error when nothing can be merged", func(t *testing.T) {
+		a := board(
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 5),
+			card(domain.CardDesignClover, 9), card(domain.CardDesignDiamond, 12),
+		)
+		require.Nil(t, a.GetHint(), "前提: 打てる手が無い")
+		assert.Error(t, a.AutoComplete())
+	})
+
+	// **理由まで正しく返す。**GetHint もフェーズを見るのでエラーにはなるが、
+	// 「打てる手が無い」ではなく「フェーズが違う」と伝わるほうが親切。
+	t.Run("rejected outside the playing phase, with that reason", func(t *testing.T) {
+		a := board(card(domain.CardDesignSpade, 1), card(domain.CardDesignSpade, 2))
+		a.GiveUp()
+		err := a.AutoComplete()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "playing phase")
+	})
+
+	// **打つ手はヒントと同じ規則で選ぶ。**別実装だと、ヒントが勧める手と自動で
+	// 打たれる手が食い違う。
+	t.Run("takes the move the hint points at", func(t *testing.T) {
+		a := board(
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 5),
+			card(domain.CardDesignClover, 9), card(domain.CardDesignDiamond, 1),
+		)
+		hint := a.GetHint()
+		require.NotNil(t, hint)
+		before := len(a.GetPiles())
+		require.NoError(t, a.AutoComplete())
+		assert.Less(t, len(a.GetPiles()), before)
+	})
 }

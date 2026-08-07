@@ -35,6 +35,8 @@ func (c *AccordionCuiController) Exec(command string) string {
 				return c.ai.GiveUp(), true
 			case "u", "undo":
 				return c.ai.Undo(), true
+			case "ac", "autocomplete":
+				return c.ai.AutoComplete(), true
 			default:
 				return handleCuiHintAndLog(cmd, c.ai.Hint, c.ai.ActionLog)
 			}
