@@ -1,9 +1,10 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { crazyeightsApi } from '../api/gameApi';
-import type { CrazyEightsConfig } from '../types/card';
+import type { CrazyEightsConfig, CrazyEightsHint } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
+import { useHintRequest } from './useHintRequest';
 
 /** Default Crazy Eights game configuration. */
 export const DEFAULT_CRAZYEIGHTS_CONFIG: CrazyEightsConfig = {
@@ -33,6 +34,17 @@ export function useCrazyEightsGame() {
   const { state, loading, error, exec: rawExec, retry } = useGameApi(crazyeightsApi.exec, { onSuccess });
 
   const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
+
+  // **Hearts / Spades はサーバー計算の理由付きヒントを返すのに、CrazyEights は
+  // フロント完結の簡易ヒューリスティックしか無かった (#4737)。**
+  const [hint, setHint] = useState<CrazyEightsHint | null>(null);
+  const [hintError, setHintError] = useState<string | null>(null);
+  const handleHint = useHintRequest({
+    fetchHint: () => crazyeightsApi.exec('hint'),
+    selectHint: (res) => res.hint ?? null,
+    setHint,
+    setHintError,
+  });
 
   useEffect(() => {
     exec('reset', undefined, undefined, DEFAULT_CRAZYEIGHTS_CONFIG);
@@ -72,6 +84,9 @@ export function useCrazyEightsGame() {
     handleDraw,
     handleChooseSuit,
     handleNextRound,
+    hint,
+    hintError,
+    handleHint,
     retry,
   };
 }

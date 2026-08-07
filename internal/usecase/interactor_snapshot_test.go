@@ -115,13 +115,16 @@ type stubSevensPresenter struct{}
 func (s *stubSevensPresenter) Output(_ interfaces.SevensGame, _ error) string { return `{}` }
 func (s *stubSevensPresenter) ActionLogOutput(_ interfaces.SevensGame) string { return `{}` }
 
-// stubCrazyEightsPresenter implements presenter.CrazyEightsPresenter (= GamePresenter[interfaces.CrazyEightsGame])
+// stubCrazyEightsPresenter implements presenter.CrazyEightsPresenter
 type stubCrazyEightsPresenter struct{}
 
 func (s *stubCrazyEightsPresenter) Output(_ interfaces.CrazyEightsGame, _ error) string {
 	return `{}`
 }
 func (s *stubCrazyEightsPresenter) ActionLogOutput(_ interfaces.CrazyEightsGame) string {
+	return `{}`
+}
+func (s *stubCrazyEightsPresenter) HintOutput(_ interfaces.CrazyEightsGame) string {
 	return `{}`
 }
 

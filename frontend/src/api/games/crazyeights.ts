@@ -13,7 +13,7 @@ export interface CrazyEightsConfigInput {
 /** API client for the Crazy Eights /crazyeights/exec endpoint. */
 export const crazyeightsApi = {
   exec: (
-    command: 'reset' | 'play' | 'draw' | 'suit' | 'nextround',
+    command: 'reset' | 'play' | 'draw' | 'suit' | 'nextround' | 'hint',
     cardIndex?: number,
     suit?: number,
     config?: CrazyEightsConfigInput,

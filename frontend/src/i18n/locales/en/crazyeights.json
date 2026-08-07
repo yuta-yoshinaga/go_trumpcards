@@ -67,5 +67,14 @@
     "original": "Original",
     "rank": "Rank",
     "suit": "Suit"
+  },
+  "hintCard": "Suggested: card [{{idx}}]",
+  "hintSuit": "Suggested suit: {{suit}}",
+  "hintReason": {
+    "match_suit": "matches the suit",
+    "match_rank": "matches the rank",
+    "play_wild": "an 8 lets you change the suit",
+    "play_valid": "a legal play",
+    "choose_longest_suit": "your longest suit"
   }
 }
