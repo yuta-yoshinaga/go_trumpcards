@@ -21,5 +21,7 @@
   "hintReasonLeadHigh": "高い札でリードしてトリックを取りにいく",
   "hintReasonFollowWin": "トリックを取って生き残る（トリック数が重要）",
   "hintReasonFollowDuck": "取れないのでリードスートの低い札で受ける",
-  "hintReasonDiscardLow": "リードに従えないので低い札を捨てる"
+  "hintReasonDiscardLow": "リードに従えないので低い札を捨てる",
+  "leaderMark": "▶(リード) ",
+  "winnerMark": "★(勝者) "
 }
