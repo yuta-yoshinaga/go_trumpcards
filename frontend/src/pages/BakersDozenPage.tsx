@@ -31,6 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BakersDozenResponse } from '../types/card';
 import { BakersDozenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { bakersDozenLegalTargets } from '../utils/bakersDozenLegalTargets';
 import { cardAlt } from '../utils/cardAlt';
 import { BAKERSDOZEN_HELP, parseBakersDozenCommand } from '../utils/cli/commands/bakersdozenCommands';
 import { formatBakersDozenState } from '../utils/cli/formatters/bakersdozenFormatter';
@@ -209,6 +210,18 @@ function BakersDozenPageContent() {
   const isGameOver = state.phase === BakersDozenPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
 
+  // **選択後は押すまで正誤が分からず、クリック→サーバーエラーのループになって
+  // いた (#4795)。**13列 + 4組札で移動先候補が多い。姉妹の Wasp / Accordion は
+  // 選択時に合法な移動先をリング表示している。
+  //
+  // **枠を出すだけで、押せなくはしない。**押せなくすると E2E の
+  // 「最初の列をクリック」が別の列を掴んでしまう。
+  const selectedCard =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? state.tableau[selectedSource.col]?.[selectedSource.cardIndex]?.card
+      : undefined;
+  const legalTargets = bakersDozenLegalTargets(state.tableau, state.foundation, selectedCard);
+
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
     selectedSource.zone === zone &&
@@ -252,7 +265,11 @@ function BakersDozenPageContent() {
               {state.foundation.map((pile, idx) => {
                 const foundationZone: BakersDozenMoveZone = { zone: 'foundation', col: idx };
                 return (
-                  <div key={`f-${idx.toString()}`} className="text-center">
+                  <div
+                    key={`f-${idx.toString()}`}
+                    className={`text-center${legalTargets.foundation.has(idx) ? ' rounded ring-2 ring-ds-success' : ''}`}
+                    data-legal-target={legalTargets.foundation.has(idx) ? 'true' : undefined}
+                  >
                     <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
                     <DropZone
                       isDropTarget={dnd.isDropTarget(foundationZone)}
@@ -313,7 +330,8 @@ function BakersDozenPageContent() {
                     // on desktop the columns flex to fill the available width as before.
                     className={`${isMobile ? 'shrink-0' : 'flex-1 min-w-0'}${
                       isOneCardCol ? ' rounded ring-1 ring-ds-warning/40 ring-dashed' : ''
-                    }`}
+                    }${legalTargets.tableau.has(colIdx) ? ' rounded ring-2 ring-ds-success' : ''}`}
+                    data-legal-target={legalTargets.tableau.has(colIdx) ? 'true' : undefined}
                     style={isMobile ? { width: bd.cw } : undefined}
                     data-testid={isOneCardCol ? `bd-onecard-col-${colIdx}` : undefined}
                   >
