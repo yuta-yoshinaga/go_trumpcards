@@ -29,6 +29,7 @@ import { OPENFACECHINESE_HELP, parseOpenfacechineseCommand } from '../utils/cli/
 import { formatOpenfacechineseState } from '../utils/cli/formatters/openfacechineseFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
+import { ofcPlacementFouls } from '../utils/ofcFoulRisk';
 
 /** Row indices accepted by the backend `place` command. */
 const ROW_FRONT = 0;
@@ -63,6 +64,14 @@ const OFC_TUTORIAL_STEPS: TutorialStep[] = [
   {
     target: '[data-tutorial="ofc-place"]',
     messageKey: 'tutorial.place',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    // **反則ルールはチュートリアルで一度も説明していなかった (#4731)。**
+    // 強さの順を守れないと得点を失うという OFC の核心。
+    target: '[data-tutorial="ofc-rows"]',
+    messageKey: 'tutorial.foulRule',
     placement: 'top',
     advanceOn: 'next',
   },
@@ -117,6 +126,29 @@ function OpenFaceChinesePageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('openfacechinese', state);
+
+  // **OFC の核心ルールは「トップ ≦ ミドル ≦ バック」で、破ると反則。**それを
+  // 破る置き方をしても、これまでは fouled バッジがラウンド終了後に出るだけで、
+  // 置く前の警告は無かった (#4731)。
+  //
+  // **確定しているときだけ警告する。**まだ空きのある段は、あとで引く札で役が
+  // 変わる。「弱そう」で警告すると、実際には成立する置き方まで避けさせる。
+  //
+  // このフックも早期 return より上に置く (上のコメントと同じ理由)。
+  const foulRisk = useMemo(() => {
+    const none = { front: false, middle: false, back: false };
+    const placer = state?.players.find((p) => p.isHuman);
+    const card = state?.currentCard;
+    if (!state || !placer || !card) return none;
+    if (state.phase !== OpenFaceChinesePhase.PLACING || !state.isHumanTurn) return none;
+    const rows = { front: placer.front, middle: placer.middle, back: placer.back };
+    return {
+      front: ofcPlacementFouls(rows, card, 'front'),
+      middle: ofcPlacementFouls(rows, card, 'middle'),
+      back: ofcPlacementFouls(rows, card, 'back'),
+    };
+  }, [state]);
+  const anyFoulRisk = foulRisk.front || foulRisk.middle || foulRisk.back;
 
   if (!state)
     return (
@@ -248,33 +280,52 @@ function OpenFaceChinesePageContent() {
                 <span className="text-ds-text-muted text-xs">{t('pendingTitle')}</span>
                 <CardImage card={state.currentCard} width={cardWidth} />
                 <span className="text-ds-text-primary text-sm">{t('placePrompt')}</span>
+                {/* 反則になる段は色だけでなく文言でも知らせる (色は SR に届かない)。 */}
+                <span
+                  className={anyFoulRisk ? 'text-ds-danger text-xs' : 'sr-only'}
+                  role="status"
+                  aria-live="polite"
+                  data-testid="ofc-foul-risk-warning"
+                >
+                  {anyFoulRisk
+                    ? t('foulRiskWarning', {
+                        rows: (['front', 'middle', 'back'] as const)
+                          .filter((r) => foulRisk[r])
+                          .map((r) => t(`rows.${r}`))
+                          .join('・'),
+                      })
+                    : ''}
+                </span>
                 <div className="flex flex-wrap justify-center gap-2 mt-1">
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={[btnSuccess, foulRisk.front ? 'ring-2 ring-ds-danger' : ''].filter(Boolean).join(' ')}
                     onClick={() => handlePlace(ROW_FRONT)}
                     disabled={loading || frontFull}
                     aria-disabled={frontFull}
+                    data-foul-risk={foulRisk.front ? 'true' : undefined}
                     data-testid="place-front"
                   >
                     {t('place.front')}
                   </button>
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={[btnSuccess, foulRisk.middle ? 'ring-2 ring-ds-danger' : ''].filter(Boolean).join(' ')}
                     onClick={() => handlePlace(ROW_MIDDLE)}
                     disabled={loading || middleFull}
                     aria-disabled={middleFull}
+                    data-foul-risk={foulRisk.middle ? 'true' : undefined}
                     data-testid="place-middle"
                   >
                     {t('place.middle')}
                   </button>
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={[btnSuccess, foulRisk.back ? 'ring-2 ring-ds-danger' : ''].filter(Boolean).join(' ')}
                     onClick={() => handlePlace(ROW_BACK)}
                     disabled={loading || backFull}
                     aria-disabled={backFull}
+                    data-foul-risk={foulRisk.back ? 'true' : undefined}
                     data-testid="place-back"
                   >
                     {t('place.back')}

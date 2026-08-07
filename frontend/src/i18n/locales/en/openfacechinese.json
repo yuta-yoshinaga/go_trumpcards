@@ -45,12 +45,14 @@
     "info": "The current round and each player's score are shown here.",
     "rows": "Place each dealt card into one of three rows (Top 3, Middle 5, Bottom 5).",
     "place": "Pick the row to place the dealt card. Once placed, a card cannot be moved.",
-    "resetButton": "Press this button to restart the game from the beginning."
+    "resetButton": "Press this button to restart the game from the beginning.",
+    "foulRule": "The top row (3 cards) must not beat the middle (5), and the middle must not beat the back (5). Break that order and the hand fouls — you lose every row for the round."
   },
   "placeRowAria": "Place on {{label}}",
   "rowAriaEmpty": "{{label}} {{count}} cards",
   "rowAriaFilled": "{{label}} {{count}} cards: {{cards}}",
   "pendingAnnounce": "To place: {{card}}",
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "foulRiskWarning": "Careful: placing it in the {{rows}} row fouls the hand (the row order breaks)"
 }
