@@ -12,5 +12,6 @@
   "hintToFoundation": "a foundation",
   "hintLine": "[HINT: move fan {{from}} to {{to}}]",
   "foundationCount": "({{count}} cards)",
-  "redealRecommended": "No legal moves. Redeal recommended (nr)."
+  "redealRecommended": "No legal moves. Redeal recommended (nr).",
+  "stuckDeadlock": "No legal move remains and no redeals are left - type giveup to concede."
 }

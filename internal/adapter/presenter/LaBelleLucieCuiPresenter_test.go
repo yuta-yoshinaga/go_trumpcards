@@ -59,6 +59,33 @@ func TestLaBelleLucieCuiPresenter_Output(t *testing.T) {
 		assert.NotContains(t, out, i18n.T("labellelucie.redealRecommended"))
 	})
 
+	// **再配札が尽きた真の手詰まりは別物 (#4769)。**Web は ll-deadlock-banner を
+	// 出して giveup を点滅させるのに、CUI は何も言わず、合法手が無いまま延々と
+	// 手を探させていた。
+	t.Run("names the deadlock when no redeal is left either", func(t *testing.T) {
+		ace, _ := json.Marshal(domain.NewCard(domain.CardDesignSpade, 1, true))
+		js := fmt.Sprintf(`{"ph":0,"rd":0,"fd":[[%s],[],[],[]],"fn":[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]}`, ace)
+		out := p.Output(llState(t, js), nil)
+		assert.Contains(t, out, i18n.T("labellelucie.stuckDeadlock"))
+		// **再配札を勧めてはいけない。**もう配り直せない。
+		assert.NotContains(t, out, i18n.T("labellelucie.redealRecommended"))
+	})
+
+	t.Run("recommends a redeal rather than a giveup while redeals remain", func(t *testing.T) {
+		ace, _ := json.Marshal(domain.NewCard(domain.CardDesignSpade, 1, true))
+		js := fmt.Sprintf(`{"ph":0,"rd":2,"fd":[[%s],[],[],[]],"fn":[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]}`, ace)
+		out := p.Output(llState(t, js), nil)
+		assert.NotContains(t, out, i18n.T("labellelucie.stuckDeadlock"))
+	})
+
+	t.Run("says neither while a legal move exists", func(t *testing.T) {
+		ace, _ := json.Marshal(domain.NewCard(domain.CardDesignSpade, 1, true))
+		js := fmt.Sprintf(`{"ph":0,"rd":0,"fd":[[],[],[],[]],"fn":[[%s],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]}`, ace)
+		out := p.Output(llState(t, js), nil)
+		assert.NotContains(t, out, i18n.T("labellelucie.stuckDeadlock"))
+		assert.NotContains(t, out, i18n.T("labellelucie.redealRecommended"))
+	})
+
 	t.Run("game clear banner", func(t *testing.T) {
 		assert.Contains(t, p.Output(llState(t, `{"ph":1,"mc":7}`), nil), "ゲームクリア")
 	})
