@@ -54,5 +54,6 @@
   "muckPrompt": "マックしますか? (m=マック / sh=ショー)",
   "rebuyPrompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済) (rb=リバイ / sr=スキップ)",
   "addonPrompt": "アドオンしますか? ({{chips}}チップ) (ad=アドオン / sa=スキップ)",
-  "gameEnd": "ゲーム終了"
+  "gameEnd": "ゲーム終了",
+  "resultBestFive": " [{{cards}}]"
 }
