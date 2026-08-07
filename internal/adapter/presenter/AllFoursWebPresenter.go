@@ -124,15 +124,23 @@ func allFoursPipValue(v int) int {
 // (場に出なければ -1)。Game = ピップ合計が単独最大のプレイヤー (同点・全員 0 なら -1)。
 func (p *AllFoursWebPresenter) buildRoundBreakdown(s interfaces.AllFoursGame) *controller.AllFoursWebOutputRoundBreakdown {
 	phase := s.GetPhase()
-	if phase != domain.AllFoursPhaseRoundEnd && phase != domain.AllFoursPhaseGameEnd {
+	// **プレイ中も出す (#4771)。**High / Low / Jack / Game はトリックが進むたびに
+	// 途中経過が確定していくのに、ラウンド終了まで隠れていた。「今どちらが何を
+	// 握っているか」はこのゲームの戦略そのもの。
+	//
+	// ただし途中の値は暫定。まだ出ていないトランプで High も Low も引っくり返る
+	// ので、Provisional を立てて画面側で確定値と区別させる。
+	final := phase == domain.AllFoursPhaseRoundEnd || phase == domain.AllFoursPhaseGameEnd
+	if !final && phase != domain.AllFoursPhasePlay {
 		return nil
 	}
 	playerCnt := s.GetPlayerCnt()
 	bd := &controller.AllFoursWebOutputRoundBreakdown{
-		High: controller.AllFoursWebOutputBreakdownAward{WinnerIdx: -1},
-		Low:  controller.AllFoursWebOutputBreakdownAward{WinnerIdx: -1},
-		Jack: controller.AllFoursWebOutputBreakdownJack{WinnerIdx: -1},
-		Game: controller.AllFoursWebOutputBreakdownGame{WinnerIdx: -1, Points: make([]int, playerCnt)},
+		High:        controller.AllFoursWebOutputBreakdownAward{WinnerIdx: -1},
+		Low:         controller.AllFoursWebOutputBreakdownAward{WinnerIdx: -1},
+		Jack:        controller.AllFoursWebOutputBreakdownJack{WinnerIdx: -1},
+		Game:        controller.AllFoursWebOutputBreakdownGame{WinnerIdx: -1, Points: make([]int, playerCnt)},
+		Provisional: !final,
 	}
 	trump := s.GetTrumpSuit()
 	if trump == domain.AllFoursTrumpUnset {

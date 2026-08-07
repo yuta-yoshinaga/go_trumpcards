@@ -69,6 +69,11 @@ type AllFoursWebOutputRoundBreakdown struct {
 	Low  AllFoursWebOutputBreakdownAward `json:"low"`
 	Jack AllFoursWebOutputBreakdownJack  `json:"jack"`
 	Game AllFoursWebOutputBreakdownGame  `json:"game"`
+	// Provisional はラウンド途中の暫定値であることを表す (#4771)。
+	//
+	// **途中経過を確定値として見せてはいけない。**High も Low も「そのラウンドで
+	// 出たトランプの中で」決まるので、まだ配られていない札で引っくり返る。
+	Provisional bool `json:"provisional"`
 }
 
 // AllFoursWebOutput All Fours Webアウトプット
