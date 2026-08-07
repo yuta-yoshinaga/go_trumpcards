@@ -685,6 +685,26 @@ func (f *FreeCell) isValidTableauSequence(cards []*Card) bool {
 	return true
 }
 
+// GetMaxMovableCards はいま一度に動かせる最大枚数を返す (#4777)。
+//
+// **空き列を移動先にすると上限は下がる。**その列自身は「経由地」に使えない
+// ため。移動先を選ぶ前の一般的な上限がこちらで、空き列に置くときの上限は
+// GetMaxMovableCardsToEmptyColumn。
+func (f *FreeCell) GetMaxMovableCards() int {
+	return f.maxMovableCards(-1)
+}
+
+// GetMaxMovableCardsToEmptyColumn は空き列へ動かすときの上限を返す。
+// 空き列が無いときは 0。
+func (f *FreeCell) GetMaxMovableCardsToEmptyColumn() int {
+	for i := 0; i < FreeCellTableauCnt; i++ {
+		if len(f.tableau[i]) == 0 {
+			return f.maxMovableCards(i)
+		}
+	}
+	return 0
+}
+
 // maxMovableCards 移動可能な最大カード枚数を計算
 // (1 + emptyFreeCells) * 2^(emptyTableauCols) ただしtoColが空の場合はそのcolを除外
 func (f *FreeCell) maxMovableCards(toCol int) int {
