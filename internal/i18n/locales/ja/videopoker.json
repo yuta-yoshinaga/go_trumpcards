@@ -41,5 +41,6 @@
   "ptThreeOfAKind": "スリーカード",
   "ptTwoPair": "ツーペア",
   "ptJacksOrBetter": "ジャックス・オア・ベター",
-  "ptKingsOrBetter": "キングス・オア・ベター"
+  "ptKingsOrBetter": "キングス・オア・ベター",
+  "holdRoyalDraw": "ロイヤルフラッシュへの4枚を残す"
 }

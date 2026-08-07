@@ -229,4 +229,78 @@ describe('getVideoPokerBaseHint', () => {
     expect(result?.confidence).toBe('strong');
     expect(result?.targetAction).toContain('0');
   });
+
+  // **配当のつかない低いペアが、強いドローを潰していた (#4691)。**ペア判定が
+  // 最初に無条件でヒットするため、4枚ロイヤル・4枚フラッシュが同居しても
+  // 常に弱いペアが推奨されていた。
+  //
+  // 順序は Jacks or Better の標準戦略に合わせる:
+  //   4枚ロイヤル > 4枚フラッシュ > 低いペア > 4枚ストレート
+  // **issue は「3つのドローすべてを低ペアより優先」としているが、それは誤り。**
+  // 標準戦略では低ペアは4枚ストレートより上に来る。
+  describe('draw versus low pair ordering (Jacks or Better)', () => {
+    const hint = (cards: Card[]) => getVideoPokerBaseHint(makeState({ hand: cards }), noWild);
+
+    it('prefers a four-card royal draw over a non-paying pair', () => {
+      // ♠10 J Q K + ♥10 → 10 のペアがあるが、4枚ロイヤルの方が遥かに強い。
+      const h = hint([
+        makeCard('SPADE', 10),
+        makeCard('SPADE', 11),
+        makeCard('SPADE', 12),
+        makeCard('SPADE', 13),
+        makeCard('HEART', 10),
+      ]);
+      expect(h?.reason).toBe('hint.holdRoyalDraw');
+    });
+
+    it('prefers a four-card flush over a non-paying pair', () => {
+      // ♠3 5 8 K + ♥3 → 3 のペアより 4枚フラッシュ。
+      const h = hint([
+        makeCard('SPADE', 3),
+        makeCard('SPADE', 5),
+        makeCard('SPADE', 8),
+        makeCard('SPADE', 13),
+        makeCard('HEART', 3),
+      ]);
+      expect(h?.reason).toBe('hint.holdFlushDraw');
+    });
+
+    // **逆側。**低ペアは4枚ストレートより上。ここを一緒くたに「ドロー優先」と
+    // すると、標準戦略から外れる方向に壊れる。
+    it('keeps a low pair over a four-card straight', () => {
+      // ♠4 5 6 7 + ♥4 → 4枚ストレートより 4 のペア。
+      const h = hint([
+        makeCard('SPADE', 4),
+        makeCard('SPADE', 5),
+        makeCard('HEART', 6),
+        makeCard('CLOVER', 7),
+        makeCard('HEART', 4),
+      ]);
+      expect(h?.reason).toBe('hint.holdPair');
+    });
+
+    // 配当のつくペア (J 以上) は据え置き。4枚フラッシュより上。
+    it('keeps a paying high pair over a four-card flush', () => {
+      const h = hint([
+        makeCard('SPADE', 12),
+        makeCard('SPADE', 5),
+        makeCard('SPADE', 8),
+        makeCard('SPADE', 3),
+        makeCard('HEART', 12),
+      ]);
+      expect(h?.reason).toBe('hint.holdPair');
+    });
+
+    // 3カード以上は無条件で据え置き (ドローより強い)。
+    it('keeps trips over any draw', () => {
+      const h = hint([
+        makeCard('SPADE', 4),
+        makeCard('HEART', 4),
+        makeCard('CLOVER', 4),
+        makeCard('SPADE', 8),
+        makeCard('SPADE', 9),
+      ]);
+      expect(h?.reason).toBe('hint.holdTrips');
+    });
+  });
 });
