@@ -1,3 +1,4 @@
+import type { HoldemEquity } from './holdem';
 // Type declarations for poker. Split out of card.ts (issue #4366);
 // card.ts re-exports this file, so existing imports keep working.
 
@@ -62,6 +63,15 @@ export type PokerPhase = 0 | 1 | 2 | 3 | 4;
 export interface PokerResponse extends BaseGameResponse {
   players: PokerPlayerData[];
   pot: number;
+  /**
+   * 2 巡目ベットでの勝率。ベッティングフェーズ以外では undefined。
+   *
+   * Holdem 系と同じ `HoldemEquity` 形。判定はドメインの `GetEquity` が唯一の
+   * 出どころで、フロントは表示だけ担当する。
+   */
+  equity?: HoldemEquity;
+  /** コールに必要な額に対するポットオッズ (0-100)。 */
+  potOdds?: number;
   sidePots: PokerSidePot[];
   dealerIdx: number;
   currentTurn: number;

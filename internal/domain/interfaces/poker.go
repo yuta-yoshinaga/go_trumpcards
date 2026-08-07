@@ -59,4 +59,8 @@ type PokerGame interface {
 	ExportProfile() interface{}
 	// ImportProfile JSONバイトからメタAIプロファイルをインポートする
 	ImportProfile(data []byte) error
+	// GetEquity ベッティングフェーズでの人間の勝率 (それ以外は nil)
+	GetEquity() *domain.HoldemEquityResult
+	// GetPotOdds コールに必要な額に対するポットオッズ (0-100)
+	GetPotOdds() float64
 }

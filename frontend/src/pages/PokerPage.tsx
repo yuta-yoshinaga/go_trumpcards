@@ -10,6 +10,7 @@ import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { EquityDisplay } from '../components/EquityDisplay';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -381,6 +382,12 @@ function PokerPageContent() {
                 />
               </div>
             )}
+
+            {/* **2巡目ベットの判断材料。**Holdem 系は EquityDisplay を持つのに
+                5カードドローには仕組み自体が無く、交換確率パネルしか無かった
+                (#4678)。ベッティングフェーズ以外はサーバーが送らないので、
+                ここでフェーズを再判定しない。 */}
+            {state.equity && <EquityDisplay equity={state.equity} potOdds={state.potOdds ?? 0} />}
 
             {/* Draw odds panel */}
             {canExchange && odds?.some((o) => o.probability > 0) && (
