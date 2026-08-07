@@ -21,5 +21,8 @@
   "playerWins": "Player wins!",
   "bankerWins": "Banker wins!",
   "tie": "Tie!",
-  "payoutLine": "payout: {{payout}}"
+  "payoutLine": "payout: {{payout}}",
+  "historyStreak": "Current streak: {{side}} x{{count}}",
+  "sidePlayer": "Player",
+  "sideBanker": "Banker"
 }

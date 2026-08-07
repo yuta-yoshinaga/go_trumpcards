@@ -128,6 +128,14 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 			"p", strconv.Itoa(pCount),
 			"b", strconv.Itoa(bCount),
 			"t", strconv.Itoa(tCount)) + "\n")
+
+		// **Web の ShoeStatsPanel は連勝数も出しているのに CUI には無かった。**
+		// ロードマップと並んでシューの流れを読む材料になる (#4688)。
+		if side, count := baccaratStreak(history); count > 0 {
+			sb.WriteString(i18n.Tf("baccarat.historyStreak",
+				"side", baccaratSideLabel(side),
+				"count", strconv.Itoa(count)) + "\n")
+		}
 	}
 
 	return sb.String()
@@ -162,4 +170,36 @@ func (bp *BaccaratCuiPresenter) betTypeStr(betType int) string {
 	default:
 		return i18n.T("baccarat.betTypeUnknown")
 	}
+}
+
+// baccaratStreak は履歴末尾の連勝の side と長さを返す。連勝が無ければ (0, 0)。
+//
+// **タイは連勝を切らない。**フロントの computeBaccaratShoeStats と同じ規則で、
+// ここがずれると同じ履歴で CUI と Web が違う連勝数を出す。
+func baccaratStreak(history []int) (side int, count int) {
+	side, count = 0, 0
+	found := false
+	for i := len(history) - 1; i >= 0; i-- {
+		r := history[i]
+		if r != domain.BaccaratResultPlayer && r != domain.BaccaratResultBanker {
+			continue // タイは飛ばす
+		}
+		if !found {
+			side, count, found = r, 1, true
+			continue
+		}
+		if r != side {
+			break
+		}
+		count++
+	}
+	return side, count
+}
+
+// baccaratSideLabel は連勝表示用の side ラベルを返す。
+func baccaratSideLabel(side int) string {
+	if side == domain.BaccaratResultBanker {
+		return i18n.T("baccarat.sideBanker")
+	}
+	return i18n.T("baccarat.sidePlayer")
 }
