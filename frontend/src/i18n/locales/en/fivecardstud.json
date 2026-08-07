@@ -30,7 +30,14 @@
     "show": "Show"
   },
   "stats": {
-    "badge": "VPIP {{vpip}}% / PFR {{pfr}}% / 3Bet {{tb}}% / AF {{af}}"
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP (Voluntarily Put In Pot): % of hands where player voluntarily put chips in the pot",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR (Pre-Flop Raise): % of hands where player raised in the first round",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet: % of hands where player re-raised an opponent's raise",
+    "af": "AF",
+    "afTooltip": "AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)"
   },
   "settings": {
     "cpuMetaAI": "Meta-AI (CPU learns your play style)"
@@ -52,5 +59,17 @@
     "fivecardstudCallHigh": "You hold a high card — worth paying to see another",
     "fivecardstudCheckFree": "Nothing made yet — check while it is free",
     "fivecardstudFoldWeak": "No pair, no high card, and a bet to meet — folding is safer"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive: plays few hands but bets strongly when in",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive: plays many hands and bets strongly",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive: plays few hands, mostly calls",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive: plays many hands but rarely raises",
+    "balanced": "BAL",
+    "balancedTooltip": "Balanced style"
   }
 }
