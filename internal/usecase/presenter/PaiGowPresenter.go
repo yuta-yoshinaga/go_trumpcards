@@ -5,4 +5,8 @@ package presenter
 import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 // PaiGowPresenter パイガオポーカープレゼンターインタフェース
-type PaiGowPresenter = GamePresenter[interfaces.PaiGowGame]
+type PaiGowPresenter interface {
+	GamePresenter[interfaces.PaiGowGame]
+	// HintOutput ヒント情報を出力する
+	HintOutput(g interfaces.PaiGowGame) string
+}

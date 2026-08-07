@@ -18,6 +18,10 @@ type PaiGowInteractorIF interface {
 	Bet(amount int) string
 	// SetHands ハンド分割
 	SetHands(lowIdx0, lowIdx1 int) string
+	// AutoSetHands ハウスウェイで自動分割する
+	AutoSetHands() string
+	// Hint 推奨分割を出力する
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -50,6 +54,16 @@ func (pi *PaiGowInteractor) Bet(amount int) string {
 // SetHands ハンド分割
 func (pi *PaiGowInteractor) SetHands(lowIdx0, lowIdx1 int) string {
 	return execAndPresent(pi.Game, pi.pp, func() error { return pi.Game.SetHands(lowIdx0, lowIdx1) })
+}
+
+// AutoSetHands ハウスウェイで自動分割する
+func (pi *PaiGowInteractor) AutoSetHands() string {
+	return execAndPresent(pi.Game, pi.pp, pi.Game.AutoSetHands)
+}
+
+// Hint 推奨分割を出力する
+func (pi *PaiGowInteractor) Hint() string {
+	return pi.pp.HintOutput(pi.Game)
 }
 
 // ActionLog 棋譜を出力する

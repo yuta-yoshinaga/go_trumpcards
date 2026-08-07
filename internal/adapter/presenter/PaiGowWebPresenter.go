@@ -35,6 +35,11 @@ func (pp *PaiGowWebPresenter) Output(pg interfaces.PaiGowGame, lastErr error) st
 	resObj.DealerHighRank = pg.GetDealerHighRank()
 	resObj.DealerLowRank = pg.GetDealerLowRank()
 
+	// **受動ヒントは Output() でも埋める。**HintOutput() は command:"hint" 専用の
+	// レスポンスで、ページの state にはマージされない。フェーズ判定は
+	// PaiGow.GetHint() 側が持つ。
+	resObj.Hint = paiGowWebHint(pg)
+
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if pg.GetGameEndFlag() {
@@ -53,6 +58,31 @@ func (pp *PaiGowWebPresenter) Output(pg interfaces.PaiGowGame, lastErr error) st
 	}
 
 	return marshalOrError(resObj)
+}
+
+// HintOutput ヒント情報をJSON出力する
+func (pp *PaiGowWebPresenter) HintOutput(pg interfaces.PaiGowGame) string {
+	resObj := new(controller.PaiGowWebOutput)
+	resObj.Hint = paiGowWebHint(pg)
+	if resObj.Hint == nil {
+		resObj.Message = "No hint is available now."
+		resObj.MessageCode = "paigow.hintNone"
+	}
+	return marshalOrError(resObj)
+}
+
+// paiGowWebHint はドメインのヒントを JSON 用の形に移す。
+func paiGowWebHint(pg interfaces.PaiGowGame) *controller.PaiGowWebOutputHint {
+	hint := pg.GetHint()
+	if hint == nil {
+		return nil
+	}
+	return &controller.PaiGowWebOutputHint{
+		LowIdx0:   hint.LowIdx0,
+		LowIdx1:   hint.LowIdx1,
+		LowIsPair: hint.LowIsPair,
+		Reason:    hint.Reason,
+	}
 }
 
 // ActionLogOutput 棋譜をJSON出力

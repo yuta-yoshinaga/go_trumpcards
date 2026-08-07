@@ -17,7 +17,39 @@ func newMockPaiGowInteractor() *usecase.MockPaiGowInteractor {
 	m.On("Bet", 100).Return("bet result")
 	m.On("SetHands", 0, 1).Return("set result")
 	m.On("ActionLog").Return("action log result")
+	m.On("AutoSetHands").Return("auto result")
+	m.On("Hint").Return("hint result")
 	return m
+}
+
+// **7枚から反則にならない分割を手作業で探すしかなかった (#4696)。**
+// Web には「自動設定」ボタンと反則チェックがあるのに CUI には無かった。
+func TestPaiGowCuiController_AutoSetHands(t *testing.T) {
+	m := newMockPaiGowInteractor()
+	c := controller.NewPaiGowCuiController(m)
+
+	assert.Equal(t, "auto result", c.Exec("a"))
+	assert.Equal(t, "auto result", c.Exec("auto"))
+}
+
+func TestPaiGowCuiController_Hint(t *testing.T) {
+	m := newMockPaiGowInteractor()
+	c := controller.NewPaiGowCuiController(m)
+
+	assert.Equal(t, "hint result", c.Exec("h"))
+	assert.Equal(t, "hint result", c.Exec("hint"))
+}
+
+// **既存コマンドは何も変わらない。**a/h を足したことで b/s が食われていないこと。
+func TestPaiGowCuiController_ExistingCommandsUnaffected(t *testing.T) {
+	m := newMockPaiGowInteractor()
+	c := controller.NewPaiGowCuiController(m)
+
+	assert.Equal(t, "bet result", c.Exec("b 100"))
+	assert.Equal(t, "set result", c.Exec("s 0 1"))
+	assert.Equal(t, "action log result", c.Exec("log"))
+	m.AssertNotCalled(t, "AutoSetHands")
+	m.AssertNotCalled(t, "Hint")
 }
 
 func TestPaiGowCuiController_Quit(t *testing.T) {

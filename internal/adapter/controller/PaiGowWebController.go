@@ -18,25 +18,34 @@ type PaiGowWebInput struct {
 
 // PaiGowWebOutput パイガオポーカーWebアウトプット
 type PaiGowWebOutput struct {
-	PlayerCards    []*WebOutputCard `json:"playerCards"`
-	DealerCards    []*WebOutputCard `json:"dealerCards"`
-	PlayerHighHand []*WebOutputCard `json:"playerHighHand"`
-	PlayerLowHand  []*WebOutputCard `json:"playerLowHand"`
-	DealerHighHand []*WebOutputCard `json:"dealerHighHand"`
-	DealerLowHand  []*WebOutputCard `json:"dealerLowHand"`
-	Phase          int              `json:"phase"`
-	Chips          int              `json:"chips"`
-	Bet            int              `json:"bet"`
-	Result         int              `json:"result"`
-	HighHandResult int              `json:"highHandResult"`
-	LowHandResult  int              `json:"lowHandResult"`
-	Payout         int              `json:"payout"`
-	Commission     int              `json:"commission"`
-	PlayerHighRank int              `json:"playerHighRank"`
-	PlayerLowRank  int              `json:"playerLowRank"`
-	DealerHighRank int              `json:"dealerHighRank"`
-	DealerLowRank  int              `json:"dealerLowRank"`
+	PlayerCards    []*WebOutputCard     `json:"playerCards"`
+	DealerCards    []*WebOutputCard     `json:"dealerCards"`
+	PlayerHighHand []*WebOutputCard     `json:"playerHighHand"`
+	PlayerLowHand  []*WebOutputCard     `json:"playerLowHand"`
+	DealerHighHand []*WebOutputCard     `json:"dealerHighHand"`
+	DealerLowHand  []*WebOutputCard     `json:"dealerLowHand"`
+	Phase          int                  `json:"phase"`
+	Chips          int                  `json:"chips"`
+	Bet            int                  `json:"bet"`
+	Result         int                  `json:"result"`
+	HighHandResult int                  `json:"highHandResult"`
+	LowHandResult  int                  `json:"lowHandResult"`
+	Payout         int                  `json:"payout"`
+	Commission     int                  `json:"commission"`
+	PlayerHighRank int                  `json:"playerHighRank"`
+	PlayerLowRank  int                  `json:"playerLowRank"`
+	DealerHighRank int                  `json:"dealerHighRank"`
+	DealerLowRank  int                  `json:"dealerLowRank"`
+	Hint           *PaiGowWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
+}
+
+// PaiGowWebOutputHint はセットハンドフェーズの推奨分割。
+type PaiGowWebOutputHint struct {
+	LowIdx0   int    `json:"lowIdx0"`
+	LowIdx1   int    `json:"lowIdx1"`
+	LowIsPair bool   `json:"lowIsPair"`
+	Reason    string `json:"reason"`
 }
 
 // PaiGowWebController パイガオポーカーWebコントローラークラス
