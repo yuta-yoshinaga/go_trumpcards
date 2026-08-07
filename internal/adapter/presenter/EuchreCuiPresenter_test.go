@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -23,6 +24,7 @@ func setupEuchreCuiMock() *interfaces.MockEuchreGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.EuchrePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetValidPlayIndices", mock.Anything).Return(([]int)(nil)).Maybe()
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetTrumpSuit").Return(1) // Spade
@@ -437,5 +439,52 @@ func TestEuchreCuiPresenter_HintOutput(t *testing.T) {
 			result := p.HintOutput(m)
 			assert.Contains(t, result, expected, "reason: "+key)
 		}
+	})
+}
+
+// **レフトボーア (同色の別スートの J) が切り札扱いになるという分かりにくい
+// ルールを含むので、CUI では出せない札を選んでエラーを受け取るまで気づけな
+// かった (#4781)。**Web は同じ判定で合法な札に枠線を付けている。
+func TestEuchreCuiPresenter_MarksPlayableCards(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.EuchreCuiPresenter)
+
+	withPlayable := func(valid []int, phase domain.EuchrePhase, turn int) *interfaces.MockEuchreGame {
+		m, players := setupEuchreCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetValidPlayIndices", mock.Anything).Return(valid).Maybe()
+		m.On("GetPhase").Return(phase)
+		m.On("GetCurrentPlayerIdx").Return(turn)
+		players[0].Reset()
+		for _, c := range []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 11, false),
+			domain.NewCard(domain.CardDesignHeart, 9, false),
+			domain.NewCard(domain.CardDesignClover, 12, false),
+		} {
+			players[0].AddCard(c)
+		}
+		return m
+	}
+
+	t.Run("stars only the cards that may be played", func(t *testing.T) {
+		out := p.Output(withPlayable([]int{0, 2}, domain.EuchrePhasePlay, 0), nil)
+		assert.Equal(t, 2, strings.Count(out, "*"), "印が付くのは2枚だけ")
+		assert.Contains(t, out, "[0]")
+	})
+
+	// **手番でないときは印を付けない。**別のプレイヤーの合法手を人間の手札に
+	// 当てると、出せない札に印が付く。
+	t.Run("stars nothing while a CPU is to act", func(t *testing.T) {
+		out := p.Output(withPlayable([]int{0, 1, 2}, domain.EuchrePhasePlay, 1), nil)
+		assert.NotContains(t, out, "*")
+	})
+
+	t.Run("stars nothing outside the play phase", func(t *testing.T) {
+		out := p.Output(withPlayable([]int{0, 1, 2}, domain.EuchrePhasePickUp, 0), nil)
+		assert.NotContains(t, out, "*")
 	})
 }
