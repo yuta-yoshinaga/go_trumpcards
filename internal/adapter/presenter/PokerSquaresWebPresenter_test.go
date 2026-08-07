@@ -16,6 +16,7 @@ import (
 
 func setupPokerSquaresWebMockDefaults(pg *interfaces.MockPokerSquaresGame) {
 	pg.On("GetPhase").Return(domain.PokerSquaresPhasePlaying).Maybe()
+	pg.On("GetHint").Return((*domain.PokerSquaresHint)(nil)).Maybe()
 	pg.On("GetPlacedCount").Return(0).Maybe()
 	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("GetCurrentCard").Return(domain.NewCard(domain.CardDesignSpade, 5, false)).Maybe()
@@ -61,6 +62,7 @@ func TestPokerSquaresWebPresenter_Output_Error(t *testing.T) {
 func TestPokerSquaresWebPresenter_Output_Complete(t *testing.T) {
 	pg := new(interfaces.MockPokerSquaresGame)
 	pg.On("GetPhase").Return(domain.PokerSquaresPhaseComplete).Maybe()
+	pg.On("GetHint").Return((*domain.PokerSquaresHint)(nil)).Maybe()
 	pg.On("GetPlacedCount").Return(25).Maybe()
 	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("GetCurrentCard").Return((*domain.Card)(nil)).Maybe()
@@ -87,6 +89,7 @@ func TestPokerSquaresWebPresenter_Output_Complete(t *testing.T) {
 func TestPokerSquaresWebPresenter_ActionLog_Playing(t *testing.T) {
 	pg := new(interfaces.MockPokerSquaresGame)
 	pg.On("GetPhase").Return(domain.PokerSquaresPhasePlaying)
+	pg.On("GetHint").Return((*domain.PokerSquaresHint)(nil)).Maybe()
 	pg.On("GetGameEndFlag").Return(false)
 	p := &PokerSquaresWebPresenter{}
 	result := p.ActionLogOutput(pg)
@@ -96,6 +99,7 @@ func TestPokerSquaresWebPresenter_ActionLog_Playing(t *testing.T) {
 func TestPokerSquaresWebPresenter_ActionLog_Complete(t *testing.T) {
 	pg := new(interfaces.MockPokerSquaresGame)
 	pg.On("GetPhase").Return(domain.PokerSquaresPhaseComplete)
+	pg.On("GetHint").Return((*domain.PokerSquaresHint)(nil)).Maybe()
 	pg.On("GetGameEndFlag").Return(true)
 	pg.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, ActionType: "place", Detail: "test"},

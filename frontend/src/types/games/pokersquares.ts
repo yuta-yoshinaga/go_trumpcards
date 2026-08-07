@@ -27,6 +27,24 @@ export interface PokerSquaresResponse extends BaseGameResponse {
   colScores: number[];
   /** Sum of all row and column scores. */
   totalScore: number;
+  /**
+   * Server-side placement hint, weighing row/column synergy.
+   *
+   * **The CUI had this and the Web did not (#4790).** The page's own
+   * `useGameHint` heuristic does not look at synergy, so a Web player got the
+   * weaker advice of the two.
+   */
+  hint?: PokerSquaresHint;
+}
+
+/** Server-side Poker Squares hint (sync: `domain.PokerSquaresHint`). */
+export interface PokerSquaresHint {
+  row: number;
+  col: number;
+  /** Row/column synergy score the placement would create. */
+  score: number;
+  /** Whether the score is positive (it works with the cards already there). */
+  synergy: boolean;
 }
 
 // --- Monte Carlo Solitaire (モンテカルロ・ソリティア) ---

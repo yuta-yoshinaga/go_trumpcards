@@ -15,7 +15,8 @@
   "button": {
     "reset": "リセット",
     "undo": "元に戻す",
-    "giveup": "ギブアップ"
+    "giveup": "ギブアップ",
+    "hint": "ヒント"
   },
   "settings": {
     "title": "設定"
@@ -28,7 +29,9 @@
   },
   "hint": {
     "placeSynergy": "役ができやすいマスに配置することを推奨",
-    "placeAny": "いずれかの空きマスに配置します"
+    "placeAny": "いずれかの空きマスに配置します",
+    "synergy": "推奨: ({{row}},{{col}}) — 既存のカードと相乗効果あり (+{{score}})",
+    "plain": "推奨: ({{row}},{{col}}) — 相乗効果は無し"
   },
   "hand": {
     "highCard": "ハイカード",

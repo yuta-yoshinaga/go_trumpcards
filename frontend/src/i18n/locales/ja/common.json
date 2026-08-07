@@ -1435,7 +1435,9 @@
     "bidwhist.hintRequested": "ヒントがあります",
     "bidwhist.noHint": "ヒントはありません",
     "russianbank.stopAvailable": "CPU が強制手を取りこぼしています。「ストップ」で咎められます",
-    "paigow.hintNone": "いまはヒントを出せません。"
+    "paigow.hintNone": "いまはヒントを出せません。",
+    "pokersquares.hintAvailable": "ヒントを表示しました",
+    "pokersquares.noHint": "いま出せるヒントはありません"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

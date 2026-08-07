@@ -1435,7 +1435,9 @@
     "bidwhist.hintRequested": "Hint available",
     "bidwhist.noHint": "No hint available",
     "russianbank.stopAvailable": "The CPU missed a forced move — call Stop to penalise it",
-    "paigow.hintNone": "No hint is available now."
+    "paigow.hintNone": "No hint is available now.",
+    "pokersquares.hintAvailable": "Here is a hint",
+    "pokersquares.noHint": "No hint is available right now"
   },
   "manual": {
     "ariaLabel": "Game Manual",
