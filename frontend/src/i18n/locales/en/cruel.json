@@ -57,5 +57,6 @@
       "usageMove": "Usage: m <fromCol> <toCol|f>",
       "unknownCommand": "Unknown command: {{cmd}}"
     }
-  }
+  },
+  "foundationProgress": "Progress: {{total}}/52"
 }
