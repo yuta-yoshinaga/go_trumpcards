@@ -32,13 +32,23 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { FortyThievesPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbol } from '../utils/cardAlt';
 import { FORTYTHIEVES_HELP, parseFortythievesCommand } from '../utils/cli/commands/fortythievesCommands';
 import { formatFortythievesState } from '../utils/cli/formatters/fortythievesFormatter';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
-const FOUNDATION_SUITS = ['♠', '♠', '♣', '♣', '♥', '♥', '♦', '♦'] as const;
+/**
+ * Suit glyph for a foundation pile, or `null` while it is empty.
+ *
+ * **空の山にスートを書かない。**`FortyThieves.MoveTableauToFoundation` は宛先
+ * インデックスを受け取らず、`findFoundation` が置ける最初の山を自動で選ぶ。
+ * 固定ラベルは空の山に対して何も保証しない見せかけだった (#4786)。
+ */
+function foundationSuit(pile: Card[]): string | null {
+  const top = pile[pile.length - 1];
+  return top ? suitSymbol(top.design) : null;
+}
 
 /** Forty Thieves tutorial step definitions. */
 const FT_TUTORIAL_STEPS: TutorialStep[] = [
@@ -326,7 +336,9 @@ function FortyThievesPageContent() {
                       key={`f-${idx.toString()}`}
                       className={`text-center rounded ${isHintTo('foundation', idx) ? HINT_RING : ''}`}
                     >
-                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                      <div className="text-game-text-muted text-xs mb-1" aria-hidden="true">
+                        {foundationSuit(pile) ?? '—'}
+                      </div>
                       <DropZone
                         isDropTarget={dnd.isDropTarget(foundationZone)}
                         onDragOver={dnd.handleDragOver(foundationZone)}
@@ -339,7 +351,7 @@ function FortyThievesPageContent() {
                             onClick={() => handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
                             aria-label={t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[idx],
+                              suit: foundationSuit(pile),
                               count: pile.length,
                             })}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
@@ -356,7 +368,7 @@ function FortyThievesPageContent() {
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading || !selectedSource}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                            aria-label={t('emptyFoundationAriaLabel', { idx: idx + 1 })}
                             style={{ width: ft.cw, height: ft.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >
