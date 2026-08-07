@@ -19,5 +19,8 @@
   "betStatusPull": "PULL",
   "playerWins": "Player wins!",
   "playerLoses": "Player loses.",
-  "totalPayoutLine": "total payout: {{payout}}"
+  "totalPayoutLine": "total payout: {{payout}}",
+  "pullConfirm": "Pull one bet back. {{amount}} returns to you and the amount at stake goes {{risk}} -> {{newRisk}}. This cannot be undone.",
+  "pullConfirmPrompt": "Enter y to go ahead (any other command cancels).",
+  "pullUnavailable": "You cannot pull right now."
 }

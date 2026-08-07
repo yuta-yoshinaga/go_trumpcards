@@ -98,6 +98,23 @@ func (lp *LetItRideCuiPresenter) Output(lir interfaces.LetItRideGame, lastErr er
 	return sb.String()
 }
 
+// PullConfirmOutput は Pull を実行する前の確認内容を出力する。
+//
+// **Web は専用の確認ダイアログでリスクの前後を見せてから実行する** のに、CUI は
+// "p" で即座に取り下げていた (#4699)。戻る額と場に残る額が分からないまま、
+// 取り消せない操作を打つことになる。
+func (lp *LetItRideCuiPresenter) PullConfirmOutput(lir interfaces.LetItRideGame) string {
+	pv := lir.GetPullPreview()
+	if pv == nil {
+		return i18n.T("letitride.pullUnavailable") + "\n"
+	}
+	return color.BoldYellow(i18n.Tf("letitride.pullConfirm",
+		"amount", strconv.Itoa(pv.Returned),
+		"risk", strconv.Itoa(pv.RiskBefore),
+		"newRisk", strconv.Itoa(pv.RiskAfter))) + "\n" +
+		i18n.T("letitride.pullConfirmPrompt") + "\n"
+}
+
 // ActionLogOutput 棋譜をテキスト出力
 func (lp *LetItRideCuiPresenter) ActionLogOutput(lir interfaces.LetItRideGame) string {
 	return actionLogOutputText(lir)

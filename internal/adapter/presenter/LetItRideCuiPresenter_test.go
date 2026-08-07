@@ -181,3 +181,35 @@ func TestLetItRideCuiPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
 }
+
+func TestLetItRideCuiPresenter_PullConfirmOutput(t *testing.T) {
+	p := new(LetItRideCuiPresenter)
+	withPreview := func(pv *domain.LetItRidePullPreview) *interfaces.MockLetItRideGame {
+		m := new(interfaces.MockLetItRideGame)
+		m.On("GetPullPreview").Return(pv)
+		return m
+	}
+
+	// **金額が出ないと確認する意味がない。**取り消せない操作の前に、戻る額と
+	// 場に残る額の前後を見せる (#4699)。
+	t.Run("names the amount returned and the stake before and after", func(t *testing.T) {
+		out := p.PullConfirmOutput(withPreview(&domain.LetItRidePullPreview{
+			Returned: 100, RiskBefore: 300, RiskAfter: 200,
+		}))
+		assert.Contains(t, out, "100")
+		assert.Contains(t, out, "300")
+		assert.Contains(t, out, "200")
+	})
+
+	t.Run("says the action cannot be undone and how to go ahead", func(t *testing.T) {
+		out := p.PullConfirmOutput(withPreview(&domain.LetItRidePullPreview{
+			Returned: 100, RiskBefore: 300, RiskAfter: 200,
+		}))
+		assert.Contains(t, out, "取り消せません")
+		assert.Contains(t, out, "y")
+	})
+
+	t.Run("reports when pulling is not possible", func(t *testing.T) {
+		assert.Contains(t, p.PullConfirmOutput(withPreview(nil)), "引き下げられません")
+	})
+}

@@ -15,6 +15,8 @@ type LetItRideGame interface {
 	Pull() error
 	// LetItRideAction ベットをそのままにする
 	LetItRideAction() error
+	// GetPullPreview Pull を実行したときに戻る額とリスクの増減を取得する
+	GetPullPreview() *domain.LetItRidePullPreview
 
 	// GetPlayerHand プレイヤーハンドを取得する
 	GetPlayerHand() []*domain.Card
