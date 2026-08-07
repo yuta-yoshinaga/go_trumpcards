@@ -36,7 +36,9 @@ type PokerSquaresWebOutput struct {
 
 // PokerSquaresWebOutputHint はサーバ側のシナジー考慮ヒント (#4790)。
 type PokerSquaresWebOutputHint struct {
+	// Row は推奨するマスの行 (0-4)。
 	Row int `json:"row"`
+	// Col は推奨するマスの列 (0-4)。
 	Col int `json:"col"`
 	// Score はその配置が生む行・列の相乗効果スコア。
 	Score int `json:"score"`
