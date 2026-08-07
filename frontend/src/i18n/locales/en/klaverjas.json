@@ -56,5 +56,16 @@
     "resetButton": "Use the reset button to start a new game."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "strengthLegend": {
+    "title": "Card strength and points",
+    "trumpCol": "Trump (J>9>A>10>K>Q>8>7)",
+    "plainCol": "Non-trump (A>10>K>Q>J>9>8>7)",
+    "rankCol": "#",
+    "cardCol": "Card",
+    "pointCol": "Pts",
+    "jas": "Jas",
+    "nel": "Nel",
+    "note": "The order differs between trump and non-trump. 162 points in total, plus 10 for the last trick."
+  }
 }
