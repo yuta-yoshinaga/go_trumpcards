@@ -414,4 +414,29 @@ describe('TwoTenJackPage', () => {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
   });
+
+  // **同じページ内で非対称だった (#4741)。**プレイフェーズはヒント札を
+  // 光らせているのに、宣言フェーズはテキストで「♠」と言うだけで、4つの
+  // 宣言ボタンのどれが推奨か視覚的に分からなかった。
+  it('highlights the suggested trump button during the declare phase', async () => {
+    mockExec.mockResolvedValue(declarePhaseState);
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('スペード')).toBeInTheDocument());
+
+    // ヒントを要求すると、推奨スートのボタンだけが強調される。
+    mockExec.mockResolvedValue({ ...declarePhaseState, hint: { reason: 'declare', trumpSuit: 3 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(document.querySelectorAll('[data-hint-suggested="true"]')).toHaveLength(1));
+    expect(screen.getByLabelText('ハート')).toHaveAttribute('data-hint-suggested', 'true');
+  });
+
+  // 逆側。ヒントを要求していなければ、どのボタンも強調しない。
+  it('highlights no trump button before a hint is requested', async () => {
+    mockExec.mockResolvedValue(declarePhaseState);
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('スペード')).toBeInTheDocument());
+
+    expect(document.querySelectorAll('[data-hint-suggested="true"]')).toHaveLength(0);
+  });
 });
