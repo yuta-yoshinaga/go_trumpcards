@@ -380,6 +380,63 @@ func (d *Durak) SetConfig(config DurakConfig) {
 // ---- 公開メソッド: ゲッター ----
 
 // GetGameEndFlag ゲーム終了フラグ取得
+// DurakHint はサーバーが計算した推奨手。
+type DurakHint struct {
+	// CardIndex は推奨する手札の位置。取る/パスを勧めるときは nil。
+	CardIndex *int
+	// AttackIdx は防御時に狙うテーブル上の攻撃カードの位置。攻撃時は nil。
+	AttackIdx *int
+	// TakeCards が true なら「引き取る」を勧める (防御できる札が無い)。
+	TakeCards bool
+	// Reason は理由キー (i18n で引く)。
+	Reason string
+}
+
+// GetHint は人間の手番での推奨手を返す。手番でなければ nil。
+//
+// **他のトリック系はサーバー計算の理由付きヒントを持つのに、Durak は CUI に
+// hint コマンドすら無く、Web もクライアント完結の簡易ヒューリスティックだけ
+// だった (#4740)。**推奨手は CPU の選択ロジック (cpuFind*) をそのまま使う。
+// 別ロジックを書くと「CPU は選ばない手を人間に勧める」ことになる。
+func (d *Durak) GetHint() *DurakHint {
+	if d.round.gameEndFlag || !d.IsHumanTurn() {
+		return nil
+	}
+	human := d.players[d.round.currentTurn]
+
+	switch d.round.phase {
+	case DurakPhaseAttack:
+		if len(d.round.tablePairs) == 0 {
+			idx := d.cpuFindWeakestAttackCard(human)
+			if idx < 0 {
+				return nil
+			}
+			return &DurakHint{CardIndex: &idx, Reason: "attack_weakest"}
+		}
+		idx := d.cpuFindAdditionalAttackCard(human)
+		if idx < 0 {
+			// 追撃できる札が無い = パスするしかない。
+			return &DurakHint{Reason: "pass_no_addition"}
+		}
+		return &DurakHint{CardIndex: &idx, Reason: "attack_additional"}
+
+	case DurakPhaseDefend:
+		for pairIdx, pair := range d.round.tablePairs {
+			if pair.Defense != nil {
+				continue
+			}
+			if idx := d.cpuFindDefenseCard(human, pair.Attack); idx >= 0 {
+				pi := pairIdx
+				return &DurakHint{CardIndex: &idx, AttackIdx: &pi, Reason: "defend_beat"}
+			}
+			// この攻撃を返せない = 引き取るしかない。
+			return &DurakHint{TakeCards: true, Reason: "take_cannot_beat"}
+		}
+		return nil
+	}
+	return nil
+}
+
 func (d *Durak) GetGameEndFlag() bool { return d.round.gameEndFlag }
 
 // IsHumanTurn 現在の手番が人間かを返す

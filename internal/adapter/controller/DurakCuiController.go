@@ -29,7 +29,7 @@ func (c *DurakCuiController) Exec(command string) string {
 		},
 		[]string{
 			"a", "attack", "d", "defend", "p", "pass", "t", "take",
-			"sort", "sd", "setdifficulty", "log", "l",
+			"sort", "sd", "setdifficulty", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -74,7 +74,7 @@ func (c *DurakCuiController) Exec(command string) string {
 					return c.di.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.di.ActionLog)
+				return handleCuiHintAndLog(cmd, c.di.Hint, c.di.ActionLog)
 			}
 		},
 	)

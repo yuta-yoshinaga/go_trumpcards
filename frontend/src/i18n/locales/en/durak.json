@@ -57,5 +57,15 @@
     "defendWithTrump": "Defend with a trump card",
     "takeBout": "Cannot defend — take the cards",
     "takeNothingToDefend": "Nothing to defend"
+  },
+  "hintCard": "Suggested: card [{{idx}}]",
+  "hintTake": "Suggested: pick up the cards",
+  "hintPass": "Suggested: pass",
+  "hintReason": {
+    "attack_weakest": "lead your weakest non-trump",
+    "attack_additional": "you can pile on the same rank",
+    "defend_beat": "this card beats it",
+    "take_cannot_beat": "nothing in hand beats it",
+    "pass_no_addition": "nothing left to pile on"
   }
 }
