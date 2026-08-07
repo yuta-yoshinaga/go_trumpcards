@@ -43,6 +43,9 @@ function makeState(overrides: Partial<RussianPokerResponse> = {}): RussianPokerR
 }
 
 beforeEach(() => {
+  // **ヒントのトグルは localStorage に残る。**消さないと前のテストの状態を
+  // 引き継いで、以降のアサーションが何も確かめなくなる。
+  localStorage.removeItem('hint_enabled_russianpoker');
   mockExec.mockReset();
   mockExec.mockResolvedValue(makeState());
 });
@@ -184,5 +187,30 @@ describe('RussianPokerPage', () => {
     fireEvent.change(anteInput, { target: { value: '15' } });
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+  });
+
+  // **ヒントロジックは実装済みで hintFactories にも登録されているのに、ページが
+  // useGameHint を import すらしておらず誰にも使われていなかった (#4716)。**
+  // 5 フェーズの複雑な意思決定を持つゲームなのに支援が皆無だった。
+  it('shows the frontend hint on the action phase once the toggle is on', async () => {
+    localStorage.setItem('hint_enabled_russianpoker', 'true');
+    renderWithProviders(<RussianPokerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+  });
+
+  // 逆側。既定 (OFF) では出さない。
+  it('shows no hint while the toggle is off', async () => {
+    renderWithProviders(<RussianPokerPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  it('offers the hint toggle in the settings panel', async () => {
+    renderWithProviders(<RussianPokerPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByLabelText(/ヒント/)).toBeInTheDocument();
   });
 });
