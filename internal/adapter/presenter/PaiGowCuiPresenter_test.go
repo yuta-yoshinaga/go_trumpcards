@@ -20,6 +20,7 @@ func setupPaiGowCuiMockDefaults(m *interfaces.MockPaiGowGame) {
 	m.On("GetDealerHighHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerLowHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
+	m.On("GetHint").Return((*domain.PaiGowHint)(nil)).Maybe()
 	m.On("GetBet").Return(0).Maybe()
 	m.On("GetResult").Return(domain.GameResult(0)).Maybe()
 	m.On("GetHighHandResult").Return(domain.GameResult(0)).Maybe()
@@ -102,6 +103,7 @@ func TestPaiGowCuiPresenter_Output_PlayerWins(t *testing.T) {
 	m.On("GetDealerHighHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerLowHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(true).Maybe()
+	m.On("GetHint").Return((*domain.PaiGowHint)(nil)).Maybe()
 	m.On("GetBet").Return(100).Maybe()
 	m.On("GetResult").Return(domain.GameResultWin).Maybe()
 	m.On("GetHighHandResult").Return(domain.GameResultWin).Maybe()
@@ -132,6 +134,7 @@ func TestPaiGowCuiPresenter_Output_DealerWins(t *testing.T) {
 	m.On("GetDealerHighHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerLowHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(true).Maybe()
+	m.On("GetHint").Return((*domain.PaiGowHint)(nil)).Maybe()
 	m.On("GetBet").Return(100).Maybe()
 	m.On("GetResult").Return(domain.GameResultLose).Maybe()
 	m.On("GetHighHandResult").Return(domain.GameResultLose).Maybe()
@@ -160,6 +163,7 @@ func TestPaiGowCuiPresenter_Output_Push(t *testing.T) {
 	m.On("GetDealerHighHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerLowHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(true).Maybe()
+	m.On("GetHint").Return((*domain.PaiGowHint)(nil)).Maybe()
 	m.On("GetBet").Return(100).Maybe()
 	m.On("GetResult").Return(domain.GameResultDraw).Maybe()
 	m.On("GetHighHandResult").Return(domain.GameResultWin).Maybe()
@@ -207,6 +211,7 @@ func TestPaiGowCuiPresenter_Output_EndPhaseWithHands(t *testing.T) {
 		domain.NewCard(domain.CardDesignHeart, 3, false),
 	}).Maybe()
 	m.On("GetGameEndFlag").Return(true).Maybe()
+	m.On("GetHint").Return((*domain.PaiGowHint)(nil)).Maybe()
 	m.On("GetBet").Return(100).Maybe()
 	m.On("GetResult").Return(domain.GameResultWin).Maybe()
 	m.On("GetHighHandResult").Return(domain.GameResultWin).Maybe()
@@ -263,4 +268,54 @@ func TestPaiGowCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "棋譜")
+}
+
+// **CUI には推奨分割を出す口が無く、7枚から反則にならない2枚を無警告で
+// 探すしかなかった (#4696)。**Web は「自動設定」ボタンと反則チェックを
+// 常時出していた。
+func TestPaiGowCuiPresenter_HintOutput(t *testing.T) {
+	p := new(PaiGowCuiPresenter)
+	cards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 14, false),
+		domain.NewCard(domain.CardDesignHeart, 14, false),
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+		domain.NewCard(domain.CardDesignHeart, 13, false),
+		domain.NewCard(domain.CardDesignClover, 5, false),
+		domain.NewCard(domain.CardDesignDiamond, 7, false),
+		domain.NewCard(domain.CardDesignSpade, 9, false),
+	}
+	withHint := func(h *domain.PaiGowHint) *interfaces.MockPaiGowGame {
+		m := new(interfaces.MockPaiGowGame)
+		m.On("GetPlayerCards").Return(cards).Maybe()
+		m.On("GetHint").Return(h)
+		return m
+	}
+
+	t.Run("names the recommended indices and the cards behind them", func(t *testing.T) {
+		out := p.HintOutput(withHint(&domain.PaiGowHint{
+			LowIdx0: 2, LowIdx1: 3, LowIsPair: true, Reason: "house_way_pair",
+		}))
+		assert.Contains(t, out, "[2]")
+		assert.Contains(t, out, "[3]")
+		// **インデックスだけでは足りない。**どの札を指しているか読み手に見えること。
+		assert.Contains(t, out, "13")
+	})
+
+	t.Run("explains why a pair split is safe", func(t *testing.T) {
+		out := p.HintOutput(withHint(&domain.PaiGowHint{
+			LowIdx0: 2, LowIdx1: 3, LowIsPair: true, Reason: "house_way_pair",
+		}))
+		assert.Contains(t, out, "反則")
+	})
+
+	// 理由キーごとに違う文言が出ること (どちらも同じ文なら理由は飾り)。
+	t.Run("high-card and pair splits give different reasons", func(t *testing.T) {
+		pair := p.HintOutput(withHint(&domain.PaiGowHint{LowIdx0: 2, LowIdx1: 3, LowIsPair: true, Reason: "house_way_pair"}))
+		high := p.HintOutput(withHint(&domain.PaiGowHint{LowIdx0: 0, LowIdx1: 2, Reason: "house_way_high"}))
+		assert.NotEqual(t, pair, high)
+	})
+
+	t.Run("says so when no hint is available", func(t *testing.T) {
+		assert.Contains(t, p.HintOutput(withHint(nil)), "ヒントを出せません")
+	})
 }

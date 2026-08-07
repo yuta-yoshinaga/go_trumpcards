@@ -98,6 +98,35 @@ func (pp *PaiGowCuiPresenter) Output(pg interfaces.PaiGowGame, lastErr error) st
 	return sb.String()
 }
 
+// HintOutput はセットハンドフェーズでの推奨分割を出力する。
+//
+// **どの2枚をローに置くかは、ディーラーのハウスウェイと同じ規則で選ぶ** (#4696)。
+// Web は「自動設定」ボタンと反則チェックを常時出しているのに、CUI は7枚から
+// 反則にならない分割を完全に手作業・無警告で探すしかなかった。
+func (pp *PaiGowCuiPresenter) HintOutput(pg interfaces.PaiGowGame) string {
+	hint := pg.GetHint()
+	if hint == nil {
+		return i18n.T("paigow.hintNone") + "\n"
+	}
+	cards := pg.GetPlayerCards()
+	low := ""
+	if hint.LowIdx0 < len(cards) && hint.LowIdx1 < len(cards) {
+		low = cuiCardStr(cards[hint.LowIdx0]) + " " + cuiCardStr(cards[hint.LowIdx1])
+	}
+	return color.Yellow(i18n.Tf("paigow.hintSplit",
+		"idx0", strconv.Itoa(hint.LowIdx0),
+		"idx1", strconv.Itoa(hint.LowIdx1),
+		"cards", low,
+		"reason", hintReasonStr(hint.Reason, paiGowHintReasonKeys),
+	)) + "\n"
+}
+
+// paiGowHintReasonKeys はパイガオ固有のヒント理由キー。
+var paiGowHintReasonKeys = map[string]string{
+	"house_way_pair": "paigow.hintReasonPair",
+	"house_way_high": "paigow.hintReasonHigh",
+}
+
 // ActionLogOutput 棋譜をテキスト出力
 func (pp *PaiGowCuiPresenter) ActionLogOutput(pg interfaces.PaiGowGame) string {
 	return actionLogOutputText(pg)

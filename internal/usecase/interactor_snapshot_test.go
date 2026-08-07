@@ -182,11 +182,12 @@ func (s *stubCribbagePresenter) Output(_ interfaces.CribbageGame, _ error) strin
 func (s *stubCribbagePresenter) ActionLogOutput(_ interfaces.CribbageGame) string { return `{}` }
 func (s *stubCribbagePresenter) HintOutput(_ interfaces.CribbageGame) string      { return `{}` }
 
-// stubPaiGowPresenter implements presenter.PaiGowPresenter (= GamePresenter[interfaces.PaiGowGame])
+// stubPaiGowPresenter implements presenter.PaiGowPresenter
 type stubPaiGowPresenter struct{}
 
 func (s *stubPaiGowPresenter) Output(_ interfaces.PaiGowGame, _ error) string { return `{}` }
 func (s *stubPaiGowPresenter) ActionLogOutput(_ interfaces.PaiGowGame) string { return `{}` }
+func (s *stubPaiGowPresenter) HintOutput(_ interfaces.PaiGowGame) string      { return `{}` }
 
 // --- tests ---
 

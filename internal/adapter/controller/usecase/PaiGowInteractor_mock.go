@@ -24,6 +24,16 @@ func (m *MockPaiGowInteractor) SetHands(lowIdx0, lowIdx1 int) string {
 	return args.String(0)
 }
 
+func (m *MockPaiGowInteractor) AutoSetHands() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+func (m *MockPaiGowInteractor) Hint() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 func (m *MockPaiGowInteractor) ActionLog() string {
 	args := m.Called()
 	return args.String(0)

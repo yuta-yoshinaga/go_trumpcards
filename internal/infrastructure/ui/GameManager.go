@@ -859,7 +859,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultPaiGow(), new(presenter.PaiGowCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:          "paigow.helpTitle",
-				CommandKeys:       []string{"paigow.helpBet", "paigow.helpSet"},
+				CommandKeys:       []string{"paigow.helpBet", "paigow.helpSet", "paigow.helpAuto", "paigow.helpHint"},
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},

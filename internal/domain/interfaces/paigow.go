@@ -13,6 +13,10 @@ type PaiGowGame interface {
 	Bet(amount int) error
 	// SetHands ローハンドの2枚を指定してハンドを分割する
 	SetHands(lowIdx0, lowIdx1 int) error
+	// AutoSetHands ハウスウェイの分割をそのまま適用する
+	AutoSetHands() error
+	// GetHint セットハンドフェーズでの推奨分割を取得する
+	GetHint() *domain.PaiGowHint
 
 	// GetPlayerCards プレイヤーの7枚を取得する
 	GetPlayerCards() []*domain.Card

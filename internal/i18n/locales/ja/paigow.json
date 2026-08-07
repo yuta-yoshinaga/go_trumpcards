@@ -19,5 +19,11 @@
   "dealerWins": "ディーラーの勝ち！",
   "push": "プッシュ！",
   "payoutLine": "払戻し: {{payout}}",
-  "payoutWithCommissionLine": "払戻し: {{payout}} (手数料: {{commission}})"
+  "payoutWithCommissionLine": "払戻し: {{payout}} (手数料: {{commission}})",
+  "helpAuto": "  a                    ハウスウェイで自動分割",
+  "helpHint": "  h                    推奨分割を表示",
+  "hintNone": "いまはヒントを出せません。",
+  "hintSplit": "推奨: [{{idx0}}] [{{idx1}}] ({{cards}}) をローハンドへ - {{reason}}",
+  "hintReasonPair": "ローにペアを置いても反則にならない最強の分割",
+  "hintReasonHigh": "反則にならない範囲でローを最大化した分割"
 }
