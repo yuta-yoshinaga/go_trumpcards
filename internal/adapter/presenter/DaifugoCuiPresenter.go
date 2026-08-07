@@ -12,7 +12,12 @@ import (
 )
 
 // daifugoPlayerStr returns the display string for a single Daifugo player.
-func daifugoPlayerStr(player *domain.DaifugoPlayer, i int) string {
+//
+// playable が非 nil のとき、そのインデックスのカードに "*" を付ける。大富豪は
+// 革命・11バック・スートロック・階段縛りで場ごとに強弱と枚数の条件が変わるのに、
+// CUI はどれが出せるかを自力で計算させていた (#4733)。CrazyEights の
+// crazyEightsHandStr と同じ見せ方に揃える。
+func daifugoPlayerStr(player *domain.DaifugoPlayer, i int, playable []int) string {
 	var b strings.Builder
 	b.WriteString(cuiPlayerName(player, i))
 	if player.GetIsFinished() {
@@ -20,10 +25,30 @@ func daifugoPlayerStr(player *domain.DaifugoPlayer, i int) string {
 	} else {
 		b.WriteString(i18n.Tf("daifugo.playerCardCount", "count", strconv.Itoa(player.GetCardsSize())) + "\n")
 		if player.GetIsHuman() {
-			b.WriteString(cuiIndexedCardListStr(player) + "\n")
+			b.WriteString(daifugoHandStr(player, playable) + "\n")
 		}
 	}
 	return b.String()
+}
+
+// daifugoHandStr renders the hand as an indexed list, starring the cards that
+// take part in at least one legal play right now.
+func daifugoHandStr(player *domain.DaifugoPlayer, playable []int) string {
+	if len(playable) == 0 {
+		return cuiIndexedCardListStr(player)
+	}
+	mark := make(map[int]bool, len(playable))
+	for _, idx := range playable {
+		mark[idx] = true
+	}
+	parts := make([]string, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		parts[i] = "[" + strconv.Itoa(i) + "]" + cuiCardStr(player.GetCard(i))
+		if mark[i] {
+			parts[i] += "*"
+		}
+	}
+	return strings.Join(parts, "  ")
 }
 
 // DaifugoCuiPresenter renders the Daifugo CUI view.
@@ -32,8 +57,9 @@ type DaifugoCuiPresenter struct{}
 // Output renders the current game state for the active locale (#1699).
 func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("daifugo.helpTitle"), func(b *strings.Builder) {
+		playable := dg.GetPlayableCardIndices()
 		for i := 0; i < dg.GetPlayerCnt(); i++ {
-			b.WriteString(daifugoPlayerStr(dg.GetPlayer(i), i))
+			b.WriteString(daifugoPlayerStr(dg.GetPlayer(i), i, playable))
 		}
 
 		b.WriteString("----------\n")
