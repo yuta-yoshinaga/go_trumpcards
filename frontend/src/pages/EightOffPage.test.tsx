@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, eightoffApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -1099,5 +1099,33 @@ describe('EightOffPage', () => {
         ),
       );
     });
+  });
+});
+
+// **上限を知るには赤くなった札にマウスを乗せるしかなかった (#4801)。**後追いの
+// 体験になる。ほぼ同型の Penguin は同じ計算式のバッジをヘッダーに常設している。
+describe('EightOffPage supermove badge', () => {
+  it('shows the current limit without any interaction', async () => {
+    renderWithProviders(<EightOffPage />);
+    const badge = await screen.findByTestId('eo-supermove-badge');
+    expect(badge).toBeInTheDocument();
+  });
+
+  // **空きセルが増えると上限も増える。**固定値を出すと、空きを作った意味が
+  // 見えない。
+  it('tracks the free cells rather than showing a fixed number', async () => {
+    mockExec.mockResolvedValue({ ...playingState, freeCells: [null, null, null, null, null, null, null, null] });
+    renderWithProviders(<EightOffPage />);
+    const withAllFree = (await screen.findByTestId('eo-supermove-badge')).textContent;
+
+    cleanup();
+    mockExec.mockResolvedValue({
+      ...playingState,
+      freeCells: [{ design: 'SPADE', value: 5 }, { design: 'HEART', value: 6 }, null, null, null, null, null, null],
+    });
+    renderWithProviders(<EightOffPage />);
+    const withTwoUsed = (await screen.findByTestId('eo-supermove-badge')).textContent;
+
+    expect(withAllFree).not.toEqual(withTwoUsed);
   });
 });

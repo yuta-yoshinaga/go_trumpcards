@@ -35,5 +35,7 @@
     "useFreeCells": "Consider moving a card to a free cell to open up moves"
   },
   "hintAnnouncement": "Hint: move {{card}} from {{from}} to {{to}}",
-  "hintNoMoves": "No moves available"
+  "hintNoMoves": "No moves available",
+  "supermoveBadge": "Max move: {{limit}}",
+  "supermoveBadgeTooltip": "Cards movable at once (free cells {{cells}}, empty columns {{cols}}). More empties means more cards."
 }
