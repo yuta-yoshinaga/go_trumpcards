@@ -63,5 +63,6 @@
     "resetButton": "Use the reset button to start a new game."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "marriageEarned": "Marriage bonus secured: +{{points}} (playing the K or Q does not take it away)"
 }
