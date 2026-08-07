@@ -1,6 +1,7 @@
 import { type DragEvent, useCallback, useMemo } from 'react';
 import { type CanfieldMoveZone, canfieldApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { AutoCompleteReadyBadge } from '../components/AutoCompleteReadyBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -30,6 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CanfieldResponse } from '../types/card';
 import { CanfieldPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { canfieldAutoCompleteReady } from '../utils/canfieldAutoComplete';
 import { cardAlt } from '../utils/cardAlt';
 import { CANFIELD_HELP, parseCanfieldCommand } from '../utils/cli/commands/canfieldCommands';
 import { formatCanfieldState } from '../utils/cli/formatters/canfieldFormatter';
@@ -200,6 +202,10 @@ function CanfieldPageContent() {
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
   if (!state) return null;
+
+  // 自動完成はリザーブ・山札・捨て札が空でないとサーバが弾く。押してみるまで
+  // 分からなかったので、他のソリティアと同じくリング+バッジで知らせる (#4787)。
+  const autoCompleteReady = canfieldAutoCompleteReady(state);
 
   const topWaste = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const topReserve = state.reserve.length > 0 ? state.reserve[state.reserve.length - 1] : null;
@@ -539,12 +545,17 @@ function CanfieldPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={`${btnSuccess} ${focusRingWhite}`}
+                    className={`${btnSuccess} ${focusRingWhite}${
+                      autoCompleteReady && !loading ? ' animate-pulse ring-2 ring-ds-success' : ''
+                    }`}
                     onClick={handleAutoComplete}
-                    disabled={loading}
+                    disabled={loading || !autoCompleteReady}
+                    data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>
+                  <AutoCompleteReadyBadge ready={autoCompleteReady} testId="canfield-autocomplete-ready-badge" />
                   <button
                     type="button"
                     className={`${btnOutline} ${focusRingWhite}`}

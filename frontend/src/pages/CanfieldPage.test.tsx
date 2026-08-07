@@ -181,12 +181,30 @@ describe('CanfieldPage', () => {
     await waitFor(() => expect(screen.getByTestId('cf-hint-display')).not.toHaveTextContent('ヒントがあります'));
   });
 
-  it('autocomplete button triggers autocomplete command', async () => {
+  // 自動完成はリザーブ・山札・捨て札が空のときだけ通る (#4787)。押せる/押せない
+  // の両側を踏まないと、常に押せる実装でも常に押せない実装でも通ってしまう。
+  const readyState = { ...playingState, reserve: [], stockCount: 0, waste: [] };
+
+  it('autocomplete button triggers autocomplete command once the board is ready', async () => {
+    mockExec.mockResolvedValue(readyState);
     renderWithProviders(<CanfieldPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const btn = screen.getByRole('button', { name: '自動完成' });
+    const btn = await screen.findByTestId('autocomplete-button');
+    await waitFor(() => expect(btn).toBeEnabled());
+    expect(btn).toHaveClass('animate-pulse');
+    expect(screen.getByTestId('canfield-autocomplete-ready-badge')).toBeInTheDocument();
     btn.click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('keeps the autocomplete button dark and disabled while the stock still holds cards', async () => {
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).toBeDisabled();
+    expect(btn).not.toHaveClass('animate-pulse');
+    expect(btn).toHaveAttribute('title');
+    expect(screen.queryByTestId('canfield-autocomplete-ready-badge')).not.toBeInTheDocument();
   });
 
   it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {

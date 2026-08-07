@@ -16,6 +16,7 @@
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "autoComplete": "自動完成",
+  "autoCompleteNotReady": "リザーブ・山札・捨て札がすべて空になるとクリックできます",
   "undo": "元に戻す",
   "empty": "空",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",

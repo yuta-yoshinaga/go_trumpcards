@@ -16,6 +16,7 @@
   "giveup": "Give up",
   "hint": "Hint",
   "autoComplete": "Auto complete",
+  "autoCompleteNotReady": "Available once the reserve, stock and waste are all empty",
   "undo": "Undo",
   "empty": "empty",
   "gameClear": "Game cleared! Moves: {{moveCount}}",
