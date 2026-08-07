@@ -266,17 +266,57 @@ func TestHighCardFlushCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, p.HintOutput(m), i18n.T("highcardflush.hintNone"))
 	})
 
-	t.Run("raise when the flush qualifies", func(t *testing.T) {
+	// **倍率まで言う (#4714)。**Web には 1x/2x/3x のボタンが並ぶのに、CUI は
+	// 「レイズ」か「フォールド」の二択しか返していなかった。
+	action := func(flushLen int, hand ...*domain.Card) *interfaces.MockHighCardFlushGame {
 		m := new(interfaces.MockHighCardFlushGame)
 		m.On("GetPhase").Return(domain.HighCardFlushPhaseAction)
-		m.On("GetPlayerFlushLen").Return(domain.HighCardFlushDealerMinFlushLen)
-		assert.Contains(t, p.HintOutput(m), i18n.T("highcardflush.hintRaise"))
+		m.On("GetPlayerFlushLen").Return(flushLen)
+		m.On("GetPlayerHand").Return(hand).Maybe()
+		return m
+	}
+	spade := func(v int) *domain.Card { return domain.NewCard(domain.CardDesignSpade, v, false) }
+
+	t.Run("raises 3x on a flush of six", func(t *testing.T) {
+		assert.Contains(t, p.HintOutput(action(6)), i18n.T("highcardflush.hintRaise3x"))
 	})
 
-	t.Run("fold when the flush is too short", func(t *testing.T) {
-		m := new(interfaces.MockHighCardFlushGame)
-		m.On("GetPhase").Return(domain.HighCardFlushPhaseAction)
-		m.On("GetPlayerFlushLen").Return(domain.HighCardFlushDealerMinFlushLen - 1)
-		assert.Contains(t, p.HintOutput(m), i18n.T("highcardflush.hintFold"))
+	t.Run("raises 2x on a flush of five", func(t *testing.T) {
+		assert.Contains(t, p.HintOutput(action(5)), i18n.T("highcardflush.hintRaise2x"))
+	})
+
+	t.Run("raises 1x on a flush of four", func(t *testing.T) {
+		assert.Contains(t, p.HintOutput(action(4)), i18n.T("highcardflush.hintRaise1x"))
+	})
+
+	// **3枚は一律レイズではない (旧実装のバグ)。**ディーラーの成立条件に
+	// 届いただけで押すと、弱い3枚でも賭けることになる。
+	t.Run("raises 1x on a three-card flush headed by a queen", func(t *testing.T) {
+		out := p.HintOutput(action(3, spade(12), spade(7), spade(3)))
+		assert.Contains(t, out, i18n.T("highcardflush.hintRaise1xMarginal"))
+	})
+
+	t.Run("folds a three-card flush below a queen", func(t *testing.T) {
+		out := p.HintOutput(action(3, spade(11), spade(7), spade(3)))
+		assert.Contains(t, out, i18n.T("highcardflush.hintFold"))
+	})
+
+	// **エースは 14 として数える。**1 のまま比較すると最強の3枚を降ろす。
+	t.Run("counts an ace as the highest card, not the lowest", func(t *testing.T) {
+		out := p.HintOutput(action(3, spade(1), spade(7), spade(3)))
+		assert.Contains(t, out, i18n.T("highcardflush.hintRaise1xMarginal"))
+	})
+
+	// **フラッシュに使えないスートの高札は数えない。**♥A を持っていても、
+	// ♠が3枚しかなければ賭けの根拠にはならない。
+	t.Run("ignores a high card in a suit too short to be the flush", func(t *testing.T) {
+		out := p.HintOutput(action(3,
+			spade(11), spade(7), spade(3),
+			domain.NewCard(domain.CardDesignHeart, 1, false)))
+		assert.Contains(t, out, i18n.T("highcardflush.hintFold"))
+	})
+
+	t.Run("folds when the flush is too short", func(t *testing.T) {
+		assert.Contains(t, p.HintOutput(action(2)), i18n.T("highcardflush.hintFold"))
 	})
 }
