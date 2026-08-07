@@ -399,6 +399,61 @@ func TestVideoPokerCuiPresenter_HintOutput(t *testing.T) {
 		assert.NotContains(t, out, "[2]")
 	})
 
+	// **配当のつかない低いペアが、強いドローを潰していた (#4691)。**ペア判定が
+	// 最初に無条件でヒットするため、4枚ロイヤル・4枚フラッシュが同居しても
+	// 常に弱いペアを勧めていた。順序は Jacks or Better の標準戦略に合わせる:
+	//   4枚ロイヤル > 4枚フラッシュ > 低いペア > 4枚ストレート
+	t.Run("jacks or better prefers a royal draw over a non-paying pair", func(t *testing.T) {
+		hand := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 10, false),
+			domain.NewCard(domain.CardDesignSpade, 11, false),
+			domain.NewCard(domain.CardDesignSpade, 12, false),
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+			domain.NewCard(domain.CardDesignHeart, 10, false),
+		}
+		out := p.HintOutput(drawGame("jacksorbetter", hand))
+		assert.Contains(t, out, i18n.T("videopoker.holdRoyalDraw"))
+	})
+
+	t.Run("jacks or better prefers a flush draw over a non-paying pair", func(t *testing.T) {
+		hand := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 8, false),
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+			domain.NewCard(domain.CardDesignHeart, 3, false),
+		}
+		out := p.HintOutput(drawGame("jacksorbetter", hand))
+		assert.Contains(t, out, i18n.T("videopoker.holdFlushDraw"))
+	})
+
+	// **逆側。**低ペアは4枚ストレートより上。ここを一緒くたに「ドロー優先」と
+	// すると、標準戦略から外れる方向に壊れる。
+	t.Run("jacks or better keeps a low pair over a straight draw", func(t *testing.T) {
+		hand := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 4, false),
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignHeart, 6, false),
+			domain.NewCard(domain.CardDesignClover, 7, false),
+			domain.NewCard(domain.CardDesignHeart, 4, false),
+		}
+		out := p.HintOutput(drawGame("jacksorbetter", hand))
+		assert.Contains(t, out, i18n.T("videopoker.holdPair"))
+	})
+
+	// 配当のつくペア (J 以上) は据え置き。4枚フラッシュより上。
+	t.Run("jacks or better keeps a paying high pair over a flush draw", func(t *testing.T) {
+		hand := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 12, false),
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 8, false),
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			domain.NewCard(domain.CardDesignHeart, 12, false),
+		}
+		out := p.HintOutput(drawGame("jacksorbetter", hand))
+		assert.Contains(t, out, i18n.T("videopoker.holdPair"))
+	})
+
 	t.Run("jacks or better holds a flush draw", func(t *testing.T) {
 		hand := []*domain.Card{
 			domain.NewCard(domain.CardDesignSpade, 3, false),
