@@ -64,32 +64,54 @@ describe('MariasPage', () => {
     expect(screen.getByText('ソリスト')).toBeInTheDocument();
   });
 
-  it('shows a marriage banner during play (trump-suit K-Q scores +40)', async () => {
-    // Default hand: ♥K + ♥Q with trump ♥ → a +40 marriage.
+  // **結婚ボーナスは配った時点で確定している (#4759)。**以前このバナーは毎
+  // レンダー手札を走査して K と Q の両方を持っているかを見ていたので、どちらかを
+  // 出した瞬間に消え、「出したのでボーナスを失った」という誤解を与えていた。
+  it('shows the settled marriage bonus during play', async () => {
+    mockExec.mockResolvedValue(makeMariasState({ roundMarriage: [40, 0, 0] }));
     renderWithProviders(<MariasPage />);
     const banner = await screen.findByTestId('marias-marriage');
-    expect(banner).toHaveTextContent('マリッジ可能');
-    expect(banner).toHaveTextContent('♥ K-Q (+40)');
+    expect(banner).toHaveTextContent('40');
   });
 
-  it('labels a non-trump marriage as +20', async () => {
-    mockExec.mockResolvedValue(makeMariasState({ trumpSuit: 1 })); // trump ♠, ♥ K-Q now +20
+  // **これがこの issue の本体。**K を場に出しても点数は動かないので、バナーも
+  // 消えてはいけない。
+  it('keeps the banner after the king has been played', async () => {
+    mockExec.mockResolvedValue(
+      makeMariasState({
+        // 手札から ♥K が消え、♥Q だけが残った状態。roundMarriage は確定のまま。
+        roundMarriage: [40, 0, 0],
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 1,
+            cards: [{ design: 'HEART', value: 12 }],
+            trickCount: 1,
+            score: 0,
+            isSoloist: true,
+          },
+          { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isSoloist: false },
+          { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isSoloist: false },
+        ],
+      }),
+    );
     renderWithProviders(<MariasPage />);
-    await waitFor(() => expect(screen.getByTestId('marias-marriage')).toHaveTextContent('♥ K-Q (+20)'));
+    expect(await screen.findByTestId('marias-marriage')).toHaveTextContent('40');
   });
 
-  it('announces the marriage banner with a spoken suit name (symbol hidden from SR)', async () => {
-    // Default hand: ♥K + ♥Q with trump ♥ → +40. SR reads the suit name, not the glyph.
+  it('announces the banner in a live region', async () => {
+    mockExec.mockResolvedValue(makeMariasState({ roundMarriage: [40, 0, 0] }));
     renderWithProviders(<MariasPage />);
     const banner = await screen.findByTestId('marias-marriage');
     expect(banner).toHaveAttribute('role', 'status');
     expect(banner).toHaveAttribute('aria-live', 'polite');
-    expect(banner).toHaveAttribute('aria-label', 'マリッジ可能: ハート K-Q +40');
   });
 
-  it('shows no marriage banner when the hand has no K-Q pair', async () => {
+  it('shows no marriage banner when no marriage was dealt', async () => {
     mockExec.mockResolvedValue(
       makeMariasState({
+        roundMarriage: [0, 0, 0],
         players: [
           {
             id: 0,
