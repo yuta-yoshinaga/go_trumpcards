@@ -69,6 +69,13 @@ func (cp *CaribbeanStudWebPresenter) Output(cs interfaces.CaribbeanStudGame, las
 	return marshalOrError(resObj)
 }
 
+// HintOutput ヒントを出力する。Web ではヒントはクライアント側 (useGameHint) で
+// 算出するため、通常の状態出力を返す。CaribbeanStudPresenter インタフェースを
+// 満たすための実装。
+func (cp *CaribbeanStudWebPresenter) HintOutput(cs interfaces.CaribbeanStudGame) string {
+	return cp.Output(cs, nil)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (cp *CaribbeanStudWebPresenter) ActionLogOutput(cs interfaces.CaribbeanStudGame) string {
 	return actionLogOutputJSON(cs)

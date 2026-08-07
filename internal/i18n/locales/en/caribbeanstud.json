@@ -20,5 +20,12 @@
   "dealerWins": "Dealer wins!",
   "playerFolded": "Player folded.",
   "push": "Push!",
-  "totalPayoutLine": "total payout: {{payout}}"
+  "totalPayoutLine": "total payout: {{payout}}",
+  "hintNone": "No hint is available now.",
+  "hintDecision": "Recommended: {{action}} - {{reason}}",
+  "hintPlay": "play (raise)",
+  "hintFold": "fold",
+  "hintPairOrBetter": "you have one pair or better",
+  "hintAceKingHigh": "no made hand, but you hold an Ace and a King",
+  "hintWeakHand": "no made hand and nothing as high as Ace-King"
 }

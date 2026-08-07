@@ -34,6 +34,11 @@ func (m *MockCaribbeanStudInteractor) ActionLog() string {
 	return args.String(0)
 }
 
+func (m *MockCaribbeanStudInteractor) Hint() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 // Snapshot モック
 func (m *MockCaribbeanStudInteractor) Snapshot() ([]byte, error) {
 	ret := m.Called()
