@@ -269,6 +269,15 @@ function EightOffPageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
+          {/* **上限を知るには赤くなった札にマウスを乗せるしかなかった (#4801)。**
+              後追いの体験になる。ほぼ同型の Penguin は同じ計算式のバッジを
+              ヘッダーに常設している。 */}
+          <span
+            data-testid="eo-supermove-badge"
+            title={t('supermoveBadgeTooltip', { cells: emptyFreeCells, cols: emptyTableauCols })}
+          >
+            {t('supermoveBadge', { limit: supermoveLimit })}
+          </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
