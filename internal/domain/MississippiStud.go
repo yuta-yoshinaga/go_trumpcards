@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 )
 
 // ミシシッピ・スタッドフェーズ定数
@@ -274,6 +275,190 @@ func mississippiStudPayoutMultiplier(rank int, hand []*Card) int {
 	default:
 		return MississippiStudPayLoss
 	}
+}
+
+// MississippiStudMadeHand は現在の手役と、それが配当表に載るかどうか。
+type MississippiStudMadeHand struct {
+	// Rank は既知のカードから作れる最良の役 (PokerHand*)。
+	Rank int
+	// PaytableEligible は配当表の対象か。6以上のペアかエースのペア、
+	// またはワンペアより上の役。
+	PaytableEligible bool
+}
+
+// 推奨アクション (#4710)。
+const (
+	// MSRecommendPlay3x 3倍を置く。
+	MSRecommendPlay3x = "play3x"
+	// MSRecommendPlay1x 1倍を置く。
+	MSRecommendPlay1x = "play1x"
+	// MSRecommendFold 降りる。
+	MSRecommendFold = "fold"
+)
+
+// knownCards はホールカードと**公開済みの**コミュニティカードを返す。
+//
+// **未公開のカードを混ぜない。**混ぜると、プレイヤーがまだ見ていない札を
+// 根拠にした助言になる。
+func (m *MississippiStud) knownCards() []*Card {
+	cards := append([]*Card{}, m.playerHand...)
+	for i, c := range m.communityCards {
+		if i < len(m.communityRevealed) && m.communityRevealed[i] {
+			cards = append(cards, c)
+		}
+	}
+	return cards
+}
+
+// GetCurrentMadeHand は既知のカードからできている役を返す。2枚未満、または
+// ハイカードどまりのときは nil。
+//
+// **Web は ms-made-hand に役と配当対象かを常時出しているのに、CUI には
+// どちらも無かった (#4710)。**
+func (m *MississippiStud) GetCurrentMadeHand() *MississippiStudMadeHand {
+	cards := m.knownCards()
+	if len(cards) < 2 {
+		return nil
+	}
+	rank := mississippiStudBestRank(cards)
+	if rank <= PokerHandHighCard {
+		return nil
+	}
+	if rank > PokerHandOnePair {
+		return &MississippiStudMadeHand{Rank: rank, PaytableEligible: true}
+	}
+	return &MississippiStudMadeHand{
+		Rank:             rank,
+		PaytableEligible: mississippiStudPairTier(cards) != MississippiStudPayLoss,
+	}
+}
+
+// mississippiStudBestRank は既知のカードから作れる最良の役を返す。
+// 5枚に満たないときは同ランクの重なりだけで判定する (フラッシュや
+// ストレートは5枚そろわないと成立しない)。
+func mississippiStudBestRank(cards []*Card) int {
+	if len(cards) >= 5 {
+		best := PokerHandHighCard
+		for _, combo := range combinations(cards, 5) {
+			if r := evalFiveCardHand(combo); r > best {
+				best = r
+			}
+		}
+		return best
+	}
+	counts := map[int]int{}
+	for _, c := range cards {
+		counts[c.GetValue()]++
+	}
+	maxCount, pairs := 0, 0
+	for _, n := range counts {
+		if n > maxCount {
+			maxCount = n
+		}
+		if n >= 2 {
+			pairs++
+		}
+	}
+	switch {
+	case maxCount >= 4:
+		return PokerHandFourOfAKind
+	case maxCount == 3:
+		return PokerHandThreeOfAKind
+	case pairs >= 2:
+		return PokerHandTwoPair
+	case maxCount == 2:
+		return PokerHandOnePair
+	default:
+		return PokerHandHighCard
+	}
+}
+
+// RecommendBet は現在のストリートでの推奨アクションを返す。判断のいらない
+// フェーズでは空文字。
+//
+// **判定はフロントの getMississippiStudHint と同じ規則。**配当対象の役が
+// できていれば 3x、まともなドローがあれば 1x、それ以外は降りる。ずれると
+// 同じ局面で CUI と Web が違う倍率を指す。
+func (m *MississippiStud) RecommendBet() string {
+	switch m.phase {
+	case MississippiStudPhaseThirdSt, MississippiStudPhaseFourthSt, MississippiStudPhaseFifthSt:
+	default:
+		return ""
+	}
+	cards := m.knownCards()
+	if len(cards) == 0 {
+		return ""
+	}
+	if made := m.GetCurrentMadeHand(); made != nil && made.PaytableEligible {
+		return MSRecommendPlay3x
+	}
+	if mississippiStudHasReasonableDraw(cards, m.phase) {
+		return MSRecommendPlay1x
+	}
+	return MSRecommendFold
+}
+
+// mississippiStudHasReasonableDraw はフラッシュ/ストレートのドロー、または
+// 3rd street でのハイカード2枚を「まだ賭ける価値がある」と見なす。
+func mississippiStudHasReasonableDraw(cards []*Card, phase int) bool {
+	slotsLeft := (MississippiStudHoleCardCnt + MississippiStudCommunityCnt) - len(cards)
+	if mississippiStudHasFlushDraw(cards, slotsLeft) || mississippiStudHasStraightDraw(cards, slotsLeft) {
+		return true
+	}
+	if phase != MississippiStudPhaseThirdSt {
+		return false
+	}
+	high := 0
+	for _, c := range cards {
+		if v := c.GetValue(); v == 1 || v >= 10 {
+			high++
+		}
+	}
+	return high >= 2
+}
+
+// mississippiStudHasFlushDraw は残り枚数でフラッシュが間に合うかを返す。
+func mississippiStudHasFlushDraw(cards []*Card, slotsLeft int) bool {
+	bySuit := map[int]int{}
+	for _, c := range cards {
+		bySuit[c.GetDesign()]++
+	}
+	for _, n := range bySuit {
+		if n >= 3 && n+slotsLeft >= (MississippiStudHoleCardCnt+MississippiStudCommunityCnt) {
+			return true
+		}
+	}
+	return false
+}
+
+// mississippiStudHasStraightDraw は残り枚数でストレートが間に合うかを返す。
+// **エースは 1 と 14 の両方で数える。**A-2-3-4-5 も 10-J-Q-K-A も成立する。
+func mississippiStudHasStraightDraw(cards []*Card, slotsLeft int) bool {
+	set := map[int]bool{}
+	for _, c := range cards {
+		v := c.GetValue()
+		set[v] = true
+		if v == 1 {
+			set[14] = true
+		}
+	}
+	values := make([]int, 0, len(set))
+	for v := range set {
+		values = append(values, v)
+	}
+	sort.Ints(values)
+	run := 1
+	for i := 1; i < len(values); i++ {
+		if values[i] == values[i-1]+1 {
+			run++
+		} else {
+			run = 1
+		}
+		if run+slotsLeft >= (MississippiStudHoleCardCnt + MississippiStudCommunityCnt) {
+			return true
+		}
+	}
+	return false
 }
 
 // mississippiStudPairTier はペア構成のティアを返す。

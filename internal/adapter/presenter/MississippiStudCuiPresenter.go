@@ -85,6 +85,38 @@ func (mp *MississippiStudCuiPresenter) Output(g interfaces.MississippiStudGame, 
 	})
 }
 
+// msHintKeys は推奨アクションから表示用の i18n キーへの対応。
+var msHintKeys = map[string]string{
+	domain.MSRecommendPlay3x: "mississippistud.hintPlay3x",
+	domain.MSRecommendPlay1x: "mississippistud.hintPlay1x",
+	domain.MSRecommendFold:   "mississippistud.hintFold",
+}
+
+// HintOutput は現在の役・配当対象かどうか・推奨倍率を出力する。
+//
+// **Web は ms-made-hand に役と配当対象かを常時出し、ヒントも表示している
+// のに、CUI にはどちらも無かった (#4710)。**判定はドメインの
+// GetCurrentMadeHand / RecommendBet 1か所に置いたので、CUI と Web が
+// 違うことを言うことはない。
+func (mp *MississippiStudCuiPresenter) HintOutput(g interfaces.MississippiStudGame) string {
+	key, ok := msHintKeys[g.RecommendBet()]
+	if !ok {
+		return i18n.T("mississippistud.hintNone") + "\n"
+	}
+	var b strings.Builder
+	// **役の名前だけでは足りない。**2 のペアは「ワンペア」でも配当が付かない。
+	if made := g.GetCurrentMadeHand(); made != nil {
+		eligible := i18n.T("mississippistud.madeHandNotEligible")
+		if made.PaytableEligible {
+			eligible = i18n.T("mississippistud.madeHandEligible")
+		}
+		b.WriteString(i18n.Tf("mississippistud.madeHandLine",
+			"hand", cuiPokerHandName(made.Rank), "eligible", eligible) + "\n")
+	}
+	b.WriteString(color.Yellow(i18n.T(key)) + "\n")
+	return b.String()
+}
+
 // ActionLogOutput 棋譜をテキスト出力する。
 func (mp *MississippiStudCuiPresenter) ActionLogOutput(g interfaces.MississippiStudGame) string {
 	return actionLogOutputText(g)

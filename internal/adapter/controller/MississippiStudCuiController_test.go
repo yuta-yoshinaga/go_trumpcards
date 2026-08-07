@@ -20,6 +20,7 @@ func newMockMississippiStudInteractor() *usecase.MockMississippiStudInteractor {
 	m.On("Play", 3).Return("play 3 result")
 	m.On("Fold").Return("fold result")
 	m.On("ActionLog").Return("action log result")
+	m.On("Hint").Return("hint result")
 	return m
 }
 
@@ -117,4 +118,13 @@ func TestMississippiStudCuiController_Empty(t *testing.T) {
 	c := controller.NewMississippiStudCuiController(m)
 
 	assert.Contains(t, c.Exec(""), "'help' でコマンド一覧を表示します。")
+}
+
+// **CUI に 1x/3x/fold を選ぶ材料が無かった (#4710)。**
+func TestMississippiStudCuiController_Hint(t *testing.T) {
+	m := newMockMississippiStudInteractor()
+	c := controller.NewMississippiStudCuiController(m)
+
+	assert.Equal(t, "hint result", c.Exec("h"))
+	assert.Equal(t, "hint result", c.Exec("hint"))
 }

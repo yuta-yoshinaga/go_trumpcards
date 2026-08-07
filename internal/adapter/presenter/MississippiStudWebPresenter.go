@@ -50,6 +50,13 @@ func (mp *MississippiStudWebPresenter) Output(g interfaces.MississippiStudGame, 
 	return marshalOrError(resObj)
 }
 
+// HintOutput ヒントを出力する。Web ではヒントはクライアント側 (useGameHint) で
+// 算出するため、通常の状態出力を返す。MississippiStudPresenter インタフェースを
+// 満たすための実装。
+func (mp *MississippiStudWebPresenter) HintOutput(g interfaces.MississippiStudGame) string {
+	return mp.Output(g, nil)
+}
+
 // ActionLogOutput 棋譜を JSON 出力する。
 func (mp *MississippiStudWebPresenter) ActionLogOutput(g interfaces.MississippiStudGame) string {
 	return actionLogOutputJSON(g)

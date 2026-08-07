@@ -38,6 +38,10 @@ type MississippiStudGame interface {
 	GetResult() domain.GameResult
 	// GetHandRank ハンドランクを取得する
 	GetHandRank() int
+	// GetCurrentMadeHand 既知のカードからできている役を取得する
+	GetCurrentMadeHand() *domain.MississippiStudMadeHand
+	// RecommendBet 現在のストリートでの推奨アクションを取得する
+	RecommendBet() string
 	// GetPayoutMultiplier 適用された配当倍率を取得する
 	GetPayoutMultiplier() int
 	// GetAntePayout アンティ部分の配当を取得する
