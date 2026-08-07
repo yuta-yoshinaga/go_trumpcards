@@ -35,6 +35,23 @@ func (p *CourtPieceWebPresenter) Output(t interfaces.CourtPieceGame, lastErr err
 }
 
 // buildBase 共通フィールドを構築
+// playableIndices は人間がいま出せる手札の位置を返す。
+//
+// **判定はドメインの GetPlayableIndices をそのまま呼ぶ。**以前はマストフォローの
+// 規則が Go と TypeScript の2箇所にあり、片方だけ直すと食い違う状態だった。
+// プレイフェーズで人間の手番でなければ空 -- 呼び出し側は空を「制限なし」とは
+// 解釈せず、手番かどうかで先に分岐する。
+func (p *CourtPieceWebPresenter) playableIndices(t interfaces.CourtPieceGame) []int {
+	if t.GetPhase() != domain.CourtPiecePhasePlay || !t.IsHumanTurn() {
+		return make([]int, 0)
+	}
+	idx := t.GetPlayableIndices(t.GetCurrentPlayerIdx())
+	if idx == nil {
+		return make([]int, 0)
+	}
+	return idx
+}
+
 func (p *CourtPieceWebPresenter) buildBase(t interfaces.CourtPieceGame) *controller.CourtPieceWebOutput {
 	resObj := new(controller.CourtPieceWebOutput)
 	resObj.Phase = int(t.GetPhase())
@@ -49,6 +66,7 @@ func (p *CourtPieceWebPresenter) buildBase(t interfaces.CourtPieceGame) *control
 	resObj.GameEndFlag = t.GetGameEndFlag()
 	resObj.WinnerTeam = t.GetWinnerTeam()
 	resObj.LeadPlayerIdx = t.GetLeadPlayerIdx()
+	resObj.PlayableIndices = p.playableIndices(t)
 
 	cfg := t.GetConfig()
 	resObj.Config = controller.CourtPieceWebOutputConfig{
