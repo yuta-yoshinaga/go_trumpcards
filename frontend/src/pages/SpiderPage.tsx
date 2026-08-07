@@ -353,6 +353,16 @@ function SpiderPageContent() {
               <div className="flex gap-0.5 sm:gap-1 mb-3" data-tutorial="spd-tableau">
                 {state.tableau.map((col, colIdx) => {
                   const tableauColZone: SpiderMoveZone = { zone: 'tableau', col: colIdx };
+                  // タップ選択でのプレビュー。onMouseEnter も onFocus も発火しない
+                  // タッチ端末では、選んだ札と一緒に動く連番がどこまでかを事前に
+                  // 確かめる手段が無かった (#4780, Yukon の #3152 と同じ)。
+                  // 連番は列ごとに1度だけ求める (ホバー側の setHoveredRun と同じ形)。
+                  const selectedRun =
+                    selectedSource?.zone === 'tableau' &&
+                    selectedSource.col === colIdx &&
+                    selectedSource.cardIndex !== undefined
+                      ? spiderMovableRun(col, selectedSource.cardIndex)
+                      : null;
                   return (
                     <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
                       <DropZone
@@ -383,11 +393,14 @@ function SpiderPageContent() {
                                 cardIndex: cardIdx,
                               };
                               const inMovableRun = hoveredRun?.col === colIdx && hoveredRun.indices.includes(cardIdx);
+                              const inSelectedRun = selectedRun?.includes(cardIdx) ?? false;
                               const ringClass = isSourceSelected(colIdx, cardIdx)
                                 ? 'ring-2 ring-ds-warning'
                                 : inMovableRun
                                   ? 'ring-2 ring-ds-success'
-                                  : '';
+                                  : inSelectedRun
+                                    ? 'ring-2 ring-ds-info'
+                                    : '';
                               return (
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -406,6 +419,7 @@ function SpiderPageContent() {
                                       }
                                       onBlur={() => setHoveredRun(null)}
                                       data-movable-run={inMovableRun ? 'true' : undefined}
+                                      data-selected-block={inSelectedRun || undefined}
                                       onClick={() => {
                                         if (selectedSource) {
                                           // If clicking a different column, treat as move target

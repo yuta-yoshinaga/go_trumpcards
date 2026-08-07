@@ -757,6 +757,54 @@ describe('SpiderPage', () => {
       await waitFor(() => expect(btnFor('♥ 6')).toHaveAttribute('data-movable-run', 'true'));
     });
 
+    // **タップにはホバーもフォーカスも無い (#4780)。**クリックで選んだだけの
+    // 状態で、一緒に動く連番が見えなければならない。
+    it('rings the whole run after a plain tap, with no hover involved', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      fireEvent.click(btnFor('♠ K'));
+      await waitFor(() => expect(btnFor('♠ Q')).toHaveAttribute('data-selected-block', 'true'));
+      expect(btnFor('♠ J')).toHaveAttribute('data-selected-block', 'true');
+      expect(btnFor('♠ Q').className).toContain('ring-ds-info');
+      // 選んだ札自身は従来どおり選択リング。
+      expect(btnFor('♠ K').className).toContain('ring-ds-warning');
+      // 別の列の札は巻き込まない。
+      expect(btnFor('♥ 6')).not.toHaveAttribute('data-selected-block');
+    });
+
+    // **同じ列でも連番の外は光らせない。**列で絞るだけの実装だと、選んだ札より
+    // 上に積まれた札まで「一緒に動く」ように見えてしまう。
+    it('leaves cards above the tapped one out of the block', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ Q')).toBeInTheDocument());
+
+      fireEvent.click(btnFor('♠ Q'));
+      await waitFor(() => expect(btnFor('♠ J')).toHaveAttribute('data-selected-block', 'true'));
+      expect(btnFor('♠ K')).not.toHaveAttribute('data-selected-block');
+    });
+
+    // 連番が途切れていれば、タップしても何も光らない (動かせないため)。
+    it('marks nothing when the tapped card cannot lift its tail', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♣ 7')).toBeInTheDocument());
+
+      fireEvent.click(btnFor('♣ 7'));
+      await waitFor(() => expect(btnFor('♣ 7')).toHaveAttribute('aria-pressed', 'true'));
+      expect(btnFor('♣ 7')).not.toHaveAttribute('data-selected-block');
+      expect(btnFor('♥ 6')).not.toHaveAttribute('data-selected-block');
+    });
+
+    it('marks nothing as a selected block before anything is tapped', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+      expect(document.querySelectorAll('[data-selected-block]')).toHaveLength(0);
+    });
+
     it('highlights the run on keyboard focus too', async () => {
       mockExec.mockResolvedValue(runState);
       renderWithProviders(<SpiderPage />);
