@@ -13,7 +13,7 @@
   "giveup": "Give Up",
   "empty": "Empty",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
-  "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "emptyFoundationAriaLabel": "Empty foundation {{idx}} (accepts an ace of any suit)",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto Complete",
