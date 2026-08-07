@@ -769,10 +769,19 @@ func TestDurak_GetHint(t *testing.T) {
 			human.RemoveCard(0)
 		}
 		// テーブルに 7 が出ている状態で、手札にも 7 を持たせる → 追撃できる。
+		//
+		// **切り札を渡してはいけない。**Normal 難易度の追撃は
+		// cpuFindMatchingCard(..., includeTrumps=false) で切り札を除外するため、
+		// 渡した 7 がたまたま切り札スートだと追撃されず pass になる。切り札は
+		// 配りごとにランダムなので、固定スートだと実測 36/200 (18%) で落ちた。
+		follow := domain.CardDesignHeart
+		if d.GetTrumpSuit() == follow {
+			follow = domain.CardDesignSpade
+		}
 		d.SetTablePairs([]*domain.DurakTablePair{
 			{Attack: domain.NewCard(domain.CardDesignClover, 7, false)},
 		})
-		human.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		human.AddCard(domain.NewCard(follow, 7, false))
 
 		hint := d.GetHint()
 		if hint == nil || hint.CardIndex == nil || hint.Reason != "attack_additional" {
@@ -783,7 +792,13 @@ func TestDurak_GetHint(t *testing.T) {
 		for human.GetCardsSize() > 0 {
 			human.RemoveCard(0)
 		}
-		human.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		// 追撃できない札。こちらも切り札だと「切り札は除外」以前に数字が
+		// 合わないので pass になるが、意図を明示するため非切り札にする。
+		noMatch := domain.CardDesignSpade
+		if d.GetTrumpSuit() == noMatch {
+			noMatch = domain.CardDesignHeart
+		}
+		human.AddCard(domain.NewCard(noMatch, 3, false))
 		hint = d.GetHint()
 		if hint == nil || hint.CardIndex != nil || hint.Reason != "pass_no_addition" {
 			t.Fatalf("追撃できなければパスを勧める: %+v", hint)
