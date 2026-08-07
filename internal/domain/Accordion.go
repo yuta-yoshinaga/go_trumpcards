@@ -121,6 +121,40 @@ func (a *Accordion) Move(fromIdx, toIdx int) error {
 	return nil
 }
 
+// AutoComplete はヒントが示す手を、手が尽きるまで繰り返す (#4793)。
+//
+// **Web は同じことを1クリックでやっている**のに、ネイティブ CUI には
+// オートコンプリートが存在せず、同じ手を延々と打たされていた。姉妹の Wasp は
+// ac/autocomplete を公開している。
+//
+// **手を選ぶ規則は GetHint と共有する。**別実装だと、ヒントが勧める手と自動で
+// 打たれる手が食い違う。
+//
+// 1手も動かせなければエラー。押しても何も起きないより、押せない理由が返る
+// ほうがよい。
+func (a *Accordion) AutoComplete() error {
+	if a.phase != AccordionPhasePlaying {
+		return errors.New("game is not in playing phase")
+	}
+	moved := 0
+	// **上限を置く。**Move はパイルを1つ減らすので理屈の上では停まるが、
+	// 規則を変えたときに無限ループへ落ちない保険。
+	for range len(a.piles) {
+		hint := a.GetHint()
+		if hint == nil {
+			break
+		}
+		if err := a.Move(hint.FromIdx, hint.ToIdx); err != nil {
+			break
+		}
+		moved++
+	}
+	if moved == 0 {
+		return errors.New("no automatic move is available")
+	}
+	return nil
+}
+
 // GiveUp ギブアップ
 func (a *Accordion) GiveUp() {
 	if a.phase == AccordionPhasePlaying {
