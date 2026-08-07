@@ -194,13 +194,15 @@ func (p *NapoleonCuiPresenter) HintOutput(n interfaces.NapoleonGame) string {
 			"suit", napoleonSuitGlyphs[*hint.TrumpSuit],
 			"reason", reason)) + "\n"
 	case hint.DiscardIndex != nil:
-		card := n.GetPlayer(0).GetCard(*hint.DiscardIndex)
+		// **人間が席 0 とは限らない。**ヒントの数値自体はドメインが
+		// findHumanIdx で解決しているのに、表示だけが決め打ちだった (#4689)。
+		card := n.GetPlayer(n.GetHumanIdx()).GetCard(*hint.DiscardIndex)
 		return color.Yellow(i18n.Tf("napoleon.hintDiscard",
 			"idx", strconv.Itoa(*hint.DiscardIndex),
 			"card", napoleonCuiCardStr(card),
 			"reason", reason)) + "\n"
 	case hint.CardIndex != nil:
-		card := n.GetPlayer(0).GetCard(*hint.CardIndex)
+		card := n.GetPlayer(n.GetHumanIdx()).GetCard(*hint.CardIndex)
 		return color.Yellow(i18n.Tf("napoleon.hintCard",
 			"idx", strconv.Itoa(*hint.CardIndex),
 			"card", napoleonCuiCardStr(card),

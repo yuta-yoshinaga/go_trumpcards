@@ -192,6 +192,11 @@ func (m *MockNapoleonGame) GetWinnerTeam() int {
 	return args.Int(0)
 }
 
+// GetHumanIdx は人間プレイヤーのインデックスを返すモック。
+func (m *MockNapoleonGame) GetHumanIdx() int {
+	return m.Called().Int(0)
+}
+
 func (m *MockNapoleonGame) GetPlayerCnt() int {
 	args := m.Called()
 	return args.Int(0)

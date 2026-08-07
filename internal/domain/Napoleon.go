@@ -686,6 +686,13 @@ func (n *Napoleon) GetHint() *NapoleonHint {
 
 // --- Private methods ---
 
+// GetHumanIdx は人間プレイヤーのインデックスを返す (-1=なし)。
+//
+// **コンストラクタは任意の並び順を受け付ける。**ドメイン内部は findHumanIdx で
+// 都度解決しているのに、CUI の表示だけが GetPlayer(0) を決め打ちしていて
+// 取り残されていた (#4689)。表示側も同じ解決を使えるように公開する。
+func (n *Napoleon) GetHumanIdx() int { return n.findHumanIdx() }
+
 // findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
 func (n *Napoleon) findHumanIdx() int {
 	for i, p := range n.players {
