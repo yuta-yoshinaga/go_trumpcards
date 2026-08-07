@@ -33,6 +33,8 @@ type GapsGame interface {
 	GetMoveCount() int
 	// GetGrid は盤面を返す。
 	GetGrid() [domain.GapsRowCnt][domain.GapsColCnt]domain.GapsCell
+	// GetGapNeed そのギャップに何が入るかを取得する (nil=対象外/未確定)
+	GetGapNeed(row, col int) *domain.GapsGapNeed
 	// GetLockedPrefixLengths は各行のロック済み接頭辞の長さ（再配布で保持される先頭カード数）を返す。
 	GetLockedPrefixLengths() [domain.GapsRowCnt]int
 	// GetRedealsUsed は使用済み再配り回数を返す。

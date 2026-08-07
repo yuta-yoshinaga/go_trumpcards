@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -32,6 +33,7 @@ func setupGapsCuiMock() *interfaces.MockGapsGame {
 		}
 	}
 	g.On("GetGrid").Return(grid).Maybe()
+	g.On("GetGapNeed", mock.Anything, mock.Anything).Return((*domain.GapsGapNeed)(nil)).Maybe()
 	g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{3, 0, 0, 0}).Maybe()
 	g.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	return g
@@ -61,6 +63,7 @@ func TestGapsCuiPresenter_Output_GameClear(t *testing.T) {
 	g.On("UndoToEscape").Return(0).Maybe()
 	var grid [domain.GapsRowCnt][domain.GapsColCnt]domain.GapsCell
 	g.On("GetGrid").Return(grid).Maybe()
+	g.On("GetGapNeed", mock.Anything, mock.Anything).Return((*domain.GapsGapNeed)(nil)).Maybe()
 	g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{}).Maybe()
 	g.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
@@ -81,6 +84,7 @@ func TestGapsCuiPresenter_Output_GameOver(t *testing.T) {
 	g.On("UndoToEscape").Return(-1).Maybe()
 	var grid [domain.GapsRowCnt][domain.GapsColCnt]domain.GapsCell
 	g.On("GetGrid").Return(grid).Maybe()
+	g.On("GetGapNeed", mock.Anything, mock.Anything).Return((*domain.GapsGapNeed)(nil)).Maybe()
 	g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{}).Maybe()
 	g.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	p := &GapsCuiPresenter{}
@@ -118,4 +122,46 @@ func TestGapsCuiPresenter_ActionLogOutput(t *testing.T) {
 	// Phase==Playing returns empty action log
 	out := p.ActionLogOutput(g)
 	assert.NotNil(t, out)
+}
+
+// **どのカードが入るかも詰みかも CUI から分からなかった (#4800)。**Web は
+// ゴーストカードと 🚫 で常時プレビューしている。
+func TestGapsCuiPresenter_GapNeeds(t *testing.T) {
+	p := new(GapsCuiPresenter)
+	withNeed := func(need *domain.GapsGapNeed) *interfaces.MockGapsGame {
+		g := new(interfaces.MockGapsGame)
+		var grid [domain.GapsRowCnt][domain.GapsColCnt]domain.GapsCell
+		g.On("GetGrid").Return(grid).Maybe()
+		g.On("GetGapNeed", 0, 0).Return(need).Maybe()
+		g.On("GetGapNeed", mock.Anything, mock.Anything).Return((*domain.GapsGapNeed)(nil)).Maybe()
+		g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{}).Maybe()
+		g.On("GetPhase").Return(domain.GapsPhasePlaying).Maybe()
+		g.On("GetMoveCount").Return(0).Maybe()
+		g.On("GetRedealsLeft").Return(2).Maybe()
+		g.On("GetRedealsUsed").Return(0).Maybe()
+		g.On("GetMaxRedeals").Return(2).Maybe()
+		g.On("GetRedealsRemaining").Return(2).Maybe()
+		g.On("IsStalemate").Return(false).Maybe()
+		g.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+		return g
+	}
+
+	t.Run("names the exact card a gap needs", func(t *testing.T) {
+		out := p.Output(withNeed(&domain.GapsGapNeed{
+			Kind: domain.GapsNeedCard, Design: domain.CardDesignHeart, Value: 6,
+		}), nil)
+		assert.Contains(t, out, "HEART 6")
+	})
+
+	t.Run("marks a blocked gap differently from an open one", func(t *testing.T) {
+		blocked := p.Output(withNeed(&domain.GapsGapNeed{Kind: domain.GapsNeedBlocked}), nil)
+		anySuit := p.Output(withNeed(&domain.GapsGapNeed{Kind: domain.GapsNeedAnySuit, Value: 2}), nil)
+		assert.NotEqual(t, blocked, anySuit, "詰みと空きが同じ見た目になっている")
+		assert.Contains(t, blocked, "[ x ]")
+	})
+
+	// **決まらないマスは従来どおり。**左隣も空きのときは何が入るか決まらない。
+	t.Run("leaves an undetermined gap as the plain placeholder", func(t *testing.T) {
+		assert.Contains(t, p.Output(withNeed(nil), nil), "[ . ]")
+	})
 }

@@ -15,5 +15,8 @@
   "hintAvailable": "ヒントあり",
   "noHint": "ヒントなし",
   "lockedMark": "*",
-  "lockedLegend": "* = 再配布で保持されるカード"
+  "lockedLegend": "* = 再配布で保持されるカード",
+  "gapBlocked": "[ x ]",
+  "gapAnySuit": "[{{rank}}?]",
+  "gapNeeded": "[{{card}}]"
 }
