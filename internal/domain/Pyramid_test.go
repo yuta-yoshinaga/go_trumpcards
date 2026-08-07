@@ -632,3 +632,79 @@ func TestPyramid_UndoN_Excessive(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "undo step")
 }
+
+// **キングは相方が要らず単独で消せる (#4782)。**Web は常時ハイライトして
+// いるのに、CUI は数値を1枚ずつ見て 13 を自分で探すしかなかった。
+func TestPyramid_IsRemovableKing(t *testing.T) {
+	// 最下段だけを持つ最小のピラミッドを組む (最下段は必ず露出している)。
+	newBoard := func(bottom ...*Card) *Pyramid {
+		p := NewDefaultPyramid()
+		p.Reset()
+		var rows [PyramidRowCnt][]*PyramidCard
+		for r := range PyramidRowCnt {
+			rows[r] = make([]*PyramidCard, r+1)
+			for c := range r + 1 {
+				card := NewCard(CardDesignSpade, 2, false)
+				removed := true
+				if r == PyramidRowCnt-1 && c < len(bottom) {
+					card = bottom[c]
+					removed = false
+				}
+				rows[r][c] = &PyramidCard{Card: card, Removed: removed}
+			}
+		}
+		p.SetPyramid(rows)
+		return p
+	}
+	last := PyramidRowCnt - 1
+
+	t.Run("an exposed king can be removed on its own", func(t *testing.T) {
+		p := newBoard(NewCard(CardDesignSpade, 13, false))
+		assert.True(t, p.IsRemovableKing(last, 0))
+	})
+
+	// **13 以外には印を付けない。**Q に印が付くと、通らない手を勧めることになる。
+	t.Run("a queen is not a removable king", func(t *testing.T) {
+		p := newBoard(NewCard(CardDesignSpade, 12, false))
+		assert.False(t, p.IsRemovableKing(last, 0))
+	})
+
+	// **除去済みの札に印を付けない。**RemoveKing で消した後も印が残ると、
+	// 通らない手を勧め続ける。(isExposed は除去済みを弾かないので、
+	// Removed の確認はここでしか踏めない。)
+	t.Run("a removed king is no longer removable", func(t *testing.T) {
+		p := newBoard(NewCard(CardDesignSpade, 13, false))
+		require.True(t, p.IsRemovableKing(last, 0))
+		require.NoError(t, p.RemoveKing(last, 0))
+		assert.False(t, p.IsRemovableKing(last, 0),
+			"消えた札に印が残っている")
+	})
+
+	// **印が付く条件と RemoveKing が通る条件は同じでなければならない。**
+	t.Run("agrees with RemoveKing", func(t *testing.T) {
+		p := newBoard(NewCard(CardDesignSpade, 13, false), NewCard(CardDesignHeart, 5, false))
+		require.True(t, p.IsRemovableKing(last, 0))
+		assert.NoError(t, p.RemoveKing(last, 0))
+
+		q := newBoard(NewCard(CardDesignSpade, 13, false), NewCard(CardDesignHeart, 5, false))
+		require.False(t, q.IsRemovableKing(last, 1))
+		assert.Error(t, q.RemoveKing(last, 1))
+	})
+
+	t.Run("out-of-range coordinates are not removable", func(t *testing.T) {
+		p := newBoard(NewCard(CardDesignSpade, 13, false))
+		assert.False(t, p.IsRemovableKing(-1, 0))
+		assert.False(t, p.IsRemovableKing(last, 99))
+	})
+
+	t.Run("the waste top is flagged only when it is a king", func(t *testing.T) {
+		p := newBoard(NewCard(CardDesignSpade, 2, false))
+		assert.False(t, p.IsWasteKingRemovable(), "空のウェイストに印は付かない")
+
+		p.SetWaste([]*Card{NewCard(CardDesignHeart, 5, false)})
+		assert.False(t, p.IsWasteKingRemovable())
+
+		p.SetWaste([]*Card{NewCard(CardDesignHeart, 5, false), NewCard(CardDesignClover, 13, false)})
+		assert.True(t, p.IsWasteKingRemovable(), "見るのは一番上の1枚")
+	})
+}

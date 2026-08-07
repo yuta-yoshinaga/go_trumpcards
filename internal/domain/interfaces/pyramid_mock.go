@@ -118,6 +118,16 @@ func (_m *MockPyramidGame) IsExposed(row, col int) bool {
 	return ret.Bool(0)
 }
 
+func (_m *MockPyramidGame) IsRemovableKing(row, col int) bool {
+	args := _m.Called(row, col)
+	return args.Bool(0)
+}
+
+func (_m *MockPyramidGame) IsWasteKingRemovable() bool {
+	args := _m.Called()
+	return args.Bool(0)
+}
+
 func (_m *MockPyramidGame) AllRemoved() bool {
 	ret := _m.Called()
 	return ret.Bool(0)
