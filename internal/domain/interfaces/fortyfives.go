@@ -63,6 +63,8 @@ type FortyFivesGame interface {
 	GetTrumpSuit() int
 	// GetTeamScores チーム別累積点を取得する
 	GetTeamScores() [domain.FortyFivesTeamCnt]int
+	// GetContractProgress 落札チームの契約達成見込みを取得する
+	GetContractProgress() *domain.FortyFivesContractProgress
 	// GetRoundTeamPoints 現ラウンドのチーム別得点を取得する
 	GetRoundTeamPoints() [domain.FortyFivesTeamCnt]int
 	// GetWinnerTeam 勝利チームを取得する (-1=未確定)

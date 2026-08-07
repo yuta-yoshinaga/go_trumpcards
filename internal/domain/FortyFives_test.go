@@ -5,6 +5,8 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func ffCard(design, value int) *Card { return NewCard(design, value, false) }
@@ -312,4 +314,70 @@ func TestFortyFives_UnmarshalErrors(t *testing.T) {
 	if err := g.UnmarshalJSON([]byte(`{"ps":[null,null,null,null]}`)); err == nil {
 		t.Error("expected nil-player error")
 	}
+}
+
+// **CUI はラウンドが終わるまで契約の進捗を一切出していなかった (#4724)。**
+// Web は ff-contract-progress に「あと何点必要か」を色分きで常時出している。
+func TestFortyFives_GetContractProgress(t *testing.T) {
+	newGame := func(declarerIdx int, contract FortyFivesBid, pts [FortyFivesTeamCnt]int) *FortyFives {
+		g := NewDefaultFortyFives()
+		g.SetDeclarerIdx(declarerIdx)
+		g.SetContract(contract)
+		g.SetRoundTeamPoints(pts)
+		return g
+	}
+
+	t.Run("nothing to report before the bid is settled", func(t *testing.T) {
+		assert.Nil(t, newGame(-1, FortyFivesBidTwenty, [FortyFivesTeamCnt]int{0, 0}).GetContractProgress())
+	})
+
+	t.Run("nothing to report without a contract", func(t *testing.T) {
+		assert.Nil(t, newGame(0, FortyFivesBidPass, [FortyFivesTeamCnt]int{0, 0}).GetContractProgress())
+	})
+
+	// 落札者インデックスからチームを割り出す (0/2 = チームA、1/3 = チームB)。
+	t.Run("reads the declaring team from the declarer seat", func(t *testing.T) {
+		pr := newGame(3, FortyFivesBidTwenty, [FortyFivesTeamCnt]int{5, 10}).GetContractProgress()
+		if assert.NotNil(t, pr) {
+			assert.Equal(t, 1, pr.DeclarerTeam)
+			assert.Equal(t, 10, pr.Points, "チームBの得点を見ていること")
+		}
+	})
+
+	t.Run("counts down the points still needed", func(t *testing.T) {
+		pr := newGame(0, FortyFivesBidTwenty, [FortyFivesTeamCnt]int{5, 0}).GetContractProgress()
+		if assert.NotNil(t, pr) {
+			assert.Equal(t, FortyFivesContractNeedMore, pr.Status)
+			assert.Equal(t, 15, pr.Remaining)
+		}
+	})
+
+	// 契約を**超えて**取ったときにマイナスを出さないこと。ちょうどの 20/20 では
+	// 引き算がそのまま 0 になるので、この枝を踏まない。
+	t.Run("reports the contract as made once the points are there", func(t *testing.T) {
+		pr := newGame(0, FortyFivesBidTwenty, [FortyFivesTeamCnt]int{25, 5}).GetContractProgress()
+		if assert.NotNil(t, pr) {
+			assert.Equal(t, FortyFivesContractMade, pr.Status)
+			assert.Equal(t, 0, pr.Remaining, "成立後にマイナスを出さない")
+		}
+	})
+
+	// **「もう届かない」は残りトリックを全部取っても足りないときだけ。**
+	// 早すぎる「不成立」は、まだ勝てるラウンドを投げさせる。
+	t.Run("declares failure only when even every remaining trick falls short", func(t *testing.T) {
+		// 4トリック消化 (合計20点)、残り1トリック=5点。契約25点に対し5点では届かない。
+		failed := newGame(0, FortyFivesBidTwentyFive, [FortyFivesTeamCnt]int{5, 15}).GetContractProgress()
+		if assert.NotNil(t, failed) {
+			assert.Equal(t, FortyFivesContractFailed, failed.Status)
+		}
+
+		// 2トリック消化 (合計10点)、残り3トリック=15点。5+15=20 で 25 には届かない…
+		// ように見えるが、相手の点も含めた残りは 15 なので届かない。
+		// 1トリックだけ消化なら残り20点あり、5+20=25 でちょうど届く。
+		alive := newGame(0, FortyFivesBidTwentyFive, [FortyFivesTeamCnt]int{5, 0}).GetContractProgress()
+		if assert.NotNil(t, alive) {
+			assert.Equal(t, FortyFivesContractNeedMore, alive.Status,
+				"ちょうど届く見込みがあるうちは不成立にしない")
+		}
+	})
 }
