@@ -30,14 +30,7 @@
     "show": "ショー"
   },
   "stats": {
-    "vpip": "VPIP",
-    "vpipTooltip": "VPIP（ボランタリー・プット・イン・ポット）: 自発的にポットに参加した割合",
-    "pfr": "PFR",
-    "pfrTooltip": "PFR（プリフロップレイズ）: 最初のラウンドでレイズした割合",
-    "threeBet": "3Bet",
-    "threeBetTooltip": "3Bet（スリーベット）: 相手のレイズに対して再レイズした割合",
-    "af": "AF",
-    "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
+    "badge": "VPIP {{vpip}}% / PFR {{pfr}}% / 3Bet {{tb}}% / AF {{af}}"
   },
   "settings": {
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"

@@ -30,14 +30,7 @@
     "show": "Show"
   },
   "stats": {
-    "vpip": "VPIP",
-    "vpipTooltip": "VPIP (Voluntarily Put In Pot): % of hands where player voluntarily put chips in the pot",
-    "pfr": "PFR",
-    "pfrTooltip": "PFR (Pre-Flop Raise): % of hands where player raised in the first round",
-    "threeBet": "3Bet",
-    "threeBetTooltip": "3Bet: % of hands where player re-raised an opponent's raise",
-    "af": "AF",
-    "afTooltip": "AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)"
+    "badge": "VPIP {{vpip}}% / PFR {{pfr}}% / 3Bet {{tb}}% / AF {{af}}"
   },
   "settings": {
     "cpuMetaAI": "Meta-AI (CPU learns your play style)"
