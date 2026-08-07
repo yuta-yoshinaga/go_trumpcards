@@ -144,6 +144,14 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 						"name", name,
 						"hand", cuiPokerHandName(r.HandRank),
 						"kickers", kickers))
+					// **Web は勝利役を構成する5枚をハイライトしているのに、CUI は
+					// 役名とキッカーだけだった (#4679)。**僅差の役 (ツーペアの
+					// キッカー勝負など) でどのカードが決め手か分からない。
+					// ショーダウン時点で bestHand は確定済みなので、そのまま出す。
+					if best := h.GetPlayer(r.PlayerIdx).GetBestHand(); len(best) > 0 {
+						b.WriteString(i18n.Tf("holdem.resultBestFive",
+							"cards", cuiCardSliceStrEmoji(best)))
+					}
 				default:
 					b.WriteString(i18n.Tf("holdem.resultName", "name", name))
 				}
