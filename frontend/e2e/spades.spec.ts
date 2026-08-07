@@ -29,7 +29,10 @@ test.describe('Spades E2E', () => {
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
     const bidValueButton = page.getByRole('button', { name: '3', exact: true });
-    const handCards = page.locator('button[aria-pressed]:has(img)');
+    // フォロースート違反やスペードブレイク前のスペードは aria-disabled になる。
+    // 全札から first() を取ると制限札を掴んでクリックが無反応になるため、
+    // 合法な札だけに絞る。
+    const handCards = page.locator('button[aria-pressed]:has(img):not([aria-disabled="true"])');
     const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
     // Play through several interactions to verify phase transitions

@@ -915,4 +915,32 @@ describe('SpadesPage', () => {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
   });
+
+  // ドメインは validatePlay / GetValidPlayIndices でフォロースートとスペード
+  // ブレイク前のリード制限を判定済みなのに、画面が使っていなかった。違反札も
+  // クリックでき、サーバーのエラーが返って初めて出せないと分かる状態だった。
+  it('dims the cards the play rules forbid on the human play turn', async () => {
+    // 手札は SPADE A / HEART J。合法なのは index 1 だけ。
+    mockExec.mockResolvedValue(makeSpadesState({ currentPlayerIdx: 0, validPlayIndices: [1] }));
+    renderWithProviders(<SpadesPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const cards = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
+    expect(cards).toHaveLength(2);
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
+  // 空を「制限なし」と読まない。CPU の手番では制限そのものを送っていない。
+  it('leaves every card enabled when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeSpadesState({ currentPlayerIdx: 1, validPlayIndices: [] }));
+    renderWithProviders(<SpadesPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const cards = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
+    expect(cards).toHaveLength(2);
+    for (const c of cards) {
+      expect(c).not.toHaveAttribute('aria-disabled', 'true');
+    }
+  });
 });

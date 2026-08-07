@@ -275,6 +275,7 @@ const baseSpadesState: SpadesResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   leadPlayerIdx: 0,
+  validPlayIndices: [0, 1],
   message: '',
   config: { cpuDifficulty: 1, pointLimit: 500, nilBonus: 100, bagPenaltyThreshold: 10 },
 };

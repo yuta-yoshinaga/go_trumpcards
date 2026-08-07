@@ -63,6 +63,7 @@ function makeState(overrides: Partial<SpadesResponse> = {}): SpadesResponse {
     gameEndFlag: false,
     winnerIdx: -1,
     leadPlayerIdx: 0,
+    validPlayIndices: [],
     message: '',
     config: { cpuDifficulty: 0, pointLimit: 500, nilBonus: 100, bagPenaltyThreshold: 10 },
     ...overrides,

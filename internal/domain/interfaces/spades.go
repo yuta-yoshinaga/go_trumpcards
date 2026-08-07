@@ -35,6 +35,8 @@ type SpadesGame interface {
 	GetPhase() domain.SpadesPhase
 	// IsHumanTurn 現在の手番が人間かを返す
 	IsHumanTurn() bool
+	// GetValidPlayIndices プレイ可能なカードのインデックスを返す
+	GetValidPlayIndices(playerIdx int) []int
 	// IsHumanBidTurn 現在のビッド手番が人間かを返す
 	IsHumanBidTurn() bool
 	// GetRoundNumber 現在のラウンド番号を取得する
