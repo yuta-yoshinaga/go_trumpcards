@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { Card, CardDesign, KlondikeTableauCard } from '../types/card';
+import type { Card, CardDesign } from '../types/card';
+import type { BeleagueredCastleTableauCard } from '../types/games/beleagueredcastle';
 import { beleagueredCastleLegalTargets } from './beleagueredCastleLegalTargets';
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
-const tc = (design: CardDesign, value: number): KlondikeTableauCard => ({
+const tc = (design: CardDesign, value: number): BeleagueredCastleTableauCard => ({
   card: card(design, value),
   faceUp: true,
 });

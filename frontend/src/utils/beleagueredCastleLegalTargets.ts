@@ -1,4 +1,5 @@
-import type { Card, KlondikeTableauCard } from '../types/card';
+import type { Card } from '../types/card';
+import type { BeleagueredCastleTableauCard } from '../types/games/beleagueredcastle';
 
 /** Where the selected card may legally go. */
 export interface BeleagueredCastleLegalTargets {
@@ -20,7 +21,7 @@ export interface BeleagueredCastleLegalTargets {
  * ので、そちらの規則を流用すると実際には打てる手を落とす (#4799)。
  */
 export function beleagueredCastleLegalTargets(
-  tableau: KlondikeTableauCard[][],
+  tableau: BeleagueredCastleTableauCard[][],
   foundation: Card[][],
   card: Card | null | undefined,
 ): BeleagueredCastleLegalTargets {
