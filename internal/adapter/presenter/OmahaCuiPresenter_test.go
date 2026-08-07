@@ -67,6 +67,60 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, i18n.T("omaha.hiLoRuleLine"))
 	})
 
+	// **Web は omaha-live-besthand で暫定ベストを常時出しているのに、CUI は
+	// 「2枚使用」の注意書きだけで実際の役を出していなかった (#4680)。**
+	// 手札4枚から必ず2枚という特殊ルールがあるぶん、暫定表示はミスを防ぐ補助になる。
+	t.Run("shows the human's current best hand once the flop is out", func(t *testing.T) {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseFlop)
+		// 手札 ♠2 ♠3 ♥11 ♥12、ボード ♠5 ♠7 ♠9 → ♠ のフラッシュ (手札2枚+場3枚)。
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))
+		h.SetCommunityCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+			domain.NewCard(domain.CardDesignSpade, 9, false),
+		})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "現在の最善役")
+		assert.Contains(t, result, "フラッシュ")
+	})
+
+	// **プリフロップでは出さない。**ボードが3枚に満たないと役は決まらない。
+	t.Run("shows nothing before the flop", func(t *testing.T) {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhasePreFlop)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))
+
+		assert.NotContains(t, p.Output(h, nil), "現在の最善役")
+	})
+
+	// **表示のために状態を変えない。**Peek を使っているので、描画しても
+	// プレイヤーの handRank は書き換わらない。
+	t.Run("rendering does not mutate the player state", func(t *testing.T) {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseFlop)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))
+		h.SetCommunityCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+			domain.NewCard(domain.CardDesignSpade, 9, false),
+		})
+
+		before := players[0].GetBestHand()
+		_ = p.Output(h, nil)
+		assert.Equal(t, before, players[0].GetBestHand(), "描画でベストハンドが書き換わらない")
+	})
+
 	t.Run("community cards displayed", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhaseFlop)
