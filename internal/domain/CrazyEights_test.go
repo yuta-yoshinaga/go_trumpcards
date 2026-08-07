@@ -1098,3 +1098,71 @@ func TestCrazyEights_CpuChooseSuitSmartAllEights(t *testing.T) {
 	// With no non-8 cards, all suit counts are 0, bestSuit defaults to Spade (1)
 	assert.Equal(t, domain.CardDesignSpade, g.GetChosenSuit())
 }
+
+// **Hearts / Spades はサーバー計算の理由付きヒントを返すのに、CrazyEights には
+// ドメインの GetHint すら無かった (#4737)。**推奨手は CPU の最善手選択をそのまま
+// 使う。別ロジックを書くと「CPU は選ばない手を人間に勧める」ことになる。
+func TestCrazyEights_GetHint(t *testing.T) {
+	setup := func(t *testing.T) *domain.CrazyEights {
+		t.Helper()
+		g := domain.NewDefaultCrazyEights()
+		g.Reset()
+		g.SetCurrentPlayerIdx(0)
+		return g
+	}
+
+	t.Run("recommends a card the rules actually allow", func(t *testing.T) {
+		g := setup(t)
+		hint := g.GetHint()
+		if hint == nil {
+			t.Fatal("配り直後の人間の手番ではヒントが出る")
+		}
+		if hint.CardIndex == nil {
+			t.Fatal("プレイフェーズでは CardIndex が入る")
+		}
+		// **勧めた札が本当に出せること。**別ロジックで選ぶと、出せない札を
+		// 勧めてしまう。ドメインの合法手判定で裏を取る。
+		// 本番の入口で裏を取る。合法手判定をテスト側に写すと、それがもう1つの
+		// 実装になってしまう。
+		if err := g.PlayerPlay(*hint.CardIndex); err != nil {
+			t.Errorf("推奨札 (index %d) が実際には出せなかった: %v", *hint.CardIndex, err)
+		}
+		if hint.Reason == "" {
+			t.Error("理由キーが空")
+		}
+	})
+
+	t.Run("recommends a suit during the choose-suit phase", func(t *testing.T) {
+		g := setup(t)
+		g.SetPhase(domain.CrazyEightsPhaseChooseSuit)
+
+		hint := g.GetHint()
+		if hint == nil || hint.Suit == nil {
+			t.Fatal("スート選択フェーズでは Suit が入る")
+		}
+		if hint.CardIndex != nil {
+			t.Error("スート選択フェーズで CardIndex は入らない")
+		}
+		if *hint.Suit < domain.CardDesignSpade || *hint.Suit > domain.CardDesignDiamond {
+			t.Errorf("Suit = %d はスートの範囲外", *hint.Suit)
+		}
+	})
+
+	// **CPU の手番では出さない。**相手の手札を見て助言することになる。
+	t.Run("no hint on a CPU turn", func(t *testing.T) {
+		g := setup(t)
+		g.SetCurrentPlayerIdx(1)
+		if g.GetHint() != nil {
+			t.Error("CPU の手番ではヒントを出さない")
+		}
+	})
+
+	// プレイでもスート選択でもないフェーズでは出さない。
+	t.Run("no hint outside the playable phases", func(t *testing.T) {
+		g := setup(t)
+		g.SetPhase(domain.CrazyEightsPhaseRoundEnd)
+		if g.GetHint() != nil {
+			t.Error("ラウンド終了フェーズではヒントを出さない")
+		}
+	})
+}

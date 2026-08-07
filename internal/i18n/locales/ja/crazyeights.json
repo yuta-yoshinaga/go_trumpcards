@@ -18,5 +18,13 @@
   "promptChooseSuit": "スート選択フェーズ",
   "promptChooseSuitHelp": "suit <1-4>・・・スートを選択 (1=♠, 2=♣, 3=♥, 4=♦)",
   "promptRoundEnd": "ラウンド終了",
-  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ"
+  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
+  "hintNone": "ヒントはありません",
+  "hintCard": "おすすめ: [{{idx}}] {{card}} ({{reason}})",
+  "hintSuit": "おすすめのスート: {{suit}} ({{reason}})",
+  "hintReasonMatchSuit": "スートが合う",
+  "hintReasonMatchRank": "数字が合う",
+  "hintReasonPlayWild": "8 でスートを変えられる",
+  "hintReasonPlayValid": "出せる札",
+  "hintReasonChooseLongestSuit": "手札に一番多いスート"
 }

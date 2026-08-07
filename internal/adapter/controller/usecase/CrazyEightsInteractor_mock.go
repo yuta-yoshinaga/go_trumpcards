@@ -45,6 +45,11 @@ func (_m *MockCrazyEightsInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }
 
+// Hint モック
+func (_m *MockCrazyEightsInteractor) Hint() string {
+	return _m.Called().String(0)
+}
+
 // Snapshot モック
 func (_m *MockCrazyEightsInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()

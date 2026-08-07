@@ -81,3 +81,9 @@ func (p *CrazyEightsWebPresenter) buildMessage(g interfaces.CrazyEightsGame, las
 func (p *CrazyEightsWebPresenter) ActionLogOutput(g interfaces.CrazyEightsGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput はヒントを返す。Web ではクライアント側でも簡易ヒントを出すが、
+// これはサーバー計算の理由付きヒント (`command: "hint"` 専用のレスポンス)。
+func (p *CrazyEightsWebPresenter) HintOutput(g interfaces.CrazyEightsGame) string {
+	return p.Output(g, nil)
+}

@@ -850,4 +850,38 @@ describe('CrazyEightsPage', () => {
     await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
     expect(screen.queryByTestId('ce-sort-original')).not.toBeInTheDocument();
   });
+
+  // **Hearts / Spades はサーバー計算の理由付きヒントを返すのに、CrazyEights には
+  // ヒントボタンすら無く、全ゲーム共通の簡易ヒューリスティックしか無かった (#4737)。**
+  it('fetches a server hint and shows the recommended card with its reason', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByTestId('ce-hint-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({ ...playPhaseState, hint: { cardIndex: 1, reason: 'match_suit' } });
+    fireEvent.click(screen.getByTestId('ce-hint-button'));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    const shown = await screen.findByTestId('ce-server-hint');
+    expect(shown).toHaveTextContent('1');
+    expect(shown).toHaveTextContent('スートが合う');
+  });
+
+  it('shows the recommended suit during the choose-suit phase', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByTestId('ce-hint-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({ ...playPhaseState, hint: { suit: 3, reason: 'choose_longest_suit' } });
+    fireEvent.click(screen.getByTestId('ce-hint-button'));
+
+    const shown = await screen.findByTestId('ce-server-hint');
+    expect(shown).toHaveTextContent('手札に一番多いスート');
+  });
+
+  // 要求する前は出さない。常時表示だとフロント完結のツールチップと二重になる。
+  it('shows no server hint before the button is pressed', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('ce-server-hint')).not.toBeInTheDocument();
+  });
 });

@@ -307,6 +307,61 @@ func (g *CrazyEights) ScoreRound() {
 // --- State getters ---
 
 // GetPhase 現在のフェーズ取得
+// CrazyEightsHint はサーバーが計算した推奨手。
+type CrazyEightsHint struct {
+	// CardIndex は推奨する手札の位置。スート選択フェーズでは nil。
+	CardIndex *int
+	// Suit は 8 を出した後に指名すべきスート。プレイフェーズでは nil。
+	Suit *int
+	// Reason は理由キー (i18n で引く)。
+	Reason string
+}
+
+// GetHint は人間の手番での推奨手を返す。手番でない・出せる札が無いときは nil。
+//
+// **Hearts / Spades は HintOutput でサーバー計算の理由付きヒントを返すのに、
+// CrazyEights にはドメインの GetHint すら無く、全ゲーム共通の簡易ヒューリスティック
+// (FrontendHintTooltip) しか支援が無かった。**推奨手は CPU の最善手選択
+// (cpuPlayHard / cpuChooseSuit) をそのまま使う。別ロジックを書くと「CPU は選ばない
+// 手を人間に勧める」ことになる。
+func (g *CrazyEights) GetHint() *CrazyEightsHint {
+	if g.gameEndFlag || g.currentPlayerIdx != 0 || !g.players[0].GetIsHuman() {
+		return nil
+	}
+
+	if g.phase == CrazyEightsPhaseChooseSuit {
+		suit := g.cpuSelectSuit(0)
+		return &CrazyEightsHint{Suit: &suit, Reason: "choose_longest_suit"}
+	}
+
+	if g.phase != CrazyEightsPhasePlay {
+		return nil
+	}
+	valid := g.getValidPlayIndices(0)
+	if len(valid) == 0 {
+		// 出せる札が無い = 引くしかない。推奨する札が無いのでヒントを出さない。
+		return nil
+	}
+	idx := g.cpuPlayHard(0, valid)
+	return &CrazyEightsHint{CardIndex: &idx, Reason: g.playHintReason(idx)}
+}
+
+// playHintReason は推奨札を選んだ理由キーを返す。
+func (g *CrazyEights) playHintReason(idx int) string {
+	card := g.players[0].GetCard(idx)
+	if card == nil {
+		return "play_valid"
+	}
+	if card.GetValue() == CrazyEightsWildValue {
+		return "play_wild"
+	}
+	top := g.GetDiscardTop()
+	if top != nil && card.GetValue() == top.GetValue() {
+		return "match_rank"
+	}
+	return "match_suit"
+}
+
 func (g *CrazyEights) GetPhase() CrazyEightsPhase { return g.phase }
 
 // SetPhase フェーズ設定 (テスト用)

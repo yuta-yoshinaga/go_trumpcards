@@ -40,6 +40,13 @@ func (m *MockCrazyEightsGame) GetPlayerCnt() int           { return m.Called().I
 func (m *MockCrazyEightsGame) GetPlayer(i int) *domain.CrazyEightsPlayer {
 	return m.Called(i).Get(0).(*domain.CrazyEightsPlayer)
 }
+
+// GetHint はサーバー計算の推奨手を返すモック。
+func (m *MockCrazyEightsGame) GetHint() *domain.CrazyEightsHint {
+	out, _ := m.Called().Get(0).(*domain.CrazyEightsHint)
+	return out
+}
+
 func (m *MockCrazyEightsGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
