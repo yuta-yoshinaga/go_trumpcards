@@ -676,6 +676,62 @@ func TestSevenCardStudCuiPresenter_HintOutput(t *testing.T) {
 		assert.NotContains(t, p.HintOutput(s), i18n.T("sevencardstud.hintNone"))
 	})
 
+	// **Hi-Lo にハイ専用の基本戦略をそのまま当てていた (#4704)。**ポットの
+	// 半分がローに行くので、ハイとして弱くてもロー札がそろっていれば続ける
+	// 価値がある。
+	newHiLo := func(cards ...*domain.Card) *domain.SevenCardStud {
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewSevenCardStudHiLo(domain.NewTrumpCards(0), players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		s.SetCurrentTurn(0)
+		for i, c := range cards {
+			if i < 2 {
+				players[0].AddHoleCard(c)
+			} else {
+				players[0].AddDoorCard(c)
+			}
+		}
+		return s
+	}
+
+	t.Run("Hi-Lo keeps going on five low cards a high-only read would fold", func(t *testing.T) {
+		// 2 3 4 6 8: ハイとしてはハイカードすら無い (ハイ専用判定なら降りる)。
+		out := p.HintOutput(newHiLo(
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 3),
+			card(domain.CardDesignClover, 4), card(domain.CardDesignDiamond, 6),
+			card(domain.CardDesignSpade, 8)))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintContinue"))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintReasonHiLoLow"))
+	})
+
+	// **ロー札が4枚では足りない。**5枚そろって初めてローが成立する。
+	t.Run("Hi-Lo does not claim a low on four low cards", func(t *testing.T) {
+		out := p.HintOutput(newHiLo(
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 3),
+			card(domain.CardDesignClover, 4), card(domain.CardDesignDiamond, 6),
+			card(domain.CardDesignSpade, 9)))
+		assert.NotContains(t, out, i18n.T("sevencardstud.hintReasonHiLoLow"))
+	})
+
+	t.Run("Hi-Lo still leads with a pair", func(t *testing.T) {
+		out := p.HintOutput(newHiLo(
+			card(domain.CardDesignSpade, 7), card(domain.CardDesignHeart, 7),
+			card(domain.CardDesignClover, 4), card(domain.CardDesignDiamond, 6),
+			card(domain.CardDesignSpade, 8)))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintReasonPair"))
+	})
+
+	t.Run("Hi-Lo folds a hand with neither a low nor a high card", func(t *testing.T) {
+		out := p.HintOutput(newHiLo(
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 4),
+			card(domain.CardDesignClover, 6), card(domain.CardDesignDiamond, 9),
+			card(domain.CardDesignSpade, 3)))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintFold"))
+	})
+
 	t.Run("Razz gives no hint at showdown", func(t *testing.T) {
 		s := newRazz(
 			card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 3),
