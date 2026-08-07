@@ -58,5 +58,8 @@
   "keepFeaturePair": "ペア",
   "keepFeatureSuited": "スーテッド",
   "keepFeatureConnector": "コネクター",
-  "keepFeatureHighCard": "ハイカード"
+  "keepFeatureHighCard": "ハイカード",
+  "discardUpcoming": "フロップベット終了後にカードを{{count}}枚捨てます",
+  "discardCandidate": "  [{{idx}}] これを捨てると: {{hand}}",
+  "discardRecommended": " ← おすすめ"
 }

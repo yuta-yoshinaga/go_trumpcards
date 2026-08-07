@@ -75,6 +75,8 @@ type PineappleGame interface {
 	ExportProfile() interface{}
 	// ImportProfile JSONバイトからメタAIプロファイルをインポートする
 	ImportProfile(data []byte) error
+	// GetHumanDiscardPreviews 人間の各ホールカードについて「それを捨てたら残る手」を取得する
+	GetHumanDiscardPreviews() []domain.PineappleDiscardPreview
 	// GetEquity エクイティ計算結果を取得する
 	GetEquity() *domain.HoldemEquityResult
 	// GetPotOdds ポットオッズを取得する

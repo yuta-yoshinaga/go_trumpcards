@@ -857,6 +857,67 @@ func (p *Pineapple) GetEquity() *HoldemEquityResult {
 	return &result
 }
 
+// PineappleDiscardPreview は捨て札候補1枚ぶんの「これを捨てたら残る手」。
+type PineappleDiscardPreview struct {
+	// CardIdx はホールカードのインデックス (0 始まり)。
+	CardIdx int
+	// HandRank はこの札を捨てたときに残る5枚の役 (PokerHand*)。
+	HandRank int
+	// Recommended は最も強い役が残る捨て札に付く。同点なら全部に付く。
+	Recommended bool
+}
+
+// GetHumanDiscardPreviews は人間の3枚のホールカードそれぞれについて、
+// 「その1枚を捨てたら残る2枚がボードと作る最強の役」を返す。Crazy Pineapple の
+// 「3枚のうちどれを捨てるか」を横並びで比べられるようにするためのもの (#4686)。
+//
+// **ボードを見て役を名乗れるときしか返さない。**
+//   - プレーンな Pineapple のディスカードはフロップ前なので nil。残る2枚だけでは
+//     役が決まらない。代わりにスーテッド/コネクターの手掛かりが出る (#4685)。
+//   - Irish Poker は2枚捨てなので「1枚捨てたら残る手」の前提が成り立たず nil。
+//
+// 判定は CPU の捨て方 (cpuDiscard) と同じ bestRankWithBoard を通す。別実装に
+// すると、CPU 自身が選ばない捨て方を人間に勧めることになる。
+func (p *Pineapple) GetHumanDiscardPreviews() []PineappleDiscardPreview {
+	if p.phase != PineapplePhaseDiscard {
+		return nil
+	}
+	var human *PineapplePlayer
+	for _, pl := range p.players {
+		if pl.GetIsHuman() {
+			human = pl
+			break
+		}
+	}
+	// 手札3枚ちょうどのときだけ。捨て終わった後は2枚なのでここで弾かれる。
+	if human == nil || human.GetFolded() || human.GetCardsSize() != 3 {
+		return nil
+	}
+	if len(p.communityCards) < 3 {
+		return nil
+	}
+
+	previews := make([]PineappleDiscardPreview, human.GetCardsSize())
+	best := -1
+	for k := range previews {
+		keep := make([]*Card, 0, len(previews)-1)
+		for i := 0; i < human.GetCardsSize(); i++ {
+			if i != k {
+				keep = append(keep, human.GetCard(i))
+			}
+		}
+		rank := p.bestRankWithBoard(keep)
+		previews[k] = PineappleDiscardPreview{CardIdx: k, HandRank: rank}
+		if rank > best {
+			best = rank
+		}
+	}
+	for i := range previews {
+		previews[i].Recommended = previews[i].HandRank == best
+	}
+	return previews
+}
+
 // GetPotOdds ポットオッズを返す
 func (p *Pineapple) GetPotOdds() float64 {
 	if p.phase < PineapplePhasePreFlop || p.phase > PineapplePhaseRiver {

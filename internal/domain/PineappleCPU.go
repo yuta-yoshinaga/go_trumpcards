@@ -376,6 +376,32 @@ func evalTwoCardStrength(c1, c2 *Card) int {
 	return clamp(score, 0, 100)
 }
 
+// bestRankWithBoard は渡したホールカードと現在のボードから作れる最強の役を返す。
+//
+// **5枚に届かないときはポーカーの役ではなくプリフロップ用スコア (0-100) を
+// 返す。**尺度が2つ混ざるので、同じ局面の中での大小比較にしか使えない。
+// 外向きに役を名乗る GetHumanDiscardPreviews はボードが揃うまで何も返さない。
+func (p *Pineapple) bestRankWithBoard(hole []*Card) int {
+	all := make([]*Card, 0, len(hole)+len(p.communityCards))
+	all = append(all, hole...)
+	all = append(all, p.communityCards...)
+
+	if len(all) < 5 {
+		if len(hole) == 2 {
+			return evalTwoCardStrength(hole[0], hole[1])
+		}
+		return -1
+	}
+
+	rank := -1
+	for _, combo := range combinations(all, 5) {
+		if r := evalFiveCardHand(combo); r > rank {
+			rank = r
+		}
+	}
+	return rank
+}
+
 // cpuDiscard CPUプレイヤーのディスカード意思決定
 // C(N,2)通りの2枚ペアを全評価し、最適な2枚を残すように1枚を捨てる。
 func (p *Pineapple) cpuDiscard(idx int) int {
@@ -390,21 +416,7 @@ func (p *Pineapple) cpuDiscard(idx int) int {
 
 	for i := 0; i < n; i++ {
 		for j := i + 1; j < n; j++ {
-			all := make([]*Card, 0, 2+len(p.communityCards))
-			all = append(all, pl.GetCard(i), pl.GetCard(j))
-			all = append(all, p.communityCards...)
-
-			rank := -1
-			if len(all) >= 5 {
-				for _, combo := range combinations(all, 5) {
-					if r := evalFiveCardHand(combo); r > rank {
-						rank = r
-					}
-				}
-			} else {
-				rank = evalTwoCardStrength(pl.GetCard(i), pl.GetCard(j))
-			}
-
+			rank := p.bestRankWithBoard([]*Card{pl.GetCard(i), pl.GetCard(j)})
 			if rank > bestRank {
 				bestRank = rank
 				bestKeepI, bestKeepJ = i, j

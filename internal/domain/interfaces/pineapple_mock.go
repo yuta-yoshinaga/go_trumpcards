@@ -322,6 +322,15 @@ func (_m *MockPineappleGame) GetActionLog() []*domain.ActionLogEntry {
 	return nil
 }
 
+// GetHumanDiscardPreviews モック
+func (_m *MockPineappleGame) GetHumanDiscardPreviews() []domain.PineappleDiscardPreview {
+	ret := _m.Called()
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]domain.PineappleDiscardPreview)
+}
+
 // GetEquity モック
 func (_m *MockPineappleGame) GetEquity() *domain.HoldemEquityResult {
 	ret := _m.Called()
