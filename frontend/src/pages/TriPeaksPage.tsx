@@ -38,8 +38,8 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseTripeaksCommand, TRIPEAKS_HELP } from '../utils/cli/commands/tripeaksCommands';
 import { formatTripeaksState } from '../utils/cli/formatters/tripeaksFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { isTriPeaksAdjacent } from '../utils/hints/tripeaksHint';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { triPeaksPlayableCells } from '../utils/triPeaksPlayable';
 
 /** Valid column positions per row in the TriPeaks tableau. */
 const VALID_COLS: readonly number[][] = [
@@ -245,6 +245,9 @@ function TriPeaksPageContent() {
   const isPlaying = state.phase === TriPeaksPhase.PLAYING;
   // Rank of the waste top, used to ring playable (±1 with K-A wrap) tableau cards.
   const wasteTopValue = state.waste.length > 0 ? state.waste[state.waste.length - 1].value : undefined;
+  // **リングと合計は同じ集合を読む。**別々に数えると、光っている札の数と
+  // ヘッダーの数字がずれる。CUI の playableCount と揃える (#4783)。
+  const playableCells = isPlaying ? triPeaksPlayableCells(state.layout, wasteTopValue) : new Set<string>();
   const isGameClear = state.phase === TriPeaksPhase.GAME_CLEAR;
   const isGameOver = state.phase === TriPeaksPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
@@ -283,6 +286,14 @@ function TriPeaksPageContent() {
           <span data-testid="tp-score">
             {t('score')}: <span className="font-bold tabular-nums">{score}</span>
           </span>
+          {isPlaying && (
+            <span data-testid="tp-playable" className="text-xs">
+              {t('playableSummary', { count: playableCells.size })}
+              {playableCells.size === 0 && state.stockCount > 0 && (
+                <span className="ml-1 text-ds-warning">{t('drawRecommended')}</span>
+              )}
+            </span>
+          )}
           {isPlaying && (
             <span data-testid="peak-remaining" className="flex items-center gap-1 text-xs">
               <span className="sr-only">{t('peakRemaining')}</span>
@@ -353,11 +364,7 @@ function TriPeaksPageContent() {
                       if (!tc2.card) return null;
                       const exposed = tc2.exposed;
                       const isHinted = hint?.type === 'remove' && hint.row === rowIdx && hint.col === colIdx;
-                      const isPlayable =
-                        isPlaying &&
-                        exposed &&
-                        wasteTopValue !== undefined &&
-                        isTriPeaksAdjacent(tc2.card.value, wasteTopValue);
+                      const isPlayable = playableCells.has(`${rowIdx.toString()}-${colIdx.toString()}`);
                       return (
                         <div key={`tc-${rowIdx.toString()}-${colIdx.toString()}`} className="absolute" style={{ left }}>
                           <button
