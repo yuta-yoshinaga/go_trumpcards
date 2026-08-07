@@ -68,5 +68,8 @@
     "drewFrom": "← from {{from}}",
     "drewAndPaired": "← from {{from}} (paired)"
   },
-  "keyHints": "D: Draw / S: Shuffle"
+  "keyHints": "D: Draw / S: Shuffle",
+  "metaAI": {
+    "status": "[Meta AI] adapting (games: {{games}}, edge-pick rate: {{rate}}%)"
+  }
 }

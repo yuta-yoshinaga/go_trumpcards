@@ -1404,4 +1404,26 @@ describe('OldMaidPage', () => {
       .filter((b) => b.dataset.drawnHighlight === 'true');
     expect(highlighted).toHaveLength(0);
   });
+
+  // **CUI は oldmaid.metaAILine で「自分の癖がどれだけ読まれているか」を毎回
+  // 出しているのに、Web は同じ値をレスポンスで受け取りながら一度も描画して
+  // いなかった (#4732)。**メタAI を ON にした意味が画面から分からない。
+  it('shows how much the meta AI has learned about the player', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, metaAI: { enabled: true, gamesPlayed: 12, edgePickRate: 0.375 } });
+    renderWithProviders(<OldMaidPage />);
+
+    const badge = await screen.findByTestId('om-metaai');
+    expect(badge).toHaveTextContent('12');
+    // 0.375 -> 38% (CUI と同じく 100 倍して丸める)。
+    expect(badge).toHaveTextContent('38');
+  });
+
+  // 逆側。OFF のときは学習していないので数字に意味が無く、出さない。
+  it('shows no meta-AI status while the meta AI is off', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, metaAI: { enabled: false, gamesPlayed: 12, edgePickRate: 0.375 } });
+    renderWithProviders(<OldMaidPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('om-metaai')).not.toBeInTheDocument();
+  });
 });
