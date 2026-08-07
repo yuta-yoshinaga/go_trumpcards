@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,6 +18,7 @@ func addPyramidExposedExpectations(pg *interfaces.MockPyramidGame) {
 	for row := range domain.PyramidRowCnt {
 		for col := range row + 1 {
 			pg.On("IsExposed", row, col).Return(row == domain.PyramidRowCnt-1).Maybe()
+			pg.On("IsRemovableKing", row, col).Return(false).Maybe()
 		}
 	}
 }
@@ -28,6 +30,7 @@ func setupPyramidCuiMock() *interfaces.MockPyramidGame {
 	pg.On("GetStockCount").Return(24).Maybe()
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
+	pg.On("IsWasteKingRemovable").Return(false).Maybe()
 	addPyramidExposedExpectations(pg)
 
 	var pyramid [domain.PyramidRowCnt][]*domain.PyramidCard
@@ -184,6 +187,7 @@ func TestPyramidCuiPresenterOutput_StalemateAndNonEmptyWaste(t *testing.T) {
 		domain.NewCard(domain.CardDesignSpade, 7, false),
 	}).Maybe()
 	pg.On("IsStalemate").Return(true).Maybe()
+	pg.On("IsWasteKingRemovable").Return(false).Maybe()
 	addPyramidExposedExpectations(pg)
 
 	var pyramid [domain.PyramidRowCnt][]*domain.PyramidCard
@@ -211,4 +215,55 @@ func TestPyramidCuiPresenterActionLogOutput(t *testing.T) {
 	p := &PyramidCuiPresenter{}
 	result := p.ActionLogOutput(pg)
 	assert.Contains(t, result, "棋譜はありません")
+}
+
+// **キングは相方が要らず単独で消せる (#4782)。**Web は常時ハイライトして
+// いるのに、CUI は数値を1枚ずつ見て 13 を自分で探すしかなかった。
+func TestPyramidCuiPresenterOutput_MarksRemovableKings(t *testing.T) {
+	last := domain.PyramidRowCnt - 1
+	// kingAt で指定した1枚だけを「除去できるキング」にした盤面のモック。
+	board := func(kingCol int, waste []*domain.Card, wasteKing bool) *interfaces.MockPyramidGame {
+		pg := new(interfaces.MockPyramidGame)
+		pg.On("GetPhase").Return(domain.PyramidPhasePlaying).Maybe()
+		pg.On("GetMoveCount").Return(0).Maybe()
+		pg.On("GetStockCount").Return(24).Maybe()
+		pg.On("GetWaste").Return(waste).Maybe()
+		pg.On("IsStalemate").Return(false).Maybe()
+		pg.On("IsWasteKingRemovable").Return(wasteKing).Maybe()
+		for row := range domain.PyramidRowCnt {
+			for col := range row + 1 {
+				pg.On("IsExposed", row, col).Return(row == last).Maybe()
+				pg.On("IsRemovableKing", row, col).Return(row == last && col == kingCol).Maybe()
+			}
+		}
+		var pyramid [domain.PyramidRowCnt][]*domain.PyramidCard
+		for row := range domain.PyramidRowCnt {
+			pyramid[row] = make([]*domain.PyramidCard, row+1)
+			for col := range row + 1 {
+				pyramid[row][col] = &domain.PyramidCard{
+					Card:    domain.NewCard(domain.CardDesignSpade, 13, false),
+					Removed: false,
+				}
+			}
+		}
+		pg.On("GetPyramid").Return(pyramid).Maybe()
+		return pg
+	}
+	p := &PyramidCuiPresenter{}
+
+	// **印が付くのは1枚だけ。**全部に付ける実装でも「付く」だけなら通る。
+	t.Run("marks one king on the pyramid and leaves the rest bare", func(t *testing.T) {
+		out := p.Output(board(0, nil, false), nil)
+		assert.Equal(t, 1, strings.Count(out, "[K]"))
+	})
+
+	t.Run("marks a king on top of the waste", func(t *testing.T) {
+		out := p.Output(board(-1, []*domain.Card{domain.NewCard(domain.CardDesignSpade, 13, false)}, true), nil)
+		assert.Contains(t, out, "[K]")
+	})
+
+	t.Run("does not mark a non-king waste card", func(t *testing.T) {
+		out := p.Output(board(-1, []*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)}, false), nil)
+		assert.NotContains(t, out, "[K]")
+	})
 }

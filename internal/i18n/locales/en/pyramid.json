@@ -16,5 +16,7 @@
   "hintPair": "Hint: remove pair ({{row1}},{{col1}})+({{row2}},{{col2}})",
   "hintWasteKing": "Hint: remove king on waste",
   "hintWastePair": "Hint: pair waste with pyramid ({{row}},{{col}})",
-  "hintUnknown": "Hint: unknown"
+  "hintUnknown": "Hint: unknown",
+  "exposedKing": "({{row}},{{col}}){{card}}[K]",
+  "wasteKing": " | Waste: {{card}}[K]"
 }

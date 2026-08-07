@@ -172,6 +172,31 @@ func (p *Pyramid) RemovePair(row1, col1, row2, col2 int) error {
 	return nil
 }
 
+// IsRemovableKing は (row, col) のカードが「いま単独で除去できるキング」かを返す。
+//
+// **RemoveKing が通る条件と同じものを見る (#4782)。**キングは相方が要らず
+// クリックだけで消せるので、Web は常時ハイライトしている。印を付ける条件と
+// 実際に通る条件が別々だと、消せない札に印が付く。
+func (p *Pyramid) IsRemovableKing(row, col int) bool {
+	if p.phase != PyramidPhasePlaying {
+		return false
+	}
+	if err := p.validatePyramidPos(row, col); err != nil {
+		return false
+	}
+	// isExposed が除去済みを弾くので、ここで Removed を見直さない
+	// (見ても常に同じ結果になる分岐が増えるだけ)。
+	return p.isExposed(row, col) && p.pyramid[row][col].Card.GetValue() == PyramidTargetSum
+}
+
+// IsWasteKingRemovable はウェイストのトップが単独で除去できるキングかを返す。
+func (p *Pyramid) IsWasteKingRemovable() bool {
+	if p.phase != PyramidPhasePlaying || len(p.waste) == 0 {
+		return false
+	}
+	return p.waste[len(p.waste)-1].GetValue() == PyramidTargetSum
+}
+
 // RemoveKing ピラミッド上のKを単独で除去
 func (p *Pyramid) RemoveKing(row, col int) error {
 	if p.phase != PyramidPhasePlaying {

@@ -33,6 +33,14 @@ func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 				switch {
 				case pc.Removed:
 					b.WriteString(pyramidRemovedPlaceholder)
+				case p.IsRemovableKing(row, col):
+					// **キングは相方が要らず単独で消せる (#4782)。**Web は常時
+					// ハイライトしているのに、CUI は数値を1枚ずつ見て 13 を
+					// 自分で探すしかなかった。
+					b.WriteString(i18n.Tf("pyramid.exposedKing",
+						"row", strconv.Itoa(row),
+						"col", strconv.Itoa(col),
+						"card", cuiCardStr(pc.Card)))
 				case p.IsExposed(row, col):
 					// Exposed cards carry their coordinates so they can be played.
 					b.WriteString(i18n.Tf("pyramid.exposedCard",
@@ -55,7 +63,11 @@ func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 			"count", strconv.Itoa(p.GetStockCount())))
 		waste := p.GetWaste()
 		if len(waste) > 0 {
-			b.WriteString(i18n.Tf("pyramid.wasteCard",
+			wasteKey := "pyramid.wasteCard"
+			if p.IsWasteKingRemovable() {
+				wasteKey = "pyramid.wasteKing"
+			}
+			b.WriteString(i18n.Tf(wasteKey,
 				"card", cuiCardStr(waste[len(waste)-1])))
 		} else {
 			b.WriteString(i18n.T("pyramid.wasteEmpty"))
