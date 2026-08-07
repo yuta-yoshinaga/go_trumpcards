@@ -195,13 +195,13 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 		h, players := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 0, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		_ = players[0]
 		result := p.Output(h, nil)
 		assert.Contains(t, result, "[結果]")
-		assert.Contains(t, result, "あなた: Flush")
+		assert.Contains(t, result, "あなた: フラッシュ")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
@@ -209,11 +209,11 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{14, 12, 10}, WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 0, HandRank: domain.ShortDeckHandOnePair, HandName: "One Pair", Kickers: []int{14, 12, 10}, WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "あなた: One Pair (キッカー: A, Q, 10)")
+		assert.Contains(t, result, "あなた: ワンペア (キッカー: A, Q, 10)")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
@@ -221,11 +221,11 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", Kickers: nil, WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 0, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", Kickers: nil, WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "あなた: Flush")
+		assert.Contains(t, result, "あなた: フラッシュ")
 		assert.NotContains(t, result, "キッカー")
 	})
 
@@ -233,11 +233,11 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 1, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{13, 12, 11}, WonAmount: 50, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.ShortDeckHandOnePair, HandName: "One Pair", Kickers: []int{13, 12, 11}, WonAmount: 50, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "CPU 1: One Pair (キッカー: K, Q, J)")
+		assert.Contains(t, result, "CPU 1: ワンペア (キッカー: K, Q, J)")
 		assert.Contains(t, result, "50チップ獲得")
 	})
 
@@ -257,7 +257,7 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 1, HandName: "High Card", WonAmount: 0, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.ShortDeckHandHighCard, HandName: "High Card", WonAmount: 0, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
@@ -268,7 +268,7 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseFlop)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 0, HandName: "Flush", WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 0, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
@@ -576,8 +576,8 @@ func TestShortDeckCuiPresenter_Output_Muck(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseShowdown)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
-			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 0, HandRank: domain.ShortDeckHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
@@ -588,7 +588,7 @@ func TestShortDeckCuiPresenter_Output_Muck(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 0, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
@@ -600,7 +600,7 @@ func TestShortDeckCuiPresenter_Output_Muck(t *testing.T) {
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandName: "One Pair", WonAmount: 0, Mucked: true, BestHand: nil},
-			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
@@ -612,12 +612,12 @@ func TestShortDeckCuiPresenter_Output_Muck(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseShowdown)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 0, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
 		assert.Contains(t, result, "[結果]")
-		assert.Contains(t, result, "あなた: Flush")
+		assert.Contains(t, result, "あなた: フラッシュ")
 	})
 }
 
@@ -663,4 +663,40 @@ func TestShortDeckCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, "棋譜はありません")
 		mockGame.AssertExpectations(t)
 	})
+}
+
+// TestShortDeckCuiPresenter_HandNameOrdering pins the short-deck ranking, where
+// the flush outranks the full house (#4987).
+//
+// **共通の役表を流用すると 5 が「フラッシュ」になる。**標準デッキでは 5=Flush /
+// 6=Full House だが、36枚デッキでは逆。訳されないより誤訳のほうが悪いので、
+// 入れ替わっている 2 ランクを名指しで固定する。
+func TestShortDeckCuiPresenter_HandNameOrdering(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	p := new(presenter.ShortDeckCuiPresenter)
+	tests := []struct {
+		name string
+		rank int
+		want string
+		deny string
+	}{
+		{"rank 5 is the full house, not the flush", domain.ShortDeckHandFullHouse, "フルハウス", "フラッシュ"},
+		{"rank 6 is the flush, not the full house", domain.ShortDeckHandFlush, "フラッシュ", "フルハウス"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h, _ := makeShortDeckForPresenter()
+			h.SetPhase(domain.ShortDeckPhaseEnd)
+			h.SetRoundResults([]domain.HoldemResult{
+				{PlayerIdx: 0, HandRank: tt.rank, HandName: domain.ShortDeckHandNames[tt.rank], WonAmount: 100},
+			})
+
+			result := p.Output(h, nil)
+			assert.Contains(t, result, "あなた: "+tt.want)
+			assert.NotContains(t, result, "あなた: "+tt.deny)
+		})
+	}
 }

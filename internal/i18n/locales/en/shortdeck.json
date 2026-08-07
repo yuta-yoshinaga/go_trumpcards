@@ -37,5 +37,15 @@
   "muckPrompt": "Muck? (m=muck / sh=show)",
   "rebuyPrompt": "Rebuy? ({{chips}} chips, used {{used}}/{{max}}) (rb=rebuy / sr=skip)",
   "addonPrompt": "Add-on? ({{chips}} chips) (ad=addon / sa=skip)",
-  "gameEnd": "Game over"
+  "gameEnd": "Game over",
+  "handRank0": "High Card",
+  "handRank1": "One Pair",
+  "handRank2": "Two Pair",
+  "handRank3": "Three of a Kind",
+  "handRank4": "Straight",
+  "handRank5": "Full House",
+  "handRank6": "Flush",
+  "handRank7": "Four of a Kind",
+  "handRank8": "Straight Flush",
+  "handRank9": "Royal Flush"
 }

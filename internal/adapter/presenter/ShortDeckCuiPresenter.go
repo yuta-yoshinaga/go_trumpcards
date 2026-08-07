@@ -125,7 +125,7 @@ func (p *ShortDeckCuiPresenter) Output(o interfaces.ShortDeckGame, lastErr error
 				case r.HandName != "":
 					b.WriteString(i18n.Tf("shortdeck.resultHand",
 						"name", name,
-						"hand", r.HandName,
+						"hand", cuiShortDeckHandName(r.HandRank),
 						"kickers", kickers))
 				default:
 					b.WriteString(i18n.Tf("shortdeck.resultName", "name", name))

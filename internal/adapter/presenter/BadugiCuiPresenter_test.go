@@ -180,3 +180,55 @@ func TestBadugiCuiPresenter_ActionLogOutput(t *testing.T) {
 	out := pres.ActionLogOutput(bd)
 	assert.NotEmpty(t, out)
 }
+
+// TestBadugiCuiPresenter_LocalizedHandNames pins the Japanese hand names (#4987).
+//
+// **バドゥーギの役名はポーカー役表と対応しない。**共通表を流用できないので専用の
+// キーを持つ。役は成立枚数 (1-4) そのもので、4 が「バドゥーギ」。
+func TestBadugiCuiPresenter_LocalizedHandNames(t *testing.T) {
+	// 4枚とも異なるランク・異なるスート = バドゥーギ (4)。
+	// ランクを重ねると成立枚数が減る。
+	tests := []struct {
+		name  string
+		cards [4]*domain.Card
+		want  string
+	}{
+		{
+			"four distinct ranks and suits is a badugi",
+			[4]*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+				domain.NewCard(domain.CardDesignHeart, 2, false),
+				domain.NewCard(domain.CardDesignDiamond, 3, false),
+				domain.NewCard(domain.CardDesignClover, 4, false),
+			},
+			"バドゥーギ",
+		},
+		{
+			"a repeated suit drops it to a three-card hand",
+			[4]*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+				domain.NewCard(domain.CardDesignSpade, 2, false),
+				domain.NewCard(domain.CardDesignDiamond, 3, false),
+				domain.NewCard(domain.CardDesignClover, 4, false),
+			},
+			"3カード",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pres := new(presenter.BadugiCuiPresenter)
+			bd, players := makeBadugiForPresenter()
+			bd.SetPhase(domain.BadugiPhaseEnd)
+			bd.SetGameEndFlag(true)
+			for _, c := range tt.cards {
+				players[0].AddCard(c)
+			}
+			_ = players[0].EvalHand()
+
+			out := pres.Output(bd, nil)
+			assert.Contains(t, out, tt.want)
+			// 英語の生の役名が漏れていないこと。
+			assert.NotContains(t, out, "-card")
+		})
+	}
+}

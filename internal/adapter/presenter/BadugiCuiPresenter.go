@@ -76,7 +76,7 @@ func (bcp *BadugiCuiPresenter) Output(g interfaces.BadugiGame, lastErr error) st
 				if isEnd {
 					b.WriteString(i18n.Tf("badugi.humanHandWithName",
 						"cards", handStr,
-						"name", pl.GetHandName()) + "\n")
+						"name", cuiBadugiHandName(pl.GetBestHand().Size)) + "\n")
 				} else {
 					b.WriteString(i18n.Tf("badugi.humanHand", "cards", handStr) + "\n")
 				}
@@ -84,7 +84,7 @@ func (bcp *BadugiCuiPresenter) Output(g interfaces.BadugiGame, lastErr error) st
 			if !pl.GetIsHuman() && isEnd && !pl.GetFolded() {
 				b.WriteString(i18n.Tf("badugi.humanHandWithName",
 					"cards", cuiCardListStrEmoji(pl),
-					"name", pl.GetHandName()) + "\n")
+					"name", cuiBadugiHandName(pl.GetBestHand().Size)) + "\n")
 			}
 		}
 
