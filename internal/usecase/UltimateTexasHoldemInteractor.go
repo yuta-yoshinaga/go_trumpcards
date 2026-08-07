@@ -22,6 +22,8 @@ type UltimateTexasHoldemInteractorIF interface {
 	Check() string
 	// Fold リバーでフォールド
 	Fold() string
+	// Hint ヒント取得
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -64,6 +66,11 @@ func (ui *UltimateTexasHoldemInteractor) Check() string {
 // Fold フォールド
 func (ui *UltimateTexasHoldemInteractor) Fold() string {
 	return execAndPresent(ui.Game, ui.up, ui.Game.Fold)
+}
+
+// Hint ヒント取得
+func (ui *UltimateTexasHoldemInteractor) Hint() string {
+	return ui.up.HintOutput(ui.Game)
 }
 
 // ActionLog 棋譜を出力する

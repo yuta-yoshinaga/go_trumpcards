@@ -552,3 +552,88 @@ func TestUltimateTexasHoldem_JSONUnmarshal_RejectsHugeSlices(t *testing.T) {
 	err = json.Unmarshal(payload, dst)
 	assert.Error(t, err)
 }
+
+// **CUI には 4x/3x/2x/1x/check/fold を選ぶ材料が何も無かった (#4709)。**
+// Web はプリフロップの強さで 4x / 3x ボタンを光らせている。
+func TestUltimateTexasHoldem_RecommendPlay(t *testing.T) {
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+	preflop := func(hand ...*domain.Card) *domain.UltimateTexasHoldem {
+		u := domain.NewDefaultUltimateTexasHoldem()
+		u.SetPhase(domain.UltimateTexasHoldemPhasePreFlop)
+		u.SetPlayerHand(hand)
+		return u
+	}
+
+	t.Run("no recommendation before the cards are out", func(t *testing.T) {
+		u := domain.NewDefaultUltimateTexasHoldem()
+		u.SetPhase(domain.UltimateTexasHoldemPhaseBet)
+		assert.Equal(t, "", u.RecommendPlay())
+	})
+
+	t.Run("4x on a pocket pair", func(t *testing.T) {
+		assert.Equal(t, domain.UTHRecommendPlay4x,
+			preflop(card(domain.CardDesignSpade, 7), card(domain.CardDesignHeart, 7)).RecommendPlay())
+	})
+
+	// **エースは 14 として数える。**value は 1 なので、素朴な大小比較だと
+	// 最強のスターターを「弱い」と判定して 4x を逃す。
+	t.Run("4x on any ace", func(t *testing.T) {
+		assert.Equal(t, domain.UTHRecommendPlay4x,
+			preflop(card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 4)).RecommendPlay())
+	})
+
+	t.Run("3x on a king with a low kicker", func(t *testing.T) {
+		assert.Equal(t, domain.UTHRecommendPlay3x,
+			preflop(card(domain.CardDesignSpade, 13), card(domain.CardDesignHeart, 4)).RecommendPlay())
+	})
+
+	// **スーテッドかどうかで段が変わる。**同じ K-4 でも同スートなら 4x。
+	t.Run("a suited king moves up from 3x to 4x", func(t *testing.T) {
+		assert.Equal(t, domain.UTHRecommendPlay4x,
+			preflop(card(domain.CardDesignSpade, 13), card(domain.CardDesignSpade, 4)).RecommendPlay())
+	})
+
+	t.Run("check on a weak offsuit holding", func(t *testing.T) {
+		assert.Equal(t, domain.UTHRecommendCheck,
+			preflop(card(domain.CardDesignSpade, 8), card(domain.CardDesignHeart, 3)).RecommendPlay())
+	})
+
+	t.Run("2x on the flop once a pair is made", func(t *testing.T) {
+		u := preflop(card(domain.CardDesignSpade, 8), card(domain.CardDesignHeart, 3))
+		u.SetPhase(domain.UltimateTexasHoldemPhaseFlop)
+		u.SetCommunity([]*domain.Card{
+			card(domain.CardDesignClover, 8), card(domain.CardDesignDiamond, 11), card(domain.CardDesignSpade, 2),
+		})
+		assert.Equal(t, domain.UTHRecommendPlay2x, u.RecommendPlay())
+	})
+
+	t.Run("check on the flop with nothing made", func(t *testing.T) {
+		u := preflop(card(domain.CardDesignSpade, 8), card(domain.CardDesignHeart, 3))
+		u.SetPhase(domain.UltimateTexasHoldemPhaseFlop)
+		u.SetCommunity([]*domain.Card{
+			card(domain.CardDesignClover, 9), card(domain.CardDesignDiamond, 11), card(domain.CardDesignSpade, 2),
+		})
+		assert.Equal(t, domain.UTHRecommendCheck, u.RecommendPlay())
+	})
+
+	t.Run("1x on the river with a made hand", func(t *testing.T) {
+		u := preflop(card(domain.CardDesignSpade, 8), card(domain.CardDesignHeart, 3))
+		u.SetPhase(domain.UltimateTexasHoldemPhaseRiver)
+		u.SetCommunity([]*domain.Card{
+			card(domain.CardDesignClover, 8), card(domain.CardDesignDiamond, 11), card(domain.CardDesignSpade, 2),
+			card(domain.CardDesignHeart, 5), card(domain.CardDesignClover, 6),
+		})
+		assert.Equal(t, domain.UTHRecommendPlay1x, u.RecommendPlay())
+	})
+
+	// **リバーで役が無ければ降りる。**チェックは選べないので check とは違う。
+	t.Run("fold on the river with nothing made", func(t *testing.T) {
+		u := preflop(card(domain.CardDesignSpade, 8), card(domain.CardDesignHeart, 3))
+		u.SetPhase(domain.UltimateTexasHoldemPhaseRiver)
+		u.SetCommunity([]*domain.Card{
+			card(domain.CardDesignClover, 9), card(domain.CardDesignDiamond, 11), card(domain.CardDesignSpade, 2),
+			card(domain.CardDesignHeart, 5), card(domain.CardDesignClover, 7),
+		})
+		assert.Equal(t, domain.UTHRecommendFold, u.RecommendPlay())
+	})
+}

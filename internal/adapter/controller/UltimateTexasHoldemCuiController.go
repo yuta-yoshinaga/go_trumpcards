@@ -27,7 +27,7 @@ func (uc *UltimateTexasHoldemCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return uc.ui.Reset() },
-		[]string{"b", "bet", "p", "play", "c", "check", "f", "fold", "log", "l"},
+		[]string{"b", "bet", "p", "play", "c", "check", "f", "fold", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
@@ -53,6 +53,8 @@ func (uc *UltimateTexasHoldemCuiController) Exec(command string) string {
 				return uc.ui.Check(), true
 			case "f", "fold":
 				return uc.ui.Fold(), true
+			case "h", "hint":
+				return uc.ui.Hint(), true
 			default:
 				return handleCuiLog(cmd, uc.ui.ActionLog)
 			}

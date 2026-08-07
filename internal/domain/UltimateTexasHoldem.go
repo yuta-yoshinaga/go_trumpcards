@@ -307,6 +307,126 @@ func (u *UltimateTexasHoldem) updatePlayerCurrentRank() {
 	u.playerHandRank, _ = evalBestFromSeven(all)
 }
 
+// 推奨アクション。CUI のヒント表示 (#4709) と Web のボタン強調が同じ判断を
+// 出すよう、判定はここ1か所に置く。
+const (
+	// UTHRecommendPlay4x プリフロップで 4x を置く。
+	UTHRecommendPlay4x = "play4x"
+	// UTHRecommendPlay3x プリフロップで 3x を置く。
+	UTHRecommendPlay3x = "play3x"
+	// UTHRecommendPlay2x フロップで 2x を置く。
+	UTHRecommendPlay2x = "play2x"
+	// UTHRecommendPlay1x リバーで 1x を置く。
+	UTHRecommendPlay1x = "play1x"
+	// UTHRecommendCheck チェックして次のストリートを見る。
+	UTHRecommendCheck = "check"
+	// UTHRecommendFold リバーで降りる。
+	UTHRecommendFold = "fold"
+)
+
+// RecommendPlay は現在のフェーズでの推奨アクションを返す。判断のいらない
+// フェーズでは空文字。
+//
+// **倍率まで返す。**Web はプリフロップの強さで 4x / 3x ボタンを光らせるのに、
+// CUI には 4x/3x/2x/1x/check/fold を選ぶ材料が何も無かった (#4709)。
+//
+// 判定はフロントの utHoldemPreflopStrength と同じ規則 (strong→4x、
+// moderate→3x、weak→check)。フロップ以降はワンペア以上かどうかで決める。
+func (u *UltimateTexasHoldem) RecommendPlay() string {
+	switch u.phase {
+	case UltimateTexasHoldemPhasePreFlop:
+		switch uthPreflopStrength(u.playerHand) {
+		case uthStrengthStrong:
+			return UTHRecommendPlay4x
+		case uthStrengthModerate:
+			return UTHRecommendPlay3x
+		default:
+			return UTHRecommendCheck
+		}
+	case UltimateTexasHoldemPhaseFlop:
+		if u.currentBestRank() >= PokerHandOnePair {
+			return UTHRecommendPlay2x
+		}
+		return UTHRecommendCheck
+	case UltimateTexasHoldemPhaseRiver:
+		if u.currentBestRank() >= PokerHandOnePair {
+			return UTHRecommendPlay1x
+		}
+		return UTHRecommendFold
+	default:
+		return ""
+	}
+}
+
+// currentBestRank はホールカードとボードから今の最良ランクを評価する。
+//
+// **保存済みの playerHandRank は読まない。**あれは配札のたびに更新される
+// フィールドで、いつ更新されたかに助言が依存してしまう。
+func (u *UltimateTexasHoldem) currentBestRank() int {
+	all := append([]*Card{}, u.playerHand...)
+	all = append(all, u.community...)
+	if len(all) < 5 {
+		return PokerHandHighCard
+	}
+	rank, _ := evalBestFromSeven(all)
+	return rank
+}
+
+// uthStrength はプリフロップの手の強さ。
+type uthStrength int
+
+const (
+	uthStrengthWeak uthStrength = iota
+	uthStrengthModerate
+	uthStrengthStrong
+)
+
+// uthPreflopStrength はホールカード2枚の強さを返す。
+//
+// **フロントの utHoldemPreflopStrength と同じ規則。**ずれると同じ手札で
+// CUI が 3x、Web のボタン強調が 4x を指すことになる。エースは 14 として
+// 数える (value は 1)。
+func uthPreflopStrength(hand []*Card) uthStrength {
+	if len(hand) < 2 {
+		return uthStrengthWeak
+	}
+	rank := func(c *Card) int {
+		if v := c.GetValue(); v == 1 {
+			return 14
+		}
+		return c.GetValue()
+	}
+	ra, rb := rank(hand[0]), rank(hand[1])
+	hi, lo := ra, rb
+	if lo > hi {
+		hi, lo = lo, hi
+	}
+	suited := hand[0].GetDesign() == hand[1].GetDesign()
+
+	switch {
+	case ra == rb: // any pair
+		return uthStrengthStrong
+	case hi == 14: // any ace
+		return uthStrengthStrong
+	case hi == 13 && suited: // suited king
+		return uthStrengthStrong
+	case hi == 13 && lo >= 11: // K-Q / K-J offsuit
+		return uthStrengthStrong
+	case hi == 12 && lo == 11 && suited: // Q-J suited
+		return uthStrengthStrong
+	case hi == 13: // K-x offsuit
+		return uthStrengthModerate
+	case hi == 12 && lo == 11: // Q-J offsuit
+		return uthStrengthModerate
+	case suited && hi-lo <= 2 && lo >= 6: // suited connector mid+
+		return uthStrengthModerate
+	case suited && hi >= 12: // Q-x suited
+		return uthStrengthModerate
+	default:
+		return uthStrengthWeak
+	}
+}
+
 // resolve ショーダウン処理。
 func (u *UltimateTexasHoldem) resolve() {
 	playerAll := append([]*Card{}, u.playerHand...)

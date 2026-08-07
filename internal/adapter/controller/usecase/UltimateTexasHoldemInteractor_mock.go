@@ -39,6 +39,11 @@ func (m *MockUltimateTexasHoldemInteractor) ActionLog() string {
 	return args.String(0)
 }
 
+func (m *MockUltimateTexasHoldemInteractor) Hint() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 // Snapshot モック
 func (m *MockUltimateTexasHoldemInteractor) Snapshot() ([]byte, error) {
 	ret := m.Called()
