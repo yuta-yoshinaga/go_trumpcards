@@ -435,12 +435,24 @@ describe('VideoPokerGameContent', () => {
     expect(stored).toMatchObject({ hands: 0, wins: 0 });
   });
 
-  it('does not show the session stats panel for other variants (deuceswild)', async () => {
+  // **配当の分散が大きいバリアントほど収支を追う価値が高いのに、そこだけ
+  // 機能が丸ごと無かった (#4692)。**以前はこのテストが「出ないこと」を
+  // 期待しており、欠落を仕様として固定していた。
+  it('shows the session stats panel for Deuces Wild too', async () => {
     mockExec.mockResolvedValue({ ...resultPhaseWin, variantName: 'deuceswild' });
     renderContent('deuceswild');
-    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
-    expect(screen.queryByTestId('vp-session-stats')).not.toBeInTheDocument();
-    // And nothing is written to any stats bucket for the disabled variant.
-    expect(localStorage.getItem('vp_stats_deuceswild')).toBeNull();
+    await waitFor(() => expect(screen.getByTestId('vp-session-stats')).toBeInTheDocument());
+
+    // **バリアントごとに別バケットへ書く。**共有すると Jacks or Better の
+    // 収支に混ざる。
+    await waitFor(() => expect(localStorage.getItem('vp_stats_deuceswild')).not.toBeNull());
+    const stored = JSON.parse(localStorage.getItem('vp_stats_deuceswild') ?? '{}');
+    expect(stored).toMatchObject({ hands: 1 });
+  });
+
+  it('shows the session stats panel for Joker Poker too', async () => {
+    mockExec.mockResolvedValue({ ...resultPhaseWin, variantName: 'jokerpoker' });
+    renderContent('jokerpoker');
+    await waitFor(() => expect(screen.getByTestId('vp-session-stats')).toBeInTheDocument());
   });
 });

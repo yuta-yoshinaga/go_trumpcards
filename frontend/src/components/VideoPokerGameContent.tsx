@@ -189,12 +189,13 @@ export function VideoPokerGameContent({
   const isDrawPhase = state?.phase === VideoPokerPhase.DRAW;
   const isResultPhase = state?.phase === VideoPokerPhase.RESULT;
 
-  // Session statistics (hands / win rate / net) are scoped to the base
-  // Jacks-or-Better variant so the shared component leaves Deuces Wild and
-  // Joker Poker untouched. Storage is still keyed per variant, so enabling the
-  // others later needs no data migration.
-  const statsEnabled = gameName === 'videopoker';
-  const { stats, clear: clearStats } = useVideoPokerStats(gameName, state, isResultPhase, statsEnabled);
+  // Session statistics (hands / win rate / net) for every variant.
+  //
+  // **以前は Jacks or Better だけに絞っていた (#4692)。**配当の分散が大きい
+  // Deuces Wild / Joker Poker ほど収支を追う価値が高いのに、そこだけ機能が
+  // 丸ごと欠けていた。保存キーは元からバリアント別 (`vp_stats_<name>`) なので、
+  // 有効化してもデータ移行は要らないし、収支が混ざることもない。
+  const { stats, clear: clearStats } = useVideoPokerStats(gameName, state, isResultPhase, true);
 
   // Announce the draw outcome once per hand. Keying on the state reference (a
   // fresh object on every API result) re-fires the effect even for an identical
@@ -471,7 +472,7 @@ export function VideoPokerGameContent({
               gameName={gameName}
               betAmount={betAmount}
               winningRowKey={isResultPhase ? videoPokerRowKey(state.handKey, state.handName) : null}
-              handCounts={statsEnabled ? stats.handCounts : null}
+              handCounts={stats.handCounts}
             />
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
@@ -502,33 +503,31 @@ export function VideoPokerGameContent({
                 </button>
               </div>
             )}
-            {statsEnabled && (
-              <div
-                className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pb-2 text-ds-text-muted text-xs lg:text-sm"
-                data-testid="vp-session-stats"
-              >
-                <span data-testid="vp-stats-summary">
-                  {stats.hands === 0
-                    ? tNs('stats.empty')
-                    : tNs('stats.summary', {
-                        hands: stats.hands,
-                        winRate: Math.round(videoPokerWinRate(stats) * 100),
-                        net: `${videoPokerNet(stats) >= 0 ? '+' : ''}${videoPokerNet(stats)}`,
-                      })}
-                </span>
-                {stats.hands > 0 && (
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={clearStats}
-                    disabled={loading}
-                    data-testid="vp-stats-clear"
-                  >
-                    {tNs('stats.clear')}
-                  </button>
-                )}
-              </div>
-            )}
+            <div
+              className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pb-2 text-ds-text-muted text-xs lg:text-sm"
+              data-testid="vp-session-stats"
+            >
+              <span data-testid="vp-stats-summary">
+                {stats.hands === 0
+                  ? tNs('stats.empty')
+                  : tNs('stats.summary', {
+                      hands: stats.hands,
+                      winRate: Math.round(videoPokerWinRate(stats) * 100),
+                      net: `${videoPokerNet(stats) >= 0 ? '+' : ''}${videoPokerNet(stats)}`,
+                    })}
+              </span>
+              {stats.hands > 0 && (
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={clearStats}
+                  disabled={loading}
+                  data-testid="vp-stats-clear"
+                >
+                  {tNs('stats.clear')}
+                </button>
+              )}
+            </div>
             <div className="flex flex-wrap justify-center gap-x-4 pb-2">
               <label className="text-ds-text-primary text-sm flex items-center gap-2 min-h-[44px]">
                 <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
