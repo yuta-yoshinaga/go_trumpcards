@@ -15,5 +15,8 @@
   "hintAvailable": "Hint available",
   "noHint": "No hint",
   "lockedMark": "*",
-  "lockedLegend": "* = kept on redeal"
+  "lockedLegend": "* = kept on redeal",
+  "gapBlocked": "[ x ]",
+  "gapAnySuit": "[{{rank}}?]",
+  "gapNeeded": "[{{card}}]"
 }

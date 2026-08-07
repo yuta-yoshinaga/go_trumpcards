@@ -2,6 +2,9 @@ package domain
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // newTestGaps returns a Gaps with the standard Reset() layout.
@@ -614,4 +617,77 @@ func TestSetters_AndGetters(t *testing.T) {
 		// allow empty but not nil
 		t.Log("action log is nil after Reset — acceptable if we never call appendLog")
 	}
+}
+
+// **各ギャップが受け入れる次ランクを追うのが Gaps の根幹戦略 (#4800)。**Web は
+// ゴーストカードと 🚫 で常時プレビューしているのに、CUI は空きマスを一律
+// [ . ] としか出していなかった。
+func TestGaps_GetGapNeed(t *testing.T) {
+	card := func(design, value int) *Card { return NewCard(design, value, false) }
+	// row0 に指定のセルを並べた盤面 (残りは空き)。
+	board := func(cells ...*Card) *Gaps {
+		g := NewDefaultGaps()
+		g.Reset()
+		var grid [GapsRowCnt][GapsColCnt]GapsCell
+		for i, c := range cells {
+			if i < GapsColCnt {
+				grid[0][i] = c
+			}
+		}
+		g.SetGrid(grid)
+		return g
+	}
+
+	// 0列目は「どのスートでもよい 2」。
+	t.Run("the leftmost column takes any two", func(t *testing.T) {
+		need := board().GetGapNeed(0, 0)
+		if assert.NotNil(t, need) {
+			assert.Equal(t, GapsNeedAnySuit, need.Kind)
+			assert.Equal(t, GapsAnchorRank, need.Value)
+		}
+	})
+
+	// **左隣が K なら詰み。**K の次は無いので何も置けない。
+	t.Run("a king on the left blocks the gap", func(t *testing.T) {
+		need := board(card(CardDesignSpade, GapsKingRank)).GetGapNeed(0, 1)
+		if assert.NotNil(t, need) {
+			assert.Equal(t, GapsNeedBlocked, need.Kind)
+		}
+	})
+
+	t.Run("names the exact card a gap needs", func(t *testing.T) {
+		need := board(card(CardDesignHeart, 5)).GetGapNeed(0, 1)
+		if assert.NotNil(t, need) {
+			assert.Equal(t, GapsNeedCard, need.Kind)
+			assert.Equal(t, CardDesignHeart, need.Design)
+			assert.Equal(t, 6, need.Value, "同スートの次のランク")
+		}
+	})
+
+	// **左隣も空きなら何も言わない。**決まらないものを決まったように見せない。
+	t.Run("says nothing when the left neighbour is itself a gap", func(t *testing.T) {
+		assert.Nil(t, board().GetGapNeed(0, 2))
+	})
+
+	t.Run("says nothing for a filled cell or an out-of-range one", func(t *testing.T) {
+		g := board(card(CardDesignSpade, 5))
+		assert.Nil(t, g.GetGapNeed(0, 0), "埋まっているマス")
+		assert.Nil(t, g.GetGapNeed(-1, 0))
+		assert.Nil(t, g.GetGapNeed(0, GapsColCnt))
+	})
+
+	// **案内した札は実際に置ける。**別実装だと置けない札を案内する。
+	t.Run("the card it names is the one isLegalMove accepts", func(t *testing.T) {
+		g := board(card(CardDesignHeart, 5))
+		// 別の行に ♥6 と ♥7 を置いて、案内どおりの札だけが通ることを見る。
+		grid := g.GetGrid()
+		grid[1][0] = card(CardDesignHeart, 6)
+		grid[1][1] = card(CardDesignHeart, 7)
+		g.SetGrid(grid)
+
+		need := g.GetGapNeed(0, 1)
+		require.NotNil(t, need)
+		assert.True(t, g.isLegalMove(1, 0, 0, 1), "案内した ♥6 は置ける")
+		assert.False(t, g.isLegalMove(1, 1, 0, 1), "♥7 は置けない")
+	})
 }

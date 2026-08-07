@@ -75,6 +75,14 @@ func (_m *MockGapsGame) GetGrid() [domain.GapsRowCnt][domain.GapsColCnt]domain.G
 	return ret.Get(0).([domain.GapsRowCnt][domain.GapsColCnt]domain.GapsCell)
 }
 
+func (_m *MockGapsGame) GetGapNeed(row, col int) *domain.GapsGapNeed {
+	args := _m.Called(row, col)
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(*domain.GapsGapNeed)
+}
+
 // GetLockedPrefixLengths モック
 func (_m *MockGapsGame) GetLockedPrefixLengths() [domain.GapsRowCnt]int {
 	ret := _m.Called()
