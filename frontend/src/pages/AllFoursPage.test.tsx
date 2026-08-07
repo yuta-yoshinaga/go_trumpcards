@@ -204,6 +204,7 @@ describe('AllFoursPage', () => {
         low: { winnerIdx: 1, card: { design: 'HEART', value: 2 } },
         jack: { winnerIdx: 0 },
         game: { winnerIdx: 0, points: [5, 0] },
+        provisional: false,
       },
     };
     mockExec.mockResolvedValueOnce(roundEndState);
@@ -225,6 +226,7 @@ describe('AllFoursPage', () => {
         low: { winnerIdx: 1, card: { design: 'HEART', value: 3 } },
         jack: { winnerIdx: -1 },
         game: { winnerIdx: -1, points: [0, 0] },
+        provisional: false,
       },
     };
     mockExec.mockResolvedValueOnce(roundEndState);
@@ -240,5 +242,43 @@ describe('AllFoursPage', () => {
     renderWithProviders(<AllFoursPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('af-breakdown')).not.toBeInTheDocument();
+  });
+});
+
+// **High/Low/Jack/Game はトリックが進むたびに途中経過が確定していくのに、
+// ラウンド終了まで一切見えなかった (#4771)。**「今どちらが何を握っているか」は
+// このゲームの戦略そのもの。
+describe('AllFoursPage live breakdown', () => {
+  const playState = (provisional: boolean): AllFoursResponse => ({
+    ...baseState,
+    phase: provisional ? AllFoursPhase.PLAY : AllFoursPhase.ROUND_END,
+    roundBreakdown: {
+      high: { winnerIdx: 0, card: { design: 'HEART', value: 12 } },
+      low: { winnerIdx: 1, card: { design: 'HEART', value: 3 } },
+      jack: { winnerIdx: -1 },
+      game: { winnerIdx: 0, points: [5, 0] },
+      provisional,
+    },
+  });
+
+  it('shows the breakdown during the play phase', async () => {
+    mockExec.mockResolvedValueOnce(playState(true));
+    renderWithProviders(<AllFoursPage />);
+    expect(await screen.findByTestId('af-breakdown')).toBeInTheDocument();
+  });
+
+  // **暫定値を確定値として見せない。**まだ出ていないトランプで High も Low も
+  // 引っくり返る。
+  it('labels a mid-round breakdown as provisional', async () => {
+    mockExec.mockResolvedValueOnce(playState(true));
+    renderWithProviders(<AllFoursPage />);
+    expect(await screen.findByTestId('af-breakdown-provisional')).toBeInTheDocument();
+  });
+
+  it('does not label the settled breakdown as provisional', async () => {
+    mockExec.mockResolvedValueOnce(playState(false));
+    renderWithProviders(<AllFoursPage />);
+    await screen.findByTestId('af-breakdown');
+    expect(screen.queryByTestId('af-breakdown-provisional')).not.toBeInTheDocument();
   });
 });

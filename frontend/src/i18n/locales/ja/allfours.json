@@ -52,7 +52,8 @@
     "low": "Low",
     "jack": "Jack",
     "game": "Game",
-    "none": "−"
+    "none": "−",
+    "provisional": "（暫定 — 残りのトランプで変わります）"
   },
   "hint": {
     "begBeg": "弱い手札なのでベグ",

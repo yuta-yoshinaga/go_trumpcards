@@ -52,7 +52,8 @@
     "low": "Low",
     "jack": "Jack",
     "game": "Game",
-    "none": "−"
+    "none": "−",
+    "provisional": "(provisional — remaining trumps can change this)"
   },
   "hint": {
     "begBeg": "weak hand, so beg",

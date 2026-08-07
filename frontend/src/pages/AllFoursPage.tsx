@@ -278,12 +278,22 @@ function AllFoursPageContent() {
               </table>
             </div>
 
-            {(isRoundEnd || isGameEnd) && state.roundBreakdown && (
+            {state.roundBreakdown && (
               <div
                 data-testid="af-breakdown"
+                data-provisional={state.roundBreakdown.provisional ? 'true' : undefined}
                 className="border border-ds-border-subtle rounded p-2 mb-3 text-ds-text-primary"
               >
-                <div className="text-xs uppercase opacity-60 mb-1">{t('breakdown.title')}</div>
+                <div className="text-xs uppercase opacity-60 mb-1">
+                  {t('breakdown.title')}
+                  {/* **暫定値を確定値として見せない (#4771)。**まだ出ていない
+                      トランプで High も Low も引っくり返る。 */}
+                  {state.roundBreakdown.provisional && (
+                    <span className="ml-2 normal-case text-ds-warning" data-testid="af-breakdown-provisional">
+                      {t('breakdown.provisional')}
+                    </span>
+                  )}
+                </div>
                 <div className="overflow-x-auto">
                   <table className="text-sm w-full border-collapse">
                     <tbody>
