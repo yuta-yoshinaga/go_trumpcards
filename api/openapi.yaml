@@ -9160,6 +9160,7 @@ paths:
         | `undo`   | `u`  | Undo the last placement |
         | `giveup` | `g`  | Give up the current game |
         | `log`    | `l`  | View action log |
+        | `hint`   | `h`  | Get a synergy-aware placement suggestion |
       operationId: pokersquaresExec
       requestBody:
         required: true
