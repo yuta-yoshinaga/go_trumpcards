@@ -3,6 +3,7 @@ import type { shitheadApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -17,7 +18,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useShitheadGame } from '../hooks/useShitheadGame';
+import { CPU_DIFFICULTY_OPTIONS, useShitheadGame } from '../hooks/useShitheadGame';
 import { badgeInfoColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { focusRingCard } from '../styles/cardStyles';
@@ -57,6 +58,12 @@ const SOURCE_FACE_DOWN = 'facedown';
 
 /** Renders the Shithead / Karma game page. */
 export const ShitheadPage = withTutorial(ShitheadPageContent, 'shithead', SHITHEAD_TUTORIAL_STEPS);
+/**
+ * ルールを切り替えられるマジックカード。値は `ShitheadConfig` のキーで、
+ * 文言は `settings.<key>` を引く。
+ */
+const MAGIC_TOGGLES = ['magicTwo', 'magicSeven', 'magicEight', 'magicTen', 'fourOfAKindBurn'] as const;
+
 /** Inner content of the Shithead page. */
 function ShitheadPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -72,6 +79,10 @@ function ShitheadPageContent() {
     handleReset,
     retry,
     dispatch,
+    shitheadConfig,
+    handleConfigChange,
+    handleMagicToggle,
+    handleResetWithConfig,
   } = useShitheadGame();
   const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('shithead', state);
@@ -301,6 +312,45 @@ function ShitheadPageContent() {
             </div>
           </GameFooter>
           {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'select',
+                    id: 'shitheadCpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: shitheadConfig.cpuDifficulty,
+                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
+                    onSelect: (v) => {
+                      handleConfigChange('cpuDifficulty', String(v));
+                      handleResetWithConfig({ ...shitheadConfig, cpuDifficulty: Number(v) });
+                    },
+                  },
+                  ...MAGIC_TOGGLES.map((key) => ({
+                    type: 'checkbox' as const,
+                    id: `shithead-${key}`,
+                    label: t(`settings.${key}`),
+                    checked: shitheadConfig[key],
+                    onToggle: (checked: boolean) => {
+                      handleMagicToggle(key, checked);
+                      handleResetWithConfig({ ...shitheadConfig, [key]: checked });
+                    },
+                  })),
+                ],
+              },
+            ]}
+          />
+
+          {/* **フックは設定機構を全部エクスポートしていたのに、ページが一切
+              使っておらず常に既定値固定だった。**マジックカードの有無は
+              ゲーム性そのものを変えるのに、Web からは触れなかった (#4747)。
+              変更は即リセットが必要 (配りが変わる) ので handleResetWithConfig を通す。 */}
         </>
       )}
     </GamePageShell>
