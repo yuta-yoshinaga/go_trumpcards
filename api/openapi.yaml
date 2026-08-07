@@ -9160,6 +9160,7 @@ paths:
         | `undo`   | `u`  | Undo the last placement |
         | `giveup` | `g`  | Give up the current game |
         | `log`    | `l`  | View action log |
+        | `hint`   | `h`  | Get a synergy-aware placement suggestion |
       operationId: pokersquaresExec
       requestBody:
         required: true
@@ -39793,8 +39794,8 @@ components:
           type: string
           description: |
             Game command. Accepted values: `reset` (`r`), `place` (`p`),
-            `undo` (`u`), `giveup` (`g`), `log` (`l`).
-          enum: [r, reset, p, place, u, undo, g, giveup, log, l]
+            `undo` (`u`), `giveup` (`g`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, p, place, u, undo, g, giveup, log, l, h, hint]
           example: place
         row:
           type: integer
@@ -39887,6 +39888,41 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          description: |
+            Server-side synergy-aware suggestion for the current card. Omitted when
+            no suggestion is available (game complete, or no current card).
+          $ref: '#/components/schemas/PokerSquaresOutputHint'
+
+    PokerSquaresOutputHint:
+      type: object
+      description: Suggested cell for the current card, scored by row/column synergy.
+      required:
+        - row
+        - col
+        - score
+        - synergy
+      properties:
+        row:
+          type: integer
+          description: Row index (0-4) of the suggested cell.
+          minimum: 0
+          maximum: 4
+          example: 2
+        col:
+          type: integer
+          description: Column index (0-4) of the suggested cell.
+          minimum: 0
+          maximum: 4
+          example: 3
+        score:
+          type: integer
+          description: Combined row + column score the placement would create.
+          example: 8
+        synergy:
+          type: boolean
+          description: Whether the score is positive, i.e. the placement builds on cards already on the board.
+          example: true
 
     # -------------------------------------------------------------------------
     # Red Dog (レッドドッグ)
