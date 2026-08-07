@@ -188,6 +188,23 @@ describe('PrsiPage', () => {
     expect(screen.queryByTestId('penalty-indicator')).not.toBeInTheDocument();
   });
 
+  // **スキップも重ねられる (#4772)。**7 の累積ペナルティは「+N」バッジと警告
+  // バナーで目立たせているのに、pendingSkips は一度も読まれていなかった。
+  it('shows the skip indicator when pendingSkips > 0', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, pendingSkips: 2 });
+    renderWithProviders(<PrsiPage />);
+    const banner = await screen.findByTestId('skip-indicator');
+    expect(banner).toHaveTextContent('2');
+    // **読み上げにも届かせる。**色だけの警告は SR に伝わらない。
+    expect(banner).toHaveAttribute('role', 'status');
+  });
+
+  it('does not show the skip indicator when pendingSkips is 0', async () => {
+    renderWithProviders(<PrsiPage />);
+    await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+    expect(screen.queryByTestId('skip-indicator')).not.toBeInTheDocument();
+  });
+
   it('shows discard top card', async () => {
     renderWithProviders(<PrsiPage />);
     await waitFor(() => {

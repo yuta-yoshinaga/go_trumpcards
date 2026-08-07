@@ -37,5 +37,6 @@
     "drawPenalty": "No 7 to stack — draw the penalty cards",
     "drawCard": "No playable cards — draw from the pile"
   },
-  "illegalHint": "Can't play this card (no matching suit or rank)"
+  "illegalHint": "Can't play this card (no matching suit or rank)",
+  "pendingSkips": "Skips pending: {{count}} — stack an Ace/Jack or lose your turn"
 }

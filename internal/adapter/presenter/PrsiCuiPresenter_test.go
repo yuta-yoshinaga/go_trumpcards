@@ -73,6 +73,26 @@ func TestPrsiCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "4") // penalty count appears
 	})
 
+	// **スキップも重ねられる (#4772)。**7 の累積ペナルティは出していたのに、
+	// エース/ジャックの累積は CUI にも出ていなかった。
+	t.Run("discard top reports the pending skips", func(t *testing.T) {
+		m, _ := setupPrsiCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPendingSkips")
+		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 1, false))
+		m.On("GetPendingSkips").Return(3)
+
+		assert.Contains(t, p.Output(m, nil), "スキップ3人ぶん")
+	})
+
+	t.Run("no skip line while nothing is stacked", func(t *testing.T) {
+		m, _ := setupPrsiCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 5, false))
+
+		assert.NotContains(t, p.Output(m, nil), "スキップ")
+	})
+
 	t.Run("legal cards listed for the human", func(t *testing.T) {
 		m, players := setupPrsiCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
