@@ -331,6 +331,9 @@ func (p *SevenCardStudCuiPresenter) HintOutput(s interfaces.SevenCardStudGame) s
 	if s.GetIsLowball() {
 		return razzHintOutput(s)
 	}
+	if s.GetIsHiLo() {
+		return sevenCardStudHiLoHintOutput(s)
+	}
 	if s.GetPhase() != domain.SevenCardStudPhaseThirdStreet {
 		return i18n.T("sevencardstud.hintNone") + "\n"
 	}
@@ -345,6 +348,78 @@ func (p *SevenCardStudCuiPresenter) HintOutput(s interfaces.SevenCardStudGame) s
 	}
 	return color.Yellow(i18n.Tf("sevencardstud.hint",
 		"action", action, "reason", i18n.T(reasonKey))) + "\n"
+}
+
+// sevenCardStudLowQualifier は Hi-Lo でローに数える上限 (8 or Better)。
+const sevenCardStudLowQualifier = 8
+
+// sevenCardStudLowCardsNeeded はロー成立に必要な枚数。
+const sevenCardStudLowCardsNeeded = 5
+
+// sevenCardStudHiLoHintOutput は Hi-Lo (8 or Better) 向けのヒント行を返す。
+//
+// **ハイ専用の基本戦略をそのまま当てない (#4704)。**Hi-Lo はポットの半分が
+// ローに行くので、ハイとしては弱くてもロー札がそろっていれば続ける価値がある。
+// ハイ用の判定 (ペア/3フラッシュ/3ストレート/3ハイカード) だけで見ると、
+// 勝ち目のある手を降ろすことになる。
+//
+// **ハイと違って全ストリートで出す。**ロー札は5枚必要なので、3枚しか無い
+// 3rd street ではロー分岐に永遠に届かない。フロントの getSevenCardStudHint も
+// 全ベッティングストリートで判定している。
+func sevenCardStudHiLoHintOutput(s interfaces.SevenCardStudGame) string {
+	if !razzBettingPhases[s.GetPhase()] {
+		return i18n.T("sevencardstud.hintNone") + "\n"
+	}
+	player := s.GetPlayer(s.GetCurrentTurn())
+	if player == nil || player.GetFolded() || len(player.GetAllCards()) == 0 {
+		return i18n.T("sevencardstud.hintNone") + "\n"
+	}
+	cards := player.GetAllCards()
+	action, reasonKey := i18n.T("sevencardstud.hintFold"), "sevencardstud.hintReasonFold"
+	switch {
+	case sevenCardStudHasPair(cards):
+		action, reasonKey = i18n.T("sevencardstud.hintContinue"), "sevencardstud.hintReasonPair"
+	case sevenCardStudLowCards(cards) >= sevenCardStudLowCardsNeeded:
+		action, reasonKey = i18n.T("sevencardstud.hintContinue"), "sevencardstud.hintReasonHiLoLow"
+	case sevenCardStudHasHighCard(cards):
+		action, reasonKey = i18n.T("sevencardstud.hintContinue"), "sevencardstud.hintReasonHigh"
+	}
+	return color.Yellow(i18n.Tf("sevencardstud.hint",
+		"action", action, "reason", i18n.T(reasonKey))) + "\n"
+}
+
+// sevenCardStudHasPair は同じランクが2枚以上あるかを返す。
+func sevenCardStudHasPair(cards []*domain.Card) bool {
+	seen := map[int]bool{}
+	for _, c := range cards {
+		if seen[c.GetValue()] {
+			return true
+		}
+		seen[c.GetValue()] = true
+	}
+	return false
+}
+
+// sevenCardStudLowCards は8以下の札の枚数を返す。**エースはローの最強札**
+// なので 1 のまま数えて問題ない。
+func sevenCardStudLowCards(cards []*domain.Card) int {
+	n := 0
+	for _, c := range cards {
+		if c.GetValue() <= sevenCardStudLowQualifier {
+			n++
+		}
+	}
+	return n
+}
+
+// sevenCardStudHasHighCard は 10 以上またはエースを持っているかを返す。
+func sevenCardStudHasHighCard(cards []*domain.Card) bool {
+	for _, c := range cards {
+		if v := c.GetValue(); v == 1 || v >= 10 {
+			return true
+		}
+	}
+	return false
 }
 
 // razzHintOutput はラズ (Lowball) 向けのヒント行を返す。
