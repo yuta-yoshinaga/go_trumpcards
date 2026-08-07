@@ -30,6 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BeleagueredCastleResponse } from '../types/card';
 import { BeleagueredCastlePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { beleagueredCastleLegalTargets } from '../utils/beleagueredCastleLegalTargets';
 import { cardAlt } from '../utils/cardAlt';
 import { BELEAGUEREDCASTLE_HELP, parseBeleagueredCastleCommand } from '../utils/cli/commands/beleagueredcastleCommands';
 import { formatBeleagueredCastleState } from '../utils/cli/formatters/beleagueredcastleFormatter';
@@ -184,6 +185,16 @@ function BeleagueredCastlePageContent() {
   // pulse the button only then (mirrors Crescent / Spiderette).
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
 
+  // 選択時に合法な移動先をリング表示している。
+  //
+  // **枠を出すだけで、押せなくはしない。**押せなくすると E2E の
+  // 「最初の列をクリック」が別の列を掴んでしまう。
+  const selectedCard =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? state.tableau[selectedSource.col]?.[selectedSource.cardIndex]?.card
+      : undefined;
+  const legalTargets = beleagueredCastleLegalTargets(state.tableau, state.foundation, selectedCard);
+
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
     selectedSource.zone === zone &&
@@ -194,7 +205,11 @@ function BeleagueredCastlePageContent() {
     const col = state.tableau[colIdx];
     const tableauColZone: BeleagueredCastleMoveZone = { zone: 'tableau', col: colIdx };
     return (
-      <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+      <div
+        key={`col-${colIdx.toString()}`}
+        className={`flex-1 min-w-0${legalTargets.tableau.has(colIdx) ? ' rounded ring-2 ring-ds-success' : ''}`}
+        data-legal-target={legalTargets.tableau.has(colIdx) ? 'true' : undefined}
+      >
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
           #{colIdx}
         </div>
@@ -309,7 +324,11 @@ function BeleagueredCastlePageContent() {
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: BeleagueredCastleMoveZone = { zone: 'foundation', col: idx };
                   return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
+                    <div
+                      key={`f-${idx.toString()}`}
+                      className={`text-center${legalTargets.foundation.has(idx) ? ' rounded ring-2 ring-ds-success' : ''}`}
+                      data-legal-target={legalTargets.foundation.has(idx) ? 'true' : undefined}
+                    >
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
                       <DropZone
                         isDropTarget={dnd.isDropTarget(foundationZone)}
