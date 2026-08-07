@@ -460,7 +460,7 @@ describe('FiveCardStudPage keyboard shortcuts', () => {
     renderWithProviders(<FiveCardStudPage />);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    const badges = screen.getAllByTestId('fcs-stats');
+    const badges = screen.getAllByTestId('hud-stats');
     expect(badges.length).toBeGreaterThan(0);
     expect(badges[0]).toHaveTextContent('25');
   });
@@ -471,6 +471,6 @@ describe('FiveCardStudPage keyboard shortcuts', () => {
     renderWithProviders(<FiveCardStudPage />);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.queryAllByTestId('fcs-stats')).toHaveLength(0);
+    expect(screen.queryAllByTestId('hud-stats')).toHaveLength(0);
   });
 });

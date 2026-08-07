@@ -10,11 +10,11 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
-import { PokerStatsBadge } from '../components/fivecardstud/PokerStatsBadge';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { HudStats } from '../components/HudStats';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -265,7 +265,9 @@ function FiveCardStudPageContent() {
                   <div className="text-ds-text-primary text-sm mb-1">
                     CPU {p.id}
                     <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
-                    <PokerStatsBadge stats={p} t={t} />
+                    {p.totalHands > 0 && (
+                      <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} namespace="fivecardstud" />
+                    )}
                     <span className="ml-2 text-xs">
                       {tc('betting.chips')} {p.chips}
                     </span>
@@ -366,7 +368,15 @@ function FiveCardStudPageContent() {
               <div className="mb-2" data-tutorial="fcs-player-hand">
                 <div className="text-ds-text-primary text-lg mb-1">
                   {t('yourHand')}
-                  <PokerStatsBadge stats={humanPlayer} t={t} />
+                  {humanPlayer.totalHands > 0 && (
+                    <HudStats
+                      vpip={humanPlayer.vpip}
+                      pfr={humanPlayer.pfr}
+                      threeBet={humanPlayer.threeBet}
+                      af={humanPlayer.af}
+                      namespace="fivecardstud"
+                    />
+                  )}
                   <span className="ml-3 text-xs">
                     {tc('betting.chips')} {humanPlayer.chips}
                   </span>
