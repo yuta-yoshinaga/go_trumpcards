@@ -21,4 +21,14 @@ export interface CliGameConfig<TState, TArgs extends unknown[]> {
   formatResponse: (state: TState) => string;
   /** Help text lines shown when the user types "help". */
   helpText: string[];
+  /**
+   * Answer a command locally, without calling the API. Return `null` to fall
+   * through to {@link parseCommand}.
+   *
+   * Some commands only report on state the page already holds — Wasp's `legal`
+   * lists the columns a card may move onto, which `waspLegalTargets` derives
+   * client-side (#4792). Routing those through the server would add an API
+   * action that computes nothing new.
+   */
+  localCommand?: (input: string) => string | null;
 }

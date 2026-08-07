@@ -581,3 +581,46 @@ describe('WaspPage', () => {
     await waitFor(() => expect(document.querySelectorAll('.ring-ds-info').length).toBeGreaterThan(0));
   });
 });
+
+// **ネイティブ CUI にある legal コマンドが CLI モードでは Unknown command に
+// なっていた (#4792)。**手元の状態を読むだけなので API は呼ばない。
+describe('WaspPage CLI legal command', () => {
+  const runCli = async (command: string) => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: /CLI|GUI/i }));
+    const input = await screen.findByLabelText(/コマンドを入力/);
+    mockExec.mockClear();
+    fireEvent.change(input, { target: { value: command } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+  };
+
+  it('answers legal without calling the API', async () => {
+    await runCli('legal 0');
+    await waitFor(() => expect(screen.getAllByText(/column 0/i).length).toBeGreaterThan(0));
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('rejects a column that is out of range', async () => {
+    await runCli('legal 99');
+    await waitFor(() => expect(screen.getAllByText(/Usage: legal/).length).toBeGreaterThan(0));
+  });
+
+  // **空き列も移動先として並べる。**Wasp では空き列はどのカードでも受け入れる。
+  // ページのハイライト用 waspLegalTargets は空き列を除くので、それをそのまま
+  // 流用すると実際には打てる手を「無い」と答えてしまう。
+  it('lists empty columns as legal targets', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[{ card: card('SPADE', 5), faceUp: true }], [], [], [], [], [], []],
+    });
+    await runCli('legal 0');
+    await waitFor(() => expect(screen.getAllByText(/empty/).length).toBeGreaterThan(0));
+  });
+
+  // **legal を足しても他のコマンドは変わらない。**
+  it('still sends other commands to the API', async () => {
+    await runCli('d');
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
+  });
+});
