@@ -245,3 +245,106 @@ func (d *Daifugo) hasMatchingSuit(cards []*Card, suit int) bool {
 	}
 	return false
 }
+
+// daifugoMaxPlayableCombos は出せるカードを探すときに調べる組み合わせ数の上限。
+//
+// **超えたら印を付けない。**中途半端に一部だけ調べて印を付けると、印の無い
+// カードが「出せない」と読めてしまう。今までどおり無印のほうがまだ正直。
+const daifugoMaxPlayableCombos = 50000
+
+// GetPlayableCardIndices は現在の手番プレイヤーの手札のうち、**いま出せる
+// 組み合わせに1つでも含まれる**カードのインデックスを返す (#4733)。
+//
+// 判定は PlayerPlay が使う isPlayable そのものを通す。革命・11バック・
+// スートロック・階段縛り・スペ3返しといった場の状態は全部そちらが見るので、
+// ここで規則を書き直さない。**別実装にすると「出せる」と印を付けた札が
+// 実際には弾かれる。**
+//
+// nil を返すのは次の場合:
+//   - 人間の手番でない / ゲーム終了 / ペンディングアクション待ち
+//   - 場が空で階段縛り中 (階段の全長を数え上げると組み合わせが爆発する)
+//   - 調べるべき組み合わせが daifugoMaxPlayableCombos を超える
+//
+// **場が空 (階段縛り無し) なら全札。**単騎はいつでも出せる。
+func (d *Daifugo) GetPlayableCardIndices() []int {
+	if d.round.gameEndFlag || d.round.pendingActionType != DaifugoPendingNone {
+		return nil
+	}
+	player := d.players[d.round.currentTurn]
+	if !player.GetIsHuman() {
+		return nil
+	}
+	n := player.GetCardsSize()
+	if n == 0 {
+		return nil
+	}
+
+	if d.round.tableCards == nil {
+		if d.round.sequenceLocked {
+			return nil
+		}
+		all := make([]int, n)
+		for i := range all {
+			all[i] = i
+		}
+		return all
+	}
+
+	k := len(d.round.tableCards)
+	if k > n || combinationCountCapped(n, k, daifugoMaxPlayableCombos) > daifugoMaxPlayableCombos {
+		return nil
+	}
+
+	marked := make([]bool, n)
+	idx := make([]int, k)
+	cards := make([]*Card, k)
+	var walk func(start, depth int)
+	walk = func(start, depth int) {
+		if depth == k {
+			for i, j := range idx {
+				cards[i] = player.GetCard(j)
+			}
+			if d.isPlayable(cards) {
+				for _, j := range idx {
+					marked[j] = true
+				}
+			}
+			return
+		}
+		for i := start; i <= n-(k-depth); i++ {
+			idx[depth] = i
+			walk(i+1, depth+1)
+		}
+	}
+	walk(0, 0)
+
+	out := make([]int, 0, n)
+	for i, ok := range marked {
+		if ok {
+			out = append(out, i)
+		}
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
+}
+
+// combinationCountCapped は C(n, k) を返す。cap を超えた時点で打ち切って
+// cap+1 を返すので、大きな n でも桁あふれしない。
+func combinationCountCapped(n, k, cap int) int {
+	if k < 0 || k > n {
+		return 0
+	}
+	if k > n-k {
+		k = n - k
+	}
+	result := 1
+	for i := 1; i <= k; i++ {
+		result = result * (n - k + i) / i
+		if result > cap {
+			return cap + 1
+		}
+	}
+	return result
+}

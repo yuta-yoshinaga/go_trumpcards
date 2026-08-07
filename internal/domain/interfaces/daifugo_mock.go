@@ -129,6 +129,14 @@ func (_m *MockDaifugoGame) GetCpuActions() []*domain.DaifugoCpuAction {
 }
 
 // GetCurrentTurn モック
+func (_m *MockDaifugoGame) GetPlayableCardIndices() []int {
+	ret := _m.Called()
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]int)
+}
+
 func (_m *MockDaifugoGame) GetCurrentTurn() int {
 	ret := _m.Called()
 	return ret.Int(0)
