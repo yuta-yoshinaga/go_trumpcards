@@ -38,6 +38,64 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "♣5")
 	})
 
+	// **Web は常時「いまの最善役」を出しているのに、ハイ戦の CUI はショーダウン
+	// まで役名を一切出していなかった (#4695)。**3rd〜7th street の間ずっと
+	// 自分の手が何に達しているか分からない。
+	t.Run("high game shows the human's current best hand", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewSevenCardStud(tc, players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		// フラッシュ: ♠2 ♠5 ♠7 ♠9 ♠13
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+
+		result := p.Output(s, nil)
+		assert.Contains(t, result, "現在の最善役")
+		assert.Contains(t, result, "フラッシュ")
+	})
+
+	// **5枚に満たないうちは出さない。**3rd street は3枚しかなく、そこで
+	// 「ハイカード」と出しても情報が無い。
+	t.Run("high game shows nothing before five cards", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewSevenCardStud(tc, players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 7, false))
+
+		assert.NotContains(t, p.Output(s, nil), "現在の最善役")
+	})
+
+	// **Razz では出さない。**ロー狙いなのにハイ役を出すと逆の助言になる。
+	t.Run("razz does not show the high-hand line", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewRazz(tc, players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+
+		assert.NotContains(t, p.Output(s, nil), "現在の最善役")
+	})
+
 	t.Run("razz mode shows the human's current best low", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := []*domain.SevenCardStudPlayer{

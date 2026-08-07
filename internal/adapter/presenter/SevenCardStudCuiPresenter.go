@@ -104,6 +104,14 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 						}
 						b.WriteString(i18n.Tf(key, "cards", cuiCardSliceStrEmoji(low)) + "\n")
 					}
+				} else if rank, best := player.PeekBestHand(); len(best) > 0 {
+					// **Web は常時「いまの最善役」を出しているのに、ハイ戦の CUI は
+					// ショーダウンまで役名を一切出していなかった (#4695)。**3rd〜7th
+					// street の間ずっと自分の手が何に達しているか分からない。
+					// PeekBestHand は状態を変えないので、描画から呼んで安全。
+					b.WriteString(i18n.Tf("sevencardstud.currentBestHand",
+						"hand", cuiPokerHandName(rank),
+						"cards", cuiCardSliceStrEmoji(best)) + "\n")
 				}
 			}
 		}
