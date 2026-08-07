@@ -138,3 +138,52 @@ func TestDurakCuiPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(gameMock)
 	assert.NotEmpty(t, result)
 }
+
+// **他のトリック系はサーバー計算の理由付きヒントを持つのに、Durak は CUI に
+// hint コマンドすら無かった (#4740)。**
+func TestDurakCuiPresenter_HintOutput(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.DurakCuiPresenter)
+
+	newMock := func(hint *domain.DurakHint) *interfaces.MockDurakGame {
+		m := new(interfaces.MockDurakGame)
+		m.On("GetHint").Return(hint)
+		m.On("GetCurrentTurn").Return(0).Maybe()
+		pl := domain.NewDurakPlayer(true)
+		pl.AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		m.On("GetPlayer", 0).Return(pl).Maybe()
+		return m
+	}
+
+	t.Run("attack hint names the card and the reason", func(t *testing.T) {
+		idx := 0
+		out := p.HintOutput(newMock(&domain.DurakHint{CardIndex: &idx, Reason: "attack_weakest"}))
+		assert.Contains(t, out, "SPADE 6")
+		assert.Contains(t, out, "最弱の非切り札で攻める")
+	})
+
+	t.Run("defend hint names which attack to beat", func(t *testing.T) {
+		idx, atk := 0, 1
+		out := p.HintOutput(newMock(&domain.DurakHint{CardIndex: &idx, AttackIdx: &atk, Reason: "defend_beat"}))
+		assert.Contains(t, out, "SPADE 6")
+		assert.Contains(t, out, "この札で返せる")
+	})
+
+	// **「引き取る」「パス」も助言のうち。**カードを勧められない局面で黙ると、
+	// プレイヤーは手が無いのか判断が付かない。
+	t.Run("take hint says to pick the cards up", func(t *testing.T) {
+		out := p.HintOutput(newMock(&domain.DurakHint{TakeCards: true, Reason: "take_cannot_beat"}))
+		assert.Contains(t, out, "返せる札が無い")
+	})
+
+	t.Run("pass hint says to pass", func(t *testing.T) {
+		out := p.HintOutput(newMock(&domain.DurakHint{Reason: "pass_no_addition"}))
+		assert.Contains(t, out, "追撃できる札が無い")
+	})
+
+	t.Run("no hint says so explicitly", func(t *testing.T) {
+		assert.Contains(t, p.HintOutput(newMock(nil)), "ヒントはありません")
+	})
+}

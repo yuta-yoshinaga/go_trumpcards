@@ -191,6 +191,12 @@ func (_m *MockDurakGame) GetBoutNumber() int {
 }
 
 // GetActionLog モック
+// GetHint はサーバー計算の推奨手を返すモック。
+func (_m *MockDurakGame) GetHint() *domain.DurakHint {
+	out, _ := _m.Called().Get(0).(*domain.DurakHint)
+	return out
+}
+
 func (_m *MockDurakGame) GetActionLog() []*domain.ActionLogEntry {
 	ret := _m.Called()
 	if val, ok := ret.Get(0).([]*domain.ActionLogEntry); ok {

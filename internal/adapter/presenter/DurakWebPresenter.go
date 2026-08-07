@@ -115,3 +115,8 @@ func (dwp *DurakWebPresenter) buildResultMessage(dg interfaces.DurakGame) string
 func (dwp *DurakWebPresenter) ActionLogOutput(dg interfaces.DurakGame) string {
 	return actionLogOutputJSON(dg)
 }
+
+// HintOutput はサーバー計算のヒントを返す (`command: "hint"` 専用のレスポンス)。
+func (p *DurakWebPresenter) HintOutput(g interfaces.DurakGame) string {
+	return p.Output(g, nil)
+}

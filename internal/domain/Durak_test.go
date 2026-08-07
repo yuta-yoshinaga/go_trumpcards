@@ -740,3 +740,62 @@ func TestDurak_NotAttackerTurn(t *testing.T) {
 	err := d.PlayerAttack(0)
 	assert.ErrorIs(t, err, domain.ErrWrongPhase)
 }
+
+// **他のトリック系はサーバー計算の理由付きヒントを持つのに、Durak は CUI に
+// hint コマンドすら無かった (#4740)。**推奨手は CPU の選択ロジックをそのまま使う。
+func TestDurak_GetHint(t *testing.T) {
+	humanTurn := func(t *testing.T) *domain.Durak {
+		t.Helper()
+		// 人間が攻撃側になる配りを引くまで回す。Reset は攻撃側をランダムに決める。
+		for i := 0; i < 200; i++ {
+			g := domain.NewDefaultDurak()
+			g.Reset()
+			if g.IsHumanTurn() && g.GetPhase() == domain.DurakPhaseAttack {
+				return g
+			}
+		}
+		t.Fatal("人間が攻撃側になる配りを引けなかった")
+		return nil
+	}
+
+	t.Run("recommends an attack the rules actually allow", func(t *testing.T) {
+		g := humanTurn(t)
+		hint := g.GetHint()
+		if hint == nil || hint.CardIndex == nil {
+			t.Fatal("初回攻撃では推奨カードが出る")
+		}
+		if hint.Reason != "attack_weakest" {
+			t.Errorf("Reason = %q, want attack_weakest", hint.Reason)
+		}
+		// **勧めた手が本番の入口を通ること。**別ロジックで選ぶと出せない札を勧める。
+		if err := g.PlayerAttack(*hint.CardIndex); err != nil {
+			t.Errorf("推奨札 (index %d) が実際には出せなかった: %v", *hint.CardIndex, err)
+		}
+	})
+
+	t.Run("no hint on a CPU turn", func(t *testing.T) {
+		g := humanTurn(t)
+		// 人間が攻撃したら手番は防御側 (CPU) に移る。
+		h := g.GetHint()
+		if h == nil || h.CardIndex == nil {
+			t.Fatal("前提: 攻撃ヒントが出ること")
+		}
+		if err := g.PlayerAttack(*h.CardIndex); err != nil {
+			t.Fatalf("攻撃に失敗: %v", err)
+		}
+		if g.IsHumanTurn() {
+			t.Skip("この配りでは人間が防御側でもある (2人戦でない構成)")
+		}
+		if g.GetHint() != nil {
+			t.Error("CPU の手番ではヒントを出さない")
+		}
+	})
+
+	t.Run("no hint once the game has ended", func(t *testing.T) {
+		g := humanTurn(t)
+		g.SetPhase(domain.DurakPhaseGameEnd)
+		if g.GetHint() != nil {
+			t.Error("ゲーム終了フェーズではヒントを出さない")
+		}
+	})
+}

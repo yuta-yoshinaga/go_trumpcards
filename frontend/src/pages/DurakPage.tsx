@@ -93,6 +93,9 @@ function DurakPageContent() {
     handlePass,
     handleTake,
     handleSort,
+    hint: serverHint,
+    hintError,
+    handleHint,
   } = useDurakGame();
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('durak');
@@ -409,6 +412,19 @@ function DurakPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
+            {serverHint && (
+              <p className="mt-2 text-sm text-ds-accent" data-testid="durak-server-hint">
+                {serverHint.takeCards
+                  ? t('hintTake')
+                  : serverHint.cardIndex === undefined
+                    ? t('hintPass')
+                    : t('hintCard', { idx: serverHint.cardIndex })}{' '}
+                ({t(`hintReason.${serverHint.reason}`)})
+              </p>
+            )}
+
+            <ErrorAlert message={hintError} onRetry={undefined} />
+
             {/* Action buttons */}
             <div className="text-center" data-tutorial="dk-action-buttons">
               <GameResetButton
@@ -458,6 +474,21 @@ function DurakPageContent() {
                   {t('takeButton')}
                 </button>
               )}
+              {/* **他のトリック系はサーバー計算の理由付きヒントを持つのに、
+                  Durak には無く、クライアント完結の簡易ヒューリスティックだけ
+                  だった (#4740)。** */}
+              {!isGameEnd && (
+                <button
+                  type="button"
+                  className={`${btnSuccess} min-w-[90px]`}
+                  disabled={loading}
+                  onClick={handleHint}
+                  data-testid="durak-hint-button"
+                >
+                  {tc('button.hint')}
+                </button>
+              )}
+
               {/* Sort buttons */}
               {!isGameEnd && (
                 <>

@@ -368,4 +368,40 @@ describe('DurakPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, defaultConfig));
     expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
   });
+
+  // **他のトリック系はサーバー計算の理由付きヒントを持つのに、Durak は CUI に
+  // hint コマンドすら無く、Web もクライアント完結の簡易ヒューリスティックだけ
+  // だった (#4740)。**
+  it('fetches a server hint and shows the recommended card with its reason', async () => {
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByTestId('durak-hint-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({ ...baseState, hint: { cardIndex: 1, reason: 'attack_weakest' } });
+    fireEvent.click(screen.getByTestId('durak-hint-button'));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    const shown = await screen.findByTestId('durak-server-hint');
+    expect(shown).toHaveTextContent('1');
+    expect(shown).toHaveTextContent('最弱の非切り札で攻める');
+  });
+
+  // **「引き取る」も助言のうち。**カードを勧められない局面で黙ると、手が無いのか
+  // 判断が付かない。cardIndex が無い分岐を踏む。
+  it('advises picking the cards up when nothing beats the attack', async () => {
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByTestId('durak-hint-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({ ...baseState, hint: { takeCards: true, reason: 'take_cannot_beat' } });
+    fireEvent.click(screen.getByTestId('durak-hint-button'));
+
+    const shown = await screen.findByTestId('durak-server-hint');
+    expect(shown).toHaveTextContent('返せる札が無い');
+  });
+
+  it('shows no server hint before the button is pressed', async () => {
+    renderWithProviders(<DurakPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('durak-server-hint')).not.toBeInTheDocument();
+  });
 });
