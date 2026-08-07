@@ -23,6 +23,7 @@
   "scores": "Scores",
   "cardFaceDown": "Card {{position}} (face down)",
   "visitedMark": "Already seen",
+  "knownMatchMark": "you have seen the matching card here",
   "scoreLine": "{{name}}: {{count}}",
   "capturedPairs": "Captured Pairs",
   "noCapturedPairs": "None",

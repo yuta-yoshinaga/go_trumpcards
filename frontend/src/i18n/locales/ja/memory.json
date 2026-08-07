@@ -23,6 +23,7 @@
   "scores": "スコア",
   "cardFaceDown": "{{position}}枚目のカード（裏向き）",
   "visitedMark": "一度めくったカード",
+  "knownMatchMark": "ここで同じカードを見ています",
   "scoreLine": "{{name}}: {{count}}",
   "capturedPairs": "獲得ペア",
   "noCapturedPairs": "なし",

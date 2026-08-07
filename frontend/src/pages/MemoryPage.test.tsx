@@ -173,6 +173,19 @@ describe('MemoryPage', () => {
       expect(screen.getByTestId('board-2')).not.toHaveAttribute('data-known-match');
     });
 
+    // 目のマークを読み上げるなら、より強い「一致がある」も読み上げる。
+    it('tells screen readers about the match, not just that the square was seen', async () => {
+      await seeNineThenFlipFive();
+      await waitFor(() =>
+        expect(screen.getByTestId('board-9')).toHaveAttribute(
+          'aria-label',
+          expect.stringContaining('ここで同じカードを見ています'),
+        ),
+      );
+      // 見ただけの位置は従来どおり目のマークの読み上げ。
+      expect(screen.getByTestId('board-2').getAttribute('aria-label')).not.toContain('ここで同じカードを見ています');
+    });
+
     it('names the remembered square in the hint text', async () => {
       await seeNineThenFlipFive();
       await waitFor(() => expect(screen.getByText(/マス10/)).toBeInTheDocument());

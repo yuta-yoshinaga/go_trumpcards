@@ -417,9 +417,14 @@ function MemoryPageContent() {
                       aria-label={
                         bc.faceUp && bc.card
                           ? cardAlt(bc.card)
-                          : wasVisited
-                            ? `${t('cardFaceDown', { position: idx + 1 })} (${t('visitedMark')})`
-                            : t('cardFaceDown', { position: idx + 1 })
+                          : // 目のマークを読み上げるなら、より強い「一致がある」も読み上げる。
+                            // 見ただけの印だけ伝えて一致を伏せると、スクリーンリーダー利用者だけが
+                            // 情報の少ない側に置かれる。
+                            isKnownMatch
+                            ? `${t('cardFaceDown', { position: idx + 1 })} (${t('knownMatchMark')})`
+                            : wasVisited
+                              ? `${t('cardFaceDown', { position: idx + 1 })} (${t('visitedMark')})`
+                              : t('cardFaceDown', { position: idx + 1 })
                       }
                       disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                       tabIndex={idx === focusedIdx ? 0 : -1}
