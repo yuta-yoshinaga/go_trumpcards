@@ -33,6 +33,8 @@ type TonkGame interface {
 	GetPhase() domain.TonkPhase
 	// IsHumanTurn 現在の手番が人間かを返す
 	IsHumanTurn() bool
+	// GetBestDeadwood 1枚捨てて到達できる最小デッドウッドとその捨て札位置
+	GetBestDeadwood(playerIdx int) (int, int)
 	// GetRoundNumber 現在のラウンド番号を取得する
 	GetRoundNumber() int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する

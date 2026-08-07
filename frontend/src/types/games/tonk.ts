@@ -41,6 +41,15 @@ export interface TonkResponse extends BaseGameResponse {
   opponentDeadwood: Card[];
   isTonk: boolean;
   isUndercut: boolean;
+  /**
+   * 1枚捨てて到達できる最小デッドウッド。人間のディスカードフェーズ以外は -1。
+   *
+   * **-1 は「まだ聞くべき場面でない」印であって 0 ではない。**0 にすると
+   * 「デッドウッド0 = 必ずノック可能」と読めてしまう。
+   */
+  bestDeadwood: number;
+  /** ノックできるデッドウッド上限。`domain.TonkKnockThreshold` をサーバーが送る。 */
+  knockThreshold: number;
   config: TonkConfig;
 }
 

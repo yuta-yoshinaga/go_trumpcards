@@ -58,5 +58,10 @@
     "tonkDrawStock": "The discard does not meld — draw from the stock",
     "tonkKnock": "One discard leaves you at five points or fewer — you can knock",
     "tonkDiscardHeavy": "Discard the card that leaves the least deadwood"
+  },
+  "deadwood": {
+    "current": "Best deadwood after discarding: {{value}}",
+    "knockable": "Can knock",
+    "notKnockable": "Cannot knock (needs {{threshold}} or less)"
   }
 }

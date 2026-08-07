@@ -33,6 +33,10 @@ func setupTonkWebMock() *interfaces.MockTonkGame {
 	m.On("GetOpponentDeadwood").Return(([]*domain.Card)(nil))
 	m.On("GetIsTonk").Return(false)
 	m.On("GetIsUndercut").Return(false)
+	// #4750: ディスカードフェーズで最小デッドウッドを引く。
+	m.On("IsHumanTurn").Return(false).Maybe()
+	m.On("GetBestDeadwood", 0).Return(3, 0).Maybe()
+
 	return m
 }
 
@@ -199,6 +203,52 @@ func TestTonkWebPresenter_Output(t *testing.T) {
 		var resObj controller.TonkWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.Equal(t, "tonk.roundEnd", resObj.MessageCode)
+	})
+}
+
+// **CUI は毎ターン「ノック可能/不可」を出しているのに、Web はプレイヤーの
+// 手計算に任せていた (#4750)。**判断の基準 (閾値) ごと送るので、フロントは
+// 数値を写さずに済む。
+func TestTonkWebPresenter_BestDeadwood(t *testing.T) {
+	p := new(presenter.TonkWebPresenter)
+
+	decode := func(t *testing.T, m *interfaces.MockTonkGame) controller.TonkWebOutput {
+		t.Helper()
+		var out controller.TonkWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+		return out
+	}
+
+	t.Run("human discard turn carries the domain's answer and the threshold", func(t *testing.T) {
+		m, _ := setupTonkWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBestDeadwood")
+		m.On("GetPhase").Return(domain.TonkPhaseDiscard)
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetBestDeadwood", 0).Return(4, 1)
+
+		out := decode(t, m)
+		assert.Equal(t, 4, out.BestDeadwood)
+		assert.Equal(t, domain.TonkKnockThreshold, out.KnockThreshold)
+	})
+
+	// **-1 は「まだ聞くべき場面でない」印。**0 にすると「デッドウッド0 =
+	// 必ずノック可能」と読めてしまい、ドローフェーズで誤った案内が出る。
+	t.Run("outside the human discard turn it is -1, not 0", func(t *testing.T) {
+		m, _ := setupTonkWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.On("IsHumanTurn").Return(true) // フェーズは Draw のまま
+
+		assert.Equal(t, -1, decode(t, m).BestDeadwood)
+	})
+
+	t.Run("cpu discard turn is -1 too", func(t *testing.T) {
+		m, _ := setupTonkWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TonkPhaseDiscard) // IsHumanTurn は既定 false
+
+		assert.Equal(t, -1, decode(t, m).BestDeadwood)
 	})
 }
 
