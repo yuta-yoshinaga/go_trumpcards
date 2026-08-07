@@ -123,6 +123,22 @@ func (s *Spiderette) Reset() {
 // Deal ストックからタブローに1枚ずつ配る。空列がある場合は配れない。
 // 山札が SpideretteDealCnt 未満の場合は残り全カードを左の列から配る
 // (標準 Spiderette ルール) ので、最後の3枚も到達可能。
+// GetDealsRemaining は「配る」をあと何回押せるかを返す (#4798)。
+//
+// **生の残り枚数だけでは分からない。**1回の配布は最大 SpideretteDealCnt 枚で、
+// 端数 (1〜6枚) の最終配布も1回として数える。Web は同じ切り上げをバッジに
+// 出しているのに、CUI は7で割って切り上げる暗算を強いていた。
+//
+// 空き列があると Deal は弾かれるが、それは一時的な状態なのでここでは見ない
+// (回数そのものは変わらない)。
+func (s *Spiderette) GetDealsRemaining() int {
+	n := len(s.stock)
+	if n <= 0 {
+		return 0
+	}
+	return (n + SpideretteDealCnt - 1) / SpideretteDealCnt
+}
+
 func (s *Spiderette) Deal() error {
 	if s.phase != SpiderettePhasePlaying {
 		return errors.New("game is not in playing phase")

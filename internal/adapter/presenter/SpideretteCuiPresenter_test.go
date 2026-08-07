@@ -16,6 +16,7 @@ func setupSpideretteCuiMockDefaults(sg *interfaces.MockSpideretteGame) {
 	sg.On("GetPhase").Return(domain.SpiderettePhasePlaying).Maybe()
 	sg.On("GetMoveCount").Return(0).Maybe()
 	sg.On("GetStockCount").Return(24).Maybe()
+	sg.On("GetDealsRemaining").Return(0).Maybe()
 	sg.On("GetCompletedSuits").Return(0).Maybe()
 	sg.On("GetScore").Return(500).Maybe()
 	sg.On("IsStalemate").Return(false).Maybe()
@@ -175,5 +176,30 @@ func TestSpideretteCuiPresenter_ActionLogOutput(t *testing.T) {
 		p := new(SpideretteCuiPresenter)
 		result := p.ActionLogOutput(sg)
 		assert.Contains(t, result, "棋譜はありません")
+	})
+}
+
+// **生の残り枚数だけでは「あと何回配れるか」が分からない (#4798)。**Web は
+// 切り上げたバッジを出しているのに、CUI は7で割る暗算を強いていた。
+func TestSpideretteCuiPresenter_DealsRemaining(t *testing.T) {
+	p := new(SpideretteCuiPresenter)
+	withDeals := func(stock, deals int) *interfaces.MockSpideretteGame {
+		sg := new(interfaces.MockSpideretteGame)
+		sg.On("GetStockCount").Return(stock)
+		sg.On("GetDealsRemaining").Return(deals)
+		setupSpideretteCuiMockDefaults(sg)
+		return sg
+	}
+
+	t.Run("prints the deal count alongside the raw stock", func(t *testing.T) {
+		out := p.Output(withDeals(15, 3), nil)
+		assert.Contains(t, out, "15")
+		assert.Contains(t, out, "残り配布: 3回")
+	})
+
+	// **0回でも出す。**行が消えると「まだ配れるのに表示が無い」のか
+	// 「もう配れない」のか区別が付かない。
+	t.Run("still says zero once the stock is spent", func(t *testing.T) {
+		assert.Contains(t, p.Output(withDeals(0, 0), nil), "残り配布: 0回")
 	})
 }

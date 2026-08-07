@@ -9,5 +9,6 @@
   "header": "完成スーツ: {{completed}}/{{total}} | 山札: {{stock}}枚 | スコア: {{score}}",
   "columnLabel": "列{{col}}:",
   "gameClearLine": "ゲームクリア！ 手数: {{moves}} スコア: {{score}}",
-  "hintLine": "ヒント: タブロー列{{fromCol}}[{{idx}}] → タブロー列{{toCol}}"
+  "hintLine": "ヒント: タブロー列{{fromCol}}[{{idx}}] → タブロー列{{toCol}}",
+  "dealsRemaining": " | 残り配布: {{count}}回"
 }
