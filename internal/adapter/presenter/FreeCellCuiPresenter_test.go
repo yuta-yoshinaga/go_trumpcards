@@ -234,3 +234,58 @@ func TestFreeCellCuiPresenterActionLogGameOver(t *testing.T) {
 
 	assert.Contains(t, result, "棋譜")
 }
+
+// **何枚まとめて動かせるかが CUI に出ていなかった (#4777)。**姉妹ゲームの
+// Seahaven Towers は supermoveLine を出している。
+func TestFreeCellCuiPresenterOutput_SupermoveLine(t *testing.T) {
+	p := new(FreeCellCuiPresenter)
+	card := func(v int) *domain.Card { return domain.NewCard(domain.CardDesignSpade, v, false) }
+	board := func(filledCells, filledCols int) *domain.FreeCell {
+		f := domain.NewFreeCell(domain.NewTrumpCards(0))
+		f.Reset()
+		f.SetPhase(domain.FreeCellPhasePlaying)
+		var cells [domain.FreeCellCellCnt]*domain.Card
+		for i := 0; i < filledCells && i < domain.FreeCellCellCnt; i++ {
+			cells[i] = card(i + 2)
+		}
+		f.SetFreeCells(cells)
+		var tableau [domain.FreeCellTableauCnt][]*domain.Card
+		for i := 0; i < domain.FreeCellTableauCnt; i++ {
+			if i < filledCols {
+				tableau[i] = []*domain.Card{card(5)}
+			}
+		}
+		f.SetTableau(tableau)
+		return f
+	}
+
+	t.Run("names the limit and what it is made of", func(t *testing.T) {
+		out := p.Output(board(0, domain.FreeCellTableauCnt), nil)
+		assert.Contains(t, out, "最大5枚")
+		assert.Contains(t, out, "空きセル4")
+		assert.Contains(t, out, "空き列0")
+	})
+
+	// **空き列があるときだけ、そこへ置く上限も出す。**同じ数だと嘘になる。
+	t.Run("adds the lower empty-column limit when one exists", func(t *testing.T) {
+		out := p.Output(board(0, domain.FreeCellTableauCnt-1), nil)
+		assert.Contains(t, out, "最大10枚")
+		assert.Contains(t, out, "空き列へは5枚")
+	})
+
+	t.Run("omits the empty-column limit when no column is empty", func(t *testing.T) {
+		out := p.Output(board(0, domain.FreeCellTableauCnt), nil)
+		assert.NotContains(t, out, "空き列へは")
+	})
+
+	t.Run("shows a limit of one when the board is packed", func(t *testing.T) {
+		out := p.Output(board(domain.FreeCellCellCnt, domain.FreeCellTableauCnt), nil)
+		assert.Contains(t, out, "最大1枚")
+	})
+
+	t.Run("shows nothing once the game is cleared", func(t *testing.T) {
+		f := board(0, domain.FreeCellTableauCnt)
+		f.SetPhase(domain.FreeCellPhaseGameClear)
+		assert.NotContains(t, p.Output(f, nil), "一括移動")
+	})
+}

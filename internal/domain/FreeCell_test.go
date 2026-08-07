@@ -1178,3 +1178,70 @@ func TestFreeCellUndoN_Excessive(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "undo step")
 }
+
+// **何枚まとめて動かせるかは CUI に出ていなかった (#4777)。**Web は
+// fc-supermove-limit で常時出している。
+func TestFreeCell_GetMaxMovableCards(t *testing.T) {
+	card := func(v int) *Card { return NewCard(CardDesignSpade, v, false) }
+	board := func(filledCells int, filledCols int) *FreeCell {
+		f := NewFreeCell(NewTrumpCards(0))
+		f.Reset()
+		var cells [FreeCellCellCnt]*Card
+		for i := 0; i < filledCells && i < FreeCellCellCnt; i++ {
+			cells[i] = card(i + 2)
+		}
+		f.SetFreeCells(cells)
+		var tableau [FreeCellTableauCnt][]*Card
+		for i := 0; i < FreeCellTableauCnt; i++ {
+			if i < filledCols {
+				tableau[i] = []*Card{card(5)}
+			}
+		}
+		f.SetTableau(tableau)
+		return f
+	}
+
+	// **(1 + 空きセル) × 2^(空き列)。**セルは足し算、列は掛け算。
+	t.Run("counts free cells additively and empty columns as doubling", func(t *testing.T) {
+		// セル4つ空き・列は全部埋まり → (1+4) << 0 = 5。
+		assert.Equal(t, 5, board(0, FreeCellTableauCnt).GetMaxMovableCards())
+		// セル4つ空き・列1つ空き → (1+4) << 1 = 10。
+		assert.Equal(t, 10, board(0, FreeCellTableauCnt-1).GetMaxMovableCards())
+		// セル4つ空き・列2つ空き → (1+4) << 2 = 20。
+		assert.Equal(t, 20, board(0, FreeCellTableauCnt-2).GetMaxMovableCards())
+	})
+
+	// **一般の上限はどの列も除外しない。**特定の列を除外した値を返すと、
+	// 空き列が1つ少ない前提の小さすぎる数を出すことになる。
+	t.Run("the general limit excludes no column, not even the first", func(t *testing.T) {
+		f := NewFreeCell(NewTrumpCards(0))
+		f.Reset()
+		f.SetFreeCells([FreeCellCellCnt]*Card{})
+		var tableau [FreeCellTableauCnt][]*Card
+		// 0 列目だけを空にし、残りを埋める。
+		for i := 1; i < FreeCellTableauCnt; i++ {
+			tableau[i] = []*Card{card(5)}
+		}
+		f.SetTableau(tableau)
+		assert.Equal(t, 10, f.GetMaxMovableCards(), "(1+4) << 1")
+	})
+
+	t.Run("a filled free cell lowers the limit", func(t *testing.T) {
+		assert.Equal(t, 4, board(1, FreeCellTableauCnt).GetMaxMovableCards())
+	})
+
+	t.Run("with everything full only a single card moves", func(t *testing.T) {
+		assert.Equal(t, 1, board(FreeCellCellCnt, FreeCellTableauCnt).GetMaxMovableCards())
+	})
+
+	// **空き列を移動先にすると上限は下がる。**その列自身を経由地に使えない。
+	t.Run("moving onto an empty column halves the limit", func(t *testing.T) {
+		f := board(0, FreeCellTableauCnt-1)
+		assert.Equal(t, 10, f.GetMaxMovableCards())
+		assert.Equal(t, 5, f.GetMaxMovableCardsToEmptyColumn())
+	})
+
+	t.Run("reports zero when there is no empty column to move onto", func(t *testing.T) {
+		assert.Equal(t, 0, board(0, FreeCellTableauCnt).GetMaxMovableCardsToEmptyColumn())
+	})
+}

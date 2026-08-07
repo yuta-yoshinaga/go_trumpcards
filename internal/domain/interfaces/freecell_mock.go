@@ -100,6 +100,16 @@ func (_m *MockFreeCellGame) GetFreeCells() [domain.FreeCellCellCnt]*domain.Card 
 	return ret.Get(0).([domain.FreeCellCellCnt]*domain.Card)
 }
 
+func (_m *MockFreeCellGame) GetMaxMovableCards() int {
+	args := _m.Called()
+	return args.Int(0)
+}
+
+func (_m *MockFreeCellGame) GetMaxMovableCardsToEmptyColumn() int {
+	args := _m.Called()
+	return args.Int(0)
+}
+
 func (_m *MockFreeCellGame) GetFoundation() [domain.FreeCellFoundationCnt][]*domain.Card {
 	ret := _m.Called()
 	return ret.Get(0).([domain.FreeCellFoundationCnt][]*domain.Card)
