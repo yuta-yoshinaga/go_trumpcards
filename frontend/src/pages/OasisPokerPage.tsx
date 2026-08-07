@@ -286,6 +286,10 @@ function OasisPokerPageContent() {
                   {state.playerHand.map((card, i) => {
                     const selected = selectedIndices.includes(i);
                     const selectable = isExchangePhase;
+                    // CUI は交換すべき札をインデックスで列挙しているのに、Web は
+                    // 「交換すべき」としか言っていなかった (#4711)。選択済みの
+                    // 枠と重ならないよう、推奨は破線で出す。
+                    const suggested = hintEnabled && (hint?.targetIndices?.includes(i) ?? false);
                     return (
                       <button
                         key={`p-${i}`}
@@ -294,12 +298,14 @@ function OasisPokerPageContent() {
                         aria-pressed={selectable ? selected : undefined}
                         data-testid={`player-card-${i}`}
                         data-selected={selected ? 'true' : 'false'}
+                        data-hint-card={suggested ? 'true' : undefined}
                         onClick={selectable ? () => toggleSelected(i) : undefined}
                         disabled={!selectable || loading}
                         className={[
                           'bg-transparent border-0 p-0 transition-transform',
                           selectable ? 'cursor-pointer hover:scale-105' : 'cursor-default',
                           selected ? 'ring-4 ring-ds-warning rounded-lg -translate-y-2' : '',
+                          suggested && !selected ? 'rounded-lg ring-2 ring-ds-info ring-dashed' : '',
                         ]
                           .filter(Boolean)
                           .join(' ')}

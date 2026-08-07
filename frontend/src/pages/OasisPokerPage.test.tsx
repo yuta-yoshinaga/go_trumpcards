@@ -231,6 +231,27 @@ describe('OasisPokerPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200, 10));
   });
 
+  // **CUI は交換すべき札をインデックスで列挙しているのに、Web は「交換すべき」
+  // としか言っていなかった (#4711)。**5枚を個別にクリックする UI があるのに、
+  // どれを選ぶかの案内が無い。
+  it('marks the cards worth exchanging when hints are enabled', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('player-card-0')).toBeInTheDocument());
+
+    // トグルを入れるまでは印を付けない。
+    expect(screen.getByTestId('player-card-0')).not.toHaveAttribute('data-hint-card');
+
+    fireEvent.click(screen.getByLabelText('ヒント表示'));
+    // 手札は 10 / J / K / 5 / 7。J と K は残し、10・5・7 を交換する。
+    expect(screen.getByTestId('player-card-0')).toHaveAttribute('data-hint-card', 'true');
+    expect(screen.getByTestId('player-card-3')).toHaveAttribute('data-hint-card', 'true');
+    expect(screen.getByTestId('player-card-4')).toHaveAttribute('data-hint-card', 'true');
+    // **付かないことも確かめる。**全部に印を付ける実装でも「付く」だけなら通る。
+    expect(screen.getByTestId('player-card-1')).not.toHaveAttribute('data-hint-card');
+    expect(screen.getByTestId('player-card-2')).not.toHaveAttribute('data-hint-card');
+  });
+
   it('shows a play hint in the action phase when hints are enabled (strong hand)', async () => {
     const strongAction: OasisPokerResponse = { ...actionPhaseState, playerHandRank: 1 };
     mockApi.mockResolvedValue(strongAction);
