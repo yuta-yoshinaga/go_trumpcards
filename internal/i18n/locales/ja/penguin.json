@@ -26,5 +26,7 @@
   "hintToFoundation": "ファンデーション",
   "hintToTableau": "タブロー列{{col}}",
   "hintToFreeCell": "フリーセル{{col}}",
-  "hintLine": "ヒント: {{from}} → {{to}}"
+  "hintLine": "ヒント: {{from}} → {{to}}",
+  "supermoveLine": "一括移動: 最大{{limit}}枚 (空きセル{{cells}} / 空き列{{cols}})",
+  "supermoveToEmpty": " / 空き列へは{{limit}}枚"
 }

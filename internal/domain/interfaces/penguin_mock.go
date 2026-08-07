@@ -100,6 +100,16 @@ func (_m *MockPenguinGame) GetFreeCells() [domain.PenguinCellCnt]*domain.Card {
 	return ret.Get(0).([domain.PenguinCellCnt]*domain.Card)
 }
 
+func (_m *MockPenguinGame) GetMaxMovableCards() int {
+	args := _m.Called()
+	return args.Int(0)
+}
+
+func (_m *MockPenguinGame) GetMaxMovableCardsToEmptyColumn() int {
+	args := _m.Called()
+	return args.Int(0)
+}
+
 func (_m *MockPenguinGame) GetFoundation() [domain.PenguinFoundationCnt][]*domain.Card {
 	ret := _m.Called()
 	return ret.Get(0).([domain.PenguinFoundationCnt][]*domain.Card)

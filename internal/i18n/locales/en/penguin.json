@@ -26,5 +26,7 @@
   "hintToFoundation": "foundation",
   "hintToTableau": "tableau column {{col}}",
   "hintToFreeCell": "free cell {{col}}",
-  "hintLine": "Hint: {{from}} → {{to}}"
+  "hintLine": "Hint: {{from}} → {{to}}",
+  "supermoveLine": "Supermove: up to {{limit}} cards (free cells {{cells}} / empty columns {{cols}})",
+  "supermoveToEmpty": " / {{limit}} onto an empty column"
 }

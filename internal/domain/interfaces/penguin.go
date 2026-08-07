@@ -31,6 +31,10 @@ type PenguinGame interface {
 	GetTableau() [domain.PenguinTableauCnt][]*domain.Card
 	// GetFreeCells フリーセルを取得する
 	GetFreeCells() [domain.PenguinCellCnt]*domain.Card
+	// GetMaxMovableCards いま一度に動かせる最大枚数を取得する
+	GetMaxMovableCards() int
+	// GetMaxMovableCardsToEmptyColumn 空き列へ動かすときの上限を取得する
+	GetMaxMovableCardsToEmptyColumn() int
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.PenguinFoundationCnt][]*domain.Card
 	// GetBaseRank ベースランクを取得する
