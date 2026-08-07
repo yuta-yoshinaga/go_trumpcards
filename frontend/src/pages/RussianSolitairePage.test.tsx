@@ -82,6 +82,10 @@ describe('RussianSolitairePage', () => {
   it('shows the face-down rule note and gives face-down cards concise positional labels', async () => {
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(screen.getByTestId('rs-facedown-rule')).toBeInTheDocument());
+    // **Yukon との唯一の違いを伝える (#4789)。**裏向きは動かせないという汎用ルール
+    // だけでは、交互色で積もうとして詰まるプレイヤーを救えない。
+    expect(screen.getByTestId('rs-facedown-rule')).toHaveTextContent('同じスートで1つ下');
+    expect(screen.getByTestId('rs-facedown-rule')).toHaveTextContent('交互色では繋げません');
     // The rule text lives only in the note, not repeated on every card label.
     expect(screen.queryByLabelText(/移動できません/)).not.toBeInTheDocument();
     // Each face-down card exposes a short label with its column and position.
