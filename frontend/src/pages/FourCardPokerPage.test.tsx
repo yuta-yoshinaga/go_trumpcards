@@ -275,7 +275,7 @@ describe('FourCardPokerPage', () => {
     // useGameHint はこのファイルで自動モック済み。既定は hint:null / enabled:false
     // なので、出す側を明示的に作る。
     vi.mocked(useGameHint).mockReturnValue({
-      hint: { targetAction: 'play', reason: 'hint.strong_hand', confidence: 'high' },
+      hint: { targetAction: 'play', reason: 'hint.strong_hand', confidence: 'strong' },
       hintEnabled: true,
       setHintEnabled: vi.fn(),
     });
