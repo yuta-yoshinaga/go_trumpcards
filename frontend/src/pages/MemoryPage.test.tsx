@@ -143,6 +143,60 @@ describe('MemoryPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('flip', 3));
   });
 
+  // **見た札を覚えて指す (#4775)。**目のマークは「前に見た」としか言わず、
+  // そこに何があったかを思い出す助けにはなっていなかった。
+  describe('recall assist', () => {
+    // 位置9 で ♠3 を見た後の局面。位置5 に同じ ♠3 が表になっている。
+    const sawNineState: MemoryResponse = {
+      ...flip1State,
+      board: makeBoard({ 9: { faceUp: true, card: { design: 'SPADE' as const, value: 3 } } }),
+    };
+
+    beforeEach(() => {
+      vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: true, setHintEnabled: vi.fn() });
+    });
+
+    async function seeNineThenFlipFive() {
+      mockExec.mockResolvedValue(sawNineState);
+      renderWithProviders(<MemoryPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+
+      mockExec.mockResolvedValue(flip2State);
+      fireEvent.click(screen.getByTestId('board-3'));
+      await waitFor(() => expect(screen.getByTestId('board-9')).toBeInTheDocument());
+    }
+
+    it('marks the remembered twin of the card just turned over', async () => {
+      await seeNineThenFlipFive();
+      await waitFor(() => expect(screen.getByTestId('board-9')).toHaveAttribute('data-known-match', 'true'));
+      // 見ただけで一致しない位置は光らない。
+      expect(screen.getByTestId('board-2')).not.toHaveAttribute('data-known-match');
+    });
+
+    it('names the remembered square in the hint text', async () => {
+      await seeNineThenFlipFive();
+      await waitFor(() => expect(screen.getByText(/マス10/)).toBeInTheDocument());
+    });
+
+    // **記憶が無ければ何も指さない。**常に光らせる実装ならここで落ちる。
+    it('marks nothing before anything has been seen', async () => {
+      mockExec.mockResolvedValue(flip2State);
+      renderWithProviders(<MemoryPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+      expect(document.querySelectorAll('[data-known-match]')).toHaveLength(0);
+    });
+
+    it('drops the memory when the board is re-dealt', async () => {
+      await seeNineThenFlipFive();
+      await waitFor(() => expect(screen.getByTestId('board-9')).toHaveAttribute('data-known-match', 'true'));
+
+      mockExec.mockResolvedValue(flip2State);
+      fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+      fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+      await waitFor(() => expect(screen.getByTestId('board-9')).not.toHaveAttribute('data-known-match'));
+    });
+  });
+
   it('shows face-up card image in flip2 phase', async () => {
     mockExec.mockResolvedValue(flip2State);
     renderWithProviders(<MemoryPage />);

@@ -43,6 +43,7 @@
   },
   "frontendHint": {
     "flipAny": "Choose a card to flip — try to remember positions you have seen",
-    "findMatch": "Try to find the matching card — recall previously flipped positions"
+    "findMatch": "Try to find the matching card — recall previously flipped positions",
+    "knownMatch": "You have seen the same card at square {{position}} — flip it to pair"
   }
 }
