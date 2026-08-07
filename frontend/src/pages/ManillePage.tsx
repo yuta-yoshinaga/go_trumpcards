@@ -232,7 +232,11 @@ function ManillePageContent() {
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span>{t('trump', { suit: trumpSymbol })}</span>
+              <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
+              {/* **目標点を確認するのに設定パネルを開き直す必要があった (#4758)。**
+                  姉妹ゲームの Mariáš は同じ位置に出している。現在のチーム
+                  スコアと突き合わせられないと、あと何点で終わるか分からない。 */}
+              <span>{t('target', { points: state.config.targetPoints })}</span>
             </div>
 
             <div className={lgTwoColGrid}>
