@@ -148,6 +148,12 @@ func (m *MockCourtPieceGame) GetHint() *domain.CourtPieceHint {
 	return nil
 }
 
+// GetPlayableIndices はプレイ可能なカードのインデックスを返すモック。
+func (m *MockCourtPieceGame) GetPlayableIndices(playerIdx int) []int {
+	out, _ := m.Called(playerIdx).Get(0).([]int)
+	return out
+}
+
 func (m *MockCourtPieceGame) GetActionLog() []*domain.ActionLogEntry {
 	args := m.Called()
 	return args.Get(0).([]*domain.ActionLogEntry)

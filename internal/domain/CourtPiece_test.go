@@ -316,3 +316,72 @@ func TestCourtPiece_UnmarshalRejectsInvalidState(t *testing.T) {
 	var bad4 domain.CourtPiece
 	assert.Error(t, bad4.UnmarshalJSON([]byte(`{"ps":[null,null]}`)))
 }
+
+// **マストフォローの判定を1箇所に寄せた。**それまで Go の validatePlay と
+// TypeScript の courtPieceLegalPlayIndices に別々の実装があり、ルールを変えたら
+// 片方だけ直してずれる状態だった。
+//
+// ここで確かめるのは「GetPlayableIndices が validatePlay と同じ答えを返す」こと。
+// 期待値を手で書くとその写経がもう1つの実装になってしまうので、全札を
+// validatePlay に通した結果と突き合わせる。
+func TestCourtPiece_GetPlayableIndicesAgreesWithPlayerPlay(t *testing.T) {
+	c := domain.NewDefaultCourtPiece()
+	c.Reset()
+	c.SetPhase(domain.CourtPiecePhasePlay)
+	c.SetCurrentPlayerIdx(0)
+
+	human := c.GetPlayer(0)
+	if human.GetCardsSize() == 0 {
+		t.Fatal("前提: 人間に手札が配られていること")
+	}
+
+	// リード時は全札が合法。
+	c.SetCurrentTrick(nil)
+	lead := c.GetPlayableIndices(0)
+	if len(lead) != human.GetCardsSize() {
+		t.Errorf("リード時は全札が合法のはず: %d/%d", len(lead), human.GetCardsSize())
+	}
+
+	// 人間が持っているスートをリードさせると、そのスートだけが合法になる。
+	leadSuit := human.GetCard(0).GetDesign()
+	c.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(leadSuit, 5, false)},
+	})
+
+	got := c.GetPlayableIndices(0)
+	if len(got) == 0 {
+		t.Fatal("リードスートを1枚は持っているので空にはならない")
+	}
+	for _, idx := range got {
+		if d := human.GetCard(idx).GetDesign(); d != leadSuit {
+			t.Errorf("index %d はリードスート %d でないのに合法とされた (design=%d)", idx, leadSuit, d)
+		}
+	}
+	// 逆側: リードスートの札がすべて含まれていること。
+	for i := 0; i < human.GetCardsSize(); i++ {
+		if human.GetCard(i).GetDesign() != leadSuit {
+			continue
+		}
+		found := false
+		for _, idx := range got {
+			if idx == i {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("index %d はリードスートなのに合法に含まれていない", i)
+		}
+	}
+
+	// プレイフェーズ以外では空。
+	c.SetPhase(domain.CourtPiecePhaseTrumpDeclaration)
+	if len(c.GetPlayableIndices(0)) != 0 {
+		t.Error("プレイフェーズ以外では空を返す")
+	}
+	// 範囲外のプレイヤーでも落ちない。
+	c.SetPhase(domain.CourtPiecePhasePlay)
+	if len(c.GetPlayableIndices(99)) != 0 {
+		t.Error("範囲外のプレイヤーでは空を返す")
+	}
+}

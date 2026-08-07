@@ -583,6 +583,25 @@ func (c *CourtPiece) validatePlay(playerIdx int, card *Card) error {
 	return nil
 }
 
+// GetPlayableIndices は指定プレイヤーがいま出せる手札の位置を返す。
+//
+// **判定は validatePlay をそのまま使う。**マストフォローの規則をここで書き直すと、
+// 「出せると表示したのにエラーになる」ずれが生まれる。プレイフェーズ以外や範囲外の
+// プレイヤーでは空を返す。
+func (c *CourtPiece) GetPlayableIndices(playerIdx int) []int {
+	if c.phase != CourtPiecePhasePlay || playerIdx < 0 || playerIdx >= len(c.players) {
+		return []int{}
+	}
+	p := c.players[playerIdx]
+	out := make([]int, 0, p.GetCardsSize())
+	for i := 0; i < p.GetCardsSize(); i++ {
+		if c.validatePlay(playerIdx, p.GetCard(i)) == nil {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (c *CourtPiece) playerHasSuit(playerIdx, design int) bool {
 	p := c.players[playerIdx]

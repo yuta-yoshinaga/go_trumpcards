@@ -2354,6 +2354,7 @@ const baseCourtPieceState: CourtPieceResponse = {
   gameEndFlag: false,
   winnerTeam: -1,
   leadPlayerIdx: 0,
+  playableIndices: [0, 1],
   hint: null,
   message: '',
   config: { cpuDifficulty: 1, pointLimit: 7 },

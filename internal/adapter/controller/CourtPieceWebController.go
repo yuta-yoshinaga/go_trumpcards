@@ -66,7 +66,11 @@ type CourtPieceWebOutput struct {
 	GameEndFlag      bool                         `json:"gameEndFlag"`
 	WinnerTeam       int                          `json:"winnerTeam"`
 	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
-	Hint             *CourtPieceWebOutputHint     `json:"hint,omitempty"`
+	// PlayableIndices は人間がいま出せる手札の位置。マストフォローの判定は
+	// ドメインの GetPlayableIndices が唯一の出どころで、フロントは再実装しない。
+	// プレイフェーズで人間の手番のときだけ埋まり、それ以外は空。
+	PlayableIndices []int                    `json:"playableIndices"`
+	Hint            *CourtPieceWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config CourtPieceWebOutputConfig `json:"config"`
 }

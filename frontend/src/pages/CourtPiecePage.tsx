@@ -36,7 +36,6 @@ import type { TutorialStep } from '../types/tutorial';
 import { COURT_PIECE_HELP, parseCourtPieceCommand } from '../utils/cli/commands/courtPieceCommands';
 import { formatCourtPieceState } from '../utils/cli/formatters/courtPieceFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { courtPieceLegalPlayIndices } from '../utils/courtPieceLegal';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -149,12 +148,11 @@ function CourtPiecePageContent() {
   const isHumanTurn = isPlayPhase && isHumanCurrent;
   const canPlay = isHumanTurn;
 
-  // On the human's play turn, mirror the server's follow-suit rule
-  // (internal/domain/CourtPiece.go validatePlay) so legal cards get a success
-  // ring. This is an additive hint only — illegal cards stay clickable and the
-  // backend remains the source of truth for rejecting an illegal play.
-  const legalPlayIndices =
-    canPlay && humanPlayer ? courtPieceLegalPlayIndices(humanPlayer.cards, state.currentTrick) : undefined;
+  // 合法手はサーバーが判定済みの state.playableIndices をそのまま使う。
+  // 以前はここで validatePlay を TypeScript に写して再計算しており、ルールを
+  // 変えたら片方だけ直してずれる状態だった。additive hint である点は従来どおりで、
+  // 非合法手もクリックでき、拒否の最終判断はバックエンドが持つ。
+  const legalPlayIndices = canPlay ? state.playableIndices : undefined;
 
   const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
 

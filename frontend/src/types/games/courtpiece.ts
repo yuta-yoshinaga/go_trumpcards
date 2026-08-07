@@ -68,6 +68,14 @@ export interface CourtPieceResponse extends BaseGameResponse {
   winnerTeam: number;
   /** Seat index of the player who led the current trick. */
   leadPlayerIdx: number;
+  /**
+   * 人間がいま出せる手札の位置。
+   *
+   * マストフォローの判定はドメインの `GetPlayableIndices` が唯一の出どころ。
+   * 以前は `courtPieceLegal.ts` に同じ規則の写しがあり、片方だけ直すと食い違った。
+   * プレイフェーズで人間の手番でなければ空 — **空を「制限なし」と読まないこと**。
+   */
+  playableIndices: number[];
   hint?: CourtPieceHint | null;
   config: CourtPieceConfig;
 }

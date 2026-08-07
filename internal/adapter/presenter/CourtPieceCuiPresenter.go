@@ -24,7 +24,7 @@ func courtPieceTeamLabel(team int) string {
 }
 
 // courtPiecePlayerStr returns the display string for a single Court Piece player.
-func courtPiecePlayerStr(player *domain.CourtPiecePlayer, i int) string {
+func courtPiecePlayerStr(player *domain.CourtPiecePlayer, i int, playable []int) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("courtpiece.playerLine",
 		"name", cuiPlayerName(player, i),
@@ -34,7 +34,10 @@ func courtPiecePlayerStr(player *domain.CourtPiecePlayer, i int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **Web は合法手をリング表示しているのに、CUI は素の一覧だけだった。**
+		// 番号を入力してエラーを踏むまで、マストフォローで何が出せるか分からない。
+		// playable が空のときは目印を付けない (制限が決まっていない状態と区別する)。
+		b.WriteString(cuiPlayableMarkedCardListStr(player, playable) + "\n")
 	}
 	return b.String()
 }
@@ -78,7 +81,12 @@ func (p *CourtPieceCuiPresenter) Output(t interfaces.CourtPieceGame, lastErr err
 		}
 
 		for i := 0; i < t.GetPlayerCnt(); i++ {
-			b.WriteString(courtPiecePlayerStr(t.GetPlayer(i), i))
+			// 目印はプレイフェーズで本人の手番のときだけ。
+			var playable []int
+			if t.GetPhase() == domain.CourtPiecePhasePlay && t.GetCurrentPlayerIdx() == i {
+				playable = t.GetPlayableIndices(i)
+			}
+			b.WriteString(courtPiecePlayerStr(t.GetPlayer(i), i, playable))
 		}
 
 		b.WriteString("----------\n")
