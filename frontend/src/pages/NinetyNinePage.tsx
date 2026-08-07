@@ -188,6 +188,13 @@ function NinetyNinePageContent() {
     if (serverHint?.buryIndices) setSelected([...serverHint.buryIndices]);
   }, [serverHint, setSelected]);
 
+  // **埋めヒントには「適用」があるのに、プレイヒントは数字を出すだけだった。**
+  // プレイヤーは表示された [N] を見て手札から目視で探す必要があり、同じヒント
+  // なのに体験が非対称だった。埋めと同じく、選択に一発で反映する。
+  const handleApplyPlay = useCallback(() => {
+    if (serverHint?.cardIndex != null) setSelected([serverHint.cardIndex]);
+  }, [serverHint, setSelected]);
+
   const handleNextTrick = useCallback(() => void exec('next'), [exec]);
   const handleNextRound = useCallback(() => void exec('nextround'), [exec]);
   const handleManualReset = useCallback(() => {
@@ -473,9 +480,19 @@ function NinetyNinePageContent() {
                     </button>
                   </div>
                 ) : serverHint.cardIndex != null ? (
-                  <span>
-                    {t('hintPlay')}: [{serverHint.cardIndex}] ({t(`hintReason.${serverHint.reason}`)})
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span>
+                      {t('hintPlay')}: [{serverHint.cardIndex}] ({t(`hintReason.${serverHint.reason}`)})
+                    </span>
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handleApplyPlay}
+                      data-testid="nn-hint-apply-play"
+                    >
+                      {t('hintApply')}
+                    </button>
+                  </div>
                 ) : null}
               </div>
             )}
