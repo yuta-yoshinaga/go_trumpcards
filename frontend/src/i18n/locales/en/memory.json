@@ -23,6 +23,7 @@
   "scores": "Scores",
   "cardFaceDown": "Card {{position}} (face down)",
   "visitedMark": "Already seen",
+  "knownMatchMark": "you have seen the matching card here",
   "scoreLine": "{{name}}: {{count}}",
   "capturedPairs": "Captured Pairs",
   "noCapturedPairs": "None",
@@ -43,6 +44,7 @@
   },
   "frontendHint": {
     "flipAny": "Choose a card to flip — try to remember positions you have seen",
-    "findMatch": "Try to find the matching card — recall previously flipped positions"
+    "findMatch": "Try to find the matching card — recall previously flipped positions",
+    "knownMatch": "You have seen the same card at square {{position}} — flip it to pair"
   }
 }
