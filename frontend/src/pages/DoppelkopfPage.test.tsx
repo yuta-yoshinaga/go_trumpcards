@@ -215,4 +215,27 @@ describe('DoppelkopfPage', () => {
     renderWithProviders(<DoppelkopfPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **同じ値が毎レスポンスに乗っているのに、ラウンド終了まで出していなかった。**
+  // 最初のトリックで Re/Kontra をアナウンスできるので、いま何点取れているかは
+  // 実戦上の判断材料になる (#4720)。
+  it('shows the running card points during play', async () => {
+    mockExec.mockResolvedValue(makeDoppelkopfState({ phase: 0, roundRePoints: 85 }));
+    renderWithProviders(<DoppelkopfPage />);
+
+    const panel = await screen.findByTestId('dk-live-points');
+    expect(panel).toHaveTextContent('85');
+    // Kontra 側は 240 - 85 = 155。合計から引いて出していることを踏む。
+    expect(panel).toHaveTextContent('155');
+    expect(panel).toHaveTextContent('121');
+  });
+
+  // 逆側。ラウンド終了後は下の内訳が引き継ぐので、二重に出さない。
+  it('hides the running panel once the round has ended', async () => {
+    mockExec.mockResolvedValue(makeDoppelkopfState({ phase: 2, roundRePoints: 85 }));
+    renderWithProviders(<DoppelkopfPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('dk-live-points')).not.toBeInTheDocument();
+  });
 });

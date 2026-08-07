@@ -75,6 +75,15 @@ const DOPPELKOPF_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const DoppelkopfPage = withTutorial(DoppelkopfPageContent, 'doppelkopf', DK_TUTORIAL_STEPS);
 
 /** Inner content of the Doppelkopf page, wrapped by TutorialProvider. */
+/**
+ * Re が勝つのに必要なカード得点。`domain.DoppelkopfReWinPoints` の写し。
+ * Kontra は 120 点で勝つ (引き分けが無いよう Re 側だけ 1 点多く必要)。
+ */
+const DOPPELKOPF_RE_WIN_POINTS = 121;
+
+/** 1 ラウンドのカード得点合計。`domain.DoppelkopfTotalPoints` の写し。 */
+const DOPPELKOPF_TOTAL_POINTS = 240;
+
 function DoppelkopfPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('doppelkopf');
@@ -280,6 +289,33 @@ function DoppelkopfPageContent() {
                         {t('chips', { count: p.chips })} | {t('tricks', { count: p.trickCount })}
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* ラウンド中の獲得点。**同じ値がレスポンスに毎回乗っているのに、
+                    ラウンド終了まで画面に出していなかった。**最初のトリックで
+                    Re/Kontra をアナウンスできるので、いま何点取れているかは
+                    実戦上の判断材料になる。終了後は下の内訳が引き継ぐ。 */}
+                {!(isRoundEnd || isGameEnd) && (
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    role="status"
+                    aria-live="polite"
+                    data-testid="dk-live-points"
+                  >
+                    <div className="mb-1 text-ds-text-primary">{t('livePoints.title')}</div>
+                    <div>
+                      {t('livePoints.re', {
+                        points: state.roundRePoints,
+                        target: DOPPELKOPF_RE_WIN_POINTS,
+                      })}
+                    </div>
+                    <div>
+                      {t('livePoints.kontra', {
+                        points: DOPPELKOPF_TOTAL_POINTS - state.roundRePoints,
+                        target: DOPPELKOPF_TOTAL_POINTS - DOPPELKOPF_RE_WIN_POINTS + 1,
+                      })}
+                    </div>
                   </div>
                 )}
 

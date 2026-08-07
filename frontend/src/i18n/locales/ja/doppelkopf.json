@@ -65,5 +65,10 @@
     "badgeTitle": "切り札"
   },
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "livePoints": {
+    "title": "現在の獲得点",
+    "re": "Re: {{points}}点（勝利ライン {{target}}点）",
+    "kontra": "Kontra: {{points}}点（勝利ライン {{target}}点）"
+  }
 }
